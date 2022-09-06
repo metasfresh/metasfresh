@@ -16,21 +16,6 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.io.File;
-import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.LegacyAdapters;
-import org.compiere.util.DB;
-import org.compiere.util.TimeUtil;
-
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaGeneralLedger;
 import de.metas.acct.api.AcctSchemaId;
@@ -44,8 +29,23 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.LegacyAdapters;
+import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
+
+import java.io.File;
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * GL Journal Model
@@ -54,10 +54,10 @@ import de.metas.util.Services;
  * @version $Id: MJournal.java,v 1.3 2006/07/30 00:51:03 jjanke Exp $
  *
  * @author Teo Sarca, SC ARHIPAC SERVICE SRL <li>BF [ 1619150 ] Usability/Consistency: reversed gl journal description <li>BF [ 1775358 ] GL Journal DateAcct/C_Period_ID issue <li>FR [ 1776045 ] Add
- *         ReActivate action to GL Journal
+ * ReActivate action to GL Journal
  * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com <li>FR [ 1948157 ] Is necessary the reference for document reverse
  * @see http://sourceforge.net/tracker/?func=detail&atid=879335&aid=1948157&group_id=176962 <li>FR: [ 2214883 ] Remove SQL code and Replace for Query <li>FR [ 2520591 ] Support multiples calendar for
- *      Org
+ * Org
  * @see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
  */
 public class MJournal extends X_GL_Journal implements IDocument
@@ -67,12 +67,14 @@ public class MJournal extends X_GL_Journal implements IDocument
 	 */
 	private static final long serialVersionUID = -364132249042527640L;
 
+	private static final AdMessageKey MSG_HeaderAndLinePeriodMismatchError = AdMessageKey.of("GL_Journal.HeaderAndLinePeriodMismatch");
+
 	/**
 	 * Standard Constructor
 	 *
-	 * @param ctx context
+	 * @param ctx           context
 	 * @param GL_Journal_ID id
-	 * @param trxName transaction
+	 * @param trxName       transaction
 	 */
 	public MJournal(final Properties ctx, final int GL_Journal_ID, final String trxName)
 	{
@@ -101,19 +103,19 @@ public class MJournal extends X_GL_Journal implements IDocument
 			setPosted(false);
 			setProcessed(false);
 		}
-	}	// MJournal
+	}    // MJournal
 
 	/**
 	 * Load Constructor
 	 *
-	 * @param ctx context
-	 * @param rs result set
+	 * @param ctx     context
+	 * @param rs      result set
 	 * @param trxName transaction
 	 */
 	public MJournal(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		super(ctx, rs, trxName);
-	}	// MJournal
+	}    // MJournal
 
 	/**
 	 * Parent Constructor.
@@ -131,7 +133,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 		setDateDoc(parent.getDateDoc());
 		setDateAcct(parent.getDateAcct());
 		setC_Currency_ID(parent.getC_Currency_ID());
-	}	// MJournal
+	}    // MJournal
 
 	/**
 	 * Copy Constructor. Dos not copy: Dates/Period
@@ -158,19 +160,19 @@ public class MJournal extends X_GL_Journal implements IDocument
 
 		// setDateDoc(original.getDateDoc());
 		// setDateAcct(original.getDateAcct());
-	}	// MJournal
+	}    // MJournal
 
 	/**
 	 * Overwrite Client/Org if required
 	 *
 	 * @param AD_Client_ID client
-	 * @param AD_Org_ID org
+	 * @param AD_Org_ID    org
 	 */
 	@Override
 	public void setClientOrg(final int AD_Client_ID, final int AD_Org_ID)
 	{
 		super.setClientOrg(AD_Client_ID, AD_Org_ID);
-	}	// setClientOrg
+	}    // setClientOrg
 
 	/**
 	 * Set Accounting Date. Set also Period if not set earlier
@@ -183,14 +185,14 @@ public class MJournal extends X_GL_Journal implements IDocument
 		super.setDateAcct(DateAcct);
 		if (DateAcct == null)
 			return;
-	}	// setDateAcct
+	}    // setDateAcct
 
 	/**
 	 * Set Currency Info
 	 *
-	 * @param C_Currency_ID currency
+	 * @param C_Currency_ID       currency
 	 * @param C_ConversionType_ID type
-	 * @param CurrencyRate rate
+	 * @param CurrencyRate        rate
 	 */
 	public void setCurrency(final int C_Currency_ID, final int C_ConversionType_ID, final BigDecimal CurrencyRate)
 	{
@@ -200,7 +202,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 			setC_ConversionType_ID(C_ConversionType_ID);
 		if (CurrencyRate != null && CurrencyRate.compareTo(BigDecimal.ZERO) == 0)
 			setCurrencyRate(CurrencyRate);
-	}	// setCurrency
+	}    // setCurrency
 
 	/**
 	 * Add to Description
@@ -227,14 +229,14 @@ public class MJournal extends X_GL_Journal implements IDocument
 	{
 		final List<I_GL_JournalLine> lines = Services.get(IGLJournalLineDAO.class).retrieveLines(this);
 		return LegacyAdapters.convertToPOArray(lines, MJournalLine.class);
-	}	// getLines
+	}    // getLines
 
 	/**
 	 * Copy Lines from other Journal
 	 *
 	 * @param fromJournal Journal
-	 * @param dateAcct date used - if null original
-	 * @param typeCR type of copying (C)orrect=negate - (R)everse=flip dr/cr - otherwise just copy
+	 * @param dateAcct    date used - if null original
+	 * @param typeCR      type of copying (C)orrect=negate - (R)everse=flip dr/cr - otherwise just copy
 	 * @return number of lines copied
 	 */
 	public int copyLinesFrom(final MJournal fromJournal, final Timestamp dateAcct, final char typeCR)
@@ -252,7 +254,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 			if (dateAcct != null)
 				toLine.setDateAcct(dateAcct);
 			// Amounts
-			if (typeCR == 'C')			// correct
+			if (typeCR == 'C')            // correct
 			{
 				toLine.setAmtSourceDr(fromLine.getAmtSourceDr().negate());
 				toLine.setAmtSourceCr(fromLine.getAmtSourceCr().negate());
@@ -271,7 +273,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 				toLine.setCR_TaxAmt(fromLine.getCR_TaxAmt().negate());
 				toLine.setCR_TaxTotalAmt(fromLine.getCR_TaxTotalAmt().negate());
 			}
-			else if (typeCR == 'R')		// reverse
+			else if (typeCR == 'R')        // reverse
 			{
 				toLine.setAmtSourceDr(fromLine.getAmtSourceCr());
 				toLine.setAmtSourceCr(fromLine.getAmtSourceDr());
@@ -290,7 +292,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 			log.error("Line difference - JournalLines=" + fromLines.length + " <> Saved=" + count);
 
 		return count;
-	}	// copyLinesFrom
+	}    // copyLinesFrom
 
 	/**
 	 * Set Processed. Propagate to Lines/Taxes
@@ -308,7 +310,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 				+ "' WHERE GL_Journal_ID=" + getGL_Journal_ID();
 		int noLine = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		log.debug(processed + " - Lines=" + noLine);
-	}	// setProcessed
+	}    // setProcessed
 
 	/**************************************************************************
 	 * Before Save
@@ -346,13 +348,13 @@ public class MJournal extends X_GL_Journal implements IDocument
 		setAmtPrecision(this); // metas: cg: 02476
 
 		return true;
-	}	// beforeSave
+	}    // beforeSave
 
 	/**
 	 * After Save. Update Batch Total
 	 *
 	 * @param newRecord true if new record
-	 * @param success true if success
+	 * @param success   true if success
 	 * @return success
 	 */
 	@Override
@@ -364,7 +366,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 		updateBatch();
 
 		return true;
-	}	// afterSave
+	}    // afterSave
 
 	/**
 	 * After Delete
@@ -381,7 +383,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 		updateBatch();
 
 		return true;
-	}	// afterDelete
+	}    // afterDelete
 
 	/**
 	 * Update Batch total
@@ -389,15 +391,15 @@ public class MJournal extends X_GL_Journal implements IDocument
 	private void updateBatch()
 	{
 		final int glJournalBatchId = getGL_JournalBatch_ID();
-		if(glJournalBatchId <= 0)
+		if (glJournalBatchId <= 0)
 		{
 			return;
 		}
 
 		final String sql = DB.convertSqlToNative("UPDATE " + I_GL_JournalBatch.Table_Name + " jb"
-				+ " SET (TotalDr, TotalCr) = (SELECT COALESCE(SUM(TotalDr),0), COALESCE(SUM(TotalCr),0)"
-				+ " FROM GL_Journal j WHERE j.IsActive='Y' AND jb.GL_JournalBatch_ID=j.GL_JournalBatch_ID) "
-				+ "WHERE GL_JournalBatch_ID=?");
+														 + " SET (TotalDr, TotalCr) = (SELECT COALESCE(SUM(TotalDr),0), COALESCE(SUM(TotalCr),0)"
+														 + " FROM GL_Journal j WHERE j.IsActive='Y' AND jb.GL_JournalBatch_ID=j.GL_JournalBatch_ID) "
+														 + "WHERE GL_JournalBatch_ID=?");
 		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { glJournalBatchId }, get_TrxName());
 		if (no != 1)
 		{
@@ -428,7 +430,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 		log.info(toString());
 		setProcessing(false);
 		return true;
-	}	// unlockIt
+	}    // unlockIt
 
 	/**
 	 * Invalidate Document
@@ -440,7 +442,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 	{
 		log.info(toString());
 		return true;
-	}	// invalidateIt
+	}    // invalidateIt
 
 	/**
 	 * Prepare Document
@@ -459,6 +461,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 
 		// Assert period is open
 		MPeriod.testPeriodOpen(getCtx(), getDateAcct(), getC_DocType_ID(), getAD_Org_ID());
+		final int headerPeriodId = MPeriod.get(getCtx(), getDateAcct(), getAD_Org_ID()).getC_Period_ID();
 
 		// Lines
 		final MJournalLine[] lines = getLines(true);
@@ -475,6 +478,14 @@ public class MJournal extends X_GL_Journal implements IDocument
 			if (!isActive())
 			{
 				continue;
+			}
+
+			// Make sure the line period is the same as header period,
+			// else we would
+			final int linePeriodId = MPeriod.get(getCtx(), line.getDateAcct(), line.getAD_Org_ID()).getC_Period_ID();
+			if (headerPeriodId != linePeriodId)
+			{
+				throw new AdempiereException(MSG_HeaderAndLinePeriodMismatchError, line.getLine());
 			}
 
 			if (line.isAllowAccountDR())
@@ -523,7 +534,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 
 		m_justPrepared = true;
 		return IDocument.STATUS_InProgress;
-	}	// prepareIt
+	}    // prepareIt
 
 	private AcctSchema getAcctSchema()
 	{
@@ -544,7 +555,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 		log.info(toString());
 		setIsApproved(true);
 		return true;
-	}	// approveIt
+	}    // approveIt
 
 	/**
 	 * Reject Approval
@@ -557,7 +568,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 		log.info(toString());
 		setIsApproved(false);
 		return true;
-	}	// rejectIt
+	}    // rejectIt
 
 	/**
 	 * Complete Document
@@ -598,7 +609,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 		setProcessed(true);
 		setDocAction(DOCACTION_Close);
 		return IDocument.STATUS_Completed;
-	}	// completeIt
+	}    // completeIt
 
 	/**
 	 * Set the definite document number after completed
@@ -655,7 +666,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 			return false;
 
 		return ok_to_void;
-	}	// voidIt
+	}    // voidIt
 
 	/**
 	 * Close Document. Cancel not delivered Qunatities
@@ -689,7 +700,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 			return false;
 
 		return ok_to_close;
-	}	// closeIt
+	}    // closeIt
 
 	/**
 	 * Reverse Correction (in same batch). As if nothing happened - same date
@@ -715,7 +726,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 			return false;
 
 		return ok_correct;
-	}	// reverseCorrectIt
+	}    // reverseCorrectIt
 
 	/**
 	 * Reverse Correction. As if nothing happened - same date
@@ -761,7 +772,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 		saveEx();
 
 		return reverse;
-	}	// reverseCorrectionIt
+	}    // reverseCorrectionIt
 
 	/**
 	 * Reverse Accrual (sane batch). Flip Dr/Cr - Use Today's date
@@ -787,7 +798,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 			return false;
 
 		return ok_reverse;
-	}	// reverseAccrualIt
+	}    // reverseAccrualIt
 
 	/**
 	 * Reverse Accrual. Flip Dr/Cr - Use Today's date
@@ -802,7 +813,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 		MJournal reverse = new MJournal(this);
 		reverse.setGL_JournalBatch_ID(GL_JournalBatch_ID);
 		reverse.setDateDoc(new Timestamp(System.currentTimeMillis()));
-		reverse.set_ValueNoCheck("C_Period_ID", null);		// reset
+		reverse.set_ValueNoCheck("C_Period_ID", null);        // reset
 		reverse.setDateAcct(reverse.getDateDoc());
 		// Reverse indicator
 		String description = reverse.getDescription();
@@ -820,7 +831,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 		setProcessed(true);
 		setDocAction(DOCACTION_None);
 		return reverse;
-	}	// reverseAccrualIt
+	}    // reverseAccrualIt
 
 	/**
 	 * Re-activate
@@ -849,7 +860,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 			return false;
 
 		return true;
-	}	// reActivateIt
+	}    // reActivateIt
 
 	/*************************************************************************
 	 * Get Summary
@@ -874,8 +885,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 		if (getDescription() != null && getDescription().length() > 0)
 			sb.append(" - ").append(getDescription());
 		return sb.toString();
-	}	// getSummary
-
+	}    // getSummary
 
 	@Override
 	public LocalDate getDocumentDate()
@@ -897,7 +907,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 				.append(",CR=").append(getTotalCr())
 				.append("]");
 		return sb.toString();
-	}	// toString
+	}    // toString
 
 	/**
 	 * Get Document Info
@@ -909,7 +919,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 	{
 		MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
 		return dt.getName() + " " + getDocumentNo();
-	}	// getDocumentInfo
+	}    // getDocumentInfo
 
 	/**
 	 * Create PDF
@@ -929,7 +939,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 			log.error("Could not create PDF - " + e.getMessage());
 		}
 		return null;
-	}	// getPDF
+	}    // getPDF
 
 	/**
 	 * Create PDF file
@@ -943,7 +953,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 		// if (re == null)
 		return null;
 		// return re.getPDF(file);
-	}	// createPDF
+	}    // createPDF
 
 	/**
 	 * Get Process Message
@@ -954,7 +964,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 	public String getProcessMsg()
 	{
 		return m_processMsg;
-	}	// getProcessMsg
+	}    // getProcessMsg
 
 	/**
 	 * Get Document Owner (Responsible)
@@ -965,7 +975,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 	public int getDoc_User_ID()
 	{
 		return getCreatedBy();
-	}	// getDoc_User_ID
+	}    // getDoc_User_ID
 
 	/**
 	 * Get Document Approval Amount
@@ -976,7 +986,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 	public BigDecimal getApprovalAmt()
 	{
 		return getTotalDr();
-	}	// getApprovalAmt
+	}    // getApprovalAmt
 
 	/**
 	 * Document Status is Complete or Closed
@@ -987,7 +997,7 @@ public class MJournal extends X_GL_Journal implements IDocument
 	public boolean isComplete()
 	{
 		return Services.get(IGLJournalBL.class).isComplete(this);
-	}	// isComplete
+	}    // isComplete
 
 	// metas: cg: 02476
 	private static void setAmtPrecision(final I_GL_Journal journal)
@@ -997,11 +1007,11 @@ public class MJournal extends X_GL_Journal implements IDocument
 		{
 			return;
 		}
-		
+
 		final AcctSchema as = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
 		final CurrencyPrecision precision = as.getStandardPrecision();
-		
+
 		final BigDecimal controlAmt = precision.roundIfNeeded(journal.getControlAmt());
 		journal.setControlAmt(controlAmt);
 	}
-}	// MJournal
+}    // MJournal
