@@ -83,7 +83,7 @@ public class SwaggerDocConstants
 
 	public static final String PROJECT_IDENTIFIER_DOC = "Identifier of the project in question. Can be\n"
 			+ "* a plain `<C_Project_ID>`\n"
-			+ "* or something like `ext-<C_Project.ProjectReferenceExt>`\n"
+			+ "* or something like `ext-<C_Project.ExternalId>`\n"
 			+ "* or something like `val-<C_Project.value>`\n";
 
 	public static final String STEP_IDENTIFIER_DOC = "Identifier of the project step in question. Can be\n"

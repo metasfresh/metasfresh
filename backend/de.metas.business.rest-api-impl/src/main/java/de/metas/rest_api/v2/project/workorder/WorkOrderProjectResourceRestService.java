@@ -65,12 +65,14 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -355,6 +357,7 @@ public class WorkOrderProjectResourceRestService
 		return requestItems
 				.keySet()
 				.stream()
+				.filter(distinctByResourceIdentifier(WOProjectResourceIdentifier::getResourceIdentifier))
 				.collect(Collectors.toMap((WOProjectResourceIdentifier::getResourceIdentifier),
 										  woProjectResourceIdentifier -> ResourceIdentifierUtil.resolveResourceIdentifier(getOrgId.apply(woProjectResourceIdentifier.getStepId()),
 																														  woProjectResourceIdentifier.getResourceIdentifier(),
@@ -504,11 +507,17 @@ public class WorkOrderProjectResourceRestService
 	@Value(staticConstructor = "of")
 	private static class WOProjectResourceIdentifier
 	{
-
 		@NonNull
 		WOProjectStepId stepId;
 
 		@NonNull
 		IdentifierString resourceIdentifier;
+	}
+
+	@NonNull
+	private static Predicate<WOProjectResourceIdentifier> distinctByResourceIdentifier(@NonNull final Function<WOProjectResourceIdentifier, IdentifierString> keyExtractor)
+	{
+		final Set<IdentifierString> seenResourceIdentifiers = new HashSet<>();
+		return t -> seenResourceIdentifiers.add(keyExtractor.apply(t));
 	}
 }
