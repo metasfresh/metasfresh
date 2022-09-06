@@ -33,7 +33,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 /*
  * #%L
@@ -89,24 +88,6 @@ public class CostingMethodHandlerUtils
 	{
 		final CurrencyPrecision precision = currenciesRepo.getCostingPrecision(costPrice.getCurrencyId());
 		return uomConversionBL.convertProductPriceToUom(costPrice, uomId, precision);
-	}
-
-	@NonNull
-	public CostPrice convertToUOM(
-			@NonNull final CostPrice costPrice,
-			@NonNull final UomId targetUomId,
-			@NonNull final ProductId productId
-	)
-	{
-		return costPrice.convertAmounts(targetUomId, costAmount -> {
-			final ProductPrice productPrice = ProductPrice.builder()
-					.productId(productId)
-					.uomId(costPrice.getUomId())
-					.money(costAmount.toMoney())
-					.build();
-			final ProductPrice productPriceConv = convertToUOM(productPrice, targetUomId);
-			return CostAmount.ofProductPrice(productPriceConv);
-		});
 	}
 
 	@NonNull
@@ -233,10 +214,5 @@ public class CostingMethodHandlerUtils
 				request.getCurrencyConversionTypeId(),
 				request.getClientId(),
 				request.getOrgId());
-	}
-
-	public Stream<CostDetail> streamAllCostDetailsAfter(final CostDetail costDetail)
-	{
-		return costDetailsService.streamAllCostDetailsAfter(costDetail);
 	}
 }
