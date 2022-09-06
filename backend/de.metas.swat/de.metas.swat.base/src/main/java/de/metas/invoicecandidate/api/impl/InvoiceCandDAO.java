@@ -429,7 +429,6 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMN_C_Invoice_Candidate_ID, invoiceCandidateId)
 				.addOnlyActiveRecordsFilter()
 				.orderBy(I_C_InvoiceCandidate_InOutLine.COLUMN_M_InOutLine_ID)
-				.orderBy(I_C_InvoiceCandidate_InOutLine.COLUMN_C_Invoice_Candidate_ID)
 				.create()
 				.list(I_C_InvoiceCandidate_InOutLine.class);
 	}

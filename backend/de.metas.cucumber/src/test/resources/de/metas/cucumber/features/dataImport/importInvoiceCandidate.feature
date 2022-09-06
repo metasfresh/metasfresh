@@ -27,6 +27,7 @@ Feature: Import Invoice Candidates via DataImportRestController
       | importFormatOrg      | importFormat               | Org Suchschlüssel          |
 
   @from:cucumber
+  @Id:S0178_10
   Scenario: Import sales I_Invoice_Candidate from csv - setting all available fields
     Given metasfresh initially has no I_Invoice_Candidate data
     And metasfresh contains M_Products:
@@ -77,6 +78,7 @@ Feature: Import Invoice Candidates via DataImportRestController
       | invoiceCandidate_1                | invoice_1               |
 
   @from:cucumber
+  @Id:S0178_20
   Scenario: Import sales I_Invoice_Candidate from csv - setting only mandatory fields, system will compute the rest
     Given metasfresh contains M_Products:
       | Identifier | Name                 | Value                      |
@@ -114,6 +116,7 @@ Feature: Import Invoice Candidates via DataImportRestController
 
 
   @from:cucumber
+  @Id:S0178_30
   Scenario: Import sales I_Invoice_Candidate from csv - error scenario
   _Given billBPartner and product values that don't match any records
   _And DocBaseType + DocSubType don't reference any existing C_DocType
@@ -146,6 +149,7 @@ Feature: Import Invoice Candidates via DataImportRestController
 
 
   @from:cucumber
+  @Id:S0178_40
   Scenario: Import sales I_Invoice_Candidate from csv - error scenario
   _Given BillLocation_ID and BillUser_ID registered under a different BPartner
   _When importing the record
@@ -180,6 +184,7 @@ Feature: Import Invoice Candidates via DataImportRestController
 
 
   @from:cucumber
+  @Id:S0178_50
   Scenario: Import sales I_Invoice_Candidate from csv and validate that qtyToInvoice is properly set on C_Invoice_Candidate
   _Given C_BPartner.InvoiceRule = AfterDelivery and QtyDelivered = 2
   _When importing the record
