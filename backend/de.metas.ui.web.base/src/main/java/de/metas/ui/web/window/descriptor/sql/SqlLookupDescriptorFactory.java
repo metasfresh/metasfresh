@@ -37,7 +37,7 @@ final class SqlLookupDescriptorFactory
 
 	private static final int WINDOWNO_Dummy = 99999;
 
-	private ADReferenceService _adReferenceService;
+	private ADReferenceService adReferenceService;
 	@Nullable private String ctxColumnName;
 	@Nullable private String ctxTableName;
 
@@ -169,26 +169,21 @@ final class SqlLookupDescriptorFactory
 		return sysConfigBL.getBooleanValue("webui.lookup.orderBy.levenshtein", false);
 	}
 
-	public SqlLookupDescriptorFactory setADReferenceService(final ADReferenceService adReferenceService)
+	public SqlLookupDescriptorFactory setADReferenceService(@NonNull final ADReferenceService adReferenceService)
 	{
-		this._adReferenceService = adReferenceService;
+		this.adReferenceService = adReferenceService;
 		return this;
 	}
 
 	public ADReferenceService getADReferenceService()
 	{
-		ADReferenceService adReferenceService = this._adReferenceService;
-		if (adReferenceService == null)
-		{
-			adReferenceService = this._adReferenceService = ADReferenceService.get();
-		}
 		return adReferenceService;
 	}
 
 	private MLookupFactory newLookupFactory()
 	{
 		return MLookupFactory.builder()
-				.adReferenceService(getADReferenceService())
+				.adReferenceService(adReferenceService)
 				.build();
 	}
 
