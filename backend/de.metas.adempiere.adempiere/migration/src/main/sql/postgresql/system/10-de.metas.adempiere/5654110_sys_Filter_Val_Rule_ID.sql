@@ -54,13 +54,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 UPDATE AD_Column SET IsActive='Y',Updated=TO_TIMESTAMP('2022-08-31 22:10:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=584244
 ;
 
--- 2022-08-31T19:11:29.294Z
-/* DDL */ SELECT public.db_alter_table('AD_Column','ALTER TABLE public.AD_Column ADD COLUMN Filter_Val_Rule_ID NUMERIC(10)')
-;
-
--- 2022-08-31T19:11:29.800Z
-ALTER TABLE AD_Column ADD CONSTRAINT FilterValRule_ADColumn FOREIGN KEY (Filter_Val_Rule_ID) REFERENCES public.AD_Val_Rule DEFERRABLE INITIALLY DEFERRED
-;
 
 -- 2022-08-31T19:16:23.982Z
 INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,
@@ -73,13 +66,6 @@ VALUES (0,584245,581409,0,30,53462,107,'Filter_Val_Rule_ID',TO_TIMESTAMP('2022-0
 INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Column_ID=584245 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
 ;
 
--- 2022-08-31T19:16:50.974Z
-/* DDL */ SELECT public.db_alter_table('AD_Field','ALTER TABLE public.AD_Field ADD COLUMN Filter_Val_Rule_ID NUMERIC(10)')
-;
-
--- 2022-08-31T19:16:51.131Z
-ALTER TABLE AD_Field ADD CONSTRAINT FilterValRule_ADField FOREIGN KEY (Filter_Val_Rule_ID) REFERENCES public.AD_Val_Rule DEFERRABLE INITIALLY DEFERRED
-;
 
 -- 2022-08-31T19:18:14.335Z
 INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,584244,706891,0,101,TO_TIMESTAMP('2022-08-31 22:18:14','YYYY-MM-DD HH24:MI:SS'),100,'Validation Rule used for filtering',10,'D','','Y','N','N','N','N','N','N','N','Filter Validation Rule',TO_TIMESTAMP('2022-08-31 22:18:14','YYYY-MM-DD HH24:MI:SS'),100)
