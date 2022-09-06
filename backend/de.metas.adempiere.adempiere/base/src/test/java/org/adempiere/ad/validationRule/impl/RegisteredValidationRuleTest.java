@@ -17,8 +17,8 @@ import org.compiere.model.I_AD_Val_Rule;
 import org.compiere.model.X_AD_Val_Rule;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Set;
 
@@ -56,7 +56,7 @@ public class RegisteredValidationRuleTest
 
 	private final static String columnNameForRegisteredValRule = "ColumnNameForRegisteredValRule";
 
-	@Before
+	@BeforeEach
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
@@ -283,6 +283,7 @@ public class RegisteredValidationRuleTest
 	{
 		final I_AD_Val_Rule registeredValRule = InterfaceWrapperHelper.newInstance(I_AD_Val_Rule.class);
 		registeredValRule.setCode(validationCode);
+		registeredValRule.setName(validationCode); // name is mandatory
 		registeredValRule.setType(X_AD_Val_Rule.TYPE_SQL);
 		InterfaceWrapperHelper.save(registeredValRule);
 
