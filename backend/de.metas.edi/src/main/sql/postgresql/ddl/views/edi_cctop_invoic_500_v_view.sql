@@ -122,11 +122,9 @@ GROUP BY il.c_invoice_id,
          (COALESCE(NULLIF(o.poreference, ''), i.poreference)),
          (COALESCE(ol.line, il.line)),
          il.c_orderline_id,
-         pip.UPC, pip.GTIN, pip.EAN_TU,
-         pp.GTIN, p.GTIN,
+         pip.UPC, pip.GTIN, pip.EAN_TU, pp.GTIN, p.GTIN,
          il.QtyEnteredInBPartnerUOM, il.C_UOM_BPartner_ID, ol.externalseqno
-ORDER BY COALESCE(ol.line, il.line)
-;
+ORDER BY COALESCE(ol.line, il.line);
 
 COMMENT ON VIEW edi_cctop_invoic_500_v IS 'Notes:
 we output the Qty in the customer''s UOM (i.e. QtyEntered), but we call it QtyInvoiced for historical reasons.

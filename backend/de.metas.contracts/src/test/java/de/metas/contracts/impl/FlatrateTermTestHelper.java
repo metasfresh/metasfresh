@@ -1,7 +1,7 @@
 package de.metas.contracts.impl;
 
-import de.metas.contracts.callorder.CallOrderContractService;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.contracts.callorder.CallOrderContractService;
 import de.metas.contracts.inoutcandidate.SubscriptionShipmentScheduleHandler;
 import de.metas.contracts.interceptor.MainValidator;
 import de.metas.contracts.invoicecandidate.FlatrateTerm_Handler;

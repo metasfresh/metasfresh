@@ -330,8 +330,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		setC_Flatrate_Term_ID(ic, orderLine);
 
 		setPaymentRule(ic, orderLine);
-
-		setIncoterms(ic, orderLine);
 	}
 
 	private void setPaymentRule(

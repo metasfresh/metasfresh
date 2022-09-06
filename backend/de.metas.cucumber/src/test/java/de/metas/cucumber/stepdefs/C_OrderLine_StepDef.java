@@ -590,7 +590,6 @@ public class C_OrderLine_StepDef
 			assertThat(orderLine.getC_Tax_ID()).isEqualTo(tax.getC_Tax_ID());
 		}
 
-
 		final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 		orderLineTable.putOrReplace(orderLineIdentifier, orderLine);

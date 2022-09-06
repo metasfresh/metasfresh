@@ -155,7 +155,6 @@ public class AD_EventLog_Entry_StepDef
 		}
 	}
 
-
 	private void logCurrentContext(@NonNull final Map<String, String> row)
 	{
 		final String classname = DataTableUtil.extractStringForColumnName(row, I_AD_EventLog_Entry.COLUMNNAME_Classname);
@@ -234,7 +233,7 @@ public class AD_EventLog_Entry_StepDef
 	}
 
 	@Nullable
-	private static  <T> T getSpecificMaterialEvent(@NonNull final Event materialEvent, @NonNull final Class<T> clazz)
+	private static <T> T getSpecificMaterialEvent(@NonNull final Event materialEvent, @NonNull final Class<T> clazz)
 	{
 		try
 		{
