@@ -878,7 +878,7 @@ class ExternalSystemConfigRepoTest
 		expect(result).toMatchSnapshot();
 	}
 
-	
+
 	@Test
 	void externalSystem_Config_getActiveByType_NoRecord()
 	{
@@ -897,7 +897,7 @@ class ExternalSystemConfigRepoTest
 		// then
 		assertThat(result).isEmpty();
 	}
-	
+
 	@Test
 	void externalSystem_LeichMehl_Config_getById()
 	{

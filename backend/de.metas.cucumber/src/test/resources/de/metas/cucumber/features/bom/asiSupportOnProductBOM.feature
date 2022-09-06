@@ -20,18 +20,18 @@ Feature: ASI support in Product BOM rest-api
       | standard_category                | attributeSet_convenienceSalate   |
 
     And metasfresh contains M_PricingSystems
-      | Identifier | Name    | Value   | OPT.IsActive |
-      | ps_SO_1    | ps_SO_1 | ps_SO_1 | true         |
+      | Identifier     | Name           | Value          | OPT.IsActive |
+      | ps_SO_20220426 | ps_SO_20220426 | ps_SO_20220426 | true         |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name       | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_SO      | ps_SO_1                       | DE                        | EUR                 | pl_SO_name | true  | false         | 2              | true         |
+      | pl_SO      | ps_SO_20220426                | DE                        | EUR                 | pl_SO_name | true  | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID.Identifier | Name   | ValidFrom  |
       | plv_SO     | pl_SO                     | plv_SO | 2021-01-01 |
 
     And metasfresh contains C_BPartners:
       | Identifier  | Name        | Value       | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | customer_SO | customer_SO | customer_SO | Y              | ps_SO_1                       |
+      | customer_SO | customer_SO | customer_SO | Y              | ps_SO_20220426                |
     And metasfresh contains C_BPartner_Locations:
       | Identifier          | GLN          | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | customerLocation_SO | customerSO01 | customer_SO              | Y                   | Y                   |
@@ -150,7 +150,7 @@ Feature: ASI support in Product BOM rest-api
   """
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.M_PricingSystem_ID.Identifier |
-      | order_SO   | Y       | customer_SO              | 2022-01-03  | ps_SO_1                           |
+      | order_SO   | Y       | customer_SO              | 2022-01-03  | ps_SO_20220426                    |
     And metasfresh contains C_OrderLines:
       | Identifier   | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_AttributeSetInstance_ID.Identifier |
       | orderLine_SO | order_SO              | product_S1              | 5          | orderLineAttributeSetInstance            |
@@ -269,7 +269,7 @@ Feature: ASI support in Product BOM rest-api
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.M_PricingSystem_ID.Identifier | OPT.PreparationDate  |
-      | order_SO   | Y       | customer_SO              | 2022-01-03  | ps_SO_1                           | 2022-01-08T21:00:00Z |
+      | order_SO   | Y       | customer_SO              | 2022-01-03  | ps_SO_20220426                    | 2022-01-08T21:00:00Z |
     And metasfresh contains C_OrderLines:
       | Identifier   | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | orderLine_SO | order_SO              | product_S2              | 5          |
@@ -440,7 +440,7 @@ Feature: ASI support in Product BOM rest-api
   """
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.M_PricingSystem_ID.Identifier | OPT.DatePromised     |
-      | order_SO   | Y       | customer_SO              | 2022-01-09  | ps_SO_1                           | 2022-01-08T21:00:00Z |
+      | order_SO   | Y       | customer_SO              | 2022-01-09  | ps_SO_20220426                    | 2022-01-08T21:00:00Z |
     And metasfresh contains C_OrderLines:
       | Identifier   | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_AttributeSetInstance_ID.Identifier |
       | orderLine_SO | order_SO              | product_S3              | 20         | orderLineAttributeSetInstance            |
@@ -612,7 +612,7 @@ Feature: ASI support in Product BOM rest-api
   """
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.M_PricingSystem_ID.Identifier | OPT.DatePromised     |
-      | order_SO   | Y       | customer_SO              | 2022-01-09  | ps_SO_1                           | 2022-01-08T21:00:00Z |
+      | order_SO   | Y       | customer_SO              | 2022-01-09  | ps_SO_20220426                    | 2022-01-08T21:00:00Z |
     And metasfresh contains C_OrderLines:
       | Identifier   | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_AttributeSetInstance_ID.Identifier |
       | orderLine_SO | order_SO              | product_S4              | 20         | orderLineAttributeSetInstance            |

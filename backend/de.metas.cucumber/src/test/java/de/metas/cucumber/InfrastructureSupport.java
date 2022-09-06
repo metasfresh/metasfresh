@@ -124,7 +124,7 @@ public class InfrastructureSupport
 
 		if (runAgainstDockerizedDatabase)
 		{
-			// choose the docker tag such that no later scripts from other branches are already in this image 
+			// choose the docker tag such that no later scripts from other branches are already in this image
 			final String fullImageName = "metasfresh/metasfresh-db:5.176.1_23146_master";
 			logger.info("Start dockerized metasfresh-db {}", fullImageName);
 
