@@ -27,6 +27,7 @@ Feature: Import Invoice Candidates via DataImportRestController
       | importFormatOrg      | importFormat               | Org Suchschlüssel          |
 
   @from:cucumber
+  @Id:S0178_10
   Scenario: Import sales I_Invoice_Candidate from csv - setting all available fields
     Given metasfresh initially has no I_Invoice_Candidate data
     And metasfresh contains M_Products:
@@ -77,6 +78,7 @@ Feature: Import Invoice Candidates via DataImportRestController
       | invoiceCandidate_1                | invoice_1               |
 
   @from:cucumber
+  @Id:S0178_20
   Scenario: Import sales I_Invoice_Candidate from csv - setting only mandatory fields, system will compute the rest
     Given metasfresh contains M_Products:
       | Identifier | Name                 | Value                      |
@@ -114,6 +116,7 @@ Feature: Import Invoice Candidates via DataImportRestController
 
 
   @from:cucumber
+  @Id:S0178_30
   Scenario: Import sales I_Invoice_Candidate from csv - error scenario
   _Given billBPartner and product values that don't match any records
   _And DocBaseType + DocSubType don't reference any existing C_DocType
@@ -146,6 +149,7 @@ Feature: Import Invoice Candidates via DataImportRestController
 
 
   @from:cucumber
+  @Id:S0178_40
   Scenario: Import sales I_Invoice_Candidate from csv - error scenario
   _Given BillLocation_ID and BillUser_ID registered under a different BPartner
   _When importing the record
@@ -177,3 +181,57 @@ Feature: Import Invoice Candidates via DataImportRestController
     Then I_Invoice_Candidate is found: searching by product value
       | M_Product_Value            | I_Invoice_Candidate_ID.Identifier | I_IsImported | OPT.I_ErrorMsg                                                                                                                |
       | Product_Value_25_08_2022_4 | iInvoiceCandidate_4               | E            | ERR = Provided Bill_Location_ID not found for Bill_BPartner_ID!, ERR = Provided Bill_User_ID not found for Bill_BPartner_ID!, |
+
+
+  @from:cucumber
+  @Id:S0178_50
+  Scenario: Import sales I_Invoice_Candidate from csv and validate that qtyToInvoice is properly set on C_Invoice_Candidate
+  _Given C_BPartner.InvoiceRule = AfterDelivery and QtyDelivered = 2
+  _When importing the record
+  _Then validate that created C_Invoice_Candidate is invoicable ( QtyToInvoice = 2)
+  _And the invoice can be generated successfully
+
+    Given metasfresh contains M_Products:
+      | Identifier | Name               | Value                    |
+      | product_5  | Product_31_08_2022 | Product_Value_31_08_2022 |
+    And metasfresh contains M_ProductPrices
+      | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | pp_1       | plv_1                             | product_5               | 10.0     | PCE               | Normal                        |
+    And metasfresh contains C_BPartners:
+      | Identifier     | Name                    | Value                         | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
+      | billBpartner_5 | BillBPartner_31_08_2022 | BillBPartner_Value_31_08_2022 | N            | Y              | ps_1                          | D               |
+    And metasfresh contains C_BPartner_Locations:
+      | Identifier       | GLN           | C_BPartner_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo |
+      | billBPLocation_5 | 1239977890123 | billBpartner_5           | true         | true         |
+    And metasfresh contains AD_Users:
+      | AD_User_ID.Identifier | Name                  | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier |
+      | billBPUser_5          | BillBPartnerContact_5 | billBpartner_5               | billBPLocation_5                      |
+    And store DataImport string requestBody in context
+      | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | Bill_User_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | IsSOTrx | OPT.QtyDelivered | OPT.DateOrdered |
+      | billBpartner_5              | billBPLocation_5            | billBPUser_5            | product_5               | 4          | true    | 2                | 2022-08-25      |
+
+    When the metasfresh REST-API endpoint path 'api/v2/import/text?dataImportConfig=InvoiceCandidate&runSynchronous=true' receives a 'POST' request with the payload from context and responds with '200' status code
+
+    Then load C_DocType:
+      | C_DocType_ID.Identifier | DocBaseType | OPT.DocSubType | OPT.IsDefault |
+      | docType                 | ARI         | null           | true          |
+    And load C_UOM for product:
+      | C_UOM_ID.Identifier | M_Product_ID.Identifier |
+      | UOM_5               | product_5               |
+    And I_Invoice_Candidate is found: searching by product value
+      | M_Product_Value          | I_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | Bill_User_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | AD_Org_ID.Identifier | OPT.QtyDelivered | IsSOTrx | OPT.C_DocType_ID.Identifier | OPT.C_UOM_ID.Identifier | OPT.InvoiceRule | I_IsImported |
+      | Product_Value_31_08_2022 | iInvoiceCandidate_5               | billBpartner_5              | billBPLocation_5            | billBPUser_5            | product_5               | 4          | importFormatOrg      | 2                | Y       | docType                     | UOM_5                   | D               | Y            |
+    And validate invoice candidates by record reference:
+      | TableName           | I_Invoice_Candidate_ID.Identifier | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | AD_Org_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | IsSOTrx | OPT.C_DocType_ID.Identifier | OPT.C_UOM_ID.Identifier | InvoiceRule |
+      | I_Invoice_Candidate | iInvoiceCandidate_5               | invoiceCandidate_5                | billBpartner_5              | billBPLocation_5            | importFormatOrg      | billBPUser_5                | product_5                   | 4              | 2                | true    | docType                     | UOM_5                   | D           |
+    And after not more than 30s C_Invoice_Candidate matches:
+      | C_Invoice_Candidate_ID.Identifier | OPT.QtyToInvoice |
+      | invoiceCandidate_5                | 2                |
+
+    When process invoice candidates
+      | C_Invoice_Candidate_ID.Identifier |
+      | invoiceCandidate_5                |
+
+    Then after not more than 30s, C_Invoice are found:
+      | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
+      | invoiceCandidate_5                | invoice_5               |

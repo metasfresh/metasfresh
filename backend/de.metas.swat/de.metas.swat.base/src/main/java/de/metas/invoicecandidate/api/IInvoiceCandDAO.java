@@ -268,6 +268,8 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 */
 	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsExclRE(InvoiceCandidateId invoiceCandidateId);
 
+	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsFor(@NonNull InvoiceCandidateId invoiceCandidateId);
+
 	/**
 	 *
 	 * @param inOutLine
