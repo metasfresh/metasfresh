@@ -22,17 +22,11 @@
 
 package org.adempiere.warehouse.interceptor;
 
-import de.metas.bpartner.BPartnerContactId;
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.exceptions.BPartnerNoBillToAddressException;
-import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.document.location.DocumentLocation;
+import de.metas.order.IOrderBL;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.OrgId;
-import de.metas.user.User;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
@@ -44,7 +38,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.ModelValidator;
@@ -59,7 +52,7 @@ public class C_Order
 {
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	private final IBPartnerOrgBL bPartnerOrgBL = Services.get(IBPartnerOrgBL.class);
-	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	public C_Order()
 	{
@@ -80,31 +73,47 @@ public class C_Order
 
 		final Optional<DocumentLocation> externalBPartnerBillToAddress = getBillingLocationDocumentForExternalBPartner(warehouseId, orgId);
 
-		if (!externalBPartnerBillToAddress.isPresent())
-		{
-			final I_C_Order oldOrder = InterfaceWrapperHelper.createOld(order, I_C_Order.class);
-
-			//dev-note: check if old warehouse was owned by an external partner and reset location
-			if (oldOrder != null && oldOrder.getM_Warehouse_ID() > 0)
-			{
-				final I_M_Warehouse oldWarehouse = warehouseBL.getById(WarehouseId.ofRepoId(oldOrder.getM_Warehouse_ID()));
-
-				if (oldWarehouse.isBPartnerInvoicesWithVendors())
-				{
-					final DocumentLocation bpartnerBillToLocation = getBillingDocumentForBPartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()));
-
-					OrderDocumentLocationAdapterFactory.billLocationAdapter(order)
-							.setFrom(bpartnerBillToLocation);
-				}
-			}
-		}
-		else
+		if (externalBPartnerBillToAddress.isPresent())
 		{
 			OrderDocumentLocationAdapterFactory.billLocationAdapter(order)
 					.setFrom(externalBPartnerBillToAddress.get());
 
 			order.setIsDropShip(false);
 		}
+	}
+
+	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_M_Warehouse_ID)
+	public void resetBillingPartnerIfWarehouseChanged(@NonNull final I_C_Order order)
+	{
+		if (order.getM_Warehouse_ID() <= 0 || order.isSOTrx())
+		{
+			return; // nothing to do
+		}
+
+		final I_M_Warehouse currentWarehouse = warehouseBL.getById(WarehouseId.ofRepoId(order.getM_Warehouse_ID()));
+
+		if (currentWarehouse.isBPartnerInvoicesWithVendors())
+		{
+			//dev-note: no need to reset billing partner (org.adempiere.warehouse.interceptor.C_Order.updateBillPartnerAndDropshipFlagFromWarehouse will do that)
+			return;
+		}
+
+		final I_C_Order oldOrder = InterfaceWrapperHelper.createOld(order, I_C_Order.class);
+
+		if (oldOrder == null || oldOrder.getM_Warehouse_ID() < 0)
+		{
+			return;
+		}
+
+		final I_M_Warehouse oldWarehouse = warehouseBL.getById(WarehouseId.ofRepoId(oldOrder.getM_Warehouse_ID()));
+
+		if (!oldWarehouse.isBPartnerInvoicesWithVendors())
+		{
+			return;
+		}
+
+		//reset to default billing location
+		orderBL.setBillLocation(order);
 	}
 
 	@NonNull
@@ -125,39 +134,4 @@ public class C_Order
 		}
 		return Optional.empty();
 	}
-
-	@NonNull
-	private DocumentLocation getBillingDocumentForBPartnerId(@NonNull final BPartnerId bPartnerId)
-	{
-		final I_C_BPartner bPartner = bPartnerDAO.getById(bPartnerId);
-
-		final I_C_BPartner_Location billToLocation = bPartnerDAO.retrieveCurrentBillLocationOrNull(bPartnerId);
-		if (billToLocation == null)
-		{
-			throw new BPartnerNoBillToAddressException(bPartner);
-		}
-
-		final BPartnerLocationId billLocationId = BPartnerLocationId.ofRepoId(billToLocation.getC_BPartner_ID(), billToLocation.getC_BPartner_Location_ID());
-
-		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
-
-		final User bpartnerBillToContact = bpartnerBL.retrieveContactOrNull(IBPartnerBL.RetrieveContactRequest.builder()
-																			   .onlyActive(true)
-																			   .contactType(IBPartnerBL.RetrieveContactRequest.ContactType.BILL_TO_DEFAULT)
-																			   .bpartnerId(billLocationId.getBpartnerId())
-																			   .bPartnerLocationId(billLocationId)
-																			   .ifNotFound(IBPartnerBL.RetrieveContactRequest.IfNotFound.RETURN_NULL)
-																			   .build());
-
-		final BPartnerContactId billContactId = Optional.ofNullable(bpartnerBillToContact)
-				.flatMap(User::getBPartnerContactId)
-				.orElse(null);
-
-		return DocumentLocation.builder()
-				.bpartnerId(billLocationId.getBpartnerId())
-				.bpartnerLocationId(billLocationId)
-				.contactId(billContactId)
-				.build();
-	}
-
 }
