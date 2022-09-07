@@ -27,6 +27,7 @@ import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListVersionId;
+import de.metas.pricing.attributebased.impl.AttributePricing;
 import de.metas.pricing.rules.AggregatedPricingRule;
 import de.metas.pricing.rules.IPricingRule;
 import de.metas.pricing.service.IPriceListDAO;
@@ -50,7 +51,7 @@ public class PriceListVersionPricingRule implements IPricingRule
 	{
 		this.includedPricingRules = AggregatedPricingRule.ofNullables(
 				createPricingRule(PriceListVersionConfiguration.getHUPricingRuleFactory()),
-				createPricingRule(PriceListVersionConfiguration.getAttributePricingRuleFactory()),
+				new AttributePricing(),
 				new MainProductPriceRule()
 		);
 	}

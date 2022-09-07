@@ -25,7 +25,6 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.model.I_C_PricingRule;
-import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_CountryArea;
@@ -124,9 +123,6 @@ public class PricingTestHelper
 
 	protected List<String> getPricingRuleClassnamesToRegister()
 	{
-		de.metas.pricing.attributebased.impl.AttributePricing.install();
-		AdempiereTestHelper.get().onCleanup("Reset PriceListVersionConfiguration", PriceListVersionConfiguration::reset);
-
 		return ImmutableList.of(
 				de.metas.pricing.rules.price_list_version.PriceListVersionPricingRule.class.getName(),
 				de.metas.pricing.rules.Discount.class.getName());

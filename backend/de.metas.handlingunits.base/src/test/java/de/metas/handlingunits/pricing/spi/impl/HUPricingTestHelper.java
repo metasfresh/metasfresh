@@ -56,7 +56,6 @@ public class HUPricingTestHelper extends PricingTestHelper
 	protected List<String> getPricingRuleClassnamesToRegister()
 	{
 		HUPricing.install();
-		AttributePricing.install();
 		AdempiereTestHelper.get().onCleanup("Reset PriceListVersionConfiguration", PriceListVersionConfiguration::reset);
 
 		return ImmutableList.of(

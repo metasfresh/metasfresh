@@ -166,9 +166,6 @@ public class FlatrateTermTestHelper
 
 	private void addPricingRules()
 	{
-		AttributePricing.install();
-		AdempiereTestHelper.get().onCleanup("Reset PriceListVersionConfiguration", PriceListVersionConfiguration::reset);
-
 		pricingRules.put("PriceListVersion", PriceListVersionPricingRule.class.getName());
 		pricingRules.put("Discount", Discount.class.getName());
 		pricingRules.put("de.metas.contracts Discount", ContractDiscount.class.getName());

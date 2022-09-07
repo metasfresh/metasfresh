@@ -49,11 +49,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class AttributePricing implements IPricingRule
 {
-	public static void install()
-	{
-		PriceListVersionConfiguration.setupAttributePricing(AttributePricing::new);
-	}
-
 	private static final Logger logger = LogManager.getLogger(AttributePricing.class);
 
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);

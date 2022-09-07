@@ -233,7 +233,6 @@ public final class Main extends AbstractModuleInterceptor
 	public static void setupPricing()
 	{
 		HUPricing.install();
-		AttributePricing.install();
 	}
 
 	public void setupTourPlanning()

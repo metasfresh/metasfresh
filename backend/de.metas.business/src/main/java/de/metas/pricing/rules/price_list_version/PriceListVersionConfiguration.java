@@ -38,7 +38,6 @@ public class PriceListVersionConfiguration
 	private static final Logger logger = LogManager.getLogger(PriceListVersionConfiguration.class);
 
 	private static Supplier<IPricingRule> huPricingRuleFactory = null;
-	private static Supplier<IPricingRule> attributePricingRuleFactory = null;
 
 	public static void setupHUPricing(
 			@NonNull final Supplier<IPricingRule> huPricingRuleFactory,
@@ -55,18 +54,6 @@ public class PriceListVersionConfiguration
 		return huPricingRuleFactory;
 	}
 
-	public static void setupAttributePricing(
-			@NonNull final Supplier<IPricingRule> attributePricingRuleFactory)
-	{
-		PriceListVersionConfiguration.attributePricingRuleFactory = attributePricingRuleFactory;
-		logger.info("Registered AttributePricing factory: {}", attributePricingRuleFactory);
-	}
-
-	public static Supplier<IPricingRule> getAttributePricingRuleFactory()
-	{
-		return attributePricingRuleFactory;
-	}
-
 	public static void reset()
 	{
 		if (!Adempiere.isUnitTestMode())
@@ -77,7 +64,6 @@ public class PriceListVersionConfiguration
 		ProductPrices.clearMainProductPriceMatchers();
 
 		PriceListVersionConfiguration.huPricingRuleFactory = null;
-		PriceListVersionConfiguration.attributePricingRuleFactory = null;
 		logger.info("Configuration reset");
 	}
 }
