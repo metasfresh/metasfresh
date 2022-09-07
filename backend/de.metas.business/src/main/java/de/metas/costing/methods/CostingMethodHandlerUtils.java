@@ -31,8 +31,8 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 /*
  * #%L
@@ -91,24 +91,6 @@ public class CostingMethodHandlerUtils
 	}
 
 	@NonNull
-	public CostPrice convertToUOM(
-			@NonNull final CostPrice costPrice,
-			@NonNull final UomId targetUomId,
-			@NonNull final ProductId productId
-	)
-	{
-		return costPrice.convertAmounts(targetUomId, costAmount -> {
-			final ProductPrice productPrice = ProductPrice.builder()
-					.productId(productId)
-					.uomId(costPrice.getUomId())
-					.money(costAmount.toMoney())
-					.build();
-			final ProductPrice productPriceConv = convertToUOM(productPrice, targetUomId);
-			return CostAmount.ofProductPrice(productPriceConv);
-		});
-	}
-
-	@NonNull
 	public Quantity convertToUOM(
 			@NonNull final Quantity qty,
 			@NonNull final UomId targetUomId,
@@ -160,6 +142,11 @@ public class CostingMethodHandlerUtils
 	protected final Optional<CostDetail> getExistingCostDetail(final CostDetailCreateRequest request)
 	{
 		return costDetailsService.getExistingCostDetail(request);
+	}
+
+	public CostDetail updateDateAcct(@NonNull final CostDetail costDetail, @NonNull final Instant newDateAcct)
+	{
+		return costDetailsService.updateDateAcct(costDetail, newDateAcct);
 	}
 
 	public final CurrentCost getCurrentCost(final CostDetailCreateRequest request)
@@ -227,10 +214,5 @@ public class CostingMethodHandlerUtils
 				request.getCurrencyConversionTypeId(),
 				request.getClientId(),
 				request.getOrgId());
-	}
-
-	public Stream<CostDetail> streamAllCostDetailsAfter(final CostDetail costDetail)
-	{
-		return costDetailsService.streamAllCostDetailsAfter(costDetail);
 	}
 }

@@ -1,11 +1,5 @@
 package de.metas.costing;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.service.ClientId;
-
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
@@ -15,7 +9,11 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import lombok.With;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.service.ClientId;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 
 /*
@@ -65,6 +63,7 @@ public class CostDetail
 
 	String description;
 
+	@With
 	Instant dateAcct;
 
 	@Builder
