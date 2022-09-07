@@ -165,4 +165,4 @@ DELETE FROM AD_Process_Para WHERE AD_Process_Para_ID=540390
 
 DROP INDEX IF EXISTS c_dunning_candidate_recompute_c_dunning_candidate;
 
-DROP TABLE c_dunning_candidate_recompute;
+DROP TABLE IF EXISTS c_dunning_candidate_recompute;
