@@ -38,7 +38,7 @@ public interface IProductPlanningDAO extends ISingletonService
 		 * @param warehouseId            may be null which means "no warehouse" (not any warehouse!)
 		 * @param plantId                may be null which means "no plantId"
 		 * @param productId              mandatory
-		 * @param includeWithNullProductId    may be null which means "true" 
+		 * @param includeWithNullProductId    may be null which means "true". If true we might find results that have M_ProducT_ID=null 
 		 * @param attributeSetInstanceId mandatory, but might contain the 0-ASI-Id;
 		 */
 		@Builder
