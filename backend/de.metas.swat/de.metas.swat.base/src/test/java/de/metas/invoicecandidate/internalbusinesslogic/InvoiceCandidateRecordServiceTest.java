@@ -322,7 +322,7 @@ class InvoiceCandidateRecordServiceTest
 		assertThat(orderedData.getQty().toBigDecimal()).isEqualByComparingTo(EIGHTY);
 
 		final ShipmentData shippedData = result.getDeliveredData().getShipmentData();
-		assertThat(shippedData.isEmpty()).isFalse();
+		assertThat(shippedData.getDeliveredQtyItems()).isNotEmpty();
 
 		assertThat(shippedData.getDeliveredQtyItems())
 				.extracting("qtyInStockUom.qty", "qtyNominal.qty", "qtyCatch.qty", "qtyOverride.qty")
