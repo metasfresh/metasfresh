@@ -1,6 +1,6 @@
 package de.metas.project.workorder.interceptor;
 
-import de.metas.project.workorder.WOProjectStepRepository;
+import de.metas.project.workorder.step.WOProjectStepRepository;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -16,7 +16,7 @@ public class C_Project_WO_Step
 	public void afterSave(@NonNull final I_C_Project_WO_Step record)
 	{
 		// validate
-		WOProjectStepRepository.fromRecord(record);
+		WOProjectStepRepository.ofRecord(record);
 	}
 
 }

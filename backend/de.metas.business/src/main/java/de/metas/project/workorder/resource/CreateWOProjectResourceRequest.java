@@ -20,11 +20,11 @@
  * #L%
  */
 
-package de.metas.project.workorder.data;
+package de.metas.project.workorder.resource;
 
 import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
-import de.metas.project.workorder.WOProjectStepId;
+import de.metas.project.workorder.step.WOProjectStepId;
 import de.metas.util.lang.ExternalId;
 import de.metas.workflow.WFDurationUnit;
 import lombok.Builder;

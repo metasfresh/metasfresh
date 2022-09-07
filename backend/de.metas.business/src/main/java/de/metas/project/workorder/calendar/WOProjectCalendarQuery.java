@@ -20,26 +20,29 @@
  * #L%
  */
 
-package de.metas.project.workorder;
+package de.metas.project.workorder.calendar;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.project.ProjectId;
+import de.metas.user.UserId;
+import de.metas.util.InSetPredicate;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 
-/**
- * Work Order Project
- */
 @Value
 @Builder
-public class WOProject
+public class WOProjectCalendarQuery
 {
-	@NonNull ProjectId projectId;
-	@NonNull String name;
-	@Nullable ProjectId parentProjectId;
+	public static final WOProjectCalendarQuery ANY = builder().build();
 
-	@Nullable BPartnerId customerId;
+	@NonNull @Builder.Default InSetPredicate<ProjectId> projectIds = InSetPredicate.any();
+	@Nullable BPartnerId onlyCustomerId;
+	@Nullable UserId onlyResponsibleId;
+
+	public boolean isAny() {return projectIds.isAny() && onlyCustomerId == null && onlyResponsibleId == null;}
+
+	public boolean isNone() {return projectIds.isNone();}
 }

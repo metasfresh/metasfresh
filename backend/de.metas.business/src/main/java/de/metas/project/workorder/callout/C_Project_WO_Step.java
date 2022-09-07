@@ -23,7 +23,7 @@
 package de.metas.project.workorder.callout;
 
 import de.metas.project.ProjectId;
-import de.metas.project.workorder.WOProjectStepRepository;
+import de.metas.project.workorder.step.WOProjectStepRepository;
 import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;

@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.project.workorder;
+package de.metas.project.workorder.step;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.project.ProjectId;
@@ -53,7 +53,7 @@ public class WOProjectSteps
 		this.projectId = projectId;
 		this.stepsInOrder = steps.stream()
 				.sorted(Comparator.comparing(WOProjectStep::getSeqNo)
-						.thenComparing(WOProjectStep::getId))
+						.thenComparing(WOProjectStep::getWoProjectStepId))
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -78,7 +78,7 @@ public class WOProjectSteps
 	public WOProjectStep getById(@NonNull WOProjectStepId stepId)
 	{
 		return stepsInOrder.stream()
-				.filter(step -> WOProjectStepId.equals(step.getId(), stepId))
+				.filter(step -> WOProjectStepId.equals(step.getWoProjectStepId(), stepId))
 				.findFirst()
 				.orElseThrow(() -> new AdempiereException("No step found for " + stepId + " in " + this));
 	}
@@ -88,7 +88,7 @@ public class WOProjectSteps
 		final ArrayList<WOProjectStep> result = new ArrayList<>();
 		for (final WOProjectStep step : stepsInOrder)
 		{
-			if (WOProjectStepId.equals(step.getId(), stepId))
+			if (WOProjectStepId.equals(step.getWoProjectStepId(), stepId))
 			{
 				break;
 			}
@@ -109,7 +109,7 @@ public class WOProjectSteps
 			{
 				result.add(step);
 			}
-			else if (WOProjectStepId.equals(step.getId(), stepId))
+			else if (WOProjectStepId.equals(step.getWoProjectStepId(), stepId))
 			{
 				addStepsToResult = true;
 			}

@@ -8,13 +8,13 @@ import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.simulation.SimulationPlanRepository;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
-import de.metas.project.workorder.WOProjectRepository;
-import de.metas.project.workorder.WOProjectResource;
-import de.metas.project.workorder.WOProjectResourceId;
-import de.metas.project.workorder.WOProjectResourceRepository;
-import de.metas.project.workorder.WOProjectResourceSimulation;
 import de.metas.project.workorder.calendar.WOProjectSimulationPlan;
 import de.metas.project.workorder.calendar.WOProjectSimulationRepository;
+import de.metas.project.workorder.project.WOProjectRepository;
+import de.metas.project.workorder.resource.WOProjectResource;
+import de.metas.project.workorder.resource.WOProjectResourceId;
+import de.metas.project.workorder.resource.WOProjectResourceRepository;
+import de.metas.project.workorder.resource.WOProjectResourceSimulation;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
@@ -116,7 +116,7 @@ class WOProjectConflictsCheckerCommand
 			return ImmutableMap.of();
 		}
 
-		final Set<ProjectId> activeProjectIds = woProjectRepository.getAllActiveProjectIds();
+		final Set<ProjectId> activeProjectIds = woProjectRepository.getActiveProjectIds();
 		if (activeProjectIds.isEmpty())
 		{
 			return ImmutableMap.of();
@@ -124,7 +124,7 @@ class WOProjectConflictsCheckerCommand
 
 		return woProjectResourceRepository
 				.streamByResourceIds(resourceIds, activeProjectIds)
-				.collect(GuavaCollectors.toImmutableMapByKey(WOProjectResource::getId));
+				.collect(GuavaCollectors.toImmutableMapByKey(WOProjectResource::getWoProjectResourceId));
 	}
 
 	private void saveAndNotify(
@@ -144,7 +144,7 @@ class WOProjectConflictsCheckerCommand
 		for (final WOProjectResource projectResource : projectResources)
 		{
 			final WOProjectResourceSimulation projectResourceSimulation = simulation != null
-					? simulation.getProjectResourceByIdOrNull(projectResource.getId())
+					? simulation.getProjectResourceByIdOrNull(projectResource.getWoProjectResourceId())
 					: null;
 
 			final ResourceAllocation resourceAllocation;
@@ -172,7 +172,7 @@ class WOProjectConflictsCheckerCommand
 	{
 		return ResourceAllocation.builder()
 				.resourceId(resourceId)
-				.projectResourceId(projectResource.getId())
+				.projectResourceId(projectResource.getWoProjectResourceId())
 				.appliedSimulationId(appliedSimulationId)
 				.dateRange(projectResource.getDateRange())
 				.build();

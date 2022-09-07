@@ -47,10 +47,10 @@ import de.metas.project.ProjectId;
 import de.metas.project.ProjectType;
 import de.metas.project.ProjectTypeId;
 import de.metas.project.ProjectTypeRepository;
-import de.metas.project.workorder.data.CreateWOProjectRequest;
-import de.metas.project.workorder.data.WOProject;
-import de.metas.project.workorder.data.WOProjectQuery;
-import de.metas.project.workorder.data.WorkOrderProjectRepository;
+import de.metas.project.workorder.project.CreateWOProjectRequest;
+import de.metas.project.workorder.project.WOProject;
+import de.metas.project.workorder.project.WOProjectQuery;
+import de.metas.project.workorder.project.WOProjectRepository;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -77,14 +77,14 @@ public class WorkOrderProjectRestService
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
-	private final WorkOrderProjectRepository woProjectRepository;
+	private final WOProjectRepository woProjectRepository;
 	private final ProjectTypeRepository projectTypeRepository;
 	private final WorkOrderMapper woProjectMapper;
 	private final WorkOrderProjectObjectUnderTestRestService workOrderProjectObjectUnderTestRestService;
 	private final WorkOrderProjectStepRestService workOrderProjectStepRestService;
 
 	public WorkOrderProjectRestService(
-			@NonNull final WorkOrderProjectRepository woProjectRepository,
+			@NonNull final WOProjectRepository woProjectRepository,
 			@NonNull final ProjectTypeRepository projectTypeRepository,
 			@NonNull final WorkOrderMapper woProjectMapper,
 			@NonNull final WorkOrderProjectObjectUnderTestRestService workOrderProjectObjectUnderTestRestService,

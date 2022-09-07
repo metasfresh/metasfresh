@@ -35,8 +35,8 @@ import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderObjectUnderTes
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderObjectsUnderTestResponse;
 import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
-import de.metas.project.workorder.data.WOProject;
-import de.metas.project.workorder.data.WorkOrderProjectRepository;
+import de.metas.project.workorder.project.WOProject;
+import de.metas.project.workorder.project.WOProjectRepository;
 import de.metas.project.workorder.undertest.CreateWOProjectObjectUnderTestRequest;
 import de.metas.project.workorder.undertest.WOObjectUnderTestQuery;
 import de.metas.project.workorder.undertest.WOProjectObjectUnderTest;
@@ -65,11 +65,11 @@ public class WorkOrderProjectObjectUnderTestRestService
 {
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
-	private final WorkOrderProjectRepository workOrderProjectRepository;
+	private final WOProjectRepository workOrderProjectRepository;
 	private final WorkOrderProjectObjectUnderTestRepository workOrderProjectObjectUnderTestRepository;
 
 	public WorkOrderProjectObjectUnderTestRestService(
-			@NonNull final WorkOrderProjectRepository workOrderProjectRepository,
+			@NonNull final WOProjectRepository workOrderProjectRepository,
 			@NonNull final WorkOrderProjectObjectUnderTestRepository workOrderProjectObjectUnderTestRepository)
 	{
 		this.workOrderProjectRepository = workOrderProjectRepository;

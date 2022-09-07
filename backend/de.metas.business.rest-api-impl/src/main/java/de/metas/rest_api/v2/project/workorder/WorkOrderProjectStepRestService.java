@@ -25,6 +25,7 @@ package de.metas.rest_api.v2.project.workorder;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.calendar.util.CalendarDateRange;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
 import de.metas.common.rest_api.v2.SyncAdvise;
@@ -39,15 +40,14 @@ import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderStepUpsertResp
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
-import de.metas.project.workorder.WOProjectStepId;
-import de.metas.project.workorder.WOProjectStepRepository;
-import de.metas.project.workorder.data.WOProject;
-import de.metas.project.workorder.data.WorkOrderProjectRepository;
+import de.metas.project.workorder.project.WOProject;
+import de.metas.project.workorder.project.WOProjectRepository;
 import de.metas.project.workorder.step.CreateWOProjectStepRequest;
 import de.metas.project.workorder.step.WOProjectStep;
+import de.metas.project.workorder.step.WOProjectStepId;
 import de.metas.project.workorder.step.WOProjectStepQuery;
+import de.metas.project.workorder.step.WOProjectStepRepository;
 import de.metas.project.workorder.step.WOStepStatus;
-import de.metas.project.workorder.step.WorkOrderProjectStepRepository;
 import de.metas.rest_api.utils.IdentifierString;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.util.Check;
@@ -81,14 +81,14 @@ public class WorkOrderProjectStepRestService
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
-	private final WorkOrderProjectRepository workOrderProjectRepository;
-	private final WorkOrderProjectStepRepository workOrderProjectStepRepository;
+	private final WOProjectRepository workOrderProjectRepository;
+	private final WOProjectStepRepository workOrderProjectStepRepository;
 	private final WorkOrderProjectResourceRestService workOrderProjectResourceRestService;
 	private final WOProjectStepRepository woProjectStepRepository;
 
 	public WorkOrderProjectStepRestService(
-			@NonNull final WorkOrderProjectRepository workOrderProjectRepository,
-			@NonNull final WorkOrderProjectStepRepository workOrderProjectStepRepository,
+			@NonNull final WOProjectRepository workOrderProjectRepository,
+			@NonNull final WOProjectStepRepository workOrderProjectStepRepository,
 			@NonNull final WorkOrderProjectResourceRestService workOrderProjectResourceRestService,
 			@NonNull final WOProjectStepRepository woProjectStepRepository)
 	{
@@ -205,16 +205,21 @@ public class WorkOrderProjectStepRestService
 			stepBuilder.externalId(externalId);
 		}
 
+		final CalendarDateRange.CalendarDateRangeBuilder calendarDateRangeBuilder = existingWOProjectStep.getDateRange().toBuilder();
+
 		if (request.isDateStartSet())
 		{
-			stepBuilder.dateStart(TimeUtil.asInstant(request.getDateStart(), zoneId));
+			final Instant startDate = TimeUtil.asInstant(request.getDateStart(), zoneId);
+			calendarDateRangeBuilder.startDate(startDate);
 		}
 
 		if (request.isDateEndSet())
 		{
-			final Instant dateEnd = TimeUtil.asEndOfDayInstant(request.getDateEnd(), zoneId);
-			stepBuilder.dateEnd(dateEnd);
+			final Instant endDate = TimeUtil.asInstant(request.getDateEnd(), zoneId);
+			calendarDateRangeBuilder.endDate(endDate);
 		}
+
+		stepBuilder.dateRange(calendarDateRangeBuilder.build());
 
 		if (request.isDescriptionSet())
 		{
@@ -314,8 +319,8 @@ public class WorkOrderProjectStepRestService
 				.projectId(JsonMetasfreshId.of(woProjectStep.getProjectId().getRepoId()))
 				.description(woProjectStep.getDescription())
 				.seqNo(woProjectStep.getSeqNo())
-				.dateStart(TimeUtil.asLocalDate(woProjectStep.getDateStart(), zoneId))
-				.dateEnd(TimeUtil.asLocalDate(woProjectStep.getDateEnd(), zoneId))
+				.dateStart(TimeUtil.asLocalDate(woProjectStep.getDateRange().getStartDate(), zoneId))
+				.dateEnd(TimeUtil.asLocalDate(woProjectStep.getDateRange().getEndDate(), zoneId))
 				.externalId(ExternalId.toValue(woProjectStep.getExternalId()))
 				.woPartialReportDate(TimeUtil.asLocalDate(woProjectStep.getWoPartialReportDate(), zoneId))
 				.woPlannedResourceDurationHours(woProjectStep.getWoPlannedResourceDurationHours())
@@ -500,7 +505,7 @@ public class WorkOrderProjectStepRestService
 	 * @param requestProjectId there for information in case the method throws an exception
 	 */
 	private void validateAreNotStoredUnderDifferentProject(
-			@NonNull final Set<IdentifierString> externalIdsToCreate, 
+			@NonNull final Set<IdentifierString> externalIdsToCreate,
 			@NonNull final OrgId orgId,
 			@NonNull final ProjectId requestProjectId)
 	{

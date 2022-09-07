@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.project.workorder.data;
+package de.metas.project.workorder.project;
 
 import de.metas.common.util.EmptyUtil;
 import de.metas.organization.OrgId;

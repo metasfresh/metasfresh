@@ -6,15 +6,15 @@ import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
-import de.metas.project.workorder.WOProject;
-import de.metas.project.workorder.WOProjectResource;
-import de.metas.project.workorder.WOProjectResourceId;
-import de.metas.project.workorder.WOProjectResourceSimulation;
-import de.metas.project.workorder.WOProjectResources;
-import de.metas.project.workorder.WOProjectStep;
-import de.metas.project.workorder.WOProjectStepId;
-import de.metas.project.workorder.WOProjectStepSimulation;
-import de.metas.project.workorder.WOProjectSteps;
+import de.metas.project.workorder.project.WOProject;
+import de.metas.project.workorder.resource.WOProjectResource;
+import de.metas.project.workorder.resource.WOProjectResourceId;
+import de.metas.project.workorder.resource.WOProjectResourceSimulation;
+import de.metas.project.workorder.resource.WOProjectResources;
+import de.metas.project.workorder.step.WOProjectStep;
+import de.metas.project.workorder.step.WOProjectStepId;
+import de.metas.project.workorder.step.WOProjectStepSimulation;
+import de.metas.project.workorder.step.WOProjectSteps;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -160,7 +160,7 @@ class WOProjectSimulationPlanEditor
 
 	private WOProjectStep adjustBySimulation(@NonNull final WOProjectStep step)
 	{
-		final WOProjectStepSimulation simulation = simulationStepsById.get(step.getId());
+		final WOProjectStepSimulation simulation = simulationStepsById.get(step.getWoProjectStepId());
 		return simulation != null
 				? simulation.applyOn(step)
 				: step;
@@ -168,7 +168,7 @@ class WOProjectSimulationPlanEditor
 
 	private WOProjectResource adjustBySimulation(@NonNull final WOProjectResource projectResource)
 	{
-		final WOProjectResourceSimulation simulation = simulationProjectResourcesById.get(projectResource.getId());
+		final WOProjectResourceSimulation simulation = simulationProjectResourcesById.get(projectResource.getWoProjectResourceId());
 		return simulation != null
 				? simulation.applyOn(projectResource)
 				: projectResource;
@@ -232,9 +232,9 @@ class WOProjectSimulationPlanEditor
 			{
 				final Duration offset = Duration.between(prevDateRange.getStartDate(), currentDateRange.getEndDate()).negated();
 				currentDateRange = currentDateRange.plus(offset);
-				changeStep(step.getId(), currentDateRange);
+				changeStep(step.getWoProjectStepId(), currentDateRange);
 
-				shiftStepResources(step.getId(), offset);
+				shiftStepResources(step.getWoProjectStepId(), offset);
 			}
 
 			prevDateRange = currentDateRange;
@@ -252,9 +252,9 @@ class WOProjectSimulationPlanEditor
 			{
 				final Duration offset = Duration.between(currentDateRange.getStartDate(), prevDateRange.getEndDate());
 				currentDateRange = currentDateRange.plus(offset);
-				changeStep(step.getId(), currentDateRange);
+				changeStep(step.getWoProjectStepId(), currentDateRange);
 
-				shiftStepResources(step.getId(), offset);
+				shiftStepResources(step.getWoProjectStepId(), offset);
 			}
 
 			prevDateRange = currentDateRange;
@@ -271,7 +271,7 @@ class WOProjectSimulationPlanEditor
 		for (final WOProjectResource projectResource : getProjectResourcesByStepId(stepId))
 		{
 			final CalendarDateRange newDateRange = projectResource.getDateRange().plus(offset);
-			changeResource(projectResource.getId(), newDateRange);
+			changeResource(projectResource.getWoProjectResourceId(), newDateRange);
 		}
 	}
 

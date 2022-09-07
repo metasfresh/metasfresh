@@ -3,7 +3,7 @@ package de.metas.project.workorder.conflicts;
 import com.google.common.collect.ImmutableList;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.product.ResourceId;
-import de.metas.project.workorder.WOProjectResourceId;
+import de.metas.project.workorder.resource.WOProjectResourceId;
 import de.metas.test.SnapshotFunctionFactory;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.AfterAll;

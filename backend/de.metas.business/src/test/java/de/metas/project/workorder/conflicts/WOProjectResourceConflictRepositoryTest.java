@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.project.ProjectId;
-import de.metas.project.workorder.WOProjectResourceId;
+import de.metas.project.workorder.resource.WOProjectResourceId;
 import de.metas.util.InSetPredicate;
 import de.metas.util.OptionalBoolean;
 import org.adempiere.test.AdempiereTestHelper;
@@ -13,7 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(AdempiereTestWatcher.class)
 class WOProjectResourceConflictRepositoryTest
