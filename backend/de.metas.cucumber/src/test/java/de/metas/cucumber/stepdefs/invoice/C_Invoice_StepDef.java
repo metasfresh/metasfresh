@@ -39,17 +39,16 @@ import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefDa
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceService;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.order.OrderId;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.impl.PaymentTermQuery;
-import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -57,7 +56,6 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
@@ -69,8 +67,6 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.X_C_Invoice;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
@@ -100,6 +96,7 @@ public class C_Invoice_StepDef
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final PaymentAllocationRepository paymentAllocationRepository = SpringContextHolder.instance.getBean(PaymentAllocationRepository.class);
+	private final InvoiceService invoiceService = SpringContextHolder.instance.getBean(InvoiceService.class);
 
 	private final C_Invoice_StepDefData invoiceTable;
 	private final C_Order_StepDefData orderTable;
@@ -192,25 +189,7 @@ public class C_Invoice_StepDef
 		final InvoiceCandidateId invoiceCandidateId = invoiceableInvoiceCandId.getFirstInvoiceableInvoiceCandId();
 
 		//enqueue invoice candidate
-		final I_C_Invoice_Candidate invoiceCandidateRecord = invoiceCandDAO.getById(invoiceCandidateId);
-
-		final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(ImmutableList.of(invoiceCandidateId.getRepoId()), ITrx.TRXNAME_None);
-
-		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
-		invoicingParams.setIgnoreInvoiceSchedule(false);
-		invoicingParams.setSupplementMissingPaymentTermIds(true);
-
-		invoiceCandBL.enqueueForInvoicing()
-				.setContext(Env.getCtx())
-				.setFailIfNothingEnqueued(true)
-				.setInvoicingParams(invoicingParams)
-				.enqueueSelection(invoiceCandidatesSelectionId);
-
-		//wait for the invoice to be created
-		StepDefUtil.tryAndWait(timeoutSec, 500, () -> {
-			InterfaceWrapperHelper.refresh(invoiceCandidateRecord);
-			return invoiceCandidateRecord.isProcessed();
-		});
+		invoiceService.processInvoiceCandidates(ImmutableSet.of(invoiceCandidateId));
 
 		final List<de.metas.adempiere.model.I_C_Invoice> invoices = invoiceDAO.getInvoicesForOrderIds(ImmutableList.of(targetOrderId));
 		assertThat(invoices.size()).isEqualTo(1);

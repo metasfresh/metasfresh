@@ -36,7 +36,7 @@ Feature: Import Invoice Candidates via DataImportRestController
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | product_1               | 10.0     | PCE               | Normal                        |
-    And metasfresh contains C_BPartners:
+    And metasfresh contains C_BPartners without locations:
       | Identifier     | Name                      | Value                         | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
       | billBpartner_1 | BillBPartner_25_08_2022_1 | BillBPartner_Value_25_08_2022 | N            | Y              | ps_1                          | I               |
     And metasfresh contains C_BPartner_Locations:
@@ -86,7 +86,7 @@ Feature: Import Invoice Candidates via DataImportRestController
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | product_2               | 10.0     | PCE               | Normal                        |
-    And metasfresh contains C_BPartners:
+    And metasfresh contains C_BPartners without locations:
       | Identifier     | Name                      | Value                           | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
       | billBpartner_2 | BillBPartner_25_08_2022_2 | BillBPartner_Value_25_08_2022_2 | N            | Y              | ps_1                          | I               |
     And metasfresh contains C_BPartner_Locations:
@@ -128,7 +128,7 @@ Feature: Import Invoice Candidates via DataImportRestController
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | product_3               | 10.0     | PCE               | Normal                        |
-    And metasfresh contains C_BPartners:
+    And metasfresh contains C_BPartners without locations:
       | Identifier     | Name                      | Value                           | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
       | billBpartner_3 | BillBPartner_25_08_2022_3 | BillBPartner_Value_25_08_2022_3 | N            | Y              | ps_1                          | I               |
     And metasfresh contains C_BPartner_Locations:
@@ -160,7 +160,7 @@ Feature: Import Invoice Candidates via DataImportRestController
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | product_4               | 10.0     | PCE               | Normal                        |
-    And metasfresh contains C_BPartners:
+    And metasfresh contains C_BPartners without locations:
       | Identifier          | Name                          | Value                           | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
       | billBpartner_4      | BillBPartner_25_08_2022_4     | billBPartner_Value_25_08_2022_4 | N            | Y              | ps_1                          | I               |
       | billBpartner_4_test | BillBPartnerTest_25_08_2022_4 | BillBPartner_Value_25_08_2022_4 | N            | Y              | ps_1                          | I               |
@@ -197,7 +197,7 @@ Feature: Import Invoice Candidates via DataImportRestController
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | product_5               | 10.0     | PCE               | Normal                        |
-    And metasfresh contains C_BPartners:
+    And metasfresh contains C_BPartners without locations:
       | Identifier     | Name                    | Value                         | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
       | billBpartner_5 | BillBPartner_31_08_2022 | BillBPartner_Value_31_08_2022 | N            | Y              | ps_1                          | D               |
     And metasfresh contains C_BPartner_Locations:
