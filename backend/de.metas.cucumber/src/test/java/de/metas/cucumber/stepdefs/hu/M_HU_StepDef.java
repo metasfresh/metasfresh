@@ -197,7 +197,7 @@ public class M_HU_StepDef
 			final I_M_HU_PI_Version piVersion = huPiVersionTable.get(huPiVersionIdentifier);
 			assertThat(piVersion).isNotNull();
 
-			final String locatorIdentifier = DataTableUtil.extractStringForColumnName(row, "OPT." + COLUMNNAME_M_Locator_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String locatorIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_Locator_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (EmptyUtil.isNotBlank(locatorIdentifier))
 			{
 				final I_M_Locator locator = locatorTable.get(locatorIdentifier);
@@ -592,6 +592,13 @@ public class M_HU_StepDef
 		assertThat(huRecord).isNotNull();
 		assertThat(huRecord.getHUStatus()).isEqualTo(huStatus);
 		assertThat(huRecord.isActive()).isEqualTo(isActive);
+
+		final String locatorIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_Locator_ID + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(locatorIdentifier))
+		{
+			final I_M_Locator locator = locatorTable.get(locatorIdentifier);
+			assertThat(huRecord.getM_Locator_ID()).isEqualTo(locator.getM_Locator_ID());
+		}
 	}
 
 	private void validateHUStorage(@NonNull final Map<String, String> row)

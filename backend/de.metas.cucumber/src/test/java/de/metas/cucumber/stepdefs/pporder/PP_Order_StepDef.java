@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.productionorder;
+package de.metas.cucumber.stepdefs.pporder;
 
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -29,11 +29,12 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_BOM_StepDefData;
-import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
 import de.metas.cucumber.stepdefs.productplanning.PP_Product_Planning_StepDefData;
 import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
+import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.material.planning.ProductPlanningId;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
@@ -67,6 +68,7 @@ import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_Planning;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -168,7 +170,9 @@ public class PP_Order_StepDef
 
 			final Boolean completeDocument = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "completeDocument", false);
 
-			final PPOrderCreateRequest ppOrderCreateRequest = PPOrderCreateRequest.builder()
+			final String productPlanningIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Order.COLUMNNAME_PP_Product_Planning_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+			final PPOrderCreateRequest.PPOrderCreateRequestBuilder ppOrderCreateRequest = PPOrderCreateRequest.builder()
 					.docBaseType(docBaseType)
 					.clientAndOrgId(clientAndOrgId)
 					.plantId(resourceId)
@@ -178,10 +182,15 @@ public class PP_Order_StepDef
 					.dateOrdered(dateOrdered)
 					.datePromised(datePromised)
 					.dateStartSchedule(dateStartSchedule)
-					.completeDocument(completeDocument)
-					.build();
+					.completeDocument(completeDocument);
 
-			final I_PP_Order ppOrder = ppOrderService.createOrder(ppOrderCreateRequest);
+			if (Check.isNotBlank(productPlanningIdentifier))
+			{
+				final I_PP_Product_Planning productPlanning = productPlanningTable.get(productPlanningIdentifier);
+				ppOrderCreateRequest.productPlanningId(ProductPlanningId.ofRepoId(productPlanning.getPP_Product_Planning_ID()));
+			}
+
+			final I_PP_Order ppOrder = ppOrderService.createOrder(ppOrderCreateRequest.build());
 			assertThat(ppOrder).isNotNull();
 
 			final String ppOrderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Order.COLUMNNAME_PP_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -208,6 +217,38 @@ public class PP_Order_StepDef
 			catch (final Exception e)
 			{
 				StepDefUtil.validateErrorMessage(e, errorMessage);
+			}
+		}
+	}
+
+	@And("validate I_PP_Order_Qty")
+	public void validate_order_qty(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps();
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			final String orderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Order.COLUMNNAME_PP_Order_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_PP_Order order = ppOrderTable.get(orderIdentifier);
+
+			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Order.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_M_Product product = productTable.get(productIdentifier);
+
+			final BigDecimal movementQty = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_PP_Order_Qty.COLUMNNAME_Qty);
+
+			final String bomLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Order_BOMLine.COLUMNNAME_PP_Order_BOMLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_PP_Order_BOMLine bomLine = bomLineIdentifier != null ? ppOrderBomLineTable.get(bomLineIdentifier) : null;
+
+			final I_PP_Order_Qty orderQty = queryBL.createQueryBuilder(I_PP_Order_Qty.class)
+					.addEqualsFilter(I_PP_Order_Qty.COLUMNNAME_PP_Order_ID, order.getPP_Order_ID())
+					.addEqualsFilter(I_PP_Order_Qty.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
+					.create()
+					.firstOnly(I_PP_Order_Qty.class);
+
+			assertThat(orderQty).isNotNull();
+			assertThat(orderQty.getQty()).isEqualTo(movementQty);
+			if (bomLine != null)
+			{
+				assertThat(orderQty.getPP_Order_BOMLine_ID()).isEqualTo(bomLine.getPP_Order_BOMLine_ID());
 			}
 		}
 	}

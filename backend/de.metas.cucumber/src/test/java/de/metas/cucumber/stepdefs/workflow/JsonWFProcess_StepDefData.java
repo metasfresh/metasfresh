@@ -20,15 +20,15 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.productionorder;
+package de.metas.cucumber.stepdefs.workflow;
 
 import de.metas.cucumber.stepdefs.StepDefData;
-import de.metas.handlingunits.model.I_PP_Order_Qty;
+import de.metas.cucumber.stepdefs.workflow.dto.WFProcessId;
 
-public class PP_Order_Qty_StepDefData extends StepDefData<I_PP_Order_Qty>
+public class JsonWFProcess_StepDefData extends StepDefData<WFProcessId>
 {
-	public PP_Order_Qty_StepDefData()
+	public JsonWFProcess_StepDefData()
 	{
-		super(I_PP_Order_Qty.class);
+		super(WFProcessId.class);
 	}
 }
