@@ -42,6 +42,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.Assertions;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_Warehouse;
@@ -61,7 +62,8 @@ public class DD_Order_StepDef
 	private final M_Warehouse_StepDefData warehouseTable;
 	private final DD_Order_StepDefData ddOrderTable;
 	private final S_Resource_StepDefData resourceTable;
-	private final DDOrderService ddOrderService;
+
+	private final DDOrderService ddOrderService = SpringContextHolder.instance.getBean(DDOrderService.class);
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
@@ -70,15 +72,12 @@ public class DD_Order_StepDef
 			@NonNull final C_BPartner_StepDefData bPartnerTable,
 			@NonNull final M_Warehouse_StepDefData warehouseTable,
 			@NonNull final DD_Order_StepDefData ddOrderTable,
-			@NonNull final S_Resource_StepDefData resourceTable,
-			@NonNull final DDOrderService ddOrderService
-	)
+			@NonNull final S_Resource_StepDefData resourceTable)
 	{
 		this.bPartnerTable = bPartnerTable;
 		this.warehouseTable = warehouseTable;
 		this.ddOrderTable = ddOrderTable;
 		this.resourceTable = resourceTable;
-		this.ddOrderService = ddOrderService;
 	}
 
 	@And("metasfresh contains DD_Orders:")
