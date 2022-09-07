@@ -1,5 +1,6 @@
 package de.metas.material.planning;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -29,6 +30,7 @@ public interface IProductPlanningDAO extends ISingletonService
 		WarehouseId warehouseId;
 		ResourceId plantId;
 		ProductId productId;
+		boolean includeWithNullProductId; 
 		AttributeSetInstanceId attributeSetInstanceId;
 
 		/**
@@ -36,6 +38,7 @@ public interface IProductPlanningDAO extends ISingletonService
 		 * @param warehouseId            may be null which means "no warehouse" (not any warehouse!)
 		 * @param plantId                may be null which means "no plantId"
 		 * @param productId              mandatory
+		 * @param includeWithNullProductId    may be null which means "true". If true we might find results that have M_ProducT_ID=null 
 		 * @param attributeSetInstanceId mandatory, but might contain the 0-ASI-Id;
 		 */
 		@Builder
@@ -44,12 +47,14 @@ public interface IProductPlanningDAO extends ISingletonService
 				@Nullable final WarehouseId warehouseId,
 				@Nullable final ResourceId plantId,
 				@Nullable final ProductId productId,
+				@Nullable final Boolean includeWithNullProductId,
 				@NonNull final AttributeSetInstanceId attributeSetInstanceId)
 		{
 			this.orgId = orgId;
 			this.warehouseId = warehouseId;
 			this.plantId = plantId;
 			this.productId = productId;
+			this.includeWithNullProductId = CoalesceUtil.coalesceNotNull(includeWithNullProductId, true);
 			this.attributeSetInstanceId = attributeSetInstanceId;
 		}
 	}
