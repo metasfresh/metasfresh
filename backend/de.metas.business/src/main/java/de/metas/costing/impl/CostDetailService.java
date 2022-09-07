@@ -25,6 +25,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -100,6 +101,12 @@ public class CostDetailService implements ICostDetailService
 	public CostDetail create(@NonNull final CostDetailBuilder costDetailBuilder)
 	{
 		return costDetailsRepo.create(costDetailBuilder);
+	}
+
+	@Override
+	public CostDetail updateDateAcct(@NonNull final CostDetail costDetail, @NonNull final Instant newDateAcct)
+	{
+		return costDetailsRepo.updateDateAcct(costDetail, newDateAcct);
 	}
 
 	@Override

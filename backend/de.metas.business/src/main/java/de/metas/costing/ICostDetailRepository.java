@@ -5,6 +5,7 @@ import de.metas.acct.api.AcctSchemaId;
 import de.metas.product.ProductId;
 import lombok.NonNull;
 
+import java.time.Instant;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -33,6 +34,8 @@ import java.util.stream.Stream;
 public interface ICostDetailRepository
 {
 	CostDetail create(CostDetail.CostDetailBuilder costDetailBuilder);
+
+	CostDetail updateDateAcct(@NonNull CostDetail costDetail, @NonNull Instant newDateAcct);
 
 	void delete(CostDetail costDetail);
 

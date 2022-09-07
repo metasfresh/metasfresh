@@ -34,6 +34,8 @@ import org.compiere.model.I_M_CostDetail;
 import org.springframework.stereotype.Component;
 
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -112,6 +114,23 @@ public class CostDetailRepository implements ICostDetailRepository
 		final CostDetailId id = CostDetailId.ofRepoId(record.getM_CostDetail_ID());
 
 		return cd.withId(id);
+	}
+
+	@Override
+	public CostDetail updateDateAcct(@NonNull final CostDetail costDetail, @NonNull final Instant newDateAcct)
+	{
+		if (Objects.equals(costDetail.getDateAcct(), newDateAcct))
+		{
+			return costDetail;
+		}
+
+		final CostDetailId costDetailId = Check.assumeNotNull(costDetail.getId(), "cost detail is saved: {}", costDetail);
+
+		final I_M_CostDetail record = load(costDetailId, I_M_CostDetail.class);
+		record.setDateAcct(Timestamp.from(newDateAcct));
+		InterfaceWrapperHelper.save(record);
+
+		return costDetail.withDateAcct(newDateAcct);
 	}
 
 	@VisibleForTesting
