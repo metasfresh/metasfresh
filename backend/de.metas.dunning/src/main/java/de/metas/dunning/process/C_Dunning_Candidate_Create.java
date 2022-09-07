@@ -22,38 +22,52 @@ package de.metas.dunning.process;
  * #L%
  */
 
-import java.sql.Timestamp;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.compiere.util.Env;
-import org.compiere.util.TrxRunnableAdapter;
-
 import de.metas.dunning.api.IDunningBL;
 import de.metas.dunning.api.IDunningCandidateProducer;
 import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.api.IDunningDAO;
+import de.metas.dunning.api.impl.RecomputeDunningCandidatesQuery;
 import de.metas.dunning.interfaces.I_C_Dunning;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
+import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.dunning.spi.IDunnableSource;
+import de.metas.organization.OrgId;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.compiere.util.Env;
+import org.compiere.util.TrxRunnableAdapter;
+
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
 
 /**
  * Process responsible for generating dunning candidates for all configured {@link IDunnableSource}s
  *
  * @author tsa
- *
  */
 public class C_Dunning_Candidate_Create extends JavaProcess
 {
 	private static final String PARAM_DunningDate = "DunningDate";
+	@Nullable
 	private Timestamp p_DunningDate = null;
 
 	private static final String PARAM_IsFullUpdate = "IsFullUpdate";
 	private boolean p_IsFullUpdate = false;
 
-	final private ITrxManager trxManager = Services.get(ITrxManager.class);
+	private static final String PARAM_IsOnlyUpdate = "IsOnlyUpdate";
+	private boolean p_IsOnlyUpdate = false;
+
+	private static final String PARAM_AD_Org_ID = I_C_Dunning_Candidate.COLUMNNAME_AD_Org_ID;
+	@Nullable
+	private OrgId p_AD_Org_ID = null;
+
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IDunningBL dunningBL = Services.get(IDunningBL.class);
+	private final IDunningDAO dunningDAO = Services.get(IDunningDAO.class);
 
 	@Override
 	protected void prepare()
@@ -61,8 +75,10 @@ public class C_Dunning_Candidate_Create extends JavaProcess
 		// Defaults
 		p_DunningDate = Env.getContextAsDate(getCtx(), "#Date");
 		p_IsFullUpdate = false;
+		p_IsOnlyUpdate = false;
+		p_AD_Org_ID = null;
 
-		for (ProcessInfoParameter para : getParametersAsArray())
+		for (final ProcessInfoParameter para : getParametersAsArray())
 		{
 			if (para.getParameter() == null)
 			{
@@ -79,14 +95,20 @@ public class C_Dunning_Candidate_Create extends JavaProcess
 			{
 				p_IsFullUpdate = para.getParameterAsBoolean();
 			}
+			else if (PARAM_IsOnlyUpdate.equals(name))
+			{
+				p_IsOnlyUpdate = para.getParameterAsBoolean();
+			}
+			else if (PARAM_AD_Org_ID.equals(name))
+			{
+				p_AD_Org_ID = para.getParameterAsRepoId(OrgId::ofRepoIdOrNull);
+			}
 		}
 	}
 
 	@Override
 	protected String doIt()
 	{
-		final IDunningDAO dunningDAO = Services.get(IDunningDAO.class);
-
 		//
 		// Generate dunning candidates
 		for (final I_C_Dunning dunning : dunningDAO.retrieveDunnings())
@@ -102,23 +124,37 @@ public class C_Dunning_Candidate_Create extends JavaProcess
 
 	private void generateCandidates(final I_C_DunningLevel dunningLevel)
 	{
-		final IDunningBL dunningBL = Services.get(IDunningBL.class);
-
 		trxManager.runInNewTrx(new TrxRunnableAdapter()
 		{
 
 			@Override
-			public void run(String localTrxName) throws Exception
+			public void run(final String localTrxName)
 			{
-				final IDunningContext context = dunningBL.createDunningContext(getCtx(), dunningLevel, p_DunningDate, get_TrxName());
+				final IDunningContext context = dunningBL.createDunningContext(getCtx(), dunningLevel, p_DunningDate, get_TrxName(), buildRecomputeDunningCandidatesQuery());
 				context.setProperty(IDunningCandidateProducer.CONTEXT_FullUpdate, p_IsFullUpdate);
 
-				final int countDelete = Services.get(IDunningDAO.class).deleteNotProcessedCandidates(context, dunningLevel);
-				addLog("@C_DunningLevel@ " + dunningLevel.getName() + ": " + countDelete + " record(s) deleted");
+				if (!p_IsOnlyUpdate)
+				{
+					final int countDelete = Services.get(IDunningDAO.class).deleteNotProcessedCandidates(context, dunningLevel);
+					addLog("@C_DunningLevel@ " + dunningLevel.getName() + ": " + countDelete + " record(s) deleted");
+				}
 
 				final int countCreateUpdate = dunningBL.createDunningCandidates(context);
 				addLog("@C_DunningLevel@ " + dunningLevel.getName() + ": " + countCreateUpdate + " record(s) created/updated");
 			}
 		});
+	}
+
+	@NonNull
+	private RecomputeDunningCandidatesQuery buildRecomputeDunningCandidatesQuery()
+	{
+		final IQueryFilter<I_C_Dunning_Candidate> selectionFilter = p_IsFullUpdate
+				? getProcessInfo().getQueryFilterOrElseTrue()
+				: getProcessInfo().getQueryFilterOrElseFalse();
+
+		return RecomputeDunningCandidatesQuery.builder()
+				.onlyTargetRecordsFilter(p_IsOnlyUpdate ? selectionFilter : null)
+				.orgId(p_AD_Org_ID)
+				.build();
 	}
 }
