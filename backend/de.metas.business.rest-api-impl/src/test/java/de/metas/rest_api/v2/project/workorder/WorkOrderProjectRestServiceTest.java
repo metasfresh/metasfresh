@@ -54,11 +54,10 @@ import de.metas.project.ProjectId;
 import de.metas.project.ProjectTypeId;
 import de.metas.project.ProjectTypeRepository;
 import de.metas.project.service.ProjectService;
-import de.metas.project.workorder.WOProjectStepId;
-import de.metas.project.workorder.WOProjectStepRepository;
-import de.metas.project.workorder.data.WorkOrderProjectRepository;
-import de.metas.project.workorder.data.WorkOrderProjectResourceRepository;
-import de.metas.project.workorder.step.WorkOrderProjectStepRepository;
+import de.metas.project.workorder.project.WOProjectRepository;
+import de.metas.project.workorder.resource.WOProjectResourceRepository;
+import de.metas.project.workorder.step.WOProjectStepId;
+import de.metas.project.workorder.step.WOProjectStepRepository;
 import de.metas.project.workorder.undertest.WorkOrderProjectObjectUnderTestRepository;
 import de.metas.resource.ResourceService;
 import de.metas.user.UserId;
@@ -135,16 +134,16 @@ class WorkOrderProjectRestServiceTest
 		final I_M_PriceList_Version priceListVersion = createPriceListVersion(priceListId, currencyId);
 		priceListVersionId = PriceListVersionId.ofRepoId(priceListVersion.getM_PriceList_Version_ID());
 
-		final WorkOrderProjectRepository workOrderProjectRepository = new WorkOrderProjectRepository();
+		final WOProjectRepository workOrderProjectRepository = new WOProjectRepository();
 
 		final ProjectService mockProjectService = Mockito.mock(ProjectService.class);
 		Mockito.when(mockProjectService.getNextProjectValue(any())).thenReturn(nextValue);
 
-		final WorkOrderProjectStepRepository workOrderProjectStepRepository = new WorkOrderProjectStepRepository();
+		final WOProjectStepRepository workOrderProjectStepRepository = new WOProjectStepRepository();
 		final WorkOrderProjectObjectUnderTestRepository workOrderProjectObjectUnderTestRepository = new WorkOrderProjectObjectUnderTestRepository();
 
 		final WorkOrderProjectObjectUnderTestRestService workOrderProjectObjectUnderTestRestService = new WorkOrderProjectObjectUnderTestRestService(workOrderProjectRepository, workOrderProjectObjectUnderTestRepository);
-		final WorkOrderProjectResourceRepository workOrderProjectResourceRepository = new WorkOrderProjectResourceRepository();
+		final WOProjectResourceRepository workOrderProjectResourceRepository = new WOProjectResourceRepository();
 		final ResourceService resourceService = ResourceService.newInstanceForJUnitTesting();
 
 		final WOProjectStepRepository woProjectStepRepository = new WOProjectStepRepository();
@@ -604,6 +603,8 @@ class WorkOrderProjectRestServiceTest
 				.externalId(externalIdStep)
 				.assignDateFrom(assignDateFrom)
 				.assignDateTo(assignDateTo)
+				.duration(BigDecimal.valueOf(8))
+				.durationUnit("D")
 				.build();
 
 		final String externalIdObjectUnderTest = "22222";
@@ -739,6 +740,8 @@ class WorkOrderProjectRestServiceTest
 				.externalId(externalIdStep)
 				.assignDateFrom(assignDateFrom)
 				.assignDateTo(assignDateTo)
+				.duration(BigDecimal.ONE)
+				.durationUnit("D")
 				.build();
 
 		final String externalIdObjectUnderTest = "3333";
@@ -839,7 +842,7 @@ class WorkOrderProjectRestServiceTest
 		projectWOStep.setName(name);
 		projectWOStep.setExternalId(externalId);
 		projectWOStep.setDateEnd(Timestamp.from(Instant.ofEpochMilli(0)));
-		projectWOStep.setDateStart(Timestamp.from(Instant.ofEpochMilli(0)));
+		projectWOStep.setDateStart(Timestamp.from(Instant.ofEpochMilli(1)));
 
 		InterfaceWrapperHelper.save(projectWOStep);
 
@@ -852,6 +855,8 @@ class WorkOrderProjectRestServiceTest
 			@NonNull final ResourceId resourceId,
 			@NonNull final LocalDate assignDateTo,
 			@NonNull final LocalDate assignDateFrom,
+			@NonNull final BigDecimal duration,
+			@NonNull final String durationUnit,
 			@Nullable final String externalId)
 	{
 		final I_C_Project_WO_Resource projectWoResource = InterfaceWrapperHelper.newInstance(I_C_Project_WO_Resource.class);
@@ -862,6 +867,8 @@ class WorkOrderProjectRestServiceTest
 		projectWoResource.setExternalId(externalId);
 		projectWoResource.setAssignDateTo(TimeUtil.asTimestamp(assignDateTo));
 		projectWoResource.setAssignDateFrom(TimeUtil.asTimestamp(assignDateFrom));
+		projectWoResource.setDuration(duration);
+		projectWoResource.setDurationUnit(durationUnit);
 
 		InterfaceWrapperHelper.save(projectWoResource);
 

@@ -20,9 +20,10 @@
  * #L%
  */
 
-package de.metas.project.workorder.data;
+package de.metas.project.workorder.project;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.EmptyUtil;
 import de.metas.money.CurrencyId;
@@ -31,6 +32,7 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectTypeId;
+import de.metas.project.workorder.calendar.WOProjectCalendarQuery;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
@@ -52,7 +54,7 @@ import java.util.Optional;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Repository
-public class WorkOrderProjectRepository
+public class WOProjectRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -60,7 +62,7 @@ public class WorkOrderProjectRepository
 	public WOProject getById(@NonNull final ProjectId id)
 	{
 		return Optional.ofNullable(getRecordById(id))
-				.map(WorkOrderProjectRepository::ofRecord)
+				.map(WOProjectRepository::ofRecord)
 				.orElseThrow(() -> new AdempiereException("No WOProject found for C_Project_ID=" + id.getRepoId()));
 	}
 
@@ -154,8 +156,96 @@ public class WorkOrderProjectRepository
 	{
 		return computeQuery(query)
 				.stream()
-				.map(WorkOrderProjectRepository::ofRecord)
+				.map(WOProjectRepository::ofRecord)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public ImmutableSet<ProjectId> getActiveProjectIds()
+	{
+		return queryBL
+				.createQueryBuilder(I_C_Project.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Project.COLUMNNAME_ProjectCategory, ProjectCategory.WorkOrderJob)
+				.create()
+				.listIds(ProjectId::ofRepoId);
+	}
+
+	@NonNull
+	public List<WOProject> getAllActiveProjectsByProjectCalendarQuery(@NonNull final WOProjectCalendarQuery query)
+	{
+		return query.isNone()
+				? ImmutableList.of()
+				: computeProjectCalendarQuery(query)
+				.stream()
+				.map(WOProjectRepository::ofRecord)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public ImmutableSet<ProjectId> getActiveProjectIdsByProjectCalendarQuery(@NonNull final WOProjectCalendarQuery query)
+	{
+		return getAllActiveProjectsByProjectCalendarQuery(query)
+				.stream()
+				.map(WOProject::getProjectId)
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Nullable
+	private I_C_Project getRecordById(@NonNull final ProjectId id)
+	{
+		return InterfaceWrapperHelper.load(id, I_C_Project.class);
+	}
+
+	@NonNull
+	private IQuery<I_C_Project> computeQuery(@NonNull final WOProjectQuery query)
+	{
+		final IQueryBuilder<I_C_Project> queryBuilder = queryBL.createQueryBuilder(I_C_Project.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Project.COLUMNNAME_ProjectCategory, ProjectCategory.WorkOrderJob.getCode())
+				.addInArrayFilter(I_C_Project.COLUMNNAME_AD_Org_ID, query.getOrgId(), OrgId.ANY)
+				.orderByDescending(I_C_Project.COLUMNNAME_AD_Org_ID);
+
+		if (EmptyUtil.isNotBlank(query.getExternalProjectReferencePattern()))
+		{
+			queryBuilder.addStringLikeFilter(I_C_Project.COLUMNNAME_C_Project_Reference_Ext, "%" + query.getExternalProjectReferencePattern() + "%", true);
+		}
+
+		if (query.getExternalId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Project.COLUMNNAME_ExternalId, query.getExternalId().getValue());
+		}
+
+		if (EmptyUtil.isNotBlank(query.getValue()))
+		{
+			queryBuilder.addEqualsFilter(I_C_Project.COLUMNNAME_Value, query.getValue().trim());
+		}
+
+		return queryBuilder.create();
+	}
+
+	@NonNull
+	private IQuery<I_C_Project> computeProjectCalendarQuery(@NonNull final WOProjectCalendarQuery query)
+	{
+		final IQueryBuilder<I_C_Project> queryBuilder = queryBL
+				.createQueryBuilder(I_C_Project.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Project.COLUMNNAME_ProjectCategory, ProjectCategory.WorkOrderJob)
+				.addInArrayFilter(I_C_Project.COLUMNNAME_C_Project_ID, query.getProjectIds());
+
+		if (query.getOnlyCustomerId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Project.COLUMNNAME_C_BPartner_ID, query.getOnlyCustomerId());
+		}
+
+		if (query.getOnlyResponsibleId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Project.COLUMNNAME_SalesRep_ID, query.getOnlyResponsibleId());
+		}
+
+		return queryBuilder
+				.orderBy(I_C_Project.COLUMNNAME_C_Project_ID)
+				.create();
 	}
 
 	@NonNull
@@ -200,38 +290,5 @@ public class WorkOrderProjectRepository
 
 				.isActive(projectRecord.isActive())
 				.build();
-	}
-
-	@Nullable
-	private I_C_Project getRecordById(@NonNull final ProjectId id)
-	{
-		return InterfaceWrapperHelper.load(id, I_C_Project.class);
-	}
-
-	@NonNull
-	private IQuery<I_C_Project> computeQuery(@NonNull final WOProjectQuery query)
-	{
-		final IQueryBuilder<I_C_Project> queryBuilder = queryBL.createQueryBuilder(I_C_Project.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Project.COLUMNNAME_ProjectCategory, ProjectCategory.WorkOrderJob.getCode())
-				.addInArrayFilter(I_C_Project.COLUMNNAME_AD_Org_ID, query.getOrgId(), OrgId.ANY)
-				.orderByDescending(I_C_Project.COLUMNNAME_AD_Org_ID);
-
-		if (EmptyUtil.isNotBlank(query.getExternalProjectReferencePattern()))
-		{
-			queryBuilder.addStringLikeFilter(I_C_Project.COLUMNNAME_C_Project_Reference_Ext, "%" + query.getExternalProjectReferencePattern() + "%", true);
-		}
-
-		if (query.getExternalId() != null)
-		{
-			queryBuilder.addEqualsFilter(I_C_Project.COLUMNNAME_ExternalId, query.getExternalId().getValue());
-		}
-
-		if (EmptyUtil.isNotBlank(query.getValue()))
-		{
-			queryBuilder.addEqualsFilter(I_C_Project.COLUMNNAME_Value, query.getValue().trim());
-		}
-
-		return queryBuilder.create();
 	}
 }

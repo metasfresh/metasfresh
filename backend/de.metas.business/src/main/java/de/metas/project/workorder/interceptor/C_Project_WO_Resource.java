@@ -3,11 +3,11 @@ package de.metas.project.workorder.interceptor;
 import de.metas.calendar.CalendarEntryId;
 import de.metas.calendar.MultiCalendarService;
 import de.metas.product.ResourceId;
-import de.metas.project.workorder.WOProjectResourceRepository;
-import de.metas.project.workorder.WOProjectService;
-import de.metas.project.workorder.WOProjectStepId;
 import de.metas.project.workorder.calendar.BudgetAndWOCalendarEntryIdConverters;
 import de.metas.project.workorder.conflicts.WOProjectConflictService;
+import de.metas.project.workorder.project.WOProjectService;
+import de.metas.project.workorder.resource.WOProjectResourceRepository;
+import de.metas.project.workorder.step.WOProjectStepId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
@@ -46,7 +46,7 @@ public class C_Project_WO_Resource
 	public void afterSave(@NonNull final I_C_Project_WO_Resource record, @NonNull final ModelChangeType changeType)
 	{
 		// validate
-		WOProjectResourceRepository.fromRecord(record);
+		WOProjectResourceRepository.ofRecord(record);
 
 		notifyEntryChanged(record, changeType);
 		updateStepDatesAfterCommit(WOProjectStepId.ofRepoId(record.getC_Project_ID(), record.getC_Project_WO_Step_ID()));

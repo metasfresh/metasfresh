@@ -43,7 +43,7 @@ public class CalendarDateRange
 	@NonNull Instant endDate;
 	boolean allDay;
 
-	@Builder
+	@Builder(toBuilder = true)
 	private CalendarDateRange(
 			@NonNull final Instant startDate,
 			@NonNull final Instant endDate,

@@ -50,13 +50,12 @@ import de.metas.project.budget.BudgetProjectResourceSimulation;
 import de.metas.project.budget.BudgetProjectService;
 import de.metas.project.budget.BudgetProjectSimulationService;
 import de.metas.project.service.ProjectRepository;
-import de.metas.project.workorder.WOProjectQuery;
-import de.metas.project.workorder.WOProjectResource;
-import de.metas.project.workorder.WOProjectResourceId;
-import de.metas.project.workorder.WOProjectResources;
-import de.metas.project.workorder.WOProjectService;
-import de.metas.project.workorder.WOProjectStepId;
 import de.metas.project.workorder.conflicts.WOProjectConflictService;
+import de.metas.project.workorder.project.WOProjectService;
+import de.metas.project.workorder.resource.WOProjectResource;
+import de.metas.project.workorder.resource.WOProjectResourceId;
+import de.metas.project.workorder.resource.WOProjectResources;
+import de.metas.project.workorder.step.WOProjectStepId;
 import de.metas.resource.Resource;
 import de.metas.resource.ResourceGroup;
 import de.metas.resource.ResourceService;
@@ -223,7 +222,7 @@ public class WOProjectCalendarService implements CalendarService
 			@Nullable final BPartnerId onlyCustomerId,
 			@Nullable final UserId onlyResponsibleId)
 	{
-		final WOProjectQuery query = WOProjectQuery.builder()
+		final WOProjectCalendarQuery query = WOProjectCalendarQuery.builder()
 				.projectIds(onlyProjectId != null ? InSetPredicate.only(onlyProjectId) : InSetPredicate.any())
 				.onlyCustomerId(onlyCustomerId)
 				.onlyResponsibleId(onlyResponsibleId)

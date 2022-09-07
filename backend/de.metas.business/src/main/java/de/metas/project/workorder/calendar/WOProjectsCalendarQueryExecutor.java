@@ -11,11 +11,11 @@ import de.metas.calendar.simulation.SimulationPlanRef;
 import de.metas.calendar.simulation.SimulationPlanService;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
-import de.metas.project.workorder.WOProject;
-import de.metas.project.workorder.WOProjectResource;
-import de.metas.project.workorder.WOProjectService;
-import de.metas.project.workorder.WOProjectStep;
-import de.metas.project.workorder.WOProjectStepId;
+import de.metas.project.workorder.project.WOProject;
+import de.metas.project.workorder.project.WOProjectService;
+import de.metas.project.workorder.resource.WOProjectResource;
+import de.metas.project.workorder.step.WOProjectStep;
+import de.metas.project.workorder.step.WOProjectStepId;
 import de.metas.resource.ResourceGroupId;
 import de.metas.resource.ResourceService;
 import de.metas.util.InSetPredicate;
@@ -93,7 +93,7 @@ public final class WOProjectsCalendarQueryExecutor
 		if (this._projectResources == null)
 		{
 			this._projectResources = woProjectService.getResources(
-					WOProjectResourceQuery.builder()
+					WOProjectResourceCalendarQuery.builder()
 							.projectIds(projectIds)
 							.resourceIds(getResourceIdsPredicate(calendarResourceIds, resourceService))
 							.startDate(startDate)
@@ -121,15 +121,15 @@ public final class WOProjectsCalendarQueryExecutor
 		if (this._stepsById == null)
 		{
 			final ImmutableList<WOProjectResource> projectResources = getProjectResources();
-			final ImmutableSet<WOProjectStepId> stepIds = projectResources.stream().map(WOProjectResource::getStepId).collect(ImmutableSet.toImmutableSet());
-			this._stepsById = Maps.uniqueIndex(woProjectService.getStepsByIds(stepIds), WOProjectStep::getId);
+			final ImmutableSet<WOProjectStepId> stepIds = projectResources.stream().map(WOProjectResource::getWoProjectStepId).collect(ImmutableSet.toImmutableSet());
+			this._stepsById = Maps.uniqueIndex(woProjectService.getStepsByIds(stepIds), WOProjectStep::getWoProjectStepId);
 		}
 		return this._stepsById;
 	}
 
 	private WOProjectStep getStep(@NonNull final WOProjectResource projectResource)
 	{
-		return getSteps().get(projectResource.getStepId());
+		return getSteps().get(projectResource.getWoProjectStepId());
 	}
 
 	private SimulationHeaderAndPlan getSimulationHeaderAndPlan()

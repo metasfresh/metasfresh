@@ -4,11 +4,11 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.product.ResourceId;
-import de.metas.project.workorder.WOProjectResource;
-import de.metas.project.workorder.WOProjectResourceId;
-import de.metas.project.workorder.WOProjectResourceSimulation;
-import de.metas.project.workorder.WOProjectService;
 import de.metas.project.workorder.conflicts.WOProjectConflictService;
+import de.metas.project.workorder.project.WOProjectService;
+import de.metas.project.workorder.resource.WOProjectResource;
+import de.metas.project.workorder.resource.WOProjectResourceId;
+import de.metas.project.workorder.resource.WOProjectResourceSimulation;
 import lombok.Builder;
 import lombok.NonNull;
 
@@ -54,7 +54,7 @@ class WOProjectSimulationCompleteCommand
 		woProjectService.updateProjectResourcesByIds(
 				projectResourceSimulationsToApply.keySet(),
 				projectResource -> {
-					final WOProjectResourceSimulation simulation = projectResourceSimulationsToApply.get(projectResource.getId());
+					final WOProjectResourceSimulation simulation = projectResourceSimulationsToApply.get(projectResource.getWoProjectResourceId());
 
 					// do nothing if simulation was already applied. shall not happen.
 					if (simulation.isAppliedOnActualData())
