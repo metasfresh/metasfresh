@@ -26,6 +26,7 @@ Feature: workflow rest controller tests
       | S_Resource_ID.Identifier | S_Resource_ID |
       | testResource             | 540011        |
 
+  @Id:S0179_100
   @from:cucumber
   Scenario: create and start picking workflow
 
@@ -85,6 +86,7 @@ Feature: workflow rest controller tests
       | M_HU_ID.Identifier | HUStatus | IsActive |
       | workflowProductHU  | S        | Y        |
 
+  @Id:S0179_110
   @from:cucumber
   Scenario: create and start distribution workflow
 
@@ -156,6 +158,7 @@ Feature: workflow rest controller tests
       | M_HU_ID.Identifier            | HUStatus | IsActive | OPT.M_Locator_ID.Identifier    |
       | workflowProductHUDistribution | A        | Y        | distributionToWarehouseLocator |
 
+  @Id:S0179_120
   @from:cucumber
   Scenario: create and start manufacturing workflow
 
