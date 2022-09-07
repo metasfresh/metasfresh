@@ -46,7 +46,8 @@ public class InfrastructureSupport
 	 * - it's easier to inspect the local DB. In fact you can start the webapi (not ServerRoot aka app-server) and the frontend, and inspect everything in the UI.
 	 * 
 	 * The drawback is that your DB is probably polluted which might be an additional reason for possible test failures.
-	 * To always run your cucumber-tests on an "unpolluted" DB, you can use templates as follows - <b>see de.metas-cucumber/dev-support!</b>	 *
+	 * To always run your cucumber-tests on an "unpolluted" DB, you can use templates as follows - <b>see de.metas-cucumber/dev-support!</b>
+	 *
 	 * Reset your local infrastructure-DB
 	 * Apply the local migration scripts
 	 * Make sure there is no open connection to the DB (otherwise there will be an error)
