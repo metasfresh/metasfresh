@@ -99,7 +99,7 @@ public class InOutDAO implements IInOutDAO
 	}
 
 	@Override
-	public <T extends I_M_InOutLine> T getLineByIdInTrx(@NonNull final InOutLineId inoutLineId, final Class<T> modelClass)
+	public <T extends I_M_InOutLine> T getLineByIdInTrx(@NonNull final InOutLineId inoutLineId, @NonNull final Class<T> modelClass)
 	{
 		return load(inoutLineId.getRepoId(), modelClass);
 	}

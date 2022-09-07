@@ -112,6 +112,11 @@ public class ExternallyReferencedCandidateRepository
 
 			syncQtysToRecord(ic, icRecord);
 
+			if(ic.getQtyDelivered().signum() > 0)
+			{
+				icRecord.setDeliveryDate(TimeUtil.asTimestamp(ic.getDateOrdered(), timeZone));
+			}
+
 			icRecord.setIsSOTrx(ic.getSoTrx().toBoolean());
 
 			icRecord.setM_PricingSystem_ID(ic.getPricingSystemId().getRepoId());
