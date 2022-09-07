@@ -239,10 +239,17 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			@NonNull final I_SEPA_Export sepaDocument,
 			@NonNull final OutputStream out)
 	{
-
-		final Document xmlDocument = createDocument(sepaDocument);
-		marshal(xmlDocument, out);
-
+		try
+		{
+			final Document xmlDocument = createDocument(sepaDocument);
+			marshal(xmlDocument, out);
+		}
+		catch (final RuntimeException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e)
+					.appendParametersToMessage()
+					.setParameter("sepaDocument", sepaDocument);
+		}
 	}
 
 	@VisibleForTesting
