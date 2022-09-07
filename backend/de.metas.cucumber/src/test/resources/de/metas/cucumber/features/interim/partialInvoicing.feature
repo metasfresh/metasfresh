@@ -298,10 +298,9 @@ Feature: Partial Payment Invoicing
 
     When the material receipt identified by inOut_PO_29082022 is reversed
 
-    ## fix me: correct to 0 once the ongoing PR from @av-ps is merged in inner_silence_uat
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.M_Product_ID.Identifier |
-      | invoiceCand_PO_29082022           | ol_PO_29082022                | 30           | 100            | 30               | product_PO_1_29082022       |
+      | invoiceCand_PO_29082022           | ol_PO_29082022                | 0            | 100            | 0                | product_PO_1_29082022       |
       | invoiceCand_PO_29082022_interim   | null                          | 0            | 0              | 0                | product_PO_1_29082022       |
       | invoiceCand_PO_29082022_box       | null                          | 0            | 0              | 0                | grey_box_product            |
 
