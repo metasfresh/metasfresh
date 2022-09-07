@@ -100,7 +100,7 @@ public class C_Order
 
 		final I_C_Order oldOrder = InterfaceWrapperHelper.createOld(order, I_C_Order.class);
 
-		if (oldOrder == null || oldOrder.getM_Warehouse_ID() < 0)
+		if (oldOrder == null || oldOrder.getM_Warehouse_ID() <= 0)
 		{
 			return;
 		}
