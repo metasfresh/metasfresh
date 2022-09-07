@@ -83,6 +83,7 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#13533](https://github.com/metasfresh/metasfresh/issues/13533) BUG: I_C_InvoiceCandidate.QtyDelivered wrongly computed for manual invoice candidates 
   * [#13550](https://github.com/metasfresh/metasfresh/issues/13550) [React] - Calendar gives blank screen when selecting a date from past
   * [#13487](https://github.com/metasfresh/metasfresh/issues/13487) [React] - Infinite loop for /dropdown call
   * [#13535](https://github.com/metasfresh/metasfresh/issues/13535) Extend Order's Product-Proposal - Fix Bug
