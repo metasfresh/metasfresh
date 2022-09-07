@@ -23,7 +23,6 @@ package de.metas.dunning.process;
  */
 
 import de.metas.dunning.api.IDunningBL;
-import de.metas.dunning.api.IDunningCandidateProducer;
 import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.api.IDunningDAO;
 import de.metas.dunning.api.impl.RecomputeDunningCandidatesQuery;
@@ -36,7 +35,6 @@ import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.compiere.util.Env;
 import org.compiere.util.TrxRunnableAdapter;
@@ -55,9 +53,6 @@ public class C_Dunning_Candidate_Create extends JavaProcess
 	@Nullable
 	private Timestamp p_DunningDate = null;
 
-	private static final String PARAM_IsFullUpdate = "IsFullUpdate";
-	private boolean p_IsFullUpdate = false;
-
 	private static final String PARAM_IsOnlyUpdate = "IsOnlyUpdate";
 	private boolean p_IsOnlyUpdate = false;
 
@@ -74,7 +69,6 @@ public class C_Dunning_Candidate_Create extends JavaProcess
 	{
 		// Defaults
 		p_DunningDate = Env.getContextAsDate(getCtx(), "#Date");
-		p_IsFullUpdate = false;
 		p_IsOnlyUpdate = false;
 		p_AD_Org_ID = null;
 
@@ -90,10 +84,6 @@ public class C_Dunning_Candidate_Create extends JavaProcess
 			if (PARAM_DunningDate.equals(name))
 			{
 				p_DunningDate = para.getParameterAsTimestamp();
-			}
-			else if (PARAM_IsFullUpdate.equals(name))
-			{
-				p_IsFullUpdate = para.getParameterAsBoolean();
 			}
 			else if (PARAM_IsOnlyUpdate.equals(name))
 			{
@@ -131,7 +121,6 @@ public class C_Dunning_Candidate_Create extends JavaProcess
 			public void run(final String localTrxName)
 			{
 				final IDunningContext context = dunningBL.createDunningContext(getCtx(), dunningLevel, p_DunningDate, get_TrxName(), buildRecomputeDunningCandidatesQuery());
-				context.setProperty(IDunningCandidateProducer.CONTEXT_FullUpdate, p_IsFullUpdate);
 
 				if (!p_IsOnlyUpdate)
 				{
@@ -148,12 +137,8 @@ public class C_Dunning_Candidate_Create extends JavaProcess
 	@NonNull
 	private RecomputeDunningCandidatesQuery buildRecomputeDunningCandidatesQuery()
 	{
-		final IQueryFilter<I_C_Dunning_Candidate> selectionFilter = p_IsFullUpdate
-				? getProcessInfo().getQueryFilterOrElseTrue()
-				: getProcessInfo().getQueryFilterOrElseFalse();
-
 		return RecomputeDunningCandidatesQuery.builder()
-				.onlyTargetRecordsFilter(p_IsOnlyUpdate ? selectionFilter : null)
+				.onlyTargetRecordsFilter(p_IsOnlyUpdate ? getProcessInfo().getQueryFilterOrElseTrue() : null)
 				.orgId(p_AD_Org_ID)
 				.build();
 	}

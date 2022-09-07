@@ -538,31 +538,6 @@ public interface I_C_Dunning_Candidate
     public static final String COLUMNNAME_IsDunningDocProcessed = "IsDunningDocProcessed";
 
 	/**
-	 * Set Zu aktualisieren.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	public void setIsStaled (boolean IsStaled);
-
-	/**
-	 * Get Zu aktualisieren.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 */
-	public boolean isStaled();
-
-    /** Column definition for IsStaled */
-    public static final org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object> COLUMN_IsStaled = new org.adempiere.model.ModelColumn<I_C_Dunning_Candidate, Object>(I_C_Dunning_Candidate.class, "IsStaled", null);
-    /** Column name IsStaled */
-    public static final String COLUMNNAME_IsStaled = "IsStaled";
-
-	/**
 	 * Set Massenaustritt.
 	 *
 	 * <br>Type: YesNo

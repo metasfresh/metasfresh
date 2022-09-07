@@ -200,7 +200,7 @@ public class DunningBL implements IDunningBL
 			}
 		}
 
-		logger.info("Created {} from {} records evaluated", new Object[] { countCreated, countAll });
+		logger.info("Created/Updated {} from {} records evaluated", new Object[] { countCreated, countAll });
 
 		return countCreated;
 	}

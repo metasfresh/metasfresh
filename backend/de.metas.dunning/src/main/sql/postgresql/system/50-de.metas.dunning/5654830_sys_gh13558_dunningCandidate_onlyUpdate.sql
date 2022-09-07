@@ -122,3 +122,47 @@ UPDATE AD_Element_Trl SET Name='Nur aktualisieren', PrintName='Nur aktualisieren
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581415,'nl_NL') 
 ;
+
+-- 2022-09-07T13:08:13.678Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=550586
+;
+
+-- 2022-09-07T13:08:13.684Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Field_Trl WHERE AD_Field_ID=550586
+;
+
+-- 2022-09-07T13:08:13.691Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Field WHERE AD_Field_ID=550586
+;
+
+-- 2022-09-07T13:08:13.724Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ SELECT public.db_alter_table('C_Dunning_Candidate','ALTER TABLE C_Dunning_Candidate DROP COLUMN IF EXISTS IsStaled')
+;
+
+-- 2022-09-07T13:08:13.760Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=547342
+;
+
+-- 2022-09-07T13:08:13.763Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Column WHERE AD_Column_ID=547342
+;
+
+-- 2022-09-07T13:37:06.421Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM  AD_Process_Para_Trl WHERE AD_Process_Para_ID=540390
+;
+
+-- 2022-09-07T13:37:06.429Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Process_Para WHERE AD_Process_Para_ID=540390
+;
+
+DROP INDEX IF EXISTS c_dunning_candidate_recompute_c_dunning_candidate;
+
+DROP TABLE c_dunning_candidate_recompute;

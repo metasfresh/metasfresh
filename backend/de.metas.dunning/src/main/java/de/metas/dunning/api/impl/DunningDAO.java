@@ -22,19 +22,6 @@ package de.metas.dunning.api.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.Query;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.compiere.util.TrxRunnable;
-
 import de.metas.dunning.api.IDunningCandidateQuery;
 import de.metas.dunning.api.IDunningCandidateQuery.ApplyAccessFilter;
 import de.metas.dunning.api.IDunningContext;
@@ -45,6 +32,18 @@ import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.security.permissions.Access;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.Query;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.compiere.util.TrxRunnable;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
 
 public class DunningDAO extends AbstractDunningDAO
 {
@@ -191,13 +190,6 @@ public class DunningDAO extends AbstractDunningDAO
 				.setOption(Query.OPTION_IteratorBufferSize, 1000) // reducing the number of selects by increasing the buffer/page size
 				.iterate(I_C_DunningDoc.class);
 		return iterator;
-	}
-
-	@Override
-	public boolean isStaled(I_C_Dunning_Candidate candidate)
-	{
-		// NOTE: staled is a virtual column
-		return candidate.isStaled();
 	}
 
 	@Override
