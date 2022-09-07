@@ -104,6 +104,8 @@ public class M_Warehouse_StepDef
 
 			final boolean isIssueWarehouse = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_M_Warehouse.COLUMNNAME_IsIssueWarehouse, false);
 
+			final boolean isInTransit = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_M_Warehouse.COLUMNNAME_IsInTransit, false);
+
 			final int bPartnerId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Warehouse.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER))
 					.map(bpartnerTable::get)
 					.map(I_C_BPartner::getC_BPartner_ID)
@@ -119,6 +121,7 @@ public class M_Warehouse_StepDef
 			warehouseRecord.setC_BPartner_ID(bPartnerId);
 			warehouseRecord.setC_BPartner_Location_ID(bPartnerLocationId);
 			warehouseRecord.setIsIssueWarehouse(isIssueWarehouse);
+			warehouseRecord.setIsInTransit(isInTransit);
 
 			InterfaceWrapperHelper.saveRecord(warehouseRecord);
 

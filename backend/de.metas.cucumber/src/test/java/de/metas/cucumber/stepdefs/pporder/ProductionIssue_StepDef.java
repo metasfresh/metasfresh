@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.productionorder;
+package de.metas.cucumber.stepdefs.pporder;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;

@@ -20,15 +20,15 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.productionorder;
+package de.metas.cucumber.stepdefs.workflow;
 
+import de.metas.common.handlingunits.JsonHUQRCode;
 import de.metas.cucumber.stepdefs.StepDefData;
-import org.eevolution.model.I_PP_Order_BOMLine;
 
-public class PP_Order_BOMLine_StepDefData extends StepDefData<I_PP_Order_BOMLine>
+public class JsonWFHQRCode_StepDefData extends StepDefData<JsonHUQRCode>
 {
-	public PP_Order_BOMLine_StepDefData()
+	public JsonWFHQRCode_StepDefData()
 	{
-		super(I_PP_Order_BOMLine.class);
+		super(JsonHUQRCode.class);
 	}
 }

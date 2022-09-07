@@ -20,10 +20,12 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.pporder;
 
-import de.metas.cucumber.stepdefs.pporder.PP_Cost_Collector_StepDefData;
-import de.metas.cucumber.stepdefs.pporder.PP_Order_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -32,8 +34,10 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.I_PP_Order_BOMLine;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -51,15 +55,18 @@ public class PP_Cost_Collector_StepDef
 	private final PP_Order_StepDefData ppOrderTable;
 	private final PP_Cost_Collector_StepDefData ppCostCollectorTable;
 	private final M_Product_StepDefData productTable;
+	private final PP_Order_BOMLine_StepDefData bomLineTable;
 
 	public PP_Cost_Collector_StepDef(
 			@NonNull final PP_Order_StepDefData ppOrderTable,
 			@NonNull final PP_Cost_Collector_StepDefData ppCostCollectorTable,
-			@NonNull final M_Product_StepDefData productTable)
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final PP_Order_BOMLine_StepDefData bomLineTable)
 	{
 		this.ppOrderTable = ppOrderTable;
 		this.ppCostCollectorTable = ppCostCollectorTable;
 		this.productTable = productTable;
+		this.bomLineTable = bomLineTable;
 	}
 
 	@And("^after not more than (.*)s, PP_Cost_Collector are found:$")
@@ -108,5 +115,39 @@ public class PP_Cost_Collector_StepDef
 		ppCostCollectorTable.put(ppCostCollectorIdentifier, ppCostCollector.get());
 
 		return true;
+	}
+
+	@And("validate I_PP_Cost_Collector")
+	public void validate_cost_collector(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps();
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			final String orderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Order.COLUMNNAME_PP_Order_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_PP_Order order = ppOrderTable.get(orderIdentifier);
+
+			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_Order.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_M_Product product = productTable.get(productIdentifier);
+
+			final BigDecimal movementQty = DataTableUtil.extractBigDecimalForColumnName(tableRow, COLUMNNAME_MovementQty);
+
+			final String bomLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Order_BOMLine.COLUMNNAME_PP_Order_BOMLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_PP_Order_BOMLine bomLine = bomLineIdentifier != null ? bomLineTable.get(bomLineIdentifier) : null;
+
+			final I_PP_Cost_Collector costCollector = queryBL.createQueryBuilder(I_PP_Cost_Collector.class)
+					.addEqualsFilter(I_PP_Cost_Collector.COLUMNNAME_PP_Order_ID, order.getPP_Order_ID())
+					.addEqualsFilter(I_PP_Order.COLUMNNAME_M_Product_ID, product.getM_Product_ID())
+					.orderBy(I_PP_Cost_Collector.COLUMNNAME_Created)
+					.create()
+					.first();
+
+			assertThat(costCollector).isNotNull();
+			assertThat(costCollector.isProcessed()).isEqualTo(true);
+			assertThat(costCollector.getMovementQty()).isEqualTo(movementQty);
+			if (bomLine != null)
+			{
+				assertThat(costCollector.getPP_Order_BOMLine_ID()).isEqualTo(bomLine.getPP_Order_BOMLine_ID());
+			}
+		}
 	}
 }
