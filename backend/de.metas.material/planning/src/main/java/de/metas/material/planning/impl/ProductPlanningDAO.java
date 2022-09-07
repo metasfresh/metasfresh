@@ -145,9 +145,9 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 			queryBuilder.addInArrayFilter(I_PP_Product_Planning.COLUMNNAME_S_Resource_ID, resourceId, null);
 		}
 
-		// Filter by Product if provided
+		// The query should exclude PP_Product_Plannings that have no M_Product_ID
 
-		queryBuilder.addInArrayFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, productId, null);
+		queryBuilder.addInArrayFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, productId);
 
 		// Filter by ASI
 		final ICompositeQueryFilter<I_PP_Product_Planning> attributesFilter = createAttributesFilter(attributeSetInstanceId);
