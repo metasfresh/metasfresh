@@ -563,6 +563,13 @@ public class CostingService implements ICostingService
 		final CostingMethod costingMethod = costElementsRepo.getById(costSegmentAndElement.getCostElementId()).getCostingMethod();
 		for (final CostDetail costDetail : costDetails)
 		{
+			// Cost details which were not changing the costs (so are there only for recording)
+			// are not relevant for cost adjustment.
+			if (!costDetail.isChangingCosts())
+			{
+				continue;
+			}
+
 			final CostingMethodHandler handler = getSingleCostingMethodHandler(costingMethod, costDetail.getDocumentRef());
 			final CostDetailAdjustment costDetailAdjustment = handler.recalculateCostDetailAmountAndUpdateCurrentCost(costDetail, currentCost);
 			result.costDetailAdjustment(costDetailAdjustment);
