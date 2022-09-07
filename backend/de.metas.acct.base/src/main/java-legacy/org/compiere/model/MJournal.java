@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaGeneralLedger;
 import de.metas.acct.api.AcctSchemaId;
@@ -29,13 +30,11 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
-import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.LegacyAdapters;
 import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 
@@ -44,7 +43,6 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Properties;
 
 /**
@@ -62,8 +60,6 @@ public class MJournal extends X_GL_Journal implements IDocument
 	 *
 	 */
 	private static final long serialVersionUID = -364132249042527640L;
-
-	private static final AdMessageKey MSG_HeaderAndLinePeriodMismatchError = AdMessageKey.of("GL_Journal.HeaderAndLinePeriodMismatch");
 
 	/**
 	 * Standard Constructor
@@ -202,10 +198,13 @@ public class MJournal extends X_GL_Journal implements IDocument
 			setDescription(desc + " | " + description);
 	}
 
-	private MJournalLine[] getLines()
+	private ImmutableList<I_GL_JournalLine> getActiveLines()
 	{
-		final List<I_GL_JournalLine> lines = Services.get(IGLJournalLineDAO.class).retrieveLines(this);
-		return LegacyAdapters.convertToPOArray(lines, MJournalLine.class);
+		final IGLJournalLineDAO glJournalLineDAO = Services.get(IGLJournalLineDAO.class);
+		return glJournalLineDAO.retrieveLines(this)
+				.stream()
+				.filter(I_GL_JournalLine::isActive)
+				.collect(ImmutableList.toImmutableList());
 	}    // getLines
 
 	/**
@@ -221,11 +220,11 @@ public class MJournal extends X_GL_Journal implements IDocument
 		if (isProcessed() || fromJournal == null)
 			return 0;
 		int count = 0;
-		MJournalLine[] fromLines = fromJournal.getLines();
-		for (final MJournalLine fromLine : fromLines)
+		final ImmutableList<I_GL_JournalLine> fromLines = fromJournal.getActiveLines();
+		for (final I_GL_JournalLine fromLine : fromLines)
 		{
 			MJournalLine toLine = new MJournalLine(getCtx(), 0, fromJournal.get_TrxName());
-			PO.copyValues(fromLine, toLine, getAD_Client_ID(), getAD_Org_ID());
+			PO.copyValues(InterfaceWrapperHelper.getPO(fromLine), toLine, getAD_Client_ID(), getAD_Org_ID());
 			toLine.setGL_Journal(this);
 			//
 			if (dateAcct != null)
@@ -265,8 +264,8 @@ public class MJournal extends X_GL_Journal implements IDocument
 			if (toLine.save())
 				count++;
 		}
-		if (fromLines.length != count)
-			log.error("Line difference - JournalLines=" + fromLines.length + " <> Saved=" + count);
+		if (fromLines.size() != count)
+			log.error("Line difference - JournalLines=" + fromLines.size() + " <> Saved=" + count);
 
 		return count;
 	}    // copyLinesFrom
@@ -441,30 +440,23 @@ public class MJournal extends X_GL_Journal implements IDocument
 		final int headerPeriodId = MPeriod.get(getCtx(), getDateAcct(), getAD_Org_ID()).getC_Period_ID();
 
 		// Lines
-		final MJournalLine[] lines = getLines();
-		if (lines.length == 0)
+		final ImmutableList<I_GL_JournalLine> lines = getActiveLines();
+		if (lines.isEmpty())
 		{
 			throw new AdempiereException("@NoLines@");
 		}
+
+		// Make sure the line period is the same as header period, else
+		// * we would have Fact_Acct.DateAcct/C_Period_ID mismatches
+		// * we would need to enforce each period is open (on process and on posting)
+		final IGLJournalBL glJournalBL = Services.get(IGLJournalBL.class);
+		glJournalBL.assertSamePeriod(this, lines);
 
 		// Add up Amounts
 		BigDecimal AmtAcctDr = BigDecimal.ZERO;
 		BigDecimal AmtAcctCr = BigDecimal.ZERO;
 		for (final I_GL_JournalLine line : lines)
 		{
-			if (!isActive())
-			{
-				continue;
-			}
-
-			// Make sure the line period is the same as header period,
-			// else we would
-			final int linePeriodId = MPeriod.get(getCtx(), line.getDateAcct(), line.getAD_Org_ID()).getC_Period_ID();
-			if (headerPeriodId != linePeriodId)
-			{
-				throw new AdempiereException(MSG_HeaderAndLinePeriodMismatchError, line.getLine());
-			}
-
 			if (line.isAllowAccountDR())
 			{
 				Services.get(IGLJournalLineBL.class).assertAccountValid(line.getAccount_DR(), line);
