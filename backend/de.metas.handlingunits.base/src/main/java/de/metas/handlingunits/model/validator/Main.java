@@ -28,13 +28,13 @@ import de.metas.cache.CacheMgt;
 import de.metas.cache.model.IModelCacheService;
 import de.metas.cache.model.ITableCacheConfig.TrxLevel;
 import de.metas.cache.model.ITableCacheConfigBuilder;
-import de.metas.distribution.ddorder.interceptor.DD_Order;
-import de.metas.distribution.ddorder.interceptor.DD_OrderLine;
-import de.metas.handlingunits.IHUDocumentHandlerFactory;
 import de.metas.distribution.ddorder.DDOrderService;
-import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.distribution.ddorder.hu_spis.DDOrderLineHUDocumentHandler;
 import de.metas.distribution.ddorder.hu_spis.ForecastLineHUDocumentHandler;
+import de.metas.distribution.ddorder.interceptor.DD_Order;
+import de.metas.distribution.ddorder.interceptor.DD_OrderLine;
+import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
+import de.metas.handlingunits.IHUDocumentHandlerFactory;
 import de.metas.handlingunits.document.IHUDocumentFactoryService;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.invoicecandidate.facet.C_Invoice_Candidate_HUPackingMaterials_FacetCollector;
@@ -88,7 +88,7 @@ import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsBL;
 import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsDAO;
 import de.metas.order.invoicecandidate.IC_OrderLine_HandlerDAO;
 import de.metas.pricing.attributebased.impl.AttributePricing;
-import de.metas.pricing.service.ProductPrices;
+import de.metas.pricing.rules.price_list_version.PriceListVersionConfiguration;
 import de.metas.storage.IStorageEngineService;
 import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.util.Services;
@@ -232,28 +232,8 @@ public final class Main extends AbstractModuleInterceptor
 
 	public static void setupPricing()
 	{
-		ProductPrices.registerMainProductPriceMatcher(HUPricing.HUPIItemProductMatcher_None);
-
-		// Registers a default matcher to make sure that the AttributePricing ignores all product prices that have an M_HU_PI_Item_Product_ID set.
-		//
-		// From skype chat:
-		// <pre>
-		// [Dienstag, 4. Februar 2014 15:33] Cis:
-		//
-		// if the HU pricing rule (that runs first) doesn't find a match, the attribute pricing rule runs next and can find a wrong match, because it can't "see" the M_HU_PI_Item_Product
-		// more concretely: we have two rules:
-		// IFCO A, with Red
-		// IFCO B with Blue
-		//
-		// And we put a product in IFCO A with Blue
-		//
-		// HU pricing rule won't find a match,
-		// Attribute pricing rule will match it with "Blue", which is wrong, since it should fall back to the "base" productPrice
-		//
-		// <pre>
-		// ..and that's why we register the filter here.
-		//
-		AttributePricing.registerDefaultMatcher(HUPricing.HUPIItemProductMatcher_None);
+		HUPricing.install();
+		AttributePricing.install();
 	}
 
 	public void setupTourPlanning()

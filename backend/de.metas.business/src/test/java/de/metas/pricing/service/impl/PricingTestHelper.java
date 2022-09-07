@@ -9,6 +9,7 @@ import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.rules.price_list_version.PriceListVersionConfiguration;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.pricing.service.ProductScalePriceService;
 import de.metas.product.IProductPA;
@@ -24,6 +25,7 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.model.I_C_PricingRule;
+import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_CountryArea;
@@ -122,14 +124,18 @@ public class PricingTestHelper
 
 	protected List<String> getPricingRuleClassnamesToRegister()
 	{
+		de.metas.pricing.attributebased.impl.AttributePricing.install();
+		AdempiereTestHelper.get().onCleanup("Reset PriceListVersionConfiguration", PriceListVersionConfiguration::reset);
+
 		return ImmutableList.of(
-				de.metas.pricing.attributebased.impl.AttributePricing.class.getName(),
-				de.metas.pricing.rules.PriceListVersion.class.getName(),
+				de.metas.pricing.rules.price_list_version.PriceListVersionPricingRule.class.getName(),
 				de.metas.pricing.rules.Discount.class.getName());
 	}
 
 	private void createPricingRules()
 	{
+		PriceListVersionConfiguration.reset();
+
 		final List<String> classnames = getPricingRuleClassnamesToRegister();
 
 		int nextSeqNo = 10;
