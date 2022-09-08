@@ -67,7 +67,7 @@ docker build -f docker-builds/Dockerfile.db-preloaded -t %mfregistry%/metas-db:%
 @echo building classic-compatible deployables
 @echo --------------------------
 docker build -f docker-builds/Dockerfile.backend.api.compat -t %mfregistry%/metas-api:%mfversion%-compat . || @goto error
-docker build -f docker-builds/Dockerfile.backend.app.compat --build-arg VERSION=%version%-%mfversion%.%buildnr% -t %mfregistry%/metas-app:%mfversion%-compat . || @goto error
+docker build -f docker-builds/Dockerfile.backend.app.compat -t %mfregistry%/metas-app:%mfversion%-compat . || @goto error
 docker build -f docker-builds/Dockerfile.mobile.compat -t %mfregistry%/metas-mobile:%mfversion%-compat . || @goto error
 docker build -f docker-builds/Dockerfile.frontend.compat -t %mfregistry%/metas-frontend:%mfversion%-compat . || @goto error
 
