@@ -213,30 +213,11 @@ public class AttributesBL implements IAttributesBL
 				.isPresent();
 	}
 
-	// @Override
-	// public boolean isMandatoryOnReceipt(@NonNull final ProductId productId, @NonNull final AttributeId attributeId)
-	// {
-	// 	final AttributeSetId attributeSetId = productsService.getAttributeSetId(productId);
-	// 	final Boolean mandatoryOnReceipt = attributesRepo.getAttributeSetAttributeId(attributeSetId, attributeId)
-	// 			.map(AttributeSetAttribute::getMandatoryOnReceipt)
-	// 			.map(OptionalBoolean::toBooleanOrNull)
-	// 			.orElse(null);
-	// 	if (mandatoryOnReceipt != null)
-	// 	{
-	// 		return mandatoryOnReceipt;
-	// 	}
-	//
-	// 	return attributesRepo.getAttributeById(attributeId).isMandatory();
-	// }
-
 	@Override
 	public boolean isMandatoryOn(@NonNull final ProductId productId,
 			@NonNull final AttributeId attributeId,
 			@NonNull AttributeSourceDocument attributeSourceDocument)
 	{
-		// TODO
-		//
-		// enum: AttributeSourceDocument receipt, manufacturing receipt
 		final AttributeSetId attributeSetId = productsService.getAttributeSetId(productId);
 		final Function<AttributeSetAttribute, OptionalBoolean> mandatoryOnFunction = attributeSourceDocument.isMaterialReceipt() ?
 				AttributeSetAttribute::getMandatoryOnReceipt :
@@ -290,8 +271,8 @@ public class AttributesBL implements IAttributesBL
 		final AttributeSetId attributeSetId = productBL.getAttributeSetId(productId);
 		final ImmutableList<I_M_Attribute> attributesMandatoryOnManufacturing = attributesRepo.getAttributesByAttributeSetId(attributeSetId).stream()
 				.filter(attribute -> isMandatoryOn(productId,
-														  AttributeId.ofRepoId(attribute.getM_Attribute_ID()),
-						AttributeSourceDocument.ManufacturingOrder))
+												   AttributeId.ofRepoId(attribute.getM_Attribute_ID()),
+												   AttributeSourceDocument.ManufacturingOrder))
 				.collect(ImmutableList.toImmutableList());
 
 		return attributesMandatoryOnManufacturing;
