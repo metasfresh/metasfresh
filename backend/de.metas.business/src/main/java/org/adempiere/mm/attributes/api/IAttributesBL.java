@@ -71,11 +71,13 @@ public interface IAttributesBL extends ISingletonService
 
 	boolean hasAttributeAssigned(ProductId productId, AttributeId attributeId);
 
-	boolean isMandatoryOnReceipt(@NonNull ProductId productId, @NonNull AttributeId attributeId);
+	boolean isMandatoryOn(@NonNull ProductId productId, @NonNull AttributeId attributeId, @NonNull AttributeSourceDocument attributeSourceDocument);
 
 	boolean isMandatoryOnShipment(@NonNull ProductId productId, @NonNull AttributeId attributeId);
 
 	ImmutableList<I_M_Attribute> getAttributesMandatoryOnPicking(ProductId productId);
+
+	ImmutableList<I_M_Attribute> getAttributesMandatoryOnManufacturing(ProductId productId);
 
 	ImmutableList<I_M_Attribute> getAttributesMandatoryOnShipment(ProductId productId);
 

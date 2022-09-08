@@ -2,7 +2,7 @@
  * #%L
  * de.metas.business
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,24 +20,32 @@
  * #L%
  */
 
-package org.adempiere.mm.attributes;
+package org.adempiere.mm.attributes.api;
 
-import de.metas.util.OptionalBoolean;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
-/**
- * A single attribute from an attribute set. note that we don't have any values in there..this is not about an instance.
- */
-@Value
-@Builder
-public class AttributeSetAttribute
+public enum AttributeSourceDocument
 {
-	@NonNull AttributeId attributeId;
-	int seqNo;
-	@NonNull OptionalBoolean mandatoryOnReceipt;
-	@NonNull OptionalBoolean mandatoryOnPicking;
-	@NonNull OptionalBoolean mandatoryOnShipment;
-	@NonNull OptionalBoolean mandatoryOnManufacturing;
+	Receipt("R"),
+	Manufacturing("M");
+
+	private final String type;
+
+	AttributeSourceDocument(String type)
+	{
+		this.type = type;
+	}
+
+	public String getType()
+	{
+		return type;
+	}
+
+	public boolean isMaterialReceipt()
+	{
+		return this == Receipt;
+	}
+
+	public boolean isManufacturing()
+	{
+		return this == Manufacturing;
+	}
 }

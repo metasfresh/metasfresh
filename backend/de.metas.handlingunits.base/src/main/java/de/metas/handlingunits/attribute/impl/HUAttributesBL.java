@@ -57,6 +57,9 @@ public class HUAttributesBL implements IHUAttributesBL
 	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	private final AdMessageKey MSG_MandatoryOnPicking = AdMessageKey.of("M_AttributeUse_MandatoryOnPicking");
+
+	private final AdMessageKey MSG_MandatoryOnManufacturing = AdMessageKey.of("M_AttributeUse_MandatoryOnManufacturing");
+
 	private final AdMessageKey MSG_MandatoryOnShipment = AdMessageKey.of("M_AttributeUse_MandatoryOnShipment");
 
 	@Override
@@ -205,6 +208,15 @@ public class HUAttributesBL implements IHUAttributesBL
 		final ImmutableList<I_M_Attribute> attributesMandatoryOnPicking = attributesBL.getAttributesMandatoryOnPicking(productId);
 
 		validateMandatoryAttributes(huId, productId, attributesMandatoryOnPicking, MSG_MandatoryOnPicking);
+	}
+
+
+	@Override
+	public void validateMandatoryManufacturingAttributes(@NonNull final HuId huId, @NonNull final ProductId productId)
+	{
+		final ImmutableList<I_M_Attribute> attributesMandatoryOnManufacturing = attributesBL.getAttributesMandatoryOnManufacturing(productId);
+
+		validateMandatoryAttributes(huId, productId, attributesMandatoryOnManufacturing, MSG_MandatoryOnManufacturing);
 	}
 
 	private void validateMandatoryAttributes(@NonNull final HuId huId,

@@ -37,6 +37,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
+import org.adempiere.mm.attributes.api.AttributeSourceDocument;
 import org.adempiere.mm.attributes.api.CurrentAttributeValueContextProvider;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributesBL;
@@ -1118,8 +1119,8 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	@Override
 	public boolean isMandatory(
 			@NonNull final I_M_Attribute attribute,
-			final Set<ProductId> productIds,
-			final boolean isMaterialReceipt)
+			@NonNull final Set<ProductId> productIds,
+			@Nullable final AttributeSourceDocument attributeSourceDocument)
 	{
 		final AttributeCode attributeCode = AttributeCode.ofString(attribute.getValue());
 		if (getAttributeValue(attributeCode).isMandatory())
@@ -1128,24 +1129,27 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 		}
 
 		final AttributeId attributeId = AttributeId.ofRepoId(attribute.getM_Attribute_ID());
-		return productIds.stream().anyMatch(productId -> isMandatoryForAttributeSet(attributeId, productId, isMaterialReceipt));
+		return productIds.stream().anyMatch(productId -> isMandatoryForAttributeSet(attributeId, productId, attributeSourceDocument));
 	}
 
 	private boolean isMandatoryForAttributeSet(
 			@NonNull final AttributeId attributeId,
 			@NonNull final ProductId productId,
-			final boolean isMaterialReceipt)
+			@Nullable final AttributeSourceDocument attributeSourceDocument)
 	{
-		if (isMaterialReceipt)
-		{
-			return attributesBL.isMandatoryOnReceipt(productId, attributeId);
-		}
-		else
+
+		if(attributeSourceDocument == null)
 		{
 			// NOTE: don't check M_Attribute.IsMandatory because
 			// we assume IAttributeValue.isMandatory implementation shall check that if it's relevant.
 			return false;
 		}
+		else
+		{
+			return attributesBL.isMandatoryOn(productId, attributeId, attributeSourceDocument);
+		}
+
+
 	}
 
 	@Nullable

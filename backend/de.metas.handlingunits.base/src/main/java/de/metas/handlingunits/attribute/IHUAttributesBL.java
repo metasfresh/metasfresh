@@ -74,6 +74,8 @@ public interface IHUAttributesBL extends ISingletonService
 
 	void validateMandatoryPickingAttributes(HuId huId, ProductId productId);
 
+	void validateMandatoryManufacturingAttributes(@NonNull HuId huId, @NonNull ProductId productId);
+
 	boolean areMandatoryPickingAttributesFulfilled(@NonNull HuId huId,
 			@NonNull ProductId productId);
 }

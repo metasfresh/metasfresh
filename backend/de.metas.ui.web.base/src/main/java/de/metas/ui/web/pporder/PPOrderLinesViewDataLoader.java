@@ -45,6 +45,7 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.mm.attributes.api.AttributeSourceDocument;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.adempiere.warehouse.groups.WarehouseGroupAssignmentType;
@@ -114,7 +115,7 @@ class PPOrderLinesViewDataLoader
 	{
 		huEditorRepo = SqlHUEditorViewRepository.builder()
 				.windowId(viewWindowId)
-				.attributesProvider(HUEditorRowAttributesProvider.builder().readonly(false).build())
+				.attributesProvider(HUEditorRowAttributesProvider.builder().readonly(false).attributeSourceDocument(AttributeSourceDocument.Manufacturing).build())
 				.sqlViewBinding(huSQLViewBinding)
 				.huReservationService(huReservationService)
 				.build();

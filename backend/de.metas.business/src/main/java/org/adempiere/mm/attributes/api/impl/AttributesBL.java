@@ -45,6 +45,7 @@ import org.adempiere.mm.attributes.AttributeListValue;
 import org.adempiere.mm.attributes.AttributeSetAttribute;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.api.AttributeAction;
+import org.adempiere.mm.attributes.api.AttributeSourceDocument;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.mm.attributes.spi.IAttributeValueGenerator;
@@ -68,6 +69,7 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.Date;
 import java.util.Properties;
+import java.util.function.Function;
 
 public class AttributesBL implements IAttributesBL
 {
@@ -211,14 +213,40 @@ public class AttributesBL implements IAttributesBL
 				.isPresent();
 	}
 
+	// @Override
+	// public boolean isMandatoryOnReceipt(@NonNull final ProductId productId, @NonNull final AttributeId attributeId)
+	// {
+	// 	final AttributeSetId attributeSetId = productsService.getAttributeSetId(productId);
+	// 	final Boolean mandatoryOnReceipt = attributesRepo.getAttributeSetAttributeId(attributeSetId, attributeId)
+	// 			.map(AttributeSetAttribute::getMandatoryOnReceipt)
+	// 			.map(OptionalBoolean::toBooleanOrNull)
+	// 			.orElse(null);
+	// 	if (mandatoryOnReceipt != null)
+	// 	{
+	// 		return mandatoryOnReceipt;
+	// 	}
+	//
+	// 	return attributesRepo.getAttributeById(attributeId).isMandatory();
+	// }
+
 	@Override
-	public boolean isMandatoryOnReceipt(@NonNull final ProductId productId, @NonNull final AttributeId attributeId)
+	public boolean isMandatoryOn(@NonNull final ProductId productId,
+			@NonNull final AttributeId attributeId,
+			@NonNull AttributeSourceDocument attributeSourceDocument)
 	{
+		// TODO
+		//
+		// enum: AttributeSourceDocument receipt, manufacturing receipt
 		final AttributeSetId attributeSetId = productsService.getAttributeSetId(productId);
+		final Function<AttributeSetAttribute, OptionalBoolean> mandatoryOnFunction = attributeSourceDocument.isMaterialReceipt() ?
+				AttributeSetAttribute::getMandatoryOnReceipt :
+				AttributeSetAttribute::getMandatoryOnManufacturing;
+
 		final Boolean mandatoryOnReceipt = attributesRepo.getAttributeSetAttributeId(attributeSetId, attributeId)
-				.map(AttributeSetAttribute::getMandatoryOnReceipt)
+				.map(mandatoryOnFunction)
 				.map(OptionalBoolean::toBooleanOrNull)
 				.orElse(null);
+
 		if (mandatoryOnReceipt != null)
 		{
 			return mandatoryOnReceipt;
@@ -254,6 +282,19 @@ public class AttributesBL implements IAttributesBL
 				.collect(ImmutableList.toImmutableList());
 
 		return attributesMandatoryOnPicking;
+	}
+
+	@Override
+	public ImmutableList<I_M_Attribute> getAttributesMandatoryOnManufacturing(final ProductId productId)
+	{
+		final AttributeSetId attributeSetId = productBL.getAttributeSetId(productId);
+		final ImmutableList<I_M_Attribute> attributesMandatoryOnManufacturing = attributesRepo.getAttributesByAttributeSetId(attributeSetId).stream()
+				.filter(attribute -> isMandatoryOn(productId,
+														  AttributeId.ofRepoId(attribute.getM_Attribute_ID()),
+						AttributeSourceDocument.Manufacturing))
+				.collect(ImmutableList.toImmutableList());
+
+		return attributesMandatoryOnManufacturing;
 	}
 
 	@Override
