@@ -243,9 +243,11 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			final Document xmlDocument = createDocument(sepaDocument);
 			marshal(xmlDocument, out);
 		}
-		catch (final Exception e)
+		catch (final RuntimeException e)
 		{
-			throw new AdempiereException("Error while marshaling " + sepaDocument, e);
+			throw AdempiereException.wrapIfNeeded(e)
+					.appendParametersToMessage()
+					.setParameter("sepaDocument", sepaDocument);
 		}
 	}
 

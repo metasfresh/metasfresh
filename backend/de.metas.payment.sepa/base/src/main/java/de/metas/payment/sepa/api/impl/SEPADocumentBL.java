@@ -1,16 +1,7 @@
 package de.metas.payment.sepa.api.impl;
 
-import java.io.ByteArrayOutputStream;
-import java.sql.Timestamp;
-import java.util.Date;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_PaySelection;
-import org.compiere.util.MimeType;
-
 import de.metas.banking.api.BankRepository;
+import de.metas.common.util.time.SystemTime;
 import de.metas.payment.sepa.api.ISEPADocumentBL;
 import de.metas.payment.sepa.api.SEPACreditTransferXML;
 import de.metas.payment.sepa.api.SEPAProtocol;
@@ -21,6 +12,14 @@ import de.metas.payment.sepa.sepamarshaller.impl.SEPAMarshaler;
 import de.metas.payment.sepa.sepamarshaller.impl.SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02;
 import de.metas.util.FileUtil;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_PaySelection;
+import org.compiere.util.MimeType;
+
+import java.io.ByteArrayOutputStream;
+import java.sql.Timestamp;
+import java.util.Date;
 
 public class SEPADocumentBL implements ISEPADocumentBL
 {
@@ -52,8 +51,14 @@ public class SEPADocumentBL implements ISEPADocumentBL
 
 		final ByteArrayOutputStream out = new ByteArrayOutputStream();
 		final SEPAMarshaler marshaler = newSEPAMarshaler(protocol);
-		marshaler.marshal(sepaExport, out);
-
+		try
+		{
+			marshaler.marshal(sepaExport, out);
+		}
+		catch (final RuntimeException e)
+		{
+			throw AdempiereException.wrapIfNeeded(e);
+		}
 		return SEPACreditTransferXML.builder()
 				.filename(FileUtil.stripIllegalCharacters(sepaExport.getDocumentNo()) + ".xml")
 				.contentType(MimeType.TYPE_XML)
