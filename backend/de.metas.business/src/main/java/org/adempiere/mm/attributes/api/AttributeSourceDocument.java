@@ -24,8 +24,8 @@ package org.adempiere.mm.attributes.api;
 
 public enum AttributeSourceDocument
 {
-	Receipt("R"),
-	Manufacturing("M");
+	MaterialReceipt("R"),
+	ManufacturingOrder("M");
 
 	private final String type;
 
@@ -41,11 +41,11 @@ public enum AttributeSourceDocument
 
 	public boolean isMaterialReceipt()
 	{
-		return this == Receipt;
+		return this == MaterialReceipt;
 	}
 
 	public boolean isManufacturing()
 	{
-		return this == Manufacturing;
+		return this == ManufacturingOrder;
 	}
 }

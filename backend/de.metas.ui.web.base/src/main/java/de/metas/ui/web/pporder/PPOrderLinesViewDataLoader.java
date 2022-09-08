@@ -115,7 +115,7 @@ class PPOrderLinesViewDataLoader
 	{
 		huEditorRepo = SqlHUEditorViewRepository.builder()
 				.windowId(viewWindowId)
-				.attributesProvider(HUEditorRowAttributesProvider.builder().readonly(false).attributeSourceDocument(AttributeSourceDocument.Manufacturing).build())
+				.attributesProvider(HUEditorRowAttributesProvider.builder().readonly(false).attributeSourceDocument(AttributeSourceDocument.ManufacturingOrder).build())
 				.sqlViewBinding(huSQLViewBinding)
 				.huReservationService(huReservationService)
 				.build();

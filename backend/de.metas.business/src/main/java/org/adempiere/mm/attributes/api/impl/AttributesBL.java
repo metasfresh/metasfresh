@@ -291,7 +291,7 @@ public class AttributesBL implements IAttributesBL
 		final ImmutableList<I_M_Attribute> attributesMandatoryOnManufacturing = attributesRepo.getAttributesByAttributeSetId(attributeSetId).stream()
 				.filter(attribute -> isMandatoryOn(productId,
 														  AttributeId.ofRepoId(attribute.getM_Attribute_ID()),
-						AttributeSourceDocument.Manufacturing))
+						AttributeSourceDocument.ManufacturingOrder))
 				.collect(ImmutableList.toImmutableList());
 
 		return attributesMandatoryOnManufacturing;

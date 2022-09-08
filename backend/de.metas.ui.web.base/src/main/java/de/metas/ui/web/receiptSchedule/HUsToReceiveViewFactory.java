@@ -63,6 +63,6 @@ public class HUsToReceiveViewFactory extends HUEditorViewFactoryTemplate
 	@Override
 	protected AttributeSourceDocument getAttributeSourceDocument()
 	{
-		return AttributeSourceDocument.Receipt;
+		return AttributeSourceDocument.MaterialReceipt;
 	}
 }
