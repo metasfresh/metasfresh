@@ -41,7 +41,6 @@ import de.metas.cucumber.stepdefs.interiminvoice.settings.C_Interim_Invoice_Sett
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.order.InvoiceRule;
 import de.metas.util.Services;
-import de.metas.util.Check;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
@@ -52,8 +51,8 @@ import org.compiere.model.I_M_PricingSystem;
 
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import java.util.Optional;
+import java.util.UUID;
 
 import static de.metas.contracts.commission.model.I_C_Flatrate_Conditions.COLUMNNAME_C_HierarchyCommissionSettings_ID;
 import static de.metas.contracts.model.I_C_Flatrate_Conditions.COLUMNNAME_C_Customer_Trade_Margin_ID;
@@ -83,9 +82,6 @@ public class C_Flatrate_Conditions_StepDef
 			@NonNull final C_LicenseFeeSettings_StepDefData licenseFeeSettingsTable,
 			@NonNull final C_Customer_Trade_Margin_StepDefData customerTradeMarginTable,
 			@NonNull final C_MediatedCommissionSettings_StepDefData mediatedCommissionSettingsTable,
-			@NonNull final C_Flatrate_Conditions_StepDefData conditionsTable,
-			@NonNull final M_PricingSystem_StepDefData pricingSysTable,
-			@NonNull final C_Interim_Invoice_Settings_StepDefData interimInvoiceSettingsTable)
 			@NonNull final C_Flatrate_Conditions_StepDefData conditionsTable,
 			@NonNull final M_PricingSystem_StepDefData pricingSysTable,
 			@NonNull final C_Interim_Invoice_Settings_StepDefData interimInvoiceSettingsTable)
