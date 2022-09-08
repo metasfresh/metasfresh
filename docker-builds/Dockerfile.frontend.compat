@@ -2,8 +2,7 @@ ARG REFNAME=local
 FROM metasfresh/metas-frontend:$REFNAME as frontend
 # FROM metasfresh/metas-mobile:$REFNAME-compat as mobile
 
-# ubuntu:16.04
-FROM httpd:2.4.54 as runtime
+FROM ubuntu:16.04 as runtime
 
 RUN apt-get update && apt-get install -y apache2 && rm -rf /var/lib/apt/lists/*
 
@@ -14,3 +13,6 @@ COPY docker-builds/compat/sites/ /etc/apache2/sites-available/
 
 COPY --from=frontend /usr/share/nginx/html/ /opt/metasfresh-webui-frontend/dist/
 # COPY --from=mobile /usr/share/nginx/html/ /opt/metasfresh-webui-frontend/dist/mobile/
+
+# downstream Dockerfile will:
+# ENTRYPOINT ["/start_webui.sh"]
