@@ -198,7 +198,7 @@ public class FlatrateTermInterimInvoice_Handler implements ConditionTypeSpecific
 
 		final I_C_Invoice_Candidate invoiceCandidate = HandlerTools.createIcAndSetCommonFields(term);
 
-		// Currently relying on C_Flatrate_Conditions.InvoiceRule instead of setting it programmatically.
+		// Relying on the InvoiceRule set from C_Flatrate_Conditions instead of overwriting it with one that allows for quality discount.
 		// Without an invoice rule that takes into account delivered items, there will be no calculation for quality discount
 		// See de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidate.computeToInvoiceExclOverride
 
