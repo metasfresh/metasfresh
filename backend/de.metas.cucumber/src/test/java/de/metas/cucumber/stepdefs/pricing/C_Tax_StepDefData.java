@@ -20,15 +20,18 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.hu;
+package de.metas.cucumber.stepdefs.pricing;
 
 import de.metas.cucumber.stepdefs.StepDefData;
-import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
+import org.compiere.model.I_C_Tax;
 
-public class M_HU_LUTU_Configuration_StepDefData extends StepDefData<I_M_HU_LUTU_Configuration>
+/**
+ * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
+ */
+public class C_Tax_StepDefData extends StepDefData<I_C_Tax>
 {
-	public M_HU_LUTU_Configuration_StepDefData()
+	public C_Tax_StepDefData()
 	{
-		super(I_M_HU_LUTU_Configuration.class);
+		super(I_C_Tax.class);
 	}
 }

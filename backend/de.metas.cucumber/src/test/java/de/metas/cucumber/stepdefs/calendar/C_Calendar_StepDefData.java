@@ -20,15 +20,15 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.hu;
+package de.metas.cucumber.stepdefs.calendar;
 
 import de.metas.cucumber.stepdefs.StepDefData;
-import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
+import org.compiere.model.I_C_Calendar;
 
-public class M_HU_LUTU_Configuration_StepDefData extends StepDefData<I_M_HU_LUTU_Configuration>
+public class C_Calendar_StepDefData extends StepDefData<I_C_Calendar>
 {
-	public M_HU_LUTU_Configuration_StepDefData()
+	public C_Calendar_StepDefData()
 	{
-		super(I_M_HU_LUTU_Configuration.class);
+		super(I_C_Calendar.class);
 	}
 }

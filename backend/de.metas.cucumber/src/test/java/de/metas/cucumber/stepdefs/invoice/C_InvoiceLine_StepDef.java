@@ -35,6 +35,7 @@ import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -71,7 +72,6 @@ public class C_InvoiceLine_StepDef
 	private final M_Product_StepDefData productTable;
 	private final C_Project_StepDefData projectTable;
 	private final C_Tax_StepDefData taxTable;
-
 	private final C_TaxCategory_StepDefData taxCategoryTable;
 
 	public C_InvoiceLine_StepDef(
@@ -106,7 +106,7 @@ public class C_InvoiceLine_StepDef
 		final List<Map<String, String>> dataTable = table.asMaps();
 		for (final Map<String, String> row : dataTable)
 		{
-			final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice.COLUMNNAME_C_Invoice_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice.COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 			final I_C_Invoice invoiceRecord = invoiceTable.get(invoiceIdentifier);
 

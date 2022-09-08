@@ -20,15 +20,15 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.hu;
+package de.metas.cucumber.stepdefs.receiptschedule;
 
 import de.metas.cucumber.stepdefs.StepDefData;
-import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 
-public class M_HU_LUTU_Configuration_StepDefData extends StepDefData<I_M_HU_LUTU_Configuration>
+public class M_ReceiptSchedule_StepDefData extends StepDefData<I_M_ReceiptSchedule>
 {
-	public M_HU_LUTU_Configuration_StepDefData()
+	public M_ReceiptSchedule_StepDefData()
 	{
-		super(I_M_HU_LUTU_Configuration.class);
+		super(I_M_ReceiptSchedule.class);
 	}
 }

@@ -31,11 +31,7 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.M_ReceiptSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
-import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
-import de.metas.handlingunits.empties.IHUEmptiesService;
-import de.metas.inoutcandidate.api.IReceiptScheduleBL;
-import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
 import de.metas.order.OrderLineId;
@@ -76,6 +72,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.compiere.model.I_M_InOut.COLUMNNAME_M_InOut_ID;
 import static org.compiere.util.Env.getCtx;
+import static org.assertj.core.api.Assertions.*;
 
 public class M_ReceiptSchedule_StepDef
 {
@@ -140,13 +137,13 @@ public class M_ReceiptSchedule_StepDef
 			final Integer bPartnerLocationID = bPartnerLocationTable.getOptional(bpPartnerLocationIdentifier)
 					.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
 					.orElseGet(() -> Integer.parseInt(bpPartnerLocationIdentifier));
-			Assertions.assertThat(bPartnerLocationID).isNotNull();
+			assertThat(bPartnerLocationID).isNotNull();
 
 			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final Integer productID = productTable.getOptional(productIdentifier)
 					.map(I_M_Product::getM_Product_ID)
 					.orElseGet(() -> Integer.parseInt(productIdentifier));
-			Assertions.assertThat(productID).isNotNull();
+			assertThat(productID).isNotNull();
 
 			final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalForColumnName(tableRow, COLUMNNAME_QtyOrdered);
 
