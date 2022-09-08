@@ -27,8 +27,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.IAttributesBL;
@@ -190,13 +188,7 @@ public class HUAttributesBL implements IHUAttributesBL
 	@Override
 	public void validateMandatoryShipmentAttributes(@NonNull final HuId huId, @NonNull final ProductId productId)
 	{
-		final AttributeSetId attributeSetId = productBL.getAttributeSetId(productId);
-
-		final ImmutableList<I_M_Attribute> attributesMandatoryOnShipment = attributeDAO.getAttributesByAttributeSetId(attributeSetId).stream()
-				.filter(attribute -> attributesBL
-						.isMandatoryOnShipment(productId,
-											   AttributeId.ofRepoId(attribute.getM_Attribute_ID())))
-				.collect(ImmutableList.toImmutableList());
+		final ImmutableList<I_M_Attribute> attributesMandatoryOnShipment = attributesBL.getAttributesMandatoryOnShipment(productId);
 
 		validateMandatoryAttributes(huId, productId, attributesMandatoryOnShipment, MSG_MandatoryOnShipment);
 
@@ -209,7 +201,6 @@ public class HUAttributesBL implements IHUAttributesBL
 
 		validateMandatoryAttributes(huId, productId, attributesMandatoryOnPicking, MSG_MandatoryOnPicking);
 	}
-
 
 	@Override
 	public void validateMandatoryManufacturingAttributes(@NonNull final HuId huId, @NonNull final ProductId productId)

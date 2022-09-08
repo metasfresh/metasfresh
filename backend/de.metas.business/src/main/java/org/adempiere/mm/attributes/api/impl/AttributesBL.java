@@ -36,7 +36,6 @@ import de.metas.product.ProductId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
-import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -226,49 +225,32 @@ public class AttributesBL implements IAttributesBL
 			return false;
 		}
 
-		final OptionalBoolean mandatory;
+		final Boolean mandatory;
 
 		if (attributeSourceDocument.isMaterialReceipt())
 		{
-			mandatory = attribute.getMandatoryOnReceipt();
+			mandatory = attribute.getMandatoryOnReceipt().toBooleanOrNull();
 		}
 		else if (attributeSourceDocument.isManufacturing())
 		{
-			mandatory = attribute.getMandatoryOnManufacturing();
+			mandatory = attribute.getMandatoryOnManufacturing().toBooleanOrNull();
 		}
 		else if (attributeSourceDocument.isPicking())
 		{
-			mandatory = attribute.getMandatoryOnPicking();
+			mandatory = attribute.getMandatoryOnPicking().toBooleanOrNull();
 		}
 		else if (attributeSourceDocument.isShipment())
 		{
-			mandatory = attribute.getMandatoryOnShipment();
+			mandatory = attribute.getMandatoryOnShipment().toBooleanOrNull();
 		}
 		else
 		{
 			throw new AdempiereException("Unknown: " + attributeSourceDocument);
 		}
 
-		if (mandatory.isTrue())
+		if (mandatory != null)
 		{
-			return true;
-		}
-
-		return attributesRepo.getAttributeById(attributeId).isMandatory();
-	}
-
-	@Override
-	public boolean isMandatoryOnShipment(@NonNull final ProductId productId, @NonNull final AttributeId attributeId)
-	{
-		final AttributeSetId attributeSetId = productsService.getAttributeSetId(productId);
-		final Boolean mandatoryOnShipment = attributesRepo.getAttributeSetAttributeId(attributeSetId, attributeId)
-				.map(AttributeSetAttribute::getMandatoryOnShipment)
-				.map(OptionalBoolean::toBooleanOrNull)
-				.orElse(null);
-
-		if (mandatoryOnShipment != null)
-		{
-			return mandatoryOnShipment;
+			return mandatory;
 		}
 
 		return attributesRepo.getAttributeById(attributeId).isMandatory();
@@ -279,8 +261,9 @@ public class AttributesBL implements IAttributesBL
 	{
 		final AttributeSetId attributeSetId = productBL.getAttributeSetId(productId);
 		final ImmutableList<I_M_Attribute> attributesMandatoryOnPicking = attributesRepo.getAttributesByAttributeSetId(attributeSetId).stream()
-				.filter(attribute -> isMandatoryOnPicking(productId,
-														  AttributeId.ofRepoId(attribute.getM_Attribute_ID())))
+				.filter(attribute -> isMandatoryOn(productId,
+												   AttributeId.ofRepoId(attribute.getM_Attribute_ID()),
+												   AttributeSourceDocument.Picking))
 				.collect(ImmutableList.toImmutableList());
 
 		return attributesMandatoryOnPicking;
@@ -305,29 +288,12 @@ public class AttributesBL implements IAttributesBL
 		final AttributeSetId attributeSetId = productBL.getAttributeSetId(productId);
 
 		final ImmutableList<I_M_Attribute> attributesMandatoryOnShipment = attributesRepo.getAttributesByAttributeSetId(attributeSetId).stream()
-				.filter(attribute -> isMandatoryOnShipment(productId,
-														   AttributeId.ofRepoId(attribute.getM_Attribute_ID())))
+				.filter(attribute -> isMandatoryOn(productId,
+												   AttributeId.ofRepoId(attribute.getM_Attribute_ID()),
+												   AttributeSourceDocument.Shipment))
 				.collect(ImmutableList.toImmutableList());
 
 		return attributesMandatoryOnShipment;
-	}
-
-	@Override
-	public boolean isMandatoryOnPicking(@NonNull final ProductId productId, @NonNull final AttributeId attributeId)
-	{
-		final AttributeSetId attributeSetId = productsService.getAttributeSetId(productId);
-
-		final Boolean mandatoryOnPicking = attributesRepo.getAttributeSetAttributeId(attributeSetId, attributeId)
-				.map(AttributeSetAttribute::getMandatoryOnPicking)
-				.map(OptionalBoolean::toBooleanOrNull)
-				.orElse(null);
-
-		if (mandatoryOnPicking != null)
-		{
-			return mandatoryOnPicking;
-		}
-
-		return attributesRepo.getAttributeById(attributeId).isMandatory();
 	}
 
 	@Override
