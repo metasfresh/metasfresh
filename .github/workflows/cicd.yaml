@@ -227,7 +227,6 @@ jobs:
           --cache-to type=inline \
           --cache-from metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
-          --build-arg VERSION=$(cat docker-builds/version.info)-${{ needs.init.outputs.tag-fixed }} \
           -t metasfresh/metas-app:${{ needs.init.outputs.tag-floating }}-compat \
           -t metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}-compat \
           .
