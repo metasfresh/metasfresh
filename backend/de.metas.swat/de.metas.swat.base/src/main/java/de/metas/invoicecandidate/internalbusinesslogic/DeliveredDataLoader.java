@@ -63,6 +63,7 @@ public class DeliveredDataLoader
 {
 	IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 
+	IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 	UomId stockUomId;
 
 	UomId icUomId;
@@ -75,7 +76,9 @@ public class DeliveredDataLoader
 
 	Boolean negateQtys;
 
-	/** always empty, if soTrx; sometimes set if poTrx */
+	/**
+	 * always empty, if soTrx; sometimes set if poTrx
+	 */
 	Optional<Percent> deliveryQualityDiscount;
 
 	/**
@@ -94,7 +97,7 @@ public class DeliveredDataLoader
 			@NonNull final UomId stockUomId,
 			@NonNull final UomId icUomId,
 			@NonNull final ProductId productId,
-			@NonNull final InvoiceCandidateId invoiceCandidateId,
+			@Nullable final InvoiceCandidateId invoiceCandidateId,
 			@NonNull final SOTrx soTrx,
 			@NonNull final Boolean negateQtys,
 			@NonNull final Optional<Percent> deliveryQualityDiscount,
@@ -110,20 +113,11 @@ public class DeliveredDataLoader
 		this.defaultQtyDelivered = coalesce(defaultQtyDelivered, StockQtyAndUOMQtys.createZero(productId, icUomId));
 	}
 
-	DeliveredData loadDeliveredQtys()
+	public DeliveredData loadDeliveredQtys()
 	{
 		final DeliveredDataBuilder result = DeliveredData.builder();
 
-		final List<I_C_InvoiceCandidate_InOutLine> icIolAssociationRecords;
-		if (invoiceCandidateId == null)
-		{
-			icIolAssociationRecords = ImmutableList.of();
-		}
-		else
-		{
-			final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
-			icIolAssociationRecords = invoiceCandDAO.retrieveICIOLAssociationsFor(invoiceCandidateId);
-		}
+		final List<I_C_InvoiceCandidate_InOutLine> icIolAssociationRecords = loadInvoiceCandidateInOutLines();
 		if (soTrx.isPurchase())
 		{
 			result.receiptData(loadReceiptQualityData(icIolAssociationRecords));
@@ -133,6 +127,28 @@ public class DeliveredDataLoader
 			result.shipmentData(loadShipmentData(icIolAssociationRecords));
 		}
 		return result.build();
+	}
+
+	private List<I_C_InvoiceCandidate_InOutLine> loadInvoiceCandidateInOutLines()
+	{
+		final List<I_C_InvoiceCandidate_InOutLine> icIolAssociationRecords;
+		if (invoiceCandidateId == null)
+		{
+			icIolAssociationRecords = ImmutableList.of();
+		}
+		else
+		{
+			final List<I_C_InvoiceCandidate_InOutLine> inOutLinesViaInterimInvoice = invoiceCandDAO.retrieveICIOLAssociationsViaInterimInvoiceExclRE(invoiceCandidateId);
+			if (!inOutLinesViaInterimInvoice.isEmpty())
+			{
+				icIolAssociationRecords = inOutLinesViaInterimInvoice;
+			}
+			else
+			{
+				icIolAssociationRecords = invoiceCandDAO.retrieveICIOLAssociationsExclRE(invoiceCandidateId);
+			}
+		}
+		return icIolAssociationRecords;
 	}
 
 	private ShipmentData loadShipmentData(@NonNull final List<I_C_InvoiceCandidate_InOutLine> icIolAssociationRecords)
@@ -161,7 +177,7 @@ public class DeliveredDataLoader
 		final ArrayList<DeliveredQtyItem> deliveredQtyItemsWithoutCatch = new ArrayList<>();
 		for (final DeliveredQtyItem deliveredQtyItem : deliveredQtyItems)
 		{
-			if(!deliveredQtyItem.isCompletedOrClosed())
+			if (!deliveredQtyItem.isCompletedOrClosed())
 			{
 				continue; // we didn't want to fallback to defaultQtyDelivered, even if all the shipped items are reversed. In that case we want to arrive at zero.
 			}
@@ -229,7 +245,7 @@ public class DeliveredDataLoader
 
 		for (final DeliveredQtyItem deliveredQtyItem : shippedQtyItems)
 		{
-			if(!deliveredQtyItem.isCompletedOrClosed())
+			if (!deliveredQtyItem.isCompletedOrClosed())
 			{
 				continue; // we didn't want to fallback to defaultQtyDelivered, even if all the shipped items are reversed. In that case we want to arrive at zero.
 			}
@@ -282,7 +298,7 @@ public class DeliveredDataLoader
 		{
 			final InOutLineId inoutLineId = InOutLineId.ofRepoIdOrNull(icIolAssociationRecord.getM_InOutLine_ID());
 
-			if(inoutLineId == null)
+			if (inoutLineId == null)
 			{
 				continue;
 			}
