@@ -32,6 +32,7 @@ import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_C_OrderLine;
 import de.metas.edi.model.I_M_InOutLine;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
+import de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUAssignmentDAO;
 import de.metas.handlingunits.IHUPIItemProductDAO;
@@ -85,6 +86,7 @@ import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
@@ -169,6 +171,8 @@ public class EDIDesadvPackService
 
 		final I_EDI_DesadvLine desadvLineRecord = desadvDAO.retrieveLineById(desadvLineId);
 
+		final DesadvLineWithDraftedPackItems desadvLineWithDraftedPackItems = getLineWithDraftedPackItems(desadvLineId);
+
 		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.fromRecordString(desadvLineRecord.getInvoicableQtyBasedOn());
 
 		StockQtyAndUOMQty remainingQtyToAdd = inOutBL.extractInOutLineQty(inOutLineRecord, invoicableQtyBasedOn);
@@ -177,13 +181,13 @@ public class EDIDesadvPackService
 
 		for (final I_M_HU topLevelHU : topLevelHUs)
 		{
-			final StockQtyAndUOMQty addedPackQty = createPackUsingHU(desadvLineRecord, inOutLineRecord, topLevelHU, recipientBPartnerId);
+			final StockQtyAndUOMQty addedPackQty = createPackUsingHU(desadvLineRecord, inOutLineRecord, topLevelHU, recipientBPartnerId, desadvLineWithDraftedPackItems);
 			remainingQtyToAdd = StockQtyAndUOMQtys.subtract(remainingQtyToAdd, addedPackQty);
 		}
 
 		if (remainingQtyToAdd.getStockQty().signum() > 0)
 		{
-			createPackUsingJustInOutLine(inOutLineRecord, orderLineRecord, desadvLineRecord, remainingQtyToAdd);
+			createPackUsingJustInOutLine(inOutLineRecord, orderLineRecord, desadvLineRecord, remainingQtyToAdd, desadvLineWithDraftedPackItems);
 		}
 	}
 
@@ -191,7 +195,8 @@ public class EDIDesadvPackService
 			@NonNull final I_M_InOutLine inOutLineRecord,
 			@NonNull final I_C_OrderLine orderLineRecord,
 			@NonNull final I_EDI_DesadvLine desadvLineRecord,
-			@NonNull final StockQtyAndUOMQty qtyToAdd)
+			@NonNull final StockQtyAndUOMQty qtyToAdd,
+			@NonNull final DesadvLineWithDraftedPackItems desadvLineWithPacks)
 	{
 		Check.assume(qtyToAdd.getStockQty().signum() > 0, "Parameter 'qtyToAdd' needs to be >0 for all this to make sense");
 
@@ -311,7 +316,12 @@ public class EDIDesadvPackService
 			createEDIDesadvPackItemRequestBuilder.qtyTu(currentQtyTU.toBigDecimal().intValue());
 
 			final UomId uomId = UomId.ofRepoId(desadvLineRecord.getC_UOM_ID());
-			setQty(createEDIDesadvPackItemRequestBuilder, productId, qtyCUsPerTUInStockUOM, qtyCUsPerCurrentLU, uomId, lutuConfigurationInStockUOM.getQtyCU());
+
+			final BigDecimal movementQty = qtyCUsPerCurrentLU.getStockQty().toBigDecimal();
+
+			desadvLineWithPacks.popFirstMatching(movementQty).ifPresent(createEDIDesadvPackItemRequestBuilder::ediDesadvPackItemId);
+
+			setQty(createEDIDesadvPackItemRequestBuilder, productId, qtyCUsPerTUInStockUOM, qtyCUsPerCurrentLU, uomId, lutuConfigurationInStockUOM.getQtyCU(), movementQty);
 
 			ediDesadvPackRepository.createDesadvPack(createEDIDesadvPackRequestBuilder
 															 .createEDIDesadvPackItemRequest(createEDIDesadvPackItemRequestBuilder.build())
@@ -360,7 +370,8 @@ public class EDIDesadvPackService
 			@NonNull final I_EDI_DesadvLine desadvLineRecord,
 			@NonNull final I_M_InOutLine inOutLineRecord,
 			@NonNull final I_M_HU huRecord,
-			@NonNull final BPartnerId bPartnerId)
+			@NonNull final BPartnerId bPartnerId,
+			@NonNull final DesadvLineWithDraftedPackItems desadvLineWithPacks)
 	{
 		final ProductId productId = ProductId.ofRepoId(desadvLineRecord.getM_Product_ID());
 
@@ -379,7 +390,7 @@ public class EDIDesadvPackService
 
 		final StockQtyAndUOMQty qtyCUsPerLU = getQuantity(rootLU, productId);
 
-		final CreateEDIDesadvPackRequest createEDIDesadvPackRequest = buildCreateDesadvPackRequest(rootLU, bPartnerId, qtyCUsPerLU, productId, desadvLineRecord, inOutLineRecord);
+		final CreateEDIDesadvPackRequest createEDIDesadvPackRequest = buildCreateDesadvPackRequest(rootLU, bPartnerId, qtyCUsPerLU, productId, desadvLineRecord, inOutLineRecord, desadvLineWithPacks);
 
 		ediDesadvPackRepository.createDesadvPack(createEDIDesadvPackRequest);
 
@@ -418,7 +429,8 @@ public class EDIDesadvPackService
 			@NonNull final StockQtyAndUOMQty quantity,
 			@NonNull final ProductId productId,
 			@NonNull final I_EDI_DesadvLine desadvLineRecord,
-			@NonNull final I_M_InOutLine inOutLineRecord)
+			@NonNull final I_M_InOutLine inOutLineRecord,
+			@NonNull final DesadvLineWithDraftedPackItems desadvLineWithPacks)
 	{
 		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackRequestBuilder createDesadvPackRequestBuilder = CreateEDIDesadvPackRequest.builder()
 				.orgId(OrgId.ofRepoId(desadvLineRecord.getAD_Org_ID()))
@@ -449,7 +461,12 @@ public class EDIDesadvPackService
 		}
 
 		final UomId uomId = UomId.ofRepoId(desadvLineRecord.getC_UOM_ID());
-		setQty(createEDIDesadvPackItemRequestBuilder, productId, qtyCUInStockUOM, quantity, uomId, qtyCUInStockUOM.toBigDecimal());
+
+		final BigDecimal movementQty = quantity.getStockQty().toBigDecimal();
+
+		desadvLineWithPacks.popFirstMatching(movementQty).ifPresent(createEDIDesadvPackItemRequestBuilder::ediDesadvPackItemId);
+
+		setQty(createEDIDesadvPackItemRequestBuilder, productId, qtyCUInStockUOM, quantity, uomId, qtyCUInStockUOM.toBigDecimal(), movementQty);
 
 		extractAndSetPackagingCodes(rootHU, createDesadvPackRequestBuilder, createEDIDesadvPackItemRequestBuilder);
 		extractAndSetPackagingGTINs(rootHU, bPartnerId, createDesadvPackRequestBuilder, createEDIDesadvPackItemRequestBuilder);
@@ -487,7 +504,8 @@ public class EDIDesadvPackService
 			@NonNull final Quantity qtyCUInStockUOM,
 			@NonNull final StockQtyAndUOMQty qtyCUsPerLU,
 			@NonNull final UomId packUomId,
-			@NonNull final BigDecimal qtyItemCapacity)
+			@NonNull final BigDecimal qtyItemCapacity,
+			@NonNull final BigDecimal movementQty)
 	{
 		final BigDecimal qtyCUPerTUinPackUOM;
 		final BigDecimal qtyCUsPerLUinPackUOM;
@@ -516,9 +534,23 @@ public class EDIDesadvPackService
 					.toBigDecimal();
 		}
 
-		createEDIDesadvPackItemRequestBuilder.movementQtyInStockUOM(qtyCUsPerLU.getStockQty().toBigDecimal());
+		createEDIDesadvPackItemRequestBuilder.movementQtyInStockUOM(movementQty);
 		createEDIDesadvPackItemRequestBuilder.qtyCu(qtyCUPerTUinPackUOM);
 		createEDIDesadvPackItemRequestBuilder.qtyCUsPerLU(qtyCUsPerLUinPackUOM);
+	}
+
+	@NonNull
+	private DesadvLineWithDraftedPackItems getLineWithDraftedPackItems(@NonNull final EDIDesadvLineId desadvLineId)
+	{
+		final EDIDesadvPackRepository.EdiDesadvPackItemQuery draftedItemsQuery = EDIDesadvPackRepository.EdiDesadvPackItemQuery
+				.ofDesadvLineWithNoInOutLine(desadvLineId);
+
+		final List<I_EDI_Desadv_Pack_Item> draftedPackItems = ediDesadvPackRepository.retrievePackItemRecords(draftedItemsQuery);
+
+		return DesadvLineWithDraftedPackItems.builder()
+				.desadvLineId(desadvLineId)
+				.draftedPackItems(new LinkedList<>(draftedPackItems))
+				.build();
 	}
 
 	private static void extractAndSetPackagingCodes(

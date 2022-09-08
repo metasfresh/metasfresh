@@ -24,6 +24,7 @@ package de.metas.edi.api.impl.pack;
 
 import de.metas.edi.api.EDIDesadvId;
 import de.metas.edi.api.EDIDesadvLineId;
+import de.metas.edi.api.EDIDesadvPackItemId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.generichumodel.PackagingCodeId;
 import de.metas.inout.InOutId;
@@ -72,6 +73,9 @@ public class CreateEDIDesadvPackRequest
 	@Builder
 	public static class CreateEDIDesadvPackItemRequest
 	{
+		@Nullable
+		EDIDesadvPackItemId ediDesadvPackItemId;
+
 		@NonNull
 		EDIDesadvLineId ediDesadvLineId;
 

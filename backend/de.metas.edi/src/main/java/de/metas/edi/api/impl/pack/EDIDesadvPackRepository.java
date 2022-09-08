@@ -82,7 +82,8 @@ public class EDIDesadvPackRepository
 		final ImmutableList.Builder<I_EDI_Desadv_Pack_Item> createdEDIDesadvPackItemRecordsBuilder = ImmutableList.builder();
 		for (final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest : createEDIDesadvPackRequest.getCreateEDIDesadvPackItemRequests())
 		{
-			final I_EDI_Desadv_Pack_Item ediDesadvPackItemRecord = newInstance(I_EDI_Desadv_Pack_Item.class);
+			final I_EDI_Desadv_Pack_Item ediDesadvPackItemRecord = InterfaceWrapperHelper.loadOrNew(createEDIDesadvPackItemRequest.getEdiDesadvPackItemId(),
+																									I_EDI_Desadv_Pack_Item.class);
 
 			ediDesadvPackItemRecord.setEDI_Desadv_Pack_ID(desadvPackRecord.getEDI_Desadv_Pack_ID());
 			ediDesadvPackItemRecord.setEDI_DesadvLine_ID(EDIDesadvLineId.toRepoId(createEDIDesadvPackItemRequest.getEdiDesadvLineId()));
@@ -175,7 +176,7 @@ public class EDIDesadvPackRepository
 	}
 
 	@NonNull
-	private List<I_EDI_Desadv_Pack_Item> retrievePackItemRecords(@NonNull final EdiDesadvPackItemQuery query)
+	public List<I_EDI_Desadv_Pack_Item> retrievePackItemRecords(@NonNull final EdiDesadvPackItemQuery query)
 	{
 		final IQueryBuilder<I_EDI_Desadv_Pack_Item> queryBuilder = queryBL.createQueryBuilder(I_EDI_Desadv_Pack_Item.class);
 
@@ -187,6 +188,23 @@ public class EDIDesadvPackRepository
 		if (query.getEdiDesadvPackId() != null)
 		{
 			queryBuilder.addEqualsFilter(I_EDI_Desadv_Pack_Item.COLUMNNAME_EDI_Desadv_Pack_ID, query.getEdiDesadvPackId());
+		}
+
+		if (query.getDesadvLineId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_EDI_Desadv_Pack_Item.COLUMNNAME_EDI_DesadvLine_ID, query.getDesadvLineId());
+		}
+
+		if (query.getWithInOutLineId() != null)
+		{
+			if (query.getWithInOutLineId())
+			{
+				queryBuilder.addNotNull(I_EDI_Desadv_Pack_Item.COLUMNNAME_M_InOutLine_ID);
+			}
+			else
+			{
+				queryBuilder.addEqualsFilter(I_EDI_Desadv_Pack_Item.COLUMNNAME_M_InOutLine_ID, null);
+			}
 		}
 
 		return queryBuilder
@@ -237,13 +255,19 @@ public class EDIDesadvPackRepository
 	}
 
 	@Value
-	private static class EdiDesadvPackItemQuery
+	public static class EdiDesadvPackItemQuery
 	{
 		@Nullable
 		InOutLineId inOutLineId;
 
 		@Nullable
 		EDIDesadvPackId ediDesadvPackId;
+
+		@Nullable
+		EDIDesadvLineId desadvLineId;
+
+		@Nullable
+		Boolean withInOutLineId;
 
 		@NonNull
 		public static EdiDesadvPackItemQuery ofInOutLineId(@NonNull final InOutLineId inOutLineId)
@@ -261,16 +285,31 @@ public class EDIDesadvPackRepository
 					.build();
 		}
 
-		@Builder
-		private EdiDesadvPackItemQuery(@Nullable final InOutLineId inOutLineId, @Nullable final EDIDesadvPackId ediDesadvPackId)
+		@NonNull
+		public static EdiDesadvPackItemQuery ofDesadvLineWithNoInOutLine(@NonNull final EDIDesadvLineId desadvLineId)
 		{
-			if (CoalesceUtil.coalesce(inOutLineId, ediDesadvPackId) == null)
+			return EdiDesadvPackItemQuery.builder()
+					.desadvLineId(desadvLineId)
+					.withInOutLineId(false)
+					.build();
+		}
+
+		@Builder
+		private EdiDesadvPackItemQuery(
+				@Nullable final InOutLineId inOutLineId,
+				@Nullable final EDIDesadvPackId ediDesadvPackId,
+				@Nullable final EDIDesadvLineId desadvLineId,
+				@Nullable final Boolean withInOutLineId)
+		{
+			if (CoalesceUtil.coalesce(inOutLineId, ediDesadvPackId, desadvLineId, withInOutLineId) == null)
 			{
-				throw new AdempiereException("inOutLineId && ediDesadvPackId cannot be both null!");
+				throw new AdempiereException("inOutLineId, ediDesadvPackId, desadvLineId && withInOutLineId cannot be all null!");
 			}
 
 			this.inOutLineId = inOutLineId;
 			this.ediDesadvPackId = ediDesadvPackId;
+			this.desadvLineId = desadvLineId;
+			this.withInOutLineId = withInOutLineId;
 		}
 	}
 }

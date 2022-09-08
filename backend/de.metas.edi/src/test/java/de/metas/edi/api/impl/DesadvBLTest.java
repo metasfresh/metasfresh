@@ -75,19 +75,23 @@ class DesadvBLTest
 				.qtyTu(BigDecimal.ZERO.intValue())
 				.movementQtyInStockUOM(BigDecimal.ZERO);
 
+		final StockQtyAndUOMQty cusPerLU = StockQtyAndUOMQty.builder()
+				.productId(productId)
+				.stockQty(Quantitys.create("20.5", eachUomId)) /* qtyCUsPerLUInStockUom */
+				.uomQty(Quantitys.create("4", coliUomId))
+				.build();
+
+		final BigDecimal movementQty = cusPerLU.getStockQty().toBigDecimal();
+
 		// invoke the method under test
 		EDIDesadvPackService.setQty(
 				createEDIDesadvPackItemRequestBuilder,
 				productId,
 				Quantitys.create("99999", eachUomId) /* qtyCUInStockUom */,
-
-				StockQtyAndUOMQty.builder()
-						.productId(productId)
-						.stockQty(Quantitys.create("20.5", eachUomId)) /* qtyCUsPerLUInStockUom */
-						.uomQty(Quantitys.create("4", coliUomId))
-						.build(),
+				cusPerLU,
 				coliUomId,
-				new BigDecimal("9"));
+				new BigDecimal("9"),
+				movementQty);
 
 		final CreateEDIDesadvPackRequest.CreateEDIDesadvPackItemRequest createEDIDesadvPackItemRequest = createEDIDesadvPackItemRequestBuilder.build();
 
