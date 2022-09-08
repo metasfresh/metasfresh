@@ -127,7 +127,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 			final ProductId productId,
 			final AttributeSetInstanceId attributeSetInstanceId)
 	{
-		return createQueryBuilder(orgId, warehouseId, resourceId, productId,true, attributeSetInstanceId)
+		return createQueryBuilder(orgId, warehouseId, resourceId, productId,false, attributeSetInstanceId)
 				.create()
 				.stream();
 	}
