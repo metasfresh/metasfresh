@@ -32,6 +32,8 @@ import lombok.ToString;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.RESOURCE_IDENTIFIER_DOC;
@@ -128,5 +130,17 @@ public class JsonWorkOrderResourceUpsertItemRequest
 	public <T> T mapResourceIdentifier(@NonNull final Function<String, T> mappingFunction)
 	{
 		return mappingFunction.apply(resourceIdentifier);
+	}
+
+	@JsonIgnore
+	@NonNull
+	public <T> Optional<T> mapDuration(@NonNull final BiFunction<BigDecimal, JsonDurationUnit, T> mappingFunction)
+	{
+		if (duration == null || durationUnit == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.ofNullable(mappingFunction.apply(duration, durationUnit));
 	}
 }

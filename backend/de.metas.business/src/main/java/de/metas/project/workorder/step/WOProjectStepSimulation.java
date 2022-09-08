@@ -1,4 +1,4 @@
-package de.metas.project.workorder;
+package de.metas.project.workorder.step;
 
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.util.CalendarDateRange;
@@ -43,7 +43,7 @@ public class WOProjectStepSimulation
 	public WOProjectStep applyOn(@NonNull final WOProjectStep step)
 	{
 		Check.assumeEquals(step.getProjectId(), projectId, "expected same projectId: {}, {}", step, this);
-		Check.assumeEquals(step.getId(), stepId, "expected same stepId: {}, {}", step, this);
+		Check.assumeEquals(step.getWoProjectStepId(), stepId, "expected same stepId: {}, {}", step, this);
 
 		return step.toBuilder()
 				.dateRange(dateRange)

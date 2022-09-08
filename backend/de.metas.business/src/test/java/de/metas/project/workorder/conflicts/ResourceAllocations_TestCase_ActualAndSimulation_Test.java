@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.util.CalendarDateRange;
 import de.metas.product.ResourceId;
-import de.metas.project.workorder.WOProjectResourceId;
+import de.metas.project.workorder.resource.WOProjectResourceId;
 import de.metas.test.SnapshotFunctionFactory;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.AfterAll;
@@ -20,7 +20,7 @@ import java.time.temporal.ChronoUnit;
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class ResourceAllocations_TestCase_ActualAndSimulation_Test
 {

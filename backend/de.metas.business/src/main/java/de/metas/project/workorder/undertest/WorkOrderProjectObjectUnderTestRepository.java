@@ -27,7 +27,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
-import de.metas.project.workorder.WOProjectObjectUnderTestId;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
