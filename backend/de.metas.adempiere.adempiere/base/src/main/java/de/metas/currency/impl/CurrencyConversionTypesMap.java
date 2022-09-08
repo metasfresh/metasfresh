@@ -83,8 +83,7 @@ final class CurrencyConversionTypesMap
 	{
 		final CurrencyConversionTypeRouting bestMatchingRouting = routings.stream()
 				.filter(routing -> routing.isMatching(adClientId, adOrgId, date))
-				.sorted(CurrencyConversionTypeRouting.moreSpecificFirstComparator())
-				.findFirst()
+				.min(CurrencyConversionTypeRouting.moreSpecificFirstComparator())
 				.orElseThrow(() -> new AdempiereException("@NotFound@ @C_ConversionType_ID@")
 						.setParameter("adClientId", adClientId)
 						.setParameter("adOrgId", adOrgId)

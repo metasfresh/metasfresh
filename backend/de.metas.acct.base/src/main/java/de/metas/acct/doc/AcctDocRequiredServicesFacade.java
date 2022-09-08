@@ -43,6 +43,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductCategoryId;
@@ -64,6 +65,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Optional;
 
 /*
@@ -105,6 +107,7 @@ public class AcctDocRequiredServicesFacade
 
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final BankAccountService bankAccountService;
 
 	//
@@ -329,4 +332,5 @@ public class AcctDocRequiredServicesFacade
 		errorManager.markIssueAcknowledged(adIssueId);
 	}
 
+	public ZoneId getTimeZone(@NonNull OrgId orgId) { return orgDAO.getTimeZone(orgId); }
 }
