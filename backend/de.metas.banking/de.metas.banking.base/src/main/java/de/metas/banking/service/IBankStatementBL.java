@@ -25,7 +25,7 @@ package de.metas.banking.service;
 import com.google.common.collect.ImmutableSet;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
-import de.metas.currency.CurrencyConversionContext;
+import de.metas.banking.BankStatementLineReferenceList;
 import de.metas.invoice.InvoiceId;
 import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentId;
@@ -34,6 +34,7 @@ import lombok.NonNull;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -69,11 +70,11 @@ public interface IBankStatementBL extends ISingletonService
 	@NonNull
 	ImmutableSet<PaymentId> getLinesPaymentIds(@NonNull final BankStatementId bankStatementId);
 
+	BankStatementLineReferenceList getLineReferences(@NonNull Collection<BankStatementLineId> bankStatementLineIds);
+
 	void updateLineFromInvoice(final @NonNull I_C_BankStatementLine bsl, @NonNull InvoiceId invoiceId);
 
 	boolean isCashJournal(final I_C_BankStatementLine bankStatementLine);
-
-	CurrencyConversionContext getCurrencyConversionCtx(@NonNull I_C_BankStatementLine bankStatementLine);
 
 	PaymentCurrencyContext getPaymentCurrencyContext(@NonNull I_C_BankStatementLine bankStatementLine);
 }
