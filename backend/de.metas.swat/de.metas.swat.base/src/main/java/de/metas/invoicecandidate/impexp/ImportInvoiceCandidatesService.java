@@ -48,7 +48,9 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Optional;
@@ -101,8 +103,8 @@ public class ImportInvoiceCandidatesService
 		final ZoneId orgZoneId = orgDAO.getTimeZone(orgId);
 
 		final LocalDate dateOrdered = Optional.ofNullable(record.getDateOrdered())
-				.map(date -> TimeUtil.asLocalDate(date,orgZoneId))
-				.orElseGet(() -> LocalDate.now(orgZoneId));
+				.map(date -> TimeUtil.asLocalDate(date, orgZoneId))
+				.orElseGet(() -> computeDateOrderedBasedOnPresetDateInvoiced(orgZoneId, record.getPresetDateInvoiced()));
 
 		return NewManualInvoiceCandidate.builder()
 				.externalHeaderId(ExternalId.ofOrNull(record.getExternalHeaderId()))
@@ -138,5 +140,25 @@ public class ImportInvoiceCandidatesService
 				.contactId(BPartnerContactId.ofRepoId(bPartnerId, invoiceCandidateToImport.getBill_User_ID()))
 				.bpartnerLocationId(BPartnerLocationId.ofRepoId(bPartnerId, invoiceCandidateToImport.getBill_Location_ID()))
 				.build();
+	}
+
+	@NonNull
+	private LocalDate computeDateOrderedBasedOnPresetDateInvoiced(@NonNull final ZoneId zoneId, @Nullable final Timestamp presetDateInvoiced)
+	{
+		final LocalDate today = LocalDate.now(zoneId);
+
+		if (presetDateInvoiced == null)
+		{
+			return today;
+		}
+
+		final LocalDate presetInvoiceDate = TimeUtil.asLocalDate(presetDateInvoiced, zoneId);
+
+		if (presetInvoiceDate.isBefore(today))
+		{
+			return presetInvoiceDate;
+		}
+
+		return today;
 	}
 }
