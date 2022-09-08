@@ -120,13 +120,19 @@ public class C_Dunning_Candidate_Create extends JavaProcess
 			@Override
 			public void run(final String localTrxName)
 			{
-				final IDunningContext context = dunningBL.createDunningContext(getCtx(), dunningLevel, p_DunningDate, get_TrxName(), buildRecomputeDunningCandidatesQuery());
+				final RecomputeDunningCandidatesQuery recomputeDunningCandidatesQuery = buildRecomputeDunningCandidatesQuery();
+				final IDunningContext context = dunningBL.createDunningContext(getCtx(), dunningLevel, p_DunningDate, get_TrxName(), recomputeDunningCandidatesQuery);
 
+				final int countDelete;
 				if (!p_IsOnlyUpdate)
 				{
-					final int countDelete = Services.get(IDunningDAO.class).deleteNotProcessedCandidates(context, dunningLevel);
-					addLog("@C_DunningLevel@ " + dunningLevel.getName() + ": " + countDelete + " record(s) deleted");
+					countDelete = dunningDAO.deleteNotProcessedCandidates(context, dunningLevel);
 				}
+				else
+				{
+					countDelete = dunningDAO.deleteTargetObsoleteCandidates(recomputeDunningCandidatesQuery, dunningLevel);
+				}
+				addLog("@C_DunningLevel@ " + dunningLevel.getName() + ": " + countDelete + " record(s) deleted");
 
 				final int countCreateUpdate = dunningBL.createDunningCandidates(context);
 				addLog("@C_DunningLevel@ " + dunningLevel.getName() + ": " + countCreateUpdate + " record(s) created/updated");

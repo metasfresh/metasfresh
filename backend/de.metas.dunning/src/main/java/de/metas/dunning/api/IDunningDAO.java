@@ -23,6 +23,7 @@ package de.metas.dunning.api;
  */
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.dunning.api.impl.RecomputeDunningCandidatesQuery;
 import de.metas.dunning.interfaces.I_C_Dunning;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
 import de.metas.dunning.model.I_C_DunningDoc;
@@ -164,4 +165,6 @@ public interface IDunningDAO extends ISingletonService
 	int deleteNotProcessedCandidates(IDunningContext context, I_C_DunningLevel dunningLevel);
 
 	List<I_C_Dunning_Candidate> retrieveProcessedDunningCandidatesForRecord(Properties ctx, int tableId, int recordId, String trxName);
+
+	int deleteTargetObsoleteCandidates(RecomputeDunningCandidatesQuery recomputeDunningCandidatesQuery, I_C_DunningLevel dunningLevel) ;
 }
