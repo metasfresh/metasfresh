@@ -108,7 +108,7 @@ public class InvoiceService
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	public void processInvoiceCandidates(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)
+	private void processInvoiceCandidates(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)
 	{
 		final ImmutableMap<AsyncBatchId, List<InvoiceCandidateId>> asyncBatchId2InvoiceCandIds = trxManager.callInNewTrx(() -> getAsyncBatchId2InvoiceCandidateIds(invoiceCandidateIds));
 

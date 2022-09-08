@@ -267,7 +267,7 @@ public class C_Invoice_StepDef
 
 		//enqueue invoice candidate
 		final I_C_Invoice_Candidate invoiceCandidateRecord = getFirstInvoiceCandidateByOrderId(targetOrderId);
-		invoiceService.processInvoiceCandidates(ImmutableSet.of(InvoiceCandidateId.ofRepoId(invoiceCandidateRecord.getC_Invoice_Candidate_ID())));
+		invoiceService.generateInvoicesFromInvoiceCandidateIds(ImmutableSet.of(InvoiceCandidateId.ofRepoId(invoiceCandidateRecord.getC_Invoice_Candidate_ID())));
 
 		final List<de.metas.adempiere.model.I_C_Invoice> invoices = invoiceDAO.getInvoicesForOrderIds(ImmutableList.of(targetOrderId));
 		assertThat(invoices.size()).isEqualTo(1);
