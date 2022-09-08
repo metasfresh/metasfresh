@@ -5,8 +5,6 @@ FROM metasfresh/metas-app:$REFNAME as app
 
 RUN apt-get -y update && apt-get -y install netcat postgresql && rm -rf /var/lib/apt/lists/*
 
-ARG VERSION
-ENV VERSION=$VERSION
 
 RUN touch local_settings.properties && ln -s /opt/metasfresh/local_settings.properties /root/local_settings.properties && mkdir dist && cp META-INF/build-info.properties dist/
 RUN mv metasfresh-app.jar metasfresh_server.jar
