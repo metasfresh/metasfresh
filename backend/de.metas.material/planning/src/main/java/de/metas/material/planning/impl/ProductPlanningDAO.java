@@ -53,6 +53,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 				productPlanningQuery.getWarehouseId(),
 				productPlanningQuery.getPlantId(),
 				productPlanningQuery.getProductId(),
+				productPlanningQuery.isIncludeWithNullProductId(),
 				productPlanningQuery.getAttributeSetInstanceId());
 
 		//
@@ -91,6 +92,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 					warehouseId,
 					(ResourceId)null,  // any plant
 					productId,
+					true /*includeNullProducts*/,
 					attributeSetInstanceId);
 
 			final List<ResourceId> plantIds = queryBuilder
@@ -125,7 +127,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 			final ProductId productId,
 			final AttributeSetInstanceId attributeSetInstanceId)
 	{
-		return createQueryBuilder(orgId, warehouseId, resourceId, productId, attributeSetInstanceId)
+		return createQueryBuilder(orgId, warehouseId, resourceId, productId,false, attributeSetInstanceId)
 				.create()
 				.stream();
 	}
@@ -135,6 +137,7 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 			final WarehouseId warehouseId,
 			final ResourceId resourceId,
 			final ProductId productId,
+			final boolean includeWithNullProductId,
 			final AttributeSetInstanceId attributeSetInstanceId)
 	{
 		final IQueryBuilder<I_PP_Product_Planning> queryBuilder = queryBL
@@ -156,9 +159,15 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 			queryBuilder.addInArrayFilter(I_PP_Product_Planning.COLUMNNAME_S_Resource_ID, resourceId, null);
 		}
 
-		// Filter by Product if provided
-
-		queryBuilder.addInArrayFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, productId, null);
+		if (includeWithNullProductId)
+		{
+			queryBuilder.addInArrayFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, productId, null);
+		}
+		else
+		{
+			// The query should exclude PP_Product_Plannings that have no M_Product_ID
+			queryBuilder.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, productId);
+		}
 
 		// Filter by ASI
 		final ICompositeQueryFilter<I_PP_Product_Planning> attributesFilter = createAttributesFilter(attributeSetInstanceId);
