@@ -69,7 +69,6 @@ import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.Date;
 import java.util.Properties;
-import java.util.function.Function;
 
 public class AttributesBL implements IAttributesBL
 {
@@ -219,18 +218,40 @@ public class AttributesBL implements IAttributesBL
 			@NonNull AttributeSourceDocument attributeSourceDocument)
 	{
 		final AttributeSetId attributeSetId = productsService.getAttributeSetId(productId);
-		final Function<AttributeSetAttribute, OptionalBoolean> mandatoryOnFunction = attributeSourceDocument.isMaterialReceipt() ?
-				AttributeSetAttribute::getMandatoryOnReceipt :
-				AttributeSetAttribute::getMandatoryOnManufacturing;
 
-		final Boolean mandatoryOnReceipt = attributesRepo.getAttributeSetAttributeId(attributeSetId, attributeId)
-				.map(mandatoryOnFunction)
-				.map(OptionalBoolean::toBooleanOrNull)
-				.orElse(null);
+		final AttributeSetAttribute attribute = attributesRepo.getAttributeSetAttributeId(attributeSetId, attributeId).orElse(null);
 
-		if (mandatoryOnReceipt != null)
+		if (attribute == null)
 		{
-			return mandatoryOnReceipt;
+			return false;
+		}
+
+		final OptionalBoolean mandatory;
+
+		if (attributeSourceDocument.isMaterialReceipt())
+		{
+			mandatory = attribute.getMandatoryOnReceipt();
+		}
+		else if (attributeSourceDocument.isManufacturing())
+		{
+			mandatory = attribute.getMandatoryOnManufacturing();
+		}
+		else if (attributeSourceDocument.isPicking())
+		{
+			mandatory = attribute.getMandatoryOnPicking();
+		}
+		else if (attributeSourceDocument.isShipment())
+		{
+			mandatory = attribute.getMandatoryOnShipment();
+		}
+		else
+		{
+			throw new AdempiereException("Unknown: " + attributeSourceDocument);
+		}
+
+		if (mandatory.isTrue())
+		{
+			return true;
 		}
 
 		return attributesRepo.getAttributeById(attributeId).isMandatory();

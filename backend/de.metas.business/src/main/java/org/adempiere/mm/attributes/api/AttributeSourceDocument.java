@@ -24,20 +24,12 @@ package org.adempiere.mm.attributes.api;
 
 public enum AttributeSourceDocument
 {
-	MaterialReceipt("R"),
-	ManufacturingOrder("M");
+	MaterialReceipt,
+	ManufacturingOrder,
 
-	private final String type;
+	Picking,
 
-	AttributeSourceDocument(String type)
-	{
-		this.type = type;
-	}
-
-	public String getType()
-	{
-		return type;
-	}
+	Shipment;
 
 	public boolean isMaterialReceipt()
 	{
@@ -48,4 +40,15 @@ public enum AttributeSourceDocument
 	{
 		return this == ManufacturingOrder;
 	}
+
+	public boolean isPicking()
+	{
+		return this == Picking;
+	}
+
+	public boolean isShipment()
+	{
+		return this == Shipment;
+	}
+
 }
