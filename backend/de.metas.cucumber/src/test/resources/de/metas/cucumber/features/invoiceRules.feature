@@ -23,12 +23,12 @@ Feature: invoice rule after delivery
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
-    And metasfresh contains C_BPartners:
+    And metasfresh contains C_BPartners without locations:
       | Identifier    | Name         | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
       | endcustomer_1 | Endcustomer2 | N            | Y              | ps_1                          | D               |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier | GLN          | C_BPartner_ID.Identifier |
-      | l_1        | bPLocation61 | endcustomer_1            |
+      | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | l_1        | 0123456780961 | endcustomer_1            | true                | true                |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.C_PaymentTerm_ID |
       | o_1        | true    | endcustomer_1            | 2021-04-17  | po_ref_mock     | 1000012              |
@@ -52,8 +52,8 @@ Feature: invoice rule after delivery
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm | processed | docStatus |
       | invoice_1               | endcustomer_1            | l_1                               | po_ref_mock | 1000002     | true      | CO        |
     And validate created invoice lines
-      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoice_1               | p_1                     | 10          | true      |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | invoiceLine_1               | invoice_1               | p_1                     | 10          | true      |
 
   @from:cucumber
   Scenario: we can invoice a sales order with invoice rule after pick
@@ -76,12 +76,12 @@ Feature: invoice rule after delivery
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_2       | plv_2                             | p_2                     | 10.0     | KGM               | Normal                        |
-    And metasfresh contains C_BPartners:
+    And metasfresh contains C_BPartners without locations:
       | Identifier    | Name         | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.InvoiceRule |
       | endcustomer_2 | Endcustomer3 | N            | Y              | ps_2                          | P               |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier | GLN          | C_BPartner_ID.Identifier |
-      | l_2        | bPLocation62 | endcustomer_2            |
+      | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | l_2        | 0123456780962 | endcustomer_2            | true                | true                |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.C_PaymentTerm_ID |
       | o_2        | true    | endcustomer_2            | 2021-04-15  | po_ref_mock     | 1000012              |
@@ -105,5 +105,5 @@ Feature: invoice rule after delivery
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | poReference | paymentTerm | processed | docStatus |
       | invoice_2               | endcustomer_2            | l_2                               | po_ref_mock | 1000002     | true      | CO        |
     And validate created invoice lines
-      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoice_2               | p_2                     | 6           | true      |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | invoiceLine_2               | invoice_2               | p_2                     | 6           | true      |

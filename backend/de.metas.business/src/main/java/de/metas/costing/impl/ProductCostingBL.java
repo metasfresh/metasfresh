@@ -255,6 +255,7 @@ public class ProductCostingBL implements IProductCostingBL
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Product_Category_Acct.COLUMNNAME_M_Product_Category_ID, productCategoryId)
 				.addEqualsFilter(I_M_Product_Category_Acct.COLUMNNAME_C_AcctSchema_ID, acctSchemaId)
+				.orderBy(I_M_Product_Category_Acct.COLUMNNAME_M_Product_Category_Acct_ID)
 				.firstOptional();
 	}
 

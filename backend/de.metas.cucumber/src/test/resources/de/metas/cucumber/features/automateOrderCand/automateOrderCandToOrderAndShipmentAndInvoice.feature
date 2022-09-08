@@ -74,8 +74,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | invoice_1               | 2156425                  | 2205175                           | po_ref_mock | 1000002     | true      | CO        |
 
     And validate created invoice lines
-      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoice_1               | 2005577                 | 10          | true      |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | invoiceLine_1_1             | invoice_1               | 2005577                 | 10          | true      |
 
 
   @from:cucumber
@@ -166,8 +166,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | invoice_1               | 2156425                  | 2205175                           | po_ref_mock | 1000002     | true      | CO        |
 
     And validate created invoice lines
-      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoice_1               | 2005577                 | 8           | true      |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | invoiceLine_1_1             | invoice_1               | 2005577                 | 8           | true      |
 
 
   @from:cucumber
@@ -276,8 +276,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | invoice_1               | 2156425                  | 2205175                           | po_ref_mock | 1000002     | true      | CO        |
 
     And validate created invoice lines
-      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoice_1               | 2005577                 | 8           | true      |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | invoiceLine_1_1             | invoice_1               | 2005577                 | 8           | true      |
 
 
   @from:cucumber
@@ -405,9 +405,9 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | invoice_1               | 2156425                  | 2205175                           | po_ref_mock | 1000002     | true      | CO        |
 
     And validate created invoice lines
-      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoice_1               | 2005577                 | 8           | true      |
-      | invoice_1               | 2005577                 | 2           | true      |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | invoiceLine_1_1             | invoice_1               | 2005577                 | 8           | true      |
+      | invoiceLine_1_2             | invoice_1               | 2005577                 | 2           | true      |
 
   @from:cucumber
   @topic:orderCandidate
@@ -482,8 +482,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | invoice_1               | 2156425                  | 2205175                           | po_ref_mock | 1000002     | true      | CO        |
 
     And validate created invoice lines
-      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoice_1               | 2005577                 | 10          | true      |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | invoiceLine_1_1             | invoice_1               | 2005577                 | 10          | true      |
 
   @from:cucumber
   @topic:orderCandidate
@@ -582,6 +582,6 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | invoice_1               | 2156425                  | 2205175                           | po_ref_mock | 1000002     | true      | CO        |
 
     And validate created invoice lines
-      | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | invoice_1          | 2005577                 | 8           | true      |
+      | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
+      | invoiceLine_1_1             | invoice_1               | 2005577                 | 8           | true      |
     And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
