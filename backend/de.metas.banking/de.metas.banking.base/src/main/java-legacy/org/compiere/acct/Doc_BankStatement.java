@@ -172,7 +172,6 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 		final AcctSchema as = fact.getAcctSchema();
 		final OrgId bankOrgId = getBankOrgId();    // Bank Account Organization
 		final BPartnerId bpartnerId = line.getBPartnerId();
-		final CurrencyConversionContext currencyConversionCtx = line.getCurrencyConversionCtx();
 
 		//
 		// BankAsset DR/CR (StmtAmt)
@@ -181,7 +180,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 				.setAccount(getAccount(AccountType.BankAsset, as))
 				// .setAmtSourceDrOrCr(line.getStmtAmt())
 				.setCurrencyId(line.getCurrencyId())
-				.setCurrencyConversionCtx(currencyConversionCtx)
+				.setCurrencyConversionCtx(line.getCurrencyConversionCtxForBankAsset())
 				.orgIdIfValid(bankOrgId)
 				.bpartnerIdIfNotNull(bpartnerId);
 	}
@@ -273,7 +272,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 				.setDocLine(line)
 				.setAccount(getAccount(AccountType.BankInTransit, as))
 				.setCurrencyId(line.getCurrencyId())
-				.setCurrencyConversionCtx(line.getCurrencyConversionCtx())
+				.setCurrencyConversionCtx(line.getCurrencyConversionCtxForBankInTransit())
 				.orgId(bankOrgId.isRegular() ? bankOrgId : line.getOrgId()) // bank org, line org
 				.bpartnerIdIfNotNull(line.getBPartnerId());
 
@@ -413,8 +412,6 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 				return ImmutableList.of();
 			}
 
-			final CurrencyConversionContext currencyConversionCtx = line.getCurrencyConversionCtx();
-
 			final Fact fact = new Fact(this, as, PostingType.Actual);
 			final FactLineBuilder bankAssetFactLine = prepareBankAssetFactLine(fact, line);
 			final FactLineBuilder bankInTransitFactLine = fact.createLine()
@@ -422,7 +419,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 					.setAccount(acct_BankInTransit)
 					.setAmtSourceDrOrCr(trxAmt.negate())
 					.setCurrencyId(line.getCurrencyId())
-					.setCurrencyConversionCtx(currencyConversionCtx)
+					.setCurrencyConversionCtx(line.getCurrencyConversionCtxForBankInTransit())
 					.orgId(bankOrgId.isRegular() ? bankOrgId : line.getPaymentOrgId()) // bank org, payment org
 					.bpartnerIdIfNotNull(bpartnerId);
 
