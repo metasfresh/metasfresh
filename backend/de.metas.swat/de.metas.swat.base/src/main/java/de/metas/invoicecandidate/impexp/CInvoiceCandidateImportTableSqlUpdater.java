@@ -49,6 +49,7 @@ import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_B
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_Bill_User_ID;
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_C_DocType_ID;
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_C_UOM_ID;
+import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_Default_OrgCode;
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_DocBaseType;
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_DocSubType;
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_I_ErrorMsg;
@@ -58,6 +59,8 @@ import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_I
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_M_Product_ID;
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_M_Product_Value;
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_OrgCode;
+import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_QtyDelivered;
+import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_QtyOrdered;
 import static org.compiere.model.I_AD_User_NotificationGroup.COLUMNNAME_AD_User_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_Value;
@@ -130,13 +133,26 @@ public class CInvoiceCandidateImportTableSqlUpdater
 
 	private static void dbUpdateOrg(@NonNull final ImportRecordsSelection selection)
 	{
-		final String sql = "UPDATE " + I_I_Invoice_Candidate.Table_Name + " i "
-				+ " SET " + COLUMNNAME_AD_Org_ID + " = o." + COLUMNNAME_AD_Org_ID
-				+ " FROM " + I_AD_Org.Table_Name + " o "
+		final String sqlOrgFromDefaultOrgCode = "SELECT " + COLUMNNAME_AD_Org_ID
+				+ " FROM " + I_AD_Org.Table_Name + " o"
+				+ " WHERE o." + COLUMNNAME_Value + " = i." + COLUMNNAME_Default_OrgCode
+				+ " AND o." + COLUMNNAME_AD_Client_ID + " = i." + COLUMNNAME_AD_Client_ID
+				+ " AND o." + COLUMNNAME_IsActive + "= 'Y'";
+
+		final String sqlOrgFromOrgCode = "SELECT " + COLUMNNAME_AD_Org_ID
+				+ " FROM " + I_AD_Org.Table_Name + " o"
 				+ " WHERE o." + COLUMNNAME_Value + " = i." + COLUMNNAME_OrgCode
 				+ " AND o." + COLUMNNAME_AD_Client_ID + " = i." + COLUMNNAME_AD_Client_ID
-				+ " AND o." + COLUMNNAME_IsActive + " = 'Y'"
-				+ " AND i." + COLUMNNAME_I_IsImported + "<> 'Y'"
+				+ " AND o." + COLUMNNAME_IsActive + "= 'Y'";
+
+		final String sql = "UPDATE " + I_I_Invoice_Candidate.Table_Name + " i "
+				+ " SET " + COLUMNNAME_AD_Org_ID + " = "
+				+ " CASE "
+				+ "		 WHEN i." + COLUMNNAME_OrgCode + " IS NULL "
+				+ "			THEN ( " + sqlOrgFromDefaultOrgCode + " )"
+				+ "		 ELSE COALESCE(( " + sqlOrgFromOrgCode + " ), i." + COLUMNNAME_AD_Org_ID + ") "
+				+ " END "
+				+ " WHERE i." + COLUMNNAME_I_IsImported + "<> 'Y'"
 				+ selection.toSqlWhereClause("i");
 
 		DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
@@ -243,11 +259,17 @@ public class CInvoiceCandidateImportTableSqlUpdater
 
 		//
 		// No C_DocType
-		updateErrorMessage(selection, COLUMNNAME_C_DocType_ID, COLUMNNAME_C_DocType_ID + " not found for provided pair ( " + COLUMNNAME_DocBaseType + ", " + COLUMNNAME_DocSubType + " )!");
+		updateErrorMessage(selection, COLUMNNAME_C_DocType_ID, COLUMNNAME_C_DocType_ID + " not found for provided ( " + COLUMNNAME_DocBaseType + ", " + COLUMNNAME_DocSubType + ", " + COLUMNNAME_IsSOTrx + " )!");
 
 		//
 		// No AD_Org
 		updateOrgErrorMessage(selection);
+
+		//
+		//No C_UOM_ID
+		updateUOMErrorMessage(selection);
+
+		updateQtyErrormessage(selection);
 	}
 
 	private void updateErrorMessage(
@@ -316,8 +338,9 @@ public class CInvoiceCandidateImportTableSqlUpdater
 				+ " AND o." + COLUMNNAME_IsActive + "= 'Y'";
 
 		final String sql = "UPDATE " + I_I_Invoice_Candidate.Table_Name + " i "
-				+ " SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + " = " + COLUMNNAME_I_ErrorMsg + "||'ERR = Provided " + COLUMNNAME_OrgCode + " does not match " + COLUMNNAME_AD_Org_ID + "!" + ", '"
-				+ " WHERE i." + COLUMNNAME_AD_Org_ID + " NOT IN ( " + sqlOrgIdForProvidedOrgCode + " ) "
+				+ " SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + " = " + COLUMNNAME_I_ErrorMsg + "||'ERR = Could not find any matching AD_Org_ID for provided " + COLUMNNAME_OrgCode + " !" + ", '"
+				+ " WHERE i." + COLUMNNAME_OrgCode + " IS NOT NULL "
+				+ " AND i." + COLUMNNAME_AD_Org_ID + " NOT IN ( " + sqlOrgIdForProvidedOrgCode + " ) "
 				+ " AND i." + COLUMNNAME_I_IsImported + "<>'Y'"
 				+ selection.toSqlWhereClause("i");
 
@@ -326,5 +349,34 @@ public class CInvoiceCandidateImportTableSqlUpdater
 		{
 			logger.warn("No " + COLUMNNAME_AD_Org_ID + " = {}", no);
 		}
+	}
+
+	private void updateUOMErrorMessage(@NonNull final ImportRecordsSelection selection)
+	{
+		final String sql = "UPDATE " + I_I_Invoice_Candidate.Table_Name + " i "
+				+ " SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + " = " + COLUMNNAME_I_ErrorMsg + "||'ERR = Could not find any matching C_UOM_ID for provided UOMCode !" + ", '"
+				+ " WHERE i." + COLUMNNAME_C_UOM_ID + " IS NULL "
+				+ " AND i." + COLUMNNAME_X12DE355 + " IS NOT NULL "
+				+ " AND i." + COLUMNNAME_I_IsImported + "<>'Y'"
+				+ selection.toSqlWhereClause("i");
+
+		final int no = DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+		if (no != 0)
+		{
+			logger.warn("No " + COLUMNNAME_C_UOM_ID + " = {}", no);
+		}
+	}
+
+	private void updateQtyErrormessage(@NonNull final ImportRecordsSelection selection)
+	{
+		final String sql = "UPDATE " + I_I_Invoice_Candidate.Table_Name + " i "
+				+ " SET " + COLUMNNAME_I_IsImported + "='E', " + COLUMNNAME_I_ErrorMsg + " = " + COLUMNNAME_I_ErrorMsg + "||'ERR = " + COLUMNNAME_QtyOrdered + " and " + COLUMNNAME_QtyDelivered + " must have the same sign!" + ", '"
+				+ " WHERE SIGN(i." + COLUMNNAME_QtyOrdered + ") <> SIGN(i." + COLUMNNAME_QtyDelivered + " ) "
+				+ " AND SIGN(i." + COLUMNNAME_QtyDelivered + ") <> 0"
+				+ " AND SIGN(i." + COLUMNNAME_QtyOrdered + ") <> 0"
+				+ " AND i." + COLUMNNAME_I_IsImported + "<>'Y'"
+				+ selection.toSqlWhereClause("i");
+
+		DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
 	}
 }

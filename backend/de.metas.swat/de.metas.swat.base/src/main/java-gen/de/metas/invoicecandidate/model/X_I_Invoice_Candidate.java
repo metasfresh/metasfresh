@@ -211,6 +211,18 @@ public class X_I_Invoice_Candidate extends org.compiere.model.PO implements I_I_
 	}
 
 	@Override
+	public void setDefault_OrgCode (final java.lang.String Default_OrgCode)
+	{
+		set_Value (COLUMNNAME_Default_OrgCode, Default_OrgCode);
+	}
+
+	@Override
+	public java.lang.String getDefault_OrgCode()
+	{
+		return get_ValueAsString(COLUMNNAME_Default_OrgCode);
+	}
+
+	@Override
 	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
