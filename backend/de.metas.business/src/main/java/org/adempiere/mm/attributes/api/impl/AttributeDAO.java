@@ -141,6 +141,7 @@ public class AttributeDAO implements IAttributeDAO
 				.mandatoryOnReceipt(OptionalBoolean.ofNullableString(record.getMandatoryOnReceipt()))
 				.mandatoryOnPicking(OptionalBoolean.ofNullableString(record.getMandatoryOnPicking()))
 				.mandatoryOnShipment(OptionalBoolean.ofNullableString(record.getMandatoryOnShipment()))
+				.mandatoryOnManufacturing(OptionalBoolean.ofNullableString(record.getMandatoryOnManufacturing()))
 				.build();
 	}
 
