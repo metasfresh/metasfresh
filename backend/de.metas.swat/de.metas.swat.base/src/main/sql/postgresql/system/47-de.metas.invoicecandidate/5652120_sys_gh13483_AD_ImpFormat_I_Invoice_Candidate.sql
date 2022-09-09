@@ -118,28 +118,6 @@ UPDATE AD_ImpFormat_Row SET StartNo=12,Updated=TO_TIMESTAMP('2022-08-22 16:42:58
 INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFormat_Row_ID,AD_Org_ID,Created,CreatedBy,DataType,DecimalPoint,DivideBy100,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,584179,540077,541792,0,TO_TIMESTAMP('2022-08-22 16:43:08','YYYY-MM-DD HH24:MI:SS'),100,'S','.','N','Y','Beschreibung',130,TO_TIMESTAMP('2022-08-22 16:43:08','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2022 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 -- 2022-08-22T13:43:10.644Z
 UPDATE AD_ImpFormat_Row SET StartNo=13,Updated=TO_TIMESTAMP('2022-08-22 16:43:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541792
 ;
