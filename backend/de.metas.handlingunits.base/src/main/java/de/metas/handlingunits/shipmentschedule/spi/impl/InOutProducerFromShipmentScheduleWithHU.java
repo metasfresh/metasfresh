@@ -25,7 +25,6 @@ package de.metas.handlingunits.shipmentschedule.spi.impl;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -73,7 +72,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_Order;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
 import org.compiere.util.Env;
@@ -352,7 +350,14 @@ public class InOutProducerFromShipmentScheduleWithHU
 		// BPartner, Location & Contact
 		InOutDocumentLocationAdapterFactory
 				.locationAdapter(shipment)
-				.setFrom(shipmentScheduleEffectiveValuesBL.getDocumentLocation(shipmentSchedule));
+				.setFrom(de.metas.inoutcandidate.location.adapter.ShipmentScheduleDocumentLocationAdapterFactory.billLocationAdapter(shipmentSchedule).toDocumentLocation());
+		if (shipmentSchedule.isDropShip())
+		{
+			shipment.setIsDropShip(true);
+			InOutDocumentLocationAdapterFactory
+					.deliveryLocationAdapter(shipment)
+					.setFrom(de.metas.inoutcandidate.location.adapter.ShipmentScheduleDocumentLocationAdapterFactory.mainLocationAdapter(shipmentSchedule).toDocumentLocation());
+		}
 
 		//
 		// Document Dates
