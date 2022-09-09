@@ -50,6 +50,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
+import de.metas.inoutcandidate.location.adapter.ShipmentScheduleDocumentLocationAdapterFactory;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
@@ -348,15 +349,21 @@ public class InOutProducerFromShipmentScheduleWithHU
 
 		//
 		// BPartner, Location & Contact
-		InOutDocumentLocationAdapterFactory
-				.locationAdapter(shipment)
-				.setFrom(de.metas.inoutcandidate.location.adapter.ShipmentScheduleDocumentLocationAdapterFactory.billLocationAdapter(shipmentSchedule).toDocumentLocation());
 		if (shipmentSchedule.isDropShip())
 		{
+			InOutDocumentLocationAdapterFactory
+					.locationAdapter(shipment)
+					.setFrom(ShipmentScheduleDocumentLocationAdapterFactory.billLocationAdapter(shipmentSchedule).toDocumentLocation());
 			shipment.setIsDropShip(true);
 			InOutDocumentLocationAdapterFactory
 					.deliveryLocationAdapter(shipment)
-					.setFrom(de.metas.inoutcandidate.location.adapter.ShipmentScheduleDocumentLocationAdapterFactory.mainLocationAdapter(shipmentSchedule).toDocumentLocation());
+					.setFrom(ShipmentScheduleDocumentLocationAdapterFactory.mainLocationAdapter(shipmentSchedule).toDocumentLocation());
+		}
+		else
+		{
+			InOutDocumentLocationAdapterFactory
+					.locationAdapter(shipment)
+					.setFrom(shipmentScheduleEffectiveValuesBL.getDocumentLocation(shipmentSchedule));
 		}
 
 		//
@@ -388,7 +395,6 @@ public class InOutProducerFromShipmentScheduleWithHU
 				shipment.setDeliveryViaRule(order.getDeliveryViaRule());
 				shipment.setM_Shipper_ID((order.getM_Shipper_ID()));
 				shipment.setM_Tour_ID(shipmentSchedule.getM_Tour_ID());
-
 
 				if (orderEmailPropagationSysConfigRepo.isPropagateToMInOut(ClientAndOrgId.ofClientAndOrg(shipmentSchedule.getAD_Client_ID(), shipmentSchedule.getAD_Org_ID())))
 				{
