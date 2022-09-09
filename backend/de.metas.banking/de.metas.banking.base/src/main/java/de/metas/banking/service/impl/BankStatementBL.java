@@ -33,9 +33,6 @@ import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListenerService;
 import de.metas.currency.Amount;
-import de.metas.currency.ConversionTypeMethod;
-import de.metas.currency.CurrencyConversionContext;
-import de.metas.currency.FixedConversionRate;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocBaseType;
 import de.metas.invoice.InvoiceId;
@@ -43,24 +40,21 @@ import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
 import de.metas.money.MoneyService;
 import de.metas.organization.ClientAndOrgId;
-import de.metas.organization.InstantAndOrgId;
-import de.metas.organization.OrgId;
 import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.MPeriod;
-import org.compiere.model.X_C_DocType;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
@@ -243,6 +237,12 @@ public class BankStatementBL implements IBankStatementBL
 	}
 
 	@Override
+	public BankStatementLineReferenceList getLineReferences(@NonNull final Collection<BankStatementLineId> bankStatementLineIds)
+	{
+		return bankStatementDAO.getLineReferences(bankStatementLineIds);
+	}
+
+	@Override
 	public void updateLineFromInvoice(final @NonNull I_C_BankStatementLine bankStatementLine, @NonNull final InvoiceId invoiceId)
 	{
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
@@ -267,29 +267,10 @@ public class BankStatementBL implements IBankStatementBL
 	}
 
 	@Override
-	public CurrencyConversionContext getCurrencyConversionCtx(@NonNull final I_C_BankStatementLine bankStatementLine)
-	{
-		final PaymentCurrencyContext paymentCurrencyContext = getPaymentCurrencyContext(bankStatementLine);
-
-		CurrencyConversionContext conversionCtx = currencyConversionBL.createCurrencyConversionContext(
-				InstantAndOrgId.ofTimestamp(bankStatementLine.getDateAcct(), OrgId.ofRepoId(bankStatementLine.getAD_Org_ID())),
-				paymentCurrencyContext.getCurrencyConversionTypeId(),
-				ClientId.ofRepoId(bankStatementLine.getAD_Client_ID()));
-
-		final FixedConversionRate fixedCurrencyRate = paymentCurrencyContext.toFixedConversionRateOrNull();
-		if (fixedCurrencyRate != null)
-		{
-			conversionCtx = conversionCtx.withFixedConversionRate(fixedCurrencyRate);
-		}
-
-		return conversionCtx;
-	}
-
-	@Override
 	public PaymentCurrencyContext getPaymentCurrencyContext(@NonNull final I_C_BankStatementLine bankStatementLine)
 	{
 		final PaymentCurrencyContext.PaymentCurrencyContextBuilder result = PaymentCurrencyContext.builder()
-				.currencyConversionTypeId(currencyConversionBL.getCurrencyConversionTypeId(ConversionTypeMethod.Spot));
+				.currencyConversionTypeId(null);
 
 		final BigDecimal fixedCurrencyRate = bankStatementLine.getCurrencyRate();
 		if (fixedCurrencyRate != null && fixedCurrencyRate.signum() != 0)

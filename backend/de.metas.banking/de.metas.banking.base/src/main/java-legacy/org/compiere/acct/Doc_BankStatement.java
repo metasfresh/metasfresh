@@ -1,24 +1,34 @@
 package org.compiere.acct;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.doc.AcctDocContext;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
+import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineReference;
+import de.metas.banking.BankStatementLineReferenceList;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.document.DocBaseType;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentId;
+import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.model.I_C_Payment;
 import org.compiere.model.MAccount;
 
 import java.math.BigDecimal;
@@ -44,6 +54,7 @@ import java.util.List;
 public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 {
 	private final IBankStatementBL bankStatementBL = SpringContextHolder.instance.getBean(IBankStatementBL.class);
+	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 
 	public Doc_BankStatement(final AcctDocContext ctx)
 	{
@@ -78,14 +89,53 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 	private List<DocLine_BankStatement> loadLines(final I_C_BankStatement bankStatement)
 	{
 		final BankStatementId bankStatementId = BankStatementId.ofRepoId(bankStatement.getC_BankStatement_ID());
-		final List<DocLine_BankStatement> docLines = new ArrayList<>();
-		for (final I_C_BankStatementLine line : bankStatementBL.getLinesByBankStatementId(bankStatementId))
+		final List<I_C_BankStatementLine> lineRecords = bankStatementBL.getLinesByBankStatementId(bankStatementId);
+		final ImmutableSet<BankStatementLineId> lineIds = extractBankStatementLineIds(lineRecords);
+		final ImmutableListMultimap<BankStatementLineId, BankStatementLineReferenceAcctInfo> lineRefs = loadLineRefs(lineIds);
+
+		final ArrayList<DocLine_BankStatement> docLines = new ArrayList<>();
+		for (final I_C_BankStatementLine line : lineRecords)
 		{
-			final DocLine_BankStatement docLine = new DocLine_BankStatement(line, this);
+			final BankStatementLineId lineId = BankStatementLineId.ofRepoId(line.getC_BankStatementLine_ID());
+			final DocLine_BankStatement docLine = new DocLine_BankStatement(line, this, lineRefs.get(lineId));
 			docLines.add(docLine);
 		}
 
 		return docLines;
+	}
+
+	private static ImmutableSet<BankStatementLineId> extractBankStatementLineIds(final List<I_C_BankStatementLine> lines)
+	{
+		return lines.stream()
+				.map(line -> BankStatementLineId.ofRepoId(line.getC_BankStatementLine_ID()))
+				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	private ImmutableListMultimap<BankStatementLineId, BankStatementLineReferenceAcctInfo> loadLineRefs(final ImmutableSet<BankStatementLineId> lineIds)
+	{
+		final BankStatementLineReferenceList lineRefs = bankStatementBL.getLineReferences(lineIds);
+		final ImmutableSet<PaymentId> paymentIds = lineRefs.stream().map(BankStatementLineReference::getPaymentId).collect(ImmutableSet.toImmutableSet());
+		final ImmutableMap<PaymentId, I_C_Payment> payments = Maps.uniqueIndex(paymentBL.getByIds(paymentIds), payment -> PaymentId.ofRepoId(payment.getC_Payment_ID()));
+
+		final ImmutableListMultimap.Builder<BankStatementLineId, BankStatementLineReferenceAcctInfo> result = ImmutableListMultimap.builder();
+		for (final BankStatementLineReference lineRef : lineRefs)
+		{
+			final I_C_Payment payment = payments.get(lineRef.getPaymentId());
+			final CurrencyConversionContext currencyConversionContext = paymentBL.extractCurrencyConversionContext(payment);
+
+			result.put(
+					lineRef.getBankStatementLineId(),
+					BankStatementLineReferenceAcctInfo.builder()
+							.id(lineRef.getId())
+							.bpartnerId(lineRef.getBpartnerId())
+							.paymentOrgId(OrgId.ofRepoId(payment.getAD_Org_ID()))
+							.trxAmt(lineRef.getTrxAmt())
+							.currencyConversionContext(currencyConversionContext)
+							// TODO
+							.build());
+		}
+
+		return result.build();
 	}
 
 	@Override
@@ -122,7 +172,6 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 		final AcctSchema as = fact.getAcctSchema();
 		final OrgId bankOrgId = getBankOrgId();    // Bank Account Organization
 		final BPartnerId bpartnerId = line.getBPartnerId();
-		final CurrencyConversionContext currencyConversionCtx = line.getCurrencyConversionCtx();
 
 		//
 		// BankAsset DR/CR (StmtAmt)
@@ -131,7 +180,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 				.setAccount(getAccount(AccountType.BankAsset, as))
 				// .setAmtSourceDrOrCr(line.getStmtAmt())
 				.setCurrencyId(line.getCurrencyId())
-				.setCurrencyConversionCtx(currencyConversionCtx)
+				.setCurrencyConversionCtx(line.getCurrencyConversionCtxForBankAsset())
 				.orgIdIfValid(bankOrgId)
 				.bpartnerIdIfNotNull(bpartnerId);
 	}
@@ -223,7 +272,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 				.setDocLine(line)
 				.setAccount(getAccount(AccountType.BankInTransit, as))
 				.setCurrencyId(line.getCurrencyId())
-				.setCurrencyConversionCtx(line.getCurrencyConversionCtx())
+				.setCurrencyConversionCtx(line.getCurrencyConversionCtxForBankInTransit())
 				.orgId(bankOrgId.isRegular() ? bankOrgId : line.getOrgId()) // bank org, line org
 				.bpartnerIdIfNotNull(line.getBPartnerId());
 
@@ -354,9 +403,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 		final OrgId bankOrgId = getBankOrgId();    // Bank Account Org
 		final BPartnerId bpartnerId = line.getBPartnerId();
 
-		final CurrencyConversionContext currencyConversionCtx = line.getCurrencyConversionCtx();
-
-		final List<BankStatementLineReference> lineReferences = line.getReferences();
+		final List<BankStatementLineReferenceAcctInfo> lineReferences = line.getReferences();
 		if (lineReferences.isEmpty())
 		{
 			final BigDecimal trxAmt = line.getTrxAmt();
@@ -372,7 +419,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 					.setAccount(acct_BankInTransit)
 					.setAmtSourceDrOrCr(trxAmt.negate())
 					.setCurrencyId(line.getCurrencyId())
-					.setCurrencyConversionCtx(currencyConversionCtx)
+					.setCurrencyConversionCtx(line.getCurrencyConversionCtxForBankInTransit())
 					.orgId(bankOrgId.isRegular() ? bankOrgId : line.getPaymentOrgId()) // bank org, payment org
 					.bpartnerIdIfNotNull(bpartnerId);
 
@@ -425,18 +472,17 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 
 			//
 			// Bank In Transit: CR/DR
-			for (final BankStatementLineReference lineRef : lineReferences)
+			for (final BankStatementLineReferenceAcctInfo lineRef : lineReferences)
 			{
-				final BPartnerId lineRefBPartnerId = lineRef.getBpartnerId();
 				final FactLineBuilder bankInTransitFactLine = fact.createLine()
 						.setDocLine(line)
 						.setSubLine_ID(lineRef.getBankStatementLineRefId().getRepoId())
 						.setAccount(acct_BankInTransit)
 						// .setAmtSourceDrOrCr(lineRef.getTrxAmt().toBigDecimal().negate())
 						.setCurrencyId(lineRef.getTrxAmt().getCurrencyId())
-						.setCurrencyConversionCtx(currencyConversionCtx)
-						.orgId(bankOrgId.isRegular() ? bankOrgId : line.getPaymentOrgId(lineRef.getPaymentId())) // bank org, payment org
-						.bpartnerIdIfNotNull(CoalesceUtil.coalesce(lineRefBPartnerId, bpartnerId)); // if the line ref has a C_BPartner, then use it
+						.setCurrencyConversionCtx(lineRef.getCurrencyConversionContext())
+						.orgId(bankOrgId.isRegular() ? bankOrgId : line.getPaymentOrgId()) // bank org, payment org
+						.bpartnerIdIfNotNull(CoalesceUtil.coalesce(lineRef.getBpartnerId(), bpartnerId)); // if the line ref has a C_BPartner, then use it
 
 				if (inboundTrx)
 				{
