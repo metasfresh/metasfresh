@@ -30,6 +30,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Objects;
 
 @Value
 public class BankStatementId implements RepoIdAware
@@ -59,5 +60,10 @@ public class BankStatementId implements RepoIdAware
 	public int getRepoId()
 	{
 		return repoId;
+	}
+
+	public static boolean equals(@Nullable BankStatementId id1, @Nullable BankStatementId id2)
+	{
+		return Objects.equals(id1, id2);
 	}
 }

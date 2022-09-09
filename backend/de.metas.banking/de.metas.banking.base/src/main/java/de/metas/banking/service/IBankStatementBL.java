@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineReferenceList;
+import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
 import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentId;
@@ -40,6 +41,9 @@ import java.util.Set;
 
 public interface IBankStatementBL extends ISingletonService
 {
+	AdMessageKey MSG_BankStatement_MustBe_Draft_InProgress_Or_Completed = AdMessageKey.of("bankstatement.BankStatement_MustBe_Draft_InProgress_Or_Completed");
+	AdMessageKey MSG_LineIsAlreadyReconciled = AdMessageKey.of("bankstatement.LineIsAlreadyReconciled");
+
 	I_C_BankStatement getById(BankStatementId bankStatementId);
 
 	I_C_BankStatementLine getLineById(BankStatementLineId bankStatementLineId);
@@ -63,7 +67,9 @@ public interface IBankStatementBL extends ISingletonService
 
 	void deleteReferences(@NonNull BankStatementLineId bankStatementLineId);
 
-	void unlinkPaymentsAndDeleteReferences(@NonNull List<I_C_BankStatementLine> bankStatementLines);
+	void unreconcile(@NonNull List<I_C_BankStatementLine> bankStatementLines);
+
+	void reconcileAsBankTransfer(@NonNull ReconcileAsBankTransferRequest request);
 
 	int computeNextLineNo(@NonNull BankStatementId bankStatementId);
 
