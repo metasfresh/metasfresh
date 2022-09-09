@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13578](https://github.com/metasfresh/metasfresh/issues/13578) When creating a counter doc C_Order, take into account the dropship information
   * [#13541](https://github.com/metasfresh/metasfresh/issues/13541) Unify de.metas.project.workorder && de.metas.project.workorder.data
   * [#13144](https://github.com/metasfresh/metasfresh/issues/13144) Create Test harness for mobileUI's API
   * [#13509](https://github.com/metasfresh/metasfresh/issues/13509) Generic importer for invoice candidates
