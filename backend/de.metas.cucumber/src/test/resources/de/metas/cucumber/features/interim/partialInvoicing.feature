@@ -35,43 +35,43 @@ Feature: Partial Payment Invoicing
       | C_Interim_Invoice_Settings_ID.Identifier | C_Harvesting_Calendar_ID.Identifier | M_Product_Witholding_ID.Identifier |
       | interim_settings                         | harvesting_calendar                 | grey_box_product                   |
     And metasfresh contains C_Flatrate_Conditions:
-      | Identifier              | Name                    | Type_Conditions | OPT.InvoiceRule | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.C_Interim_Invoice_Settings_ID.Identifier |
-      | interim_invoice_payment | Interim Invoice Payment | InterimInvoice  | I               | ps_PO                             | Co                       | interim_settings                             |
+      | C_Flatrate_Conditions_ID.Identifier | Name                    | Type_Conditions | OPT.InvoiceRule | OPT.M_PricingSystem_ID.Identifier | OPT.OnFlatrateTermExtend | OPT.C_Interim_Invoice_Settings_ID.Identifier |
+      | interim_invoice_payment             | Interim Invoice Payment | InterimInvoice  | I               | ps_PO                             | Co                       | interim_settings                             |
 
   Scenario: Happy flow
 
-    _Given x1 C_Interim_Invoice_Settings with the withholding product set to be 'Graue Kiste' (interim_settings)
-    _And x1 C_Flatrate_Conditions configured with 'interim_settings'
-    _And x1 C_Order with with IsSOTrx='N' (purchase order)
-    _And x1 C_OrderLine ordering x100 products
-    __________________________________________
-    _When the purchase order is completed
-    _Then x1 C_Invoice_Candidate is created with QtyOrdered=100 (invoice_candidate)
-    _When x30 CUs are received
-    _And an interim invoice contract created for C_OrderLine
-    _Then x1 C_InterimInvoice_FlatrateTerm is created with QtyDelivered=30 (IIFT1) having x1 C_InterimInvoice_FlatrateTerm_Line (IIFT_L1)
-    _And x2 C_Invoice_Candidate are generated -> one interim (I_IC1) with QtyDelivered=QtyToInvoice=30 and one withholding (W_IC1) with QtyDelivered=QtyToInvoice=-30
-    __________________________________________
-    _When 'I_IC1' is processed
-    _Then x1 C_Invoice (I_I1) and x1 C_InvoiceLine (I_IL1) are generated
-    _And 'I_IC1' has QtyInvoiced=30 and QtyToInvoice=0
-    _And 'IIFT1' has QtyInvoiced=30
-    _And 'I_I1' and 'I_IL1' are associated to 'IIFT_L1'
-    __________________________________________
-    _When x20 CUs are received
-    _Then x1 C_InterimInvoice_FlatrateTerm is created with QtyDelivered=20 (IIFT2) having x1 C_InterimInvoice_FlatrateTerm_Line (IIFT_L2)
-    _And x2 C_Invoice_Candidate are generated -> one interim (I_IC2) with QtyDelivered=QtyToInvoice=20 and one withholding (W_IC2) with QtyDelivered=QtyToInvoice=-20
-    __________________________________________
-    _When 'I_IC2' is processed
-    _Then x1 C_Invoice (I_I2) and x1 C_InvoiceLine (I_IL2) are generated
-    _And 'I_IC2' has QtyInvoiced=20 and QtyToInvoice=0
-    _And 'IIFT2' has QtyInvoiced=20
-    _And 'I_I2' and 'I_IL2' are associated to 'IIFT_L2'
-    __________________________________________
-    _When 'invoice_candidate', 'W_IC1' and 'W_IC2' are processed
-    _Then 'W_IC1' has QtyInvoiced=-30 and QtyToInvoice=0
-    _And 'W_IC2' has QtyInvoiced=-20 and QtyToInvoice=0
-    _And 'invoice_candidate' has QtyInvoiced=50 and QtyToInvoice=0
+  _Given x1 C_Interim_Invoice_Settings with the withholding product set to be 'Graue Kiste' (interim_settings)
+  _And x1 C_Flatrate_Conditions configured with 'interim_settings'
+  _And x1 C_Order with with IsSOTrx='N' (purchase order)
+  _And x1 C_OrderLine ordering x100 products
+  __________________________________________
+  _When the purchase order is completed
+  _Then x1 C_Invoice_Candidate is created with QtyOrdered=100 (invoice_candidate)
+  _When x30 CUs are received
+  _And an interim invoice contract created for C_OrderLine
+  _Then x1 C_InterimInvoice_FlatrateTerm is created with QtyDelivered=30 (IIFT1) having x1 C_InterimInvoice_FlatrateTerm_Line (IIFT_L1)
+  _And x2 C_Invoice_Candidate are generated -> one interim (I_IC1) with QtyDelivered=QtyToInvoice=30 and one withholding (W_IC1) with QtyDelivered=QtyToInvoice=-30
+  __________________________________________
+  _When 'I_IC1' is processed
+  _Then x1 C_Invoice (I_I1) and x1 C_InvoiceLine (I_IL1) are generated
+  _And 'I_IC1' has QtyInvoiced=30 and QtyToInvoice=0
+  _And 'IIFT1' has QtyInvoiced=30
+  _And 'I_I1' and 'I_IL1' are associated to 'IIFT_L1'
+  __________________________________________
+  _When x20 CUs are received
+  _Then x1 C_InterimInvoice_FlatrateTerm is created with QtyDelivered=20 (IIFT2) having x1 C_InterimInvoice_FlatrateTerm_Line (IIFT_L2)
+  _And x2 C_Invoice_Candidate are generated -> one interim (I_IC2) with QtyDelivered=QtyToInvoice=20 and one withholding (W_IC2) with QtyDelivered=QtyToInvoice=-20
+  __________________________________________
+  _When 'I_IC2' is processed
+  _Then x1 C_Invoice (I_I2) and x1 C_InvoiceLine (I_IL2) are generated
+  _And 'I_IC2' has QtyInvoiced=20 and QtyToInvoice=0
+  _And 'IIFT2' has QtyInvoiced=20
+  _And 'I_I2' and 'I_IL2' are associated to 'IIFT_L2'
+  __________________________________________
+  _When 'invoice_candidate', 'W_IC1' and 'W_IC2' are processed
+  _Then 'W_IC1' has QtyInvoiced=-30 and QtyToInvoice=0
+  _And 'W_IC2' has QtyInvoiced=-20 and QtyToInvoice=0
+  _And 'invoice_candidate' has QtyInvoiced=50 and QtyToInvoice=0
 
     And metasfresh contains M_Products:
       | Identifier                | Value                     | Name                      |
@@ -215,28 +215,28 @@ Feature: Partial Payment Invoicing
 
   Scenario: Order completed, interim invoice contract created, material receipt created, no interim invoice created, material receipt reversed
 
-    _Given x1 C_Interim_Invoice_Settings with the withholding product set to be 'Graue Kiste' (interim_settings)
-    _And x1 C_Flatrate_Conditions configured with 'interim_settings'
-    _And x1 C_Order with with IsSOTrx='N' (purchase order)
-    _And x1 C_OrderLine ordering x100 products
-    __________________________________________
-    _When the purchase order is completed
-    _Then x1 C_Invoice_Candidate is created with QtyOrdered=100 (invoice_candidate)
-    _When x30 CUs are received generating a material receipt (material_receipt)
-    _And an interim invoice contract created for C_OrderLine
-    _Then x1 C_InterimInvoice_FlatrateTerm is created with QtyDelivered=30 (IIFT1) having x1 C_InterimInvoice_FlatrateTerm_Line (IIFT_L1)
-    _And x2 C_Invoice_Candidate are generated -> one interim (I_IC1) with QtyDelivered=QtyToInvoice=30 and one withholding (W_IC1) with QtyDelivered=QtyToInvoice=-30
-    __________________________________________
-    _When 'I_IC1' is processed
-    _Then x1 C_Invoice (I_I1) and x1 C_InvoiceLine (I_IL1) are generated
-    _And 'I_IC1' has QtyInvoiced=30 and QtyToInvoice=0
-    _And 'IIFT1' has QtyInvoiced=30
-    _And 'I_I1' and 'I_IL1' are associated to 'IIFT_L1'
-    __________________________________________
-    _When 'material_receipt' is reversed
-    _Then 'I_IC1' has QtyDelivered=0, QtyToInvoice=0
-    _And 'W_IC1' has QtyDelivered=0, QtyToInvoice=0
-    _And 'invoice_candidate' has QtyDelivered=0, QtyToInvoice=0
+  _Given x1 C_Interim_Invoice_Settings with the withholding product set to be 'Graue Kiste' (interim_settings)
+  _And x1 C_Flatrate_Conditions configured with 'interim_settings'
+  _And x1 C_Order with with IsSOTrx='N' (purchase order)
+  _And x1 C_OrderLine ordering x100 products
+  __________________________________________
+  _When the purchase order is completed
+  _Then x1 C_Invoice_Candidate is created with QtyOrdered=100 (invoice_candidate)
+  _When x30 CUs are received generating a material receipt (material_receipt)
+  _And an interim invoice contract created for C_OrderLine
+  _Then x1 C_InterimInvoice_FlatrateTerm is created with QtyDelivered=30 (IIFT1) having x1 C_InterimInvoice_FlatrateTerm_Line (IIFT_L1)
+  _And x2 C_Invoice_Candidate are generated -> one interim (I_IC1) with QtyDelivered=QtyToInvoice=30 and one withholding (W_IC1) with QtyDelivered=QtyToInvoice=-30
+  __________________________________________
+  _When 'I_IC1' is processed
+  _Then x1 C_Invoice (I_I1) and x1 C_InvoiceLine (I_IL1) are generated
+  _And 'I_IC1' has QtyInvoiced=30 and QtyToInvoice=0
+  _And 'IIFT1' has QtyInvoiced=30
+  _And 'I_I1' and 'I_IL1' are associated to 'IIFT_L1'
+  __________________________________________
+  _When 'material_receipt' is reversed
+  _Then 'I_IC1' has QtyDelivered=0, QtyToInvoice=0
+  _And 'W_IC1' has QtyDelivered=0, QtyToInvoice=0
+  _And 'invoice_candidate' has QtyDelivered=0, QtyToInvoice=0
 
     And metasfresh contains M_Products:
       | Identifier            | Value                 | Name                  |
@@ -310,31 +310,31 @@ Feature: Partial Payment Invoicing
 
   Scenario: Order completed, interim invoice contract created, material receipt created, interim invoice created, material receipt created, interim invoice reversed
 
-    _Given x1 C_Interim_Invoice_Settings with thw withholding product set to be 'Graue Kiste' (interim_settings)
-    _And x1 C_Flatrate_Conditions configured with 'interim_settings'
-    _And x1 C_Order with with IsSOTrx='N' (purchase order)
-    _And x1 C_OrderLine ordering x100 products
-    __________________________________________
-    _When the purchase order is completed
-    _Then x1 C_Invoice_Candidate is created with QtyOrdered=100 (invoice_candidate)
-    _When x30 CUs are received generating a material receipt (material_receipt)
-    _And an interim invoice contract created for C_OrderLine
-    _Then x1 C_InterimInvoice_FlatrateTerm is created with QtyDelivered=30 (IIFT1) having x1 C_InterimInvoice_FlatrateTerm_Line (IIFT_L1)
-    _And x2 C_Invoice_Candidate are generated -> one interim (I_IC1) with QtyDelivered=QtyToInvoice=30 and one withholding (W_IC1) with QtyDelivered=QtyToInvoice=-30
-    __________________________________________
-    _When 'I_IC1' is processed
-    _Then x1 C_Invoice (I_I1) and x1 C_InvoiceLine (I_IL1) are generated
-    _And 'I_IC1' has QtyInvoiced=30 and QtyToInvoice=0
-    _And 'IIFT1' has QtyInvoiced=30
-    _And 'I_I1' and 'I_IL1' are associated to 'IIFT_L1'
-    __________________________________________
-    _When x20 CUs are received
-    _Then x1 C_InterimInvoice_FlatrateTerm is created with QtyDelivered=20 (IIFT2) having x1 C_InterimInvoice_FlatrateTerm_Line (IIFT_L2)
-    _And x2 C_Invoice_Candidate are generated -> one interim (I_IC2) with QtyDelivered=QtyToInvoice=20 and one withholding (W_IC2) with QtyDelivered=QtyToInvoice=-20
-    __________________________________________
-    _When 'I_I1' is reversed
-    _Then 'I_IC1' has QtyInvoiced=0 and QtyToInvoice=30
-    _And 'IIFT1' has QtyInvoiced=0
+  _Given x1 C_Interim_Invoice_Settings with thw withholding product set to be 'Graue Kiste' (interim_settings)
+  _And x1 C_Flatrate_Conditions configured with 'interim_settings'
+  _And x1 C_Order with with IsSOTrx='N' (purchase order)
+  _And x1 C_OrderLine ordering x100 products
+  __________________________________________
+  _When the purchase order is completed
+  _Then x1 C_Invoice_Candidate is created with QtyOrdered=100 (invoice_candidate)
+  _When x30 CUs are received generating a material receipt (material_receipt)
+  _And an interim invoice contract created for C_OrderLine
+  _Then x1 C_InterimInvoice_FlatrateTerm is created with QtyDelivered=30 (IIFT1) having x1 C_InterimInvoice_FlatrateTerm_Line (IIFT_L1)
+  _And x2 C_Invoice_Candidate are generated -> one interim (I_IC1) with QtyDelivered=QtyToInvoice=30 and one withholding (W_IC1) with QtyDelivered=QtyToInvoice=-30
+  __________________________________________
+  _When 'I_IC1' is processed
+  _Then x1 C_Invoice (I_I1) and x1 C_InvoiceLine (I_IL1) are generated
+  _And 'I_IC1' has QtyInvoiced=30 and QtyToInvoice=0
+  _And 'IIFT1' has QtyInvoiced=30
+  _And 'I_I1' and 'I_IL1' are associated to 'IIFT_L1'
+  __________________________________________
+  _When x20 CUs are received
+  _Then x1 C_InterimInvoice_FlatrateTerm is created with QtyDelivered=20 (IIFT2) having x1 C_InterimInvoice_FlatrateTerm_Line (IIFT_L2)
+  _And x2 C_Invoice_Candidate are generated -> one interim (I_IC2) with QtyDelivered=QtyToInvoice=20 and one withholding (W_IC2) with QtyDelivered=QtyToInvoice=-20
+  __________________________________________
+  _When 'I_I1' is reversed
+  _Then 'I_IC1' has QtyInvoiced=0 and QtyToInvoice=30
+  _And 'IIFT1' has QtyInvoiced=0
 
     And metasfresh contains M_Products:
       | Identifier            | Value                 | Name                  |
