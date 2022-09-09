@@ -25,6 +25,7 @@ import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.ZoneId;
 import java.util.List;
 
 class DocLine_BankStatement extends DocLine<Doc_BankStatement>
@@ -154,17 +155,15 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 		final I_C_BankStatementLine line = getC_BankStatementLine();
 
 		final OrgId orgId = OrgId.ofRepoId(line.getAD_Org_ID());
-		final ZoneId timeZone = services.getTimeZone(orgId);
 
 		// IMPORTANT for Bank Asset Account booking,
 		// * we shall NOT consider the fixed Currency Rate because we want to compute currency gain/loss
 		// * use default conversion types
 
 		return services.createCurrencyConversionContext(
-				TimeUtil.asLocalDate(line.getDateAcct(), timeZone),
+				LocalDateAndOrgId.ofTimestamp(line.getDateAcct(), orgId, services::getTimeZone),
 				null,
-				ClientId.ofRepoId(line.getAD_Client_ID()),
-				orgId);
+				ClientId.ofRepoId(line.getAD_Client_ID()));
 	}
 
 	CurrencyConversionContext getCurrencyConversionCtxForBankInTransit()
