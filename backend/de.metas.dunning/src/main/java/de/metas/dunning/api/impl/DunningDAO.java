@@ -1,10 +1,8 @@
-package de.metas.dunning.api.impl;
-
 /*
  * #%L
  * de.metas.dunning
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package de.metas.dunning.api.impl;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.dunning.api.impl;
 
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.dunning.api.IDunningCandidateQuery;
@@ -260,7 +260,7 @@ public class DunningDAO extends AbstractDunningDAO
 		final int[] result = { 0 };
 
 		trxManager.run(context.getTrxName(), context.getTrxRunnerConfig(),
-											localTrxName -> result[0] = DB.executeUpdateEx(deleteSQL.toString(), params.toArray(), localTrxName));
+											localTrxName -> result[0] = DB.executeUpdateAndThrowExceptionOnFail(deleteSQL.toString(), params.toArray(), localTrxName));
 		return result[0];
 	}
 

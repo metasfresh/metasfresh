@@ -23,6 +23,7 @@ package de.metas.dunning.api;
  */
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.dunning.DunningDocId;
 import de.metas.dunning.api.impl.RecomputeDunningCandidatesQuery;
 import de.metas.dunning.interfaces.I_C_Dunning;
 import de.metas.dunning.interfaces.I_C_DunningLevel;
@@ -32,6 +33,7 @@ import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 import java.util.Iterator;
 import java.util.List;
