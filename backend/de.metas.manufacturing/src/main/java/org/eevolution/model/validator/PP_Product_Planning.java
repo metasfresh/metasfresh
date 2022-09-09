@@ -107,6 +107,10 @@ public class PP_Product_Planning
 	public void updateProductFromBomVersions(final I_PP_Product_Planning planning)
 	{
 		final  ProductBOMVersionsId bomVersionsId = ProductBOMVersionsId.ofRepoIdOrNull(planning.getPP_Product_BOMVersions_ID());
+		if (bomVersionsId == null)
+		{
+			return; // nothing to do
+		}
 		final I_PP_Product_BOMVersions bomVersions = bomVersionsDAO.getBOMVersions(bomVersionsId);
 		planning.setM_Product_ID(bomVersions.getM_Product_ID());
 	}

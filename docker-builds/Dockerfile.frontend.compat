@@ -1,6 +1,6 @@
 ARG REFNAME=local
 FROM metasfresh/metas-frontend:$REFNAME as frontend
-# FROM metasfresh/metas-mobile:$REFNAME-compat as mobile
+FROM metasfresh/metas-mobile:$REFNAME-compat as mobile
 
 FROM ubuntu:16.04 as runtime
 
