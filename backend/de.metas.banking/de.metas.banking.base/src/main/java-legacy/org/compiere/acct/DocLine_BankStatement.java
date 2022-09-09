@@ -52,7 +52,8 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 	@Getter
 	private final BigDecimal fixedCurrencyRate;
 
-	private CurrencyConversionContext _currencyConversionContext; // lazy
+	private CurrencyConversionContext _currencyConversionContextForBankAsset; // lazy
+	private CurrencyConversionContext _currencyConversionContextForBankInTransit; // lazy
 
 	public DocLine_BankStatement(
 			@NonNull final I_C_BankStatementLine line,
@@ -135,17 +136,45 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 		return getModel(I_C_BankStatementLine.class);
 	}
 
-	CurrencyConversionContext getCurrencyConversionCtx()
+	CurrencyConversionContext getCurrencyConversionCtxForBankAsset()
 	{
-		CurrencyConversionContext currencyConversionContext = this._currencyConversionContext;
+		CurrencyConversionContext currencyConversionContext = this._currencyConversionContextForBankAsset;
 		if (currencyConversionContext == null)
 		{
-			currencyConversionContext = this._currencyConversionContext = createCurrencyConversionCtx();
+			currencyConversionContext = this._currencyConversionContextForBankAsset = createCurrencyConversionCtxForBankAsset();
 		}
 		return currencyConversionContext;
 	}
 
-	private CurrencyConversionContext createCurrencyConversionCtx()
+	private CurrencyConversionContext createCurrencyConversionCtxForBankAsset()
+	{
+		final I_C_BankStatementLine line = getC_BankStatementLine();
+
+		final OrgId orgId = OrgId.ofRepoId(line.getAD_Org_ID());
+		final ZoneId timeZone = services.getTimeZone(orgId);
+
+		// IMPORTANT for Bank Asset Account booking,
+		// * we shall NOT consider the fixed Currency Rate because we want to compute currency gain/loss
+		// * use default conversion types
+
+		return services.createCurrencyConversionContext(
+				TimeUtil.asLocalDate(line.getDateAcct(), timeZone),
+				null,
+				ClientId.ofRepoId(line.getAD_Client_ID()),
+				orgId);
+	}
+
+	CurrencyConversionContext getCurrencyConversionCtxForBankInTransit()
+	{
+		CurrencyConversionContext currencyConversionContext = this._currencyConversionContextForBankInTransit;
+		if (currencyConversionContext == null)
+		{
+			currencyConversionContext = this._currencyConversionContextForBankInTransit = createCurrencyConversionCtxForBankInTransit();
+		}
+		return currencyConversionContext;
+	}
+
+	private CurrencyConversionContext createCurrencyConversionCtxForBankInTransit()
 	{
 		final I_C_Payment payment = getC_Payment();
 		if (payment != null)
