@@ -90,9 +90,9 @@ public class DesadvBL implements IDesadvBL
 	private final transient IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final transient IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final transient IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final transient IProductBL productBL = Services.get(IProductBL.class);
 
-	private final EDIDesadvPackService ediDesadvPackService;
+	private final transient EDIDesadvPackService ediDesadvPackService;
 
 	// @VisibleForTesting
 	public DesadvBL(@NonNull final EDIDesadvPackService ediDesadvPackService)

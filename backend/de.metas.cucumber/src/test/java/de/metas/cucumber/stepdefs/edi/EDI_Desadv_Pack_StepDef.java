@@ -70,7 +70,7 @@ public class EDI_Desadv_Pack_StepDef
 	@Given("metasfresh initially has no EDI_Desadv_Pack data")
 	public void setupMD_Stock_Data()
 	{
-		truncateEDIDesadvPack();
+		deleteAllFromEDIDesadvPack();
 	}
 
 	@Then("^after not more than (.*)s, EDI_Desadv_Pack records are found:$")
@@ -93,7 +93,7 @@ public class EDI_Desadv_Pack_StepDef
 		StepDefUtil.tryAndWait(timeoutSec, 500, emptyTable, this::logCurrentContext);
 	}
 
-	private void truncateEDIDesadvPack()
+	private void deleteAllFromEDIDesadvPack()
 	{
 		DB.executeUpdateEx("DELETE FROM EDI_Desadv_Pack", ITrx.TRXNAME_None);
 	}

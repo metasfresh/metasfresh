@@ -311,7 +311,7 @@ public abstract class AbstractAttributeStorage implements IAttributeStorage
 	}
 
 	@Override
-	public final IAttributeValue getAttributeValue(final AttributeCode attributeCode)
+	public final IAttributeValue getAttributeValue(@NonNull final AttributeCode attributeCode)
 	{
 		final IAttributeValue attributeValue = getAttributeValueOrNull(attributeCode);
 		if (NullAttributeValue.isNull(attributeValue))
