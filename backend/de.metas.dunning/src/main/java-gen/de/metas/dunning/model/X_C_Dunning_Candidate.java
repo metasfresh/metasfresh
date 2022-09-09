@@ -471,28 +471,6 @@ public class X_C_Dunning_Candidate extends org.compiere.model.PO implements I_C_
 		return false;
 	}
 
-	/** Set Zu aktualisieren.
-		@param IsStaled Zu aktualisieren	  */
-	@Override
-	public void setIsStaled (boolean IsStaled)
-	{
-		throw new IllegalArgumentException ("IsStaled is virtual column");	}
-
-	/** Get Zu aktualisieren.
-		@return Zu aktualisieren	  */
-	@Override
-	public boolean isStaled () 
-	{
-		Object oo = get_Value(COLUMNNAME_IsStaled);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
-	}
-
 	/** Set Massenaustritt.
 		@param IsWriteOff Massenaustritt	  */
 	@Override
