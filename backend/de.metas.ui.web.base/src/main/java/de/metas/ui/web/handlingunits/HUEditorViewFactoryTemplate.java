@@ -89,6 +89,7 @@ import org.adempiere.ad.dao.impl.InArrayQueryFilter;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.AttributeSourceDocument;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
@@ -273,7 +274,10 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 	}
 
 	@Nullable
-	protected String getAdditionalSqlWhereClause() {return null;}
+	protected String getAdditionalSqlWhereClause()
+	{
+		return null;
+	}
 
 	protected final DocumentFilterDescriptorsProvider getViewFilterDescriptors()
 	{
@@ -331,7 +335,10 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		return viewLayoutBuilder.build();
 	}
 
-	protected boolean isMaterialReceipt() {return false;}
+	protected AttributeSourceDocument getAttributeSourceDocument()
+	{
+		return null;
+	}
 
 	@Override
 	public final HUEditorView createView(final @NonNull CreateViewRequest request)
@@ -354,9 +361,9 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 					.windowId(windowId)
 					.rowProcessedPredicate(getRowProcessedPredicate(referencingTableName))
 					.attributesProvider(HUEditorRowAttributesProvider.builder()
-							.readonly(attributesAlwaysReadonly)
-							.isMaterialReceipt(isMaterialReceipt())
-							.build())
+												.readonly(attributesAlwaysReadonly)
+												.attributeSourceDocument(getAttributeSourceDocument())
+												.build())
 					.sqlViewBinding(sqlViewBinding)
 					.huReservationService(huReservationService);
 
