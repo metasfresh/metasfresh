@@ -269,6 +269,7 @@ public class DunningDAO extends AbstractDunningDAO
 	 *
 	 * @return the number of deleted candidates
 	 */
+	@Override
 	public int deleteTargetObsoleteCandidates(
 			@NonNull final RecomputeDunningCandidatesQuery recomputeDunningCandidatesQuery,
 			@NonNull final I_C_DunningLevel dunningLevel)

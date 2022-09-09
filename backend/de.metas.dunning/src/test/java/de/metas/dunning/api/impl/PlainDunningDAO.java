@@ -30,6 +30,7 @@ import de.metas.dunning.model.I_C_DunningDoc;
 import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.util.collections.IteratorUtils;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.exceptions.AdempiereException;
@@ -143,4 +144,11 @@ public class PlainDunningDAO extends AbstractDunningDAO
 		throw new AdempiereException("Operation not supported");
 	}
 
+	@Override
+	public int deleteTargetObsoleteCandidates(
+			@NonNull final RecomputeDunningCandidatesQuery recomputeDunningCandidatesQuery,
+			@NonNull final I_C_DunningLevel dunningLevel)
+	{
+		throw new AdempiereException("Operation not supported");
+	}
 }
