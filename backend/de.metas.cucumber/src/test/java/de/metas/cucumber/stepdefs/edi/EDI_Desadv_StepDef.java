@@ -22,29 +22,23 @@
 
 package de.metas.cucumber.stepdefs.edi;
 
-import de.metas.async.api.IWorkPackageBlockBuilder;
-import de.metas.async.api.IWorkPackageQueue;
-import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.edi.api.IDesadvDAO;
-import de.metas.edi.async.spi.impl.EDIWorkpackageProcessor;
+import de.metas.edi.process.export.enqueue.DesadvEnqueuer;
+import de.metas.edi.process.export.enqueue.EnqueueDesadvRequest;
+import de.metas.edi.process.export.enqueue.EnqueueDesadvResult;
 import de.metas.esb.edi.model.I_EDI_Desadv;
-import de.metas.esb.edi.model.X_EDI_Desadv;
-import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
-import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
-import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
@@ -56,12 +50,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.*;
@@ -76,8 +66,8 @@ public class EDI_Desadv_StepDef
 	private static final String QTY_TU_TAGNAME = "QtyTU";
 
 	private final IDesadvDAO desadvDAO = Services.get(IDesadvDAO.class);
-	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
-	private final ITrxItemProcessorExecutorService trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
+
+	private final DesadvEnqueuer desadvEnqueuer = SpringContextHolder.instance.getBean(DesadvEnqueuer.class);
 
 	private final EDI_Desadv_StepDefData desadvTable;
 	private final C_BPartner_StepDefData bpartnerTable;
@@ -225,54 +215,14 @@ public class EDI_Desadv_StepDef
 
 		final I_EDI_Desadv desadvRecord = desadvTable.get(desadvIdentifier);
 
-		final List<I_EDI_Desadv> desadvsToSkip = new ArrayList<>();
+		final EnqueueDesadvRequest enqueueDesadvRequest = EnqueueDesadvRequest.builder()
+				.ctx(Env.getCtx())
+				.desadvIterator(ImmutableList.of(desadvRecord).iterator())
+				.build();
 
-		final Properties ctx = Env.getCtx();
+		final EnqueueDesadvResult enqueueDesadvResult = desadvEnqueuer.enqueue(enqueueDesadvRequest);
 
-		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(ctx, EDIWorkpackageProcessor.class);
-
-		final IWorkPackageBlockBuilder builder = queue.newBlock()
-				.setAD_PInstance_Creator_ID(PInstanceId.ofRepoId(1))
-				.setContext(ctx);
-
-		// Enqueue selected desadvs as workpackages
-		final Iterator<I_EDI_Desadv> desadvs = ImmutableList.of(desadvRecord).iterator();
-
-		trxItemProcessorExecutorService
-				.<I_EDI_Desadv, Void>createExecutor()
-				.setContext(ctx, ITrx.TRXNAME_None)
-				.setExceptionHandler(FailTrxItemExceptionHandler.instance)
-				.setProcessor(new TrxItemProcessorAdapter<I_EDI_Desadv, Void>()
-				{
-					@Override
-					public void process(final I_EDI_Desadv desadv) throws Exception
-					{
-						// make sure the desadvs that don't meet the sum percentage requirement won't get enqueued
-						final BigDecimal currentSumPercentage = desadv.getFulfillmentPercent();
-						if (currentSumPercentage.compareTo(desadv.getFulfillmentPercentMin()) < 0)
-						{
-							desadvsToSkip.add(desadv);
-						}
-						else
-						{
-							// note: in here, the desadv has the item processor's trxName (as of this task)
-							final String trxName = InterfaceWrapperHelper.getTrxName(desadv);
-
-							builder.newWorkpackage()
-									.bindToTrxName(trxName)
-									.addElement(desadv)
-									.build();
-
-							desadv.setEDI_ExportStatus(X_EDI_Desadv.EDI_EXPORTSTATUS_Enqueued);
-							InterfaceWrapperHelper.save(desadv);
-						}
-					}
-				})
-				.process(desadvs);
-
-		builder.build(); // in case every single desadv was skipped, store our empty block now, just for reference and suppord.
-
-		assertThat(desadvsToSkip).isEmpty();
+		assertThat(enqueueDesadvResult.getSkippedDesadvList()).isEmpty();
 	}
 
 	private void findDesadv(@NonNull final Map<String, String> tableRow)
