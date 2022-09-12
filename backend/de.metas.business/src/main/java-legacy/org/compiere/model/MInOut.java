@@ -46,7 +46,6 @@ import de.metas.order.DeliveryRule;
 import de.metas.order.IMatchPOBL;
 import de.metas.order.IMatchPODAO;
 import de.metas.order.IOrderDAO;
-import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.ClientAndOrgId;
@@ -61,7 +60,6 @@ import de.metas.report.ReportResultData;
 import de.metas.report.StandardDocumentReportType;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.ProductASIMandatoryException;
 import org.adempiere.misc.service.IPOService;
@@ -607,16 +605,6 @@ public class MInOut extends X_M_InOut implements IDocument
 	private MInOutLine[] m_lines = null;
 	/** Confirmations */
 	private MInOutConfirm[] m_confirms = null;
-
-	/**
-	 * Get Document Status
-	 *
-	 * @return Document Status Clear Text
-	 */
-	public String getDocStatusName()
-	{
-		return Services.get(IADReferenceDAO.class).retrieveListNameTrl(getCtx(), X_M_InOut.DOCSTATUS_AD_Reference_ID, getDocStatus());
-	} // getDocStatusName
 
 	/**
 	 * Add to Description
@@ -1379,7 +1367,7 @@ public class MInOut extends X_M_InOut implements IDocument
 				}
 				//
 				m_processMsg = "Open @M_InOutConfirm_ID@: " +
-						confirm.getConfirmTypeName() + " - " + confirm.getDocumentNo();
+						confirm.getConfirmType() + " - " + confirm.getDocumentNo();
 				return IDocument.STATUS_InProgress;
 			}
 		}

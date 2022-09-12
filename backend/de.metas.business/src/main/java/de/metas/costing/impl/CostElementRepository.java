@@ -6,8 +6,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import de.metas.ad_reference.ADReferenceService;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -56,12 +56,14 @@ import lombok.NonNull;
 public class CostElementRepository implements ICostElementRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+	private final ADReferenceService adReferenceService;
 
 	private final CCache<Integer, IndexedCostElements> cache = CCache.<Integer, IndexedCostElements> builder()
 			.tableName(I_M_CostElement.Table_Name)
 			.initialCapacity(1)
 			.build();
+
+	public CostElementRepository(@NonNull final ADReferenceService adReferenceService) {this.adReferenceService = adReferenceService;}
 
 	private IndexedCostElements getIndexedCostElements()
 	{
@@ -122,7 +124,7 @@ public class CostElementRepository implements ICostElementRepository
 		final I_M_CostElement newCostElementPO = InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_CostElement.class);
 		InterfaceWrapperHelper.setValue(newCostElementPO, I_M_CostElement.COLUMNNAME_AD_Client_ID, clientId.getRepoId());
 		newCostElementPO.setAD_Org_ID(Env.CTXVALUE_AD_Org_ID_Any);
-		String name = adReferenceDAO.retrieveListNameTrl(CostingMethod.AD_REFERENCE_ID, costingMethod.getCode());
+		String name = adReferenceService.retrieveListNameTrl(CostingMethod.AD_REFERENCE_ID, costingMethod.getCode());
 		if (Check.isEmpty(name, true))
 		{
 			name = costingMethod.name();

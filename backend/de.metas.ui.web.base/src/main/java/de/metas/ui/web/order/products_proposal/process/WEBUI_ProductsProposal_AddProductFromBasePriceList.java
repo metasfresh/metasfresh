@@ -51,8 +51,14 @@ public class WEBUI_ProductsProposal_AddProductFromBasePriceList extends Products
 	@NonNull
 	private final OrderProductProposalsService orderProductProposalsService = SpringContextHolder.instance.getBean(OrderProductProposalsService.class);
 	@NonNull
-	private final LookupDataSource incoTermsLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_Incoterms.Table_Name);
-	private final LookupDataSource uomLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_UOM.Table_Name);
+	private final LookupDataSource incoTermsLookup;
+	private final LookupDataSource uomLookup;
+
+	{
+		final LookupDataSourceFactory lookupDataSourceFactory = LookupDataSourceFactory.sharedInstance();
+		incoTermsLookup = lookupDataSourceFactory.searchInTableLookup(I_C_Incoterms.Table_Name);
+		uomLookup = LookupDataSourceFactory.sharedInstance().searchInTableLookup(I_C_UOM.Table_Name);
+	}
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()

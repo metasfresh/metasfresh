@@ -157,9 +157,9 @@ public class QuotationHistoryProductsProposalViewFactory extends ProductsProposa
 
 	private static class RowsLoader
 	{
-		private final LookupDataSource bpartnerLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_BPartner.Table_Name);
-		private final LookupDataSource productLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_M_Product.Table_Name);
-		private final LookupDataSource termsLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_C_Incoterms.Table_Name);
+		private final LookupDataSource bpartnerLookup = LookupDataSourceFactory.sharedInstance().searchInTableLookup(I_C_BPartner.Table_Name);
+		private final LookupDataSource productLookup = LookupDataSourceFactory.sharedInstance().searchInTableLookup(I_M_Product.Table_Name);
+		private final LookupDataSource termsLookup = LookupDataSourceFactory.sharedInstance().searchInTableLookup(I_C_Incoterms.Table_Name);
 
 		private final DocumentIdIntSequence nextRowIdSequence = DocumentIdIntSequence.newInstance();
 

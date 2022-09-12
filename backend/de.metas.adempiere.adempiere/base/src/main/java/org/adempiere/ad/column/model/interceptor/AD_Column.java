@@ -2,6 +2,7 @@ package org.adempiere.ad.column.model.interceptor;
 
 import de.metas.i18n.po.POTrlRepository;
 import de.metas.logging.LogManager;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.security.impl.ParsedSql;
 import de.metas.translation.api.IElementTranslationBL;
 import de.metas.util.Services;
@@ -15,6 +16,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Field;
@@ -142,14 +144,14 @@ public class AD_Column
 			try
 			{
 				final String ctxTableName = getTableName(column);
-				lookupInfo = MLookupFactory.getLookupInfo(
+				lookupInfo = MLookupFactory.newInstance().getLookupInfo(
 						Integer.MAX_VALUE, // WindowNo
 						adReferenceId,
 						ctxTableName, // ctxTableName
 						column.getColumnName(), // ctxColumnName
-						column.getAD_Reference_Value_ID(),
+						ReferenceId.ofRepoIdOrNull(column.getAD_Reference_Value_ID()),
 						column.isParent(), // IsParent,
-						column.getAD_Val_Rule_ID() //AD_Val_Rule_ID
+						AdValRuleId.ofRepoIdOrNull(column.getAD_Val_Rule_ID()) //AD_Val_Rule_ID
 				);
 			}
 			catch (final Exception ex)

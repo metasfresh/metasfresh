@@ -23,6 +23,7 @@
 package de.metas.serviceprovider.issue.importer;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.externalreference.ExternalId;
 import de.metas.externalreference.ExternalReferenceRepository;
@@ -49,12 +50,12 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.assertj.core.api.Assertions;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -79,7 +80,6 @@ class IssueImporterServiceTest
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
-		final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 
 		issueRepository = new IssueRepository(queryBL, modelCacheInvalidationService);
 
@@ -97,7 +97,7 @@ class IssueImporterServiceTest
 				issueRepository,
 				externalReferenceRepository,
 				trxManager,
-				adReferenceDAO,
+				ADReferenceService.newMocked(),
 				new IssueLabelRepository(queryBL)
 		);
 	}

@@ -180,15 +180,6 @@ public class MInOutConfirm extends X_M_InOutConfirm implements IDocument
 	}	//	addDescription
 
 	/**
-	 * 	Get Name of ConfirmType
-	 *	@return confirm type
-	 */
-	public String getConfirmTypeName ()
-	{
-		return MRefList.getListName (getCtx(), CONFIRMTYPE_AD_Reference_ID, getConfirmType());
-	}	//	getConfirmTypeName
-
-	/**
 	 * 	String Representation
 	 *	@return info
 	 */

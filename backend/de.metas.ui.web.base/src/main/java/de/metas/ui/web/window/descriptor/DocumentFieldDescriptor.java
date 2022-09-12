@@ -309,7 +309,7 @@ public final class DocumentFieldDescriptor
 	public Optional<LookupDataSource> createLookupDataSource()
 	{
 		return getLookupDescriptor()
-				.map(LookupDataSourceFactory.instance::getLookupDataSource);
+				.map(lookupDescriptor -> LookupDataSourceFactory.sharedInstance().getLookupDataSource(lookupDescriptor));
 	}
 
 	public Optional<IExpression<?>> getDefaultValueExpression()

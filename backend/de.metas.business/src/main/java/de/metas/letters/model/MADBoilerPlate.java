@@ -24,7 +24,7 @@ import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.validationRule.IValidationRule;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.Adempiere;
 import org.compiere.model.GridTab;
@@ -376,15 +376,15 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		{
 			final Properties ctx = Env.getCtx();
 
-			lookup = MLookupFactory.get(ctx,
+			lookup = MLookupFactory.newInstance().get(ctx,
 					windowNo,
 					0, // Column_ID
 					DisplayType.TableDir,
 					null, // tablename
 					I_AD_BoilerPlate.COLUMNNAME_AD_BoilerPlate_ID,
-					0, // AD_Reference_Value_ID,
+					null, // AD_Reference_Value_ID,
 					false, // IsParent,
-					IValidationRule.AD_Val_Rule_ID_Null); // ValidationCode
+					(AdValRuleId)null); // ValidationCode
 		}
 		catch (final Exception e)
 		{

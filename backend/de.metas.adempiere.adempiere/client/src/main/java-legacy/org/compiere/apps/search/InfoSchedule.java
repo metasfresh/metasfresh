@@ -147,7 +147,7 @@ public class InfoSchedule extends CDialog
 	 */
 	private void jbInit() throws Exception
 	{
-		setIconImage(Images.getImage2(InfoBuilder.ACTION_InfoSchedule + "16"));
+		setIconImage(Images.getImage2("InfoSchedule16"));
 		mainPanel.setLayout(mainLayout);
 		parameterPanel.setLayout(parameterLayout);
 		labelResourceType.setHorizontalTextPosition(SwingConstants.LEADING);

@@ -28,7 +28,7 @@ import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.service.IADReferenceDAO;
+import de.metas.ad_reference.ADRefList;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
@@ -178,7 +178,7 @@ public class PickingJobService
 				|| item.getQtyPickedAndDelivered().signum() != 0;
 	}
 
-	public IADReferenceDAO.ADRefList getQtyRejectedReasons()
+	public ADRefList getQtyRejectedReasons()
 	{
 		return pickingCandidateService.getQtyRejectedReasons();
 	}

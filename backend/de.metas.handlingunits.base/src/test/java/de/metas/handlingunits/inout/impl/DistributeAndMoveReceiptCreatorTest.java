@@ -1,6 +1,7 @@
 package de.metas.handlingunits.inout.impl;
 
 import de.metas.acct.api.IProductAcctDAO;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.distribution.ddorder.DDOrderService;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
@@ -75,6 +76,7 @@ public class DistributeAndMoveReceiptCreatorTest
 						new DDOrderMoveScheduleService(
 								ddOrderLowLevelDAO,
 								new DDOrderMoveScheduleRepository(),
+								ADReferenceService.newMocked(),
 								huReservationService)));
 	}
 

@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
@@ -67,9 +68,11 @@ public class OrderLinePricingConditionsViewFactory extends PricingConditionsView
 	public static final String WINDOW_ID_STRING = "orderLinePricingConditions";
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_STRING);
 
-	public OrderLinePricingConditionsViewFactory()
+	public OrderLinePricingConditionsViewFactory(
+			@NonNull final LookupDataSourceFactory lookupDataSourceFactory
+	)
 	{
-		super(WINDOW_ID);
+		super(lookupDataSourceFactory, WINDOW_ID);
 	}
 
 	@Override
