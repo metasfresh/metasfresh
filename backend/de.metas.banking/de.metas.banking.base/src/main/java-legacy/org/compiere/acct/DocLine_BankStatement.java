@@ -205,10 +205,4 @@ class DocLine_BankStatement extends DocLine<Doc_BankStatement>
 			return conversionCtx;
 		}
 	}
-
-	public boolean isBankTransfer()
-	{
-		final I_C_BankStatementLine bsl = getC_BankStatementLine();
-		return bsl.getC_BP_BankAccountTo_ID() > 0 || bsl.getLink_BankStatementLine_ID() > 0;
-	}
 }

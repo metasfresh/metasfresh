@@ -26,7 +26,9 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineReferenceList;
+import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
+import de.metas.money.CurrencyId;
 import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentId;
 import de.metas.util.ISingletonService;
@@ -34,12 +36,16 @@ import lombok.NonNull;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
 public interface IBankStatementBL extends ISingletonService
 {
+	AdMessageKey MSG_BankStatement_MustBe_Draft_InProgress_Or_Completed = AdMessageKey.of("bankstatement.BankStatement_MustBe_Draft_InProgress_Or_Completed");
+	AdMessageKey MSG_LineIsAlreadyReconciled = AdMessageKey.of("bankstatement.LineIsAlreadyReconciled");
+
 	I_C_BankStatement getById(BankStatementId bankStatementId);
 
 	I_C_BankStatementLine getLineById(BankStatementLineId bankStatementLineId);
@@ -63,7 +69,11 @@ public interface IBankStatementBL extends ISingletonService
 
 	void deleteReferences(@NonNull BankStatementLineId bankStatementLineId);
 
-	void unlinkPaymentsAndDeleteReferences(@NonNull List<I_C_BankStatementLine> bankStatementLines);
+	void assertBankStatementIsDraftOrInProcessOrCompleted(I_C_BankStatement bankStatement);
+
+	void unreconcile(@NonNull List<I_C_BankStatementLine> bankStatementLines);
+
+	void reconcileAsBankTransfer(@NonNull ReconcileAsBankTransferRequest request);
 
 	int computeNextLineNo(@NonNull BankStatementId bankStatementId);
 
@@ -77,4 +87,8 @@ public interface IBankStatementBL extends ISingletonService
 	boolean isCashJournal(final I_C_BankStatementLine bankStatementLine);
 
 	PaymentCurrencyContext getPaymentCurrencyContext(@NonNull I_C_BankStatementLine bankStatementLine);
+
+	void changeCurrencyRate(BankStatementLineId bankStatementLineId, BigDecimal currencyRate);
+
+	CurrencyId getBaseCurrencyId(I_C_BankStatementLine line);
 }

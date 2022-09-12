@@ -22,7 +22,6 @@ import de.metas.document.DocBaseType;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
@@ -31,6 +30,7 @@ import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.MAccount;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -44,12 +44,11 @@ import java.util.List;
  * </pre>
  *
  * @author Jorg Janke
- * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
+ * @author victor.perez@e-evolution.com, e-Evolution <a href="http://www.e-evolution.com">...</a>
  * <li>FR [ 2520591 ] Support multiples calendar for Org
  * @version $Id: Doc_Bank.java,v 1.3 2006/07/30 00:53:33 jjanke Exp $
  * <p>
  * FR [ 1840016 ] Avoid usage of clearing accounts - subject to C_AcctSchema.IsPostIfClearingEqual Avoid posting if both accounts BankAsset and BankInTransit are equal
- * Also see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
  */
 public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 {
@@ -177,12 +176,24 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 		// BankAsset DR/CR (StmtAmt)
 		return fact.createLine()
 				.setDocLine(line)
-				.setAccount(getAccount(AccountType.BankAsset, as))
+				.setAccount(getBankAssetAccount(as))
 				// .setAmtSourceDrOrCr(line.getStmtAmt())
 				.setCurrencyId(line.getCurrencyId())
 				.setCurrencyConversionCtx(line.getCurrencyConversionCtxForBankAsset())
 				.orgIdIfValid(bankOrgId)
 				.bpartnerIdIfNotNull(bpartnerId);
+	}
+
+	private MAccount getBankAssetAccount(@NonNull final AcctSchema as)
+	{
+		final MAccount account = getAccount(AccountType.BankAsset, as);
+		if (account == null)
+		{
+			throw newPostingException()
+					.setDetailMessage("No Bank Asset account found")
+					.setAcctSchema(as);
+		}
+		return account;
 	}
 
 	/**
@@ -213,17 +224,7 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 	{
 		final ArrayList<Fact> facts = new ArrayList<>();
 
-		//
-		// Bank transfer or Payment
-		if (line.isBankTransfer())
-		{
-			facts.addAll(createFacts_BankTransfer(as, line));
-		}
-		else
-		{
-			facts.addAll(createFacts_Payments(as, line));
-		}
-
+		facts.addAll(createFacts_TrxAmt(as, line));
 		facts.addAll(createFacts_BankFee(as, line));
 		facts.addAll(createFacts_Charge(as, line));
 		facts.addAll(createFacts_Interest(as, line));
@@ -231,273 +232,137 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 		return facts;
 	}
 
-	/**
-	 * Create facts for bank transfer
-	 */
-	private List<Fact> createFacts_BankTransfer(
-			final AcctSchema as,
-			// final Fact fact,
-			final DocLine_BankStatement line
-			// final FactLine factLine_BankAsset
-	)
+	private List<Fact> createFacts_TrxAmt(
+			@NonNull final AcctSchema as,
+			@NonNull final DocLine_BankStatement line)
 	{
-		//
-		// Make sure it's a valid bank transfer line
-		Check.assume(line.isBankTransfer(), "Line is bank transfer: {}", line);
-		Check.assume(line.getReferences().isEmpty(), "Line has no referenced payments: {}", line);
+		final Fact fact;
+		final List<BankStatementLineReferenceAcctInfo> lineReferences = line.getReferences();
+		if (lineReferences.isEmpty())
+		{
+			fact = createFacts_TrxAmt_SimpleLine(as, line);
+		}
+		else
+		{
+			fact = createFacts_TrxAmt_LineRefs(as, line);
+		}
 
-		//
-		// Get the transferred amount.
-		// If the amount is zero, we have nothing to do.
-		final BigDecimal trxAmt = line.getTrxAmt();
-		if (trxAmt.signum() == 0)
+		if (fact == null)
 		{
 			return ImmutableList.of();
 		}
 
-		// NOTE: atm we support only the case when StmtAmt=TrxAmt because we also have to calculate the currency gain and loss (i.e. BankAsset minus BankInTransit),
-		// and the factLine_BankAsset is booking the StmtAmt.
-		Check.assume(trxAmt.compareTo(line.getStmtAmt()) == 0, "StmtAmt equals = TrxAmt for line {}", line);
-
-		final OrgId bankOrgId = getBankOrgId();    // Bank Account Org
-		final Fact fact = new Fact(this, as, PostingType.Actual);
-
-		//
-		// Bank Asset: DR/CR
-		final FactLineBuilder factLine_BankAsset_Builder = prepareBankAssetFactLine(fact, line);
-
-		//
-		// Bank In Transit: CR/DR
-		final FactLineBuilder factLine_BankTransfer_Builder = fact.createLine()
-				.setDocLine(line)
-				.setAccount(getAccount(AccountType.BankInTransit, as))
-				.setCurrencyId(line.getCurrencyId())
-				.setCurrencyConversionCtx(line.getCurrencyConversionCtxForBankInTransit())
-				.orgId(bankOrgId.isRegular() ? bankOrgId : line.getOrgId()) // bank org, line org
-				.bpartnerIdIfNotNull(line.getBPartnerId());
-
-		final FactLine factLine_BankAsset;
-		final FactLine factLine_BankTransfer;
-		final BigDecimal amtAcct_BankAsset;
-		final BigDecimal amtAcct_BankTransfer;
-
-		//
-		// Bank transfer: income
-		// Bank Asset: DR
-		// Bank In transit: CR
-		if (line.isInboundTrx())
-		{
-			factLine_BankAsset_Builder.setAmtSource(trxAmt, null);
-			factLine_BankTransfer_Builder.setAmtSource(null, trxAmt);
-
-			factLine_BankAsset = factLine_BankAsset_Builder.buildAndAdd();
-			factLine_BankTransfer = factLine_BankTransfer_Builder.buildAndAdd();
-
-			amtAcct_BankAsset = factLine_BankAsset.getAmtAcctDr();
-			amtAcct_BankTransfer = factLine_BankTransfer.getAmtAcctCr();
-		}
-		//
-		// Bank transfer: outgoing
-		// Bank Asset: CR
-		// Bank In transit: DR
-		else
-		{
-			factLine_BankAsset_Builder.setAmtSource(null, trxAmt.negate());
-			factLine_BankTransfer_Builder.setAmtSource(trxAmt.negate(), null);
-
-			factLine_BankAsset = factLine_BankAsset_Builder.buildAndAdd();
-			factLine_BankTransfer = factLine_BankTransfer_Builder.buildAndAdd();
-
-			amtAcct_BankAsset = factLine_BankAsset.getAmtAcctCr();
-			amtAcct_BankTransfer = factLine_BankTransfer.getAmtAcctDr();
-		}
-
-		//
-		// Currency Gain/Loss bookings
-		final BigDecimal amtAcct_BankAssetMinusTransferred = amtAcct_BankAsset.subtract(amtAcct_BankTransfer);
-		createFacts_BankTransfer_RealizedGainOrLoss(fact, line, amtAcct_BankAssetMinusTransferred);
+		createFacts_CurrencyExchangeGainOrLoss(fact, line);
 
 		return ImmutableList.of(fact);
 	}
 
-	/**
-	 * Create facts for bank transfer's currency gain/loss
-	 */
-	private void createFacts_BankTransfer_RealizedGainOrLoss(
-			final Fact fact,
-			final DocLine_BankStatement line,
-			final BigDecimal amtAcct_BankAssetMinusTransferred)
-	{
-		// If there is no difference between how much we booked in BankAsset and how much we book in Bank Transfer
-		// => stop here, there are no currency gain/loss
-		if (amtAcct_BankAssetMinusTransferred.signum() == 0)
-		{
-			return;
-		}
-
-		//
-		// Flag this document as multi-currency to prevent source amounts balancing.
-		// Our source amounts won't be source balanced anymore because the bank transfer is booked in allocation's currency
-		// and the currency gain/loss is booked in accounting currency.
-		setIsMultiCurrency();
-
-		final AcctSchema as = fact.getAcctSchema();
-		final MAccount account;
-		final BigDecimal amtSourceDr;
-		final BigDecimal amtSourceCr;
-		if (line.isInboundTrx())
-		{
-			// Inbound Gain
-			if (amtAcct_BankAssetMinusTransferred.signum() >= 0)
-			{
-				account = getRealizedGainAcct(as);
-				amtSourceDr = null;
-				amtSourceCr = amtAcct_BankAssetMinusTransferred;
-			}
-			// Inbound Loss
-			else
-			{
-				account = getRealizedLossAcct(as);
-				amtSourceDr = amtAcct_BankAssetMinusTransferred.negate();
-				amtSourceCr = null;
-			}
-		}
-		// Outbound
-		else
-		{
-			// Outbound Loss
-			if (amtAcct_BankAssetMinusTransferred.signum() >= 0)
-			{
-				account = getRealizedLossAcct(as);
-				amtSourceDr = amtAcct_BankAssetMinusTransferred;
-				amtSourceCr = null;
-
-			}
-			// Outbound Gain
-			else
-			{
-				account = getRealizedGainAcct(as);
-				amtSourceDr = null;
-				amtSourceCr = amtAcct_BankAssetMinusTransferred.negate();
-			}
-		}
-
-		fact.createLine()
-				.setDocLine(line)
-				.setAccount(account)
-				.setCurrencyId(as.getCurrencyId())
-				.setAmtSource(amtSourceDr, amtSourceCr)
-				.buildAndAdd();
-	}
-
-	/**
-	 * Create facts for booking the payments.
-	 */
-	private List<Fact> createFacts_Payments(
+	@Nullable
+	private Fact createFacts_TrxAmt_SimpleLine(
 			@NonNull final AcctSchema as,
 			@NonNull final DocLine_BankStatement line)
 	{
-		Check.assume(!line.isBankTransfer(), "Line is NOT bank transfer: {}", line);
+		final BigDecimal trxAmt = line.getTrxAmt();
+		if (trxAmt.signum() == 0)
+		{
+			return null;
+		}
 
+		final OrgId bankOrgId = getBankOrgId();    // Bank Account Org
+
+		final Fact fact = new Fact(this, as, PostingType.Actual);
+		final FactLineBuilder bankAssetFactLineBuilder = prepareBankAssetFactLine(fact, line);
+		final FactLineBuilder bankInTransitFactLineBuilder = fact.createLine()
+				.setDocLine(line)
+				.setAccount(getAccount(AccountType.BankInTransit, as))
+				.setAmtSourceDrOrCr(trxAmt.negate())
+				.setCurrencyId(line.getCurrencyId())
+				.setCurrencyConversionCtx(line.getCurrencyConversionCtxForBankInTransit())
+				.orgId(bankOrgId.isRegular() ? bankOrgId : line.getPaymentOrgId()) // bank org, payment org/line org
+				.bpartnerIdIfNotNull(line.getBPartnerId());
+
+		//
+		// Inbound:
+		// Bank Asset: DR
+		// Bank In Transit: CR
+		if (trxAmt.signum() > 0)
+		{
+			bankAssetFactLineBuilder.setAmtSource(trxAmt, null);
+			bankInTransitFactLineBuilder.setAmtSource(null, trxAmt);
+		}
+		//
+		// Outbound
+		// Bank Asset: CR
+		// Bank In Transit: DR
+		else // trxAmt.signum() < 0
+		{
+			bankAssetFactLineBuilder.setAmtSource(null, trxAmt.negate());
+			bankInTransitFactLineBuilder.setAmtSource(trxAmt.negate(), null);
+		}
+
+		bankAssetFactLineBuilder.buildAndAdd();
+		bankInTransitFactLineBuilder.buildAndAdd();
+
+		return fact;
+	}
+
+	private Fact createFacts_TrxAmt_LineRefs(
+			@NonNull final AcctSchema as,
+			@NonNull final DocLine_BankStatement line)
+	{
 		final MAccount acct_BankInTransit = getAccount(AccountType.BankInTransit, as);
 		final OrgId bankOrgId = getBankOrgId();    // Bank Account Org
 		final BPartnerId bpartnerId = line.getBPartnerId();
-
 		final List<BankStatementLineReferenceAcctInfo> lineReferences = line.getReferences();
-		if (lineReferences.isEmpty())
+
+		final Fact fact = new Fact(this, as, PostingType.Actual);
+
+		//
+		// Bank Asset: DR/CR
+		final boolean inboundTrx;
 		{
 			final BigDecimal trxAmt = line.getTrxAmt();
-			if (trxAmt.signum() == 0)
-			{
-				return ImmutableList.of();
-			}
-
-			final Fact fact = new Fact(this, as, PostingType.Actual);
 			final FactLineBuilder bankAssetFactLine = prepareBankAssetFactLine(fact, line);
-			final FactLineBuilder bankInTransitFactLine = fact.createLine()
-					.setDocLine(line)
-					.setAccount(acct_BankInTransit)
-					.setAmtSourceDrOrCr(trxAmt.negate())
-					.setCurrencyId(line.getCurrencyId())
-					.setCurrencyConversionCtx(line.getCurrencyConversionCtxForBankInTransit())
-					.orgId(bankOrgId.isRegular() ? bankOrgId : line.getPaymentOrgId()) // bank org, payment org
-					.bpartnerIdIfNotNull(bpartnerId);
-
-			//
-			// Inbound:
-			// Bank Asset: DR
-			// Bank In Transit: CR
-			if (trxAmt.signum() > 0)
+			if (trxAmt.signum() >= 0)
 			{
 				bankAssetFactLine.setAmtSource(trxAmt, null);
-				bankInTransitFactLine.setAmtSource(null, trxAmt);
+				inboundTrx = true;
 			}
-			//
-			// Outbound
-			// Bank Asset: CR
-			// Bank In Transit: DR
-			else // trxAmt.signum() < 0
+			else
 			{
 				bankAssetFactLine.setAmtSource(null, trxAmt.negate());
-				bankInTransitFactLine.setAmtSource(trxAmt.negate(), null);
+				inboundTrx = false;
 			}
-
 			bankAssetFactLine.buildAndAdd();
-			bankInTransitFactLine.buildAndAdd();
-
-			return ImmutableList.of(fact);
 		}
-		else
+
+		//
+		// Bank In Transit: CR/DR
+		for (final BankStatementLineReferenceAcctInfo lineRef : lineReferences)
 		{
-			final Fact fact = new Fact(this, as, PostingType.Actual);
+			final FactLineBuilder bankInTransitFactLineBuilder = fact.createLine()
+					.setDocLine(line)
+					.setSubLine_ID(lineRef.getBankStatementLineRefId().getRepoId())
+					.setAccount(acct_BankInTransit)
+					// .setAmtSourceDrOrCr(lineRef.getTrxAmt().toBigDecimal().negate())
+					.setCurrencyId(lineRef.getTrxAmt().getCurrencyId())
+					.setCurrencyConversionCtx(lineRef.getCurrencyConversionContext())
+					.orgId(bankOrgId.isRegular() ? bankOrgId : line.getPaymentOrgId()) // bank org, payment org
+					.bpartnerIdIfNotNull(CoalesceUtil.coalesce(lineRef.getBpartnerId(), bpartnerId)); // if the line ref has a C_BPartner, then use it
 
-			//
-			// Bank Asset: DR/CR
-			final boolean inboundTrx;
+			if (inboundTrx)
 			{
-				final BigDecimal trxAmt = line.getTrxAmt();
-				final FactLineBuilder bankAssetFactLine = prepareBankAssetFactLine(fact, line);
-				if (trxAmt.signum() >= 0)
-				{
-					bankAssetFactLine.setAmtSource(trxAmt, null);
-					inboundTrx = true;
-				}
-				else
-				{
-					bankAssetFactLine.setAmtSource(null, trxAmt.negate());
-					inboundTrx = false;
-				}
-				bankAssetFactLine.buildAndAdd();
+				bankInTransitFactLineBuilder.setAmtSource(null, lineRef.getTrxAmt().toBigDecimal());
+			}
+			else
+			{
+				bankInTransitFactLineBuilder.setAmtSource(lineRef.getTrxAmt().toBigDecimal().negate(), null);
 			}
 
-			//
-			// Bank In Transit: CR/DR
-			for (final BankStatementLineReferenceAcctInfo lineRef : lineReferences)
-			{
-				final FactLineBuilder bankInTransitFactLine = fact.createLine()
-						.setDocLine(line)
-						.setSubLine_ID(lineRef.getBankStatementLineRefId().getRepoId())
-						.setAccount(acct_BankInTransit)
-						// .setAmtSourceDrOrCr(lineRef.getTrxAmt().toBigDecimal().negate())
-						.setCurrencyId(lineRef.getTrxAmt().getCurrencyId())
-						.setCurrencyConversionCtx(lineRef.getCurrencyConversionContext())
-						.orgId(bankOrgId.isRegular() ? bankOrgId : line.getPaymentOrgId()) // bank org, payment org
-						.bpartnerIdIfNotNull(CoalesceUtil.coalesce(lineRef.getBpartnerId(), bpartnerId)); // if the line ref has a C_BPartner, then use it
-
-				if (inboundTrx)
-				{
-					bankInTransitFactLine.setAmtSource(null, lineRef.getTrxAmt().toBigDecimal());
-				}
-				else
-				{
-					bankInTransitFactLine.setAmtSource(lineRef.getTrxAmt().toBigDecimal().negate(), null);
-				}
-
-				bankInTransitFactLine.buildAndAdd();
-			}
-
-			return ImmutableList.of(fact);
+			bankInTransitFactLineBuilder.buildAndAdd();
 		}
+
+		return fact;
 	}
 
 	private List<Fact> createFacts_BankFee(
@@ -616,5 +481,116 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 		interestFactLine.buildAndAdd();
 
 		return ImmutableList.of(fact);
+	}
+
+	private void createFacts_CurrencyExchangeGainOrLoss(
+			final Fact fact,
+			final DocLine_BankStatement line)
+	{
+		final BigDecimal bankAssetMinusInTransitAmount = computeBankAssetMinusInTransitAcctAmt(fact);
+		// If there is no difference between how much we booked in BankAsset and how much we book in Bank In Transit
+		// => stop here, there are no currency gain/loss
+		if (bankAssetMinusInTransitAmount.signum() == 0)
+		{
+			return;
+		}
+
+		//
+		// Flag this document as multi-currency to prevent source amounts balancing.
+		// Our source amounts won't be source balanced anymore because the bank transfer is booked in allocation's currency
+		// and the currency gain/loss is booked in accounting currency.
+		setIsMultiCurrency(true);
+
+		final AcctSchema as = fact.getAcctSchema();
+		final MAccount account;
+		final BigDecimal amtSourceDr;
+		final BigDecimal amtSourceCr;
+		if (line.isInboundTrx())
+		{
+			// Inbound Gain
+			if (bankAssetMinusInTransitAmount.signum() >= 0)
+			{
+				account = getRealizedGainAcct(as);
+				amtSourceDr = null;
+				amtSourceCr = bankAssetMinusInTransitAmount;
+			}
+			// Inbound Loss
+			else
+			{
+				account = getRealizedLossAcct(as);
+				amtSourceDr = bankAssetMinusInTransitAmount.negate();
+				amtSourceCr = null;
+			}
+		}
+		// Outbound
+		else
+		{
+			// Outbound Loss
+			if (bankAssetMinusInTransitAmount.signum() >= 0)
+			{
+				account = getRealizedLossAcct(as);
+				amtSourceDr = bankAssetMinusInTransitAmount;
+				amtSourceCr = null;
+
+			}
+			// Outbound Gain
+			else
+			{
+				account = getRealizedGainAcct(as);
+				amtSourceDr = null;
+				amtSourceCr = bankAssetMinusInTransitAmount.negate();
+			}
+		}
+
+		fact.createLine()
+				.setDocLine(line)
+				.setAccount(account)
+				.setCurrencyId(as.getCurrencyId())
+				.setAmtSource(amtSourceDr, amtSourceCr)
+				.buildAndAdd();
+	}
+
+	private BigDecimal computeBankAssetMinusInTransitAcctAmt(final Fact fact)
+	{
+		if (fact.isEmpty())
+		{
+			return BigDecimal.ZERO;
+		}
+
+		final MAccount bankAssetAccount = getBankAssetAccount(fact.getAcctSchema());
+		final FactLine factLine_BankAsset = fact.getSingleLineByAccountId(bankAssetAccount);
+
+		final BigDecimal bankAssetAmt;
+		final boolean isIncomeAmount;
+		if (factLine_BankAsset.getAmtAcctDr().signum() != 0)
+		{
+			bankAssetAmt = factLine_BankAsset.getAmtAcctDr();
+			isIncomeAmount = true;
+		}
+		else
+		{
+			bankAssetAmt = factLine_BankAsset.getAmtAcctCr();
+			isIncomeAmount = false;
+		}
+
+		BigDecimal bankInTransitAmt = BigDecimal.ZERO;
+		for (final FactLine factLine : fact.getLines())
+		{
+			if (factLine == factLine_BankAsset)
+			{
+				continue;
+			}
+
+			if (isIncomeAmount)
+			{
+				bankInTransitAmt = bankInTransitAmt.add(factLine.getAmtAcctCr());
+			}
+			else
+			{
+				bankInTransitAmt = bankInTransitAmt.add(factLine.getAmtAcctDr());
+			}
+		}
+
+		return bankAssetAmt.subtract(bankInTransitAmt);
 	}
 }   // Doc_Bank
