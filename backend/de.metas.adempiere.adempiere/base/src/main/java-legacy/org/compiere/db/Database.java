@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import de.metas.common.util.time.SystemTime;
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.compiere.util.DisplayType;
 
@@ -50,9 +51,11 @@ public class Database
 
 	public static String TO_DATE(@NonNull final ZonedDateTime zdt)
 	{
+		final long microseconds = zdt.getNano() / 1000;
+
 		return "'"
 				+ zdt.getYear() + "-" + zdt.getMonthValue() + "-" + zdt.getDayOfMonth()
-				+ " " + zdt.getHour() + ":" + zdt.getMinute() + ":" + zdt.getSecond()
+				+ " " + zdt.getHour() + ":" + zdt.getMinute() + ":" + zdt.getSecond() + "." + microseconds
 				+ " " + zdt.getZone().getId()
 				+ "'::timestamptz";
 	}
@@ -109,8 +112,14 @@ public class Database
 		}
 		else
 		{
-			dateString.append(myDate.substring(0, myDate.indexOf('.')));    // cut off miliseconds
-			dateString.append("','YYYY-MM-DD HH24:MI:SS')");
+			final String[] parts = myDate.split("\\.");
+			final String dateWithoutMicroseconds = parts[0];
+			final String microseconds = parts[1];
+			dateString
+					.append(dateWithoutMicroseconds)
+					.append(".")
+					.append(StringUtils.trunc(microseconds, 6))
+					.append("','YYYY-MM-DD HH24:MI:SS.US')");
 		}
 		return dateString.toString();
 	}   // TO_DATE
