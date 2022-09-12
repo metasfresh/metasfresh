@@ -1,6 +1,9 @@
 -- 2022-09-12T06:05:33.543Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsLogWarning,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUpdateExportDate,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,SpreadsheetFormat,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,585107,'Y','de.metas.banking.process.C_BankStatement_ChangeCurrencyRate','N',TO_TIMESTAMP('2022-09-12 09:05:33','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','N','N','Y','N','N','N','N','Y','N','Y',0,'Change Currency Rate','json','N','N','xls','Java',TO_TIMESTAMP('2022-09-12 09:05:33','YYYY-MM-DD HH24:MI:SS'),100,'C_BankStatement_ChangeCurrencyRate')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsLogWarning,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,
+                        IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,SpreadsheetFormat,Type,Updated,UpdatedBy,Value)
+VALUES ('3',0,0,585107,'Y','de.metas.banking.process.C_BankStatement_ChangeCurrencyRate','N',TO_TIMESTAMP('2022-09-12 09:05:33','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','N','N','N','Y','N','N','N','N','Y',
+        'Y',0,'Change Currency Rate','json','N','N','xls','Java',TO_TIMESTAMP('2022-09-12 09:05:33','YYYY-MM-DD HH24:MI:SS'),100,'C_BankStatement_ChangeCurrencyRate')
 ;
 
 -- 2022-09-12T06:05:33.547Z
