@@ -32,7 +32,9 @@ import de.metas.banking.api.BankAccountService;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.banking.service.IBankStatementListenerService;
+import de.metas.banking.service.ReconcileAsBankTransferRequest;
 import de.metas.currency.Amount;
+import de.metas.document.engine.DocStatus;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
@@ -43,6 +45,7 @@ import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
@@ -161,7 +164,61 @@ public class BankStatementBL implements IBankStatementBL
 	}
 
 	@Override
-	public void unlinkPaymentsAndDeleteReferences(@NonNull final List<I_C_BankStatementLine> bankStatementLines)
+	public void reconcileAsBankTransfer(@NonNull final ReconcileAsBankTransferRequest request)
+	{
+		if (BankStatementId.equals(request.getBankStatementId(), request.getCounterpartBankStatementId()))
+		{
+			throw new AdempiereException("Matching same bank statement is not allowed");
+		}
+		if (BankStatementLineId.equals(request.getBankStatementLineId(), request.getCounterpartBankStatementLineId()))
+		{
+			throw new AdempiereException("Matching same bank statement line is not allowed");
+		}
+
+		final I_C_BankStatement bankStatement = getById(request.getBankStatementId());
+		if (!DocStatus.ofCode(bankStatement.getDocStatus()).isDraftedInProgressOrCompleted())
+		{
+			throw new AdempiereException(MSG_BankStatement_MustBe_Draft_InProgress_Or_Completed);
+		}
+		final I_C_BankStatementLine line = getLineById(request.getBankStatementLineId());
+		if (line.isReconciled())
+		{
+			throw new AdempiereException(MSG_LineIsAlreadyReconciled);
+		}
+
+		final I_C_BankStatement counterpartBankStatement = getById(request.getCounterpartBankStatementId());
+		if (!DocStatus.ofCode(counterpartBankStatement.getDocStatus()).isDraftedInProgressOrCompleted())
+		{
+			throw new AdempiereException(MSG_BankStatement_MustBe_Draft_InProgress_Or_Completed);
+		}
+		final I_C_BankStatementLine counterpartLine = getLineById(request.getCounterpartBankStatementLineId());
+		if (counterpartLine.isReconciled())
+		{
+			throw new AdempiereException(MSG_LineIsAlreadyReconciled);
+		}
+
+		final boolean sameCurrency = line.getC_Currency_ID() == counterpartLine.getC_Currency_ID();
+		if (sameCurrency && line.getTrxAmt().negate().compareTo(counterpartLine.getTrxAmt()) != 0)
+		{
+			throw new AdempiereException("Transfer amount differs"); // TODO: translate
+		}
+
+		line.setC_BP_BankAccountTo_ID(counterpartBankStatement.getC_BP_BankAccount_ID());
+		line.setLink_BankStatementLine_ID(counterpartLine.getC_BankStatementLine_ID());
+		line.setIsReconciled(true);
+		InterfaceWrapperHelper.save(line);
+
+		counterpartLine.setC_BP_BankAccountTo_ID(bankStatement.getC_BP_BankAccount_ID());
+		counterpartLine.setLink_BankStatementLine_ID(line.getC_BankStatementLine_ID());
+		counterpartLine.setIsReconciled(true);
+		InterfaceWrapperHelper.save(counterpartLine);
+
+		unpost(bankStatement);
+		unpost(counterpartBankStatement);
+	}
+
+	@Override
+	public void unreconcile(@NonNull final List<I_C_BankStatementLine> bankStatementLines)
 	{
 		if (bankStatementLines.isEmpty())
 		{
@@ -183,13 +240,14 @@ public class BankStatementBL implements IBankStatementBL
 				paymentIdsToUnReconcile.add(paymentId);
 			}
 
-			bankStatementLine.setIsReconciled(false);
-			bankStatementLine.setIsMultiplePaymentOrInvoice(false);
-			bankStatementLine.setIsMultiplePayment(false);
+			final BankStatementLineId linkBankStatementLineId = BankStatementLineId.ofRepoIdOrNull(bankStatementLine.getLink_BankStatementLine_ID());
+			if (linkBankStatementLineId != null)
+			{
+				final I_C_BankStatementLine linkBankStatementLine = getLineById(linkBankStatementLineId);
+				markAsNotReconciledAndSave(linkBankStatementLine);
+			}
 
-			bankStatementLine.setC_Payment_ID(-1);
-
-			bankStatementDAO.save(bankStatementLine);
+			markAsNotReconciledAndSave(bankStatementLine);
 		}
 
 		//
@@ -200,6 +258,19 @@ public class BankStatementBL implements IBankStatementBL
 		deleteReferencesAndNotifyListeners(lineRefs);
 
 		paymentBL.markNotReconciled(paymentIdsToUnReconcile);
+	}
+
+	private void markAsNotReconciledAndSave(final I_C_BankStatementLine bankStatementLine)
+	{
+		bankStatementLine.setIsReconciled(false);
+
+		bankStatementLine.setLink_BankStatementLine_ID(-1);
+
+		bankStatementLine.setIsMultiplePaymentOrInvoice(false);
+		bankStatementLine.setIsMultiplePayment(false);
+		bankStatementLine.setC_Payment_ID(-1);
+
+		bankStatementDAO.save(bankStatementLine);
 	}
 
 	@Override

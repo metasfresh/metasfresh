@@ -2,6 +2,7 @@ package de.metas.banking.process;
 
 import java.util.Set;
 
+import de.metas.banking.service.IBankStatementBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BankStatement;
@@ -46,7 +47,7 @@ public class C_BankStatement_UnReconcileLine extends BankStatementBasedProcess
 				.and(() -> checkSingleLineSelectedWhichIsReconciled(context));
 	}
 
-	private final ProcessPreconditionsResolution checkSingleLineSelectedWhichIsReconciled(@NonNull final IProcessPreconditionsContext context)
+	private ProcessPreconditionsResolution checkSingleLineSelectedWhichIsReconciled(@NonNull final IProcessPreconditionsContext context)
 	{
 		// there should be a single line selected
 		final Set<TableRecordReference> bankStatemementLineRefs = context.getSelectedIncludedRecords();
@@ -73,11 +74,11 @@ public class C_BankStatement_UnReconcileLine extends BankStatementBasedProcess
 		final DocStatus docStatus = DocStatus.ofCode(bankStatement.getDocStatus());
 		if (!docStatus.isDraftedInProgressOrCompleted())
 		{
-			throw new AdempiereException(msgBL.getTranslatableMsgText(MSG_BankStatement_MustBe_Draft_InProgress_Or_Completed));
+			throw new AdempiereException(IBankStatementBL.MSG_BankStatement_MustBe_Draft_InProgress_Or_Completed);
 		}
 
 		final I_C_BankStatementLine bankStatementLine = getSingleSelectedBankStatementLine();
-		bankStatementBL.unlinkPaymentsAndDeleteReferences(ImmutableList.of(bankStatementLine));
+		bankStatementBL.unreconcile(ImmutableList.of(bankStatementLine));
 		bankStatementBL.unpost(bankStatement);
 
 		return MSG_OK;

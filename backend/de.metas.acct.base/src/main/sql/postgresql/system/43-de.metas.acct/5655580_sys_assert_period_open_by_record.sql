@@ -90,6 +90,10 @@ BEGIN
         RAISE EXCEPTION 'Document %/% is not handled when checking if the period is open', p_TableName, p_Record_ID;
     END IF;
 
+    IF (v_DateAcct IS NULL) THEN
+        RAISE EXCEPTION 'No document found for %/%', p_TableName, p_Record_ID;
+    END IF;
+
     PERFORM "de_metas_acct".assert_period_open(
             p_DateAcct := v_DateAcct,
             p_DocBaseType := v_DocBaseType,
