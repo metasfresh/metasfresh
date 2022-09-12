@@ -32,7 +32,6 @@ import com.adekia.exchange.amazonsp.util.AmazonOrder;
 import com.adekia.exchange.amazonsp.util.AmazonOrderApiHelper;
 import com.adekia.exchange.context.Ctx;
 import oasis.names.specification.ubl.schema.xsd.order_23.OrderType;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -41,7 +40,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@ConditionalOnProperty(prefix = "order", name = "provider", havingValue = "amazon")
+//@ConditionalOnProperty(prefix = "order", name = "provider", havingValue = "amazon")
 public class AmazonGetOrdersProviderImpl implements AmazonGetOrdersProvider {
 
     @Override
