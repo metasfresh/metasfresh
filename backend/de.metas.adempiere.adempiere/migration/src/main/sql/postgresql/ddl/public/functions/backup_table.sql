@@ -1,3 +1,5 @@
+DROP FUNCTION IF EXISTS backup_table(p_tablename text);
+
 CREATE FUNCTION backup_table(p_tablename text) RETURNS text
     LANGUAGE plpgsql
 AS
