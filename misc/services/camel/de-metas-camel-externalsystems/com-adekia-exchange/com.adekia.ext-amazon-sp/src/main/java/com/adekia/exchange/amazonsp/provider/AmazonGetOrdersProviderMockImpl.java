@@ -40,7 +40,6 @@ import java.util.stream.Collectors;
 
 @Service
 @ConditionalOnProperty(prefix = "order", name = "provider", havingValue = "amazon-mock")
-
 public class AmazonGetOrdersProviderMockImpl implements AmazonGetOrdersProvider
 {
 	@Override

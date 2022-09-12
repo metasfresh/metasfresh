@@ -26,11 +26,10 @@ import com.adekia.exchange.sender.OrderBPSender;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import org.apache.camel.ProducerTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 @Service
-@ConditionalOnProperty(prefix = "order", name = "sender", havingValue = "metasfresh")
+//@ConditionalOnProperty(prefix = "order", name = "sender", havingValue = "metasfresh")
 public class MetasfreshOrderBPSenderImpl implements OrderBPSender
 {
 	private ProducerTemplate producerTemplate;

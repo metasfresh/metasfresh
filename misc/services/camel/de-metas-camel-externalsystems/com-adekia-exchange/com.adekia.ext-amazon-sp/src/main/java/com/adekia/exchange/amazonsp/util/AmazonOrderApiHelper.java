@@ -50,7 +50,7 @@ public class AmazonOrderApiHelper
 				.clientId(ctx.getProperties().get("clientId"))
 				.clientSecret(ctx.getProperties().get("clientSecret"))
 				.refreshToken(ctx.getProperties().get("refreshToken"))
-				.endpoint("https://api.amazon.com/auth/o2/token")
+				.endpoint(ctx.getProperties().get("LwaEndpoint")) // https://api.amazon.com/auth/o2/token
 				.build();
 
 	/*
