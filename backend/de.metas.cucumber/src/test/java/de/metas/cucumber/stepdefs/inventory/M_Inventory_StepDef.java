@@ -141,11 +141,7 @@ public class M_Inventory_StepDef
 		final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentScheduleRecord = shipmentScheduleTable.get(shipmentScheduleIdentifier);
 
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Product.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final Integer productID = productTable.getOptional(productIdentifier)
-				.map(I_M_Product::getM_Product_ID)
-				.orElseGet(() -> Integer.parseInt(productIdentifier));
-
-		final I_M_Product productRecord = InterfaceWrapperHelper.load(productID, I_M_Product.class);
+		final I_M_Product productRecord = productTable.get(productIdentifier);
 
 		assertThat(productRecord).isNotNull();
 

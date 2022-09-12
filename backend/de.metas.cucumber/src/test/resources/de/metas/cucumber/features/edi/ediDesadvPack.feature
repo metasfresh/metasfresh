@@ -6,6 +6,9 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item
     And metasfresh initially has no EDI_Desadv_Pack_Item data
     And metasfresh initially has no EDI_Desadv_Pack data
     And destroy existing M_HUs
+    And load M_Product:
+      | M_Product_ID.Identifier | OPT.M_Product_ID |
+      | convenienceSalate       | 2005577          |
 
 
   Scenario: As a user I want to verify the creation of EDI_DesadvPack and EDI_DesadvPack_Item records
@@ -121,7 +124,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item
       | huPiItemTU                 | packingVersionTU              | 0   | MI       |                                  |
     And metasfresh contains M_HU_PI_Item_Product:
       | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
-      | huProductTU                        | huPiItemTU                 | 2005577                 | 10  | 2021-01-01 |
+      | huProductTU                        | huPiItemTU                 | convenienceSalate       | 10  | 2021-01-01 |
 
     And metasfresh initially has M_Inventory data
       | M_Inventory_ID.Identifier | MovementDate         | DocumentNo     |
@@ -214,7 +217,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item
       | huPiItemTU                 | packingVersionTU              | 0   | MI       |                                  |
     And metasfresh contains M_HU_PI_Item_Product:
       | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
-      | huProductTU                        | huPiItemTU                 | 2005577                 | 10  | 2021-01-01 |
+      | huProductTU                        | huPiItemTU                 | convenienceSalate       | 10  | 2021-01-01 |
 
     And metasfresh initially has M_Inventory data
       | M_Inventory_ID.Identifier | MovementDate         | DocumentNo     |
