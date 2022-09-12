@@ -28,6 +28,9 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+import java.util.Objects;
+
 @Value
 public class AdColumnId implements RepoIdAware
 {
@@ -59,5 +62,10 @@ public class AdColumnId implements RepoIdAware
 	public int getRepoId()
 	{
 		return repoId;
+	}
+
+	public static boolean equals(@Nullable final AdColumnId id1, @Nullable final AdColumnId id2)
+	{
+		return Objects.equals(id1, id2);
 	}
 }

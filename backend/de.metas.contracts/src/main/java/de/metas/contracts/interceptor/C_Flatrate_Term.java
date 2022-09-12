@@ -22,6 +22,7 @@
 
 package de.metas.contracts.interceptor;
 
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.calendar.standard.ICalendarDAO;
 import de.metas.contracts.Contracts_Constants;
@@ -65,7 +66,6 @@ import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -110,12 +110,16 @@ public class C_Flatrate_Term
 	private final ContractOrderService contractOrderService;
 	private final IOLCandDAO candDAO = Services.get(IOLCandDAO.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+	private final ADReferenceService adReferenceService;
 
-	public C_Flatrate_Term(@NonNull final ContractOrderService contractOrderService,
-			@NonNull final IDocumentLocationBL documentLocationBL)
+	public C_Flatrate_Term(
+			@NonNull final ContractOrderService contractOrderService,
+			@NonNull final IDocumentLocationBL documentLocationBL,
+			@NonNull final ADReferenceService adReferenceService)
 	{
 		this.contractOrderService = contractOrderService;
 		this.documentLocationBL = documentLocationBL;
+		this.adReferenceService = adReferenceService;
 	}
 
 	@Init
@@ -165,7 +169,7 @@ public class C_Flatrate_Term
 			}
 
 			final POInfo docTypePOInfo = POInfo.getPOInfo(I_C_DocType.Table_Name);
-			final String name = Services.get(IADReferenceDAO.class).retrieveListNameTrl(docTypePOInfo.getColumnReferenceValueId(docTypePOInfo.getColumnIndex(I_C_DocType.COLUMNNAME_DocSubType)), docSubType)
+			final String name = adReferenceService.retrieveListNameTrl(docTypePOInfo.getColumnReferenceValueId(docTypePOInfo.getColumnIndex(I_C_DocType.COLUMNNAME_DocSubType)), docSubType)
 					+ " (" + org.getValue() + ")";
 			docTypeDAO.createDocType(DocTypeCreateRequest.builder()
 					.ctx(localCtx)

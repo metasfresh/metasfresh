@@ -1,4 +1,4 @@
-import { delete as del, get, patch, post } from 'axios';
+import axios, { delete as del, get, patch, post } from 'axios';
 
 import { createPatchRequestPayload, getQueryString } from '../utils';
 import { prepareFilterForBackend } from '../utils/filterHelpers';
@@ -203,17 +203,22 @@ export function deleteStaticFilter(windowId, viewId, filterId) {
   );
 }
 
-/*
- * @method quickActionsRequest
- * @summary Do a request for quick actions
- *
- * @param {string} viewId
- * @param {string} viewProfileId
- * @param {array} selectedIds
- * @param {object} childView
- * @param {object} parentView
- */
-export async function quickActionsRequest({
+/** Fetches all actions to be displayed in top "burger" menu */
+export const allActionsRequest = ({
+  windowId,
+  viewId,
+  selectedIds,
+  childViewId,
+  childViewSelectedIds,
+}) => {
+  return post(`${config.API_URL}/documentView/${windowId}/${viewId}/actions`, {
+    selectedIds,
+    childViewId,
+    childViewSelectedIds,
+  });
+};
+
+export function quickActionsRequest({
   windowId,
   viewId,
   viewProfileId,
@@ -367,3 +372,35 @@ export function getViewAttributeTypeahead(
     query
   )}`);
 }
+
+export const getViewFilterParameterDropdown = ({
+  windowId,
+  viewId,
+  filterId,
+  parameterName,
+  context = {},
+}) => {
+  return axios.post(
+    `${config.API_URL}/documentView/${windowId}/${viewId}/filter/${filterId}/field/${parameterName}/dropdown`,
+    {
+      context,
+    }
+  );
+};
+
+export const getViewFilterParameterTypeahead = ({
+  windowId,
+  viewId,
+  filterId,
+  parameterName,
+  query,
+  context = {},
+}) => {
+  return axios.post(
+    `${config.API_URL}/documentView/${windowId}/${viewId}/filter/${filterId}/field/${parameterName}/typeahead`,
+    {
+      query: query,
+      context,
+    }
+  );
+};

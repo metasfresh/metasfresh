@@ -131,32 +131,17 @@ public class RoleDAO implements IRoleDAO
 		rolePermissions.addPermissionIfCondition(record.isRoleAlwaysUseBetaFunctions(), IUserRolePermissions.PERMISSION_UseBetaFunctions);
 		rolePermissions.addPermissionIfCondition(record.isAttachmentDeletionAllowed(), IUserRolePermissions.PERMISSION_IsAttachmentDeletionAllowed);
 
-		rolePermissions.addPermissionIfCondition(record.isAllow_Info_Product(), IUserRolePermissions.PERMISSION_InfoWindow_Product);
-		rolePermissions.addPermissionIfCondition(record.isAllow_Info_BPartner(), IUserRolePermissions.PERMISSION_InfoWindow_BPartner);
-		rolePermissions.addPermissionIfCondition(record.isAllow_Info_Account(), IUserRolePermissions.PERMISSION_InfoWindow_Account);
-		rolePermissions.addPermissionIfCondition(record.isAllow_Info_Schedule(), IUserRolePermissions.PERMISSION_InfoWindow_Schedule);
-		rolePermissions.addPermissionIfCondition(record.isAllow_Info_MRP(), IUserRolePermissions.PERMISSION_InfoWindow_MRP);
-		rolePermissions.addPermissionIfCondition(record.isAllow_Info_CRP(), IUserRolePermissions.PERMISSION_InfoWindow_CRP);
-		rolePermissions.addPermissionIfCondition(record.isAllow_Info_Order(), IUserRolePermissions.PERMISSION_InfoWindow_Order);
-		rolePermissions.addPermissionIfCondition(record.isAllow_Info_Invoice(), IUserRolePermissions.PERMISSION_InfoWindow_Invoice);
-		rolePermissions.addPermissionIfCondition(record.isAllow_Info_InOut(), IUserRolePermissions.PERMISSION_InfoWindow_InOut);
-		rolePermissions.addPermissionIfCondition(record.isAllow_Info_Payment(), IUserRolePermissions.PERMISSION_InfoWindow_Payment);
-		rolePermissions.addPermissionIfCondition(record.isAllow_Info_CashJournal(), IUserRolePermissions.PERMISSION_InfoWindow_CashJournal);
-		rolePermissions.addPermissionIfCondition(record.isAllow_Info_Resource(), IUserRolePermissions.PERMISSION_InfoWindow_Resource);
-		rolePermissions.addPermissionIfCondition(record.isAllow_Info_Asset(), IUserRolePermissions.PERMISSION_InfoWindow_Asset);
-
 		//
 		// Accounting module
 		rolePermissions.addPermissionIfCondition(record.isShowAcct(), IUserRolePermissions.PERMISSION_ShowAcct);
 
-		rolePermissions.addPermissionIfCondition(record.isAllow_Info_Account(), IUserRolePermissions.PERMISSION_InfoWindow_Account);
 		rolePermissions.addPermissionIfCondition(record.isAllowedTrlBox(), IUserRolePermissions.PERMISSION_TrlBox);
 		rolePermissions.addPermissionIfCondition(record.isAllowedMigrationScripts(), IUserRolePermissions.PERMISSION_MigrationScripts);
 
 		return rolePermissions.build();
 	}
 
-	private static final Constraints extractConstraints(final I_AD_Role record)
+	private static Constraints extractConstraints(final I_AD_Role record)
 	{
 		return Constraints.builder()
 				.addConstraint(UserPreferenceLevelConstraint.forPreferenceType(record.getPreferenceType()))
@@ -168,7 +153,7 @@ public class RoleDAO implements IRoleDAO
 				.build();
 	}
 
-	private static final LoginOrgConstraint extractLoginOrgConstraint(final I_AD_Role record)
+	private static LoginOrgConstraint extractLoginOrgConstraint(final I_AD_Role record)
 	{
 		final OrgId loginOrgId = record.getLogin_Org_ID() > 0
 				? OrgId.ofRepoIdOrNull(record.getLogin_Org_ID())

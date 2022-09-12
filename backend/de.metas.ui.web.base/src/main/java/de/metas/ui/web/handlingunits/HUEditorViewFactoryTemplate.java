@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.cache.CCache;
 import de.metas.document.references.related_documents.RelatedDocumentsPermissionsFactory;
 import de.metas.global_qrcodes.GlobalQRCode;
@@ -73,7 +74,6 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.factory.standard.LayoutFactory;
-import org.adempiere.ad.column.ColumnSql;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlSelectValue;
 import de.metas.ui.web.window.model.sql.SqlOptions;
@@ -83,6 +83,7 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.column.ColumnSql;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.dao.impl.InArrayQueryFilter;
@@ -115,6 +116,8 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 	private HUReservationService huReservationService;
 	@Autowired
 	private WebuiDocumentReferencesService webuiDocumentReferencesService;
+	@Autowired
+	private ADReferenceService adReferenceService;
 
 	private static final String SYSCFG_AlwaysUseSameLayout = "de.metas.ui.web.handlingunits.HUEditorViewFactory.AlwaysUseSameLayout";
 
@@ -365,7 +368,8 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 												.attributeSourceDocument(getAttributeSourceDocument())
 												.build())
 					.sqlViewBinding(sqlViewBinding)
-					.huReservationService(huReservationService);
+					.huReservationService(huReservationService)
+					.adReferenceService(adReferenceService);
 
 			customizeHUEditorViewRepository(huEditorViewRepositoryBuilder);
 
@@ -517,9 +521,9 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 					.setParametersLayoutType(PanelLayoutType.SingleOverlayField)
 					.setFrequentUsed(true)
 					.addParameter(DocumentFilterParamDescriptor.builder()
-							.setFieldName(PARAM_Barcode)
-							.setDisplayName(barcodeCaption)
-							.setWidgetType(DocumentFieldWidgetType.Text)
+							.fieldName(PARAM_Barcode)
+							.displayName(barcodeCaption)
+							.widgetType(DocumentFieldWidgetType.Text)
 							.barcodeScannerType(BarcodeScannerType.QRCode))
 					.build();
 		}

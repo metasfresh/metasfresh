@@ -349,6 +349,7 @@ class Lookup extends Component {
       forwardedRef,
       isFilterActive,
       updateItems,
+      typeaheadSupplier,
     } = this.props;
 
     const {
@@ -475,7 +476,7 @@ class Lookup extends Component {
                   onDropdownListToggle={this.dropdownListToggle}
                   forcedWidth={width}
                   forceHeight={forceHeight}
-                  isComposed={this.props.properties.length > 1 ? true : false}
+                  isComposed={this.props.properties.length > 1}
                   {...{
                     placeholder,
                     tabIndex,
@@ -503,6 +504,7 @@ class Lookup extends Component {
                     advSearchCaption,
                     advSearchWindowId,
                     updateItems,
+                    typeaheadSupplier,
                   }}
                 />
               );
@@ -582,50 +584,61 @@ class Lookup extends Component {
 }
 
 Lookup.propTypes = {
-  onFocus: PropTypes.func,
-  onBlur: PropTypes.func,
-  onBlurWidget: PropTypes.func,
   forceFullWidth: PropTypes.bool,
   forceHeight: PropTypes.number,
   widgetData: PropTypes.array,
   defaultValue: PropTypes.any,
-  selected: PropTypes.any,
+  selected: PropTypes.any, // could be string,number,{key,caption} etc
   mandatory: PropTypes.bool,
   properties: PropTypes.array,
   initialFocus: PropTypes.bool,
-  onClickOutside: PropTypes.func,
-  onChange: PropTypes.func,
   validStatus: PropTypes.object,
-  newRecordCaption: PropTypes.any,
+  newRecordCaption: PropTypes.string,
   windowType: PropTypes.string,
   parameterName: PropTypes.string,
-  entity: PropTypes.any,
+  entity: PropTypes.string,
   dataId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   tabId: PropTypes.string,
-  subentity: PropTypes.any,
+  subentity: PropTypes.string,
   subentityId: PropTypes.string,
   viewId: PropTypes.string,
-  onSelectBarcode: PropTypes.any,
-  onScanBarcode: PropTypes.any,
-  rank: PropTypes.any,
+  rank: PropTypes.string, // e.g. "primary"
   readonly: PropTypes.bool,
   placeholder: PropTypes.string,
   align: PropTypes.any,
   isModal: PropTypes.bool,
   updated: PropTypes.bool,
-  filterWidget: PropTypes.any,
+  filterWidget: PropTypes.bool,
   rowId: PropTypes.string,
   tabIndex: PropTypes.number,
   autoFocus: PropTypes.bool,
   newRecordWindowId: PropTypes.string,
+  advSearchCaption: PropTypes.string,
+  advSearchWindowId: PropTypes.string,
+  forwardedRef: PropTypes.object,
+  isFilterActive: PropTypes.bool,
+
+  //
+  // Callbacks and other functions:
+  onFocus: PropTypes.func,
+  onBlur: PropTypes.func,
+  onBlurWidget: PropTypes.func,
+  onChange: PropTypes.func,
+  updateItems: PropTypes.func,
+  typeaheadSupplier: PropTypes.func,
+
+  //
+  // onClickOutside HOC:
+  onClickOutside: PropTypes.func,
+
+  //
+  // BarcodeScanner HOC:
+  barcodeScannerType: PropTypes.string,
   scanning: PropTypes.any,
   codeSelected: PropTypes.any,
   scannerElement: PropTypes.any,
-  advSearchCaption: PropTypes.string,
-  advSearchWindowId: PropTypes.string,
-  forwardedRef: PropTypes.any,
-  isFilterActive: PropTypes.bool,
-  updateItems: PropTypes.func,
+  onSelectBarcode: PropTypes.func.isRequired,
+  onScanBarcode: PropTypes.func.isRequired,
 };
 
 export default withForwardedRef(BarcodeScanner(onClickOutside(Lookup)));

@@ -40,6 +40,7 @@ import de.metas.util.lang.RepoIdAware;
 import de.metas.util.lang.RepoIdAwares;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.model.util.IModelCopyHelper;
 import org.adempiere.ad.model.util.ModelCopyHelper;
 import org.adempiere.ad.persistence.IModelClassInfo;
@@ -1174,17 +1175,14 @@ public class InterfaceWrapperHelper
 		return OrgId.optionalOfRepoId(orgIdInt);
 	}
 
-	public static <T> T getValueByColumnId(final Object model, final int adColumnId)
+	public static <T> T getValueByColumnId(@NonNull final Object model, @NonNull final AdColumnId adColumnId)
 	{
-		Check.assumeNotNull(model, "model is not null");
-		Check.assume(adColumnId > 0, "adColumnId > 0");
-
 		if (GridTabWrapper.isHandled(model))
 		{
 			final GridTab gridTab = GridTabWrapper.getGridTab(model);
 			for (final GridField field : gridTab.getFields())
 			{
-				if (field.getAD_Column_ID() == adColumnId)
+				if (field.getAD_Column_ID() == adColumnId.getRepoId())
 				{
 					@SuppressWarnings("unchecked")
 					final T value = (T)field.getValue();

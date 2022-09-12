@@ -73,6 +73,11 @@ public interface IADTableDAO extends ISingletonService
 	 */
 	boolean hasColumnName(String tableName, String columnName);
 
+	default boolean hasColumnName(@NonNull TableName tableName, @NonNull String columnName)
+	{
+		return hasColumnName(tableName.getAsString(), columnName);
+	}
+
 	/**
 	 * @return ColumnName or null
 	 */

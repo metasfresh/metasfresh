@@ -2,8 +2,8 @@ package org.adempiere.ad.migration.validator.sql_migration_context_info.names;
 
 import de.metas.i18n.AdMessageId;
 import de.metas.process.AdProcessId;
-import de.metas.reflist.RefListId;
-import de.metas.reflist.ReferenceId;
+import de.metas.ad_reference.ADRefListId;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.column.AdColumnId;
@@ -45,7 +45,7 @@ public final class Names
 
 	public static final class ADRefListName_Loader
 	{
-		public static String retrieve(final RefListId refListId)
+		public static String retrieve(final ADRefListId refListId)
 		{
 			final String name = DB.getSQLValueStringEx(
 					ITrx.TRXNAME_ThreadInherited,

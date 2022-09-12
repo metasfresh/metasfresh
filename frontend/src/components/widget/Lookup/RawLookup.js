@@ -134,15 +134,6 @@ export class RawLookup extends Component {
     }
   };
 
-  clearState = () => {
-    this.setState({
-      list: [],
-      isInputEmpty: true,
-      selected: null,
-      loading: false,
-    });
-  };
-
   handleSelect = (select, mouse) => {
     const {
       onChange,
@@ -317,12 +308,15 @@ export class RawLookup extends Component {
       subentityId,
       viewId,
       mainProperty,
+      typeaheadSupplier,
     } = this.props;
 
     // -- shape placeholder with the clearValueText in case this exists
     const inputValue = this.inputSearch.value;
     let typeaheadRequest;
     const typeaheadParams = {
+      entity,
+      docType: windowType,
       docId: filterWidget ? viewId : dataId,
       propertyName: filterWidget ? parameterName : mainProperty.field,
       query: inputValue,
@@ -332,7 +326,13 @@ export class RawLookup extends Component {
 
     this.typeaheadQuery = typeaheadParams.query;
 
-    if (entity === 'documentView' && !filterWidget) {
+    if (typeaheadSupplier) {
+      typeaheadRequest = typeaheadSupplier({
+        ...typeaheadParams,
+        subentity,
+        subentityId,
+      });
+    } else if (entity === 'documentView' && !filterWidget) {
       typeaheadRequest = getViewAttributeTypeahead(
         windowType,
         viewId,
@@ -343,15 +343,12 @@ export class RawLookup extends Component {
     } else if (viewId && !filterWidget) {
       typeaheadRequest = autocompleteModalRequest({
         ...typeaheadParams,
-        docType: windowType,
         entity: 'documentView',
         viewId,
       });
     } else {
       typeaheadRequest = autocompleteRequest({
         ...typeaheadParams,
-        docType: windowType,
-        entity,
         subentity,
         subentityId,
       });
@@ -655,22 +652,18 @@ RawLookup.propTypes = {
   defaultValue: PropTypes.any,
   initialFocus: PropTypes.bool,
   autoFocus: PropTypes.bool,
-  filter: PropTypes.object,
   handleInputEmptyStatus: PropTypes.any,
   isOpen: PropTypes.bool,
   selected: PropTypes.object,
   forcedWidth: PropTypes.number,
   forceHeight: PropTypes.number,
-  dispatch: PropTypes.func.isRequired,
-  onDropdownListToggle: PropTypes.func,
   isComposed: PropTypes.bool,
   mainProperty: PropTypes.any,
-  filterWidget: PropTypes.any,
+  filterWidget: PropTypes.bool,
   lookupEmpty: PropTypes.any,
   localClearing: PropTypes.any,
   fireDropdownList: PropTypes.any,
   parentElement: PropTypes.any,
-  onChange: PropTypes.func,
   setNextProperty: PropTypes.any,
   subentity: PropTypes.any,
   newRecordWindowId: PropTypes.any,
@@ -687,7 +680,6 @@ RawLookup.propTypes = {
   isModal: PropTypes.bool,
   placeholder: PropTypes.string,
   recent: PropTypes.any,
-  enableAutofocus: PropTypes.func,
   resetLocalClearing: PropTypes.any,
   align: PropTypes.string,
   readonly: PropTypes.bool,
@@ -696,7 +688,22 @@ RawLookup.propTypes = {
   idValue: PropTypes.string,
   advSearchCaption: PropTypes.string,
   advSearchWindowId: PropTypes.string,
+
+  //
+  // Callbacks and other functions:
+  dispatch: PropTypes.func.isRequired,
+  onDropdownListToggle: PropTypes.func,
+  onChange: PropTypes.func,
+  enableAutofocus: PropTypes.func,
   updateItems: PropTypes.func,
+  typeaheadSupplier: PropTypes.func,
+
+  //
+  // mapStateToProps:
+  filter: PropTypes.shape({
+    visible: PropTypes.bool,
+    boundingRect: PropTypes.object,
+  }),
 };
 
 export default connect(mapStateToProps, null, null, { forwardRef: true })(

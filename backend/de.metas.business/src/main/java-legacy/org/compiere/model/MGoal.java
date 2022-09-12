@@ -25,8 +25,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.ad_reference.ReferenceId;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.service.ClientId;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -540,7 +543,9 @@ public class MGoal extends X_PA_Goal
 				return Msg.getElement(getCtx(), "C_Phase_ID");
 		}
 		String value = getMeasureDisplay();
-		String display = MRefList.getListName(getCtx(), MEASUREDISPLAY_AD_Reference_ID, value);
+
+		final ADReferenceService adReferenceService = ADReferenceService.get();
+		String display = adReferenceService.retrieveListNameTrl(getCtx(), ReferenceId.ofRepoId(MEASUREDISPLAY_AD_Reference_ID), value);
 		return display == null ? value : display;
 	}	// getMeasureDisplayText
 

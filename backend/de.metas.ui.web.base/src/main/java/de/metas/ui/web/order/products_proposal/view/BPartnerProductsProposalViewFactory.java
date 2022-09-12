@@ -23,6 +23,7 @@ import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -63,15 +64,17 @@ public class BPartnerProductsProposalViewFactory extends ProductsProposalViewFac
 
 	private final BPartnerProductStatsService bpartnerProductStatsService;
 	private final OrderProductProposalsService orderProductProposalsService;
-
+	private final LookupDataSourceFactory lookupDataSourceFactory;
 	protected BPartnerProductsProposalViewFactory(
 			@NonNull final BPartnerProductStatsService bpartnerProductStatsService,
-			@NonNull final OrderProductProposalsService orderProductProposalsService)
+			@NonNull final OrderProductProposalsService orderProductProposalsService,
+			@NonNull final LookupDataSourceFactory lookupDataSourceFactory)
 	{
 		super(WINDOW_ID);
 
 		this.bpartnerProductStatsService = bpartnerProductStatsService;
 		this.orderProductProposalsService = orderProductProposalsService;
+		this.lookupDataSourceFactory = lookupDataSourceFactory;
 	}
 
 	@Override
@@ -129,6 +132,7 @@ public class BPartnerProductsProposalViewFactory extends ProductsProposalViewFac
 				.collect(ImmutableSet.toImmutableSet());
 
 		return ProductsProposalRowsLoader.builder()
+				.lookupDataSourceFactory(lookupDataSourceFactory)
 				.bpartnerProductStatsService(bpartnerProductStatsService)
 				.orderProductProposalsService(orderProductProposalsService)
 				.priceListVersionIds(priceListVersionIds)

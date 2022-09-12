@@ -4,6 +4,8 @@ import org.adempiere.model.ModelColumn;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for AD_Column
  *  @author metasfresh (generated) 
@@ -54,7 +56,7 @@ public interface I_AD_Column
 	String COLUMNNAME_AD_Column_ID = "AD_Column_ID";
 
 	/**
-	 * Set System-Element.
+	 * Set System Element.
 	 * System Element enables the central maintenance of column description and help.
 	 *
 	 * <br>Type: Search
@@ -64,7 +66,7 @@ public interface I_AD_Column
 	void setAD_Element_ID (int AD_Element_ID);
 
 	/**
-	 * Get System-Element.
+	 * Get System Element.
 	 * System Element enables the central maintenance of column description and help.
 	 *
 	 * <br>Type: Search
@@ -130,8 +132,8 @@ public interface I_AD_Column
 	String COLUMNNAME_AD_Process_ID = "AD_Process_ID";
 
 	/**
-	 * Set Referenz.
-	 * System Reference and Validation
+	 * Set Reference Overwrite.
+	 * System Reference - optional Overwrite
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -140,8 +142,8 @@ public interface I_AD_Column
 	void setAD_Reference_ID (int AD_Reference_ID);
 
 	/**
-	 * Get Referenz.
-	 * System Reference and Validation
+	 * Get Reference Overwrite.
+	 * System Reference - optional Overwrite
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -157,7 +159,7 @@ public interface I_AD_Column
 	String COLUMNNAME_AD_Reference_ID = "AD_Reference_ID";
 
 	/**
-	 * Set Referenzschlüssel.
+	 * Set Reference Key.
 	 * Required to specify, if data type is Table or List
 	 *
 	 * <br>Type: Table
@@ -167,7 +169,7 @@ public interface I_AD_Column
 	void setAD_Reference_Value_ID (int AD_Reference_Value_ID);
 
 	/**
-	 * Get Referenzschlüssel.
+	 * Get Reference Key.
 	 * Required to specify, if data type is Table or List
 	 *
 	 * <br>Type: Table
@@ -206,8 +208,7 @@ public interface I_AD_Column
 	String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
 
 	/**
-	 * Set Dynamische Validierung.
-	 * Dynamic Validation Rule
+	 * Set Validation Rule.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -216,8 +217,7 @@ public interface I_AD_Column
 	void setAD_Val_Rule_ID (int AD_Val_Rule_ID);
 
 	/**
-	 * Get Dynamische Validierung.
-	 * Dynamic Validation Rule
+	 * Get Validation Rule.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -233,7 +233,7 @@ public interface I_AD_Column
 	String COLUMNNAME_AD_Val_Rule_ID = "AD_Val_Rule_ID";
 
 	/**
-	 * Set Spaltenname.
+	 * Set DB Column Name.
 	 * Name of the column in the database
 	 *
 	 * <br>Type: String
@@ -243,7 +243,7 @@ public interface I_AD_Column
 	void setColumnName (java.lang.String ColumnName);
 
 	/**
-	 * Get Spaltenname.
+	 * Get DB Column Name.
 	 * Name of the column in the database
 	 *
 	 * <br>Type: String
@@ -327,7 +327,7 @@ public interface I_AD_Column
 	String COLUMNNAME_DDL_NoForeignKey = "DDL_NoForeignKey";
 
 	/**
-	 * Set Standardwert-Logik.
+	 * Set Default Logic.
 	 * Default value hierarchy, separated by ;
 
 	 *
@@ -338,7 +338,7 @@ public interface I_AD_Column
 	void setDefaultValue (@Nullable java.lang.String DefaultValue);
 
 	/**
-	 * Get Standardwert-Logik.
+	 * Get Default Logic.
 	 * Default value hierarchy, separated by ;
 
 	 *
@@ -373,9 +373,8 @@ public interface I_AD_Column
 	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Entitäts-Art.
-	 * Dictionary Entity Type;
- Determines ownership and synchronization
+	 * Set Entity Type.
+	 * Entity Type
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -384,9 +383,8 @@ public interface I_AD_Column
 	void setEntityType (java.lang.String EntityType);
 
 	/**
-	 * Get Entitäts-Art.
-	 * Dictionary Entity Type;
- Determines ownership and synchronization
+	 * Get Entity Type.
+	 * Entity Type
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -419,7 +417,7 @@ public interface I_AD_Column
 	String COLUMNNAME_FacetFilterSeqNo = "FacetFilterSeqNo";
 
 	/**
-	 * Set Länge.
+	 * Set Length.
 	 * Length of the column in the database
 	 *
 	 * <br>Type: Integer
@@ -429,7 +427,7 @@ public interface I_AD_Column
 	void setFieldLength (int FieldLength);
 
 	/**
-	 * Get Länge.
+	 * Get Length.
 	 * Length of the column in the database
 	 *
 	 * <br>Type: Integer
@@ -440,6 +438,33 @@ public interface I_AD_Column
 
 	ModelColumn<I_AD_Column, Object> COLUMN_FieldLength = new ModelColumn<>(I_AD_Column.class, "FieldLength", null);
 	String COLUMNNAME_FieldLength = "FieldLength";
+
+	/**
+	 * Set Filter Validation Rule.
+	 * Validation Rule used for filtering
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFilter_Val_Rule_ID (int Filter_Val_Rule_ID);
+
+	/**
+	 * Get Filter Validation Rule.
+	 * Validation Rule used for filtering
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getFilter_Val_Rule_ID();
+
+	@Nullable org.compiere.model.I_AD_Val_Rule getFilter_Val_Rule();
+
+	void setFilter_Val_Rule(@Nullable org.compiere.model.I_AD_Val_Rule Filter_Val_Rule);
+
+	ModelColumn<I_AD_Column, org.compiere.model.I_AD_Val_Rule> COLUMN_Filter_Val_Rule_ID = new ModelColumn<>(I_AD_Column.class, "Filter_Val_Rule_ID", org.compiere.model.I_AD_Val_Rule.class);
+	String COLUMNNAME_Filter_Val_Rule_ID = "Filter_Val_Rule_ID";
 
 	/**
 	 * Set Filter Default Value.
@@ -622,8 +647,8 @@ public interface I_AD_Column
 	String COLUMNNAME_IsAlwaysUpdateable = "IsAlwaysUpdateable";
 
 	/**
-	 * Set Validierungsregel automatisch anwenden.
-	 * If a validation rule (AD_Val_Rule_ID) is set and a new record is created where the column is empty, then apply the validation rule and insert the first result into the new record.
+	 * Set Auto-apply validation rule.
+	 * If a new record is created where this column or field is empty, then insert the first possible record reference. If set, then AD_Val_Rule_ID is used for filtering and AD_Reference_Value_ID is used for ordering.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -632,8 +657,8 @@ public interface I_AD_Column
 	void setIsAutoApplyValidationRule (boolean IsAutoApplyValidationRule);
 
 	/**
-	 * Get Validierungsregel automatisch anwenden.
-	 * If a validation rule (AD_Val_Rule_ID) is set and a new record is created where the column is empty, then apply the validation rule and insert the first result into the new record.
+	 * Get Auto-apply validation rule.
+	 * If a new record is created where this column or field is empty, then insert the first possible record reference. If set, then AD_Val_Rule_ID is used for filtering and AD_Reference_Value_ID is used for ordering.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -668,7 +693,7 @@ public interface I_AD_Column
 	String COLUMNNAME_IsAutocomplete = "IsAutocomplete";
 
 	/**
-	 * Set Berechnet.
+	 * Set Calculated.
 	 * The value is calculated by the system
 	 *
 	 * <br>Type: YesNo
@@ -678,7 +703,7 @@ public interface I_AD_Column
 	void setIsCalculated (boolean IsCalculated);
 
 	/**
-	 * Get Berechnet.
+	 * Get Calculated.
 	 * The value is calculated by the system
 	 *
 	 * <br>Type: YesNo
@@ -691,8 +716,8 @@ public interface I_AD_Column
 	String COLUMNNAME_IsCalculated = "IsCalculated";
 
 	/**
-	 * Set Encrypted.
-	 * Display or Storage is encrypted
+	 * Set Column Encryption.
+	 * Test and enable Column Encryption
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -701,8 +726,8 @@ public interface I_AD_Column
 	void setIsEncrypted (java.lang.String IsEncrypted);
 
 	/**
-	 * Get Encrypted.
-	 * Display or Storage is encrypted
+	 * Get Column Encryption.
+	 * Test and enable Column Encryption
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: true
@@ -782,7 +807,7 @@ public interface I_AD_Column
 
 	/**
 	 * Set GenericZoom Quellspalte.
-	 * Legt fest, ob zu der betreffenden Spalte Referenzen (d.h. externe Datensätze, die die Spalte referenzieren) angezeigt werden sollen
+	 * Werden beim GenericZoom Referenzen auf diese Spalte beachtet?
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -792,7 +817,7 @@ public interface I_AD_Column
 
 	/**
 	 * Get GenericZoom Quellspalte.
-	 * Legt fest, ob zu der betreffenden Spalte Referenzen (d.h. externe Datensätze, die die Spalte referenzieren) angezeigt werden sollen
+	 * Werden beim GenericZoom Referenzen auf diese Spalte beachtet?
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: false
@@ -827,7 +852,7 @@ public interface I_AD_Column
 	String COLUMNNAME_IsIdentifier = "IsIdentifier";
 
 	/**
-	 * Set Schlüssel-Spalte.
+	 * Set Key column.
 	 * This column is the key in this table
 	 *
 	 * <br>Type: YesNo
@@ -837,7 +862,7 @@ public interface I_AD_Column
 	void setIsKey (boolean IsKey);
 
 	/**
-	 * Get Schlüssel-Spalte.
+	 * Get Key column.
 	 * This column is the key in this table
 	 *
 	 * <br>Type: YesNo
@@ -871,7 +896,7 @@ public interface I_AD_Column
 	String COLUMNNAME_IsLazyLoading = "IsLazyLoading";
 
 	/**
-	 * Set Pflichtangabe.
+	 * Set mandatory.
 	 * Data entry is required in this column
 	 *
 	 * <br>Type: YesNo
@@ -881,7 +906,7 @@ public interface I_AD_Column
 	void setIsMandatory (boolean IsMandatory);
 
 	/**
-	 * Get Pflichtangabe.
+	 * Get mandatory.
 	 * Data entry is required in this column
 	 *
 	 * <br>Type: YesNo
@@ -917,7 +942,8 @@ public interface I_AD_Column
 	String COLUMNNAME_IsParent = "IsParent";
 
 	/**
-	 * Set IsRestAPICustomColumn.
+	 * Set REST-API Custom Column.
+	 * If true, it allows users to update the column's value via "extendedProps" field in the corresponding model's REST API payload. (only for REST API endpoints which support the feature)
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -926,7 +952,8 @@ public interface I_AD_Column
 	void setIsRestAPICustomColumn (boolean IsRestAPICustomColumn);
 
 	/**
-	 * Get IsRestAPICustomColumn.
+	 * Get REST-API Custom Column.
+	 * If true, it allows users to update the column's value via "extendedProps" field in the corresponding model's REST API payload. (only for REST API endpoints which support the feature)
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -1030,8 +1057,8 @@ public interface I_AD_Column
 	String COLUMNNAME_IsStaleable = "IsStaleable";
 
 	/**
-	 * Set Synchronize Database.
-	 * Change database table definition when changing dictionary definition
+	 * Set Synchronize Column.
+	 * Change database table definition from application dictionary
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -1040,8 +1067,8 @@ public interface I_AD_Column
 	void setIsSyncDatabase (@Nullable java.lang.String IsSyncDatabase);
 
 	/**
-	 * Get Synchronize Database.
-	 * Change database table definition when changing dictionary definition
+	 * Get Synchronize Column.
+	 * Change database table definition from application dictionary
 	 *
 	 * <br>Type: Button
 	 * <br>Mandatory: false
@@ -1076,7 +1103,7 @@ public interface I_AD_Column
 	String COLUMNNAME_IsTranslated = "IsTranslated";
 
 	/**
-	 * Set Updateable.
+	 * Set Updatable.
 	 * Determines, if the field can be updated
 	 *
 	 * <br>Type: YesNo
@@ -1086,7 +1113,7 @@ public interface I_AD_Column
 	void setIsUpdateable (boolean IsUpdateable);
 
 	/**
-	 * Get Updateable.
+	 * Get Updatable.
 	 * Determines, if the field can be updated
 	 *
 	 * <br>Type: YesNo
@@ -1325,7 +1352,7 @@ public interface I_AD_Column
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
 
 	/**
-	 * Set Max. Wert.
+	 * Set Max. Value.
 	 * Maximum Value for a field
 	 *
 	 * <br>Type: String
@@ -1335,7 +1362,7 @@ public interface I_AD_Column
 	void setValueMax (@Nullable java.lang.String ValueMax);
 
 	/**
-	 * Get Max. Wert.
+	 * Get Max. Value.
 	 * Maximum Value for a field
 	 *
 	 * <br>Type: String
@@ -1348,7 +1375,7 @@ public interface I_AD_Column
 	String COLUMNNAME_ValueMax = "ValueMax";
 
 	/**
-	 * Set Min. Wert.
+	 * Set Min. Value.
 	 * Minimum Value for a field
 	 *
 	 * <br>Type: String
@@ -1358,7 +1385,7 @@ public interface I_AD_Column
 	void setValueMin (@Nullable java.lang.String ValueMin);
 
 	/**
-	 * Get Min. Wert.
+	 * Get Min. Value.
 	 * Minimum Value for a field
 	 *
 	 * <br>Type: String
