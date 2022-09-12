@@ -81,4 +81,6 @@ public interface IWarehouseBL extends ISingletonService
 	Optional<ResourceId> getPlantId(WarehouseId warehouseId);
 
 	void updateWarehouseLocation(@NonNull LocationId oldLocationId, @NonNull LocationId newLocationId);
+
+	DocumentLocation getBPartnerBillingLocationDocument(@NonNull WarehouseId warehouseId);
 }

@@ -297,6 +297,28 @@ public interface I_I_Invoice_Candidate
 	ModelColumn<I_I_Invoice_Candidate, Object> COLUMN_DateOrdered = new ModelColumn<>(I_I_Invoice_Candidate.class, "DateOrdered", null);
 	String COLUMNNAME_DateOrdered = "DateOrdered";
 
+
+	/**
+	 * Set Default Org Code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setDefault_OrgCode (java.lang.String Default_OrgCode);
+
+	/**
+	 * Get Default Org Code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getDefault_OrgCode();
+
+	ModelColumn<I_I_Invoice_Candidate, Object> COLUMN_Default_OrgCode = new ModelColumn<>(I_I_Invoice_Candidate.class, "Default_OrgCode", null);
+	String COLUMNNAME_Default_OrgCode = "Default_OrgCode";
+
 	/**
 	 * Set Description.
 	 *
