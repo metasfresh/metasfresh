@@ -28,6 +28,7 @@ import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineReferenceList;
 import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
+import de.metas.money.CurrencyId;
 import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentId;
 import de.metas.util.ISingletonService;
@@ -35,6 +36,7 @@ import lombok.NonNull;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -67,6 +69,8 @@ public interface IBankStatementBL extends ISingletonService
 
 	void deleteReferences(@NonNull BankStatementLineId bankStatementLineId);
 
+	void assertBankStatementIsDraftOrInProcessOrCompleted(I_C_BankStatement bankStatement);
+
 	void unreconcile(@NonNull List<I_C_BankStatementLine> bankStatementLines);
 
 	void reconcileAsBankTransfer(@NonNull ReconcileAsBankTransferRequest request);
@@ -83,4 +87,8 @@ public interface IBankStatementBL extends ISingletonService
 	boolean isCashJournal(final I_C_BankStatementLine bankStatementLine);
 
 	PaymentCurrencyContext getPaymentCurrencyContext(@NonNull I_C_BankStatementLine bankStatementLine);
+
+	void changeCurrencyRate(BankStatementLineId bankStatementLineId, BigDecimal currencyRate);
+
+	CurrencyId getBaseCurrencyId(I_C_BankStatementLine line);
 }

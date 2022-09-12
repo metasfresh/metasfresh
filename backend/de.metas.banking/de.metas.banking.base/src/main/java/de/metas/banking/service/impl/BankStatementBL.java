@@ -24,6 +24,8 @@ package de.metas.banking.service.impl;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.acct.api.IFactAcctDAO;
+import de.metas.acct.api.IPostingRequestBuilder;
+import de.metas.acct.api.IPostingService;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
@@ -43,10 +45,13 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Invoice;
@@ -68,6 +73,7 @@ public class BankStatementBL implements IBankStatementBL
 	private final IBankStatementListenerService bankStatementListenersService = Services.get(IBankStatementListenerService.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 	private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
+	private final IPostingService postingService = Services.get(IPostingService.class);
 	private final BankAccountService bankAccountService;
 	private final MoneyService moneyService;
 
@@ -123,13 +129,30 @@ public class BankStatementBL implements IBankStatementBL
 	public void unpost(final I_C_BankStatement bankStatement)
 	{
 		// Make sure the period is open
-		final Properties ctx = InterfaceWrapperHelper.getCtx(bankStatement);
-		MPeriod.testPeriodOpen(ctx, bankStatement.getStatementDate(), X_C_DocType.DOCBASETYPE_BankStatement, bankStatement.getAD_Org_ID());
+		if (bankStatement.isPosted())
+		{
+			final Properties ctx = InterfaceWrapperHelper.getCtx(bankStatement);
+			MPeriod.testPeriodOpen(ctx, bankStatement.getStatementDate(), X_C_DocType.DOCBASETYPE_BankStatement, bankStatement.getAD_Org_ID());
 
-		factAcctDAO.deleteForDocumentModel(bankStatement);
+			factAcctDAO.deleteForDocumentModel(bankStatement);
 
-		bankStatement.setPosted(false);
-		InterfaceWrapperHelper.save(bankStatement);
+			bankStatement.setPosted(false);
+			InterfaceWrapperHelper.save(bankStatement);
+		}
+
+		postIt(bankStatement);
+	}
+
+	private void postIt(final I_C_BankStatement bankStatement)
+	{
+		postingService.newPostingRequest()
+				.setClientId(ClientId.ofRepoId(bankStatement.getAD_Client_ID()))
+				.setDocumentRef(TableRecordReference.of(bankStatement))
+				.setFailOnError(false)
+				.onErrorNotifyUser(UserId.ofRepoId(bankStatement.getUpdatedBy()))
+				.setPostImmediate(IPostingRequestBuilder.PostImmediate.No)
+				.postIt();
+
 	}
 
 	@Override
@@ -176,10 +199,7 @@ public class BankStatementBL implements IBankStatementBL
 		}
 
 		final I_C_BankStatement bankStatement = getById(request.getBankStatementId());
-		if (!DocStatus.ofCode(bankStatement.getDocStatus()).isDraftedInProgressOrCompleted())
-		{
-			throw new AdempiereException(MSG_BankStatement_MustBe_Draft_InProgress_Or_Completed);
-		}
+		assertBankStatementIsDraftOrInProcessOrCompleted(bankStatement);
 		final I_C_BankStatementLine line = getLineById(request.getBankStatementLineId());
 		if (line.isReconciled())
 		{
@@ -187,10 +207,7 @@ public class BankStatementBL implements IBankStatementBL
 		}
 
 		final I_C_BankStatement counterpartBankStatement = getById(request.getCounterpartBankStatementId());
-		if (!DocStatus.ofCode(counterpartBankStatement.getDocStatus()).isDraftedInProgressOrCompleted())
-		{
-			throw new AdempiereException(MSG_BankStatement_MustBe_Draft_InProgress_Or_Completed);
-		}
+		assertBankStatementIsDraftOrInProcessOrCompleted(counterpartBankStatement);
 		final I_C_BankStatementLine counterpartLine = getLineById(request.getCounterpartBankStatementLineId());
 		if (counterpartLine.isReconciled())
 		{
@@ -215,6 +232,15 @@ public class BankStatementBL implements IBankStatementBL
 
 		unpost(bankStatement);
 		unpost(counterpartBankStatement);
+	}
+
+	@Override
+	public void assertBankStatementIsDraftOrInProcessOrCompleted(final I_C_BankStatement bankStatement)
+	{
+		if (!DocStatus.ofCode(bankStatement.getDocStatus()).isDraftedInProgressOrCompleted())
+		{
+			throw new AdempiereException(MSG_BankStatement_MustBe_Draft_InProgress_Or_Completed);
+		}
 	}
 
 	@Override
@@ -355,6 +381,40 @@ public class BankStatementBL implements IBankStatementBL
 		}
 
 		return result.build();
+	}
+
+	@Override
+	public void changeCurrencyRate(@NonNull final BankStatementLineId bankStatementLineId, @NonNull final BigDecimal currencyRate)
+	{
+		if (currencyRate.signum() == 0)
+		{
+			throw new AdempiereException("Invalid currency rate: " + currencyRate);
+		}
+
+		final I_C_BankStatementLine line = getLineById(bankStatementLineId);
+		final BankStatementId bankStatementId = BankStatementId.ofRepoId(line.getC_BankStatement_ID());
+
+		final I_C_BankStatement bankStatement = getById(bankStatementId);
+		assertBankStatementIsDraftOrInProcessOrCompleted(bankStatement);
+
+		final CurrencyId currencyId = CurrencyId.ofRepoId(line.getC_Currency_ID());
+		final CurrencyId baseCurrencyId = getBaseCurrencyId(line);
+		if (CurrencyId.equals(currencyId, baseCurrencyId))
+		{
+			throw new AdempiereException("line is not in foreign currency");
+		}
+
+		line.setCurrencyRate(currencyRate);
+		InterfaceWrapperHelper.save(line);
+
+		unpost(bankStatement);
+	}
+
+	@Override
+	public CurrencyId getBaseCurrencyId(final I_C_BankStatementLine line)
+	{
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(line.getAD_Client_ID(), line.getAD_Org_ID());
+		return moneyService.getBaseCurrencyId(clientAndOrgId);
 	}
 
 }
