@@ -124,7 +124,7 @@ jobs:
           domain: metasfresh
       - name: push-results
         run: |
-          testspace "[jest/frontend]results/junit.xml"
+          testspace "[jest/frontend]results/junit.xml" "[jest/frontend]+results/junit.log"
       - name: produce-summary
         # echo '* metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
         run: |
