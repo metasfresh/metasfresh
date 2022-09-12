@@ -125,6 +125,11 @@ jobs:
       - name: push-results
         run: |
           testspace "[jest/frontend]results/junit.xml"
+      - name: produce-summary
+        # echo '* metasfresh/metas-mobile:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
+        run: |
+          echo '#### images' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-frontend:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
   backend:
     runs-on: ubuntu-latest
     needs: [init, java]
@@ -200,6 +205,14 @@ jobs:
           docker push metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}
           docker push metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded
           docker push metasfresh/metas-db:${{ needs.init.outputs.tag-floating }}-preloaded
+      - name: produce-summary
+        run: |
+          echo '#### images' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-api:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-app:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-externalsystems:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metas-db:${{ needs.init.outputs.tag-fixed }}-preloaded' >> $GITHUB_STEP_SUMMARY
 
   compatibility-images:
     runs-on: ubuntu-latest
@@ -266,6 +279,14 @@ jobs:
           docker push metasfresh/metasfresh-webapi:${{ needs.init.outputs.tag-fixed }}-compat
           docker push metasfresh/metasfresh-app:${{ needs.init.outputs.tag-fixed }}-compat
           docker push metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat
+      - name: produce-summary
+        run: |
+          echo 'Custom images are available under the following tag: `${{ needs.init.outputs.tag-fixed }}-compat`' >> $GITHUB_STEP_SUMMARY
+          echo 'and can be deployed on any regular system via metasfresh instances rollout using the above tag as *Baseversion*.' >> $GITHUB_STEP_SUMMARY
+          echo '#### images' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metasfresh-webapi:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metasfresh-app:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
+          echo '* metasfresh/metasfresh-webui:${{ needs.init.outputs.tag-fixed }}-compat' >> $GITHUB_STEP_SUMMARY
 
   junit:
     runs-on: ubuntu-latest
@@ -309,6 +330,10 @@ jobs:
           docker run --rm -v "$(pwd)/junit:/reports" metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}
           docker run --rm -v "$(pwd)/junit:/reports" metasfresh/metas-junit:${{ needs.init.outputs.tag-floating }}-j14
           find junit -type d -links 2 -exec testspace [{}]{}/*.xml \;
+      - name: produce-summary
+        run: |
+          echo 'test results can be found at https://metasfresh.testspace.com/' >> $GITHUB_STEP_SUMMARY
+
 
   cucumber:
     runs-on: ubuntu-latest
@@ -349,6 +374,9 @@ jobs:
           runurl: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           find cucumber -type d -links 2 -exec testspace [{}]{}/*.xml \;
+      - name: produce-summary
+        run: |
+          echo 'test results can be found at https://metasfresh.testspace.com/' >> $GITHUB_STEP_SUMMARY
 
   redeploy:
     runs-on: ubuntu-latest
