@@ -1,6 +1,7 @@
 package org.adempiere.exceptions;
 
 import de.metas.ad_reference.ReferenceId;
+import de.metas.document.DocBaseType;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
@@ -19,19 +20,19 @@ public class PeriodClosedException extends AdempiereException
 	/**
 	 *
 	 */
-	public PeriodClosedException(final Timestamp dateAcct, final String docBaseType)
+	public PeriodClosedException(final Timestamp dateAcct, final DocBaseType docBaseType)
 	{
 		super(buildMsg(dateAcct, docBaseType));
 	}
 
-	private static ITranslatableString buildMsg(@Nullable final Timestamp dateAcct, @Nullable final String docBaseType)
+	private static ITranslatableString buildMsg(@Nullable final Timestamp dateAcct, @Nullable final DocBaseType docBaseType)
 	{
 		final ITranslatableString dateAcctTrl = dateAcct != null
 				? TranslatableStrings.dateAndTime(dateAcct)
 				: TranslatableStrings.anyLanguage("?");
 
 		final ITranslatableString docBaseTypeTrl = docBaseType != null
-				? TranslatableStrings.adRefList(ReferenceId.ofRepoId(X_C_DocType.DOCBASETYPE_AD_Reference_ID), docBaseType)
+				? TranslatableStrings.adRefList(ReferenceId.ofRepoId(X_C_DocType.DOCBASETYPE_AD_Reference_ID), docBaseType.getCode())
 				: TranslatableStrings.anyLanguage("?");
 
 		return TranslatableStrings.builder()

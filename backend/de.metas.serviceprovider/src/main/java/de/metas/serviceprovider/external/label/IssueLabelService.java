@@ -23,12 +23,12 @@
 package de.metas.serviceprovider.external.label;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.ad_reference.ADRefListItemCreateRequest;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.reflist.ReferenceId;
 import de.metas.serviceprovider.issue.IssueId;
-import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
@@ -38,23 +38,26 @@ import static de.metas.serviceprovider.model.X_S_IssueLabel.LABEL_AD_Reference_I
 @Service
 public class IssueLabelService
 {
-	private final IADReferenceDAO referenceDAO = Services.get(IADReferenceDAO.class);
+	private final ADReferenceService adReferenceService;
 
 	private final IssueLabelRepository issueLabelRepository;
 
-	public IssueLabelService(@NonNull final IssueLabelRepository issueLabelRepository)
+	public IssueLabelService(
+			@NonNull final ADReferenceService adReferenceService,
+			@NonNull final IssueLabelRepository issueLabelRepository)
 	{
+		this.adReferenceService = adReferenceService;
 		this.issueLabelRepository = issueLabelRepository;
 	}
 
 	public void persistLabels(@NonNull final IssueId issueId, @NonNull final ImmutableList<IssueLabel> issueLabels)
 	{
-		final Set<String> existingLabelValues = referenceDAO.retrieveListValues(LABEL_AD_Reference_ID);
+		final Set<String> existingLabelValues = adReferenceService.getRefListById(ReferenceId.ofRepoId(LABEL_AD_Reference_ID)).getValues();
 
 		issueLabels.stream()
 				.filter(label -> !existingLabelValues.contains(label.getValue()))
 				.map(IssueLabelService::buildRefList)
-				.forEach(referenceDAO::saveRefList);
+				.forEach(adReferenceService::saveRefList);
 
 		issueLabelRepository.persistLabels(issueId, issueLabels);
 	}
@@ -66,9 +69,9 @@ public class IssueLabelService
 	}
 
 	@NonNull
-	private static IADReferenceDAO.ADRefListItemCreateRequest buildRefList(@NonNull final IssueLabel issueLabel)
+	private static ADRefListItemCreateRequest buildRefList(@NonNull final IssueLabel issueLabel)
 	{
-		return IADReferenceDAO.ADRefListItemCreateRequest
+		return ADRefListItemCreateRequest
 				.builder()
 				.name(TranslatableStrings.constant(issueLabel.getValue()))
 				.value(issueLabel.getValue())

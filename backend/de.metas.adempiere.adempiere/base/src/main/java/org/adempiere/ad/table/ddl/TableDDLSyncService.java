@@ -97,7 +97,7 @@ public class TableDDLSyncService
 		}
 		else
 		{
-			DB.executeUpdateEx(sqlStatement, ITrx.TRXNAME_ThreadInherited);
+			DB.executeUpdateAndThrowExceptionOnFail(sqlStatement, ITrx.TRXNAME_ThreadInherited);
 		}
 	}
 
@@ -191,25 +191,6 @@ public class TableDDLSyncService
 
 	private static TableDDL retrieveAppDictTable(@NonNull final String tableName)
 	{
-		final String sql = "SELECT"
-				+ " t." + I_AD_Table.COLUMNNAME_TableName
-				+ ", c." + I_AD_Column.COLUMNNAME_ColumnName
-				+ ", c." + I_AD_Column.COLUMNNAME_AD_Reference_ID
-				+ ", c." + I_AD_Column.COLUMNNAME_DefaultValue
-				+ ", c." + I_AD_Column.COLUMNNAME_IsMandatory
-				+ ", c." + I_AD_Column.COLUMNNAME_FieldLength
-				+ ", c." + I_AD_Column.COLUMNNAME_IsKey
-				+ ", c." + I_AD_Column.COLUMNNAME_IsParent
-				+ ", c." + I_AD_Column.COLUMNNAME_DDL_NoForeignKey
-				+ " FROM " + I_AD_Column.Table_Name + " c "
-				+ " INNER JOIN " + I_AD_Table.Table_Name + " t ON t.AD_Table_ID=c.AD_Table_ID"
-				+ " WHERE t.TableName=?"
-				+ " AND t.IsActive='Y'"
-				+ " AND t.IsView='N'"
-				+ " AND c.IsActive='Y'"
-				+ " AND (c." + I_AD_Column.COLUMNNAME_ColumnSQL + " is null or length(TRIM(c.ColumnSQL)) = 0)" // no virtual columns
-				+ " ORDER BY t.TableName, c.ColumnName";
-
 		final ImmutableList<ColumnDDL> columns = retrieveAppDictColumns(tableName, null);
 		if (columns.isEmpty())
 		{
