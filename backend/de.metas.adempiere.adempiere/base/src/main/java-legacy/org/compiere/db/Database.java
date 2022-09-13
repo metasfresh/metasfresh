@@ -103,7 +103,7 @@ public class Database
 		}
 
 		final StringBuilder dateString = new StringBuilder("TO_TIMESTAMP('");
-		// YYYY-MM-DD HH24:MI:SS.mmmm JDBC Timestamp format
+		// YYYY-MM-DD HH24:MI:SS.US JDBC Timestamp format; note that "US" means "Microsecond (000000-999999)"
 		final String myDate = time.toString();
 		if (dayOnly)
 		{
