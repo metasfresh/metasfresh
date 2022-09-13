@@ -18,11 +18,16 @@ import de.metas.banking.service.IBankStatementBL;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyConversionContext;
+import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentBL;
+import de.metas.util.NumberUtils;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
@@ -32,7 +37,9 @@ import org.compiere.model.MAccount;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Post Bank Statement Documents.
@@ -559,20 +566,22 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 		final MAccount bankAssetAccount = getBankAssetAccount(fact.getAcctSchema());
 		final FactLine factLine_BankAsset = fact.getSingleLineByAccountId(bankAssetAccount);
 
-		final BigDecimal bankAssetAmt;
+		final AmountSourceAndAcct bankAssetAmt;
 		final boolean isIncomeAmount;
 		if (factLine_BankAsset.getAmtAcctDr().signum() != 0)
 		{
-			bankAssetAmt = factLine_BankAsset.getAmtAcctDr();
+			bankAssetAmt = extractAmountSourceAndAcct(factLine_BankAsset, true);
 			isIncomeAmount = true;
 		}
 		else
 		{
-			bankAssetAmt = factLine_BankAsset.getAmtAcctCr();
+			bankAssetAmt = extractAmountSourceAndAcct(factLine_BankAsset, false);
 			isIncomeAmount = false;
 		}
 
-		BigDecimal bankInTransitAmt = BigDecimal.ZERO;
+		final HashMap<CurrencyAndRate, AmountSourceAndAcct> bankAssetMinusInTransitAmounts = new HashMap<>();
+		bankAssetMinusInTransitAmounts.put(bankAssetAmt.getCurrencyAndRate(), bankAssetAmt);
+
 		for (final FactLine factLine : fact.getLines())
 		{
 			if (factLine == factLine_BankAsset)
@@ -580,16 +589,116 @@ public class Doc_BankStatement extends Doc<DocLine_BankStatement>
 				continue;
 			}
 
-			if (isIncomeAmount)
+			final AmountSourceAndAcct bankInTransitAmt = isIncomeAmount
+					? extractAmountSourceAndAcct(factLine, false)
+					: extractAmountSourceAndAcct(factLine, true);
+
+			bankAssetMinusInTransitAmounts.compute(
+					bankInTransitAmt.getCurrencyAndRate(),
+					(currencyAndRate, amt) -> amt == null ? bankInTransitAmt.negate() : amt.subtract(bankInTransitAmt));
+		}
+
+		BigDecimal bankAssetMinusInTransitAcctAmt = BigDecimal.ZERO;
+		for (final AmountSourceAndAcct amtSourceAndAcct : bankAssetMinusInTransitAmounts.values())
+		{
+			// Case: for a given Currency/Rate we have Zero Source Amount
+			// => skip it even if Accounting amount is not zero, because that difference (if it exists)
+			// it's because of conversion roundings and NOT because exchange rate difference.
+			if (amtSourceAndAcct.isZeroAmtSource())
 			{
-				bankInTransitAmt = bankInTransitAmt.add(factLine.getAmtAcctCr());
+				continue;
+			}
+
+			bankAssetMinusInTransitAcctAmt = bankAssetMinusInTransitAcctAmt.add(amtSourceAndAcct.getAmtAcct());
+		}
+
+		return bankAssetMinusInTransitAcctAmt;
+	}
+
+	private static AmountSourceAndAcct extractAmountSourceAndAcct(@NonNull final FactLine factLine, boolean isDR)
+	{
+		return AmountSourceAndAcct.builder()
+				.currencyAndRate(CurrencyAndRate.of(factLine.getCurrencyId(), factLine.getCurrencyRate()))
+				.amtSource(isDR ? factLine.getAmtSourceDr() : factLine.getAmtSourceCr())
+				.amtAcct(isDR ? factLine.getAmtAcctDr() : factLine.getAmtAcctCr())
+				.build();
+
+	}
+
+	@Value(staticConstructor = "of")
+	private static class CurrencyAndRate
+	{
+		@NonNull CurrencyId currencyId;
+		@NonNull BigDecimal currencyRate;
+
+		private CurrencyAndRate(@NonNull final CurrencyId currencyId, @NonNull final BigDecimal currencyRate)
+		{
+			this.currencyId = currencyId;
+			this.currencyRate = NumberUtils.stripTrailingDecimalZeros(currencyRate);
+		}
+	}
+
+	@Value
+	@Builder(toBuilder = true)
+	private static class AmountSourceAndAcct
+	{
+		@NonNull CurrencyAndRate currencyAndRate;
+		@NonNull BigDecimal amtSource;
+		@NonNull BigDecimal amtAcct;
+
+		public static AmountSourceAndAcct zero(@NonNull final CurrencyAndRate currencyAndRate)
+		{
+			return builder().currencyAndRate(currencyAndRate).amtSource(BigDecimal.ZERO).amtAcct(BigDecimal.ZERO).build();
+		}
+
+		public boolean isZero()
+		{
+			return amtSource.signum() == 0 && amtAcct.signum() == 0;
+		}
+
+		public boolean isZeroAmtSource()
+		{
+			return amtSource.signum() == 0;
+		}
+
+		public AmountSourceAndAcct negate()
+		{
+			return isZero()
+					? this
+					: toBuilder().amtSource(this.amtSource.negate()).amtAcct(this.amtAcct.negate()).build();
+		}
+
+		public AmountSourceAndAcct add(@NonNull final AmountSourceAndAcct other)
+		{
+			assertCurrencyAndRateMatching(other);
+			if (other.isZero())
+			{
+				return this;
+			}
+			else if (this.isZero())
+			{
+				return other;
 			}
 			else
 			{
-				bankInTransitAmt = bankInTransitAmt.add(factLine.getAmtAcctDr());
+				return toBuilder()
+						.amtSource(this.amtSource.add(other.amtSource))
+						.amtAcct(this.amtAcct.add(other.amtAcct))
+						.build();
 			}
 		}
 
-		return bankAssetAmt.subtract(bankInTransitAmt);
+		public AmountSourceAndAcct subtract(@NonNull final AmountSourceAndAcct other)
+		{
+			return add(other.negate());
+		}
+
+		private void assertCurrencyAndRateMatching(@NonNull final AmountSourceAndAcct other)
+		{
+			if (!Objects.equals(this.currencyAndRate, other.currencyAndRate))
+			{
+				throw new AdempiereException("Currency rate not matching: " + this.currencyAndRate + ", " + other.currencyAndRate);
+			}
+		}
 	}
 }   // Doc_Bank
