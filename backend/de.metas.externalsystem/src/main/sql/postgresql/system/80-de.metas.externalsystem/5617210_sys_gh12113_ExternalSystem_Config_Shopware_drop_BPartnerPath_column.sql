@@ -52,4 +52,5 @@ DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=573323
 
 -- 2021-12-07T15:11:58.541Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
--- This break the deploy DELETE FROM AD_Column WHERE AD_Column_ID=573323;
+DELETE FROM AD_Column WHERE AD_Column_ID=573323
+;
