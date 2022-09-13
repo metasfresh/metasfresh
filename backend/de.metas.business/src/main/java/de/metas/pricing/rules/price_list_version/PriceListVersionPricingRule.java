@@ -97,7 +97,7 @@ public class PriceListVersionPricingRule implements IPricingRule
 
 			final IEditablePricingContext pricingCtxEffective = pricingCtx.copy();
 			pricingCtxEffective.setPriceListVersionId(currentPriceListVersionId);
-			includedPricingRules.calculate(pricingCtx, result);
+			includedPricingRules.calculate(pricingCtxEffective, result);
 			if (result.isCalculated())
 			{
 				return;
