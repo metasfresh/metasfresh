@@ -31,15 +31,18 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.sql.SqlComposedKey;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Adv_Search;
 import org.compiere.model.I_C_Order;
 
 public class AdvancedSearchBPartnerProcessor implements AdvancedSearchDescriptor.AdvancedSearchSelectionProcessor
 {
 	private final SqlViewFactory sqlViewFactory;
-
+	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	public AdvancedSearchBPartnerProcessor(final SqlViewFactory sqlViewFactory)
 	{
 		this.sqlViewFactory = sqlViewFactory;
@@ -63,6 +66,13 @@ public class AdvancedSearchBPartnerProcessor implements AdvancedSearchDescriptor
 			throw new AdempiereException("@NoSelection@"); // shall not happen
 		}
 		document.processValueChange(bpartnerFieldName, bpartnerId, null, false);
+
+		final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
+		final String tableName = entityDescriptor.getTableName();
+		final int adTableId = adTableDAO.retrieveTableId(tableName);
+		final int bPartnerTableId = adTableDAO.retrieveTableId(I_C_BPartner.Table_Name);
+		if ((adTableId == bPartnerTableId) && (bpartnerFieldName.equals(I_C_BPartner.COLUMNNAME_C_BPartner_SalesRep_ID)))
+			return;
 
 		//
 		// Location
@@ -93,7 +103,6 @@ public class AdvancedSearchBPartnerProcessor implements AdvancedSearchDescriptor
 		switch (bpartnerFieldName)
 		{
 			case I_C_Order.COLUMNNAME_C_BPartner_ID:
-			case I_C_Order.COLUMNNAME_C_BPartner_SalesRep_ID:
 				return I_C_Order.COLUMNNAME_C_BPartner_Location_ID;
 			case I_C_Order.COLUMNNAME_Bill_BPartner_ID:
 				return I_C_Order.COLUMNNAME_Bill_Location_ID;
@@ -101,6 +110,8 @@ public class AdvancedSearchBPartnerProcessor implements AdvancedSearchDescriptor
 				return I_C_Order.COLUMNNAME_DropShip_Location_ID;
 			case I_C_Order.COLUMNNAME_Pay_BPartner_ID:
 				return I_C_Order.COLUMNNAME_Pay_Location_ID;
+			case I_C_Order.COLUMNNAME_C_BPartner_SalesRep_ID:
+				return I_C_Order.COLUMNNAME_C_BPartner_SalesRep_ID;
 			default:
 				throw new AdempiereException("Can't find Location field for Bpartner field: " + bpartnerFieldName);
 		}
@@ -118,7 +129,7 @@ public class AdvancedSearchBPartnerProcessor implements AdvancedSearchDescriptor
 			case I_C_Order.COLUMNNAME_DropShip_BPartner_ID:
 				return I_C_Order.COLUMNNAME_DropShip_User_ID;
 			case I_C_Order.COLUMNNAME_C_BPartner_SalesRep_ID:
-				return I_C_Order.COLUMNNAME_ExternalId;
+				return I_C_Order.COLUMNNAME_C_BPartner_SalesRep_ID;
 			default:
 				throw new AdempiereException("Can't find Location field for Bpartner field: " + bpartnerFieldName);
 		}
