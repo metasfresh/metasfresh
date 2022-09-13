@@ -1,5 +1,6 @@
 package de.metas.ad_reference;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import lombok.Builder;
@@ -21,8 +22,9 @@ public class ADRefList
 	@Getter @NonNull final String name;
 	@Getter boolean isOrderByValue;
 	private final ImmutableMap<String, ADRefListItem> itemsByValue;
+	private final ImmutableList<ADRefListItem> items; // required for toBuilder()
 
-	@Builder
+	@Builder(toBuilder = true)
 	private ADRefList(
 			final @NonNull ReferenceId referenceId,
 			final @NonNull String name,
@@ -32,8 +34,9 @@ public class ADRefList
 
 		this.referenceId = referenceId;
 		this.name = name;
-		this.itemsByValue = Maps.uniqueIndex(items, ADRefListItem::getValue);
 		this.isOrderByValue = isOrderByValue;
+		this.items = ImmutableList.copyOf(items);
+		this.itemsByValue = Maps.uniqueIndex(items, ADRefListItem::getValue);
 	}
 
 	public Set<String> getValues() {return itemsByValue.keySet();}
