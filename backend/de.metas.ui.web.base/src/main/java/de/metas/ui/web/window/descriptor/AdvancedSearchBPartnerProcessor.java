@@ -71,7 +71,7 @@ public class AdvancedSearchBPartnerProcessor implements AdvancedSearchDescriptor
 				composedKey.getValueAsInteger(I_C_BPartner_Adv_Search.COLUMNNAME_C_BPartner_Location_ID).orElse(-1));
 		if (bpLocationId != null)
 		{
-			final String locationFieldName = getLocationFieldNameForBPartnerField(bpartnerFieldName);
+			final String locationFieldName = getLocationFieldNameForBPartnerField(I_C_BPartner_Adv_Search.COLUMNNAME_C_BPartner_Location_ID);
 			document.processValueChange(locationFieldName, bpLocationId.getRepoId(), null, false);
 		}
 
@@ -82,7 +82,7 @@ public class AdvancedSearchBPartnerProcessor implements AdvancedSearchDescriptor
 				composedKey.getValueAsInteger(I_C_BPartner_Adv_Search.COLUMNNAME_C_BP_Contact_ID).orElse(-1));
 		if (bpContactId != null)
 		{
-			final String bpContactIdFieldName = getUserIdFieldNameForBPartnerField(bpartnerFieldName);
+			final String bpContactIdFieldName = getUserIdFieldNameForBPartnerField(I_C_BPartner_Adv_Search.COLUMNNAME_C_BP_Contact_ID);
 			document.processValueChange(bpContactIdFieldName, bpContactId.getRepoId(), null, false);
 		}
 	}
