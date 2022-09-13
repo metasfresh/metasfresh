@@ -1,6 +1,5 @@
 @from:cucumber
 @topic:orderCandidate
-@dev:runThisOne
 Feature: Process order candidate and validate created order
 
   Background:
