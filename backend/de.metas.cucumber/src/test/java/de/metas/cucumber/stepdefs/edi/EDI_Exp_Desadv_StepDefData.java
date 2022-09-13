@@ -27,4 +27,8 @@ import org.w3c.dom.Document;
 
 public class EDI_Exp_Desadv_StepDefData extends StepDefData<Document>
 {
+	public EDI_Exp_Desadv_StepDefData()
+	{
+		super(Document.class);
+	}
 }

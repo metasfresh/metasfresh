@@ -27,4 +27,8 @@ import de.metas.esb.edi.model.I_EDI_Desadv;
 
 public class EDI_Desadv_StepDefData extends StepDefData<I_EDI_Desadv>
 {
+	public EDI_Desadv_StepDefData()
+	{
+		super(I_EDI_Desadv.class);
+	}
 }
