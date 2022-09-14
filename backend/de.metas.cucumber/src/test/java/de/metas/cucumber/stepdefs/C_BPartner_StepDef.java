@@ -26,6 +26,7 @@ import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
+import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
@@ -52,14 +53,14 @@ public class C_BPartner_StepDef
 {
 	public static final int BP_GROUP_ID = BPGroupId.ofRepoId(1000000).getRepoId();
 
-	private final StepDefData<I_C_BPartner> bPartnerTable;
+	private final C_BPartner_StepDefData bPartnerTable;
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
-	private final StepDefData<I_M_PricingSystem> pricingSystemTable;
+	private final M_PricingSystem_StepDefData pricingSystemTable;
 
 
 	public C_BPartner_StepDef(
-			@NonNull final StepDefData<I_C_BPartner> bPartnerTable,
-			@NonNull final StepDefData<I_M_PricingSystem> pricingSystemTable)
+			@NonNull final C_BPartner_StepDefData bPartnerTable,
+			@NonNull final M_PricingSystem_StepDefData pricingSystemTable)
 	{
 		this.bPartnerTable = bPartnerTable;
 		this.pricingSystemTable = pricingSystemTable;

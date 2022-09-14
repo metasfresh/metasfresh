@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,10 +20,13 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.shipmentschedule;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -55,12 +58,12 @@ public class M_ShipmentSchedule_StepDef
 {
 	final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final StepDefData<I_C_OrderLine> orderLineTable;
-	private final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable;
+	private final C_OrderLine_StepDefData orderLineTable;
+	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 
 	public M_ShipmentSchedule_StepDef(
-			@NonNull final StepDefData<I_C_OrderLine> orderLineTable,
-			@NonNull final StepDefData<I_M_ShipmentSchedule> shipmentScheduleTable)
+			@NonNull final C_OrderLine_StepDefData orderLineTable,
+			@NonNull final M_ShipmentSchedule_StepDefData shipmentScheduleTable)
 	{
 		this.orderLineTable = orderLineTable;
 		this.shipmentScheduleTable = shipmentScheduleTable;

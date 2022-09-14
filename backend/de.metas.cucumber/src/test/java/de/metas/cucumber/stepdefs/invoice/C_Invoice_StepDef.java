@@ -24,7 +24,6 @@ package de.metas.cucumber.stepdefs.invoice;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.impl.PaymentTermQuery;
@@ -43,9 +42,9 @@ public class C_Invoice_StepDef
 {
 	private final IPaymentTermRepository paymentTermRepo = Services.get(IPaymentTermRepository.class);
 
-	private final StepDefData<I_C_Invoice> invoiceTable;
+	private final C_Invoice_StepDefData invoiceTable;
 
-	public C_Invoice_StepDef(@NonNull final StepDefData<I_C_Invoice> invoiceTable)
+	public C_Invoice_StepDef(@NonNull final C_Invoice_StepDefData invoiceTable)
 	{
 		this.invoiceTable = invoiceTable;
 	}
