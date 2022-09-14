@@ -116,7 +116,7 @@ public class C_Order_CounterDocHandler extends CounterDocumentHandlerAdapter
 
 		// References (should not be required)
 		counterOrder.setSalesRep_ID(order.getSalesRep_ID());
-		if (order.isDropShip() && order.getDropShip_BPartner_ID() != 0)
+		if (order.isDropShip() && order.getDropShip_BPartner_ID() > 0)
 		{
 			counterOrder.setIsDropShip(order.isDropShip());
 			OrderDocumentLocationAdapterFactory
