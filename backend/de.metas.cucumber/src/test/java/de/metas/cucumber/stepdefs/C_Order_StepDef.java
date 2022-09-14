@@ -685,6 +685,12 @@ public class C_Order_StepDef
 			assertThat(order.getAD_InputDataSource_ID()).isEqualTo(dataSource.getAD_InputDataSource_ID());
 		}
 
+		final Boolean isDropShip = DataTableUtil.extractBooleanForColumnNameOrNull(row,"OPT." + I_C_Order.COLUMNNAME_IsDropShip);
+		if (isDropShip != null)
+		{
+			assertThat(order.isDropShip()).isEqualTo(isDropShip);
+		}
+
 		final String dropShipBPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_DropShip_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(dropShipBPartnerIdentifier))
 		{
@@ -709,6 +715,12 @@ public class C_Order_StepDef
 			assertThat(order.getDropShip_User_ID()).isEqualTo(expectedDropShipUser.getAD_User_ID());
 		}
 
+		final Boolean isHandover = DataTableUtil.extractBooleanForColumnNameOrNull(row,"OPT." + I_C_Order.COLUMNNAME_IsUseHandOver_Location);
+		if (isHandover != null)
+		{
+			assertThat(order.isUseHandOver_Location()).isEqualTo(isHandover);
+		}
+		
 		final String handOverBPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_HandOver_Partner_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(handOverBPartnerIdentifier))
 		{
