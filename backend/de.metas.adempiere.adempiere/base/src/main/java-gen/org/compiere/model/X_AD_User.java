@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1819708594L;
+	private static final long serialVersionUID = -2013205932L;
 
     /** Standard Constructor */
     public X_AD_User (final Properties ctx, final int AD_User_ID, @Nullable final String trxName)
@@ -32,18 +32,6 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
-	}
-
-	@Override
-	public void setab182_isDunningDefault (final boolean ab182_isDunningDefault)
-	{
-		set_Value (COLUMNNAME_ab182_isDunningDefault, ab182_isDunningDefault);
-	}
-
-	@Override
-	public boolean isab182_isDunningDefault() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_ab182_isDunningDefault);
 	}
 
 	/** 
@@ -698,6 +686,18 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public boolean isDefaultContact() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDefaultContact);
+	}
+
+	@Override
+	public void setIsDunningDefault (final boolean IsDunningDefault)
+	{
+		set_Value (COLUMNNAME_IsDunningDefault, IsDunningDefault);
+	}
+
+	@Override
+	public boolean IsDunningDefault()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsDunningDefault);
 	}
 
 	@Override

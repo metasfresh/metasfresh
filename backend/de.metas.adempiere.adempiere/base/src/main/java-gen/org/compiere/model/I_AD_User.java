@@ -17,29 +17,6 @@ public interface I_AD_User
 
 
 	/**
-	 * Set Dunning Default.
-	 * Dunning Default
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setab182_isDunningDefault (boolean ab182_isDunningDefault);
-
-	/**
-	 * Get Dunning Default.
-	 * Dunning Default
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isab182_isDunningDefault();
-
-	ModelColumn<I_AD_User, Object> COLUMN_ab182_isDunningDefault = new ModelColumn<>(I_AD_User.class, "ab182_isDunningDefault", null);
-	String COLUMNNAME_ab182_isDunningDefault = "ab182_isDunningDefault";
-
-	/**
 	 * Get Client.
 	 * Client/Tenant for this installation.
 	 *
@@ -1043,6 +1020,29 @@ public interface I_AD_User
 
 	ModelColumn<I_AD_User, Object> COLUMN_IsDefaultContact = new ModelColumn<>(I_AD_User.class, "IsDefaultContact", null);
 	String COLUMNNAME_IsDefaultContact = "IsDefaultContact";
+
+	/**
+	 * Set Dunning Default.
+	 * Dunning Default
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDunningDefault (boolean IsDunningDefault);
+
+	/**
+	 * Get Dunning Default.
+	 * Dunning Default
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean IsDunningDefault();
+
+	ModelColumn<I_AD_User, Object> COLUMN_IsDunningDefault = new ModelColumn<>(I_AD_User.class, "IsDunningDefault", null);
+	String COLUMNNAME_IsDunningDefault = "IsDunningDefault";
 
 	/**
 	 * Set Full BP Access.
