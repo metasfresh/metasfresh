@@ -148,14 +148,14 @@ public class DeliveredDataLoader
 		}
 		else
 		{
-			final List<I_C_InvoiceCandidate_InOutLine> inOutLinesViaInterimInvoice = invoiceCandDAO.retrieveICIOLAssociationsViaInterimInvoiceExclRE(invoiceCandidateId);
+			final List<I_C_InvoiceCandidate_InOutLine> inOutLinesViaInterimInvoice = invoiceCandDAO.retrieveICIOLAssociationsViaInterimInvoice(invoiceCandidateId);
 			if (!inOutLinesViaInterimInvoice.isEmpty())
 			{
 				icIolAssociationRecords = inOutLinesViaInterimInvoice;
 			}
 			else
 			{
-				icIolAssociationRecords = invoiceCandDAO.retrieveICIOLAssociationsExclRE(invoiceCandidateId);
+				icIolAssociationRecords = invoiceCandDAO.retrieveICIOLAssociationsFor(invoiceCandidateId);
 			}
 		}
 		return icIolAssociationRecords;

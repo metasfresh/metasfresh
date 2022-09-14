@@ -107,6 +107,7 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.MessageFormat;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
@@ -1137,19 +1138,16 @@ public class C_Invoice_Candidate_StepDef
 
 		InterfaceWrapperHelper.refresh(invoiceCandidateRecord);
 
+		final ImmutableList.Builder<String> errorCollectors = ImmutableList.builder();
+
 		final BigDecimal qtyDelivered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_QtyDelivered);
 
 		if (qtyDelivered != null)
 		{
-			if (invoiceCandidateRecord.getQtyDelivered().compareTo(qtyDelivered) == 0)
+			if (invoiceCandidateRecord.getQtyDelivered().compareTo(qtyDelivered) != 0)
 			{
-				return ItemProvider.ProviderResult.resultWasFound(invoiceCandidateRecord);
-			}
-			else
-			{
-				return ItemProvider.ProviderResult
-						.resultWasNotFound("C_Invoice_Candidate_ID={0}; Expecting QtyDelivered={1} but actual is {2}",
-										   invoiceCandidateRecord.getC_Invoice_Candidate_ID(), qtyDelivered, invoiceCandidateRecord.getQtyDelivered());
+				errorCollectors.add(MessageFormat.format("C_Invoice_Candidate_ID={0}; Expecting QtyDelivered={1} but actual is {2}",
+														 invoiceCandidateRecord.getC_Invoice_Candidate_ID(), qtyDelivered, invoiceCandidateRecord.getQtyDelivered()));
 			}
 		}
 
@@ -1157,24 +1155,27 @@ public class C_Invoice_Candidate_StepDef
 
 		if (qtyToInvoice != null)
 		{
-			if (invoiceCandidateRecord.getQtyToInvoice().compareTo(qtyToInvoice) == 0)
+			if (invoiceCandidateRecord.getQtyToInvoice().compareTo(qtyToInvoice) != 0)
 			{
-				return ItemProvider.ProviderResult.resultWasFound(invoiceCandidateRecord);
-			}
-			else
-			{
-				return ItemProvider.ProviderResult
-						.resultWasNotFound("C_Invoice_Candidate_ID={0}; Expecting QtyToInvoice={1} but actual is {2}",
-										   invoiceCandidateRecord.getC_Invoice_Candidate_ID(), qtyToInvoice, invoiceCandidateRecord.getQtyToInvoice());
+				errorCollectors.add(MessageFormat.format("C_Invoice_Candidate_ID={0}; Expecting QtyToInvoice={1} but actual is {2}",
+														 invoiceCandidateRecord.getC_Invoice_Candidate_ID(), qtyToInvoice, invoiceCandidateRecord.getQtyToInvoice()));
 			}
 		}
 
-		if (!invoiceCandDAO.isToRecompute(invoiceCandidateRecord))
+		if (invoiceCandDAO.isToRecompute(invoiceCandidateRecord))
 		{
-			return ItemProvider.ProviderResult.resultWasFound(invoiceCandidateRecord);
+			errorCollectors.add("C_Invoice_Candidate_ID=" + invoiceCandidateRecord.getC_Invoice_Candidate_ID() + " is not updated yet");
 		}
 
-		return ItemProvider.ProviderResult.resultWasNotFound("C_Invoice_Candidate_ID=" + invoiceCandidateRecord.getC_Invoice_Candidate_ID() + " is not updated yet");
+		final List<String> errors = errorCollectors.build();
+
+		if (errors.size() > 0)
+		{
+			final String errorMessages = String.join(" && \n", errors);
+			return ItemProvider.ProviderResult.resultWasNotFound(errorMessages);
+		}
+
+		return ItemProvider.ProviderResult.resultWasFound(invoiceCandidateRecord);
 	}
 
 	private boolean isInvoiceCandidateProcessed(

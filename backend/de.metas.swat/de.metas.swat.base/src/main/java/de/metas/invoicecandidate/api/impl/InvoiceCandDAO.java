@@ -440,7 +440,7 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Override
-	public List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsViaInterimInvoiceExclRE(@NonNull final InvoiceCandidateId invoiceCandidateId)
+	public List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsViaInterimInvoice(@NonNull final InvoiceCandidateId invoiceCandidateId)
 	{
 		return queryBL.createQueryBuilder(I_C_InterimInvoice_FlatrateTerm.class)
 				.addOnlyActiveRecordsFilter()
@@ -456,7 +456,6 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream(I_C_InvoiceCandidate_InOutLine.class)
-				.filter(this::isInOutCompletedOrClosed)
 				.collect(ImmutableList.toImmutableList());
 	}
 
