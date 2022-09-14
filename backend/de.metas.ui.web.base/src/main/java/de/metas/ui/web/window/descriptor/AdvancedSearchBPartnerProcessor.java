@@ -31,9 +31,7 @@ import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.sql.SqlComposedKey;
-import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Adv_Search;
@@ -42,7 +40,6 @@ import org.compiere.model.I_C_Order;
 public class AdvancedSearchBPartnerProcessor implements AdvancedSearchDescriptor.AdvancedSearchSelectionProcessor
 {
 	private final SqlViewFactory sqlViewFactory;
-	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	public AdvancedSearchBPartnerProcessor(final SqlViewFactory sqlViewFactory)
 	{
 		this.sqlViewFactory = sqlViewFactory;
@@ -69,9 +66,7 @@ public class AdvancedSearchBPartnerProcessor implements AdvancedSearchDescriptor
 
 		final DocumentEntityDescriptor entityDescriptor = document.getEntityDescriptor();
 		final String tableName = entityDescriptor.getTableName();
-		final int adTableId = adTableDAO.retrieveTableId(tableName);
-		final int bPartnerTableId = adTableDAO.retrieveTableId(I_C_BPartner.Table_Name);
-		if ((adTableId == bPartnerTableId) && (bpartnerFieldName.equals(I_C_BPartner.COLUMNNAME_C_BPartner_SalesRep_ID)))
+		if ((tableName.equals(I_C_BPartner.Table_Name)) && (bpartnerFieldName.equals(I_C_BPartner.COLUMNNAME_C_BPartner_SalesRep_ID)))
 			return;
 
 		//
