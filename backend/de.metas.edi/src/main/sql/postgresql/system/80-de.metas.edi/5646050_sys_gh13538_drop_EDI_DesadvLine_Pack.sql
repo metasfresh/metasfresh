@@ -928,6 +928,8 @@ DELETE FROM AD_Element_Link WHERE AD_Window_ID=540780
 DELETE FROM  AD_Window_Trl WHERE AD_Window_ID=540780
 ;
 
+update ad_pinstance set ad_window_id=null where AD_Window_ID=540780;
+
 -- 2022-07-05T14:58:11.355Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Window WHERE AD_Window_ID=540780
