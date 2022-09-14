@@ -1,8 +1,4 @@
 
-alter table edi_desadv_pack
-    add edi_desadvline_pack_id numeric(10)
-;
-
 insert into edi_desadv_pack(edi_desadv_pack_id, ad_client_id, ad_org_id, created, createdby, isactive,
                             updated, updatedby, edi_desadv_id, ipa_sscc18, ismanual_ipa_sscc18, gtin_lu_packingmaterial,
                             m_hu_packagingcode_lu_id, m_hu_id, edi_desadv_parent_pack_id, edi_desadvline_pack_id)
