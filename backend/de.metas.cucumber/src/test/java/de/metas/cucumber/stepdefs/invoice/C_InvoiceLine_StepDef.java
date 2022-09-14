@@ -23,7 +23,6 @@
 package de.metas.cucumber.stepdefs.invoice;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -42,9 +41,9 @@ public class C_InvoiceLine_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	final StepDefData<I_C_Invoice> invoiceTable;
+	final C_Invoice_StepDefData invoiceTable;
 
-	public C_InvoiceLine_StepDef(@NonNull final StepDefData<I_C_Invoice> invoiceTable)
+	public C_InvoiceLine_StepDef(@NonNull final C_Invoice_StepDefData invoiceTable)
 	{
 		this.invoiceTable = invoiceTable;
 	}

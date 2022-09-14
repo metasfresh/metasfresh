@@ -23,7 +23,6 @@
 package de.metas.cucumber.stepdefs.shipment;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefData;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
@@ -37,9 +36,9 @@ import static org.assertj.core.api.Assertions.*;
 
 public class M_InOut_StepDef
 {
-	private final StepDefData<I_M_InOut> shipmentTable;
+	private final M_InOut_StepDefData shipmentTable;
 
-	public M_InOut_StepDef(@NonNull final StepDefData<I_M_InOut> shipmentTable)
+	public M_InOut_StepDef(@NonNull final M_InOut_StepDefData shipmentTable)
 	{
 		this.shipmentTable = shipmentTable;
 	}
