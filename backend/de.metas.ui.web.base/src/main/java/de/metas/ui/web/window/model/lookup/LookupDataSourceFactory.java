@@ -13,10 +13,10 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.table.api.MinimalColumnInfo;
 import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
@@ -108,9 +108,9 @@ public final class LookupDataSourceFactory
 	public LookupDataSource searchByColumn(@NonNull final String tableName, @NonNull final String columnname)
 	{
 		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-		final I_AD_Column column = adTableDAO.retrieveColumn(tableName, columnname);
-		final ReferenceId adReferenceValueId = ReferenceId.ofRepoId(column.getAD_Reference_Value_ID());
-		final AdValRuleId adValRuleId = AdValRuleId.ofRepoIdOrNull(column.getAD_Val_Rule_ID());
+		final MinimalColumnInfo column = adTableDAO.getMinimalColumnInfo(tableName, columnname);
+		final ReferenceId adReferenceValueId = column.getAdReferenceValueId();
+		final AdValRuleId adValRuleId = column.getAdValRuleId();
 
 		final LookupDescriptor lookupDescriptor = lookupDescriptorProviders.searchByAD_Val_Rule_ID(adReferenceValueId, adValRuleId)
 				.provide()

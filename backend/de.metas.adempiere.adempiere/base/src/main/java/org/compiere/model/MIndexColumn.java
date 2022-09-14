@@ -30,6 +30,8 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 import de.metas.util.Check;
+import de.metas.util.Services;
+import org.adempiere.ad.table.api.IADTableDAO;
 
 /**
  * AD Index Column
@@ -42,10 +44,12 @@ public class MIndexColumn extends X_AD_Index_Column {
 	 */
 	private static final long serialVersionUID = 1907712672821691643L;
 
+	@SuppressWarnings("unused")
 	public MIndexColumn(Properties ctx, int AD_Index_Column_ID, String trxName) {
 		super(ctx, AD_Index_Column_ID, trxName);
 	}
 
+	@SuppressWarnings("unused")
 	public MIndexColumn(Properties ctx, ResultSet rs, String trxName) {
 		super(ctx, rs, trxName);
 	}
@@ -62,51 +66,15 @@ public class MIndexColumn extends X_AD_Index_Column {
 		{
 			return sql;
 		}
-		int AD_Column_ID = getAD_Column_ID();
-		return MColumn.getColumnName(getCtx(), AD_Column_ID);
+		return Services.get(IADTableDAO.class).retrieveColumnName(getAD_Column_ID());
 	}
 
 	@Override
 	public String toString()
 	{
-		StringBuffer sb = new StringBuffer("MIndexColumn[").append(get_ID())
-				.append(", AD_Column_ID=").append(getAD_Column_ID())
-				.append("]");
-		return sb.toString();
+		return "MIndexColumn[" + get_ID()
+				+ ", AD_Column_ID=" + getAD_Column_ID()
+				+ "]";
 	}
 
-	public static MIndexColumn retrieveOrCreate(final MIndexTable indexTable,
-			final String columnName, final int seqNo) {
-
-		final Properties ctx = indexTable.getCtx();
-		final String trxName = indexTable.get_TrxName();
-		final MTable table = (MTable) indexTable.getAD_Table();
-
-		final MColumn column = table.getColumn(columnName);
-
-		if (column == null) {
-			throw new IllegalArgumentException("Illegal column name '"
-					+ columnName + "' for table " + table);
-		}
-
-		final String whereClause = COLUMNNAME_AD_Index_Table_ID + "=? AND "
-				+ COLUMNNAME_AD_Column_ID + "=?";
-
-		final Object[] params = { indexTable.get_ID(), column.get_ID() };
-
-		MIndexColumn indexColumn = new Query(ctx, Table_Name,
-				whereClause, trxName).setParameters(params).firstOnly();
-
-		if (indexColumn == null) {
-			
-			indexColumn = new MIndexColumn(ctx, 0, trxName);
-			indexColumn.setAD_Index_Table_ID(indexTable.get_ID());
-			indexColumn.setAD_Column_ID(column.get_ID());
-		}
-		
-		indexColumn.setSeqNo(seqNo);
-		indexColumn.saveEx();
-		
-		return indexColumn;
-	}
 }

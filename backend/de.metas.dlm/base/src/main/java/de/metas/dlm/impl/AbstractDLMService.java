@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Stream;
 
+import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.table.api.IADTableDAO;
@@ -589,8 +590,8 @@ public abstract class AbstractDLMService implements IDLMService
 				final int referencedTableID = adTableDAO.retrieveTableId(ref.getReferencedTableName());
 				configRefDB.setDLM_Referenced_Table_ID(referencedTableID);
 
-				final I_AD_Column referencingColumn = InterfaceWrapperHelper.create(adTableDAO.retrieveColumn(line.getTableName(), ref.getReferencingColumnName()), I_AD_Column.class);
-				configRefDB.setDLM_Referencing_Column(referencingColumn);
+				final AdColumnId referencingColumnId = adTableDAO.retrieveColumnId(line.getTableName(), ref.getReferencingColumnName());
+				configRefDB.setDLM_Referencing_Column_ID(referencingColumnId.getRepoId());
 
 				InterfaceWrapperHelper.save(configRefDB);
 				ref.setDLM_Partition_Config_Reference_ID(configRefDB.getDLM_Partition_Config_Reference_ID());

@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 
 import org.adempiere.ad.table.TableRecordIdDescriptor;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.table.api.MinimalColumnInfo;
 import org.adempiere.exceptions.DBException;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Table;
@@ -125,7 +126,7 @@ public class DLMReferenceExceptionWrapper implements IExceptionWrapper<DBExcepti
 		final I_AD_Table referencingTable = adTableDAO.retrieveTable(infos[2]);
 		Check.errorIf(referencingTable == null, "Unable to retrieve an AD_Table for referencingTable name={}", infos[2]);
 
-		final I_AD_Column referencingColumn = adTableDAO.retrieveColumn(referencingTable.getTableName(), infos[3]);
+		final MinimalColumnInfo referencingColumn = adTableDAO.getMinimalColumnInfo(referencingTable.getTableName(), infos[3]);
 		Check.errorIf(referencingTable == null, "Unable to retrieve an AD_Column for referencingTable name={} and referencingColumn name={}", infos[2], infos[3]);
 
 		final DLMReferenceException ex = new DLMReferenceException(t,

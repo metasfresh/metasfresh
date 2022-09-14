@@ -6,9 +6,9 @@ import lombok.NonNull;
 import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.migration.executor.IPostponedExecutable;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.table.api.MinimalColumnInfo;
 import org.adempiere.ad.table.ddl.TableDDLSyncService;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_Column;
 import org.slf4j.Logger;
 
 public class ColumnSyncDDLExecutable implements IPostponedExecutable
@@ -31,8 +31,8 @@ public class ColumnSyncDDLExecutable implements IPostponedExecutable
 		{
 			// TODO unsync column?
 			final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
-			final I_AD_Column column = adTableDAO.retrieveColumnById(adColumnId);
-			final String tableName = adTableDAO.retrieveTableName(column.getAD_Table_ID());
+			final MinimalColumnInfo column = adTableDAO.getMinimalColumnInfo(adColumnId);
+			final String tableName = adTableDAO.retrieveTableName(column.getAdTableId());
 			logger.warn("Please manualy drop column {}.{}", tableName, column.getColumnName());
 		}
 		else
