@@ -204,6 +204,7 @@ final class SqlLookupDescriptorFactory
 	public SqlLookupDescriptorFactory setDisplayType(final ReferenceId displayType)
 	{
 		this.displayType = displayType;
+		this.filtersBuilder.setDisplayType(ReferenceId.toRepoId(displayType));
 		return this;
 	}
 
