@@ -113,3 +113,9 @@ DROP TRIGGER IF EXISTS AD_User_IsDunningDefault ON AD_User
 -- 2022-09-14T09:17:31.527Z
 CREATE TRIGGER AD_User_IsDunningDefault BEFORE INSERT OR UPDATE  ON AD_User FOR EACH ROW EXECUTE PROCEDURE AD_User_IsDunningDefault()
 ;
+
+-- UI Element: Geschäftspartner(123,D) -> Nutzer / Kontakt(496,D) -> main -> 10 -> main.Dunning Default
+-- Column: AD_User.isDunningDefault
+-- 2022-09-14T18:31:09.721Z
+UPDATE AD_UI_Element SET IsActive='N',Updated=TO_TIMESTAMP('2022-09-14 20:31:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=612981
+;
