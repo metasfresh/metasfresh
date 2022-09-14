@@ -92,8 +92,13 @@ public class InterimInvoiceFlatrateTermDAO implements IInterimInvoiceFlatrateTer
 	public Stream<InterimInvoiceFlatrateTerm> retrieveBy(final InterimInvoiceFlatrateTermQuery query)
 	{
 		final IQueryBuilder<I_C_Flatrate_Term> flatrateTermQueryBuilder = queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, query.getBpartnerId());
+				.addOnlyActiveRecordsFilter();
+
+		final BPartnerId bpartnerId = query.getBpartnerId();
+		if (bpartnerId != null)
+		{
+			flatrateTermQueryBuilder.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, bpartnerId);
+		}
 
 		final Instant dateOn = query.getDateOn();
 		if (dateOn != null)
