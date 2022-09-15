@@ -29,8 +29,12 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.EdiDesadvRecipientGLN  |
-      | endcustomer_1 | Endcustomer_13092022_1 | N            | Y              | ps_1                          | true                     | bPartnerDesadvRecipientGLN |
+      | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | endcustomer_1 | Endcustomer_13092022_1 | N            | Y              | ps_1                          |
+    And the following c_bpartner is changed
+      | C_BPartner_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.EdiDesadvRecipientGLN  |
+      | endcustomer_1            | true                     | bPartnerDesadvRecipientGLN |
+
     And metasfresh contains C_BPartner_Products:
       | C_BPartner_ID.Identifier | M_Product_ID.Identifier |
       | endcustomer_1            | p_1                     |
@@ -99,8 +103,11 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
       | pp_2       | plv_1                             | p_2                     | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.EdiDesadvRecipientGLN  |
-      | endcustomer_1 | Endcustomer_13092022_2 | N            | Y              | ps_1                          | true                     | bPartnerDesadvRecipientGLN |
+      | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | endcustomer_1 | Endcustomer_13092022_2 | N            | Y              | ps_1                          |
+    And the following c_bpartner is changed
+      | C_BPartner_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.EdiDesadvRecipientGLN  |
+      | endcustomer_1            | true                     | bPartnerDesadvRecipientGLN |
     And metasfresh contains C_BPartner_Product
       | C_BPartner_Product_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.GTIN            |
       | bp_1                             | endcustomer_1            | p_2                     | bPartnerProductGTIN |
@@ -215,9 +222,11 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item
       | pp_3       | plv_1                             | p_3                     | 10.0     | PCE               | Normal                        |
 
     And metasfresh contains C_BPartners:
-      | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.EdiDesadvRecipientGLN  |
-      | endcustomer_1 | Endcustomer_14092022_1 | N            | Y              | ps_1                          | true                     | bPartnerDesadvRecipientGLN |
-
+      | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | endcustomer_1 | Endcustomer_14092022_1 | N            | Y              | ps_1                          |
+    And the following c_bpartner is changed
+      | C_BPartner_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.EdiDesadvRecipientGLN  |
+      | endcustomer_1            | true                     | bPartnerDesadvRecipientGLN |
     And load M_HU_PackagingCode:
       | M_HU_PackagingCode_ID.Identifier | PackagingCode | HU_UnitType |
       | huPackagingCode_1                | ISO1          | LU          |
@@ -373,8 +382,12 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item
       | pp_4       | plv_1                             | p_4                     | 10.0     | PCE               | Normal                        |
 
     And metasfresh contains C_BPartners:
-      | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.EdiDesadvRecipientGLN  |
-      | endcustomer_1 | Endcustomer_14092022_2 | N            | Y              | ps_1                          | true                     | bPartnerDesadvRecipientGLN |
+      | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | endcustomer_1 | Endcustomer_14092022_2 | N            | Y              | ps_1                          |
+
+    And the following c_bpartner is changed
+      | C_BPartner_ID.Identifier | OPT.IsEdiDesadvRecipient | OPT.EdiDesadvRecipientGLN  |
+      | endcustomer_1            | true                     | bPartnerDesadvRecipientGLN |
 
     And load M_HU_PackagingCode:
       | M_HU_PackagingCode_ID.Identifier | PackagingCode | HU_UnitType |
