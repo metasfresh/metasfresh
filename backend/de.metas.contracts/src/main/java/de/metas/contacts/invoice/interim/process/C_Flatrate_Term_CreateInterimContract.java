@@ -27,8 +27,8 @@ import de.metas.contacts.invoice.interim.InterimInvoiceFlatrateTermQuery;
 import de.metas.contacts.invoice.interim.command.InterimInvoiceFlatrateTermCreateCommand;
 import de.metas.contacts.invoice.interim.service.IInterimInvoiceFlatrateTermDAO;
 import de.metas.contracts.ConditionsId;
-import de.metas.contracts.order.model.I_C_Order;
-import de.metas.contracts.order.model.I_C_OrderLine;
+import de.metas.order.IOrderDAO;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
@@ -38,7 +38,8 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
 import org.compiere.util.TimeUtil;
 
 import java.sql.Timestamp;
@@ -52,7 +53,8 @@ public class C_Flatrate_Term_CreateInterimContract extends JavaProcess implement
 	@Param(mandatory = true, parameterName = "DateTo")
 	private Timestamp p_DateTo;
 
-	IInterimInvoiceFlatrateTermDAO interimInvoiceFlatrateTermDAO = Services.get(IInterimInvoiceFlatrateTermDAO.class);
+	private final IInterimInvoiceFlatrateTermDAO interimInvoiceFlatrateTermDAO = Services.get(IInterimInvoiceFlatrateTermDAO.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -65,12 +67,12 @@ public class C_Flatrate_Term_CreateInterimContract extends JavaProcess implement
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
-		final I_C_OrderLine orderLine = InterfaceWrapperHelper.load(context.getSingleSelectedRecordId(), I_C_OrderLine.class);
+		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(OrderLineId.ofRepoId(context.getSingleSelectedRecordId()));
 		if (!orderLine.isProcessed())
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("only processed order lines are allowed");
 		}
-		final I_C_Order order = InterfaceWrapperHelper.load(orderLine.getC_Order_ID(), I_C_Order.class);
+		final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 		final InterimInvoiceFlatrateTermQuery query = InterimInvoiceFlatrateTermQuery.builder()
 				.bpartnerId(BPartnerId.ofRepoId(order.getC_BPartner_ID()))
 				.productId(ProductId.ofRepoId(orderLine.getM_Product_ID()))
