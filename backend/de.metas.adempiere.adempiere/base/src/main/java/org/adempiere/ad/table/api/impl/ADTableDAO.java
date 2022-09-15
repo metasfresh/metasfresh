@@ -466,6 +466,7 @@ public class ADTableDAO implements IADTableDAO
 						+ "," + I_AD_Column.COLUMNNAME_AD_Reference_Value_ID
 						+ "," + I_AD_Column.COLUMNNAME_AD_Val_Rule_ID
 						+ "," + I_AD_Column.COLUMNNAME_EntityType
+						+ "," + I_AD_Column.COLUMNNAME_FieldLength
 						+ " FROM " + I_AD_Column.Table_Name
 						+ " ORDER BY "
 						+ " " + I_AD_Column.COLUMNNAME_AD_Table_ID
@@ -492,6 +493,7 @@ public class ADTableDAO implements IADTableDAO
 				.adReferenceValueId(ReferenceId.ofRepoIdOrNull(rs.getInt(I_AD_Column.COLUMNNAME_AD_Reference_Value_ID)))
 				.adValRuleId(AdValRuleId.ofRepoIdOrNull(rs.getInt(I_AD_Column.COLUMNNAME_AD_Val_Rule_ID)))
 				.entityType(rs.getString(I_AD_Column.COLUMNNAME_EntityType))
+				.fieldLength(rs.getInt(I_AD_Column.COLUMNNAME_FieldLength))
 				.build();
 	}
 }

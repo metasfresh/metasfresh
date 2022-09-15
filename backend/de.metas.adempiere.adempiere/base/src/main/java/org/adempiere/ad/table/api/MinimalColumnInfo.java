@@ -28,4 +28,5 @@ public class MinimalColumnInfo
 	@Nullable ReferenceId adReferenceValueId;
 	@Nullable AdValRuleId adValRuleId;
 	@NonNull String entityType;
+	int fieldLength;
 }
