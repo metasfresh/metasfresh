@@ -65,7 +65,7 @@ public class M_PriceList_StepDef
 	private final M_PriceList_StepDefData priceListTable;
 	private final M_PriceList_Version_StepDefData priceListVersionTable;
 	private final M_ProductPrice_StepDefData productPriceTable;
-	
+
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
 
 	public M_PriceList_StepDef(
@@ -87,8 +87,11 @@ public class M_PriceList_StepDef
 	@And("metasfresh contains M_PricingSystems")
 	public void add_M_PricingSystem(@NonNull final DataTable dataTable)
 	{
-		final Map<String, String> dataTableRow = dataTable.asMaps().get(0);
-		createM_PricingSystem(dataTableRow);
+		final List<Map<String, String>> row = dataTable.asMaps();
+		for (final Map<String, String> dataTableRow : row)
+		{
+			createM_PricingSystem(dataTableRow);
+		}
 	}
 
 	@And("metasfresh contains M_PriceLists")
@@ -117,7 +120,7 @@ public class M_PriceList_StepDef
 		m_pricingSystem.setDescription(description);
 
 		saveRecord(m_pricingSystem);
-		
+
 		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(row, I_M_PricingSystem.Table_Name);
 		pricingSystemTable.put(recordIdentifier, m_pricingSystem);
 	}
@@ -125,7 +128,7 @@ public class M_PriceList_StepDef
 	private void createM_PriceList(@NonNull final Map<String, String> row)
 	{
 		final String pricingSystemIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_PricingSystem_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		
+
 		final String countryCode = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.C_Country.CountryCode");
 		final String isoCode = DataTableUtil.extractStringForColumnName(row, "C_Currency.ISO_Code");
 		final String name = DataTableUtil.extractStringForColumnName(row, "Name");
@@ -196,7 +199,7 @@ public class M_PriceList_StepDef
 		m_priceList_Version.setName(name);
 		m_priceList_Version.setDescription(description);
 		m_priceList_Version.setValidFrom(validFrom);
-		
+
 		saveRecord(m_priceList_Version);
 
 		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(row, I_M_PriceList_Version.Table_Name);
@@ -218,14 +221,14 @@ public class M_PriceList_StepDef
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final I_M_Product product = productTable.get(productIdentifier);
 		final BigDecimal priceStd = DataTableUtil.extractBigDecimalForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_PriceStd);
-		
+
 
 		final String taxCategoryInternalName = DataTableUtil.extractStringForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_C_TaxCategory_ID + "." + I_C_TaxCategory.COLUMNNAME_InternalName);
 		final Optional<TaxCategoryId> taxCategoryId = taxBL.getTaxCategoryIdByInternalName(taxCategoryInternalName);
 		assertThat(taxCategoryId).as("Missing taxCategory for internalName=%s", taxCategoryInternalName).isPresent();
 
 		final String plvIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ProductPrice.COLUMNNAME_M_PriceList_Version_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		
+
 		final I_M_ProductPrice productPrice = InterfaceWrapperHelper.newInstance(I_M_ProductPrice.class);
 
 		productPrice.setM_PriceList_Version_ID(priceListVersionTable.get(plvIdentifier).getM_PriceList_Version_ID());
@@ -235,7 +238,7 @@ public class M_PriceList_StepDef
 		productPrice.setC_TaxCategory_ID(taxCategoryId.get().getRepoId());
 
 		saveRecord(productPrice);
-		
+
 		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, I_M_ProductPrice.Table_Name);
 		productPriceTable.put(recordIdentifier, productPrice);
 	}

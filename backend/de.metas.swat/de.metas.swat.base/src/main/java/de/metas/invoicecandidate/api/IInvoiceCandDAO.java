@@ -392,6 +392,8 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	void invalidateUninvoicedFreightCostCandidate(OrderId orderId);
 
+	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsFor(@NonNull InvoiceCandidateId invoiceCandidateId);
+
 	@NonNull
 	List<I_C_Invoice_Candidate> retrieveApprovedForInvoiceReferencing(TableRecordReferenceSet singleTableReferences);
 }

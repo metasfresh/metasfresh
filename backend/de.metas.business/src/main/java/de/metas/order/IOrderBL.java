@@ -27,6 +27,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.document.DocTypeId;
+import de.metas.document.engine.DocStatus;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.exceptions.PriceListNotFoundException;
@@ -259,4 +260,6 @@ public interface IOrderBL extends ISingletonService
 	boolean isHaddexOrder(I_C_Order order);
 
 	void closeOrder(final OrderId orderId);
+
+	DocStatus getDocStatus(OrderId orderId);
 }

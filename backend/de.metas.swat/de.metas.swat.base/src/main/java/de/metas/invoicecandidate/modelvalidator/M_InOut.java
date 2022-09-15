@@ -52,7 +52,9 @@ public class M_InOut
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSECORRECT, //
 			ModelValidator.TIMING_AFTER_REVERSEACCRUAL, //
 			ModelValidator.TIMING_AFTER_REACTIVATE,
-			ModelValidator.TIMING_AFTER_COMPLETE // needed in case we complete an inout that was previously reactivated
+			ModelValidator.TIMING_AFTER_COMPLETE,// needed in case we complete an inout that was previously reactivated
+			ModelValidator.TIMING_AFTER_CLOSE,
+			ModelValidator.TIMING_AFTER_VOID,
 			})
 
 	public void invalidateInvoiceCandidatesOnReversal(final I_M_InOut inout)

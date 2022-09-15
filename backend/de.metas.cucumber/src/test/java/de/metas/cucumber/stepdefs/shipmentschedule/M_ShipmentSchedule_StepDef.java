@@ -45,11 +45,14 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_C_OrderLine;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -125,6 +128,16 @@ public class M_ShipmentSchedule_StepDef
 		for (final Map<String, String> tableRow : tableRows)
 		{
 			assertShipmentScheduleIsClosed(tableRow);
+		}
+	}
+
+	@And("update shipment schedules")
+	public void update_shipment_schedule(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			alterShipmentSchedule(tableRow);
 		}
 	}
 
@@ -244,5 +257,20 @@ public class M_ShipmentSchedule_StepDef
 
 		assertNotNull(shipmentSchedule);
 		assertEquals(Boolean.TRUE, refreshedSchedule.isClosed());
+	}
+
+	private void alterShipmentSchedule(@NonNull final Map<String, String> tableRow)
+	{
+		final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_M_ShipmentSchedule shipmentScheduleRecord = shipmentScheduleTable.get(shipmentScheduleIdentifier);
+
+		final BigDecimal qtyToDeliverOverride = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver_Override);
+
+		if (qtyToDeliverOverride != null)
+		{
+			shipmentScheduleRecord.setQtyToDeliver_Override(qtyToDeliverOverride);
+		}
+
+		saveRecord(shipmentScheduleRecord);
 	}
 }

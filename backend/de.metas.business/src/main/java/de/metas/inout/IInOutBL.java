@@ -1,5 +1,6 @@
 package de.metas.inout;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -181,4 +182,6 @@ public interface IInOutBL extends ISingletonService
 	Optional<RequestTypeId> getRequestTypeForCreatingNewRequestsAfterComplete(I_M_InOut inOut);
 
 	I_R_Request createRequestFromInOut(I_M_InOut inOut);
+
+	DocStatus getDocStatus(InOutId inOutId);
 }
