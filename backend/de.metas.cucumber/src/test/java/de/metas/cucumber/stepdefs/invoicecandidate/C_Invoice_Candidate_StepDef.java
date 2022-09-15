@@ -25,7 +25,9 @@ package de.metas.cucumber.stepdefs.invoicecandidate;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.common.util.Check;
 import de.metas.common.util.EmptyUtil;
+import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.cucumber.stepdefs.AD_User_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
@@ -37,6 +39,7 @@ import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.cucumber.stepdefs.docType.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.iinvoicecandidate.I_Invoice_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
@@ -62,9 +65,9 @@ import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
-import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
@@ -82,6 +85,7 @@ import org.assertj.core.api.Assertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -103,6 +107,7 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.MessageFormat;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
@@ -111,6 +116,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_ApprovalForInvoicing;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Bill_Location_ID;
@@ -126,6 +132,7 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_D
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_IsInDispute;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_IsInterimInvoice;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_IsSOTrx;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_LineNetAmt;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_M_Product_ID;
@@ -144,6 +151,7 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Q
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoiceInUOM_Calc;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QualityDiscountPercent_Override;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Record_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
@@ -160,7 +168,6 @@ public class C_Invoice_Candidate_StepDef
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
-
 	private final C_Invoice_Candidate_StepDefData invoiceCandTable;
 	private final C_Invoice_StepDefData invoiceTable;
 	private final C_BPartner_StepDefData bPartnerTable;
@@ -175,6 +182,7 @@ public class C_Invoice_Candidate_StepDef
 	private final C_DocType_StepDefData docTypeTable;
 	private final C_UOM_StepDefData uomTable;
 	private final AD_Org_StepDefData orgTable;
+	private final C_Flatrate_Term_StepDefData contractTable;
 
 	public C_Invoice_Candidate_StepDef(
 			@NonNull final C_Invoice_Candidate_StepDefData invoiceCandTable,
@@ -190,7 +198,8 @@ public class C_Invoice_Candidate_StepDef
 			@NonNull final AD_User_StepDefData contactTable,
 			@NonNull final C_DocType_StepDefData docTypeTable,
 			@NonNull final C_UOM_StepDefData uomTable,
-			@NonNull final AD_Org_StepDefData orgTable)
+			@NonNull final AD_Org_StepDefData orgTable,
+			@NonNull final C_Flatrate_Term_StepDefData contractTable)
 	{
 		this.invoiceCandTable = invoiceCandTable;
 		this.invoiceTable = invoiceTable;
@@ -206,6 +215,7 @@ public class C_Invoice_Candidate_StepDef
 		this.docTypeTable = docTypeTable;
 		this.uomTable = uomTable;
 		this.orgTable = orgTable;
+		this.contractTable = contractTable;
 	}
 
 	@And("^locate invoice candidates for invoice: (.*)$")
@@ -285,13 +295,19 @@ public class C_Invoice_Candidate_StepDef
 				invoiceCandidate.setQtyToInvoice_Override(qtyToInvoiceOverride);
 			}
 
+			final BigDecimal priceEnteredOverride = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_PriceEntered_Override);
+			if (priceEnteredOverride != null)
+			{
+				invoiceCandidate.setPriceEntered_Override(priceEnteredOverride);
+			}
+
 			final String invoiceRuleOverride = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_InvoiceRule_Override);
 			if (Check.isNotBlank(invoiceRuleOverride))
 			{
 				invoiceCandidate.setInvoiceRule_Override(invoiceRuleOverride);
 			}
 
-			InterfaceWrapperHelper.saveRecord(invoiceCandidate);
+			saveRecord(invoiceCandidate);
 			invoiceCandTable.putOrReplace(invoiceCandIdentifier, invoiceCandidate);
 		}
 	}
@@ -1074,6 +1090,22 @@ public class C_Invoice_Candidate_StepDef
 			invCandQueryBuilder.addEqualsFilter(COLUMNNAME_QtyDelivered, qtyDelivered);
 		}
 
+		final String isInterimInvoiceStr = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + COLUMNNAME_IsInterimInvoice);
+		if (Check.isNotBlank(isInterimInvoiceStr))
+		{
+			final String isInterimInvoice = DataTableUtil.nullToken2Null(isInterimInvoiceStr);
+			if (isInterimInvoice != null)
+			{
+				invCandQueryBuilder.addEqualsFilter(COLUMNNAME_IsInterimInvoice, StringUtils.toBoolean(isInterimInvoice));
+			}
+			else
+			{
+				invCandQueryBuilder.addEqualsFilter(COLUMNNAME_IsInterimInvoice, null);
+			}
+		}
+
+		addTableRecordReferenceFiltersForInvoiceCandidate(row, invCandQueryBuilder);
+
 		final Optional<I_C_Invoice_Candidate> invoiceCandidate = invCandQueryBuilder.create()
 				.firstOnlyOptional(I_C_Invoice_Candidate.class);
 
@@ -1106,19 +1138,16 @@ public class C_Invoice_Candidate_StepDef
 
 		InterfaceWrapperHelper.refresh(invoiceCandidateRecord);
 
+		final ImmutableList.Builder<String> errorCollectors = ImmutableList.builder();
+
 		final BigDecimal qtyDelivered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_QtyDelivered);
 
 		if (qtyDelivered != null)
 		{
-			if (invoiceCandidateRecord.getQtyDelivered().compareTo(qtyDelivered) == 0)
+			if (invoiceCandidateRecord.getQtyDelivered().compareTo(qtyDelivered) != 0)
 			{
-				return ItemProvider.ProviderResult.resultWasFound(invoiceCandidateRecord);
-			}
-			else
-			{
-				return ItemProvider.ProviderResult
-						.resultWasNotFound("C_Invoice_Candidate_ID={0}; Expecting QtyDelivered={1} but actual is {2}",
-										   invoiceCandidateRecord.getC_Invoice_Candidate_ID(), qtyDelivered, invoiceCandidateRecord.getQtyDelivered());
+				errorCollectors.add(MessageFormat.format("C_Invoice_Candidate_ID={0}; Expecting QtyDelivered={1} but actual is {2}",
+														 invoiceCandidateRecord.getC_Invoice_Candidate_ID(), qtyDelivered, invoiceCandidateRecord.getQtyDelivered()));
 			}
 		}
 
@@ -1126,24 +1155,27 @@ public class C_Invoice_Candidate_StepDef
 
 		if (qtyToInvoice != null)
 		{
-			if (invoiceCandidateRecord.getQtyToInvoice().compareTo(qtyToInvoice) == 0)
+			if (invoiceCandidateRecord.getQtyToInvoice().compareTo(qtyToInvoice) != 0)
 			{
-				return ItemProvider.ProviderResult.resultWasFound(invoiceCandidateRecord);
-			}
-			else
-			{
-				return ItemProvider.ProviderResult
-						.resultWasNotFound("C_Invoice_Candidate_ID={0}; Expecting QtyToInvoice={1} but actual is {2}",
-										   invoiceCandidateRecord.getC_Invoice_Candidate_ID(), qtyToInvoice, invoiceCandidateRecord.getQtyToInvoice());
+				errorCollectors.add(MessageFormat.format("C_Invoice_Candidate_ID={0}; Expecting QtyToInvoice={1} but actual is {2}",
+														 invoiceCandidateRecord.getC_Invoice_Candidate_ID(), qtyToInvoice, invoiceCandidateRecord.getQtyToInvoice()));
 			}
 		}
 
-		if (!invoiceCandDAO.isToRecompute(invoiceCandidateRecord))
+		if (invoiceCandDAO.isToRecompute(invoiceCandidateRecord))
 		{
-			return ItemProvider.ProviderResult.resultWasFound(invoiceCandidateRecord);
+			errorCollectors.add("C_Invoice_Candidate_ID=" + invoiceCandidateRecord.getC_Invoice_Candidate_ID() + " is not updated yet");
 		}
 
-		return ItemProvider.ProviderResult.resultWasNotFound("C_Invoice_Candidate_ID=" + invoiceCandidateRecord.getC_Invoice_Candidate_ID() + " is not updated yet");
+		final List<String> errors = errorCollectors.build();
+
+		if (errors.size() > 0)
+		{
+			final String errorMessages = String.join(" && \n", errors);
+			return ItemProvider.ProviderResult.resultWasNotFound(errorMessages);
+		}
+
+		return ItemProvider.ProviderResult.resultWasFound(invoiceCandidateRecord);
 	}
 
 	private boolean isInvoiceCandidateProcessed(
@@ -1481,5 +1513,27 @@ public class C_Invoice_Candidate_StepDef
 		}
 
 		return ItemProvider.ProviderResult.resultWasNotFound("C_Invoice_Candidate_ID=" + invoiceCandidateRecord.getC_Invoice_Candidate_ID() + " is not matching criteria yet");
+	}
+
+	private void addTableRecordReferenceFiltersForInvoiceCandidate(@NonNull final Map<String, String> row, @NonNull final IQueryBuilder<I_C_Invoice_Candidate> invCandQueryBuilder)
+	{
+		final String referencedTableName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_AD_Table_ID + "." + I_AD_Table.COLUMNNAME_TableName);
+		final String referencedRecordIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_Record_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(referencedTableName) && Check.isNotBlank(referencedRecordIdentifier))
+		{
+			final int recordId;
+			switch (referencedTableName)
+			{
+				case I_C_Flatrate_Term.Table_Name:
+					recordId = contractTable.get(referencedRecordIdentifier).getC_Flatrate_Term_ID();
+					break;
+				default:
+					throw new AdempiereException("Unsupported TableName=" + referencedTableName);
+			}
+			final TableRecordReference tableRecordReference = TableRecordReference.of(referencedTableName, recordId);
+
+			invCandQueryBuilder.addEqualsFilter(COLUMNNAME_AD_Table_ID, tableRecordReference.getAD_Table_ID());
+			invCandQueryBuilder.addEqualsFilter(COLUMNNAME_Record_ID, tableRecordReference.getRecord_ID());
+		}
 	}
 }

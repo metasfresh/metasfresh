@@ -112,7 +112,7 @@ public class ExternallyReferencedCandidateRepository
 
 			syncQtysToRecord(ic, icRecord);
 
-			if(ic.getQtyDelivered().signum() > 0)
+			if(ic.getQtyDelivered().signum() != 0)
 			{
 				icRecord.setDeliveryDate(TimeUtil.asTimestamp(ic.getDateOrdered(), timeZone));
 			}

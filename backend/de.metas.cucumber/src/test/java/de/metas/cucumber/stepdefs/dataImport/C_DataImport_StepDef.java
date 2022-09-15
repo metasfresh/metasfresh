@@ -118,6 +118,7 @@ public class C_DataImport_StepDef
 		final String poReference = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_Invoice_Candidate.COLUMNNAME_POReference);
 		final String description = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_Invoice_Candidate.COLUMNNAME_Description);
 		final String invoiceRule = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_Invoice_Candidate.COLUMNNAME_InvoiceRule);
+		final String orgCode = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_I_Invoice_Candidate.COLUMNNAME_OrgCode);
 
 		final String payload = bpartnerValue + ";"
 				+ bPartnerLocation.getC_BPartner_Location_ID() + ";"
@@ -133,7 +134,8 @@ public class C_DataImport_StepDef
 				+ TimeUtil.asLocalDate(presetDateInvoiced) + ";"
 				+ description + ";"
 				+ poReference + ";"
-				+ invoiceRule + ";";
+				+ invoiceRule + ";"
+				+ orgCode + ";";
 
 		testContext.setRequestPayload(payload.replaceAll("null", ""));
 	}

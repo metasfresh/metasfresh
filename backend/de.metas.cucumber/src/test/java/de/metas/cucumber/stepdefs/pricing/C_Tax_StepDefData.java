@@ -20,14 +20,18 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.pricing;
 
-import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.cucumber.stepdefs.StepDefData;
+import org.compiere.model.I_C_Tax;
 
-public class M_ReceiptSchedule_StepDefData extends StepDefData<I_M_ReceiptSchedule>
+/**
+ * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
+ */
+public class C_Tax_StepDefData extends StepDefData<I_C_Tax>
 {
-	public M_ReceiptSchedule_StepDefData()
+	public C_Tax_StepDefData()
 	{
-		super(I_M_ReceiptSchedule.class);
+		super(I_C_Tax.class);
 	}
 }
