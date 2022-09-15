@@ -25,8 +25,6 @@ package org.adempiere.ad.service;
 import de.metas.ad_reference.ADRefTable;
 import de.metas.util.ISingletonService;
 import de.metas.util.collections.BlindIterator;
-import lombok.NonNull;
-import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.service.impl.LookupDisplayInfo;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
@@ -34,8 +32,6 @@ import org.compiere.model.MLookupInfo;
 import org.compiere.util.KeyNamePair;
 import org.compiere.util.NamePair;
 import org.compiere.util.ValueNamePair;
-
-import java.util.Optional;
 
 /**
  * Field Lookup DAO methods
@@ -77,8 +73,6 @@ public interface ILookupDAO extends ISingletonService
 		@Override
 		void close();
 	}
-
-	Optional<MinimalColumnInfo> getMinimalColumnInfo(@NonNull AdColumnId adColumnId);
 
 	LookupDisplayInfo getLookupDisplayInfo(ADRefTable tableRefInfo);
 

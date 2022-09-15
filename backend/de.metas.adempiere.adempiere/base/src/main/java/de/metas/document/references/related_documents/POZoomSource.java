@@ -27,6 +27,7 @@ import java.util.Properties;
 
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.table.api.MinimalColumnInfo;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
 import org.compiere.model.I_AD_Column;
@@ -94,7 +95,7 @@ public final class POZoomSource implements IZoomSource
 		final ArrayList<String> eligibleKeyColumnNames = new ArrayList<>();
 		for (String element : keyColumnNamesArr)
 		{
-			final I_AD_Column column = adTableDAO.retrieveColumn(po.get_TableName(), element);
+			final MinimalColumnInfo column = adTableDAO.getMinimalColumnInfo(po.get_TableName(), element);
 			if (column.isGenericZoomOrigin())
 			{
 				eligibleKeyColumnNames.add(element);

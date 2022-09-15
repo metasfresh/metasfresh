@@ -20,6 +20,7 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.table.api.MinimalColumnInfo;
 import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.compiere.model.I_AD_Column;
@@ -97,8 +98,8 @@ public class AD_Field
 			final MLookupInfo lookupInfo;
 			try
 			{
-				final I_AD_Column column = tableDAO.retrieveColumnById(adColumnId);
-				final String ctxTableName = tableDAO.retrieveTableName(column.getAD_Table_ID());
+				final MinimalColumnInfo column = tableDAO.getMinimalColumnInfo(adColumnId);
+				final String ctxTableName = tableDAO.retrieveTableName(column.getAdTableId());
 				lookupInfo = MLookupFactory.newInstance().getLookupInfo(
 						Integer.MAX_VALUE, // WindowNo
 						adReferenceId,
@@ -108,7 +109,7 @@ public class AD_Field
 						column.isParent(), // IsParent,
 						CoalesceUtil.coalesceSuppliers(
 								() -> AdValRuleId.ofRepoIdOrNull(field.getAD_Val_Rule_ID()),
-								() -> AdValRuleId.ofRepoIdOrNull(column.getAD_Val_Rule_ID())
+								column::getAdValRuleId
 						)
 				);
 			}

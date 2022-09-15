@@ -23,24 +23,16 @@
 package org.adempiere.ad.service.impl;
 
 import de.metas.ad_reference.ADRefTable;
-import de.metas.ad_reference.ReferenceId;
 import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
-import de.metas.cache.CCache;
 import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
 import de.metas.security.permissions.UIDisplayedEntityTypes;
 import de.metas.util.Check;
-import de.metas.util.Services;
 import de.metas.util.StringUtils;
-import lombok.NonNull;
-import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IStringExpression;
 import org.adempiere.ad.service.ILookupDAO;
-import org.adempiere.ad.service.MinimalColumnInfo;
-import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.ad.validationRule.INamePairPredicate;
 import org.adempiere.ad.validationRule.IValidationContext;
 import org.adempiere.ad.validationRule.IValidationRule;
@@ -51,7 +43,6 @@ import org.adempiere.exceptions.DBException;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.MLookup;
 import org.compiere.model.MLookupInfo;
-import org.compiere.model.X_AD_Column;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
@@ -65,75 +56,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 
 public class LookupDAO implements ILookupDAO
 {
 	private static final Logger logger = LogManager.getLogger(LookupDAO.class);
-	private final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final LookupDisplayInfoRepository lookupDisplayInfoRepository = new LookupDisplayInfoRepository();
-	private final CCache<AdColumnId, Optional<MinimalColumnInfo>> minimalColumnInfoById = CCache.<AdColumnId, Optional<MinimalColumnInfo>>builder().build();
-
-	@Override
-	public Optional<MinimalColumnInfo> getMinimalColumnInfo(@NonNull final AdColumnId adColumnId)
-	{
-		return minimalColumnInfoById.getOrLoad(adColumnId, this::retrieveMinimalColumnInfo);
-	}
-
-	private Optional<MinimalColumnInfo> retrieveMinimalColumnInfo(@NonNull final AdColumnId adColumnId)
-	{
-		// IMPORTANT: do not use POInfo or X_AD_Column. We have to fetch this minimal information directly because POInfo might depend on this when lookups are fetched.
-
-		final String sql = "SELECT c.ColumnName, "
-				+ "c.AD_Reference_Value_ID, c.IsParent, c.AD_Val_Rule_ID "
-				+ ", c." + X_AD_Column.COLUMNNAME_AD_Table_ID
-				+ " FROM AD_Column c"
-				+ " WHERE c.AD_Column_ID=?";
-		final List<Object> sqlParams = Collections.singletonList(adColumnId);
-		PreparedStatement pstmt = null;
-		ResultSet rs = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			DB.setParameters(pstmt, sqlParams);
-			//
-			rs = pstmt.executeQuery();
-			if (rs.next())
-			{
-				final String columnName = rs.getString(1);
-				final ReferenceId AD_Reference_Value_ID = ReferenceId.ofRepoIdOrNull(rs.getInt(2));
-				final boolean IsParent = StringUtils.toBoolean(rs.getString(3));
-				final AdValRuleId AD_Val_Rule_ID = AdValRuleId.ofRepoIdOrNull(rs.getInt(4));
-
-				final int tableID = rs.getInt(5);
-				final String tableName = adTableDAO.retrieveTableName(tableID);
-
-				return Optional.of(MinimalColumnInfo.builder()
-						.tableName(tableName)
-						.columnName(columnName)
-						.AD_Reference_Value_ID(AD_Reference_Value_ID)
-						.parent(IsParent)
-						.AD_Val_Rule_ID(AD_Val_Rule_ID)
-						.build());
-			}
-			else
-			{
-				//logger.error("Column Not Found - AD_Column_ID={}", adColumnId);
-				return Optional.empty();
-			}
-		}
-		catch (final SQLException ex)
-		{
-			throw new DBException(ex, sql, sqlParams);
-		}
-		finally
-		{
-			DB.close(rs, pstmt);
-		}
-	}
 
 	@Override
 	public LookupDisplayInfo getLookupDisplayInfo(final ADRefTable tableRefInfo)

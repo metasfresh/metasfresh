@@ -713,6 +713,29 @@ public interface I_AD_Column
 	String COLUMNNAME_IsCalculated = "IsCalculated";
 
 	/**
+	 * Set Partitionsgrenze.
+	 * Falls ja, dann gehören Datensatze, die über die jeweilige Referenz verknüpft sind nicht zur selben Partition.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDLMPartitionBoundary (boolean IsDLMPartitionBoundary);
+
+	/**
+	 * Get Partitionsgrenze.
+	 * Falls ja, dann gehören Datensatze, die über die jeweilige Referenz verknüpft sind nicht zur selben Partition.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDLMPartitionBoundary();
+
+	ModelColumn<I_AD_Column, Object> COLUMN_IsDLMPartitionBoundary = new ModelColumn<>(I_AD_Column.class, "IsDLMPartitionBoundary", null);
+	String COLUMNNAME_IsDLMPartitionBoundary = "IsDLMPartitionBoundary";
+
+	/**
 	 * Set Column Encryption.
 	 * Test and enable Column Encryption
 	 *
