@@ -1935,4 +1935,15 @@ public class BPartnerDAO implements IBPartnerDAO
 				.create()
 				.listImmutable(I_C_BPartner.class);
 	}
+
+	@Override
+	public List<I_C_BPartner> retrieveBusinessPartners()
+	{
+		return queryBL.createQueryBuilder(I_C_BPartner.class)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_C_BPartner.COLUMNNAME_Name)
+				.orderBy(I_C_BPartner.COLUMNNAME_C_BPartner_ID)
+				.create()
+				.listImmutable(I_C_BPartner.class);
+	}
 }
