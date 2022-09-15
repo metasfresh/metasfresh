@@ -82,37 +82,6 @@ UPDATE AD_Index_Table_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2022-09-14 
 UPDATE AD_Index_Table SET BeforeChangeWarning='Do you really want to change the dunning default?',Updated=TO_TIMESTAMP('2022-09-14 11:17:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Index_Table_ID=540707
 ;
 
--- 2022-09-14T09:17:31.508Z
-DROP INDEX IF EXISTS ad_user_IsDunningDefault
-;
-
--- 2022-09-14T09:17:31.511Z
-CREATE UNIQUE INDEX AD_User_IsDunningDefault ON AD_User (C_BPartner_ID,IsDunningDefault) WHERE C_BPartner_ID IS NOT NULL AND IsDunningDefault='Y'
-;
-
--- 2022-09-14T09:17:31.520Z
-CREATE OR REPLACE FUNCTION AD_User_IsDunningDefault()
-    RETURNS TRIGGER AS $AD_User_IsDunningDefault$
-BEGIN
-    IF TG_OP='INSERT' THEN
-        UPDATE AD_User SET IsDunningDefault='N', Updated=NEW.Updated, UpdatedBy=NEW.UpdatedBy WHERE 1=1  AND C_BPartner_ID=NEW.C_BPartner_ID AND IsDunningDefault=NEW.IsDunningDefault AND AD_User_ID<>NEW.AD_User_ID AND C_BPartner_ID IS NOT NULL AND IsDunningDefault='Y';
-    ELSE
-        IF OLD.C_BPartner_ID<>NEW.C_BPartner_ID OR OLD.IsDunningDefault<>NEW.IsDunningDefault THEN
-            UPDATE AD_User SET IsDunningDefault='N', Updated=NEW.Updated, UpdatedBy=NEW.UpdatedBy WHERE 1=1  AND C_BPartner_ID=NEW.C_BPartner_ID AND IsDunningDefault=NEW.IsDunningDefault AND AD_User_ID<>NEW.AD_User_ID AND C_BPartner_ID IS NOT NULL AND IsDunningDefault='Y';
-        END IF;
-    END IF;
-    RETURN NEW;
-END;
-$AD_User_IsDunningDefault$ LANGUAGE plpgsql;
-;
-
--- 2022-09-14T09:17:31.525Z
-DROP TRIGGER IF EXISTS AD_User_IsDunningDefault ON AD_User
-;
-
--- 2022-09-14T09:17:31.527Z
-CREATE TRIGGER AD_User_IsDunningDefault BEFORE INSERT OR UPDATE  ON AD_User FOR EACH ROW EXECUTE PROCEDURE AD_User_IsDunningDefault()
-;
 
 -- UI Element: Geschäftspartner(123,D) -> Nutzer / Kontakt(496,D) -> main -> 10 -> main.Dunning Default
 -- Column: AD_User.isDunningDefault
