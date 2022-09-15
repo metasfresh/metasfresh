@@ -1,7 +1,6 @@
 package org.adempiere.ad.column.autoapplyvalrule;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
+import com.google.common.collect.ImmutableList;
 import de.metas.ad_reference.ADRefTable;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.ad_reference.ReferenceId;
@@ -12,17 +11,15 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
-import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.dao.impl.ValidationRuleQueryFilter;
-import org.adempiere.ad.service.ILookupDAO;
-import org.adempiere.ad.service.MinimalColumnInfo;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.table.api.MinimalColumnInfo;
 import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.IQuery;
-import org.compiere.model.I_AD_Column;
 
 import java.util.Collection;
 
@@ -52,24 +49,24 @@ import java.util.Collection;
 public class ValRuleAutoApplier
 {
 	// services
-	private final ILookupDAO lookupDAO;
+	private final IADTableDAO adTableDAO;
 	private final ADReferenceService adReferenceService;
 
 	@Getter private final String tableName;
-	private final ImmutableMap<String, I_AD_Column> columns;
+	private final ImmutableList<MinimalColumnInfo> columns;
 
 	@Builder
 	private ValRuleAutoApplier(
 			@NonNull final ADReferenceService adReferenceService,
-			@NonNull final ILookupDAO lookupDAO,
+			@NonNull final IADTableDAO adTableDAO,
 			@NonNull final String tableName,
-			@NonNull final Collection<I_AD_Column> columns)
+			@NonNull final Collection<MinimalColumnInfo> columns)
 	{
 		this.adReferenceService = adReferenceService;
-		this.lookupDAO = lookupDAO;
+		this.adTableDAO = adTableDAO;
 
 		this.tableName = tableName;
-		this.columns = Maps.uniqueIndex(columns, I_AD_Column::getColumnName);
+		this.columns = ImmutableList.copyOf(columns);
 	}
 
 	/**
@@ -77,41 +74,30 @@ public class ValRuleAutoApplier
 	 */
 	public void handleRecord(@NonNull final Object recordModel)
 	{
-		for (final String columnName : columns.keySet())
-		{
-			handleColumn(recordModel, columnName);
-		}
+		columns.forEach((column) -> handleColumn(recordModel, column));
 	}
 
 	private void handleColumn(
 			@NonNull final Object recordModel,
-			@NonNull final String columnName)
+			@NonNull final MinimalColumnInfo column)
 	{
-		if (!InterfaceWrapperHelper.isNullOrEmpty(recordModel, columnName))
+		if (!InterfaceWrapperHelper.isNullOrEmpty(recordModel, column.getColumnName()))
 		{
-			return;
-		}
-
-		final I_AD_Column column = columns.get(columnName);
-		final MinimalColumnInfo columnInfo = lookupDAO.getMinimalColumnInfo(AdColumnId.ofRepoId(column.getAD_Column_ID())).orElse(null);
-		if(columnInfo == null)
-		{
-			// shall not happen
 			return;
 		}
 
 		final int resultId = retrieveFirstValRuleResultId(recordModel, column, adReferenceService);
 
-		final int firstValidId = InterfaceWrapperHelper.getFirstValidIdByColumnName(columnInfo.getColumnName());
+		final int firstValidId = InterfaceWrapperHelper.getFirstValidIdByColumnName(column.getColumnName());
 		if (resultId >= firstValidId)
 		{
-			InterfaceWrapperHelper.setValue(recordModel, columnInfo.getColumnName(), resultId);
+			InterfaceWrapperHelper.setValue(recordModel, column.getColumnName(), resultId);
 		}
 	}
 
 	private static int retrieveFirstValRuleResultId(
 			@NonNull final Object recordModel,
-			@NonNull final I_AD_Column column,
+			@NonNull final MinimalColumnInfo column,
 			@NonNull final ADReferenceService adReferenceService)
 	{
 		final ADRefTable tableRefInfo = extractTableRefInfo(column, adReferenceService);
@@ -119,7 +105,7 @@ public class ValRuleAutoApplier
 		final IQueryBuilder<Object> queryBuilder = Services.get(IQueryBL.class)
 				.createQueryBuilder(tableRefInfo.getTableName());
 
-		final AdValRuleId adValRuleId = AdValRuleId.ofRepoIdOrNull(column.getAD_Val_Rule_ID());
+		final AdValRuleId adValRuleId = column.getAdValRuleId();
 		if (adValRuleId != null)
 		{
 			final ValidationRuleQueryFilter<Object> validationRuleQueryFilter = new ValidationRuleQueryFilter<>(recordModel, adValRuleId);
@@ -139,9 +125,9 @@ public class ValRuleAutoApplier
 		return query.firstId();
 	}
 
-	private static ADRefTable extractTableRefInfo(@NonNull final I_AD_Column column, @NonNull final ADReferenceService adReferenceService)
+	private static ADRefTable extractTableRefInfo(@NonNull final MinimalColumnInfo column, @NonNull final ADReferenceService adReferenceService)
 	{
-		final ReferenceId adReferenceValueId = ReferenceId.ofRepoIdOrNull(column.getAD_Reference_Value_ID());
+		final ReferenceId adReferenceValueId = column.getAdReferenceValueId();
 		return adReferenceValueId != null
 				? adReferenceService.retrieveTableRefInfo(adReferenceValueId)
 				: adReferenceService.getTableDirectRefInfo(column.getColumnName());

@@ -69,22 +69,19 @@ public class MColumn extends X_AD_Column
 	/**
 	 * Get Column Name
 	 *
-	 * @param ctx          context
+	 * @param ignoredCtx          context
 	 * @param AD_Column_ID id
 	 * @return Column Name or null
 	 */
-	public static String getColumnName(Properties ctx, int AD_Column_ID)
+	public static String getColumnName(Properties ignoredCtx, int AD_Column_ID)
 	{
-		MColumn col = MColumn.get(ctx, AD_Column_ID);
-		if (col == null || col.getAD_Column_ID() <= 0)
-			return null;
-		return col.getColumnName();
+		return Services.get(IADTableDAO.class).retrieveColumnName(AD_Column_ID);
 	}    // getColumnName
 
 	/**
 	 * Cache
 	 */
-	private static CCache<Integer, MColumn> s_cache = new CCache<>("AD_Column", 20);
+	private static final CCache<Integer, MColumn> s_cache = new CCache<>("AD_Column", 20);
 
 	/**
 	 * Static Logger

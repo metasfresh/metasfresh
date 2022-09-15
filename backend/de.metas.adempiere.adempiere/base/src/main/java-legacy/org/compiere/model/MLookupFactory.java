@@ -40,18 +40,17 @@ import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.service.ILookupDAO;
-import org.adempiere.ad.service.MinimalColumnInfo;
 import org.adempiere.ad.service.impl.LookupDisplayColumn;
 import org.adempiere.ad.service.impl.LookupDisplayInfo;
 import org.adempiere.ad.table.api.ColumnName;
 import org.adempiere.ad.table.api.ColumnNameFQ;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.table.api.MinimalColumnInfo;
 import org.adempiere.ad.table.api.TableName;
 import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.ad.validationRule.IValidationRuleFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -194,20 +193,18 @@ public class MLookupFactory
 			return null;
 		}
 
-		final MinimalColumnInfo columnInfo = Services.get(ILookupDAO.class).getMinimalColumnInfo(adColumnId).orElse(null);
-		if (columnInfo == null)
-		{
-			return null;
-		}
+		final IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
+		final MinimalColumnInfo columnInfo = adTableDAO.getMinimalColumnInfo(adColumnId);
+		final String tableName = adTableDAO.retrieveTableName(columnInfo.getAdTableId());
 
 		return getLookupInfo(
 				WindowNo,
 				AD_Reference_ID,
-				columnInfo.getTableName(),
+				tableName,
 				columnInfo.getColumnName(),
-				columnInfo.getAD_Reference_Value_ID(),
+				columnInfo.getAdReferenceValueId(),
 				columnInfo.isParent(),
-				columnInfo.getAD_Val_Rule_ID());
+				columnInfo.getAdValRuleId());
 	}
 
 	/**
