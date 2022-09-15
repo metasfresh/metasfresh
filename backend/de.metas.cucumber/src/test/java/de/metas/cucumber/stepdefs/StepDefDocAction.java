@@ -26,5 +26,6 @@ public enum StepDefDocAction
 {
 	completed,
 	reactivated,
-	reversed
+	reversed,
+	closed
 }

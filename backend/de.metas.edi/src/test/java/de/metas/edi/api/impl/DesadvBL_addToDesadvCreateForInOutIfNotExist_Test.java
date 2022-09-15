@@ -3,11 +3,16 @@ package de.metas.edi.api.impl;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.business.BusinessTestHelper;
+import de.metas.edi.api.impl.pack.EDIDesadvPackRepository;
+import de.metas.edi.api.impl.pack.EDIDesadvPackService;
+import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_C_OrderLine;
+import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.model.I_M_InOutLine;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
-import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
+import de.metas.esb.edi.model.I_EDI_Desadv_Pack;
+import de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item;
 import de.metas.esb.edi.model.X_EDI_DesadvLine;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHUAssignmentBL;
@@ -39,10 +44,10 @@ import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_Product;
@@ -57,12 +62,12 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Properties;
 
-import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.COLUMNNAME_BestBeforeDate;
-import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.COLUMNNAME_C_UOM_ID;
-import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.COLUMNNAME_IPA_SSCC18;
-import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.COLUMNNAME_QtyCU;
-import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.COLUMNNAME_QtyCUsPerLU;
-import static de.metas.esb.edi.model.I_EDI_DesadvLine_Pack.COLUMNNAME_QtyTU;
+import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_IPA_SSCC18;
+import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_BestBeforeDate;
+import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_EDI_Desadv_Pack_ID;
+import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCU;
+import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyCUsPerLU;
+import static de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item.COLUMNNAME_QtyTU;
 import static java.math.BigDecimal.TEN;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -91,7 +96,7 @@ import static org.assertj.core.api.Assertions.*;
  */
 
 @ExtendWith(AdempiereTestWatcher.class)
-class DesadvBL_addInOutLine_Test
+class DesadvBL_addToDesadvCreateForInOutIfNotExist_Test
 {
 	private int sscc18SerialNo = 0;
 	private I_M_HU_PI_Item_Product huPIItemProductRecord;
@@ -104,6 +109,9 @@ class DesadvBL_addInOutLine_Test
 	private I_M_HU_PI_Item huPIItemPallet;
 	private HUTestHelper huTestHelper;
 	private I_M_InOutLine inOutLineRecord;
+
+	private I_M_InOut inOutRecord;
+
 	private SSCC18CodeBL sscc18CodeBL;
 	private DesadvBL desadvBL;
 	private final IHUAssignmentBL huAssignmentBL = Services.get(IHUAssignmentBL.class);
@@ -114,7 +122,7 @@ class DesadvBL_addInOutLine_Test
 	{
 		final ReceiptScheduleProducerFactory receiptScheduleProducerFactory = new ReceiptScheduleProducerFactory(new GenerateReceiptScheduleForModelAggregateFilter(ImmutableList.of()));
 		Services.registerService(IReceiptScheduleProducerFactory.class, receiptScheduleProducerFactory);
-		
+
 		// AdempiereTestHelper.get().init(); // this is done by huTestHelper
 		huTestHelper = HUTestHelper.newInstanceOutOfTrx(); // we need to do this before registering our custom SSCC18CodeBL
 
@@ -132,29 +140,29 @@ class DesadvBL_addInOutLine_Test
 		final I_M_Product productRecord = BusinessTestHelper.createProduct("product", stockUOMRecord);
 
 		BusinessTestHelper.createUOMConversion(CreateUOMConversionRequest.builder()
-				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
-				.fromUomId(UomId.ofRepoId(orderUOMRecord.getC_UOM_ID()))
-				.toUomId(UomId.ofRepoId(stockUOMRecord.getC_UOM_ID()))
-				.fromToMultiplier(new BigDecimal("2"))
-				.build());
+													   .productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
+													   .fromUomId(UomId.ofRepoId(orderUOMRecord.getC_UOM_ID()))
+													   .toUomId(UomId.ofRepoId(stockUOMRecord.getC_UOM_ID()))
+													   .fromToMultiplier(new BigDecimal("2"))
+													   .build());
 
 		// we do need a UOM conversion between catchUomRecord and orderUOMRecord,
 		// because we need to convert the catch qtys (might e.g. be in tons) to the ordered UOM (might be in kilos)
 		BusinessTestHelper.createUOMConversion(CreateUOMConversionRequest.builder()
-				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
-				.fromUomId(UomId.ofRepoId(orderUOMRecord.getC_UOM_ID()))
-				.toUomId(UomId.ofRepoId(catchUomRecord.getC_UOM_ID()))
-				.fromToMultiplier(new BigDecimal("3"))
-				.build());
+													   .productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
+													   .fromUomId(UomId.ofRepoId(orderUOMRecord.getC_UOM_ID()))
+													   .toUomId(UomId.ofRepoId(catchUomRecord.getC_UOM_ID()))
+													   .fromToMultiplier(new BigDecimal("3"))
+													   .build());
 
 		// we do need a UOM conversion between catchUomRecord and stockUOM,
 		// because we need to convert the catch qtys (might e.g. be in tons) when computing the LUTUconfig's capacity
 		BusinessTestHelper.createUOMConversion(CreateUOMConversionRequest.builder()
-				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
-				.fromUomId(UomId.ofRepoId(stockUOMRecord.getC_UOM_ID()))
-				.toUomId(UomId.ofRepoId(catchUomRecord.getC_UOM_ID()))
-				.fromToMultiplier(new BigDecimal("1.5"))
-				.build());
+													   .productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
+													   .fromUomId(UomId.ofRepoId(stockUOMRecord.getC_UOM_ID()))
+													   .toUomId(UomId.ofRepoId(catchUomRecord.getC_UOM_ID()))
+													   .fromToMultiplier(new BigDecimal("1.5"))
+													   .build());
 
 		// setup HU packing instructions
 		final I_M_HU_PI huDefPalet = huTestHelper.createHUDefinition(HUTestHelper.NAME_Palet_Product, X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
@@ -180,6 +188,7 @@ class DesadvBL_addInOutLine_Test
 
 		final I_C_Order orderRecord = newInstance(I_C_Order.class);
 		orderRecord.setC_BPartner_ID(20);
+		orderRecord.setEDI_Desadv_ID(desadv.getEDI_Desadv_ID());
 		saveRecord(orderRecord);
 
 		final I_C_OrderLine orderLineRecord = newInstance(I_C_OrderLine.class);
@@ -190,39 +199,54 @@ class DesadvBL_addInOutLine_Test
 		orderLineRecord.setC_UOM_ID(orderUOMRecord.getC_UOM_ID());
 		saveRecord(orderLineRecord);
 
+		inOutRecord = newInstance(I_M_InOut.class);
+		inOutRecord.setC_Order_ID(orderRecord.getC_Order_ID());
+		inOutRecord.setC_BPartner_ID(recipientBPartnerId.getRepoId());
+		saveRecord(inOutRecord);
+
 		inOutLineRecord = newInstance(I_M_InOutLine.class);
 		inOutLineRecord.setC_OrderLine_ID(orderLineRecord.getC_OrderLine_ID());
 		inOutLineRecord.setM_Product_ID(huPIItemProductRecord.getM_Product_ID());
 		inOutLineRecord.setMovementQty(new BigDecimal("84")); // in order-UOM this is 84 / 2 = 42; in catch-UOM this is 84 * 1.5 = 126
 		inOutLineRecord.setQtyEntered(new BigDecimal("42"));
 		inOutLineRecord.setC_UOM_ID(orderUOMRecord.getC_UOM_ID());
+		inOutLineRecord.setM_InOut_ID(inOutRecord.getM_InOut_ID());
 		saveRecord(inOutLineRecord);
 
-		desadvBL = new DesadvBL(new HURepository());
+		desadvBL = new DesadvBL(new EDIDesadvPackService(new HURepository(), new EDIDesadvPackRepository()));
 	}
 
 	@Test
-	void addInOutLine_no_HU()
+	void addToDesadvCreateForInOutIfNotExist_no_HU()
 	{
 		// invoke the method under test
-		desadvBL.addInOutLine(inOutLineRecord, recipientBPartnerId);
+		desadvBL.addToDesadvCreateForInOutIfNotExist(inOutRecord);
 
+		InterfaceWrapperHelper.refresh(inOutLineRecord);
 		final I_EDI_DesadvLine desadvLine = inOutLineRecord.getEDI_DesadvLine();
 		assertThat(inOutLineRecord.getEDI_DesadvLine_ID()).isEqualTo(desadvLine.getEDI_DesadvLine_ID());
 		assertThat(desadvLine.getQtyDeliveredInStockingUOM()).isEqualByComparingTo("86");
 		assertThat(inOutLineRecord.getQtyEntered()).isEqualByComparingTo("42"); // guard
 
-		final List<I_EDI_DesadvLine_Pack> ssccRecords = POJOLookupMap.get().getRecords(I_EDI_DesadvLine_Pack.class);
+		final List<I_EDI_Desadv_Pack> ssccRecords = POJOLookupMap.get().getRecords(I_EDI_Desadv_Pack.class);
 		assertThat(ssccRecords)
-				.extracting("Manual_IPA_SSCC18", COLUMNNAME_IPA_SSCC18, COLUMNNAME_QtyTU, COLUMNNAME_QtyCU, COLUMNNAME_QtyCUsPerLU)
+				.extracting("Manual_IPA_SSCC18", COLUMNNAME_IPA_SSCC18)
 				.containsOnly(
-						tuple(true, "001111110000000015", 10, new BigDecimal("2.500"), new BigDecimal("25.000")),
-						tuple(true, "001111110000000022", 7, new BigDecimal("2.500"), new BigDecimal("17.000"))//
+						tuple(true, "001111110000000015"),
+						tuple(true, "001111110000000022")//
+				);
+
+		final List<I_EDI_Desadv_Pack_Item> ssccItemRecords = POJOLookupMap.get().getRecords(I_EDI_Desadv_Pack_Item.class);
+		assertThat(ssccItemRecords)
+				.extracting(COLUMNNAME_EDI_Desadv_Pack_ID, COLUMNNAME_QtyTU, COLUMNNAME_QtyCU, COLUMNNAME_QtyCUsPerLU)
+				.containsOnly(
+						tuple(ssccRecords.get(0).getEDI_Desadv_Pack_ID(), 10, new BigDecimal("2.500"), new BigDecimal("25.000")),
+						tuple(ssccRecords.get(1).getEDI_Desadv_Pack_ID(), 7, new BigDecimal("2.500"), new BigDecimal("17.000"))//
 				);
 	}
 
 	@Test
-	void addInOutLine_no_HU_catch_weight()
+	void addToDesadvCreateForInOutIfNotExist_no_HU_catch_weight()
 	{
 		// catchqty = "127"
 		// 84(qty in stockUOM) * 1.5 = 126 (qty in catchUOM) plus a bit of catch-weighty variance
@@ -237,78 +261,114 @@ class DesadvBL_addInOutLine_Test
 		saveRecord(inOutLineRecord);
 
 		// invoke the method under test
-		desadvBL.addInOutLine(inOutLineRecord, recipientBPartnerId);
+		desadvBL.addToDesadvCreateForInOutIfNotExist(inOutRecord);
 
+		InterfaceWrapperHelper.refresh(inOutLineRecord);
 		final I_EDI_DesadvLine desadvLine = inOutLineRecord.getEDI_DesadvLine();
 		assertThat(inOutLineRecord.getEDI_DesadvLine_ID()).isEqualTo(desadvLine.getEDI_DesadvLine_ID());
 		assertThat(desadvLine.getQtyDeliveredInStockingUOM()).isEqualByComparingTo("86"); // the initial 2 plus the inoutLineRecord's 84
 
-		final List<I_EDI_DesadvLine_Pack> ssccRecords = POJOLookupMap.get().getRecords(I_EDI_DesadvLine_Pack.class);
+		final List<I_EDI_Desadv_Pack> ssccRecords = POJOLookupMap.get().getRecords(I_EDI_Desadv_Pack.class);
 		assertThat(ssccRecords)
-				.extracting("Manual_IPA_SSCC18", COLUMNNAME_IPA_SSCC18, COLUMNNAME_QtyTU, COLUMNNAME_QtyCU, COLUMNNAME_QtyCUsPerLU, COLUMNNAME_C_UOM_ID)
+				.extracting("Manual_IPA_SSCC18", COLUMNNAME_IPA_SSCC18)
 				.containsOnly(
-						tuple(true, "001111110000000015", 10/* TUs */, new BigDecimal("2.500")/* CUsperTU */, new BigDecimal("25.000")/* CUsperLU */, orderUomId.getRepoId()),
-						tuple(true, "001111110000000022", 7/* TUs */, new BigDecimal("2.500")/* CUperTU */, new BigDecimal("17.334")/* CUperLU - rounded to ceiling */, orderUomId.getRepoId()) //
+						tuple(true, "001111110000000015"),
+						tuple(true, "001111110000000022")//
+				);
+
+		final List<I_EDI_Desadv_Pack_Item> ssccItemRecords = POJOLookupMap.get().getRecords(I_EDI_Desadv_Pack_Item.class);
+		assertThat(ssccItemRecords)
+				.extracting(COLUMNNAME_EDI_Desadv_Pack_ID, COLUMNNAME_QtyTU, COLUMNNAME_QtyCU, COLUMNNAME_QtyCUsPerLU)
+				.containsOnly(
+						tuple(ssccRecords.get(0).getEDI_Desadv_Pack_ID(), 10/* TUs */, new BigDecimal("2.500")/* CUsperTU */, new BigDecimal("25.000")/* CUsperLU */),
+						tuple(ssccRecords.get(1).getEDI_Desadv_Pack_ID(), 7/* TUs */, new BigDecimal("2.500")/* CUperTU */, new BigDecimal("17.334")/* CUperLU - rounded to ceiling */) //
 				);
 	}
 
 	@Test
-	void addInOutLine_no_HU_desadvLineWithCOLIasUOM()
+	void addToDesadvCreateForInOutIfNotExist_no_HU_desadvLineWithCOLIasUOM()
 	{
 		changeDesadvLineToCOLIasUOM();
 
 		// invoke the method under test
-		desadvBL.addInOutLine(inOutLineRecord, recipientBPartnerId);
+		desadvBL.addToDesadvCreateForInOutIfNotExist(inOutRecord);
 
+		InterfaceWrapperHelper.refresh(inOutLineRecord);
 		final I_EDI_DesadvLine resultDesadvLine = inOutLineRecord.getEDI_DesadvLine();
 		assertThat(inOutLineRecord.getEDI_DesadvLine_ID()).isEqualTo(resultDesadvLine.getEDI_DesadvLine_ID());
 		assertThat(resultDesadvLine.getQtyDeliveredInStockingUOM()).isEqualByComparingTo("86");
 
-		final List<I_EDI_DesadvLine_Pack> packRecords = POJOLookupMap.get().getRecords(I_EDI_DesadvLine_Pack.class);
-		assertThat(packRecords)
-				.extracting("Manual_IPA_SSCC18", COLUMNNAME_IPA_SSCC18, COLUMNNAME_QtyTU, COLUMNNAME_QtyCU, COLUMNNAME_QtyCUsPerLU)
+		final List<I_EDI_Desadv_Pack> ssccRecords = POJOLookupMap.get().getRecords(I_EDI_Desadv_Pack.class);
+		assertThat(ssccRecords)
+				.extracting("Manual_IPA_SSCC18", COLUMNNAME_IPA_SSCC18)
 				.containsOnly(
-						tuple(true, "001111110000000015", 10, new BigDecimal("1"), new BigDecimal("10")),
-						tuple(true, "001111110000000022", 7, new BigDecimal("1"), new BigDecimal("7"))//
+						tuple(true, "001111110000000015"),
+						tuple(true, "001111110000000022")//
+				);
+
+		final List<I_EDI_Desadv_Pack_Item> ssccItemRecords = POJOLookupMap.get().getRecords(I_EDI_Desadv_Pack_Item.class);
+		assertThat(ssccItemRecords)
+				.extracting(COLUMNNAME_EDI_Desadv_Pack_ID, COLUMNNAME_QtyTU, COLUMNNAME_QtyCU, COLUMNNAME_QtyCUsPerLU)
+				.containsOnly(
+						tuple(ssccRecords.get(0).getEDI_Desadv_Pack_ID(), 10, new BigDecimal("1"), new BigDecimal("10")),
+						tuple(ssccRecords.get(1).getEDI_Desadv_Pack_ID(), 7, new BigDecimal("1"), new BigDecimal("7")) //
 				);
 	}
 
-	/** tests inoutLine whose quantity is partially covered by an HU */
+	/**
+	 * tests inoutLine whose quantity is partially covered by an HU
+	 */
 	@Test
-	void addInoutLine_HU()
+	void addToDesadvCreateForInOutIfNotExist_HU()
 	{
 		setupHandlingUnit(); // HU with 49 CUs
 
 		// invoke the method under test
-		desadvBL.addInOutLine(inOutLineRecord, recipientBPartnerId);
+		desadvBL.addToDesadvCreateForInOutIfNotExist(inOutRecord);
 
-		final List<I_EDI_DesadvLine_Pack> packRecords = POJOLookupMap.get().getRecords(I_EDI_DesadvLine_Pack.class);
-		assertThat(packRecords)
-				.extracting("Manual_IPA_SSCC18", COLUMNNAME_IPA_SSCC18, COLUMNNAME_BestBeforeDate, COLUMNNAME_QtyTU, COLUMNNAME_QtyCU, COLUMNNAME_QtyCUsPerLU)
+		final List<I_EDI_Desadv_Pack> ssccRecords = POJOLookupMap.get().getRecords(I_EDI_Desadv_Pack.class);
+		assertThat(ssccRecords)
+				.extracting("Manual_IPA_SSCC18", COLUMNNAME_IPA_SSCC18)
 				.containsOnly(
 						/* the first pack is based on the HU that we added */
-						tuple(false, "001111110000000015", TimeUtil.parseTimestamp("2019-12-02"), 10, new BigDecimal("2.500"), new BigDecimal("24.500")/* 49 times 0.5, i.e. the Hus qty converted to the pack's UOM */),
+						tuple(false, "001111110000000015"),
 
 						// the 2nd pack represents "the rest" that is requiered to arrive at the inOutLineRecord's qtyEntered = 42
-						tuple(true, "001111110000000022", null, 7, new BigDecimal("2.500"), new BigDecimal("17.500"))//
+						tuple(true, "001111110000000022")//
+				);
+
+		final List<I_EDI_Desadv_Pack_Item> ssccItemRecords = POJOLookupMap.get().getRecords(I_EDI_Desadv_Pack_Item.class);
+		assertThat(ssccItemRecords)
+				.extracting(COLUMNNAME_EDI_Desadv_Pack_ID, COLUMNNAME_BestBeforeDate, COLUMNNAME_QtyTU, COLUMNNAME_QtyCU, COLUMNNAME_QtyCUsPerLU)
+				.containsOnly(
+						tuple(ssccRecords.get(0).getEDI_Desadv_Pack_ID(), TimeUtil.parseTimestamp("2019-12-02"), 10, new BigDecimal("2.500"), new BigDecimal("24.500")/* 49 times 0.5, i.e. the Hus qty converted to the pack's UOM */),
+						tuple(ssccRecords.get(1).getEDI_Desadv_Pack_ID(), null, 7, new BigDecimal("2.500"), new BigDecimal("17.500")) //
 				);
 	}
 
 	@Test
-	void addInoutLine_HU_desadvLineWithCOLIasUOM()
+	void addToDesadvCreateForInOutIfNotExist_HU_desadvLineWithCOLIasUOM()
 	{
 		changeDesadvLineToCOLIasUOM();
 		setupHandlingUnit();
 
 		// invoke the method under test
-		desadvBL.addInOutLine(inOutLineRecord, recipientBPartnerId);
+		desadvBL.addToDesadvCreateForInOutIfNotExist(inOutRecord);
 
-		final List<I_EDI_DesadvLine_Pack> packRecords = POJOLookupMap.get().getRecords(I_EDI_DesadvLine_Pack.class);
-		assertThat(packRecords)
-				.extracting("Manual_IPA_SSCC18", COLUMNNAME_IPA_SSCC18, COLUMNNAME_BestBeforeDate, COLUMNNAME_QtyTU, COLUMNNAME_QtyCU, COLUMNNAME_QtyCUsPerLU)
+		final List<I_EDI_Desadv_Pack> ssccRecords = POJOLookupMap.get().getRecords(I_EDI_Desadv_Pack.class);
+		assertThat(ssccRecords)
+				.extracting("Manual_IPA_SSCC18", COLUMNNAME_IPA_SSCC18)
 				.containsOnly(
-						tuple(false, "001111110000000015", TimeUtil.parseTimestamp("2019-12-02"), 10, new BigDecimal("1"), new BigDecimal("10")),
-						tuple(true, "001111110000000022", null, 7, new BigDecimal("1"), new BigDecimal("7"))//
+						tuple(false, "001111110000000015"),
+						tuple(true, "001111110000000022")//
+				);
+
+		final List<I_EDI_Desadv_Pack_Item> ssccItemRecords = POJOLookupMap.get().getRecords(I_EDI_Desadv_Pack_Item.class);
+		assertThat(ssccItemRecords)
+				.extracting(COLUMNNAME_EDI_Desadv_Pack_ID, COLUMNNAME_BestBeforeDate, COLUMNNAME_QtyTU, COLUMNNAME_QtyCU, COLUMNNAME_QtyCUsPerLU)
+				.containsOnly(
+						tuple(ssccRecords.get(0).getEDI_Desadv_Pack_ID(), TimeUtil.parseTimestamp("2019-12-02"), 10, new BigDecimal("1"), new BigDecimal("10")),
+						tuple(ssccRecords.get(1).getEDI_Desadv_Pack_ID(), null, 7, new BigDecimal("1"), new BigDecimal("7")) //
 				);
 	}
 
@@ -321,7 +381,9 @@ class DesadvBL_addInOutLine_Test
 		saveRecord(desadvLine);
 	}
 
-	/** sets up a handling unit with 49 items and assigns it to {@link #inOutLineRecord}. */
+	/**
+	 * sets up a handling unit with 49 items and assigns it to {@link #inOutLineRecord}.
+	 */
 	private void setupHandlingUnit()
 	{
 		final Properties ctx = Env.getCtx();
@@ -335,7 +397,7 @@ class DesadvBL_addInOutLine_Test
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		final I_M_HU_PI_Attribute sscc18HUPIAttributeRecord = huTestHelper
 				.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(sscc18AttrRecord)
-						.setM_HU_PI(handlingUnitsDAO.getIncludedPI(huPIItemPallet)));
+												 .setM_HU_PI(handlingUnitsDAO.getIncludedPI(huPIItemPallet)));
 		final I_M_HU lu = huTestHelper.createLU(
 				huContext,
 				huPIItemPallet,
@@ -354,7 +416,7 @@ class DesadvBL_addInOutLine_Test
 		saveRecord(bestBeforeAttrRecord);
 
 		final I_M_HU_PI_Attribute bestBeforeHUPIAttributeRecord = huTestHelper.createM_HU_PI_Attribute(HUPIAttributeBuilder.newInstance(bestBeforeAttrRecord)
-				.setM_HU_PI(handlingUnitsDAO.getIncludedPI(huPIItemPallet)));
+																											   .setM_HU_PI(handlingUnitsDAO.getIncludedPI(huPIItemPallet)));
 		for (final I_M_HU childHU : handlingUnitsDAO.retrieveIncludedHUs(lu))
 		{
 			final I_M_HU_Attribute childHUAttrRecord = newInstance(I_M_HU_Attribute.class);

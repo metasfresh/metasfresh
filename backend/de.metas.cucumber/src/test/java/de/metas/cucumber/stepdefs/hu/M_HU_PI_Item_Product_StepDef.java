@@ -34,7 +34,6 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Product;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -78,7 +77,7 @@ public class M_HU_PI_Item_Product_StepDef
 		for (final Map<String, String> row : rows)
 		{
 			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_Product product = productTable.get(productIdentifier);
+			final int productID = productTable.get(productIdentifier).getM_Product_ID();
 
 			final String huPiItemIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_PI_Item_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_M_HU_PI_Item huPiItem = huPiItemTable.get(huPiItemIdentifier);
@@ -88,7 +87,7 @@ public class M_HU_PI_Item_Product_StepDef
 			final boolean active = DataTableUtil.extractBooleanForColumnNameOr(row, COLUMNNAME_IsActive, true);
 
 			final I_M_HU_PI_Item_Product existingHuPiItemProduct = queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
-					.addEqualsFilter(COLUMNNAME_M_Product_ID, product.getM_Product_ID())
+					.addEqualsFilter(COLUMNNAME_M_Product_ID, productID)
 					.addEqualsFilter(COLUMNNAME_M_HU_PI_Item_ID, huPiItem.getM_HU_PI_Item_ID())
 					.addEqualsFilter(COLUMNNAME_Qty, qty)
 					.addEqualsFilter(COLUMNNAME_IsActive, active)
@@ -99,7 +98,7 @@ public class M_HU_PI_Item_Product_StepDef
 																								() -> InterfaceWrapperHelper.newInstance(I_M_HU_PI_Item_Product.class));
 			assertThat(huPiItemProductRecord).isNotNull();
 
-			huPiItemProductRecord.setM_Product_ID(product.getM_Product_ID());
+			huPiItemProductRecord.setM_Product_ID(productID);
 			huPiItemProductRecord.setM_HU_PI_Item_ID(huPiItem.getM_HU_PI_Item_ID());
 			huPiItemProductRecord.setQty(qty);
 			huPiItemProductRecord.setValidFrom(validFrom);
