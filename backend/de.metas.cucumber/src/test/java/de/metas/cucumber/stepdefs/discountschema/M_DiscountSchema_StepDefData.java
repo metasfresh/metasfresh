@@ -20,15 +20,15 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.shipment;
+package de.metas.cucumber.stepdefs.discountschema;
 
 import de.metas.cucumber.stepdefs.StepDefData;
-import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_DiscountSchema;
 
-public class M_InOutLine_StepDefData extends StepDefData<I_M_InOutLine>
+public class M_DiscountSchema_StepDefData extends StepDefData<I_M_DiscountSchema>
 {
-	public M_InOutLine_StepDefData()
+	public M_DiscountSchema_StepDefData()
 	{
-		super(I_M_InOutLine.class);
+		super(I_M_DiscountSchema.class);
 	}
 }

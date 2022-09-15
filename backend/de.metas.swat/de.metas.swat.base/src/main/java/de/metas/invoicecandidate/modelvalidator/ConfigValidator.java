@@ -38,7 +38,6 @@ import de.metas.invoicecandidate.agg.key.impl.ICHeaderAggregationKeyBuilder_OLD;
 import de.metas.invoicecandidate.agg.key.impl.ICLineAggregationKeyBuilder_OLD;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.InvoiceCandidate_Constants;
-import de.metas.invoicecandidate.approvedforinvoice.ApprovedForInvoicingService;
 import de.metas.invoicecandidate.callout.C_Invoice_Candidate_TabCallout;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate_Recompute;
@@ -53,7 +52,6 @@ import org.adempiere.ad.ui.api.ITabCalloutFactory;
 import org.adempiere.invoice.event.InvoiceUserNotificationsProducer;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.ui.api.IGridTabSummaryInfoFactory;
-import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 
@@ -115,8 +113,8 @@ public class ConfigValidator extends AbstractModuleInterceptor
 		// engine.addModelValidator(new C_Invoice()); is now a spring component
 		engine.addModelValidator(new AD_Note());
 		engine.addModelValidator(new C_OrderLine());
-		engine.addModelValidator(new C_Order(SpringContextHolder.instance.getBean(ApprovedForInvoicingService.class)));
-		engine.addModelValidator(new M_InOut(SpringContextHolder.instance.getBean(ApprovedForInvoicingService.class)));
+		// engine.addModelValidator(new C_Order()); is now a spring component
+		// engine.addModelValidator(new M_InOut()); is now a spring component
 		//engine.addModelValidator(new M_InOutLine()); is now a spring component
 		engine.addModelValidator(new M_InventoryLine());
 		engine.addModelValidator(new M_ProductGroup_Product());

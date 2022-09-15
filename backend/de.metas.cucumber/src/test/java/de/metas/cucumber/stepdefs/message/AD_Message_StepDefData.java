@@ -20,15 +20,15 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.shipment;
+package de.metas.cucumber.stepdefs.message;
 
 import de.metas.cucumber.stepdefs.StepDefData;
-import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_AD_Message;
 
-public class M_InOutLine_StepDefData extends StepDefData<I_M_InOutLine>
+public class AD_Message_StepDefData extends StepDefData<I_AD_Message>
 {
-	public M_InOutLine_StepDefData()
+	public AD_Message_StepDefData()
 	{
-		super(I_M_InOutLine.class);
+		super(I_AD_Message.class);
 	}
 }

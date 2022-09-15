@@ -33,10 +33,12 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
 import javax.naming.OperationNotSupportedException;
 
 @Interceptor(I_M_InOut.class)
+@Component
 public class M_InOut
 {
 	private static final AdMessageKey OPERATION_NOT_SUPPORTED_APPROVED_FOR_INVOICE = AdMessageKey.of("Operation_Not_Supported_Approved_For_Invoice");

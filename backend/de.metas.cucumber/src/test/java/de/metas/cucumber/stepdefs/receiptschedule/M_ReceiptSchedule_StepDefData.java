@@ -20,15 +20,15 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.shipment;
+package de.metas.cucumber.stepdefs.receiptschedule;
 
 import de.metas.cucumber.stepdefs.StepDefData;
-import org.compiere.model.I_M_InOutLine;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 
-public class M_InOutLine_StepDefData extends StepDefData<I_M_InOutLine>
+public class M_ReceiptSchedule_StepDefData extends StepDefData<I_M_ReceiptSchedule>
 {
-	public M_InOutLine_StepDefData()
+	public M_ReceiptSchedule_StepDefData()
 	{
-		super(I_M_InOutLine.class);
+		super(I_M_ReceiptSchedule.class);
 	}
 }

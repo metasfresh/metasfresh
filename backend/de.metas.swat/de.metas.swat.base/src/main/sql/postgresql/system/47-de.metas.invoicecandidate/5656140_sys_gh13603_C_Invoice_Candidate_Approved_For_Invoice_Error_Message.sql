@@ -70,11 +70,11 @@ UPDATE AD_Message_Trl SET MsgText='There are invoice candidates already approved
 
 -- 2022-09-14T17:10:37.874Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Message_Trl SET MsgText='Es gibt bereits Rechnungskandidaten, die für die Rechnungsstellung zugelassen sind.',Updated=TO_TIMESTAMP('2022-09-14 20:10:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545156
+UPDATE AD_Message_Trl SET MsgText='Es gibt bereits Rechnungskandidaten, die für die Rechnungsstellung freigegeben sind.',Updated=TO_TIMESTAMP('2022-09-14 20:10:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545156
 ;
 
 -- 2022-09-14T17:10:47.420Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-UPDATE AD_Message_Trl SET MsgText='Es gibt bereits Rechnungskandidaten, die für die Rechnungsstellung zugelassen sind.',Updated=TO_TIMESTAMP('2022-09-14 20:10:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545156
+UPDATE AD_Message_Trl SET MsgText='Es gibt bereits Rechnungskandidaten, die für die Rechnungsstellung freigegeben sind.',Updated=TO_TIMESTAMP('2022-09-14 20:10:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545156
 ;
 

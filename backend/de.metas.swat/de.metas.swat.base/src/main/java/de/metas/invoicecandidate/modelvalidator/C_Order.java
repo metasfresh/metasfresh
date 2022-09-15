@@ -32,12 +32,14 @@ import org.compiere.model.X_C_BPartner_Stats;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Component;
 
 import javax.naming.OperationNotSupportedException;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 @Interceptor(I_C_Order.class)
+@Component
 public class C_Order
 {
 	private static final AdMessageKey OPERATION_NOT_SUPPORTED_APPROVED_FOR_INVOICE = AdMessageKey.of("Operation_Not_Supported_Approved_For_Invoice");
