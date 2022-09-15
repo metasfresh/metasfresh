@@ -329,7 +329,7 @@ public interface IBPartnerDAO extends ISingletonService
 	List<I_C_BPartner> retrieveVendors(@NonNull QueryLimit limit);
 
 
-	List<I_C_BPartner> retrieveBusinessPartners(@NonNull QueryLimit limit);
+	List<I_C_BPartner> retrieveBusinessPartners();
 
 	@Value
 	@Builder

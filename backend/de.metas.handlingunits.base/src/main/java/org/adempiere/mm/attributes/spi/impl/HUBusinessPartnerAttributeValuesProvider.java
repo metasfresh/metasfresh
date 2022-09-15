@@ -10,12 +10,10 @@ import de.metas.i18n.TranslatableStrings;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.mm.attributes.AttributeValueId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
-import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
@@ -53,7 +51,6 @@ import java.util.List;
 
 class HUBusinessPartnerAttributeValuesProvider implements IAttributeValuesProvider
 {
-	private final ISysConfigBL sysconfigBL = Services.get(ISysConfigBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	static final String ATTRIBUTEVALUETYPE = X_M_Attribute.ATTRIBUTEVALUETYPE_Number;
@@ -61,12 +58,11 @@ class HUBusinessPartnerAttributeValuesProvider implements IAttributeValuesProvid
 
 	private static final AdMessageKey MSG_noneOrEmpty = AdMessageKey.of("NoneOrEmpty");
 
-	private static final String SYSCONFIG_MAX_BUSINESS_PARTNERS = "org.adempiere.mm.attributes.spi.impl.HUBusinessPartnerAttributeValuesProvider.maxBusinessPartners";
-	private static final int DEFAULT_MAX_BUSINESSPARNERS = 20;
-
 	private static final CCache<Integer, ImmutableList<KeyNamePair>> businessPartenrsCache = CCache.<Integer, ImmutableList<KeyNamePair>>builder()
+			.cacheName(CACHE_PREFIX + "#HU#" + I_C_BPartner.COLUMNNAME_C_BPartner_ID)
 			.tableName(I_C_BPartner.Table_Name)
-			.cacheName(CACHE_PREFIX)
+			.initialCapacity(100)
+			.expireMinutes(30)
 			.build();
 
 	private final I_M_Attribute attribute;
@@ -132,10 +128,10 @@ class HUBusinessPartnerAttributeValuesProvider implements IAttributeValuesProvid
 	@Override
 	public List<? extends NamePair> getAvailableValues(final Evaluatee evalCtx_NOTUSED)
 	{
-		// NOTE: the only reason why we are fetching and returning the vendors instead of returning NULL,
-		// is because user needs to set it in purchase order's ASI.
+		// NOTE: the only reason why we are fetching and returning the business partners instead of returning NULL,
+		// is because user needs to set it in purchase order's ASI / HU attributes.
 
-		return getCachedBusinessPartners();
+		return getBusinessPartners();
 	}
 
 	@Nullable
@@ -167,7 +163,7 @@ class HUBusinessPartnerAttributeValuesProvider implements IAttributeValuesProvid
 			return null;
 		}
 
-		return getCachedBusinessPartners()
+		return getBusinessPartners()
 				.stream()
 				.filter(vnp -> vnp.getKey() == bpartnerId.getRepoId())
 				.findFirst()
@@ -188,25 +184,19 @@ class HUBusinessPartnerAttributeValuesProvider implements IAttributeValuesProvid
 		return null;
 	}
 
-	private List<KeyNamePair> getCachedBusinessPartners()
+	private List<KeyNamePair> getBusinessPartners()
 	{
-		final ImmutableList<KeyNamePair> vendors = businessPartenrsCache.getOrLoad(0, this::retrieveBusinessPartnerKeyNamePairs);
-
+		final ImmutableList<KeyNamePair> businessPartners = businessPartenrsCache.getOrLoad(0, this::retrieveBusinessPartnersKeyNamePairs);
 		return ImmutableList.<KeyNamePair>builder()
 				.add(staticNullValue())
-				.addAll(vendors)
+				.addAll(businessPartners)
 				.build();
 	}
 
-	private QueryLimit getMaxBusinessPartners()
-	{
-		final int maxBusinessPartnersInt = sysconfigBL.getIntValue(SYSCONFIG_MAX_BUSINESS_PARTNERS, DEFAULT_MAX_BUSINESSPARNERS);
-		return QueryLimit.ofInt(maxBusinessPartnersInt);
-	}
 
-	private ImmutableList<KeyNamePair> retrieveBusinessPartnerKeyNamePairs()
+	private ImmutableList<KeyNamePair> retrieveBusinessPartnersKeyNamePairs()
 	{
-		return bpartnerDAO.retrieveBusinessPartners(getMaxBusinessPartners())
+		return bpartnerDAO.retrieveBusinessPartners()
 				.stream()
 				.map(HUBusinessPartnerAttributeValuesProvider::toKeyNamePair)
 				.sorted(Comparator.comparing(KeyNamePair::getName))

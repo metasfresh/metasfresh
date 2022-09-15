@@ -1936,13 +1936,12 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public List<I_C_BPartner> retrieveBusinessPartners(@NonNull final QueryLimit limit)
+	public List<I_C_BPartner> retrieveBusinessPartners()
 	{
 		return queryBL.createQueryBuilder(I_C_BPartner.class)
 				.addOnlyActiveRecordsFilter()
 				.orderBy(I_C_BPartner.COLUMNNAME_Name)
 				.orderBy(I_C_BPartner.COLUMNNAME_C_BPartner_ID)
-				.setLimit(limit)
 				.create()
 				.listImmutable(I_C_BPartner.class);
 	}

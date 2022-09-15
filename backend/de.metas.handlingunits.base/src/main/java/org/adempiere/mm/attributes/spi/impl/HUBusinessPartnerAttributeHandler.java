@@ -34,10 +34,7 @@ import org.adempiere.mm.attributes.spi.IAttributeValueGeneratorAdapter;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.adempiere.mm.attributes.spi.IAttributeValuesProviderFactory;
 
-/**
- * Retrieve all Business Partners for {@link I_M_HU#getC_BPartner_ID()}.
- *
- */
+
 public class HUBusinessPartnerAttributeHandler
 		implements IAttributeValueGeneratorAdapter, IAttributeValueCalloutAdapter, IAttributeValuesProviderFactory
 {
