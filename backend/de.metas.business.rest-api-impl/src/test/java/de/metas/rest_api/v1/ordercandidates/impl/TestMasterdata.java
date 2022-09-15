@@ -15,7 +15,7 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.rules.IPricingRule;
-import de.metas.pricing.rules.PriceListVersion;
+import de.metas.pricing.rules.price_list_version.PriceListVersionPricingRule;
 import de.metas.shipping.ShipperId;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
@@ -274,7 +274,7 @@ final class TestMasterdata
 
 	public void createPricingRules()
 	{
-		createPricingRule(PriceListVersion.class, 10);
+		createPricingRule(PriceListVersionPricingRule.class, 10);
 	}
 
 	private void createPricingRule(

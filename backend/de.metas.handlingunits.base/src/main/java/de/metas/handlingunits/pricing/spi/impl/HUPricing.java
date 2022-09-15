@@ -9,6 +9,7 @@ import de.metas.logging.LogManager;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.attributebased.impl.AttributePricing;
+import de.metas.pricing.rules.price_list_version.PriceListVersionConfiguration;
 import de.metas.pricing.service.ProductPriceQuery;
 import de.metas.pricing.service.ProductPriceQuery.IProductPriceQueryMatcher;
 import de.metas.pricing.service.ProductPriceQuery.ProductPriceQueryMatcher;
@@ -17,7 +18,6 @@ import de.metas.product.ProductId;
 import de.metas.util.Loggables;
 import lombok.NonNull;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
-import org.adempiere.ad.dao.impl.NotEqualsQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList_Version;
@@ -36,15 +36,39 @@ import java.util.Optional;
  */
 public class HUPricing extends AttributePricing
 {
-	private static final transient Logger logger = LogManager.getLogger(HUPricing.class);
+	public static void install()
+	{
+		PriceListVersionConfiguration.setupHUPricing(
+				HUPricing::new,
+				HUPricing.HUPIItemProductMatcher_None
+		);
+
+		// Registers a default matcher to make sure that the AttributePricing ignores all product prices that have an M_HU_PI_Item_Product_ID set.
+		//
+		// From skype chat:
+		// <pre>
+		// [Dienstag, 4. Februar 2014 15:33] Cis:
+		//
+		// if the HU pricing rule (that runs first) doesn't find a match, the attribute pricing rule runs next and can find a wrong match, because it can't "see" the M_HU_PI_Item_Product
+		// more concretely: we have two rules:
+		// IFCO A, with Red
+		// IFCO B with Blue
+		//
+		// And we put a product in IFCO A with Blue
+		//
+		// HU pricing rule won't find a match,
+		// Attribute pricing rule will match it with "Blue", which is wrong, since it should fall back to the "base" productPrice
+		//
+		// <pre>
+		// ..and that's why we register the filter here.
+		//
+		AttributePricing.registerDefaultMatcher(HUPricing.HUPIItemProductMatcher_None);
+	}
+
+	private static final Logger logger = LogManager.getLogger(HUPricing.class);
 
 	private static final String HUPIItemProductMatcher_NAME = "M_HU_PI_Item_Product_Matcher";
 	public static final IProductPriceQueryMatcher HUPIItemProductMatcher_None = ProductPriceQueryMatcher.of(HUPIItemProductMatcher_NAME, EqualsQueryFilter.isNull(I_M_ProductPrice.COLUMNNAME_M_HU_PI_Item_Product_ID));
-
-	/**
-	 * Matches any product price with a not-null M_HU_PI_Item_Product_ID.
-	 */
-	private static final IProductPriceQueryMatcher HUPIItemProductMatcher_Any = ProductPriceQueryMatcher.of(HUPIItemProductMatcher_NAME, NotEqualsQueryFilter.of(I_M_ProductPrice.COLUMNNAME_M_HU_PI_Item_Product_ID, null));
 
 	@Override
 	protected Optional<I_M_ProductPrice> findMatchingProductPriceAttribute(final IPricingContext pricingCtx)
@@ -234,7 +258,7 @@ public class HUPricing extends AttributePricing
 		if (InterfaceWrapperHelper.hasModelColumnName(referencedObj, I_M_HU_PI_Item_Product_Aware.COLUMNNAME_M_HU_PI_Item_Product_ID))
 		{
 			final Integer valueOverrideOrValue = InterfaceWrapperHelper.getValueOverrideOrValue(referencedObj, I_M_HU_PI_Item_Product_Aware.COLUMNNAME_M_HU_PI_Item_Product_ID);
-			return valueOverrideOrValue == null ? null : HUPIItemProductId.ofRepoIdOrNull(valueOverrideOrValue.intValue());
+			return valueOverrideOrValue == null ? null : HUPIItemProductId.ofRepoIdOrNull(valueOverrideOrValue);
 		}
 
 		return null;
