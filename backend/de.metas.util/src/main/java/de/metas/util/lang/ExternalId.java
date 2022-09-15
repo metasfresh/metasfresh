@@ -34,7 +34,7 @@ import javax.annotation.Nullable;
 public class ExternalId implements Comparable<ExternalId>
 {
 	/**
-	 * Can be used to distinguish between an external ID that was not yet set and one that already set to {@code null}.
+	 * Can be used to distinguish between an external ID that was not yet set and one that was already set to "can't be used or set".
 	 */
 	public static final ExternalId INVALID = ExternalId.of("INVALID");
 
