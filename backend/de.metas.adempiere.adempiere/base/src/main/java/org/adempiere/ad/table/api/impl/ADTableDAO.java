@@ -467,6 +467,7 @@ public class ADTableDAO implements IADTableDAO
 						+ "," + I_AD_Column.COLUMNNAME_AD_Val_Rule_ID
 						+ "," + I_AD_Column.COLUMNNAME_EntityType
 						+ "," + I_AD_Column.COLUMNNAME_FieldLength
+						+ "," + I_AD_Column.COLUMNNAME_IsDLMPartitionBoundary
 						+ " FROM " + I_AD_Column.Table_Name
 						+ " ORDER BY "
 						+ " " + I_AD_Column.COLUMNNAME_AD_Table_ID
