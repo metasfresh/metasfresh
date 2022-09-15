@@ -189,10 +189,10 @@ public class C_BPartner_StepDef
 		final Integer bpGroupId = Optional.ofNullable(DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_C_BP_Group_ID))
 				.orElse(BP_GROUP_ID);
 
-		final I_C_BPartner bPartnerRecord =
+		final de.metas.edi.model.I_C_BPartner bPartnerRecord =
 				CoalesceUtil.coalesceSuppliers(
-						() -> bpartnerDAO.retrieveBPartnerByValue(Env.getCtx(), bPartnerValue),
-						() -> InterfaceWrapperHelper.newInstance(I_C_BPartner.class));
+						() -> (de.metas.edi.model.I_C_BPartner)bpartnerDAO.retrieveBPartnerByValue(Env.getCtx(), bPartnerValue),
+						() -> InterfaceWrapperHelper.newInstance(de.metas.edi.model.I_C_BPartner.class));
 
 		bPartnerRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 		bPartnerRecord.setName(bPartnerName);
@@ -299,6 +299,24 @@ public class C_BPartner_StepDef
 		{
 			bPartnerRecord.setIsAllowActionPrice(allowCampaignPrice);
 		}
+
+		final boolean isDesadvRecipient = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + de.metas.edi.model.I_C_BPartner.COLUMNNAME_IsEdiDesadvRecipient, false);
+		bPartnerRecord.setIsEdiDesadvRecipient(isDesadvRecipient);
+
+		final String ediDesadvRecipientGLN = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + de.metas.edi.model.I_C_BPartner.COLUMNNAME_EdiDesadvRecipientGLN);
+		if (Check.isNotBlank(ediDesadvRecipientGLN))
+		{
+			bPartnerRecord.setEdiDesadvRecipientGLN(DataTableUtil.nullToken2Null(ediDesadvRecipientGLN));
+		}
+
+		final String ediInvoicRecipientGLN = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + de.metas.edi.model.I_C_BPartner.COLUMNNAME_EdiInvoicRecipientGLN);
+		if (Check.isNotBlank(ediInvoicRecipientGLN))
+		{
+			bPartnerRecord.setEdiInvoicRecipientGLN(DataTableUtil.nullToken2Null(ediInvoicRecipientGLN));
+		}
+
+		final boolean isInvoicRecipient = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + de.metas.edi.model.I_C_BPartner.COLUMNNAME_IsEdiInvoicRecipient, false);
+		bPartnerRecord.setIsEdiInvoicRecipient(isInvoicRecipient);
 
 		final boolean alsoCreateLocation = InterfaceWrapperHelper.isNew(bPartnerRecord) && addDefaultLocationIfNewBPartner;
 		InterfaceWrapperHelper.saveRecord(bPartnerRecord);

@@ -16,8 +16,9 @@
     <MovementDate>2021-01-20+01:00</MovementDate>
     <POReference>6666666666</POReference>
     <EDI_Exp_Desadv_Pack>
+        <GTIN_LU_PackingMaterial>EURO</GTIN_LU_PackingMaterial>
         <IPA_SSCC18>123456789012345678</IPA_SSCC18>
-        <M_HU_PackagingCode_LU_Text>ISO1</M_HU_PackagingCode_LU_Text>
+        <M_HU_PackagingCode_LU_Text>ISO</M_HU_PackagingCode_LU_Text>
         <EDI_Exp_Desadv_Pack_Item>
             <BestBeforeDate>2021-03-10+01:00</BestBeforeDate>
             <LotNumber>19</LotNumber>
@@ -51,6 +52,7 @@
                 <QtyDeliveredInUOM>1</QtyDeliveredInUOM>
                 <OrderLine>100</OrderLine>
             </EDI_DesadvLine_ID>
+            <GTIN_TU_PackingMaterial>BPARTNER_GTIN</GTIN_TU_PackingMaterial>
             <M_HU_PackagingCode_TU_Text>COLI</M_HU_PackagingCode_TU_Text>
         </EDI_Exp_Desadv_Pack_Item>
     </EDI_Exp_Desadv_Pack>

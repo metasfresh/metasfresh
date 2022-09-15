@@ -23,29 +23,34 @@
 package de.metas.cucumber.stepdefs;
 
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Product;
 
 import java.util.List;
 import java.util.Map;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.handlingunits.model.I_M_HU_PackingMaterial.COLUMNNAME_IsInvoiceable;
 import static de.metas.handlingunits.model.I_M_HU_PackingMaterial.COLUMNNAME_Name;
 
 public class M_HU_PackingMaterial_StepDef
 {
-	private final StepDefData<I_M_Product> productTable;
-	private final StepDefData<I_M_HU_PackingMaterial> packingMaterial;
+	private final M_Product_StepDefData productTable;
+	private final M_HU_PackingMaterial_StepDefData packingMaterialTable;
+
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public M_HU_PackingMaterial_StepDef(
-			@NonNull final StepDefData<I_M_Product> productTable,
-			@NonNull final StepDefData<I_M_HU_PackingMaterial> packingMaterial)
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final M_HU_PackingMaterial_StepDefData packingMaterialTable)
 	{
 		this.productTable = productTable;
-		this.packingMaterial = packingMaterial;
+		this.packingMaterialTable = packingMaterialTable;
 	}
 
 	@Given("metasfresh contains M_HU_PackingMaterial")
@@ -58,22 +63,48 @@ public class M_HU_PackingMaterial_StepDef
 		}
 	}
 
+	@And("load M_HU_PackingMaterial")
+	public void load_M_HU_PackingMaterial(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			loadPackingMaterial(tableRow);
+		}
+	}
+
+	private void loadPackingMaterial(@NonNull final Map<String, String> tableRow)
+	{
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_HU_PackingMaterial.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final int productId = productTable.get(productIdentifier).getM_Product_ID();
+
+		final I_M_HU_PackingMaterial packingMaterialRecord = queryBL.createQueryBuilder(I_M_HU_PackingMaterial.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_HU_PackingMaterial.COLUMNNAME_M_Product_ID, productId)
+				.create()
+				.firstOnlyNotNull(I_M_HU_PackingMaterial.class);
+
+		final String recordIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_HU_PackingMaterial.COLUMNNAME_M_HU_PackingMaterial_ID + "." + TABLECOLUMN_IDENTIFIER);
+		packingMaterialTable.put(recordIdentifier, packingMaterialRecord);
+	}
+
 	private void createM_HU_PackingMaterial(@NonNull final Map<String, String> tableRow)
 	{
 		final String packingMaterialName = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_Name);
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product.Table_Name + ".Identifier");
-		final boolean isInvoiceable = DataTableUtil.extractBooleanForColumnName(tableRow, COLUMNNAME_IsInvoiceable);
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_HU_PackingMaterial.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final boolean isInvoiceable = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + COLUMNNAME_IsInvoiceable, true);
 
-		final I_M_Product product = productTable.get(productIdentifier);
-		final I_M_HU_PackingMaterial productRecord = InterfaceWrapperHelper.newInstance(I_M_HU_PackingMaterial.class);
-		productRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
-		productRecord.setName(packingMaterialName);
-		productRecord.setM_Product_ID(product.getM_Product_ID());
-		productRecord.setIsInvoiceable(isInvoiceable);
+		final int productId = productTable.get(productIdentifier).getM_Product_ID();
 
-		InterfaceWrapperHelper.saveRecord(productRecord);
+		final I_M_HU_PackingMaterial packingMaterialRecord = InterfaceWrapperHelper.newInstance(I_M_HU_PackingMaterial.class);
+		packingMaterialRecord.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
+		packingMaterialRecord.setName(packingMaterialName);
+		packingMaterialRecord.setM_Product_ID(productId);
+		packingMaterialRecord.setIsInvoiceable(isInvoiceable);
 
-		final String recordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, "M_HU_PackingMaterial");
-		packingMaterial.put(recordIdentifier, productRecord);
+		InterfaceWrapperHelper.saveRecord(packingMaterialRecord);
+
+		final String recordIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_HU_PackingMaterial.COLUMNNAME_M_HU_PackingMaterial_ID + "." + TABLECOLUMN_IDENTIFIER);
+		packingMaterialTable.put(recordIdentifier, packingMaterialRecord);
 	}
 }
