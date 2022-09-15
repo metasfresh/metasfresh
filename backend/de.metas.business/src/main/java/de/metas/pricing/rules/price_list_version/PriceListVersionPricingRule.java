@@ -41,6 +41,9 @@ import java.time.ZonedDateTime;
 import java.util.HashSet;
 import java.util.function.Supplier;
 
+/**
+ * This pricing rule is a composite; see the constructor for the included sub-rules.
+ */
 public class PriceListVersionPricingRule implements IPricingRule
 {
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
@@ -80,6 +83,10 @@ public class PriceListVersionPricingRule implements IPricingRule
 		return includedPricingRules.applies(pricingCtx, result);
 	}
 
+	/**
+	 * Iterates the ctx's {@code pricingCtx}'s priceList's PLVs from a PLV to its respective base-PLV 
+	 * and applies the sub-pricing-rules until a price is found or all PLvs were tried.
+	 */
 	@Override
 	public void calculate(final IPricingContext pricingCtx, final IPricingResult result)
 	{
