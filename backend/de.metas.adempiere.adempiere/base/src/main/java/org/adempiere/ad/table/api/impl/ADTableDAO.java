@@ -494,6 +494,7 @@ public class ADTableDAO implements IADTableDAO
 				.adValRuleId(AdValRuleId.ofRepoIdOrNull(rs.getInt(I_AD_Column.COLUMNNAME_AD_Val_Rule_ID)))
 				.entityType(rs.getString(I_AD_Column.COLUMNNAME_EntityType))
 				.fieldLength(rs.getInt(I_AD_Column.COLUMNNAME_FieldLength))
+				.isDLMPartitionBoundary(StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsDLMPartitionBoundary)))
 				.build();
 	}
 }

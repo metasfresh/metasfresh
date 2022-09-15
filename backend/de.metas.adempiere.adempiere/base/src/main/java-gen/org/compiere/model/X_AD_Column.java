@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1481255383L;
+	private static final long serialVersionUID = -930119389L;
 
     /** Standard Constructor */
     public X_AD_Column (final Properties ctx, final int AD_Column_ID, @Nullable final String trxName)
@@ -457,6 +457,18 @@ public class X_AD_Column extends org.compiere.model.PO implements I_AD_Column, o
 	public boolean isCalculated() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsCalculated);
+	}
+
+	@Override
+	public void setIsDLMPartitionBoundary (final boolean IsDLMPartitionBoundary)
+	{
+		set_Value (COLUMNNAME_IsDLMPartitionBoundary, IsDLMPartitionBoundary);
+	}
+
+	@Override
+	public boolean isDLMPartitionBoundary() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsDLMPartitionBoundary);
 	}
 
 	/** 

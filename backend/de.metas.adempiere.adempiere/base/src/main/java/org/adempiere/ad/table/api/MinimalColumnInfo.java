@@ -29,4 +29,5 @@ public class MinimalColumnInfo
 	@Nullable AdValRuleId adValRuleId;
 	@NonNull String entityType;
 	int fieldLength;
+	boolean isDLMPartitionBoundary;
 }
