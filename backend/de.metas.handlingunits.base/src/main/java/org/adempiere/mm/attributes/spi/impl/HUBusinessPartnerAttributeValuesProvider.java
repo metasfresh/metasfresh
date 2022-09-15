@@ -58,7 +58,7 @@ class HUBusinessPartnerAttributeValuesProvider implements IAttributeValuesProvid
 
 	private static final AdMessageKey MSG_noneOrEmpty = AdMessageKey.of("NoneOrEmpty");
 
-	private static final CCache<Integer, ImmutableList<KeyNamePair>> businessPartenrsCache = CCache.<Integer, ImmutableList<KeyNamePair>>builder()
+	private static final CCache<Integer, ImmutableList<KeyNamePair>> businessPartnersCache = CCache.<Integer, ImmutableList<KeyNamePair>>builder()
 			.cacheName(CACHE_PREFIX + "#HU#" + I_C_BPartner.COLUMNNAME_C_BPartner_ID)
 			.tableName(I_C_BPartner.Table_Name)
 			.initialCapacity(100)
@@ -81,7 +81,7 @@ class HUBusinessPartnerAttributeValuesProvider implements IAttributeValuesProvid
 	@Override
 	public List<CCacheStats> getCacheStats()
 	{
-		return ImmutableList.of(businessPartenrsCache.stats());
+		return ImmutableList.of(businessPartnersCache.stats());
 	}
 
 	@Override
@@ -186,7 +186,7 @@ class HUBusinessPartnerAttributeValuesProvider implements IAttributeValuesProvid
 
 	private List<KeyNamePair> getBusinessPartners()
 	{
-		final ImmutableList<KeyNamePair> businessPartners = businessPartenrsCache.getOrLoad(0, this::retrieveBusinessPartnersKeyNamePairs);
+		final ImmutableList<KeyNamePair> businessPartners = businessPartnersCache.getOrLoad(0, this::retrieveBusinessPartnersKeyNamePairs);
 		return ImmutableList.<KeyNamePair>builder()
 				.add(staticNullValue())
 				.addAll(businessPartners)
