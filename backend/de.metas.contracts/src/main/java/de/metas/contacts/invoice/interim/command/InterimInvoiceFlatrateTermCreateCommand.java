@@ -44,14 +44,13 @@ import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.logging.LogManager;
-import de.metas.money.CurrencyId;
-import de.metas.money.Money;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderLine;
 import de.metas.order.OrderLineId;
 import de.metas.order.OrderLineRepository;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
@@ -66,7 +65,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -220,11 +218,9 @@ public class InterimInvoiceFlatrateTermCreateCommand
 
 	private InterimInvoiceFlatrateTerm createInterimInvoiceOverview(@NonNull final I_C_Flatrate_Term flatrateTerm)
 	{
-		final I_C_Order order = orderDAO.getById(orderLine.getOrderId());
-
 		final UomId productUomId = UomId.ofRepoId(product.getC_UOM_ID());
 		final Quantity zeroQty = Quantitys.createZero(productUomId);
-		final CurrencyId currencyId = CurrencyId.ofRepoId(order.getC_Currency_ID());
+		final ProductPrice orderLinePriceActual = orderLine.getPriceActual();
 		final InterimInvoiceFlatrateTerm interimInvoiceFlatrateTerm = InterimInvoiceFlatrateTerm.builder()
 				.flatrateTermId(FlatrateTermId.ofRepoId(flatrateTerm.getC_Flatrate_Term_ID()))
 				.calendarId(interimInvoiceSettings.getHarvestingCalendarId())
@@ -234,9 +230,8 @@ public class InterimInvoiceFlatrateTermCreateCommand
 				.qtyInvoiced(zeroQty)
 				.productId(productId)
 				.uomId(productUomId)
-				.priceActual(Money.zero(currencyId))
-				.currencyId(currencyId)
-
+				.priceActual(orderLinePriceActual.toMoney())
+				.currencyId(orderLinePriceActual.getCurrencyId())
 				.build();
 
 		return interimInvoiceFlatrateTermDAO.save(interimInvoiceFlatrateTerm);
