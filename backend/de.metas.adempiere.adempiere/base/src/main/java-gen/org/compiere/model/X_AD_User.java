@@ -308,14 +308,14 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	@Override
 	public void setC_Title_ID (final int C_Title_ID)
 	{
-		if (C_Title_ID < 1)
+		if (C_Title_ID < 1) 
 			set_Value (COLUMNNAME_C_Title_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_C_Title_ID, C_Title_ID);
 	}
 
 	@Override
-	public int getC_Title_ID()
+	public int getC_Title_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Title_ID);
 	}
@@ -673,6 +673,18 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
+	public void setIsBackofficeContact (final boolean IsBackofficeContact)
+	{
+		set_Value (COLUMNNAME_IsBackofficeContact, IsBackofficeContact);
+	}
+
+	@Override
+	public boolean isBackofficeContact()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsBackofficeContact);
+	}
+
+	@Override
 	public void setIsBillToContact_Default (final boolean IsBillToContact_Default)
 	{
 		set_Value (COLUMNNAME_IsBillToContact_Default, IsBillToContact_Default);
@@ -685,6 +697,17 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
+	public void setIsCustomUserRestriction (final boolean IsCustomUserRestriction)
+	{
+		throw new IllegalArgumentException ("IsCustomUserRestriction is virtual column");	}
+
+	@Override
+	public boolean isCustomUserRestriction()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsCustomUserRestriction);
+	}
+
+	@Override
 	public void setIsDefaultContact (final boolean IsDefaultContact)
 	{
 		set_Value (COLUMNNAME_IsDefaultContact, IsDefaultContact);
@@ -694,6 +717,18 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public boolean isDefaultContact()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsDefaultContact);
+	}
+
+	@Override
+	public void setIsDunningDefault (final boolean IsDunningDefault)
+	{
+		set_Value (COLUMNNAME_IsDunningDefault, IsDunningDefault);
+	}
+
+	@Override
+	public boolean IsDunningDefault()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsDunningDefault);
 	}
 
 	@Override
@@ -751,6 +786,18 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public boolean isLoginAsHostKey()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsLoginAsHostKey);
+	}
+
+	@Override
+	public void setIsLogisticContact (final boolean IsLogisticContact)
+	{
+		set_Value (COLUMNNAME_IsLogisticContact, IsLogisticContact);
+	}
+
+	@Override
+	public boolean isLogisticContact()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsLogisticContact);
 	}
 
 	@Override
