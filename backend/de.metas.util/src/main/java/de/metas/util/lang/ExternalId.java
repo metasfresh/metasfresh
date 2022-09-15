@@ -68,7 +68,7 @@ public class ExternalId implements Comparable<ExternalId>
 	}
 
 	/**
-	 * @return {@code true} if the given {@code externalId} is the same at {@link #INVALID}.
+	 * @return {@code true} if the given {@code externalId} is the same as {@link #INVALID}.
 	 */
 	public static boolean isInvalid(@Nullable final ExternalId externalId)
 	{
