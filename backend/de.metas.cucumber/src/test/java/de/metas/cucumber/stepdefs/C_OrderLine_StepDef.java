@@ -53,6 +53,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -86,6 +87,7 @@ public class C_OrderLine_StepDef
 	private final C_Flatrate_Term_StepDefData contractTable;
 	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
 	private final M_Attribute_StepDefData attributeTable;
+	private final C_Tax_StepDefData taxTable;
 
 	public C_OrderLine_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
@@ -96,7 +98,8 @@ public class C_OrderLine_StepDef
 			@NonNull final C_Flatrate_Conditions_StepDefData flatrateConditionsTable,
 			@NonNull final C_Flatrate_Term_StepDefData contractTable,
 			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable,
-			@NonNull final M_Attribute_StepDefData attributeTable)
+			@NonNull final M_Attribute_StepDefData attributeTable,
+			@NonNull final C_Tax_StepDefData taxTable)
 	{
 		this.productTable = productTable;
 		this.partnerTable = partnerTable;
@@ -107,6 +110,7 @@ public class C_OrderLine_StepDef
 		this.contractTable = contractTable;
 		this.huPiItemProductTable = huPiItemProductTable;
 		this.attributeTable = attributeTable;
+		this.taxTable = taxTable;
 	}
 
 	@Given("metasfresh contains C_OrderLines:")
@@ -169,6 +173,12 @@ public class C_OrderLine_StepDef
 
 					orderLine.setM_HU_PI_Item_Product_ID(huPiItemProductRecordID);
 				}
+			}
+
+			final BigDecimal qtyEnteredTU = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, de.metas.handlingunits.model.I_C_OrderLine.COLUMNNAME_QtyEnteredTU);
+			if (qtyEnteredTU != null)
+			{
+				orderLine.setQtyEnteredTU(qtyEnteredTU);
 			}
 
 			saveRecord(orderLine);
@@ -422,6 +432,13 @@ public class C_OrderLine_StepDef
 		{
 			StepDefUtil.splitIdentifiers(asiValues)
 					.forEach(value -> validateAttributeValue(orderLine, value));
+		}
+
+		final String taxIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OrderLine.COLUMNNAME_C_Tax_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(taxIdentifier))
+		{
+			final I_C_Tax tax = taxTable.get(taxIdentifier);
+			assertThat(orderLine.getC_Tax_ID()).isEqualTo(tax.getC_Tax_ID());
 		}
 
 		final String orderLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);

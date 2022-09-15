@@ -27,6 +27,7 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_BOMVersions_StepDefData;
+import de.metas.cucumber.stepdefs.workflow.AD_Workflow_StepDefData;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.util.Check;
 import io.cucumber.datatable.DataTable;
@@ -35,6 +36,7 @@ import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Product_BOMVersions;
@@ -43,11 +45,13 @@ import org.eevolution.model.X_PP_Product_Planning;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TEST_PLANT_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.WORKFLOW_ID;
 import static org.assertj.core.api.Assertions.*;
+import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_AD_Workflow_ID;
 import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID;
 
 public class PP_Product_Planning_StepDef
@@ -56,17 +60,20 @@ public class PP_Product_Planning_StepDef
 	private final PP_Product_BOMVersions_StepDefData productBomVersionsTable;
 	private final PP_Product_Planning_StepDefData productPlanningTable;
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
+	private final AD_Workflow_StepDefData workflowTable;
 
 	public PP_Product_Planning_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final PP_Product_BOMVersions_StepDefData productBomVersionsTable,
 			@NonNull final PP_Product_Planning_StepDefData productPlanningTable,
-			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable)
+			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
+			@NonNull final AD_Workflow_StepDefData workflowTable)
 	{
 		this.productTable = productTable;
 		this.productBomVersionsTable = productBomVersionsTable;
 		this.productPlanningTable = productPlanningTable;
 		this.attributeSetInstanceTable = attributeSetInstanceTable;
+		this.workflowTable = workflowTable;
 	}
 
 	@Given("metasfresh contains PP_Product_Plannings")
@@ -90,11 +97,16 @@ public class PP_Product_Planning_StepDef
 
 		final boolean isAttributeDependant = DataTableUtil.extractBooleanForColumnNameOr(tableRow, I_PP_Product_Planning.COLUMNNAME_IsAttributeDependant, false);
 
+		final int workflowId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_AD_Workflow_ID + "." + TABLECOLUMN_IDENTIFIER))
+				.map(workflowTable::get)
+				.map(I_AD_Workflow::getAD_Workflow_ID)
+				.orElse(WORKFLOW_ID.getRepoId());
+
 		final I_PP_Product_Planning productPlanningRecord = InterfaceWrapperHelper.newInstance(I_PP_Product_Planning.class);
 		productPlanningRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		productPlanningRecord.setAD_Org_ID(productRecord.getAD_Org_ID());
 		productPlanningRecord.setS_Resource_ID(TEST_PLANT_ID.getRepoId());
-		productPlanningRecord.setAD_Workflow_ID(WORKFLOW_ID.getRepoId());
+		productPlanningRecord.setAD_Workflow_ID(workflowId);
 		productPlanningRecord.setIsCreatePlan(isCreatePlan);
 		productPlanningRecord.setIsAttributeDependant(isAttributeDependant);
 

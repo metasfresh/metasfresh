@@ -43,6 +43,7 @@ import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -53,17 +54,20 @@ public class M_HU_CreateReceipt_StepDef
 	private final IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
 
 	private final M_HU_StepDefData huTable;
+	private final M_HU_List_StepDefData huListTable;
 	private final M_ReceiptSchedule_StepDefData receiptScheduleTable;
 	private final M_InOut_StepDefData inOutTable;
 
 	public M_HU_CreateReceipt_StepDef(
 			@NonNull final M_HU_StepDefData huTable,
 			@NonNull final M_ReceiptSchedule_StepDefData receiptScheduleTable,
-			@NonNull final M_InOut_StepDefData inOutTable)
+			@NonNull final M_InOut_StepDefData inOutTable,
+			@NonNull final M_HU_List_StepDefData huListTable)
 	{
 		this.huTable = huTable;
 		this.receiptScheduleTable = receiptScheduleTable;
 		this.inOutTable = inOutTable;
+		this.huListTable = huListTable;
 	}
 
 	@And("create material receipt")
@@ -72,9 +76,26 @@ public class M_HU_CreateReceipt_StepDef
 		final List<Map<String, String>> rows = dataTable.asMaps();
 		for (final Map<String, String> row : rows)
 		{
-			final String huIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU.COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_HU hu = huTable.get(huIdentifier);
-			final HuId selectedHuId = HuId.ofRepoId(hu.getM_HU_ID());
+			final String huIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, I_M_HU.COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String huListIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.HUList." + TABLECOLUMN_IDENTIFIER);
+
+			assertThat(huIdentifier != null /*XOR*/ ^ huListIdentifier != null).isEqualTo(true);
+
+			final Set<HuId> huIdSet;
+			if (huIdentifier != null)
+			{
+				huIdSet = ImmutableSet.of(HuId.ofRepoId(huTable.get(huIdentifier).getM_HU_ID()));
+			}
+			else
+			{
+				assertThat(huListIdentifier).isNotBlank();
+
+				huIdSet = huListTable.get(huListIdentifier)
+						.stream()
+						.map(I_M_HU::getM_HU_ID)
+						.map(HuId::ofRepoId)
+						.collect(ImmutableSet.toImmutableSet());
+			}
 
 			final String receiptScheduleIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ReceiptSchedule.COLUMNNAME_M_ReceiptSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_M_ReceiptSchedule receiptSchedule = receiptScheduleTable.get(receiptScheduleIdentifier);
@@ -84,7 +105,7 @@ public class M_HU_CreateReceipt_StepDef
 					.movementDateRule(ReceiptMovementDateRule.CURRENT_DATE)
 					.ctx(Env.getCtx())
 					.receiptSchedules(ImmutableList.of(receiptSchedule))
-					.selectedHuIds(ImmutableSet.of(selectedHuId))
+					.selectedHuIds(huIdSet)
 					.build();
 
 			final InOutGenerateResult inOutGenerateResult = huReceiptScheduleBL.processReceiptSchedules(parameters);

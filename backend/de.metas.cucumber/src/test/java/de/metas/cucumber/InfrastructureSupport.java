@@ -43,10 +43,10 @@ public class InfrastructureSupport
 	 * The benefits are:
 	 * - cucumber startup time is reduced drastically
 	 * - it's easier to inspect the local DB. In fact you can start the webapi (not ServerRoot aka app-server) and the frontend, and inspect everything in the UI.
-	 * 
+	 *
 	 * The drawback is that your DB is probably polluted which might be an additional reason for possible test failures.
 	 * To always run your cucumber-tests on an "unpolluted" DB, you can use templates as follows:
-	 * 
+	 *
 	 * Reset your local infrastructure-DB
 	 * Apply the local migration scripts
 	 * Make sure there is no open connection to the DB (otherwise there will be an error)
@@ -55,8 +55,8 @@ public class InfrastructureSupport
 	 * docker exec -it infrastructure_db_1  psql -U postgres -c "alter database metasfresh rename to metasfresh_template_master_integration;" && \
 	 * docker exec -it infrastructure_db_1  psql -U postgres -c "alter database metasfresh_template_master_integration is_template true;"
 	 * </pre>
-	 * 
-	 * Now, you can reset your local DB after each cucumber run like this:  
+	 *
+	 * Now, you can reset your local DB after each cucumber run like this:
 	 * <pre>
 	 * # drop the current metasfresh-DB and recreate it from the template
 	 * docker exec -it infrastructure_db_1  psql -U postgres -c "drop database if exists metasfresh;" && \
