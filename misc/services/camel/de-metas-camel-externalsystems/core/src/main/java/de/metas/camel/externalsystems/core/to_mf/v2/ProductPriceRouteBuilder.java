@@ -87,7 +87,7 @@ public class ProductPriceRouteBuilder extends RouteBuilder
 				.process(this::validateJsonRequestProductPriceSearch)
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonRequestProductPriceQuery.class))
 				.removeHeaders("CamelHttp*")
-				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
+
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
 				.toD("{{metasfresh.prices-v2.api.uri}}/${header.orgCode}/product/search")
 

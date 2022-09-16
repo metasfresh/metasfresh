@@ -35,6 +35,7 @@ import de.metas.CommandLineParser;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.ServerBoot;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupRequest;
+import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.externalsystem.leichundmehl.JsonExternalSystemLeichMehlConfigProductMapping;
 import de.metas.common.externalsystem.leichundmehl.JsonExternalSystemLeichMehlPluFileConfigs;

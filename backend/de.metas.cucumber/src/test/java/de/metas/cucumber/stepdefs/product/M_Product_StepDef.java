@@ -355,9 +355,9 @@ public class M_Product_StepDef
 
 	private void updateMProduct(@NonNull final Map<String, String> tableRow)
 	{
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_M_Product productRecord = productTable.get(productIdentifier);
-		assertThat(product).isNotNull();
+		assertThat(productRecord).isNotNull();
 
 		final String gtin = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_Product.COLUMNNAME_GTIN);
 
@@ -366,7 +366,7 @@ public class M_Product_StepDef
 			productRecord.setGTIN(gtin);
 		}
 
-		final boolean isStocked = DataTableUtil.extractBooleanForColumnName(row, COLUMNNAME_IsStocked);
+		final boolean isStocked = DataTableUtil.extractBooleanForColumnName(tableRow, COLUMNNAME_IsStocked);
 		productRecord.setIsStocked(isStocked);
 		
 		saveRecord(productRecord);
