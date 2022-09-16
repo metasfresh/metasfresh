@@ -4,6 +4,7 @@ Feature: approved for invoicing
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-09-14T13:30:13+01:00[Europe/Berlin]
+    And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
     And metasfresh contains M_Products:
       | Identifier | Name                |
@@ -46,8 +47,8 @@ Feature: approved for invoicing
   @from:cucumber
   Scenario: create sales order, complete it, approve invoice candidates for invoicing and then try to reactivate order with error
     Given update C_BPartner:
-      | Identifier  | InvoiceRule |
-      | bpartner_SO | I           |
+      | Identifier  | OPT.InvoiceRule |
+      | bpartner_SO | I               |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | o_1        | true    | bpartner_SO              | 2022-09-15  |
@@ -69,8 +70,8 @@ Feature: approved for invoicing
   @from:cucumber
   Scenario: create sales order, complete it, approve invoice candidates for invoicing, generate shipment, complete it and then try to reactivate shipment with error
     Given update C_BPartner:
-      | Identifier  | InvoiceRule |
-      | bpartner_SO | D           |
+      | Identifier  | OPT.InvoiceRule |
+      | bpartner_SO | D               |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | o_1        | true    | bpartner_SO              | 2021-09-15  |
@@ -108,8 +109,8 @@ Feature: approved for invoicing
   @from:cucumber
   Scenario: create purchase order, complete it, approve invoice candidates for invoicing and then try to reactivate order with error
     Given update C_BPartner:
-      | Identifier  | PO_InvoiceRule |
-      | bpartner_PO | I              |
+      | Identifier  | OPT.PO_InvoiceRule |
+      | bpartner_PO | I                  |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.DocBaseType |
       | o_1        | false   | bpartner_PO              | 2022-09-15  | po_ref_mock     | POO             |
@@ -133,8 +134,8 @@ Feature: approved for invoicing
   @from:cucumber
   Scenario: create purchase order, complete it, approve invoice candidates for invoicing, generate receipt, complete it and then try to reactivate receipt with error
     Given update C_BPartner:
-      | Identifier  | PO_InvoiceRule |
-      | bpartner_PO | D              |
+      | Identifier  | OPT.PO_InvoiceRule |
+      | bpartner_PO | D                  |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.DocBaseType |
       | o_1        | false   | bpartner_PO              | 2022-09-15  | po_ref_mock     | POO             |
