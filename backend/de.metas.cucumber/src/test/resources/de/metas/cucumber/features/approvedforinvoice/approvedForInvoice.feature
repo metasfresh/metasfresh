@@ -165,10 +165,6 @@ Feature: approved for invoicing
       | OPT.AD_Message_ID.Identifier |
       | approved_for_invoice_error   |
 
-    Then the order identified by o_1 is reactivated expecting error
-      | OPT.AD_Message_ID.Identifier |
-      | approved_for_invoice_error   |
-
   @from:cucumber
   Scenario: create shipment, complete it, approve invoice candidate for invoicing then try to reverse shipment with error
     Given metasfresh contains M_InOut:
