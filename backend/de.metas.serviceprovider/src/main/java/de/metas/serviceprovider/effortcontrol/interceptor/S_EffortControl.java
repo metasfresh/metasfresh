@@ -38,14 +38,11 @@ public class S_EffortControl
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
 	public void setEffortControlKey(@NonNull final I_S_EffortControl record)
 	{
-		final String effortControlAggKey = new EffortControlKeyBuilder().buildKey(record);
-
-		if (effortControlAggKey.equals(record.getEffortAggregationKey()))
+		if (record.getEffortAggregationKey() == null)
 		{
-			return;
+			final String effortControlAggKey = new EffortControlKeyBuilder().buildKey(record);
+			record.setEffortAggregationKey(effortControlAggKey);
 		}
-
-		record.setEffortAggregationKey(effortControlAggKey);
 	}
 
 

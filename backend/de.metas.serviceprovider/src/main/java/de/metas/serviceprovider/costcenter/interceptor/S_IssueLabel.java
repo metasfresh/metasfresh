@@ -27,6 +27,7 @@ import de.metas.serviceprovider.external.label.IssueLabel;
 import de.metas.serviceprovider.external.label.IssueLabelRepository;
 import de.metas.serviceprovider.github.GithubImporterConstants;
 import de.metas.serviceprovider.issue.IssueId;
+import de.metas.serviceprovider.model.I_S_Issue;
 import de.metas.serviceprovider.model.I_S_IssueLabel;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -47,6 +48,10 @@ public class S_IssueLabel
 		this.costCenterService = costCenterService;
 	}
 
+	/**
+	 * Timing AFTER_* is needed so its latest (current) value it's available in case S_Issue.C_Activity_ID gets updated triggering another MI
+	 * which ends up fetching the label (i.e. {@link S_Issue#syncCostCenter(I_S_Issue)})
+	 */
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
 	public void addCostCenter(@NonNull final I_S_IssueLabel record)
 	{
@@ -62,6 +67,10 @@ public class S_IssueLabel
 		costCenterService.syncWithCostCenterLabel(IssueId.ofRepoId(record.getS_Issue_ID()), costCenterLabel);
 	}
 
+	/**
+	 * Timing AFTER_* is needed so its removal is acknowledged in case S_Issue.C_Activity_ID gets updated triggering another MI
+	 * which ends up fetching the issue's labels (i.e. {@link S_Issue#syncCostCenter(I_S_Issue)})
+	 */
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })
 	public void removeCostCenterFromIssue(@NonNull final I_S_IssueLabel record)
 	{
@@ -87,6 +96,6 @@ public class S_IssueLabel
 			return;
 		}
 
-		costCenterService.validateSingleCostCenterLabel(IssueId.ofRepoId(record.getS_Issue_ID()));
+		costCenterService.validateNoCostCenterLabel(IssueId.ofRepoId(record.getS_Issue_ID()));
 	}
 }

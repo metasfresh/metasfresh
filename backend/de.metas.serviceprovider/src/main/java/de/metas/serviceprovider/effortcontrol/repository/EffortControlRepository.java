@@ -31,7 +31,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -110,7 +109,6 @@ public class EffortControlRepository
 				.effortSum(Effort.ofNullable(record.getEffortSum()))
 				.budget(record.getBudget())
 				.invoiceableHours(record.getInvoiceableHours())
-				.updated(TimeUtil.asInstant(record.getUpdated()))
 				.build();
 	}
 }

@@ -23,6 +23,7 @@
 package de.metas.serviceprovider.effortcontrol;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import de.metas.logging.LogManager;
 import de.metas.serviceprovider.effortcontrol.repository.CreateEffortControlRequest;
 import de.metas.serviceprovider.effortcontrol.repository.EffortControl;
@@ -40,8 +41,11 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
 @Service
 public class RecomputeEffortControlService
@@ -50,42 +54,57 @@ public class RecomputeEffortControlService
 
 	private final IssueRepository issueRepository;
 	private final EffortControlRepository effortControlRepository;
+	private final EffortControlService effortControlService;
 
 	public RecomputeEffortControlService(
 			@NonNull final IssueRepository issueRepository,
-			@NonNull final EffortControlRepository effortControlRepository)
+			@NonNull final EffortControlRepository effortControlRepository,
+			@NonNull final EffortControlService effortControlService)
 	{
 		this.issueRepository = issueRepository;
 		this.effortControlRepository = effortControlRepository;
+		this.effortControlService = effortControlService;
 	}
 
 	public void recomputeAllOpenEffortControlRecords()
 	{
 		issueRepository.setAggregationKeyIfMissing();
 
-		issueRepository.getIssuesWithOpenEffortStream()
-				.forEach(this::handleIssueWithoutEffortControl);
+		final Set<EffortTarget> processedTargets = new HashSet<>();
+
+		issueRepository.streamIssuesWithOpenEffort()
+				.forEach(issue -> {
+					final EffortTarget effortTarget = issue.getEffortTarget().orElse(null);
+
+					Check.assumeNotNull(effortTarget, "Issues without an effort target should not be loaded!");
+
+					if (processedTargets.contains(effortTarget))
+					{
+						return;
+					}
+
+					final Properties issueCtx = createIssueCtx(issue);
+
+					try (final IAutoCloseable tempContext = Env.switchContext(issueCtx))
+					{
+						recomputeEffortControlFor(effortTarget);
+					}
+
+					processedTargets.add(effortTarget);
+				});
 	}
 
-	public void recomputeEffortControl(@NonNull final EffortControlId effortControlId)
+	public void recomputeEffortControlFor(@NonNull final EffortControlId effortControlId)
 	{
 		final EffortControl effortControl = effortControlRepository.getById(effortControlId);
 
 		recomputeValuesFor(effortControl);
 	}
 
-	private void handleIssueWithoutEffortControl(@NonNull final IssueEntity effortIssue)
+	private void recomputeEffortControlFor(@NonNull final EffortTarget effortTarget)
 	{
-		Check.assumeNotNull(effortIssue.getCostCenterActivityId(), "CostCenterId should not be empty at this stage!");
-		Check.assumeNotNull(effortIssue.getProjectId(), "ProjectId should not be empty at this stage!");
-
-		final Properties issueCtx = createIssueCtx(effortIssue);
-
-		try (final IAutoCloseable contextRestorer = Env.switchContext(issueCtx))
-		{
-			final EffortControl effortControl = resolveEffortControlFromIssue(effortIssue);
-			recomputeValuesFor(effortControl);
-		}
+		final EffortControl effortControl = resolveEffortControlForTarget(effortTarget);
+		recomputeValuesFor(effortControl);
 	}
 
 	private void recomputeValuesFor(@NonNull final EffortControl effortControl)
@@ -96,16 +115,21 @@ public class RecomputeEffortControlService
 				.projectId(effortControl.getProjectId())
 				.build();
 
-		final List<IssueEntity> effortControlIssues = issueRepository.geyByQuery(query);
+		final List<EffortInfo> effortInfos = issueRepository.geyByQuery(query)
+				.stream()
+				.map(effortControlService::getEffortInfo)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.collect(ImmutableList.toImmutableList());
 
-		final EffortCollection effortCollection = EffortCollection.of(effortControl, effortControlIssues);
+		final EffortControlCalculator effortCalculator = EffortControlCalculator.of(effortControl, effortInfos);
 
-		computeEffort(effortCollection);
+		updateEffort(effortCalculator);
 	}
 
-	private void computeEffort(@NonNull final EffortCollection effortCollection)
+	private void updateEffort(@NonNull final EffortControlCalculator effortCollection)
 	{
-		final EffortControl updatedEffortControl = effortCollection.computeEffortControl();
+		final EffortControl updatedEffortControl = effortCollection.calculate();
 
 		if (EffortControl.equals(updatedEffortControl, effortCollection.getEffortControl()))
 		{
@@ -121,20 +145,20 @@ public class RecomputeEffortControlService
 	}
 
 	@NonNull
-	private EffortControl resolveEffortControlFromIssue(@NonNull final IssueEntity issueEntity)
+	private EffortControl resolveEffortControlForTarget(@NonNull final EffortTarget effortTarget)
 	{
 		final EffortControlQuery query = EffortControlQuery.builder()
-				.orgId(issueEntity.getOrgId())
-				.costCenterId(issueEntity.getCostCenterActivityId())
-				.projectId(issueEntity.getProjectId())
+				.orgId(effortTarget.getOrgId())
+				.costCenterId(effortTarget.getCostCenterId())
+				.projectId(effortTarget.getProjectId())
 				.build();
 
 		return effortControlRepository.getOptionalByQuery(query)
 				.orElseGet(() -> {
 					final CreateEffortControlRequest createEffortControlRequest = CreateEffortControlRequest.builder()
-							.orgId(issueEntity.getOrgId())
-							.costCenterId(issueEntity.getCostCenterActivityId())
-							.projectId(issueEntity.getProjectId())
+							.orgId(effortTarget.getOrgId())
+							.costCenterId(effortTarget.getCostCenterId())
+							.projectId(effortTarget.getProjectId())
 							.build();
 
 					return effortControlRepository.save(createEffortControlRequest);

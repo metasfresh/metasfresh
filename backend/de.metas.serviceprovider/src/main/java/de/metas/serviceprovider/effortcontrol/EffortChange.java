@@ -80,25 +80,30 @@ public class EffortChange
 	@NonNull
 	public BigDecimal getDeltaBudgetForTarget(@NonNull final EffortTarget target)
 	{
-		return getDeltaForTarget(target, EffortInfo::getBudget, null);
+		return getDeltaForTarget(target, EffortInfo::getBudget, null/*sameTargetDeltaProvider*/);
 	}
 
 	@NonNull
 	public BigDecimal getDeltaInvoiceableHoursForTarget(@NonNull final EffortTarget target)
 	{
-		return getDeltaForTarget(target, EffortInfo::getInvoiceableHours, null);
+		return getDeltaForTarget(target, EffortInfo::getInvoiceableHours, null/*sameTargetDeltaProvider*/);
 	}
 
 	@NonNull
 	public Duration getDeltaEffortSumForTarget(@NonNull final EffortTarget target)
 	{
-		return Duration.ofSeconds(getDeltaForTarget(target, EffortInfo::getEffortSumInSeconds, null).longValueExact());
+		return Duration.ofSeconds(getDeltaForTarget(target,
+													EffortInfo::getEffortSumInSeconds,
+													null/*sameTargetDeltaProvider*/).longValueExact());
 	}
 
 	@NonNull
 	public Duration getPendingEffortSumForTarget(@NonNull final EffortTarget target)
 	{
-		return Duration.ofSeconds(getDeltaForTarget(target, EffortInfo::getPendingEffortInSeconds, this::resolveDeltaPendingEffortWithinSameTarget).longValueExact());
+		return Duration.ofSeconds(getDeltaForTarget(target,
+													EffortInfo::getPendingEffortInSeconds,
+													this::resolveDeltaPendingEffortWithinSameTarget)
+										  .longValueExact());
 	}
 
 	@NonNull

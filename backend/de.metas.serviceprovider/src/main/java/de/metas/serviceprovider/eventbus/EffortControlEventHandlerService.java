@@ -34,7 +34,7 @@ import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 @Service
-@Profile(Profiles.PROFILE_App) // it's important to have just *one* instance of this listener, because on each event needs to be handled exactly once.
+@Profile(Profiles.PROFILE_App) // it's important to have just *one* instance of this listener, because each event needs to be handled exactly once.
 public class EffortControlEventHandlerService implements EffortControlEventHandler
 {
 	private final EffortControlRepository effortControlRepository;

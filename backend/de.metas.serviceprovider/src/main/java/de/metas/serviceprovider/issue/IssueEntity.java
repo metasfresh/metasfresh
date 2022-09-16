@@ -28,6 +28,7 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.serviceprovider.effortcontrol.EffortTarget;
 import de.metas.serviceprovider.external.project.ExternalProjectReferenceId;
 import de.metas.serviceprovider.milestone.MilestoneId;
 import de.metas.serviceprovider.timebooking.Effort;
@@ -46,6 +47,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Stream;
 
 @Data
@@ -184,5 +186,26 @@ public class IssueEntity
 				.filter(Objects::nonNull)
 				.max(Instant::compareTo)
 				.orElse(null);
+	}
+
+	@NonNull
+	public Optional<EffortTarget> getEffortTarget()
+	{
+		if (costCenterActivityId == null || projectId == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(EffortTarget.builder()
+								   .costCenterId(costCenterActivityId)
+								   .orgId(orgId)
+								   .projectId(projectId)
+								   .build());
+	}
+
+	@NonNull
+	public Status getStatusOrNew()
+	{
+		return Optional.ofNullable(status).orElse(Status.NEW);
 	}
 }

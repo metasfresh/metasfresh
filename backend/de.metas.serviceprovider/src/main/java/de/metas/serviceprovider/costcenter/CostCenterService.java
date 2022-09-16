@@ -42,7 +42,6 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 @Service
 public class CostCenterService
@@ -61,8 +60,7 @@ public class CostCenterService
 		this.activityRepository = activityRepository;
 	}
 
-	@NonNull
-	public void syncWithCostCenterActivity(
+	public void syncLabelsWithCostCenter(
 			@NonNull final OrgId orgId,
 			@NonNull final IssueId issueId,
 			@Nullable final ActivityId costCenterId)
@@ -119,7 +117,7 @@ public class CostCenterService
 		issueRepository.save(issueWithoutCostCenter);
 	}
 
-	public void validateSingleCostCenterLabel(@NonNull final IssueId issueId)
+	public void validateNoCostCenterLabel(@NonNull final IssueId issueId)
 	{
 		final LabelCollection labelCollection = issueLabelService.getByIssueId(issueId);
 
@@ -130,7 +128,7 @@ public class CostCenterService
 
 		if (costCenterAlreadySet)
 		{
-			throw new AdempiereException("Only one cost center label allowed on issue")
+			throw new AdempiereException("S_Issue already has a cost center label applied!")
 					.appendParametersToMessage()
 					.setParameter("issueId", labelCollection.getIssueId())
 					.markAsUserValidationError();
@@ -179,26 +177,20 @@ public class CostCenterService
 	{
 		final Activity costCenterActivity = activityRepository.getById(costCenterActivityId);
 
-		final boolean isCostCenterAlreadySet = labelCollection.getSingleLabelForType(GithubImporterConstants.LabelType.COST_CENTER)
-				.map(costCenterLabel -> costCenterLabel.getValueForType(GithubImporterConstants.LabelType.COST_CENTER))
-				.filter(costCenterLabelValue -> costCenterActivity.getValue().equals(costCenterLabelValue))
-				.isPresent();
-
-		if (isCostCenterAlreadySet)
-		{
-			return;
-		}
-
-		final IssueLabel newCostCenterLabel = IssueLabel.builder()
+		final IssueLabel costCenterLabel = IssueLabel.builder()
 				.value(GithubImporterConstants.LabelType.COST_CENTER.wrapValue(costCenterActivity.getValue()))
 				.orgId(orgId)
 				.build();
 
-		final ImmutableList<IssueLabel> labelsWithoutCostCenter = labelCollection.filter(label -> !label.matchesType(GithubImporterConstants.LabelType.COST_CENTER));
+		final boolean isCostCenterLabelAlreadyUpToDate = labelCollection.hasLabel(costCenterLabel);
 
-		final ImmutableList<IssueLabel> allLabels = Stream.concat(labelsWithoutCostCenter.stream(), Stream.of(newCostCenterLabel))
-				.collect(ImmutableList.toImmutableList());
+		if (isCostCenterLabelAlreadyUpToDate)
+		{
+			return;
+		}
 
-		issueLabelService.persistLabels(labelCollection.getIssueId(), allLabels);
+		final LabelCollection upToDateCollection = labelCollection.putLabelByType(costCenterLabel, GithubImporterConstants.LabelType.COST_CENTER);
+
+		issueLabelService.persistLabels(labelCollection.getIssueId(), upToDateCollection.getIssueLabelList());
 	}
 }

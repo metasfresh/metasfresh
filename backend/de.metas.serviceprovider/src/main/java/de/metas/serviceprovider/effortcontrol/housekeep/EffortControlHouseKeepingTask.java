@@ -30,16 +30,16 @@ import org.springframework.stereotype.Component;
 @Component
 public class EffortControlHouseKeepingTask implements IStartupHouseKeepingTask
 {
-	private final RecomputeEffortControlService effortControlDAO;
+	private final RecomputeEffortControlService recomputeEffortControlService;
 
-	public EffortControlHouseKeepingTask(@NonNull final RecomputeEffortControlService effortControlDAO)
+	public EffortControlHouseKeepingTask(@NonNull final RecomputeEffortControlService recomputeEffortControlService)
 	{
-		this.effortControlDAO = effortControlDAO;
+		this.recomputeEffortControlService = recomputeEffortControlService;
 	}
 
 	@Override
 	public void executeTask()
 	{
-		effortControlDAO.recomputeAllOpenEffortControlRecords();
+		recomputeEffortControlService.recomputeAllOpenEffortControlRecords();
 	}
 }

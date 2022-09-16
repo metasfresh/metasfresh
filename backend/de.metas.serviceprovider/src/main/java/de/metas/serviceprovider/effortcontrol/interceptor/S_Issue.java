@@ -22,17 +22,16 @@
 
 package de.metas.serviceprovider.effortcontrol.interceptor;
 
-import de.metas.organization.OrgId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
 import de.metas.serviceprovider.effortcontrol.EffortChange;
 import de.metas.serviceprovider.effortcontrol.EffortControlService;
 import de.metas.serviceprovider.effortcontrol.EffortInfo;
-import de.metas.serviceprovider.effortcontrol.EffortTarget;
-import de.metas.serviceprovider.issue.Status;
+import de.metas.serviceprovider.issue.IssueEntity;
+import de.metas.serviceprovider.issue.IssueId;
+import de.metas.serviceprovider.issue.IssueRepository;
 import de.metas.serviceprovider.issue.agg.key.impl.IssueEffortKeyBuilder;
 import de.metas.serviceprovider.model.I_S_Issue;
-import de.metas.util.time.HmmUtils;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -42,18 +41,20 @@ import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.time.Duration;
 
 @Interceptor(I_S_Issue.class)
 @Component
 public class S_Issue
 {
 	private final EffortControlService effortControlService;
+	private final IssueRepository issueRepository;
 
-	public S_Issue(final EffortControlService effortControlService)
+	public S_Issue(
+			@NonNull final EffortControlService effortControlService,
+			@NonNull final IssueRepository issueRepository)
 	{
 		this.effortControlService = effortControlService;
+		this.issueRepository = issueRepository;
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
@@ -61,7 +62,7 @@ public class S_Issue
 					I_S_Issue.COLUMNNAME_AD_Org_ID,
 					I_S_Issue.COLUMNNAME_C_Activity_ID,
 					I_S_Issue.COLUMNNAME_C_Project_ID })
-	public void addEffortControlKey(@NonNull final I_S_Issue record)
+	public void setEffortAggregationKey(@NonNull final I_S_Issue record)
 	{
 		final ActivityId costCenterId = ActivityId.ofRepoIdOrNull(record.getC_Activity_ID());
 		final ProjectId projectId = ProjectId.ofRepoIdOrNull(record.getC_Project_ID());
@@ -91,22 +92,6 @@ public class S_Issue
 	{
 		final I_S_Issue oldRecord = InterfaceWrapperHelper.createOld(record, I_S_Issue.class);
 
-		final ActivityId costCenterId = ActivityId.ofRepoIdOrNull(record.getC_Activity_ID());
-		final ActivityId oldCostCenterId = ActivityId.ofRepoIdOrNull(oldRecord.getC_Activity_ID());
-
-		if (costCenterId == null && oldCostCenterId == null)
-		{
-			return;
-		}
-
-		final ProjectId projectId = ProjectId.ofRepoIdOrNull(record.getC_Project_ID());
-		final ProjectId oldProjectId = ProjectId.ofRepoIdOrNull(oldRecord.getC_Project_ID());
-
-		if (projectId == null && oldProjectId == null)
-		{
-			return;
-		}
-
 		final EffortInfo currentEffortInfo = buildEffortInfoFromRecord(record);
 		final EffortInfo oldEffortInfo = buildEffortInfoFromRecord(oldRecord);
 
@@ -127,29 +112,7 @@ public class S_Issue
 	@Nullable
 	private EffortInfo buildEffortInfoFromRecord(@NonNull final I_S_Issue record)
 	{
-		final ActivityId costCenterId = ActivityId.ofRepoIdOrNull(record.getC_Activity_ID());
-		final ProjectId projectId = ProjectId.ofRepoIdOrNull(record.getC_Project_ID());
-
-		if (costCenterId == null || projectId == null)
-		{
-			return null;
-		}
-
-		final EffortTarget effortTarget = EffortTarget.builder()
-				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
-				.costCenterId(costCenterId)
-				.projectId(projectId)
-				.build();
-
-		final Duration issueEffort = Duration.ofSeconds(HmmUtils.hmmToSeconds(record.getIssueEffort()));
-
-		return EffortInfo.builder()
-				.effortTarget(effortTarget)
-				.issueStatus(Status.ofCode(record.getStatus()))
-				.effortSum(issueEffort)
-				//note: budget is spread across multiple effort issues but also kept at budget level
-				.budget(record.isEffortIssue() ? record.getBudgetedEffort() : BigDecimal.ZERO)
-				.invoiceableHours(record.isEffortIssue() ? BigDecimal.ZERO : record.getInvoiceableEffort())
-				.build();
+		final IssueEntity issue = issueRepository.getById(IssueId.ofRepoId(record.getS_Issue_ID()));
+		return effortControlService.getEffortInfo(issue).orElse(null);
 	}
 }

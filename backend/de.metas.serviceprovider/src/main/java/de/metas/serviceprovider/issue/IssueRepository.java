@@ -202,7 +202,7 @@ public class IssueRepository
 	}
 
 	@NonNull
-	public Stream<IssueEntity> getIssuesWithOpenEffortStream()
+	public Stream<IssueEntity> streamIssuesWithOpenEffort()
 	{
 		final IQuery<I_S_EffortControl> effortControlQuery = queryBL
 				.createQueryBuilder(I_S_EffortControl.class)
@@ -220,7 +220,6 @@ public class IssueRepository
 				.map(IssueRepository::buildIssueEntity);
 	}
 
-	@NonNull
 	public void setAggregationKeyIfMissing()
 	{
 		final IssueEffortKeyBuilder effortKeyBuilder = new IssueEffortKeyBuilder();
@@ -229,7 +228,6 @@ public class IssueRepository
 				.addOnlyActiveRecordsFilter()
 				.addNotNull(I_S_Issue.COLUMNNAME_C_Project_ID)
 				.addNotNull(I_S_Issue.COLUMNNAME_C_Activity_ID)
-				.addEqualsFilter(I_S_Issue.COLUMNNAME_IsEffortIssue, true)
 				.addEqualsFilter(I_S_Issue.COLUMNNAME_EffortAggregationKey, null)
 				.create()
 				.iterateAndStream()

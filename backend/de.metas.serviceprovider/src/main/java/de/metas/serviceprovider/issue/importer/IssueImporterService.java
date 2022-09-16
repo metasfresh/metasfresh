@@ -27,7 +27,6 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.activity.repository.ActivityRepository;
-import de.metas.activity.repository.GetSingleActivityQuery;
 import de.metas.externalreference.ExternalId;
 import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceQuery;
@@ -397,11 +396,8 @@ public class IssueImporterService
 
 		return existingIssue
 				.filter(entity -> entity.getCostCenterActivityId() != null)
-				.map(entity -> GetSingleActivityQuery.builder()
-						.orgId(entity.getOrgId())
-						.activityId(entity.getCostCenterActivityId())
-						.build())
-				.flatMap(activityRepository::getByActivityQuery)
+				.map(IssueEntity::getCostCenterActivityId)
+				.map(activityRepository::getById)
 				.map(activity -> IssueLabel.builder()
 						.value(GithubImporterConstants.LabelType.COST_CENTER.wrapValue(activity.getValue()))
 						.orgId(activity.getOrgId())

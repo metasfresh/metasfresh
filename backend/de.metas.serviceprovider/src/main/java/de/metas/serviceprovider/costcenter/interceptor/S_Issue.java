@@ -44,6 +44,9 @@ public class S_Issue
 		this.costCenterService = costCenterService;
 	}
 
+	/**
+	 * Timing AFTER_* is needed as the issue will be loaded again via Repository during {@link CostCenterService#syncLabelsWithCostCenter(OrgId, IssueId, ActivityId)}
+	 */
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE },
 			ifColumnsChanged = { I_S_Issue.COLUMNNAME_C_Activity_ID })
 	public void syncCostCenter(@NonNull final I_S_Issue record)
@@ -52,6 +55,6 @@ public class S_Issue
 		final IssueId issueId = IssueId.ofRepoId(record.getS_Issue_ID());
 		final ActivityId costCenterId = ActivityId.ofRepoIdOrNull(record.getC_Activity_ID());
 
-		costCenterService.syncWithCostCenterActivity(orgId, issueId, costCenterId);
+		costCenterService.syncLabelsWithCostCenter(orgId, issueId, costCenterId);
 	}
 }

@@ -22,11 +22,17 @@
 
 package de.metas.serviceprovider.effortcontrol;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.serviceprovider.eventbus.EffortControlEventBusService;
 import de.metas.serviceprovider.eventbus.EffortControlEventRequest;
+import de.metas.serviceprovider.issue.IssueEntity;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.Duration;
+import java.util.Optional;
 
 @Service
 public class EffortControlService
@@ -42,12 +48,33 @@ public class EffortControlService
 	{
 		effortChange.listTargets()
 				.stream()
-				.map(target -> effortControlEventRequest(target, effortChange))
+				.map(target -> buildEffortControlEventRequestForTarget(target, effortChange))
 				.forEach(effortControlEventBusService::postRequestAfterCommit);
 	}
 
 	@NonNull
-	private EffortControlEventRequest effortControlEventRequest(@NonNull final EffortTarget effortTarget, @NonNull final EffortChange effortChange)
+	public Optional<EffortInfo> getEffortInfo(@NonNull final IssueEntity issue)
+	{
+		if (!issue.getEffortTarget().isPresent())
+		{
+			return Optional.empty();
+		}
+
+		final Duration issueEffort = Duration.ofSeconds(issue.getIssueEffort().getSeconds());
+
+		return Optional.ofNullable(EffortInfo.builder()
+										   .effortTarget(issue.getEffortTarget().get())
+										   .issueStatus(issue.getStatusOrNew())
+										   .effortSum(issueEffort)
+										   //note: budget is spread across multiple effort issues but also kept at budget level;
+										   .budget(issue.isEffortIssue() ? CoalesceUtil.coalesceNotNull(issue.getBudgetedEffort(), BigDecimal.ZERO) : BigDecimal.ZERO)
+										   //note: invoiceable hours are ultimately set at Budget issue level
+										   .invoiceableHours(issue.isEffortIssue() ? BigDecimal.ZERO : CoalesceUtil.coalesceNotNull(issue.getInvoiceableHours(), BigDecimal.ZERO))
+										   .build());
+	}
+
+	@NonNull
+	private EffortControlEventRequest buildEffortControlEventRequestForTarget(@NonNull final EffortTarget effortTarget, @NonNull final EffortChange effortChange)
 	{
 		return EffortControlEventRequest.builder()
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(effortChange.getClientId(), effortTarget.getOrgId()))

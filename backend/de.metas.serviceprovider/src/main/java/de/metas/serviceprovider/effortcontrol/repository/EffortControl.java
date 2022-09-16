@@ -35,7 +35,6 @@ import org.joda.time.DateTimeConstants;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.util.Objects;
 
 @Value
@@ -58,14 +57,12 @@ public class EffortControl
 	Boolean isOverBudget;
 
 	@NonNull
-	Instant updated;
-
-	@NonNull
 	Effort pendingEffortSum;
 
 	@NonNull
 	Effort effortSum;
 
+	//FIXME: should migrate towards Quantity or Duration (same for invoiceable hours)
 	@NonNull
 	BigDecimal budget;
 
@@ -78,7 +75,6 @@ public class EffortControl
 			@NonNull final OrgId orgId,
 			@NonNull final ProjectId projectId,
 			@NonNull final ActivityId costCenterId,
-			@NonNull final Instant updated,
 			@NonNull final Effort pendingEffortSum,
 			@NonNull final Effort effortSum,
 			@NonNull final BigDecimal budget,
@@ -88,7 +84,6 @@ public class EffortControl
 		this.orgId = orgId;
 		this.projectId = projectId;
 		this.costCenterId = costCenterId;
-		this.updated = updated;
 		this.pendingEffortSum = pendingEffortSum;
 		this.effortSum = effortSum;
 		this.budget = budget;

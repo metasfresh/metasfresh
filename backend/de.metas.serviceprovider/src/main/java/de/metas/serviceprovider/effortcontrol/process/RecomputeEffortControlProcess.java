@@ -33,7 +33,7 @@ import org.compiere.SpringContextHolder;
 
 public class RecomputeEffortControlProcess extends JavaProcess implements IProcessPrecondition
 {
-	private final RecomputeEffortControlService effortControlDAO = SpringContextHolder.instance.getBean(RecomputeEffortControlService.class);
+	private final RecomputeEffortControlService recomputeEffortControlService = SpringContextHolder.instance.getBean(RecomputeEffortControlService.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
@@ -58,7 +58,7 @@ public class RecomputeEffortControlProcess extends JavaProcess implements IProce
 
 		addLog("Invoking RecomputeEffortControlProcess for id: {}", effortControlId);
 
-		effortControlDAO.recomputeEffortControl(effortControlId);
+		recomputeEffortControlService.recomputeEffortControlFor(effortControlId);
 
 		return MSG_OK;
 	}

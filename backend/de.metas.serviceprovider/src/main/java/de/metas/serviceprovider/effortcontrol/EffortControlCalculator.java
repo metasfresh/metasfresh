@@ -23,27 +23,24 @@
 package de.metas.serviceprovider.effortcontrol;
 
 import de.metas.serviceprovider.effortcontrol.repository.EffortControl;
-import de.metas.serviceprovider.issue.IssueEntity;
-import de.metas.serviceprovider.issue.Status;
 import de.metas.serviceprovider.timebooking.Effort;
 import lombok.NonNull;
 import lombok.Value;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Objects;
 
 @Value(staticConstructor = "of")
-public class EffortCollection
+public class EffortControlCalculator
 {
 	@NonNull
 	EffortControl effortControl;
 
 	@NonNull
-	List<IssueEntity> effortIssues;
+	List<EffortInfo> effortInfos;
 
 	@NonNull
-	public EffortControl computeEffortControl()
+	public EffortControl calculate()
 	{
 		return effortControl.toBuilder()
 				.pendingEffortSum(computePendingEffortSum())
@@ -56,37 +53,36 @@ public class EffortCollection
 	@NonNull
 	private Effort computePendingEffortSum()
 	{
-		return effortIssues.stream()
-				.filter(issue -> !Status.INVOICED.equals(issue.getStatus()))
-				.map(IssueEntity::getIssueEffort)
+		return effortInfos.stream()
+				.map(EffortInfo::getPendingEffortInSeconds)
+				.map(BigDecimal::longValueExact)
+				.map(Effort::ofSeconds)
 				.reduce(Effort.ZERO, Effort::addNullSafe);
 	}
 
 	@NonNull
 	private Effort computeEffortSum()
 	{
-		return effortIssues.stream()
-				.map(IssueEntity::getIssueEffort)
+		return effortInfos.stream()
+				.map(EffortInfo::getEffortSumInSeconds)
+				.map(BigDecimal::longValueExact)
+				.map(Effort::ofSeconds)
 				.reduce(Effort.ZERO, Effort::addNullSafe);
 	}
 
 	@NonNull
 	private BigDecimal computeBudget()
 	{
-		return effortIssues.stream()
-				.filter(IssueEntity::isEffortIssue)
-				.map(IssueEntity::getBudgetedEffort)
-				.filter(Objects::nonNull)
+		return effortInfos.stream()
+				.map(EffortInfo::getBudget)
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 
 	@NonNull
 	private BigDecimal computeInvoiceableHours()
 	{
-		return effortIssues.stream()
-				.filter(issue -> !issue.isEffortIssue())
-				.map(IssueEntity::getInvoiceableHours)
-				.filter(Objects::nonNull)
+		return effortInfos.stream()
+				.map(EffortInfo::getInvoiceableHours)
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 }

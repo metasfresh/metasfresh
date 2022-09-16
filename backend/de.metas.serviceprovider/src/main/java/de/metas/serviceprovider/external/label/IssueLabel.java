@@ -41,7 +41,6 @@ public class IssueLabel
 	@NonNull
 	String value;
 
-	@NonNull
 	public boolean matchesType(@NonNull final GithubImporterConstants.LabelType labelType)
 	{
 		final Matcher matcher = labelType.getPattern().matcher(value);
