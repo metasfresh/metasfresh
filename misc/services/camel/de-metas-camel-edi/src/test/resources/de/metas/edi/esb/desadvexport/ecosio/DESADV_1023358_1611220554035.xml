@@ -1,26 +1,4 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<!--
-  ~ #%L
-  ~ de-metas-camel-edi
-  ~ %%
-  ~ Copyright (C) 2021 metas GmbH
-  ~ %%
-  ~ This program is free software: you can redistribute it and/or modify
-  ~ it under the terms of the GNU General Public License as
-  ~ published by the Free Software Foundation, either version 2 of the
-  ~ License, or (at your option) any later version.
-  ~
-  ~ This program is distributed in the hope that it will be useful,
-  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
-  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-  ~ GNU General Public License for more details.
-  ~
-  ~ You should have received a copy of the GNU General Public
-  ~ License along with this program. If not, see
-  ~ <http://www.gnu.org/licenses/gpl-2.0.html>.
-  ~ #L%
-  -->
-
 <EDI_Exp_Desadv AD_Client_Value="InterCheese AG" ReplicationMode="1" ReplicationType="M" Version="*" SequenceNo="1017175" TrxName="">
     <C_BPartner_ID>
         <EdiRecipientGLN>1234567890123</EdiRecipientGLN>
@@ -39,7 +17,8 @@
     <POReference>6666666666</POReference>
     <EDI_Exp_Desadv_Pack>
         <IPA_SSCC18>123456789012345678</IPA_SSCC18>
-        <M_HU_PackagingCode_LU_Text>ISO1</M_HU_PackagingCode_LU_Text>
+        <M_HU_PackagingCode_LU_Text>ISO</M_HU_PackagingCode_LU_Text>
+        <GTIN_LU_PackingMaterial>EURO</GTIN_LU_PackingMaterial>
         <EDI_Exp_Desadv_Pack_Item>
             <QtyCU>1</QtyCU>
             <QtyCUsPerLU>1</QtyCUsPerLU>
@@ -76,6 +55,7 @@
                 <QtyDeliveredInUOM>1</QtyDeliveredInUOM>
                 <OrderLine>100</OrderLine>
             </EDI_DesadvLine_ID>
+            <GTIN_TU_PackingMaterial>BPARTNER_GTIN</GTIN_TU_PackingMaterial>
         </EDI_Exp_Desadv_Pack_Item>
     </EDI_Exp_Desadv_Pack>
     <Bill_Location_ID>

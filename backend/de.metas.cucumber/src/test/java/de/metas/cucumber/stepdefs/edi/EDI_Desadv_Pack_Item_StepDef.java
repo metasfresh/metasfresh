@@ -23,11 +23,15 @@
 package de.metas.cucumber.stepdefs.edi;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_HU_PackagingCode_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
+import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.esb.edi.model.I_EDI_Desadv_Pack;
 import de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
@@ -36,7 +40,10 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
@@ -54,13 +61,22 @@ public class EDI_Desadv_Pack_Item_StepDef
 
 	private final EDI_Desadv_Pack_StepDefData packTable;
 	private final EDI_Desadv_Pack_Item_StepDefData packItemTable;
+	private final M_InOut_StepDefData shipmentTable;
+	private final M_InOutLine_StepDefData shipmentLineTable;
+	private final M_HU_PackagingCode_StepDefData huPackagingCodeTable;
 
 	public EDI_Desadv_Pack_Item_StepDef(
 			@NonNull final EDI_Desadv_Pack_StepDefData packTable,
-			@NonNull final EDI_Desadv_Pack_Item_StepDefData packItemTable)
+			@NonNull final EDI_Desadv_Pack_Item_StepDefData packItemTable,
+			@NonNull final M_InOut_StepDefData shipmentTable,
+			@NonNull final M_InOutLine_StepDefData shipmentLineTable,
+			@NonNull final M_HU_PackagingCode_StepDefData huPackagingCodeTable)
 	{
 		this.packTable = packTable;
 		this.packItemTable = packItemTable;
+		this.shipmentTable = shipmentTable;
+		this.shipmentLineTable = shipmentLineTable;
+		this.huPackagingCodeTable = huPackagingCodeTable;
 	}
 
 	@Given("metasfresh initially has no EDI_Desadv_Pack_Item data")
@@ -169,6 +185,57 @@ public class EDI_Desadv_Pack_Item_StepDef
 		assertThat(desadvPackItemRecord.getQtyCUsPerLU()).isEqualTo(qtyCUsPerLU);
 		assertThat(desadvPackItemRecord.getQtyItemCapacity()).isEqualTo(qtyItemCapacity);
 		assertThat(desadvPackItemRecord.getQtyTU()).isEqualTo(qtyTu);
+
+		final String shipmentIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_EDI_Desadv_Pack_Item.COLUMNNAME_M_InOut_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(shipmentIdentifier))
+		{
+			final I_M_InOut shipmentRecord = shipmentTable.get(shipmentIdentifier);
+
+			assertThat(desadvPackItemRecord.getM_InOut_ID()).isEqualTo(shipmentRecord.getM_InOut_ID());
+		}
+
+		final String shipmentLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_EDI_Desadv_Pack_Item.COLUMNNAME_M_InOutLine_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(shipmentLineIdentifier))
+		{
+			final I_M_InOutLine shipmentLine = shipmentLineTable.get(shipmentLineIdentifier);
+
+			assertThat(desadvPackItemRecord.getM_InOutLine_ID()).isEqualTo(shipmentLine.getM_InOutLine_ID());
+		}
+
+		final String lotNumber = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + I_EDI_Desadv_Pack_Item.COLUMNNAME_LotNumber);
+		if (Check.isNotBlank(lotNumber))
+		{
+			assertThat(desadvPackItemRecord.getLotNumber()).isEqualTo(DataTableUtil.nullToken2Null(lotNumber));
+		}
+
+		final String nullableBestBeforeDateString = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + I_EDI_Desadv_Pack_Item.COLUMNNAME_BestBeforeDate);
+		if (Check.isNotBlank(nullableBestBeforeDateString))
+		{
+			if (DataTableUtil.nullToken2Null(nullableBestBeforeDateString) == null)
+			{
+				assertThat(desadvPackItemRecord.getBestBeforeDate()).isNull();
+			}
+			else
+			{
+				assertThat(desadvPackItemRecord.getBestBeforeDate()).isEqualTo(TimeUtil.parseTimestamp(nullableBestBeforeDateString));
+			}
+		}
+
+		final String huPackagingCodeTuIdentifier = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + I_EDI_Desadv_Pack_Item.COLUMNNAME_M_HU_PackagingCode_TU_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(huPackagingCodeTuIdentifier))
+		{
+			final int huPackingCodeTuId = DataTableUtil.nullToken2Null(huPackagingCodeTuIdentifier) == null
+					? 0
+					: huPackagingCodeTable.get(huPackagingCodeTuIdentifier).getM_HU_PackagingCode_ID();
+
+			assertThat(desadvPackItemRecord.getM_HU_PackagingCode_TU_ID()).isEqualTo(huPackingCodeTuId);
+		}
+
+		final String gtinTuPackingMaterial = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + I_EDI_Desadv_Pack_Item.COLUMNNAME_GTIN_TU_PackingMaterial);
+		if (Check.isNotBlank(gtinTuPackingMaterial))
+		{
+			assertThat(desadvPackItemRecord.getGTIN_TU_PackingMaterial()).isEqualTo(DataTableUtil.nullToken2Null(gtinTuPackingMaterial));
+		}
 
 		final String packItemIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_EDI_Desadv_Pack_Item.COLUMNNAME_EDI_Desadv_Pack_Item_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		packItemTable.put(packItemIdentifier, desadvPackItemRecord);

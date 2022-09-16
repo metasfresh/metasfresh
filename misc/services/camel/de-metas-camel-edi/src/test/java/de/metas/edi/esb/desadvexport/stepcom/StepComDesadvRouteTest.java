@@ -76,10 +76,35 @@ class StepComDesadvRouteTest extends CamelTestSupport
 	@Test
 	void desadv_as_ordered() throws Exception
 	{
+		testAndValidateResult(
+				"/de/metas/edi/esb/desadvexport/stepcom/DESADV_as_ordered.xml",
+				"./src/test/resources/de/metas/edi/esb/desadvexport/stepcom/DESADV_as_ordered_expected_output.xml");
+	}
+
+	@Test
+	void desadv_no_packs() throws Exception
+	{
+		testAndValidateResult(
+				"/de/metas/edi/esb/desadvexport/stepcom/DESADV_no_packs.xml",
+				"./src/test/resources/de/metas/edi/esb/desadvexport/stepcom/DESADV_no_packs_expected_output.xml");
+	}
+
+	@Test
+	void desadv_with_and_without_packs() throws Exception
+	{
+		testAndValidateResult(
+				"/de/metas/edi/esb/desadvexport/stepcom/DESADV_with_and_without_packs.xml",
+				"./src/test/resources/de/metas/edi/esb/desadvexport/stepcom/DESADV_with_and_without_packs_expected_output.xml");
+	}
+
+	private void testAndValidateResult(
+			@NonNull final String inputStrPath,
+			@NonNull final String expectedOutputPath) throws Exception
+	{
 		// given
 		SystemTime.setTimeSource(() -> Instant.parse("2021-02-07T20:35:30.00Z").toEpochMilli());
 
-		final var inputStr = StepComDesadvRouteTest.class.getResourceAsStream("/de/metas/edi/esb/desadvexport/stepcom/DESADV_as_ordered.xml");
+		final var inputStr = StepComDesadvRouteTest.class.getResourceAsStream(inputStrPath);
 		assertThat(inputStr).isNotNull();
 
 		final JAXBContext jaxbContext = JAXBContext.newInstance(ObjectFactory.class);
@@ -108,11 +133,10 @@ class StepComDesadvRouteTest extends CamelTestSupport
 				exchange);
 
 		// then
-
 		assertThat(mockDocument.called).isEqualTo(1);
 		assertThat(mockAmqpToMF.called).isEqualTo(1);
-		assertThat(mockDocument.result).isEqualTo(contentOf(new File("./src/test/resources/de/metas/edi/esb/desadvexport/stepcom/DESADV_as_ordered_expected_output.xml"))
-						   .replaceAll("\r", ""));
+		assertThat(mockDocument.result).isEqualTo(contentOf(new File(expectedOutputPath))
+														  .replaceAll("\r", ""));
 	}
 
 	private void prepareRouteForTesting(
@@ -142,8 +166,6 @@ class StepComDesadvRouteTest extends CamelTestSupport
 			called++;
 
 			result = exchange.getIn().getBody(String.class);
-					// (contentOf(new File("./src/test/resources/de/metas/edi/esb/desadvexport/stepcom/DESADV_as_ordered_expected_output.xml"))
-					// 				   .replaceAll("\r", ""));
 		}
 	}
 

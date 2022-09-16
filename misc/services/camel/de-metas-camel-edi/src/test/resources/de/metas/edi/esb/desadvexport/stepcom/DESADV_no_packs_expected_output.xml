@@ -23,7 +23,7 @@
             <HREFE1>
                 <DOCUMENTID>1013013</DOCUMENTID>
                 <REFERENCEQUAL>ORBU</REFERENCEQUAL>
-                <REFERENCE>testReference3</REFERENCE>
+                <REFERENCE>testReference4</REFERENCE>
                 <REFERENCEDATE1>20220703230000</REFERENCEDATE1>
             </HREFE1>
             <HADRE1>
@@ -49,38 +49,6 @@
             <PACKIN>
                 <DOCUMENTID>1013013</DOCUMENTID>
                 <PACKAGINGTOTAL>0</PACKAGINGTOTAL>
-                <PACKAGINGLEVEL>OUTE</PACKAGINGLEVEL>
-                <PACKAGINGCODE>ISO</PACKAGINGCODE>
-                <DETAIL>
-                    <DOCUMENTID>1013013</DOCUMENTID>
-                    <LINENUMBER>10</LINENUMBER>
-                    <DPRDE1>
-                        <DOCUMENTID>1013013</DOCUMENTID>
-                        <LINENUMBER>10</LINENUMBER>
-                        <PRODUCTDESCQUAL>PROD</PRODUCTDESCQUAL>
-                        <PRODUCTDESCTEXT>Convenience Salat 250g</PRODUCTDESCTEXT>
-                        <PRODUCTDESCTYPE>CU</PRODUCTDESCTYPE>
-                    </DPRDE1>
-                    <DQUAN1>
-                        <DOCUMENTID>1013013</DOCUMENTID>
-                        <LINENUMBER>10</LINENUMBER>
-                        <QUANTITYQUAL>DELV</QUANTITYQUAL>
-                        <QUANTITY>30</QUANTITY>
-                        <MEASUREMENTUNIT>PIEC</MEASUREMENTUNIT>
-                    </DQUAN1>
-                    <DREFE1>
-                        <DOCUMENTID>1013013</DOCUMENTID>
-                        <LINENUMBER>10</LINENUMBER>
-                        <REFERENCEQUAL>LIRN</REFERENCEQUAL>
-                        <REFERENCELINE>10</REFERENCELINE>
-                    </DREFE1>
-                    <DQVAR1>
-                        <DOCUMENTID>1013013</DOCUMENTID>
-                        <LINENUMBER>10</LINENUMBER>
-                        <QUANTITY>-70</QUANTITY>
-                        <DISCREPANCYCODE>BCOM</DISCREPANCYCODE>
-                    </DQVAR1>
-                </DETAIL>
             </PACKIN>
         </HEADER>
         <TRAILR>
