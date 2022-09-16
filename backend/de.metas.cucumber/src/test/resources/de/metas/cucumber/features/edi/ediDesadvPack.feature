@@ -340,7 +340,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item
       | EDI_Desadv_Pack_ID.Identifier | OPT.IPA_SSCC18     |
       | p_1                           | ipaSSCC18_13092022 |
 
-    And generate csv file for sscc labels for 'p1'
+    And generate csv file for sscc labels for 'p_1'
       | ReportDataLine                                                                                                               |
       | %BTW% /AF="\\V-APSRV01\PRAGMA\ETIKETTEN\LAYOUTS\SSCC.BTW" /D="<TRIGGER FILE NAME>" /PRN="\\V-DCSRV02\ETIKETTEN01" /R=3 /P /D |
       | %END%                                                                                                                        |
@@ -527,7 +527,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item
       | p_1                           | ipaSSCC18_14092022_1 |
       | p_2                           | ipaSSCC18_14092022_2 |
 
-    And generate csv file for sscc labels for 'p1,p2'
+    And generate csv file for sscc labels for 'p_1,p_2'
       | ReportDataLine                                                                                                               |
       | %BTW% /AF="\\V-APSRV01\PRAGMA\ETIKETTEN\LAYOUTS\SSCC.BTW" /D="<TRIGGER FILE NAME>" /PRN="\\V-DCSRV02\ETIKETTEN01" /R=3 /P /D |
       | %END%                                                                                                                        |
