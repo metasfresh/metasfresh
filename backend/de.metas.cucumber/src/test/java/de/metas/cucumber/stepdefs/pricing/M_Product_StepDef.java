@@ -75,28 +75,4 @@ public class M_Product_StepDef
 		mockedProduct.setIsSold(false);
 		saveRecord(mockedProduct);
 	}
-
-	@Given("load M_Product:")
-	public void load_M_Product(@NonNull final DataTable dataTable)
-	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> row : tableRows)
-		{
-			loadProduct(row);
-		}
-	}
-
-	private void loadProduct(@NonNull final Map<String, String> row)
-	{
-		final String identifier = DataTableUtil.extractStringForColumnName(row, I_M_Product.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-		final String id = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Product.COLUMNNAME_M_Product_ID);
-
-		if (Check.isNotBlank(id))
-		{
-			final I_M_Product productRecord = productDAO.getById(Integer.parseInt(id));
-
-			productTable.putOrReplace(identifier, productRecord);
-		}
-	}
 }
