@@ -42,6 +42,7 @@ echo.
 docker build -f docker-builds/Dockerfile.common -t %mfregistry%/metas-mvn-common:%mfversion% . || @goto error
 docker build -f docker-builds/Dockerfile.backend -t %mfregistry%/metas-mvn-backend:%mfversion% . || @goto error
 docker build -f docker-builds/Dockerfile.camel -t %mfregistry%/metas-mvn-camel:%mfversion% . || @goto error
+docker build -f docker-builds/Dockerfile.camel.dist -t %mfregistry%/metas-mvn-camel-dist:%mfversion% . || @goto error
 
 docker build -f docker-builds/Dockerfile.junit -t %mfregistry%/metas-junit:%mfversion% . || @goto error
 docker build -f docker-builds/Dockerfile.camel.junit -t %mfregistry%/metas-camel-junit:%mfversion% . || @goto error
