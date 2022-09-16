@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.common.util.EmptyUtil;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
@@ -41,6 +42,7 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
@@ -73,12 +75,12 @@ public class C_Order_StepDef
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
-	private final StepDefData<I_C_BPartner> bpartnerTable;
-	private final StepDefData<I_C_Order> orderTable;
+	private final C_BPartner_StepDefData bpartnerTable;
+	private final C_Order_StepDefData orderTable;
 
 	public C_Order_StepDef(
-			@NonNull final StepDefData<I_C_BPartner> bpartnerTable,
-			@NonNull final StepDefData<I_C_Order> orderTable)
+			@NonNull final C_BPartner_StepDefData bpartnerTable,
+			@NonNull final C_Order_StepDefData orderTable)
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.orderTable = orderTable;
@@ -101,18 +103,57 @@ public class C_Order_StepDef
 			order.setIsSOTrx(DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsSOTrx));
 			order.setDateOrdered(DataTableUtil.extractDateTimestampForColumnName(tableRow, I_C_Order.COLUMNNAME_DateOrdered));
 
+			final String docBaseType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocBaseType);
+			if (EmptyUtil.isNotBlank(docBaseType))
+			{
+				final String docSubType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocSubType);
+
+				final I_C_DocType docType = queryBL.createQueryBuilder(I_C_DocType.class)
+						.addEqualsFilter(COLUMNNAME_DocBaseType, docBaseType)
+						.addEqualsFilter(COLUMNNAME_DocSubType, docSubType)
+						.create()
+						.firstOnlyNotNull(I_C_DocType.class);
+
+				assertThat(docType).isNotNull();
+
+				order.setC_DocType_ID(docType.getC_DocType_ID());
+				order.setC_DocTypeTarget_ID(docType.getC_DocType_ID());
+			}
+
 			saveRecord(order);
 
 			orderTable.put(DataTableUtil.extractRecordIdentifier(tableRow, I_C_Order.COLUMNNAME_C_Order_ID), order);
 		}
 	}
 
-	@Given("^the order identified by (.*) is completed$")
-	public void order_is_completed(@NonNull final String orderIdentifier)
+	@Given("^the order identified by (.*) is (reactivated|completed|closed|voided)$")
+	public void order_action(@NonNull final String orderIdentifier, @NonNull final String action)
 	{
 		final I_C_Order order = orderTable.get(orderIdentifier);
-		order.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it
-		documentBL.processEx(order, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+
+		switch (StepDefDocAction.valueOf(action))
+		{
+			case reactivated:
+				order.setDocAction(IDocument.ACTION_Complete);
+				documentBL.processEx(order, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
+				break;
+			case completed:
+				order.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it
+				documentBL.processEx(order, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+				break;
+			case closed:
+				order.setDocAction(IDocument.ACTION_Complete);
+				documentBL.processEx(order, IDocument.ACTION_Close, IDocument.STATUS_Closed);
+				break;
+			case voided:
+				order.setDocAction(IDocument.ACTION_Complete);
+				documentBL.processEx(order, IDocument.ACTION_Void, IDocument.STATUS_Voided);
+				break;
+			default:
+				throw new AdempiereException("Unhandled C_Order action")
+						.appendParametersToMessage()
+						.setParameter("action:", action);
+		}
 	}
 
 	@Given("generate PO from SO is invoked with parameters:")
@@ -206,7 +247,7 @@ public class C_Order_StepDef
 
 		final String externalPurchaseOrderUrl = DataTableUtil.extractStringForColumnName(dataTableRow, I_C_Order.COLUMNNAME_ExternalPurchaseOrderURL);
 		assertThat(purchaseOrderRecord.getExternalPurchaseOrderURL()).isEqualTo(externalPurchaseOrderUrl);
-		
+
 		final String poReference = DataTableUtil.extractStringForColumnName(dataTableRow, I_C_Order.COLUMNNAME_POReference);
 		assertThat(purchaseOrderRecord.getPOReference()).isEqualTo(poReference);
 

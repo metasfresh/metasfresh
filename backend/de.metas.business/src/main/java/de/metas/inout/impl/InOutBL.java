@@ -2,11 +2,11 @@ package de.metas.inout.impl;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutAndLineId;
@@ -591,5 +591,13 @@ public class InOutBL implements IInOutBL
 				.build();
 
 		return requestsRepo.createRequest(requestCandidate);
+	}
+
+	@NonNull
+	public DocStatus getDocStatus(@NonNull final InOutId inOutId)
+	{
+		final I_M_InOut inOut = getById(inOutId);
+
+		return DocStatus.ofCode(inOut.getDocStatus());
 	}
 }

@@ -1,43 +1,5 @@
 package de.metas.invoicecandidate.modelvalidator;
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import org.adempiere.ad.modelvalidator.annotations.DocValidate;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.Adempiere;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.ModelValidator;
-import org.compiere.model.X_C_BPartner_Stats;
-import org.compiere.model.X_C_DocType;
-import org.compiere.util.DisplayType;
-import org.compiere.util.TimeUtil;
-
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
@@ -54,11 +16,30 @@ import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.annotations.DocValidate;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.Adempiere;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.ModelValidator;
+import org.compiere.model.X_C_BPartner_Stats;
+import org.compiere.model.X_C_DocType;
+import org.compiere.util.DisplayType;
+import org.compiere.util.TimeUtil;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 
 @Interceptor(I_C_Order.class)
 public class C_Order
 {
-	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE, ModelValidator.TIMING_AFTER_REACTIVATE, ModelValidator.TIMING_AFTER_CLOSE })
+	@DocValidate(timings = {
+			ModelValidator.TIMING_AFTER_COMPLETE,
+			ModelValidator.TIMING_AFTER_REACTIVATE,
+			ModelValidator.TIMING_AFTER_CLOSE,
+			ModelValidator.TIMING_AFTER_VOID })
 	public void invalidateInvoiceCandidates(final I_C_Order order)
 	{
 		final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);

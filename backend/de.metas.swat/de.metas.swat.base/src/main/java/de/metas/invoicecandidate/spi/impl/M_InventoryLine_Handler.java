@@ -1,29 +1,5 @@
 package de.metas.invoicecandidate.spi.impl;
 
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.ZERO;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Iterator;
-import java.util.Properties;
-
-import de.metas.lang.SOTrx;
-import de.metas.tax.api.TaxId;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_Inventory;
-import org.compiere.util.Env;
-
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerDocumentLocationHelper;
@@ -36,6 +12,8 @@ import de.metas.document.engine.DocStatus;
 import de.metas.document.location.DocumentLocation;
 import de.metas.inout.invoicecandidate.M_InOutLine_Handler;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
+import de.metas.inventory.IInventoryBL;
+import de.metas.inventory.InventoryId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.location.adapter.InvoiceCandidateLocationAdapterFactory;
@@ -47,6 +25,7 @@ import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInventoryLine_HandlerDAO;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
+import de.metas.lang.SOTrx;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
@@ -108,6 +87,9 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 {
 	// Services
 	private static final transient IInventoryLine_HandlerDAO inventoryLineHandlerDAO = Services.get(IInventoryLine_HandlerDAO.class);
+
+	private final IInventoryBL inventoryBL = Services.get(IInventoryBL.class);
+	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
 	@Override
 	public boolean isCreateMissingCandidatesAutomatically()
@@ -293,6 +275,16 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 	{
 		final I_M_InventoryLine inventoryLine = getM_InventoryLine(ic);
 		setBPartnerData(ic, inventoryLine);
+	}
+
+	@Override
+	public void setIsInEffect(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		final I_M_InventoryLine inventoryLine = getM_InventoryLine(ic);
+
+		final DocStatus inventoryDocStatus = inventoryBL.getDocStatus(InventoryId.ofRepoId(inventoryLine.getM_Inventory_ID()));
+
+		invoiceCandBL.computeIsInEffect(inventoryDocStatus, ic);
 	}
 
 	public static I_M_InventoryLine getM_InventoryLine(final I_C_Invoice_Candidate ic)

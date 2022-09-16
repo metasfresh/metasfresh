@@ -44,7 +44,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.APIResponse;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.purchasecandidate.PurchaseCandidate;
@@ -77,7 +77,7 @@ import static org.assertj.core.api.Assertions.*;
 
 public class CreatePurchaseCandidate_StepDef
 {
-	private final StepDefData<I_C_Activity> activityTable;
+	private final C_Activity_StepDefData activityTable;
 
 	private final PurchaseCandidateRepository purchaseCandidateRepo;
 	private final TestContext testContext;
@@ -85,7 +85,7 @@ public class CreatePurchaseCandidate_StepDef
 	private final JsonPurchaseCandidateRequest.JsonPurchaseCandidateRequestBuilder jsonPurchaseCandidateRequest = JsonPurchaseCandidateRequest.builder();
 
 	public CreatePurchaseCandidate_StepDef(
-			@NonNull final StepDefData<I_C_Activity> activityTable,
+			@NonNull final C_Activity_StepDefData activityTable,
 			@NonNull final TestContext testContext)
 	{
 		this.activityTable = activityTable;
