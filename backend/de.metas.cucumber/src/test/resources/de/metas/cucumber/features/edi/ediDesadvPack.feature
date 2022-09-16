@@ -340,9 +340,11 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item
       | EDI_Desadv_Pack_ID.Identifier | OPT.IPA_SSCC18     |
       | p_1                           | ipaSSCC18_13092022 |
 
-    And generate csv file for sscc labels
-      | EDI_Desadv_Pack_ID.Identifier | ReportData                                                                                                    |
-      | p_1                           | 1,ipaSSCC18_13092022,po_ref_14092022_1,16.04.2021,,salesProduct_14092022_1,1,0,210420,luLotNumber,,,,,,,,,,,, |
+    And generate csv file for sscc labels for 'p1'
+      | ReportDataLine                                                                                                               |
+      | %BTW% /AF="\\V-APSRV01\PRAGMA\ETIKETTEN\LAYOUTS\SSCC.BTW" /D="<TRIGGER FILE NAME>" /PRN="\\V-DCSRV02\ETIKETTEN01" /R=3 /P /D |
+      | %END%                                                                                                                        |
+      | 1,ipaSSCC18_13092022,po_ref_14092022_1,16.04.2021,,salesProduct_14092022_1,1,0,210420,luLotNumber,,,,,,,,,,,,                |
 
     And the shipment identified by s_1 is reversed
 
@@ -525,6 +527,9 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item
       | p_1                           | ipaSSCC18_14092022_1 |
       | p_2                           | ipaSSCC18_14092022_2 |
 
-    And generate csv file for sscc labels
-      | EDI_Desadv_Pack_ID.Identifier | ReportData                                                                                                                                                                                                                               |
-      | p_1, p_2                      | 1,ipaSSCC18_14092022_1,po_ref_mock_14092022_2,16.04.2021,,salesProduct_14092022_2,1,0,210420,lotNumber,,,,,,,,,,,,\n1,ipaSSCC18_14092022_2,po_ref_mock_14092022_2,16.04.2021,,salesProduct_14092022_2,1,0,210420,luLotNumber,,,,,,,,,,,, |
+    And generate csv file for sscc labels for 'p1,p2'
+      | ReportDataLine                                                                                                               |
+      | %BTW% /AF="\\V-APSRV01\PRAGMA\ETIKETTEN\LAYOUTS\SSCC.BTW" /D="<TRIGGER FILE NAME>" /PRN="\\V-DCSRV02\ETIKETTEN01" /R=3 /P /D |
+      | %END%                                                                                                                        |
+      | 1,ipaSSCC18_14092022_1,po_ref_mock_14092022_2,16.04.2021,,salesProduct_14092022_2,1,0,210420,lotNumber,,,,,,,,,,,,           |
+      | 1,ipaSSCC18_14092022_2,po_ref_mock_14092022_2,16.04.2021,,salesProduct_14092022_2,1,0,210420,luLotNumber,,,,,,,,,,,,         |

@@ -27,7 +27,6 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ZebraConfigId;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.ResourceReader;
-import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.edi.api.ZebraConfigRepository;
 import de.metas.edi.api.ZebraPrinterService;
@@ -41,9 +40,6 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
-
-import java.util.List;
-import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.esb.edi.model.I_EDI_Desadv_Pack.COLUMNNAME_EDI_Desadv_Pack_ID;
@@ -64,36 +60,29 @@ public class EDI_DesadvPackGenerateCSV_FileForSSCC_Labels_StepDef
 		this.ediDesadvPackTable = ediDesadvPackTable;
 	}
 
-	@And("generate csv file for sscc labels")
-	public void generateCSV_FileForSSCC_Labels(@NonNull final DataTable table)
+	@And("generate csv file for sscc labels for {string}")
+	public void generateCSV_FileForSSCC_Labels(
+			@NonNull final String packIdentifiersParam,
+			@NonNull final DataTable dataTable)
 	{
-		final List<Map<String, String>> dataTable = table.asMaps();
-		for (final Map<String, String> tableRow : dataTable)
-		{
-			generateCSVFileForSSCCLabels(tableRow);
-		}
-	}
+		final ImmutableList<EDIDesadvPackId> desadvPackIDsToPrint = getDesadvPackIDSToPrint(packIdentifiersParam);
+		final String reportDataContent = generateCSVFileForSSCCLabels(desadvPackIDsToPrint);
 
-	private void generateCSVFileForSSCCLabels(@NonNull final Map<String, String> tableRow)
-	{
-		final ImmutableList<EDIDesadvPackId> desadvPackIDsToPrint = getDesadvPackIDSToPrint(tableRow);
-
-		final ReportResultData reportResultData = getReportResultDataFor(desadvPackIDsToPrint);
-
-		final String reportDataString = ResourceReader.asString(reportResultData.getReportData());
-		final String reportDataContent = reportDataString
-				.substring(reportDataString.lastIndexOf('%') + 2)
-				.replace("\"", "");
-
-		final String expectedReportDataString = DataTableUtil.extractStringForColumnName(tableRow, "ReportData");
-
-		assertThat(reportDataContent).isEqualTo(expectedReportDataString);
+		dataTable.asMaps()
+				.forEach(tableRow -> assertThat(reportDataContent).contains(DataTableUtil.extractStringForColumnName(tableRow, "ReportDataLine")));
 	}
 
 	@NonNull
-	private ImmutableList<EDIDesadvPackId> getDesadvPackIDSToPrint(@NonNull final Map<String, String> tableRow)
+	private String generateCSVFileForSSCCLabels(@NonNull final ImmutableList<EDIDesadvPackId> desadvPackIDsToPrint)
 	{
-		final String packIdentifierCandidate = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_EDI_Desadv_Pack_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final ReportResultData reportResultData = getReportResultDataFor(desadvPackIDsToPrint);
+
+		return ResourceReader.asString(reportResultData.getReportData());
+	}
+
+	@NonNull
+	private ImmutableList<EDIDesadvPackId> getDesadvPackIDSToPrint(@NonNull final String packIdentifierCandidate)
+	{
 		final ImmutableList<EDIDesadvPackId> desadvPackIDsToPrint = StepDefUtil.extractIdentifiers(packIdentifierCandidate)
 				.stream()
 				.map(ediDesadvPackTable::get)
