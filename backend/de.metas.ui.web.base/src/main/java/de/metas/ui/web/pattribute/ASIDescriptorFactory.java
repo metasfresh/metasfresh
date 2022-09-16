@@ -13,6 +13,7 @@ import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributesBL;
+import org.adempiere.mm.attributes.spi.IAttributeValuesProvider;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
@@ -69,6 +70,8 @@ import de.metas.util.Services;
 @Component
 public class ASIDescriptorFactory
 {
+	private final IAttributesBL attributesBL = Services.get(IAttributesBL.class);
+
 	private final CCache<ArrayKey, ASIDescriptor> asiDescriptorById = CCache.newLRUCache(I_M_AttributeSet.Table_Name + "#Descriptors#by#M_AttributeSet_ID", 200, 0);
 	private final CCache<AttributeId, ASILookupDescriptor> asiLookupDescriptorsByAttributeId = CCache.newLRUCache(I_M_AttributeSet.Table_Name + "#LookupDescriptors", 200, 0);
 
@@ -156,7 +159,9 @@ public class ASIDescriptorFactory
 	{
 		final int attributeId = attribute.getM_Attribute_ID();
 		final String fieldName = attribute.getValue();
-		final String attributeValueType = attribute.getAttributeValueType();
+
+		final IAttributeValuesProvider attributeValuesProvider = attributesBL.createAttributeValuesProvider(attribute);
+		final String attributeValueType = attributeValuesProvider != null ? attributeValuesProvider.getAttributeValueType() : attribute.getAttributeValueType();
 
 		final Class<?> valueClass;
 		final DocumentFieldWidgetType widgetType;
@@ -182,7 +187,7 @@ public class ASIDescriptorFactory
 		}
 		else if (X_M_Attribute.ATTRIBUTEVALUETYPE_Number.equals(attributeValueType))
 		{
-			final int displayType = Services.get(IAttributesBL.class).getNumberDisplayType(attribute);
+			final int displayType = attributesBL.getNumberDisplayType(attribute);
 			if (displayType == DisplayType.Integer)
 			{
 				valueClass = Integer.class;
