@@ -63,6 +63,14 @@
 
     </profiles>
 
+	<servers>
+		<server>
+			<id>github-metasfresh-maven</id>
+			<username>${env.GITHUB_ACTOR}</username>
+			<password>${env.GITHUB_TOKEN}</password>
+		</server>
+	</servers>
+
     <!-- List of profiles that are active for all builds. -->
     <activeProfiles>
         <activeProfile>env-dev</activeProfile>
