@@ -1,4 +1,26 @@
-package de.metas.pricing.rules;
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2022 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.pricing.rules.price_list_version;
 
 import ch.qos.logback.classic.Level;
 import de.metas.common.util.time.SystemTime;
@@ -7,7 +29,6 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
-import de.metas.organization.IOrgDAO;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.InvoicableQtyBasedOn;
@@ -32,22 +53,19 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
 
 /**
  * Calculate Price using Price List Version
  *
  * @author tsa
  */
-public class PriceListVersion extends AbstractPriceListBasedRule
+class MainProductPriceRule extends AbstractPriceListBasedRule
 {
-	private static final Logger logger = LogManager.getLogger(PriceListVersion.class);
+	private static final Logger logger = LogManager.getLogger(MainProductPriceRule.class);
 
 	private final IPriceListDAO priceListsRepo = Services.get(IPriceListDAO.class);
 	private final IProductBL productsService = Services.get(IProductBL.class);
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private final ProductTaxCategoryService productTaxCategoryService = SpringContextHolder.instance.getBean(ProductTaxCategoryService.class);
 	private final ProductScalePriceService productScalePriceService = SpringContextHolder.instance.getBean(ProductScalePriceService.class);
