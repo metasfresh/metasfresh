@@ -37,6 +37,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
+/**
+   * This logabble can writes logs to {@code AD_PInstance_Log} just like a JavaProcess. It's supposed to be used when you have an {@code AD_PInstance_ID} and want to log to it, but you are not inside a java-process.
+   */
 public class ADProcessLoggable implements ILoggable
 {
 	private static final Logger logger = LogManager.getLogger(ADProcessLoggable.class);
