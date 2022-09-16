@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13614](https://github.com/metasfresh/metasfresh/issues/13614) Desadv Packs - in depth testing (camel & cucumber)
   * [#13589](https://github.com/metasfresh/metasfresh/issues/13589) Fix Basepricelist retrieval vor product proposal without save
   * [#13571](https://github.com/metasfresh/metasfresh/issues/13571) M_AttributeUse.MandatoryForManufacturing
   * [#13558](https://github.com/metasfresh/metasfresh/issues/13558) Improve "update dunning candidate" process 
