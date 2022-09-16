@@ -28,9 +28,9 @@ import de.metas.esb.edi.model.I_EDI_Desadv;
 /**
  * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
  */
-public class Edi_Desadv_StepDefData extends StepDefData<I_EDI_Desadv>
+public class EDI_Desadv_StepDefData extends StepDefData<I_EDI_Desadv>
 {
-	public Edi_Desadv_StepDefData()
+	public EDI_Desadv_StepDefData()
 	{
 		super(I_EDI_Desadv.class);
 	}

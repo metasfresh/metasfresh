@@ -76,7 +76,7 @@ public class EDI_Desadv_StepDef
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_Order_StepDefData orderTable;
 	private final EDI_Exp_Desadv_StepDefData ediExpDesadvTable;
-	
+
 	public EDI_Desadv_StepDef(
 			@NonNull final EDI_Desadv_StepDefData desadvTable,
 			@NonNull final C_BPartner_StepDefData bpartnerTable,

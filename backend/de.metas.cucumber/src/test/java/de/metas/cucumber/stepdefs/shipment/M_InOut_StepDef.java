@@ -242,7 +242,7 @@ public class M_InOut_StepDef
 				.map(this::getShipmentLinesForShipmentIdentifiers)
 				.orElseGet(ImmutableSet::of);
 
-		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
+		final I_M_ShipmentSchedule shipmentSchedule = InterfaceWrapperHelper.create(shipmentScheduleTable.get(shipmentScheduleIdentifier), I_M_ShipmentSchedule.class);
 
 		final Set<Integer> linesToIgnore = alreadyCreatedShipmentLines.isEmpty()
 				? ImmutableSet.of(-1)
