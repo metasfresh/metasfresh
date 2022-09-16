@@ -203,6 +203,9 @@ public interface IAttributeSet
 	String getValueAsString(AttributeCode attributeCode);
 
 	@Nullable
+	String getValueAsStringOrNull(AttributeCode attributeCode);
+
+	@Nullable
 	default String getValueAsString(@NonNull final String attributeKey)
 	{
 		return getValueAsString(AttributeCode.ofString(attributeKey));

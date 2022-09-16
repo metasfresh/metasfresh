@@ -29,6 +29,7 @@ import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefDat
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_Picking_Candidate;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
@@ -36,7 +37,6 @@ import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.candidate.commands.ProcessPickingCandidatesCommand;
 import de.metas.handlingunits.picking.candidate.commands.ProcessPickingCandidatesRequest;
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -68,6 +68,7 @@ public class Picking_Terminal_StepDef
 	private final PickingCandidateRepository pickingCandidateRepository = SpringContextHolder.instance.getBean(PickingCandidateRepository.class);
 	private final PickingCandidateService pickingCandidateService = SpringContextHolder.instance.getBean(PickingCandidateService.class);
 	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
+
 
 	public Picking_Terminal_StepDef(
 			@NonNull final M_ShipmentSchedule_StepDefData shipmentScheduleTable,
@@ -118,7 +119,7 @@ public class Picking_Terminal_StepDef
 		final List<Map<String, String>> rows = dataTable.asMaps();
 		for (final Map<String, String> row : rows)
 		{
-			final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String shipmentScheduleIdentifier = DataTableUtil.extractStringForColumnName(row, de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
 
 			final String huIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU.COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -154,7 +155,7 @@ public class Picking_Terminal_StepDef
 			final I_M_HU hu = huTable.get(huIdentifier);
 			assertThat(hu).isNotNull();
 
-			final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
+			final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
 			assertThat(shipmentSchedule).isNotNull();
 
 			final String errorMessage = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.ErrorMessage");
@@ -175,7 +176,7 @@ public class Picking_Terminal_StepDef
 	@And("^validate M_HUs are available to pick for shipmentSchedule identified by (.*)$")
 	public void validate_M_HUs_available_to_pick_for_SS(@NonNull final String shipmentScheduleIdentifier, @NonNull final DataTable table)
 	{
-		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
+		final I_M_ShipmentSchedule shipmentSchedule = InterfaceWrapperHelper.create(shipmentScheduleTable.get(shipmentScheduleIdentifier), I_M_ShipmentSchedule.class);
 		assertThat(shipmentSchedule).isNotNull();
 
 		final IHUPickingSlotBL.PickingHUsQuery query = IHUPickingSlotBL.PickingHUsQuery.builder()
@@ -206,7 +207,7 @@ public class Picking_Terminal_StepDef
 	@And("^validate that there are no M_HUs available to pick for shipmentSchedule identified by (.*)$")
 	public void validate_no_M_HUs_available_to_pick_for_ShipmentSched(@NonNull final String shipmentScheduleIdentifier)
 	{
-		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
+		final I_M_ShipmentSchedule shipmentSchedule = InterfaceWrapperHelper.create(shipmentScheduleTable.get(shipmentScheduleIdentifier), I_M_ShipmentSchedule.class);
 		assertThat(shipmentSchedule).isNotNull();
 
 		final IHUPickingSlotBL.PickingHUsQuery query = IHUPickingSlotBL.PickingHUsQuery.builder()

@@ -398,6 +398,9 @@ public class C_BPartner_StepDef
 			bPartnerRecord.setVATaxID(DataTableUtil.nullToken2Null(vaTaxId));
 		}
 
+		final boolean isDesadvRecipient = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + de.metas.edi.model.I_C_BPartner.COLUMNNAME_IsEdiDesadvRecipient, false);
+		bPartnerRecord.setIsEdiDesadvRecipient(isDesadvRecipient);
+
 		final String ediDesadvRecipientGLN = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + de.metas.edi.model.I_C_BPartner.COLUMNNAME_EdiDesadvRecipientGLN);
 
 		if (Check.isNotBlank(ediDesadvRecipientGLN))

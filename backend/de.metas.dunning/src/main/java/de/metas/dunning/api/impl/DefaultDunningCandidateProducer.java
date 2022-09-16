@@ -182,8 +182,6 @@ public class DefaultDunningCandidateProducer implements IDunningCandidateProduce
 		candidate.setDunningInterestAmt(interestAmt);
 		candidate.setFeeAmt(dunningLevel.getFeeAmt());
 
-		// candidate.setIsStaled(false); Removed. IsStaled is a virtual column.
-
 		Services.get(IDunningEventDispatcher.class).fireDunningCandidateEvent(IDunningBL.EVENT_NewDunningCandidate, candidate);
 
 		dunningDAO.save(candidate);

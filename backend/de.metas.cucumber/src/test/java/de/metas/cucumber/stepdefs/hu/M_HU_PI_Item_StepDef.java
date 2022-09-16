@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.hu;
 
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_HU_PackingMaterial_StepDefData;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
@@ -117,13 +118,14 @@ public class M_HU_PI_Item_StepDef
 				huPiItemRecord.setIncluded_HU_PI_ID(huPi.getM_HU_PI_ID());
 			}
 
-			final String huPackingMaterialIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_HU_PackingMaterial_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String huPackingMaterialIdentifier = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + I_M_HU_PI_Item.COLUMNNAME_M_HU_PackingMaterial_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(huPackingMaterialIdentifier))
 			{
-				final I_M_HU_PackingMaterial huPackingMaterial = huPackingMaterialTable.get(huPackingMaterialIdentifier);
-				assertThat(huPackingMaterial).isNotNull();
+				final int huPackingMaterialId = DataTableUtil.nullToken2Null(huPackingMaterialIdentifier) == null
+						? -1
+						: huPackingMaterialTable.get(huPackingMaterialIdentifier).getM_HU_PackingMaterial_ID();
 
-				huPiItemRecord.setM_HU_PackingMaterial_ID(huPackingMaterial.getM_HU_PackingMaterial_ID());
+				huPiItemRecord.setM_HU_PackingMaterial_ID(huPackingMaterialId);
 			}
 
 			saveRecord(huPiItemRecord);
