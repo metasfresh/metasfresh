@@ -36,7 +36,6 @@ import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefDat
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.document.exception.DocumentActionException;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer;
@@ -363,7 +362,7 @@ public class M_InOut_StepDef
 	@And("^the (shipment|material receipt|return inOut) identified by (.*) is (completed|reactivated|reversed|voided|closed) expecting error$")
 	public void shipment_action_expecting_error(@NonNull final String model_UNUSED, @NonNull final String shipmentIdentifier, @NonNull final String action, @NonNull final DataTable dataTable)
 	{
-		Map<String, String> row = dataTable.asMaps().get(0);
+		final Map<String, String> row = dataTable.asMaps().get(0);
 
 		boolean errorThrown = false;
 
@@ -375,12 +374,12 @@ public class M_InOut_StepDef
 		{
 			errorThrown = true;
 
-			final String errorMessageIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_AD_Message_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_AD_Message errorMessage = messageTable.get(errorMessageIdentifier);
+			final String errorMessageIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_AD_Message_ID + "." + TABLECOLUMN_IDENTIFIER);
 
-			if (e instanceof DocumentActionException)
+			if (errorMessageIdentifier != null)
 			{
-				assertThat(e.getMessage()).isEqualTo(msgBL.getMsg(Env.getCtx(), AdMessageKey.of(errorMessage.getValue())));
+				final I_AD_Message errorMessage = messageTable.get(errorMessageIdentifier);
+				assertThat(e.getMessage()).contains(msgBL.getMsg(Env.getCtx(), AdMessageKey.of(errorMessage.getValue())));
 			}
 		}
 
