@@ -47,6 +47,7 @@ de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordServiceTes
               "qty" : "420",
               "uomId" : 100003
             },
+            "completedOrClosed" : true,
             "inDispute" : false
           },
           {
@@ -62,6 +63,7 @@ de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordServiceTes
               "qty" : "190",
               "uomId" : 100003
             },
+            "completedOrClosed" : true,
             "inDispute" : false
           }
         ]
@@ -132,6 +134,7 @@ de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordServiceTes
               "qty" : "400",
               "uomId" : 100003
             },
+            "completedOrClosed" : true,
             "inDispute" : false
           },
           {
@@ -143,6 +146,7 @@ de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordServiceTes
               "qty" : "200",
               "uomId" : 100003
             },
+            "completedOrClosed" : true,
             "inDispute" : false
           }
         ]
