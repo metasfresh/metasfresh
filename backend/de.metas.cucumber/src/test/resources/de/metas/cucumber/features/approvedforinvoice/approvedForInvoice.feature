@@ -45,6 +45,9 @@ Feature: approved for invoicing
 
   @from:cucumber
   Scenario: create sales order, complete it, approve invoice candidates for invoicing and then try to reactivate order with error
+    Given update C_BPartner:
+      | Identifier  | InvoiceRule |
+      | bpartner_SO | I           |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | o_1        | true    | bpartner_SO              | 2022-09-15  |
@@ -52,22 +55,22 @@ Feature: approved for invoicing
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_SO                    | 10         |
     When the order identified by o_1 is completed
-    Then after not more than 30s, M_ShipmentSchedules are found:
-      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
-      | s_ol_1     | ol_1                      | N             |
     Then after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice |
-      | invoiceCand_1                     | ol_1                          | 0            |
+      | invoiceCand_1                     | ol_1                          | 10           |
     And update C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.ApprovalForInvoicing |
       | invoiceCand_1                     | true                     |
 
     Then the order identified by o_1 is reactivated expecting error
-      | AD_Message_ID.Identifier   |
-      | approved_for_invoice_error |
+      | OPT.AD_Message_ID.Identifier |
+      | approved_for_invoice_error   |
 
   @from:cucumber
   Scenario: create sales order, complete it, approve invoice candidates for invoicing, generate shipment, complete it and then try to reactivate shipment with error
+    Given update C_BPartner:
+      | Identifier  | InvoiceRule |
+      | bpartner_SO | D           |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | o_1        | true    | bpartner_SO              | 2021-09-15  |
@@ -78,12 +81,6 @@ Feature: approved for invoicing
     Then after not more than 30s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_ol_1     | ol_1                      | N             |
-    Then after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice |
-      | invoiceCand_1                     | ol_1                          | 0            |
-    And update C_Invoice_Candidate:
-      | C_Invoice_Candidate_ID.Identifier | OPT.ApprovalForInvoicing |
-      | invoiceCand_1                     | true                     |
 
     When 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
@@ -92,13 +89,28 @@ Feature: approved for invoicing
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_ol_1                           | inOut_1               |
 
+    Then after not more than 30s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice |
+      | invoiceCand_1                     | ol_1                          | 10           |
+
+    And update C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.ApprovalForInvoicing |
+      | invoiceCand_1                     | true                     |
+
     Then the shipment identified by inOut_1 is reactivated expecting error
-      | AD_Message_ID.Identifier   |
-      | approved_for_invoice_error |
+      | OPT.AD_Message_ID.Identifier |
+      | approved_for_invoice_error   |
+
+    Then the order identified by o_1 is reactivated expecting error
+      | OPT.AD_Message_ID.Identifier |
+      | approved_for_invoice_error   |
 
   @from:cucumber
   Scenario: create purchase order, complete it, approve invoice candidates for invoicing and then try to reactivate order with error
-    Given metasfresh contains C_Orders:
+    Given update C_BPartner:
+      | Identifier  | PO_InvoiceRule |
+      | bpartner_PO | I              |
+    And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.DocBaseType |
       | o_1        | false   | bpartner_PO              | 2022-09-15  | po_ref_mock     | POO             |
     And metasfresh contains C_OrderLines:
@@ -108,19 +120,22 @@ Feature: approved for invoicing
 
     Then after not more than 30s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice |
-      | invoiceCand_1                     | ol_1                          | 0            |
+      | invoiceCand_1                     | ol_1                          | 10           |
 
     And update C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.ApprovalForInvoicing |
       | invoiceCand_1                     | true                     |
 
     Then the order identified by o_1 is reactivated expecting error
-      | AD_Message_ID.Identifier   |
-      | approved_for_invoice_error |
+      | OPT.AD_Message_ID.Identifier |
+      | approved_for_invoice_error   |
 
   @from:cucumber
   Scenario: create purchase order, complete it, approve invoice candidates for invoicing, generate receipt, complete it and then try to reactivate receipt with error
-    Given metasfresh contains C_Orders:
+    Given update C_BPartner:
+      | Identifier  | PO_InvoiceRule |
+      | bpartner_PO | D              |
+    And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.DocBaseType |
       | o_1        | false   | bpartner_PO              | 2022-09-15  | po_ref_mock     | POO             |
     And metasfresh contains C_OrderLines:
@@ -128,27 +143,30 @@ Feature: approved for invoicing
       | ol_1       | o_1                   | p_PO                    | 10         |
     When the order identified by o_1 is completed
 
-    Then after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice |
-      | invoiceCand_1                     | ol_1                          | 0            |
-
-    And update C_Invoice_Candidate:
-      | C_Invoice_Candidate_ID.Identifier | OPT.ApprovalForInvoicing |
-      | invoiceCand_1                     | true                     |
-
     And after not more than 30s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_PO              | bpartnerLocation_PO               | p_PO                    | 10         | warehouse                 |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
       | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 1     | N               | 10    | 101                                | 1000006                      |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_PO              | N               | 1     | N               | 1     | N               | 5     | 101                                | 1000006                      |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | inOut_1               |
 
+    Then after not more than 30s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice |
+      | invoiceCand_1                     | ol_1                          | 5            |
+    And update C_Invoice_Candidate:
+      | C_Invoice_Candidate_ID.Identifier | OPT.ApprovalForInvoicing |
+      | invoiceCand_1                     | true                     |
+
     Then the material receipt identified by inOut_1 is reactivated expecting error
-      | AD_Message_ID.Identifier   |
-      | approved_for_invoice_error |
+      | OPT.AD_Message_ID.Identifier |
+      | approved_for_invoice_error   |
+
+    Then the order identified by o_1 is reactivated expecting error
+      | OPT.AD_Message_ID.Identifier |
+      | approved_for_invoice_error   |
 
   @from:cucumber
   Scenario: create shipment, complete it, approve invoice candidate for invoicing then try to reverse shipment with error
@@ -170,8 +188,8 @@ Feature: approved for invoicing
       | invoiceCand_1                     | true                     |
 
     Then the shipment identified by inOut_1 is reactivated expecting error
-      | AD_Message_ID.Identifier   |
-      | approved_for_invoice_error |
+      | OPT.AD_Message_ID.Identifier |
+      | approved_for_invoice_error   |
 
   @from:cucumber
   Scenario: create receipt, complete it, approve invoice candidate for invoicing then try to reverse shipment with error
@@ -193,7 +211,7 @@ Feature: approved for invoicing
       | invoiceCand_1                     | true                     |
 
     Then the material receipt identified by inOut_1 is reactivated expecting error
-      | AD_Message_ID.Identifier   |
-      | approved_for_invoice_error |
+      | OPT.AD_Message_ID.Identifier |
+      | approved_for_invoice_error   |
 
 

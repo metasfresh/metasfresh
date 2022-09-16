@@ -30,7 +30,6 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
-import de.metas.document.exception.DocumentActionException;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.order.IOrderBL;
@@ -171,7 +170,7 @@ public class C_Order_StepDef
 	@Given("^the order identified by (.*) is (reactivated|completed|closed|voided) expecting error$")
 	public void order_action_expecting_error(@NonNull final String orderIdentifier, @NonNull final String action, @NonNull final DataTable dataTable)
 	{
-		Map<String, String> row = dataTable.asMaps().get(0);
+		final Map<String, String> row = dataTable.asMaps().get(0);
 
 		boolean errorThrown = false;
 
@@ -183,12 +182,13 @@ public class C_Order_StepDef
 		{
 			errorThrown = true;
 
-			final String errorMessageIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_AD_Message_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_AD_Message errorMessage = messageTable.get(errorMessageIdentifier);
+			final String errorMessageIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_AD_Message_ID + "." + TABLECOLUMN_IDENTIFIER);
 
-			if (e instanceof DocumentActionException)
+			if (errorMessageIdentifier != null)
 			{
-				assertThat(e.getMessage()).isEqualTo(msgBL.getMsg(Env.getCtx(), AdMessageKey.of(errorMessage.getValue())));
+				final I_AD_Message errorMessage = messageTable.get(errorMessageIdentifier);
+
+				assertThat(e.getMessage()).contains(msgBL.getMsg(Env.getCtx(), AdMessageKey.of(errorMessage.getValue())));
 			}
 		}
 
@@ -346,7 +346,7 @@ public class C_Order_StepDef
 			final String groupCompensationType = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_GroupCompensationType);
 			final String groupCompensationAmtType = DataTableUtil.extractStringForColumnName(tableRow, I_C_OrderLine.COLUMNNAME_GroupCompensationAmtType);
 
-			final I_C_Order	orderRecord = queryBL.createQueryBuilder(I_C_Order.class)
+			final I_C_Order orderRecord = queryBL.createQueryBuilder(I_C_Order.class)
 					.addEqualsFilter(I_C_Order.COLUMNNAME_ExternalId, externalHeaderId)
 					.create()
 					.firstOnlyNotNull(I_C_Order.class);
