@@ -36,6 +36,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
 
+import static de.metas.serviceprovider.TestConstants.MOCK_CLIENT_ID;
 import static de.metas.serviceprovider.TestConstants.MOCK_DATE_2020_03_01;
 import static de.metas.serviceprovider.TestConstants.MOCK_DESCRIPTION;
 import static de.metas.serviceprovider.TestConstants.MOCK_EFFORT_1_30;
@@ -90,6 +91,7 @@ public class IssueTestHelper
 		return IssueEntity.builder()
 				.assigneeId(MOCK_USER_ID)
 				.orgId(MOCK_ORG_ID)
+				.clientId(MOCK_CLIENT_ID)
 				.externalProjectReferenceId(MOCK_EXTERNAL_PROJECT_REFERENCE_ID_ACTIVE)
 				.projectId(MOCK_PROJECT_ID)
 				.effortUomId(UomId.ofRepoId(mockUOMRecord.getC_UOM_ID()))
@@ -113,6 +115,7 @@ public class IssueTestHelper
 				.externalIssueNo(BigDecimal.valueOf(MOCK_EXTERNAL_ISSUE_NO))
 				.externalIssueURL(MOCK_EXTERNAL_URL)
 				.externallyUpdatedAt(MOCK_UPDATED_AT)
+				.invoiceableHours(BigDecimal.ZERO)
 				.build();
 	}
 }

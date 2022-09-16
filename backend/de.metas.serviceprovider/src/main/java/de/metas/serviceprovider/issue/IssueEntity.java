@@ -39,6 +39,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 import lombok.Setter;
+import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -65,6 +66,9 @@ public class IssueEntity
 
 	@NonNull
 	private OrgId orgId;
+
+	@NonNull
+	private ClientId clientId;
 
 	@Nullable
 	private MilestoneId milestoneId;
@@ -97,6 +101,9 @@ public class IssueEntity
 
 	@Nullable
 	private Quantity invoicableChildEffort;
+
+	@Nullable
+	private BigDecimal invoiceableHours;
 
 	@NonNull
 	private String name;

@@ -30,7 +30,6 @@ import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
 import de.metas.externalreference.ExternalSystems;
 import de.metas.organization.OrgId;
-import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
 import de.metas.serviceprovider.ImportQueue;
 import de.metas.serviceprovider.external.ExternalSystem;
@@ -59,7 +58,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.assertj.core.api.Assertions;
-import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_UOM;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -70,6 +68,8 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+
+import static de.metas.serviceprovider.TestConstants.MOCK_CLIENT_ID;
 
 @ExtendWith(AdempiereTestWatcher.class)
 class IssueImporterServiceTest
@@ -129,13 +129,6 @@ class IssueImporterServiceTest
 			final I_C_UOM mockUOMRecord = InterfaceWrapperHelper.newInstance(I_C_UOM.class);
 			InterfaceWrapperHelper.saveRecord(mockUOMRecord);
 
-			final I_C_Activity mockCostCenterActivityRecord = InterfaceWrapperHelper.newInstance(I_C_Activity.class);
-			mockCostCenterActivityRecord.setAD_Org_ID(1);
-			mockCostCenterActivityRecord.setName("test issue");
-			mockCostCenterActivityRecord.setValue("ExternalReference_11111");
-
-			InterfaceWrapperHelper.save(mockCostCenterActivityRecord);
-
 			final Instant updatedAt = Instant.parse("2022-08-24T13:24:05Z");
 
 			initialImportIssueInfo = ImportIssueInfo.builder()
@@ -155,6 +148,7 @@ class IssueImporterServiceTest
 			expectedIssue = IssueEntity.builder()
 					.issueId(null) // will be set later
 					.status(Status.PENDING)
+					.clientId(MOCK_CLIENT_ID)
 					.orgId(OrgId.ofRepoId(1))
 					.effortUomId(UomId.ofRepoId(mockUOMRecord.getC_UOM_ID()))
 					.budgetedEffort(new BigDecimal("0"))
@@ -169,9 +163,9 @@ class IssueImporterServiceTest
 					.isEffortIssue(false)
 					.processed(false)
 					.externalIssueNo(new BigDecimal("11111"))
-					.costCenterActivityId(ActivityId.ofRepoId(mockCostCenterActivityRecord.getC_Activity_ID()))
 					.externalProjectReferenceId(ExternalProjectReferenceId.ofRepoId(mockExternalProjectReference.getS_ExternalProjectReference_ID()))
 					.externallyUpdatedAt(updatedAt)
+					.invoiceableHours(BigDecimal.ZERO)
 					.build();
 		}
 

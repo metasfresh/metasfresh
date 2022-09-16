@@ -73,6 +73,15 @@ public class IssueLabelRepository
 				.build();
 	}
 
+	@NonNull
+	public static IssueLabel fromRecord(@NonNull final I_S_IssueLabel record)
+	{
+		return IssueLabel.builder()
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				.value(record.getLabel())
+				.build();
+	}
+
 	@VisibleForTesting
 	@NonNull
 	ImmutableList<I_S_IssueLabel> getRecordsByIssueId(@NonNull final IssueId issueId)
@@ -132,14 +141,5 @@ public class IssueLabelRepository
 					         @NonNull final I_S_IssueLabel record2)
 	{
 		return record1.getLabel().equalsIgnoreCase(record2.getLabel());
-	}
-
-	@NonNull
-	private static IssueLabel fromRecord(@NonNull final I_S_IssueLabel record)
-	{
-		return IssueLabel.builder()
-				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
-				.value(record.getLabel())
-				.build();
 	}
 }

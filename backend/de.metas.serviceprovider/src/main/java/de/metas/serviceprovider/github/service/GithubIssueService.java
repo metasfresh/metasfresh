@@ -34,10 +34,11 @@ import de.metas.serviceprovider.github.GithubService;
 import de.metas.serviceprovider.github.config.GithubConfigRepository;
 import de.metas.serviceprovider.github.link.GithubIssueLink;
 import de.metas.serviceprovider.github.link.GithubIssueLinkResolver;
+import de.metas.serviceprovider.issue.IssueEntity;
 import de.metas.serviceprovider.issue.IssueId;
+import de.metas.serviceprovider.issue.IssueRepository;
 import de.metas.serviceprovider.issue.importer.IssueImporterService;
 import de.metas.serviceprovider.issue.importer.info.ImportIssuesRequest;
-import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
@@ -55,19 +56,22 @@ public class GithubIssueService
 	private final IssueImporterService issueImporterService;
 	private final GithubImporterService githubImporterService;
 	private final GithubService githubService;
+	private final IssueRepository issueRepository;
 
 	public GithubIssueService(
 			@NonNull final ExternalProjectRepository externalProjectRepository,
 			@NonNull final GithubConfigRepository githubConfigRepository,
 			@NonNull final IssueImporterService issueImporterService,
 			@NonNull final GithubImporterService githubImporterService,
-			@NonNull final GithubService githubService)
+			@NonNull final GithubService githubService,
+			@NonNull final IssueRepository issueRepository)
 	{
 		this.externalProjectRepository = externalProjectRepository;
 		this.githubConfigRepository = githubConfigRepository;
 		this.issueImporterService = issueImporterService;
 		this.githubImporterService = githubImporterService;
 		this.githubService = githubService;
+		this.issueRepository = issueRepository;
 	}
 
 	@NonNull
@@ -82,9 +86,10 @@ public class GithubIssueService
 
 		final ExternalProjectReference githubProjectReference = resolveExternalProjectReference(orgId, githubIdSearchKey.getRepositoryOwner(), githubIdSearchKey.getRepository());
 
-		final Set<IssueId> importedIssueIds = importIssuesFor(githubProjectReference, ImmutableList.of(githubIdSearchKey.getIssueNo()));
+		importIssuesFor(githubProjectReference, ImmutableList.of(githubIdSearchKey.getIssueNo()));
 
-		return Optional.of(CollectionUtils.singleElement(importedIssueIds));
+		return issueRepository.getByExternalURLOptional(issueURL)
+				.map(IssueEntity::getIssueId);
 	}
 
 	@NonNull

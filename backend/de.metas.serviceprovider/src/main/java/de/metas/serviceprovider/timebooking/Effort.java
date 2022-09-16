@@ -27,6 +27,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.time.Duration;
 
 @Value
 public class Effort
@@ -49,6 +50,12 @@ public class Effort
 	public static Effort ofSeconds(final long seconds)
 	{
 		return new Effort(seconds);
+	}
+
+	@NonNull
+	public static Effort ofDuration(@NonNull final Duration duration)
+	{
+		return ofSeconds(duration.getSeconds());
 	}
 
 	@NonNull

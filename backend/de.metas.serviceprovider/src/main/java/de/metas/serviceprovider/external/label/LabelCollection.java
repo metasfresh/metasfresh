@@ -22,13 +22,17 @@
 
 package de.metas.serviceprovider.external.label;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.serviceprovider.github.GithubImporterConstants;
 import de.metas.serviceprovider.issue.IssueId;
+import de.metas.util.collections.CollectionUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 @Value
@@ -54,5 +58,28 @@ public class LabelCollection
 	{
 		return issueLabelList.stream()
 				.filter(label -> labelTypes.stream().anyMatch(label::matchesType));
+	}
+
+	@NonNull
+	public ImmutableList<IssueLabel> filter(@NonNull final Predicate<IssueLabel> filter)
+	{
+		return issueLabelList
+				.stream()
+				.filter(filter)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public Optional<IssueLabel> getSingleLabelForType(@NonNull final GithubImporterConstants.LabelType labelType)
+	{
+		final List<IssueLabel> singleLabelCollection = streamByType(ImmutableList.of(labelType))
+				.collect(ImmutableList.toImmutableList());
+
+		if (singleLabelCollection.isEmpty())
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(CollectionUtils.singleElement(singleLabelCollection));
 	}
 }

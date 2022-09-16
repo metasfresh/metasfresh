@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 980948824L;
+	private static final long serialVersionUID = -1459096620L;
 
     /** Standard Constructor */
     public X_S_Issue (final Properties ctx, final int S_Issue_ID, @Nullable final String trxName)
@@ -165,6 +165,18 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 	public int getEffort_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Effort_UOM_ID);
+	}
+
+	@Override
+	public void setEffortAggregationKey (final @Nullable java.lang.String EffortAggregationKey)
+	{
+		set_Value (COLUMNNAME_EffortAggregationKey, EffortAggregationKey);
+	}
+
+	@Override
+	public java.lang.String getEffortAggregationKey() 
+	{
+		return get_ValueAsString(COLUMNNAME_EffortAggregationKey);
 	}
 
 	@Override
