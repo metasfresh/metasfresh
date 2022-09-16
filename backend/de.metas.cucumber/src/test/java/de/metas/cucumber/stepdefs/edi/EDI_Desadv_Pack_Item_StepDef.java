@@ -253,6 +253,6 @@ public class EDI_Desadv_Pack_Item_StepDef
 
 	private void truncateEDIDesadvPackItem()
 	{
-		DB.executeUpdateEx("DELETE FROM EDI_Desadv_Pack_Item", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("DELETE FROM EDI_Desadv_Pack_Item", ITrx.TRXNAME_None);
 	}
 }

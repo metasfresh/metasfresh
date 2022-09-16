@@ -125,7 +125,7 @@ public class EDI_Desadv_Pack_StepDef
 
 	private void deleteAllFromEDIDesadvPack()
 	{
-		DB.executeUpdateEx("DELETE FROM EDI_Desadv_Pack", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("DELETE FROM EDI_Desadv_Pack", ITrx.TRXNAME_None);
 	}
 
 	private void packIsFound(
