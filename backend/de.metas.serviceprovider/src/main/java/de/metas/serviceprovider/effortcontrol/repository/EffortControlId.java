@@ -27,9 +27,11 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.serviceprovider.model.I_S_EffortControl;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import lombok.Value;
 
 import javax.annotation.Nullable;
 
+@Value
 public class EffortControlId implements RepoIdAware
 {
 	@JsonCreator
