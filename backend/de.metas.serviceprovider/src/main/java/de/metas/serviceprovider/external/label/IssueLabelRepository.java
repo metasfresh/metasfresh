@@ -62,7 +62,7 @@ public class IssueLabelRepository
 	@NonNull
 	public LabelCollection getByIssueId(@NonNull final IssueId issueId)
 	{
-		final List<IssueLabel> labelList = getRecordsByIssueId(issueId)
+		final ImmutableList<IssueLabel> labelList = getRecordsByIssueId(issueId)
 				.stream()
 				.map(IssueLabelRepository::fromRecord)
 				.collect(ImmutableList.toImmutableList());
