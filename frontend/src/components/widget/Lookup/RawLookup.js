@@ -337,11 +337,14 @@ export class RawLookup extends Component {
       subentityId,
       viewId,
       mainProperty,
+      typeaheadSupplier,
     } = this.props;
 
     const inputValue = this.inputSearch.value;
     let typeaheadRequest;
     const typeaheadParams = {
+      entity,
+      docType: windowType,
       docId: filterWidget ? viewId : dataId,
       propertyName: filterWidget ? parameterName : mainProperty.field,
       query: inputValue,
@@ -349,7 +352,15 @@ export class RawLookup extends Component {
       tabId,
     };
 
-    if (entity === 'documentView' && !filterWidget) {
+    this.typeaheadQuery = typeaheadParams.query;
+
+    if (typeaheadSupplier) {
+      typeaheadRequest = typeaheadSupplier({
+        ...typeaheadParams,
+        subentity,
+        subentityId,
+      });
+    } else if (entity === 'documentView' && !filterWidget) {
       typeaheadRequest = getViewAttributeTypeahead(
         windowType,
         viewId,
@@ -360,22 +371,24 @@ export class RawLookup extends Component {
     } else if (viewId && !filterWidget) {
       typeaheadRequest = autocompleteModalRequest({
         ...typeaheadParams,
-        docType: windowType,
         entity: 'documentView',
         viewId,
       });
     } else {
       typeaheadRequest = autocompleteRequest({
         ...typeaheadParams,
-        docType: windowType,
-        entity,
         subentity,
         subentityId,
       });
     }
 
     typeaheadRequest.then((response) => {
-      this.populateTypeaheadData(response.data);
+      if (
+        this.typeaheadQuery &&
+        this.typeaheadQuery === typeaheadParams.query
+      ) {
+        this.populateTypeaheadData(response.data);
+      }
     });
   };
 
@@ -663,7 +676,7 @@ RawLookup.propTypes = {
   forcedWidth: PropTypes.number,
   forceHeight: PropTypes.number,
   mainProperty: PropTypes.object,
-  filterWidget: PropTypes.any,
+  filterWidget: PropTypes.bool,
   lookupEmpty: PropTypes.bool,
   localClearing: PropTypes.any,
   fireDropdownList: PropTypes.bool,
@@ -698,6 +711,7 @@ RawLookup.propTypes = {
   enableAutofocus: PropTypes.func,
   updateItems: PropTypes.func,
   resetLocalClearing: PropTypes.func,
+  typeaheadSupplier: PropTypes.func,
 
   //
   // mapStateToProps:

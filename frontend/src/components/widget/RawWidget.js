@@ -42,6 +42,7 @@ export class RawWidget extends PureComponent {
     if (rawWidget.current && autoFocus) {
       try {
         rawWidget.current.focus();
+        this.setState({ isFocused: true });
       } catch (e) {
         console.error(`Custom widget doesn't have 'focus' function defined`);
       }
@@ -418,6 +419,10 @@ export class RawWidget extends PureComponent {
       widgetData[0].widgetType === 'List' && widgetData[0].multiListValue
     );
 
+    // dev-note: avoid displaying value when hovering over password widget
+    const widgetTitle =
+      widgetData[0].widgetType === 'Password' ? null : widgetValue;
+
     const widgetProperties = {
       //autocomplete=new-password did not work in chrome for non password fields anymore,
       //switched to autocomplete=off instead
@@ -432,7 +437,7 @@ export class RawWidget extends PureComponent {
       onChange: this.handleChange,
       onBlur: this.handleBlur,
       onKeyDown: this.handleKeyDown,
-      title: widgetValue,
+      title: widgetTitle,
       id,
     };
     const showErrorBorder = charsTyped && charsTyped[fieldName] > maxLength;
