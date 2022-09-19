@@ -1838,6 +1838,17 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.createSelection(pInstanceId);
 	}
 
+	@Override
+	public List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsFor(@NonNull final InvoiceCandidateId invoiceCandidateId)
+	{
+		return queryBL.createQueryBuilder(I_C_InvoiceCandidate_InOutLine.class)
+				.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMN_C_Invoice_Candidate_ID, invoiceCandidateId)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_C_InvoiceCandidate_InOutLine.COLUMN_M_InOutLine_ID)
+				.create()
+				.list(I_C_InvoiceCandidate_InOutLine.class);
+	}
+
 	private IQuery<I_C_Invoice_Candidate> convertToIQuery(@NonNull final InvoiceCandidateMultiQuery multiQuery)
 	{
 		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL

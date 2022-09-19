@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.invoicecandidate.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_Invoice_Candidate
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_Invoice_Candidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1853595142L;
+	private static final long serialVersionUID = 376384167L;
 
     /** Standard Constructor */
     public X_C_Invoice_Candidate (final Properties ctx, final int C_Invoice_Candidate_ID, @Nullable final String trxName)
@@ -1371,6 +1371,18 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+	public void setIsInEffect (final boolean IsInEffect)
+	{
+		set_Value (COLUMNNAME_IsInEffect, IsInEffect);
+	}
+
+	@Override
+	public boolean isInEffect()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsInEffect);
+	}
+
+	@Override
 	public void setIsInOutApprovedForInvoicing (final boolean IsInOutApprovedForInvoicing)
 	{
 		set_ValueNoCheck (COLUMNNAME_IsInOutApprovedForInvoicing, IsInOutApprovedForInvoicing);
@@ -1627,14 +1639,14 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	@Override
 	public void setM_Material_Tracking_ID (final int M_Material_Tracking_ID)
 	{
-		if (M_Material_Tracking_ID < 1) 
+		if (M_Material_Tracking_ID < 1)
 			set_Value (COLUMNNAME_M_Material_Tracking_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_M_Material_Tracking_ID, M_Material_Tracking_ID);
 	}
 
 	@Override
-	public int getM_Material_Tracking_ID() 
+	public int getM_Material_Tracking_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Material_Tracking_ID);
 	}
@@ -2061,7 +2073,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public BigDecimal getQtyEnteredTU() 
+	public BigDecimal getQtyEnteredTU()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyEnteredTU);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -2306,7 +2318,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		throw new IllegalArgumentException ("QualityDiscountPercent_ReceiptSchedule is virtual column");	}
 
 	@Override
-	public BigDecimal getQualityDiscountPercent_ReceiptSchedule() 
+	public BigDecimal getQualityDiscountPercent_ReceiptSchedule()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QualityDiscountPercent_ReceiptSchedule);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -2349,7 +2361,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 		throw new IllegalArgumentException ("QualityNote_ReceiptSchedule is virtual column");	}
 
 	@Override
-	public java.lang.String getQualityNote_ReceiptSchedule() 
+	public java.lang.String getQualityNote_ReceiptSchedule()
 	{
 		return get_ValueAsString(COLUMNNAME_QualityNote_ReceiptSchedule);
 	}
@@ -2442,7 +2454,7 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
-	public void setUserElementString1 (final @Nullable String UserElementString1)
+	public void setUserElementString1 (final @Nullable java.lang.String UserElementString1)
 	{
 		set_Value (COLUMNNAME_UserElementString1, UserElementString1);
 	}

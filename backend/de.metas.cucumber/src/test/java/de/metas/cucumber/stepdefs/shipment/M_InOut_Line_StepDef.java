@@ -258,6 +258,57 @@ public class M_InOut_Line_StepDef
 		assertThat(inOutLine).isNull();
 	}
 
+	@And("metasfresh contains M_InOutLine")
+	public void metasfresh_contains_M_InOutLine(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> table = dataTable.asMaps();
+		for (final Map<String, String> row : table)
+		{
+			final de.metas.inout.model.I_M_InOutLine inOutLine = InterfaceWrapperHelper.newInstance(de.metas.inout.model.I_M_InOutLine.class);
+
+			final String inOutIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_M_InOut inOut = shipmentTable.get(inOutIdentifier);
+			assertThat(inOut).isNotNull();
+
+			inOutLine.setM_InOut_ID(inOut.getM_InOut_ID());
+
+			final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_QtyEntered);
+			inOutLine.setQtyEntered(qtyEntered);
+
+			final BigDecimal movementQty = DataTableUtil.extractBigDecimalForColumnName(row, COLUMNNAME_MovementQty);
+			inOutLine.setMovementQty(movementQty);
+
+			final String uomCode = DataTableUtil.extractStringForColumnName(row, "UomCode");
+			final I_C_UOM uom = uomDao.getByX12DE355(X12DE355.ofCode(uomCode));
+			assertThat(uom).isNotNull();
+
+			inOutLine.setC_UOM_ID(uom.getC_UOM_ID());
+
+			final String productIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(productIdentifier))
+			{
+				final I_M_Product product = productTable.get(productIdentifier);
+				assertThat(product).isNotNull();
+
+				inOutLine.setM_Product_ID(product.getM_Product_ID());
+			}
+
+			final String locatorIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_Locator_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(locatorIdentifier))
+			{
+				final I_M_Locator locator = locatorTable.get(locatorIdentifier);
+				assertThat(locator).isNotNull();
+
+				inOutLine.setM_Locator_ID(locator.getM_Locator_ID());
+			}
+
+			InterfaceWrapperHelper.saveRecord(inOutLine);
+
+			final String inOutLineIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_InOutLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+			shipmentLineTable.putOrReplace(inOutLineIdentifier, inOutLine);
+		}
+	}
+
 	private void validateShipmentLine(@NonNull final I_M_InOutLine shipmentLine, @NonNull final Map<String, String> row)
 	{
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, "M_Product_ID.Identifier");

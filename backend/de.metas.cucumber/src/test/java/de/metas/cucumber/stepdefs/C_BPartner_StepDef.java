@@ -224,6 +224,7 @@ public class C_BPartner_StepDef
 		bPartnerRecord.setIsCustomer(StringUtils.toBoolean(tableRow.get("OPT." + COLUMNNAME_IsCustomer), false));
 		bPartnerRecord.setIsSalesRep(StringUtils.toBoolean(tableRow.get("OPT." + COLUMNNAME_IsSalesRep), false));
 		bPartnerRecord.setAD_Org_ID(orgId);
+		bPartnerRecord.setDeliveryRule(DeliveryRule.FORCE.getCode());
 
 		final String discountSchemaIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_PO_DiscountSchema_ID + "." + TABLECOLUMN_IDENTIFIER);
 
@@ -338,6 +339,12 @@ public class C_BPartner_StepDef
 		{
 			final I_AD_Org org = orgTable.get(bpOrgIdentifier);
 			bPartnerRecord.setAD_OrgBP_ID(org.getAD_Org_ID());
+		}
+
+		final String invoiceRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_InvoiceRule);
+		if(Check.isNotBlank(invoiceRule))
+		{
+			bPartnerRecord.setInvoiceRule(invoiceRule);
 		}
 
 		final boolean alsoCreateLocation = InterfaceWrapperHelper.isNew(bPartnerRecord) && addDefaultLocationIfNewBPartner;

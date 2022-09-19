@@ -3,12 +3,12 @@ package de.metas.inout.impl;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inout.IInOutBL;
@@ -687,6 +687,14 @@ public class InOutBL implements IInOutBL
 
 		inOut.setDescription(description.translate(adLanguage));
 		inOut.setDescriptionBottom(documentNote.translate(adLanguage));
+	}
+
+	@NonNull
+	public DocStatus getDocStatus(@NonNull final InOutId inOutId)
+	{
+		final I_M_InOut inOut = getById(inOutId);
+
+		return DocStatus.ofCode(inOut.getDocStatus());
 	}
 
 	private I_C_BPartner getBPartnerOrNull(@NonNull final I_M_InOut inOut)

@@ -31,6 +31,9 @@ import de.metas.materialtracking.qualityBasedInvoicing.IProductionMaterial;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
 import de.metas.util.Services;
+import org.compiere.model.I_C_UOM;
+
+import java.math.BigDecimal;
 
 /* package */abstract class AbstractProductionMaterial implements IProductionMaterial
 {

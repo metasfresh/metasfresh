@@ -1,5 +1,6 @@
 package de.metas.inout;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.InvoicableQtyBasedOn;
@@ -191,4 +192,6 @@ public interface IInOutBL extends ISingletonService
 	String getLocationEmail(InOutId ofRepoId);
 
 	StockQtyAndUOMQty extractInOutLineQty(I_M_InOutLine inOutLineRecord, InvoicableQtyBasedOn invoicableQtyBasedOn);
+
+	DocStatus getDocStatus(InOutId inOutId);
 }
