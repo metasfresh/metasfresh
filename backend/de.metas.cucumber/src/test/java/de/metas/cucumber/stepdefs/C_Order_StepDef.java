@@ -323,23 +323,6 @@ public class C_Order_StepDef
 				order.setDropShip_BPartner_ID(dropShipLocation.getC_BPartner_ID());
 			}
 
-			final String docBaseType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocBaseType);
-			if (EmptyUtil.isNotBlank(docBaseType))
-			{
-				final String docSubType = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DocSubType);
-
-				final I_C_DocType docType = queryBL.createQueryBuilder(I_C_DocType.class)
-						.addEqualsFilter(COLUMNNAME_DocBaseType, docBaseType)
-						.addEqualsFilter(COLUMNNAME_DocSubType, docSubType)
-						.create()
-						.firstOnlyNotNull(I_C_DocType.class);
-
-				assertThat(docType).isNotNull();
-
-				order.setC_DocType_ID(docType.getC_DocType_ID());
-				order.setC_DocTypeTarget_ID(docType.getC_DocType_ID());
-			}
-
 			saveRecord(order);
 
 			orderTable.putOrReplace(DataTableUtil.extractRecordIdentifier(tableRow, I_C_Order.COLUMNNAME_C_Order_ID), order);

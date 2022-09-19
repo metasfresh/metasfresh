@@ -1,19 +1,7 @@
 package de.metas.invoicecandidate.internalbusinesslogic;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
-import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-import static org.adempiere.model.InterfaceWrapperHelper.isNull;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
-
 import de.metas.document.engine.DocStatus;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
@@ -46,6 +34,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 
 /*

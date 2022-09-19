@@ -139,7 +139,6 @@ public interface I_C_Invoice_Candidate
 
 	/**
 	 * Set Approved for Invoicing.
-	 * After an invoice candidate has been approved for invoicing, its prices and taxes are no longer updated automatically from the corresponding purchase or sales order line.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
@@ -149,7 +148,6 @@ public interface I_C_Invoice_Candidate
 
 	/**
 	 * Get Approved for Invoicing.
-	 * After an invoice candidate has been approved for invoicing, its prices and taxes are no longer updated automatically from the corresponding purchase or sales order line.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true

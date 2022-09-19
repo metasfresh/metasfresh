@@ -31,9 +31,9 @@ Feature: In effect invoice candidates
       | bpartner_Customer | BPartnerNameCustomer_14092022 | Y              | N            | ps_1                          | D               |                    |
       | bpartner_Vendor   | BPartnerNameVendor_14092022   | N              | Y            | ps_2                          |                 | I                  |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier         | C_BPartner_ID.Identifier |
-      | bpartnerLocation_1 | bpartner_Customer        |
-      | bpartnerLocation_2 | bpartner_Vendor          |
+      | Identifier         | C_BPartner_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo |
+      | bpartnerLocation_1 | bpartner_Customer        | true         | true         |
+      | bpartnerLocation_2 | bpartner_Vendor          | true         | true         |
     And load M_Warehouse:
       | M_Warehouse_ID.Identifier | Value        |
       | warehouse                 | StdWarehouse |
@@ -57,8 +57,8 @@ Feature: In effect invoice candidates
       | Identifier         | C_OrderLine_ID.Identifier | IsToRecompute |
       | shipmentSchedule_1 | orderLine_1               | N             |
     Then after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.IsInEffect |
-      | invoiceCand_1                     | orderLine_1                   | 0                | 0            | true           |
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.IsInEffect |
+      | invoiceCand_1                     | orderLine_1               | 0                | 0            | true           |
 
     And update shipment schedules
       | M_ShipmentSchedule_ID.Identifier | OPT.QtyToDeliver_Override |
@@ -70,8 +70,8 @@ Feature: In effect invoice candidates
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | shipmentSchedule_1               | inOut_1               |
     And after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.IsInEffect |
-      | invoiceCand_1                     | orderLine_1                   | 50               | 50           | true           |
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.IsInEffect |
+      | invoiceCand_1                     | orderLine_1               | 50               | 50           | true           |
 
     When the order identified by order_1 is reactivated
 
@@ -113,8 +113,8 @@ Feature: In effect invoice candidates
     When the order identified by order_2 is completed
 
     And after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.IsInEffect |
-      | invoiceCand_2                     | orderLine_2                   | 0                | 0            | true           |
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.IsInEffect |
+      | invoiceCand_2                     | orderLine_2               | 0                | 0            | true           |
 
     When the order identified by order_2 is voided
 
@@ -135,8 +135,8 @@ Feature: In effect invoice candidates
     When the order identified by order_3 is completed
 
     And after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.IsInEffect |
-      | invoiceCand_3                     | orderLine_3                   | 100          | true           |
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice | OPT.IsInEffect |
+      | invoiceCand_3                     | orderLine_3               | 100          | true           |
 
     When the order identified by order_3 is reactivated
 
@@ -172,8 +172,8 @@ Feature: In effect invoice candidates
     When the order identified by order_4 is completed
 
     And after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice | OPT.IsInEffect |
-      | invoiceCand_4                     | orderLine_4                   | 100          | true           |
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice | OPT.IsInEffect |
+      | invoiceCand_4                     | orderLine_4               | 100          | true           |
 
     When the order identified by order_4 is voided
 

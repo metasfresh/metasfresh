@@ -35,6 +35,7 @@ import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.rest.v1.ExternalReferenceRestControllerService;
+import de.metas.order.DeliveryRule;
 import de.metas.product.IProductDAO;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -339,12 +340,6 @@ public class C_BPartner_StepDef
 		{
 			final I_AD_Org org = orgTable.get(bpOrgIdentifier);
 			bPartnerRecord.setAD_OrgBP_ID(org.getAD_Org_ID());
-		}
-
-		final String invoiceRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_InvoiceRule);
-		if(Check.isNotBlank(invoiceRule))
-		{
-			bPartnerRecord.setInvoiceRule(invoiceRule);
 		}
 
 		final boolean alsoCreateLocation = InterfaceWrapperHelper.isNew(bPartnerRecord) && addDefaultLocationIfNewBPartner;
