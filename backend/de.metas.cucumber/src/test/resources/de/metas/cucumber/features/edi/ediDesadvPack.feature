@@ -111,9 +111,9 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item
     And metasfresh contains C_BPartner_Product
       | C_BPartner_Product_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.GTIN            |
       | bp_1                             | endcustomer_1            | p_2                     | bPartnerProductGTIN |
-    And metasfresh contains M_HU_PackingMaterial
-      | M_HU_PackingMaterial_ID.Identifier | M_Product_ID.Identifier | Name                |
-      | pm_1                               | p_2                     | packingMaterialTest |
+    And metasfresh contains M_HU_PackingMaterial:
+      | M_HU_PackingMaterial_ID.Identifier | OPT.M_Product_ID.Identifier | Name                |
+      | pm_1                               | p_2                         | packingMaterialTest |
     And load M_HU_PackagingCode:
       | M_HU_PackagingCode_ID.Identifier | PackagingCode | HU_UnitType |
       | huPackagingCode_1                | ISO1          | LU          |
@@ -282,10 +282,10 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item
       | C_BPartner_Product_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.GTIN               |
       | bp_1                             | endcustomer_1            | p_2                     | bPartnerProductGTIN_LU |
       | bp_2                             | endcustomer_1            | p_3                     | bPartnerProductGTIN_TU |
-    And metasfresh contains M_HU_PackingMaterial
-      | M_HU_PackingMaterial_ID.Identifier | M_Product_ID.Identifier | Name                   |
-      | pm_1                               | p_2                     | packingMaterialTest_LU |
-      | pm_2                               | p_3                     | packingMaterialTest_TU |
+    And metasfresh contains M_HU_PackingMaterial:
+      | M_HU_PackingMaterial_ID.Identifier | OPT.M_Product_ID.Identifier | Name                   |
+      | pm_1                               | p_2                         | packingMaterialTest_LU |
+      | pm_2                               | p_3                         | packingMaterialTest_TU |
 
     And metasfresh contains M_HU_Item:
       | M_HU_Item_ID.Identifier | M_HU_ID.Identifier | M_HU_PI_Item_ID.Identifier | Qty | M_HU_PackingMaterial_ID.Identifier | OPT.ItemType |
@@ -396,11 +396,11 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item
       | huPackagingCode_1                | ISO1          | LU          |
       | huPackagingCode_2                | CART          | TU          |
 
-    And metasfresh contains M_HU_PackingMaterial
-      | M_HU_PackingMaterial_ID.Identifier | M_Product_ID.Identifier | Name                   |
-      | pm_1                               | p_2                     | packingMaterialTest_LU |
-      | pm_2                               | p_3                     | packingMaterialTest_TU |
-      | pm_3                               | p_4                     | packingMaterialTest    |
+    And metasfresh contains M_HU_PackingMaterial:
+      | M_HU_PackingMaterial_ID.Identifier | OPT.M_Product_ID.Identifier | Name                   |
+      | pm_1                               | p_2                         | packingMaterialTest_LU |
+      | pm_2                               | p_3                         | packingMaterialTest_TU |
+      | pm_3                               | p_4                         | packingMaterialTest    |
 
     And metasfresh contains M_HU_PI:
       | M_HU_PI_ID.Identifier | Name                       |
