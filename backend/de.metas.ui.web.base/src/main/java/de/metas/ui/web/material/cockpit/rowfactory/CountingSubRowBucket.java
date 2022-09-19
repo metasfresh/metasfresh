@@ -63,17 +63,17 @@ public class CountingSubRowBucket
 	private final int plantId;
 
 	// Zaehlbestand
-	private Quantity qtyStockEstimateCount;
+	private Quantity qtyStockEstimateCountAtDate;
 
 	@Nullable
-	private Instant qtyStockEstimateTime;
+	private Instant qtyStockEstimateTimeAtDate;
 
-	private Quantity qtyInventoryCount;
+	private Quantity qtyInventoryCountAtDate;
 
 	@Nullable
-	private Instant qtyInventoryTime;
+	private Instant qtyInventoryTimeAtDate;
 
-	private Quantity qtyStockCurrent;
+	private Quantity qtyStockCurrentAtDate;
 
 	private Quantity qtyOnHandStock;
 
@@ -90,13 +90,13 @@ public class CountingSubRowBucket
 	{
 		final I_C_UOM uom = productBL.getStockUOM(cockpitRecord.getM_Product_ID());
 
-		qtyStockEstimateCount = addToNullable(qtyStockEstimateCount, cockpitRecord.getQtyStockEstimateCount(), uom);
-		qtyStockEstimateTime = TimeUtil.max(qtyStockEstimateTime, TimeUtil.asInstant(cockpitRecord.getQtyStockEstimateTime()));
+		qtyStockEstimateCountAtDate = addToNullable(qtyStockEstimateCountAtDate, cockpitRecord.getQtyStockEstimateCount_AtDate(), uom);
+		qtyStockEstimateTimeAtDate = TimeUtil.max(qtyStockEstimateTimeAtDate, TimeUtil.asInstant(cockpitRecord.getQtyStockEstimateTime_AtDate()));
 
-		qtyInventoryCount = addToNullable(qtyInventoryCount, cockpitRecord.getQtyInventoryCount(), uom);
-		qtyInventoryTime = TimeUtil.max(qtyInventoryTime, TimeUtil.asInstant(cockpitRecord.getQtyInventoryTime()));
+		qtyInventoryCountAtDate = addToNullable(qtyInventoryCountAtDate, cockpitRecord.getQtyInventoryCount_AtDate(), uom);
+		qtyInventoryTimeAtDate = TimeUtil.max(qtyInventoryTimeAtDate, TimeUtil.asInstant(cockpitRecord.getQtyInventoryTime_AtDate()));
 
-		qtyStockCurrent = addToNullable(qtyStockCurrent, cockpitRecord.getQtyStockCurrent(), uom);
+		qtyStockCurrentAtDate = addToNullable(qtyStockCurrentAtDate, cockpitRecord.getQtyStockCurrent_AtDate(), uom);
 
 		cockpitRecordIds.add(cockpitRecord.getMD_Cockpit_ID());
 	}
@@ -121,11 +121,11 @@ public class CountingSubRowBucket
 				.date(productIdAndDate.getDate())
 				.productId(productIdAndDate.getProductId().getRepoId())
 				.plantId(plantId)
-				.qtyStockEstimateCount(qtyStockEstimateCount)
-				.qtyStockEstimateTime(qtyStockEstimateTime)
-				.qtyInventoryCount(qtyInventoryCount)
-				.qtyInventoryTime(qtyInventoryTime)
-				.qtyStockCurrent(qtyStockCurrent)
+				.qtyStockEstimateCountAtDate(qtyStockEstimateCountAtDate)
+				.qtyStockEstimateTimeAtDate(qtyStockEstimateTimeAtDate)
+				.qtyInventoryCountAtDate(qtyInventoryCountAtDate)
+				.qtyInventoryTimeAtDate(qtyInventoryTimeAtDate)
+				.qtyStockCurrentAtDate(qtyStockCurrentAtDate)
 				.qtyOnHandStock(qtyOnHandStock)
 				.allIncludedCockpitRecordIds(cockpitRecordIds)
 				.allIncludedStockRecordIds(stockRecordIds)
