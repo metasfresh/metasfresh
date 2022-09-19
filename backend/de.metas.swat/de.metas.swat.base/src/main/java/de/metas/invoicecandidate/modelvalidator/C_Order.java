@@ -8,8 +8,11 @@ import de.metas.bpartner.service.IBPartnerStatsBL.CalculateSOCreditStatusRequest
 import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.exception.DocumentActionException;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
+import de.metas.invoicecandidate.approvedforinvoice.ApprovedForInvoicingService;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
@@ -21,6 +24,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.ModelValidator;
@@ -28,13 +32,25 @@ import org.compiere.model.X_C_BPartner_Stats;
 import org.compiere.model.X_C_DocType;
 import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Component;
 
+import javax.naming.OperationNotSupportedException;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 @Interceptor(I_C_Order.class)
+@Component
 public class C_Order
 {
+	private static final AdMessageKey OPERATION_NOT_SUPPORTED_APPROVED_FOR_INVOICE = AdMessageKey.of("Operation_Not_Supported_Approved_For_Invoice");
+
+	private final ApprovedForInvoicingService approvedForInvoicingService;
+
+	public C_Order(@NonNull final ApprovedForInvoicingService approvedForInvoicingService)
+	{
+		this.approvedForInvoicingService = approvedForInvoicingService;
+	}
+
 	@DocValidate(timings = {
 			ModelValidator.TIMING_AFTER_COMPLETE,
 			ModelValidator.TIMING_AFTER_REACTIVATE,
@@ -139,5 +155,20 @@ public class C_Order
 		}
 
 		return true;
+	}
+
+	@DocValidate(timings = {
+			ModelValidator.TIMING_BEFORE_REVERSECORRECT,
+			ModelValidator.TIMING_BEFORE_REACTIVATE,
+			ModelValidator.TIMING_BEFORE_VOID,
+			ModelValidator.TIMING_BEFORE_REVERSEACCRUAL })
+	public void checkAnyAssociatedInvoiceCandidateClearedForInvoice(@NonNull final I_C_Order order) throws OperationNotSupportedException
+	{
+		final TableRecordReference recordReference = TableRecordReference.of(I_C_Order.Table_Name, order.getC_Order_ID());
+
+		if (approvedForInvoicingService.areAnyCandidatesApprovedForInvoice(recordReference))
+		{
+			throw new DocumentActionException(OPERATION_NOT_SUPPORTED_APPROVED_FOR_INVOICE);
+		}
 	}
 }

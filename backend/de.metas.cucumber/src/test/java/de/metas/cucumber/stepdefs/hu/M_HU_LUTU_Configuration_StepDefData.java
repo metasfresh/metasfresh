@@ -20,15 +20,15 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.shipment;
+package de.metas.cucumber.stepdefs.hu;
 
 import de.metas.cucumber.stepdefs.StepDefData;
-import org.compiere.model.I_M_InOutLine;
+import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 
-public class M_InOutLine_StepDefData extends StepDefData<I_M_InOutLine>
+public class M_HU_LUTU_Configuration_StepDefData extends StepDefData<I_M_HU_LUTU_Configuration>
 {
-	public M_InOutLine_StepDefData()
+	public M_HU_LUTU_Configuration_StepDefData()
 	{
-		super(I_M_InOutLine.class);
+		super(I_M_HU_LUTU_Configuration.class);
 	}
 }
