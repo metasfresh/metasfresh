@@ -106,8 +106,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DocTypeNotFoundException;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
@@ -1436,7 +1434,7 @@ public class FlatrateBL implements IFlatrateBL
 
 			final I_C_Calendar calendar = transition.getC_Calendar_Contract();
 
-			Timestamp currentFirstDay = firstDayOfTerm; // first day of term or first day of new year
+			Timestamp currentFirstDay = TimeUtil.truncToDay(firstDayOfTerm); // first day of term or first day of new year, not including hours
 			for (int i = 0; i < termDuration; i++)
 			{
 				final List<I_C_Period> periodsContainingDay = Services.get(ICalendarDAO.class).retrievePeriods(
