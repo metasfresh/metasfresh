@@ -54,6 +54,8 @@ import de.metas.order.OrderId;
 import de.metas.ordercandidate.api.IOLCandDAO;
 import de.metas.ordercandidate.api.OLCandId;
 import de.metas.ordercandidate.modelvalidator.C_OLCand;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -100,6 +102,7 @@ public class C_Flatrate_Term
 
 	private final IBPartnerDAO bparnterDAO = Services.get(IBPartnerDAO.class);
 	private final IFlatrateBL flatrateBL = Services.get(IFlatrateBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private final IDocumentLocationBL documentLocationBL;
 
@@ -237,7 +240,11 @@ public class C_Flatrate_Term
 
 			final I_C_Calendar invoicingCal = term.getC_Flatrate_Conditions().getC_Flatrate_Transition().getC_Calendar_Contract();
 
-			final List<I_C_Period> periodsOfTerm = calendarDAO.retrievePeriods(ctx, invoicingCal, term.getStartDate(), term.getEndDate(), trxName);
+			final OrgId orgId = OrgId.ofRepoId(term.getAD_Org_ID());
+			final LocalDateAndOrgId startDate = LocalDateAndOrgId.ofTimestamp(term.getStartDate(), orgId, orgDAO::getTimeZone);
+			final LocalDateAndOrgId endDate = LocalDateAndOrgId.ofTimestamp(term.getEndDate(), orgId, orgDAO::getTimeZone);
+
+			final List<I_C_Period> periodsOfTerm = calendarDAO.retrievePeriods(ctx, invoicingCal, startDate, endDate, trxName);
 
 			if (periodsOfTerm.isEmpty())
 			{

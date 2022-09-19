@@ -1,7 +1,6 @@
 package de.metas.contracts.impl;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
@@ -27,6 +26,8 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
@@ -56,7 +57,6 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Calendar;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
-import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -83,7 +83,6 @@ import static de.metas.contracts.model.X_C_Flatrate_Term.DOCSTATUS_Completed;
 import static org.adempiere.model.InterfaceWrapperHelper.getCtx;
 import static org.adempiere.model.InterfaceWrapperHelper.getTrxName;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -116,6 +115,7 @@ public class FlatrateDAO implements IFlatrateDAO
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
 	public I_C_Flatrate_Term getById(final int flatrateTermId)
@@ -594,7 +594,7 @@ public class FlatrateDAO implements IFlatrateDAO
 	@Override
 	public final List<I_C_Flatrate_DataEntry> retrieveInvoicingEntries(
 			final I_C_Flatrate_Term flatrateTerm,
-			final Timestamp dateFrom, final Timestamp dateTo,
+			final @NonNull LocalDateAndOrgId dateFrom, @NonNull final LocalDateAndOrgId dateTo,
 			final UomId uomId)
 	{
 		final List<I_C_Flatrate_DataEntry> result = new ArrayList<>();
@@ -602,11 +602,14 @@ public class FlatrateDAO implements IFlatrateDAO
 		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 		final List<I_C_Flatrate_DataEntry> entriesToCorrect = flatrateDB.retrieveDataEntries(flatrateTerm, X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased, uomId);
 
+		final Timestamp dateFromTimestamp = dateFrom.toTimestamp(orgDAO::getTimeZone);
+		final Timestamp dateToTimestamp = dateTo.toTimestamp(orgDAO::getTimeZone);
+
 		for (final I_C_Flatrate_DataEntry entryToCorrect : entriesToCorrect)
 		{
 			final I_C_Period entryPeriod = entryToCorrect.getC_Period();
-			if (entryPeriod.getEndDate().before(dateFrom) // entryPeriod ends before dateFrom
-					|| entryPeriod.getStartDate().after(dateTo))      // entryPeriod begins after dateTo
+			if (entryPeriod.getEndDate().before(dateFromTimestamp) // entryPeriod ends before dateFrom
+					|| entryPeriod.getStartDate().after(dateToTimestamp))      // entryPeriod begins after dateTo
 			{
 				continue;
 			}

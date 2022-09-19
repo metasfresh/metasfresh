@@ -2,7 +2,9 @@ package org.compiere.util;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Range;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -30,7 +32,7 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.HOURS;
 import static java.util.concurrent.TimeUnit.MICROSECONDS;
@@ -1291,6 +1293,11 @@ public class TimeUtil
 	@Nullable
 	public static Timestamp asTimestamp(@Nullable final Object obj)
 	{
+		return asTimestamp(obj, null);
+	}
+
+	public static Timestamp asTimestamp(@Nullable final Object obj, @Nullable final ZoneId zoneId)
+	{
 		if (obj == null)
 		{
 			return null;
@@ -1309,7 +1316,8 @@ public class TimeUtil
 		}
 		else
 		{
-			return Timestamp.from(asInstant(obj));
+			final ZoneId zoneIdNonNull = CoalesceUtil.coalesceNotNull(zoneId,SystemTime.zoneId());
+			return Timestamp.from(asInstant(obj, zoneIdNonNull));
 		}
 	}
 
@@ -1336,6 +1344,12 @@ public class TimeUtil
 	public static Timestamp asTimestamp(final Timestamp timestamp)
 	{
 		return timestamp;
+	}
+
+	@Deprecated
+	public static Timestamp asTimestamp(final LocalDateAndOrgId localDateAndOrgId)
+	{
+		throw new AdempiereException("Converting from LocalDateAndOrgId to Timestamp without knowing the org timezone is not possible");
 	}
 
 	/**
@@ -1381,7 +1395,7 @@ public class TimeUtil
 			return null;
 		}
 		final Instant instant = localDate
-				.atStartOfDay(coalesce(timezone, de.metas.common.util.time.SystemTime.zoneId()))
+				.atStartOfDay(coalesceNotNull(timezone, SystemTime.zoneId()))
 				.toInstant();
 		return Timestamp.from(instant);
 	}
@@ -1400,7 +1414,7 @@ public class TimeUtil
 			@Nullable final ZoneId timezone)
 	{
 		final LocalDate localDateEff = localDate != null ? localDate : LocalDate.now();
-		final ZoneId timezoneEff = coalesce(timezone, de.metas.common.util.time.SystemTime.zoneId());
+		final ZoneId timezoneEff = coalesceNotNull(timezone, SystemTime.zoneId());
 
 		final Instant instant;
 		if (localTime == null)
@@ -1626,6 +1640,12 @@ public class TimeUtil
 	@Nullable
 	public static LocalDate asLocalDate(@Nullable final Object obj)
 	{
+		return asLocalDate(obj, null);
+	}
+
+	@Nullable
+	public static LocalDate asLocalDate(@Nullable final Object obj, @Nullable final ZoneId zoneId)
+	{
 		if (obj == null)
 		{
 			return null;
@@ -1638,9 +1658,13 @@ public class TimeUtil
 		{
 			return LocalDate.parse(obj.toString());
 		}
+		else if (obj instanceof LocalDateAndOrgId)
+		{
+			return ((LocalDateAndOrgId)obj).toLocalDate();
+		}
 		else
 		{
-			return asLocalDateTime(obj).toLocalDate();
+			return asLocalDateTime(obj,zoneId).toLocalDate();
 		}
 	}
 
@@ -1667,8 +1691,14 @@ public class TimeUtil
 		return zonedDateTime != null ? zonedDateTime.toLocalDate() : null;
 	}
 
-
+	@Nullable
 	public static LocalTime asLocalTime(@Nullable final Object obj)
+	{
+		return asLocalTime(obj, null);
+	}
+
+	@Nullable
+	public static LocalTime asLocalTime(@Nullable final Object obj, @Nullable final ZoneId zoneId)
 	{
 		if (obj == null)
 		{
@@ -1680,7 +1710,7 @@ public class TimeUtil
 		}
 		else
 		{
-			return asLocalDateTime(obj).toLocalTime();
+			return asLocalDateTime(obj, zoneId).toLocalTime();
 		}
 	}
 
@@ -1695,6 +1725,12 @@ public class TimeUtil
 
 	@Nullable
 	public static LocalDateTime asLocalDateTime(@Nullable final Object obj)
+	{
+		return asLocalDateTime(obj, null);
+	}
+
+	@Nullable
+	public static LocalDateTime asLocalDateTime(@Nullable final Object obj, @Nullable final ZoneId zoneId)
 	{
 		if (obj == null)
 		{
@@ -1718,7 +1754,10 @@ public class TimeUtil
 		}
 		else
 		{
-			return asInstant(obj).atZone(de.metas.common.util.time.SystemTime.zoneId()).toLocalDateTime();
+			final ZoneId zoneIdNonNull = CoalesceUtil.coalesceNotNull(zoneId, SystemTime.zoneId());
+
+			return asInstant(obj, zoneIdNonNull)
+					.atZone(zoneIdNonNull).toLocalDateTime();
 		}
 	}
 
@@ -1736,7 +1775,7 @@ public class TimeUtil
 	public static ZonedDateTime asZonedDateTime(@Nullable final LocalDate localDate)
 	{
 		return localDate != null
-				? localDate.atStartOfDay(de.metas.common.util.time.SystemTime.zoneId())
+				? localDate.atStartOfDay(SystemTime.zoneId())
 				: null;
 	}
 
