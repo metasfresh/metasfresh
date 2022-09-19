@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs;
 
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_StepDefData;
+import de.metas.cucumber.stepdefs.hu.M_HU_PackingMaterial_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.handlingunits.model.I_M_HU_Item;
 import de.metas.util.Check;
