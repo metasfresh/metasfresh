@@ -594,7 +594,8 @@ public class FlatrateDAO implements IFlatrateDAO
 	@Override
 	public final List<I_C_Flatrate_DataEntry> retrieveInvoicingEntries(
 			final I_C_Flatrate_Term flatrateTerm,
-			final @NonNull LocalDateAndOrgId dateFrom, @NonNull final LocalDateAndOrgId dateTo,
+			final @NonNull LocalDateAndOrgId dateFrom,
+			final @NonNull LocalDateAndOrgId dateTo,
 			final UomId uomId)
 	{
 		final List<I_C_Flatrate_DataEntry> result = new ArrayList<>();
@@ -602,14 +603,14 @@ public class FlatrateDAO implements IFlatrateDAO
 		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 		final List<I_C_Flatrate_DataEntry> entriesToCorrect = flatrateDB.retrieveDataEntries(flatrateTerm, X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased, uomId);
 
-		final Timestamp dateFromTimestamp = dateFrom.toTimestamp(orgDAO::getTimeZone);
-		final Timestamp dateToTimestamp = dateTo.toTimestamp(orgDAO::getTimeZone);
+		final Instant dateFromInstant = dateFrom.toInstant(orgDAO::getTimeZone);
+		final Instant dateToInstant = dateTo.toInstant(orgDAO::getTimeZone);
 
 		for (final I_C_Flatrate_DataEntry entryToCorrect : entriesToCorrect)
 		{
 			final I_C_Period entryPeriod = entryToCorrect.getC_Period();
-			if (entryPeriod.getEndDate().before(dateFromTimestamp) // entryPeriod ends before dateFrom
-					|| entryPeriod.getStartDate().after(dateToTimestamp))      // entryPeriod begins after dateTo
+			if (entryPeriod.getEndDate().toInstant().compareTo(dateFromInstant) < 0  // entryPeriod ends before dateFrom
+					|| entryPeriod.getStartDate().toInstant().compareTo(dateToInstant) > 0)      // entryPeriod begins after dateTo
 			{
 				continue;
 			}
@@ -956,8 +957,8 @@ public class FlatrateDAO implements IFlatrateDAO
 		if (existingData == null)
 		{
 			existingData = InterfaceWrapperHelper.create(getCtx(bPartner),
-														 I_C_Flatrate_Data.class,
-														 getTrxName(bPartner));
+					I_C_Flatrate_Data.class,
+					getTrxName(bPartner));
 			existingData.setAD_Org_ID(bPartner.getAD_Org_ID());
 			existingData.setC_BPartner_ID(bPartner.getC_BPartner_ID());
 			existingData.setHasContracts(false);
@@ -1076,8 +1077,8 @@ public class FlatrateDAO implements IFlatrateDAO
 
 		final IQueryBuilder<I_C_Flatrate_Term> queryBuilder = //
 				existingSubscriptionsQueryBuilder(OrgId.ofRepoId(flatrateTerm.getAD_Org_ID()),
-												  BPartnerId.ofRepoId(flatrateTerm.getBill_BPartner_ID()),
-												  instant);
+						BPartnerId.ofRepoId(flatrateTerm.getBill_BPartner_ID()),
+						instant);
 
 		queryBuilder.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Order_Term_ID, flatrateTerm.getC_Order_Term_ID());
 
