@@ -63,21 +63,7 @@ public interface IPeriodBL extends ISingletonService
 	 */
 	void createPeriodControls(I_C_Period period);
 
-	/**
-	 * Checks if given date is in period.
-	 * 
-	 * @param period
-	 * @param date date
-	 * @return true if in period
-	 */
 	boolean isInPeriod(I_C_Period period, Date date);
 
-	/**
-	 * Checks if given date is in the period identified by the periodId.
-	 *
-	 * @param periodId the ID of the period
-	 * @param date date
-	 * @return true if in period
-	 */
 	boolean isInPeriod(final int periodId, final LocalDateAndOrgId date);
 }
