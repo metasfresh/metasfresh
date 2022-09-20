@@ -6,7 +6,6 @@ import de.metas.acct.aggregation.IFactAcctLogBL;
 import de.metas.acct.api.IAccountBL;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.api.IFactAcctDAO;
-import de.metas.acct.api.IFactAcctListenersService;
 import de.metas.acct.api.IPostingService;
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.acct.impexp.AccountImportProcess;
@@ -58,8 +57,7 @@ import java.util.Properties;
 @Component
 public class AcctModuleInterceptor extends AbstractModuleInterceptor
 {
-	private static final transient Logger logger = LogManager.getLogger(AcctModuleInterceptor.class);
-	private final IFactAcctListenersService factAcctListenersService = Services.get(IFactAcctListenersService.class);
+	private static final Logger logger = LogManager.getLogger(AcctModuleInterceptor.class);
 	private final IPostingService postingService = Services.get(IPostingService.class);
 	private final IFactAcctDAO factAcctDAO = Services.get(IFactAcctDAO.class);
 	private final IDocumentRepostingSupplierService documentBL = Services.get(IDocumentRepostingSupplierService.class);
@@ -117,7 +115,7 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 	@Override
 	protected void registerInterceptors(final IModelValidationEngine engine)
 	{
-		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema(acctSchemaDAO, costElementRepo));
+		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema(costElementRepo));
 		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema_GL());
 		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema_Default());
 		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema_Element());

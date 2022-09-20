@@ -1,5 +1,11 @@
 package de.metas.acct.model.validator;
 
+import de.metas.acct.api.TaxCorrectionType;
+import de.metas.costing.CostingLevel;
+import de.metas.costing.CostingMethod;
+import de.metas.costing.ICostElementRepository;
+import de.metas.organization.OrgId;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -9,15 +15,6 @@ import org.compiere.model.I_M_CostType;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.X_C_AcctSchema;
 import org.compiere.util.Env;
-
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.api.IAcctSchemaDAO;
-import de.metas.acct.api.TaxCorrectionType;
-import de.metas.costing.CostingLevel;
-import de.metas.costing.CostingMethod;
-import de.metas.costing.ICostElementRepository;
-import de.metas.organization.OrgId;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -44,14 +41,11 @@ import lombok.NonNull;
 @Interceptor(I_C_AcctSchema.class)
 public class C_AcctSchema
 {
-	private final IAcctSchemaDAO acctSchemaDAO;
 	private final ICostElementRepository costElementRepo;
 
 	public C_AcctSchema(
-			@NonNull final IAcctSchemaDAO acctSchemaDAO,
 			@NonNull final ICostElementRepository costElementRepo)
 	{
-		this.acctSchemaDAO = acctSchemaDAO;
 		this.costElementRepo = costElementRepo;
 	}
 
@@ -71,35 +65,14 @@ public class C_AcctSchema
 			acctSchema.setGAAP(X_C_AcctSchema.GAAP_InternationalGAAP);
 		}
 
-		// Primary accounting schema shall not restrict to a particular Organization
-		if (acctSchema.getAD_OrgOnly_ID() > 0 && isPrimaryAcctSchema(acctSchema))
-		{
-			acctSchema.setAD_OrgOnly_ID(OrgId.ANY.getRepoId());
-		}
+		// NOTE: allow having only org restriction for primary accounting schema too.
+		// if (acctSchema.getAD_OrgOnly_ID() > 0 && isPrimaryAcctSchema(acctSchema))
+		// {
+		// 	acctSchema.setAD_OrgOnly_ID(OrgId.ANY.getRepoId());
+		// }
 
 		//
 		checkCosting(acctSchema);
-	}
-
-	private boolean isPrimaryAcctSchema(final I_C_AcctSchema acctSchema)
-	{
-		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoIdOrNull(acctSchema.getC_AcctSchema_ID());
-
-		if (acctSchemaId == null)
-		{
-			// New schema is not primary
-			return false;
-		}
-
-		final ClientId clientId = ClientId.ofRepoId(acctSchema.getAD_Client_ID());
-		final AcctSchemaId primaryAcctSchemaId = acctSchemaDAO.getPrimaryAcctSchemaId(clientId);
-		if (primaryAcctSchemaId == null)
-		{
-			// no primary schema defined
-			return false;
-		}
-
-		return primaryAcctSchemaId.equals(acctSchemaId);
 	}
 
 	/**
