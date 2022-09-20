@@ -133,7 +133,7 @@ public class AcctModuleInterceptor extends AbstractModuleInterceptor
 	@Override
 	protected void registerInterceptors(final IModelValidationEngine engine)
 	{
-		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema(acctSchemaDAO, costElementRepo));
+		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema(costElementRepo));
 		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema_GL());
 		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema_Default());
 		engine.addModelValidator(new de.metas.acct.model.validator.C_AcctSchema_Element());
