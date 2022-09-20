@@ -77,7 +77,7 @@ public abstract class AbstractCalendarDAO implements ICalendarDAO
 	}
 
 	@Override
-	public I_C_Period findByCalendar(final LocalDateAndOrgId date, @NonNull final CalendarId calendarId)
+	public I_C_Period findByCalendar(@NonNull final LocalDateAndOrgId date, @NonNull final CalendarId calendarId)
 	{
 		final Properties ctx = Env.getCtx();
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
