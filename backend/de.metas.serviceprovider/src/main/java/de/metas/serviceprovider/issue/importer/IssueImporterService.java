@@ -27,15 +27,12 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.activity.repository.ActivityRepository;
-import de.metas.activity.repository.CreateActivityRequest;
-import de.metas.activity.repository.GetSingleActivityQuery;
 import de.metas.externalreference.ExternalId;
 import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceQuery;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
-import de.metas.product.acct.api.ActivityId;
 import de.metas.serviceprovider.ImportQueue;
 import de.metas.serviceprovider.external.label.IssueLabel;
 import de.metas.serviceprovider.external.label.IssueLabelService;
@@ -58,6 +55,7 @@ import de.metas.util.NumberUtils;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Env;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -239,6 +237,7 @@ public class IssueImporterService
 				: getIssueIdByExternalId(importIssueInfo.getExternalParentIssueId(), importIssueInfo.getOrgId());
 
 		return IssueEntity.builder()
+				.clientId(Env.getClientId())
 				.orgId(importIssueInfo.getOrgId())
 				.externalProjectReferenceId(importIssueInfo.getExternalProjectReferenceId())
 				.projectId(importIssueInfo.getProjectId())
@@ -262,7 +261,6 @@ public class IssueImporterService
 				.deliveryPlatform(importIssueInfo.getDeliveryPlatform())
 				.plannedUATDate(importIssueInfo.getPlannedUATDate())
 				.deliveredDate(importIssueInfo.getDeliveredDate())
-				.costCenterActivityId(determineCostCenter(importIssueInfo))
 				.externallyUpdatedAt(importIssueInfo.getUpdatedAt())
 				.build();
 	}
@@ -303,7 +301,6 @@ public class IssueImporterService
 				.roughEstimation(importIssueInfo.getRoughEstimation())
 				.deliveredDate(importIssueInfo.getDeliveredDate())
 				.budgetedEffort(importIssueInfo.getBudget())
-				.costCenterActivityId(determineCostCenter(importIssueInfo))
 				.externallyUpdatedAt(importIssueInfo.getUpdatedAt())
 				.build();
 
@@ -363,37 +360,6 @@ public class IssueImporterService
 		}
 	}
 
-	@Nullable
-	private ActivityId determineCostCenter(@NonNull final ImportIssueInfo importIssueInfo)
-	{
-		final IssueLabel costCenterLabel = importIssueInfo
-				.getSingleLabel(issueLabel -> issueLabel.matchesType(GithubImporterConstants.LabelType.COST_CENTER))
-				.orElse(null);
-
-		if (costCenterLabel == null)
-		{
-			return null;
-		}
-
-		final String costCenterValue = costCenterLabel.getValueForType(GithubImporterConstants.LabelType.COST_CENTER);
-
-		final GetSingleActivityQuery query = GetSingleActivityQuery.builder()
-				.orgId(costCenterLabel.getOrgId())
-				.value(costCenterValue)
-				.build();
-
-		return activityRepository.getIdByActivityQuery(query)
-				.orElseGet(() -> {
-					final CreateActivityRequest request = CreateActivityRequest.builder()
-							.orgId(costCenterLabel.getOrgId())
-							.value(costCenterValue)
-							.name(importIssueInfo.getName())
-							.build();
-
-					return activityRepository.save(request);
-				});
-	}
-
 	@NonNull
 	public ImportIssueInfo appendCustomLabels(@NonNull final ImportIssueInfo importIssueInfo, @NonNull final Optional<IssueEntity> existingIssueEntity)
 	{
@@ -430,11 +396,8 @@ public class IssueImporterService
 
 		return existingIssue
 				.filter(entity -> entity.getCostCenterActivityId() != null)
-				.map(entity -> GetSingleActivityQuery.builder()
-						.orgId(entity.getOrgId())
-						.activityId(entity.getCostCenterActivityId())
-						.build())
-				.flatMap(activityRepository::getByActivityQuery)
+				.map(IssueEntity::getCostCenterActivityId)
+				.map(activityRepository::getById)
 				.map(activity -> IssueLabel.builder()
 						.value(GithubImporterConstants.LabelType.COST_CENTER.wrapValue(activity.getValue()))
 						.orgId(activity.getOrgId())

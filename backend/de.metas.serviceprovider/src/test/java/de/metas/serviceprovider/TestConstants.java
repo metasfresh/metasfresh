@@ -31,6 +31,7 @@ import de.metas.serviceprovider.external.reference.ExternalServiceReferenceType;
 import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.milestone.MilestoneId;
 import de.metas.user.UserId;
+import org.adempiere.service.ClientId;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -81,6 +82,7 @@ public interface TestConstants
 	ExternalProjectReferenceId MOCK_EXTERNAL_PROJECT_REFERENCE_ID_ACTIVE = ExternalProjectReferenceId.ofRepoId(1);
 	MilestoneId MOCK_MILESTONE_ID = MilestoneId.ofRepoId(1);
 	OrgId MOCK_ORG_ID = OrgId.ANY;
+	ClientId MOCK_CLIENT_ID = ClientId.SYSTEM;
 	ProjectId MOCK_PROJECT_ID = ProjectId.ofRepoId(1);
 	UserId MOCK_USER_ID = UserId.ofRepoId(1);
 	IssueId MOCK_ISSUE_ID = IssueId.ofRepoId(1);

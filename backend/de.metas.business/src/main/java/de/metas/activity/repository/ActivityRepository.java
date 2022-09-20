@@ -72,10 +72,17 @@ public class ActivityRepository
 	}
 
 	@NonNull
+	public Activity getById(@NonNull final ActivityId activityId)
+	{
+		return fromRecord(InterfaceWrapperHelper.load(activityId, I_C_Activity.class));
+	}
+
+	@NonNull
 	private IQueryBuilder<I_C_Activity> toQueryBuilder(@NonNull final GetSingleActivityQuery activityQuery)
 	{
 		final IQueryBuilder<I_C_Activity> activityQueryBuilder = queryBL.createQueryBuilder(I_C_Activity.class)
 				.addOnlyActiveRecordsFilter()
+				.orderBy(I_C_Activity.COLUMNNAME_C_Activity_ID)
 				.addInArrayFilter(I_C_Activity.COLUMNNAME_AD_Org_ID, OrgId.ANY, activityQuery.getOrgId());
 
 		if (Check.isNotBlank(activityQuery.getValue()))
