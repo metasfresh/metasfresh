@@ -13,23 +13,37 @@ jobs:
       - uses: actions/checkout@v3
       - name: sanitize-ref-name
         id: sanitize
+        env:
+          GIT_REF: ${{ github.ref_name }}
         run: |
-          echo "::set-output name=refname::$(echo '${{ github.ref_name }}' | sed -r 's/([^a-zA-Z0-9.]+)/-/g' | sed -r 's/(^-|-$)//g')"          
+          echo "::set-output name=refname::$(echo ""$GIT_REF"" | sed -r 's/([^a-zA-Z0-9.]+)/-/g' | sed -r 's/(^-|-$)//g')"
       - name: define-build-info-properties
         id: build-info-properties
+        env:
+          BUILD_SYSTEM: ${{ runner.name }}
+          BUILD_USER: ${{ github.actor }}
         run: |
-          echo "::set-output name=content::build.name=github actions\nbuild.system=${{ runner.name }}\nbuild.time=$(date)\nbuild.user=${{ github.actor }}\nbuild.version=$(cat docker-builds/version.info)-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}\nbuild.number=${{ github.run_number }}"
+          echo "::set-output name=content::build.name=github actions\nbuild.system=$BUILD_SYSTEM\nbuild.time=$(date)\nbuild.user=$BUILD_USER\nbuild.version=$(cat docker-builds/version.info)-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}\nbuild.number=${{ github.run_number }}"
       - name: define-git-properties
         id: git-properties
+        env:
+          GIT_URL: ${{ github.repositoryUrl }}
+          GIT_REF: ${{ github.event.ref }}
+          GIT_ID: ${{ github.event.head_commit.id }}
+          GIT_MSG: ${{ github.event.head_commit.message }}
         run: |
-          echo "::set-output name=content::git.remote.origin.url=${{ github.repositoryUrl }}\ngit.branch=${{ github.event.ref }}\ngit.commit.id=${{ github.event.head_commit.id }}\ngit.commit.message=${{ github.event.head_commit.message }}"
+          echo "::set-output name=content::git.remote.origin.url=$GIT_URL\ngit.branch=$GIT_REF\ngit.commit.id=$GIT_ID\ngit.commit.message=$GIT_MSG"
       - name: print-vars
         run: env
       - name: print-info
+        env:
+          OUT_REFNAME: ${{ steps.sanitize.outputs.refname }}
+          OUT_BUILD_PROPS: ${{ steps.build-info-properties.outputs.content }}
+          OUT_GIT_PROPS: ${{ steps.git-properties.outputs.content }}
         run: |
-          echo -e "[sanitized refname]\n${{ steps.sanitize.outputs.refname }}\n"
-          echo -e "[build-info.properties]\n${{ steps.build-info-properties.outputs.content }}\n"
-          echo -e "[git-properties]\n${{ steps.git-properties.outputs.content }}\n"
+          echo -e "[sanitized refname]\n$OUT_REFNAME\n"
+          echo -e "[build-info.properties]\n$OUT_BUILD_PROPS\n"
+          echo -e "[git-properties]\n$OUT_GIT_PROPS\n"
 
   java:
     runs-on: ubuntu-latest
@@ -158,9 +172,12 @@ jobs:
           username: metasfresh
           password: ${{ secrets.DOCKERHUB_METASFRESH_RW_TOKEN }}
       - name: prepare
+        env:
+          INIT_BUILD_PROPS: ${{ needs.init.outputs.build-info-properties }}
+          INIT_GIT_PROPS: ${{ needs.init.outputs.git-properties }}
         run: |
-          echo -e "${{ needs.init.outputs.build-info-properties }}" > docker-builds/metadata/build-info.properties
-          echo -e "${{ needs.init.outputs.git-properties }}" > docker-builds/metadata/git.properties
+          echo -e "$INIT_BUILD_PROPS" > docker-builds/metadata/build-info.properties
+          echo -e "$INIT_GIT_PROPS" > docker-builds/metadata/git.properties
       - name: build-api
         run: |
           docker buildx build \
