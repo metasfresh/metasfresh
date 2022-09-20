@@ -42,6 +42,7 @@ export class RawWidget extends PureComponent {
     if (rawWidget.current && autoFocus) {
       try {
         rawWidget.current.focus();
+        this.setState({ isFocused: true });
       } catch (e) {
         console.error(`Custom widget doesn't have 'focus' function defined`);
       }
@@ -418,6 +419,10 @@ export class RawWidget extends PureComponent {
       widgetData[0].widgetType === 'List' && widgetData[0].multiListValue
     );
 
+    // dev-note: avoid displaying value when hovering over password widget
+    const widgetTitle =
+      widgetData[0].widgetType === 'Password' ? null : widgetValue;
+
     const widgetProperties = {
       //autocomplete=new-password did not work in chrome for non password fields anymore,
       //switched to autocomplete=off instead
@@ -432,7 +437,7 @@ export class RawWidget extends PureComponent {
       onChange: this.handleChange,
       onBlur: this.handleBlur,
       onKeyDown: this.handleKeyDown,
-      title: widgetValue,
+      title: widgetTitle,
       id,
     };
     const showErrorBorder = charsTyped && charsTyped[fieldName] > maxLength;
@@ -680,22 +685,11 @@ export class RawWidget extends PureComponent {
 }
 
 RawWidget.propTypes = {
-  allowShortcut: PropTypes.func.isRequired,
-  disableShortcut: PropTypes.func.isRequired,
   inProgress: PropTypes.bool,
   autoFocus: PropTypes.bool,
   textSelected: PropTypes.bool,
   listenOnKeys: PropTypes.bool,
-  listenOnKeysFalse: PropTypes.func,
-  listenOnKeysTrue: PropTypes.func,
   widgetData: PropTypes.array,
-  handleFocus: PropTypes.func,
-  handlePatch: PropTypes.func,
-  handleBlur: PropTypes.func,
-  handleProcess: PropTypes.func,
-  handleChange: PropTypes.func,
-  handleBackdropLock: PropTypes.func,
-  handleZoomInto: PropTypes.func,
   tabId: PropTypes.string,
   viewId: PropTypes.string,
   rowId: PropTypes.string,
@@ -713,23 +707,18 @@ RawWidget.propTypes = {
   filterId: PropTypes.string,
   id: PropTypes.number,
   range: PropTypes.bool,
-  onShow: PropTypes.func,
-  onHide: PropTypes.func,
   subentity: PropTypes.string,
   subentityId: PropTypes.string,
   tabIndex: PropTypes.number,
-  dropdownOpenCallback: PropTypes.func,
   fullScreen: PropTypes.bool,
   widgetType: PropTypes.string,
   fields: PropTypes.array,
   icon: PropTypes.string,
   entity: PropTypes.string,
   data: PropTypes.any,
-  closeTableField: PropTypes.func,
   attribute: PropTypes.bool,
   allowShowPassword: PropTypes.bool, // NOTE: looks like this wasn't used
   buttonProcessId: PropTypes.string, // NOTE: looks like this wasn't used
-  onBlurWidget: PropTypes.func,
   defaultValue: PropTypes.oneOfType([PropTypes.string, PropTypes.array]),
   noLabel: PropTypes.bool,
   isOpenDatePicker: PropTypes.bool,
@@ -746,8 +735,29 @@ RawWidget.propTypes = {
   fieldFormGroupClass: PropTypes.string,
   fieldLabelClass: PropTypes.string,
   fieldInputClass: PropTypes.string,
+
+  //
+  // Callbacks and other functions:
+  allowShortcut: PropTypes.func.isRequired,
+  disableShortcut: PropTypes.func.isRequired,
+  listenOnKeysFalse: PropTypes.func,
+  listenOnKeysTrue: PropTypes.func,
   enableOnClickOutside: PropTypes.func,
   disableOnClickOutside: PropTypes.func,
+  handleFocus: PropTypes.func,
+  handlePatch: PropTypes.func,
+  handleBlur: PropTypes.func,
+  onBlurWidget: PropTypes.func,
+  handleProcess: PropTypes.func,
+  handleChange: PropTypes.func,
+  handleBackdropLock: PropTypes.func,
+  handleZoomInto: PropTypes.func,
+  onShow: PropTypes.func,
+  onHide: PropTypes.func,
+  dropdownOpenCallback: PropTypes.func,
+  closeTableField: PropTypes.func,
+  typeaheadSupplier: PropTypes.func,
+  dropdownValuesSupplier: PropTypes.func,
 };
 RawWidget.defaultProps = {
   tabIndex: 0,
