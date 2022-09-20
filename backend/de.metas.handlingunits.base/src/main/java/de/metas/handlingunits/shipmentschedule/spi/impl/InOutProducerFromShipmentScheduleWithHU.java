@@ -327,7 +327,8 @@ public class InOutProducerFromShipmentScheduleWithHU
 		final I_M_InOut shipment = InterfaceWrapperHelper.newInstance(I_M_InOut.class, processorCtx);
 		shipment.setAD_Org_ID(shipmentSchedule.getAD_Org_ID());
 
-		//
+		shipment.setM_SectionCode_ID(candidate.getM_ShipmentSchedule().getM_SectionCode_ID());
+
 		// Document Type
 		{
 			final DocTypeQuery query = DocTypeQuery.builder()
