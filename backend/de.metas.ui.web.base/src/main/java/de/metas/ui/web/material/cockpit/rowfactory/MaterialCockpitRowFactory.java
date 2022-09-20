@@ -91,7 +91,7 @@ public class MaterialCockpitRowFactory
 
 		addCockpitRowsToResult(request, dimensionSpec, result);
 		addStockRowsToResult(request, dimensionSpec, result);
-		addQuantitiesRowsToResult(request, result);
+		addQuantitiesRowsToResult(request, dimensionSpec, result);
 
 		return result.values()
 				.stream()
@@ -177,6 +177,7 @@ public class MaterialCockpitRowFactory
 
 	private void addQuantitiesRowsToResult(
 			@NonNull final CreateRowsRequest request,
+			@NonNull final DimensionSpec dimensionSpec,
 			@NonNull final Map<MainRowBucketId, MainRowWithSubRows> result)
 	{
 		for (final I_QtyDemand_QtySupply_V qtyRecord : request.getQuantitiesRecords())
@@ -184,7 +185,7 @@ public class MaterialCockpitRowFactory
 			final MainRowBucketId mainRowBucketId = MainRowBucketId.createInstanceForQuantitiesRecord(qtyRecord, request.getDate());
 
 			final MainRowWithSubRows mainRowBucket = result.computeIfAbsent(mainRowBucketId, MainRowWithSubRows::create);
-			mainRowBucket.addQuantitiesRecord(qtyRecord);
+			mainRowBucket.addQuantitiesRecord(qtyRecord, dimensionSpec, request.isIncludePerPlantDetailRows());
 		}
 	}
 }

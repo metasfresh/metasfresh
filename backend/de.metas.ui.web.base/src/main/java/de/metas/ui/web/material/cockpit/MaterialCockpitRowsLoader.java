@@ -33,7 +33,7 @@ import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.material.cockpit.filters.MaterialCockpitFilters;
 import de.metas.ui.web.material.cockpit.filters.ProductFilterUtil;
 import de.metas.ui.web.material.cockpit.filters.ProductFilterVO;
-import de.metas.ui.web.material.cockpit.filters.QtyFilters;
+import de.metas.ui.web.material.cockpit.filters.QtyDemandSupplyFilters;
 import de.metas.ui.web.material.cockpit.filters.StockFilters;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory;
 import de.metas.util.Services;
@@ -97,7 +97,7 @@ public class MaterialCockpitRowsLoader
 				.createStockQueryFor(filters)
 				.list();
 
-		final List<I_QtyDemand_QtySupply_V> qtyRecords = QtyFilters
+		final List<I_QtyDemand_QtySupply_V> quantitiesRecords = QtyDemandSupplyFilters
 				.createQuantitiesQueryFor(filters)
 				.list();
 		
@@ -107,7 +107,7 @@ public class MaterialCockpitRowsLoader
 				.productIdsToListEvenIfEmpty(retrieveRelevantProductIds(filters))
 				.cockpitRecords(cockpitRecords)
 				.stockRecords(stockRecords)
-				.quantitiesRecords(qtyRecords)
+				.quantitiesRecords(quantitiesRecords)
 				.includePerPlantDetailRows(includePerPlantDetailRows)
 				.build();
 		return materialCockpitRowFactory.createRows(request);

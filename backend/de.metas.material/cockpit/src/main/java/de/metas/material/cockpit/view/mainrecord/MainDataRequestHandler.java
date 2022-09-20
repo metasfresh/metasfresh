@@ -61,7 +61,7 @@ public class MainDataRequestHandler
 		{
 			final I_MD_Cockpit dataRecord = retrieveOrCreateDataRecord(updateMainStockDataRequest.getIdentifier());
 
-			dataRecord.setMDCandidateQtyStock(updateMainStockDataRequest.getQtyStockCurrent());
+			dataRecord.setMDCandidateQtyStock_AtDate(updateMainStockDataRequest.getQtyStockCurrent());
 			saveRecord(dataRecord);
 		}
 	}

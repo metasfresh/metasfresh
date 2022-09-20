@@ -586,6 +586,8 @@ public class MaterialCockpitRow implements IViewRow
 			final int productId,
 			final LocalDate date,
 			final int plantId,
+			@Nullable final Quantity qtyDemandSalesOrder,
+			@Nullable final Quantity qtySupplyPurchaseOrder,
 			@Nullable final Quantity qtyStockEstimateCountAtDate,
 			@Nullable final Instant qtyStockEstimateTimeAtDate,
 			@Nullable final Integer qtyStockEstimateSeqNoAtDate,
@@ -646,12 +648,12 @@ public class MaterialCockpitRow implements IViewRow
 
 		this.pmmQtyPromisedAtDate = null;
 		this.qtyDemandSalesOrderAtDate = null;
-		this.qtyDemandSalesOrder = null;
+		this.qtyDemandSalesOrder = Quantity.toBigDecimal(qtyDemandSalesOrder);
 		this.qtyDemandDDOrderAtDate = null;
 		this.qtyDemandSumAtDate = null;
 		this.qtySupplyPPOrderAtDate = null;
 		this.qtySupplyPurchaseOrderAtDate = null;
-		this.qtySupplyPurchaseOrder = null;
+		this.qtySupplyPurchaseOrder = Quantity.toBigDecimal(qtySupplyPurchaseOrder);
 		this.qtyMaterialentnahmeAtDate = null;
 		this.qtyDemandPPOrderAtDate = null;
 		this.qtySupplyDDOrderAtDate = null;

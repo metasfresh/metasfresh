@@ -124,6 +124,12 @@ public class MainRowWithSubRows
 		countingSubRow.addCockpitRecord(stockEstimate);
 	}
 
+	private void addQuantitiesRecordToCounting(@NonNull final I_QtyDemand_QtySupply_V quantitiesRecord, final int ppPlantId)
+	{
+		final CountingSubRowBucket countingSubRow = countingSubRows.computeIfAbsent(ppPlantId, CountingSubRowBucket::create);
+		countingSubRow.addQuantitiesRecord(quantitiesRecord);
+	}
+	
 	/**
 	 * @return true if there was at least one {@link DimensionGroupSubRowBucket} to which the given dataRecord could be added.
 	 */
@@ -139,6 +145,19 @@ public class MainRowWithSubRows
 		return !subRowBuckets.isEmpty();
 	}
 
+	/**
+	 * @return true if there was at least one {@link DimensionGroupSubRowBucket} to which the given dataRecord could be added.
+	 */
+	private boolean addQuantitiesRecordToDimensionGroups(
+			@NonNull final I_QtyDemand_QtySupply_V quantitiesRecord,
+			@NonNull final DimensionSpec dimensionSpec)
+	{
+		final AttributesKey attributesKey = AttributesKey.ofString(quantitiesRecord.getAttributesKey());
+		final List<DimensionGroupSubRowBucket> subRowBuckets = findOrCreateSubRowBucket(attributesKey, dimensionSpec);
+		subRowBuckets.forEach(bucket -> bucket.addQuantitiesRecord(quantitiesRecord));
+		return !subRowBuckets.isEmpty();
+	}
+	
 	private void assertProductIdAndDateOfDataRecord(@NonNull final I_MD_Cockpit dataRecord)
 	{
 		final MainRowBucketId key = MainRowBucketId.createInstanceForCockpitRecord(dataRecord);
@@ -212,8 +231,39 @@ public class MainRowWithSubRows
 		mainRow.addStockRecord(stockRecord);
 	}
 
-	public void addQuantitiesRecord(@NonNull final I_QtyDemand_QtySupply_V quantitiesRecord)
+	public void addQuantitiesRecord(
+			@NonNull final I_QtyDemand_QtySupply_V quantitiesRecord,
+			@NonNull final DimensionSpec dimensionSpec,
+			final boolean includePerPlantDetailRows)
 	{
+		boolean addedToAtLeastOneBucket = false;
+
+		int ppPlantId = 0;
+		if (quantitiesRecord.getM_Warehouse_ID() > 0)
+		{
+			final I_M_Warehouse warehouse = warehouseDAO.getById(WarehouseId.ofRepoId(quantitiesRecord.getM_Warehouse_ID()));
+			ppPlantId = warehouse.getPP_Plant_ID();
+		}
+
+		if (ppPlantId > 0)
+		{
+			if (includePerPlantDetailRows)
+			{
+				addQuantitiesRecordToCounting(quantitiesRecord, ppPlantId);
+				addedToAtLeastOneBucket = true;
+			}
+		}
+		else
+		{
+			addedToAtLeastOneBucket = addQuantitiesRecordToDimensionGroups(quantitiesRecord, dimensionSpec);
+		}
+
+		if (!addedToAtLeastOneBucket)
+		{
+			final DimensionGroupSubRowBucket fallbackBucket = dimensionGroupSubRows.computeIfAbsent(DimensionSpecGroup.OTHER_GROUP, DimensionGroupSubRowBucket::create);
+			fallbackBucket.addQuantitiesRecord(quantitiesRecord);
+		}
+
 		mainRow.addQuantitiesRecord(quantitiesRecord);
 	}
 

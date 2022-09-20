@@ -2,9 +2,12 @@ package de.metas.ui.web.material.cockpit.rowfactory;
 
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
+import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
@@ -54,6 +57,7 @@ public class CountingSubRowBucket
 {
 
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	public static CountingSubRowBucket create(final int plantId)
 	{
@@ -76,6 +80,10 @@ public class CountingSubRowBucket
 	private Quantity qtyStockCurrentAtDate;
 
 	private Quantity qtyOnHandStock;
+	
+	private Quantity qtySupplyPurchaseOrder;
+	
+	private Quantity qtyDemandSalesOrder;
 
 	private final Set<Integer> cockpitRecordIds = new HashSet<>();
 
@@ -110,6 +118,14 @@ public class CountingSubRowBucket
 		stockRecordIds.add(stockRecord.getMD_Stock_ID());
 	}
 
+	public void addQuantitiesRecord(@NonNull final I_QtyDemand_QtySupply_V quantitiesRecord)
+	{
+		final I_C_UOM uom = uomDAO.getById(UomId.ofRepoId(quantitiesRecord.getC_UOM_ID()));
+
+		qtyDemandSalesOrder = addToNullable(qtyDemandSalesOrder, quantitiesRecord.getQtyReserved(), uom);
+		qtySupplyPurchaseOrder = addToNullable(qtySupplyPurchaseOrder, quantitiesRecord.getQtyToMove(), uom);
+	}
+
 	@NonNull
 	public MaterialCockpitRow createIncludedRow(@NonNull final MainRowWithSubRows mainRowBucket)
 	{
@@ -121,6 +137,8 @@ public class CountingSubRowBucket
 				.date(productIdAndDate.getDate())
 				.productId(productIdAndDate.getProductId().getRepoId())
 				.plantId(plantId)
+				.qtyDemandSalesOrder(qtyDemandSalesOrder)
+				.qtySupplyPurchaseOrder(qtySupplyPurchaseOrder)
 				.qtyStockEstimateCountAtDate(qtyStockEstimateCountAtDate)
 				.qtyStockEstimateTimeAtDate(qtyStockEstimateTimeAtDate)
 				.qtyInventoryCountAtDate(qtyInventoryCountAtDate)

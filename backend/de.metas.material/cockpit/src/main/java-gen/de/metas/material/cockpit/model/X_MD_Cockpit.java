@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -886333893L;
+	private static final long serialVersionUID = -1989481417L;
 
     /** Standard Constructor */
     public X_MD_Cockpit (final Properties ctx, final int MD_Cockpit_ID, @Nullable final String trxName)
@@ -105,15 +105,15 @@ public class X_MD_Cockpit extends org.compiere.model.PO implements I_MD_Cockpit,
 	}
 
 	@Override
-	public void setMDCandidateQtyStock (final @Nullable BigDecimal MDCandidateQtyStock)
+	public void setMDCandidateQtyStock_AtDate (final @Nullable BigDecimal MDCandidateQtyStock_AtDate)
 	{
-		set_Value (COLUMNNAME_MDCandidateQtyStock, MDCandidateQtyStock);
+		set_Value (COLUMNNAME_MDCandidateQtyStock_AtDate, MDCandidateQtyStock_AtDate);
 	}
 
 	@Override
-	public BigDecimal getMDCandidateQtyStock() 
+	public BigDecimal getMDCandidateQtyStock_AtDate() 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_MDCandidateQtyStock);
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_MDCandidateQtyStock_AtDate);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 

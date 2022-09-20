@@ -208,25 +208,25 @@ public interface I_MD_Cockpit
 	String COLUMNNAME_MD_Cockpit_ID = "MD_Cockpit_ID";
 
 	/**
-	 * Set MDCandidateQtyStock.
+	 * Set 📆 MDCandidateQtyStock.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setMDCandidateQtyStock (@Nullable BigDecimal MDCandidateQtyStock);
+	void setMDCandidateQtyStock_AtDate (@Nullable BigDecimal MDCandidateQtyStock_AtDate);
 
 	/**
-	 * Get MDCandidateQtyStock.
+	 * Get 📆 MDCandidateQtyStock.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getMDCandidateQtyStock();
+	BigDecimal getMDCandidateQtyStock_AtDate();
 
-	ModelColumn<I_MD_Cockpit, Object> COLUMN_MDCandidateQtyStock = new ModelColumn<>(I_MD_Cockpit.class, "MDCandidateQtyStock", null);
-	String COLUMNNAME_MDCandidateQtyStock = "MDCandidateQtyStock";
+	ModelColumn<I_MD_Cockpit, Object> COLUMN_MDCandidateQtyStock_AtDate = new ModelColumn<>(I_MD_Cockpit.class, "MDCandidateQtyStock_AtDate", null);
+	String COLUMNNAME_MDCandidateQtyStock_AtDate = "MDCandidateQtyStock_AtDate";
 
 	/**
 	 * Set 📆 Vendor Promised.

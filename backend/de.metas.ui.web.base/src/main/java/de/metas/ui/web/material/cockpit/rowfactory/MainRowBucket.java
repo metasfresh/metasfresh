@@ -5,6 +5,8 @@ import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -46,6 +48,8 @@ public class MainRowBucket
 {
 	@Getter(AccessLevel.NONE)
 	private final transient IProductBL productBL = Services.get(IProductBL.class);
+	@Getter(AccessLevel.NONE)
+	private final transient IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	private Quantity qtyStockCurrentAtDate;
 
@@ -144,7 +148,7 @@ public class MainRowBucket
 
 	public void addQuantitiesRecord(@NonNull final I_QtyDemand_QtySupply_V quantitiesRecord)
 	{
-		final I_C_UOM uom = productBL.getStockUOM(quantitiesRecord.getM_Product_ID());
+		final I_C_UOM uom = uomDAO.getById(UomId.ofRepoId(quantitiesRecord.getC_UOM_ID()));
 
 		qtyDemandSalesOrder = addToNullable(qtyDemandSalesOrder, quantitiesRecord.getQtyReserved(), uom);
 		qtySupplyPurchaseOrder = addToNullable(qtySupplyPurchaseOrder, quantitiesRecord.getQtyToMove(), uom);

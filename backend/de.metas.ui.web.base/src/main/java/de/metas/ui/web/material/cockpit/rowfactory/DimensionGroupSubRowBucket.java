@@ -3,9 +3,12 @@ package de.metas.ui.web.material.cockpit.rowfactory;
 import de.metas.dimension.DimensionSpecGroup;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
+import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Data;
 import lombok.NonNull;
@@ -43,12 +46,12 @@ import static de.metas.util.Check.assumeNotNull;
  * Mutable row representation that is used during the rows' loading
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @Data
 public class DimensionGroupSubRowBucket
 {
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	public static DimensionGroupSubRowBucket create(@NonNull final DimensionSpecGroup dimensionSpecGroup)
 	{
@@ -62,6 +65,8 @@ public class DimensionGroupSubRowBucket
 
 	private Quantity qtyDemandSalesOrderAtDate;
 
+	private Quantity qtyDemandSalesOrder;
+
 	private Quantity qtyDemandDDOrderAtDate;
 
 	private Quantity qtyDemandSumAtDate;
@@ -71,6 +76,8 @@ public class DimensionGroupSubRowBucket
 	private Quantity qtySupplyPPOrderAtDate;
 
 	private Quantity qtySupplyPurchaseOrderAtDate;
+
+	private Quantity qtySupplyPurchaseOrder;
 
 	private Quantity qtySupplyDDOrderAtDate;
 
@@ -120,6 +127,14 @@ public class DimensionGroupSubRowBucket
 		cockpitRecordIds.add(cockpitRecord.getMD_Cockpit_ID());
 	}
 
+	public void addQuantitiesRecord(@NonNull final I_QtyDemand_QtySupply_V quantitiesRecord)
+	{
+		final I_C_UOM uom = uomDAO.getById(UomId.ofRepoId(quantitiesRecord.getC_UOM_ID()));
+
+		qtyDemandSalesOrder = addToNullable(qtyDemandSalesOrder, quantitiesRecord.getQtyReserved(), uom);
+		qtySupplyPurchaseOrder = addToNullable(qtySupplyPurchaseOrder, quantitiesRecord.getQtyToMove(), uom);
+	}
+
 	public void addStockRecord(@NonNull final I_MD_Stock stockRecord)
 	{
 		final I_C_UOM uom = productBL.getStockUOM(stockRecord.getM_Product_ID());
@@ -144,7 +159,9 @@ public class DimensionGroupSubRowBucket
 				.qtyMaterialentnahmeAtDate(getQtyMaterialentnahmeAtDate())
 				.qtyDemandPPOrderAtDate(getQtyDemandPPOrderAtDate())
 				.qtySupplyPurchaseOrderAtDate(getQtySupplyPurchaseOrderAtDate())
+				.qtySupplyPurchaseOrder(getQtySupplyPurchaseOrder())
 				.qtyDemandSalesOrderAtDate(getQtyDemandSalesOrderAtDate())
+				.qtyDemandSalesOrder(getQtyDemandSalesOrder())
 				.qtyDemandDDOrderAtDate(getQtyDemandDDOrderAtDate())
 				.qtyDemandSumAtDate(getQtyDemandSumAtDate())
 				.qtySupplyPPOrderAtDate(getQtySupplyPPOrderAtDate())

@@ -53,6 +53,7 @@ public class MainRowBucketId
 				date);
 	}
 
+	@NonNull
 	public static MainRowBucketId createInstanceForQuantitiesRecord(
 			@NonNull final I_QtyDemand_QtySupply_V qtyRecord,
 			@NonNull final LocalDate date)

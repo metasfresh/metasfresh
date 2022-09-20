@@ -22,8 +22,8 @@
 
 package de.metas.ui.web.material.cockpit.filters;
 
-import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
+import de.metas.product.ProductId;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -32,8 +32,9 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
 
-public class QtyFilters
+public class QtyDemandSupplyFilters
 {
+	@NonNull
 	public static IQuery<I_QtyDemand_QtySupply_V> createQuantitiesQueryFor(@NonNull final DocumentFilterList filters)
 	{
 		final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -46,6 +47,17 @@ public class QtyFilters
 		return queryBuilder.create();
 	}
 
+	@NonNull
+	public static IQuery<I_QtyDemand_QtySupply_V> createQuantitiesQueryFor(@NonNull final ProductId productId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+		return queryBL
+				.createQueryBuilder(I_QtyDemand_QtySupply_V.class)
+				.addEqualsFilter(I_QtyDemand_QtySupply_V.COLUMNNAME_M_Product_ID, productId)
+				.create();
+	}
+
 	private static boolean augmentQueryBuilder(final IQueryBuilder<I_QtyDemand_QtySupply_V> queryBuilder, final ProductFilterVO productFilterVO)
 	{
 		final IQuery<I_M_Product> productQuery = ProductFilterUtil.createProductQueryOrNull(productFilterVO);
@@ -54,7 +66,7 @@ public class QtyFilters
 			return false;
 		}
 
-		queryBuilder.addInSubQueryFilter(I_MD_Stock.COLUMNNAME_M_Product_ID, I_M_Product.COLUMNNAME_M_Product_ID, productQuery);
+		queryBuilder.addInSubQueryFilter(I_QtyDemand_QtySupply_V.COLUMNNAME_M_Product_ID, I_M_Product.COLUMNNAME_M_Product_ID, productQuery);
 		return true;
 	}
 }
