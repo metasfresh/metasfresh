@@ -603,14 +603,15 @@ public class FlatrateDAO implements IFlatrateDAO
 		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
 		final List<I_C_Flatrate_DataEntry> entriesToCorrect = flatrateDB.retrieveDataEntries(flatrateTerm, X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased, uomId);
 
-		final Instant dateFromInstant = dateFrom.toInstant(orgDAO::getTimeZone);
-		final Instant dateToInstant = dateTo.toInstant(orgDAO::getTimeZone);
-
 		for (final I_C_Flatrate_DataEntry entryToCorrect : entriesToCorrect)
 		{
 			final I_C_Period entryPeriod = entryToCorrect.getC_Period();
-			if (entryPeriod.getEndDate().toInstant().compareTo(dateFromInstant) < 0  // entryPeriod ends before dateFrom
-					|| entryPeriod.getStartDate().toInstant().compareTo(dateToInstant) > 0)      // entryPeriod begins after dateTo
+			final OrgId orgId = OrgId.ofRepoId(entryToCorrect.getAD_Org_ID());
+			final LocalDateAndOrgId endDate = LocalDateAndOrgId.ofTimestamp(entryPeriod.getEndDate(), orgId, orgDAO::getTimeZone);
+			final LocalDateAndOrgId startDate = LocalDateAndOrgId.ofTimestamp(entryPeriod.getEndDate(), orgId, orgDAO::getTimeZone);
+
+			if (endDate.compareTo(dateFrom) < 0  // entryPeriod ends before dateFrom
+					|| startDate.compareTo(dateTo) > 0)      // entryPeriod begins after dateTo
 			{
 				continue;
 			}
