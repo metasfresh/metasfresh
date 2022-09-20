@@ -231,8 +231,8 @@ public class M_InOut_Line_StepDef
 				inOutLine.setM_Locator_ID(locator.getM_Locator_ID());
 			}
 
-			final boolean isPackingMaterial = DataTableUtil.extractBooleanForColumnName(row, "OPT." + de.metas.inout.model.I_M_InOutLine.COLUMNNAME_IsPackagingMaterial);
-			if (isPackingMaterial)
+			final Boolean isPackingMaterial = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + de.metas.inout.model.I_M_InOutLine.COLUMNNAME_IsPackagingMaterial);
+			if (isPackingMaterial != null)
 			{
 				inOutLine.setIsPackagingMaterial(isPackingMaterial);
 			}
