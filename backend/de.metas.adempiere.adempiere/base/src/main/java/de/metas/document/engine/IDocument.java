@@ -1,7 +1,7 @@
 package de.metas.document.engine;
 
+import de.metas.ad_reference.ReferenceId;
 import de.metas.organization.InstantAndOrgId;
-import de.metas.reflist.ReferenceId;
 import de.metas.util.Services;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;

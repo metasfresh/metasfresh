@@ -49,6 +49,8 @@ Feature: Setting customColumns via SetCustomColumns method
       | S_ResourceType | TimeSlotEnd   | true                      |
       | S_ResourceType | ChargeableQty | true                      |
 
+    And the metasfresh cache is reset
+
     When set custom columns for C_Order:
       | C_Order_ID.Identifier | OPT.BPartnerName | OPT.IsDropShip | OPT.DateOrdered | OPT.DatePromised         | OPT.Volume | OPT.EMail |
       | order                 | BPartnerName     | true           | 2022-08-05      | 2022-08-05T14:38:40.108Z | 2.1234     | null      |
@@ -58,9 +60,9 @@ Feature: Setting customColumns via SetCustomColumns method
       | resourceType                 | 12:25             | 15:00           | 10                |
 
     Then validate customColumns:
-      | OPT.C_Order_ID.Identifier | OPT.S_ResourceType_ID.Identifier | CustomColumnJSONValue                                                                                                              |
-      | order                     |                                  | {"BPartnerName":"BPartnerName","DateOrdered":"2022-08-05","DatePromised":"2022-08-05T14:38:40Z","IsDropShip":true,"Volume":2.1234} |
-      |                           | resourceType                     | {"ChargeableQty":10,"TimeSlotEnd":"15:00:00","TimeSlotStart":"12:25:00"}                                                           |
+      | OPT.C_Order_ID.Identifier | OPT.S_ResourceType_ID.Identifier | CustomColumnJSONValue                                                                                                                  |
+      | order                     |                                  | {"BPartnerName":"BPartnerName","DateOrdered":"2022-08-05","DatePromised":"2022-08-05T14:38:40.108Z","IsDropShip":true,"Volume":2.1234} |
+      |                           | resourceType                     | {"ChargeableQty":10,"TimeSlotEnd":"15:00:00","TimeSlotStart":"12:25:00"}                                                               |
 
     And set custom columns for C_Order expecting error:
       | C_Order_ID.Identifier | OPT.DeliveryInfo | OPT.ErrorMessage                                                                                           |

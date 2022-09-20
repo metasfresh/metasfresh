@@ -10,6 +10,7 @@ import java.time.LocalDate;
 
 import javax.annotation.Nullable;
 
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
@@ -150,7 +151,7 @@ public class ReconcilePaymentsCommandTest
 		bankStatmentPaymentBL = new BankStatementPaymentBL(bankStatementBL, moneyService);
 		SpringContextHolder.registerJUnitBean(IBankStatementPaymentBL.class, bankStatmentPaymentBL);
 
-		this.rowsRepo = new BankStatementLineAndPaymentsToReconcileRepository(bankStatementBL, currencyRepository);
+		this.rowsRepo = new BankStatementLineAndPaymentsToReconcileRepository(bankStatementBL, currencyRepository, LookupDataSourceFactory.sharedInstance());
 		rowsRepo.setBpartnerLookup(new MockedBPartnerLookupDataSource());
 
 		createMasterdata();

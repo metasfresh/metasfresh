@@ -22,6 +22,7 @@ package de.metas.contracts.interceptor;
  * #L%
  */
 
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.contracts.Contracts_Constants;
 import de.metas.contracts.bpartner.interceptor.C_BPartner_Location;
 import de.metas.contracts.callorder.CallOrderContractService;
@@ -75,6 +76,7 @@ public class MainValidator extends AbstractModuleInterceptor
 	private final OrderGroupCompensationChangesHandler groupChangesHandler;
 	private final InOutLinesWithMissingInvoiceCandidate inoutLinesWithMissingInvoiceCandidateRepo;
 	private final CallOrderContractService callOrderContractService;
+	private final ADReferenceService adReferenceService;
 
 	@Deprecated
 	public MainValidator()
@@ -84,7 +86,8 @@ public class MainValidator extends AbstractModuleInterceptor
 				SpringContextHolder.instance.getBean(IDocumentLocationBL.class),
 				SpringContextHolder.instance.getBean(OrderGroupCompensationChangesHandler.class),
 				SpringContextHolder.instance.getBean(InOutLinesWithMissingInvoiceCandidate.class),
-				SpringContextHolder.instance.getBean(CallOrderContractService.class));
+				SpringContextHolder.instance.getBean(CallOrderContractService.class),
+				ADReferenceService.get());
 	}
 
 	public MainValidator(
@@ -92,13 +95,15 @@ public class MainValidator extends AbstractModuleInterceptor
 			@NonNull final IDocumentLocationBL documentLocationBL,
 			@NonNull final OrderGroupCompensationChangesHandler groupChangesHandler,
 			@NonNull final InOutLinesWithMissingInvoiceCandidate inoutLinesWithMissingInvoiceCandidateRepo,
-			@NonNull final CallOrderContractService callOrderContractService)
+			@NonNull final CallOrderContractService callOrderContractService,
+			@NonNull final ADReferenceService adReferenceService)
 	{
 		this.contractOrderService = contractOrderService;
 		this.documentLocationBL = documentLocationBL;
 		this.groupChangesHandler = groupChangesHandler;
 		this.inoutLinesWithMissingInvoiceCandidateRepo = inoutLinesWithMissingInvoiceCandidateRepo;
 		this.callOrderContractService = callOrderContractService;
+		this.adReferenceService = adReferenceService;
 	}
 
 	@Override
@@ -177,7 +182,7 @@ public class MainValidator extends AbstractModuleInterceptor
 		engine.addModelValidator(C_SubscriptionProgress.instance);
 		engine.addModelValidator(C_Flatrate_DataEntry.instance);
 		engine.addModelValidator(C_Flatrate_Matching.instance);
-		engine.addModelValidator(new C_Flatrate_Term(contractOrderService,documentLocationBL));
+		engine.addModelValidator(new C_Flatrate_Term(contractOrderService,documentLocationBL, adReferenceService));
 
 		engine.addModelValidator(new C_Invoice_Candidate());
 		engine.addModelValidator(new C_Invoice_Clearing_Alloc());

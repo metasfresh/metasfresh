@@ -28,7 +28,6 @@ import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
-import de.metas.cucumber.stepdefs.M_ReceiptSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
@@ -140,13 +139,13 @@ public class M_ReceiptSchedule_StepDef
 			final Integer bPartnerLocationID = bPartnerLocationTable.getOptional(bpPartnerLocationIdentifier)
 					.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
 					.orElseGet(() -> Integer.parseInt(bpPartnerLocationIdentifier));
-			Assertions.assertThat(bPartnerLocationID).isNotNull();
+			assertThat(bPartnerLocationID).isNotNull();
 
 			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final Integer productID = productTable.getOptional(productIdentifier)
 					.map(I_M_Product::getM_Product_ID)
 					.orElseGet(() -> Integer.parseInt(productIdentifier));
-			Assertions.assertThat(productID).isNotNull();
+			assertThat(productID).isNotNull();
 
 			final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalForColumnName(tableRow, COLUMNNAME_QtyOrdered);
 

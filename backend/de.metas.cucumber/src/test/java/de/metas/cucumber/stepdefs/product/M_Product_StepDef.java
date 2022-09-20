@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.product;
 
+import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -39,7 +40,6 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -70,6 +70,7 @@ import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_Product_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_IsStocked;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_Category_ID;
+import static org.compiere.model.I_M_Product.COLUMNNAME_Value;
 
 public class M_Product_StepDef
 {
@@ -233,6 +234,25 @@ public class M_Product_StepDef
 		}
 	}
 
+	@And("load product by value:")
+	public void load_product_by_value(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			final String value = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_Value);
+
+			final I_M_Product loadedProduct = queryBL.createQueryBuilder(I_M_Product.class)
+					.addEqualsFilter(COLUMNNAME_Value, value)
+					.create()
+					.firstOnlyNotNull(I_M_Product.class);
+
+			final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+
+			productTable.put(productIdentifier, loadedProduct);
+		}
+	}
+
 	private void createM_Product(@NonNull final Map<String, String> tableRow)
 	{
 		final String productName = tableRow.get("Name");
@@ -241,7 +261,7 @@ public class M_Product_StepDef
 
 		final String productType = DataTableUtil.extractStringOrNullForColumnName(tableRow, I_M_Product.COLUMNNAME_ProductType);
 
-		final int orgId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_Product.COLUMNNAME_AD_Org_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER))
+		final int orgId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_Product.COLUMNNAME_AD_Org_ID + "." + TABLECOLUMN_IDENTIFIER))
 				.map(orgTable::get)
 				.map(I_AD_Org::getAD_Org_ID)
 				.orElse(StepDefConstants.ORG_ID.getRepoId());

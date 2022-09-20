@@ -41,6 +41,7 @@ import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.AttributeSourceDocument;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValueContext;
 import org.adempiere.service.ISysConfigBL;
@@ -107,7 +108,7 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 			@NonNull final ImmutableSet<ProductId> productIds,
 			@NonNull final I_M_HU hu,
 			final boolean readonly,
-			final boolean isMaterialReceipt)
+			final AttributeSourceDocument attributeSourceDocument)
 	{
 		this.documentPath = documentPath;
 		this.attributesStorage = attributesStorage;
@@ -144,7 +145,7 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 			{
 				hiddenAttributeNames.add(attributeCode);
 			}
-			if (attributesStorage.isMandatory(attribute, productIds, isMaterialReceipt))
+			if (attributesStorage.isMandatory(attribute, productIds, attributeSourceDocument))
 			{
 				mandatoryAttributeNames.add(attributeCode);
 			}

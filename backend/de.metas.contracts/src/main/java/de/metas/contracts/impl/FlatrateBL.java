@@ -25,6 +25,8 @@ package de.metas.contracts.impl;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.IProductAcctDAO;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
@@ -105,7 +107,6 @@ import de.metas.util.time.InstantInterval;
 import de.metas.workflow.api.IWFExecutionFactory;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DocTypeNotFoundException;
@@ -114,6 +115,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -230,7 +232,8 @@ public class FlatrateBL implements IFlatrateBL
 				{
 					final Properties ctx = InterfaceWrapperHelper.getCtx(dataEntry);
 
-					final ITranslatableString competed = Services.get(IADReferenceDAO.class)
+					final ADReferenceService adReferenceService = ADReferenceService.get();
+					final ITranslatableString competed = adReferenceService
 							.retrieveListNameTranslatableString(
 									X_C_Flatrate_DataEntry.DOCSTATUS_AD_Reference_ID,
 									X_C_Flatrate_DataEntry.DOCSTATUS_Completed);
@@ -891,15 +894,15 @@ public class FlatrateBL implements IFlatrateBL
 			}
 		}
 
-		final POInfo poInfo = POInfo.getPOInfo(I_C_Flatrate_Term.Table_Name);
-		final Lookup columnLookup = poInfo.getColumnLookup(ctx, poInfo.getColumnIndex(I_C_Flatrate_Term.COLUMNNAME_UOMType));
+		final ADReferenceService adReferenceService = ADReferenceService.get();
+		final String uomTypeTrl = adReferenceService.retrieveListNameTrl(ctx, ReferenceId.ofRepoId(X_C_Flatrate_Term.UOMTYPE_AD_Reference_ID), flatrateTerm.getUOMType());
 
 		final String msg = msgBL.getMsg(ctx, FlatrateBL.MSG_DATA_ENTRY_CREATE_FLAT_FEE_4P,
 										new Object[] {
 												counter,
 												flatrateTerm.getStartDate(),
 												flatrateTerm.getEndDate(),
-												columnLookup.getDisplay(flatrateTerm.getUOMType()) });
+												uomTypeTrl });
 		Loggables.withLogger(logger, Level.INFO).addLog(msg);
 	}
 

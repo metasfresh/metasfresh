@@ -24,6 +24,7 @@ package de.metas.serviceprovider.issue.importer;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.activity.repository.ActivityRepository;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.externalreference.ExternalId;
 import de.metas.externalreference.ExternalReferenceRepository;
@@ -102,7 +103,7 @@ class IssueImporterServiceTest
 				issueRepository,
 				externalReferenceRepository,
 				trxManager,
-				new IssueLabelService(new IssueLabelRepository(queryBL)),
+				new IssueLabelService(ADReferenceService.newMocked(), new IssueLabelRepository(queryBL)),
 				new ActivityRepository()
 		);
 	}

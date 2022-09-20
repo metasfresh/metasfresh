@@ -22,13 +22,12 @@ package de.metas.edi.sscc18;
  * #L%
  */
 
+import de.metas.edi.api.impl.pack.EDIDesadvPack;
+import de.metas.esb.edi.model.I_EDI_DesadvLine;
+import de.metas.handlingunits.allocation.impl.TotalQtyCUBreakdownCalculator;
 
 import java.math.BigDecimal;
 import java.util.List;
-
-import de.metas.esb.edi.model.I_EDI_DesadvLine;
-import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
-import de.metas.handlingunits.allocation.impl.TotalQtyCUBreakdownCalculator;
 
 /**
  * {@link I_EDI_DesadvLine} printable labels.
@@ -55,7 +54,7 @@ public interface IPrintableDesadvLineSSCC18Labels
 
 	Integer getExistingSSCC18sCount();
 
-	List<I_EDI_DesadvLine_Pack> getExistingSSCC18s();
+	List<EDIDesadvPack> getExistingSSCC18s();
 
 	BigDecimal getRequiredSSCC18sCount();
 

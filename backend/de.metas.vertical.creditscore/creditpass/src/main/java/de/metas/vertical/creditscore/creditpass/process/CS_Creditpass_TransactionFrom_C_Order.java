@@ -22,6 +22,7 @@ package de.metas.vertical.creditscore.creditpass.process;
  * #L%
  */
 
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -37,8 +38,8 @@ import de.metas.vertical.creditscore.base.spi.model.TransactionResult;
 import de.metas.vertical.creditscore.creditpass.CreditPassConstants;
 import de.metas.vertical.creditscore.creditpass.model.extended.I_C_Order;
 import de.metas.vertical.creditscore.creditpass.service.CreditPassTransactionService;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.X_C_Order;
 import org.compiere.util.Env;
 
@@ -70,7 +71,8 @@ public class CS_Creditpass_TransactionFrom_C_Order extends JavaProcess implement
 		else
 		{
 			order.setCreditpassFlag(true);
-			final String paymentRuleName = Services.get(IADReferenceDAO.class).retrieveListNameTrl(X_C_Order.PAYMENTRULE_AD_Reference_ID, paymentRule);
+			final ADReferenceService adReferenceService = ADReferenceService.get();
+			final String paymentRuleName = adReferenceService.retrieveListNameTrl(X_C_Order.PAYMENTRULE_AD_Reference_ID, paymentRule);
 			final ITranslatableString message = Services.get(IMsgBL.class).getTranslatableMsgText(CreditPassConstants.CREDITPASS_STATUS_FAILURE_MESSAGE_KEY, paymentRuleName);
 			order.setCreditpassStatus(message.translate(Env.getAD_Language()));
 		}

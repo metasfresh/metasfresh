@@ -139,6 +139,9 @@ public class DebugRestController
 	@Lazy
 	private ObjectMapper sharedJsonObjectMapper;
 
+	@Autowired
+	private LookupDataSourceFactory lookupDataSourceFactory;
+
 	private JSONOptions newJSONOptions()
 	{
 		return JSONOptions.of(userSession);
@@ -267,7 +270,7 @@ public class DebugRestController
 	{
 		userSession.assertLoggedIn();
 
-		return LookupDataSourceFactory.instance.getCacheStats()
+		return lookupDataSourceFactory.getCacheStats()
 				.stream()
 				.map(CCache.CCacheStats::toString)
 				.collect(GuavaCollectors.toImmutableList());

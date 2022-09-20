@@ -14,7 +14,7 @@ RUN yarn install
 
 COPY frontend/ .
 RUN yarn lint
-RUN yarn test --ci --runInBand || touch junit.xml
+RUN yarn test --ci --runInBand 2>&1 | tee test.log
 
 ENV NODE_OPTIONS=--openssl-legacy-provider
 RUN webpack --config webpack.docker.js
@@ -22,7 +22,8 @@ RUN webpack --config webpack.docker.js
 
 FROM alpine as testresults
 WORKDIR /results
-COPY --from=build /app/junit.xml .
+COPY --from=build /app/test.log /app/junit.xml* .
+RUN touch junit.xml
 
 
 FROM nginx:1.21.6 as runtime

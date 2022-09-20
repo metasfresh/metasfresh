@@ -3,6 +3,7 @@ package de.metas.document.engine.impl;
 import com.google.common.base.Objects;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
@@ -22,8 +23,7 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.service.IADReferenceDAO;
-import org.adempiere.ad.service.IADReferenceDAO.ADRefListItem;
+import de.metas.ad_reference.ADRefListItem;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.TrxCallable;
@@ -477,16 +477,15 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	@Override
 	public final Map<String, IDocActionItem> retrieveDocActionItemsIndexedByValue()
 	{
-		final IADReferenceDAO referenceDAO = Services.get(IADReferenceDAO.class);
+		final ADReferenceService adReferenceService = ADReferenceService.get();
 		final Properties ctx = Env.getCtx();
 		final String adLanguage = Env.getAD_Language(ctx);
 
-		final Map<String, IDocActionItem> docActionItemsByValue = referenceDAO.retrieveListItems(X_C_Order.DOCACTION_AD_Reference_ID) // 135
+		return adReferenceService.retrieveListItems(X_C_Order.DOCACTION_AD_Reference_ID) // 135
 				.stream()
 				.map(adRefListItem -> new DocActionItem(adRefListItem, adLanguage))
 				.sorted(Comparator.comparing(DocActionItem::toString))
 				.collect(GuavaCollectors.toImmutableMapByKey(IDocActionItem::getValue));
-		return docActionItemsByValue;
 	}
 
 	private static final class DocActionItem implements IDocActionItem

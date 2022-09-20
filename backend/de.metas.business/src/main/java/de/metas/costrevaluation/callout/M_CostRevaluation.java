@@ -54,7 +54,6 @@ public class M_CostRevaluation implements ITabCallout
 	public void postConstruct()
 	{
 		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
-		Services.get(ITabCalloutFactory.class).registerTabCalloutForTable(I_M_CostRevaluation.Table_Name, getClass());
 	}
 
 	@Override

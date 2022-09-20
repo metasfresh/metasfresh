@@ -38,8 +38,8 @@ import java.time.Instant;
 @Builder
 public class InterimInvoiceFlatrateTermQuery
 {
-	@NonNull BPartnerId bpartnerId;
 	@NonNull ProductId productId;
+	@Nullable BPartnerId bpartnerId;
 	@Nullable OrderLineId orderLineId;
 	@Nullable ConditionsId conditionsId;
 	@Nullable FlatrateTermId flatrateTermId;

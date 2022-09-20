@@ -26,6 +26,7 @@ import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -252,6 +253,29 @@ public class InOutBL implements IInOutBL
 			}
 		}
 		return pricingSystem;
+	}
+
+	@NonNull
+	public StockQtyAndUOMQty extractInOutLineQty(
+			@NonNull final I_M_InOutLine inOutLineRecord,
+			@NonNull final InvoicableQtyBasedOn invoicableQtyBasedOn)
+	{
+		switch (invoicableQtyBasedOn)
+		{
+			case CatchWeight:
+				final StockQtyAndUOMQty stockQtyAndCatchQty = getStockQtyAndCatchQty(inOutLineRecord);
+				if (stockQtyAndCatchQty.getUOMQtyOpt().isPresent())
+				{
+					return stockQtyAndCatchQty;
+				}
+
+				// fallback if the given iol simply doesn't have a catch weight (which is a common case)
+				return getStockQtyAndQtyInUOM(inOutLineRecord);
+			case NominalWeight:
+				return getStockQtyAndQtyInUOM(inOutLineRecord);
+			default:
+				throw new AdempiereException("Unsupported invoicableQtyBasedOn=" + invoicableQtyBasedOn);
+		}
 	}
 
 	/**

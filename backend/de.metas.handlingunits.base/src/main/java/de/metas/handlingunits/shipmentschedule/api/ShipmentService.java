@@ -25,6 +25,7 @@ package de.metas.handlingunits.shipmentschedule.api;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.service.AsyncBatchService;
@@ -54,7 +55,6 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
-import de.metas.inoutcandidate.lock.ShipmentScheduleLockRepository;
 import de.metas.inoutcandidate.lock.SqlShipmentScheduleLockRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.order.DeliveryRule;
@@ -136,7 +136,8 @@ public class ShipmentService implements IShipmentService
 							pickingCandidateRepository,
 							new HuId2SourceHUsService(new HUTraceRepository()),
 							huReservationService,
-							bpartnerBL
+							bpartnerBL,
+							ADReferenceService.newMocked()
 					),
 					new PickingJobHUReservationService(huReservationService),
 					pickingConfigRepo,

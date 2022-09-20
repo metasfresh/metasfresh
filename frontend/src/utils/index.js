@@ -299,3 +299,7 @@ export function formatSortingQuery(orderBy) {
 
   return orderBy;
 }
+
+export const isBlank = (str) => {
+  return !str || str.length === 0 || str.trim().length === 0;
+};

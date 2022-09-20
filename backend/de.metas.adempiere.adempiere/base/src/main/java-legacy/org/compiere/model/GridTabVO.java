@@ -633,27 +633,6 @@ public class GridTabVO implements Evaluatee, Serializable
 		return _fields;
 	}
 
-	/**
-	 * @return {@link GridFieldVO} or <code>null</code>
-	 */
-	public GridFieldVO getFieldByAD_Field_ID(final int adFieldId)
-	{
-		if (adFieldId <= 0)
-		{
-			return null;
-		}
-
-		for (final GridFieldVO gridFieldVO : getFields())
-		{
-			if (gridFieldVO.getAD_Field_ID() == adFieldId)
-			{
-				return gridFieldVO;
-			}
-		}
-
-		return null;
-	}
-
 	public GridFieldVO getFieldByColumnName(final String columnName)
 	{
 		Check.assumeNotEmpty(columnName, "columnName is not empty");

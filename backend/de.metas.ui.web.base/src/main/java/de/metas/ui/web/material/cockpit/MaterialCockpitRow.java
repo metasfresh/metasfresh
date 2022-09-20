@@ -132,7 +132,7 @@ public class MaterialCockpitRow implements IViewRow
 	public static final String FIELDNAME_Manufacturer_ID = I_M_Product.COLUMNNAME_Manufacturer_ID;
 
 	/**
-	 * Use supplier in order to make this work with unit tests; getting the LookupValue uses LookupDAO.retrieveLookupDisplayInfo which goes directly to the DB.
+	 * Use supplier in order to make this work with unit tests; getting the LookupValue uses LookupDAO.getLookupDisplayInfo which goes directly to the DB.
 	 */
 	@ViewColumn(fieldName = FIELDNAME_Manufacturer_ID, //
 			captionKey = FIELDNAME_Manufacturer_ID, //
@@ -154,7 +154,7 @@ public class MaterialCockpitRow implements IViewRow
 	public static final String FIELDNAME_C_UOM_ID = I_M_Product.COLUMNNAME_C_UOM_ID;
 
 	/**
-	 * Use supplier in order to make this work with unit tests; getting the LookupValue uses LookupDAO.retrieveLookupDisplayInfo which goes directly to the DB.
+	 * Use supplier in order to make this work with unit tests; getting the LookupValue uses LookupDAO.getLookupDisplayInfo which goes directly to the DB.
 	 */
 	@ViewColumn(fieldName = FIELDNAME_C_UOM_ID, //
 			captionKey = FIELDNAME_C_UOM_ID, //
@@ -388,7 +388,7 @@ public class MaterialCockpitRow implements IViewRow
 		this.productName = productRecord.getName();
 		this.productCategoryOrSubRowName = productCategoryRecord.getName();
 
-		final LookupDataSourceFactory lookupFactory = LookupDataSourceFactory.instance;
+		final LookupDataSourceFactory lookupFactory = LookupDataSourceFactory.sharedInstance();
 
 		final int uomRepoId = CoalesceUtil.firstGreaterThanZero(productRecord.getPackage_UOM_ID(), productRecord.getC_UOM_ID());
 
@@ -503,7 +503,7 @@ public class MaterialCockpitRow implements IViewRow
 		this.productName = productRecord.getName();
 		this.productCategoryOrSubRowName = dimensionGroupName;
 
-		final LookupDataSourceFactory lookupFactory = LookupDataSourceFactory.instance;
+		final LookupDataSourceFactory lookupFactory = LookupDataSourceFactory.sharedInstance();
 
 		final int uomRepoId = CoalesceUtil.firstGreaterThanZero(productRecord.getPackage_UOM_ID(), productRecord.getC_UOM_ID());
 		this.uom = () -> lookupFactory
@@ -593,7 +593,7 @@ public class MaterialCockpitRow implements IViewRow
 		this.productName = productRecord.getName();
 		this.productCategoryOrSubRowName = plantName;
 
-		final LookupDataSourceFactory lookupFactory = LookupDataSourceFactory.instance;
+		final LookupDataSourceFactory lookupFactory = LookupDataSourceFactory.sharedInstance();
 
 		final int uomRepoId = CoalesceUtil.firstGreaterThanZero(productRecord.getPackage_UOM_ID(), productRecord.getC_UOM_ID());
 		this.uom = () -> lookupFactory

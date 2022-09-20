@@ -67,7 +67,6 @@ import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.ProductASIMandatoryException;
 import org.adempiere.misc.service.IPOService;
@@ -614,16 +613,6 @@ public class MInOut extends X_M_InOut implements IDocument
 	private MInOutLine[] m_lines = null;
 	/** Confirmations */
 	private MInOutConfirm[] m_confirms = null;
-
-	/**
-	 * Get Document Status
-	 *
-	 * @return Document Status Clear Text
-	 */
-	public String getDocStatusName()
-	{
-		return Services.get(IADReferenceDAO.class).retrieveListNameTrl(getCtx(), X_M_InOut.DOCSTATUS_AD_Reference_ID, getDocStatus());
-	} // getDocStatusName
 
 	/**
 	 * Add to Description
@@ -1397,7 +1386,7 @@ public class MInOut extends X_M_InOut implements IDocument
 				}
 				//
 				m_processMsg = "Open @M_InOutConfirm_ID@: " +
-						confirm.getConfirmTypeName() + " - " + confirm.getDocumentNo();
+						confirm.getConfirmType() + " - " + confirm.getDocumentNo();
 				return IDocument.STATUS_InProgress;
 			}
 		}

@@ -1,10 +1,12 @@
 package de.metas.impexp;
 
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-
+import de.metas.impexp.format.ImpFormatColumnDataType;
+import de.metas.impexp.format.ImpFormatId;
+import de.metas.impexp.format.ImpFormatType;
+import de.metas.util.Services;
+import lombok.Getter;
+import lombok.NonNull;
+import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -12,12 +14,10 @@ import org.compiere.model.I_AD_ImpFormat;
 import org.compiere.model.I_AD_ImpFormat_Row;
 import org.compiere.model.I_I_Product;
 
-import de.metas.impexp.format.ImpFormatColumnDataType;
-import de.metas.impexp.format.ImpFormatId;
-import de.metas.impexp.format.ImpFormatType;
-import de.metas.util.Services;
-import lombok.Getter;
-import lombok.NonNull;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -113,11 +113,11 @@ class ImportFormatBuilder
 
 	public ImportFormatBuilder column(final String columnName, final ImpFormatColumnDataType type)
 	{
-		final int adColumnId = tableDAO.retrieveColumn(importTableId, columnName).getAD_Column_ID();
+		final AdColumnId adColumnId = tableDAO.retrieveColumnId(importTableId, columnName);
 
 		final I_AD_ImpFormat_Row colRecord = InterfaceWrapperHelper.newInstance(I_AD_ImpFormat_Row.class);
 		colRecord.setName("Value");
-		colRecord.setAD_Column_ID(adColumnId);
+		colRecord.setAD_Column_ID(adColumnId.getRepoId());
 		colRecord.setDataType(type.getCode());
 		colRecord.setStartNo(columnRecords.size() + 1);
 

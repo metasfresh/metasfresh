@@ -2,13 +2,14 @@ package de.metas.i18n;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.ad_reference.ADRefListItem;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.currency.Amount;
-import de.metas.reflist.ReferenceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
-import org.adempiere.ad.service.IADReferenceDAO;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -411,11 +412,11 @@ public class TranslatableStrings
 
 	public static ITranslatableString adRefList(@NonNull final ReferenceId adReferenceId, @NonNull final String value)
 	{
-		final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+		final ADReferenceService adReferenceService = ADReferenceService.get();
 
-		return adReferenceDAO.getRefListById(adReferenceId)
+		return adReferenceService.getRefListById(adReferenceId)
 				.getItemByValue(value)
-				.map(IADReferenceDAO.ADRefListItem::getName)
+				.map(ADRefListItem::getName)
 				.orElseGet(() -> anyLanguage(value));
 	}
 

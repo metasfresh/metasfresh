@@ -48,12 +48,11 @@ services:
       - "8080:8080"
       - "8789:8789"
     volumes:
-      - ./metasfresh.properties:/opt/metasfresh/metasfresh-webui-api/metasfresh.properties:ro
+      - ./metasfresh.properties:/opt/metasfresh-webui-api/metasfresh.properties:ro
     environment:
       # missing  ${metasfresh_es_enable_params}, ${metasfresh_db_connectionpool_params}, ${metasfresh_admin_params} and ${webui_frontend_url_params}
       - "JAVA_TOOL_OPTIONS=-Xmx512M -XX:+HeapDumpOnOutOfMemoryError -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8789"
       - "JAVA_SECURITY_EGD=file:/dev/./urandom"
-      - PropertyFile=/opt/metasfresh/metasfresh-webui-api/metasfresh.properties
       - "SPRING_RABBITMQ_HOST=rabbitmq"
       - "SPRING_RABBITMQ_PORT=5672"
       - "SPRING_RABBITMQ_USERNAME=metasfresh"

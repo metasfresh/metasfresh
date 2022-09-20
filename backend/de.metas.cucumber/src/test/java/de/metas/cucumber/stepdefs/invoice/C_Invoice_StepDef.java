@@ -47,6 +47,7 @@ import de.metas.impex.model.I_AD_InputDataSource;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoice.InvoiceCreditContext;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceService;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
@@ -54,7 +55,6 @@ import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.api.impl.PlainInvoicingParams;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
@@ -63,7 +63,6 @@ import de.metas.order.OrderId;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.impl.PaymentTermQuery;
-import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -72,7 +71,6 @@ import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
@@ -87,7 +85,6 @@ import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.X_C_Invoice;
-import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
 import org.slf4j.Logger;
@@ -101,7 +98,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_Invoice_Candidate_ID;
@@ -109,6 +105,7 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Q
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
+import static org.compiere.model.I_C_Invoice.COLUMNNAME_AD_User_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_ConversionType_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_DocTypeTarget_ID;
@@ -120,7 +117,6 @@ import static org.compiere.model.I_C_Invoice.COLUMNNAME_IsSOTrx;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_POReference;
 import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID;
 import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_PriceEntered;
-import static org.compiere.model.I_C_Order.COLUMNNAME_AD_User_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_Order_ID;
 
 public class C_Invoice_StepDef
@@ -139,7 +135,7 @@ public class C_Invoice_StepDef
 	private final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService = SpringContextHolder.instance.getBean(InvoiceProcessingServiceCompanyService.class);
 	private final CurrencyRepository currencyRepository = SpringContextHolder.instance.getBean(CurrencyRepository.class);
 	private final PaymentAllocationRepository paymentAllocationRepository = SpringContextHolder.instance.getBean(PaymentAllocationRepository.class);
-
+	private final InvoiceService invoiceService = SpringContextHolder.instance.getBean(InvoiceService.class);
 
 	private final C_Invoice_StepDefData invoiceTable;
 	private final C_InvoiceLine_StepDefData invoiceLineTable;
@@ -271,37 +267,13 @@ public class C_Invoice_StepDef
 
 		//enqueue invoice candidate
 		final I_C_Invoice_Candidate invoiceCandidateRecord = getFirstInvoiceCandidateByOrderId(targetOrderId);
+		invoiceService.generateInvoicesFromInvoiceCandidateIds(ImmutableSet.of(InvoiceCandidateId.ofRepoId(invoiceCandidateRecord.getC_Invoice_Candidate_ID())));
 
-		assertThat(invoiceCandidateRecord).isNotNull();
+		final List<de.metas.adempiere.model.I_C_Invoice> invoices = invoiceDAO.getInvoicesForOrderIds(ImmutableList.of(targetOrderId));
+		assertThat(invoices.size()).isEqualTo(1);
 
-		final PInstanceId invoiceCandidatesSelectionId = DB.createT_Selection(ImmutableList.of(invoiceCandidateRecord.getC_Invoice_Candidate_ID()), ITrx.TRXNAME_None);
-
-		final PlainInvoicingParams invoicingParams = new PlainInvoicingParams();
-		invoicingParams.setIgnoreInvoiceSchedule(false);
-		invoicingParams.setSupplementMissingPaymentTermIds(true);
-
-		invoiceCandBL.enqueueForInvoicing()
-				.setContext(Env.getCtx())
-				.setFailIfNothingEnqueued(true)
-				.setInvoicingParams(invoicingParams)
-				.enqueueSelection(invoiceCandidatesSelectionId);
-
-		//wait for the invoice to be created
-		final Supplier<Boolean> invoiceCreated = () ->
-		{
-			final List<de.metas.adempiere.model.I_C_Invoice> invoices = invoiceDAO.getInvoicesForOrderIds(ImmutableList.of(targetOrderId));
-			if (invoices.isEmpty())
-			{
-				return false;
-			}
-			assertThat(invoices.size())
-					.as("There may be just 1 invoice for C_Order_ID.Identifier %s", orderIdentifier)
-					.isEqualTo(1);
-			final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice.COLUMNNAME_C_Invoice_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			invoiceTable.put(invoiceIdentifier, invoices.get(0));
-			return true;
-		};
-		StepDefUtil.tryAndWait(timeoutSec, 500, invoiceCreated);
+		final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
+		invoiceTable.put(invoiceIdentifier, invoices.get(0));
 	}
 
 	@And("metasfresh contains C_Invoice:")
@@ -391,7 +363,6 @@ public class C_Invoice_StepDef
 				.orgId(StepDefConstants.ORG_ID)
 				.value(paymentTerm)
 				.build();
-
 		final PaymentTermId paymentTermId = paymentTermRepo.retrievePaymentTermId(query)
 				.orElse(null);
 
@@ -606,7 +577,6 @@ public class C_Invoice_StepDef
 
 		logger.error("*** Error while looking for first invoice-able invoice candidate record, see current context: \n" + message);
 	}
-
 
 	private void create_C_Invoice(@NonNull final Map<String, String> row)
 	{

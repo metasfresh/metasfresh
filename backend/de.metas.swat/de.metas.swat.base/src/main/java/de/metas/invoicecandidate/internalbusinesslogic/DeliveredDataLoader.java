@@ -40,6 +40,14 @@ import lombok.NonNull;
 import lombok.Value;
 import org.compiere.model.I_M_InOut;
 
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
+import static org.adempiere.model.InterfaceWrapperHelper.isNull;
+
 /*
  * #%L
  * de.metas.swat.base
@@ -99,7 +107,7 @@ public class DeliveredDataLoader
 			@NonNull final UomId stockUomId,
 			@NonNull final UomId icUomId,
 			@NonNull final ProductId productId,
-			@NonNull final InvoiceCandidateId invoiceCandidateId,
+			@Nullable final InvoiceCandidateId invoiceCandidateId,
 			@NonNull final SOTrx soTrx,
 			@NonNull final Boolean negateQtys,
 			@NonNull final Optional<Percent> deliveryQualityDiscount,
@@ -115,19 +123,11 @@ public class DeliveredDataLoader
 		this.defaultQtyDelivered = coalesceNotNull(defaultQtyDelivered, StockQtyAndUOMQtys.createZero(productId, icUomId));
 	}
 
-	DeliveredData loadDeliveredQtys()
+	public DeliveredData loadDeliveredQtys()
 	{
 		final DeliveredDataBuilder result = DeliveredData.builder();
 
-		final List<I_C_InvoiceCandidate_InOutLine> icIolAssociationRecords;
-		if (invoiceCandidateId == null)
-		{
-			icIolAssociationRecords = ImmutableList.of();
-		}
-		else
-		{
-			icIolAssociationRecords = invoiceCandDAO.retrieveICIOLAssociationsFor(invoiceCandidateId);
-		}
+		final List<I_C_InvoiceCandidate_InOutLine> icIolAssociationRecords = loadInvoiceCandidateInOutLines();
 		if (soTrx.isPurchase())
 		{
 			result.receiptData(loadReceiptQualityData(icIolAssociationRecords));
@@ -137,6 +137,28 @@ public class DeliveredDataLoader
 			result.shipmentData(loadShipmentData(icIolAssociationRecords));
 		}
 		return result.build();
+	}
+
+	private List<I_C_InvoiceCandidate_InOutLine> loadInvoiceCandidateInOutLines()
+	{
+		final List<I_C_InvoiceCandidate_InOutLine> icIolAssociationRecords;
+		if (invoiceCandidateId == null)
+		{
+			icIolAssociationRecords = ImmutableList.of();
+		}
+		else
+		{
+			final List<I_C_InvoiceCandidate_InOutLine> inOutLinesViaInterimInvoice = invoiceCandDAO.retrieveICIOLAssociationsViaInterimInvoice(invoiceCandidateId);
+			if (!inOutLinesViaInterimInvoice.isEmpty())
+			{
+				icIolAssociationRecords = inOutLinesViaInterimInvoice;
+			}
+			else
+			{
+				icIolAssociationRecords = invoiceCandDAO.retrieveICIOLAssociationsFor(invoiceCandidateId);
+			}
+		}
+		return icIolAssociationRecords;
 	}
 
 	private ShipmentData loadShipmentData(@NonNull final List<I_C_InvoiceCandidate_InOutLine> icIolAssociationRecords)
