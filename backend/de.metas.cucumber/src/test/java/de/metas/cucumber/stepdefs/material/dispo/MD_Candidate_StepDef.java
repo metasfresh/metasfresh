@@ -63,7 +63,6 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.And;
-import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
@@ -140,17 +139,6 @@ public class MD_Candidate_StepDef
 		Env.setClientId(Env.getCtx(), ClientId.METASFRESH);
 	}
 
-	@Given("metasfresh initially has no MD_Candidate data")
-	public void setupMD_Candidate_Data()
-	{
-		truncateMDCandidateData();
-	}
-
-	private void truncateMDCandidateData()
-	{
-		DB.executeUpdateEx("TRUNCATE TABLE MD_Candidate cascade", ITrx.TRXNAME_None);
-	}
-
 	@And("metasfresh initially has no MD_Candidate_StockChange_detail data")
 	public void setupMD_Candidate_StockChange_detail_Data()
 	{
@@ -183,7 +171,6 @@ public class MD_Candidate_StepDef
 	@When("metasfresh initially has this MD_Candidate data")
 	public void metasfresh_has_this_md_candidate_data1(@NonNull final MD_Candidate_StepDefTable table)
 	{
-		truncateMDCandidateData();
 		for (final MaterialDispoTableRow tableRow : table.getRows())
 		{
 			final I_MD_Candidate mdCandidateRecord = InterfaceWrapperHelper.newInstance(I_MD_Candidate.class);
@@ -361,7 +348,12 @@ public class MD_Candidate_StepDef
 	{
 		final Map<String, String> row = dataTable.asMaps().get(0);
 
-		final int productId = DataTableUtil.extractIntForColumnName(row, "M_Product_ID");
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, "M_Product_ID");
+
+		final int productId = productTable.getOptional(productIdentifier)
+				.map(I_M_Product::getM_Product_ID)
+				.orElseGet(() -> Integer.parseInt(productIdentifier));
+
 		final int freshQtyOnHandId = DataTableUtil.extractIntForColumnName(row, "Fresh_QtyOnHand_ID");
 		final int freshQtyOnHandLineId = DataTableUtil.extractIntForColumnName(row, "Fresh_QtyOnHand_Line_ID");
 		final Instant dateDoc = DataTableUtil.extractInstantForColumnName(row, "DateDoc");
