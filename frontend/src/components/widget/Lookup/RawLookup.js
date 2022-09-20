@@ -413,9 +413,9 @@ export class RawLookup extends Component {
       list.unshift(optionAdvSearch);
     }
 
-    if (!mandatory ) {
+    if (!mandatory) {
       list.push(this.getPlaceholderKeyCaption());
-      }
+    }
 
     newState.list = [...list];
     newState.hasMoreResults = hasMoreResults;
