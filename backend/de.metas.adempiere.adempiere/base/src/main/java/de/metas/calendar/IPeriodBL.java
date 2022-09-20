@@ -22,16 +22,15 @@ package de.metas.calendar;
  * #L%
  */
 
-
-import java.sql.Timestamp;
-import java.util.Date;
-import java.util.Properties;
-
+import de.metas.organization.LocalDateAndOrgId;
+import de.metas.util.ISingletonService;
 import org.adempiere.exceptions.PeriodClosedException;
 import org.compiere.model.I_C_Period;
 import org.compiere.model.I_C_PeriodControl;
 
-import de.metas.util.ISingletonService;
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.Properties;
 
 public interface IPeriodBL extends ISingletonService
 {
@@ -64,12 +63,7 @@ public interface IPeriodBL extends ISingletonService
 	 */
 	void createPeriodControls(I_C_Period period);
 
-	/**
-	 * Checks if given date is in period.
-	 * 
-	 * @param period
-	 * @param date date
-	 * @return true if in period
-	 */
 	boolean isInPeriod(I_C_Period period, Date date);
+
+	boolean isInPeriod(final int periodId, final LocalDateAndOrgId date);
 }
