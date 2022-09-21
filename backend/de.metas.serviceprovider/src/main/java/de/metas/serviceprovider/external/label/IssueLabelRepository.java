@@ -62,7 +62,7 @@ public class IssueLabelRepository
 	@NonNull
 	public LabelCollection getByIssueId(@NonNull final IssueId issueId)
 	{
-		final List<IssueLabel> labelList = getRecordsByIssueId(issueId)
+		final ImmutableList<IssueLabel> labelList = getRecordsByIssueId(issueId)
 				.stream()
 				.map(IssueLabelRepository::fromRecord)
 				.collect(ImmutableList.toImmutableList());
@@ -70,6 +70,15 @@ public class IssueLabelRepository
 		return LabelCollection.builder()
 				.issueId(issueId)
 				.issueLabelList(labelList)
+				.build();
+	}
+
+	@NonNull
+	public static IssueLabel fromRecord(@NonNull final I_S_IssueLabel record)
+	{
+		return IssueLabel.builder()
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				.value(record.getLabel())
 				.build();
 	}
 
@@ -132,14 +141,5 @@ public class IssueLabelRepository
 					         @NonNull final I_S_IssueLabel record2)
 	{
 		return record1.getLabel().equalsIgnoreCase(record2.getLabel());
-	}
-
-	@NonNull
-	private static IssueLabel fromRecord(@NonNull final I_S_IssueLabel record)
-	{
-		return IssueLabel.builder()
-				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
-				.value(record.getLabel())
-				.build();
 	}
 }

@@ -22,6 +22,7 @@
 
 package de.metas.serviceprovider.external.label;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.serviceprovider.github.GithubImporterConstants;
 import de.metas.serviceprovider.issue.IssueId;
 import lombok.Builder;
@@ -29,6 +30,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 @Value
@@ -38,12 +40,12 @@ public class LabelCollection
 	IssueId issueId;
 
 	@NonNull
-	List<IssueLabel> issueLabelList;
+	ImmutableList<IssueLabel> issueLabelList;
 
 	@Builder
 	public LabelCollection(
 			@NonNull final IssueId issueId,
-			@NonNull final List<IssueLabel> issueLabelList)
+			@NonNull final ImmutableList<IssueLabel> issueLabelList)
 	{
 		this.issueId = issueId;
 		this.issueLabelList = issueLabelList;
@@ -54,5 +56,32 @@ public class LabelCollection
 	{
 		return issueLabelList.stream()
 				.filter(label -> labelTypes.stream().anyMatch(label::matchesType));
+	}
+
+	@NonNull
+	public ImmutableList<IssueLabel> filter(@NonNull final Predicate<IssueLabel> filter)
+	{
+		return issueLabelList
+				.stream()
+				.filter(filter)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public LabelCollection putLabelByType(@NonNull final IssueLabel labelToAdd, @NonNull final GithubImporterConstants.LabelType labelType)
+	{
+		final ImmutableList<IssueLabel> updatedLabelList = Stream.concat(Stream.of(labelToAdd), issueLabelList.stream())
+				.filter(label -> !label.matchesType(labelType) || label.getValue().equals(labelToAdd.getValue()))
+				.collect(ImmutableList.toImmutableList());
+
+		return LabelCollection.builder()
+				.issueId(issueId)
+				.issueLabelList(updatedLabelList)
+				.build();
+	}
+
+	public boolean hasLabel(@NonNull final IssueLabel issueLabel)
+	{
+		return issueLabelList.stream().anyMatch(label -> label.getValue().equals(issueLabel.getValue()));
 	}
 }

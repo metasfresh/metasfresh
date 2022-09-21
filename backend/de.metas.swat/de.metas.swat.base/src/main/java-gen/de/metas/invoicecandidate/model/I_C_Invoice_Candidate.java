@@ -1,8 +1,9 @@
 package de.metas.invoicecandidate.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_Invoice_Candidate
  *  @author metasfresh (generated)
@@ -1942,6 +1943,27 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsInDispute = new ModelColumn<>(I_C_Invoice_Candidate.class, "IsInDispute", null);
 	String COLUMNNAME_IsInDispute = "IsInDispute";
+
+	/**
+	 * Set In Effect.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsInEffect (boolean IsInEffect);
+
+	/**
+	 * Get In Effect.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isInEffect();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_IsInEffect = new ModelColumn<>(I_C_Invoice_Candidate.class, "IsInEffect", null);
+	String COLUMNNAME_IsInEffect = "IsInEffect";
 
 	/**
 	 * Set Lieferung/ Wareneingang freigeben.

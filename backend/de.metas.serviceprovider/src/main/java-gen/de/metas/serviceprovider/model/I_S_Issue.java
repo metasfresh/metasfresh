@@ -255,6 +255,27 @@ public interface I_S_Issue
 	String COLUMNNAME_Description = "Description";
 
 	/**
+	 * Set Effort aggregation key.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setEffortAggregationKey (@Nullable java.lang.String EffortAggregationKey);
+
+	/**
+	 * Get Effort aggregation key.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getEffortAggregationKey();
+
+	ModelColumn<I_S_Issue, Object> COLUMN_EffortAggregationKey = new ModelColumn<>(I_S_Issue.class, "EffortAggregationKey", null);
+	String COLUMNNAME_EffortAggregationKey = "EffortAggregationKey";
+
+	/**
 	 * Set Effort delivery platform.
 	 *
 	 * <br>Type: String

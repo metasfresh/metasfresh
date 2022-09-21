@@ -459,4 +459,65 @@ public class RabbitMQEventBusConfiguration
 			return fanoutMaterialEventsExchange().getName();
 		}
 	}
+
+	@Configuration
+	public static class EffortControlQueueConfiguration implements IEventBusQueueConfiguration
+	{
+		public static final Topic EVENTBUS_TOPIC = Topic.distributed("de.metas.serviceprovider.eventbus.EffortControlEventRequest");
+		public static final String QUEUE_NAME_SPEL = "#{metasfreshEffortControlQueue.name}";
+		private static final String QUEUE_BEAN_NAME = "metasfreshEffortControlQueue";
+		private static final String EXCHANGE_NAME_PREFIX = "metasfresh-effort-control-events";
+
+		@Value(APPLICATION_NAME_SPEL)
+		private String appName;
+
+		@Bean(QUEUE_BEAN_NAME)
+		public AnonymousQueue effortControlQueue()
+		{
+			final NamingStrategy eventQueueNamingStrategy = new Base64UrlNamingStrategy(EVENTBUS_TOPIC.getName() + "." + appName + "-");
+			return new AnonymousQueue(eventQueueNamingStrategy);
+		}
+
+		@Bean
+		public FanoutExchange fanoutEffortControlExchange()
+		{
+			return new FanoutExchange(EXCHANGE_NAME_PREFIX + FANOUT_SUFFIX);
+		}
+
+		@Bean
+		public DirectExchange directEffortControlExchange()
+		{
+			return new DirectExchange(EXCHANGE_NAME_PREFIX + DIRECT_SUFFIX);
+		}
+
+		@Bean
+		public Binding fanoutEffortControlBinding()
+		{
+			return BindingBuilder.bind(effortControlQueue()).to(fanoutEffortControlExchange());
+		}
+
+		@Bean
+		public Binding directEffortControlBinding()
+		{
+			return BindingBuilder.bind(effortControlQueue()).to(directEffortControlExchange()).with(getQueueName());
+		}
+
+		@Override
+		public String getQueueName()
+		{
+			return effortControlQueue().getName();
+		}
+
+		@Override
+		public Optional<String> getTopicName()
+		{
+			return Optional.of(EVENTBUS_TOPIC.getName());
+		}
+
+		@Override
+		public String getFanoutExchangeName()
+		{
+			return fanoutEffortControlExchange().getName();
+		}
+	}
 }
