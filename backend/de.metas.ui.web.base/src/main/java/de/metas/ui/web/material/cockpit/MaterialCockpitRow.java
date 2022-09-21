@@ -216,7 +216,8 @@ public class MaterialCockpitRow implements IViewRow
 	@ViewColumn(fieldName = FIELDNAME_QtySupply_PurchaseOrder_AtDate, //
 			captionKey = FIELDNAME_QtySupply_PurchaseOrder_AtDate, //
 			widgetType = DocumentFieldWidgetType.Quantity, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 130) })
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 130,
+			displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
 	@Getter // note that we use the getter for testing
 	private final BigDecimal qtySupplyPurchaseOrderAtDate;
 
@@ -224,7 +225,8 @@ public class MaterialCockpitRow implements IViewRow
 	@ViewColumn(fieldName = FIELDNAME_QtySupply_PurchaseOrder, //
 			captionKey = FIELDNAME_QtySupply_PurchaseOrder, //
 			widgetType = DocumentFieldWidgetType.Quantity, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 140) })
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 140,
+			displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
 	private final BigDecimal qtySupplyPurchaseOrder;
 
 	public static final String FIELDNAME_QtySupplyDDOrder_AtDate = I_MD_Cockpit.COLUMNNAME_QtySupply_DD_Order_AtDate;
