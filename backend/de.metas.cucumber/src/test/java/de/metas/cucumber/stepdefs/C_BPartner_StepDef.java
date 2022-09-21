@@ -35,6 +35,7 @@ import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.rest.v1.ExternalReferenceRestControllerService;
+import de.metas.order.DeliveryRule;
 import de.metas.product.IProductDAO;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -224,6 +225,7 @@ public class C_BPartner_StepDef
 		bPartnerRecord.setIsCustomer(StringUtils.toBoolean(tableRow.get("OPT." + COLUMNNAME_IsCustomer), false));
 		bPartnerRecord.setIsSalesRep(StringUtils.toBoolean(tableRow.get("OPT." + COLUMNNAME_IsSalesRep), false));
 		bPartnerRecord.setAD_Org_ID(orgId);
+		bPartnerRecord.setDeliveryRule(DeliveryRule.FORCE.getCode());
 
 		final String discountSchemaIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_PO_DiscountSchema_ID + "." + TABLECOLUMN_IDENTIFIER);
 

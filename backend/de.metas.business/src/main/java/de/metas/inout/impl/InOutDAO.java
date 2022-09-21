@@ -99,12 +99,6 @@ public class InOutDAO implements IInOutDAO
 	}
 
 	@Override
-	public <T extends I_M_InOutLine> T getLineByIdInTrx(@NonNull final InOutLineId inoutLineId, @NonNull final Class<T> modelClass)
-	{
-		return load(inoutLineId.getRepoId(), modelClass);
-	}
-
-	@Override
 	public <T extends I_M_InOutLine> T getLineByIdOutOfTrx(@NonNull final InOutLineId inoutLineId, final Class<T> modelClass)
 	{
 		return loadOutOfTrx(inoutLineId.getRepoId(), modelClass);
@@ -341,6 +335,12 @@ public class InOutDAO implements IInOutDAO
 				.stream()
 				.map(this::extractInOutAndLineId)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@Override
+	public <T extends I_M_InOutLine> T getLineByIdInTrx(@NonNull final InOutLineId inoutLineId, @NonNull final Class<T> modelClass)
+	{
+		return load(inoutLineId.getRepoId(), modelClass);
 	}
 
 	private InOutAndLineId extractInOutAndLineId(final I_M_InOutLine line)

@@ -329,7 +329,7 @@ public class C_Order_StepDef
 		}
 	}
 
-	@And("^the order identified by (.*) is (reactivated|completed)$")
+	@And("^the order identified by (.*) is (reactivated|completed|closed|voided)$")
 	public void order_action(@NonNull final String orderIdentifier, @NonNull final String action)
 	{
 		final I_C_Order order = orderTable.get(orderIdentifier);
@@ -343,6 +343,14 @@ public class C_Order_StepDef
 			case completed:
 				order.setDocAction(IDocument.ACTION_Complete); // we need this because otherwise MOrder.completeIt() won't complete it
 				documentBL.processEx(order, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+				break;
+			case closed:
+				order.setDocAction(IDocument.ACTION_Complete);
+				documentBL.processEx(order, IDocument.ACTION_Close, IDocument.STATUS_Closed);
+				break;
+			case voided:
+				order.setDocAction(IDocument.ACTION_Complete);
+				documentBL.processEx(order, IDocument.ACTION_Void, IDocument.STATUS_Voided);
 				break;
 			default:
 				throw new AdempiereException("Unhandled C_Order action")
@@ -719,7 +727,7 @@ public class C_Order_StepDef
 		{
 			assertThat(order.isUseHandOver_Location()).isEqualTo(isHandover);
 		}
-		
+
 		final String handOverBPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_HandOver_Partner_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(handOverBPartnerIdentifier))
 		{

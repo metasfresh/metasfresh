@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.shipment;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.common.util.EmptyUtil;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
@@ -83,9 +84,11 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_C_BPartner_Location_ID;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
+import static org.compiere.model.I_C_DocType.COLUMNNAME_DocSubType;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_Name;
 import static org.compiere.model.I_M_InOut.COLUMNNAME_C_Order_ID;
 import static org.compiere.model.I_M_InOut.COLUMNNAME_DocStatus;
+import static org.compiere.model.I_M_InOut.COLUMNNAME_IsSOTrx;
 import static org.compiere.model.I_M_InOut.COLUMNNAME_M_InOut_ID;
 
 public class M_InOut_StepDef
@@ -446,6 +449,74 @@ public class M_InOut_StepDef
 				.firstOnly(I_M_InOut.class);
 
 		assertThat(inOut).isNull();
+	}
+
+	@And("metasfresh contains M_InOut:")
+	public void create_M_InOut(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final I_M_InOut inOut = InterfaceWrapperHelper.newInstance(I_M_InOut.class);
+
+			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_C_BPartner bPartner = bpartnerTable.get(bpartnerIdentifier);
+			assertThat(bPartner).isNotNull();
+			inOut.setC_BPartner_ID(bPartner.getC_BPartner_ID());
+
+			final String bpartnerLocationIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_C_BPartner_Location bPartnerLocation = bpartnerLocationTable.get(bpartnerLocationIdentifier);
+			assertThat(bpartnerIdentifier).isNotNull();
+			inOut.setC_BPartner_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
+
+			final boolean isSOTrx = DataTableUtil.extractBooleanForColumnName(row, COLUMNNAME_IsSOTrx);
+			inOut.setIsSOTrx(isSOTrx);
+
+			final String docBaseType = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_DocBaseType);
+			if (EmptyUtil.isNotBlank(docBaseType))
+			{
+				final String docSubType = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_DocSubType);
+
+				final I_C_DocType docType = queryBL.createQueryBuilder(I_C_DocType.class)
+						.addEqualsFilter(COLUMNNAME_DocBaseType, docBaseType)
+						.addEqualsFilter(COLUMNNAME_DocSubType, docSubType)
+						.create()
+						.firstOnlyNotNull(I_C_DocType.class);
+
+				assertThat(docType).isNotNull();
+
+				inOut.setC_DocType_ID(docType.getC_DocType_ID());
+			}
+
+			final String deliveryRule = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_DeliveryRule);
+			inOut.setDeliveryRule(deliveryRule);
+
+			final String deliveryViaRule = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_DeliveryViaRule);
+			inOut.setDeliveryViaRule(deliveryViaRule);
+
+			final String freightCostRule = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_FreightCostRule);
+			inOut.setFreightCostRule(freightCostRule);
+
+			final String warehouseIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(warehouseIdentifier))
+			{
+				final int warehouseId = warehouseTable.get(warehouseIdentifier).getM_Warehouse_ID();
+				inOut.setM_Warehouse_ID(warehouseId);
+			}
+
+			final Timestamp movementDate = DataTableUtil.extractDateTimestampForColumnName(row, I_M_InOut.COLUMNNAME_MovementDate);
+			inOut.setMovementDate(movementDate);
+
+			final String movementType = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_MovementType);
+			inOut.setMovementType(movementType);
+
+			final String priorityRule = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_PriorityRule);
+			inOut.setPriorityRule(priorityRule);
+
+			InterfaceWrapperHelper.saveRecord(inOut);
+
+			final String inOutIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
+			shipmentTable.putOrReplace(inOutIdentifier, inOut);
+		}
 	}
 
 	private void locateShipmentByScheduleId(@NonNull final Map<String, String> row)

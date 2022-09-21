@@ -22,13 +22,12 @@ package de.metas.invoicecandidate.modelvalidator;
  * #L%
  */
 
+import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
+import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.ModelValidator;
-
-import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
-import de.metas.util.Services;
 
 @Interceptor(I_M_InOut.class)
 public class M_InOut
@@ -37,7 +36,9 @@ public class M_InOut
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSECORRECT, //
 			ModelValidator.TIMING_AFTER_REVERSEACCRUAL, //
 			ModelValidator.TIMING_AFTER_REACTIVATE,
-			ModelValidator.TIMING_AFTER_COMPLETE // needed in case we complete an inout that was previously reactivated
+			ModelValidator.TIMING_AFTER_COMPLETE,// needed in case we complete an inout that was previously reactivated
+			ModelValidator.TIMING_AFTER_CLOSE,
+			ModelValidator.TIMING_AFTER_VOID,
 			})
 
 	public void invalidateInvoiceCandidatesOnReversal(final I_M_InOut inout)

@@ -39,6 +39,7 @@ import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.TableRecordReference_StepDefUtil;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.cucumber.stepdefs.docType.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.iinvoicecandidate.I_Invoice_Candidate_StepDefData;
@@ -132,6 +133,7 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_D
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_InvoiceRule_Override;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_IsInDispute;
+import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_IsInEffect;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_IsInterimInvoice;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_IsSOTrx;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_LineNetAmt;
@@ -154,6 +156,7 @@ import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Q
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Record_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assumptions.assumeThat;
 
 public class C_Invoice_Candidate_StepDef
 {
@@ -183,6 +186,7 @@ public class C_Invoice_Candidate_StepDef
 	private final C_UOM_StepDefData uomTable;
 	private final AD_Org_StepDefData orgTable;
 	private final C_Flatrate_Term_StepDefData contractTable;
+	private final TableRecordReference_StepDefUtil tableRecordReferenceStepDefUtil;
 
 	public C_Invoice_Candidate_StepDef(
 			@NonNull final C_Invoice_Candidate_StepDefData invoiceCandTable,
@@ -199,7 +203,8 @@ public class C_Invoice_Candidate_StepDef
 			@NonNull final C_DocType_StepDefData docTypeTable,
 			@NonNull final C_UOM_StepDefData uomTable,
 			@NonNull final AD_Org_StepDefData orgTable,
-			@NonNull final C_Flatrate_Term_StepDefData contractTable)
+			@NonNull final C_Flatrate_Term_StepDefData contractTable,
+			@NonNull final TableRecordReference_StepDefUtil tableRecordReferenceStepDefUtil)
 	{
 		this.invoiceCandTable = invoiceCandTable;
 		this.invoiceTable = invoiceTable;
@@ -216,6 +221,7 @@ public class C_Invoice_Candidate_StepDef
 		this.uomTable = uomTable;
 		this.orgTable = orgTable;
 		this.contractTable = contractTable;
+		this.tableRecordReferenceStepDefUtil = tableRecordReferenceStepDefUtil;
 	}
 
 	@And("^locate invoice candidates for invoice: (.*)$")
@@ -646,6 +652,23 @@ public class C_Invoice_Candidate_StepDef
 					final I_C_Tax taxEffective = taxTable.get(taxEffectiveIdentifier);
 					assertThat(updatedInvoiceCandidate.getC_Tax_Effective_ID()).isEqualTo(taxEffective.getC_Tax_ID());
 				}
+
+				final String recordIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_Record_ID + "." + TABLECOLUMN_IDENTIFIER);
+				final String tableName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.TableName");
+
+				if (Check.isNotBlank(recordIdentifier) && Check.isNotBlank(tableName))
+				{
+					final TableRecordReference tableRecordReference = tableRecordReferenceStepDefUtil.getTableRecordReferenceFromIdentifier(recordIdentifier, tableName);
+
+					assertThat(updatedInvoiceCandidate.getRecord_ID()).isEqualTo(tableRecordReference.getRecord_ID());
+					assertThat(updatedInvoiceCandidate.getAD_Table_ID()).isEqualTo(tableRecordReference.getAD_Table_ID());
+				}
+
+				final Boolean isInEffect = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + COLUMNNAME_IsInEffect, null);
+				if (isInEffect != null)
+				{
+					assertThat(updatedInvoiceCandidate.isInEffect()).isEqualTo(isInEffect);
+				}
 			}
 			catch (final Throwable e)
 			{
@@ -982,6 +1005,7 @@ public class C_Invoice_Candidate_StepDef
 	public void locate_invoice_candidate_by_record_id(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+
 		for (final Map<String, String> row : tableRows)
 		{
 			loadAndValidateInvoiceCandidateByRecordId(row);
@@ -996,6 +1020,34 @@ public class C_Invoice_Candidate_StepDef
 			final I_C_Invoice_Candidate invoiceCandidate = StepDefUtil.tryAndWaitForItem(maxSecondsToWait, 1000, () -> getInvoiceCandidateIfMatches(row));
 
 			assertThat(invoiceCandidate).isNotNull();
+		}
+	}
+
+	@And("process invoice candidate expecting error")
+	public void process_invoice_cand_expecting_error(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+
+		for (final Map<String, String> row : tableRows)
+		{
+			try (final IAutoCloseable ignore = Loggables.temporarySetLoggable(new LogbackLoggable(logger, Level.INFO)))
+			{
+				final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
+				final I_C_Invoice_Candidate invoiceCandidate = invoiceCandTable.get(invoiceCandIdentifier);
+
+				final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID());
+				boolean isError = false;
+				try
+				{
+					invoiceService.generateInvoicesFromInvoiceCandidateIds(ImmutableSet.of(invoiceCandidateId));
+				}
+				catch (final Exception e)
+				{
+					isError = true;
+				}
+
+				assumeThat(isError).isTrue();
+			}
 		}
 	}
 
@@ -1106,6 +1158,12 @@ public class C_Invoice_Candidate_StepDef
 
 		addTableRecordReferenceFiltersForInvoiceCandidate(row, invCandQueryBuilder);
 
+		final Boolean isInEffect = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + COLUMNNAME_IsInEffect, null);
+		if (isInEffect != null)
+		{
+			invCandQueryBuilder.addEqualsFilter(COLUMNNAME_IsInEffect, isInEffect);
+		}
+
 		final Optional<I_C_Invoice_Candidate> invoiceCandidate = invCandQueryBuilder.create()
 				.firstOnlyOptional(I_C_Invoice_Candidate.class);
 
@@ -1160,6 +1218,17 @@ public class C_Invoice_Candidate_StepDef
 				errorCollectors.add(MessageFormat.format("C_Invoice_Candidate_ID={0}; Expecting QtyToInvoice={1} but actual is {2}",
 														 invoiceCandidateRecord.getC_Invoice_Candidate_ID(), qtyToInvoice, invoiceCandidateRecord.getQtyToInvoice()));
 			}
+		}
+
+		final Boolean isInEffect = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + COLUMNNAME_IsInEffect, null);
+		if (isInEffect != null)
+		{
+			if (isInEffect != invoiceCandidateRecord.isInEffect())
+			{
+				errorCollectors.add(MessageFormat.format("C_Invoice_Candidate_ID={0}; Expecting IsInEffect={1} but actual is {2}",
+														 invoiceCandidateRecord.getC_Invoice_Candidate_ID(), isInEffect, invoiceCandidateRecord.isInEffect()));
+			}
+
 		}
 
 		if (invoiceCandDAO.isToRecompute(invoiceCandidateRecord))
