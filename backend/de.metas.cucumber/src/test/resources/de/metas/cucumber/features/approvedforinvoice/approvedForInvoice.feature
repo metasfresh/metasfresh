@@ -31,9 +31,9 @@ Feature: approved for invoicing
       | bpartner_SO | Customer_SO_15092022 | N            | Y              | ps_SO                         |
       | bpartner_PO | Vendor_PO_15092022   | Y            | N              | ps_PO                         |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier          | C_BPartner_ID.Identifier |
-      | bpartnerLocation_SO | bpartner_SO              |
-      | bpartnerLocation_PO | bpartner_PO              |
+      | Identifier          | C_BPartner_ID.Identifier | OPT.IsShipTo | OPT.IsBillTo |
+      | bpartnerLocation_SO | bpartner_SO              | true         | true         |
+      | bpartnerLocation_PO | bpartner_PO              | true         | true         |
     And load AD_Message:
       | Identifier                 | Value                                        |
       | approved_for_invoice_error | Operation_Not_Supported_Approved_For_Invoice |
