@@ -30,7 +30,6 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;

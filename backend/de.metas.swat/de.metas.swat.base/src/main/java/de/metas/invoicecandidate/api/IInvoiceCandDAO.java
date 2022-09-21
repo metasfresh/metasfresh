@@ -423,8 +423,5 @@ public interface IInvoiceCandDAO extends ISingletonService
 	ImmutableList<I_C_InvoiceCandidate_InOutLine> retrieveICIOLForInvoiceCandidate(@NonNull I_C_Invoice_Candidate ic);
 
 	@NonNull
-	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsFor(@NonNull InvoiceCandidateId invoiceCandidateId);
-
-	@NonNull
 	List<I_C_Invoice_Candidate> retrieveApprovedForInvoiceReferencing(TableRecordReferenceSet singleTableReferences);
 }

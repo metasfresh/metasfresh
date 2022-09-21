@@ -313,6 +313,12 @@ public class C_Invoice_Candidate_StepDef
 				invoiceCandidate.setInvoiceRule_Override(invoiceRuleOverride);
 			}
 
+			final Boolean approvalForInvoicing = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + COLUMNNAME_ApprovalForInvoicing);
+			if (approvalForInvoicing != null)
+			{
+				invoiceCandidate.setApprovalForInvoicing(approvalForInvoicing);
+			}
+
 			saveRecord(invoiceCandidate);
 			invoiceCandTable.putOrReplace(invoiceCandIdentifier, invoiceCandidate);
 		}
@@ -495,43 +501,6 @@ public class C_Invoice_Candidate_StepDef
 			{
 				wrapInvoiceCandidateRelatedException(e, invoiceCandidateRecord, invoiceCandidateIdentifier);
 			}
-		}
-	}
-
-	@And("update C_Invoice_Candidate:")
-	public void update_C_Invoice_Candidate(@NonNull final DataTable dataTable)
-	{
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
-			final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_C_Invoice_Candidate invoiceCandidate = invoiceCandTable.get(invoiceCandIdentifier);
-
-			final BigDecimal qtyToInvoiceOverride = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_QtyToInvoice_Override);
-			if (qtyToInvoiceOverride != null)
-			{
-				invoiceCandidate.setQtyToInvoice_Override(qtyToInvoiceOverride);
-			}
-
-			final BigDecimal priceEnteredOverride = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_PriceEntered_Override);
-			if (priceEnteredOverride != null)
-			{
-				invoiceCandidate.setPriceEntered_Override(priceEnteredOverride);
-			}
-
-			final String invoiceRuleOverride = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_InvoiceRule_Override);
-			if (Check.isNotBlank(invoiceRuleOverride))
-			{
-				invoiceCandidate.setInvoiceRule_Override(invoiceRuleOverride);
-			}
-
-			final Boolean approvalForInvoicing = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + COLUMNNAME_ApprovalForInvoicing);
-			if (approvalForInvoicing != null)
-			{
-				invoiceCandidate.setApprovalForInvoicing(approvalForInvoicing);
-			}
-
-			saveRecord(invoiceCandidate);
-			invoiceCandTable.putOrReplace(invoiceCandIdentifier, invoiceCandidate);
 		}
 	}
 
