@@ -119,7 +119,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 
 		receiptSchedule.setAD_Org_ID(line.getAD_Org_ID());
 		receiptSchedule.setIsActive(true); // make sure it's active
-
+		receiptSchedule.setM_SectionCode_ID(line.getM_SectionCode_ID());
 		//
 		// Source Document Line link
 		{
