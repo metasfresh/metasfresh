@@ -43,6 +43,7 @@ Feature: In effect invoice candidates
 
 
   @from:cucumber
+  @Id:S0182_100
   Scenario: create sales order, complete it and validate that the IC created is in effect, reactivate it and validate that IC went out of effect then complete it again, close it and generate the invoice
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
@@ -102,6 +103,7 @@ Feature: In effect invoice candidates
 
 
   @from:cucumber
+  @Id:S0182_200
   Scenario: create sales order, complete it and validate that the IC created is in effect, then void it and validate that IC went out of effect
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
@@ -124,6 +126,7 @@ Feature: In effect invoice candidates
 
 
   @from:cucumber
+  @Id:S0182_300
   Scenario: create purchase order, complete it and validate that the IC created is in effect, reactivate it and validate that IC went out of effect then complete it again and generate the invoice
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.DocBaseType |
@@ -161,6 +164,7 @@ Feature: In effect invoice candidates
 
 
   @from:cucumber
+  @Id:S0182_400
   Scenario: create purchase order, complete it and validate that the IC created is in effect, then void it and validate that IC went out of effect
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.DocBaseType |
@@ -182,6 +186,7 @@ Feature: In effect invoice candidates
       | invoiceCand_4                     | 0            | false          | C_OrderLine   | orderLine_4              | product_PO                  |
 
   @from:cucumber
+  @Id:S0182_500
   Scenario: create shipment, complete it and validate that the IC created is in effect, reactivate it and validate that IC went out of effect then complete it again, close it and generate the invoice
     Given metasfresh contains M_InOut:
       | M_InOut_ID.Identifier | IsSOTrx | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Warehouse_ID.Identifier | DeliveryRule | DeliveryViaRule | FreightCostRule | MovementDate | MovementType | PriorityRule | OPT.DocBaseType | OPT.DocSubType |
@@ -222,6 +227,7 @@ Feature: In effect invoice candidates
 
 
   @from:cucumber
+  @Id:S0182_600
   Scenario: create shipment, complete it and validate that the IC created is in effect, then revert it and validate that IC went out of effect
     Given metasfresh contains M_InOut:
       | M_InOut_ID.Identifier | IsSOTrx | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Warehouse_ID.Identifier | DeliveryRule | DeliveryViaRule | FreightCostRule | MovementDate | MovementType | PriorityRule | OPT.DocBaseType | OPT.DocSubType |
@@ -244,6 +250,7 @@ Feature: In effect invoice candidates
 
 
   @from:cucumber
+  @Id:S0182_700
   Scenario: create shipment, complete it and validate that the IC created is in effect, then void it and validate that IC went out of effect
     Given metasfresh contains M_InOut:
       | M_InOut_ID.Identifier | IsSOTrx | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Warehouse_ID.Identifier | DeliveryRule | DeliveryViaRule | FreightCostRule | MovementDate | MovementType | PriorityRule | OPT.DocBaseType | OPT.DocSubType |
@@ -272,6 +279,7 @@ Feature: In effect invoice candidates
 
 
   @from:cucumber
+  @Id:S0182_800
   Scenario: create receipt, complete it and validate that the IC created is in effect, reactivate it and validate that IC went out of effect then complete it again, close it and generate the invoice
     Given metasfresh contains M_InOut:
       | M_InOut_ID.Identifier | IsSOTrx | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Warehouse_ID.Identifier | DeliveryRule | DeliveryViaRule | FreightCostRule | MovementDate | MovementType | PriorityRule | OPT.DocBaseType | OPT.DocSubType |
@@ -312,6 +320,7 @@ Feature: In effect invoice candidates
 
 
   @from:cucumber
+  @Id:S0182_900
   Scenario: create receipt, complete it and validate that the IC created is in effect, then revert it and validate that IC went out of effect
     Given metasfresh contains M_InOut:
       | M_InOut_ID.Identifier | IsSOTrx | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Warehouse_ID.Identifier | DeliveryRule | DeliveryViaRule | FreightCostRule | MovementDate | MovementType | PriorityRule | OPT.DocBaseType | OPT.DocSubType |
@@ -334,6 +343,7 @@ Feature: In effect invoice candidates
 
 
   @from:cucumber
+  @Id:S0182_1000
   Scenario: create receipt, complete it and validate that the IC created is in effect, then void it and validate that IC went out of effect
     Given metasfresh contains M_InOut:
       | M_InOut_ID.Identifier | IsSOTrx | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Warehouse_ID.Identifier | DeliveryRule | DeliveryViaRule | FreightCostRule | MovementDate | MovementType | PriorityRule | OPT.DocBaseType | OPT.DocSubType |

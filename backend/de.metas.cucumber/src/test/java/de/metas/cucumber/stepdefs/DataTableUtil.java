@@ -130,8 +130,8 @@ public class DataTableUtil
 	}
 
 	private int extractIntOrDefaultForColumnName(
-			final @NotNull Map<String, String> dataTableRow,
-			final @NotNull String columnName,
+			final @NonNull Map<String, String> dataTableRow,
+			final @NonNull String columnName,
 			final int defaultValue)
 	{
 		final String string = extractStringOrNullForColumnName(dataTableRow, columnName);
@@ -147,7 +147,7 @@ public class DataTableUtil
 	{
 		// it's OK for "OPT." columns to be missing!
 		// TODO: add some dedicated methods to distinguish between OPT and not-OPT that can be null
-		// if (!dataTableRow.containsKey(columnName)) 
+		// if (!dataTableRow.containsKey(columnName))
 		// {
 		// 	throw new AdempiereException("Missing column for columnName=" + columnName).appendParametersToMessage()
 		// 			.setParameter("dataTableRow", dataTableRow);

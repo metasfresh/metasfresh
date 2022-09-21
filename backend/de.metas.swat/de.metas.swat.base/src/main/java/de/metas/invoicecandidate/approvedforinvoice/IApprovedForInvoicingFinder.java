@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.cucumber
+ * de.metas.swat.base
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,15 +20,19 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.shipment;
+package de.metas.invoicecandidate.approvedforinvoice;
 
-import de.metas.cucumber.stepdefs.StepDefData;
-import org.compiere.model.I_M_InOutLine;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
-public class M_InOutLine_StepDefData extends StepDefData<I_M_InOutLine>
+import java.util.List;
+
+public interface IApprovedForInvoicingFinder
 {
-	public M_InOutLine_StepDefData()
-	{
-		super(I_M_InOutLine.class);
-	}
+	@NonNull
+	String getTableName();
+
+	@NonNull
+	List<I_C_Invoice_Candidate> findApprovedForReference(@NonNull final TableRecordReference documentRecordReference);
 }
