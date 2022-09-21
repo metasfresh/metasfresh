@@ -10,7 +10,9 @@ import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import lombok.AccessLevel;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NonNull;
 import org.compiere.model.I_C_UOM;
 
@@ -50,7 +52,9 @@ import static de.metas.util.Check.assumeNotNull;
 @Data
 public class DimensionGroupSubRowBucket
 {
+	@Getter(AccessLevel.NONE)
 	private final IProductBL productBL = Services.get(IProductBL.class);
+	@Getter(AccessLevel.NONE)
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	public static DimensionGroupSubRowBucket create(@NonNull final DimensionSpecGroup dimensionSpecGroup)

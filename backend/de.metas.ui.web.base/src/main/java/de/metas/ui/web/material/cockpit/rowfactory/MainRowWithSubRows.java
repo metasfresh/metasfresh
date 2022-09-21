@@ -146,7 +146,7 @@ public class MainRowWithSubRows
 	}
 
 	/**
-	 * @return true if there was at least one {@link DimensionGroupSubRowBucket} to which the given dataRecord could be added.
+	 * @return true if there was at least one {@link DimensionGroupSubRowBucket} to which the given quantitiesRecord could be added.
 	 */
 	private boolean addQuantitiesRecordToDimensionGroups(
 			@NonNull final I_QtyDemand_QtySupply_V quantitiesRecord,
