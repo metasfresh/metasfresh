@@ -162,3 +162,18 @@ UPDATE AD_Process_Trl SET Description='Der Prozess aktualisiert den Freigabestat
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 UPDATE AD_Process_Trl SET Description='The process updates the clearance status of the selected HUs propagating the change to all included HUs.',Updated=TO_TIMESTAMP('2022-09-20 17:18:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Process_ID=585110
 ;
+
+-- 2022-09-21T10:11:29.340Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List SET Name='Freigegeben',Updated=TO_TIMESTAMP('2022-09-21 13:11:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=543121
+;
+
+-- 2022-09-21T10:13:39.170Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List SET Name='Gesperrt',Updated=TO_TIMESTAMP('2022-09-21 13:13:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=543122
+;
+
+-- 2022-09-21T10:13:54.571Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Ref_List SET Name='In Quarantäne',Updated=TO_TIMESTAMP('2022-09-21 13:13:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=543123
+;
