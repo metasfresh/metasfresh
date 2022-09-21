@@ -93,7 +93,7 @@ public class S_Issue
 		final I_S_Issue oldRecord = InterfaceWrapperHelper.createOld(record, I_S_Issue.class);
 
 		final EffortInfo currentEffortInfo = buildEffortInfoFromRecord(record);
-		final EffortInfo oldEffortInfo = timing.isAfter() && timing.isNew()
+		final EffortInfo oldEffortInfo = timing.isNew()
 				? null
 				: buildEffortInfoFromRecord(oldRecord);
 
