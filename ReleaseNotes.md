@@ -12,6 +12,8 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13580](https://github.com/metasfresh/metasfresh/issues/13580) IC Handle the case of respective record going "into limbo"
+  * [#13603](https://github.com/metasfresh/metasfresh/issues/13603) Disallow reactivating/reverting documents that have ICs approved for invoicing
   * [#13614](https://github.com/metasfresh/metasfresh/issues/13614) Desadv Packs - in depth testing (camel & cucumber)
   * [#13589](https://github.com/metasfresh/metasfresh/issues/13589) Fix Basepricelist retrieval vor product proposal without save
   * [#13571](https://github.com/metasfresh/metasfresh/issues/13571) M_AttributeUse.MandatoryForManufacturing
