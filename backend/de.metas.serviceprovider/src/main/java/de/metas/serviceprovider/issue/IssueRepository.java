@@ -260,9 +260,7 @@ public class IssueRepository
 				.orElseThrow(() -> new AdempiereException("Unknown IssueType!").appendParametersToMessage()
 						.setParameter("I_S_Issue", record));
 
-		final Status status = Status.ofCodeOptional(record.getStatus())
-				.orElseThrow(() -> new AdempiereException("Unknown Status!").appendParametersToMessage()
-						.setParameter("I_S_Issue", record));
+		final Status status = Status.ofCodeOptional(record.getStatus()).orElse(Status.NEW);
 
 		return IssueEntity.builder()
 				.clientId(ClientId.ofRepoId(record.getAD_Client_ID()))
