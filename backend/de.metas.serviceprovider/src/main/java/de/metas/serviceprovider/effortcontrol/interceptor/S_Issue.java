@@ -32,6 +32,7 @@ import de.metas.serviceprovider.issue.IssueRepository;
 import de.metas.serviceprovider.issue.agg.key.impl.IssueEffortKeyBuilder;
 import de.metas.serviceprovider.model.I_S_Issue;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -77,7 +78,7 @@ public class S_Issue
 		record.setEffortAggregationKey(issueEffortAggKey);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE },
 			ifColumnsChanged = {
 					I_S_Issue.COLUMNNAME_AD_Org_ID,
 					I_S_Issue.COLUMNNAME_IssueEffort,
@@ -87,12 +88,14 @@ public class S_Issue
 					I_S_Issue.COLUMNNAME_C_Activity_ID,
 					I_S_Issue.COLUMNNAME_C_Project_ID
 			})
-	public void syncEffortControl(@NonNull final I_S_Issue record)
+	public void syncEffortControl(@NonNull final I_S_Issue record, @NonNull final ModelChangeType timing)
 	{
 		final I_S_Issue oldRecord = InterfaceWrapperHelper.createOld(record, I_S_Issue.class);
 
 		final EffortInfo currentEffortInfo = buildEffortInfoFromRecord(record);
-		final EffortInfo oldEffortInfo = buildEffortInfoFromRecord(oldRecord);
+		final EffortInfo oldEffortInfo = timing.isAfter() && timing.isNew()
+				? null
+				: buildEffortInfoFromRecord(oldRecord);
 
 		if (currentEffortInfo == null && oldEffortInfo == null)
 		{
