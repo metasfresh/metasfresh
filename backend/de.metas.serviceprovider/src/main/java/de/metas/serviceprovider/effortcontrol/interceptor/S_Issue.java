@@ -28,7 +28,6 @@ import de.metas.serviceprovider.effortcontrol.EffortChange;
 import de.metas.serviceprovider.effortcontrol.EffortControlService;
 import de.metas.serviceprovider.effortcontrol.EffortInfo;
 import de.metas.serviceprovider.issue.IssueEntity;
-import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.issue.IssueRepository;
 import de.metas.serviceprovider.issue.agg.key.impl.IssueEffortKeyBuilder;
 import de.metas.serviceprovider.model.I_S_Issue;
@@ -112,7 +111,7 @@ public class S_Issue
 	@Nullable
 	private EffortInfo buildEffortInfoFromRecord(@NonNull final I_S_Issue record)
 	{
-		final IssueEntity issue = issueRepository.getById(IssueId.ofRepoId(record.getS_Issue_ID()));
+		final IssueEntity issue = IssueRepository.ofRecord(record);
 		return effortControlService.getEffortInfo(issue).orElse(null);
 	}
 }

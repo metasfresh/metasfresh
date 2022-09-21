@@ -102,7 +102,7 @@ public class IssueRepository
 					.setParameter("S_Issue_Id", issueId);
 		}
 
-		return buildIssueEntity(record);
+		return ofRecord(record);
 	}
 
 	@NonNull
@@ -111,7 +111,7 @@ public class IssueRepository
 		final I_S_Issue record = getRecordOrNull(issueId);
 
 		return record != null
-				? Optional.of(buildIssueEntity(record))
+				? Optional.of(ofRecord(record))
 				: Optional.empty();
 	}
 
@@ -123,7 +123,7 @@ public class IssueRepository
 				.addEqualsFilter(I_S_Issue.COLUMNNAME_IssueURL, externalURL)
 				.create()
 				.firstOnlyOptional(I_S_Issue.class)
-				.map(IssueRepository::buildIssueEntity);
+				.map(IssueRepository::ofRecord);
 	}
 
 	@NonNull
@@ -135,7 +135,7 @@ public class IssueRepository
 				.create()
 				.list()
 				.stream()
-				.map(IssueRepository::buildIssueEntity)
+				.map(IssueRepository::ofRecord)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -217,7 +217,7 @@ public class IssueRepository
 				.addNotInSubQueryFilter(I_S_Issue.COLUMNNAME_EffortAggregationKey, I_S_EffortControl.COLUMNNAME_EffortAggregationKey, effortControlQuery)
 				.create()
 				.iterateAndStream()
-				.map(IssueRepository::buildIssueEntity);
+				.map(IssueRepository::ofRecord);
 	}
 
 	public void setAggregationKeyIfMissing()
@@ -248,23 +248,12 @@ public class IssueRepository
 				.addEqualsFilter(I_S_Issue.COLUMNNAME_C_Project_ID, query.getProjectId())
 				.create()
 				.iterateAndStream()
-				.map(IssueRepository::buildIssueEntity)
+				.map(IssueRepository::ofRecord)
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	@Nullable
-	private I_S_Issue getRecordOrNull(@NonNull final IssueId issueId)
-	{
-		return queryBL
-				.createQueryBuilder(I_S_Issue.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_S_Issue.COLUMNNAME_S_Issue_ID, issueId.getRepoId())
-				.create()
-				.firstOnly(I_S_Issue.class);
-	}
-
 	@NonNull
-	private static IssueEntity buildIssueEntity(@NonNull final I_S_Issue record)
+	public static IssueEntity ofRecord(@NonNull final I_S_Issue record)
 	{
 		final IssueType issueType = IssueType
 				.getTypeByValue(record.getIssueType())
@@ -310,6 +299,17 @@ public class IssueRepository
 				.externallyUpdatedAt(TimeUtil.asInstant(record.getExternallyUpdatedAt()))
 				.invoiceableHours(record.getInvoiceableEffort())
 				.build();
+	}
+
+	@Nullable
+	private I_S_Issue getRecordOrNull(@NonNull final IssueId issueId)
+	{
+		return queryBL
+				.createQueryBuilder(I_S_Issue.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_S_Issue.COLUMNNAME_S_Issue_ID, issueId.getRepoId())
+				.create()
+				.firstOnly(I_S_Issue.class);
 	}
 
 	@NonNull
