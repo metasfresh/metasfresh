@@ -32,6 +32,7 @@ import de.metas.calendar.standard.ICalendarDAO;
 import de.metas.calendar.standard.NonBusinessDay;
 import de.metas.calendar.standard.RecurrentNonBusinessDay;
 import de.metas.calendar.standard.RecurrentNonBusinessDayFrequency;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -47,7 +48,6 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
-import java.sql.Timestamp;
 import java.util.List;
 import java.util.Properties;
 
@@ -59,26 +59,25 @@ public abstract class AbstractCalendarDAO implements ICalendarDAO
 	protected abstract List<I_C_Period> retrievePeriods(
 			final Properties ctx,
 			final int calendarId,
-			final Timestamp begin,
-			final Timestamp end,
+			final LocalDateAndOrgId begin,
+			final LocalDateAndOrgId end,
 			final String trxName);
 
 	@Override
 	public List<I_C_Period> retrievePeriods(
 			final Properties ctx,
-			final I_C_Calendar cal,
-			final Timestamp begin,
-			final Timestamp end,
+			final @NonNull I_C_Calendar cal,
+			final LocalDateAndOrgId begin,
+			final LocalDateAndOrgId end,
 			final String trxName)
 	{
-		Check.assume(cal != null, "Param 'cal' is not null");
 		final int calendarId = cal.getC_Calendar_ID();
 		return retrievePeriods(ctx, calendarId, begin, end, trxName);
 
 	}
 
 	@Override
-	public I_C_Period findByCalendar(final Timestamp date, @NonNull final CalendarId calendarId)
+	public I_C_Period findByCalendar(final LocalDateAndOrgId date, @NonNull final CalendarId calendarId)
 	{
 		final Properties ctx = Env.getCtx();
 		final String trxName = ITrx.TRXNAME_ThreadInherited;
@@ -86,7 +85,7 @@ public abstract class AbstractCalendarDAO implements ICalendarDAO
 	}
 
 	@Override
-	public I_C_Period findByCalendar(final Properties ctx, final Timestamp date, final int calendarId, final String trxName)
+	public I_C_Period findByCalendar(final Properties ctx, final LocalDateAndOrgId date, final int calendarId, final String trxName)
 	{
 		final List<I_C_Period> periodsAll = retrievePeriods(ctx, calendarId, date, date, trxName);
 		for (final I_C_Period period : periodsAll)
