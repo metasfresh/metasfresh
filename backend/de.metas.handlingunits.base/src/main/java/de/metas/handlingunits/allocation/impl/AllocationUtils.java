@@ -190,7 +190,7 @@ public final class AllocationUtils
 			final ZonedDateTime date,
 			@Nullable final Object referenceModel,
 			final boolean forceQtyAllocation,
-			final ClearanceStatusInfo clearanceStatusInfo)
+			@Nullable final ClearanceStatusInfo clearanceStatusInfo)
 	{
 		return builder()
 				.setHUContext(huContext)

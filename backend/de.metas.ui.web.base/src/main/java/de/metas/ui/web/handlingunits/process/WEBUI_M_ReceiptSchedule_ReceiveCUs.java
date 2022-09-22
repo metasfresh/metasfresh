@@ -23,6 +23,7 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
+import de.metas.product.IProductDAO;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.util.GuavaCollectors;
@@ -81,6 +82,7 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends ReceiptScheduleBasedProc
 	private final transient IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient IBPartnerOrgBL partnerOrgBL = Services.get(IBPartnerOrgBL.class);
+	private final transient IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	private boolean allowMultipleReceiptsSchedules = true; // by default we shall allow multiple lines
 	private boolean allowNoQuantityAvailable = false; // by default we shall not allow lines which have no quantity available
@@ -245,16 +247,27 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends ReceiptScheduleBasedProc
 
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(rs.getAD_Client_ID(), rs.getAD_Org_ID());
 		final IMutableHUContext huContextInitial = Services.get(IHUContextFactory.class).createMutableHUContextForProcessing(getCtx(), clientAndOrgId);
-		final String language = partnerOrgBL.getOrgLanguageOrLoggedInUserLanguage(clientAndOrgId.getOrgId());
+		final I_M_Product product = productDAO.getById(rs.getM_Product_ID());
+		final ClearanceStatus clearanceStatus = ClearanceStatus.ofNullableCode(product.getHUClearanceStatus());
+		final ClearanceStatusInfo clearanceStatusInfo;
+		if (clearanceStatus != null)
+		{
+			final String language = partnerOrgBL.getOrgLanguageOrLoggedInUserLanguage(clientAndOrgId.getOrgId());
+			clearanceStatusInfo = ClearanceStatusInfo.of(clearanceStatus, msgBL.getMsg(language, MESSAGE_ClearanceStatusInfo_Receipt));
+		}
+		else
+		{
+			clearanceStatusInfo = null;
+		}
 
 		return AllocationUtils.builder()
 				.setHUContext(huContextInitial)
 				.setDateAsToday()
-				.setProduct(loadOutOfTrx(rs.getM_Product_ID(), I_M_Product.class))
+				.setProduct(product)
 				.setQuantity(new Quantity(qty, loadOutOfTrx(rs.getC_UOM_ID(), I_C_UOM.class)))
 				.setFromReferencedModel(rs)
 				.setForceQtyAllocation(true)
-				.setClearanceStatusInfo(ClearanceStatusInfo.of(ClearanceStatus.Locked, msgBL.getMsg(language, MESSAGE_ClearanceStatusInfo_Receipt)))
+				.setClearanceStatusInfo(clearanceStatusInfo)
 				.create();
 	}
 

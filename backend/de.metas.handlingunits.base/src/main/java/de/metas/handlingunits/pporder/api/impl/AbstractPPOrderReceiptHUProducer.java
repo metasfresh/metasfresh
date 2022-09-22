@@ -70,6 +70,7 @@ import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.organization.OrgId;
+import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
@@ -117,6 +118,7 @@ import java.util.Map;
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient IBPartnerOrgBL partnerOrgBL = Services.get(IBPartnerOrgBL.class);
+	private final transient IProductDAO productDAO = Services.get(IProductDAO.class);
 
 	// Parameters
 	private final PPOrderId ppOrderId;
@@ -370,8 +372,17 @@ import java.util.Map;
 		final ZonedDateTime date = getMovementDate();
 		final Object referencedModel = getAllocationRequestReferencedModel();
 
-		final String language = getOrgUserOrLoggedInUSerLanguage(referencedModel);
-		final ClearanceStatusInfo clearanceStatusInfo = ClearanceStatusInfo.of(ClearanceStatus.Locked, msgBL.getMsg(language, MESSAGE_ClearanceStatusInfo_Manufactured));
+		final ClearanceStatus clearanceStatus = ClearanceStatus.ofNullableCode(productDAO.getById(productId).getHUClearanceStatus());
+		final ClearanceStatusInfo clearanceStatusInfo;
+		if (clearanceStatus != null)
+		{
+			final String language = getOrgUserOrLoggedInUSerLanguage(referencedModel);
+			clearanceStatusInfo = ClearanceStatusInfo.of(clearanceStatus, msgBL.getMsg(language, MESSAGE_ClearanceStatusInfo_Manufactured));
+		}
+		else
+		{
+			clearanceStatusInfo = null;
+		}
 
 		return AllocationUtils.createQtyRequest(huContext,
 				productId, // product

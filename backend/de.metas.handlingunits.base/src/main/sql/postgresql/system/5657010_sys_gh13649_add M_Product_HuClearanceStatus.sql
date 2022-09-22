@@ -90,7 +90,7 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 
 -- 2022-09-21T13:03:07.543Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545157,0,TO_TIMESTAMP('2022-09-21 16:03:07','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','ClearanceStatusInfo.Receipt','I',TO_TIMESTAMP('2022-09-21 16:03:07','YYYY-MM-DD HH24:MI:SS'),100,'Erhalten')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545157,0,TO_TIMESTAMP('2022-09-21 16:03:07','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Erhalten','I',TO_TIMESTAMP('2022-09-21 16:03:07','YYYY-MM-DD HH24:MI:SS'),100,'ClearanceStatusInfo.Receipt')
 ;
 
 -- 2022-09-21T13:03:07.544Z
@@ -110,7 +110,7 @@ UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2022-09-21 16:0
 
 -- 2022-09-21T13:03:56.880Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545158,0,TO_TIMESTAMP('2022-09-21 16:03:56','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','ClearanceStatusInfo.Manufactured','I',TO_TIMESTAMP('2022-09-21 16:03:56','YYYY-MM-DD HH24:MI:SS'),100,'Hergestellt')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545158,0,TO_TIMESTAMP('2022-09-21 16:03:56','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Hergestellt','I',TO_TIMESTAMP('2022-09-21 16:03:56','YYYY-MM-DD HH24:MI:SS'),100,'ClearanceStatusInfo.Manufactured')
 ;
 
 -- 2022-09-21T13:03:56.881Z

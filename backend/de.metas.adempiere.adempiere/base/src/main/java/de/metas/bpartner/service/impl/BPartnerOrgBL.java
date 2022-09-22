@@ -36,7 +36,6 @@ import static de.metas.util.Check.assume;
 public class BPartnerOrgBL implements IBPartnerOrgBL
 {
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 
 	@Override
 	public I_C_BPartner retrieveLinkedBPartner(final I_AD_Org org)
@@ -138,7 +137,9 @@ public class BPartnerOrgBL implements IBPartnerOrgBL
 	public String getOrgLanguageOrLoggedInUserLanguage(@NonNull final OrgId orgId)
 	{
 		final OrgInfo orgInfo = orgDAO.getOrgInfoById(orgId);
-		final Language language = bpartnerBL.getLanguage(orgInfo.getOrgBPartnerLocationId().getBpartnerId())
+		final BPartnerId orgBpartnerId = orgInfo.getOrgBPartnerLocationId().getBpartnerId();
+		final Language language = Services.get(IBPartnerBL.class)
+				.getLanguage(orgBpartnerId)
 				.orElse(null);
 		if (language != null)
 		{
