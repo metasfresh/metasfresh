@@ -222,9 +222,9 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 		final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecordOutOfTrx(asyncBatchId);
 
 		final LockOwner lockOwner = getLockOwnerForAsyncBatch(asyncBatchId);
-		
+
 		final Supplier<Boolean> timeoutReached = () -> startTime.plusMillis(timeout.toMillis()).isBefore(Instant.now());
-		
+
 		while (!timeoutReached.get())
 		{
 			final ILock lock = lockManager.lock()
@@ -294,16 +294,23 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 			checkIfBatchIsDone();
 		}
 
-		private void forceCompletionIfNotAlreadyCompleted()
+		private synchronized void checkIfBatchIsDone()
 		{
-			if (checkIfBatchIsDone())
+			if (wpProgress == null || !isEnqueueingDone)
 			{
 				return;
 			}
 
-			this.completableFuture.completeExceptionally(new AdempiereException("Forced exceptionally complete!")
-																 .appendParametersToMessage()
-																 .setParameter("AsyncBatchId", batchId.getRepoId()));
+			if (wpProgress.isProcessedSuccessfully())
+			{
+				Loggables.withLogger(logger, Level.INFO).addLog("AsyncBatchId={} completed successfully. ", batchId.getRepoId());
+				this.completableFuture.complete(null);
+			}
+			else if (wpProgress.isProcessedWithError())
+			{
+				this.completableFuture.completeExceptionally(new AdempiereException("WorkPackage completed with an exception")
+																.appendParametersToMessage()
+																.setParameter("AsyncBatchId", batchId.getRepoId()));
 		}
 
 		private synchronized boolean checkIfBatchIsDone()
@@ -312,23 +319,6 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 			{
 				return false;
 			}
-
-			if (wpProgress.isProcessedSuccessfully())
-			{
-				Loggables.withLogger(logger, Level.INFO).addLog("AsyncBatchId={} completed successfully. ", batchId.getRepoId());
-				this.completableFuture.complete(null);
-				return true;
-			}
-			else if (wpProgress.isProcessedWithError())
-			{
-				this.completableFuture.completeExceptionally(new AdempiereException("WorkPackage completed with an exception")
-																.appendParametersToMessage()
-																.setParameter("AsyncBatchId", batchId.getRepoId()));
-				return true;
-			}
-
-			return false;
-		}
 
 		@NonNull
 		private static WorkPackagesProgress getWPsProgress(@NonNull final AsyncBatchNotifyRequest request)

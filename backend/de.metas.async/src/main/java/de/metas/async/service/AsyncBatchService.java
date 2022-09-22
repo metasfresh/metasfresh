@@ -91,16 +91,16 @@ public class AsyncBatchService
 																" processedWPSize: " + workPackagesProcessedCount +
 																" erroredWPSize: " + workPackagesWithErrorCount);
 
-			final AsyncBatchNotifyRequest request = AsyncBatchNotifyRequest.builder()
-					.clientId(Env.getClientId())
-					.asyncBatchId(AsyncBatchId.toRepoId(asyncBatchId))
+		final AsyncBatchNotifyRequest request = AsyncBatchNotifyRequest.builder()
+				.clientId(Env.getClientId())
+				.asyncBatchId(AsyncBatchId.toRepoId(asyncBatchId))
 				.noOfProcessedWPs(workPackagesProcessedCount)
 				.noOfEnqueuedWPs(workPackages.size())
 				.noOfErrorWPs(workPackagesWithErrorCount)
-					.build();
+				.build();
 
-			asyncBatchEventBusService.postRequest(request);
-		}
+		asyncBatchEventBusService.postRequest(request);
+	}
 
 	/**
 	 * Enqueues and waits for the workpackages to finish, successfully or exceptionally.
