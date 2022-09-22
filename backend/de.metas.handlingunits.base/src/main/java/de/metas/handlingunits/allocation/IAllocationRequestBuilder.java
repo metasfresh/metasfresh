@@ -1,20 +1,19 @@
 package de.metas.handlingunits.allocation;
 
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-
+import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.storage.EmptyHUListener;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 
 /**
  * {@link IAllocationRequest} builder. Use it to create modified instances of your immutable {@link IAllocationRequest}.
@@ -26,6 +25,8 @@ import javax.annotation.Nullable;
  */
 public interface IAllocationRequestBuilder
 {
+	ClearanceStatusInfo getClearanceStatusInfo();
+
 	/**
 	 * Create the new allocation request
 	 *
@@ -82,4 +83,6 @@ public interface IAllocationRequestBuilder
 	IAllocationRequestBuilder setFromReferencedTableRecord(@Nullable TableRecordReference fromReferencedTableRecord);
 
 	IAllocationRequestBuilder addEmptyHUListener(EmptyHUListener emptyHUListener);
+
+	IAllocationRequestBuilder setClearanceStatusInfo(ClearanceStatusInfo clearanceStatusInfo);
 }

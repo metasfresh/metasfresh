@@ -26,6 +26,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.handlingunits.ClearanceStatus;
+import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
@@ -64,6 +66,9 @@ import de.metas.handlingunits.pporder.api.CreateReceiptCandidateRequest.CreateRe
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcessor;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
@@ -81,6 +86,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
+import org.compiere.model.IClientOrgAware;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
 import org.eevolution.api.PPCostCollectorId;
@@ -98,6 +104,8 @@ import java.util.Map;
 
 /* package */abstract class AbstractPPOrderReceiptHUProducer implements IPPOrderReceiptHUProducer
 {
+	private final static AdMessageKey MESSAGE_Hergestellt = AdMessageKey.of("Hergestellt");
+
 	// Services
 	private final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 	private final IPPOrderProductAttributeBL ppOrderProductAttributeBL = Services.get(IPPOrderProductAttributeBL.class);
@@ -107,6 +115,8 @@ import java.util.Map;
 	private final IHUCapacityBL huCapacityBL = Services.get(IHUCapacityBL.class);
 	private final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	// Parameters
 	private final PPOrderId ppOrderId;
@@ -360,13 +370,27 @@ import java.util.Map;
 		final ZonedDateTime date = getMovementDate();
 		final Object referencedModel = getAllocationRequestReferencedModel();
 
+		final String language = getOrgUserOrLoggedInUSerLanguage(referencedModel);
+		final ClearanceStatusInfo clearanceStatusInfo = ClearanceStatusInfo.of(ClearanceStatus.Locked, msgBL.getMsg(language, MESSAGE_Hergestellt));
+
 		return AllocationUtils.createQtyRequest(huContext,
 				productId, // product
 				qtyToReceive, // the quantity to receive
 				date, // transaction date
 				referencedModel, // referenced model
-				true // forceQtyAllocation: make sure we will transfer the given qty, no matter what
+				true, // forceQtyAllocation: make sure we will transfer the given qty, no matter what
+				clearanceStatusInfo // clearance status
 		);
+	}
+
+	private String getOrgUserOrLoggedInUSerLanguage(final Object referencedModel)
+	{
+		if (referencedModel instanceof IClientOrgAware)
+		{
+			final OrgId orgId = OrgId.ofRepoId(((IClientOrgAware)referencedModel).getAD_Org_ID());
+			return orgDAO.getOrgLanguageOrLoggedInUserLanguage(orgId);
+		}
+		return Env.getADLanguageOrBaseLanguage();
 	}
 
 	private IHUProducerAllocationDestination createAllocationDestination()
@@ -600,7 +624,9 @@ import java.util.Map;
 	//
 	//
 
-	private interface TUSpec {}
+	private interface TUSpec
+	{
+	}
 
 	@Value(staticConstructor = "of")
 	private static class HUPIItemProductTUSpec implements TUSpec

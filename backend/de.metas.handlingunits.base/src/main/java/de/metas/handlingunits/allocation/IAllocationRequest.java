@@ -22,15 +22,15 @@ package de.metas.handlingunits.allocation;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_UOM;
-
+import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.IHUContext;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_UOM;
+
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 
 /**
  * Allocation Request describes what we need to allocate/deallocate. Implementors are immutable. Instead of modifying it (split, create partial requests etc), use {@link IAllocationRequestBuilder} to
@@ -43,7 +43,7 @@ public interface IAllocationRequest
 {
 	BigDecimal QTY_INFINITE = Quantity.QTY_INFINITE;
 
-	IHUContext getHUContext();
+	IHUContext getHuContext();
 
 	/**
 	 * @return allocation date
@@ -88,4 +88,6 @@ public interface IAllocationRequest
 	 * @return <code>true</code> if we shall allocate the qty even if the destination is already full
 	 */
 	boolean isForceQtyAllocation();
+
+	ClearanceStatusInfo getClearanceStatusInfo();
 }

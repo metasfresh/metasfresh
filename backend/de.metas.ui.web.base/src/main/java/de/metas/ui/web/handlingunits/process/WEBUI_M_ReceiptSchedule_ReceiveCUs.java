@@ -2,6 +2,8 @@ package de.metas.ui.web.handlingunits.process;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
+import de.metas.handlingunits.ClearanceStatus;
+import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.IAllocationRequest;
@@ -13,8 +15,11 @@ import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.IOrgDAO;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
@@ -70,8 +75,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 @Profile(Profiles.PROFILE_Webui)
 public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends ReceiptScheduleBasedProcess
 {
+	private final static AdMessageKey MESSAGE_Erhalten = AdMessageKey.of("Erhalten");
+
 	private final transient IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
 	private final transient IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
+	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private boolean allowMultipleReceiptsSchedules = true; // by default we shall allow multiple lines
 	private boolean allowNoQuantityAvailable = false; // by default we shall not allow lines which have no quantity available
@@ -236,6 +245,7 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends ReceiptScheduleBasedProc
 
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(rs.getAD_Client_ID(), rs.getAD_Org_ID());
 		final IMutableHUContext huContextInitial = Services.get(IHUContextFactory.class).createMutableHUContextForProcessing(getCtx(), clientAndOrgId);
+		final String language = orgDAO.getOrgLanguageOrLoggedInUserLanguage(clientAndOrgId.getOrgId());
 
 		return AllocationUtils.builder()
 				.setHUContext(huContextInitial)
@@ -244,6 +254,7 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends ReceiptScheduleBasedProc
 				.setQuantity(new Quantity(qty, loadOutOfTrx(rs.getC_UOM_ID(), I_C_UOM.class)))
 				.setFromReferencedModel(rs)
 				.setForceQtyAllocation(true)
+				.setClearanceStatusInfo(ClearanceStatusInfo.of(ClearanceStatus.Locked, msgBL.getMsg(language, MESSAGE_Erhalten)))
 				.create();
 	}
 

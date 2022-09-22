@@ -6,6 +6,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.cache.CCache;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.calendar.CalendarId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.image.AdImageId;
 import de.metas.organization.IOrgDAO;
@@ -37,6 +38,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_OrgInfo;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.POInfo;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -163,12 +165,12 @@ public class OrgDAO implements IOrgDAO
 	}
 
 	@Override
-	
+
 	public OrgInfo getOrgInfoByIdInTrx(final OrgId adOrgId)
 	{
 		return retrieveOrgInfo(adOrgId, ITrx.TRXNAME_ThreadInherited);
 	}
-	
+
 	@NonNull
 	private OrgInfo retrieveOrgInfo(@NonNull final OrgId orgId, final String trxName)
 	{
@@ -372,6 +374,22 @@ public class OrgDAO implements IOrgDAO
 	public String getOrgName(@NonNull final OrgId orgId)
 	{
 		return getById(orgId).getName();
+	}
+
+	@NonNull
+	@Override
+	public String getOrgLanguageOrLoggedInUserLanguage(@NonNull final OrgId orgId)
+	{
+		final String language = Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_AD_OrgInfo.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_AD_OrgInfo.COLUMNNAME_AD_Org_ID, orgId)
+				.andCollect(I_AD_OrgInfo.COLUMNNAME_Org_BPartner_ID, I_C_BPartner.class)
+				.create()
+				.first(I_C_BPartner.COLUMNNAME_AD_Language, String.class);
+
+		return CoalesceUtil.firstNotBlank(language, Env.getADLanguageOrBaseLanguage());
+
 	}
 
 }
