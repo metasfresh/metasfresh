@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 /**
  *
@@ -447,6 +448,17 @@ public final class Check
 			throwOrLogEx(defaultExClazz, "Assumption failure: " + valueName + " >= 0 but it was " + valueInt);
 		}
 		return valueInt;
+	}
+
+	public static void assumeGreaterOrEqualToZero(@NonNull final Integer... valueInt)
+	{
+		final boolean anyLessThanZero = Stream.of(valueInt)
+				.anyMatch(value -> value < 0);
+
+		if (anyLessThanZero)
+		{
+			throw new RuntimeException("At least one param was less than 0! params=" + Arrays.toString(valueInt));
+		}
 	}
 
 	public static BigDecimal assumeGreaterOrEqualToZero(final BigDecimal valueBD, final String valueName)
