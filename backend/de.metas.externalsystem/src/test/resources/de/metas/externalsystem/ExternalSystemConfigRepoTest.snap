@@ -638,6 +638,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Other_Config
       "id" : {
         "externalSystemParentConfigId" : 100001
       },
+      "value" : {
+        "externalSystemParentConfigId" : 100001
+      },
       "parameters" : [
         {
           "id" : 100002,

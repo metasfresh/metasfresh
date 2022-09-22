@@ -27,12 +27,15 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
+import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
+import de.metas.externalsystem.model.I_ExternalSystem_Other_ConfigParameter;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.IADProcessDAO;
@@ -57,6 +60,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
@@ -66,7 +71,8 @@ import static de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum.CO
 import static de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP.COLUMNNAME_IsAutoSendWhenCreatedByUserGroup;
 import static de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP.COLUMNNAME_IsSyncBPartnersToRabbitMQ;
 import static de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP.COLUMNNAME_IsSyncExternalReferencesToRabbitMQ;
-import static org.assertj.core.api.Assertions.*;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class ExternalSystem_Config_StepDef
 {
@@ -150,19 +156,17 @@ public class ExternalSystem_Config_StepDef
 	@And("deactivate ExternalSystem_Config")
 	public void deactivate_ExternalSystem_Config(@NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> row: dataTable.asMaps())
+		for (final Map<String, String> row : dataTable.asMaps())
 		{
 			final String configIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_ExternalSystem_Config_ID + "." + TABLECOLUMN_IDENTIFIER);
 
-			final I_ExternalSystem_Config externalSystemConfig = configTable.get(configIdentifier);
-			assertThat(externalSystemConfig).isNotNull();
-
-			final I_ExternalSystem_Config parentConfig = InterfaceWrapperHelper.load(externalSystemConfig.getExternalSystem_Config_ID(), I_ExternalSystem_Config.class);
+			final I_ExternalSystem_Config parentConfig = configTable.get(configIdentifier);
+			assertThat(parentConfig).isNotNull();
 
 			parentConfig.setIsActive(false);
-			InterfaceWrapperHelper.saveRecord(parentConfig);
+			saveRecord(parentConfig);
 
-			final ExternalSystemType externalSystemType = ExternalSystemType.ofCode(externalSystemConfig.getType());
+			final ExternalSystemType externalSystemType = ExternalSystemType.ofCode(parentConfig.getType());
 
 			switch (externalSystemType)
 			{
@@ -173,7 +177,7 @@ public class ExternalSystem_Config_StepDef
 							.firstOnlyNotNull(I_ExternalSystem_Config_RabbitMQ_HTTP.class);
 
 					configRabbitMQHttp.setIsActive(false);
-					InterfaceWrapperHelper.saveRecord(configRabbitMQHttp);
+					saveRecord(configRabbitMQHttp);
 					break;
 				case GRSSignum:
 					final I_ExternalSystem_Config_GRSSignum configGrsSignum = queryBL.createQueryBuilder(I_ExternalSystem_Config_GRSSignum.class)
@@ -182,11 +186,61 @@ public class ExternalSystem_Config_StepDef
 							.firstOnlyNotNull(I_ExternalSystem_Config_GRSSignum.class);
 
 					configGrsSignum.setIsActive(false);
-					InterfaceWrapperHelper.saveRecord(configGrsSignum);
+					saveRecord(configGrsSignum);
 					break;
 				default:
 					throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 			}
+		}
+	}
+
+	@And("^add Other external system config with identifier: (.*)$")
+	public void add_other_sys_config(@NonNull final String configIdentifier, @NonNull final DataTable dataTable)
+	{
+		final I_ExternalSystem_Config externalSystemParentConfigRecord = createExternalSystemConfig(configIdentifier, ExternalSystemType.Other);
+
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String name = DataTableUtil.extractStringForColumnName(row, I_ExternalSystem_Other_ConfigParameter.COLUMNNAME_Name);
+			final String value = DataTableUtil.extractStringForColumnName(row, I_ExternalSystem_Other_ConfigParameter.COLUMNNAME_Value);
+
+			final I_ExternalSystem_Other_ConfigParameter otherConfigParam = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Other_ConfigParameter.class);
+			otherConfigParam.setExternalSystem_Config_ID(externalSystemParentConfigRecord.getExternalSystem_Config_ID());
+			otherConfigParam.setName(name);
+			otherConfigParam.setValue(value);
+			otherConfigParam.setIsActive(true);
+
+			saveRecord(otherConfigParam);
+		}
+	}
+
+	@And("^store endpointPath (.*) in context, resolving placeholder as ExternalSystem.value$")
+	public void store_endpointPath_in_context(@NonNull String endpointPath)
+	{
+		final String regex = ".*(:[a-zA-Z]+)/?.*";
+
+		final Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+		final Matcher matcher = pattern.matcher(endpointPath);
+
+		while (matcher.find())
+		{
+			final String externalSysConfigIdentifierGroup = matcher.group(1);
+			final String externalSysConfigIdentifier = externalSysConfigIdentifierGroup.replace(":", "");
+
+			final I_ExternalSystem_Config parentConfig = configTable.get(externalSysConfigIdentifier);
+			assertThat(parentConfig).isNotNull();
+
+			final ExternalSystemParentConfigId parentConfigId = ExternalSystemParentConfigId.ofRepoId(parentConfig.getExternalSystem_Config_ID());
+			final ExternalSystemType systemType = ExternalSystemType.ofCode(parentConfig.getType());
+
+			final IExternalSystemChildConfig childConfig = externalSystemConfigRepo.getChildByParentIdAndType(parentConfigId, systemType)
+					.orElse(null);
+
+			assertThat(childConfig).isNotNull();
+
+			endpointPath = endpointPath.replace(externalSysConfigIdentifierGroup, childConfig.getValue());
+
+			testContext.setEndpointPath(endpointPath);
 		}
 	}
 
@@ -208,13 +262,7 @@ public class ExternalSystem_Config_StepDef
 			return;
 		}
 
-		final I_ExternalSystem_Config externalSystemParentConfigEntity = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Config.class);
-		externalSystemParentConfigEntity.setType(externalSystemType.getCode());
-		externalSystemParentConfigEntity.setName("notImportant");
-		externalSystemParentConfigEntity.setIsActive(true);
-		InterfaceWrapperHelper.save(externalSystemParentConfigEntity);
-
-		configTable.put(configIdentifier, externalSystemParentConfigEntity);
+		final I_ExternalSystem_Config externalSystemParentConfigEntity = createExternalSystemConfig(configIdentifier, externalSystemType);
 
 		switch (externalSystemType)
 		{
@@ -253,7 +301,7 @@ public class ExternalSystem_Config_StepDef
 				final boolean isAutoSendWhenCreatedByUserGroup = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + COLUMNNAME_IsAutoSendWhenCreatedByUserGroup, false);
 				externalSystemConfigRabbitMQ.setIsAutoSendWhenCreatedByUserGroup(isAutoSendWhenCreatedByUserGroup);
 				final String userGroupIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_ExternalSystem_Config_RabbitMQ_HTTP.COLUMNNAME_SubjectCreatedByUserGroup_ID + "." + TABLECOLUMN_IDENTIFIER);
-				if(Check.isNotBlank(userGroupIdentifier))
+				if (Check.isNotBlank(userGroupIdentifier))
 				{
 					final I_AD_UserGroup userGroup = userGroupTable.get(userGroupIdentifier);
 					assertThat(userGroup).isNotNull();
@@ -284,5 +332,19 @@ public class ExternalSystem_Config_StepDef
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 		}
+	}
+
+	@NonNull
+	private I_ExternalSystem_Config createExternalSystemConfig(@NonNull final String configIdentifier, @NonNull final ExternalSystemType externalSystemType)
+	{
+		final I_ExternalSystem_Config externalSystemParentConfigEntity = InterfaceWrapperHelper.newInstance(I_ExternalSystem_Config.class);
+		externalSystemParentConfigEntity.setType(externalSystemType.getCode());
+		externalSystemParentConfigEntity.setName(externalSystemType.getCode() + "_ConfigName");
+		externalSystemParentConfigEntity.setIsActive(true);
+		InterfaceWrapperHelper.save(externalSystemParentConfigEntity);
+
+		configTable.put(configIdentifier, externalSystemParentConfigEntity);
+
+		return externalSystemParentConfigEntity;
 	}
 }
