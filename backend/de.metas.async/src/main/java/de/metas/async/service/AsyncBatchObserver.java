@@ -276,10 +276,10 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 		ILock lock;
 
 		@NonFinal
-		boolean isEnqueueingDone;
+		volatile boolean isEnqueueingDone;
 
 		@NonFinal
-		WorkPackagesProgress wpProgress = null;
+		volatile WorkPackagesProgress wpProgress = null;
 
 		private void markEnqueueingIsDone()
 		{
@@ -293,7 +293,7 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 			checkIfBatchIsDone();
 		}
 
-		private void checkIfBatchIsDone()
+		private synchronized void checkIfBatchIsDone()
 		{
 			if (wpProgress == null || !isEnqueueingDone)
 			{
