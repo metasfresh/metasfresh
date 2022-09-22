@@ -644,18 +644,29 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			}
 			else
 			{
+				final String otherAccountIdentification = line.getOtherAccountIdentification();
+				final String accountNo = bankAccount.getAccountNo();
+
 				final GenericAccountIdentification1CH othr = objectFactory.createGenericAccountIdentification1CH();
 				id.setOthr(othr);
 
-				final String otherAccountIdentification = line.getOtherAccountIdentification();
-				if (!Check.isEmpty(otherAccountIdentification, true))
+				if (Check.isEmpty(otherAccountIdentification, true) && Check.isEmpty(accountNo, true))
 				{
-					// task 07789
-					othr.setId(otherAccountIdentification); // for task 07789, this needs to contain the ESR TeilehmerNr or PostkontoNr
+					othr.setId(iban.replaceAll(" ", "")); // this is ofc the more frequent case (..on a global scale)
 				}
 				else
 				{
-					othr.setId(bankAccount.getAccountNo());
+
+
+					if (!Check.isEmpty(otherAccountIdentification, true))
+					{
+						// task 07789
+						othr.setId(otherAccountIdentification); // for task 07789, this needs to contain the ESR TeilehmerNr or PostkontoNr
+					}
+					else
+					{
+						othr.setId(bankAccount.getAccountNo());
+					}
 				}
 			}
 		}
