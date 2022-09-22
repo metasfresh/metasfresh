@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13625](https://github.com/metasfresh/metasfresh/issues/13625) Material-Cockpit Add C_Order QtyReserved column
   * [#13580](https://github.com/metasfresh/metasfresh/issues/13580) IC Handle the case of respective record going "into limbo"
   * [#13603](https://github.com/metasfresh/metasfresh/issues/13603) Disallow reactivating/reverting documents that have ICs approved for invoicing
   * [#13614](https://github.com/metasfresh/metasfresh/issues/13614) Desadv Packs - in depth testing (camel & cucumber)
