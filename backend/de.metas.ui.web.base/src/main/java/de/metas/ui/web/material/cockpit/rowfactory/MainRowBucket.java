@@ -2,8 +2,11 @@ package de.metas.ui.web.material.cockpit.rowfactory;
 
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
+import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -45,51 +48,57 @@ public class MainRowBucket
 {
 	@Getter(AccessLevel.NONE)
 	private final transient IProductBL productBL = Services.get(IProductBL.class);
-	
-	private Quantity qtyStockCurrent;
+	@Getter(AccessLevel.NONE)
+	private final transient IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+
+	private Quantity qtyStockCurrentAtDate;
 
 	private Quantity qtyOnHand;
 
 	// Zusage Lieferant
-	private Quantity pmmQtyPromised;
+	private Quantity pmmQtyPromisedAtDate;
+
+	private Quantity qtyDemandSalesOrderAtDate;
 
 	private Quantity qtyDemandSalesOrder;
 
-	private Quantity qtyDemandDDOrder;
+	private Quantity qtyDemandDDOrderAtDate;
 	// MRP Menge
-	private Quantity qtyDemandPPOrder;
+	private Quantity qtyDemandPPOrderAtDate;
 
-	private Quantity qtyDemandSum;
+	private Quantity qtyDemandSumAtDate;
 
-	private Quantity qtySupplyPPOrder;
+	private Quantity qtySupplyPPOrderAtDate;
+
+	private Quantity qtySupplyPurchaseOrderAtDate;
 
 	private Quantity qtySupplyPurchaseOrder;
 
-	private Quantity qtySupplyDDOrder;
+	private Quantity qtySupplyDDOrderAtDate;
 
-	private Quantity qtySupplySum;
+	private Quantity qtySupplySumAtDate;
 
-	private Quantity qtySupplyRequired;
+	private Quantity qtySupplyRequiredAtDate;
 
-	private Quantity qtySupplyToSchedule;
+	private Quantity qtySupplyToScheduleAtDate;
 
-	private Quantity qtyMaterialentnahme;
+	private Quantity qtyMaterialentnahmeAtDate;
 
 	// zusagbar Zaehlbestand
-	private Quantity qtyExpectedSurplus;
+	private Quantity qtyExpectedSurplusAtDate;
 
-	private Quantity qtyStockEstimateCount;
-
-	@Nullable
-	private Integer qtyStockEstimateSeqNo;
+	private Quantity qtyStockEstimateCountAtDate;
 
 	@Nullable
-	private Instant qtyStockEstimateTime;
-
-	private Quantity qtyInventoryCount;
+	private Integer qtyStockEstimateSeqNoAtDate;
 
 	@Nullable
-	private Instant qtyInventoryTime;
+	private Instant qtyStockEstimateTimeAtDate;
+
+	private Quantity qtyInventoryCountAtDate;
+
+	@Nullable
+	private Instant qtyInventoryTimeAtDate;
 
 	private final Set<Integer> cockpitRecordIds = new HashSet<>();
 
@@ -101,30 +110,30 @@ public class MainRowBucket
 
 		final I_C_UOM uom = productBL.getStockUOM(cockpitRecord.getM_Product_ID());
 
-		pmmQtyPromised = addToNullable(pmmQtyPromised, cockpitRecord.getPMM_QtyPromised_OnDate(), uom);
-		qtyMaterialentnahme = addToNullable(qtyMaterialentnahme, cockpitRecord.getQtyMaterialentnahme(), uom);
+		pmmQtyPromisedAtDate = addToNullable(pmmQtyPromisedAtDate, cockpitRecord.getPMM_QtyPromised_OnDate_AtDate(), uom);
+		qtyMaterialentnahmeAtDate = addToNullable(qtyMaterialentnahmeAtDate, cockpitRecord.getQtyMaterialentnahme_AtDate(), uom);
 
-		qtyDemandPPOrder = addToNullable(qtyDemandPPOrder, cockpitRecord.getQtyDemand_PP_Order(), uom);
-		qtyDemandSalesOrder = addToNullable(qtyDemandSalesOrder, cockpitRecord.getQtyDemand_SalesOrder(), uom);
-		qtyDemandDDOrder = addToNullable(qtyDemandDDOrder, cockpitRecord.getQtyDemand_DD_Order(), uom);
-		qtyDemandSum = addToNullable(qtyDemandSum, cockpitRecord.getQtyDemandSum(), uom);
+		qtyDemandPPOrderAtDate = addToNullable(qtyDemandPPOrderAtDate, cockpitRecord.getQtyDemand_PP_Order_AtDate(), uom);
+		qtyDemandSalesOrderAtDate = addToNullable(qtyDemandSalesOrderAtDate, cockpitRecord.getQtyDemand_SalesOrder_AtDate(), uom);
+		qtyDemandDDOrderAtDate = addToNullable(qtyDemandDDOrderAtDate, cockpitRecord.getQtyDemand_DD_Order_AtDate(), uom);
+		qtyDemandSumAtDate = addToNullable(qtyDemandSumAtDate, cockpitRecord.getQtyDemandSum_AtDate(), uom);
 
-		qtySupplyPurchaseOrder = addToNullable(qtySupplyPurchaseOrder, cockpitRecord.getQtySupply_PurchaseOrder(), uom);
-		qtySupplyPPOrder = addToNullable(qtySupplyPPOrder, cockpitRecord.getQtySupply_PP_Order(), uom);
-		qtySupplyDDOrder = addToNullable(qtySupplyDDOrder, cockpitRecord.getQtySupply_DD_Order(), uom);
-		qtySupplySum = addToNullable(qtySupplySum, cockpitRecord.getQtySupplySum(), uom);
-		qtySupplyRequired = addToNullable(qtySupplyRequired, cockpitRecord.getQtySupplyRequired(), uom);
-		qtySupplyToSchedule = addToNullable(qtySupplyToSchedule, cockpitRecord.getQtySupplyToSchedule(), uom);
+		qtySupplyPurchaseOrderAtDate = addToNullable(qtySupplyPurchaseOrderAtDate, cockpitRecord.getQtySupply_PurchaseOrder_AtDate(), uom);
+		qtySupplyPPOrderAtDate = addToNullable(qtySupplyPPOrderAtDate, cockpitRecord.getQtySupply_PP_Order_AtDate(), uom);
+		qtySupplyDDOrderAtDate = addToNullable(qtySupplyDDOrderAtDate, cockpitRecord.getQtySupply_DD_Order_AtDate(), uom);
+		qtySupplySumAtDate = addToNullable(qtySupplySumAtDate, cockpitRecord.getQtySupplySum_AtDate(), uom);
+		qtySupplyRequiredAtDate = addToNullable(qtySupplyRequiredAtDate, cockpitRecord.getQtySupplyRequired_AtDate(), uom);
+		qtySupplyToScheduleAtDate = addToNullable(qtySupplyToScheduleAtDate, cockpitRecord.getQtySupplyToSchedule_AtDate(), uom);
 
-		qtyStockEstimateCount = addToNullable(qtyStockEstimateCount, cockpitRecord.getQtyStockEstimateCount(), uom);
-		qtyStockEstimateTime = TimeUtil.max(qtyStockEstimateTime, TimeUtil.asInstant(cockpitRecord.getQtyStockEstimateTime()));
-		qtyStockEstimateSeqNo = cockpitRecord.getQtyStockEstimateSeqNo();
+		qtyStockEstimateCountAtDate = addToNullable(qtyStockEstimateCountAtDate, cockpitRecord.getQtyStockEstimateCount_AtDate(), uom);
+		qtyStockEstimateTimeAtDate = TimeUtil.max(qtyStockEstimateTimeAtDate, TimeUtil.asInstant(cockpitRecord.getQtyStockEstimateTime_AtDate()));
+		qtyStockEstimateSeqNoAtDate = cockpitRecord.getQtyStockEstimateSeqNo_AtDate();
 
-		qtyInventoryCount = addToNullable(qtyInventoryCount, cockpitRecord.getQtyInventoryCount(), uom);
-		qtyInventoryTime = TimeUtil.max(qtyInventoryTime, TimeUtil.asInstant(cockpitRecord.getQtyInventoryTime()));
+		qtyInventoryCountAtDate = addToNullable(qtyInventoryCountAtDate, cockpitRecord.getQtyInventoryCount_AtDate(), uom);
+		qtyInventoryTimeAtDate = TimeUtil.max(qtyInventoryTimeAtDate, TimeUtil.asInstant(cockpitRecord.getQtyInventoryTime_AtDate()));
 
-		qtyExpectedSurplus = addToNullable(qtyExpectedSurplus, cockpitRecord.getQtyExpectedSurplus(), uom);
-		qtyStockCurrent = addToNullable(qtyStockCurrent, cockpitRecord.getQtyStockCurrent(), uom);
+		qtyExpectedSurplusAtDate = addToNullable(qtyExpectedSurplusAtDate, cockpitRecord.getQtyExpectedSurplus_AtDate(), uom);
+		qtyStockCurrentAtDate = addToNullable(qtyStockCurrentAtDate, cockpitRecord.getQtyStockCurrent_AtDate(), uom);
 
 		cockpitRecordIds.add(cockpitRecord.getMD_Cockpit_ID());
 	}
@@ -135,5 +144,13 @@ public class MainRowBucket
 
 		qtyOnHand = addToNullable(qtyOnHand, stockRecord.getQtyOnHand(), uom);
 		stockRecordIds.add(stockRecord.getMD_Stock_ID());
+	}
+
+	public void addQuantitiesRecord(@NonNull final I_QtyDemand_QtySupply_V quantitiesRecord)
+	{
+		final I_C_UOM uom = uomDAO.getById(UomId.ofRepoId(quantitiesRecord.getC_UOM_ID()));
+
+		qtyDemandSalesOrder = addToNullable(qtyDemandSalesOrder, quantitiesRecord.getQtyReserved(), uom);
+		qtySupplyPurchaseOrder = addToNullable(qtySupplyPurchaseOrder, quantitiesRecord.getQtyToMove(), uom);
 	}
 }
