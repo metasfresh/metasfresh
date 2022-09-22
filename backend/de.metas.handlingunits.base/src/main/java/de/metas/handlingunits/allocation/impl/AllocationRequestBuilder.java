@@ -29,7 +29,7 @@ import java.util.List;
 	private ProductId productId = null;
 	private Quantity quantity = null;
 	private ZonedDateTime date = null;
-	private ClearanceStatusInfo clearanceStatusInfo;
+	@Nullable private ClearanceStatusInfo clearanceStatusInfo;
 	private Boolean forceQtyAllocation = null;
 	@Nullable private TableRecordReference fromReferencedTableRecord;
 	private boolean fromReferencedTableRecordSet = false;
@@ -222,7 +222,7 @@ import java.util.List;
 	}
 
 	@Override
-	public IAllocationRequestBuilder setClearanceStatusInfo(final ClearanceStatusInfo clearanceStatusInfo)
+	public IAllocationRequestBuilder setClearanceStatusInfo(@Nullable final ClearanceStatusInfo clearanceStatusInfo)
 	{
 		this.clearanceStatusInfo = clearanceStatusInfo;
 		return this;

@@ -126,5 +126,4 @@ public interface IOrgDAO extends ISingletonService
 
 	String getOrgName(@NonNull OrgId orgId);
 
-	@NonNull String getOrgLanguageOrLoggedInUserLanguage(@NonNull OrgId orgId);
 }

@@ -21,12 +21,9 @@ import java.time.ZonedDateTime;
  * @author tsa
  * @see AllocationUtils#builder()
  * @see AllocationUtils#derive(IAllocationRequest)
- *
  */
 public interface IAllocationRequestBuilder
 {
-	ClearanceStatusInfo getClearanceStatusInfo();
-
 	/**
 	 * Create the new allocation request
 	 *
@@ -36,7 +33,7 @@ public interface IAllocationRequestBuilder
 
 	/**
 	 * Sets base {@link IAllocationRequest}.
-	 *
+	 * <p>
 	 * When building the new allocation request, if there are some values which were not set then those values are fetched from this allocation.
 	 */
 	IAllocationRequestBuilder setBaseAllocationRequest(final IAllocationRequest baseAllocationRequest);
@@ -60,7 +57,6 @@ public interface IAllocationRequestBuilder
 	IAllocationRequestBuilder setDateAsToday();
 
 	/**
-	 *
 	 * @param forceQtyAllocation if null, the actual value will be fetched from base allocation request (if any)
 	 * @return this
 	 */
@@ -84,5 +80,8 @@ public interface IAllocationRequestBuilder
 
 	IAllocationRequestBuilder addEmptyHUListener(EmptyHUListener emptyHUListener);
 
-	IAllocationRequestBuilder setClearanceStatusInfo(ClearanceStatusInfo clearanceStatusInfo);
+	IAllocationRequestBuilder setClearanceStatusInfo(@Nullable ClearanceStatusInfo clearanceStatusInfo);
+
+	@Nullable
+	ClearanceStatusInfo getClearanceStatusInfo();
 }

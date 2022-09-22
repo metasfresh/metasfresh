@@ -24,6 +24,7 @@ package de.metas.handlingunits.pporder.api.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.ClearanceStatus;
@@ -68,7 +69,6 @@ import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
-import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
@@ -104,7 +104,7 @@ import java.util.Map;
 
 /* package */abstract class AbstractPPOrderReceiptHUProducer implements IPPOrderReceiptHUProducer
 {
-	private final static AdMessageKey MESSAGE_Hergestellt = AdMessageKey.of("Hergestellt");
+	private final static AdMessageKey MESSAGE_ClearanceStatusInfo_Manufactured = AdMessageKey.of("ClearanceStatusInfo.Manufactured");
 
 	// Services
 	private final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
@@ -116,7 +116,7 @@ import java.util.Map;
 	private final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final transient IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final transient IBPartnerOrgBL partnerOrgBL = Services.get(IBPartnerOrgBL.class);
 
 	// Parameters
 	private final PPOrderId ppOrderId;
@@ -371,7 +371,7 @@ import java.util.Map;
 		final Object referencedModel = getAllocationRequestReferencedModel();
 
 		final String language = getOrgUserOrLoggedInUSerLanguage(referencedModel);
-		final ClearanceStatusInfo clearanceStatusInfo = ClearanceStatusInfo.of(ClearanceStatus.Locked, msgBL.getMsg(language, MESSAGE_Hergestellt));
+		final ClearanceStatusInfo clearanceStatusInfo = ClearanceStatusInfo.of(ClearanceStatus.Locked, msgBL.getMsg(language, MESSAGE_ClearanceStatusInfo_Manufactured));
 
 		return AllocationUtils.createQtyRequest(huContext,
 				productId, // product
@@ -388,7 +388,7 @@ import java.util.Map;
 		if (referencedModel instanceof IClientOrgAware)
 		{
 			final OrgId orgId = OrgId.ofRepoId(((IClientOrgAware)referencedModel).getAD_Org_ID());
-			return orgDAO.getOrgLanguageOrLoggedInUserLanguage(orgId);
+			return partnerOrgBL.getOrgLanguageOrLoggedInUserLanguage(orgId);
 		}
 		return Env.getADLanguageOrBaseLanguage();
 	}

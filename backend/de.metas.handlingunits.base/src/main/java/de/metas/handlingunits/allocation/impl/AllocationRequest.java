@@ -50,6 +50,7 @@ import java.time.ZonedDateTime;
 	@Getter
 	private final boolean forceQtyAllocation;
 	@Getter
+	@Nullable
 	private final ClearanceStatusInfo clearanceStatusInfo;
 
 	// Reference
