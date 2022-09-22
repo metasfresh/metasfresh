@@ -57,8 +57,8 @@ Feature: approved for invoicing
       | ol_1       | o_1                   | p_SO                    | 10         |
     When the order identified by o_1 is completed
     Then after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice |
-      | invoiceCand_1                     | ol_1                          | 10           |
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | invoiceCand_1                     | ol_1                      | 10           |
     And update C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.ApprovalForInvoicing |
       | invoiceCand_1                     | true                     |
@@ -91,8 +91,8 @@ Feature: approved for invoicing
       | s_ol_1                           | inOut_1               |
 
     Then after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice |
-      | invoiceCand_1                     | ol_1                          | 10           |
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | invoiceCand_1                     | ol_1                      | 10           |
 
     And update C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.ApprovalForInvoicing |
@@ -120,8 +120,8 @@ Feature: approved for invoicing
     When the order identified by o_1 is completed
 
     Then after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice |
-      | invoiceCand_1                     | ol_1                          | 10           |
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | invoiceCand_1                     | ol_1                      | 10           |
 
     And update C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.ApprovalForInvoicing |
@@ -155,8 +155,8 @@ Feature: approved for invoicing
       | processedTopHU     | receiptSchedule_PO              | inOut_1               |
 
     Then after not more than 30s, C_Invoice_Candidate are found:
-      | C_Invoice_Candidate_ID.Identifier | OPT.C_OrderLine_ID.Identifier | QtyToInvoice |
-      | invoiceCand_1                     | ol_1                          | 5            |
+      | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
+      | invoiceCand_1                     | ol_1                      | 5            |
     And update C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.ApprovalForInvoicing |
       | invoiceCand_1                     | true                     |
@@ -171,8 +171,8 @@ Feature: approved for invoicing
       | M_InOut_ID.Identifier | IsSOTrx | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Warehouse_ID.Identifier | DeliveryRule | DeliveryViaRule | FreightCostRule | MovementDate | MovementType | PriorityRule | OPT.DocBaseType | OPT.DocSubType |
       | inOut_1               | true    | bpartner_SO              | bpartnerLocation_SO               | warehouse                 | A            | P               | I               | 2022-09-15   | C-           | 5            | MMS             | MS             |
     And metasfresh contains M_InOutLine
-      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | OPT.M_Product_ID.Identifier | QtyEntered | MovementQty | UomCode | OPT.M_Locator_ID.Identifier |
-      | inOutLine_1               | inOut_1               | p_SO                        | 10         | 10          | PCE     | locator                     |
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | OPT.M_Product_ID.Identifier | QtyEntered | MovementQty | UomCode | OPT.M_Locator_ID.Identifier | OPT.IsManualPackingMaterial |
+      | inOutLine_1               | inOut_1               | p_SO                        | 10         | 10          | PCE     | locator                     | Y                           |
 
     When the shipment identified by inOut_1 is completed
 

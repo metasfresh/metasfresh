@@ -124,7 +124,6 @@ public class C_BPartner_StepDef
 		for (final Map<String, String> tableRow : tableRows)
 		{
 			createC_BPartner(tableRow, true);
-			createC_BPartner(tableRow, true);
 		}
 	}
 
