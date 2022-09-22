@@ -2,12 +2,17 @@ package de.metas.ui.web.material.cockpit.rowfactory;
 
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
+import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
 import de.metas.product.IProductBL;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
+import lombok.AccessLevel;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.compiere.model.I_C_UOM;
@@ -53,8 +58,10 @@ import static de.metas.util.Check.assumeNotNull;
 @ToString
 public class CountingSubRowBucket
 {
-
+	@Getter(AccessLevel.NONE)
 	private final transient IProductBL productBL = Services.get(IProductBL.class);
+	@Getter(AccessLevel.NONE)
+	private final transient IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	public static CountingSubRowBucket create(final int plantId)
 	{
@@ -64,19 +71,23 @@ public class CountingSubRowBucket
 	private final ResourceId plantId;
 
 	// Zaehlbestand
-	private Quantity qtyStockEstimateCount;
+	private Quantity qtyStockEstimateCountAtDate;
 
 	@Nullable
-	private Instant qtyStockEstimateTime;
+	private Instant qtyStockEstimateTimeAtDate;
 
-	private Quantity qtyInventoryCount;
+	private Quantity qtyInventoryCountAtDate;
 
 	@Nullable
-	private Instant qtyInventoryTime;
+	private Instant qtyInventoryTimeAtDate;
 
-	private Quantity qtyStockCurrent;
+	private Quantity qtyStockCurrentAtDate;
 
 	private Quantity qtyOnHandStock;
+	
+	private Quantity qtySupplyPurchaseOrder;
+	
+	private Quantity qtyDemandSalesOrder;
 
 	private final Set<Integer> cockpitRecordIds = new HashSet<>();
 
@@ -91,13 +102,13 @@ public class CountingSubRowBucket
 	{
 		final I_C_UOM uom = productBL.getStockUOM(cockpitRecord.getM_Product_ID());
 
-		qtyStockEstimateCount = addToNullable(qtyStockEstimateCount, cockpitRecord.getQtyStockEstimateCount(), uom);
-		qtyStockEstimateTime = TimeUtil.max(qtyStockEstimateTime, TimeUtil.asInstant(cockpitRecord.getQtyStockEstimateTime()));
+		qtyStockEstimateCountAtDate = addToNullable(qtyStockEstimateCountAtDate, cockpitRecord.getQtyStockEstimateCount_AtDate(), uom);
+		qtyStockEstimateTimeAtDate = TimeUtil.max(qtyStockEstimateTimeAtDate, TimeUtil.asInstant(cockpitRecord.getQtyStockEstimateTime_AtDate()));
 
-		qtyInventoryCount = addToNullable(qtyInventoryCount, cockpitRecord.getQtyInventoryCount(), uom);
-		qtyInventoryTime = TimeUtil.max(qtyInventoryTime, TimeUtil.asInstant(cockpitRecord.getQtyInventoryTime()));
+		qtyInventoryCountAtDate = addToNullable(qtyInventoryCountAtDate, cockpitRecord.getQtyInventoryCount_AtDate(), uom);
+		qtyInventoryTimeAtDate = TimeUtil.max(qtyInventoryTimeAtDate, TimeUtil.asInstant(cockpitRecord.getQtyInventoryTime_AtDate()));
 
-		qtyStockCurrent = addToNullable(qtyStockCurrent, cockpitRecord.getQtyStockCurrent(), uom);
+		qtyStockCurrentAtDate = addToNullable(qtyStockCurrentAtDate, cockpitRecord.getQtyStockCurrent_AtDate(), uom);
 
 		cockpitRecordIds.add(cockpitRecord.getMD_Cockpit_ID());
 	}
@@ -111,6 +122,14 @@ public class CountingSubRowBucket
 		stockRecordIds.add(stockRecord.getMD_Stock_ID());
 	}
 
+	public void addQuantitiesRecord(@NonNull final I_QtyDemand_QtySupply_V quantitiesRecord)
+	{
+		final I_C_UOM uom = uomDAO.getById(UomId.ofRepoId(quantitiesRecord.getC_UOM_ID()));
+
+		qtyDemandSalesOrder = addToNullable(qtyDemandSalesOrder, quantitiesRecord.getQtyReserved(), uom);
+		qtySupplyPurchaseOrder = addToNullable(qtySupplyPurchaseOrder, quantitiesRecord.getQtyToMove(), uom);
+	}
+
 	@NonNull
 	public MaterialCockpitRow createIncludedRow(@NonNull final MainRowWithSubRows mainRowBucket)
 	{
@@ -122,11 +141,13 @@ public class CountingSubRowBucket
 				.date(productIdAndDate.getDate())
 				.productId(productIdAndDate.getProductId().getRepoId())
 				.plantId(plantId)
-				.qtyStockEstimateCount(qtyStockEstimateCount)
-				.qtyStockEstimateTime(qtyStockEstimateTime)
-				.qtyInventoryCount(qtyInventoryCount)
-				.qtyInventoryTime(qtyInventoryTime)
-				.qtyStockCurrent(qtyStockCurrent)
+				.qtyDemandSalesOrder(qtyDemandSalesOrder)
+				.qtySupplyPurchaseOrder(qtySupplyPurchaseOrder)
+				.qtyStockEstimateCountAtDate(qtyStockEstimateCountAtDate)
+				.qtyStockEstimateTimeAtDate(qtyStockEstimateTimeAtDate)
+				.qtyInventoryCountAtDate(qtyInventoryCountAtDate)
+				.qtyInventoryTimeAtDate(qtyInventoryTimeAtDate)
+				.qtyStockCurrentAtDate(qtyStockCurrentAtDate)
 				.qtyOnHandStock(qtyOnHandStock)
 				.allIncludedCockpitRecordIds(cockpitRecordIds)
 				.allIncludedStockRecordIds(stockRecordIds)

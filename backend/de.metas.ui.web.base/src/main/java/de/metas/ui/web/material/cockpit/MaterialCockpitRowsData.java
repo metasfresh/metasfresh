@@ -27,7 +27,9 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
+import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
 import de.metas.product.ProductId;
+import de.metas.ui.web.material.cockpit.filters.QtyDemandSupplyFilters;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory;
 import de.metas.ui.web.material.cockpit.rowfactory.MaterialCockpitRowFactory.CreateRowsRequest.CreateRowsRequestBuilder;
 import de.metas.ui.web.view.template.IRowsData;
@@ -56,7 +58,9 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 	private final MaterialCockpitRowFactory materialCockpitRowFactory;
 	private final SynchronizedRowsIndexHolder<MaterialCockpitRow> rowsHolder;
 
-	/** Every row has a product, and so does every MD_Stock and MD_Candidate.. */
+	/**
+	 * Every row has a product, and so does every MD_Stock and MD_Candidate..
+	 */
 	private final Multimap<ProductId, DocumentId> productId2DocumentIds;
 
 	public MaterialCockpitRowsData(
@@ -131,7 +135,12 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 			final List<I_MD_Stock> stockRecords = loadStockRecords(row.getAllIncludedStockRecordIds());
 			builder.stockRecords(stockRecords);
 
-			builder.productIdToListEvenIfEmpty(ProductId.ofRepoId(row.getProductId()));
+			final ProductId productId = ProductId.ofRepoId(row.getProductId());
+
+			final List<I_QtyDemand_QtySupply_V> quantitiesRecords = loadQuantitiesRecords(productId);
+			builder.quantitiesRecords(quantitiesRecords);
+
+			builder.productIdToListEvenIfEmpty(productId);
 		}
 
 		final List<MaterialCockpitRow> newRows = new ArrayList<>();
@@ -182,4 +191,11 @@ public class MaterialCockpitRowsData implements IRowsData<MaterialCockpitRow>
 				.includePerPlantDetailRows(includePerPlantDetailRows);
 	}
 
+	@NonNull
+	private List<I_QtyDemand_QtySupply_V> loadQuantitiesRecords(@NonNull final ProductId productId)
+	{
+		return QtyDemandSupplyFilters
+				.createQuantitiesQueryFor(productId)
+				.list();
+	}
 }
