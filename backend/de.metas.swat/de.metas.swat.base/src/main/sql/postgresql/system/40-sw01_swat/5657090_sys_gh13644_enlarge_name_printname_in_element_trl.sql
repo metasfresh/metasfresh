@@ -30,3 +30,8 @@ UPDATE AD_Column SET FieldLength=120,Updated=TO_TIMESTAMP('2022-09-22 09:34:50',
 INSERT INTO t_alter_column values('ad_element_trl','PO_PrintName','VARCHAR(120)',null,null)
 ;
 
+
+-- 2022-09-22T09:26:25.146Z
+UPDATE AD_Language SET IsSystemLanguage='Y',Updated=TO_TIMESTAMP('2022-09-22 10:26:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language_ID=156
+;
+
