@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.business
+ * %%
+ * Copyright (C) 2022 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 
 CREATE TABLE migration_data.ad_element_trl_220907_2
 (
@@ -34,5 +56,30 @@ CREATE TABLE migration_data.ad_element_trl_220907_2
 
 ALTER TABLE  migration_data.ad_element_trl_220907_2
     OWNER TO metasfresh
+;
+
+
+-- Needed function for tables backup, be cherry-picked or merged in the future
+CREATE FUNCTION backup_table(p_tablename text) RETURNS text
+    LANGUAGE plpgsql
+AS
+$$
+DECLARE
+    v_backupTableName text;
+    v_rowcount        numeric;
+BEGIN
+    v_backupTableName = 'backup.' || p_TableName || '_bkp_' || TO_CHAR(NOW(), 'YYYYMMDD_HH24MISS_MS');
+    RAISE NOTICE 'Backup `%` to `%`...', p_TableName, v_backupTableName;
+
+    EXECUTE 'CREATE TABLE ' || v_backupTableName || ' AS SELECT * FROM ' || p_TableName;
+    GET DIAGNOSTICS v_rowcount = ROW_COUNT;
+    RAISE NOTICE 'Backup done. % rows copied.', v_rowcount;
+
+    RETURN v_backupTableName;
+END
+$$
+;
+
+ALTER FUNCTION backup_table(text) OWNER TO metasfresh
 ;
 
