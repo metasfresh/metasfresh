@@ -58,4 +58,5 @@ Feature: external system invocation using metasfresh api
       | JsonExternalSystemRequest.parameters.Key | JsonExternalSystemRequest.parameters.Value |
       | TestName1                                | TestValue1                                 |
       | TestName2                                | TestValue2                                 |
+      | External_Request                         | test                                       |
     And a new metasfresh AD_PInstance_Log is stored for the external system 'Other' invocation
