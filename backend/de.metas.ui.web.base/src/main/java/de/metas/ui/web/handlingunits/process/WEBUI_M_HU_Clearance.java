@@ -9,6 +9,8 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.HUEditorProcessTemplate;
 import de.metas.ui.web.handlingunits.HUEditorRowFilter;
+import de.metas.ui.web.handlingunits.HUEditorView;
+import de.metas.ui.web.payment_allocation.InvoicesView;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.Services;
 
@@ -47,6 +49,9 @@ public class WEBUI_M_HU_Clearance extends HUEditorProcessTemplate implements IPr
 		streamSelectedHUs(HUEditorRowFilter.Select.ALL)
 				.forEach(hu -> handlingUnitsBL.setClearanceStatusRecursively(HuId.ofRepoId(hu.getM_HU_ID()), clearanceStatusInfo));
 
+		final HUEditorView view = getView();
+		view.invalidateAll();
+			
 		return MSG_OK;
 	}
 }
