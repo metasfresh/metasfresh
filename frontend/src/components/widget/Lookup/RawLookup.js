@@ -384,27 +384,6 @@ export class RawLookup extends Component {
   };
 
   populateTypeaheadData = (responseData) => {
-    const {
-      mainProperty,
-      newRecordCaption,
-      advSearchCaption,
-      advSearchWindowId,
-      isModal,
-      mandatory,
-    } = this.props;
-
-    const placeholder = mainProperty.clearValueText
-      ? mainProperty.clearValueText
-      : this.props.placeholder;
-
-    let values = responseData.values || [];
-    const isAlwaysDisplayNewBPartner =
-      !!responseData.isAlwaysDisplayNewBPartner;
-    const hasMoreResults = !!responseData.hasMoreResults;
-    let list;
-    const newState = { loading: false };
-
-  populateTypeaheadData = (responseData) => {
     const { isModal, mandatory } = this.props;
 
     let values = responseData.values || [];
