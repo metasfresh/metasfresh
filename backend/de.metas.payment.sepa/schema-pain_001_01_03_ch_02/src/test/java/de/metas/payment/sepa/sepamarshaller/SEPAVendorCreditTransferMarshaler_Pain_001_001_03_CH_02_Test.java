@@ -24,8 +24,6 @@ package de.metas.payment.sepa.sepamarshaller;
 
 import lombok.NonNull;
 import org.assertj.core.api.Assertions;
-import org.junit.Ignore;
-import org.junit.jupiter.api.Test;
 import org.xmlunit.validation.Languages;
 import org.xmlunit.validation.ValidationProblem;
 import org.xmlunit.validation.ValidationResult;
@@ -39,16 +37,12 @@ import java.util.List;
 public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 {
 
-	@Test
-	@Ignore
-	//pain.001.001.03_sample.xml does not fit the ch.02 schema variant
-	//use to test your own files
 	public void test_UserFile()
 	{
+		//use to test your own files
 		testXmlSchema("/pain.001.001.03_sample.xml");
 	}
 
-	@Test
 	public void test_sepaTest()
 	{
 		testXmlSchema("/sepa_test_xml.xml");
