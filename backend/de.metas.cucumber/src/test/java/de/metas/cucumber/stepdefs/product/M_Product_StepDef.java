@@ -31,6 +31,7 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
 import de.metas.externalreference.ExternalIdentifier;
+import de.metas.handlingunits.ClearanceStatus;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
@@ -65,7 +66,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.PRODUCT_CATEGORY_STAND
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_Product_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_IsStocked;
@@ -258,6 +259,7 @@ public class M_Product_StepDef
 		final String productName = tableRow.get("Name");
 		final String productValue = CoalesceUtil.coalesceNotNull(tableRow.get("Value"), productName);
 		final boolean isStocked = DataTableUtil.extractBooleanForColumnNameOr(tableRow, I_M_Product.COLUMNNAME_IsStocked, true);
+		final String huClearanceStatus = DataTableUtil.extractNullableStringForColumnName(tableRow, I_M_Product.COLUMNNAME_HUClearanceStatus);
 
 		final String productType = DataTableUtil.extractStringOrNullForColumnName(tableRow, I_M_Product.COLUMNNAME_ProductType);
 
@@ -292,6 +294,11 @@ public class M_Product_StepDef
 
 		productRecord.setProductType(CoalesceUtil.coalesceNotNull(productType, ProductType.Item.getCode()));
 		productRecord.setIsStocked(isStocked);
+		final ClearanceStatus clearanceStatus = ClearanceStatus.ofNullableCode(huClearanceStatus);
+		if (clearanceStatus != null)
+		{
+			productRecord.setHUClearanceStatus(clearanceStatus.getCode());
+		}
 
 		final String productCategoryIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_Product_Category_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(productCategoryIdentifier))
