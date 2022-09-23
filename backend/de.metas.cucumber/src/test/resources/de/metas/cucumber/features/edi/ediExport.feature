@@ -4,6 +4,11 @@ Feature: EDI_cctop_invoic_v export format
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
 
+  #   Convenience Salat 250g
+    And load M_Product:
+      | M_Product_ID.Identifier | OPT.M_Product_ID |
+      | convenienceSalate       | 2005577          |
+
   Scenario: As a user I want to export C_Invoice using EDI_cctop_invoic_v export format
 
   #   IFCO 6410 x 10 Stk
@@ -11,12 +16,6 @@ Feature: EDI_cctop_invoic_v export format
       | M_HU_PI_Item_Product_ID.Identifier | OPT.GTIN        |
       | 3010001                            | itemProductGTIN |
 
-
-    
-  # Convenience Salat 250g
-    And load M_Product:
-      | M_Product_ID.Identifier | OPT.M_Product_ID |
-      | convenienceSalate       | 2005577          |
     And update M_Product:
       | M_Product_ID.Identifier | OPT.GTIN    |
       | convenienceSalate       | productGTIN |

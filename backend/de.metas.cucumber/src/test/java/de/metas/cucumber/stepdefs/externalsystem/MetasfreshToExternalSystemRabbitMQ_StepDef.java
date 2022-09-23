@@ -67,7 +67,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -75,8 +74,8 @@ import java.util.function.Function;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_BPARTNER_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_HU_ID;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PP_ORDER_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_EXTERNAL_REFERENCE_LOOKUP_REQUEST;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PP_ORDER_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.QUEUE_NAME_MF_TO_ES;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.externalsystem.model.I_ExternalSystem_Config.COLUMNNAME_ExternalSystem_Config_ID;
@@ -309,7 +308,18 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 		final String bpIdentifier = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(row, "OPT.parameters." + I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER))
 				.orElseGet(() -> DataTableUtil.extractStringOrNullForColumnName(row, I_C_BPartner.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER));
 
-		return checkMatchingESRequestBasedOnBPartner(bpIdentifier, externalSystemRequest);
+		if (isMatchingESRequestBasedOnBPartner(bpIdentifier, externalSystemRequest))
+		{
+			return true;
+		}
+
+		final String ppOrderIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_PP_Order.COLUMNNAME_PP_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (isMatchingESRequestBasedOnPPOrderIdentifier(ppOrderIdentifier, externalSystemRequest))
+		{
+			return true;
+		}
+
+		return false;
 	}
 
 	private void checkExistingJsonExternalSystemRequestForHu(
@@ -419,7 +429,7 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 		return false;
 	}
 
-	private boolean checkMatchingESRequestBasedOnBPartner(@Nullable final String bpartnerIdentifier, @NonNull final JsonExternalSystemRequest externalSystemRequest)
+	private boolean isMatchingESRequestBasedOnBPartner(@Nullable final String bpartnerIdentifier, @NonNull final JsonExternalSystemRequest externalSystemRequest)
 	{
 		if (Check.isNotBlank(bpartnerIdentifier))
 		{
@@ -581,5 +591,18 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 
 		return Optional.ofNullable(foundRequest)
 				.orElse(null);
+	}
+
+	private boolean isMatchingESRequestBasedOnPPOrderIdentifier(@Nullable final String ppOrderIdentifier, @NonNull final JsonExternalSystemRequest externalSystemRequest)
+	{
+		if (Check.isNotBlank(ppOrderIdentifier))
+		{
+			final I_PP_Order ppOrder = ppOrderTable.get(ppOrderIdentifier);
+			final String ppOrderIdAsString = externalSystemRequest.getParameters().get(PARAM_PP_ORDER_ID);
+
+			return Check.isNotBlank(ppOrderIdAsString) && Integer.parseInt(ppOrderIdAsString) == ppOrder.getPP_Order_ID();
+		}
+
+		return false;
 	}
 }
