@@ -124,8 +124,6 @@ public interface IADProcessDAO extends ISingletonService
 
 	void save(I_AD_Process process);
 
-	void copyWindowRelatedProcesses(WindowCopyResult windowCopyResult);
-
 	void updateColumnNameByAdElementId(
 			@NonNull AdElementId adElementId,
 			@Nullable String newColumnName);
