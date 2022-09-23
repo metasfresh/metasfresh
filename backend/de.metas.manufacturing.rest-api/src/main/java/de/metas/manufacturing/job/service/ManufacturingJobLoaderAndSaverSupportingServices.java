@@ -10,7 +10,6 @@ import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
-import de.metas.handlingunits.qrcodes.model.json.JsonRenderedHUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.i18n.ITranslatableString;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
@@ -84,11 +83,6 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 	public HUQRCode getQRCodeByHuId(@NonNull final HuId huId)
 	{
 		return huQRCodeService.getQRCodeByHuId(huId);
-	}
-
-	public HuId getHuIdByQRCode(@NonNull final JsonRenderedHUQRCode qrCode)
-	{
-		return huQRCodeService.getHuIdByQRCode(HUQRCode.fromGlobalQRCodeJsonString(qrCode.getCode()));
 	}
 
 	public Optional<HuId> getHuIdByQRCodeIfExists(@NonNull final HUQRCode qrCode)
