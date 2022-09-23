@@ -514,6 +514,12 @@ public class C_Order_StepDef
 				order.setPaymentRule(paymentRule);
 			}
 
+			final ZonedDateTime datePromised = DataTableUtil.extractZonedDateTimeOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_DatePromised);
+			if (datePromised != null)
+			{
+				order.setDatePromised(TimeUtil.asTimestamp(datePromised));
+			}
+			
 			InterfaceWrapperHelper.saveRecord(order);
 
 			orderTable.putOrReplace(orderIdentifier, order);

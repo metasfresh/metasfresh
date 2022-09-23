@@ -18,6 +18,7 @@ import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.commons.OrderLineDescriptor;
 import de.metas.material.event.receiptschedule.AbstractReceiptScheduleEvent;
+import de.metas.material.event.receiptschedule.OldReceiptScheduleData;
 import de.metas.material.event.receiptschedule.ReceiptScheduleCreatedEvent;
 import de.metas.material.event.receiptschedule.ReceiptScheduleDeletedEvent;
 import de.metas.material.event.receiptschedule.ReceiptScheduleUpdatedEvent;
@@ -30,6 +31,7 @@ import org.slf4j.Logger;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.util.Collection;
 
@@ -98,11 +100,41 @@ public class ReceiptScheduleEventHandler
 		final MaterialDescriptor materialDescriptor = event.getMaterialDescriptor();
 		final MainDataRecordIdentifier identifier = MainDataRecordIdentifier.createForMaterial(materialDescriptor, timeZone);
 
-		createAndHandleMainDataEvent(event, identifier);
+		final OldReceiptScheduleData oldReceiptScheduleData = event.getOldReceiptScheduleData();
+		if (oldReceiptScheduleData != null)
+		{
+			final MainDataRecordIdentifier oldIdentifier = MainDataRecordIdentifier.createForMaterial(oldReceiptScheduleData.getOldMaterialDescriptor(), timeZone);
 
+			createAndHandleMainDataRequestForOldValues(oldReceiptScheduleData, oldIdentifier);
+		}
+		
+		createAndHandleMainDataEvent(event, identifier);
 		createAndHandleDetailRequest(event, identifier);
 	}
 
+	private void createAndHandleMainDataRequestForOldValues(
+			@NonNull final OldReceiptScheduleData oldReceiptScheduleData,
+			@NonNull final MainDataRecordIdentifier identifier)
+	{
+		final BigDecimal oldOrderedQuantity = oldReceiptScheduleData.getOldOrderedQuantity();
+		final BigDecimal oldReservedQuantity = oldReceiptScheduleData.getOldReservedQuantity();
+		
+		if (oldOrderedQuantity.signum() == 0
+				&& oldReservedQuantity.signum() == 0)
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("Skipping this event because it has both oldOrderedQuantityDelta and oldReservedQuantityDelta = zero");
+			return;
+		}
+
+		final UpdateMainDataRequest request = UpdateMainDataRequest.builder()
+				.identifier(identifier)
+				.orderedPurchaseQty(oldOrderedQuantity.negate())
+				.qtySupplyPurchaseOrder(oldReservedQuantity.negate())
+				.build();
+
+		dataUpdateRequestHandler.handleDataUpdateRequest(request);
+	}
+	
 	private void createAndHandleMainDataEvent(
 			@NonNull final AbstractReceiptScheduleEvent event,
 			@NonNull final MainDataRecordIdentifier identifier)

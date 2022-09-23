@@ -398,7 +398,6 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 			return;
 		}
 		receiptSchedule.setIsActive(false);
-		InterfaceWrapperHelper.delete(receiptSchedule);
 	}
 
 	/**
