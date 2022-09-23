@@ -457,6 +457,7 @@ public final class AggregationEngine
 
 			// 06630: set shipment id to header
 			invoiceHeader.setM_InOut_ID(InOutId.toRepoId(inoutId));
+			invoiceHeader.setM_SectionCode_ID(icRecord.getM_SectionCode_ID());
 		}
 		catch (final RuntimeException rte)
 		{

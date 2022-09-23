@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.ordercandidates.v2.request.JsonOrderLineGroup;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Value;
@@ -97,6 +98,8 @@ public class JsonOLCand
 	String description;
 	Integer line;
 
+	JsonMetasfreshId sectionCodeId;
+
 	@JsonCreator
 	@Builder
 	private JsonOLCand(
@@ -125,7 +128,8 @@ public class JsonOLCand
 			@JsonProperty("warehouseDestId") final int warehouseDestId,
 			@JsonProperty("jsonOrderLineGroup") final JsonOrderLineGroup jsonOrderLineGroup,
 			@JsonProperty("description") final String description,
-			@JsonProperty("line") final Integer line)
+			@JsonProperty("line") final Integer line,
+			@JsonProperty("sectionCodeId") final JsonMetasfreshId sectionCodeId)
 	{
 		this.id = id;
 		this.externalLineId = externalLineId;
@@ -153,6 +157,7 @@ public class JsonOLCand
 		this.jsonOrderLineGroup = jsonOrderLineGroup;
 		this.description = description;
 		this.line = line;
+		this.sectionCodeId = sectionCodeId;
 	}
 
 }

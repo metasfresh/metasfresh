@@ -300,6 +300,11 @@ class OLCandOrderFactory
 		order.setEMail(candidateOfGroup.getEmail());
 		order.setPhone(candidateOfGroup.getPhone());
 
+		if (candidateOfGroup.getSectionCodeId() != null)
+		{
+			order.setM_SectionCode_ID(candidateOfGroup.getSectionCodeId().getRepoId());
+		}
+
 		save(order);
 		return order;
 	}
@@ -408,9 +413,9 @@ class OLCandOrderFactory
 		orderDAO.save(mainOrderLineInGroup);
 
 		orderGroupsRepository.retrieveOrCreateGroup(GroupRepository.RetrieveOrCreateGroupRequest.builder()
-				.orderLineIds(orderLineIds)
-				.newGroupTemplate(createNewGroupTemplate(productId, productDAO.retrieveProductCategoryByProductId(productId)))
-				.build());
+															.orderLineIds(orderLineIds)
+															.newGroupTemplate(createNewGroupTemplate(productId, productDAO.retrieveProductCategoryByProductId(productId)))
+															.build());
 	}
 
 	@NonNull

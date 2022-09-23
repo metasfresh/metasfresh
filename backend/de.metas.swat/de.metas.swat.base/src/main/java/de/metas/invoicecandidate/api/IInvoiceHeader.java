@@ -2,14 +2,15 @@ package de.metas.invoicecandidate.api;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.impex.InputDataSourceId;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.user.UserId;
 import org.compiere.model.I_C_DocType;
-import de.metas.impex.InputDataSourceId;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -83,4 +84,7 @@ public interface IInvoiceHeader
 
 	@Nullable
 	InputDataSourceId getAD_InputDataSource_ID();
+
+	@Nullable
+	SectionCodeId getM_SectionCode_ID();
 }
