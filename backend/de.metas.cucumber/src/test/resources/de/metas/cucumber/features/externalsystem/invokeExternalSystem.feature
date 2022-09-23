@@ -46,11 +46,16 @@ Feature: external system invocation using metasfresh api
   @from:cucumber
   Scenario: The request is good and the external Other is invoked via the correct process
     Given add Other external system config with identifier: otherConfigIdentifier
-      | Name | Value |
-      | Test | Test  |
+      | Name      | Value      |
+      | TestName1 | TestValue1 |
+      | TestName2 | TestValue2 |
 
     And store endpointPath /api/externalsystem/Other/:otherConfigIdentifier/test in context, resolving placeholder as ExternalSystem.value
 
     When a 'POST' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
-    Then a new metasfresh AD_PInstance_Log is stored for the external system 'Other' invocation
+    Then RabbitMQ receives a JsonExternalSystemRequest with the following Other external system config: otherConfigIdentifier
+      | JsonExternalSystemRequest.parameters.Key | JsonExternalSystemRequest.parameters.Value |
+      | TestName1                                | TestValue1                                 |
+      | TestName2                                | TestValue2                                 |
+    And a new metasfresh AD_PInstance_Log is stored for the external system 'Other' invocation

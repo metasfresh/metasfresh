@@ -208,6 +208,31 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 		}
 	}
 
+	@Then("^RabbitMQ receives a JsonExternalSystemRequest with the following Other external system config: (.*)$")
+	public void rabbitMQ_receives_an_external_system_request_for_config(@NonNull final String externalSystemConfigIdentifier, @NonNull final DataTable dataTable) throws IOException, TimeoutException, InterruptedException
+	{
+		final List<JsonExternalSystemRequest> requests = pollRequestFromQueue(1);
+		final JsonExternalSystemRequest requestToRabbitMQ = requests.get(0);
+
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String expectedParameterName = DataTableUtil.extractStringForColumnName(row, "JsonExternalSystemRequest.parameters.Key");
+			final String expectedParameterValue = DataTableUtil.extractStringForColumnName(row, "JsonExternalSystemRequest.parameters.Value");
+
+			final String actualParameterValue = requestToRabbitMQ.getParameters().get(expectedParameterName);
+			assertThat(actualParameterValue).isNotBlank();
+			assertThat(actualParameterValue).isEqualTo(expectedParameterValue);
+		}
+
+		final I_ExternalSystem_Config externalSystemConfig = externalSystemConfigTable.get(externalSystemConfigIdentifier);
+		assertThat(externalSystemConfig).isNotNull();
+
+		assertThat(requestToRabbitMQ.getExternalSystemName().getName()).isEqualTo(externalSystemConfig.getType());
+		assertThat(requestToRabbitMQ.getExternalSystemConfigId().getValue())
+				.as("Wrong ExternalSystem_Config_ID in RabbitMQ request; identifier=%s; requests=%s", externalSystemConfigIdentifier, requests)
+				.isEqualTo(externalSystemConfig.getExternalSystem_Config_ID());
+	}
+
 	private List<JsonExternalSystemRequest> pollRequestFromQueue(final int numberOfMessages) throws IOException, TimeoutException, InterruptedException
 	{
 		Channel channel = null;
