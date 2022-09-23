@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13643] https://github.com/metasfresh/metasfresh/pull/13643#pullrequestreview-1118261799 Support SEPA for QR
   * [#13649](https://github.com/metasfresh/metasfresh/issues/13649) Allow product configuration to lock HUs for that product that are received or manufactured
   * [#13623](https://github.com/metasfresh/metasfresh/issues/13623) New Contracts do not work on with startdate on the end of the month
   * [#13625](https://github.com/metasfresh/metasfresh/issues/13625) Material-Cockpit Add C_Order QtyReserved column
