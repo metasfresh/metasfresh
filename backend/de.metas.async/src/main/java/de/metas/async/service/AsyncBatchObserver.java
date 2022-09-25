@@ -90,7 +90,9 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 
 	public void observeOn(@NonNull final AsyncBatchId id)
 	{
-		Loggables.withLogger(logger, Level.INFO).addLog("Observer registered for asyncBatchId: " + id.getRepoId());
+		Loggables.withLogger(logger, Level.INFO).addLog("Observer registered for asyncBatchId: " + id.getRepoId()
+																+ " date: " + Instant.now() + " ; "
+																+ " threadId: " + Thread.currentThread().getId());
 
 		//dev-note: make sure to wait for any work already enqueued with this async batch to finalize
 		Optional.ofNullable(asyncBatch2Completion.get(id))
@@ -147,12 +149,18 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 				return;
 			}
 
-			throw AdempiereException.wrapIfNeeded(timeoutException);
+			throw AdempiereException.wrapIfNeeded(timeoutException)
+					.appendParametersToMessage()
+					.setParameter("Date:", Instant.now())
+					.setParameter("ThreadID", Thread.currentThread().getId())
+					.setParameter("AsyncBatchId", id);
 		}
 		catch (final Exception e)
 		{
 			throw AdempiereException.wrapIfNeeded(e)
 					.appendParametersToMessage()
+					.setParameter("Date:", Instant.now())
+					.setParameter("ThreadID", Thread.currentThread().getId())
 					.setParameter("AsyncBatchId", id);
 		}
 		finally

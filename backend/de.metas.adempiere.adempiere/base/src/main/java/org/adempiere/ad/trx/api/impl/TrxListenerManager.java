@@ -53,7 +53,7 @@ public class TrxListenerManager implements ITrxListenerManager
 
 		if (shouldFireListenerNow(listener))
 		{
-			fireListener(listener);
+			fireListenerNow(listener);
 			return;
 		}
 
@@ -80,6 +80,12 @@ public class TrxListenerManager implements ITrxListenerManager
 		final TrxEventTiming eventTimingOfListener = listener.getTiming();
 
 		final TrxEventTiming currentTiming = getCurrentTiming();
+
+		if (currentTiming == eventTimingOfListener && listener.isForceAfterNextCommit())
+		{
+			return;
+		}
+
 		final boolean listenerHasProblematicTiming = !eventTimingOfListener.canBeRegisteredWithinOtherTiming(currentTiming);
 		if (listenerHasProblematicTiming)
 		{
@@ -209,7 +215,7 @@ public class TrxListenerManager implements ITrxListenerManager
 		return trx.getTrxName();
 	}
 
-	private void fireListener(@NonNull final RegisterListenerRequest listener)
+	private void fireListenerNow(@NonNull final RegisterListenerRequest listener)
 	{
 		final TrxEventTiming timing = listener.getTiming();
 		final OnError onError = OnErrorBehaviourProvider.getOnErrorBehaviour(timing);
@@ -220,8 +226,14 @@ public class TrxListenerManager implements ITrxListenerManager
 	private boolean shouldFireListenerNow(@NonNull final RegisterListenerRequest registerListenerRequest)
 	{
 		final TrxEventTiming currentRunningWithinTiming = getCurrentTiming();
+		final boolean timingsMatch = currentRunningWithinTiming == registerListenerRequest.getTiming();
 
-		return currentRunningWithinTiming == registerListenerRequest.getTiming();
+		if (currentRunningWithinTiming == TrxEventTiming.AFTER_COMMIT)
+		{
+			return timingsMatch && !registerListenerRequest.isForceAfterNextCommit();
+		}
+
+		return timingsMatch;
 	}
 
 	private static class OnErrorBehaviourProvider

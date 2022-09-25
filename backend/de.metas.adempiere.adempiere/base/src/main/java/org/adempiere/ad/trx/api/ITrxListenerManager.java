@@ -1,12 +1,12 @@
 package org.adempiere.ad.trx.api;
 
-import java.util.function.Supplier;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
-
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.function.Supplier;
 
 /**
  * Transactions Listeners Mananger.<br>
@@ -83,6 +83,8 @@ public interface ITrxListenerManager
 		@Getter
 		private boolean registerWeakly = false;
 		@Getter
+		private boolean forceAfterNextCommit = false;
+		@Getter
 		private boolean invokeMethodJustOnce = true;
 		@Getter
 		private EventHandlingMethod handlingMethod;
@@ -133,6 +135,20 @@ public interface ITrxListenerManager
 		{
 			this.handlingMethod = handlingMethod;
 			parent.registerListener(this);
+		}
+
+		public RegisterListenerRequest forceAfterNextCommit(final boolean forceAfterNextCommit)
+		{
+			this.forceAfterNextCommit = forceAfterNextCommit;
+
+			if (this.forceAfterNextCommit && this.timing != TrxEventTiming.AFTER_COMMIT)
+			{
+				throw new AdempiereException("forceAfterNextCommit option can only be used with TrxEventTiming.AFTER_COMMIT!")
+						.appendParametersToMessage()
+						.setParameter("timing", timing);
+			}
+
+			return this;
 		}
 
 		@Override
