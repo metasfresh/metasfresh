@@ -542,3 +542,7 @@ WHERE wt.ad_window_id = w.ad_window_id
 and not exists (select 1 from ad_element_trl et
     where et.ad_element_id=w.ad_element_id
     and et.ad_language = wt.ad_language);
+
+
+
+select migrationscript_ignore('10-de.metas.adempiere/5653860_sys_gh13480_Duplicate_TRL_Corrections_From_AD_Element.sql');
