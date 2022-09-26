@@ -85,6 +85,7 @@ import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderAndLineId;
 import de.metas.organization.IOrgDAO;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IPricingResult;
 import de.metas.process.PInstanceId;
@@ -711,8 +712,8 @@ public class FlatrateBL implements IFlatrateBL
 	@Override
 	public List<I_C_Flatrate_DataEntry> retrieveAndCheckInvoicingEntries(
 			final I_C_Flatrate_Term flatrateTerm,
-			final Timestamp startDate,
-			final Timestamp endDate,
+			final LocalDateAndOrgId startDate,
+			final LocalDateAndOrgId endDate,
 			final I_C_UOM uom,
 			final List<String> errors)
 	{
@@ -811,7 +812,6 @@ public class FlatrateBL implements IFlatrateBL
 			final String trxName)
 	{
 		final IFlatrateDAO flatrateDB = Services.get(IFlatrateDAO.class);
-		final IUOMDAO uomDAO = this.uomDAO;
 
 		final List<I_M_Product> products = flatrateDB.retrieveHoldingFeeProducts(flatrateTerm.getC_Flatrate_Conditions());
 
@@ -819,8 +819,7 @@ public class FlatrateBL implements IFlatrateBL
 
 		final ICalendarDAO calendarDAO = Services.get(ICalendarDAO.class);
 
-		final List<I_C_Period> periods = calendarDAO.retrievePeriods(
-				ctx, flatrateTerm.getC_Flatrate_Conditions().getC_Flatrate_Transition().getC_Calendar_Contract(), flatrateTerm.getStartDate(), flatrateTerm.getEndDate(), trxName);
+		final List<I_C_Period> periods = getPeriodList(ctx, flatrateTerm, trxName, calendarDAO);
 		for (final I_C_Period period : periods)
 		{
 			for (final I_M_Product product : products)
@@ -856,6 +855,17 @@ public class FlatrateBL implements IFlatrateBL
 		Loggables.withLogger(logger, Level.INFO).addLog(msg);
 	}
 
+	private List<I_C_Period> getPeriodList(final Properties ctx, final I_C_Flatrate_Term flatrateTerm, final String trxName, final ICalendarDAO calendarDAO)
+	{
+		final OrgId orgId = OrgId.ofRepoId(flatrateTerm.getAD_Org_ID());
+		final LocalDateAndOrgId startDate = LocalDateAndOrgId.ofTimestamp(flatrateTerm.getStartDate(), orgId, orgDAO::getTimeZone);
+		final LocalDateAndOrgId endDate = LocalDateAndOrgId.ofTimestamp(flatrateTerm.getEndDate(), orgId, orgDAO::getTimeZone);
+
+		final List<I_C_Period> periods = calendarDAO.retrievePeriods(
+				ctx, flatrateTerm.getC_Flatrate_Conditions().getC_Flatrate_Transition().getC_Calendar_Contract(), startDate, endDate, trxName);
+		return periods;
+	}
+
 	private void createEntriesForFlatFee(
 			final Properties ctx,
 			final I_C_Flatrate_Term flatrateTerm,
@@ -868,8 +878,7 @@ public class FlatrateBL implements IFlatrateBL
 
 		final List<I_C_UOM> uoms = flatrateDB.retrieveUOMs(ctx, flatrateTerm, trxName);
 
-		final List<I_C_Period> periods = calendarDAO.retrievePeriods(
-				ctx, flatrateTerm.getC_Flatrate_Conditions().getC_Flatrate_Transition().getC_Calendar_Contract(), flatrateTerm.getStartDate(), flatrateTerm.getEndDate(), trxName);
+		final List<I_C_Period> periods = getPeriodList(ctx, flatrateTerm, trxName, calendarDAO);
 		for (final I_C_Period period : periods)
 		{
 			for (final I_C_UOM uom : uoms)
@@ -1435,8 +1444,9 @@ public class FlatrateBL implements IFlatrateBL
 			}
 
 			final I_C_Calendar calendar = transition.getC_Calendar_Contract();
+			final OrgId orgId = OrgId.ofRepoId(term.getAD_Org_ID());
 
-			Timestamp currentFirstDay = firstDayOfTerm; // first day of term or first day of new year
+			LocalDateAndOrgId currentFirstDay = LocalDateAndOrgId.ofTimestamp(firstDayOfTerm, orgId, orgDAO::getTimeZone); // first day of term or first day of new year, not including hours
 			for (int i = 0; i < termDuration; i++)
 			{
 				final List<I_C_Period> periodsContainingDay = Services.get(ICalendarDAO.class).retrievePeriods(
@@ -1450,7 +1460,7 @@ public class FlatrateBL implements IFlatrateBL
 
 				lastDayOfTerm = Services.get(ICalendarBL.class).getLastDayOfYear(year);
 
-				currentFirstDay = TimeUtil.addDays(lastDayOfTerm, 1);
+				currentFirstDay = LocalDateAndOrgId.ofTimestamp(TimeUtil.addDays(lastDayOfTerm, 1), orgId, orgDAO::getTimeZone);
 			}
 		}
 		// Case: If TermDuration is ZERO, we shall not calculate the EndDate automatically,

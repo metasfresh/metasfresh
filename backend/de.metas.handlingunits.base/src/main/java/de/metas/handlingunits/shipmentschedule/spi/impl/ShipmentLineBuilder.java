@@ -402,7 +402,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 		shipmentLine.setAD_Org_ID(currentShipment.getAD_Org_ID());
 		shipmentLine.setM_InOut(currentShipment);
 
-		//
+		shipmentLine.setM_SectionCode_ID(currentShipment.getM_SectionCode_ID());
+
 		// Line Warehouse & Locator (retrieved from current Shipment)
 		{
 			final WarehouseId warehouseId = WarehouseId.ofRepoId(currentShipment.getM_Warehouse_ID());

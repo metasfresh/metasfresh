@@ -28,6 +28,8 @@ import de.metas.calendar.standard.ICalendarDAO;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.mforecast.IForecastDAO;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -43,7 +45,6 @@ import org.compiere.model.ModelValidator;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
-import java.sql.Timestamp;
 import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -58,6 +59,7 @@ public class M_Forecast
 	private final IForecastDAO forecastsRepo = Services.get(IForecastDAO.class);
 	private final ICalendarBL calendarBL = Services.get(ICalendarBL.class);
 	private final ICalendarDAO calendarDAO = Services.get(ICalendarDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	public static final AdMessageKey MSG_CALENDAR_DOES_NOT_CONTAIN_PROMISED_DATE = AdMessageKey.of("de.metas.material.interceptor.M_Forecast.CalendarDoesNotContainPromisedDate");
 
 	public M_Forecast()
@@ -89,8 +91,9 @@ public class M_Forecast
 			})
 	public void updateFieldsFromDatePromised(@NonNull final I_M_Forecast forecast)
 	{
-		final CalendarId calendarId = calendarBL.getOrgCalendarOrDefault(OrgId.ofRepoId(forecast.getAD_Org_ID()));
-		final Timestamp datePromised = forecast.getDatePromised();
+		final OrgId orgId = OrgId.ofRepoId(forecast.getAD_Org_ID());
+		final CalendarId calendarId = calendarBL.getOrgCalendarOrDefault(orgId);
+		final LocalDateAndOrgId datePromised = LocalDateAndOrgId.ofTimestamp(forecast.getDatePromised(), orgId, orgDAO::getTimeZone);
 		final I_C_Period period = calendarDAO.findByCalendar(datePromised, calendarId);
 
 		if (period == null)

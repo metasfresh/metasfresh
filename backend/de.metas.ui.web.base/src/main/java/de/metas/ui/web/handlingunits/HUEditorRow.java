@@ -229,7 +229,7 @@ public final class HUEditorRow implements IViewRow
 
 	public static final String FIELDNAME_ClearanceStatus = I_M_HU.COLUMNNAME_ClearanceStatus;
 	@ViewColumn(fieldName = FIELDNAME_ClearanceStatus, widgetType = DocumentFieldWidgetType.Text, sorting = false, layouts = {
-			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 100, displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)})
+			@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 100, displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
 	private final JSONLookupValue clearanceStatus;
 
 
@@ -295,10 +295,10 @@ public final class HUEditorRow implements IViewRow
 		if (attributesProvider != null)
 		{
 			attributesSupplier = Optional.of(HUEditorRowAttributesSupplier.builder()
-													 .viewRowId(rowId.toDocumentId())
-													 .huId(huId)
-													 .provider(attributesProvider)
-													 .build());
+					.viewRowId(rowId.toDocumentId())
+					.huId(huId)
+					.provider(attributesProvider)
+					.build());
 		}
 		else
 		{
@@ -336,6 +336,11 @@ public final class HUEditorRow implements IViewRow
 	public DocumentPath getDocumentPath()
 	{
 		return documentPath;
+	}
+
+	public JSONLookupValue getClearanceStatus()
+	{
+		return clearanceStatus;
 	}
 
 	public HUEditorRowId getHURowId()

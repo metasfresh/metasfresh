@@ -930,6 +930,18 @@ DELETE FROM  AD_Window_Trl WHERE AD_Window_ID=540780
 
 update ad_pinstance set ad_window_id=null where AD_Window_ID=540780;
 
+DO $$
+    BEGIN
+        -- replace the old desadv packs window with the new one
+        update s_story_window set ad_window_id=541543, updatedby=99, updated='2022-09-23 09:33'
+        where AD_Window_ID=540780;
+    EXCEPTION when others then
+        RAISE NOTICE 'Update failed; Error-Code %, Message=%', SQLSTATE, SQLERRM;
+    END;
+$$;
+
+
+
 -- 2022-07-05T14:58:11.355Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
 DELETE FROM AD_Window WHERE AD_Window_ID=540780
