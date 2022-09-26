@@ -838,7 +838,7 @@ public class TimeUtil
 	{
 		if (dateTime == null)
 		{
-			dateTime = new Timestamp(System.currentTimeMillis());
+			dateTime = new Timestamp(Instant.now().toEpochMilli());
 		}
 		if (offset == 0)
 		{
