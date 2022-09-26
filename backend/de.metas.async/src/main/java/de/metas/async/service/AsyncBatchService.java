@@ -115,11 +115,19 @@ public class AsyncBatchService
 	 */
 	public <T> T executeBatch(@NonNull final Supplier<T> supplier, @NonNull final AsyncBatchId asyncBatchId)
 	{
-		asyncBatchObserver.observeOn(asyncBatchId);
+		final T result;
+		try
+		{
+			asyncBatchObserver.observeOn(asyncBatchId);
 
-		final T result = trxManager.callInNewTrx(supplier::get);
+			result = trxManager.callInNewTrx(supplier::get);
 
-		asyncBatchObserver.waitToBeProcessed(asyncBatchId);
+			asyncBatchObserver.waitToBeProcessed(asyncBatchId);
+		}
+		finally
+		{
+			asyncBatchObserver.removeObserver(asyncBatchId);
+		}
 
 		return result;
 	}
