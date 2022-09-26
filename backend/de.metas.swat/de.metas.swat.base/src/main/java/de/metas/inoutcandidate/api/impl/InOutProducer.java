@@ -458,9 +458,9 @@ public class InOutProducer implements IInOutProducer
 
 		final I_M_InOut receiptHeader = InterfaceWrapperHelper.create(ctx, I_M_InOut.class, trxName);
 		receiptHeader.setAD_Org_ID(rs.getAD_Org_ID());
+		receiptHeader.setM_SectionCode_ID(rs.getM_SectionCode_ID());
 		receiptHeader.setC_Project_ID(rs.getC_Project_ID()); // going to set this to null later, in case there are lines with different projects
 
-		//
 		// Document Type
 		{
 			receiptHeader.setMovementType(X_M_InOut.MOVEMENTTYPE_VendorReceipts);
@@ -572,7 +572,8 @@ public class InOutProducer implements IInOutProducer
 	{
 		final I_M_InOut inout = getCurrentReceipt();
 
-		//
+		line.setM_SectionCode_ID(rs.getM_SectionCode_ID());
+
 		// Product & ASI
 		line.setM_Product_ID(rs.getM_Product_ID());
 		final I_M_AttributeSetInstance rsASI = receiptScheduleBL.getM_AttributeSetInstance_Effective(rs);

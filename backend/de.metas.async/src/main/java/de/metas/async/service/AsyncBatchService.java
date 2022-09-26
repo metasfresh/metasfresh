@@ -87,23 +87,20 @@ public class AsyncBatchService
 				.filter(I_C_Queue_WorkPackage::isError)
 				.count();
 
-		final int workPackagesFinalized = workPackagesProcessedCount + workPackagesWithErrorCount;
-
 		Loggables.withLogger(logger, Level.INFO).addLog("*** processAsyncBatch for: asyncBatchID: " + asyncBatch.getC_Async_Batch_ID() +
 																" allWPSize: " + workPackages.size() +
 																" processedWPSize: " + workPackagesProcessedCount +
 																" erroredWPSize: " + workPackagesWithErrorCount);
 
-		if (workPackagesFinalized >= workPackages.size())
-		{
-			final AsyncBatchNotifyRequest request = AsyncBatchNotifyRequest.builder()
-					.clientId(Env.getClientId())
-					.asyncBatchId(AsyncBatchId.toRepoId(asyncBatchId))
-					.success(workPackagesWithErrorCount <= 0)
-					.build();
+		final AsyncBatchNotifyRequest request = AsyncBatchNotifyRequest.builder()
+				.clientId(Env.getClientId())
+				.asyncBatchId(AsyncBatchId.toRepoId(asyncBatchId))
+				.noOfProcessedWPs(workPackagesProcessedCount)
+				.noOfEnqueuedWPs(workPackages.size())
+				.noOfErrorWPs(workPackagesWithErrorCount)
+				.build();
 
-			asyncBatchEventBusService.postRequest(request);
-		}
+		asyncBatchEventBusService.postRequest(request);
 	}
 
 	/**

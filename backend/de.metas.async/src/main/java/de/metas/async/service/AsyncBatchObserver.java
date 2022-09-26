@@ -29,6 +29,8 @@ import de.metas.async.eventbus.AsyncBatchNotifyRequest;
 import de.metas.async.eventbus.AsyncBatchNotifyRequestHandler;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.common.util.Check;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockCommand;
 import de.metas.lock.api.ILockManager;
@@ -37,8 +39,10 @@ import de.metas.lock.spi.ExistingLockInfo;
 import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.experimental.NonFinal;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
@@ -46,6 +50,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
@@ -81,11 +86,11 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 	@Override
 	public void handleRequest(@NonNull final AsyncBatchNotifyRequest request)
 	{
-		Loggables.withLogger(logger, Level.INFO).addLog("Batch notified as finished; AsyncBatchId: {}", request.getAsyncBatchId());
+		Loggables.withLogger(logger, Level.DEBUG).addLog("AsyncBatch identified by: {} notified with status: {}", request.getAsyncBatchId(), request);
 
 		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoId(request.getAsyncBatchId());
 
-		this.notifyBatchProcessedFor(asyncBatchId, request.getSuccess());
+		this.notifyBatchFor(asyncBatchId, request);
 	}
 
 	public void observeOn(@NonNull final AsyncBatchId id)
@@ -112,7 +117,7 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 		//dev-note:acquire an owner related lock to make sure there is just one AsyncBatchObserver that's registering a certain async batch at a time
 		final ILock lock = lockBatch(id, Duration.ofMillis(timeoutMS));
 
-		asyncBatch2Completion.put(id, new BatchProgress(lock));
+		asyncBatch2Completion.put(id, new BatchProgress(lock, id));
 	}
 
 	/**
@@ -121,7 +126,8 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 	 */
 	public void waitToBeProcessed(@NonNull final AsyncBatchId id)
 	{
-		if (asyncBatch2Completion.get(id) == null)
+		final BatchProgress asyncBatchProgress = asyncBatch2Completion.get(id);
+		if (asyncBatchProgress == null)
 		{
 			Loggables.withLogger(logger, Level.INFO).addLog("No observer registered to be processed for asyncBatchId: {}", id.getRepoId());
 			return;
@@ -129,7 +135,9 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 
 		try
 		{
-			final CompletableFuture<Void> completableFuture = asyncBatch2Completion.get(id).getCompletableFuture();
+			asyncBatchProgress.markEnqueueingIsDone();
+
+			final CompletableFuture<Void> completableFuture = asyncBatchProgress.getCompletableFuture();
 
 			final int timeoutMS = sysConfigBL.getIntValue(SYS_Config_WaitTimeOutMS, SYS_Config_WaitTimeOutMS_DEFAULT_VALUE);
 
@@ -192,25 +200,17 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 		Loggables.withLogger(logger, Level.INFO).addLog("Observer removed for asyncBatchId: {}", id.getRepoId());
 	}
 
-	private void notifyBatchProcessedFor(@NonNull final AsyncBatchId id, final boolean successful)
+	private void notifyBatchFor(@NonNull final AsyncBatchId asyncBatchId, @NonNull final AsyncBatchNotifyRequest notifyRequest)
 	{
-		if (asyncBatch2Completion.get(id) == null)
+		if (!isAsyncBatchObserved(asyncBatchId))
 		{
-			Loggables.withLogger(logger, Level.INFO).addLog("No observer registered to notify for asyncBatchId: {}" , id.getRepoId());
+			Loggables.withLogger(logger, Level.INFO).addLog("No observer registered to notify for asyncBatchId: {}", asyncBatchId.getRepoId());
 			return;
 		}
 
-		if (successful)
-		{
-			Loggables.withLogger(logger, Level.INFO).addLog("AsyncBatchId={} completed successfully. " , id.getRepoId());
-			asyncBatch2Completion.get(id).getCompletableFuture().complete(null);
-		}
-		else
-		{
-			asyncBatch2Completion.get(id).getCompletableFuture().completeExceptionally(new AdempiereException("A Workpackage completed with an exception")
-																		.appendParametersToMessage()
-																		.setParameter("AsyncBatchId" , id.getRepoId()));
-		}
+		final BatchProgress asyncBatchProgress = asyncBatch2Completion.get(asyncBatchId);
+
+		asyncBatchProgress.updateWorkPackagesProgress(notifyRequest);
 	}
 
 	@NonNull
@@ -221,9 +221,9 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 		final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecordOutOfTrx(asyncBatchId);
 
 		final LockOwner lockOwner = getLockOwnerForAsyncBatch(asyncBatchId);
-		
+
 		final Supplier<Boolean> timeoutReached = () -> startTime.plusMillis(timeout.toMillis()).isBefore(Instant.now());
-		
+
 		while (!timeoutReached.get())
 		{
 			final ILock lock = lockManager.lock()
@@ -257,16 +257,107 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 	@Value
 	private static class BatchProgress
 	{
-		public BatchProgress(@NonNull final ILock lock)
+		private static final Logger logger = LogManager.getLogger(BatchProgress.class);
+
+		public BatchProgress(@NonNull final ILock lock, @NonNull final AsyncBatchId batchId)
 		{
 			this.completableFuture = new CompletableFuture<>();
 			this.lock = lock;
+			this.batchId = batchId;
 		}
+
+		@NonNull
+		AsyncBatchId batchId;
 
 		@NonNull
 		CompletableFuture<Void> completableFuture;
 
 		@NonNull
 		ILock lock;
+
+		@NonFinal
+		volatile boolean isEnqueueingDone;
+
+		@NonFinal
+		volatile WorkPackagesProgress wpProgress = null;
+
+		private void markEnqueueingIsDone()
+		{
+			isEnqueueingDone = true;
+			checkIfBatchIsDone();
+		}
+
+		public void updateWorkPackagesProgress(@NonNull final AsyncBatchNotifyRequest notifyRequest)
+		{
+			this.wpProgress = getWPsProgress(notifyRequest);
+			checkIfBatchIsDone();
+		}
+
+		private synchronized void checkIfBatchIsDone()
+		{
+			if (wpProgress == null || !isEnqueueingDone)
+			{
+				return;
+			}
+
+			if (wpProgress.isProcessedSuccessfully())
+			{
+				Loggables.withLogger(logger, Level.INFO).addLog("AsyncBatchId={} completed successfully. ", batchId.getRepoId());
+				this.completableFuture.complete(null);
+			}
+			else if (wpProgress.isProcessedWithError())
+			{
+				this.completableFuture.completeExceptionally(new AdempiereException("WorkPackage completed with an exception")
+																.appendParametersToMessage()
+																.setParameter("AsyncBatchId", batchId.getRepoId()));
+			}
+		}
+
+		@NonNull
+		private static WorkPackagesProgress getWPsProgress(@NonNull final AsyncBatchNotifyRequest request)
+		{
+			return WorkPackagesProgress.builder()
+					.noOfProcessedWPs(request.getNoOfProcessedWPs())
+					.noOfEnqueuedWPs(request.getNoOfEnqueuedWPs())
+					.noOfErrorWPs(request.getNoOfErrorWPs())
+					.build();
+		}
+
+		private static class WorkPackagesProgress
+		{
+			@NonNull
+			Integer noOfEnqueuedWPs;
+
+			@NonNull
+			Integer noOfProcessedWPs;
+
+			@NonNull
+			Integer noOfErrorWPs;
+
+			@Builder
+			public WorkPackagesProgress(
+					@NonNull final Integer noOfEnqueuedWPs,
+					@Nullable final Integer noOfProcessedWPs,
+					@Nullable final Integer noOfErrorWPs)
+			{
+				this.noOfEnqueuedWPs = noOfEnqueuedWPs;
+				this.noOfProcessedWPs = CoalesceUtil.coalesceNotNull(noOfProcessedWPs, 0);
+				this.noOfErrorWPs = CoalesceUtil.coalesceNotNull(noOfErrorWPs, 0);
+
+				Check.assumeGreaterThanZero(noOfEnqueuedWPs, "noOfEnqueuedWPs");
+				Check.assumeGreaterOrEqualToZero(this.noOfProcessedWPs, this.noOfErrorWPs);
+			}
+
+			public boolean isProcessedSuccessfully()
+			{
+				return noOfErrorWPs == 0 && noOfProcessedWPs >= noOfEnqueuedWPs;
+			}
+
+			public boolean isProcessedWithError()
+			{
+				return noOfErrorWPs > 0 && (noOfProcessedWPs + noOfErrorWPs >= noOfEnqueuedWPs);
+			}
+		}
 	}
 }
+
