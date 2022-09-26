@@ -91,6 +91,12 @@ const BarcodeScannerComponent = ({ resolveScannedBarcode, onResolvedResult }) =>
     inputTextRef?.current?.select();
   };
 
+  const handleInputTextBlur = () => {
+    setTimeout(() => {
+      inputTextRef?.current?.focus();
+    }, 2000);
+  };
+
   useEffect(() => {
     inputTextRef?.current?.focus();
   });
@@ -106,6 +112,7 @@ const BarcodeScannerComponent = ({ resolveScannedBarcode, onResolvedResult }) =>
           type="text"
           placeholder={trl('components.BarcodeScannerComponent.scanTextPlaceholder')}
           onFocus={handleInputTextFocus}
+          onBlur={handleInputTextBlur}
           onChange={handleInputTextChanged}
           onKeyPress={handleInputTextKeyPress}
         />
