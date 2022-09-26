@@ -419,6 +419,29 @@ public interface I_M_Product
 	String COLUMNNAME_ExternalId = "ExternalId";
 
 	/**
+	 * Set FLO ID.
+	 * ID granted by FLOCERT for companies to put it on their products.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFLO_Identifier (@Nullable java.lang.String FLO_Identifier);
+
+	/**
+	 * Get FLO ID.
+	 * ID granted by FLOCERT for companies to put it on their products.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getFLO_Identifier();
+
+	ModelColumn<I_M_Product, Object> COLUMN_FLO_Identifier = new ModelColumn<>(I_M_Product.class, "FLO_Identifier", null);
+	String COLUMNNAME_FLO_Identifier = "FLO_Identifier";
+
+	/**
 	 * Set Group1.
 	 *
 	 * <br>Type: String
@@ -1822,29 +1845,6 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, org.compiere.model.I_S_Resource> COLUMN_S_Resource_ID = new ModelColumn<>(I_M_Product.class, "S_Resource_ID", org.compiere.model.I_S_Resource.class);
 	String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
-
-	/**
-	 * Set FLO ID.
-	 * ID granted by FLOCERT for companies to put it on their products.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setth173_FLO_ID (@Nullable java.lang.String th173_FLO_ID);
-
-	/**
-	 * Get FLO ID.
-	 * ID granted by FLOCERT for companies to put it on their products.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getth173_FLO_ID();
-
-	ModelColumn<I_M_Product, Object> COLUMN_th173_FLO_ID = new ModelColumn<>(I_M_Product.class, "th173_FLO_ID", null);
-	String COLUMNNAME_th173_FLO_ID = "th173_FLO_ID";
 
 	/**
 	 * Set Trademark.
