@@ -26,6 +26,7 @@ import de.metas.material.planning.pporder.PPOrderQuantities;
 import de.metas.material.planning.pporder.impl.PPOrderBOMBL;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
@@ -217,9 +218,15 @@ public class ManufacturingJobLoaderAndSaver
 				.issueFromHU(HUInfo.builder()
 						.id(schedule.getIssueFromHUId())
 						.barcode(supportingServices.getQRCodeByHuId(schedule.getIssueFromHUId()))
+						.huCapacity(getHUCapacity(schedule))
 						.build())
 				.issued(schedule.getIssued())
 				.build();
+	}
+
+	private Quantity getHUCapacity(@NonNull final PPOrderIssueSchedule schedule)
+	{
+		return supportingServices.getHUCapacity(schedule.getIssueFromHUId(), schedule.getProductId(), schedule.getQtyToIssue().getUOM());
 	}
 
 	private FinishedGoodsReceive toFinishedGoodsReceive(final @NonNull PPOrderRoutingActivity from)
