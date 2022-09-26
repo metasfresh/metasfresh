@@ -15,19 +15,19 @@ import { updateManufacturingIssue } from '../../../../actions/ManufacturingActio
 
 import ScanHUAndGetQtyComponent from '../../../../components/ScanHUAndGetQtyComponent';
 import { toQRCodeString } from '../../../../utils/huQRCodes';
+import { formatQtyToHumanReadable } from '../../../../utils/qtys';
 
 const RawMaterialIssueScanScreen = () => {
   const {
     params: { workflowId: wfProcessId, activityId, lineId, stepId },
   } = useRouteMatch();
 
-  const { huQRCode, qtyToIssue, uom, qtyRejectedReasons, weightable, scaleDevice } = useSelector((state) =>
-    getPropsFromState({ state, wfProcessId, activityId, lineId, stepId })
-  );
+  const { huQRCode, uom, userInfo, qtyToIssue, qtyToIssueMax, isIssueWholeStep, qtyRejectedReasons, scaleDevice } =
+    useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId, stepId }));
 
   const dispatch = useDispatch();
   const history = useHistory();
-  const onResult = ({ qty = 0, reason = null }) => {
+  const onResult = ({ qty = 0, qtyRejected = 0, reason = null }) => {
     dispatch(
       updateManufacturingIssue({
         wfProcessId,
@@ -35,8 +35,8 @@ const RawMaterialIssueScanScreen = () => {
         lineId,
         stepId,
         qtyIssued: qty,
-        qtyRejected: qtyToIssue - qty,
-        qtyRejectedReasonCode: reason,
+        qtyRejected: isIssueWholeStep ? qtyRejected : 0,
+        qtyRejectedReasonCode: isIssueWholeStep ? reason : null,
       })
     )
       .catch((axiosError) => toastError({ axiosError }))
@@ -46,12 +46,12 @@ const RawMaterialIssueScanScreen = () => {
   return (
     <ScanHUAndGetQtyComponent
       eligibleBarcode={toQRCodeString(huQRCode)}
-      qtyCaption={trl('general.QtyToPick')}
-      qtyTarget={qtyToIssue}
+      userInfo={userInfo}
       qtyInitial={qtyToIssue}
+      qtyMax={qtyToIssueMax}
       uom={uom}
       qtyRejectedReasons={qtyRejectedReasons}
-      scaleDevice={weightable ? scaleDevice : null}
+      scaleDevice={scaleDevice}
       // Callbacks:
       onResult={onResult}
     />
@@ -63,15 +63,56 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId, stepId }) =
   const line = getLineByIdFromActivity(activity, lineId);
   const step = getStepByIdFromActivity(activity, lineId, stepId);
 
-  console.log('RawMaterialIssueScanScreen.getPropsFromState', { line, step });
+  const uom = step.uom;
+  const lineQtyToIssue = line.qtyToIssue;
+  const lineQtyIssued = line.qtyIssued;
+  const lineQtyToIssueTolerancePerc = line.qtyToIssueTolerancePerc;
+  const stepQtyToIssue = step.qtyToIssue;
+  const isWeightable = !!line.weightable;
+
+  const lineQtyToIssueMax = Math.max(line.qtyToIssueMax, lineQtyToIssue);
+  let qtyToIssueMax = Math.max(lineQtyToIssueMax - lineQtyIssued, 0);
+  qtyToIssueMax = Math.min(qtyToIssueMax, step.qtyHUCapacity);
+
+  const lineQtyToIssueRemaining = Math.max(lineQtyToIssue - lineQtyIssued, 0);
+  const qtyToIssue = Math.min(stepQtyToIssue, lineQtyToIssueRemaining, qtyToIssueMax);
+
+  const isIssueWholeStep = qtyToIssue >= step.qtyHUCapacity;
+
+  const userInfo = [
+    {
+      caption: trl('general.QtyToPick') + ' (total)', // TODO trl
+      value: formatQtyToHumanReadable({ qty: lineQtyToIssue, uom, tolerancePercent: lineQtyToIssueTolerancePerc }),
+    },
+    {
+      caption: trl('general.QtyToPick'),
+      value: formatQtyToHumanReadable({ qty: lineQtyToIssueRemaining, uom }),
+    },
+  ];
+
+  console.log('RawMaterialIssueScanScreen.getPropsFromState', {
+    qtyToIssue,
+    qtyToIssueMax,
+    isIssueWholeStep,
+    //
+    line,
+    step,
+    //
+    lineQtyToIssueMax,
+    lineQtyToIssueRemaining,
+    lineQtyToIssue,
+    stepQtyToIssue,
+  });
 
   return {
     huQRCode: step.huQRCode,
-    qtyToIssue: step.qtyToIssue,
     uom: step.uom,
-    weightable: !!line.weightable,
-    qtyRejectedReasons: getQtyRejectedReasonsFromActivity(activity),
-    scaleDevice: getScaleDeviceFromActivity(activity),
+    userInfo,
+    qtyToIssue: qtyToIssue,
+    qtyToIssueMax: qtyToIssueMax,
+    isIssueWholeStep,
+    qtyRejectedReasons: isIssueWholeStep ? getQtyRejectedReasonsFromActivity(activity) : null,
+    scaleDevice: isWeightable ? getScaleDeviceFromActivity(activity) : null,
   };
 };
 

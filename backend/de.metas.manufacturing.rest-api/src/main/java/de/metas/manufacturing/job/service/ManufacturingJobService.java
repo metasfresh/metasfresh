@@ -85,6 +85,7 @@ public class ManufacturingJobService
 				.ppOrderBL(ppOrderBL = Services.get(IHUPPOrderBL.class))
 				.ppOrderBOMBL(ppOrderBOMBL = Services.get(IPPOrderBOMBL.class))
 				.ppOrderRoutingRepository(Services.get(IPPOrderRoutingRepository.class))
+				.handlingUnitsBL(Services.get(IHandlingUnitsBL.class))
 				.ppOrderIssueScheduleService(ppOrderIssueScheduleService)
 				.huQRCodeService(huQRCodeService)
 				.build();

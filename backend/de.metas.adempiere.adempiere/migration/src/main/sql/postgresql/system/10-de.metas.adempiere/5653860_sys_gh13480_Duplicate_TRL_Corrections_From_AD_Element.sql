@@ -280,18 +280,6 @@ UPDATE AD_Element_Trl SET Name='Projekt - LEGACY',Updated=TO_TIMESTAMP('2022-08-
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(573947,'de_CH') 
 ;
 
-
-
--- Element: null
--- 2022-08-29T16:33:40.976Z
-UPDATE AD_Element_Trl SET Name='Projekt - LEGACY',Updated=TO_TIMESTAMP('2022-08-29 19:33:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=573947 AND AD_Language='fr_CH'
-
-;
-
--- 2022-08-29T16:33:40.979Z
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(573947,'fr_CH') 
-;
-
 -- Element: null
 -- 2022-08-29T16:33:43.941Z
 UPDATE AD_Element_Trl SET Name='- LEGACY',Updated=TO_TIMESTAMP('2022-08-29 19:33:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=573947 AND AD_Language='en_US'

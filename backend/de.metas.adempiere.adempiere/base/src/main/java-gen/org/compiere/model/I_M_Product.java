@@ -788,6 +788,29 @@ public interface I_M_Product
 	String COLUMNNAME_Help = "Help";
 
 	/**
+	 * Set HU Clearance.
+	 * Initial clearance status for newly created or received handling units with this product.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHUClearanceStatus (@Nullable java.lang.String HUClearanceStatus);
+
+	/**
+	 * Get HU Clearance.
+	 * Initial clearance status for newly created or received handling units with this product.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getHUClearanceStatus();
+
+	ModelColumn<I_M_Product, Object> COLUMN_HUClearanceStatus = new ModelColumn<>(I_M_Product.class, "HUClearanceStatus", null);
+	String COLUMNNAME_HUClearanceStatus = "HUClearanceStatus";
+
+	/**
 	 * Set Image URL.
 	 * URL of  image
 	 *
