@@ -4,6 +4,7 @@ import { BrowserMultiFormatReader, BarcodeFormat } from '@zxing/browser';
 import DecodeHintType from '@zxing/library/cjs/core/DecodeHintType';
 import { toastError } from '../utils/toast';
 import { trl } from '../utils/translations';
+import { useBooleanSetting } from '../reducers/settings';
 
 const READER_HINTS = new Map().set(DecodeHintType.POSSIBLE_FORMATS, [
   BarcodeFormat.QR_CODE,
@@ -17,10 +18,10 @@ const READER_OPTIONS = {
 };
 
 const BarcodeScannerComponent = ({ resolveScannedBarcode, onResolvedResult }) => {
-  const video = useRef();
-  const mountedRef = useRef(true);
+  const videoRef = useRef();
+  const inputTextRef = useRef();
 
-  const validateScannedBarcodeAndForward = ({ scannedBarcode, controls }) => {
+  const validateScannedBarcodeAndForward = ({ scannedBarcode, controls = null }) => {
     //console.log('Resolving scanned barcode', { scannedBarcode, resolveScannedBarcode });
     if (resolveScannedBarcode) {
       let resolvedResultPromise;
@@ -43,21 +44,22 @@ const BarcodeScannerComponent = ({ resolveScannedBarcode, onResolvedResult }) =>
     }
   };
 
-  const handleResolvedResult = (resolvedResult, controls) => {
+  const handleResolvedResult = (resolvedResult, controls = null) => {
     // console.log('Got resolvedResult', resolvedResult);
     if (resolvedResult.error) {
       toastError({ plainMessage: resolvedResult.error });
     } else {
-      controls.stop();
+      controls?.stop();
       onResolvedResult(resolvedResult);
     }
   };
 
+  const mountedRef = useRef(true);
   useEffect(() => {
     mountedRef.current = true;
 
     const codeReader = new BrowserMultiFormatReader(READER_HINTS, READER_OPTIONS);
-    codeReader.decodeFromVideoDevice(undefined, video.current, (result, error, controls) => {
+    codeReader.decodeFromVideoDevice(undefined, videoRef.current, (result, error, controls) => {
       if (mountedRef.current === false) {
         controls.stop();
       } else if (typeof result !== 'undefined') {
@@ -70,7 +72,46 @@ const BarcodeScannerComponent = ({ resolveScannedBarcode, onResolvedResult }) =>
     };
   });
 
-  return <video ref={video} width="100%" height="100%" />;
+  const handleInputTextChanged = () => {
+    // do nothing for now
+    //console.log('event: ', { e, text: e.target.value });
+  };
+
+  const handleInputTextKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      const inputElement = e.target;
+      const scannedBarcode = inputElement.value;
+
+      inputElement.select();
+      validateScannedBarcodeAndForward({ scannedBarcode });
+    }
+  };
+
+  const handleInputTextFocus = () => {
+    inputTextRef?.current?.select();
+  };
+
+  useEffect(() => {
+    inputTextRef?.current?.focus();
+  });
+
+  const isShowInputText = useBooleanSetting('barcodeScanner.showInputText');
+  return (
+    <div className="barcode-scanner">
+      <video ref={videoRef} width="100%" height="100%" />
+      {isShowInputText && (
+        <input
+          ref={inputTextRef}
+          className="input-text"
+          type="text"
+          placeholder={trl('components.BarcodeScannerComponent.scanTextPlaceholder')}
+          onFocus={handleInputTextFocus}
+          onChange={handleInputTextChanged}
+          onKeyPress={handleInputTextKeyPress}
+        />
+      )}
+    </div>
+  );
 };
 
 BarcodeScannerComponent.propTypes = {
