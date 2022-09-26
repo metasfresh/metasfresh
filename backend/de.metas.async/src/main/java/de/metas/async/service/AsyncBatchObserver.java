@@ -99,12 +99,14 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 																+ " date: " + Instant.now() + " ; "
 																+ " threadId: " + Thread.currentThread().getId());
 
+		final int timeoutMS = sysConfigBL.getIntValue(SYS_Config_WaitTimeOutMS, SYS_Config_WaitTimeOutMS_DEFAULT_VALUE);
+
 		//dev-note: make sure to wait for any work already enqueued with this async batch to finalize
 		Optional.ofNullable(asyncBatch2Completion.get(id))
 				.ifPresent(batchProgress -> {
 					try
 					{
-						batchProgress.getCompletableFuture().get();
+						batchProgress.getCompletableFuture().get(timeoutMS, TimeUnit.MILLISECONDS);
 					}
 					catch (final Throwable t)
 					{
@@ -113,8 +115,6 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 								.setParameter("AsyncBatchId", id);
 					}
 				});
-
-		final int timeoutMS = sysConfigBL.getIntValue(SYS_Config_WaitTimeOutMS, SYS_Config_WaitTimeOutMS_DEFAULT_VALUE);
 
 		//dev-note:acquire an owner related lock to make sure there is just one AsyncBatchObserver that's registering a certain async batch at a time
 		final ILock lock = lockBatch(id, Duration.ofMillis(timeoutMS));
@@ -195,15 +195,16 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 
 	public void removeObserver(@NonNull final AsyncBatchId id)
 	{
-		if (asyncBatch2Completion.get(id) == null)
+		final BatchProgress batchProgress = asyncBatch2Completion.remove(id);
+
+		if (batchProgress == null)
 		{
 			Loggables.withLogger(logger, Level.WARN).addLog("No observer registered that can be removed for asyncBatchId: {}", id.getRepoId());
 			return;
 		}
 
-		final BatchProgress batchProgress = asyncBatch2Completion.remove(id);
-
 		batchProgress.getLock().unlockAll();
+		batchProgress.forceCompletionIfNotAlreadyCompleted();
 
 		Loggables.withLogger(logger, Level.INFO).addLog("Observer removed for asyncBatchId: {}", id.getRepoId());
 	}
@@ -301,24 +302,40 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 			checkIfBatchIsDone();
 		}
 
-		private synchronized void checkIfBatchIsDone()
+		private void forceCompletionIfNotAlreadyCompleted()
+		{
+			if (checkIfBatchIsDone())
+			{
+				return;
+			}
+
+			this.completableFuture.completeExceptionally(new AdempiereException("Forced exceptionally complete!")
+																 .appendParametersToMessage()
+																 .setParameter("AsyncBatchId", batchId.getRepoId()));
+		}
+
+		private synchronized boolean checkIfBatchIsDone()
 		{
 			if (wpProgress == null || !isEnqueueingDone)
 			{
-				return;
+				return false;
 			}
 
 			if (wpProgress.isProcessedSuccessfully())
 			{
 				Loggables.withLogger(logger, Level.INFO).addLog("AsyncBatchId={} completed successfully. ", batchId.getRepoId());
 				this.completableFuture.complete(null);
+				return true;
 			}
 			else if (wpProgress.isProcessedWithError())
 			{
 				this.completableFuture.completeExceptionally(new AdempiereException("WorkPackage completed with an exception")
 																.appendParametersToMessage()
 																.setParameter("AsyncBatchId", batchId.getRepoId()));
+				return true;
 			}
+
+			return false;
 		}
 
 		@NonNull
