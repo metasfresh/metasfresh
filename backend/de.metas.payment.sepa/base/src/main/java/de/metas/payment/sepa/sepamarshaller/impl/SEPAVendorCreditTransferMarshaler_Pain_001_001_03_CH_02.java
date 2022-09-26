@@ -399,38 +399,42 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		//
 		// Payment type information.
 		{
-			final PaymentTypeInformation19CH pmtTpInf = objectFactory.createPaymentTypeInformation19CH();
-			pmtInf.setPmtTpInf(pmtTpInf);
+			if (paymentMode == PAYMENT_TYPE_5 || paymentMode == PAYMENT_TYPE_1
+					|| paymentMode == PAYMENT_TYPE_2_1	|| paymentMode == PAYMENT_TYPE_2_2)
+			{
+				final PaymentTypeInformation19CH pmtTpInf = objectFactory.createPaymentTypeInformation19CH();
+				pmtInf.setPmtTpInf(pmtTpInf);
 
-			// service level
-			if (paymentMode == PAYMENT_TYPE_5)
-			{
-				// ServiceLEvel.Code "SEPA" does not work if we are doing transactions in swizz.
-				// Service level - Hard-coded value of SEPA.
-				final ServiceLevel8Choice svcLvl = objectFactory.createServiceLevel8Choice();
-				svcLvl.setCd("SEPA");
-				pmtTpInf.setSvcLvl(svcLvl);
-			}
-			else if (paymentMode == PAYMENT_TYPE_1)
-			{
-				// local instrument
-				final LocalInstrument2Choice lclInstrm = objectFactory.createLocalInstrument2Choice();
-				lclInstrm.setPrtry("CH01"); // Zahlungsart 1
-				pmtTpInf.setLclInstrm(lclInstrm);
-			}
-			else if (paymentMode == PAYMENT_TYPE_2_1)
-			{
-				// local instrument
-				final LocalInstrument2Choice lclInstrm = objectFactory.createLocalInstrument2Choice();
-				lclInstrm.setPrtry("CH02"); // Zahlungsart 2.1
-				pmtTpInf.setLclInstrm(lclInstrm);
-			}
-			else if (paymentMode == PAYMENT_TYPE_2_2)
-			{
-				// local instrument
-				final LocalInstrument2Choice lclInstrm = objectFactory.createLocalInstrument2Choice();
-				lclInstrm.setPrtry("CH03"); // Zahlungsart 2.2
-				pmtTpInf.setLclInstrm(lclInstrm);
+				// service level
+				if (paymentMode == PAYMENT_TYPE_5)
+				{
+					// ServiceLEvel.Code "SEPA" does not work if we are doing transactions in swizz.
+					// Service level - Hard-coded value of SEPA.
+					final ServiceLevel8Choice svcLvl = objectFactory.createServiceLevel8Choice();
+					svcLvl.setCd("SEPA");
+					pmtTpInf.setSvcLvl(svcLvl);
+				}
+				else if (paymentMode == PAYMENT_TYPE_1)
+				{
+					// local instrument
+					final LocalInstrument2Choice lclInstrm = objectFactory.createLocalInstrument2Choice();
+					lclInstrm.setPrtry("CH01"); // Zahlungsart 1
+					pmtTpInf.setLclInstrm(lclInstrm);
+				}
+				else if (paymentMode == PAYMENT_TYPE_2_1)
+				{
+					// local instrument
+					final LocalInstrument2Choice lclInstrm = objectFactory.createLocalInstrument2Choice();
+					lclInstrm.setPrtry("CH02"); // Zahlungsart 2.1
+					pmtTpInf.setLclInstrm(lclInstrm);
+				}
+				else if (paymentMode == PAYMENT_TYPE_2_2)
+				{
+					// local instrument
+					final LocalInstrument2Choice lclInstrm = objectFactory.createLocalInstrument2Choice();
+					lclInstrm.setPrtry("CH03"); // Zahlungsart 2.2
+					pmtTpInf.setLclInstrm(lclInstrm);
+				}
 			}
 		}
 
@@ -661,18 +665,26 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			}
 			else
 			{
+				final String otherAccountIdentification = line.getOtherAccountIdentification();
+				final String accountNo = bankAccount.getAccountNo();
+
 				final GenericAccountIdentification1CH othr = objectFactory.createGenericAccountIdentification1CH();
 				id.setOthr(othr);
-
-				final String otherAccountIdentification = line.getOtherAccountIdentification();
-				if (!Check.isEmpty(otherAccountIdentification, true))
+				if (Check.isEmpty(otherAccountIdentification, true) && Check.isEmpty(accountNo, true))
 				{
-					// task 07789
-					othr.setId(otherAccountIdentification); // for task 07789, this needs to contain the ESR TeilehmerNr or PostkontoNr
+					othr.setId(iban.replaceAll(" ", ""));
 				}
 				else
 				{
-					othr.setId(bankAccount.getAccountNo());
+					if (!Check.isEmpty(otherAccountIdentification, true))
+					{
+						// task 07789
+						othr.setId(otherAccountIdentification); // for task 07789, this needs to contain the ESR TeilehmerNr or PostkontoNr
+					}
+					else
+					{
+						othr.setId(accountNo);
+					}
 				}
 			}
 		}
@@ -948,7 +960,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 				de.metas.payment.esr.model.I_C_BP_BankAccount.class);
 
 		final String paymentMode;
-		if (bPBankAccount.isEsrAccount() && !Check.isEmpty(line.getStructuredRemittanceInfo(), true))
+		if (bPBankAccount.isEsrAccount() && !Check.isEmpty(line.getStructuredRemittanceInfo(), true) && bPBankAccount.getQR_IBAN() == null)
 		{
 			paymentMode = PAYMENT_TYPE_1;
 		}
@@ -1025,7 +1037,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	@VisibleForTesting
 	static boolean isInvalidQRReference(final String reference)
 	{
-		if(reference.length() != 27)
+		if(reference!=null && reference.length() != 27)
 		{
 			return true;
 		}
