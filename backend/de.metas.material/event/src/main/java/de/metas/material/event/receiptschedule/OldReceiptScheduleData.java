@@ -22,29 +22,25 @@
 
 package de.metas.material.event.receiptschedule;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.metas.material.event.commons.MaterialDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 import java.math.BigDecimal;
 
 @Builder
 @Value
-@JsonDeserialize(builder = OldReceiptScheduleData.OldReceiptScheduleDataBuilder.class)
+@Jacksonized
 public class OldReceiptScheduleData
 {
 	@NonNull
-	@JsonProperty("oldOrderedQuantity")
 	BigDecimal oldOrderedQuantity;
 
 	@NonNull
-	@JsonProperty("oldReservedQuantity")
 	BigDecimal oldReservedQuantity;
 
 	@NonNull
-	@JsonProperty("oldMaterialDescriptor")
 	MaterialDescriptor oldMaterialDescriptor;
 }

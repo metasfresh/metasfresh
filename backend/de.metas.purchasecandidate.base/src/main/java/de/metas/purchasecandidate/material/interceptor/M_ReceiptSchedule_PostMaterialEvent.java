@@ -33,6 +33,7 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Objects;
 
 /*
  * #%L
@@ -160,44 +161,45 @@ public class M_ReceiptSchedule_PostMaterialEvent
 		final MaterialDescriptor orderedMaterial = createOrderMaterialDescriptor(receiptSchedule);
 		final MinMaxDescriptor minMaxDescriptor = replenishInfoRepository.getBy(orderedMaterial).toMinMaxDescriptor();
 
-		final I_M_ReceiptSchedule oldReceiptSchedule = InterfaceWrapperHelper.createOld(
-				receiptSchedule,
-				I_M_ReceiptSchedule.class);
-
 		final ReceiptScheduleUpdatedEvent.ReceiptScheduleUpdatedEventBuilder receiptScheduleUpdatedEventBuilder = ReceiptScheduleUpdatedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(receiptSchedule.getAD_Client_ID(), receiptSchedule.getAD_Org_ID()))
 				.materialDescriptor(orderedMaterial)
 				.receiptScheduleId(receiptSchedule.getM_ReceiptSchedule_ID())
 				.minMaxDescriptor(minMaxDescriptor);
 
-		setQuantities(receiptScheduleUpdatedEventBuilder, orderedMaterial, receiptSchedule, oldReceiptSchedule);
+		setQuantities(receiptScheduleUpdatedEventBuilder, orderedMaterial, receiptSchedule);
 
 		return receiptScheduleUpdatedEventBuilder.build();
 	}
 
 	private void setQuantities(
 			@NonNull final ReceiptScheduleUpdatedEvent.ReceiptScheduleUpdatedEventBuilder receiptScheduleUpdatedEventBuilder,
-			@NonNull final MaterialDescriptor orderedMaterial,
-			@NonNull final I_M_ReceiptSchedule receiptSchedule,
-			@NonNull final I_M_ReceiptSchedule oldReceiptSchedule)
+			@NonNull final MaterialDescriptor currentMaterialDescriptor,
+			@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
-		final MaterialDescriptor oldMaterialDescriptor = createOrderMaterialDescriptor(oldReceiptSchedule);
-		final BigDecimal qtyReserved = extractQtyReserved(receiptSchedule);
+		final BigDecimal currentQtyReserved = extractQtyReserved(receiptSchedule); 
+		
+		receiptScheduleUpdatedEventBuilder
+				.reservedQuantity(currentQtyReserved);
 
-		if (areOldValuesNeeded(orderedMaterial, oldMaterialDescriptor))
+		final I_M_ReceiptSchedule oldReceiptSchedule = InterfaceWrapperHelper.createOld(receiptSchedule, I_M_ReceiptSchedule.class);
+		
+		final MaterialDescriptor oldMaterialDescriptor = createOrderMaterialDescriptor(oldReceiptSchedule);
+
+		if (targetMaterialDescriptorChanged(currentMaterialDescriptor, oldMaterialDescriptor))
 		{
 			receiptScheduleUpdatedEventBuilder
 					.oldReceiptScheduleData(buildOldReceiptScheduleData(oldMaterialDescriptor, oldReceiptSchedule))
-					.reservedQuantityDelta(extractQtyReserved(receiptSchedule))
-					.orderedQuantityDelta(orderedMaterial.getQuantity())
-					.reservedQuantity(qtyReserved);
+					.reservedQuantityDelta(currentQtyReserved)
+					.orderedQuantityDelta(currentMaterialDescriptor.getQuantity());
 		}
 		else
 		{
+			final BigDecimal oldQtyReserved = extractQtyReserved(oldReceiptSchedule);
+			
 			receiptScheduleUpdatedEventBuilder
-					.reservedQuantityDelta(qtyReserved.subtract(extractQtyReserved(oldReceiptSchedule)))
-					.orderedQuantityDelta(orderedMaterial.getQuantity().subtract(extractQtyOrdered(oldReceiptSchedule)))
-					.reservedQuantity(qtyReserved);
+					.reservedQuantityDelta(currentQtyReserved.subtract(oldQtyReserved))
+					.orderedQuantityDelta(currentMaterialDescriptor.getQuantity().subtract(oldMaterialDescriptor.getQuantity()));
 		}
 	}
 
@@ -213,19 +215,14 @@ public class M_ReceiptSchedule_PostMaterialEvent
 				.build();
 	}
 
-	private boolean areOldValuesNeeded(
+	private boolean targetMaterialDescriptorChanged(
 			@NonNull final MaterialDescriptor orderedMaterialDescriptor,
 			@NonNull final MaterialDescriptor oldMaterialDescriptor)
 	{
-		return !orderedMaterialDescriptor.getStorageAttributesKey().equals(oldMaterialDescriptor.getStorageAttributesKey()) ||
-				!orderedMaterialDescriptor.getDate().equals(oldMaterialDescriptor.getDate());
-	}
-
-	private BigDecimal extractQtyOrdered(final I_M_ReceiptSchedule receiptSchedule)
-	{
-		final IReceiptScheduleQtysBL receiptScheduleQtysBL = Services.get(IReceiptScheduleQtysBL.class);
-		final BigDecimal oldOrderedQuantity = receiptScheduleQtysBL.getQtyOrdered(receiptSchedule);
-		return oldOrderedQuantity;
+		return !orderedMaterialDescriptor.getStorageAttributesKey().equals(oldMaterialDescriptor.getStorageAttributesKey()) 
+				|| !orderedMaterialDescriptor.getDate().equals(oldMaterialDescriptor.getDate()) 
+				|| orderedMaterialDescriptor.getProductId() != oldMaterialDescriptor.getProductId() 
+				|| !Objects.equals(orderedMaterialDescriptor.getWarehouseId(), oldMaterialDescriptor.getWarehouseId()); 
 	}
 
 	private BigDecimal extractQtyReserved(@NonNull final I_M_ReceiptSchedule receiptSchedule)

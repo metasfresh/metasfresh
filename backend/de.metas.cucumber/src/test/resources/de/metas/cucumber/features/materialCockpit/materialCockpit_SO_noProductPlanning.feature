@@ -3,7 +3,6 @@ Feature: sales order interaction with material cockpit - no product planning
 
   Background: Initial Data
     Given metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
-    And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
 
   @from:cucumber
   Scenario: SO with qty = 10, no ASI
@@ -430,7 +429,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | cp_2       | p_1                     | 2021-04-16  |                              | 0                               | 0                       | 0                          | 0                             | 0                            |
 
   @from:cucumber
-  Scenario: SO with 1 line (qty=10) and ASI, reactivated, changed the date promised
+  Scenario: SO with 1 line (qty=10), no ASI, reactivated, changed the date promised
     Given metasfresh contains M_Products:
       | Identifier | Name                    |
       | p_1        | salesProduct_21092022_9 |

@@ -1,6 +1,6 @@
 /*
  * #%L
- * metasfresh-material-event
+ * de.metas.cucumber
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,27 +20,15 @@
  * #L%
  */
 
-package de.metas.material.event.shipmentschedule;
+package de.metas.cucumber.stepdefs.material.cockpit;
 
-import de.metas.material.event.commons.MaterialDescriptor;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
+import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.material.cockpit.model.I_MD_Cockpit;
 
-import java.math.BigDecimal;
-
-@Builder
-@Value
-@Jacksonized
-public class OldShipmentScheduleData
+public class MD_Cockpit_StepDefData extends StepDefData<I_MD_Cockpit>
 {
-	@NonNull
-	BigDecimal oldOrderedQuantity;
-
-	@NonNull
-	BigDecimal oldReservedQuantity;
-
-	@NonNull
-	MaterialDescriptor oldMaterialDescriptor;
+	public MD_Cockpit_StepDefData()
+	{
+		super(I_MD_Cockpit.class);
+	}
 }

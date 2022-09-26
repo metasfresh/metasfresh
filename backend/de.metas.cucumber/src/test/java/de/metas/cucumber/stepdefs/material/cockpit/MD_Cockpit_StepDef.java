@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.material.cockpit;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
@@ -38,8 +39,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -48,9 +48,12 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.text.MessageFormat;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
@@ -88,17 +91,18 @@ public class MD_Cockpit_StepDef
 			final int timeoutSec,
 			@NonNull final Map<String, String> tableRow) throws InterruptedException
 	{
+		final String identifier = DataTableUtil.extractRecordIdentifier(tableRow, I_MD_Cockpit.Table_Name);
 		final ExpectedResults expectedResults = buildExpectedResults(tableRow);
 
 		final I_MD_Cockpit mdCockpitRecord = getCockpitByProductIdAttributesKeyAndDateGeneral(timeoutSec, expectedResults);
 
-		final Supplier<Boolean> mdCockpitIsValid = () -> {
+		final ItemProvider<I_MD_Cockpit> getValidCockpit = () -> {
 			InterfaceWrapperHelper.refresh(mdCockpitRecord);
 
-			return validateCockpitRecord(expectedResults, mdCockpitRecord);
+			return validateCockpitRecord(identifier, expectedResults, mdCockpitRecord);
 		};
 
-		StepDefUtil.tryAndWait(timeoutSec, 500, mdCockpitIsValid, () -> logCurrentContext(expectedResults));
+		StepDefUtil.tryAndWaitForItem(timeoutSec, 500, getValidCockpit, () -> logCurrentContext(expectedResults));
 	}
 
 	@NonNull
@@ -116,9 +120,12 @@ public class MD_Cockpit_StepDef
 		final BigDecimal qtySupplyPurchaseOrder = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_QtySupply_PurchaseOrder_AtDate);
 		final BigDecimal qtySupplySum = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_QtySupplySum_AtDate);
 
+		final String asiIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_AttributesKey + "." + TABLECOLUMN_IDENTIFIER);
+		final AttributesKey attributeStorageKey = getAttributesKey(asiIdentifier);
+
 		return ExpectedResults.builder()
 				.productId(productId)
-				.storageAttributesKey(getAttributesKey(tableRow))
+				.storageAttributesKey(attributeStorageKey)
 				.dateGeneral(dateGeneral)
 				.qtyDemandSumAtDate(qtyDemandSum)
 				.qtyDemandSalesOrderAtDate(qtyDemandSalesOrder)
@@ -131,10 +138,8 @@ public class MD_Cockpit_StepDef
 	}
 
 	@NonNull
-	private AttributesKey getAttributesKey(@NonNull final Map<String, String> tableRow)
+	private AttributesKey getAttributesKey(@Nullable final String asiIdentifier)
 	{
-		final String asiIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit.COLUMNNAME_AttributesKey + "." + TABLECOLUMN_IDENTIFIER);
-
 		if (Check.isNotBlank(asiIdentifier))
 		{
 			final I_M_AttributeSetInstance attributeSetInstance = attributeSetInstanceTable.get(asiIdentifier);
@@ -150,53 +155,70 @@ public class MD_Cockpit_StepDef
 		}
 	}
 
-	private boolean validateCockpitRecord(
+	@NonNull
+	private ItemProvider.ProviderResult<I_MD_Cockpit> validateCockpitRecord(
+			@NonNull final String cockpitIdentifier,
 			@NonNull final ExpectedResults expectedResults,
 			@NonNull final I_MD_Cockpit cockpitRecord)
 	{
-		final BigDecimal qtyDemandSum = expectedResults.getQtyDemandSumAtDate();
-		if (qtyDemandSum != null && !cockpitRecord.getQtyDemandSum_AtDate().equals(qtyDemandSum))
+		final List<String> errorCollector = new ArrayList<>();
+
+		final BigDecimal qtyDemandSumAtDate = expectedResults.getQtyDemandSumAtDate();
+		if (qtyDemandSumAtDate != null && !cockpitRecord.getQtyDemandSum_AtDate().equals(qtyDemandSumAtDate))
 		{
-			return false;
+			errorCollector.add(MessageFormat.format("MD_Cockpit.Identifier={0}; Expecting QtyDemandSumAtDate={1} but actual is {2}",
+													cockpitIdentifier, qtyDemandSumAtDate, cockpitRecord.getQtyDemandSum_AtDate()));
 		}
 
-		final BigDecimal qtyDemandSalesOrder = expectedResults.getQtyDemandSalesOrderAtDate();
-		if (qtyDemandSalesOrder != null && !cockpitRecord.getQtyDemand_SalesOrder_AtDate().equals(qtyDemandSalesOrder))
+		final BigDecimal qtyDemandSalesOrderAtDate = expectedResults.getQtyDemandSalesOrderAtDate();
+		if (qtyDemandSalesOrderAtDate != null && !cockpitRecord.getQtyDemand_SalesOrder_AtDate().equals(qtyDemandSalesOrderAtDate))
 		{
-			return false;
+			errorCollector.add(MessageFormat.format("MD_Cockpit.Identifier={0}; Expecting QtyDemandSalesOrderAtDate={1} but actual is {2}",
+													cockpitIdentifier, qtyDemandSalesOrderAtDate, cockpitRecord.getQtyDemand_SalesOrder_AtDate()));
 		}
 
-		final BigDecimal qtyStockCurrent = expectedResults.getQtyStockCurrentAtDate();
-		if (qtyStockCurrent != null && !cockpitRecord.getQtyStockCurrent_AtDate().equals(qtyStockCurrent))
+		final BigDecimal qtyStockCurrentAtDate = expectedResults.getQtyStockCurrentAtDate();
+		if (qtyStockCurrentAtDate != null && !cockpitRecord.getQtyStockCurrent_AtDate().equals(qtyStockCurrentAtDate))
 		{
-			return false;
+			errorCollector.add(MessageFormat.format("MD_Cockpit.Identifier={0}; Expecting QtyStockCurrentAtDate={1} but actual is {2}",
+													cockpitIdentifier, qtyStockCurrentAtDate, cockpitRecord.getQtyStockCurrent_AtDate()));
 		}
 
-		final BigDecimal qtyExpectedSurplus = expectedResults.getQtyExpectedSurplusAtDate();
-		if (qtyExpectedSurplus != null && !cockpitRecord.getQtyExpectedSurplus_AtDate().equals(qtyExpectedSurplus))
+		final BigDecimal qtyExpectedSurplusAtDate = expectedResults.getQtyExpectedSurplusAtDate();
+		if (qtyExpectedSurplusAtDate != null && !cockpitRecord.getQtyExpectedSurplus_AtDate().equals(qtyExpectedSurplusAtDate))
 		{
-			return false;
+			errorCollector.add(MessageFormat.format("MD_Cockpit.Identifier={0}; Expecting QtyExpectedSurplusAtDate={1} but actual is {2}",
+													cockpitIdentifier, qtyExpectedSurplusAtDate, cockpitRecord.getQtyExpectedSurplus_AtDate()));
 		}
 
-		final BigDecimal qtyInventoryCount = expectedResults.getQtyInventoryCountAtDate();
-		if (qtyInventoryCount != null && !cockpitRecord.getQtyInventoryCount_AtDate().equals(qtyInventoryCount))
+		final BigDecimal qtyInventoryCountAtDate = expectedResults.getQtyInventoryCountAtDate();
+		if (qtyInventoryCountAtDate != null && !cockpitRecord.getQtyInventoryCount_AtDate().equals(qtyInventoryCountAtDate))
 		{
-			return false;
+			errorCollector.add(MessageFormat.format("MD_Cockpit.Identifier={0}; Expecting QtyInventoryCountAtDate={1} but actual is {2}",
+													cockpitIdentifier, qtyInventoryCountAtDate, cockpitRecord.getQtyInventoryCount_AtDate()));
 		}
 
-		final BigDecimal qtySupplyPurchaseOrder = expectedResults.getQtySupplyPurchaseOrderAtDate();
-		if (qtySupplyPurchaseOrder != null && !cockpitRecord.getQtySupply_PurchaseOrder_AtDate().equals(qtySupplyPurchaseOrder))
+		final BigDecimal qtySupplyPurchaseOrderAtDate = expectedResults.getQtySupplyPurchaseOrderAtDate();
+		if (qtySupplyPurchaseOrderAtDate != null && !cockpitRecord.getQtySupply_PurchaseOrder_AtDate().equals(qtySupplyPurchaseOrderAtDate))
 		{
-			return false;
+			errorCollector.add(MessageFormat.format("MD_Cockpit.Identifier={0}; Expecting QtySupplyPurchaseOrderAtDate={1} but actual is {2}",
+													cockpitIdentifier, qtySupplyPurchaseOrderAtDate, cockpitRecord.getQtySupply_PurchaseOrder_AtDate()));
 		}
 
-		final BigDecimal qtySupplySum = expectedResults.getQtySupplySumAtDate();
-		if (qtySupplySum != null && !cockpitRecord.getQtySupplySum_AtDate().equals(qtySupplySum))
+		final BigDecimal qtySupplySumAtDate = expectedResults.getQtySupplySumAtDate();
+		if (qtySupplySumAtDate != null && !cockpitRecord.getQtySupplySum_AtDate().equals(qtySupplySumAtDate))
 		{
-			return false;
+			errorCollector.add(MessageFormat.format("MD_Cockpit.Identifier={0}; Expecting QtySupplySumAtDate={1} but actual is {2}",
+													cockpitIdentifier, qtySupplySumAtDate, cockpitRecord.getQtySupplySum_AtDate()));
 		}
 
-		return true;
+		if (errorCollector.size() > 0)
+		{
+			final String errorMessages = String.join(" && \n", errorCollector);
+			return ItemProvider.ProviderResult.resultWasNotFound(errorMessages);
+		}
+
+		return ItemProvider.ProviderResult.resultWasFound(cockpitRecord);
 	}
 
 	@NonNull
@@ -204,22 +226,15 @@ public class MD_Cockpit_StepDef
 			final int timeoutSec,
 			@NonNull final ExpectedResults expectedResults) throws InterruptedException
 	{
-		final ProductId productId = expectedResults.getProductId();
-		final AttributesKey storageAttributesKey = expectedResults.getStorageAttributesKey();
-
-		final Supplier<Boolean> mdCockpitIsFound = () -> getQueryBuilderBy(productId, storageAttributesKey)
+		final Supplier<Optional<I_MD_Cockpit>> mdCockpitIsFound = () -> queryBL.createQueryBuilder(I_MD_Cockpit.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MD_Cockpit.COLUMNNAME_DateGeneral, expectedResults.getDateGeneral(), DateTruncQueryFilterModifier.DAY)
+				.addEqualsFilter(I_MD_Cockpit.COLUMNNAME_M_Product_ID, expectedResults.getProductId())
+				.addEqualsFilter(I_MD_Cockpit.COLUMNNAME_AttributesKey, expectedResults.getStorageAttributesKey().getAsString())
 				.create()
-				.stream()
-				.anyMatch(record -> record.getDateGeneral().toLocalDateTime().toLocalDate().equals(expectedResults.getDateGeneral()));
+				.firstOnlyOptional(I_MD_Cockpit.class);
 
-		StepDefUtil.tryAndWait(timeoutSec, 500, mdCockpitIsFound, () -> logCurrentContext(expectedResults));
-
-		return getQueryBuilderBy(productId, storageAttributesKey)
-				.create()
-				.stream()
-				.filter(record -> record.getDateGeneral().toLocalDateTime().toLocalDate().equals(expectedResults.getDateGeneral()))
-				.findFirst()
-				.orElseThrow(() -> new AdempiereException("Record not found for ExpectedResult: " + expectedResults));
+		return StepDefUtil.tryAndWaitForItem(timeoutSec, 500, mdCockpitIsFound, () -> logCurrentContext(expectedResults));
 	}
 
 	private void logCurrentContext(@NonNull final ExpectedResults expectedResults)
@@ -258,17 +273,6 @@ public class MD_Cockpit_StepDef
 						.append("\n"));
 
 		logger.error("*** Error while looking for MD_Cockpit records, see current context: \n" + message);
-	}
-
-	@NonNull
-	private IQueryBuilder<I_MD_Cockpit> getQueryBuilderBy(
-			@NonNull final ProductId productId,
-			@NonNull final AttributesKey attributesKey)
-	{
-		return queryBL.createQueryBuilder(I_MD_Cockpit.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MD_Cockpit.COLUMNNAME_M_Product_ID, productId)
-				.addEqualsFilter(I_MD_Cockpit.COLUMNNAME_AttributesKey, attributesKey.getAsString());
 	}
 
 	@Builder

@@ -35,6 +35,7 @@ import org.springframework.util.SocketUtils;
 
 import java.io.File;
 
+import static de.metas.async.Async_Constants.SYS_Config_SKIP_WP_PROCESSOR_FOR_AUTOMATION;
 import static de.metas.async.model.validator.Main.SYSCONFIG_ASYNC_INIT_DELAY_MILLIS;
 import static de.metas.async.processor.impl.planner.QueueProcessorPlanner.SYSCONFIG_POLLINTERVAL_MILLIS;
 import static de.metas.util.web.audit.ApiAuditService.CFG_INTERNAL_PORT;
@@ -87,6 +88,7 @@ public class CucumberLifeCycleSupport implements ConcurrentEventListener
 		System.setProperty(SYSCONFIG_ASYNC_INIT_DELAY_MILLIS, "0"); // start the async processor right away; we want to get testing, and not wait
 		System.setProperty(SYSCONFIG_SKIP_HOUSE_KEEPING, "true"); // skip housekeeping tasks. assume they are not needed because the DB is fresh
 		System.setProperty(SYSCONFIG_POLLINTERVAL_MILLIS, "500");
+		System.setProperty(SYS_Config_SKIP_WP_PROCESSOR_FOR_AUTOMATION, "true");
 		final String[] args = { //
 				"-dbHost", dbHost,
 				"-dbPort", dbPort,
