@@ -557,4 +557,4 @@ and not exists (select 1 from ad_element_trl et
 
 
 
-select migrationscript_ignore('10-de.metas.adempiere/5653860_sys_gh13480_Duplicate_TRL_Corrections_From_AD_Element.sql');
+-- select migrationscript_ignore('10-de.metas.adempiere/5653860_sys_gh13480_Duplicate_TRL_Corrections_From_AD_Element.sql');
