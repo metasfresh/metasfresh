@@ -7,6 +7,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Maps;
 import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.product.ProductId;
 import de.metas.workflow.WFDurationUnit;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -195,6 +196,15 @@ public class PPOrderRouting
 	private boolean isFinalActivity(final PPOrderRoutingActivity activity)
 	{
 		return getNextActivityCodes(activity).isEmpty();
+	}
+
+	public ImmutableSet<ProductId> getProductIdsByActivityId(@NonNull final PPOrderRoutingActivityId activityId)
+	{
+		return getProducts()
+				.stream()
+				.filter(activityProduct -> activityProduct.getId() != null && PPOrderRoutingActivityId.equals(activityProduct.getId().getActivityId(), activityId))
+				.map(PPOrderRoutingProduct::getProductId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	public void voidIt()
