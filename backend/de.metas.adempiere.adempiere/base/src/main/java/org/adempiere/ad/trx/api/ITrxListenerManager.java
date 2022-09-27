@@ -82,6 +82,12 @@ public interface ITrxListenerManager
 		private final TrxEventTiming timing;
 		@Getter
 		private boolean registerWeakly = false;
+
+		/**
+		 * Normally, if a listener is registered from another listener during its commit, 
+		 * that listener is not registered, but fired right away.
+		 * With this field can force that new listener to be fired after the next (not current) commit instead.
+		 */
 		@Getter
 		private boolean forceAfterNextCommit = false;
 		@Getter
@@ -130,6 +136,8 @@ public interface ITrxListenerManager
 
 		/**
 		 * Sets the given handling method (can be lambda) and registers the listener.
+		 * 
+		 * Note that instead of registering the listener, the implementation might also decide to invoke the listener right away.
 		 */
 		public void registerHandlingMethod(@NonNull final EventHandlingMethod handlingMethod)
 		{
@@ -195,6 +203,8 @@ public interface ITrxListenerManager
 	/**
 	 * This method shall only be called by the framework. Instead, call {@link #newEventListener(TrxEventTiming)}
 	 * and be sure to call {@link RegisterListenerRequest#registerHandlingMethod(EventHandlingMethod)} at the end.
+	 * 
+	 * Note that instead of registering the listener, the implementation might also decide to invoke the listener right away.
 	 */
 	void registerListener(RegisterListenerRequest listener);
 

@@ -137,7 +137,7 @@ public class TrxListenerManager implements ITrxListenerManager
 		fireListeners(OnErrorBehaviourProvider.getOnErrorBehaviour(TrxEventTiming.AFTER_CLOSE), TrxEventTiming.AFTER_CLOSE, trx);
 	}
 
-	private final void fireListeners(
+	private void fireListeners(
 			@NonNull final OnError onError,
 			@NonNull final TrxEventTiming timingInfo,
 			@NonNull final ITrx trx)
