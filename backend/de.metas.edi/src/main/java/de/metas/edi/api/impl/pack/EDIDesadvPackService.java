@@ -321,7 +321,7 @@ public class EDIDesadvPackService
 
 			desadvLineWithPacks.popFirstMatching(movementQty).ifPresent(createEDIDesadvPackItemRequestBuilder::ediDesadvPackItemId);
 
-			setQty(createEDIDesadvPackItemRequestBuilder, productId, qtyCUsPerTUInStockUOM, qtyCUsPerCurrentLU, uomId, lutuConfigurationInStockUOM.getQtyCU(), movementQty);
+			setQty(createEDIDesadvPackItemRequestBuilder, productId, qtyCUsPerTUInStockUOM, qtyCUsPerCurrentLU, uomId, qtyCUsPerTUInStockUOM.toBigDecimal(), movementQty);
 
 			ediDesadvPackRepository.createDesadvPack(createEDIDesadvPackRequestBuilder
 															 .createEDIDesadvPackItemRequest(createEDIDesadvPackItemRequestBuilder.build())
