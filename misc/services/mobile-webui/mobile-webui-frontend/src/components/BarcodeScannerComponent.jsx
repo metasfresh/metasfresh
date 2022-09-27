@@ -4,7 +4,7 @@ import { BrowserMultiFormatReader, BarcodeFormat } from '@zxing/browser';
 import DecodeHintType from '@zxing/library/cjs/core/DecodeHintType';
 import { toastError } from '../utils/toast';
 import { trl } from '../utils/translations';
-import { useBooleanSetting } from '../reducers/settings';
+import { useBooleanSetting, useSetting } from '../reducers/settings';
 
 const READER_HINTS = new Map().set(DecodeHintType.POSSIBLE_FORMATS, [
   BarcodeFormat.QR_CODE,
@@ -72,9 +72,19 @@ const BarcodeScannerComponent = ({ resolveScannedBarcode, onResolvedResult }) =>
     };
   });
 
-  const handleInputTextChanged = () => {
-    // do nothing for now
-    //console.log('event: ', { e, text: e.target.value });
+  const triggerOnChangeIfLengthGreaterThan = useSetting('barcodeScanner.inputText.triggerOnChangeIfLengthGreaterThan');
+  const handleInputTextChanged = (e) => {
+    const inputElement = e.target;
+    const scannedBarcode = inputElement.value;
+
+    if (
+      scannedBarcode &&
+      triggerOnChangeIfLengthGreaterThan &&
+      scannedBarcode.length >= triggerOnChangeIfLengthGreaterThan
+    ) {
+      inputElement.select();
+      validateScannedBarcodeAndForward({ scannedBarcode });
+    }
   };
 
   const handleInputTextKeyPress = (e) => {
