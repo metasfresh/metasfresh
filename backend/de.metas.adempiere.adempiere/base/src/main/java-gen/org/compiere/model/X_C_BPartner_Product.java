@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_BPartner_Product
  *  @author metasfresh (generated) 
@@ -13,7 +13,8 @@ import java.util.Properties;
 public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_BPartner_Product, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1198950092L;
+
+	private static final long serialVersionUID = 1782571382L;
 
     /** Standard Constructor */
     public X_C_BPartner_Product (final Properties ctx, final int C_BPartner_Product_ID, @Nullable final String trxName)
@@ -153,6 +154,20 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	}
 
 	@Override
+
+	public void setFLO_Identifier (final @Nullable java.lang.String FLO_Identifier)
+	{
+		set_Value (COLUMNNAME_FLO_Identifier, FLO_Identifier);
+	}
+
+	@Override
+	public java.lang.String getFLO_Identifier() 
+	{
+		return get_ValueAsString(COLUMNNAME_FLO_Identifier);
+	}
+
+	@Override
+
 	public void setGTIN (final @Nullable java.lang.String GTIN)
 	{
 		set_Value (COLUMNNAME_GTIN, GTIN);
@@ -314,30 +329,6 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Order_Pack);
 		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setPicking_AgeTolerance_AfterMonths (final int Picking_AgeTolerance_AfterMonths)
-	{
-		set_Value (COLUMNNAME_Picking_AgeTolerance_AfterMonths, Picking_AgeTolerance_AfterMonths);
-	}
-
-	@Override
-	public int getPicking_AgeTolerance_AfterMonths() 
-	{
-		return get_ValueAsInt(COLUMNNAME_Picking_AgeTolerance_AfterMonths);
-	}
-
-	@Override
-	public void setPicking_AgeTolerance_BeforeMonths (final int Picking_AgeTolerance_BeforeMonths)
-	{
-		set_Value (COLUMNNAME_Picking_AgeTolerance_BeforeMonths, Picking_AgeTolerance_BeforeMonths);
-	}
-
-	@Override
-	public int getPicking_AgeTolerance_BeforeMonths() 
-	{
-		return get_ValueAsInt(COLUMNNAME_Picking_AgeTolerance_BeforeMonths);
 	}
 
 	@Override
