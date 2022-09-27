@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y locales && rm -rf /var/lib/apt/lists/* 
 ENV LANG=de_DE.UTF-8 LANGUAGE=de_DE.UTF-8 LC_MESSAGES=de_DE.UTF-8
 ENV TZ=Europe/Berlin
 
-WORKDIR /app 
+WORKDIR /webui
 
 # we copy frontend/yarn.lock* to achieve a copy-if-exists like effect: https://stackoverflow.com/questions/31528384/conditional-copy-add-in-dockerfile
 COPY frontend/package.json frontend/yarn.lock* .
@@ -14,19 +14,26 @@ RUN yarn install
 
 COPY frontend/ .
 RUN yarn lint
-RUN yarn test --ci --runInBand 2>&1 | tee test.log
 
 ENV NODE_OPTIONS=--openssl-legacy-provider
 RUN webpack --config webpack.docker.js
 
 
-FROM alpine as testresults
-WORKDIR /results
-COPY --from=build /app/test.log /app/junit.xml* .
-RUN touch junit.xml
+FROM build as test
+
+SHELL ["/bin/bash", "-c"]
+
+# run all tests and capture log and exit code
+ENV JEST_JUNIT_OUTPUT_NAME=jest.xml
+RUN yarn test --ci --runInBand --bail=0 --detectOpenHandles --forceExit 2>&1 | tee jest.log && echo "${PIPESTATUS[0]}" > jest.exit-code
+
+VOLUME /reports
+WORKDIR /reports/frontend
+
+CMD cp /webui/jest.* .
 
 
 FROM nginx:1.21.6 as runtime
 WORKDIR /usr/share/nginx/html
 COPY docker-builds/nginx/default.conf /etc/nginx/conf.d
-COPY --from=build /app/dist/ .
+COPY --from=build /webui/dist/ .

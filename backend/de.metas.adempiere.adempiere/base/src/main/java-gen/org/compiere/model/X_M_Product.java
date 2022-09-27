@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_Product
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_Product extends org.compiere.model.PO implements I_M_Product, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1506230858L;
+	private static final long serialVersionUID = -176285754L;
 
     /** Standard Constructor */
     public X_M_Product (final Properties ctx, final int M_Product_ID, @Nullable final String trxName)
@@ -383,6 +383,18 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public java.lang.String getExternalId() 
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalId);
+	}
+
+	@Override
+	public void setFLO_Identifier (final @Nullable java.lang.String FLO_Identifier)
+	{
+		set_Value (COLUMNNAME_FLO_Identifier, FLO_Identifier);
+	}
+
+	@Override
+	public java.lang.String getFLO_Identifier() 
+	{
+		return get_ValueAsString(COLUMNNAME_FLO_Identifier);
 	}
 
 	@Override
