@@ -81,7 +81,8 @@ public class TrxListenerManager implements ITrxListenerManager
 
 		final TrxEventTiming currentTiming = getCurrentTiming();
 
-		if (currentTiming == eventTimingOfListener && listener.isForceAfterNextCommit())
+		//dev-note: isForceAfterNextCommit -> implies listener.timing == TrxEventTiming.AFTER_COMMIT
+		if (listener.isForceAfterNextCommit() && currentTiming == eventTimingOfListener)
 		{
 			return;
 		}
