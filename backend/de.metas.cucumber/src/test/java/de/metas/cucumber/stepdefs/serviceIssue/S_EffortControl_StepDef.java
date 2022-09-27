@@ -31,6 +31,8 @@ import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.serviceprovider.model.I_S_EffortControl;
+import de.metas.serviceprovider.model.I_S_Issue;
+import de.metas.serviceprovider.model.X_S_Issue;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -216,7 +218,7 @@ public class S_EffortControl_StepDef
 		}
 
 		final Boolean isIssueClosed = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + I_S_EffortControl.COLUMNNAME_IsIssueClosed);
-		if (isIssueClosed != null && effortControl.isIssueClosed() != isIssueClosed)
+		if (isIssueClosed != null && isIssueClosed(effortControl) != isIssueClosed)
 		{
 			errorCollectors.add(MessageFormat.format("S_EffortControl={0}; Expecting IsIssueClosed={1} but actual is {2}",
 													 effortControl.getS_EffortControl_ID(), isIssueClosed, effortControl.isIssueClosed()));
@@ -238,5 +240,18 @@ public class S_EffortControl_StepDef
 		}
 
 		return ItemProvider.ProviderResult.resultWasFound(effortControl);
+	}
+
+	private boolean isIssueClosed(@NonNull final I_S_EffortControl effortControl)
+	{
+		return queryBL.createQueryBuilder(I_S_Issue.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_S_Issue.COLUMNNAME_C_Activity_ID, effortControl.getC_Activity_ID())
+				.addEqualsFilter(I_S_Issue.COLUMNNAME_C_Project_ID, effortControl.getC_Project_ID())
+				.addEqualsFilter(I_S_Issue.COLUMNNAME_AD_Org_ID, effortControl.getAD_Org_ID())
+				.addEqualsFilter(I_S_Issue.COLUMNNAME_IsEffortIssue, true)
+				.create()
+				.stream()
+				.allMatch(issue -> issue.getStatus().equals(X_S_Issue.INTERNAL_STATUS_Invoiced));
 	}
 }
