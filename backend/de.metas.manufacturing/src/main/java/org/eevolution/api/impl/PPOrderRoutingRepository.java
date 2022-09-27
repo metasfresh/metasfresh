@@ -270,7 +270,7 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 				.type(PPRoutingActivityType.ofCode(record.getPP_Activity_Type()))
 				.code(PPOrderRoutingActivityCode.ofString(record.getValue()))
 				.name(record.getName())
-				.routingActivityId(PPRoutingActivityId.ofAD_WF_Node_ID(routingId, record.getAD_WF_Node_ID()))
+				.routingActivityId(PPRoutingActivityId.ofRepoId(routingId, record.getAD_WF_Node_ID()))
 				//
 				.subcontracting(record.isSubcontracting())
 				.subcontractingVendorId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
