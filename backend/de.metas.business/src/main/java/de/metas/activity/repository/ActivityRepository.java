@@ -58,6 +58,6 @@ public class ActivityRepository
 
 		return activityQueryBuilder
 				.create()
-				.firstIdOnlyOptional(ActivityId::ofRepoId);
+				.firstIdOnlyOptional(ActivityId::ofRepoIdOrNull);
 	}
 }
