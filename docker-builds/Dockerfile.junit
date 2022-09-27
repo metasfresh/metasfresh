@@ -9,16 +9,37 @@ ENV LANG=de_DE.UTF-8 LANGUAGE=de_DE.UTF-8 LC_MESSAGES=de_DE.UTF-8
 ENV TZ=Europe/Berlin
 
 WORKDIR /java
+SHELL ["/bin/bash", "-c"]
 
 COPY --from=backend /root/.m2 /root/.m2/
 COPY --from=common /commons commons
 COPY --from=backend /backend backend
 
-SHELL ["/bin/bash", "-c"]
 
-RUN set -o pipefail && cd /java/commons && mvn -o surefire:test -Dmaven.test.failure.ignore=true 2>&1 | tee /java/junit.log
-RUN set -o pipefail && cd /java/backend && mvn -o surefire:test -Dmaven.test.failure.ignore=true 2>&1 | tee -a /java/junit.log
+WORKDIR /java/commons
 
+# run all tests, never fail, never surrender, and capture log and exit code
+RUN mvn -o surefire:test --fail-never 2>&1 | tee junit.log && echo "${PIPESTATUS[0]}" > junit.exit-code
+
+# capture a pseudo maven exit code, to signal if there where test failures... even if we didnt want to talk about it before
+RUN cat junit.log | grep -q "BUILD SUCCESS" && echo "$?" > junit.mvn.exit-code || echo "$?" > junit.mvn.exit-code
+
+
+WORKDIR /java/backend
+
+# run all tests, never fail, never surrender, and capture log and exit code
+RUN mvn -o surefire:test --fail-never 2>&1 | tee junit.log && echo "${PIPESTATUS[0]}" > junit.exit-code
+
+# capture a pseudo maven exit code, to signal if there where test failures... even if we didnt want to talk about it before
+RUN cat junit.log | grep -q "BUILD SUCCESS" && echo "$?" > junit.mvn.exit-code || echo "$?" > junit.mvn.exit-code
+
+
+WORKDIR /java
 VOLUME /reports
 
-CMD set -o pipefail && shopt -s globstar && find **/target/surefire-reports/*.xml -printf "%h\n" | uniq | sed 's/\/target\/surefire-reports//' | sed 's/^/\/reports\//' | xargs mkdir -p && mcp ';target/surefire-reports/*.xml' '/reports/#1#2.xml'
+CMD set -o pipefail \
+	&& shopt -s globstar \
+	&& find **/target/surefire-reports/*.xml -printf "%h\n" | uniq | sed 's/\/target\/surefire-reports//' | sed 's/^/\/reports\//' | xargs mkdir -p \
+	&& find **/junit.log -printf "%h\n" | uniq | sed 's/^/\/reports\//' | xargs mkdir -p \
+	&& mcp ';target/surefire-reports/*.xml' '/reports/#1#2.xml' \
+	&& mcp '*/junit.*' '/reports/#1/junit.#2'

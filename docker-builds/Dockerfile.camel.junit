@@ -7,17 +7,28 @@ RUN apt-get update && apt-get install -y perl locales mmv && rm -rf /var/lib/apt
 ENV LANG=de_DE.UTF-8 LANGUAGE=de_DE.UTF-8 LC_MESSAGES=de_DE.UTF-8
 ENV TZ=Europe/Berlin
 
-WORKDIR /java
-
-COPY --from=camel /root/.m2 /root/.m2/
-COPY --from=camel /camel camel
-
+WORKDIR /java/camel
 SHELL ["/bin/bash", "-c"]
 
+COPY --from=camel /root/.m2 /root/.m2/
+COPY --from=camel /camel .
+
+# removing project specific surefire configurations, to use a single and more recent version of the surefire plugin
 RUN set -o pipefail && find -type f -name 'pom.xml' | xargs perl -i -p0e 's/<plugin>.*?maven-surefire-plugin.*?<\/plugin>//s'
 
-RUN cd /java/camel && mvn -o surefire:test -Dmaven.test.failure.ignore=true 2>&1 | tee -a /java/junit.log
+# run all tests, never fail, never surrender, and capture log and exit code
+RUN mvn -o surefire:test --fail-never 2>&1 | tee junit.log && echo "${PIPESTATUS[0]}" > junit.exit-code
 
+# capture a pseudo maven exit code, to signal if there where test failures... even if we didnt want to talk about it before
+RUN cat junit.log | grep -q "BUILD SUCCESS" && echo "$?" > junit.mvn.exit-code || echo "$?" > junit.mvn.exit-code
+
+
+WORKDIR /java
 VOLUME /reports
 
-CMD set -o pipefail && cp /java/junit.log /reports/ && shopt -s globstar && find **/target/surefire-reports/*.xml -printf "%h\n" | uniq | sed 's/\/target\/surefire-reports//' | sed 's/^/\/reports\//' | xargs mkdir -p && mcp ';target/surefire-reports/*.xml' '/reports/#1#2.xml'
+CMD set -o pipefail \
+	&& shopt -s globstar \
+	&& find **/target/surefire-reports/*.xml -printf "%h\n" | uniq | sed 's/\/target\/surefire-reports//' | sed 's/^/\/reports\//' | xargs mkdir -p \
+	&& find **/junit.log -printf "%h\n" | uniq | sed 's/^/\/reports\//' | xargs mkdir -p \
+	&& mcp ';target/surefire-reports/*.xml' '/reports/#1#2.xml' \
+	&& mcp '*/junit.*' '/reports/#1/junit.#2'
