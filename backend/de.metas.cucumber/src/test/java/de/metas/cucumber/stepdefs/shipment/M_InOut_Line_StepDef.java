@@ -193,7 +193,7 @@ public class M_InOut_Line_StepDef
 		final List<Map<String, String>> table = dataTable.asMaps();
 		for (final Map<String, String> row : table)
 		{
-			final de.metas.inout.model.I_M_InOutLine inOutLine = InterfaceWrapperHelper.newInstance(de.metas.inout.model.I_M_InOutLine.class);
+			final de.metas.handlingunits.model.I_M_InOutLine inOutLine = InterfaceWrapperHelper.newInstance(de.metas.handlingunits.model.I_M_InOutLine.class);
 
 			final String inOutIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_M_InOut inOut = shipmentTable.get(inOutIdentifier);
@@ -235,6 +235,12 @@ public class M_InOut_Line_StepDef
 			if (isPackingMaterial != null)
 			{
 				inOutLine.setIsPackagingMaterial(isPackingMaterial);
+			}
+
+			final Boolean isManualPackingMaterial = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + de.metas.handlingunits.model.I_M_InOutLine.COLUMNNAME_IsManualPackingMaterial);
+			if (isManualPackingMaterial != null)
+			{
+				inOutLine.setIsManualPackingMaterial(isManualPackingMaterial);
 			}
 
 			InterfaceWrapperHelper.saveRecord(inOutLine);

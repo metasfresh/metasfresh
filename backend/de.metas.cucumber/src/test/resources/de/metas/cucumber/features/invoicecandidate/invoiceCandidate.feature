@@ -5,6 +5,7 @@ Feature: In effect invoice candidates
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2022-10-01T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    And set sys config boolean value false for sys config AUTO_SHIP_AND_INVOICE
 
     And metasfresh contains M_Products:
       | Identifier | Name                |
@@ -43,6 +44,7 @@ Feature: In effect invoice candidates
 
 
   @from:cucumber
+  @Id:S0182_100
   Scenario: create sales order, complete it and validate that the IC created is in effect, reactivate it and validate that IC went out of effect then complete it again, close it and generate the invoice
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
@@ -102,6 +104,7 @@ Feature: In effect invoice candidates
 
 
   @from:cucumber
+  @Id:S0182_200
   Scenario: create sales order, complete it and validate that the IC created is in effect, then void it and validate that IC went out of effect
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference |
@@ -124,6 +127,7 @@ Feature: In effect invoice candidates
 
 
   @from:cucumber
+  @Id:S0182_300
   Scenario: create purchase order, complete it and validate that the IC created is in effect, reactivate it and validate that IC went out of effect then complete it again and generate the invoice
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.DocBaseType |
@@ -161,6 +165,7 @@ Feature: In effect invoice candidates
 
 
   @from:cucumber
+  @Id:S0182_400
   Scenario: create purchase order, complete it and validate that the IC created is in effect, then void it and validate that IC went out of effect
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.POReference | OPT.DocBaseType |
@@ -182,13 +187,14 @@ Feature: In effect invoice candidates
       | invoiceCand_4                     | 0            | false          | C_OrderLine   | orderLine_4              | product_PO                  |
 
   @from:cucumber
+  @Id:S0182_500
   Scenario: create shipment, complete it and validate that the IC created is in effect, reactivate it and validate that IC went out of effect then complete it again, close it and generate the invoice
     Given metasfresh contains M_InOut:
       | M_InOut_ID.Identifier | IsSOTrx | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Warehouse_ID.Identifier | DeliveryRule | DeliveryViaRule | FreightCostRule | MovementDate | MovementType | PriorityRule | OPT.DocBaseType | OPT.DocSubType |
       | inOut_5               | true    | bpartner_Customer        | bpartnerLocation_1                | warehouse                 | A            | P               | I               | 2022-09-14   | C-           | 5            | MMS             | MS             |
     And metasfresh contains M_InOutLine
-      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | OPT.M_Product_ID.Identifier | QtyEntered | MovementQty | UomCode | OPT.M_Locator_ID.Identifier |
-      | inOutLine_5               | inOut_5               | product_SO                  | 100        | 100         | PCE     | locator                     |
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | OPT.M_Product_ID.Identifier | QtyEntered | MovementQty | UomCode | OPT.M_Locator_ID.Identifier | OPT.IsManualPackingMaterial |
+      | inOutLine_5               | inOut_5               | product_SO                  | 100        | 100         | PCE     | locator                     | Y                           |
 
     When the shipment identified by inOut_5 is completed
 
@@ -222,13 +228,14 @@ Feature: In effect invoice candidates
 
 
   @from:cucumber
+  @Id:S0182_600
   Scenario: create shipment, complete it and validate that the IC created is in effect, then revert it and validate that IC went out of effect
     Given metasfresh contains M_InOut:
       | M_InOut_ID.Identifier | IsSOTrx | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Warehouse_ID.Identifier | DeliveryRule | DeliveryViaRule | FreightCostRule | MovementDate | MovementType | PriorityRule | OPT.DocBaseType | OPT.DocSubType |
       | inOut_6               | true    | bpartner_Customer        | bpartnerLocation_1                | warehouse                 | A            | P               | I               | 2022-09-14   | C-           | 5            | MMS             | MS             |
     And metasfresh contains M_InOutLine
-      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | OPT.M_Product_ID.Identifier | QtyEntered | MovementQty | UomCode | OPT.M_Locator_ID.Identifier |
-      | inOutLine_6               | inOut_6               | product_SO                  | 100        | 100         | PCE     | locator                     |
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | OPT.M_Product_ID.Identifier | QtyEntered | MovementQty | UomCode | OPT.M_Locator_ID.Identifier | OPT.IsManualPackingMaterial |
+      | inOutLine_6               | inOut_6               | product_SO                  | 100        | 100         | PCE     | locator                     | Y                           |
 
     When the shipment identified by inOut_6 is completed
 
@@ -244,13 +251,14 @@ Feature: In effect invoice candidates
 
 
   @from:cucumber
+  @Id:S0182_700
   Scenario: create shipment, complete it and validate that the IC created is in effect, then void it and validate that IC went out of effect
     Given metasfresh contains M_InOut:
       | M_InOut_ID.Identifier | IsSOTrx | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Warehouse_ID.Identifier | DeliveryRule | DeliveryViaRule | FreightCostRule | MovementDate | MovementType | PriorityRule | OPT.DocBaseType | OPT.DocSubType |
       | inOut_7               | true    | bpartner_Customer        | bpartnerLocation_1                | warehouse                 | A            | P               | I               | 2022-09-14   | C-           | 5            | MMS             | MS             |
     And metasfresh contains M_InOutLine
-      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | OPT.M_Product_ID.Identifier | QtyEntered | MovementQty | UomCode | OPT.M_Locator_ID.Identifier |
-      | inOutLine_7               | inOut_7               | product_SO                  | 100        | 100         | PCE     | locator                     |
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | OPT.M_Product_ID.Identifier | QtyEntered | MovementQty | UomCode | OPT.M_Locator_ID.Identifier | OPT.IsManualPackingMaterial |
+      | inOutLine_7               | inOut_7               | product_SO                  | 100        | 100         | PCE     | locator                     | Y                           |
 
     When the shipment identified by inOut_7 is completed
 
@@ -272,13 +280,14 @@ Feature: In effect invoice candidates
 
 
   @from:cucumber
+  @Id:S0182_800
   Scenario: create receipt, complete it and validate that the IC created is in effect, reactivate it and validate that IC went out of effect then complete it again, close it and generate the invoice
     Given metasfresh contains M_InOut:
       | M_InOut_ID.Identifier | IsSOTrx | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Warehouse_ID.Identifier | DeliveryRule | DeliveryViaRule | FreightCostRule | MovementDate | MovementType | PriorityRule | OPT.DocBaseType | OPT.DocSubType |
       | inOut_8               | false   | bpartner_Vendor          | bpartnerLocation_2                | warehouse                 | A            | P               | I               | 2022-09-14   | V+           | 5            | MMR             | MR             |
     And metasfresh contains M_InOutLine
-      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | OPT.M_Product_ID.Identifier | QtyEntered | MovementQty | UomCode | OPT.M_Locator_ID.Identifier |
-      | inOutLine_8               | inOut_8               | product_PO                  | 100        | 100         | PCE     | locator                     |
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | OPT.M_Product_ID.Identifier | QtyEntered | MovementQty | UomCode | OPT.M_Locator_ID.Identifier | OPT.IsManualPackingMaterial |
+      | inOutLine_8               | inOut_8               | product_PO                  | 100        | 100         | PCE     | locator                     | Y                           |
 
     When the material receipt identified by inOut_8 is completed
 
@@ -312,13 +321,14 @@ Feature: In effect invoice candidates
 
 
   @from:cucumber
+  @Id:S0182_900
   Scenario: create receipt, complete it and validate that the IC created is in effect, then revert it and validate that IC went out of effect
     Given metasfresh contains M_InOut:
       | M_InOut_ID.Identifier | IsSOTrx | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Warehouse_ID.Identifier | DeliveryRule | DeliveryViaRule | FreightCostRule | MovementDate | MovementType | PriorityRule | OPT.DocBaseType | OPT.DocSubType |
       | inOut_9               | false   | bpartner_Vendor          | bpartnerLocation_2                | warehouse                 | A            | P               | I               | 2022-09-14   | V+           | 5            | MMR             | MR             |
     And metasfresh contains M_InOutLine
-      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | OPT.M_Product_ID.Identifier | QtyEntered | MovementQty | UomCode | OPT.M_Locator_ID.Identifier |
-      | inOutLine_9               | inOut_9               | product_PO                  | 100        | 100         | PCE     | locator                     |
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | OPT.M_Product_ID.Identifier | QtyEntered | MovementQty | UomCode | OPT.M_Locator_ID.Identifier | OPT.IsManualPackingMaterial |
+      | inOutLine_9               | inOut_9               | product_PO                  | 100        | 100         | PCE     | locator                     | Y                           |
 
     When the material receipt identified by inOut_9 is completed
 
@@ -334,13 +344,14 @@ Feature: In effect invoice candidates
 
 
   @from:cucumber
+  @Id:S0182_1000
   Scenario: create receipt, complete it and validate that the IC created is in effect, then void it and validate that IC went out of effect
     Given metasfresh contains M_InOut:
       | M_InOut_ID.Identifier | IsSOTrx | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Warehouse_ID.Identifier | DeliveryRule | DeliveryViaRule | FreightCostRule | MovementDate | MovementType | PriorityRule | OPT.DocBaseType | OPT.DocSubType |
       | inOut_10              | false   | bpartner_Vendor          | bpartnerLocation_2                | warehouse                 | A            | P               | I               | 2022-09-14   | V+           | 5            | MMR             | MR             |
     And metasfresh contains M_InOutLine
-      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | OPT.M_Product_ID.Identifier | QtyEntered | MovementQty | UomCode | OPT.M_Locator_ID.Identifier |
-      | inOutLine_10              | inOut_10              | product_PO                  | 100        | 100         | PCE     | locator                     |
+      | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | OPT.M_Product_ID.Identifier | QtyEntered | MovementQty | UomCode | OPT.M_Locator_ID.Identifier | OPT.IsManualPackingMaterial |
+      | inOutLine_10              | inOut_10              | product_PO                  | 100        | 100         | PCE     | locator                     | Y                           |
 
     When the material receipt identified by inOut_10 is completed
 

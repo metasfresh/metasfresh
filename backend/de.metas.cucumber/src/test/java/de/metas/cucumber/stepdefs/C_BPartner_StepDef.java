@@ -200,6 +200,16 @@ public class C_BPartner_StepDef
 		}
 	}
 
+	@Given("update C_BPartner:")
+	public void update_c_bpartner(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			updateBPartner(tableRow);
+		}
+	}
+
 	private void createC_BPartner(@NonNull final Map<String, String> tableRow, final boolean addDefaultLocationIfNewBPartner)
 	{
 		final String bPartnerName = tableRow.get("Name");
@@ -457,5 +467,30 @@ public class C_BPartner_StepDef
 
 			bPartnerTable.putOrReplace(identifier, bPartnerRecord);
 		}
+	}
+
+	private void updateBPartner(@NonNull final Map<String, String> tableRow)
+	{
+		final String bPartnerIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, "C_BPartner");
+
+		final I_C_BPartner bPartner = bPartnerTable.get(bPartnerIdentifier);
+
+		assertThat(bPartner).isNotNull();
+
+		final String invoiceRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_InvoiceRule);
+		if (EmptyUtil.isNotBlank(invoiceRule))
+		{
+			bPartner.setInvoiceRule(invoiceRule);
+		}
+
+		final String poInvoiceRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_PO_InvoiceRule);
+		if (EmptyUtil.isNotBlank(poInvoiceRule))
+		{
+			bPartner.setPO_InvoiceRule(poInvoiceRule);
+		}
+
+		InterfaceWrapperHelper.save(bPartner);
+
+		bPartnerTable.putOrReplace(bPartnerIdentifier, bPartner);
 	}
 }

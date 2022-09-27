@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.cucumber
+ * de.metas.swat.base
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,14 +20,19 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.invoicecandidate.approvedforinvoice;
 
-import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
-public class M_ReceiptSchedule_StepDefData extends StepDefData<I_M_ReceiptSchedule>
+import java.util.List;
+
+public interface IApprovedForInvoicingFinder
 {
-	public M_ReceiptSchedule_StepDefData()
-	{
-		super(I_M_ReceiptSchedule.class);
-	}
+	@NonNull
+	String getTableName();
+
+	@NonNull
+	List<I_C_Invoice_Candidate> findApprovedForReference(@NonNull final TableRecordReference documentRecordReference);
 }
