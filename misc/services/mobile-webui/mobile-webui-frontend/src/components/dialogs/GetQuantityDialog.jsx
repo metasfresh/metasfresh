@@ -9,6 +9,7 @@ import QtyReasonsRadioGroup from '../QtyReasonsRadioGroup';
 import * as ws from '../../utils/websocket';
 import { qtyInfos } from '../../utils/qtyInfos';
 import { formatQtyToHumanReadable } from '../../utils/qtys';
+import { useBooleanSetting } from '../../reducers/settings';
 
 const GetQuantityDialog = ({
   userInfo,
@@ -23,6 +24,8 @@ const GetQuantityDialog = ({
   onQtyChange,
   onCloseDialog,
 }) => {
+  const allowManualInput = useBooleanSetting('qtyInput.AllowManualInputWhenScaleDeviceExists');
+
   const [qtyInfo, setQtyInfo] = useState(qtyInfos.invalidOfNumber(qtyInitial));
   const [rejectedReason, setRejectedReason] = useState(null);
   const [useScaleDevice, setUseScaleDevice] = useState(!!scaleDevice);
@@ -106,7 +109,7 @@ const GetQuantityDialog = ({
                     />
                   </td>
                 </tr>
-                {scaleDevice && (
+                {scaleDevice && allowManualInput && (
                   <tr>
                     <td colSpan="2">
                       <div className="buttons has-addons">
