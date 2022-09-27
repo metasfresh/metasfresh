@@ -46,6 +46,7 @@ import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_ForecastLine;
@@ -60,6 +61,7 @@ import java.util.Objects;
 import java.util.Set;
 
 import static de.metas.common.util.IdConstants.toRepoId;
+import static de.metas.material.dispo.model.X_MD_Candidate.MD_CANDIDATE_TYPE_STOCK;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.deleteRecord;
 import static org.adempiere.model.InterfaceWrapperHelper.isNew;
@@ -97,13 +99,16 @@ public class CandidateRepositoryWriteService
 	private final DimensionService dimensionService;
 	private final StockChangeDetailRepo stockChangeDetailRepo;
 	private final IForecastDAO forecastDAO = Services.get(IForecastDAO.class);
+	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
 	public CandidateRepositoryWriteService(
 			@NonNull final DimensionService dimensionService,
-			@NonNull final StockChangeDetailRepo stockChangeDetailRepo)
+			@NonNull final StockChangeDetailRepo stockChangeDetailRepo,
+			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval)
 	{
 		this.dimensionService = dimensionService;
 		this.stockChangeDetailRepo = stockChangeDetailRepo;
+		this.candidateRepositoryRetrieval = candidateRepositoryRetrieval;
 	}
 
 	/**
@@ -717,19 +722,74 @@ public class CandidateRepositoryWriteService
 				.withSeqNo(candidateRecord.getSeqNo());
 	}
 
-	public DeleteResult deleteCandidatebyId(@NonNull final CandidateId candidateId)
+	/**
+	 * @return DeleteResult for STOCK candidate
+	 */
+	@NonNull
+	public DeleteResult deleteCandidateById(@NonNull final CandidateId candidateId)
 	{
 		final I_MD_Candidate candidateRecord = load(candidateId, I_MD_Candidate.class);
-		final DeleteResult deleteResult = new DeleteResult(candidateId, DateAndSeqNo
-				.builder()
-				.date(TimeUtil.asInstant(candidateRecord.getDateProjected()))
-				.seqNo(candidateRecord.getSeqNo())
-				.build(),
-														   candidateRecord.getQty());
 
-		deleteCandidatesAndDetailsByQuery(DeleteCandidatesQuery.builder()
-												  .candidateId(candidateId)
-												  .build());
+		final boolean isStock = MD_CANDIDATE_TYPE_STOCK.equals(candidateRecord.getMD_Candidate_Type());
+
+		if (isStock)
+		{
+			throw new AdempiereException("STOCK Candidate must be deleted together with the actual MD_Candidate!");
+		}
+
+		final CandidateId stockCandidateId = getStockCandidateIdForCandidate(candidateRecord);
+
+		final I_MD_Candidate stockCandidate = load(stockCandidateId, I_MD_Candidate.class);
+
+		final DeleteResult deleteResult = buildDeleteResultForCandidate(stockCandidate);
+
+		if (candidateRecord.getMD_Candidate_Parent_ID() > 0)
+		{
+			deleteRecord(candidateRecord);
+			deleteRecord(stockCandidate);
+		}
+		else
+		{
+			deleteRecord(stockCandidate);
+			deleteRecord(candidateRecord);
+		}
+
+		return deleteResult;
+	}
+
+	/**
+	 * @return DeleteResult for STOCK candidate
+	 */
+	@NonNull
+	public DeleteResult deleteCandidateAndDetailsById(@NonNull final CandidateId candidateId)
+	{
+		final I_MD_Candidate candidateRecord = load(candidateId, I_MD_Candidate.class);
+
+		final boolean isStock = MD_CANDIDATE_TYPE_STOCK.equals(candidateRecord.getMD_Candidate_Type());
+
+		if (isStock)
+		{
+			throw new AdempiereException("STOCK Candidate must be deleted together with the actual MD_Candidate!");
+		}
+
+		final CandidateId stockCandidateId = getStockCandidateIdForCandidate(candidateRecord);
+
+		final I_MD_Candidate stockCandidate = load(stockCandidateId, I_MD_Candidate.class);
+
+		final DeleteResult deleteResult = buildDeleteResultForCandidate(stockCandidate);
+
+		if (candidateRecord.getMD_Candidate_Parent_ID() <= 0)
+		{
+			deleteCandidatesAndDetailsByQuery(DeleteCandidatesQuery.builder()
+													  .candidateId(candidateId)
+													  .build());
+		}
+		else
+		{
+			deleteCandidatesAndDetailsByQuery(DeleteCandidatesQuery.builder()
+													  .candidateId(stockCandidateId)
+													  .build());
+		}
 
 		return deleteResult;
 	}
@@ -882,6 +942,36 @@ public class CandidateRepositoryWriteService
 				.execute();
 	}
 
+	@NonNull
+	private CandidateId getStockCandidateIdForCandidate(@NonNull final I_MD_Candidate candidate)
+	{
+		Check.assume(!MD_CANDIDATE_TYPE_STOCK.equals(candidate.getMD_Candidate_Type()), "The given Candidate is a Stock Candidate!");
+
+		if (candidate.getMD_Candidate_Parent_ID() > 0)
+		{
+			return CandidateId.ofRepoId(candidate.getMD_Candidate_Parent_ID());
+		}
+
+		final CandidateId candidateId = CandidateId.ofRepoId(candidate.getMD_Candidate_ID());
+		return candidateRepositoryRetrieval.retrieveSingleChild(candidateId)
+				.orElseThrow(() -> new AdempiereException("No stock found for CandidateId!")
+						.appendParametersToMessage()
+						.setParameter("CandidateId", candidateId))
+				.getId();
+	}
+	
+	@NonNull
+	private DeleteResult buildDeleteResultForCandidate(@NonNull final I_MD_Candidate candidateRecord)
+	{
+		return new DeleteResult(CandidateId.ofRepoId(candidateRecord.getMD_Candidate_ID()),
+																 DateAndSeqNo
+																		 .builder()
+																		 .date(TimeUtil.asInstant(candidateRecord.getDateProjected()))
+																		 .seqNo(candidateRecord.getSeqNo())
+																		 .build(),
+																 candidateRecord.getQty());
+	}
+	
 	@Value
 	public static class DeleteResult
 	{

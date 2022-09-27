@@ -76,7 +76,7 @@ public class ShipmentScheduleDeletedHandlerTests
 
 		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
 
-		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo);
+		final CandidateRepositoryWriteService candidateRepositoryCommands = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepositoryRetrieval);
 
 		final PostMaterialEventService postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 
