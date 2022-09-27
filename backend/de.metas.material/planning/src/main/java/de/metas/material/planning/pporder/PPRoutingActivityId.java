@@ -4,14 +4,11 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
-import de.metas.util.GuavaCollectors;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
 
 /*
  * #%L
@@ -87,14 +84,5 @@ public class PPRoutingActivityId implements RepoIdAware
 	public int toJson()
 	{
 		return getRepoId();
-	}
-
-	public static PPRoutingId extractSingleRoutingId(final Collection<PPRoutingActivityId> activityIds)
-	{
-		Check.assumeNotEmpty(activityIds, "activityIds is not empty");
-		return activityIds.stream()
-				.map(PPRoutingActivityId::getRoutingId)
-				.distinct()
-				.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("Activities are from multiple routings: " + activityIds)));
 	}
 }
