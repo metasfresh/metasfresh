@@ -214,16 +214,6 @@ public class M_Product_StepDef
 		InterfaceWrapperHelper.saveRecord(taxCategory);
 	}
 
-	@Given("load M_Product:")
-	public void load_product(@NonNull final DataTable dataTable)
-	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			loadProduct(tableRow);
-		}
-	}
-
 	@And("load product by value:")
 	public void load_product_by_value(@NonNull final DataTable dataTable)
 	{
@@ -242,7 +232,7 @@ public class M_Product_StepDef
 			productTable.put(productIdentifier, loadedProduct);
 		}
 	}
-	
+
 	@Given("update M_Product:")
 	public void update_M_Product(@NonNull final DataTable dataTable)
 	{
@@ -383,17 +373,6 @@ public class M_Product_StepDef
 		return productType;
 	}
 
-	private void loadProduct(@NonNull final Map<String, String> tableRow)
-	{
-		final int productId = DataTableUtil.extractIntForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID);
-
-		final I_M_Product product = productDAO.getById(productId);
-		assertThat(product).isNotNull();
-
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-		productTable.put(productIdentifier, product);
-	}
-
 	private void updateMProduct(@NonNull final Map<String, String> tableRow)
 	{
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -407,9 +386,12 @@ public class M_Product_StepDef
 			productRecord.setGTIN(gtin);
 		}
 
-		final boolean isStocked = DataTableUtil.extractBooleanForColumnName(tableRow, COLUMNNAME_IsStocked);
-		productRecord.setIsStocked(isStocked);
-		
+		final Boolean isStocked = DataTableUtil.extractBooleanForColumnNameOrNull(tableRow, COLUMNNAME_IsStocked);
+		if(isStocked != null)
+		{
+			productRecord.setIsStocked(isStocked);
+		}
+
 		saveRecord(productRecord);
 	}
 }
