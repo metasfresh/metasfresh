@@ -8,7 +8,6 @@ Feature: Validate order doc outbound log creation
     And metasfresh has date and time 2022-02-01T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value false for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And set sys config boolean value true for sys config de.metas.report.jasper.IsMockReportService
-    And reset all cache
 
     And metasfresh contains M_Products:
       | Identifier        | Name              |
