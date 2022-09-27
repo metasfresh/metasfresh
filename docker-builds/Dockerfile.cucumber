@@ -21,4 +21,4 @@ VOLUME /reports
 
 
 SHELL ["/bin/bash", "-c"]
-CMD mvn verify -Dmaven.gitcommitid.skip=true -Dmaven.test.failure.ignore=true && cp target/*.xml /reports
+CMD mvn -o surefire:test --fail-never && cp target/*.xml /reports
