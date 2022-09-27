@@ -148,6 +148,9 @@ public class ExternalSystemConfigRepo
 			case LeichUndMehl:
 				return getLeichMehlConfigByValue(value)
 						.map(this::getExternalSystemParentConfig);
+			case Other:
+				return Optional.of(getExternalSystemParentConfigByValue(value));
+
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", type);
 		}
@@ -228,7 +231,7 @@ public class ExternalSystemConfigRepo
 				.filter(ExternalSystemParentConfig::isActive)
 				.collect(ImmutableList.toImmutableList());
 	}
-	
+
 	public void saveConfig(@NonNull final ExternalSystemParentConfig config)
 	{
 		switch (config.getType())
@@ -986,6 +989,16 @@ public class ExternalSystemConfigRepo
 				.ftpUsername(config.getFTP_Username())
 				.ftpPassword(config.getFTP_Password())
 				.ftpDirectory(config.getFTP_Directory())
+				.build();
+	}
+
+	@NonNull
+	private ExternalSystemParentConfig getExternalSystemParentConfigByValue(@NonNull final String value)
+	{
+		final ExternalSystemOtherConfig childConfig = externalSystemOtherConfigRepository.getByValue(value);
+
+		return getById(childConfig.getId().getExternalSystemParentConfigId())
+				.childConfig(childConfig)
 				.build();
 	}
 }
