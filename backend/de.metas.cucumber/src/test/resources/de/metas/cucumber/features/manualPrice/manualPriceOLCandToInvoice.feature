@@ -196,13 +196,23 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | Identifier | Name                      | IsStocked |
       | p_1        | noPriceProduct_08072022_2 | true      |
 
+    And metasfresh contains M_HU_PI:
+      | M_HU_PI_ID.Identifier | Name                |
+      | packingTU             | packingTU_S0163_300 |
+    And metasfresh contains M_HU_PI_Version:
+      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | Name                       | HU_UnitType | IsCurrent |
+      | packingTUVersion              | packingTU             | packingVersionTU_S0163_300 | TU          | Y         |
+    And metasfresh contains M_HU_PI_Item:
+      | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType |
+      | huPiItemTU                 | packingTUVersion              | 0   | PM       |
+
     And metasfresh contains C_UOM_Conversions
       | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate |
       | p_1                     | PCE                    | TU                   | 0.1          |
 
     And metasfresh contains M_HU_PI_Item_Product:
       | OPT.M_HU_PI_Item_Product_ID | M_HU_PI_Item_Product_ID.Identifier | OPT.C_UOM_ID.X12DE355 | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.IsInfiniteCapacity | OPT.IsAllowAnyProduct | OPT.Name             | OPT.IsDefaultForProduct |
-      | 5010005                     | hu_pi_item_product_1               | PCE                   | 3008003                    | p_1                     | 10  | 2020-04-01 | false                  | false                 | IFCO_Test_5 x 10 PCE | false                   |
+      | 5010005                     | hu_pi_item_product_1               | PCE                   | huPiItemTU                 | p_1                     | 10  | 2020-04-01 | false                  | false                 | IFCO_Test_5 x 10 PCE | false                   |
 
     And load C_BPartner:
       | C_BPartner_ID.Identifier | OPT.C_BPartner_ID |

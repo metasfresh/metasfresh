@@ -1,42 +1,20 @@
 package org.adempiere.ad.trx.api.impl;
 
-import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxListenerManager;
-import org.adempiere.exceptions.AdempiereException;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import org.slf4j.Logger;
-
+import com.google.common.collect.ImmutableMap;
 import de.metas.logging.LogManager;
 import de.metas.util.StringUtils;
 import de.metas.util.WeakList;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxListenerManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Default {@link ITrxListenerManager} implementation
@@ -47,8 +25,8 @@ public class TrxListenerManager implements ITrxListenerManager
 
 	private volatile WeakList<RegisterListenerRequest> listeners = null;
 
-	/** for debugging */
-	private final String trxName;
+	@NonNull
+	private final ITrx trx;
 
 	/**
 	 * Never contains {@code null}.
@@ -60,9 +38,9 @@ public class TrxListenerManager implements ITrxListenerManager
 		ThrowException, LogAndSkip
 	}
 
-	public TrxListenerManager(final String trxName)
+	public TrxListenerManager(final @NonNull ITrx trx)
 	{
-		this.trxName = trxName;
+		this.trx = trx;
 	}
 
 	@Override
@@ -70,6 +48,12 @@ public class TrxListenerManager implements ITrxListenerManager
 	{
 		if (!listener.isActive())
 		{
+			return;
+		}
+
+		if (shouldFireListenerNow(listener))
+		{
+			fireListenerNow(listener);
 			return;
 		}
 
@@ -96,16 +80,23 @@ public class TrxListenerManager implements ITrxListenerManager
 		final TrxEventTiming eventTimingOfListener = listener.getTiming();
 
 		final TrxEventTiming currentTiming = getCurrentTiming();
+
+		//dev-note: isForceAfterNextCommit -> implies listener.timing == TrxEventTiming.AFTER_COMMIT
+		if (listener.isForceAfterNextCommit() && currentTiming == eventTimingOfListener)
+		{
+			return;
+		}
+
 		final boolean listenerHasProblematicTiming = !eventTimingOfListener.canBeRegisteredWithinOtherTiming(currentTiming);
 		if (listenerHasProblematicTiming)
 		{
 			final String message = StringUtils.formatMessage("Registering another listener within a listener's event handling code might be a development error and that other listener might not be fired."
-					+ "\n trxName={}"
-					+ "\n current trx event timing={}"
-					+ "\n listener that is registered={}",
-					this.trxName,
-					currentTiming,
-					listener);
+																	 + "\n trxName={}"
+																	 + "\n current trx event timing={}"
+																	 + "\n listener that is registered={}",
+															 getTrxName(),
+															 currentTiming,
+															 listener);
 			new AdempiereException(message).throwIfDeveloperModeOrLogWarningElse(logger);
 		}
 	}
@@ -119,8 +110,7 @@ public class TrxListenerManager implements ITrxListenerManager
 	@Override
 	public void fireBeforeCommit(final ITrx trx)
 	{
-		// Execute the "beforeCommit". On error, propagate the exception.
-		fireListeners(OnError.ThrowException, TrxEventTiming.BEFORE_COMMIT, trx);
+		fireListeners(OnErrorBehaviourProvider.getOnErrorBehaviour(TrxEventTiming.BEFORE_COMMIT), TrxEventTiming.BEFORE_COMMIT, trx);
 	}
 
 	private TrxEventTiming getCurrentTiming()
@@ -131,25 +121,24 @@ public class TrxListenerManager implements ITrxListenerManager
 	@Override
 	public void fireAfterCommit(final ITrx trx)
 	{
-		// Execute the "afterCommit", but don't fail because we are not allowed to fail by method's contract
-		fireListeners(OnError.LogAndSkip, TrxEventTiming.AFTER_COMMIT, trx);
+		fireListeners(OnErrorBehaviourProvider.getOnErrorBehaviour(TrxEventTiming.AFTER_COMMIT), TrxEventTiming.AFTER_COMMIT, trx);
 	}
 
 	@Override
 	public void fireAfterRollback(final ITrx trx)
 	{
 		// Execute the "afterRollback", but don't fail because we are not allowed to fail by method's contract
-		fireListeners(OnError.LogAndSkip, TrxEventTiming.AFTER_ROLLBACK, trx);
+		fireListeners(OnErrorBehaviourProvider.getOnErrorBehaviour(TrxEventTiming.AFTER_ROLLBACK), TrxEventTiming.AFTER_ROLLBACK, trx);
 	}
 
 	@Override
 	public void fireAfterClose(final ITrx trx)
 	{
 		// Execute the "afterClose", but don't fail because we are not allowed to fail by method's contract
-		fireListeners(OnError.LogAndSkip, TrxEventTiming.AFTER_CLOSE, trx);
+		fireListeners(OnErrorBehaviourProvider.getOnErrorBehaviour(TrxEventTiming.AFTER_CLOSE), TrxEventTiming.AFTER_CLOSE, trx);
 	}
 
-	private final void fireListeners(
+	private void fireListeners(
 			@NonNull final OnError onError,
 			@NonNull final TrxEventTiming timingInfo,
 			@NonNull final ITrx trx)
@@ -219,6 +208,50 @@ public class TrxListenerManager implements ITrxListenerManager
 					.setParameter("listener", listener)
 					.setParameter(timingInfo)
 					.appendParametersToMessage();
+		}
+	}
+
+	private String getTrxName()
+	{
+		return trx.getTrxName();
+	}
+
+	private void fireListenerNow(@NonNull final RegisterListenerRequest listener)
+	{
+		final TrxEventTiming timing = listener.getTiming();
+		final OnError onError = OnErrorBehaviourProvider.getOnErrorBehaviour(timing);
+
+		fireListener(onError, timing, trx, listener);
+	}
+
+	private boolean shouldFireListenerNow(@NonNull final RegisterListenerRequest registerListenerRequest)
+	{
+		final TrxEventTiming currentRunningWithinTiming = getCurrentTiming();
+		final boolean timingsMatch = currentRunningWithinTiming == registerListenerRequest.getTiming();
+
+		if (currentRunningWithinTiming == TrxEventTiming.AFTER_COMMIT)
+		{
+			return timingsMatch && !registerListenerRequest.isForceAfterNextCommit();
+		}
+
+		return timingsMatch;
+	}
+
+	private static class OnErrorBehaviourProvider
+	{
+		private final static Map<TrxEventTiming, OnError> timingType2ErrorBehaviour = ImmutableMap.of(
+				TrxEventTiming.BEFORE_COMMIT, OnError.ThrowException,
+				//note: we are not allowed to fail at any of the below stages
+				TrxEventTiming.AFTER_COMMIT, OnError.LogAndSkip,
+				TrxEventTiming.AFTER_ROLLBACK, OnError.LogAndSkip,
+				TrxEventTiming.AFTER_CLOSE, OnError.LogAndSkip
+		);
+
+		@NonNull
+		private static OnError getOnErrorBehaviour(@NonNull final TrxEventTiming trxEventTiming)
+		{
+			return Optional.ofNullable(timingType2ErrorBehaviour.get(trxEventTiming))
+					.orElse(OnError.ThrowException);
 		}
 	}
 }
