@@ -18,15 +18,19 @@ export const formatQtyToHumanReadable = ({ qty, uom, precision = null, tolerance
     }
   }
 
+  const formatOptions = {
+    useGrouping: false,
+  };
+
   const maximumFractionDigits = Math.min(
     precision != null ? precision : getDefaultDisplayPrecision(uomEffective),
     MAX_maximumFractionDigits
   );
-  const qtyEffectiveStr = qtyEffective.toLocaleString(getLanguage(), {
-    useGrouping: false,
-    minimumFractionDigits: 0,
-    maximumFractionDigits,
-  });
+  if (maximumFractionDigits < MAX_maximumFractionDigits) {
+    formatOptions.minimumFractionDigits = 0;
+    formatOptions.maximumFractionDigits = maximumFractionDigits;
+  }
+  const qtyEffectiveStr = qtyEffective.toLocaleString(getLanguage(), formatOptions);
 
   let result = `${qtyEffectiveStr}${uomEffective ? uomEffective : ''}`;
 
@@ -34,14 +38,16 @@ export const formatQtyToHumanReadable = ({ qty, uom, precision = null, tolerance
     result += ' ±' + tolerancePercent + '%';
   }
 
-  // console.trace('formatQtyToHumanReadable', {
+  // console.log('formatQtyToHumanReadable', {
   //   result,
   //   qty,
   //   uom,
   //   precision,
   //   tolerancePercent,
   //   qtyEffective,
+  //   uomEffective,
   //   maximumFractionDigits,
+  //   formatOptions,
   // });
 
   return result;
