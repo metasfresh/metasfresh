@@ -39,6 +39,7 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.organization.OrgId;
 import de.metas.project.ProjectId;
+import de.metas.project.RStatusId;
 import de.metas.project.service.ProjectRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -64,6 +65,8 @@ import static org.assertj.core.api.Assertions.*;
 
 public class C_Project_StepDef
 {
+	private static final RStatusId OPPORTUNITY_STATUS_CATEGORY_ID = RStatusId.ofRepoId(540004);
+
 	private final ProjectRepository projectRepository = SpringContextHolder.instance.getBean(ProjectRepository.class);
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final ObjectMapper mapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
@@ -120,7 +123,7 @@ public class C_Project_StepDef
 
 			project.setName(name);
 			project.setValue(value);
-			project.setR_StatusCategory_ID(540004); /*Opportunity*/
+			project.setR_StatusCategory_ID(OPPORTUNITY_STATUS_CATEGORY_ID.getRepoId());
 			project.setAD_Org_ID(OrgId.MAIN.getRepoId());
 			project.setC_Currency_ID(currency.getId().getRepoId());
 
@@ -167,7 +170,7 @@ public class C_Project_StepDef
 		final Currency currency = currencyDAO.getByCurrencyCode(CurrencyCode.ofThreeLetterCode(currencyIsoCode));
 
 		final I_C_Project projectRecord = InterfaceWrapperHelper.newInstance(I_C_Project.class);
-		projectRecord.setR_StatusCategory_ID(540004); /*Opportunity*/
+		projectRecord.setR_StatusCategory_ID(OPPORTUNITY_STATUS_CATEGORY_ID.getRepoId());
 		projectRecord.setAD_Org_ID(OrgId.MAIN.getRepoId());
 		projectRecord.setC_Project_ID(projectId);
 		projectRecord.setName(name);
