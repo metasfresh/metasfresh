@@ -101,7 +101,7 @@ Feature: effort issue interaction with effort control
       | effortTest300EffortControl    | costCenterEffortTest300  | testProject             | 0:00                 | 0:00          | 0          | N                | N                 |
 
   @from:cucumber
-  Scenario: Existing effort issue with costcenter & project set with an existing effort control, then remove cost center from effort issue
+  Scenario: Existing effort issue with costcenter & project set with an existing effort control, then remove project from effort issue
     And metasfresh contains C_Activity:
       | C_Activity_ID.Identifier | Name                           | Value                          |
       | costCenterEffortTest400  | costCenterEffortTest400_220922 | costCenterEffortTest400_220922 |
