@@ -19,9 +19,8 @@ export const useSetting = (name) => {
 };
 
 const getSettingFromState = (state, name) => {
-  const value = state?.settings?.backend?.[name];
-  console.log('getSettingFromState', { name, value, state });
-  return value;
+  //console.log('getSettingFromState', { name, value, state });
+  return state?.settings?.backend?.[name];
 };
 
 export const reducer = (state = {}, action) => {
