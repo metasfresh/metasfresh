@@ -313,6 +313,12 @@ public class C_Invoice_Candidate_StepDef
 				invoiceCandidate.setInvoiceRule_Override(invoiceRuleOverride);
 			}
 
+			final Boolean approvalForInvoicing = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + COLUMNNAME_ApprovalForInvoicing);
+			if (approvalForInvoicing != null)
+			{
+				invoiceCandidate.setApprovalForInvoicing(approvalForInvoicing);
+			}
+
 			saveRecord(invoiceCandidate);
 			invoiceCandTable.putOrReplace(invoiceCandIdentifier, invoiceCandidate);
 		}

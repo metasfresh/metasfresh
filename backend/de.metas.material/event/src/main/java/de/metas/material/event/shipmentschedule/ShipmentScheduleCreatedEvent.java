@@ -61,6 +61,7 @@ public class ShipmentScheduleCreatedEvent extends AbstractShipmentScheduleEvent
 		super(
 				eventDescriptor,
 				materialDescriptor,
+				null, // no old record
 				minMaxDescriptor,
 				reservedQuantity,
 				shipmentScheduleId);

@@ -104,10 +104,9 @@ public class SupplyProposalEvaluatorTests
 		SpringContextHolder.registerJUnitBean(dimensionService);
 
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
-
-		candidateRepositoryCommands = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo);
-
 		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
+
+		candidateRepositoryCommands = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepositoryRetrieval);
 		supplyProposalEvaluator = new SupplyProposalEvaluator(candidateRepositoryRetrieval);
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(
