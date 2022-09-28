@@ -371,7 +371,7 @@ ListWidget.propTypes = {
   field: PropTypes.string,
   mandatory: PropTypes.bool,
   lastProperty: PropTypes.string,
-
+  compositeWidgetData: PropTypes.array,
   //
   // Callbacks and other functions
   setNextProperty: PropTypes.func,

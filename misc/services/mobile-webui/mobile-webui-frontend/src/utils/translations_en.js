@@ -35,6 +35,11 @@ const translations = {
       appName: 'Distribution',
     },
   },
+  components: {
+    BarcodeScannerComponent: {
+      scanTextPlaceholder: 'scan...',
+    },
+  },
   activities: {
     scanBarcode: {
       defaultCaption: 'Scan',
@@ -45,7 +50,8 @@ const translations = {
       PickHU: 'Pick HU',
       scanQRCode: 'Scan QR',
       notEligibleHUBarcode: 'HU barcode not matching',
-      invalidQtyPicked: 'Invalid qty picked',
+      qtyAboveMax: '%(qtyDiff)s above max',
+      notPositiveQtyNotAllowed: 'Zero or negative qty not allowed',
       confirmDone: 'Done',
       rejectedPrompt: 'There are %(qtyRejected)s %(uom)s not picked. Why ?',
       unPickBtn: 'Unpick',

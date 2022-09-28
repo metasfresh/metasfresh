@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_BPartner_Product
  *  @author metasfresh (generated) 
@@ -265,6 +264,29 @@ public interface I_C_BPartner_Product
 
 	ModelColumn<I_C_BPartner_Product, Object> COLUMN_ExclusionFromSaleReason = new ModelColumn<>(I_C_BPartner_Product.class, "ExclusionFromSaleReason", null);
 	String COLUMNNAME_ExclusionFromSaleReason = "ExclusionFromSaleReason";
+
+	/**
+	 * Set FLO ID.
+	 * ID granted by FLOCERT for companies to put it on their products.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFLO_Identifier (@Nullable java.lang.String FLO_Identifier);
+
+	/**
+	 * Get FLO ID.
+	 * ID granted by FLOCERT for companies to put it on their products.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getFLO_Identifier();
+
+	ModelColumn<I_C_BPartner_Product, Object> COLUMN_FLO_Identifier = new ModelColumn<>(I_C_BPartner_Product.class, "FLO_Identifier", null);
+	String COLUMNNAME_FLO_Identifier = "FLO_Identifier";
 
 	/**
 	 * Set GTIN.

@@ -183,6 +183,7 @@ registerHandler({
   mergeActivityDataStored: ({ draftActivityDataStored, fromActivity }) => {
     draftActivityDataStored.lines = normalizeLines(fromActivity.componentProps.lines);
     draftActivityDataStored.scaleDevice = fromActivity.componentProps.scaleDevice;
+    draftActivityDataStored.qtyRejectedReasons = fromActivity.componentProps.qtyRejectedReasons;
     updateActivityBottomUp({ draftActivityDataStored });
   },
 });

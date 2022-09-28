@@ -12,6 +12,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -587,5 +588,25 @@ public final class CollectionUtils
 			result.putAll(map2);
 			return ImmutableMap.copyOf(result);
 		}
+	}
+
+	@NonNull
+	public <K, V> Map<K, List<V>> groupMultiValueByKey(
+			@NonNull final Collection<V> values,
+			@NonNull final Function<V, K> mappingFunction)
+	{
+
+		final HashMap<K, ArrayList<V>> key2Values = new HashMap<>();
+
+		values.forEach(value -> {
+			final K currentKey = mappingFunction.apply(value);
+
+			final ArrayList<V> currentValues = new ArrayList<>();
+			currentValues.add(value);
+
+			key2Values.merge(currentKey, currentValues, CollectionUtils::mergeLists);
+		});
+
+		return ImmutableMap.copyOf(key2Values);
 	}
 }

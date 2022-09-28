@@ -22,14 +22,16 @@ const ScanScreen = () => {
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(pushHeaderEntry({ location: url, caption: activityCaption }));
-  }, [activityCaption]);
+  }, [url, activityCaption]);
 
   const history = useHistory();
   const onBarcodeScanned = ({ scannedBarcode }) => {
+    //console.log('onBarcodeScanned', { scannedBarcode });
     dispatch(setScannedBarcode({ wfProcessId, activityId, scannedBarcode }));
 
     postScannedBarcode({ wfProcessId, activityId, scannedBarcode })
       .then((wfProcess) => {
+        //console.log('postScannedBarcode.then', { wfProcess });
         dispatch(updateWFProcess({ wfProcess }));
         history.goBack();
       })
