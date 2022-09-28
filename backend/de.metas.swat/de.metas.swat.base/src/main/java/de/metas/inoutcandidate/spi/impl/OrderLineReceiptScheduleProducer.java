@@ -2,6 +2,7 @@ package de.metas.inoutcandidate.spi.impl;
 
 import com.google.common.base.MoreObjects;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -19,6 +20,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
@@ -39,10 +41,13 @@ import org.compiere.model.I_M_Warehouse;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_Product_Planning;
 
+import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+
+import static org.adempiere.model.InterfaceWrapperHelper.deleteRecord;
 
 /*
  * #%L

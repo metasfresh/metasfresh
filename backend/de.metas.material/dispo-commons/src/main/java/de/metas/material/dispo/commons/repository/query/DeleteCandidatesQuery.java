@@ -40,8 +40,8 @@ public class DeleteCandidatesQuery
 
 	@Nullable
 	String status;
-	
-	@Nullable 
+
+	@Nullable
 	CandidateId candidateId;
 
 	public DeleteCandidatesQuery(
@@ -50,12 +50,12 @@ public class DeleteCandidatesQuery
 			@Nullable final CandidateId candidateId)
 	{
 		final boolean allNull = Stream.of(isActive, status, candidateId).noneMatch(Objects::nonNull);
-		
+
 		if (allNull)
 		{
 			throw new AdempiereException("At least one criteria must be set!");
 		}
-		
+
 		this.isActive = isActive;
 		this.status = status;
 		this.candidateId = candidateId;
