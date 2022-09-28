@@ -2,7 +2,6 @@ package de.metas.inoutcandidate.spi.impl;
 
 import com.google.common.base.MoreObjects;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -20,7 +19,6 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
@@ -41,11 +39,32 @@ import org.compiere.model.I_M_Warehouse;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_Product_Planning;
 
-import javax.annotation.Nullable;
 import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
 /**
  *
@@ -381,7 +400,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 			return;
 		}
 		receiptSchedule.setIsActive(false);
-		InterfaceWrapperHelper.delete(receiptSchedule);
+		deleteRecord(receiptSchedule);
 	}
 
 	/**
