@@ -36,6 +36,7 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefData;
+import de.metas.cucumber.stepdefs.sectioncode.M_SectionCode_StepDefData;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocTypeId;
@@ -83,6 +84,7 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_SectionCode;
 import org.compiere.model.X_C_Invoice;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -129,7 +131,6 @@ public class C_Invoice_StepDef
 	private final CurrencyRepository currencyRepository = SpringContextHolder.instance.getBean(CurrencyRepository.class);
 	private final PaymentAllocationRepository paymentAllocationRepository = SpringContextHolder.instance.getBean(PaymentAllocationRepository.class);
 
-
 	private final C_Invoice_StepDefData invoiceTable;
 	private final C_InvoiceLine_StepDefData invoiceLineTable;
 	private final C_Invoice_Candidate_StepDefData invoiceCandTable;
@@ -137,6 +138,7 @@ public class C_Invoice_StepDef
 	private final C_OrderLine_StepDefData orderLineTable;
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
+	private final M_SectionCode_StepDefData sectionCodeTable;
 
 	public C_Invoice_StepDef(
 			@NonNull final C_Invoice_StepDefData invoiceTable,
@@ -145,7 +147,8 @@ public class C_Invoice_StepDef
 			@NonNull final C_Order_StepDefData orderTable,
 			@NonNull final C_OrderLine_StepDefData orderLineTable,
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
-			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable)
+			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
+			@NonNull final M_SectionCode_StepDefData sectionCodeTable)
 	{
 		this.invoiceTable = invoiceTable;
 		this.invoiceCandTable = invoiceCandTable;
@@ -154,6 +157,7 @@ public class C_Invoice_StepDef
 		this.bpartnerTable = bpartnerTable;
 		this.bPartnerLocationTable = bPartnerLocationTable;
 		this.orderLineTable = orderLineTable;
+		this.sectionCodeTable = sectionCodeTable;
 	}
 
 	@And("validate created invoices")
@@ -454,6 +458,13 @@ public class C_Invoice_StepDef
 				assertThat(invoiceToAllocate.getOpenAmountConverted().getAsBigDecimal()).isEqualTo(invoiceOpenAmt);
 			}
 		}
+
+		final String sectionCodeIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_M_SectionCode_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(sectionCodeIdentifier))
+		{
+			final I_M_SectionCode sectionCode = sectionCodeTable.get(sectionCodeIdentifier);
+			assertThat(invoice.getM_SectionCode_ID()).isEqualTo(sectionCode.getM_SectionCode_ID());
+		}
 	}
 
 	public Boolean loadInvoice(@NonNull final Map<String, String> row)
@@ -594,4 +605,45 @@ public class C_Invoice_StepDef
 		invoiceTable.putOrReplace(invoiceIdentifier, invoice);
 	}
 
+	@And("update C_Invoice:")
+	public void update_C_Invoice(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			updateInvoice(row);
+		}
+	}
+
+	private void updateInvoice(@NonNull final Map<String, String> row)
+	{
+		final String invoiceIdentifier = DataTableUtil.extractRecordIdentifier(row, "C_Invoice");
+
+		final I_C_Invoice invoice = invoiceTable.get(invoiceIdentifier);
+
+		final Timestamp dateInvoiced = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + COLUMNNAME_DateInvoiced);
+		if (dateInvoiced != null)
+		{
+			invoice.setDateInvoiced(dateInvoiced);
+		}
+
+		final String paymentTerm = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_C_PaymentTerm_ID);
+		if (Check.isNotBlank(paymentTerm))
+		{
+			final PaymentTermQuery query = PaymentTermQuery.builder()
+					.orgId(StepDefConstants.ORG_ID)
+					.value(paymentTerm)
+					.build();
+
+			final PaymentTermId paymentTermId = paymentTermRepo.retrievePaymentTermId(query)
+					.orElse(null);
+
+			assertThat(paymentTermId).isNotNull();
+
+			invoice.setC_PaymentTerm_ID(paymentTermId.getRepoId());
+		}
+
+		InterfaceWrapperHelper.save(invoice);
+
+		invoiceTable.putOrReplace(invoiceIdentifier, invoice);
+	}
 }

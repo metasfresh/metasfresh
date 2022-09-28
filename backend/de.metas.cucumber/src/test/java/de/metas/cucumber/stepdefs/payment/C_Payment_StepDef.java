@@ -26,14 +26,17 @@ import de.metas.cucumber.stepdefs.C_BP_BankAccount_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
+import de.metas.cucumber.stepdefs.sectioncode.M_SectionCode_StepDefData;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.DocTypeId;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -46,6 +49,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Currency;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Payment;
+import org.compiere.model.I_M_SectionCode;
 import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
@@ -72,17 +76,20 @@ public class C_Payment_StepDef
 	private final C_Payment_StepDefData paymentTable;
 	private final CurrencyRepository currencyRepository;
 	private final C_BP_BankAccount_StepDefData bpBankAccountTable;
+	private final M_SectionCode_StepDefData sectionCodeTable;
 
 	public C_Payment_StepDef(
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final CurrencyRepository currencyRepository,
 			@NonNull final C_Payment_StepDefData paymentTable,
-			@NonNull final C_BP_BankAccount_StepDefData bpBankAccountTable)
+			@NonNull final C_BP_BankAccount_StepDefData bpBankAccountTable,
+			@NonNull final M_SectionCode_StepDefData sectionCodeTable)
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.currencyRepository = currencyRepository;
 		this.paymentTable = paymentTable;
 		this.bpBankAccountTable = bpBankAccountTable;
+		this.sectionCodeTable = sectionCodeTable;
 	}
 
 	@And("metasfresh contains C_Payment")
@@ -135,6 +142,13 @@ public class C_Payment_StepDef
 			if (expectedAvailableAmt != null)
 			{
 				assertThat(paymentAvailableAmt).isEqualTo(payment.isReceipt() ? expectedAvailableAmt : expectedAvailableAmt.negate());
+			}
+
+			final String sectionCodeIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_Dunning_Candidate.COLUMNNAME_M_SectionCode_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(sectionCodeIdentifier))
+			{
+				final I_M_SectionCode sectionCode = sectionCodeTable.get(sectionCodeIdentifier);
+				assertThat(payment.getM_SectionCode_ID()).isEqualTo(sectionCode.getM_SectionCode_ID());
 			}
 		}
 	}

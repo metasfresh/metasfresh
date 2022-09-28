@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.cucumber
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,32 +20,15 @@
  * #L%
  */
 
-package de.metas.sectionCode.repository;
+package de.metas.cucumber.stepdefs.sectioncode;
 
-import de.metas.sectionCode.SectionCodeId;
-import de.metas.util.Services;
-import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
+import de.metas.cucumber.stepdefs.StepDefData;
 import org.compiere.model.I_M_SectionCode;
-import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
-
-@Repository
-public class SectionCodeRepository
+public class M_SectionCode_StepDefData extends StepDefData<I_M_SectionCode>
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-	@NonNull
-	public Optional<SectionCodeId> getSectionCodeIdByValue(@NonNull final String value)
+	public M_SectionCode_StepDefData()
 	{
-		return queryBL.createQueryBuilder(I_M_SectionCode.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_SectionCode.COLUMNNAME_Value, value)
-				.create()
-				.listIds()
-				.stream()
-				.map(SectionCodeId::ofRepoId)
-				.findFirst();
+		super(I_M_SectionCode.class);
 	}
 }

@@ -435,7 +435,7 @@ final class MasterdataProvider
 	}
 
 	@Nullable
-	public SectionCodeId getSectionCodeId(@NonNull final String sectionCode)
+	public SectionCodeId getSectionCodeId(@Nullable final String sectionCode)
 	{
 		if (Check.isBlank(sectionCode))
 		{

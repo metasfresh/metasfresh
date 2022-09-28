@@ -1,46 +1,3 @@
-/*
- * #%L
- * de.metas.salescandidate.base
- * %%
- * Copyright (C) 2022 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-/*
- * #%L
- * de.metas.salescandidate.base
- * %%
- * Copyright (C) 2022 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 -- Column: C_OLCand.M_SectionCode_ID
 -- 2022-09-22T07:57:26.843Z
@@ -100,3 +57,19 @@ UPDATE AD_UI_Element SET SeqNo=5,Updated=TO_TIMESTAMP('2022-09-22 11:08:26','YYY
 -- 2022-09-23T09:53:28.661Z
 INSERT INTO t_alter_column values('c_olcand','M_SectionCode_ID','NUMERIC(10)',null,null)
 ;
+
+
+-- 2022-09-27T10:42:45.710Z
+INSERT INTO C_OLCandAggAndOrder (AD_Client_ID,AD_Column_OLCand_ID,AD_Org_ID,C_OLCandAggAndOrder_ID,C_OLCandProcessor_ID,Created,CreatedBy,GroupBy,IsActive,SplitOrder,Updated,UpdatedBy) VALUES (1000000,584431,1000000,540025,1000003,TO_TIMESTAMP('2022-09-27 13:42:45','YYYY-MM-DD HH24:MI:SS'),100,'N','Y','N',TO_TIMESTAMP('2022-09-27 13:42:45','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-09-27T10:42:50.145Z
+UPDATE C_OLCandAggAndOrder SET OrderBySeqNo=250,Updated=TO_TIMESTAMP('2022-09-27 13:42:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE C_OLCandAggAndOrder_ID=540025
+;
+
+-- Field: Auftragsdisposition(540095,de.metas.ordercandidate) -> Kandidat(540282,de.metas.ordercandidate) -> Section Code
+-- Column: C_OLCand.M_SectionCode_ID
+-- 2022-09-27T14:45:13.725Z
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2022-09-27 17:45:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=707325
+;
+

@@ -28,6 +28,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
+import org.compiere.model.I_M_SectionCode;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
@@ -73,7 +74,7 @@ public class SectionCodeId implements RepoIdAware
 
 	private SectionCodeId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "M_SectionCode_ID");
+		this.repoId = Check.assumeGreaterThanZero(repoId, I_M_SectionCode.COLUMNNAME_M_SectionCode_ID);
 	}
 
 	@JsonValue
