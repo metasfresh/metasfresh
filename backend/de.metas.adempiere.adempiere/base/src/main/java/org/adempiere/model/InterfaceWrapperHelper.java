@@ -1646,7 +1646,7 @@ public class InterfaceWrapperHelper
 
 	/**
 	 * @param modelClass
-	 * @return immutable list of column names of modelClass's table
+	 * @return immutable list of physical column names of modelClass's table
 	 */
 	public static Set<String> getModelColumnNames(final Class<?> modelClass)
 	{
@@ -1660,8 +1660,10 @@ public class InterfaceWrapperHelper
 		final String tableName = InterfaceWrapperHelper.getTableName(modelClass);
 		final POInfo poInfo = POInfo.getPOInfo(tableName);
 		Check.assumeNotNull(poInfo, "poInfo not null for {}", tableName); // shall not happen
-
-		return poInfo.getColumnNames();
+		return poInfo.getColumnNames()
+				.stream()
+				.filter(poInfo::isPhysicalColumn)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	public static IModelInternalAccessor getModelInternalAccessor(final Object model)
