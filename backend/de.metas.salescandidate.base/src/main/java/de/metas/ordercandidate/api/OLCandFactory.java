@@ -11,6 +11,7 @@ import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.quantity.Quantity;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -77,6 +78,7 @@ final class OLCandFactory
 				.bpartnerName(record.getBPartnerName())
 				.email(record.getEMail())
 				.phone(record.getPhone())
+				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(record.getM_SectionCode_ID()))
 				.build();
 	}
 }
