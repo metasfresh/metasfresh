@@ -221,7 +221,7 @@ public class S_EffortControl_StepDef
 		if (isIssueClosed != null && isIssueClosed(effortControl) != isIssueClosed)
 		{
 			errorCollectors.add(MessageFormat.format("S_EffortControl={0}; Expecting IsIssueClosed={1} but actual is {2}",
-													 effortControl.getS_EffortControl_ID(), isIssueClosed, effortControl.isIssueClosed()));
+													 effortControl.getS_EffortControl_ID(), isIssueClosed, isIssueClosed(effortControl)));
 		}
 
 		final Boolean isOverBudget = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + I_S_EffortControl.COLUMNNAME_IsOverBudget);
