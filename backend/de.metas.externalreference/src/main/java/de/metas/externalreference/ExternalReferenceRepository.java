@@ -36,6 +36,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
@@ -106,6 +107,11 @@ public class ExternalReferenceRepository
 		record.setVersion(externalReference.getVersion());
 		record.setExternalReferenceURL(externalReference.getExternalReferenceUrl());
 		record.setExternalSystem_Config_ID(ExternalSystemParentConfigId.toRepoId(externalSystemConfigId));
+
+		if (externalReference.getIsReadOnlyInMetasfresh() != null)
+		{
+			record.setIsReadOnlyInMetasfresh(externalReference.getIsReadOnlyInMetasfresh());
+		}
 
 		InterfaceWrapperHelper.saveRecord(record);
 
@@ -202,6 +208,19 @@ public class ExternalReferenceRepository
 		return UserId.ofRepoId(externalReference.getCreatedBy());
 	}
 
+	@NonNull
+	public List<ExternalReference> getExternalReferencesByTableRecordReference(@NonNull final TableRecordReference tableRecordReference)
+	{
+		return queryBL.createQueryBuilder(I_S_ExternalReference.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Referenced_AD_Table_ID, tableRecordReference.getAD_Table_ID())
+				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Record_ID, tableRecordReference.getRecord_ID())
+				.create()
+				.stream()
+				.map(this::buildExternalReference)
+				.collect(ImmutableList.toImmutableList());
+	}
+
 	private Optional<ExternalReference> getOptionalExternalReferenceBy(@NonNull final ExternalReferenceQuery query)
 	{
 		return queryBL.createQueryBuilder(I_S_ExternalReference.class)
@@ -271,6 +290,7 @@ public class ExternalReferenceRepository
 				.version(record.getVersion())
 				.externalReferenceUrl(record.getExternalReferenceURL())
 				.externalSystemParentConfigId(record.getExternalSystem_Config_ID() > 0 ? record.getExternalSystem_Config_ID() : null)
+				.isReadOnlyInMetasfresh(record.isReadOnlyInMetasfresh())
 				.build();
 	}
 

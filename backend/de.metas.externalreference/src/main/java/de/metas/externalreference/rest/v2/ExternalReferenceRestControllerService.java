@@ -213,6 +213,7 @@ public class ExternalReferenceRestControllerService
 					.version(reference.getVersion())
 					.externalReferenceUrl(reference.getExternalReferenceUrl())
 					.externalSystemParentConfigId(JsonMetasfreshId.toValue(reference.getExternalSystemConfigId()))
+					.isReadOnlyInMetasfresh(reference.getIsReadOnlyMetasfresh())
 					.build();
 			externalReferenceRepository.save(externalReference);
 		}
@@ -292,6 +293,7 @@ public class ExternalReferenceRestControllerService
 				.version(request.getExternalReferenceItem().getVersion())
 				.externalReferenceUrl(request.getExternalReferenceItem().getExternalReferenceUrl())
 				.externalSystemParentConfigId(JsonMetasfreshId.toValue(request.getExternalReferenceItem().getExternalSystemConfigId()))
+				.isReadOnlyInMetasfresh(request.getExternalReferenceItem().getIsReadOnlyMetasfresh())
 				.build();
 	}
 
@@ -315,6 +317,7 @@ public class ExternalReferenceRestControllerService
 				.version(candidate.getVersion())
 				.externalReferenceUrl(candidate.getExternalReferenceUrl())
 				.externalSystemParentConfigId(ExternalSystemParentConfigId.toRepoId(externalSystemConfigId))
+				.isReadOnlyInMetasfresh(candidate.getIsReadOnlyInMetasfresh())
 				.build();
 	}
 
@@ -376,6 +379,7 @@ public class ExternalReferenceRestControllerService
 						.systemName(JsonExternalSystemName.of(externalReference.getExternalSystem().getCode()))
 						.externalReferenceId(JsonMetasfreshId.of(externalReference.getExternalReferenceId().getRepoId()))
 						.externalSystemConfigId(JsonMetasfreshId.ofOrNull(externalReference.getExternalSystemParentConfigId()))
+						.isReadOnlyMetasfresh(externalReference.getIsReadOnlyInMetasfresh())
 						.build();
 			}
 			result.item(responseItem);

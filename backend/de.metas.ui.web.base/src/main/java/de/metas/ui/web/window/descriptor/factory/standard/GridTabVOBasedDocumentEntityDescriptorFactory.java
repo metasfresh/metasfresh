@@ -26,6 +26,7 @@ import de.metas.ui.web.window.descriptor.IncludedTabNewRecordInputMode;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
+import de.metas.ui.web.window.descriptor.decorator.IDocumentDecorator;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptorProviderBuilder;
@@ -55,6 +56,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.GridFieldDefaultFilterDescriptor;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTabVO;
@@ -70,6 +72,7 @@ import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -105,6 +108,9 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	// Services
 	private static final Logger logger = LogManager.getLogger(GridTabVOBasedDocumentEntityDescriptorFactory.class);
 	private final transient IColumnBL adColumnBL = Services.get(IColumnBL.class);
+
+	private final Collection<IDocumentDecorator> documentDecorators = SpringContextHolder.instance.getBeansOfType(IDocumentDecorator.class);
+
 	private final DocumentsRepository documentsRepository = SqlDocumentsRepository.instance;
 	private final LookupDataSourceFactory lookupDataSourceFactory;
 
@@ -231,6 +237,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		//
 		// Entity descriptor
 		final DocumentEntityDescriptor.Builder entityDescriptorBuilder = DocumentEntityDescriptor.builder()
+				.setDocumentDecorators(documentDecorators)
 				.setDocumentType(gridTabVO.getAdWindowId())
 				.setDetailId(detailId)
 				.setInternalName(gridTabVO.getInternalName())

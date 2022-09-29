@@ -54,6 +54,7 @@ import org.adempiere.ad.ui.spi.ITabCallout;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -1355,11 +1356,30 @@ public final class Document
 
 	private DocumentReadonly computeReadonly()
 	{
+		final boolean fieldsReadOnlyBasedOnDecorators = getEntityDescriptor().getDocumentDecorators() != null
+				&& getEntityDescriptor().getDocumentDecorators()
+				.stream()
+				.anyMatch(documentDecorator -> documentDecorator.isReadOnly(this));
+
+		final boolean fieldsReadOnly = fieldsReadOnlyBasedOnDecorators || computeDefaultFieldsReadOnly().booleanValue();
+
+		return DocumentReadonly.builder()
+				.parentActive(parentReadonly.isActive()).active(isActive())
+				.processed(parentReadonly.isProcessed() || isProcessed())
+				.processing(parentReadonly.isProcessing() || isProcessing())
+				.fieldsReadonly(fieldsReadOnly)
+				.build();
+	}
+
+	@NonNull
+	private LogicExpressionResult computeDefaultFieldsReadOnly()
+	{
 		final ILogicExpression allFieldsReadonlyLogic = getEntityDescriptor().getReadonlyLogic();
-		LogicExpressionResult allFieldsReadonly;
+
+		final LogicExpressionResult allFieldsReadonly;
 		try
 		{
-			allFieldsReadonly = allFieldsReadonlyLogic.evaluateToResult(asEvaluatee(), OnVariableNotFound.Fail);
+			return allFieldsReadonlyLogic.evaluateToResult(asEvaluatee(), OnVariableNotFound.Fail);
 		}
 		catch (final Exception e)
 		{
@@ -1367,13 +1387,7 @@ public final class Document
 			logger.warn("Failed evaluating entity readonly logic {} for {}. Considering {}", allFieldsReadonlyLogic, this, allFieldsReadonly, e);
 		}
 
-		final DocumentReadonly readonlyComputed = DocumentReadonly.builder()
-				.parentActive(parentReadonly.isActive()).active(isActive())
-				.processed(parentReadonly.isProcessed() || isProcessed())
-				.processing(parentReadonly.isProcessing() || isProcessing())
-				.fieldsReadonly(allFieldsReadonly.booleanValue())
-				.build();
-		return readonlyComputed;
+		return allFieldsReadonly;
 	}
 
 	private void updateFieldReadOnlyAndCollect(final IDocumentField documentField, final ReasonSupplier reason)
@@ -2064,6 +2078,20 @@ public final class Document
 		}
 
 		return standardActions;
+	}
+
+	@NonNull
+	public Optional<TableRecordReference> getTableRecordReference()
+	{
+		final String tableName = entityDescriptor.getTableName();
+		final Integer recordId = getDocumentId().isInt() ? getDocumentIdAsInt() : null;
+
+		if (tableName == null || recordId == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(TableRecordReference.of(tableName, recordId));
 	}
 
 	//

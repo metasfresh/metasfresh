@@ -20,6 +20,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor.DocumentEntityDataBindingDescriptorBuilder;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyType;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
+import de.metas.ui.web.window.descriptor.decorator.IDocumentDecorator;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
@@ -161,6 +162,10 @@ public class DocumentEntityDescriptor
 	@Getter
 	private final boolean cloneEnabled;
 
+	@Nullable
+	@Getter
+	private final Collection<IDocumentDecorator> documentDecorators;
+
 	private DocumentEntityDescriptor(@NonNull final Builder builder)
 	{
 		documentType = builder.getDocumentType();
@@ -207,6 +212,7 @@ public class DocumentEntityDescriptor
 		soTrx = builder.getSOTrx();
 
 		cloneEnabled = builder.isCloneEnabled();
+		documentDecorators = builder.getDocumentDecorators();
 	}
 
 	@Override
@@ -435,6 +441,7 @@ public class DocumentEntityDescriptor
 	{
 		private static final Logger logger = LogManager.getLogger(DocumentEntityDescriptor.Builder.class);
 		private DocumentFilterDescriptorsProvidersService filterDescriptorsProvidersService;
+		private Collection<IDocumentDecorator> documentDecorators;
 
 		private boolean _built = false;
 
@@ -1103,6 +1110,19 @@ public class DocumentEntityDescriptor
 		{
 			this.filterDescriptorsProvidersService = filterDescriptorsProvidersService;
 			return this;
+		}
+
+		@NonNull
+		public Builder setDocumentDecorators(final Collection<IDocumentDecorator> documentDecorators)
+		{
+			this.documentDecorators = documentDecorators;
+			return this;
+		}
+
+		@Nullable
+		public Collection<IDocumentDecorator> getDocumentDecorators()
+		{
+			return this.documentDecorators;
 		}
 
 		public Builder setRefreshViewOnChangeEvents(final boolean refreshViewOnChangeEvents)
