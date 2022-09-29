@@ -30,6 +30,7 @@ import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
 import de.metas.cucumber.stepdefs.discountschema.M_DiscountSchema_StepDefData;
+import de.metas.cucumber.stepdefs.dunning.C_Dunning_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
@@ -46,6 +47,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Dunning;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_M_DiscountSchema;
@@ -87,6 +89,7 @@ public class C_BPartner_StepDef
 	private final M_PricingSystem_StepDefData pricingSystemTable;
 	private final M_Product_StepDefData productTable;
 	private final M_DiscountSchema_StepDefData discountSchemaTable;
+	private final C_Dunning_StepDefData dunningTable;
 
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
@@ -99,13 +102,15 @@ public class C_BPartner_StepDef
 			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
 			@NonNull final M_PricingSystem_StepDefData pricingSystemTable,
 			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final M_DiscountSchema_StepDefData discountSchemaTable)
+			@NonNull final M_DiscountSchema_StepDefData discountSchemaTable,
+			@NonNull final C_Dunning_StepDefData dunningTable)
 	{
 		this.bPartnerTable = bPartnerTable;
 		this.bPartnerLocationTable = bPartnerLocationTable;
 		this.pricingSystemTable = pricingSystemTable;
 		this.productTable = productTable;
 		this.discountSchemaTable = discountSchemaTable;
+		this.dunningTable = dunningTable;
 	}
 
 	@Given("metasfresh contains C_BPartners:")
@@ -188,6 +193,16 @@ public class C_BPartner_StepDef
 		for (final Map<String, String> tableRow : tableRows)
 		{
 			loadBPartner(tableRow);
+		}
+	}
+
+	@Given("update C_BPartner:")
+	public void update_c_bpartner(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			updateBPartner(tableRow);
 		}
 	}
 
@@ -383,5 +398,37 @@ public class C_BPartner_StepDef
 
 			bPartnerTable.putOrReplace(identifier, bPartnerRecord);
 		}
+	}
+
+	private void updateBPartner(@NonNull final Map<String, String> tableRow)
+	{
+		final String bPartnerIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, "C_BPartner");
+
+		final I_C_BPartner bPartner = bPartnerTable.get(bPartnerIdentifier);
+
+		assertThat(bPartner).isNotNull();
+
+		final String invoiceRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_InvoiceRule);
+		if (EmptyUtil.isNotBlank(invoiceRule))
+		{
+			bPartner.setInvoiceRule(invoiceRule);
+		}
+
+		final String poInvoiceRule = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_PO_InvoiceRule);
+		if (EmptyUtil.isNotBlank(poInvoiceRule))
+		{
+			bPartner.setPO_InvoiceRule(poInvoiceRule);
+		}
+
+		final String dunningIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner.COLUMNNAME_C_Dunning_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (EmptyUtil.isNotBlank(dunningIdentifier))
+		{
+			final I_C_Dunning dunning = dunningTable.get(dunningIdentifier);
+			bPartner.setC_Dunning_ID(dunning.getC_Dunning_ID());
+		}
+
+		InterfaceWrapperHelper.save(bPartner);
+
+		bPartnerTable.putOrReplace(bPartnerIdentifier, bPartner);
 	}
 }

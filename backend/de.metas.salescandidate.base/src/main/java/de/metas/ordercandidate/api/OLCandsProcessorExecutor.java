@@ -227,6 +227,7 @@ public class OLCandsProcessorExecutor
 				.loggable(loggable)
 				.olCandProcessorId(olCandProcessorId)
 				.olCandListeners(olCandListeners)
+				.aggregationInfo(aggregationInfo)
 				.build();
 	}
 

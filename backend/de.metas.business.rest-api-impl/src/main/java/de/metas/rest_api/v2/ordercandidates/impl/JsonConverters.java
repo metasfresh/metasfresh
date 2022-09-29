@@ -34,6 +34,7 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantitys;
 import de.metas.rest_api.utils.CurrencyService;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -184,6 +185,8 @@ public class JsonConverters
 
 		final BPartnerId salesRepInternalId = masterdataProvider.getSalesRepBPartnerId(bPartnerInfo.getBpartnerId());
 
+		final SectionCodeId sectionCodeId = masterdataProvider.getSectionCodeId(request.getSectionCode());
+
 		return OLCandCreateRequest.builder()
 				//
 				.orgId(orgId)
@@ -251,6 +254,7 @@ public class JsonConverters
 				.bpartnerName(request.getBpartnerName())
 				.email(request.getEmail())
 				.phone(request.getPhone())
+				.sectionCodeId(sectionCodeId)
 				;
 	}
 
@@ -378,6 +382,7 @@ public class JsonConverters
 
 				.description(olCand.unbox().getDescription())
 				.line(olCand.getLine())
+				.sectionCodeId(JsonMetasfreshId.ofOrNull(olCand.getSectionCodeId() != null ? olCand.getSectionCodeId().getRepoId() : null))
 				.build();
 	}
 
