@@ -1,4 +1,3 @@
-@dev:runThisOne
 @from:cucumber
 Feature: Shipping HUs interaction with material schedule
 
@@ -28,7 +27,7 @@ Feature: Shipping HUs interaction with material schedule
 
     And metasfresh contains C_BPartners without locations:
       | Identifier  | Name                        | Value                       | OPT.IsCustomer | OPT.IsVendor | M_PricingSystem_ID.Identifier |
-      | customer_SO | customer_huMaterialSchedule | customer_huMaterialSchedule | Y              | N            | ps_1                          |
+      | customer_SO | customer_reverseShip_290922 | customer_reverseShip_290922 | Y              | N            | ps_1                          |
     And metasfresh contains C_BPartner_Locations:
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
       | l_1        | 1609202212345 | customer_SO              | Y                   | Y                   |

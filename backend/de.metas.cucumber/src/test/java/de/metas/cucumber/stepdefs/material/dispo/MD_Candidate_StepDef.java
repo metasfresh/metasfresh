@@ -67,7 +67,6 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
@@ -77,7 +76,6 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -137,12 +135,6 @@ public class MD_Candidate_StepDef
 		materialDispoRecordRepository = SpringContextHolder.instance.getBean(MaterialDispoRecordRepository.class);
 		candidateRepositoryRetrieval = SpringContextHolder.instance.getBean(CandidateRepositoryRetrieval.class);
 		Env.setClientId(Env.getCtx(), ClientId.METASFRESH);
-	}
-
-	@And("metasfresh initially has no MD_Candidate_StockChange_detail data")
-	public void setupMD_Candidate_StockChange_detail_Data()
-	{
-		DB.executeUpdateEx("TRUNCATE TABLE md_candidate_stockChange_detail cascade", ITrx.TRXNAME_None);
 	}
 
 	@When("metasfresh receives a ShipmentScheduleCreatedEvent")
@@ -512,16 +504,16 @@ public class MD_Candidate_StepDef
 		final Runnable logContext = () -> logger.error("MD_Candidate not found\n"
 															   + "**tableRow:**\n{}\n" + "**candidatesQuery:**\n{}\n"
 															   + "**query result candidates:**\n{}\n"
-															   + "**all candidates:**\n{}",
-													   tableRow, candidatesQuery,
+															   + "**all product related candidates:**\n{}",
+													   tableRow,
+													   candidatesQuery,
 													   materialDispoRecordRepository.getAllByQueryAsString(candidatesQuery),
-													   materialDispoRecordRepository.getAllAsString());
+													   materialDispoRecordRepository.getAllAsString(tableRow.getProductId()));
 
-		final MaterialDispoDataItem materialDispoRecord = StepDefUtil
+		return StepDefUtil
 				.tryAndWaitForItem(timeoutSec, 1000,
 								   itemProvider,
 								   logContext);
-		return materialDispoRecord;
 	}
 
 	private void validate_md_candidate_stock(@NonNull final Map<String, String> tableRow)

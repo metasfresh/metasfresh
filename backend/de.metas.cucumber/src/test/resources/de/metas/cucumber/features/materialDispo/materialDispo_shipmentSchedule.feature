@@ -8,8 +8,8 @@ Feature: material-dispo updates on shipment-schedule events
   Background: Initial Data
     And metasfresh has date and time 2022-09-19T08:00:00+01:00[Europe/Berlin]
     And metasfresh contains M_PricingSystems
-      | Identifier | Name                | Value                | OPT.Description            | OPT.IsActive |
-      | ps_1       | pricing_system_name | pricing_system_value | pricing_system_description | true         |
+      | Identifier | Name                | Value              | OPT.Description            | OPT.IsActive |
+      | ps_1       | pricing_system_name | value_md_ss_290922 | pricing_system_description | true         |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name            | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
       | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name | null            | true  | false         | 2              | true         |
@@ -17,8 +17,8 @@ Feature: material-dispo updates on shipment-schedule events
       | Identifier | M_PriceList_ID.Identifier | Name           | ValidFrom  |
       | plv_1      | pl_1                      | salesOrder-PLV | 2020-04-01 |
     And metasfresh contains C_BPartners:
-      | Identifier    | Name        | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | endcustomer_1 | Endcustomer | N            | Y              | ps_1                          |
+      | Identifier    | Name         | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | endcustomer_1 | md_ss_290922 | N            | Y              | ps_1                          |
 
   @from:cucumber
   @topic:materialdispo
@@ -30,8 +30,8 @@ Feature: material-dispo updates on shipment-schedule events
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
     Given metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
-      | o_1        | true    | endcustomer_1            | 2022-09-19  |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate     |
+      | o_1        | true    | endcustomer_1            | 2022-09-19  | 2022-09-18T21:00:00.00Z |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
@@ -57,8 +57,8 @@ Feature: material-dispo updates on shipment-schedule events
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected           | Qty | Qty_AvailableToPromise |
       | c_1        | INVENTORY_UP      |                               | p_1                     | 2022-09-18T10:00:00.00Z | 100 | 100                    |
     And metasfresh contains C_Orders:
-      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
-      | o_1        | true    | endcustomer_1            | 2021-04-08  |
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate     |
+      | o_1        | true    | endcustomer_1            | 2021-04-08  | 2022-09-18T21:00:00.00Z |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 20         |
