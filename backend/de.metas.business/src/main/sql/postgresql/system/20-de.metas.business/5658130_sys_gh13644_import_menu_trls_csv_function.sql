@@ -4,6 +4,10 @@ $$
         p_ad_element_id numeric;
         p_ad_menu_id    numeric;
     BEGIN
+
+        PERFORM backup_table('AD_Element_Trl');
+        PERFORM backup_table('AD_Menu_Trl');
+
         FOR p_ad_menu_id IN SELECT DISTINCT ad_menu_id FROM migration_data."AD_Menu_Trad" WHERE LENGTH(TRIM(name_trl)) > 0 ORDER BY 1
             LOOP
                 BEGIN
