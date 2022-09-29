@@ -49,10 +49,8 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.ITranslatableString;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CreditorReferenceType1Choice;
 import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CreditorReferenceType2;
-import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.DocumentType3Code;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
