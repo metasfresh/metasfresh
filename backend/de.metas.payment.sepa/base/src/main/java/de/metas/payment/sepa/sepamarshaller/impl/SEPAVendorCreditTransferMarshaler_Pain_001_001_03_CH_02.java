@@ -1,5 +1,66 @@
 package de.metas.payment.sepa.sepamarshaller.impl;
 
+import static java.math.BigDecimal.ZERO;
+
+/*
+ * #%L
+ * de.metas.payment.sepa
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
+import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.function.Supplier;
+
+import javax.annotation.Nullable;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+
+import de.metas.common.util.time.SystemTime;
+import de.metas.i18n.AdMessageKey;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CreditorReferenceType1Choice;
+import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CreditorReferenceType2;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IPair;
+import org.compiere.Adempiere;
+import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Location;
+import org.compiere.util.Util.ArrayKey;
+
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.banking.Bank;
 import de.metas.banking.BankId;
@@ -62,41 +123,9 @@ import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.StringUtils.TruncateAt;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.util.xml.DynamicObjectFactory;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IPair;
-import org.compiere.Adempiere;
-import org.compiere.model.I_C_BP_BankAccount;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Location;
-import org.compiere.util.Util.ArrayKey;
-
-import javax.annotation.Nullable;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
-import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.function.Supplier;
-
-import static java.math.BigDecimal.ZERO;
 
 /**
  * Written according to "Schweizer Implementation Guidelines für Kunde-an-Bank-Meldungen für Überweisungen im Zahlungsverkehr", "Version 1.4/30.06.2013". There link is
@@ -120,9 +149,9 @@ import static java.math.BigDecimal.ZERO;
  */
 public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements SEPAMarshaler
 {
-	public static final String NOTPROVIDED_VALUE = "NOTPROVIDED";
-
 	private static final AdMessageKey ERR_SEPA_Export_InvalidReference = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_InvalidReference");
+
+	private static final String BIC_NOTPROVIDED = "NOTPROVIDED";
 
 	/**
 	 * Identifier of the <b>Pa</b>yment <b>In</b>itiation format (XSD) used by this marshaller.
@@ -130,24 +159,16 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	private static final String PAIN_001_001_03_CH_02 = "pain.001.001.03.ch.02";
 	private static final String PAIN_001_001_03_CH_02_SCHEMALOCATION = "http://www.six-interbank-clearing.com/de/";
 
-	/**
-	 * Title: "ISR"
-	 */
+	/** Title: "ISR" */
 	private static final String PAYMENT_TYPE_1 = "PAYMENT_TYPE_1";
 
-	/**
-	 * Title: "IS 1-Stage". Currently not implemented.
-	 */
+	/** Title: "IS 1-Stage". Currently not implemented. */
 	private static final String PAYMENT_TYPE_2_1 = "PAYMENT_TYPE_2_1";
 
-	/**
-	 * Title: "IS 2-Stage". Currently not implemented.
-	 */
+	/** Title: "IS 2-Stage". Currently not implemented. */
 	private static final String PAYMENT_TYPE_2_2 = "PAYMENT_TYPE_2_2";
 
-	/**
-	 * Title: "IBAN/postal account and IID/BIC"
-	 */
+	/** Title: "IBAN/postal account and IID/BIC" */
 	private static final String PAYMENT_TYPE_3 = "PAYMENT_TYPE_3";
 
 	/**
@@ -452,7 +473,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		pmtInf.setDbtrAcct(dbtrAcct);
 		final AccountIdentification4ChoiceCH id = objectFactory.createAccountIdentification4ChoiceCH();
 		dbtrAcct.setId(id);
-		if (Check.isEmpty(iban, true))
+		if (Check.isBlank(iban))
 		{
 			final GenericAccountIdentification1CH othr = objectFactory.createGenericAccountIdentification1CH();
 			id.setOthr(othr);
@@ -546,7 +567,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			cdtrAgt.setFinInstnId(finInstnId);
 
 			final String bcFromIBAN = extractBCFromIban(line.getIBAN(), line);
-			if (!Check.isEmpty(bcFromIBAN, true))
+			if (Check.isNotBlank(bcFromIBAN))
 			{
 				// this is our best bet. Even data in adempiere might be wrong/outdated
 				final ClearingSystemMemberIdentification2 clrSysMmbId = objectFactory.createClearingSystemMemberIdentification2();
@@ -561,7 +582,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 				// has to be CHBCC for payment modes 2.2, 3, 4; note if we do paymentMode 5 ("real" SEPA), weren't in this if-block to start with
 				clrSysId.setCd("CHBCC");
 			}
-			else if (!Check.isEmpty(line.getSwiftCode(), true))
+			else if (Check.isNotBlank(line.getSwiftCode()))
 			{
 				finInstnId.setBIC(line.getSwiftCode());
 			}
@@ -577,11 +598,11 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 					|| Objects.equals(paymentType, PAYMENT_TYPE_4)
 					|| Objects.equals(paymentType, PAYMENT_TYPE_6))
 			{
-				final boolean hasNoBIC = Check.isEmpty(finInstnId.getBIC(), true) || NOTPROVIDED_VALUE.equals(finInstnId.getBIC());
+				final boolean hasNoBIC = Check.isBlank(finInstnId.getBIC()) || BIC_NOTPROVIDED.equals(finInstnId.getBIC());
 				if (hasNoBIC)
 				{
 					final String bankName = getBankNameIfAny(line);
-					Check.errorIf(Check.isEmpty(bankName, true), SepaMarshallerException.class,
+					Check.errorIf(Check.isBlank(bankName), SepaMarshallerException.class,
 							"Zahlart={}, but line {} has no information about the bank name",
 							paymentType, createInfo(line));
 
@@ -657,33 +678,26 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			cdtrAcct.setId(id);
 
 			final String iban = line.getIBAN();
-			if (!Check.isEmpty(iban, true) && !Objects.equals(paymentType, PAYMENT_TYPE_1))
+			if (Check.isNotBlank(iban) && paymentType != PAYMENT_TYPE_1)
 			{
 				// prefer IBAN, unless we have paypent type 1 (because then we use the ISR participant number)
 				id.setIBAN(iban.replaceAll(" ", "")); // this is ofc the more frequent case (..on a global scale)
 			}
-			else {
+			else
+			{
 				final String otherAccountIdentification = line.getOtherAccountIdentification();
 				final String accountNo = bankAccount.getAccountNo();
 
 				final GenericAccountIdentification1CH othr = objectFactory.createGenericAccountIdentification1CH();
 				id.setOthr(othr);
-
-				if (Check.isEmpty(otherAccountIdentification, true) && Check.isEmpty(accountNo, true))
+				if (Check.isNotBlank(otherAccountIdentification))
 				{
-					othr.setId(iban.replaceAll(" ", ""));
+					// task 07789
+					othr.setId(otherAccountIdentification); // for task 07789, this needs to contain the ESR TeilehmerNr or PostkontoNr
 				}
 				else
 				{
-					if (!Check.isEmpty(otherAccountIdentification, true))
-					{
-						// task 07789
-						othr.setId(otherAccountIdentification); // for task 07789, this needs to contain the ESR TeilehmerNr or PostkontoNr
-					}
-					else
-					{
-						othr.setId(bankAccount.getAccountNo());
-					}
+					othr.setId(accountNo);
 				}
 			}
 		}
@@ -695,17 +709,19 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		// Remittance Info
 		{
 			final RemittanceInformation5CH rmtInf = objectFactory.createRemittanceInformation5CH();
-			if (Check.isEmpty(line.getStructuredRemittanceInfo(), true)
-					|| Objects.equals(paymentType, PAYMENT_TYPE_3)
-					|| Objects.equals(paymentType, PAYMENT_TYPE_5))
+			if (Check.isBlank(line.getStructuredRemittanceInfo())
+					|| paymentType == PAYMENT_TYPE_3
+					|| paymentType == PAYMENT_TYPE_5)
 			{
 				Check.errorIf(Objects.equals(paymentType, PAYMENT_TYPE_1), SepaMarshallerException.class,
 							  "SEPA_ExportLine {} has to have StructuredRemittanceInfo", createInfo(line));
 
+
 				if (!Check.isBlank(bankAccount.getQR_IBAN()))
 				{
+					final String QRReference = StringUtils.cleanWhitespace(line.getStructuredRemittanceInfo());
 
-					if(isInvalidQRReference(reference))
+					if(isInvalidQRReference(QRReference))
 					{
 						throw new AdempiereException(ERR_SEPA_Export_InvalidReference,createInfo(line));
 					}
@@ -720,7 +736,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 					tp.setCdOrPrtry(cdOrPrtry);
 					cdOrPrtry.setPrtry("QRR");
 
-					cdtrRefInf.setRef(reference);
+					cdtrRefInf.setRef(QRReference);
 				}
 				else
 				{
@@ -781,7 +797,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	private final String getFirstNonEmpty(@NonNull final Supplier<String>... values)
 	{
 		final String result = CoalesceUtil.firstValidValue(
-				s -> !Check.isEmpty(s, true),
+				s -> Check.isNotBlank(s),
 				values);
 
 		if (result != null)
@@ -859,9 +875,9 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		pstlAdr.setCtry(location.getC_Country().getCountryCode()); // note: C_Location.C_Country is a mandatory column
 
 		final boolean addressInBankAccountIsComplete = bpBankAccount != null
-				&& !Check.isEmpty(bpBankAccount.getA_City(), true)
-				&& !Check.isEmpty(bpBankAccount.getA_Zip(), true)
-				&& !Check.isEmpty(bpBankAccount.getA_Street(), true);
+				&& Check.isNotBlank(bpBankAccount.getA_City())
+				&& Check.isNotBlank(bpBankAccount.getA_Zip())
+				&& Check.isNotBlank(bpBankAccount.getA_Street());
 		if (addressInBankAccountIsComplete)
 		{
 			pstlAdr.getAdrLine().add(bpBankAccount.getA_Street());
@@ -883,12 +899,11 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	 *
 	 * @see <a href="http://www.swissiban.com/de.htm">http://www.swissiban.com/de.htm</a> for what it does (it's simple).
 	 */
-	@Nullable
 	private String extractBCFromIban(
 			@Nullable final String iban,
 			@NonNull final I_SEPA_Export_Line line)
 	{
-		if (Check.isEmpty(iban, true))
+		if (Check.isBlank(iban))
 		{
 			return null;
 		}
@@ -913,7 +928,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	 */
 	private boolean isSwizzIBAN(@Nullable final String iban)
 	{
-		if (Check.isEmpty(iban, true))
+		if (Check.isBlank(iban))
 		{
 			return false;
 		}
@@ -980,7 +995,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 				de.metas.payment.esr.model.I_C_BP_BankAccount.class);
 
 		final String paymentMode;
-		if (bPBankAccount.isEsrAccount() && !Check.isEmpty(line.getStructuredRemittanceInfo(), true) && bPBankAccount.getQR_IBAN() == null)
+		if (bPBankAccount.isEsrAccount() && Check.isNotBlank(line.getStructuredRemittanceInfo()) && Check.isBlank(bPBankAccount.getQR_IBAN()))
 		{
 			paymentMode = PAYMENT_TYPE_1;
 		}
@@ -1002,7 +1017,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			}
 			else
 			{
-				final boolean hasIbanAndEurCurrency = !Check.isEmpty(iban, true) && currencyCode.isEuro();
+				final boolean hasIbanAndEurCurrency = Check.isNotBlank(iban) && currencyCode.isEuro();
 				if (hasIbanAndEurCurrency)
 				{
 					paymentMode = PAYMENT_TYPE_5;
@@ -1051,9 +1066,9 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	}
 
 	@VisibleForTesting
-	static boolean isInvalidQRReference(final String reference)
+	static boolean isInvalidQRReference(@NonNull final String reference)
 	{
-		if(reference == null || reference.length() != 27)
+		if(reference.length() != 27)
 		{
 			return true;
 		}
