@@ -1026,9 +1026,9 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	}
 
 	@VisibleForTesting
-	static boolean isInvalidQRReference(final String reference)
+	static boolean isInvalidQRReference(@NonNull final String reference)
 	{
-		if(reference!=null && reference.length() != 27)
+		if(reference.length() != 27)
 		{
 			return true;
 		}
