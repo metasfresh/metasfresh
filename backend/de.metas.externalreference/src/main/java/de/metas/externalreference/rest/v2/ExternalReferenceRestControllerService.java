@@ -25,6 +25,7 @@ package de.metas.externalreference.rest.v2;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.RestUtils;
+import de.metas.audit.data.ExternalSystemParentConfigId;
 import de.metas.common.externalreference.v2.JsonExternalReferenceCreateRequest;
 import de.metas.common.externalreference.v2.JsonExternalReferenceItem;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupItem;
@@ -211,6 +212,7 @@ public class ExternalReferenceRestControllerService
 					.recordId(metasfreshId.getValue())
 					.version(reference.getVersion())
 					.externalReferenceUrl(reference.getExternalReferenceUrl())
+					.externalSystemParentConfigId(JsonMetasfreshId.toValue(reference.getExternalSystemConfigId()))
 					.build();
 			externalReferenceRepository.save(externalReference);
 		}
@@ -289,6 +291,7 @@ public class ExternalReferenceRestControllerService
 				.recordId(request.getExternalReferenceItem().getMetasfreshId().getValue())
 				.version(request.getExternalReferenceItem().getVersion())
 				.externalReferenceUrl(request.getExternalReferenceItem().getExternalReferenceUrl())
+				.externalSystemParentConfigId(JsonMetasfreshId.toValue(request.getExternalReferenceItem().getExternalSystemConfigId()))
 				.build();
 	}
 
@@ -297,6 +300,9 @@ public class ExternalReferenceRestControllerService
 			@NonNull final ExternalReference candidate,
 			@NonNull final ExternalReference existingReference)
 	{
+		final ExternalSystemParentConfigId externalSystemConfigId = (ExternalSystemParentConfigId)candidate
+				.getExternalSystemParentConfigId(ExternalSystemParentConfigId::ofRepoIdOrNull);
+
 		return ExternalReference.builder()
 				//existing
 				.externalReferenceId(existingReference.getExternalReferenceId())
@@ -308,6 +314,7 @@ public class ExternalReferenceRestControllerService
 				.recordId(candidate.getRecordId())
 				.version(candidate.getVersion())
 				.externalReferenceUrl(candidate.getExternalReferenceUrl())
+				.externalSystemParentConfigId(ExternalSystemParentConfigId.toRepoId(externalSystemConfigId))
 				.build();
 	}
 
@@ -368,6 +375,7 @@ public class ExternalReferenceRestControllerService
 						.externalReferenceUrl(externalReference.getExternalReferenceUrl())
 						.systemName(JsonExternalSystemName.of(externalReference.getExternalSystem().getCode()))
 						.externalReferenceId(JsonMetasfreshId.of(externalReference.getExternalReferenceId().getRepoId()))
+						.externalSystemConfigId(JsonMetasfreshId.ofOrNull(externalReference.getExternalSystemParentConfigId()))
 						.build();
 			}
 			result.item(responseItem);

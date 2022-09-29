@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.externalreference.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for S_ExternalReference
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_ExternalReference, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 480936277L;
+	private static final long serialVersionUID = -837092087L;
 
     /** Standard Constructor */
     public X_S_ExternalReference (final Properties ctx, final int S_ExternalReference_ID, @Nullable final String trxName)
@@ -87,6 +87,21 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	public java.lang.String getExternalSystem() 
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalSystem);
+	}
+
+	@Override
+	public void setExternalSystem_Config_ID (final int ExternalSystem_Config_ID)
+	{
+		if (ExternalSystem_Config_ID < 1)
+			set_Value (COLUMNNAME_ExternalSystem_Config_ID, null);
+		else
+			set_Value (COLUMNNAME_ExternalSystem_Config_ID, ExternalSystem_Config_ID);
+	}
+
+	@Override
+	public int getExternalSystem_Config_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_ExternalSystem_Config_ID);
 	}
 
 	@Override
