@@ -24,8 +24,10 @@ package org.adempiere.ad.dao.impl;
 
 import com.google.common.base.MoreObjects;
 import de.metas.util.Check;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryInsertExecutor;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.Adempiere;
 import org.compiere.model.POInfo;
 
 import java.util.Collections;
@@ -51,15 +53,11 @@ class QueryInsertExecutor<ToModelType, FromModelType> implements IQueryInsertExe
 	// Options
 	private boolean createSelectionOfInsertedRows = false;
 
-	QueryInsertExecutor(final Class<ToModelType> toModelClass, final AbstractTypedQuery<FromModelType> fromQuery)
+	QueryInsertExecutor(@NonNull final Class<ToModelType> toModelClass, @NonNull final AbstractTypedQuery<FromModelType> fromQuery)
 	{
-		super();
-
-		Check.assumeNotNull(toModelClass, "toModelClass not null");
 		this.toModelClass = toModelClass;
 		this.toTableName = InterfaceWrapperHelper.getTableName(toModelClass);
 
-		Check.assumeNotNull(fromQuery, "fromQuery not null");
 		this.fromQuery = fromQuery;
 		this.fromModelClass = fromQuery.getModelClass();
 		this.fromTableName = InterfaceWrapperHelper.getTableName(fromModelClass);
@@ -87,8 +85,8 @@ class QueryInsertExecutor<ToModelType, FromModelType> implements IQueryInsertExe
 	@Override
 	public QueryInsertExecutor<ToModelType, FromModelType> mapCommonColumns()
 	{
-		final Set<String> fromColumnNames = InterfaceWrapperHelper.getModelColumnNames(fromModelClass);
-		final Set<String> toColumnNames = new HashSet<>(InterfaceWrapperHelper.getModelColumnNames(toModelClass));
+		final Set<String> fromColumnNames = InterfaceWrapperHelper.getModelPhysicalColumnNames(fromModelClass);
+		final Set<String> toColumnNames = new HashSet<>(InterfaceWrapperHelper.getModelPhysicalColumnNames(toModelClass));
 		final Set<String> toColumnsWithoutAPhysicalFromColumn = new HashSet<>(toColumnNames);
 		toColumnNames.retainAll(fromColumnNames);
 		for (final String toColumnName : toColumnNames)
@@ -116,6 +114,10 @@ class QueryInsertExecutor<ToModelType, FromModelType> implements IQueryInsertExe
 	 */
 	private void mapVirtualColumnsInSourceTable(final Set<String> toColumnsWithoutAPhysicalFromColumn)
 	{
+		if (Adempiere.isUnitTestMode())
+		{
+			return;
+		}
 		final POInfo fromTablePOInfo = POInfo.getPOInfo(fromTableName);
 		Check.assumeNotNull(fromTablePOInfo, "cannot find POInfo for table name: {}", fromTableName);
 		toColumnsWithoutAPhysicalFromColumn.stream()

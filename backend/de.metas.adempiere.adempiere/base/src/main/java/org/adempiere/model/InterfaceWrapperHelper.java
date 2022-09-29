@@ -1645,10 +1645,9 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
-	 * @param modelClass
 	 * @return immutable list of physical column names of modelClass's table
 	 */
-	public static Set<String> getModelColumnNames(final Class<?> modelClass)
+	public static Set<String> getModelPhysicalColumnNames(final Class<?> modelClass)
 	{
 		if (Adempiere.isUnitTestMode())
 		{
