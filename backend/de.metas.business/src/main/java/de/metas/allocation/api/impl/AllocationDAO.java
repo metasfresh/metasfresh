@@ -403,4 +403,15 @@ public class AllocationDAO implements IAllocationDAO
 	{
 		return InterfaceWrapperHelper.load(allocationId, I_C_AllocationHdr.class);
 	}
+
+	@Override
+	@NonNull
+	public List<I_C_AllocationLine> retrieveAllPaymentAllocationLines(final @NonNull PaymentId paymentId)
+	{
+		return queryBL.createQueryBuilder(I_C_AllocationLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Payment_ID, paymentId)
+				.create()
+				.list();
+	}
 }

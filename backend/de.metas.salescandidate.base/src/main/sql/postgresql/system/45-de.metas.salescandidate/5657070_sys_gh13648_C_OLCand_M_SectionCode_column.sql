@@ -60,7 +60,7 @@ INSERT INTO t_alter_column values('c_olcand','M_SectionCode_ID','NUMERIC(10)',nu
 
 
 -- 2022-09-27T10:42:45.710Z
-INSERT INTO C_OLCandAggAndOrder (AD_Client_ID,AD_Column_OLCand_ID,AD_Org_ID,C_OLCandAggAndOrder_ID,C_OLCandProcessor_ID,Created,CreatedBy,GroupBy,IsActive,SplitOrder,Updated,UpdatedBy) VALUES (1000000,584431,1000000,540025,1000003,TO_TIMESTAMP('2022-09-27 13:42:45','YYYY-MM-DD HH24:MI:SS'),100,'N','Y','N',TO_TIMESTAMP('2022-09-27 13:42:45','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO C_OLCandAggAndOrder (AD_Client_ID,AD_Column_OLCand_ID,AD_Org_ID,C_OLCandAggAndOrder_ID,C_OLCandProcessor_ID,Created,CreatedBy,GroupBy,IsActive,SplitOrder,Updated,UpdatedBy) VALUES (1000000,584431,1000000,540025,1000003,TO_TIMESTAMP('2022-09-27 13:42:45','YYYY-MM-DD HH24:MI:SS'),100,'N','Y','Y',TO_TIMESTAMP('2022-09-27 13:42:45','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2022-09-27T10:42:50.145Z

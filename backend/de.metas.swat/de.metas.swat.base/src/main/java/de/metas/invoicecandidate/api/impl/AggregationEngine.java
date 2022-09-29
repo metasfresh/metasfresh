@@ -289,7 +289,7 @@ public final class AggregationEngine
 			key2headerAndAggregators.put(headerAggregationKey, headerAndAggregators);
 
 			final InvoiceHeaderImplBuilder invoiceHeader = headerAndAggregators.getInvoiceHeader();
-			addToInvoiceHeader(invoiceHeader, icRecord, headerAggregationKey.getAggregationId(), inoutId);
+			addToInvoiceHeader(invoiceHeader, icRecord, inoutId, headerAggregationKey.getAggregationId());
 
 			// task 08451: log why we create a new invoice header
 			final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
@@ -302,7 +302,7 @@ public final class AggregationEngine
 		else
 		{
 			final InvoiceHeaderImplBuilder invoiceHeader = headerAndAggregators.getInvoiceHeader();
-			addToInvoiceHeader(invoiceHeader, icRecord, headerAggregationKey.getAggregationId(), inoutId);
+			addToInvoiceHeader(invoiceHeader, icRecord, inoutId, headerAggregationKey.getAggregationId());
 		}
 
 		//
@@ -369,8 +369,8 @@ public final class AggregationEngine
 	private void addToInvoiceHeader(
 			@NonNull final InvoiceHeaderImplBuilder invoiceHeader,
 			@NonNull final I_C_Invoice_Candidate icRecord,
-			@NonNull final AggregationId headerAggregationId,
-			@Nullable final InOutId inoutId)
+			@Nullable final InOutId inoutId,
+			@Nullable final AggregationId headerAggregationId)
 	{
 		try
 		{
@@ -749,8 +749,13 @@ public final class AggregationEngine
 	@Nullable
 	private SectionCodeId getSectionCodeId(
 			@NonNull final I_C_Invoice_Candidate icRecord,
-			@NonNull final AggregationId headerAggregationId)
+			@Nullable final AggregationId headerAggregationId)
 	{
+		if (headerAggregationId == null)
+		{
+			return null;
+		}
+
 		final Aggregation icHeaderAggregation = aggregationDAO.retrieveAggregation(InterfaceWrapperHelper.getCtx(icRecord),
 																				   headerAggregationId.getRepoId());
 		if (icHeaderAggregation.hasColumnName(I_C_Invoice_Candidate.COLUMNNAME_M_SectionCode_ID))

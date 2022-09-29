@@ -141,7 +141,8 @@ public class C_Dunning_Candidate_StepDef
 																		   null, // C_DunningLevel, not needed
 																		   ITrx.TRXNAME_None);
 
-			context.setProperty(IDunningProducer.CONTEXT_ProcessDunningDoc, true);
+			final Boolean isAutoProcess = DataTableUtil.extractBooleanForColumnNameOr(row, "AutoProcess", false);
+			context.setProperty(IDunningProducer.CONTEXT_ProcessDunningDoc, isAutoProcess);
 
 			final IDunningProducer dunningProducer = context.getDunningConfig().createDunningProducer();
 			dunningProducer.setDunningContext(context);

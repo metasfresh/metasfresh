@@ -16,7 +16,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
   @from:cucumber
   @topic:orderCandidate
   @Id:S0150_100
-  @dev:runThisOne
+  @Id:S0190_300
   Scenario: Order candidate to shipment and invoice flow and closed order
     Given update C_OLCandAggAndOrder:
       | Name             | AD_Column_OLCand_ID | OPT.SplitOrder |
@@ -30,8 +30,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | testSection_S0150_100       | testSection |
 
     And metasfresh contains C_Doc_Outbound_Config:
-      | C_Doc_Outbound_Config_ID.Identifier | TableName |
-      | DunningDocOutboundConfig_S0150_100  | C_Dunning |
+      | C_Doc_Outbound_Config_ID.Identifier | TableName    | PrintFormat.Name               |
+      | DunningDocOutboundConfig_S0150_100  | C_DunningDoc | Mahnbrief mit Rechnungsbelegen |
     And metasfresh contains C_Dunning:
       | C_Dunning_ID.Identifier | Name    |
       | dunning_S0150_100       | Level 1 |
@@ -48,7 +48,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
 {
     "orgCode": "001",
     "externalLineId": "1555",
-    "externalHeaderId": "fp_test145471",
+    "externalHeaderId": "1444",
     "dataSource": "int-Shopware",
     "bpartner": {
         "bpartnerIdentifier": "2156425",
@@ -75,7 +75,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
 """
 {
-    "externalHeaderId": "fp_test145471",
+    "externalHeaderId": "1444",
     "inputDataSourceName": "int-Shopware",
     "ship": true,
     "invoice": true,
@@ -89,7 +89,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
     And validate the created orders
       | C_Order_ID.Identifier | OPT.ExternalId | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | poReference | processed | docStatus | OPT.BPartnerName | OPT.AD_InputDataSource_ID.InternalName | OPT.M_SectionCode_ID.Identifier |
-      | order_1               | fp_test145471  | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CL        | testName         | Shopware                               | testSection_S0150_100           |
+      | order_1               | 1444           | bpartner_1               | bpartnerLocation_1                | 2021-07-20  | SOO         | EUR          | F            | S               | po_ref_mock | true      | CL        | testName         | Shopware                               | testSection_S0150_100           |
 
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
@@ -127,18 +127,18 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | C_Dunning_Candidate_ID.Identifier | TableName | Record_ID.Identifier | OPT.M_SectionCode_ID.Identifier |
       | dunningCandInvoice_1              | C_Invoice | invoice_1            | testSection_S0150_100           |
     And invoke "C_Dunning_Candidate_Process" process:
-      | C_Dunning_Candidate_ID.Identifier |
-      | dunningCandInvoice_1              |
+      | C_Dunning_Candidate_ID.Identifier | AutoProcess |
+      | dunningCandInvoice_1              | false       |
     And validate C_DunningDoc:
       | C_DunningLevel_ID.Identifier | M_SectionCode_ID.Identifier | Processed |
-      | dunningLevel_S0150_100       | testSection_S0150_100       | Y         |
+      | dunningLevel_S0150_100       | testSection_S0150_100       | N         |
 
     And metasfresh contains C_BP_BankAccount
       | Identifier       | C_BPartner_ID.Identifier | C_Currency.ISO_Code |
       | bp_bank_account1 | bpartner_1               | EUR                 |
     And metasfresh contains C_Payment
       | Identifier  | C_BPartner_ID.Identifier | PayAmt | C_Currency.ISO_Code | C_DocType_ID.Name | IsReceipt | C_BP_BankAccount.Identifier |
-      | payment_100 | bpartner_1               | 50     | EUR                 | Zahlungseingang   | false     | bp_bank_account1            |
+      | payment_100 | bpartner_1               | 50     | EUR                 | Zahlungseingang   | true      | bp_bank_account1            |
     And the payment identified by payment_100 is completed
     And allocate payments to invoices
       | OPT.C_Invoice_ID.Identifier | OPT.C_Payment_ID.Identifier |

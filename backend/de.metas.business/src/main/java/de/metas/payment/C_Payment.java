@@ -24,8 +24,6 @@ package de.metas.payment;
 
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyRepository;
-import de.metas.invoice.InvoiceId;
-import de.metas.invoice.service.IInvoiceBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.payment.api.IPaymentBL;
@@ -40,7 +38,6 @@ import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.ModelValidator;
@@ -49,7 +46,6 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 
 import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Callout(I_C_Payment.class)
 @Interceptor(I_C_Payment.class)
@@ -59,7 +55,6 @@ public class C_Payment
 	private final IPaymentTermRepository paymentTermRepository = Services.get(IPaymentTermRepository.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
-	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 
 	private final CurrencyRepository currencyRepository;
 
@@ -114,22 +109,5 @@ public class C_Payment
 		record.setPayAmt(priceActual);
 		record.setDiscountAmt(discountAmount);
 		paymentBL.validateDocTypeIsInSync(record);
-	}
-
-	@CalloutMethod(columnNames = I_C_Payment.COLUMNNAME_C_Invoice_ID)
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, ifColumnsChanged = I_C_Payment.COLUMNNAME_C_Invoice_ID)
-	public void propagateSectionCodeFromInvoice(@NonNull final I_C_Payment record)
-	{
-		final InvoiceId invoiceId = InvoiceId.ofRepoIdOrNull(record.getC_Invoice_ID());
-
-		if (invoiceId == null)
-		{
-			return;
-		}
-
-		final I_C_Invoice invoice = invoiceBL.getById(invoiceId);
-		record.setM_SectionCode_ID(invoice.getM_SectionCode_ID());
-
-		saveRecord(record);
 	}
 }

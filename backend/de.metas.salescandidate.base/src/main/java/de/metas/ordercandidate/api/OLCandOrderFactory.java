@@ -662,6 +662,11 @@ class OLCandOrderFactory
 	@Nullable
 	private SectionCodeId getSectionCodeId(@NonNull final OLCand groupRepOLCand)
 	{
+		if (aggregationInfo == null)
+		{
+			return null;
+		}
+
 		if (aggregationInfo.isSplitDiscriminatorByColumn(I_C_OLCand.COLUMNNAME_M_SectionCode_ID))
 		{
 			return groupRepOLCand.getSectionCodeId();

@@ -34,6 +34,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_PrintFormat;
 import org.compiere.model.I_AD_Table;
 
 import java.util.Map;
@@ -64,9 +65,17 @@ public class C_Doc_Outbound_Config_StepDef
 		final AdTableId tableId = AdTableId.ofRepoIdOrNull(tableDAO.retrieveTableId(tableName));
 		assertThat(tableId).isNotNull();
 
+		final String printFormatName = DataTableUtil.extractStringForColumnName(row, "PrintFormat." + I_AD_PrintFormat.COLUMNNAME_Name);
+		final I_AD_PrintFormat printFormat = queryBL.createQueryBuilder(I_AD_PrintFormat.class)
+				.addOnlyActiveRecordsFilter()
+				.addStringLikeFilter(I_AD_PrintFormat.COLUMNNAME_Name, printFormatName, true)
+				.create()
+				.firstNotNull(I_AD_PrintFormat.class);
+
 		final I_C_Doc_Outbound_Config record = CoalesceUtil.coalesceSuppliers(
 				() -> queryBL.createQueryBuilder(I_C_Doc_Outbound_Config.class)
 						.addEqualsFilter(I_C_Doc_Outbound_Config.COLUMNNAME_AD_Table_ID, tableId)
+						.addEqualsFilter(I_C_Doc_Outbound_Config.COLUMNNAME_AD_PrintFormat_ID, printFormat.getAD_PrintFormat_ID())
 						.create()
 						.firstOnlyOrNull(I_C_Doc_Outbound_Config.class),
 				() -> InterfaceWrapperHelper.newInstance(I_C_Doc_Outbound_Config.class));
@@ -74,6 +83,7 @@ public class C_Doc_Outbound_Config_StepDef
 		assertThat(record).isNotNull();
 
 		record.setAD_Table_ID(tableId.getRepoId());
+		record.setAD_PrintFormat_ID(printFormat.getAD_PrintFormat_ID());
 
 		InterfaceWrapperHelper.save(record);
 
