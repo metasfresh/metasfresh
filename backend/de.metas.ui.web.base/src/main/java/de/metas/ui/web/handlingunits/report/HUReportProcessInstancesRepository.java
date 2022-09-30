@@ -23,14 +23,12 @@ import de.metas.ui.web.process.IProcessInstancesRepository;
 import de.metas.ui.web.process.ProcessId;
 import de.metas.ui.web.process.ViewAsPreconditionsContext;
 import de.metas.ui.web.process.WebuiPreconditionsContext;
+import de.metas.ui.web.process.adprocess.ADProcessInstancesRepository;
 import de.metas.ui.web.process.descriptor.InternalName;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor.ProcessDescriptorType;
 import de.metas.ui.web.process.descriptor.ProcessLayout;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
-import de.metas.ui.web.process.view.ViewActionDescriptor;
-import de.metas.ui.web.process.view.ViewActionParamDescriptor;
-import de.metas.ui.web.process.view.ViewProcessInstancesRepository;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -93,7 +91,7 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 			.expireAfterAccess(10, TimeUnit.MINUTES)
 			.build();
 
-	private final ViewProcessInstancesRepository viewProcessInstancesRepository = SpringContextHolder.instance.getBean(ViewProcessInstancesRepository.class);
+	private final ADProcessInstancesRepository processInstancesRepository = SpringContextHolder.instance.getBean(ADProcessInstancesRepository.class);
 
 	@Override
 	public String getProcessHandlerType()
@@ -128,12 +126,9 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 				.collect(ImmutableList.toImmutableList()));
 	}
 
-
-	@Nullable
 	private void addParametersEntityDescriptor(@NonNull final ProcessId processId, @NonNull final DocumentEntityDescriptor.Builder builder)
 	{
-		final ViewActionDescriptor descriptor = viewProcessInstancesRepository.getViewActionDescriptor(processId);
-		descriptor.addParametersDescriptor(builder);
+		processInstancesRepository.addProcessParameters(processId,builder);
 	}
 
 
