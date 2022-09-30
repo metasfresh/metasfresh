@@ -83,6 +83,7 @@ public class QRPaymentStringDataProvider extends AbstractPaymentStringDataProvid
 		bpBankAccount.setA_Name(bPartnerName);
 		bpBankAccount.setName(bPartnerName);
 
+		bpBankAccount.setQR_IBAN(paymentString.getIBAN());
 		bpBankAccount.setAccountNo(paymentString.getInnerAccountNo());
 		bpBankAccount.setESR_RenderedAccountNo(paymentString.getPostAccountNo());
 
