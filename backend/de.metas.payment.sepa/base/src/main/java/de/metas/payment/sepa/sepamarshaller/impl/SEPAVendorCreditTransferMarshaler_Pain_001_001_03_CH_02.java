@@ -1,67 +1,5 @@
 package de.metas.payment.sepa.sepamarshaller.impl;
 
-import static java.math.BigDecimal.ZERO;
-
-/*
- * #%L
- * de.metas.payment.sepa
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
-import java.io.Writer;
-import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBElement;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
-
-import de.metas.common.util.time.SystemTime;
-import de.metas.i18n.AdMessageKey;
-import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CreditorReferenceType1Choice;
-import de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02.CreditorReferenceType2;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IPair;
-import org.compiere.Adempiere;
-import org.compiere.model.I_C_BP_BankAccount;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Location;
-import org.compiere.util.Util.ArrayKey;
-
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.banking.Bank;
 import de.metas.banking.BankId;
@@ -124,9 +62,41 @@ import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.StringUtils.TruncateAt;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.util.xml.DynamicObjectFactory;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IPair;
+import org.compiere.Adempiere;
+import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Location;
+import org.compiere.util.Util.ArrayKey;
+
+import javax.annotation.Nullable;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
+import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.function.Supplier;
+
+import static java.math.BigDecimal.ZERO;
 
 /**
  * Written according to "Schweizer Implementation Guidelines für Kunde-an-Bank-Meldungen für Überweisungen im Zahlungsverkehr", "Version 1.4/30.06.2013". There link is
@@ -152,7 +122,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 {
 	private static final AdMessageKey ERR_SEPA_Export_InvalidReference = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_InvalidReference");
 
-	private static final String BIC_NOTPROVIDED = "NOTPROVIDED";
+	protected static final String BIC_NOTPROVIDED = "NOTPROVIDED";
 
 	/**
 	 * Identifier of the <b>Pa</b>yment <b>In</b>itiation format (XSD) used by this marshaller.
