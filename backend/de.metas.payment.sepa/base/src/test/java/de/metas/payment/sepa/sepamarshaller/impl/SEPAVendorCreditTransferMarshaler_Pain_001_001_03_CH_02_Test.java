@@ -97,7 +97,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 				.map(CreditTransferTransactionInformation10CH::getPmtId)
 				.map(PaymentIdentification1::getEndToEndId)
 				.collect(Collectors.toSet());
-		assertThat(endToEndIds).containsExactlyInAnyOrder("ENDTOENDID-2", "ENDTOENDID-4", "ENDTOENDID-6");
+		assertThat(endToEndIds).containsExactlyInAnyOrder("ENDTOENDID-1", "ENDTOENDID-2", "ENDTOENDID-3");
 
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).hasSize(2);
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.isBtchBookg()).isTrue());
