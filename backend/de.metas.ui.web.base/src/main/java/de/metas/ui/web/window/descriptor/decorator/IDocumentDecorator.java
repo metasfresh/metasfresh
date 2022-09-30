@@ -22,9 +22,20 @@
 
 package de.metas.ui.web.window.descriptor.decorator;
 
+import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.window.model.Document;
+
+import java.util.Optional;
 
 public interface IDocumentDecorator
 {
-	boolean isReadOnly(Document document);
+	default boolean isReadOnly(final Document document)
+	{
+		return false;
+	}
+
+	default Optional<ITranslatableString> cannotBeDeleted(final Document document)
+	{
+		return Optional.empty();
+	}
 }

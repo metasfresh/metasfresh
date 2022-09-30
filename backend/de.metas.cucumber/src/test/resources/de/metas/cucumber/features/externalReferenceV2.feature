@@ -10,14 +10,14 @@ Feature: external references for metasfresh resources
   @from:cucumber
   Scenario: external resource is not referenced to a metasfresh resource
     When the metasfresh REST-API endpoint path '/api/v2/externalRefs/001' receives a 'PUT' request with the payload
-  """
+    """
 {
   "systemName": "Github",
   "items": [
     { "id": "Not_Referenced_GitHubIssue_v2_290922_1", "type": "IssueID" }
   ]
 }
-"""
+    """
     Then the metasfresh REST-API responds with
     """
 {

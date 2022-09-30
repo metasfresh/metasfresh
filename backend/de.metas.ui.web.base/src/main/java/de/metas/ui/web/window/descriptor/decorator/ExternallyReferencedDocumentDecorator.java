@@ -24,14 +24,24 @@ package de.metas.ui.web.window.descriptor.decorator;
 
 import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceRepository;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.window.model.Document;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class ExternallyReferencedDocumentDecorator implements IDocumentDecorator
 {
+	private static final AdMessageKey EXTERNAL_REFERENCE_READ_ONLY_IN_METASFRESH_ERROR = AdMessageKey.of("externalReferenceReadOnlyInMetasfresh");
+
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+
 	private final ExternalReferenceRepository externalReferenceRepository;
 
 	public ExternallyReferencedDocumentDecorator(@NonNull final ExternalReferenceRepository externalReferenceRepository)
@@ -51,6 +61,20 @@ public class ExternallyReferencedDocumentDecorator implements IDocumentDecorator
 
 		return externalReferenceRepository.getExternalReferencesByTableRecordReference(recordReference)
 				.stream()
-				.anyMatch(ExternalReference::getIsReadOnlyInMetasfresh);
+				.anyMatch(ExternalReference::getIsReadOnlyInMetasfreshOrFalse);
+	}
+
+	@Override
+	public Optional<ITranslatableString> cannotBeDeleted(final Document document)
+	{
+		if (!isReadOnly(document))
+		{
+			return Optional.empty();
+		}
+
+		final ITranslatableString errorMessage = msgBL.getTranslatableMsgText(EXTERNAL_REFERENCE_READ_ONLY_IN_METASFRESH_ERROR,
+																			  document.getDocumentId());
+
+		return Optional.of(errorMessage);
 	}
 }

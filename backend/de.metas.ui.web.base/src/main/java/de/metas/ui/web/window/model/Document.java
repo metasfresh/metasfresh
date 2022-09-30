@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.exceptions.DocumentProcessingException;
+import de.metas.i18n.ITranslatableString;
 import de.metas.lang.SOTrx;
 import de.metas.letters.model.Letters;
 import de.metas.logging.LogManager;
@@ -2092,6 +2093,24 @@ public final class Document
 		}
 
 		return Optional.of(TableRecordReference.of(tableName, recordId));
+	}
+
+	/**
+	 * @return error message if delete is not allowed, {@link Optional#empty} otherwise
+	 */
+	public Optional<ITranslatableString> cannotBeDeleted()
+	{
+		if (entityDescriptor.getDocumentDecorators() == null)
+		{
+			return Optional.empty();
+		}
+
+		return entityDescriptor.getDocumentDecorators()
+				.stream()
+				.map(decorator -> decorator.cannotBeDeleted(this))
+				.filter(Optional::isPresent)
+				.map(Optional::get)
+				.findFirst();
 	}
 
 	//

@@ -86,4 +86,13 @@ public class ExternalReference
 
 		return idMapper.apply(externalSystemParentConfigId);
 	}
+
+	public boolean getIsReadOnlyInMetasfreshOrFalse()
+	{
+		if (isReadOnlyInMetasfresh == null)
+		{
+			return false;
+		}
+		return isReadOnlyInMetasfresh;
+	}
 }
