@@ -47,7 +47,9 @@ public class PPOrderIssueScheduleService
 		PPOrderIssueSchedule issueSchedule = issueScheduleRepository.getById(issueScheduleId);
 		if (issueSchedule.getIssued() != null)
 		{
-			throw new AdempiereException("Already issued");
+			throw new AdempiereException("Already issued")
+					.setParameter("request", request)
+					.setParameter("issueSchedule", issueSchedule);
 		}
 
 		//
