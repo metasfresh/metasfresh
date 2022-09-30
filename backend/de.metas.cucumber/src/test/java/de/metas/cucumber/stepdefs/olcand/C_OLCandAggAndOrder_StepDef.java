@@ -42,12 +42,12 @@ public class C_OLCandAggAndOrder_StepDef
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
-			final String olColumnName = DataTableUtil.extractStringForColumnName(row, "Name");
-
+			final int olCandProcessorId = DataTableUtil.extractIntForColumnName(row, I_C_OLCandAggAndOrder.COLUMNNAME_C_OLCandProcessor_ID);
 			final int olCandColumnId = DataTableUtil.extractIntForColumnName(row, I_C_OLCandAggAndOrder.COLUMNNAME_AD_Column_OLCand_ID);
 			final Boolean splitOrder = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_C_OLCandAggAndOrder.COLUMNNAME_SplitOrder, null);
 
 			final I_C_OLCandAggAndOrder aggAndOrder = queryBL.createQueryBuilder(I_C_OLCandAggAndOrder.class)
+					.addEqualsFilter(I_C_OLCandAggAndOrder.COLUMNNAME_C_OLCandProcessor_ID, olCandProcessorId)
 					.addEqualsFilter(I_C_OLCandAggAndOrder.COLUMNNAME_AD_Column_OLCand_ID, olCandColumnId)
 					.orderBy(I_C_OLCandAggAndOrder.COLUMN_C_OLCandAggAndOrder_ID)
 					.create()

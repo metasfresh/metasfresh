@@ -67,7 +67,7 @@ public class OLCandAggregation
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public boolean isSplitDiscriminatorByColumn(@NonNull final String columnName)
+	public boolean isSplitByDiscriminatorColumn(@NonNull final String columnName)
 	{
 		return getSplitOrderDiscriminatorColumns()
 				.stream()

@@ -185,7 +185,7 @@ public class JsonConverters
 
 		final BPartnerId salesRepInternalId = masterdataProvider.getSalesRepBPartnerId(bPartnerInfo.getBpartnerId());
 
-		final SectionCodeId sectionCodeId = masterdataProvider.getSectionCodeId(request.getSectionCode());
+		final SectionCodeId sectionCodeId = masterdataProvider.getSectionCodeId(orgId, request.getSectionCode());
 
 		return OLCandCreateRequest.builder()
 				//
@@ -382,7 +382,7 @@ public class JsonConverters
 
 				.description(olCand.unbox().getDescription())
 				.line(olCand.getLine())
-				.sectionCodeId(JsonMetasfreshId.ofOrNull(olCand.getSectionCodeId() != null ? olCand.getSectionCodeId().getRepoId() : null))
+				.sectionCodeId(JsonMetasfreshId.ofOrNull(SectionCodeId.toRepoId(olCand.getSectionCodeId())))
 				.build();
 	}
 

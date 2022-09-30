@@ -204,14 +204,6 @@ public class DunnableDoc implements IDunnableDoc
 	}
 
 	@Override
-	public String toString()
-	{
-		return "DunnableDoc [tableName=" + tableName + ", record_id=" + record_id + ", C_BPartner_ID=" + C_BPartner_ID + ", C_BPatner_Location_ID=" + C_BPatner_Location_ID + ", Contact_ID="
-				+ Contact_ID + ", C_Currency_ID=" + C_Currency_ID + ", totalAmt=" + totalAmt + ", openAmt=" + openAmt + ", dueDate=" + dueDate + ", graceDate=" + graceDate + ", daysDue=" + daysDue
-				+ ", inDispute=" + inDispute + ", M_SectionCode_ID=" + M_SectionCode_ID + "]";
-	}
-
-	@Override
 	public String getDocumentNo()
 	{
 		return documentNo;
@@ -221,5 +213,13 @@ public class DunnableDoc implements IDunnableDoc
 	public int getM_SectionCode_ID()
 	{
 		return M_SectionCode_ID;
+	}
+
+	@Override
+	public String toString()
+	{
+		return "DunnableDoc [tableName=" + tableName + ", record_id=" + record_id + ", C_BPartner_ID=" + C_BPartner_ID + ", C_BPatner_Location_ID=" + C_BPatner_Location_ID + ", Contact_ID="
+				+ Contact_ID + ", C_Currency_ID=" + C_Currency_ID + ", totalAmt=" + totalAmt + ", openAmt=" + openAmt + ", dueDate=" + dueDate + ", graceDate=" + graceDate + ", daysDue=" + daysDue
+				+ ", inDispute=" + inDispute + ", M_SectionCode_ID=" + M_SectionCode_ID + "]";
 	}
 }

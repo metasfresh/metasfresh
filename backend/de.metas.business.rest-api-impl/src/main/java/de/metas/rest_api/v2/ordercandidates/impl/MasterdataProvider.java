@@ -39,7 +39,7 @@ import de.metas.rest_api.v2.bpartner.BpartnerRestController;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.ordercandidates.impl.ProductMasterDataProvider.ProductInfo;
 import de.metas.sectionCode.SectionCodeId;
-import de.metas.sectionCode.service.SectionCodeService;
+import de.metas.sectionCode.SectionCodeService;
 import de.metas.security.permissions2.PermissionService;
 import de.metas.shipping.IShipperDAO;
 import de.metas.shipping.ShipperId;
@@ -435,14 +435,14 @@ final class MasterdataProvider
 	}
 
 	@Nullable
-	public SectionCodeId getSectionCodeId(@Nullable final String sectionCode)
+	public SectionCodeId getSectionCodeId(@NonNull final OrgId orgId, @Nullable final String sectionCode)
 	{
 		if (Check.isBlank(sectionCode))
 		{
 			return null;
 		}
 
-		return sectionCodeService.getSectionCodeIdByValue(sectionCode)
+		return sectionCodeService.getSectionCodeIdByValue(orgId, sectionCode)
 				.orElse(null);
 	}
 }

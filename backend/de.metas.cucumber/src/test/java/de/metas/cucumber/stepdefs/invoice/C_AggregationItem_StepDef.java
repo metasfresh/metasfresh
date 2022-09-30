@@ -42,12 +42,12 @@ public class C_AggregationItem_StepDef
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
-			final String columnName = DataTableUtil.extractStringForColumnName(row, "Name");
-
+			final int aggregationId = DataTableUtil.extractIntForColumnName(row, I_C_AggregationItem.COLUMNNAME_C_Aggregation_ID);
 			final int columnId = DataTableUtil.extractIntForColumnName(row, I_C_AggregationItem.COLUMNNAME_AD_Column_ID);
 			final Boolean isActive = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_C_AggregationItem.COLUMNNAME_IsActive, null);
 
 			final I_C_AggregationItem aggItem = queryBL.createQueryBuilder(I_C_AggregationItem.class)
+					.addEqualsFilter(I_C_AggregationItem.COLUMNNAME_C_Aggregation_ID, aggregationId)
 					.addEqualsFilter(I_C_AggregationItem.COLUMNNAME_AD_Column_ID, columnId)
 					.orderBy(I_C_AggregationItem.COLUMN_C_AggregationItem_ID)
 					.create()

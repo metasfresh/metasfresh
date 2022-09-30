@@ -22,16 +22,18 @@
 
 package de.metas.cucumber.stepdefs.dunning;
 
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.sectioncode.M_SectionCode_StepDefData;
 import de.metas.dunning.model.I_C_DunningDoc;
-import de.metas.dunning.model.I_C_Dunning_Candidate;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DunningLevel;
 import org.compiere.model.I_M_SectionCode;
 
@@ -47,13 +49,16 @@ public class C_DunningDoc_StepDef
 
 	private final C_DunningLevel_StepDefData dunningLevelTable;
 	private final M_SectionCode_StepDefData sectionCodeTable;
+	private final C_BPartner_StepDefData bpartnerTable;
 
 	public C_DunningDoc_StepDef(
 			@NonNull final C_DunningLevel_StepDefData dunningLevelTable,
-			@NonNull final M_SectionCode_StepDefData sectionCodeTable)
+			@NonNull final M_SectionCode_StepDefData sectionCodeTable,
+			@NonNull final C_BPartner_StepDefData bpartnerTable)
 	{
 		this.dunningLevelTable = dunningLevelTable;
 		this.sectionCodeTable = sectionCodeTable;
+		this.bpartnerTable = bpartnerTable;
 	}
 
 	@And("validate C_DunningDoc:")
@@ -63,25 +68,38 @@ public class C_DunningDoc_StepDef
 		{
 			final List<I_C_DunningDoc> dunningDocs = retrieveDunningDoc(row);
 			assertThat(dunningDocs).isNotEmpty();
+
+			dunningDocs.forEach(doc -> validateDunningDoc(doc, row));
 		}
 	}
 
 	@NonNull
 	private List<I_C_DunningDoc> retrieveDunningDoc(@NonNull final Map<String, String> row)
 	{
-		final String dunningLevelIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_DunningLevel.COLUMNNAME_C_DunningLevel_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final I_C_DunningLevel dunningLevel = dunningLevelTable.get(dunningLevelIdentifier);
-
-		final String sectionCodeIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Dunning_Candidate.COLUMNNAME_M_SectionCode_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_M_SectionCode sectionCode = sectionCodeTable.get(sectionCodeIdentifier);
-
-		final Boolean processed = DataTableUtil.extractBooleanForColumnNameOr(row, I_C_DunningDoc.COLUMNNAME_Processed, false);
+		final String bpIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_DunningDoc.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_C_BPartner bPartner = bpartnerTable.get(bpIdentifier);
 
 		return queryBL.createQueryBuilder(I_C_DunningDoc.class)
-				.addEqualsFilter(I_C_DunningDoc.COLUMNNAME_C_DunningLevel_ID, dunningLevel.getC_DunningLevel_ID())
-				.addEqualsFilter(I_C_DunningDoc.COLUMNNAME_M_SectionCode_ID, sectionCode.getM_SectionCode_ID())
-				.addEqualsFilter(I_C_DunningDoc.COLUMNNAME_Processed, processed)
+				.addEqualsFilter(I_C_DunningDoc.COLUMNNAME_C_BPartner_ID, bPartner.getC_BPartner_ID())
 				.create()
 				.list();
+	}
+
+	private void validateDunningDoc(@NonNull final I_C_DunningDoc dunningDoc, @NonNull final Map<String, String> row)
+	{
+		final String dunningLevelIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_DunningDoc.COLUMNNAME_C_DunningLevel_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final I_C_DunningLevel dunningLevel = dunningLevelTable.get(dunningLevelIdentifier);
+
+		assertThat(dunningDoc.getC_DunningLevel_ID()).isEqualTo(dunningLevel.getC_DunningLevel_ID());
+
+		final String sectionCodeIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_DunningDoc.COLUMNNAME_M_SectionCode_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(sectionCodeIdentifier))
+		{
+			final I_M_SectionCode sectionCode = sectionCodeTable.get(sectionCodeIdentifier);
+			assertThat(dunningDoc.getM_SectionCode_ID()).isEqualTo(sectionCode.getM_SectionCode_ID());
+		}
+
+		final Boolean processed = DataTableUtil.extractBooleanForColumnNameOr(row, I_C_DunningDoc.COLUMNNAME_Processed, false);
+		assertThat(dunningDoc.isProcessed()).isEqualTo(processed);
 	}
 }

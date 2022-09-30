@@ -20,32 +20,27 @@
  * #L%
  */
 
-package de.metas.sectionCode.repository;
+package de.metas.sectionCode;
 
-import de.metas.sectionCode.SectionCodeId;
-import de.metas.util.Services;
+import de.metas.organization.OrgId;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.I_M_SectionCode;
-import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
 
 import java.util.Optional;
 
-@Repository
-public class SectionCodeRepository
+@Service
+public class SectionCodeService
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final SectionCodeRepository sectionCodeRepository;
+
+	public SectionCodeService(@NonNull final SectionCodeRepository sectionCodeRepository)
+	{
+		this.sectionCodeRepository = sectionCodeRepository;
+	}
 
 	@NonNull
-	public Optional<SectionCodeId> getSectionCodeIdByValue(@NonNull final String value)
+	public Optional<SectionCodeId> getSectionCodeIdByValue(@NonNull final OrgId orgId, @NonNull final String value)
 	{
-		return queryBL.createQueryBuilder(I_M_SectionCode.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_SectionCode.COLUMNNAME_Value, value)
-				.create()
-				.listIds()
-				.stream()
-				.map(SectionCodeId::ofRepoId)
-				.findFirst();
+		return sectionCodeRepository.getSectionCodeIdByValue(orgId, value);
 	}
 }

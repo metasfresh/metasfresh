@@ -667,7 +667,7 @@ class OLCandOrderFactory
 			return null;
 		}
 
-		if (aggregationInfo.isSplitDiscriminatorByColumn(I_C_OLCand.COLUMNNAME_M_SectionCode_ID))
+		if (aggregationInfo.isSplitByDiscriminatorColumn(I_C_OLCand.COLUMNNAME_M_SectionCode_ID))
 		{
 			return groupRepOLCand.getSectionCodeId();
 		}

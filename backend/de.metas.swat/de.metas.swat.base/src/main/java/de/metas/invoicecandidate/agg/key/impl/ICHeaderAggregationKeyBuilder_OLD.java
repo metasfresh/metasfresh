@@ -25,7 +25,6 @@ package de.metas.invoicecandidate.agg.key.impl;
 import de.metas.aggregation.api.AbstractAggregationKeyBuilder;
 import de.metas.aggregation.api.AggregationId;
 import de.metas.aggregation.api.AggregationKey;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.pricing.service.IPriceListDAO;
@@ -126,10 +125,6 @@ public final class ICHeaderAggregationKeyBuilder_OLD extends AbstractAggregation
 		final Boolean compact = true;
 		values.add(compact ? toHashcode(ic.getDescriptionHeader()) : ic.getDescriptionHeader());
 		values.add(compact ? toHashcode(ic.getDescriptionBottom()) : ic.getDescriptionBottom());
-
-		//M_SectionCode_ID
-		final int sectionCodeId = ic.getM_SectionCode_ID();
-		values.add(CoalesceUtil.coalesceNotNull(sectionCodeId, 0));
 
 		return values;
 	}

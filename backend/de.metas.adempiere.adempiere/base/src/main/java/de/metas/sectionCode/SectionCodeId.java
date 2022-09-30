@@ -22,7 +22,6 @@
 
 package de.metas.sectionCode;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
@@ -33,7 +32,6 @@ import org.compiere.model.I_M_SectionCode;
 import javax.annotation.Nullable;
 import java.util.Optional;
 
-@JsonAutoDetect(fieldVisibility = JsonAutoDetect.Visibility.ANY, getterVisibility = JsonAutoDetect.Visibility.NONE, isGetterVisibility = JsonAutoDetect.Visibility.NONE, setterVisibility = JsonAutoDetect.Visibility.NONE)
 @Value
 public class SectionCodeId implements RepoIdAware
 {

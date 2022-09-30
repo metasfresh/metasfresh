@@ -56,10 +56,10 @@ public class C_Doc_Outbound_Config_StepDef
 	@Given("metasfresh contains C_Doc_Outbound_Config:")
 	public void metasfresh_contains_C_Doc_Outbound_Config(@NonNull final DataTable dataTable)
 	{
-		dataTable.asMaps().forEach(this::loadC_Doc_Outbound_Config);
+		dataTable.asMaps().forEach(this::loadOrCreateC_Doc_Outbound_Config);
 	}
 
-	private void loadC_Doc_Outbound_Config(@NonNull final Map<String, String> row)
+	private void loadOrCreateC_Doc_Outbound_Config(@NonNull final Map<String, String> row)
 	{
 		final String tableName = DataTableUtil.extractStringForColumnName(row, I_AD_Table.COLUMNNAME_TableName);
 		final AdTableId tableId = AdTableId.ofRepoIdOrNull(tableDAO.retrieveTableId(tableName));
@@ -70,17 +70,15 @@ public class C_Doc_Outbound_Config_StepDef
 				.addOnlyActiveRecordsFilter()
 				.addStringLikeFilter(I_AD_PrintFormat.COLUMNNAME_Name, printFormatName, true)
 				.create()
-				.firstNotNull(I_AD_PrintFormat.class);
+				.firstOnlyNotNull(I_AD_PrintFormat.class);
 
-		final I_C_Doc_Outbound_Config record = CoalesceUtil.coalesceSuppliers(
+		final I_C_Doc_Outbound_Config record = CoalesceUtil.coalesceSuppliersNotNull(
 				() -> queryBL.createQueryBuilder(I_C_Doc_Outbound_Config.class)
 						.addEqualsFilter(I_C_Doc_Outbound_Config.COLUMNNAME_AD_Table_ID, tableId)
 						.addEqualsFilter(I_C_Doc_Outbound_Config.COLUMNNAME_AD_PrintFormat_ID, printFormat.getAD_PrintFormat_ID())
 						.create()
 						.firstOnlyOrNull(I_C_Doc_Outbound_Config.class),
 				() -> InterfaceWrapperHelper.newInstance(I_C_Doc_Outbound_Config.class));
-
-		assertThat(record).isNotNull();
 
 		record.setAD_Table_ID(tableId.getRepoId());
 		record.setAD_PrintFormat_ID(printFormat.getAD_PrintFormat_ID());

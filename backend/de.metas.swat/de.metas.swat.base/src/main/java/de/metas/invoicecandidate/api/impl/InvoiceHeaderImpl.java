@@ -99,7 +99,6 @@ import java.util.List;
 
 	private String incotermLocation;
 
-	@Getter
 	@Setter
 	private SectionCodeId sectionCodeId;
 

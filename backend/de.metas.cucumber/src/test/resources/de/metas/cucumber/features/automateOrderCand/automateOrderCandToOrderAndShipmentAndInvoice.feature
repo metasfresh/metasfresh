@@ -6,7 +6,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
 
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
-    And metasfresh has date and time 2021-09-01T13:30:13+01:00[Europe/Berlin]
+    And metasfresh has date and time 2021-11-20T13:30:13+01:00[Europe/Berlin]
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And preexisting test data is put into tableData
       | C_BPartner_ID.Identifier | C_BPartner_ID | C_BPartner_Location_ID.Identifier | C_BPartner_Location_ID | M_Product_ID.Identifier | M_Product_ID |
@@ -19,11 +19,11 @@ Feature: Process order candidate and automatically generate shipment and invoice
   @Id:S0190_300
   Scenario: Order candidate to shipment and invoice flow and closed order
     Given update C_OLCandAggAndOrder:
-      | Name             | AD_Column_OLCand_ID | OPT.SplitOrder |
-      | M_SectionCode_ID | 584431              | Y              |
+      | C_OLCandProcessor_ID | Column           | AD_Column_OLCand_ID | OPT.SplitOrder |
+      | 1000003              | M_SectionCode_ID | 584431              | Y              |
     And update C_AggregationItem:
-      | Name             | AD_Column_ID | OPT.IsActive |
-      | M_SectionCode_ID | 584388       | Y            |
+      | C_Aggregation_ID | Column           | AD_Column_ID | OPT.IsActive |
+      | 1000000          | M_SectionCode_ID | 584388       | Y            |
 
     And metasfresh contains M_SectionCode:
       | M_SectionCode_ID.Identifier | Value       |
@@ -121,8 +121,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | invoice_1  | 2021-04-08       |
 
     And invoke "C_Dunning_Candidate_Create" process:
-      | C_DunningLevel_ID.Identifier | OPT.IsFullUpdate |
-      | dunningLevel_S0150_100       | Y                |
+      | C_DunningLevel_ID.Identifier | DunningDate | OPT.IsFullUpdate |
+      | dunningLevel_S0150_100       | 2022-09-29  | Y                |
     And locate C_Dunning_Candidate:
       | C_Dunning_Candidate_ID.Identifier | TableName | Record_ID.Identifier | OPT.M_SectionCode_ID.Identifier |
       | dunningCandInvoice_1              | C_Invoice | invoice_1            | testSection_S0150_100           |
@@ -130,8 +130,8 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | C_Dunning_Candidate_ID.Identifier | AutoProcess |
       | dunningCandInvoice_1              | false       |
     And validate C_DunningDoc:
-      | C_DunningLevel_ID.Identifier | M_SectionCode_ID.Identifier | Processed |
-      | dunningLevel_S0150_100       | testSection_S0150_100       | N         |
+      | C_BPartner_ID.Identifier | C_DunningLevel_ID.Identifier | OPT.M_SectionCode_ID.Identifier | Processed |
+      | bpartner_1               | dunningLevel_S0150_100       | testSection_S0150_100           | N         |
 
     And metasfresh contains C_BP_BankAccount
       | Identifier       | C_BPartner_ID.Identifier | C_Currency.ISO_Code |

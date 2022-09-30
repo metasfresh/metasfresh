@@ -14,7 +14,7 @@ import de.metas.rest_api.utils.JsonErrors;
 import de.metas.rest_api.v2.bpartner.BpartnerRestController;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
-import de.metas.sectionCode.service.SectionCodeService;
+import de.metas.sectionCode.SectionCodeService;
 import de.metas.security.permissions2.PermissionServiceFactories;
 import de.metas.security.permissions2.PermissionServiceFactory;
 import de.metas.util.Services;

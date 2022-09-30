@@ -45,6 +45,8 @@ public class MAllocationLine extends X_C_AllocationLine
 	 */
 	private static final long serialVersionUID = 5532305715886380749L;
 
+	private final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
+
 	/**
 	 * 	Standard Constructor
 	 *	@param ctx context
@@ -339,7 +341,6 @@ public class MAllocationLine extends X_C_AllocationLine
 					+ " order of C_Invoice_ID=" + C_Invoice_ID);
 			}
 
-			final IPaymentBL paymentBL = Services.get(IPaymentBL.class);
 			final Optional<SectionCodeId> sectionCodeIdOpt = paymentBL.determineSectionCodeId(payment);
 
 			if (sectionCodeIdOpt.isPresent())

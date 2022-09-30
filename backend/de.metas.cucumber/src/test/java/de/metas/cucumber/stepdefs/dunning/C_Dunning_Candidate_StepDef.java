@@ -50,10 +50,8 @@ import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_M_SectionCode;
 import org.compiere.util.Env;
-import org.compiere.util.TrxRunnableAdapter;
 
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
@@ -96,22 +94,17 @@ public class C_Dunning_Candidate_StepDef
 
 			final Boolean isFullUpdate = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT.IsFullUpdate", false);
 
-			final Timestamp dunningDate = Timestamp.from(Instant.now());
+			final Timestamp dunningDate = DataTableUtil.extractDateTimestampForColumnName(row, "DunningDate");
 
-			trxManager.runInNewTrx(new TrxRunnableAdapter()
-			{
+			trxManager.runInNewTrx(() ->
+								   {
+									   final IDunningContext context = dunningBL.createDunningContext(Env.getCtx(), dunningLevelRecord, dunningDate, ITrx.TRXNAME_None);
+									   context.setProperty(IDunningCandidateProducer.CONTEXT_FullUpdate, isFullUpdate);
 
-				@Override
-				public void run(String localTrxName)
-				{
-					final IDunningContext context = dunningBL.createDunningContext(Env.getCtx(), dunningLevelRecord, dunningDate, ITrx.TRXNAME_None);
-					context.setProperty(IDunningCandidateProducer.CONTEXT_FullUpdate, isFullUpdate);
+									   dunningDAO.deleteNotProcessedCandidates(context, dunningLevelRecord);
 
-					final int countDelete = dunningDAO.deleteNotProcessedCandidates(context, dunningLevelRecord);
-
-					final int countCreateUpdate = dunningBL.createDunningCandidates(context);
-				}
-			});
+									   dunningBL.createDunningCandidates(context);
+								   });
 		}
 	}
 

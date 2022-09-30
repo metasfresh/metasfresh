@@ -910,19 +910,18 @@ public class PaymentBL implements IPaymentBL
 	@NonNull
 	public Optional<SectionCodeId> determineSectionCodeId(@NonNull final I_C_Payment payment)
 	{
-		final Set<InvoiceId> invoiceIdsWithPaymentAllocation = allocationDAO.retrieveAllPaymentAllocationLines(PaymentId.ofRepoId(payment.getC_Payment_ID()))
+		final Set<InvoiceId> invoiceIdsFromAllocationLines = allocationDAO.retrieveAllPaymentAllocationLines(PaymentId.ofRepoId(payment.getC_Payment_ID()))
 				.stream()
-				.filter(allocationLine ->  allocationLine.getReversalLine_ID() <= 0)
+				//note: excluding deallocated lines
+				.filter(allocationLine -> allocationLine.getReversalLine_ID() <= 0)
 				.map(I_C_AllocationLine::getC_Invoice_ID)
 				.map(InvoiceId::ofRepoIdOrNull)
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 
-		final Set<SectionCodeId> sectionCodeIds = invoiceDAO.getByIdsInTrx(invoiceIdsWithPaymentAllocation)
+		final Set<Integer> sectionCodeIds = invoiceDAO.getByIdsInTrx(invoiceIdsFromAllocationLines)
 				.stream()
 				.map(I_C_Invoice::getM_SectionCode_ID)
-				.map(SectionCodeId::ofRepoIdOrNull)
-				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 
 		if (sectionCodeIds.size() != 1)
@@ -930,6 +929,8 @@ public class PaymentBL implements IPaymentBL
 			return Optional.empty();
 		}
 
-		return Optional.of(sectionCodeIds.iterator().next());
+		final SectionCodeId singleSectionCodeId = SectionCodeId.ofRepoIdOrNull(sectionCodeIds.iterator().next());
+
+		return Optional.ofNullable(singleSectionCodeId);
 	}
 }
