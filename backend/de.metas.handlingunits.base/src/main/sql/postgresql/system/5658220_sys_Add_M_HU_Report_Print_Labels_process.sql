@@ -42,3 +42,8 @@ UPDATE AD_Process SET Name='Etiketten',Updated=TO_TIMESTAMP('2022-09-30 15:00:18
 -- URL zum Konzept
 INSERT INTO M_HU_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,Created,CreatedBy,IsActive,IsApplyToCUs,IsApplyToLUs,IsApplyToTopLevelHUsOnly,IsApplyToTUs,IsProvideAsUserAction,M_HU_Process_ID,Updated,UpdatedBy) VALUES (0,0,585114,TO_TIMESTAMP('2022-09-30 15:01:51','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','N','Y','Y',540024,TO_TIMESTAMP('2022-09-30 15:01:51','YYYY-MM-DD HH24:MI:SS'),100)
 ;
+
+
+update ad_process_trl  set name = 'Etiketten' where ad_process_id=585114 and ad_language in ('de_DE','de_CH');
+
+update ad_process_trl  set name = 'HU Labels' where ad_process_id=585114 and ad_language ='en_US';
