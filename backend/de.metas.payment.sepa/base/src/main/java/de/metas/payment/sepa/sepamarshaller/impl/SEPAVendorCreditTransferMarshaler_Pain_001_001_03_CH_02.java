@@ -34,6 +34,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Supplier;
@@ -589,7 +590,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			else
 			{
 				// // let the bank see what it can do
-				finInstnId.setBIC(NOTPROVIDED_VALUE);
+				finInstnId.setBIC(BIC_NOTPROVIDED);
 			}
 
 			//
@@ -774,7 +775,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			final String endToEndId;
 			if (exportContext.isReferenceAsEndToEndId())
 			{
-				endToEndId = CoalesceUtil.coalesce(StringUtils.trunc(replaceForbiddenChars(reference), 65, TruncateAt.STRING_START), NOTPROVIDED_VALUE);
+				endToEndId = CoalesceUtil.coalesce(StringUtils.trunc(replaceForbiddenChars(reference), 65, TruncateAt.STRING_START), BIC_NOTPROVIDED);
 			}
 			else
 			{
