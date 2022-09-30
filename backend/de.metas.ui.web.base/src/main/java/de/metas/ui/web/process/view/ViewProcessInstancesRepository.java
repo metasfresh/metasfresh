@@ -77,7 +77,7 @@ public class ViewProcessInstancesRepository implements IProcessInstancesReposito
 		return viewClassActions.mergeWith(viewActions);
 	}
 
-	private final ViewActionDescriptor getViewActionDescriptor(final ProcessId processId)
+	public final ViewActionDescriptor getViewActionDescriptor(final ProcessId processId)
 	{
 		final IPair<String, String> viewIdAndActionId = extractViewIdAndActionId(processId);
 		final String viewId = viewIdAndActionId.getLeft();

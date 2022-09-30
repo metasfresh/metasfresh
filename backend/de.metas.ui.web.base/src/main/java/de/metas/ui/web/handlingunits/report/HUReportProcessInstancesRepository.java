@@ -28,6 +28,9 @@ import de.metas.ui.web.process.descriptor.ProcessDescriptor;
 import de.metas.ui.web.process.descriptor.ProcessDescriptor.ProcessDescriptorType;
 import de.metas.ui.web.process.descriptor.ProcessLayout;
 import de.metas.ui.web.process.descriptor.WebuiRelatedProcessDescriptor;
+import de.metas.ui.web.process.view.ViewActionDescriptor;
+import de.metas.ui.web.process.view.ViewActionParamDescriptor;
+import de.metas.ui.web.process.view.ViewProcessInstancesRepository;
 import de.metas.ui.web.view.IView;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -41,9 +44,11 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Process;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -88,6 +93,8 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 			.expireAfterAccess(10, TimeUnit.MINUTES)
 			.build();
 
+	private final ViewProcessInstancesRepository viewProcessInstancesRepository = SpringContextHolder.instance.getBean(ViewProcessInstancesRepository.class);
+
 	@Override
 	public String getProcessHandlerType()
 	{
@@ -121,8 +128,18 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 				.collect(ImmutableList.toImmutableList()));
 	}
 
+
+	@Nullable
+	private void addParametersEntityDescriptor(@NonNull final ProcessId processId, @NonNull final DocumentEntityDescriptor.Builder builder)
+	{
+		final ViewActionDescriptor descriptor = viewProcessInstancesRepository.getViewActionDescriptor(processId);
+		descriptor.addParametersDescriptor(builder);
+	}
+
+
 	private WebuiHUProcessDescriptor toWebuiHUProcessDescriptor(@NonNull final HUProcessDescriptor huProcessDescriptor)
 	{
+
 		final AdProcessId reportADProcessId = huProcessDescriptor.getProcessId();
 		final ProcessId processId = ProcessId.of(PROCESS_HANDLER_TYPE, reportADProcessId.getRepoId());
 
@@ -131,15 +148,18 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 		final ITranslatableString caption = adProcessTrl.getColumnTrl(I_AD_Process.COLUMNNAME_Name, adProcess.getName());
 		final ITranslatableString description = adProcessTrl.getColumnTrl(I_AD_Process.COLUMNNAME_Description, adProcess.getDescription());
 
-		final DocumentEntityDescriptor parametersDescriptor = DocumentEntityDescriptor.builder()
+				final DocumentEntityDescriptor.Builder builder = DocumentEntityDescriptor.builder()
 				.setDocumentType(DocumentType.Process, processId.toDocumentId())
 				.setCaption(caption)
 				.setDescription(description)
 				.disableDefaultTableCallouts()
 				.addField(DocumentFieldDescriptor.builder(HUReportProcessInstance.PARAM_Copies)
 						.setCaption(Services.get(IMsgBL.class).translatable(HUReportProcessInstance.PARAM_Copies))
-						.setWidgetType(DocumentFieldWidgetType.Integer))
-				.build();
+						.setWidgetType(DocumentFieldWidgetType.Integer));
+
+		addParametersEntityDescriptor(processId, builder);
+
+		final DocumentEntityDescriptor parametersDescriptor = builder.build();
 
 		return WebuiHUProcessDescriptor.builder()
 				.huProcessDescriptor(huProcessDescriptor)
