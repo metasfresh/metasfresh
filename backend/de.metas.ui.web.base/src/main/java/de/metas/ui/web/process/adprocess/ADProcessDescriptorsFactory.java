@@ -244,7 +244,7 @@ import java.util.stream.Stream;
 				.build();
 	}
 
-	public void addProcessParameters(final ProcessId processId, final DocumentEntityDescriptor.Builder parametersDescriptorBuilder)
+	public void addProcessParameters(@NonNull final ProcessId processId, @NonNull final DocumentEntityDescriptor.Builder parametersDescriptorBuilder)
 	{
 		final I_AD_Process adProcess = adProcessService.getById(processId.toAdProcessId());
 		if (adProcess == null)
@@ -256,7 +256,7 @@ import java.util.stream.Stream;
 		addProcessParameters(processId, webuiProcesClassInfo, parametersDescriptorBuilder);
 	}
 
-	private void addProcessParameters(final ProcessId processId, final WebuiProcessClassInfo webuiProcesClassInfo, final DocumentEntityDescriptor.Builder parametersDescriptorBuilder)
+	private void addProcessParameters(@NonNull final ProcessId processId, @NonNull final WebuiProcessClassInfo webuiProcesClassInfo, @NonNull final DocumentEntityDescriptor.Builder parametersDescriptorBuilder)
 	{
 		adProcessService.retrieveProcessParameters(processId.toAdProcessId())
 				.stream()
