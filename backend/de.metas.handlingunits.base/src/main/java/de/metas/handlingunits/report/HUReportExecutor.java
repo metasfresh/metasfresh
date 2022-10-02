@@ -236,16 +236,21 @@ public class HUReportExecutor
 		final String adLanguage = request.getAdLanguage();
 		final String reportLanguageToUse = Objects.equals(REPORT_LANG_NONE, adLanguage) ? null : adLanguage;
 
-		final ProcessExecutor processExecutor = ProcessInfo.builder()
+		final ProcessInfo.ProcessInfoBuilder builder = ProcessInfo.builder()
 				.setCtx(ctx)
 				.setAD_Process_ID(request.getAdProcessId())
 				.setWindowNo(request.getWindowNo())
 				.setTableName(I_M_HU.Table_Name)
 				.setReportLanguage(reportLanguageToUse)
 				.addParameter(ReportConstants.REPORT_PARAM_BARCODE_URL, DocumentReportService.getBarcodeServlet(Env.getClientId(ctx), Env.getOrgId(ctx)))
-				.addParameter(IMassPrintingService.PARAM_PrintCopies, request.getCopies().toInt())
-				.addParameter(REPORT_AD_PROCESS_ID, request.getAdJasperProcessId()!=null ? request.getAdJasperProcessId().getRepoId():null)
-				.setPrintPreview(request.getPrintPreview())
+				.addParameter(IMassPrintingService.PARAM_PrintCopies, request.getCopies().toInt());
+
+		if (request.getAdJasperProcessId()!=null)
+		{
+			builder.addParameter(REPORT_AD_PROCESS_ID, request.getAdJasperProcessId().getRepoId());
+		}
+
+		final ProcessExecutor processExecutor =	builder.setPrintPreview(request.getPrintPreview())
 				//
 				// Execute report in a new transaction
 				.buildAndPrepareExecution()
