@@ -9,6 +9,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
+import de.metas.ui.web.window.model.IDocumentFieldView;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
 
@@ -236,10 +237,14 @@ final class HUReportProcessInstance implements IProcessInstanceController
 	}
 	public AdProcessId getJasperProcess_ID()
 	{
-		final int processId= parameters.getFieldView(PARAM_AD_Process_ID).getValueAsInt(0);
-		if (processId > 0)
+		final IDocumentFieldView field = parameters.getFieldViewOrNull(PARAM_AD_Process_ID);
+		if (field != null)
 		{
-			return AdProcessId.ofRepoId(processId);
+			final int processId = field.getValueAsInt(0);
+			if (processId > 0)
+			{
+				return AdProcessId.ofRepoId(processId);
+			}
 		}
 		return null;
 	}
