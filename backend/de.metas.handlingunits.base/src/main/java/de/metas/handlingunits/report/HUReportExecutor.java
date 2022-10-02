@@ -10,6 +10,7 @@ import de.metas.notification.INotificationBL;
 import de.metas.notification.Recipient;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.printing.IMassPrintingService;
+import de.metas.process.ADProcessService;
 import de.metas.process.AdProcessId;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutor;
@@ -72,10 +73,12 @@ public class HUReportExecutor
 	}
 
 	private static final String REPORT_LANG_NONE = "NO-COMMON-LANGUAGE-FOUND";
+	private static final String REPORT_AD_PROCESS_ID = "AD_Process_ID";
 
 	private final Properties ctx;
 	private int windowNo = Env.WINDOW_None;
 	private PrintCopies numberOfCopies = PrintCopies.ONE;
+	private AdProcessId adJasperProcessId;
 	private Boolean printPreview = null;
 
 	private HUReportExecutor(final Properties ctx)
@@ -109,6 +112,13 @@ public class HUReportExecutor
 		this.numberOfCopies = numberOfCopies;
 		return this;
 	}
+
+	public HUReportExecutor adJasperProcessId(final AdProcessId adJasperProcessId)
+	{
+		this.adJasperProcessId = adJasperProcessId;
+		return this;
+	}
+
 
 	public HUReportExecutor printPreview(final boolean printPreview)
 	{
@@ -174,6 +184,7 @@ public class HUReportExecutor
 				.adProcessId(adProcessId)
 				.windowNo(windowNo)
 				.copies(numberOfCopies)
+				.adJasperProcessId(adJasperProcessId)
 				.printPreview(printPreview)
 				.adLanguage(extractReportingLanguageFromHUs(husToProcess))
 				.huIdsToProcess(extractHUIds(husToProcess))
@@ -183,7 +194,7 @@ public class HUReportExecutor
 
 	private HUReportTrxListener newHUReportTrxListener(final AdProcessId adProcessId)
 	{
-		return new HUReportTrxListener(ctx, adProcessId, windowNo, numberOfCopies);
+		return new HUReportTrxListener(ctx, adProcessId, windowNo, numberOfCopies, adJasperProcessId);
 	}
 
 	private ImmutableSet<HuId> extractHUIds(final Collection<HUToReport> hus)
@@ -233,6 +244,7 @@ public class HUReportExecutor
 				.setReportLanguage(reportLanguageToUse)
 				.addParameter(ReportConstants.REPORT_PARAM_BARCODE_URL, DocumentReportService.getBarcodeServlet(Env.getClientId(ctx), Env.getOrgId(ctx)))
 				.addParameter(IMassPrintingService.PARAM_PrintCopies, request.getCopies().toInt())
+				.addParameter(REPORT_AD_PROCESS_ID, request.getAdJasperProcessId()!=null ? request.getAdJasperProcessId().getRepoId():null)
 				.setPrintPreview(request.getPrintPreview())
 				//
 				// Execute report in a new transaction
@@ -253,6 +265,7 @@ public class HUReportExecutor
 		private final AdProcessId adProcessId;
 		private final int windowNo;
 		private final PrintCopies copies;
+		private final AdProcessId adJasperProcessId;
 
 		private final Set<HuId> huIdsToProcess = new LinkedHashSet<>(); // using a linked set to preserve the order in which HUs were added
 
@@ -274,12 +287,14 @@ public class HUReportExecutor
 				@NonNull final Properties ctx,
 				final AdProcessId adProcessId,
 				final int windowNo,
-				final PrintCopies copies)
+				final PrintCopies copies,
+		        @Nullable final AdProcessId adJasperProcessId)
 		{
 			this.ctx = ctx;
 			this.adProcessId = adProcessId;
 			this.windowNo = windowNo;
 			this.copies = copies;
+			this.adJasperProcessId = adJasperProcessId;
 		}
 
 		public boolean addAll(@NonNull final Collection<HuId> huIds)
@@ -331,6 +346,7 @@ public class HUReportExecutor
 					.adProcessId(adProcessId)
 					.windowNo(windowNo)
 					.copies(copies)
+					.adJasperProcessId(adJasperProcessId)
 					.adLanguage(adLanguage)
 					.huIdsToProcess(ImmutableSet.copyOf(huIdsToProcess))
 					.build());
@@ -363,6 +379,7 @@ public class HUReportExecutor
 		AdProcessId adProcessId;
 		int windowNo;
 		PrintCopies copies;
+		AdProcessId adJasperProcessId;
 		Boolean printPreview;
 		String adLanguage;
 		boolean onErrorThrowException;
@@ -374,6 +391,7 @@ public class HUReportExecutor
 				@NonNull final AdProcessId adProcessId,
 				final int windowNo,
 				@NonNull final PrintCopies copies,
+				@Nullable final AdProcessId adJasperProcessId,
 				@Nullable final Boolean printPreview,
 				@NonNull final String adLanguage,
 				final boolean onErrorThrowException,
@@ -387,6 +405,7 @@ public class HUReportExecutor
 			this.adProcessId = adProcessId;
 			this.windowNo = windowNo > 0 ? windowNo : Env.WINDOW_None;
 			this.copies = copies;
+			this.adJasperProcessId = adJasperProcessId;
 			this.printPreview = printPreview;
 			this.adLanguage = adLanguage;
 			this.onErrorThrowException = onErrorThrowException;

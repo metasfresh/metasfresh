@@ -148,6 +148,7 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 				.setCaption(caption)
 				.setDescription(description)
 				.disableDefaultTableCallouts()
+						.disableCallouts()
 				.addField(DocumentFieldDescriptor.builder(HUReportProcessInstance.PARAM_Copies)
 						.setCaption(Services.get(IMsgBL.class).translatable(HUReportProcessInstance.PARAM_Copies))
 						.setWidgetType(DocumentFieldWidgetType.Integer));

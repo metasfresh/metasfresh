@@ -70,6 +70,7 @@ import lombok.NonNull;
 final class HUReportProcessInstance implements IProcessInstanceController
 {
 	public static final String PARAM_Copies = "Copies";
+	public static final String PARAM_AD_Process_ID = "AD_Process_ID";
 
 	private final DocumentId instanceId;
 	private final ViewRowIdsSelection viewRowIdsSelection;
@@ -162,6 +163,7 @@ final class HUReportProcessInstance implements IProcessInstanceController
 		final HUEditorView view = HUEditorView.cast(viewsRepo.getView(viewId));
 		final HUReportExecutorResult reportExecutorResult = HUReportExecutor.newInstance(context.getCtx())
 				.numberOfCopies(numberOfCopies)
+				.adJasperProcessId(getJasperProcess_ID())
 				.printPreview(true)
 				.executeNow(reportAdProcessId, extractHUsToReport(view));
 
@@ -231,5 +233,14 @@ final class HUReportProcessInstance implements IProcessInstanceController
 	public int getCopies()
 	{
 		return parameters.getFieldView(PARAM_Copies).getValueAsInt(0);
+	}
+	public AdProcessId getJasperProcess_ID()
+	{
+		final int processId= parameters.getFieldView(PARAM_AD_Process_ID).getValueAsInt(0);
+		if (processId > 0)
+		{
+			return AdProcessId.ofRepoId(processId);
+		}
+		return null;
 	}
 }
