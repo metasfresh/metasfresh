@@ -99,7 +99,7 @@ public final class ViewActionDescriptor
 		return parametersDescriptor.build();
 	}
 
-	public void addParametersDescriptor(final DocumentEntityDescriptor.Builder parametersDescriptor)
+	private void addParametersDescriptor(final DocumentEntityDescriptor.Builder parametersDescriptor)
 	{
 		viewActionParamDescriptors.stream()
 				.filter(ViewActionParamDescriptor::isUserParameter)
