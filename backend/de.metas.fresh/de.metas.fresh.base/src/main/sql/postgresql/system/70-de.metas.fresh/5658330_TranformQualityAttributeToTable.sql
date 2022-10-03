@@ -713,13 +713,24 @@ UPDATE AD_Column SET FieldLength=60,Updated=TO_TIMESTAMP('2022-10-03 15:29:01','
 INSERT INTO t_alter_column values('m_quality','Value','VARCHAR(60)',null,null)
 ;
 
+-- 2022-10-03T12:52:58.164Z
+-- URL zum Konzept
+UPDATE AD_Column SET AD_Reference_ID=32, IsExcludeFromZoomTargets='Y',Updated=TO_TIMESTAMP('2022-10-03 15:52:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=584630
+;
+
+-- 2022-10-03T12:53:03.993Z
+-- URL zum Konzept
+INSERT INTO t_alter_column values('m_quality','AD_Image_ID','NUMERIC(10)',null,null)
+;
+
+
 
 ------------------------------ migrate data -------------------------------------------------------------------------------
 
 
 INSERT INTO m_quality (ad_client_id, ad_image_id, ad_org_id, created, createdby, isactive, m_quality_id, name, updated, updatedby, value)
 select
-    ad_client_id, null, ad_org_id, created, createdby, isactive, nextval('m_quality_seq'), name, updated, updatedby, value
+    1000000, null, ad_org_id, created, createdby, isactive, nextval('m_quality_seq'), name, updated, updatedby, value
 from ad_ref_list where ad_reference_id = 541509;
 ;
 
