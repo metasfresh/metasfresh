@@ -3,7 +3,7 @@ $$
     BEGIN
 
         PERFORM backup_table('AD_Process_Trl');
-
+        PERFORM backup_table('AD_Process_Para_Trl');
 
         UPDATE ad_process_trl
         SET name        = data.name_trl
@@ -12,15 +12,6 @@ $$
         WHERE ad_process_trl.ad_process_id = data.ad_process_id
           AND ad_language IN ('fr_CH', 'fr_FR')
           AND LENGTH(TRIM(data.name_trl)) > 0;
-    END;
-$$
-;
-
-DO
-$$
-    BEGIN
-
-        PERFORM backup_table('AD_Process_Para_Trl');
 
         UPDATE ad_process_para_trl
         SET name        = data.name_trl
@@ -30,7 +21,7 @@ $$
         WHERE ad_process_para_trl.ad_process_para_id = data.ad_process_para_id
           AND ad_language IN ('fr_CH', 'fr_FR')
           AND LENGTH(TRIM(data.name_trl)) > 0;
+
     END;
 $$
 ;
-
