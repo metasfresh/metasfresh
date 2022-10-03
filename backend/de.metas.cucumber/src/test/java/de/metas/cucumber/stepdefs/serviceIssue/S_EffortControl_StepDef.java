@@ -244,14 +244,20 @@ public class S_EffortControl_StepDef
 
 	private boolean isIssueClosed(@NonNull final I_S_EffortControl effortControl)
 	{
-		return queryBL.createQueryBuilder(I_S_Issue.class)
+		final List<I_S_Issue> effortIssues = queryBL.createQueryBuilder(I_S_Issue.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_S_Issue.COLUMNNAME_C_Activity_ID, effortControl.getC_Activity_ID())
 				.addEqualsFilter(I_S_Issue.COLUMNNAME_C_Project_ID, effortControl.getC_Project_ID())
 				.addEqualsFilter(I_S_Issue.COLUMNNAME_AD_Org_ID, effortControl.getAD_Org_ID())
 				.addEqualsFilter(I_S_Issue.COLUMNNAME_IsEffortIssue, true)
 				.create()
-				.stream()
-				.allMatch(issue -> issue.getStatus().equals(X_S_Issue.INTERNAL_STATUS_Invoiced));
+				.list();
+
+		if (effortIssues.isEmpty())
+		{
+			return false;
+		}
+
+		return effortIssues.stream().allMatch(issue -> issue.getStatus().equals(X_S_Issue.INTERNAL_STATUS_Invoiced));
 	}
 }

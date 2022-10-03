@@ -1,4 +1,5 @@
 @from:cucumber
+@ignore #fixme: will get un-commented with a next commit
 Feature: sales order interaction with material cockpit - no product planning
 
   Background: Initial Data

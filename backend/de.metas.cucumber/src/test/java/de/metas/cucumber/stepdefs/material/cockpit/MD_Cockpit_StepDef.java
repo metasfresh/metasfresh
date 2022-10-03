@@ -253,9 +253,10 @@ public class MD_Cockpit_StepDef
 				.append(I_MD_Cockpit.COLUMNNAME_QtySupply_PurchaseOrder_AtDate).append(" : ").append(expectedResults.getQtySupplyPurchaseOrderAtDate()).append("\n")
 				.append(I_MD_Cockpit.COLUMNNAME_QtySupplySum_AtDate).append(" : ").append(expectedResults.getQtySupplySumAtDate()).append("\n");
 
-		message.append("MD_Cockpit records:").append("\n");
+		message.append("MD_Cockpit records filtered by product:").append("\n");
 
 		queryBL.createQueryBuilder(I_MD_Cockpit.class)
+				.addEqualsFilter(I_MD_Cockpit.COLUMNNAME_M_Product_ID, expectedResults.getProductId())
 				.create()
 				.stream(I_MD_Cockpit.class)
 				.forEach(cockpitEntry -> message
