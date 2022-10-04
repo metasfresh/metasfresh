@@ -62,8 +62,7 @@ public class TestingGenericZoomIntoTableInfoRepository implements GenericZoomInt
 				.create()
 				.firstOnlyOptional(I_AD_Table.class)
 				.map(I_AD_Table::getAD_Window_ID)
-				.filter(id -> id > 0)
-				.map(AdWindowId::ofRepoId)
+				.map(AdWindowId::ofRepoIdOrNull)
 				.orElse(null);
 
 		if (windowId == null)
@@ -74,7 +73,6 @@ public class TestingGenericZoomIntoTableInfoRepository implements GenericZoomInt
 		return ImmutableList.of(
 				GenericZoomIntoTableWindow.builder()
 						.adWindowId(windowId)
-						.priority(1)
 						.build()
 		);
 	}

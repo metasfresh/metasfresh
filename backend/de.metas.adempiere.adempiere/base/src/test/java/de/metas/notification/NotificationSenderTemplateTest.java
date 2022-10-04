@@ -147,7 +147,7 @@ public class NotificationSenderTemplateTest
 		assertThat(mailContent).isNotNull();
 		assertThat(mailContent).isEqualTo("<html xmlns=\"http://www.w3.org/1999/xhtml\">\n"
 												  + "\t<body>\n"
-												  + "\t\tTest message is <a href=\"" + MOCK_FE_URL + "/window/100003/" + mockRecord.getAPI_Request_Audit_ID() + "\">" + mockRecord.getAPI_Request_Audit_ID() + "</a>.\n"
+												  + "\t\tTest message is <a href=\"" + MOCK_FE_URL + "/window/" + window.getAD_Window_ID() + "/" + mockRecord.getAPI_Request_Audit_ID() + "\">" + mockRecord.getAPI_Request_Audit_ID() + "</a>.\n"
 												  + "\t\t<br/>\n"
 												  + "\t\t\n"
 												  + "\t\t<br/>\n"
