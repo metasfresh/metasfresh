@@ -22,8 +22,17 @@ const RawMaterialIssueScanScreen = () => {
     params: { workflowId: wfProcessId, activityId, lineId, stepId },
   } = useRouteMatch();
 
-  const { huQRCode, uom, userInfo, qtyToIssue, qtyToIssueMax, isIssueWholeStep, qtyRejectedReasons, scaleDevice } =
-    useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId, stepId }));
+  const {
+    huQRCode,
+    uom,
+    userInfo,
+    qtyToIssue,
+    qtyToIssueMax,
+    isWeightable,
+    isIssueWholeHU,
+    qtyRejectedReasons,
+    scaleDevice,
+  } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId, stepId }));
 
   const dispatch = useDispatch();
   const history = useHistory();
@@ -34,9 +43,10 @@ const RawMaterialIssueScanScreen = () => {
         activityId,
         lineId,
         stepId,
+        huWeightGrossBeforeIssue: isWeightable && isIssueWholeHU ? qty : null,
         qtyIssued: qty,
-        qtyRejected: isIssueWholeStep ? qtyRejected : 0,
-        qtyRejectedReasonCode: isIssueWholeStep ? reason : null,
+        qtyRejected: isIssueWholeHU ? qtyRejected : 0,
+        qtyRejectedReasonCode: isIssueWholeHU ? reason : null,
       })
     )
       .catch((axiosError) => toastError({ axiosError }))
@@ -77,7 +87,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId, stepId }) =
   const lineQtyToIssueRemaining = Math.max(lineQtyToIssue - lineQtyIssued, 0);
   const qtyToIssue = Math.min(stepQtyToIssue, lineQtyToIssueRemaining, qtyToIssueMax);
 
-  const isIssueWholeStep = qtyToIssue >= step.qtyHUCapacity;
+  const isIssueWholeHU = qtyToIssue >= step.qtyHUCapacity;
 
   const userInfo = [
     {
@@ -93,7 +103,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId, stepId }) =
   console.log('RawMaterialIssueScanScreen.getPropsFromState', {
     qtyToIssue,
     qtyToIssueMax,
-    isIssueWholeStep,
+    isIssueWholeHU,
     //
     line,
     step,
@@ -110,8 +120,9 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId, stepId }) =
     userInfo,
     qtyToIssue: qtyToIssue,
     qtyToIssueMax: qtyToIssueMax,
-    isIssueWholeStep,
-    qtyRejectedReasons: isIssueWholeStep ? getQtyRejectedReasonsFromActivity(activity) : null,
+    isWeightable,
+    isIssueWholeHU,
+    qtyRejectedReasons: isIssueWholeHU ? getQtyRejectedReasonsFromActivity(activity) : null,
     scaleDevice: isWeightable ? getScaleDeviceFromActivity(activity) : null,
   };
 };

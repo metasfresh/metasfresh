@@ -1,12 +1,6 @@
-package de.metas.ui.web.picking.husToPick.process;
-
-import java.util.List;
+package de.metas.handlingunits.weighting;
 
 import de.metas.common.util.time.SystemTime;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
-import org.compiere.model.X_C_DocType;
-
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -15,6 +9,7 @@ import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.weightable.IWeightable;
+import de.metas.handlingunits.attribute.weightable.PlainWeightable;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.inventory.Inventory;
 import de.metas.handlingunits.inventory.InventoryHeaderCreateRequest;
@@ -35,6 +30,11 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+import org.compiere.model.X_C_DocType;
+
+import java.util.List;
 
 /*
  * #%L
@@ -58,7 +58,7 @@ import lombok.NonNull;
  * #L%
  */
 
-class WeightHUCommand
+public class WeightHUCommand
 {
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
@@ -66,7 +66,7 @@ class WeightHUCommand
 	private final InventoryLineAggregatorFactory inventoryLineAggregatorFactory;
 
 	private final HuId huId;
-	private final IWeightable targetWeight;
+	private final PlainWeightable targetWeight;
 
 	@Builder
 	private WeightHUCommand(
@@ -80,7 +80,7 @@ class WeightHUCommand
 		this.inventoryLineAggregatorFactory = inventoryLineAggregatorFactory;
 
 		this.huId = huId;
-		this.targetWeight = targetWeight;
+		this.targetWeight = PlainWeightable.copyOf(targetWeight);
 	}
 
 	public InventoryId execute()

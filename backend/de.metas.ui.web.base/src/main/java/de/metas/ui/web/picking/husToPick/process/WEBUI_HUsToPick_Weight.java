@@ -1,6 +1,7 @@
 package de.metas.ui.web.picking.husToPick.process;
 
 import com.google.common.annotations.VisibleForTesting;
+import de.metas.handlingunits.weighting.WeightHUCommand;
 import de.metas.ui.web.process.adprocess.device_providers.DeviceDescriptorsList;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.attribute.weightable.IWeightable;

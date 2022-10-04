@@ -1,16 +1,25 @@
 package de.metas.handlingunits.pporder.api.issue_schedule;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.ReservedHUsPolicy;
+import de.metas.handlingunits.attribute.storage.IAttributeStorage;
+import de.metas.handlingunits.attribute.weightable.PlainWeightable;
+import de.metas.handlingunits.attribute.weightable.Weightables;
+import de.metas.handlingunits.inventory.InventoryService;
+import de.metas.handlingunits.inventory.draftlinescreator.InventoryLineAggregatorFactory;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.QtyRejectedWithReason;
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IssueCandidateGeneratedBy;
+import de.metas.handlingunits.weighting.WeightHUCommand;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -18,17 +27,26 @@ import org.compiere.model.I_C_UOM;
 import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+
 @Service
 public class PPOrderIssueScheduleService
 {
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 	private final PPOrderIssueScheduleRepository issueScheduleRepository;
+	private final InventoryService inventoryService;
+	private final InventoryLineAggregatorFactory inventoryLineAggregatorFactory;
 
 	public PPOrderIssueScheduleService(
-			@NonNull final PPOrderIssueScheduleRepository issueScheduleRepository)
+			@NonNull final PPOrderIssueScheduleRepository issueScheduleRepository,
+			@NonNull final InventoryService inventoryService,
+			@NonNull final InventoryLineAggregatorFactory inventoryLineAggregatorFactory)
 	{
 		this.issueScheduleRepository = issueScheduleRepository;
+		this.inventoryService = inventoryService;
+		this.inventoryLineAggregatorFactory = inventoryLineAggregatorFactory;
 	}
 
 	public ImmutableList<PPOrderIssueSchedule> getByOrderId(final PPOrderId ppOrderId)
@@ -50,6 +68,11 @@ public class PPOrderIssueScheduleService
 			throw new AdempiereException("Already issued")
 					.setParameter("request", request)
 					.setParameter("issueSchedule", issueSchedule);
+		}
+
+		if (request.getHuWeightGrossBeforeIssue() != null)
+		{
+			weightHU(issueSchedule.getIssueFromHUId(), request.getHuWeightGrossBeforeIssue());
 		}
 
 		//
@@ -80,9 +103,7 @@ public class PPOrderIssueScheduleService
 
 		//
 		// Qty Rejected
-		final QtyRejectedWithReason qtyRejected = request.getQtyRejectedReasonCode() != null
-				? QtyRejectedWithReason.of(Quantity.of(request.getQtyRejected(), uom), request.getQtyRejectedReasonCode())
-				: null;
+		final QtyRejectedWithReason qtyRejected = getQtyRejectedWithReason(request, uom);
 
 		//
 		// Update the issue schedule
@@ -92,5 +113,55 @@ public class PPOrderIssueScheduleService
 				.build());
 		issueScheduleRepository.saveChanges(issueSchedule);
 		return issueSchedule;
+	}
+
+	@Nullable
+	private static QtyRejectedWithReason getQtyRejectedWithReason(final @NonNull PPOrderIssueScheduleProcessRequest request, final @NonNull I_C_UOM uom)
+	{
+		if(request.getQtyRejectedReasonCode() == null)
+		{
+			return null;
+		}
+
+		final Quantity qtyRejected = Quantity.of(Check.assumeNotNull(request.getQtyRejected(), "QtyRejected is set: {}", request), uom);
+		return QtyRejectedWithReason.of(qtyRejected, request.getQtyRejectedReasonCode());
+	}
+
+	private void weightHU(@NonNull final HuId huId, @NonNull final BigDecimal weightGross)
+	{
+		if (weightGross.signum() < 0)
+		{
+			throw new AdempiereException("Invalid weightGross: " + weightGross)
+					.setParameter("huId", huId);
+		}
+
+		final I_M_HU hu = handlingUnitsBL.getById(huId);
+		final IMutableHUContext huContext = handlingUnitsBL.createMutableHUContext();
+		final IAttributeStorage huAttributes = huContext.getHUAttributeStorageFactory().getAttributeStorage(hu);
+		final PlainWeightable targetWeight = Weightables.plainOf(huAttributes);
+		if (!targetWeight.isWeightable())
+		{
+			throw new AdempiereException("HU is not targetWeight: " + handlingUnitsBL.getDisplayName(hu))
+					.setParameter("targetWeight", targetWeight);
+		}
+
+		final ProductId productId = huContext.getHUStorageFactory().getStorage(hu).getSingleProductIdOrNull();
+		if (productId == null)
+		{
+			throw new AdempiereException("Not a single product HU: " + handlingUnitsBL.getDisplayName(hu));
+		}
+
+		targetWeight.setWeightGross(weightGross);
+		Weightables.updateWeightNet(targetWeight);
+
+		WeightHUCommand.builder()
+				.inventoryService(inventoryService)
+				.inventoryLineAggregatorFactory(inventoryLineAggregatorFactory)
+				//
+				.huId(huId)
+				.targetWeight(targetWeight)
+				.build()
+				//
+				.execute();
 	}
 }
