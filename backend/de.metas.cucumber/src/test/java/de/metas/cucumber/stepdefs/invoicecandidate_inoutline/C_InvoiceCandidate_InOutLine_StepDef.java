@@ -23,7 +23,9 @@
 package de.metas.cucumber.stepdefs.invoicecandidate_inoutline;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDef;
 import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
@@ -44,6 +46,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine.COLUMNNAME_M_InOutLine_ID;
 
 public class C_InvoiceCandidate_InOutLine_StepDef
 {
@@ -55,23 +58,27 @@ public class C_InvoiceCandidate_InOutLine_StepDef
 	private final C_Invoice_Candidate_StepDefData invoiceCandTable;
 	private final M_InOutLine_StepDefData shipmentLineTable;
 
+	private final C_Invoice_Candidate_StepDef invoiceCandidateStepDef;
+
 	public C_InvoiceCandidate_InOutLine_StepDef(
 			@NonNull final C_InvoiceCandidate_InOutLine_StepDefData invoiceCandInOuLineTable,
 			@NonNull final C_Invoice_Candidate_StepDefData invoiceCandTable,
-			@NonNull final M_InOutLine_StepDefData shipmentLineTable)
+			@NonNull final M_InOutLine_StepDefData shipmentLineTable,
+			@NonNull final C_Invoice_Candidate_StepDef invoiceCandidateStepDef)
 	{
 		this.invoiceCandInOuLineTable = invoiceCandInOuLineTable;
 		this.invoiceCandTable = invoiceCandTable;
 		this.shipmentLineTable = shipmentLineTable;
+		this.invoiceCandidateStepDef = invoiceCandidateStepDef;
 	}
 
 	@And("validate created C_InvoiceCandidate_InOutLine")
-	public void validate_C_InvoiceCandidate_InOutLine(@NonNull final DataTable dataTable) throws InterruptedException
+	public void validate_C_InvoiceCandidate_InOutLine(@NonNull final DataTable dataTable) throws Throwable
 	{
-		Runnable logContext = () -> {};
-
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
+
+			Runnable logContext = () -> {};
 			final String invoiceCandidateIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(invoiceCandidateIdentifier))
 			{
@@ -79,11 +86,23 @@ public class C_InvoiceCandidate_InOutLine_StepDef
 				logContext = () -> logCurrentContext(invoiceCandidate.getC_Invoice_Candidate_ID());
 			}
 
-			StepDefUtil.tryAndWait(120, 500, () -> isValid_C_InvoiceCandidate_InOutLine(row), logContext);
+			final int maxSecondsToWait = 120;
+			try
+			{
+				StepDefUtil.tryAndWaitForItem(maxSecondsToWait, 1000, () -> isValid_C_InvoiceCandidate_InOutLine(row), logContext);
+			}
+			catch (final Throwable e)
+			{
+				invoiceCandidateStepDef.manuallyRecomputeInvoiceCandidate(e, row, maxSecondsToWait);
+
+				StepDefUtil.tryAndWaitForItem(5, 1000, () -> isValid_C_InvoiceCandidate_InOutLine(row), logContext);
+			}
+
 		}
 	}
 
-	private boolean isValid_C_InvoiceCandidate_InOutLine(@NonNull final Map<String, String> row)
+	@NonNull
+	private ItemProvider.ProviderResult<I_C_InvoiceCandidate_InOutLine> isValid_C_InvoiceCandidate_InOutLine(@NonNull final Map<String, String> row)
 	{
 		final IQueryBuilder<I_C_InvoiceCandidate_InOutLine> queryBuilder = queryBL.createQueryBuilder(I_C_InvoiceCandidate_InOutLine.class).addOnlyActiveRecordsFilter();
 
@@ -94,11 +113,11 @@ public class C_InvoiceCandidate_InOutLine_StepDef
 			queryBuilder.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCandidate.getC_Invoice_Candidate_ID());
 		}
 
-		final String shipmentLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_InvoiceCandidate_InOutLine.COLUMNNAME_M_InOutLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final String shipmentLineIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_InOutLine_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(shipmentLineIdentifier))
 		{
 			final I_M_InOutLine shipmentLine = shipmentLineTable.get(shipmentLineIdentifier);
-			queryBuilder.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMNNAME_M_InOutLine_ID, shipmentLine.getM_InOutLine_ID());
+			queryBuilder.addEqualsFilter(COLUMNNAME_M_InOutLine_ID, shipmentLine.getM_InOutLine_ID());
 		}
 
 		final BigDecimal qtyDelivered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_InvoiceCandidate_InOutLine.COLUMNNAME_QtyDelivered);
@@ -107,19 +126,18 @@ public class C_InvoiceCandidate_InOutLine_StepDef
 			queryBuilder.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMNNAME_QtyDelivered, qtyDelivered);
 		}
 
-
 		final I_C_InvoiceCandidate_InOutLine invoiceCandidateInOutLine = queryBuilder.create()
 				.firstOnly(I_C_InvoiceCandidate_InOutLine.class);
 
 		if (invoiceCandidateInOutLine == null)
 		{
-			return false;
+			return ItemProvider.ProviderResult.resultWasNotFound("No C_InvoiceCandidate_InOutLine found!");
 		}
 
 		final String invoiceCandidateInOutLineIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_InvoiceCandidate_InOutLine_ID + "." + TABLECOLUMN_IDENTIFIER);
 		invoiceCandInOuLineTable.putOrReplace(invoiceCandidateInOutLineIdentifier, invoiceCandidateInOutLine);
 
-		return true;
+		return ItemProvider.ProviderResult.resultWasFound(invoiceCandidateInOutLine);
 	}
 
 	private void logCurrentContext(@NonNull final Integer invoiceCandidateId)
