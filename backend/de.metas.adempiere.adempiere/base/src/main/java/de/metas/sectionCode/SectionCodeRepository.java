@@ -44,9 +44,8 @@ public class SectionCodeRepository
 				.addEqualsFilter(I_M_SectionCode.COLUMNNAME_AD_Org_ID, orgId)
 				.addEqualsFilter(I_M_SectionCode.COLUMNNAME_Value, value)
 				.create()
-				.listIds()
-				.stream()
-				.map(SectionCodeId::ofRepoId)
-				.findFirst();
+				.firstOnlyOptional(I_M_SectionCode.class)
+				.map(I_M_SectionCode::getM_SectionCode_ID)
+				.map(SectionCodeId::ofRepoId);
 	}
 }
