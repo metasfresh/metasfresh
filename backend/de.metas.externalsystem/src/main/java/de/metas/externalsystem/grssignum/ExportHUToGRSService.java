@@ -26,7 +26,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.audit.data.repository.DataExportAuditLogRepository;
 import de.metas.audit.data.repository.DataExportAuditRepository;
 import de.metas.common.externalsystem.ExternalSystemConstants;
-import de.metas.common.util.EmptyUtil;
 import de.metas.document.engine.DocStatus;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemConfigService;
@@ -37,8 +36,6 @@ import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.export.hu.ExportHUCandidate;
 import de.metas.externalsystem.export.hu.ExportHUToExternalSystemService;
 import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
-import de.metas.handlingunits.ClearanceStatus;
-import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -49,7 +46,6 @@ import de.metas.i18n.IMsgBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
@@ -147,18 +143,6 @@ public class ExportHUToGRSService extends ExportHUToExternalSystemService
 	@Override
 	protected void runPreExportHook(final TableRecordReference recordReferenceToExport)
 	{
-		final HuId huId = recordReferenceToExport.getIdAssumingTableName(I_M_HU.Table_Name, HuId::ofRepoId);
-
-		final String huClearanceNote = msgBL.getMsg(Env.getAD_Language(), MSG_HU_LOCKED_CLEARANCE_STATUS_NOTE);
-
-		if (EmptyUtil.isEmpty(huClearanceNote))
-		{
-			return;
-		}
-
-		final ClearanceStatusInfo clearanceStatusInfo = ClearanceStatusInfo.of(ClearanceStatus.Locked, huClearanceNote);
-
-		handlingUnitsBL.setClearanceStatusRecursively(huId, clearanceStatusInfo);
 	}
 
 	private void exportIfAlreadyExportedOnce(@NonNull final I_M_HU_Trace huTrace)

@@ -3,6 +3,7 @@ package de.metas.manufacturing.job.service;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.device.accessor.DeviceId;
@@ -23,11 +24,12 @@ import de.metas.manufacturing.job.model.RawMaterialsIssueStep;
 import de.metas.manufacturing.job.model.ReceivingTarget;
 import de.metas.material.planning.pporder.OrderBOMLineQuantities;
 import de.metas.material.planning.pporder.PPOrderQuantities;
+import de.metas.material.planning.pporder.impl.PPOrderBOMBL;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
-import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
@@ -164,9 +166,14 @@ public class ManufacturingJobLoaderAndSaver
 
 	private RawMaterialsIssue toRawMaterialsIssue(final @NonNull PPOrderRoutingActivity from)
 	{
+		final PPOrderId ppOrderId = from.getOrderId();
+		final PPOrderRouting routing = getRouting(ppOrderId);
+		final ImmutableSet<ProductId> onlyProductIds = from.getId() != null ? routing.getProductIdsByActivityId(from.getId()) : ImmutableSet.of();
+
 		return RawMaterialsIssue.builder()
-				.lines(getBOMLines(from.getOrderId())
+				.lines(getBOMLines(ppOrderId)
 						.stream()
+						.filter(bomLine -> onlyProductIds.isEmpty() || onlyProductIds.contains(ProductId.ofRepoId(bomLine.getM_Product_ID())))
 						.map(this::toRawMaterialsIssueLine)
 						.filter(Objects::nonNull)
 						.collect(ImmutableList.toImmutableList()))
@@ -191,7 +198,7 @@ public class ManufacturingJobLoaderAndSaver
 				.productId(productId)
 				.productName(supportingServices.getProductName(productId))
 				.qtyToIssue(bomLineQuantities.getQtyRequired())
-				.qtyToIssueTolerance(extractQtyToIssueTolerance(orderBOMLine))
+				.qtyToIssueTolerance(PPOrderBOMBL.extractQtyToIssueTolerance(orderBOMLine))
 				//.qtyIssued(bomLineQuantities.getQtyIssuedOrReceived())
 				.steps(getIssueSchedules(ppOrderId)
 						.get(ppOrderBOMLineId)
@@ -200,14 +207,6 @@ public class ManufacturingJobLoaderAndSaver
 						.map(this::toRawMaterialsIssueStep)
 						.collect(ImmutableList.toImmutableList()))
 				.build();
-	}
-
-	@Nullable
-	private static Percent extractQtyToIssueTolerance(final I_PP_Order_BOMLine orderBOMLine)
-	{
-		return orderBOMLine.isEnforceTolerance()
-				? Percent.of(orderBOMLine.getTolerance_Perc())
-				: null;
 	}
 
 	private RawMaterialsIssueStep toRawMaterialsIssueStep(final PPOrderIssueSchedule schedule)
@@ -225,9 +224,15 @@ public class ManufacturingJobLoaderAndSaver
 				.issueFromHU(HUInfo.builder()
 						.id(schedule.getIssueFromHUId())
 						.barcode(supportingServices.getQRCodeByHuId(schedule.getIssueFromHUId()))
+						.huCapacity(getHUCapacity(schedule))
 						.build())
 				.issued(schedule.getIssued())
 				.build();
+	}
+
+	private Quantity getHUCapacity(@NonNull final PPOrderIssueSchedule schedule)
+	{
+		return supportingServices.getHUCapacity(schedule.getIssueFromHUId(), schedule.getProductId(), schedule.getQtyToIssue().getUOM());
 	}
 
 	private FinishedGoodsReceive toFinishedGoodsReceive(final @NonNull PPOrderRoutingActivity from)

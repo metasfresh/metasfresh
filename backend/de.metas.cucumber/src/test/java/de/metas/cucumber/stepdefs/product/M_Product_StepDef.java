@@ -27,9 +27,9 @@ import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.productCategory.M_Product_Category_StepDefData;
 import de.metas.externalreference.ExternalIdentifier;
+import de.metas.handlingunits.ClearanceStatus;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
@@ -46,7 +46,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
@@ -61,7 +60,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.PRODUCT_CATEGORY_STANDARD_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_Product_ID;
 import static org.compiere.model.I_M_Product_Category.COLUMNNAME_M_Product_Category_ID;
@@ -167,6 +166,7 @@ public class M_Product_StepDef
 		final String productName = tableRow.get("Name");
 		final String productValue = CoalesceUtil.coalesceNotNull(tableRow.get("Value"), productName);
 		final boolean isStocked = DataTableUtil.extractBooleanForColumnNameOr(tableRow, I_M_Product.COLUMNNAME_IsStocked, true);
+		final String huClearanceStatus = DataTableUtil.extractNullableStringForColumnName(tableRow, I_M_Product.COLUMNNAME_HUClearanceStatus);
 
 		final I_M_Product productRecord = CoalesceUtil.coalesceSuppliers(
 				() -> productDAO.retrieveProductByValue(productValue),
@@ -178,6 +178,11 @@ public class M_Product_StepDef
 		productRecord.setC_UOM_ID(UomId.toRepoId(UomId.EACH));
 		productRecord.setProductType(ProductType.Item.getCode());
 		productRecord.setIsStocked(isStocked);
+		final ClearanceStatus clearanceStatus = ClearanceStatus.ofNullableCode(huClearanceStatus);
+		if (clearanceStatus != null)
+		{
+			productRecord.setHUClearanceStatus(clearanceStatus.getCode());
+		}
 
 		final String productCategoryIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_Product_Category_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(productCategoryIdentifier))

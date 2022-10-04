@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for M_Product
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_M_Product extends org.compiere.model.PO implements I_M_Product, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1597829536L;
+	private static final long serialVersionUID = -176285754L;
 
     /** Standard Constructor */
     public X_M_Product (final Properties ctx, final int M_Product_ID, @Nullable final String trxName)
@@ -248,6 +248,37 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 		return get_ValueAsString(COLUMNNAME_DocumentNote);
 	}
 
+	/** 
+	 * DryingMethods AD_Reference_ID=541511
+	 * Reference name: M_Drying_Methods
+	 */
+	public static final int DRYINGMETHODS_AD_Reference_ID=541511;
+	/** Gefriergetrocknet = Gefriergetrocknet */
+	public static final String DRYINGMETHODS_Gefriergetrocknet = "Gefriergetrocknet";
+	/** Luftgetrocknet = Luftgetrocknet */
+	public static final String DRYINGMETHODS_Luftgetrocknet = "Luftgetrocknet";
+	/** Schaufelgetrocknet = Schaufelgetrocknet */
+	public static final String DRYINGMETHODS_Schaufelgetrocknet = "Schaufelgetrocknet";
+	/** Sonnengetrocknet = Sonnengetrocknet */
+	public static final String DRYINGMETHODS_Sonnengetrocknet = "Sonnengetrocknet";
+	/** Sprühgetrocknet = Spruhgetrocknet */
+	public static final String DRYINGMETHODS_Spruehgetrocknet = "Spruhgetrocknet";
+	/** Vakuumgetrocknet = Vakuumgetrocknet */
+	public static final String DRYINGMETHODS_Vakuumgetrocknet = "Vakuumgetrocknet";
+	/** Walzengetrocknet = Walzengetrocknet */
+	public static final String DRYINGMETHODS_Walzengetrocknet = "Walzengetrocknet";
+	@Override
+	public void setDryingMethods (final @Nullable java.lang.String DryingMethods)
+	{
+		set_Value (COLUMNNAME_DryingMethods, DryingMethods);
+	}
+
+	@Override
+	public java.lang.String getDryingMethods() 
+	{
+		return get_ValueAsString(COLUMNNAME_DryingMethods);
+	}
+
 	@Override
 	public void setExternalId (final @Nullable java.lang.String ExternalId)
 	{
@@ -258,6 +289,18 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public java.lang.String getExternalId() 
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalId);
+	}
+
+	@Override
+	public void setFLO_Identifier (final @Nullable java.lang.String FLO_Identifier)
+	{
+		set_Value (COLUMNNAME_FLO_Identifier, FLO_Identifier);
+	}
+
+	@Override
+	public java.lang.String getFLO_Identifier() 
+	{
+		return get_ValueAsString(COLUMNNAME_FLO_Identifier);
 	}
 
 	@Override
@@ -399,6 +442,29 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 		return get_ValueAsString(COLUMNNAME_Help);
 	}
 
+	/** 
+	 * HUClearanceStatus AD_Reference_ID=541540
+	 * Reference name: Clearance
+	 */
+	public static final int HUCLEARANCESTATUS_AD_Reference_ID=541540;
+	/** Cleared = C */
+	public static final String HUCLEARANCESTATUS_Cleared = "C";
+	/** Locked = L */
+	public static final String HUCLEARANCESTATUS_Locked = "L";
+	/** Quarantined = Q */
+	public static final String HUCLEARANCESTATUS_Quarantined = "Q";
+	@Override
+	public void setHUClearanceStatus (final @Nullable java.lang.String HUClearanceStatus)
+	{
+		set_Value (COLUMNNAME_HUClearanceStatus, HUClearanceStatus);
+	}
+
+	@Override
+	public java.lang.String getHUClearanceStatus() 
+	{
+		return get_ValueAsString(COLUMNNAME_HUClearanceStatus);
+	}
+
 	@Override
 	public void setImageURL (final @Nullable java.lang.String ImageURL)
 	{
@@ -504,6 +570,18 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public boolean isPickListPrintDetails() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsPickListPrintDetails);
+	}
+
+	@Override
+	public void setIsPrintWhenPackingMaterial (final boolean IsPrintWhenPackingMaterial)
+	{
+		set_Value (COLUMNNAME_IsPrintWhenPackingMaterial, IsPrintWhenPackingMaterial);
+	}
+
+	@Override
+	public boolean isPrintWhenPackingMaterial() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsPrintWhenPackingMaterial);
 	}
 
 	@Override

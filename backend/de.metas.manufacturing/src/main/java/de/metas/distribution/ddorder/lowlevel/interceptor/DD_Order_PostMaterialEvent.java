@@ -163,7 +163,6 @@ public class DD_Order_PostMaterialEvent
 		materialEventService.postEventAfterNextCommit(event);
 	}
 
-	@NonNull
 	private static String getDDOrderRequestedEventTrace(@NonNull final I_DD_Order ddOrderRecord)
 	{
 		return DDOrderProducer.ATTR_DDORDER_REQUESTED_EVENT_TRACE_ID.getValue(ddOrderRecord);

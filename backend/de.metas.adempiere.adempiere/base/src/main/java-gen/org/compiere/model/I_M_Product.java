@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_Product
  *  @author metasfresh (generated) 
@@ -378,6 +377,27 @@ public interface I_M_Product
 	String COLUMNNAME_DocumentNote = "DocumentNote";
 
 	/**
+	 * Set Drying Methods.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDryingMethods (@Nullable java.lang.String DryingMethods);
+
+	/**
+	 * Get Drying Methods.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDryingMethods();
+
+	ModelColumn<I_M_Product, Object> COLUMN_DryingMethods = new ModelColumn<>(I_M_Product.class, "DryingMethods", null);
+	String COLUMNNAME_DryingMethods = "DryingMethods";
+
+	/**
 	 * Set External ID.
 	 *
 	 * <br>Type: String
@@ -397,6 +417,29 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, Object> COLUMN_ExternalId = new ModelColumn<>(I_M_Product.class, "ExternalId", null);
 	String COLUMNNAME_ExternalId = "ExternalId";
+
+	/**
+	 * Set FLO ID.
+	 * ID granted by FLOCERT for companies to put it on their products.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFLO_Identifier (@Nullable java.lang.String FLO_Identifier);
+
+	/**
+	 * Get FLO ID.
+	 * ID granted by FLOCERT for companies to put it on their products.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getFLO_Identifier();
+
+	ModelColumn<I_M_Product, Object> COLUMN_FLO_Identifier = new ModelColumn<>(I_M_Product.class, "FLO_Identifier", null);
+	String COLUMNNAME_FLO_Identifier = "FLO_Identifier";
 
 	/**
 	 * Set Group1.
@@ -592,6 +635,29 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, Object> COLUMN_Help = new ModelColumn<>(I_M_Product.class, "Help", null);
 	String COLUMNNAME_Help = "Help";
+
+	/**
+	 * Set HU Clearance.
+	 * Initial clearance status for newly created or received handling units with this product.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHUClearanceStatus (@Nullable java.lang.String HUClearanceStatus);
+
+	/**
+	 * Get HU Clearance.
+	 * Initial clearance status for newly created or received handling units with this product.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getHUClearanceStatus();
+
+	ModelColumn<I_M_Product, Object> COLUMN_HUClearanceStatus = new ModelColumn<>(I_M_Product.class, "HUClearanceStatus", null);
+	String COLUMNNAME_HUClearanceStatus = "HUClearanceStatus";
 
 	/**
 	 * Set Bild-URL.
@@ -820,6 +886,29 @@ public interface I_M_Product
 	String COLUMNNAME_IsPickListPrintDetails = "IsPickListPrintDetails";
 
 	/**
+	 * Set Print as packing material.
+	 * When activated, packing material products will be printed on documents only when also used as packing materials in the order.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsPrintWhenPackingMaterial (boolean IsPrintWhenPackingMaterial);
+
+	/**
+	 * Get Print as packing material.
+	 * When activated, packing material products will be printed on documents only when also used as packing materials in the order.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isPrintWhenPackingMaterial();
+
+	ModelColumn<I_M_Product, Object> COLUMN_IsPrintWhenPackingMaterial = new ModelColumn<>(I_M_Product.class, "IsPrintWhenPackingMaterial", null);
+	String COLUMNNAME_IsPrintWhenPackingMaterial = "IsPrintWhenPackingMaterial";
+
+	/**
 	 * Set Eingekauft.
 	 *
 	 * <br>Type: YesNo
@@ -931,7 +1020,7 @@ public interface I_M_Product
 	String COLUMNNAME_IsStocked = "IsStocked";
 
 	/**
-	 * Set Zusammenfassungseintrag.
+	 * Set Summary Level.
 	 * This is a summary entity
 	 *
 	 * <br>Type: YesNo
@@ -941,7 +1030,7 @@ public interface I_M_Product
 	void setIsSummary (boolean IsSummary);
 
 	/**
-	 * Get Zusammenfassungseintrag.
+	 * Get Summary Level.
 	 * This is a summary entity
 	 *
 	 * <br>Type: YesNo
@@ -1429,7 +1518,7 @@ public interface I_M_Product
 	String COLUMNNAME_Processing = "Processing";
 
 	/**
-	 * Set Produktart.
+	 * Set Product Type.
 	 * Type of product
 	 *
 	 * <br>Type: List
@@ -1439,7 +1528,7 @@ public interface I_M_Product
 	void setProductType (java.lang.String ProductType);
 
 	/**
-	 * Get Produktart.
+	 * Get Product Type.
 	 * Type of product
 	 *
 	 * <br>Type: List
@@ -1731,7 +1820,7 @@ public interface I_M_Product
 	String COLUMNNAME_SKU = "SKU";
 
 	/**
-	 * Set Ressource.
+	 * Set Resource.
 	 * Resource
 	 *
 	 * <br>Type: TableDir
@@ -1741,7 +1830,7 @@ public interface I_M_Product
 	void setS_Resource_ID (int S_Resource_ID);
 
 	/**
-	 * Get Ressource.
+	 * Get Resource.
 	 * Resource
 	 *
 	 * <br>Type: TableDir

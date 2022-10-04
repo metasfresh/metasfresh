@@ -22,19 +22,8 @@ package de.metas.handlingunits.allocation.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -49,6 +38,16 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+import java.util.List;
 
 public final class AllocationUtils
 {
@@ -181,6 +180,18 @@ public final class AllocationUtils
 			@Nullable final Object referenceModel,
 			final boolean forceQtyAllocation)
 	{
+		return createQtyRequest (huContext, productId, qty, date, referenceModel, forceQtyAllocation, null);
+	}
+
+	public static IAllocationRequest createQtyRequest(
+			final IHUContext huContext,
+			final ProductId productId,
+			final Quantity qty,
+			final ZonedDateTime date,
+			@Nullable final Object referenceModel,
+			final boolean forceQtyAllocation,
+			@Nullable final ClearanceStatusInfo clearanceStatusInfo)
+	{
 		return builder()
 				.setHUContext(huContext)
 				.setProduct(productId)
@@ -188,6 +199,7 @@ public final class AllocationUtils
 				.setDate(date)
 				.setFromReferencedModel(referenceModel)
 				.setForceQtyAllocation(forceQtyAllocation)
+				.setClearanceStatusInfo(clearanceStatusInfo)
 				.create();
 	}
 
@@ -279,7 +291,7 @@ public final class AllocationUtils
 			return null;
 		}
 
-		final IContextAware context = request.getHUContext();
+		final IContextAware context = request.getHuContext();
 		return tableRecord.getModel(context);
 	}
 
@@ -323,7 +335,7 @@ public final class AllocationUtils
 	 */
 	public static IHUBuilder createHUBuilder(final IAllocationRequest request)
 	{
-		final IHUContext huContext = request.getHUContext();
+		final IHUContext huContext = request.getHuContext();
 		final IHUBuilder huBuilder = Services.get(IHandlingUnitsDAO.class).createHUBuilder(huContext);
 
 		huBuilder.setDate(request.getDate());
