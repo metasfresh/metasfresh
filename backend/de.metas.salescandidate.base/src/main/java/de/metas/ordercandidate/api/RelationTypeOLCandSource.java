@@ -17,6 +17,7 @@ import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.quantity.Quantity;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -153,6 +154,7 @@ final class RelationTypeOLCandSource implements OLCandSource
 				.bpartnerName(olCandRecord.getBPartnerName())
 				.email(olCandRecord.getEMail())
 				.phone(olCandRecord.getPhone())
+				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(olCandRecord.getM_SectionCode_ID()))
 				.build();
 	}
 }

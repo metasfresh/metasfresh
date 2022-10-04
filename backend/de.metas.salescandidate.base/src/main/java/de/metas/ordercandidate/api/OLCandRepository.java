@@ -18,6 +18,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -319,6 +320,8 @@ public class OLCandRepository
 		{
 			olCandWithIssuesInterface.setQtyItemCapacity(request.getQtyItemCapacity());
 		}
+
+		olCandPO.setM_SectionCode_ID(SectionCodeId.toRepoId(request.getSectionCodeId()));
 
 		saveRecord(olCandWithIssuesInterface);
 

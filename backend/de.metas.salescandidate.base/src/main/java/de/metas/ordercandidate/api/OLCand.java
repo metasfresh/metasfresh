@@ -19,6 +19,7 @@ import de.metas.pricing.attributebased.IProductPriceAware;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.shipping.ShipperId;
 import lombok.Builder;
 import lombok.Getter;
@@ -146,6 +147,9 @@ public final class OLCand implements IProductPriceAware
 	@Getter
 	private final String email;
 
+	@Getter
+	private final SectionCodeId sectionCodeId;
+
 	@Builder
 	private OLCand(
 			@NonNull final IOLCandEffectiveValuesBL olCandEffectiveValuesBL,
@@ -169,7 +173,9 @@ public final class OLCand implements IProductPriceAware
 			@Nullable final BPartnerId salesRepInternalId,
 			@Nullable final String bpartnerName,
 			@Nullable final String phone,
-			@Nullable final String email)
+			@Nullable final String email,
+			@Nullable final SectionCodeId sectionCodeId)
+
 	{
 		this.olCandEffectiveValuesBL = olCandEffectiveValuesBL;
 
@@ -215,6 +221,7 @@ public final class OLCand implements IProductPriceAware
 		this.bpartnerName = bpartnerName;
 		this.email = email;
 		this.phone = phone;
+		this.sectionCodeId = sectionCodeId;
 	}
 
 	@Override

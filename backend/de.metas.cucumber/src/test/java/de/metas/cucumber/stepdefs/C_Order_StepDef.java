@@ -26,6 +26,7 @@ import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
+import de.metas.cucumber.stepdefs.sectioncode.M_SectionCode_StepDefData;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
@@ -64,6 +65,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_M_PricingSystem;
+import org.compiere.model.I_M_SectionCode;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -112,19 +114,22 @@ public class C_Order_StepDef
 	private final C_BPartner_Location_StepDefData bpartnerLocationTable;
 	private final AD_User_StepDefData userTable;
 	private final M_PricingSystem_StepDefData pricingSystemDataTable;
+	private final M_SectionCode_StepDefData sectionCodeTable;
 
 	public C_Order_StepDef(
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final C_Order_StepDefData orderTable,
 			@NonNull final C_BPartner_Location_StepDefData bpartnerLocationTable,
 			@NonNull final AD_User_StepDefData userTable,
-			@NonNull final M_PricingSystem_StepDefData pricingSystemDataTable)
+			@NonNull final M_PricingSystem_StepDefData pricingSystemDataTable,
+			@NonNull final M_SectionCode_StepDefData sectionCodeTable)
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.orderTable = orderTable;
 		this.bpartnerLocationTable = bpartnerLocationTable;
 		this.userTable = userTable;
 		this.pricingSystemDataTable = pricingSystemDataTable;
+		this.sectionCodeTable = sectionCodeTable;
 	}
 
 	@Given("metasfresh contains C_Orders:")
@@ -617,6 +622,13 @@ public class C_Order_StepDef
 		{
 			final I_AD_InputDataSource dataSource = inputDataSourceDAO.retrieveInputDataSource(Env.getCtx(), internalName, true, Trx.TRXNAME_None);
 			assertThat(order.getAD_InputDataSource_ID()).isEqualTo(dataSource.getAD_InputDataSource_ID());
+		}
+
+		final String sectionCodeIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_M_SectionCode_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if(Check.isNotBlank(sectionCodeIdentifier))
+		{
+			final I_M_SectionCode sectionCode = sectionCodeTable.get(sectionCodeIdentifier);
+			assertThat(order.getM_SectionCode_ID()).isEqualTo(sectionCode.getM_SectionCode_ID());
 		}
 	}
 

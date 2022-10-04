@@ -6,6 +6,7 @@ import de.metas.impex.InputDataSourceId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
@@ -82,6 +83,8 @@ public class InvoiceHeaderImplBuilder
 
 	private String incotermLocation;
 
+	private int M_SectionCode_ID;
+
 	/* package */ InvoiceHeaderImplBuilder()
 	{
 		super();
@@ -138,6 +141,8 @@ public class InvoiceHeaderImplBuilder
 		//incoterms
 		invoiceHeader.setC_Incoterms_ID(getC_Incoterms_ID());
 		invoiceHeader.setIncotermLocation(getIncotermLocation());
+
+		invoiceHeader.setSectionCodeId(SectionCodeId.ofRepoIdOrNull(getM_SectionCode_ID()));
 
 		return invoiceHeader;
 	}
@@ -531,5 +536,13 @@ public class InvoiceHeaderImplBuilder
 		this.externalId = checkOverride("ExternalId", this.externalId, externalId);
 	}
 
+	private int getM_SectionCode_ID()
+	{
+		return M_SectionCode_ID;
+	}
 
+	public void setM_SectionCode_ID(final int sectionCodeId)
+	{
+		M_SectionCode_ID = checkOverrideID("M_SectionCode_ID", M_SectionCode_ID, sectionCodeId);
+	}
 }
