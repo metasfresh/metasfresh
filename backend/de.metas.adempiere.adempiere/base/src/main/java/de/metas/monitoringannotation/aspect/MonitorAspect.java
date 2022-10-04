@@ -55,7 +55,7 @@ public class MonitorAspect
 		this.service = service;
 	}
 
-	@Value("${performance.monitoring.enable}")
+	@Value("${performance.monitoring.enable:false}")
 	private String perfMonEnvVar;
 
 	@Around("execution(* *(..)) && @annotation(de.metas.monitoringannotation.annotation.Monitor)")

@@ -50,7 +50,7 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 	private final ThreadLocal<ArrayList<String>> calledBy = ThreadLocal.withInitial(() -> new ArrayList<>());
 	private final ThreadLocal<Boolean> isInitiatorLabelActive = ThreadLocal.withInitial(() -> false);
 
-	@Value("${performance.monitoring.enable}")
+	@Value("${performance.monitoring.enable:false}")
 	private String perfMonEnvVar;
 
 	public MicrometerPerformanceMonitoringService(
