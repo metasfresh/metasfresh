@@ -131,7 +131,7 @@ Feature: external references for metasfresh resources
 }
     """
 
-  Scenario: some external resource is referenced to a metasfresh resource and have 'IsReadOnlyMetasfresh' flag updated
+  Scenario: an external resource is referenced to a metasfresh resource and has 'IsReadOnlyMetasfresh' flag updated
     Given the metasfresh REST-API endpoint path '/api/v2/externalRefs/upsert/001' receives a 'PUT' request with the payload
     """
 {
