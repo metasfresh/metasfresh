@@ -26,6 +26,7 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
 import javax.annotation.Nullable;
+import java.io.File;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -91,6 +92,38 @@ public class FileUtil
 		return path;
 	}
 
+	@NonNull
+	public String normalizeAndValidateFilePath(@NonNull final String filePath)
+	{
+		final File file = new File(filePath);
+
+		if (file.isAbsolute())
+		{
+			throw new RuntimeException("Absolute path not allowed! filePath:" + filePath);
+		}
+
+		try
+		{
+			final String pathUsingCanonical = file.getCanonicalPath();
+			final String pathUsingAbsolute = file.getAbsolutePath();
+
+			// avoid attacks, e.g. "1/../2/"
+			if (!pathUsingCanonical.equals(pathUsingAbsolute))
+			{
+				throw new RuntimeException("Absolute path and canonical path for filePath must be equal! filePath: " + filePath);
+			}
+
+			return Paths.get(file.getPath())
+					.normalize()
+					.toString();
+
+		}
+		catch (final Exception e)
+		{
+			throw new RuntimeException("Error caught: ", e);
+		}
+	}
+
 	@Nullable
 	private Path parseWindowsLocalPath(@NonNull final URL url)
 	{
@@ -114,8 +147,8 @@ public class FileUtil
 		try
 		{
 			final String normalizedPath = Stream.of(url.getAuthority(), url.getPath())
-							.filter(Check::isNotBlank)
-							.collect(Collectors.joining());
+					.filter(Check::isNotBlank)
+					.collect(Collectors.joining());
 
 			return Paths.get("//" + normalizedPath);
 		}

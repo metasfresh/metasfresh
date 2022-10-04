@@ -90,6 +90,7 @@ class ListWidget extends Component {
       lastProperty,
       disableAutofocus,
       doNotOpenOnFocus,
+      dropdownValuesSupplier,
     } = this.props;
 
     this.setState(
@@ -104,7 +105,20 @@ class ListWidget extends Component {
 
         let request;
 
-        if (viewId && entity === 'window' && !filterWidget) {
+        if (dropdownValuesSupplier) {
+          request = dropdownValuesSupplier({
+            attribute,
+            docId: dataId,
+            docType: windowType,
+            entity,
+            subentity,
+            subentityId,
+            tabId,
+            viewId,
+            propertyName,
+            rowId,
+          });
+        } else if (viewId && entity === 'window' && !filterWidget) {
           request = dropdownModalRequest({
             windowId: windowType,
             fieldName: propertyName,
@@ -112,21 +126,26 @@ class ListWidget extends Component {
             viewId,
             rowId,
           });
+        } else if (attribute) {
+          request = getViewAttributeDropdown(
+            windowType,
+            viewId,
+            dataId,
+            propertyName
+          );
         } else {
-          request = attribute
-            ? getViewAttributeDropdown(windowType, viewId, dataId, propertyName)
-            : dropdownRequest({
-                attribute,
-                docId: dataId,
-                docType: windowType,
-                entity,
-                subentity,
-                subentityId,
-                tabId,
-                viewId,
-                propertyName,
-                rowId,
-              });
+          request = dropdownRequest({
+            attribute,
+            docId: dataId,
+            docType: windowType,
+            entity,
+            subentity,
+            subentityId,
+            tabId,
+            viewId,
+            propertyName,
+            rowId,
+          });
         }
 
         request.then((res) => {
@@ -328,8 +347,6 @@ ListWidget.defaultProps = {
 };
 
 ListWidget.propTypes = {
-  filter: PropTypes.object.isRequired,
-  dispatch: PropTypes.func.isRequired,
   properties: PropTypes.object,
   isInputEmpty: PropTypes.bool,
   defaultValue: PropTypes.any,
@@ -341,7 +358,7 @@ ListWidget.propTypes = {
   entity: PropTypes.string,
   subentity: PropTypes.string,
   subentityId: PropTypes.string,
-  viewId: PropTypes.any,
+  viewId: PropTypes.string,
   attribute: PropTypes.any,
   lookupList: PropTypes.bool,
   mainProperty: PropTypes.object,
@@ -350,16 +367,31 @@ ListWidget.propTypes = {
   selected: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
   initialFocus: PropTypes.any,
   doNotOpenOnFocus: PropTypes.bool,
+  widgetField: PropTypes.string,
+  field: PropTypes.string,
+  mandatory: PropTypes.bool,
+  lastProperty: PropTypes.string,
+  compositeWidgetData: PropTypes.array,
+  //
+  // Callbacks and other functions
   setNextProperty: PropTypes.func,
   disableAutofocus: PropTypes.func,
   enableAutofocus: PropTypes.func,
   onChange: PropTypes.func,
   onFocus: PropTypes.func,
   onBlur: PropTypes.func,
-  widgetField: PropTypes.string,
-  field: PropTypes.string,
-  mandatory: PropTypes.bool,
-  lastProperty: PropTypes.string,
+  dropdownValuesSupplier: PropTypes.func,
+
+  //
+  // mapStateToProps:
+  filter: PropTypes.shape({
+    visible: PropTypes.bool,
+    boundingRect: PropTypes.object,
+  }),
+
+  //
+  // mapDispatchToProps
+  dispatch: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => ({

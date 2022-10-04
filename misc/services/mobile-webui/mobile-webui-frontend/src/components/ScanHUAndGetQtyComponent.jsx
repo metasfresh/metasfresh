@@ -6,16 +6,22 @@ import { trl } from '../utils/translations';
 import BarcodeScannerComponent from './BarcodeScannerComponent';
 import GetQuantityDialog from './dialogs/GetQuantityDialog';
 import Button from './buttons/Button';
+import { formatQtyToHumanReadable } from '../utils/qtys';
 
 const STATUS_READ_BARCODE = 'READ_BARCODE';
 const STATUS_READ_QTY = 'READ_QTY';
 
+const DEFAULT_MSG_qtyAboveMax = 'activities.picking.qtyAboveMax';
+const DEFAULT_MSG_notPositiveQtyNotAllowed = 'activities.picking.notPositiveQtyNotAllowed';
+const DEFAULT_MSG_notEligibleHUBarcode = 'activities.picking.notEligibleHUBarcode';
+
 const ScanHUAndGetQtyComponent = ({
+  userInfo,
   eligibleBarcode,
   uom,
   qtyCaption,
   qtyInitial,
-  qtyTarget,
+  qtyMax,
   qtyRejectedReasons,
   scaleDevice,
   invalidBarcodeMessageKey,
@@ -31,7 +37,7 @@ const ScanHUAndGetQtyComponent = ({
     // If an eligible barcode was provided, make sure scanned barcode is matching it
     if (eligibleBarcode && scannedBarcode !== eligibleBarcode) {
       return {
-        error: trl(invalidBarcodeMessageKey ?? 'activities.picking.notEligibleHUBarcode'),
+        error: trl(invalidBarcodeMessageKey ?? DEFAULT_MSG_notEligibleHUBarcode),
       };
     } else {
       return { scannedBarcode };
@@ -39,7 +45,7 @@ const ScanHUAndGetQtyComponent = ({
   };
 
   const onBarcodeScanned = ({ scannedBarcode }) => {
-    const askForQty = qtyTarget != null;
+    const askForQty = qtyMax != null;
     if (askForQty) {
       setCurrentScannedBarcode(scannedBarcode);
       setProgressStatus(STATUS_READ_QTY);
@@ -48,23 +54,30 @@ const ScanHUAndGetQtyComponent = ({
     }
   };
 
-  const validateQtyEntered = (qtyEntered) => {
+  const validateQtyEntered = (qtyEntered, uom) => {
     // Qty shall be positive
     if (qtyEntered <= 0) {
-      return trl(invalidQtyMessageKey || 'activities.picking.invalidQtyPicked');
+      return trl(DEFAULT_MSG_notPositiveQtyNotAllowed);
     }
 
-    // Qty shall be less than or equal to qtyTarget
-    if (qtyTarget > 0 && qtyEntered > qtyTarget) {
-      return trl(invalidQtyMessageKey || 'activities.picking.invalidQtyPicked');
+    // Qty shall be less than or equal to qtyMax
+    if (qtyMax && qtyMax > 0 && qtyEntered > qtyMax) {
+      return trl(invalidQtyMessageKey || DEFAULT_MSG_qtyAboveMax, {
+        qtyDiff: formatQtyToHumanReadable({ qty: qtyEntered - qtyMax, uom }),
+      });
     }
 
     // OK
     return null;
   };
 
-  const onQtyEntered = ({ qtyEnteredAndValidated, qtyRejectedReason }) => {
-    onResult({ qty: qtyEnteredAndValidated, reason: qtyRejectedReason, scannedBarcode: currentScannedBarcode });
+  const onQtyEntered = ({ qtyEnteredAndValidated, qtyRejected, qtyRejectedReason }) => {
+    onResult({
+      qty: qtyEnteredAndValidated,
+      qtyRejected,
+      reason: qtyRejectedReason,
+      scannedBarcode: currentScannedBarcode,
+    });
   };
 
   switch (progressStatus) {
@@ -83,8 +96,9 @@ const ScanHUAndGetQtyComponent = ({
     case STATUS_READ_QTY:
       return (
         <GetQuantityDialog
+          userInfo={userInfo}
           qtyInitial={qtyInitial}
-          qtyTarget={qtyTarget}
+          qtyTarget={qtyMax}
           qtyCaption={qtyCaption}
           uom={uom}
           qtyRejectedReasons={qtyRejectedReasons}
@@ -104,8 +118,9 @@ ScanHUAndGetQtyComponent.propTypes = {
   //
   // Props
   eligibleBarcode: PropTypes.string,
+  userInfo: PropTypes.array,
   qtyCaption: PropTypes.string,
-  qtyTarget: PropTypes.number,
+  qtyMax: PropTypes.number,
   qtyInitial: PropTypes.number,
   uom: PropTypes.string,
   qtyRejectedReasons: PropTypes.array,

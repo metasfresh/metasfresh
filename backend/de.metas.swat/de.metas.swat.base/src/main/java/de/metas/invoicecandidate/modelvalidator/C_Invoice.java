@@ -23,28 +23,40 @@ package de.metas.invoicecandidate.modelvalidator;
  */
 
 import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.document.exception.DocumentActionException;
+import de.metas.i18n.AdMessageKey;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.detail.InvoiceWithDetailsService;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.approvedforinvoice.ApprovedForInvoicingService;
 import de.metas.logging.TableRecordMDC;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.ModelValidator;
 import org.slf4j.MDC.MDCCloseable;
 import org.springframework.stereotype.Component;
+
+import javax.naming.OperationNotSupportedException;
 
 @Interceptor(I_C_Invoice.class)
 @Component
 public class C_Invoice
 {
-	private final InvoiceWithDetailsService invoiceWithDetailsService;
+	private static final AdMessageKey OPERATION_NOT_SUPPORTED_APPROVED_FOR_INVOICE = AdMessageKey.of("Operation_Not_Supported_Approved_For_Invoice");
 
-	public C_Invoice(@NonNull InvoiceWithDetailsService invoiceWithDetailsService)
+	private final InvoiceWithDetailsService invoiceWithDetailsService;
+	private final ApprovedForInvoicingService approvedForInvoicingService;
+
+	public C_Invoice(
+			@NonNull final InvoiceWithDetailsService invoiceWithDetailsService,
+			@NonNull final ApprovedForInvoicingService approvedForInvoicingService)
 	{
 		this.invoiceWithDetailsService = invoiceWithDetailsService;
+		this.approvedForInvoicingService = approvedForInvoicingService;
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE, ModelValidator.TIMING_AFTER_VOID, ModelValidator.TIMING_AFTER_CLOSE })
@@ -89,5 +101,20 @@ public class C_Invoice
 			Services.get(IInvoiceCandBL.class).candidates_unProcess(invoice);
 		}
 
+	}
+
+	@DocValidate(timings = {
+			ModelValidator.TIMING_BEFORE_REVERSECORRECT,
+			ModelValidator.TIMING_BEFORE_REACTIVATE,
+			ModelValidator.TIMING_BEFORE_VOID,
+			ModelValidator.TIMING_BEFORE_REVERSEACCRUAL })
+	public void checkAnyAssociatedInvoiceCandidateClearedForInvoice(@NonNull final I_C_Invoice invoice) throws OperationNotSupportedException
+	{
+		final TableRecordReference recordReference = TableRecordReference.of(I_C_Invoice.Table_Name, invoice.getC_Invoice_ID());
+
+		if (approvedForInvoicingService.areAnyCandidatesApprovedForInvoice(recordReference))
+		{
+			throw new DocumentActionException(OPERATION_NOT_SUPPORTED_APPROVED_FOR_INVOICE);
+		}
 	}
 }

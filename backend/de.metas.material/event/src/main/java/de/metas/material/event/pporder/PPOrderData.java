@@ -29,6 +29,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.IdConstants;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.material.event.commons.ProductDescriptor;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.product.ResourceId;
@@ -36,7 +37,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_S_Resource;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -51,7 +51,7 @@ public class PPOrderData
 	ClientAndOrgId clientAndOrgId;
 
 	/**
-	 * The {@link I_S_Resource#getS_Resource_ID()} of the plant, as specified by the respective product planning record.
+	 * The {@link ResourceId} of the plant, as specified by the respective product planning record.
 	 */
 	ResourceId plantId;
 
@@ -92,6 +92,8 @@ public class PPOrderData
 	 */
 	BigDecimal qtyDelivered;
 
+	HUPIItemProductId packingMaterialId;
+
 	@JsonCreator
 	@Builder(toBuilder = true)
 	public PPOrderData(
@@ -107,7 +109,8 @@ public class PPOrderData
 			@JsonProperty("dateStartSchedule") @NonNull final Instant dateStartSchedule,
 			@JsonProperty("qtyRequired") @NonNull final BigDecimal qtyRequired,
 			@JsonProperty("qtyDelivered") @Nullable final BigDecimal qtyDelivered,
-			@JsonProperty("materialDispoGroupId") final MaterialDispoGroupId materialDispoGroupId)
+			@JsonProperty("materialDispoGroupId") final MaterialDispoGroupId materialDispoGroupId,
+			@JsonProperty("packingMaterialId") @Nullable final HUPIItemProductId packingMaterialId)
 	{
 		this.clientAndOrgId = clientAndOrgId;
 		this.plantId = plantId;
@@ -122,6 +125,7 @@ public class PPOrderData
 		this.qtyRequired = qtyRequired;
 		this.qtyDelivered = CoalesceUtil.coalesce(qtyDelivered, ZERO);
 		this.materialDispoGroupId = materialDispoGroupId;
+		this.packingMaterialId = packingMaterialId;
 	}
 
 	@JsonIgnore

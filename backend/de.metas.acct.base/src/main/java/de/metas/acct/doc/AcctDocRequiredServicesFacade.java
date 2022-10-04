@@ -38,10 +38,13 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductCategoryId;
@@ -62,7 +65,7 @@ import org.compiere.util.TrxRunnable2;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Optional;
 
 /*
@@ -104,6 +107,7 @@ public class AcctDocRequiredServicesFacade
 
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 	private final ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final BankAccountService bankAccountService;
 
 	//
@@ -182,12 +186,11 @@ public class AcctDocRequiredServicesFacade
 	}
 
 	public final CurrencyConversionContext createCurrencyConversionContext(
-			@Nullable final LocalDate convDate,
+			@Nullable final LocalDateAndOrgId convDate,
 			@Nullable final CurrencyConversionTypeId conversionTypeId,
-			@NonNull final ClientId clientId,
-			@NonNull final OrgId orgId)
+			@NonNull final ClientId clientId)
 	{
-		return currencyConversionBL.createCurrencyConversionContext(convDate, conversionTypeId, clientId, orgId);
+		return currencyConversionBL.createCurrencyConversionContext(convDate, conversionTypeId, clientId);
 	}
 
 	public CurrencyRate getCurrencyRate(
@@ -295,6 +298,12 @@ public class AcctDocRequiredServicesFacade
 		return costingService.createCostDetail(request);
 	}
 
+	@SuppressWarnings("UnusedReturnValue")
+	public ExplainedOptional<AggregatedCostAmount> createCostDetailOrEmpty(@NonNull final CostDetailCreateRequest request)
+	{
+		return costingService.createCostDetailOrEmpty(request);
+	}
+
 	public MoveCostsResult moveCosts(@NonNull final MoveCostsRequest request)
 	{
 		return costingService.moveCosts(request);
@@ -322,4 +331,8 @@ public class AcctDocRequiredServicesFacade
 		errorManager.markIssueAcknowledged(adIssueId);
 	}
 
+	public ZoneId getTimeZone(@NonNull final OrgId orgId)
+	{
+		return orgDAO.getTimeZone(orgId);
+	}
 }

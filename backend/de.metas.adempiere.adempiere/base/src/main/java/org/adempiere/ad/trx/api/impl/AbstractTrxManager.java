@@ -22,18 +22,14 @@ package org.adempiere.ad.trx.api.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.concurrent.Callable;
-import java.util.concurrent.locks.ReentrantLock;
-
-import javax.annotation.Nullable;
-
+import ch.qos.logback.classic.Level;
+import com.google.common.annotations.VisibleForTesting;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import de.metas.util.ILoggable;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager;
@@ -68,15 +64,16 @@ import org.compiere.util.Util;
 import org.slf4j.Logger;
 import org.slf4j.MDC;
 
-import com.google.common.annotations.VisibleForTesting;
-
-import ch.qos.logback.classic.Level;
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.ILoggable;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.concurrent.Callable;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Abstract {@link ITrxManager} implementation without any dependencies on a native stuff.
@@ -679,7 +676,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 		}
 	}
 
-	private final <T> T call0(
+	private <T> T call0(
 			@NonNull final TrxCallable<T> callable,
 			@NonNull final ITrxRunConfig cfg,
 			@Nullable final String trxName)
@@ -1012,14 +1009,15 @@ public abstract class AbstractTrxManager implements ITrxManager
 	}
 
 	@Override
-	public final boolean isNull(final ITrx trx)
+	public final boolean isNull(@Nullable final ITrx trx)
 	{
 		return trx == null || trx == NullTrxPlaceholder.instance;
 	}
 
 	@Override
-	public final boolean isNull(final String trxName)
+	public final boolean isNull(@Nullable final String trxName)
 	{
+		//noinspection ConstantConditions
 		return trxName == null
 				|| trxName == ITrx.TRXNAME_None
 				|| trxName == ITrx.TRXNAME_NoneNotNull
@@ -1247,8 +1245,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 
 		// NOTE: at this point trxName is not null and we relly on "getTrx" method to make sure the transaction really exist
 		OnTrxMissingPolicyNotSupportedException.throwIf(onTrxMissingPolicy, OnTrxMissingPolicy.CreateNew); // createNew is not supported
-		final ITrx trx = get(trxName, onTrxMissingPolicy);
-		return trx;
+		return get(trxName, onTrxMissingPolicy);
 	}
 
 	@Override
@@ -1295,7 +1292,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 		threadLocalOnRunnableFail.set(onRunnableFail);
 	}
 
-	private final OnRunnableFail getThreadInheritedOnRunnableFail(final OnRunnableFail onRunnableFailDefault)
+	private OnRunnableFail getThreadInheritedOnRunnableFail(final OnRunnableFail onRunnableFailDefault)
 	{
 		final OnRunnableFail onRunnableFail = threadLocalOnRunnableFail.get();
 		return onRunnableFail == null ? onRunnableFailDefault : onRunnableFail;

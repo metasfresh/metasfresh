@@ -96,7 +96,6 @@ import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
-import org.compiere.model.X_C_BP_Relation;
 import org.compiere.model.X_C_Location;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -354,7 +353,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public <T extends I_AD_User> T getContactById(final BPartnerContactId contactId, final Class<T> modelClass)
+	public <T extends I_AD_User> T getContactById(@NonNull final BPartnerContactId contactId, final Class<T> modelClass)
 	{
 		return InterfaceWrapperHelper.create(getContactById(contactId), modelClass);
 	}
@@ -633,6 +632,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
+	@NonNull
 	public CountryId getCountryId(@NonNull final BPartnerLocationId bpLocationId)
 	{
 		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdEvenInactive(bpLocationId);
@@ -644,6 +644,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		return getCountryId(bpLocation);
 	}
 
+	@NonNull
 	private CountryId getCountryId(@NonNull final I_C_BPartner_Location bpLocation)
 	{
 		final LocationId locationId = LocationId.ofRepoId(bpLocation.getC_Location_ID());
@@ -1931,6 +1932,17 @@ public class BPartnerDAO implements IBPartnerDAO
 				.orderBy(I_C_BPartner.COLUMNNAME_Name)
 				.orderBy(I_C_BPartner.COLUMNNAME_C_BPartner_ID)
 				.setLimit(limit)
+				.create()
+				.listImmutable(I_C_BPartner.class);
+	}
+
+	@Override
+	public List<I_C_BPartner> retrieveBusinessPartners()
+	{
+		return queryBL.createQueryBuilder(I_C_BPartner.class)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_C_BPartner.COLUMNNAME_Name)
+				.orderBy(I_C_BPartner.COLUMNNAME_C_BPartner_ID)
 				.create()
 				.listImmutable(I_C_BPartner.class);
 	}

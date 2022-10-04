@@ -22,6 +22,7 @@
 
 package de.metas.picking.workflow.handlers;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import de.metas.common.util.time.SystemTime;
@@ -43,6 +44,7 @@ import de.metas.picking.workflow.PickingJobRestService;
 import de.metas.picking.workflow.PickingWFProcessStartParams;
 import de.metas.picking.workflow.handlers.activity_handlers.ActualPickingWFActivityHandler;
 import de.metas.picking.workflow.handlers.activity_handlers.CompletePickingWFActivityHandler;
+import de.metas.picking.workflow.handlers.activity_handlers.RequestReviewWFActivityHandler;
 import de.metas.picking.workflow.handlers.activity_handlers.SetPickingSlotWFActivityHandler;
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.MobileApplicationId;
@@ -70,7 +72,8 @@ import static de.metas.picking.workflow.handlers.activity_handlers.PickingWFActi
 @Component
 public class PickingMobileApplication implements WorkflowBasedMobileApplication
 {
-	static final MobileApplicationId HANDLER_ID = MobileApplicationId.ofString("picking");
+	@VisibleForTesting
+	public static final MobileApplicationId HANDLER_ID = MobileApplicationId.ofString("picking");
 
 	private static final AdMessageKey MSG_Caption = AdMessageKey.of("mobileui.picking.appName");
 	private static final MobileApplicationInfo APPLICATION_INFO = MobileApplicationInfo.builder()
@@ -185,6 +188,43 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	{
 		final UserId lockedBy = pickingJob.getLockedBy();
 
+		final ImmutableList.Builder<WFActivity> activities = ImmutableList.builder();
+		activities.add(WFActivity.builder()
+				.id(WFActivityId.ofString("A10"))
+				.caption(ImmutableTranslatableString.builder()
+						.trl("de_DE", "Kommissionierplatz scannen")
+						.trl("de_CH", "Kommissionierplatz scannen")
+						.defaultValue("Scan picking slot")
+						.build())
+				.wfActivityType(SetPickingSlotWFActivityHandler.HANDLED_ACTIVITY_TYPE)
+				.status(SetPickingSlotWFActivityHandler.computeActivityState(pickingJob))
+				.build());
+		activities.add(WFActivity.builder()
+				.id(WFActivityId.ofString("A20"))
+				.caption(TranslatableStrings.anyLanguage("Pick"))
+				.wfActivityType(ActualPickingWFActivityHandler.HANDLED_ACTIVITY_TYPE)
+				.status(ActualPickingWFActivityHandler.computeActivityState(pickingJob))
+				.build());
+
+		if (pickingJob.isPickingReviewRequired())
+		{
+			activities.add(WFActivity.builder()
+					.id(WFActivityId.ofString("A80"))
+					.caption(TranslatableStrings.adMessage(RequestReviewWFActivityHandler.MSG_Caption))
+					.wfActivityType(RequestReviewWFActivityHandler.HANDLED_ACTIVITY_TYPE)
+					.status(RequestReviewWFActivityHandler.computeActivityState(pickingJob))
+					.build());
+		}
+		else
+		{
+			activities.add(WFActivity.builder()
+					.id(WFActivityId.ofString("A90"))
+					.caption(TranslatableStrings.adRefList(IDocument.ACTION_AD_Reference_ID, IDocument.ACTION_Complete))
+					.wfActivityType(CompletePickingWFActivityHandler.HANDLED_ACTIVITY_TYPE)
+					.status(CompletePickingWFActivityHandler.computeActivityState(pickingJob))
+					.build());
+		}
+
 		return WFProcess.builder()
 				.id(WFProcessId.ofIdPart(HANDLER_ID, pickingJob.getId()))
 				.invokerId(lockedBy)
@@ -193,29 +233,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 						.customerName(pickingJob.getCustomerName())
 						.build())
 				.document(pickingJob)
-				.activities(ImmutableList.of(
-						WFActivity.builder()
-								.id(WFActivityId.ofString("A1"))
-								.caption(ImmutableTranslatableString.builder()
-										.trl("de_DE", "Kommissionierplatz scannen")
-										.trl("de_CH", "Kommissionierplatz scannen")
-										.defaultValue("Scan picking slot")
-										.build())
-								.wfActivityType(SetPickingSlotWFActivityHandler.HANDLED_ACTIVITY_TYPE)
-								.status(SetPickingSlotWFActivityHandler.computeActivityState(pickingJob))
-								.build(),
-						WFActivity.builder()
-								.id(WFActivityId.ofString("A2"))
-								.caption(TranslatableStrings.anyLanguage("Pick"))
-								.wfActivityType(ActualPickingWFActivityHandler.HANDLED_ACTIVITY_TYPE)
-								.status(ActualPickingWFActivityHandler.computeActivityState(pickingJob))
-								.build(),
-						WFActivity.builder()
-								.id(WFActivityId.ofString("A3"))
-								.caption(TranslatableStrings.adRefList(IDocument.ACTION_AD_Reference_ID, IDocument.ACTION_Complete))
-								.wfActivityType(CompletePickingWFActivityHandler.HANDLED_ACTIVITY_TYPE)
-								.status(CompletePickingWFActivityHandler.computeActivityState(pickingJob))
-								.build()))
+				.activities(activities.build())
 				.build();
 	}
 

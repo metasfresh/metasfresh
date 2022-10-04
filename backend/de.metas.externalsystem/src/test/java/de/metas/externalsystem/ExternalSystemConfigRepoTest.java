@@ -24,17 +24,25 @@ package de.metas.externalsystem;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
+import de.metas.externalsystem.ebay.ApiMode;
+import de.metas.externalsystem.ebay.ExternalSystemEbayConfigId;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfigId;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigId;
+import de.metas.externalsystem.leichmehl.ReplacementSource;
+import de.metas.externalsystem.leichmehl.TargetFieldType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_Ebay;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_Ebay_Mapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl_ProductMapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6_UOM;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_WooCommerce;
+import de.metas.externalsystem.model.I_LeichMehl_PluFile_Config;
 import de.metas.externalsystem.model.X_ExternalSystem_Config;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
@@ -51,6 +59,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.util.Optional;
 
 import static de.metas.externalsystem.model.X_ExternalSystem_Config_Shopware6Mapping.ISINVOICEEMAILENABLED_Yes;
@@ -136,6 +145,8 @@ class ExternalSystemConfigRepoTest
 		childRecord.setM_FreightCost_ReducedVAT_Product_ID(30);
 		childRecord.setM_PriceList_ID(40);
 		childRecord.setProductLookup(ProductLookup.ProductNumber.getCode());
+		childRecord.setIsSyncAvailableForSalesToShopware6(true);
+		childRecord.setPercentageOfAvailableForSalesToSync(BigDecimal.TEN);
 		saveRecord(childRecord);
 
 		final I_C_UOM uom = newInstance(I_C_UOM.class);
@@ -431,6 +442,143 @@ class ExternalSystemConfigRepoTest
 		// then
 		assertThat(result).isNotNull();
 		expect(result).toMatchSnapshot();
+	}
+
+	@Test
+	void externalSystem_Config_Ebay_getById()
+	{
+		// given
+		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
+		parentRecord.setName("name");
+		parentRecord.setType(X_ExternalSystem_Config.TYPE_Ebay);
+		saveRecord(parentRecord);
+
+		final String value = "testEbayValue";
+
+		final I_ExternalSystem_Config_Ebay childRecord = newInstance(I_ExternalSystem_Config_Ebay.class);
+		childRecord.setAppId("appId");
+		childRecord.setDevId("devId");
+		childRecord.setCertId("certId");
+		childRecord.setRefreshToken("refreshToken");
+		childRecord.setAPI_Mode(ApiMode.SANDBOX.getCode());
+		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		childRecord.setExternalSystemValue(value);
+		saveRecord(childRecord);
+
+		// when
+		final ExternalSystemEbayConfigId id = ExternalSystemEbayConfigId.ofRepoId(childRecord.getExternalSystem_Config_Ebay_ID());
+		final ExternalSystemParentConfig result = externalSystemConfigRepo.getById(id);
+
+		// then
+		assertThat(result).isNotNull();
+		expect(result).toMatchSnapshot();
+	}
+
+	@Test
+	void externalSystem_Config_Ebay_getByTypeAndParent()
+	{
+		// given
+		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
+		parentRecord.setName("name");
+		parentRecord.setType(X_ExternalSystem_Config.TYPE_Ebay);
+		saveRecord(parentRecord);
+
+		final String value = "testEbayValue";
+
+		final I_ExternalSystem_Config_Ebay childRecord = newInstance(I_ExternalSystem_Config_Ebay.class);
+		childRecord.setAppId("appId");
+		childRecord.setDevId("devId");
+		childRecord.setCertId("certId");
+		childRecord.setRefreshToken("refreshToken");
+		childRecord.setAPI_Mode(ApiMode.SANDBOX.getCode());
+		childRecord.setExternalSystemValue(value);
+		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		saveRecord(childRecord);
+
+
+		final I_ExternalSystem_Config_Ebay_Mapping childMappingRecord = newInstance(I_ExternalSystem_Config_Ebay_Mapping.class);
+		childMappingRecord.setC_PaymentTerm_ID(10000);
+		childMappingRecord.setC_DocTypeOrder_ID(10000);
+		childMappingRecord.setPaymentRule("K");
+		childMappingRecord.setSeqNo(10);
+		childMappingRecord.setEBayCustomerGroup("testWithAnä");
+		childMappingRecord.setEBayPaymentMethod("test");
+		childMappingRecord.setDescription("test");
+		childMappingRecord.setExternalSystem_Config_Ebay_ID(childRecord.getExternalSystem_Config_Ebay_ID());
+		childMappingRecord.setIsInvoiceEmailEnabled(true);
+		childMappingRecord.setBPartner_IfExists("UPDATE_MERGE");
+		childMappingRecord.setBPartner_IfNotExists("FAIL");
+		childMappingRecord.setBPartnerLocation_IfExists("DONT_UPDATE");
+		childMappingRecord.setBPartnerLocation_IfNotExists("CREATE");
+		saveRecord(childMappingRecord);
+
+		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID());
+		// when
+		final IExternalSystemChildConfig result = externalSystemConfigRepo.getChildByParentIdAndType(externalSystemParentConfigId, ExternalSystemType.Ebay)
+				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemChildConfig found!"));
+
+		// then
+		assertThat(result).isNotNull();
+		assertThat(result.getId().getRepoId()).isEqualTo(childRecord.getExternalSystem_Config_Ebay_ID());
+		expect(result).toMatchSnapshot();
+	}
+
+	@Test
+	void externalSystem_Config_Ebay_getByTypeAndValue()
+	{
+		// given
+		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
+		parentRecord.setName("name");
+		parentRecord.setType(X_ExternalSystem_Config.TYPE_Ebay);
+		saveRecord(parentRecord);
+
+		final String value = "testEbayValue";
+
+		final I_ExternalSystem_Config_Ebay childRecord = newInstance(I_ExternalSystem_Config_Ebay.class);
+		childRecord.setIsActive(true);
+		childRecord.setAppId("appId");
+		childRecord.setDevId("devId");
+		childRecord.setCertId("certId");
+		childRecord.setRefreshToken("refreshToken");
+		childRecord.setAPI_Mode(ApiMode.SANDBOX.getCode());
+		childRecord.setExternalSystemValue(value);
+		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		saveRecord(childRecord);
+
+		// when
+		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.Ebay, value)
+				.orElseThrow(() -> new RuntimeException("Something went wrong, no ExternalSystemParentConfig found!"));
+
+		// then
+		assertThat(result).isNotNull();
+		expect(result).toMatchSnapshot();
+	}
+
+	@Test
+	void externalSystem_Config_Ebay_getByTypeAndValue_wrongType()
+	{
+		// given
+		final I_ExternalSystem_Config parentRecord = newInstance(I_ExternalSystem_Config.class);
+		parentRecord.setName("name");
+		parentRecord.setType(X_ExternalSystem_Config.TYPE_Ebay);
+		saveRecord(parentRecord);
+
+		final String value = "testEbayValue";
+
+		final I_ExternalSystem_Config_Ebay childRecord = newInstance(I_ExternalSystem_Config_Ebay.class);
+		childRecord.setAppId("appId");
+		childRecord.setDevId("devId");
+		childRecord.setCertId("certId");
+		childRecord.setRefreshToken("refreshToken");
+		childRecord.setAPI_Mode(ApiMode.SANDBOX.getCode());
+		childRecord.setExternalSystemValue(value);
+		childRecord.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		saveRecord(childRecord);
+
+		// when
+		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.Alberta, value);
+
+		assertThat(externalSystemParentConfig).isEmpty();
 	}
 
 	@Test
@@ -730,6 +878,7 @@ class ExternalSystemConfigRepoTest
 		expect(result).toMatchSnapshot();
 	}
 
+
 	@Test
 	void externalSystem_Config_getActiveByType_NoRecord()
 	{
@@ -757,17 +906,14 @@ class ExternalSystemConfigRepoTest
 				.type(X_ExternalSystem_Config.TYPE_LeichMehl)
 				.build();
 
-		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID());
+		final I_ExternalSystem_Config_LeichMehl leichMehlConfig = newInstance(I_ExternalSystem_Config_LeichMehl.class);
+		leichMehlConfig.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		leichMehlConfig.setExternalSystemValue("LeichMehl");
+		leichMehlConfig.setProduct_BaseFolderName("productBaseFolderName");
+		leichMehlConfig.setTCP_PortNumber(8080);
+		leichMehlConfig.setTCP_Host("tcpHost");
 
-		final I_ExternalSystem_Config_LeichMehl leichMehlConfig = ExternalSystemTestUtil.createLeichMehlConfigBuilder()
-				.externalSystemParentConfigId(parentRecord.getExternalSystem_Config_ID())
-				.value("LeichMehl")
-				.ftpPort(1111)
-				.ftpUsername("ftpUsername")
-				.ftpPassword("ftpPassword")
-				.ftpHost("hostname")
-				.ftpDirectory("directory")
-				.build();
+		saveRecord(leichMehlConfig);
 
 		// when
 		final ExternalSystemParentConfig result = externalSystemConfigRepo.getById(ExternalSystemLeichMehlConfigId.ofRepoId(leichMehlConfig.getExternalSystem_Config_LeichMehl_ID()));
@@ -787,15 +933,14 @@ class ExternalSystemConfigRepoTest
 
 		final String value = "testLeichMehlValue";
 
-		ExternalSystemTestUtil.createLeichMehlConfigBuilder()
-				.externalSystemParentConfigId(parentRecord.getExternalSystem_Config_ID())
-				.value(value)
-				.ftpHost("hostname")
-				.ftpPort(1111)
-				.ftpUsername("ftpUsername")
-				.ftpPassword("ftpPassword")
-				.ftpDirectory("directory")
-				.build();
+		final I_ExternalSystem_Config_LeichMehl leichMehlConfig = newInstance(I_ExternalSystem_Config_LeichMehl.class);
+		leichMehlConfig.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		leichMehlConfig.setExternalSystemValue(value);
+		leichMehlConfig.setProduct_BaseFolderName("productBaseFolderName");
+		leichMehlConfig.setTCP_PortNumber(8080);
+		leichMehlConfig.setTCP_Host("tcpHost");
+
+		saveRecord(leichMehlConfig);
 
 		// when
 		final ExternalSystemParentConfig result = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.LeichUndMehl, value)
@@ -816,15 +961,14 @@ class ExternalSystemConfigRepoTest
 
 		final String value = "testLeichMehlValue";
 
-		ExternalSystemTestUtil.createLeichMehlConfigBuilder()
-				.externalSystemParentConfigId(parentRecord.getExternalSystem_Config_ID())
-				.value(value)
-				.ftpPort(1111)
-				.ftpUsername("ftpUsername")
-				.ftpPassword("ftpPassword")
-				.ftpHost("hostname")
-				.ftpDirectory("directory")
-				.build();
+		final I_ExternalSystem_Config_LeichMehl leichMehlConfig = newInstance(I_ExternalSystem_Config_LeichMehl.class);
+		leichMehlConfig.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		leichMehlConfig.setExternalSystemValue(value);
+		leichMehlConfig.setProduct_BaseFolderName("productBaseFolderName");
+		leichMehlConfig.setTCP_PortNumber(8080);
+		leichMehlConfig.setTCP_Host("tcpHost");
+
+		saveRecord(leichMehlConfig);
 
 		// when
 		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.Shopware6, value);
@@ -841,15 +985,14 @@ class ExternalSystemConfigRepoTest
 				.type(X_ExternalSystem_Config.TYPE_LeichMehl)
 				.build();
 
-		ExternalSystemTestUtil.createLeichMehlConfigBuilder()
-				.externalSystemParentConfigId(parentRecord.getExternalSystem_Config_ID())
-				.value("testLeichMehlValue")
-				.ftpPort(1111)
-				.ftpUsername("ftpUsername")
-				.ftpPassword("ftpPassword")
-				.ftpHost("hostname")
-				.ftpDirectory("directory")
-				.build();
+		final I_ExternalSystem_Config_LeichMehl leichMehlConfig = newInstance(I_ExternalSystem_Config_LeichMehl.class);
+		leichMehlConfig.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		leichMehlConfig.setExternalSystemValue("testLeichMehlValue");
+		leichMehlConfig.setProduct_BaseFolderName("productBaseFolderName");
+		leichMehlConfig.setTCP_PortNumber(8080);
+		leichMehlConfig.setTCP_Host("tcpHost");
+
+		saveRecord(leichMehlConfig);
 
 		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID());
 
@@ -870,15 +1013,14 @@ class ExternalSystemConfigRepoTest
 				.type(X_ExternalSystem_Config.TYPE_LeichMehl)
 				.build();
 
-		ExternalSystemTestUtil.createLeichMehlConfigBuilder()
-				.externalSystemParentConfigId(parentRecordActive.getExternalSystem_Config_ID())
-				.value("testLeichMehlValue")
-				.ftpPort(1111)
-				.ftpUsername("ftpUsername")
-				.ftpPassword("ftpPassword")
-				.ftpHost("hostname")
-				.ftpDirectory("directory")
-				.build();
+		final I_ExternalSystem_Config_LeichMehl configLeichMehl = newInstance(I_ExternalSystem_Config_LeichMehl.class);
+		configLeichMehl.setExternalSystem_Config_ID(parentRecordActive.getExternalSystem_Config_ID());
+		configLeichMehl.setExternalSystemValue("testLeichMehlValue");
+		configLeichMehl.setProduct_BaseFolderName("productBaseFolderName");
+		configLeichMehl.setTCP_PortNumber(8080);
+		configLeichMehl.setTCP_Host("tcpHost");
+
+		saveRecord(configLeichMehl);
 
 		// given
 		final I_ExternalSystem_Config parentRecordInactive = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
@@ -886,15 +1028,14 @@ class ExternalSystemConfigRepoTest
 				.active(false)
 				.build();
 
-		ExternalSystemTestUtil.createLeichMehlConfigBuilder()
-				.externalSystemParentConfigId(parentRecordInactive.getExternalSystem_Config_ID())
-				.value("testLeichMehlValueInactive")
-				.ftpPort(1111)
-				.ftpUsername("ftpUsername")
-				.ftpPassword("ftpPassword")
-				.ftpHost("hostname")
-				.ftpDirectory("directory")
-				.build();
+		final I_ExternalSystem_Config_LeichMehl configLeichMehlInactive = newInstance(I_ExternalSystem_Config_LeichMehl.class);
+		configLeichMehlInactive.setExternalSystem_Config_ID(parentRecordInactive.getExternalSystem_Config_ID());
+		configLeichMehlInactive.setExternalSystemValue("testLeichMehlValueInactive");
+		configLeichMehlInactive.setProduct_BaseFolderName("productBaseFolderName");
+		configLeichMehlInactive.setTCP_PortNumber(8080);
+		configLeichMehlInactive.setTCP_Host("tcpHost");
+
+		saveRecord(configLeichMehlInactive);
 
 		// when
 		final ImmutableList<ExternalSystemParentConfig> result = externalSystemConfigRepo.getActiveByType(ExternalSystemType.LeichUndMehl);
@@ -902,6 +1043,51 @@ class ExternalSystemConfigRepoTest
 		// then
 		assertThat(result).isNotEmpty();
 		assertThat(result.size()).isEqualTo(1);
+		expect(result).toMatchSnapshot();
+	}
+
+	@Test
+	void givenLeichMehlCofing_withProductMappings_andPluFileConfigs_whenGetById_thenReturnWholeInfo()
+	{
+		// given
+		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(X_ExternalSystem_Config.TYPE_LeichMehl)
+				.build();
+
+		final I_ExternalSystem_Config_LeichMehl leichMehlConfig = newInstance(I_ExternalSystem_Config_LeichMehl.class);
+		leichMehlConfig.setExternalSystem_Config_ID(parentRecord.getExternalSystem_Config_ID());
+		leichMehlConfig.setExternalSystemValue("LeichMehl");
+		leichMehlConfig.setProduct_BaseFolderName("productBaseFolderName");
+		leichMehlConfig.setTCP_PortNumber(8080);
+		leichMehlConfig.setTCP_Host("tcpHost");
+
+		saveRecord(leichMehlConfig);
+
+		final I_ExternalSystem_Config_LeichMehl_ProductMapping productMappingRecord = newInstance(I_ExternalSystem_Config_LeichMehl_ProductMapping.class);
+		productMappingRecord.setExternalSystem_Config_LeichMehl_ID(leichMehlConfig.getExternalSystem_Config_LeichMehl_ID());
+		productMappingRecord.setSeqNo(10);
+		productMappingRecord.setM_Product_ID(1);
+		productMappingRecord.setM_Product_Category_ID(2);
+		productMappingRecord.setC_BPartner_ID(3);
+		productMappingRecord.setPLU_File("plufile");
+
+		saveRecord(productMappingRecord);
+
+		final I_LeichMehl_PluFile_Config pluFileConfig = newInstance(I_LeichMehl_PluFile_Config.class);
+		pluFileConfig.setExternalSystem_Config_LeichMehl_ID(leichMehlConfig.getExternalSystem_Config_LeichMehl_ID());
+		pluFileConfig.setTargetFieldName("targetFileName");
+		pluFileConfig.setTargetFieldType(TargetFieldType.Date.getCode());
+		pluFileConfig.setReplacement("replacement");
+		pluFileConfig.setReplaceRegExp("replacePattern");
+		pluFileConfig.setReplacementSource(ReplacementSource.PPOrder.getCode());
+
+		saveRecord(pluFileConfig);
+
+		// when
+		final ExternalSystemParentConfig result = externalSystemConfigRepo.getById(ExternalSystemLeichMehlConfigId.ofRepoId(leichMehlConfig.getExternalSystem_Config_LeichMehl_ID()));
+
+		// then
+		assertThat(result).isNotNull();
 		expect(result).toMatchSnapshot();
 	}
 }

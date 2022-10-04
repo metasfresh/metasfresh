@@ -29,6 +29,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.costing.CostingDocumentRef;
 import de.metas.costing.ICostingService;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.DocStatus;
@@ -51,6 +52,7 @@ import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
+import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfo;
 import de.metas.product.IProductBL;
@@ -65,7 +67,6 @@ import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.ProductASIMandatoryException;
 import org.adempiere.misc.service.IPOService;
@@ -81,13 +82,11 @@ import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
@@ -417,6 +416,9 @@ public class MInOut extends X_M_InOut implements IDocument
 		{
 			setEMail(order.getEMail());
 		}
+
+		setAD_InputDataSource_ID(order.getAD_InputDataSource_ID());
+
 		// Drop shipment
 		// metas start: cg: 01717
 		if (order.isSOTrx())
@@ -516,6 +518,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		setUser1_ID(invoice.getUser1_ID());
 		setUser2_ID(invoice.getUser2_ID());
 		setEMail(invoice.getEMail());
+		setAD_InputDataSource_ID(invoice.getAD_InputDataSource_ID());
 
 		// metas
 		copyAdditionalCols(order);
@@ -610,16 +613,6 @@ public class MInOut extends X_M_InOut implements IDocument
 	private MInOutLine[] m_lines = null;
 	/** Confirmations */
 	private MInOutConfirm[] m_confirms = null;
-
-	/**
-	 * Get Document Status
-	 *
-	 * @return Document Status Clear Text
-	 */
-	public String getDocStatusName()
-	{
-		return Services.get(IADReferenceDAO.class).retrieveListNameTrl(getCtx(), X_M_InOut.DOCSTATUS_AD_Reference_ID, getDocStatus());
-	} // getDocStatusName
 
 	/**
 	 * Add to Description
@@ -861,7 +854,7 @@ public class MInOut extends X_M_InOut implements IDocument
 		final String sql = "UPDATE M_InOutLine SET Processed='"
 				+ (processed ? "Y" : "N")
 				+ "' WHERE M_InOut_ID=" + getM_InOut_ID();
-		final int noLine = DB.executeUpdate(sql, get_TrxName());
+		final int noLine = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		m_lines = null;
 		log.debug("{} - Lines={}", processed, noLine);
 	} // setProcessed
@@ -1127,7 +1120,7 @@ public class MInOut extends X_M_InOut implements IDocument
 					+ "(SELECT AD_Org_ID"
 					+ " FROM M_InOut o WHERE ol.M_InOut_ID=o.M_InOut_ID) "
 					+ "WHERE M_InOut_ID=" + getC_Order_ID();
-			final int no = DB.executeUpdate(sql, get_TrxName());
+			final int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 			log.debug("Lines -> #{}", no);
 		}
 		return true;
@@ -1393,7 +1386,7 @@ public class MInOut extends X_M_InOut implements IDocument
 				}
 				//
 				m_processMsg = "Open @M_InOutConfirm_ID@: " +
-						confirm.getConfirmTypeName() + " - " + confirm.getDocumentNo();
+						confirm.getConfirmType() + " - " + confirm.getDocumentNo();
 				return IDocument.STATUS_InProgress;
 			}
 		}
@@ -1456,14 +1449,6 @@ public class MInOut extends X_M_InOut implements IDocument
 			if (product != null
 					&& Services.get(IProductBL.class).isStocked(product))
 			{
-				// Ignore the Material Policy when is Reverse Correction
-				if (!isReversal())
-				{
-					checkMaterialPolicy(sLine);
-				}
-
-				log.debug("Material Transaction");
-				MTransaction mtrx = null;
 				// same warehouse in order and receipt?
 				boolean sameWarehouse = true;
 				// Reservation ASI - assume none
@@ -1476,78 +1461,7 @@ public class MInOut extends X_M_InOut implements IDocument
 
 				final IStorageBL storageBL = Services.get(IStorageBL.class);
 
-				//
-				if (sLine.getM_AttributeSetInstance_ID() == 0)
-				{
-					final MInOutLineMA mas[] = MInOutLineMA.get(getCtx(),
-							sLine.getM_InOutLine_ID(), get_TrxName());
-					for (final MInOutLineMA ma : mas)
-					{
-						BigDecimal QtyMA = ma.getMovementQty();
-						if (MovementType.charAt(1) == '-')
-						{
-							QtyMA = QtyMA.negate();
-						}
-						BigDecimal reservedDiff = BigDecimal.ZERO;
-						BigDecimal orderedDiff = BigDecimal.ZERO;
-						if (sLine.getC_OrderLine_ID() != 0)
-						{
-							if (isSOTrx())
-							{
-								reservedDiff = ma.getMovementQty().negate();
-							}
-							else
-							{
-								orderedDiff = ma.getMovementQty().negate();
-							}
-						}
-
-						// Update Storage - see also VMatch.createMatchRecord
-						// task 08999 : update the storage async
-						storageBL.addAsync(
-								getCtx(),
-								getM_Warehouse_ID(),
-								sLine.getM_Locator_ID(),
-								sLine.getM_Product_ID(),
-								ma.getM_AttributeSetInstance_ID(), reservationAttributeSetInstance_ID,
-								QtyMA,
-								sameWarehouse ? reservedDiff : BigDecimal.ZERO,
-								sameWarehouse ? orderedDiff : BigDecimal.ZERO,
-								get_TrxName());
-						if (!sameWarehouse)
-						{
-							// correct qtyOrdered in warehouse of order
-							final WarehouseId warehouseId = Services.get(IWarehouseAdvisor.class).evaluateWarehouse(oLine);
-							// task 08999 : update the storage async
-							storageBL.addAsync(
-									getCtx(),
-									warehouseId.getRepoId(),
-									Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId).getRepoId(),
-									sLine.getM_Product_ID(),
-									ma.getM_AttributeSetInstance_ID(), reservationAttributeSetInstance_ID,
-									BigDecimal.ZERO, reservedDiff, orderedDiff, get_TrxName());
-						}
-						// Create Transaction
-						mtrx = new MTransaction(getCtx(),
-								sLine.getAD_Org_ID(),
-								MovementType,
-								sLine.getM_Locator_ID(),
-								sLine.getM_Product_ID(),
-
-								// #gh489: M_Storage is a legacy and currently doesn't really work.
-								// In this case, its use of M_AttributeSetInstance_ID (which is forwarded from storage to 'ma') introduces a coupling between random documents.
-								// this coupling is a big problem, so we don't forward the ASI-ID to the M_Transaction
-								0, // ma.getM_AttributeSetInstance_ID(),
-
-								QtyMA,
-								getMovementDate(),
-								get_TrxName());
-						mtrx.setM_InOutLine_ID(sLine.getM_InOutLine_ID());
-						InterfaceWrapperHelper.save(mtrx);
-					}
-				}
-				// sLine.getM_AttributeSetInstance_ID() != 0
-				if (mtrx == null)
+				log.debug("Material Transaction");
 				{
 					final BigDecimal reservedDiff = sameWarehouse ? QtySO.negate() : BigDecimal.ZERO;
 					final BigDecimal orderedDiff = sameWarehouse ? QtyPO.negate() : BigDecimal.ZERO;
@@ -1569,16 +1483,16 @@ public class MInOut extends X_M_InOut implements IDocument
 						storageBL.addAsync(
 								getCtx(),
 								warehouseId.getRepoId(),
-								Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId).getRepoId(),
+								Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(warehouseId).getRepoId(),
 								sLine.getM_Product_ID(),
 								sLine.getM_AttributeSetInstance_ID(), reservationAttributeSetInstance_ID,
 								BigDecimal.ZERO, QtySO.negate(), QtyPO.negate(), get_TrxName());
 					}
 					// FallBack: Create Transaction
-					mtrx = new MTransaction(getCtx(), sLine.getAD_Org_ID(),
-							MovementType, sLine.getM_Locator_ID(),
-							sLine.getM_Product_ID(), sLine.getM_AttributeSetInstance_ID(),
-							Qty, getMovementDate(), get_TrxName());
+					final MTransaction mtrx = new MTransaction(getCtx(), sLine.getAD_Org_ID(),
+															   MovementType, sLine.getM_Locator_ID(),
+															   sLine.getM_Product_ID(), sLine.getM_AttributeSetInstance_ID(),
+															   Qty, getMovementDate(), get_TrxName());
 					mtrx.setM_InOutLine_ID(sLine.getM_InOutLine_ID());
 					InterfaceWrapperHelper.save(mtrx);
 				}
@@ -2048,101 +1962,6 @@ public class MInOut extends X_M_InOut implements IDocument
 		}
 	}
 
-	/**
-	 * Check Material Policy Sets line ASI
-	 */
-	private void checkMaterialPolicy(final MInOutLine line)
-	{
-		MInOutLineMA.deleteInOutLineMA(line.getM_InOutLine_ID(), get_TrxName());
-
-		// Incoming Trx
-		final String MovementType = getMovementType();
-		final boolean inTrx = MovementType.charAt(1) == '+'; // V+ Vendor Receipt
-
-		boolean needSave = false;
-		final MProduct product = line.getProduct();
-
-		// Need to have Location
-		if (product != null
-				&& line.getM_Locator_ID() == 0)
-		{
-			// MWarehouse w = MWarehouse.get(getCtx(), getM_Warehouse_ID());
-			line.setM_Warehouse_ID(getM_Warehouse_ID());
-			line.setM_Locator_ID(inTrx ? BigDecimal.ZERO : line.getMovementQty()); // default Locator
-			needSave = true;
-		}
-
-		// Attribute Set Instance
-		// Create an Attribute Set Instance to any receipt FIFO/LIFO
-		if (product != null && line.getM_AttributeSetInstance_ID() == 0)
-		{
-			// Validate Transaction
-			if (getMovementType().compareTo(MInOut.MOVEMENTTYPE_CustomerReturns) == 0
-					|| getMovementType().compareTo(MInOut.MOVEMENTTYPE_VendorReceipts) == 0)
-			{
-				MAttributeSetInstance asi = null;
-				// always create asi so fifo/lifo work.
-				if (asi == null)
-				{
-					asi = MAttributeSetInstance.create(getCtx(), product, get_TrxName());
-				}
-				line.setM_AttributeSetInstance_ID(asi.getM_AttributeSetInstance_ID());
-				log.debug("New ASI={}", line);
-				needSave = true;
-			}
-			// Create consume the Attribute Set Instance using policy FIFO/LIFO
-			else if (getMovementType().compareTo(MInOut.MOVEMENTTYPE_VendorReturns) == 0 || getMovementType().compareTo(MInOut.MOVEMENTTYPE_CustomerShipment) == 0)
-			{
-				final String MMPolicy = Services.get(IProductBL.class).getMMPolicy(product);
-				final Timestamp minGuaranteeDate = getMovementDate();
-				final MStorage[] storages = MStorage.getWarehouse(getCtx(),
-						getM_Warehouse_ID(), line.getM_Product_ID(), line.getM_AttributeSetInstance_ID(),
-						minGuaranteeDate, MClient.MMPOLICY_FiFo.equals(MMPolicy), true, line.getM_Locator_ID(), get_TrxName());
-				BigDecimal qtyToDeliver = line.getMovementQty();
-				for (final MStorage storage : storages)
-				{
-					if (storage.getQtyOnHand().compareTo(qtyToDeliver) >= 0)
-					{
-						final MInOutLineMA ma = new MInOutLineMA(line,
-								0, // storage.getM_AttributeSetInstance_ID(),
-								qtyToDeliver);
-						ma.saveEx();
-						qtyToDeliver = BigDecimal.ZERO;
-					}
-					else
-					{
-						final MInOutLineMA ma = new MInOutLineMA(line,
-								0, // storage.getM_AttributeSetInstance_ID(),
-								storage.getQtyOnHand());
-						ma.saveEx();
-						qtyToDeliver = qtyToDeliver.subtract(storage.getQtyOnHand());
-						log.debug("{}, QtyToDeliver={}", ma, qtyToDeliver);
-					}
-
-					if (qtyToDeliver.signum() == 0)
-					{
-						break;
-					}
-				}
-
-				if (qtyToDeliver.signum() != 0)
-				{
-					// deliver using new asi
-					final MAttributeSetInstance asi = MAttributeSetInstance.create(getCtx(), product, get_TrxName());
-					final int M_AttributeSetInstance_ID = asi.getM_AttributeSetInstance_ID();
-					final MInOutLineMA ma = new MInOutLineMA(line, M_AttributeSetInstance_ID, qtyToDeliver);
-					ma.saveEx();
-					log.debug("##: {}", ma);
-				}
-			}  // outgoing Trx
-		}  // attributeSetInstance
-
-		if (needSave)
-		{
-			line.saveEx();
-		}
-	} // checkMaterialPolicy
-
 	/**************************************************************************
 	 * Create Counter Document
 	 *
@@ -2412,19 +2231,6 @@ public class MInOut extends X_M_InOut implements IDocument
 			sLine.setReversalLine_ID(rLine.getM_InOutLine_ID());
 			InterfaceWrapperHelper.save(sLine);
 
-			// We need to copy MA
-			if (rLine.getM_AttributeSetInstance_ID() <= 0)
-			{
-				final MInOutLineMA mas[] = MInOutLineMA.get(getCtx(),
-						sLine.getM_InOutLine_ID(), get_TrxName());
-				for (final MInOutLineMA ma2 : mas)
-				{
-					final MInOutLineMA ma = new MInOutLineMA(rLine,
-							ma2.getM_AttributeSetInstance_ID(),
-							ma2.getMovementQty().negate());
-					ma.saveEx();
-				}
-			}
 			// De-Activate Asset
 			final MAsset asset = MAsset.getFromShipment(getCtx(), sLine.getM_InOutLine_ID(), get_TrxName());
 			if (asset != null)
@@ -2510,7 +2316,7 @@ public class MInOut extends X_M_InOut implements IDocument
 
 		// Std Period open?
 		final MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
-		MPeriod.testPeriodOpen(getCtx(), getDateAcct(), dt.getDocBaseType(), getAD_Org_ID());
+		MPeriod.testPeriodOpen(getCtx(), getDateAcct(), DocBaseType.ofCode(dt.getDocBaseType()), getAD_Org_ID());
 
 		//
 		// Make sure it's not a reversal or reversed document.
@@ -2575,12 +2381,6 @@ public class MInOut extends X_M_InOut implements IDocument
 			}
 
 			// TODO: check if there are more places where to look and check if the inout line was already invoiced
-
-			// Delete material allocations
-			for (final MInOutLineMA ma : MInOutLineMA.get(getCtx(), inoutLine.getM_InOutLine_ID(), get_TrxName()))
-			{
-				InterfaceWrapperHelper.delete(ma);
-			}
 
 			// Delete M_Transactions
 			for (final I_M_Transaction mtrx : transactionDAO.retrieveReferenced(inoutLine))
@@ -2657,9 +2457,9 @@ public class MInOut extends X_M_InOut implements IDocument
 	} // getSummary
 
 	@Override
-	public LocalDate getDocumentDate()
+	public InstantAndOrgId getDocumentDate()
 	{
-		return TimeUtil.asLocalDate(getMovementDate());
+		return InstantAndOrgId.ofTimestamp(getMovementDate(), OrgId.ofRepoId(getAD_Org_ID()));
 	}
 
 	/**

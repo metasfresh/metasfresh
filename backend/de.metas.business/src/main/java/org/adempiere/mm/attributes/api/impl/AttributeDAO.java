@@ -23,6 +23,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.ValidationRuleQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
@@ -141,6 +142,7 @@ public class AttributeDAO implements IAttributeDAO
 				.mandatoryOnReceipt(OptionalBoolean.ofNullableString(record.getMandatoryOnReceipt()))
 				.mandatoryOnPicking(OptionalBoolean.ofNullableString(record.getMandatoryOnPicking()))
 				.mandatoryOnShipment(OptionalBoolean.ofNullableString(record.getMandatoryOnShipment()))
+				.mandatoryOnManufacturing(OptionalBoolean.ofNullableString(record.getMandatoryOnManufacturing()))
 				.build();
 	}
 
@@ -559,8 +561,8 @@ public class AttributeDAO implements IAttributeDAO
 		//
 		// 07708: Apply AD_Val_Rule when filtering attributes for current context
 		final ValidationRuleQueryFilter<I_M_AttributeValue> validationRuleQueryFilter;
-		final int adValRuleId = attribute.getAD_Val_Rule_ID();
-		if (adValRuleId > 0)
+		final AdValRuleId adValRuleId = AdValRuleId.ofRepoIdOrNull(attribute.getAD_Val_Rule_ID());
+		if (adValRuleId != null)
 		{
 			validationRuleQueryFilter = new ValidationRuleQueryFilter<>(attribute, adValRuleId);
 		}

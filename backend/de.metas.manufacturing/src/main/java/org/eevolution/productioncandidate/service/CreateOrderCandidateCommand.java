@@ -22,6 +22,7 @@
 
 package org.eevolution.productioncandidate.service;
 
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanningId;
@@ -44,6 +45,7 @@ import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.Optional;
 
 public class CreateOrderCandidateCommand
@@ -99,12 +101,19 @@ public class CreateOrderCandidateCommand
 		ppOrderCandidateRecord.setC_OrderLine_ID(OrderLineId.toRepoId(request.getSalesOrderLineId()));
 		ppOrderCandidateRecord.setM_ShipmentSchedule_ID(ShipmentScheduleId.toRepoId(request.getShipmentScheduleId()));
 
+		final I_PP_Product_Planning productPlanning = productPlanningsRepo.getById(request.getProductPlanningId());
+		final BigDecimal qtyProcessed_OnDate = productPlanning.getQtyProcessed_OnDate();
+		ppOrderCandidateRecord.setQtyProcessed_OnDate(qtyProcessed_OnDate);
+		ppOrderCandidateRecord.setSeqNo(productPlanning.getSeqNo());
+
 		ppOrderCandidateRecord.setIsSimulated(request.isSimulated());
 
 		if (request.isSimulated())
 		{
 			ppOrderCandidateRecord.setProcessed(true);
 		}
+
+		ppOrderCandidateRecord.setM_HU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(request.getPackingMaterialId()));
 
 		ppOrderCandidateDAO.save(ppOrderCandidateRecord);
 

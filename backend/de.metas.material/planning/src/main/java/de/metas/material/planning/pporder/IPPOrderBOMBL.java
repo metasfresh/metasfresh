@@ -131,6 +131,8 @@ public interface IPPOrderBOMBL extends ISingletonService
 
 	void voidBOMLine(I_PP_Order_BOMLine line);
 
+	void validateBeforeClose(I_PP_Order_BOMLine line);
+
 	void close(I_PP_Order_BOMLine line);
 
 	void unclose(I_PP_Order_BOMLine line);

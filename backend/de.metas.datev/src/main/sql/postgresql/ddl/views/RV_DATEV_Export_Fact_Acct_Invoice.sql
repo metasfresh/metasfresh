@@ -1,4 +1,7 @@
-CREATE VIEW RV_DATEV_Export_Fact_Acct_Invoice (DebitOrCreditIndicator, Currency, dr_account, cr_account, amt, activityname, c_activity_id, documentno, dateacct, bpvalue, bpname, duedate, description, c_bpartner_id, c_invoice_id, docbasetype, fact_acct_id, rv_datev_export_fact_acct_invoice_id, ad_client_id, ad_org_id) AS
+CREATE VIEW RV_DATEV_Export_Fact_Acct_Invoice (DebitOrCreditIndicator, Currency, dr_account, cr_account, amt, activityname, c_activity_id, documentno, dateacct, bpvalue, bpname, duedate, description, c_bpartner_id, c_invoice_id, docbasetype,
+    c_tax_rate,
+    c_doctype_name,
+    fact_acct_id, rv_datev_export_fact_acct_invoice_id, ad_client_id, ad_org_id) AS
 SELECT CASE
            WHEN fa.amtacctdr <> 0::numeric THEN 'S'
                                            ELSE 'H'
@@ -6,16 +9,16 @@ SELECT CASE
        (SELECT cur.iso_code FROM c_currency cur WHERE cur.c_currency_id = fa.c_currency_id)
                                                                                         AS Currency,
        CASE
-           WHEN fa.amtacctdr <> 0::numeric THEN ev.value
-                                           ELSE ev2.value
+           WHEN fa.amtsourcedr <> 0::numeric THEN ev.value
+                                             ELSE ev2.value
        END                                                                              AS dr_account,
        CASE
-           WHEN fa.amtacctdr <> 0::numeric THEN ev2.value
-                                           ELSE ev.value
+           WHEN fa.amtsourcedr <> 0::numeric THEN ev2.value
+                                             ELSE ev.value
        END                                                                              AS cr_account,
        CASE
-           WHEN fa.amtacctdr <> 0::numeric THEN fa.amtacctdr
-                                           ELSE fa.amtacctcr
+           WHEN fa.amtsourcedr <> 0::numeric THEN fa.amtsourcedr
+                                             ELSE fa.amtsourcecr
        END                                                                              AS amt,
        a.name                                                                           AS activityname,
        a.c_activity_id,
@@ -28,6 +31,8 @@ SELECT CASE
        bp.c_bpartner_id,
        fa.record_id                                                                     AS c_invoice_id,
        fa.docbasetype,
+       t.rate AS c_tax_rate,
+       dt.name AS c_doctype_name,       
        fa.fact_acct_id,
        fa.fact_acct_id                                                                  AS rv_datev_export_fact_acct_invoice_id,
        fa.ad_client_id,
@@ -39,6 +44,9 @@ FROM fact_acct fa
          JOIN c_bpartner bp ON bp.c_bpartner_id = fa.c_bpartner_id
          LEFT JOIN c_activity a ON a.c_activity_id = COALESCE(fa.c_activity_id, fa2.c_activity_id)
          JOIN c_invoice i ON i.c_invoice_id = fa.record_id
+         JOIN c_tax t ON t.c_tax_id = fa.c_tax_id
+         JOIN c_doctype dt ON dt.c_doctype_id = fa.c_doctype_id
+
 WHERE fa.ad_table_id = get_table_id('C_Invoice'::character varying)
 ;
 

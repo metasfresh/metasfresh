@@ -23,8 +23,10 @@
 package org.adempiere.warehouse.api.impl;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.exceptions.BPartnerNoBillToAddressException;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.document.location.DocumentLocation;
@@ -34,6 +36,7 @@ import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
+import de.metas.user.User;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -68,21 +71,21 @@ public class WarehouseBL implements IWarehouseBL
 	}
 
 	@Override
-	public I_M_Locator getDefaultLocator(@NonNull final I_M_Warehouse warehouse)
+	public I_M_Locator getOrCreateDefaultLocator(@NonNull final I_M_Warehouse warehouse)
 	{
-		return getDefaultLocator(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()));
+		return getOrCreateDefaultLocator(WarehouseId.ofRepoId(warehouse.getM_Warehouse_ID()));
 	}
 
 	@Override
-	public I_M_Locator getDefaultLocator(@NonNull final WarehouseId warehouseId)
+	public I_M_Locator getOrCreateDefaultLocator(@NonNull final WarehouseId warehouseId)
 	{
-		final LocatorId defaultLocatorId = getDefaultLocatorId(warehouseId);
+		final LocatorId defaultLocatorId = getOrCreateDefaultLocatorId(warehouseId);
 		return warehouseDAO.getLocatorById(defaultLocatorId);
 	}
 
 	@Override
 	@NonNull
-	public LocatorId getDefaultLocatorId(@NonNull final WarehouseId warehouseId)
+	public LocatorId getOrCreateDefaultLocatorId(@NonNull final WarehouseId warehouseId)
 	{
 		final List<I_M_Locator> locators = warehouseDAO.getLocators(warehouseId);
 		int activeLocatorsCount = 0;
@@ -231,7 +234,6 @@ public class WarehouseBL implements IWarehouseBL
 		return warehouseDAO.getLocatorByRepoId(locatorRepoId);
 	}
 
-
 	@Override
 	public WarehouseId getInTransitWarehouseId(final OrgId adOrgId)
 	{
@@ -250,6 +252,47 @@ public class WarehouseBL implements IWarehouseBL
 		final ImmutableSet<WarehouseId> warehouseIds = warehouseDAO.retrieveWarehouseWithLocation(oldLocationId);
 
 		warehouseIds.forEach(warehouseId -> updateWarehouseLocation(warehouseId, newLocationId));
+	}
+
+	@Override
+	@NonNull
+	public DocumentLocation getBPartnerBillingLocationDocument(@NonNull final WarehouseId warehouseId)
+	{
+		final I_M_Warehouse warehouseRecord = warehouseDAO.getById(warehouseId);
+
+		final BPartnerLocationId warehouseBPartnerLocationId = BPartnerLocationId.ofRepoId(warehouseRecord.getC_BPartner_ID(), warehouseRecord.getC_BPartner_Location_ID());
+
+		// prefer the warehouse's C_BPartner_Location_ID, but if it's not a billTolocation, then fall back to another bill-location of the bpartner
+		final I_C_BPartner_Location billToLocation = Optional.ofNullable(bpartnerDAO.getBPartnerLocationByIdInTrx(warehouseBPartnerLocationId))
+				.filter(I_C_BPartner_Location::isBillTo)
+				.orElseGet(() -> bpartnerDAO.retrieveCurrentBillLocationOrNull(warehouseBPartnerLocationId.getBpartnerId()));
+
+		if (billToLocation == null)
+		{
+			throw new BPartnerNoBillToAddressException(bpartnerDAO.getById(warehouseBPartnerLocationId.getBpartnerId()));
+		}
+
+		final BPartnerLocationId billingLocationId = BPartnerLocationId.ofRepoId(billToLocation.getC_BPartner_ID(), billToLocation.getC_BPartner_Location_ID());
+
+		final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+
+		final User warehouseContact = bpartnerBL.retrieveContactOrNull(IBPartnerBL.RetrieveContactRequest.builder()
+																					.onlyActive(true)
+																					.contactType(IBPartnerBL.RetrieveContactRequest.ContactType.BILL_TO_DEFAULT)
+																					.bpartnerId(billingLocationId.getBpartnerId())
+																					.bPartnerLocationId(billingLocationId)
+																					.ifNotFound(IBPartnerBL.RetrieveContactRequest.IfNotFound.RETURN_NULL)
+																					.build());
+
+		final BPartnerContactId billContactId = Optional.ofNullable(warehouseContact)
+				.flatMap(User::getBPartnerContactId)
+				.orElse(null);
+
+		return DocumentLocation.builder()
+				.bpartnerId(billingLocationId.getBpartnerId())
+				.bpartnerLocationId(billingLocationId)
+				.contactId(billContactId)
+				.build();
 	}
 
 	private void updateWarehouseLocation(@NonNull final WarehouseId warehouseId, @NonNull final LocationId locationId)

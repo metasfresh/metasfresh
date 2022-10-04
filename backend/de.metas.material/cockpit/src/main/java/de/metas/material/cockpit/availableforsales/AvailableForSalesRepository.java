@@ -9,19 +9,30 @@ import de.metas.material.cockpit.model.I_MD_Available_For_Sales_QueryResult;
 import de.metas.material.commons.attributes.AttributesKeyPattern;
 import de.metas.material.commons.attributes.AttributesKeyPatternsUtil;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_MD_Available_For_Sales;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 
 import static java.math.BigDecimal.ZERO;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -49,8 +60,12 @@ import static java.math.BigDecimal.ZERO;
 public class AvailableForSalesRepository
 {
 	private static final String SYSCONFIG_AVAILABILITY_INFO_ATTRIBUTES_KEYS = "de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor.AvailabilityInfo.AttributesKeys";
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public AvailableForSalesMultiResult getBy(@NonNull final AvailableForSalesMultiQuery availableForSalesMultiQuery)
+	@NonNull
+	public AvailableForSalesMultiResult computeAvailableForSales(
+			@NonNull final AvailableForSalesMultiQuery availableForSalesMultiQuery,
+			@NonNull final Function<ProductId, UomId> stockUOMProvider)
 	{
 		final AvailableForSalesMultiResultBuilder multiResult = AvailableForSalesMultiResult.builder();
 		if (availableForSalesMultiQuery.getAvailableForSalesQueries().isEmpty())
@@ -70,40 +85,109 @@ public class AvailableForSalesRepository
 
 		for (int queryNo = 0; queryNo < singleQueries.size(); queryNo++)
 		{
-			BigDecimal qtyOnHandStock = ZERO;
-			BigDecimal qtyToBeShipped = ZERO;
-			String storageAttributesKey = null;
-
-			for (final I_MD_Available_For_Sales_QueryResult recordForQueryNo : queryNo2records.get(queryNo))
-			{
-				qtyOnHandStock = qtyOnHandStock.add(recordForQueryNo.getQtyOnHandStock());
-				qtyToBeShipped = qtyToBeShipped.add(recordForQueryNo.getQtyToBeShipped());
-				storageAttributesKey = recordForQueryNo.getStorageAttributesKey();
-			}
-
 			final AvailableForSalesQuery singleQuery = singleQueries.get(queryNo);
-			final AvailableForSalesResult result = createSingleResult(qtyOnHandStock, qtyToBeShipped, AttributesKey.ofString(storageAttributesKey), singleQuery);
-			multiResult.availableForSalesResult(result);
+
+			final UomId stockUOMId = stockUOMProvider.apply(singleQuery.getProductId());
+
+			queryNo2records.get(queryNo)
+					.stream()
+					.peek(result -> validateResultUOM(result, stockUOMId))
+					.map(resultRow -> createSingleResult(resultRow, singleQuery))
+					.filter(Optional::isPresent)
+					.map(Optional::get)
+					.forEach(multiResult::availableForSalesResult);
 		}
 
 		return multiResult.build();
 	}
 
-	private AvailableForSalesResult createSingleResult(
-			@NonNull final BigDecimal qtyOnHandStock,
-			@NonNull final BigDecimal qtyToBeShipped,
+	@NonNull
+	public ImmutableList<I_MD_Available_For_Sales> getRecordsByQuery(@NonNull final RetrieveAvailableForSalesQuery retrieveAvailableForSalesQuery)
+	{
+		final IQueryBuilder<I_MD_Available_For_Sales> queryBuilder = queryBL.createQueryBuilder(I_MD_Available_For_Sales.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_MD_Available_For_Sales.COLUMNNAME_M_Product_ID, retrieveAvailableForSalesQuery.getProductId());
+
+		if (retrieveAvailableForSalesQuery.getOrgId() != null)
+		{
+			queryBuilder.addEqualsFilter(I_MD_Available_For_Sales.COLUMNNAME_AD_Org_ID, retrieveAvailableForSalesQuery.getOrgId());
+
+		}
+
+		if (retrieveAvailableForSalesQuery.getStorageAttributesKeyPattern() != null)
+		{
+			queryBuilder.filter(ASIAvailableForSalesAttributesKeyFilter.matchingAttributes(retrieveAvailableForSalesQuery.getStorageAttributesKeyPattern()));
+		}
+
+		return queryBuilder
+				.create()
+				.listImmutable(I_MD_Available_For_Sales.class);
+	}
+
+	public void delete(@NonNull final I_MD_Available_For_Sales availableForSales)
+	{
+		InterfaceWrapperHelper.deleteRecord(availableForSales);
+	}
+
+	public void create(@NonNull final CreateAvailableForSalesRequest createAvailableForSalesRequest)
+	{
+		final I_MD_Available_For_Sales availableForSales = InterfaceWrapperHelper.newInstance(I_MD_Available_For_Sales.class);
+
+		availableForSales.setStorageAttributesKey(createAvailableForSalesRequest.getStorageAttributesKey().getAsString());
+		availableForSales.setM_Product_ID(createAvailableForSalesRequest.getProductId().getRepoId());
+		availableForSales.setQtyToBeShipped(createAvailableForSalesRequest.getQtyToBeShipped());
+		availableForSales.setQtyOnHandStock(createAvailableForSalesRequest.getQtyOnHandStock());
+		availableForSales.setAD_Org_ID(createAvailableForSalesRequest.getOrgId().getRepoId());
+		availableForSales.setIsActive(true);
+
+		save(availableForSales);
+	}
+
+	public void save(@NonNull final I_MD_Available_For_Sales availableForSalesRecord)
+	{
+		saveRecord(availableForSalesRecord);
+	}
+
+	@Nullable
+	public I_MD_Available_For_Sales getByUniqueKey(
+			@NonNull final ProductId productId,
 			@NonNull final AttributesKey storageAttributesKey,
+			@NonNull final OrgId orgId)
+	{
+		return queryBL.createQueryBuilder(I_MD_Available_For_Sales.class)
+				.addEqualsFilter(I_MD_Available_For_Sales.COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(I_MD_Available_For_Sales.COLUMNNAME_StorageAttributesKey, storageAttributesKey.getAsString())
+				.addEqualsFilter(I_MD_Available_For_Sales.COLUMNNAME_AD_Org_ID, orgId)
+				.create()
+				.firstOnly(I_MD_Available_For_Sales.class);
+	}
+
+	@NonNull
+	private Optional<AvailableForSalesResult> createSingleResult(
+			@NonNull final I_MD_Available_For_Sales_QueryResult queryResultRow,
 			@NonNull final AvailableForSalesQuery singleQuery)
 	{
-		return AvailableForSalesResult
-				.builder()
-				.availableForSalesQuery(singleQuery)
-				.productId(singleQuery.getProductId())
-				.storageAttributesKey(storageAttributesKey)
-				.quantities(Quantities.builder()
-						.qtyOnHandStock(qtyOnHandStock)
-						.qtyToBeShipped(qtyToBeShipped).build())
-				.build();
+		final BigDecimal qtyOnHandStock = queryResultRow.getQtyOnHandStock();
+		final BigDecimal qtyToBeShipped = queryResultRow.getQtyToBeShipped();
+
+		if (ZERO.equals(qtyOnHandStock) && ZERO.equals(qtyToBeShipped))
+		{
+			return Optional.empty();
+		}
+
+		final String storageAttributesKey = queryResultRow.getStorageAttributesKey();
+
+		return Optional.of(AvailableForSalesResult
+								   .builder()
+								   .availableForSalesQuery(singleQuery)
+								   .productId(singleQuery.getProductId())
+								   .storageAttributesKey(AttributesKey.ofString(storageAttributesKey))
+								   .orgId(OrgId.ofRepoId(queryResultRow.getAD_Org_ID()))
+								   .quantities(Quantities.builder()
+													   .qtyOnHandStock(qtyOnHandStock)
+													   .qtyToBeShipped(qtyToBeShipped)
+													   .build())
+								   .build());
 	}
 
 	public AvailableForSalesLookupResult retrieveAvailableStock(@NonNull final AvailableForSalesMultiQuery availableForSalesMultiQuery)
@@ -152,4 +236,14 @@ public class AvailableForSalesRepository
 		return AttributesKeyPatternsUtil.parseCommaSeparatedString(storageAttributesKeys);
 	}
 
+	private static void validateResultUOM(@NonNull final I_MD_Available_For_Sales_QueryResult result, @NonNull final UomId stockUOMId)
+	{
+		if (result.getC_UOM_ID() != stockUOMId.getRepoId())
+		{
+			throw new AdempiereException("MD_Available_For_Sales_QueryResult is not in stock uom!")
+					.appendParametersToMessage()
+					.setParameter("Result.C_UOM_ID", result.getC_UOM_ID())
+					.setParameter("stockUOMId", stockUOMId.getRepoId());
+		}
+	}
 }

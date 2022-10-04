@@ -38,9 +38,9 @@ import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrdersBulk;
 import de.metas.common.manufacturing.v2.JsonResponseManufacturingOrdersReport;
 import de.metas.common.manufacturing.v2.JsonResponseReceiveFromManufacturingOrder;
 import de.metas.common.manufacturing.v2.Outcome;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonError;
 import de.metas.common.rest_api.v2.JsonErrorItem;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonQuantity;
 import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.flatrate.interfaces.I_C_DocType;
@@ -72,13 +72,13 @@ import de.metas.manufacturing.order.importaudit.ManufacturingOrderReportAuditIte
 import de.metas.manufacturing.rest_api.ExportSequenceNumberProvider;
 import de.metas.manufacturing.rest_api.ManufacturingOrderExportAuditRepository;
 import de.metas.manufacturing.rest_api.ManufacturingOrderReportAuditRepository;
-import de.metas.manufacturing.rest_api.v2.ManufacturingOrderAPIService;
 import org.eevolution.api.PPOrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
 import de.metas.product.ResourceId;
+import de.metas.resource.ManufacturingResourceType;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -94,11 +94,11 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.X_C_DocType;
-import org.compiere.model.X_S_Resource;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.BOMComponentType;
 import org.eevolution.api.IPPCostCollectorDAO;
 import org.eevolution.api.PPCostCollectorId;
+import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderPlanningStatus;
 import org.eevolution.model.I_PP_Cost_Collector;
 import org.eevolution.model.I_PP_Order_BOM;
@@ -558,14 +558,14 @@ public class ManufacturingOrderAPIServiceTest
 			createDocType(X_C_DocType.DOCBASETYPE_ManufacturingCostCollector);
 
 			final WarehouseId warehouseId = WarehouseId.ofRepoId(huTestHelper.defaultWarehouse.getM_Warehouse_ID());
-			locatorId = warehouseBL.getDefaultLocatorId(warehouseId);
+			locatorId = warehouseBL.getOrCreateDefaultLocatorId(warehouseId);
 		}
 
 		public ResourceId createPlant(final String name)
 		{
 			final I_S_Resource plant = newInstance(I_S_Resource.class);
 			plant.setIsManufacturingResource(true);
-			plant.setManufacturingResourceType(X_S_Resource.MANUFACTURINGRESOURCETYPE_Plant);
+			plant.setManufacturingResourceType(ManufacturingResourceType.Plant.getCode());
 			plant.setValue(name);
 			plant.setName(name);
 			saveRecord(plant);

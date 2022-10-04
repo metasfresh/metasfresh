@@ -176,7 +176,7 @@ public class CandidateRepositoryRetrieval
 			builder.additionalDemandDetail(demandDetailOrNull);
 		}
 
-		builder.transactionDetails(createTransactionDetails(candidateRecordOrNull));
+		builder.transactionDetails(getTransactionDetails(candidateRecordOrNull));
 
 		final Dimension candidateDimension = dimensionService.getFromRecord(candidateRecordOrNull);
 		builder.dimension(candidateDimension);
@@ -310,12 +310,11 @@ public class CandidateRepositoryRetrieval
 		return DemandDetailRepoHelper.forDemandDetailRecord(demandDetailRecord);
 	}
 
-	private static List<TransactionDetail> createTransactionDetails(@NonNull final I_MD_Candidate candidateRecord)
+	@NonNull
+	private static List<TransactionDetail> createTransactionDetails(
+			@NonNull final I_MD_Candidate candidateRecord,
+			@NonNull final List<I_MD_Candidate_Transaction_Detail> transactionDetailRecords)
 	{
-		final List<I_MD_Candidate_Transaction_Detail> transactionDetailRecords = //
-				RepositoryCommons.createCandidateDetailQueryBuilder(candidateRecord, I_MD_Candidate_Transaction_Detail.class)
-						.list();
-
 		final ImmutableList.Builder<TransactionDetail> result = ImmutableList.builder();
 		for (final I_MD_Candidate_Transaction_Detail transactionDetailRecord : transactionDetailRecords)
 		{
@@ -413,6 +412,16 @@ public class CandidateRepositoryRetrieval
 												.build())
 				.build();
 		return retrieveOrderedByDateAndSeqNo(query);
+	}
+
+	@NonNull
+	private List<TransactionDetail> getTransactionDetails(@NonNull final I_MD_Candidate candidateRecord)
+	{
+		final List<I_MD_Candidate_Transaction_Detail> transactionDetailRecords = RepositoryCommons
+				.createCandidateDetailQueryBuilder(candidateRecord, I_MD_Candidate_Transaction_Detail.class)
+				.list();
+
+		return createTransactionDetails(candidateRecord, transactionDetailRecords);
 	}
 
 	private static boolean isSimulated(@NonNull final I_MD_Candidate candidateRecord)

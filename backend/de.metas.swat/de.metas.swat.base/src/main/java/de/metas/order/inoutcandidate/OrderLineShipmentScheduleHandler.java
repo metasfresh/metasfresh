@@ -174,6 +174,8 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		shipmentSchedule.setAD_Table_ID(getTableId(I_C_OrderLine.class));
 		shipmentSchedule.setRecord_ID(orderLine.getC_OrderLine_ID());
 
+		shipmentSchedule.setM_SectionCode(orderLine.getM_SectionCode());
+
 		shipmentSchedule.setQtyReserved(BigDecimal.ZERO.max(orderLine.getQtyReserved())); // task 09358: making sure that negative qtyOrdered are not propagated to the shipment sched
 
 		// 08255 : initialize the qty order calculated
@@ -234,7 +236,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		extensions.updateShipmentScheduleFromOrderLine(shipmentSchedule, orderLine);
 	}
 
-	private static void updateShipmentScheduleFromOrder(
+	private void updateShipmentScheduleFromOrder(
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
 			@NonNull final I_C_Order order)
 	{
@@ -274,6 +276,9 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 		shipmentSchedule.setDocSubType(orderDocBaseTypeAndSubType.getDocSubType());
 
 		shipmentSchedule.setC_Async_Batch_ID(order.getC_Async_Batch_ID());
+
+		final de.metas.order.model.I_C_Order orderModel = orderDAO.getById(OrderId.ofRepoId(order.getC_Order_ID()), de.metas.order.model.I_C_Order.class);
+		shipmentSchedule.setAD_InputDataSource_ID(orderModel.getAD_InputDataSource_ID());
 	}
 
 	/**

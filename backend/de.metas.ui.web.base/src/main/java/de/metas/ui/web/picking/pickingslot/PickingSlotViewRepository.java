@@ -18,7 +18,6 @@ import de.metas.product.ProductId;
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.picking.pickingslot.PickingHURowsRepository.PickedHUEditorRow;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Check;
@@ -75,48 +74,49 @@ public class PickingSlotViewRepository
 	 * @param pickingHUsRepo the "backend" repo to be used by this instance.
 	 */
 	@Autowired
-	public PickingSlotViewRepository(@NonNull final PickingHURowsRepository pickingHUsRepo)
+	public PickingSlotViewRepository(
+			@NonNull final LookupDataSourceFactory lookupDataSourceFactory,
+			@NonNull final PickingHURowsRepository pickingHUsRepo)
 	{
 		// creating those LookupDataSources requires DB access. so to allow this component to be initialized early during startup
 		// and also to allow it to be unit-tested (when the lookups are not part of the test), I use those suppliers
 		this(
 				pickingHUsRepo,
-				createWarehouseLookup(),
-				createBPartnerLookup(),
-				createBPartnerLocationLookup());
+				createWarehouseLookup(lookupDataSourceFactory),
+				createBPartnerLookup(lookupDataSourceFactory),
+				createBPartnerLocationLookup(lookupDataSourceFactory));
 	}
 
-	private static Supplier<LookupDataSource> createWarehouseLookup()
+	private static Supplier<LookupDataSource> createWarehouseLookup(final LookupDataSourceFactory lookupDataSourceFactory)
 	{
-		return Suppliers.memoize(() -> LookupDataSourceFactory.instance
-				.getLookupDataSource(SqlLookupDescriptor.builder()
-											 .setCtxTableName(null)
-											 .setCtxColumnName(I_M_PickingSlot.COLUMNNAME_M_Warehouse_ID)
-											 .setDisplayType(DisplayType.Search)
-											 .setWidgetType(DocumentFieldWidgetType.Lookup)
-											 .buildForDefaultScope()));
+		return Suppliers.memoize(() -> lookupDataSourceFactory
+				.getLookupDataSource(builder -> builder.setCtxTableName(null)
+						.setCtxColumnName(I_M_PickingSlot.COLUMNNAME_M_Warehouse_ID)
+						.setDisplayType(DisplayType.Search)
+						.setWidgetType(DocumentFieldWidgetType.Lookup)
+						.buildForDefaultScope()));
 	}
 
-	private static Supplier<LookupDataSource> createBPartnerLookup()
+	private static Supplier<LookupDataSource> createBPartnerLookup(final @NonNull LookupDataSourceFactory lookupDataSourceFactory)
 	{
-		return Suppliers.memoize(() -> LookupDataSourceFactory.instance
-				.getLookupDataSource(SqlLookupDescriptor.builder()
-											 .setCtxTableName(null)
-											 .setCtxColumnName(I_M_PickingSlot.COLUMNNAME_C_BPartner_ID)
-											 .setDisplayType(DisplayType.Search)
-											 .setWidgetType(DocumentFieldWidgetType.Lookup)
-											 .buildForDefaultScope()));
+		return Suppliers.memoize(() -> lookupDataSourceFactory
+				.getLookupDataSource(builder -> builder
+						.setCtxTableName(null)
+						.setCtxColumnName(I_M_PickingSlot.COLUMNNAME_C_BPartner_ID)
+						.setDisplayType(DisplayType.Search)
+						.setWidgetType(DocumentFieldWidgetType.Lookup)
+						.buildForDefaultScope()));
 	}
 
-	private static Supplier<LookupDataSource> createBPartnerLocationLookup()
+	private static Supplier<LookupDataSource> createBPartnerLocationLookup(final @NonNull LookupDataSourceFactory lookupDataSourceFactory)
 	{
-		return Suppliers.memoize(() -> LookupDataSourceFactory.instance
-				.getLookupDataSource(SqlLookupDescriptor.builder()
-											 .setCtxTableName(null)
-											 .setCtxColumnName(I_M_PickingSlot.COLUMNNAME_C_BPartner_Location_ID)
-											 .setDisplayType(DisplayType.Search)
-											 .setWidgetType(DocumentFieldWidgetType.Lookup)
-											 .buildForDefaultScope()));
+		return Suppliers.memoize(() -> lookupDataSourceFactory
+				.getLookupDataSource(builder -> builder
+						.setCtxTableName(null)
+						.setCtxColumnName(I_M_PickingSlot.COLUMNNAME_C_BPartner_Location_ID)
+						.setDisplayType(DisplayType.Search)
+						.setWidgetType(DocumentFieldWidgetType.Lookup)
+						.buildForDefaultScope()));
 	}
 
 	@VisibleForTesting
@@ -252,7 +252,7 @@ public class PickingSlotViewRepository
 	/**
 	 * Creates a HU related picking slot row for the given HU editor row and the given {@code pickingSlotId}.
 	 *
-	 * @param from          the hu editor row to create a picking slot row for. If it has included HU editor rows, then the method creates an included picking slot line accordingly.
+	 * @param from the hu editor row to create a picking slot row for. If it has included HU editor rows, then the method creates an included picking slot line accordingly.
 	 */
 	private static PickingSlotRow createPickedHURow(@NonNull final PickedHUEditorRow from, final PickingSlotId pickingSlotId)
 	{

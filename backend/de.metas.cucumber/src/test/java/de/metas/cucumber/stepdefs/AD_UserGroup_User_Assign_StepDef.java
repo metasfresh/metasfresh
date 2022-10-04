@@ -29,7 +29,6 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_AD_User;
 import org.compiere.model.I_AD_UserGroup;
 import org.compiere.model.I_AD_UserGroup_User_Assign;
 
@@ -64,8 +63,7 @@ public class AD_UserGroup_User_Assign_StepDef
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
 			final String userIdentifier = DataTableUtil.extractStringForColumnName(row, I_AD_UserGroup_User_Assign.COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_AD_User user = userTable.get(userIdentifier);
-			assertThat(user).isNotNull();
+			final int userId = userTable.get(userIdentifier).getAD_User_ID();
 
 			final String userGroupIdentifier = DataTableUtil.extractStringForColumnName(row, I_AD_UserGroup_User_Assign.COLUMNNAME_AD_UserGroup_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_AD_UserGroup userGroup = userGroupTable.get(userGroupIdentifier);
@@ -75,7 +73,7 @@ public class AD_UserGroup_User_Assign_StepDef
 
 			final I_AD_UserGroup_User_Assign userGroupAssign = CoalesceUtil.coalesceSuppliers(
 					() -> queryBL.createQueryBuilder(I_AD_UserGroup_User_Assign.class)
-							.addEqualsFilter(I_AD_UserGroup_User_Assign.COLUMNNAME_AD_User_ID, user.getAD_User_ID())
+							.addEqualsFilter(I_AD_UserGroup_User_Assign.COLUMNNAME_AD_User_ID, userId)
 							.addEqualsFilter(I_AD_UserGroup_User_Assign.COLUMN_AD_UserGroup_ID, userGroup.getAD_UserGroup_ID())
 							.create()
 							.firstOnlyOrNull(I_AD_UserGroup_User_Assign.class),
@@ -83,7 +81,7 @@ public class AD_UserGroup_User_Assign_StepDef
 
 			assertThat(userGroupAssign).isNotNull();
 
-			userGroupAssign.setAD_User_ID(user.getAD_User_ID());
+			userGroupAssign.setAD_User_ID(userId);
 			userGroupAssign.setAD_UserGroup_ID(userGroup.getAD_UserGroup_ID());
 			userGroupAssign.setIsActive(active);
 

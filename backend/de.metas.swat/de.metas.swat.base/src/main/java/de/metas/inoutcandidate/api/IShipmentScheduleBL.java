@@ -136,6 +136,7 @@ public interface IShipmentScheduleBL extends ISingletonService
 	 */
 	IStorageQuery createStorageQuery(I_M_ShipmentSchedule shipmentSchedule, boolean considerAttributes, boolean excludeAllReserved);
 
+	@NonNull
 	Quantity getQtyToDeliver(I_M_ShipmentSchedule shipmentScheduleRecord);
 
 	Optional<Quantity> getCatchQtyOverride(I_M_ShipmentSchedule shipmentScheduleRecord);

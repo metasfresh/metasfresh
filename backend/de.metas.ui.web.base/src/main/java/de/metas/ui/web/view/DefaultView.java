@@ -2,6 +2,7 @@ package de.metas.ui.web.view;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
 import de.metas.cache.CCache.CacheMapType;
@@ -12,7 +13,9 @@ import de.metas.logging.LogManager;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.ui.web.document.filter.DocumentFilter;
+import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterList;
+import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
 import de.metas.ui.web.document.filter.provider.standard.FacetFilterViewCacheMap;
 import de.metas.ui.web.document.references.WebuiDocumentReferenceId;
@@ -35,6 +38,7 @@ import de.metas.ui.web.window.model.DocumentValidStatus;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.ui.web.window.model.sql.SqlOptions;
+import de.metas.ui.web.window.model.sql.SqlValueConverters;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.collections.IteratorUtils;
@@ -45,9 +49,10 @@ import lombok.ToString;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.SynchronizedMutable;
-import org.adempiere.util.lang.SynchronizedMutable.OldAndNewValues;
+import org.adempiere.util.lang.OldAndNewValues;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.POInfo;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
@@ -57,6 +62,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -273,6 +279,9 @@ public final class DefaultView implements IEditableView
 		return selectionsRef.isQueryLimitHit();
 	}
 
+	@Override
+	public EmptyReason getEmptyReason() {return selectionsRef.getEmptyReason();}
+
 	public ViewRowIdsOrderedSelection getDefaultSelectionBeforeFacetsFiltering()
 	{
 		return selectionsRef.getDefaultSelectionBeforeFacetsFiltering();
@@ -388,6 +397,7 @@ public final class DefaultView implements IEditableView
 				.orderBys(orderedSelection.getOrderBys())
 				.rows(rows)
 				.columnInfos(extractViewResultColumns(rows))
+				.emptyReason(orderedSelection.getEmptyReason())
 				.build();
 	}
 
@@ -491,28 +501,79 @@ public final class DefaultView implements IEditableView
 	}
 
 	@Override
-	public LookupValuesList getFilterParameterDropdown(final String filterId, final String filterParameterName, final Evaluatee ctx)
+	public LookupValuesList getFilterParameterDropdown(final String filterId, final String filterParameterName, final ViewFilterParameterLookupEvaluationCtx ctx)
 	{
 		assertNotClosed();
+
+		final Evaluatee ctxEffective = ctx.mapParameterValues(parameterValues -> normalizeFilterParameterValues(parameterValues, filterId)).toEvaluatee();
 
 		return viewFilterDescriptors.getByFilterId(filterId)
 				.getParameterByName(filterParameterName)
 				.getLookupDataSource()
 				.orElseThrow(() -> new AdempiereException("No lookup found for filterId=" + filterId + ", filterParameterName=" + filterParameterName))
-				.findEntities(ctx)
+				.findEntities(ctxEffective)
 				.getValues();
 	}
 
 	@Override
-	public LookupValuesPage getFilterParameterTypeahead(final String filterId, final String filterParameterName, final String query, final Evaluatee ctx)
+	public LookupValuesPage getFilterParameterTypeahead(final String filterId, final String filterParameterName, final String query, final ViewFilterParameterLookupEvaluationCtx ctx)
 	{
 		assertNotClosed();
+
+		final Evaluatee ctxEffective = ctx.mapParameterValues(parameterValues -> normalizeFilterParameterValues(parameterValues, filterId)).toEvaluatee();
 
 		return viewFilterDescriptors.getByFilterId(filterId)
 				.getParameterByName(filterParameterName)
 				.getLookupDataSource()
 				.orElseThrow(() -> new AdempiereException("No lookup found for filterId=" + filterId + ", filterParameterName=" + filterParameterName))
-				.findEntities(ctx, query);
+				.findEntities(ctxEffective, query);
+	}
+
+	private Map<String, Object> normalizeFilterParameterValues(
+			@Nullable final Map<String, Object> parameterValues,
+			@NonNull final String filterId)
+	{
+		if (parameterValues == null || parameterValues.isEmpty())
+		{
+			return ImmutableMap.of();
+		}
+
+		final DocumentFilterDescriptor filterDescriptor = getFilterDescriptors().getByFilterId(filterId);
+
+		final String tableName = getViewDataRepository().getTableName();
+		final POInfo poInfo = POInfo.getPOInfo(tableName);
+		if (poInfo == null)
+		{
+			// shall not happen
+			return ImmutableMap.of();
+		}
+
+		final ImmutableMap.Builder<String, Object> result = ImmutableMap.builder();
+		for (final String parameterName : parameterValues.keySet())
+		{
+			if (!filterDescriptor.hasParameter(parameterName))
+			{
+				continue;
+			}
+			if (!poInfo.hasColumnName(parameterName))
+			{
+				// shall not happen in case of DefaultView(s)
+				continue;
+			}
+
+			final DocumentFilterParamDescriptor parameterDescriptor = filterDescriptor.getParameterByName(parameterName);
+			final DocumentFieldWidgetType widgetType = parameterDescriptor.getWidgetType();
+			final Class<?> poValueClass = poInfo.getColumnClass(parameterName);
+			final Object value = parameterValues.get(parameterName);
+			final Object valueNorm = SqlValueConverters.convertToPOValue(value, parameterName, widgetType, poValueClass);
+
+			if (valueNorm != null)
+			{
+				result.put(parameterName, valueNorm);
+			}
+		}
+
+		return result.build();
 	}
 
 	@Override
@@ -767,6 +828,7 @@ public final class DefaultView implements IEditableView
 	// Builder
 	//
 	//
+	@SuppressWarnings("UnusedReturnValue")
 	public static final class Builder
 	{
 		private ViewId viewId;
@@ -972,7 +1034,7 @@ public final class DefaultView implements IEditableView
 			return this;
 		}
 
-		public Builder refreshViewOnChangeEvents(boolean refreshViewOnChangeEvents)
+		public Builder refreshViewOnChangeEvents(final boolean refreshViewOnChangeEvents)
 		{
 			this.refreshViewOnChangeEvents = refreshViewOnChangeEvents;
 			return this;

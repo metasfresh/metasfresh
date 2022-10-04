@@ -183,12 +183,6 @@ public class RangeAwareParams implements IRangeAwareParams
 	}
 
 	@Override
-	public LocalDate getParameter_ToAsLocalDate(String parameterName)
-	{
-		return valuesTo.getParameterAsLocalDate(parameterName);
-	}
-
-	@Override
 	public ZonedDateTime getParameterAsZonedDateTime(String parameterName)
 	{
 		return values.getParameterAsZonedDateTime(parameterName);

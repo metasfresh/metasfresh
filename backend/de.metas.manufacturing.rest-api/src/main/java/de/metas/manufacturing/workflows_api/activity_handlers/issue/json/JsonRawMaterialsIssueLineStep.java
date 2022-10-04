@@ -25,6 +25,7 @@ public class JsonRawMaterialsIssueLineStep
 	@NonNull String locatorName;
 	@NonNull JsonRenderedHUQRCode huQRCode;
 	@NonNull String uom;
+	@NonNull BigDecimal qtyHUCapacity;
 	@NonNull BigDecimal qtyToIssue;
 	@Nullable BigDecimal qtyIssued;
 	@Nullable BigDecimal qtyRejected;
@@ -40,6 +41,7 @@ public class JsonRawMaterialsIssueLineStep
 				.locatorName(step.getIssueFromLocator().getCaption())
 				.huQRCode(step.getIssueFromHU().getBarcode().toRenderedJson())
 				.uom(step.getQtyToIssue().getUOMSymbol())
+				.qtyHUCapacity(step.getIssueFromHU().getHuCapacity().toBigDecimal())
 				.qtyToIssue(step.getQtyToIssue().toBigDecimal());
 
 		final PPOrderIssueSchedule.Issued issued = step.getIssued();

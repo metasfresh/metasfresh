@@ -1,9 +1,11 @@
 package de.metas.product;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.order.compensationGroup.GroupCategoryId;
 import de.metas.order.compensationGroup.GroupTemplateId;
 import de.metas.organization.OrgId;
+import de.metas.resource.ResourceGroupId;
 import de.metas.util.ISingletonService;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
@@ -114,7 +116,10 @@ public interface IProductDAO extends ISingletonService
 			@NonNull GroupCategoryId groupCategoryId,
 			@NonNull OrgId targetOrgId);
 
+	@Nullable
 	ProductCategoryId retrieveProductCategoryForGroupTemplateId(@NonNull GroupTemplateId groupTemplateId);
+
+	ImmutableSet<ProductId> retrieveStockedProductIds(@NonNull final ClientId clientId);
 
 	@Value
 	class ProductQuery
@@ -165,6 +170,8 @@ public interface IProductDAO extends ISingletonService
 	@Nullable
 	ProductAndCategoryId retrieveProductAndCategoryIdByProductId(ProductId productId);
 
+	ImmutableSet<ProductAndCategoryId> retrieveProductAndCategoryIdsByProductIds(@NonNull Set<ProductId> productIds);
+
 	ProductAndCategoryAndManufacturerId retrieveProductAndCategoryAndManufacturerByProductId(ProductId productId);
 
 	Set<ProductAndCategoryAndManufacturerId> retrieveProductAndCategoryAndManufacturersByProductIds(Set<ProductId> productIds);
@@ -186,6 +193,10 @@ public interface IProductDAO extends ISingletonService
 	void updateProductsByResourceIds(Set<ResourceId> resourceIds, BiConsumer<ResourceId, I_M_Product> productUpdater);
 
 	void deleteProductByResourceId(ResourceId resourceId);
+
+	void updateProductByResourceGroupId(@NonNull ResourceGroupId resourceGroupId, @NonNull Consumer<I_M_Product> productUpdater);
+
+	void deleteProductByResourceGroupId(@NonNull ResourceGroupId resourceGroupId);
 
 	I_M_Product createProduct(CreateProductRequest request);
 

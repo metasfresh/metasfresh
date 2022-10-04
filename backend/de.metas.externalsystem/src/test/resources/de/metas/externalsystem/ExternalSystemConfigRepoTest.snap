@@ -52,6 +52,85 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Alber
 ]
 
 
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Ebay_getById=[
+  {
+    "id" : 100001,
+    "type" : "Ebay",
+    "name" : "name",
+    "active" : true,
+    "orgId" : 0,
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "value" : "testEbayValue",
+      "appId" : "appId",
+      "certId" : "certId",
+      "devId" : "devId",
+      "refreshToken" : "refreshToken",
+      "externalSystemEbayConfigMappingList" : [ ],
+      "apiMode" : "SANDBOX",
+      "isActive" : true
+    },
+    "writeAudit" : false
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Ebay_getByTypeAndParent=[
+  {
+    "id" : 100002,
+    "parentId" : 100001,
+    "value" : "testEbayValue",
+    "appId" : "appId",
+    "certId" : "certId",
+    "devId" : "devId",
+    "refreshToken" : "refreshToken",
+    "externalSystemEbayConfigMappingList" : [
+      {
+        "seqNo" : 10,
+        "docTypeOrderId" : 10000,
+        "paymentRule" : "K",
+        "bpartnerIfExists" : "UPDATE_MERGE",
+        "bpartnerIfNotExists" : "FAIL",
+        "bpartnerLocationIfExists" : "DONT_UPDATE",
+        "bpartnerLocationIfNotExists" : "CREATE",
+        "isInvoiceEmailEnabled" : true,
+        "paymentTermId" : 10000,
+        "ebayCustomerGroup" : "testWithAnä",
+        "ebayPaymentMethod" : "test",
+        "description" : "test"
+      }
+    ],
+    "apiMode" : "SANDBOX",
+    "isActive" : true
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Ebay_getByTypeAndValue=[
+  {
+    "id" : 100001,
+    "type" : "Ebay",
+    "name" : "name",
+    "active" : true,
+    "orgId" : 0,
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "value" : "testEbayValue",
+      "appId" : "appId",
+      "certId" : "certId",
+      "devId" : "devId",
+      "refreshToken" : "refreshToken",
+      "externalSystemEbayConfigMappingList" : [ ],
+      "apiMode" : "SANDBOX",
+      "isActive" : true
+    },
+    "writeAudit" : false
+  }
+]
+
+
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSignum_getById=[
   {
     "id" : 100001,
@@ -137,11 +216,13 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
         "id" : 100002,
         "parentId" : 100001,
         "value" : "testLeichMehlValue",
-        "ftpHost" : "hostname",
-        "ftpPort" : 1111,
-        "ftpUsername" : "ftpUsername",
-        "ftpPassword" : "ftpPassword",
-        "ftpDirectory" : "directory"
+        "productBaseFolderName" : "productBaseFolderName",
+        "tcpPort" : 8080,
+        "tcpHost" : "tcpHost",
+        "pluFileExportAuditEnabled" : false,
+        "productMappings" : [ ],
+        "pluFileConfigs" : [ ],
+        "productMappingEmpty" : true
       },
       "writeAudit" : true,
       "auditFileFolder" : "auditFileFolder"
@@ -155,11 +236,13 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
     "id" : 100002,
     "parentId" : 100001,
     "value" : "testLeichMehlValue",
-    "ftpHost" : "hostname",
-    "ftpPort" : 1111,
-    "ftpUsername" : "ftpUsername",
-    "ftpPassword" : "ftpPassword",
-    "ftpDirectory" : "directory"
+    "productBaseFolderName" : "productBaseFolderName",
+    "tcpPort" : 8080,
+    "tcpHost" : "tcpHost",
+    "pluFileExportAuditEnabled" : false,
+    "productMappings" : [ ],
+    "pluFileConfigs" : [ ],
+    "productMappingEmpty" : true
   }
 ]
 
@@ -175,11 +258,13 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
       "id" : 100002,
       "parentId" : 100001,
       "value" : "testLeichMehlValue",
-      "ftpHost" : "hostname",
-      "ftpPort" : 1111,
-      "ftpUsername" : "ftpUsername",
-      "ftpPassword" : "ftpPassword",
-      "ftpDirectory" : "directory"
+      "productBaseFolderName" : "productBaseFolderName",
+      "tcpPort" : 8080,
+      "tcpHost" : "tcpHost",
+      "pluFileExportAuditEnabled" : false,
+      "productMappings" : [ ],
+      "pluFileConfigs" : [ ],
+      "productMappingEmpty" : true
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -204,9 +289,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "isSyncBPartnerToRabbitMQ" : true,
       "isAutoSendWhenCreatedByUserGroup" : false,
       "isSyncExternalReferencesToRabbitMQ" : false,
+      "syncBPartnerToRabbitMQ" : true,
       "syncExternalReferencesToRabbitMQ" : false,
-      "autoSendSubjectWhenCreatedByUserGroup" : false,
-      "syncBPartnerToRabbitMQ" : true
+      "autoSendSubjectWhenCreatedByUserGroup" : false
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -225,9 +310,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
     "isSyncBPartnerToRabbitMQ" : true,
     "isAutoSendWhenCreatedByUserGroup" : false,
     "isSyncExternalReferencesToRabbitMQ" : false,
+    "syncBPartnerToRabbitMQ" : true,
     "syncExternalReferencesToRabbitMQ" : false,
-    "autoSendSubjectWhenCreatedByUserGroup" : false,
-    "syncBPartnerToRabbitMQ" : true
+    "autoSendSubjectWhenCreatedByUserGroup" : false
   }
 ]
 
@@ -250,9 +335,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "isAutoSendWhenCreatedByUserGroup" : true,
       "userGroupId" : 1,
       "isSyncExternalReferencesToRabbitMQ" : false,
+      "syncBPartnerToRabbitMQ" : true,
       "syncExternalReferencesToRabbitMQ" : false,
-      "autoSendSubjectWhenCreatedByUserGroup" : true,
-      "syncBPartnerToRabbitMQ" : true
+      "autoSendSubjectWhenCreatedByUserGroup" : true
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -297,7 +382,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "value" : "testShopware6Value",
       "productLookup" : "ProductNumber",
       "metasfreshIdJSONPath" : "JSONPathMetasfreshID",
-      "shopwareIdJSONPath" : "JSONPathShopwareID"
+      "shopwareIdJSONPath" : "JSONPathShopwareID",
+      "syncAvailableForSalesToShopware6" : true,
+      "percentageToDeductFromAvailableForSales" : 10
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -330,7 +417,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "priceListId" : 1,
       "isActive" : false,
       "value" : "testShopware6Value",
-      "productLookup" : "ProductNumber"
+      "productLookup" : "ProductNumber",
+      "syncAvailableForSalesToShopware6" : false,
+      "percentageToDeductFromAvailableForSales" : 0
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -372,7 +461,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
     "priceListId" : 1,
     "isActive" : true,
     "value" : "testShopware6Value",
-    "productLookup" : "ProductNumber"
+    "productLookup" : "ProductNumber",
+    "syncAvailableForSalesToShopware6" : false,
+    "percentageToDeductFromAvailableForSales" : 0
   }
 ]
 
@@ -402,7 +493,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "priceListId" : 1,
       "isActive" : true,
       "value" : "testShopware6Value",
-      "productLookup" : "ProductNumber"
+      "productLookup" : "ProductNumber",
+      "syncAvailableForSalesToShopware6" : false,
+      "percentageToDeductFromAvailableForSales" : 0
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -429,7 +522,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "priceListId" : 2,
       "isActive" : true,
       "value" : "new-value",
-      "productLookup" : "ProductNumber"
+      "productLookup" : "ProductNumber",
+      "syncAvailableForSalesToShopware6" : false,
+      "percentageToDeductFromAvailableForSales" : 0
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -492,9 +587,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getAc
         "isSyncBPartnerToRabbitMQ" : false,
         "isAutoSendWhenCreatedByUserGroup" : false,
         "isSyncExternalReferencesToRabbitMQ" : false,
+        "syncBPartnerToRabbitMQ" : false,
         "syncExternalReferencesToRabbitMQ" : false,
-        "autoSendSubjectWhenCreatedByUserGroup" : false,
-        "syncBPartnerToRabbitMQ" : false
+        "autoSendSubjectWhenCreatedByUserGroup" : false
       },
       "writeAudit" : true,
       "auditFileFolder" : "auditFileFolder"
@@ -502,28 +597,6 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getAc
   ]
 ]
 
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_LeichMehl_Config_getById=[
-  {
-    "id" : 100001,
-    "type" : "LeichUndMehl",
-    "name" : "name",
-    "active" : true,
-    "orgId" : 0,
-    "childConfig" : {
-      "id" : 100002,
-      "parentId" : 100001,
-      "value" : "LeichMehl",
-      "ftpHost" : "hostname",
-      "ftpPort" : 1111,
-      "ftpUsername" : "ftpUsername",
-      "ftpPassword" : "ftpPassword",
-      "ftpDirectory" : "directory"
-    },
-    "writeAudit" : true,
-    "auditFileFolder" : "auditFileFolder"
-  }
-]
-
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_LeichMehl_Config_getById=[
   {
@@ -536,11 +609,13 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_LeichMehl_Co
       "id" : 100002,
       "parentId" : 100001,
       "value" : "LeichMehl",
-      "ftpHost" : "hostname",
-      "ftpPort" : 1111,
-      "ftpUsername" : "ftpUsername",
-      "ftpPassword" : "ftpPassword",
-      "ftpDirectory" : "directory"
+      "productBaseFolderName" : "productBaseFolderName",
+      "tcpPort" : 8080,
+      "tcpHost" : "tcpHost",
+      "pluFileExportAuditEnabled" : false,
+      "productMappings" : [ ],
+      "pluFileConfigs" : [ ],
+      "productMappingEmpty" : true
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -571,6 +646,50 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Other_Config
           "value" : "value2"
         }
       ]
+    },
+    "writeAudit" : true,
+    "auditFileFolder" : "auditFileFolder"
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.givenLeichMehlCofing_withProductMappings_andPluFileConfigs_whenGetById_thenReturnWholeInfo=[
+  {
+    "id" : 100001,
+    "type" : "LeichUndMehl",
+    "name" : "name",
+    "active" : true,
+    "orgId" : 0,
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "value" : "LeichMehl",
+      "productBaseFolderName" : "productBaseFolderName",
+      "tcpPort" : 8080,
+      "tcpHost" : "tcpHost",
+      "pluFileExportAuditEnabled" : false,
+      "productMappings" : [
+        {
+          "id" : 100003,
+          "seqNo" : 10,
+          "pluFile" : "plufile",
+          "productCategoryId" : 2,
+          "productId" : 1,
+          "bPartnerId" : 3
+        }
+      ],
+      "pluFileConfigs" : [
+        {
+          "id" : 100004,
+          "leichMehlConfigId" : 100002,
+          "targetFieldName" : "targetFileName",
+          "targetFieldType" : "Date",
+          "replaceRegExp" : "replacePattern",
+          "replacement" : "replacement",
+          "replacementSource" : "PPOrder"
+        }
+      ],
+      "productMappingEmpty" : false
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"

@@ -16,14 +16,14 @@
  *****************************************************************************/
 package org.compiere.process;
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-
-import org.adempiere.ad.service.IADReferenceDAO;
+import de.metas.ad_reference.ADReferenceService;
+import de.metas.i18n.ITranslatableString;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.product.IStorageBL;
+import de.metas.util.Services;
 import org.adempiere.exceptions.DBException;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.MLocator;
 import org.compiere.model.MMovement;
 import org.compiere.model.MMovementLine;
@@ -32,11 +32,11 @@ import org.compiere.model.X_M_Movement;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 
-import de.metas.i18n.ITranslatableString;
-import de.metas.process.JavaProcess;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.product.IStorageBL;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 
 /**
  * StorageCleanup
@@ -88,7 +88,7 @@ public class StorageCleanup extends JavaProcess
 		String sql = "DELETE FROM M_Storage "
 				+ "WHERE QtyOnHand = 0 AND QtyReserved = 0 AND QtyOrdered = 0"
 				+ " AND Created < now()-3";
-		int no = DB.executeUpdate(sql, get_TrxName());
+		int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		log.info("Deleted Empty #" + no);
 
 		//
@@ -198,7 +198,8 @@ public class StorageCleanup extends JavaProcess
 		mh.processIt(MMovement.ACTION_Complete);
 		mh.save();
 
-		final ITranslatableString docStatus = Services.get(IADReferenceDAO.class)
+		final ADReferenceService adReferenceService = ADReferenceService.get();
+		final ITranslatableString docStatus = adReferenceService
 				.retrieveListNameTranslatableString(
 						X_M_Movement.DOCSTATUS_AD_Reference_ID,
 						mh.getDocStatus());

@@ -16,6 +16,7 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonDocTypeInfo;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.DocBaseType;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;
@@ -35,6 +36,7 @@ import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantitys;
+import de.metas.project.ProjectId;
 import de.metas.rest_api.utils.CurrencyService;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.IUOMDAO;
@@ -173,8 +175,9 @@ public class JsonConverters
 			throw new AdempiereException("The stocked product identified by: " + jsonProductIdentifier + " cannot be used as compensation group main item.");
 		}
 
-		final String docBaseType = Optional.ofNullable(request.getInvoiceDocType())
+		final DocBaseType docBaseType = Optional.ofNullable(request.getInvoiceDocType())
 				.map(JsonDocTypeInfo::getDocBaseType)
+				.map(DocBaseType::ofCode)
 				.orElse(null);
 
 		final String subType = Optional.ofNullable(request.getInvoiceDocType())
@@ -248,6 +251,7 @@ public class JsonConverters
 				.deliveryViaRule(request.getDeliveryViaRule())
 				.qtyShipped(request.getQtyShipped())
 				.qtyItemCapacity(request.getQtyItemCapacity())
+				.projectId(ProjectId.ofRepoIdOrNull(JsonMetasfreshId.toValueInt(request.getProjectId())))
 				//
 				.assignSalesRepRule(assignSalesRepRule)
 				.salesRepInternalId(salesRepInternalId)

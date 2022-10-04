@@ -2,6 +2,7 @@ package de.metas.ui.web.handlingunits;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.HuId;
@@ -23,6 +24,7 @@ import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.project.ProjectId;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
@@ -58,7 +60,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -66,6 +67,7 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
@@ -121,7 +123,6 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final WindowId windowId;
@@ -129,6 +130,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	private final HUEditorRowAttributesProvider attributesProvider;
 	private final HUEditorRowIsProcessedPredicate rowProcessedPredicate;
 	private final HUReservationService huReservationService;
+	private final ADReferenceService adReferenceService;
 
 	private final boolean showBestBeforeDate;
 	private final boolean showWeightGross;
@@ -144,13 +146,14 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 			@Nullable final HUEditorRowAttributesProvider attributesProvider,
 			@Nullable final HUEditorRowIsProcessedPredicate rowProcessedPredicate,
 			@NonNull final HUReservationService huReservationService,
+			@NonNull final ADReferenceService adReferenceService,
 			final boolean showBestBeforeDate,
 			final boolean showWeightGross)
 	{
 		this.windowId = windowId;
 
-		this.attributesProvider = attributesProvider;
 		this.rowProcessedPredicate = rowProcessedPredicate != null ? rowProcessedPredicate : HUEditorRowIsProcessedPredicates.NEVER;
+		this.adReferenceService = adReferenceService;
 		this.showBestBeforeDate = showBestBeforeDate;
 		this.showWeightGross = showWeightGross;
 
@@ -159,6 +162,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		sqlViewSelect = sqlViewBinding.getSqlViewSelect();
 
 		this.huReservationService = huReservationService;
+		this.attributesProvider = attributesProvider;
 	}
 
 	@Override
@@ -252,6 +256,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		final boolean processed = rowProcessedPredicate.isProcessed(hu);
 		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
 		final HUEditorRowId rowId = HUEditorRowId.ofHU(huId, topLevelHUId);
+		final ProjectId projectId = ProjectId.ofRepoIdOrNull(hu.getC_Project_ID());
 
 		final HUEditorRow.Builder huEditorRow = HUEditorRow.builder(windowId)
 				.setRowId(rowId)
@@ -268,7 +273,8 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 				.setHUStatus(hu.getHUStatus())
 				.setReservedForOrderLine(orderLineIdWithReservation.orElse(null))
 				.setPackingInfo(extractPackingInfo(hu, huRecordType))
-				.setClearanceStatus(getHUClearanceStatusLookupValue(hu));
+				.setClearanceStatus(getHUClearanceStatusLookupValue(hu))
+				.setProject(createProjectLookupValue(projectId));
 		//
 		// Acquire Best Before Date if required
 		if (showBestBeforeDate)
@@ -394,6 +400,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		final I_M_HU hu = huStorage.getM_HU();
 		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
 		final ProductId productId = huStorage.getProductId();
+		final ProjectId projectId = ProjectId.ofRepoIdOrNull(hu.getC_Project_ID());
 		final HUEditorRowAttributesProvider attributesProviderEffective = !huId.equals(parentHUId) ? attributesProvider : null;
 
 		final Optional<OrderLineId> reservedForOrderLineId = huReservationService.getOrderLineIdByReservedVhuId(huId);
@@ -416,6 +423,9 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 				.setUOM(createUOMLookupValue(huStorage.getC_UOM()))
 				.setQtyCU(huStorage.getQty().toBigDecimal())
 				.setClearanceStatus(getHUClearanceStatusLookupValue(hu))
+				//
+				.setProject(createProjectLookupValue(projectId))
+				//
 				.build();
 	}
 
@@ -429,6 +439,19 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 
 		final String displayName = productBL.getProductValueAndName(productId);
 		return JSONLookupValue.of(productId.getRepoId(), displayName);
+	}
+
+	@Nullable
+	public JSONLookupValue createProjectLookupValue(@Nullable final ProjectId projectId)
+	{
+		if (projectId == null)
+		{
+			return null;
+		}
+
+		final I_C_Project project =  InterfaceWrapperHelper.load(projectId, I_C_Project.class);
+		final String displayName = String.format("%s-%s", project.getValue(), project.getName());
+		return JSONLookupValue.of(projectId.getRepoId(), displayName);
 	}
 
 	@Nullable
@@ -478,7 +501,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 		else
 		{
 			huStatusKey = hu.getHUStatus();
-			huStatusDisplayName = adReferenceDAO.retrieveListNameTrl(X_M_HU.HUSTATUS_AD_Reference_ID, huStatusKey);
+			huStatusDisplayName = adReferenceService.retrieveListNameTrl(X_M_HU.HUSTATUS_AD_Reference_ID, huStatusKey);
 		}
 
 		return JSONLookupValue.of(huStatusKey, huStatusDisplayName);

@@ -94,7 +94,7 @@ import java.util.Set;
 @Service
 public class JsonInvoiceService
 {
-	private final static transient Logger logger = LogManager.getLogger(InvoiceService.class);
+	private final static transient Logger logger = LogManager.getLogger(JsonInvoiceService.class);
 
 	private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);

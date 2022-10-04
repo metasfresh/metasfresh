@@ -18,6 +18,7 @@ import de.metas.order.DeliveryViaRule;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderFreightCostsService;
 import de.metas.payment.PaymentRule;
+import de.metas.pricing.service.ScalePriceUsage;
 import de.metas.pricing.service.impl.PricingTestHelper;
 import de.metas.pricing.tax.ProductTaxCategoryRepository;
 import de.metas.pricing.tax.ProductTaxCategoryService;
@@ -1147,6 +1148,7 @@ public class FreightCostTest
 		productPrice.setC_TaxCategory_ID(taxCategoryId);
 		productPrice.setC_UOM_ID(uomId);
 		productPrice.setPriceStd(price);
+		productPrice.setUseScalePrice(ScalePriceUsage.DONT_USE_SCALE_PRICE.getCode());
 
 		save(productPrice);
 

@@ -40,6 +40,7 @@ import de.metas.util.lang.RepoIdAware;
 import de.metas.util.lang.RepoIdAwares;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.model.util.IModelCopyHelper;
 import org.adempiere.ad.model.util.ModelCopyHelper;
 import org.adempiere.ad.persistence.IModelClassInfo;
@@ -78,6 +79,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -1173,17 +1175,14 @@ public class InterfaceWrapperHelper
 		return OrgId.optionalOfRepoId(orgIdInt);
 	}
 
-	public static <T> T getValueByColumnId(final Object model, final int adColumnId)
+	public static <T> T getValueByColumnId(@NonNull final Object model, @NonNull final AdColumnId adColumnId)
 	{
-		Check.assumeNotNull(model, "model is not null");
-		Check.assume(adColumnId > 0, "adColumnId > 0");
-
 		if (GridTabWrapper.isHandled(model))
 		{
 			final GridTab gridTab = GridTabWrapper.getGridTab(model);
 			for (final GridField field : gridTab.getFields())
 			{
-				if (field.getAD_Column_ID() == adColumnId)
+				if (field.getAD_Column_ID() == adColumnId.getRepoId())
 				{
 					@SuppressWarnings("unchecked")
 					final T value = (T)field.getValue();
@@ -1234,6 +1233,14 @@ public class InterfaceWrapperHelper
 		final boolean useOverrideColumnIfAvailable = false;
 		final T value = getValue(model, columnName, throwExIfColumnNotFound, useOverrideColumnIfAvailable);
 		return Optional.ofNullable(value);
+	}
+
+	@NonNull
+	public static <T extends RepoIdAware> Optional<T> getRepoIdOptional(@NonNull final Object model, @NonNull final String columnName, @NonNull final Function<Integer, T> idMapper)
+	{
+		return getValueOptional(model, columnName)
+				.map(columnValue -> (Integer)columnValue)
+				.map(idMapper);
 	}
 
 	/**
@@ -1636,10 +1643,9 @@ public class InterfaceWrapperHelper
 	}
 
 	/**
-	 * @param modelClass
-	 * @return immutable list of column names of modelClass's table
+	 * @return immutable list of physical column names of modelClass's table
 	 */
-	public static Set<String> getModelColumnNames(final Class<?> modelClass)
+	public static Set<String> getModelPhysicalColumnNames(final Class<?> modelClass)
 	{
 		if (Adempiere.isUnitTestMode())
 		{
@@ -1651,8 +1657,10 @@ public class InterfaceWrapperHelper
 		final String tableName = InterfaceWrapperHelper.getTableName(modelClass);
 		final POInfo poInfo = POInfo.getPOInfo(tableName);
 		Check.assumeNotNull(poInfo, "poInfo not null for {}", tableName); // shall not happen
-
-		return poInfo.getColumnNames();
+		return poInfo.getColumnNames()
+				.stream()
+				.filter(poInfo::isPhysicalColumn)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	public static IModelInternalAccessor getModelInternalAccessor(final Object model)

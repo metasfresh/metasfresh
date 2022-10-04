@@ -45,6 +45,7 @@ public class AvailableForSalesConfigRepo
 			.tableName(I_MD_AvailableForSales_Config.Table_Name)
 			.build();
 
+	@NonNull
 	public AvailableForSalesConfig getConfig(@NonNull final ConfigQuery query)
 	{
 		cache.getOrLoad(query, () -> retrieveConfigRecord(query));
@@ -52,6 +53,7 @@ public class AvailableForSalesConfigRepo
 		return retrieveConfigRecord(query);
 	}
 
+	@NonNull
 	private AvailableForSalesConfig retrieveConfigRecord(@NonNull final ConfigQuery query)
 	{
 		final I_MD_AvailableForSales_Config configRecord = Services.get(IQueryBL.class)
@@ -66,6 +68,7 @@ public class AvailableForSalesConfigRepo
 		return ofRecord(configRecord);
 	}
 
+	@NonNull
 	private AvailableForSalesConfig ofRecord(@Nullable final I_MD_AvailableForSales_Config configRecord)
 	{
 		if (configRecord == null)

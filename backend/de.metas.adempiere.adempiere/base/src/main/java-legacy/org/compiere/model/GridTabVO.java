@@ -64,6 +64,7 @@ import java.util.Set;
  * @author Jorg Janke
  * @version $Id: GridTabVO.java,v 1.4 2006/07/30 00:58:38 jjanke Exp $
  */
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class GridTabVO implements Evaluatee, Serializable
 {
 	private static final long serialVersionUID = -1425513230093430761L;
@@ -84,7 +85,7 @@ public class GridTabVO implements Evaluatee, Serializable
 	{
 		logger.debug("TabNo={}", TabNo);
 
-		GridTabVO vo = new GridTabVO(wVO.getCtx(), wVO.getWindowNo(), TabNo, wVO.isLoadAllLanguages(), wVO.isApplyRolePermissions());
+		final GridTabVO vo = new GridTabVO(wVO.getCtx(), wVO.getWindowNo(), TabNo, wVO.isLoadAllLanguages(), wVO.isApplyRolePermissions());
 		vo.adWindowId = wVO.getAdWindowId();
 		//
 		if (!loadTabDetails(vo, rs))
@@ -338,17 +339,18 @@ public class GridTabVO implements Evaluatee, Serializable
 					vo.IsReadOnly = true;
 				}
 			}
-			catch (Exception e)
+			catch (final Exception e)
 			{
 			}
 
 			vo.allowQuickInput = StringUtils.toBoolean(rs.getString(I_AD_Tab.COLUMNNAME_AllowQuickInput));
 			vo.includedTabNewRecordInputMode = rs.getString(I_AD_Tab.COLUMNNAME_IncludedTabNewRecordInputMode);
 			vo.refreshViewOnChangeEvents = StringUtils.toBoolean(rs.getString(I_AD_Tab.COLUMNNAME_IsRefreshViewOnChangeEvents));
+			vo.queryIfNoFilters = StringUtils.toBoolean(rs.getString(I_AD_Tab.COLUMNNAME_IsQueryIfNoFilters));
 
 			loadTabDetails_metas(vo, rs); // metas
 		}
-		catch (SQLException ex)
+		catch (final SQLException ex)
 		{
 			logger.error("", ex);
 			return false;
@@ -423,7 +425,7 @@ public class GridTabVO implements Evaluatee, Serializable
 		this.applyRolePermissions = applyRolePermissions;
 	}
 
-	private static final transient Logger logger = LogManager.getLogger(GridTabVO.class);
+	private static final Logger logger = LogManager.getLogger(GridTabVO.class);
 
 	/**
 	 * Context - replicated
@@ -592,6 +594,9 @@ public class GridTabVO implements Evaluatee, Serializable
 	@Getter
 	private boolean refreshViewOnChangeEvents = false;
 
+	@Getter
+	private boolean queryIfNoFilters = true;
+
 	@Override
 	public String toString()
 	{
@@ -626,27 +631,6 @@ public class GridTabVO implements Evaluatee, Serializable
 			}
 		}
 		return _fields;
-	}
-
-	/**
-	 * @return {@link GridFieldVO} or <code>null</code>
-	 */
-	public GridFieldVO getFieldByAD_Field_ID(final int adFieldId)
-	{
-		if (adFieldId <= 0)
-		{
-			return null;
-		}
-
-		for (final GridFieldVO gridFieldVO : getFields())
-		{
-			if (gridFieldVO.getAD_Field_ID() == adFieldId)
-			{
-				return gridFieldVO;
-			}
-		}
-
-		return null;
 	}
 
 	public GridFieldVO getFieldByColumnName(final String columnName)
@@ -733,13 +717,13 @@ public class GridTabVO implements Evaluatee, Serializable
 	 *
 	 * @param newCtx new context
 	 */
-	public void setCtx(Properties newCtx)
+	public void setCtx(final Properties newCtx)
 	{
 		ctx = newCtx;
 		final List<GridFieldVO> fields = this._fields;
 		if (fields != null)
 		{
-			for (GridFieldVO field : fields)
+			for (final GridFieldVO field : fields)
 			{
 				field.setCtx(newCtx);
 			}
@@ -758,7 +742,7 @@ public class GridTabVO implements Evaluatee, Serializable
 	 * @return value
 	 */
 	@Override
-	public String get_ValueAsString(String variableName)
+	public String get_ValueAsString(final String variableName)
 	{
 		return Env.getContext(ctx, WindowNo, variableName, false);    // not just window
 	}    //	get_ValueAsString
@@ -809,6 +793,7 @@ public class GridTabVO implements Evaluatee, Serializable
 		clone.allowQuickInput = allowQuickInput;
 		clone.includedTabNewRecordInputMode = includedTabNewRecordInputMode;
 		clone.refreshViewOnChangeEvents = refreshViewOnChangeEvents;
+		clone.queryIfNoFilters = queryIfNoFilters;
 
 		clone_metas(ctx, windowNo, clone); // metas
 
@@ -923,7 +908,7 @@ public class GridTabVO implements Evaluatee, Serializable
 
 	private StringBuffer loadErrorMessages = null;
 
-	protected void addLoadErrorMessage(String message)
+	protected void addLoadErrorMessage(final String message)
 	{
 		if (Check.isEmpty(message, true))
 		{
@@ -946,7 +931,7 @@ public class GridTabVO implements Evaluatee, Serializable
 		{
 			return "";
 		}
-		StringBuffer sb = new StringBuffer();
+		final StringBuffer sb = new StringBuffer();
 		sb.append("Tab ").append(this.getName()).append("(").append(this.TableName).append("): ").append(loadErrorMessages);
 		return sb.toString();
 	}
@@ -1070,7 +1055,7 @@ public class GridTabVO implements Evaluatee, Serializable
 		return IsReadOnly;
 	}
 
-	void setReadOnly(boolean isReadOnly)
+	void setReadOnly(final boolean isReadOnly)
 	{
 		IsReadOnly = isReadOnly;
 	}

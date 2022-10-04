@@ -25,19 +25,23 @@ package de.metas.cucumber;
 import de.metas.ServerBoot;
 import de.metas.migration.cli.workspace_migrate.WorkspaceMigrateConfig;
 import de.metas.migration.cli.workspace_migrate.WorkspaceMigrateConfig.OnScriptFailure;
+import de.metas.util.Services;
 import io.cucumber.plugin.ConcurrentEventListener;
 import io.cucumber.plugin.event.EventHandler;
 import io.cucumber.plugin.event.EventPublisher;
 import io.cucumber.plugin.event.TestRunFinished;
 import io.cucumber.plugin.event.TestRunStarted;
 import lombok.NonNull;
+import org.adempiere.service.ISysConfigBL;
 import org.springframework.util.SocketUtils;
 
 import java.io.File;
 
+import static de.metas.async.Async_Constants.SYS_Config_SKIP_WP_PROCESSOR_FOR_AUTOMATION;
 import static de.metas.async.model.validator.Main.SYSCONFIG_ASYNC_INIT_DELAY_MILLIS;
-import static de.metas.async.processor.impl.planner.QueueProcessorPlanner.SYSCONFIG_POLLINTERVAL_MILLIS;
 import static de.metas.async.model.validator.Main.SYSCONFIG_DEBOUNCER_DELAY_MILLIS;
+import static de.metas.async.processor.impl.planner.QueueProcessorPlanner.SYSCONFIG_POLLINTERVAL_MILLIS;
+import static de.metas.salesorder.interceptor.C_Order_AutoProcess_Async.SYS_Config_AUTO_SHIP_AND_INVOICE;
 import static de.metas.util.web.audit.ApiAuditService.CFG_INTERNAL_PORT;
 import static org.adempiere.ad.housekeeping.HouseKeepingService.SYSCONFIG_SKIP_HOUSE_KEEPING;
 
@@ -52,6 +56,8 @@ public class CucumberLifeCycleSupport implements ConcurrentEventListener
 	private final EventHandler<TestRunStarted> setup = event -> beforeAll();
 
 	private final EventHandler<TestRunFinished> teardown = event -> afterAll();
+
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@Override
 	public void setEventPublisher(@NonNull final EventPublisher eventPublisher)
@@ -89,6 +95,8 @@ public class CucumberLifeCycleSupport implements ConcurrentEventListener
 		System.setProperty(SYSCONFIG_SKIP_HOUSE_KEEPING, "true"); // skip housekeeping tasks. assume they are not needed because the DB is fresh
 		System.setProperty(SYSCONFIG_POLLINTERVAL_MILLIS, "500");
 		System.setProperty(SYSCONFIG_DEBOUNCER_DELAY_MILLIS, "100");
+		System.setProperty(SYS_Config_SKIP_WP_PROCESSOR_FOR_AUTOMATION, "true");
+		System.setProperty(SYS_Config_AUTO_SHIP_AND_INVOICE, "false");
 		final String[] args = { //
 				"-dbHost", dbHost,
 				"-dbPort", dbPort,
@@ -97,6 +105,7 @@ public class CucumberLifeCycleSupport implements ConcurrentEventListener
 				"-rabbitUser", infrastructureSupport.getRabbitUser(),
 				"-rabbitPassword", infrastructureSupport.getRabbitPassword()
 		};
+
 		ServerBoot.main(args);
 	}
 

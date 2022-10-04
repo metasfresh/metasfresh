@@ -22,10 +22,9 @@
 
 package de.metas.ui.web.calendar.json;
 
-import de.metas.calendar.CalendarGlobalId;
 import de.metas.calendar.CalendarResourceId;
+import de.metas.calendar.simulation.SimulationPlanId;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
@@ -36,13 +35,14 @@ import javax.annotation.Nullable;
 @Jacksonized
 public class JsonCalendarEntryUpdateRequest
 {
-	@NonNull CalendarGlobalId calendarId;
-	@NonNull CalendarResourceId resourceId;
+	@Nullable SimulationPlanId simulationId;
 
-	@NonNull String title;
+	@Nullable CalendarResourceId resourceId;
+
+	@Nullable String title;
 	@Nullable String description;
 
-	@NonNull JsonDateTime startDate;
-	@NonNull JsonDateTime endDate;
-	boolean isAllDay;
+	@Nullable JsonDateTime startDate;
+	@Nullable JsonDateTime endDate;
+	@Nullable Boolean isAllDay;
 }

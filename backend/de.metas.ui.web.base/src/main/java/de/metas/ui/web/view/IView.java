@@ -21,7 +21,6 @@ import de.metas.ui.web.window.model.sql.SqlOptions;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-import org.compiere.util.Evaluatee;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -121,6 +120,8 @@ public interface IView
 
 	boolean isQueryLimitHit();
 
+	@Nullable default EmptyReason getEmptyReason() {return null;}
+
 	/**
 	 * Invalidate ALL view rows.
 	 * <p>
@@ -160,9 +161,9 @@ public interface IView
 
 	IViewRow getById(DocumentId rowId) throws EntityNotFoundException;
 
-	LookupValuesList getFilterParameterDropdown(String filterId, String filterParameterName, Evaluatee ctx);
+	LookupValuesList getFilterParameterDropdown(String filterId, String filterParameterName, ViewFilterParameterLookupEvaluationCtx ctx);
 
-	LookupValuesPage getFilterParameterTypeahead(String filterId, String filterParameterName, String query, Evaluatee ctx);
+	LookupValuesPage getFilterParameterTypeahead(String filterId, String filterParameterName, String query, ViewFilterParameterLookupEvaluationCtx ctx);
 
 	/**
 	 * Gets the stick filters.

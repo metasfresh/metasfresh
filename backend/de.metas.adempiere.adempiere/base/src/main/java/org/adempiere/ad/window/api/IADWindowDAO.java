@@ -1,14 +1,15 @@
 package org.adempiere.ad.window.api;
 
-import java.util.List;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableSet;
+import de.metas.i18n.ITranslatableString;
+import de.metas.lang.SOTrx;
+import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.element.api.AdFieldId;
 import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.window.api.impl.ADWindowDAO;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.model.I_AD_Tab_Callout;
 import org.compiere.model.I_AD_Field;
 import org.compiere.model.I_AD_Tab;
@@ -19,12 +20,13 @@ import org.compiere.model.I_AD_UI_ElementGroup;
 import org.compiere.model.I_AD_UI_Section;
 import org.compiere.model.I_AD_Window;
 
-import de.metas.i18n.ITranslatableString;
-import de.metas.lang.SOTrx;
-import de.metas.util.ISingletonService;
-
 import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Set;
 
+/**
+ * @implNote Please consider using {@link ADWindowService} when possible. Also consider proxying your DAO methods there.
+ */
 public interface IADWindowDAO extends ISingletonService
 {
 
@@ -37,6 +39,7 @@ public interface IADWindowDAO extends ISingletonService
 
 	String retrieveInternalWindowName(AdWindowId adWindowId);
 
+	@NonNull
 	AdWindowId getWindowIdByInternalName(String internalName);
 
 	List<I_AD_UI_ElementField> retrieveUIElementFields(final I_AD_UI_Element uiElement);
@@ -70,7 +73,7 @@ public interface IADWindowDAO extends ISingletonService
 	@Nullable
 	String getFirstTabWhereClause(@NonNull AdWindowId adWindowId);
 
-	void copyWindow(@NonNull WindowCopyRequest request);
+	WindowCopyResult copyWindow(@NonNull WindowCopyRequest request);
 
 	List<I_AD_Field> retrieveFields(I_AD_Tab adTab);
 
@@ -102,7 +105,11 @@ public interface IADWindowDAO extends ISingletonService
 	@Deprecated
 	AdWindowId getAdWindowId(String tableName, SOTrx soTrx, AdWindowId defaultValue);
 
+	AdTabId copyTabToWindow(@NonNull AdTabId sourceTabId, @NonNull AdWindowId targetWindowId);
+
 	List<I_AD_Tab_Callout> retrieveTabCallouts(AdTabId tabId);
 
 	AdTabId copyTabToWindow(I_AD_Tab sourceTab, AdWindowId targetWindowId);
+
+	ImmutableSet<AdWindowId> retrieveAllAdWindowIdsByTableId(AdTableId adTableId);
 }

@@ -1,5 +1,6 @@
 package de.metas.invoicecandidate.api;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.aggregation.model.I_C_Aggregation;
@@ -22,6 +23,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_InvoiceLine;
@@ -166,7 +168,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * Note that for more than one candidate, this method is more efficient than repeated calls of {@link #invalidateCand(I_C_Invoice_Candidate)}
 	 */
 	void invalidateCands(List<I_C_Invoice_Candidate> ics);
-	
+
 	void invalidateAllCands(Properties ctx, String trxName);
 
 	/**
@@ -233,7 +235,7 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * Updates the {@link I_C_Invoice_Candidate#COLUMNNAME_C_PaymentTerm_ID} of those candidates that don't have a payment term ID.
 	 * The ID those ICs are updated with is taken from the selected IC with the smallest {@code C_Invoice_Candidate_ID} that has a {@code C_PaymentTerm_ID}.
 	 *
-	 * @task https://github.com/metasfresh/metasfresh/issues/3809
+	 * task https://github.com/metasfresh/metasfresh/issues/3809
 	 */
 	void updateMissingPaymentTermIds(PInstanceId selectionId);
 
@@ -272,13 +274,31 @@ public interface IInvoiceCandDAO extends ISingletonService
 	 * <li>belong to an {@code M_InOut} record that is active and completed or closed (i.e. <b>not</b> reversed)</li>
 	 * </ul>
 	 *
-	 * @task https://github.com/metasfresh/metasfresh/issues/1566
+	 * task https://github.com/metasfresh/metasfresh/issues/1566
 	 */
 	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsExclRE(InvoiceCandidateId invoiceCandidateId);
 
+	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsFor(@NonNull InvoiceCandidateId invoiceCandidateId);
+
 	/**
+	 * Returns the list of {@link I_C_InvoiceCandidate_InOutLine}s that
+	 * <ul>
+	 * <li>belong to an active {@code M_InOutLine} that belongs to an active {@code C_InterimInvoice_FlatrateTerm_Line} that belongs to an active {@code C_InterimInvoice_FlatrateTerm}
+	 * that has the given {@code invoiceCandidateId} as either interim or withholding IC </li>
+	 * <li>are active</li>
+	 * <li>belong to an {@code M_InOut} record that is active</li>
+	 * </ul>
+	 */
+	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsViaInterimInvoice(@NonNull InvoiceCandidateId invoiceCandidateId);
+
+	/**
+	 * Returns the number of {@link I_C_InvoiceCandidate_InOutLine}s for a given invoiceCandidateId regardless of {@link I_M_InOut} status
 	 *
-	 * @param inOutLine
+	 * @task https://github.com/metasfresh/metasfresh/issues/13376
+	 */
+	int countICIOLAssociations(final InvoiceCandidateId invoiceCandidateId);
+
+	/**
 	 * @return also returns inactive records (intended use is for deletion)
 	 */
 	List<I_C_InvoiceCandidate_InOutLine> retrieveICIOLAssociationsForInOutLineInclInactive(I_M_InOutLine inOutLine);
@@ -399,4 +419,9 @@ public interface IInvoiceCandDAO extends ISingletonService
 	}
 
 	void invalidateUninvoicedFreightCostCandidate(OrderId orderId);
+
+	ImmutableList<I_C_InvoiceCandidate_InOutLine> retrieveICIOLForInvoiceCandidate(@NonNull I_C_Invoice_Candidate ic);
+
+	@NonNull
+	List<I_C_Invoice_Candidate> retrieveApprovedForInvoiceReferencing(TableRecordReferenceSet singleTableReferences);
 }

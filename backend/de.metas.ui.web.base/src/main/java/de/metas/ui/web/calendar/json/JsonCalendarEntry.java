@@ -26,6 +26,7 @@ import de.metas.calendar.CalendarEntry;
 import de.metas.calendar.CalendarEntryId;
 import de.metas.calendar.CalendarGlobalId;
 import de.metas.calendar.CalendarResourceId;
+import de.metas.calendar.simulation.SimulationPlanId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -40,6 +41,9 @@ import java.time.ZoneId;
 public class JsonCalendarEntry
 {
 	@NonNull CalendarEntryId entryId;
+
+	@Nullable SimulationPlanId simulationId;
+
 	@NonNull CalendarGlobalId calendarId;
 	@NonNull CalendarResourceId resourceId;
 
@@ -48,20 +52,30 @@ public class JsonCalendarEntry
 
 	@NonNull JsonDateTime startDate;
 	@NonNull JsonDateTime endDate;
-	boolean isAllDay;
+	boolean allDay;
 
+	boolean editable;
+	@Nullable String color;
+	@Nullable String url;
 
-	public static JsonCalendarEntry of(@NonNull final CalendarEntry entry, @NonNull final ZoneId timeZone)
+	public static JsonCalendarEntry of(
+			@NonNull final CalendarEntry entry,
+			@NonNull final ZoneId timeZone,
+			@NonNull final String adLanguage)
 	{
 		return builder()
 				.entryId(entry.getEntryId())
+				.simulationId(entry.getSimulationId())
 				.calendarId(entry.getCalendarId())
 				.resourceId(entry.getResourceId())
-				.title(entry.getTitle())
-				.description(entry.getDescription())
-				.startDate(JsonDateTime.ofZonedDateTime(entry.getDateRange().getStartDate(), timeZone))
-				.endDate(JsonDateTime.ofZonedDateTime(entry.getDateRange().getEndDate(), timeZone))
-				.isAllDay(entry.getDateRange().isAllDay())
+				.title(entry.getTitle().translate(adLanguage))
+				.description(entry.getDescription().translate(adLanguage))
+				.startDate(JsonDateTime.ofInstant(entry.getDateRange().getStartDate(), timeZone))
+				.endDate(JsonDateTime.ofInstant(entry.getDateRange().getEndDate(), timeZone))
+				.allDay(entry.getDateRange().isAllDay())
+				.editable(entry.isEditable())
+				.color(entry.getColor())
+				.url(entry.getUrl() != null ? entry.getUrl().toString() : null)
 				.build();
 	}
 }

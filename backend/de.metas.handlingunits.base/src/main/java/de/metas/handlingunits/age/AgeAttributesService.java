@@ -27,7 +27,6 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -61,25 +60,18 @@ public class AgeAttributesService
 		return AgeValues.ofAgeInMonths(agesInMonths);
 	}
 
-	@SuppressWarnings("OptionalIsPresent")
-	public int computeDefaultAge()
+	@Nullable
+	public Integer computeDefaultAgeOrNull()
 	{
 		final List<AttributeListValue> allAgeValues = getAllAgeValues();
 
-		final Optional<AttributeListValue> nullFieldValueOpt = allAgeValues.stream()
+		return allAgeValues.stream()
 				.filter(AttributeListValue::isNullFieldValue)
-				.findFirst();
-
-		final int defaultAge;
-		if (nullFieldValueOpt.isPresent())
-		{
-			defaultAge = Integer.parseInt(nullFieldValueOpt.get().getValue());
-		}
-		else
-		{
-			defaultAge = Integer.parseInt(allAgeValues.get(0).getValue());
-		}
-		return defaultAge;
+				.findFirst()
+				.map(AttributeListValue::getValue)
+				.filter(Check::isNotBlank)
+				.map(Integer::parseInt)
+				.orElse(null);
 	}
 
 	private List<AttributeListValue> getAllAgeValues()

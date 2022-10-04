@@ -5,7 +5,7 @@ import de.metas.device.accessor.DeviceAccessor;
 import de.metas.device.accessor.DeviceAccessorsHubFactory;
 import de.metas.device.accessor.DeviceId;
 import de.metas.device.websocket.DeviceWebsocketNamingStrategy;
-import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
@@ -13,16 +13,17 @@ import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedulePro
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.reservation.HUReservationService;
-import de.metas.manufacturing.job.model.CurrentReceivingHU;
+import de.metas.i18n.AdMessageKey;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLineId;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivity;
 import de.metas.manufacturing.job.model.ManufacturingJobActivityId;
 import de.metas.manufacturing.job.model.ManufacturingJobReference;
+import de.metas.manufacturing.job.model.ReceivingTarget;
 import de.metas.manufacturing.job.model.ScaleDevice;
 import de.metas.manufacturing.job.service.commands.ReceiveGoodsCommand;
 import de.metas.manufacturing.job.service.commands.create_job.ManufacturingJobCreateCommand;
-import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonAggregateToLU;
+import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonReceivingTarget;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.InstantAndOrgId;
@@ -38,7 +39,6 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.ManufacturingOrderQuery;
-import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivityId;
@@ -55,9 +55,10 @@ import java.util.stream.Stream;
 @Service
 public class ManufacturingJobService
 {
+	private static final AdMessageKey MSG_ScaleDeviceNotRegistered = AdMessageKey.of("ScaleDeviceNotRegistered");
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHUPPOrderBL ppOrderBL;
 	private final IPPOrderBOMBL ppOrderBOMBL;
 	private final PPOrderIssueScheduleService ppOrderIssueScheduleService;
@@ -86,6 +87,7 @@ public class ManufacturingJobService
 				.ppOrderBL(ppOrderBL = Services.get(IHUPPOrderBL.class))
 				.ppOrderBOMBL(ppOrderBOMBL = Services.get(IPPOrderBOMBL.class))
 				.ppOrderRoutingRepository(Services.get(IPPOrderRoutingRepository.class))
+				.handlingUnitsBL(Services.get(IHandlingUnitsBL.class))
 				.ppOrderIssueScheduleService(ppOrderIssueScheduleService)
 				.huQRCodeService(huQRCodeService)
 				.build();
@@ -253,24 +255,29 @@ public class ManufacturingJobService
 		return changedJob;
 	}
 
-	public ManufacturingJob receiveGoodsAndAggregateToLU(
+	public ManufacturingJob receiveGoods(
 			@NonNull final ManufacturingJob job,
 			@NonNull final FinishedGoodsReceiveLineId lineId,
-			@NonNull final JsonAggregateToLU aggregateToLU,
+			@NonNull final JsonReceivingTarget receivingTarget,
 			@NonNull final BigDecimal qtyToReceiveBD,
 			@NonNull final ZonedDateTime date)
 	{
-		final PPOrderId ppOrderId = job.getPpOrderId();
-
 		final ManufacturingJob changedJob = job.withChangedReceiveLine(lineId, line -> {
-			final CurrentReceivingHU currentReceivingHU = trxManager.callInThreadInheritedTrx(() -> receiveGoodsAndAggregateToLU(
-					ppOrderId,
-					line.getCoProductBOMLineId(),
-					aggregateToLU,
-					qtyToReceiveBD,
-					date));
+			final ReceivingTarget newReceivingTarget = trxManager.callInThreadInheritedTrx(() -> ReceiveGoodsCommand.builder()
+					.handlingUnitsBL(handlingUnitsBL)
+					.ppOrderBL(ppOrderBL)
+					.ppOrderBOMBL(ppOrderBOMBL)
+					.loadingAndSavingSupportServices(loadingAndSavingSupportServices)
+					//
+					.ppOrderId(job.getPpOrderId())
+					.coProductBOMLineId(line.getCoProductBOMLineId())
+					.receivingTarget(receivingTarget)
+					.qtyToReceiveBD(qtyToReceiveBD)
+					.date(date)
+					//
+					.build().execute());
 
-			return line.withCurrentReceivingHU(currentReceivingHU);
+			return line.withReceivingTarget(newReceivingTarget);
 		});
 
 		saveActivityStatuses(changedJob);
@@ -278,30 +285,14 @@ public class ManufacturingJobService
 		return changedJob;
 	}
 
-	private CurrentReceivingHU receiveGoodsAndAggregateToLU(
-			final @NonNull PPOrderId ppOrderId,
-			final @Nullable PPOrderBOMLineId coProductBOMLineId,
-			final @NonNull JsonAggregateToLU aggregateToLU,
-			final @NonNull BigDecimal qtyToReceiveBD,
-			final @NonNull ZonedDateTime date)
-	{
-		return ReceiveGoodsCommand.builder()
-				.handlingUnitsDAO(handlingUnitsDAO)
-				.ppOrderBL(ppOrderBL)
-				.ppOrderBOMBL(ppOrderBOMBL)
-				.loadingAndSavingSupportServices(loadingAndSavingSupportServices)
-				//
-				.ppOrderId(ppOrderId)
-				.coProductBOMLineId(coProductBOMLineId)
-				.aggregateToLU(aggregateToLU)
-				.qtyToReceiveBD(qtyToReceiveBD)
-				.date(date)
-				//
-				.build().execute();
-	}
-
 	public ManufacturingJob withCurrentScaleDevice(@NonNull final ManufacturingJob job, @Nullable final DeviceId currentScaleDeviceId)
 	{
+		// Make sure the device really exists, to avoid future issues in mobile UI
+		if (currentScaleDeviceId != null && !getScaleDevice(currentScaleDeviceId).isPresent())
+		{
+			throw new AdempiereException(MSG_ScaleDeviceNotRegistered).markAsUserValidationError();
+		}
+
 		if (!DeviceId.equals(job.getCurrentScaleDeviceId(), currentScaleDeviceId))
 		{
 			final ManufacturingJob jobChanged = job.withCurrentScaleDevice(currentScaleDeviceId);

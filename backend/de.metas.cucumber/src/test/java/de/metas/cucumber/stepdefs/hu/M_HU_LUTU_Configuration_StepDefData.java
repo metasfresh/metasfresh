@@ -31,5 +31,4 @@ public class M_HU_LUTU_Configuration_StepDefData extends StepDefData<I_M_HU_LUTU
 	{
 		super(I_M_HU_LUTU_Configuration.class);
 	}
-	
 }

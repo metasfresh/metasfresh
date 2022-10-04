@@ -115,7 +115,7 @@ public class PP_Order
 		if (ppOrder.getM_Locator_ID() <= 0 || InterfaceWrapperHelper.isValueChanged(ppOrder, I_PP_Order.COLUMNNAME_M_Warehouse_ID))
 		{
 			final WarehouseId warehouseId = WarehouseId.ofRepoId(ppOrder.getM_Warehouse_ID());
-			final LocatorId locatorId = warehouseBL.getDefaultLocatorId(warehouseId);
+			final LocatorId locatorId = warehouseBL.getOrCreateDefaultLocatorId(warehouseId);
 			ppOrder.setM_Locator_ID(locatorId.getRepoId());
 		}
 

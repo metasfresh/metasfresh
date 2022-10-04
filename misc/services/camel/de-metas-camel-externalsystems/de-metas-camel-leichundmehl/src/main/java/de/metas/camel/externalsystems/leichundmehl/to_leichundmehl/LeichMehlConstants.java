@@ -26,10 +26,21 @@ public interface LeichMehlConstants
 {
 	String ROUTE_PROPERTY_EXPORT_PP_ORDER_CONTEXT = "ExportPPOrderRouteContext";
 
-	String HEADER_FTP_PORT = "FTPPort";
-	String HEADER_FTP_HOST = "FTPHost";
-	String HEADER_FTP_USERNAME = "FTPUsername";
-	String HEADER_FTP_PASSWORD = "FTPPassword";
-	String HEADER_FTP_DIRECTORY = "FTPDirectory";
-	String HEADER_FTP_FILENAME = "FTPFilename";
+	String XML_ELEMENT_RI = "ri";
+	String XML_ELEMENT_RECV_PLU = "recvPLU";
+
+	String XML_PROPERTY_FILE_ENCODING_VALUE = "Windows-1252";
+	String XML_PROPERTY_VALUE_YES = "yes";
+
+	String NODE_ATTRIBUTE_TYPE = "xsi:type";
+	String NODE_ATTRIBUTE_NAME = "name";
+
+	String ELEMENT_TAG_PRINT_OBJECTS = "printObjects";
+	String ELEMENT_TAG_PRINT_OBJECT = "printObject";
+
+	String ATTRIBUTE_TARGET_ELEMENT_DATA = "data";
+	String ATTRIBUTE_TARGET_ELEMENT_FORMAT = "format";
+	String ATTRIBUTE_TARGET_ELEMENT_TEMPLATE = "template";
+
+	String AD_PINSTANCE_TABLE_NAME = "AD_PInstance";
 }

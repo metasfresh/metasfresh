@@ -27,12 +27,15 @@ import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
 import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.organization.OrgId;
+import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.serviceprovider.external.project.ExternalProjectReferenceId;
+import de.metas.serviceprovider.issue.agg.key.impl.IssueEffortKeyBuilder;
 import de.metas.serviceprovider.issue.hierarchy.IssueHierarchy;
 import de.metas.serviceprovider.milestone.MilestoneId;
+import de.metas.serviceprovider.model.I_S_EffortControl;
 import de.metas.serviceprovider.model.I_S_Issue;
 import de.metas.serviceprovider.timebooking.Effort;
 import de.metas.uom.UomId;
@@ -43,6 +46,8 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
+import org.compiere.model.IQuery;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
@@ -53,6 +58,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Repository
 public class IssueRepository
@@ -81,8 +87,8 @@ public class IssueRepository
 	 * Retrieves the record identified by the given issue ID.
 	 *
 	 * @param issueId Issue ID
-	 * @throws AdempiereException in case no record was found for the given ID.
 	 * @return issue entity
+	 * @throws AdempiereException in case no record was found for the given ID.
 	 */
 	@NonNull
 	public IssueEntity getById(@NonNull final IssueId issueId)
@@ -96,7 +102,7 @@ public class IssueRepository
 					.setParameter("S_Issue_Id", issueId);
 		}
 
-		return buildIssueEntity(record);
+		return ofRecord(record);
 	}
 
 	@NonNull
@@ -105,7 +111,7 @@ public class IssueRepository
 		final I_S_Issue record = getRecordOrNull(issueId);
 
 		return record != null
-				? Optional.of(buildIssueEntity(record))
+				? Optional.of(ofRecord(record))
 				: Optional.empty();
 	}
 
@@ -117,7 +123,7 @@ public class IssueRepository
 				.addEqualsFilter(I_S_Issue.COLUMNNAME_IssueURL, externalURL)
 				.create()
 				.firstOnlyOptional(I_S_Issue.class)
-				.map(this::buildIssueEntity);
+				.map(IssueRepository::ofRecord);
 	}
 
 	@NonNull
@@ -129,7 +135,7 @@ public class IssueRepository
 				.create()
 				.list()
 				.stream()
-				.map(this::buildIssueEntity)
+				.map(IssueRepository::ofRecord)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -195,30 +201,69 @@ public class IssueRepository
 		return IssueHierarchy.of(currentNode);
 	}
 
-	@Nullable
-	private I_S_Issue getRecordOrNull(@NonNull final IssueId issueId)
+	@NonNull
+	public Stream<IssueEntity> streamIssuesWithOpenEffort()
 	{
-		return queryBL
-				.createQueryBuilder(I_S_Issue.class)
+		final IQuery<I_S_EffortControl> effortControlQuery = queryBL
+				.createQueryBuilder(I_S_EffortControl.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_S_Issue.COLUMNNAME_S_Issue_ID, issueId.getRepoId())
+				.addEqualsFilter(I_S_EffortControl.COLUMNNAME_IsProcessed, false)
+				.create();
+
+		return queryBL.createQueryBuilder(I_S_Issue.class)
+				.addOnlyActiveRecordsFilter()
+				.addNotNull(I_S_Issue.COLUMNNAME_C_Project_ID)
+				.addNotNull(I_S_Issue.COLUMNNAME_C_Activity_ID)
+				.addNotInSubQueryFilter(I_S_Issue.COLUMNNAME_EffortAggregationKey, I_S_EffortControl.COLUMNNAME_EffortAggregationKey, effortControlQuery)
 				.create()
-				.firstOnly(I_S_Issue.class);
+				.iterateAndStream()
+				.map(IssueRepository::ofRecord);
+	}
+
+	public void setAggregationKeyIfMissing()
+	{
+		final IssueEffortKeyBuilder effortKeyBuilder = new IssueEffortKeyBuilder();
+
+		queryBL.createQueryBuilder(I_S_Issue.class)
+				.addOnlyActiveRecordsFilter()
+				.addNotNull(I_S_Issue.COLUMNNAME_C_Project_ID)
+				.addNotNull(I_S_Issue.COLUMNNAME_C_Activity_ID)
+				.addEqualsFilter(I_S_Issue.COLUMNNAME_EffortAggregationKey, null)
+				.create()
+				.iterateAndStream()
+				.peek(issueWithNoAggregation -> {
+					final String aggregationKey = effortKeyBuilder.buildKey(issueWithNoAggregation);
+					issueWithNoAggregation.setEffortAggregationKey(aggregationKey);
+				})
+				.forEach(InterfaceWrapperHelper::save);
 	}
 
 	@NonNull
-	private IssueEntity buildIssueEntity(@NonNull final I_S_Issue record)
+	public List<IssueEntity> geyByQuery(@NonNull final IssueQuery query)
+	{
+		return queryBL.createQueryBuilder(I_S_Issue.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_S_Issue.COLUMNNAME_AD_Org_ID, query.getOrgId())
+				.addEqualsFilter(I_S_Issue.COLUMNNAME_C_Activity_ID, query.getCostCenterId())
+				.addEqualsFilter(I_S_Issue.COLUMNNAME_C_Project_ID, query.getProjectId())
+				.create()
+				.iterateAndStream()
+				.map(IssueRepository::ofRecord)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public static IssueEntity ofRecord(@NonNull final I_S_Issue record)
 	{
 		final IssueType issueType = IssueType
 				.getTypeByValue(record.getIssueType())
 				.orElseThrow(() -> new AdempiereException("Unknown IssueType!").appendParametersToMessage()
 						.setParameter("I_S_Issue", record));
 
-		final Status status = Status.ofCodeOptional(record.getStatus())
-				.orElseThrow(() -> new AdempiereException("Unknown Status!").appendParametersToMessage()
-						.setParameter("I_S_Issue", record));
+		final Status status = Status.ofCodeOptional(record.getStatus()).orElse(Status.NEW);
 
 		return IssueEntity.builder()
+				.clientId(ClientId.ofRepoId(record.getAD_Client_ID()))
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.externalProjectReferenceId(ExternalProjectReferenceId.ofRepoIdOrNull(record.getS_ExternalProjectReference_ID()))
 				.projectId(ProjectId.ofRepoIdOrNull(record.getC_Project_ID()))
@@ -248,10 +293,25 @@ public class IssueRepository
 				.processed(record.isProcessed())
 				.deliveredDate(TimeUtil.asLocalDate(record.getDeliveredDate()))
 				.processedTimestamp(TimeUtil.asInstant(record.getProcessedDate()))
+				.costCenterActivityId(ActivityId.ofRepoIdOrNull(record.getC_Activity_ID()))
+				.externallyUpdatedAt(TimeUtil.asInstant(record.getExternallyUpdatedAt()))
+				.invoiceableHours(record.getInvoiceableEffort())
 				.build();
 	}
 
-	private I_S_Issue buildRecord(@NonNull final IssueEntity issueEntity)
+	@Nullable
+	private I_S_Issue getRecordOrNull(@NonNull final IssueId issueId)
+	{
+		return queryBL
+				.createQueryBuilder(I_S_Issue.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_S_Issue.COLUMNNAME_S_Issue_ID, issueId.getRepoId())
+				.create()
+				.firstOnly(I_S_Issue.class);
+	}
+
+	@NonNull
+	private static I_S_Issue buildRecord(@NonNull final IssueEntity issueEntity)
 	{
 		final I_S_Issue record =
 				InterfaceWrapperHelper.loadOrNew(issueEntity.getIssueId(), I_S_Issue.class);
@@ -279,7 +339,7 @@ public class IssueRepository
 		record.setIssueEffort(issueEntity.getIssueEffort().getHmm());
 		record.setAggregatedEffort(issueEntity.getAggregatedEffort().getHmm());
 		record.setInvoiceableChildEffort(Quantity.toBigDecimal(issueEntity.getInvoicableChildEffort()));
-		
+
 		record.setLatestActivityOnSubIssues(TimeUtil.asTimestamp(issueEntity.getLatestActivityOnSubIssues()));
 		record.setLatestActivity(TimeUtil.asTimestamp(issueEntity.getLatestActivityOnIssue()));
 
@@ -295,6 +355,12 @@ public class IssueRepository
 
 		record.setExternalIssueNo(issueEntity.getExternalIssueNo());
 		record.setIssueURL(issueEntity.getExternalIssueURL());
+
+		record.setC_Activity_ID(ActivityId.toRepoId(issueEntity.getCostCenterActivityId()));
+
+		record.setExternallyUpdatedAt(TimeUtil.asTimestamp(issueEntity.getExternallyUpdatedAt()));
+
+		record.setInvoiceableEffort(issueEntity.getInvoiceableHours());
 
 		return record;
 	}

@@ -21,9 +21,14 @@
  */
 package de.metas.project.process.legacy;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
-
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.currency.ICurrencyBL;
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BPartner;
@@ -34,16 +39,9 @@ import org.compiere.model.MProductPO;
 import org.compiere.model.MProject;
 import org.compiere.model.MProjectLine;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.currency.ICurrencyBL;
-import de.metas.money.CurrencyConversionTypeId;
-import de.metas.money.CurrencyId;
-import de.metas.organization.OrgId;
-import de.metas.process.JavaProcess;
-import de.metas.process.ProcessInfoParameter;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.util.ArrayList;
 
 /**
  *  Generate Purchase Order from Project.
@@ -217,7 +215,7 @@ public class ProjectGenPO extends JavaProcess
 							poPrice,
 							CurrencyId.ofRepoId(C_Currency_ID), 
 							CurrencyId.ofRepoId(order.getC_Currency_ID()),
-							TimeUtil.asLocalDate(order.getDateAcct()), 
+							order.getDateAcct().toInstant(),
 							CurrencyConversionTypeId.ofRepoIdOrNull(order.getC_ConversionType_ID()),
 							ClientId.ofRepoId(order.getAD_Client_ID()), 
 							OrgId.ofRepoId(order.getAD_Org_ID()));

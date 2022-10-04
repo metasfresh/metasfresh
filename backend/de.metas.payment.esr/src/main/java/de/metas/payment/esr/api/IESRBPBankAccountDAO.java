@@ -35,11 +35,12 @@ import de.metas.util.ISingletonService;
 public interface IESRBPBankAccountDAO extends ISingletonService
 {
 	/**
-	 * Search for the ESR bank account(s) of the given org's linked partner.
+	 * Search for the ESR bank account(s) of the given Organization's linked partner.
 	 * 
 	 * @return account(s) if exist, throw exception otherwise. If there is more than one ESR account, then the one with IsDefaultESR='Y' is returned first.
+	 * @return account(s) if exists, throw exception otherwise. If there is more than one ESR account, then the one with IsDefaultESR='Y' is returned first.
 	 */
-	public List<I_C_BP_BankAccount> fetchOrgEsrAccounts(I_AD_Org org);
+	List<I_C_BP_BankAccount> fetchOrgEsrAccounts(I_AD_Org org);
 
 	/**
 	 * Retrieve matching ESR bank accounts. Note that the given {@code postAccountNo} and {@code innerAccountNo} are <b>not</b> guaranteed to be unique.<br>
@@ -52,7 +53,9 @@ public interface IESRBPBankAccountDAO extends ISingletonService
 	/**
 	 * @return All the ESR_PostFinanceUserNumber entries for the bank account
 	 */
-	public List<I_ESR_PostFinanceUserNumber> retrieveESRPostFinanceUserNumbers(BankAccountId bankAcctId);
+	List<I_ESR_PostFinanceUserNumber> retrieveESRPostFinanceUserNumbers(BankAccountId bankAcctId);
 
-	public List<I_C_BP_BankAccount> retrieveQRBPBankAccounts(String IBAN);
+	List<I_C_BP_BankAccount> retrieveQRBPBankAccounts(String IBAN);
+
+	boolean isESRBankAccount(int bpBankAccountId);
 }

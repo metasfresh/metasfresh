@@ -13,6 +13,7 @@ import de.metas.inout.InOutLineId;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.shipping.model.ShipperTransportationId;
@@ -27,7 +28,9 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IQuery;
 import org.compiere.model.IQuery.Aggregate;
+import org.compiere.model.I_C_InterimInvoice_FlatrateTerm_Line;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -39,6 +42,7 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Function;
@@ -89,9 +93,15 @@ public class InOutDAO implements IInOutDAO
 	}
 
 	@Override
-	public I_M_InOutLine getLineById(@NonNull final InOutLineId inoutLineId)
+	public I_M_InOutLine getLineByIdInTrx(@NonNull final InOutLineId inoutLineId)
 	{
 		return load(inoutLineId, I_M_InOutLine.class);
+	}
+
+	@Override
+	public <T extends I_M_InOutLine> T getLineByIdOutOfTrx(@NonNull final InOutLineId inoutLineId, final Class<T> modelClass)
+	{
+		return loadOutOfTrx(inoutLineId.getRepoId(), modelClass);
 	}
 
 	@Override
@@ -119,12 +129,6 @@ public class InOutDAO implements IInOutDAO
 				.asList();
 	}
 
-	@Override
-	public <T extends I_M_InOutLine> T getLineById(@NonNull final InOutLineId inoutLineId, final Class<T> modelClass)
-	{
-		@SuppressWarnings("UnnecessaryLocalVariable") final T inoutLine = loadOutOfTrx(inoutLineId.getRepoId(), modelClass);
-		return inoutLine;
-	}
 
 	@Override
 	public List<I_M_InOutLine> retrieveLines(final I_M_InOut inOut)
@@ -333,6 +337,12 @@ public class InOutDAO implements IInOutDAO
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	@Override
+	public <T extends I_M_InOutLine> T getLineByIdInTrx(@NonNull final InOutLineId inoutLineId, @NonNull final Class<T> modelClass)
+	{
+		return load(inoutLineId.getRepoId(), modelClass);
+	}
+
 	private InOutAndLineId extractInOutAndLineId(final I_M_InOutLine line)
 	{
 		return InOutAndLineId.ofRepoId(line.getM_InOut_ID(), line.getM_InOutLine_ID());
@@ -453,5 +463,43 @@ public class InOutDAO implements IInOutDAO
 				.list(modelClass)
 				.stream()
 				.collect(ImmutableMap.toImmutableMap(inOut -> InOutId.ofRepoId(inOut.getM_InOut_ID()), Function.identity()));
+	}
+
+	@Override
+	@NonNull
+	public Optional<I_M_InOutLine> getReversalLineForLineId(@NonNull final InOutLineId inoutLineId)
+	{
+		final I_M_InOutLine inOutLine = load(inoutLineId, I_M_InOutLine.class);
+
+		if (inOutLine == null)
+		{
+			return Optional.empty();
+		}
+
+		if (inOutLine.getReversalLine_ID() <= 0)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.ofNullable(load(inOutLine.getReversalLine_ID(), I_M_InOutLine.class));
+	}
+
+	@Override
+	public Collection<InOutAndLineId> retrieveLineIdsForOrderLineIdAvailableForInterimInvoice(@NonNull final OrderLineId orderLine)
+	{
+		final IQuery<I_C_InterimInvoice_FlatrateTerm_Line> inOutsUsedForInterimInvoice = queryBL.createQueryBuilder(I_C_InterimInvoice_FlatrateTerm_Line.class)
+				.addOnlyActiveRecordsFilter()
+				.create();
+
+		return queryBL.createQueryBuilder(I_M_InOutLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_InOutLine.COLUMNNAME_C_OrderLine_ID, orderLine)
+				.addNotInSubQueryFilter(I_M_InOutLine.COLUMNNAME_M_InOutLine_ID, I_C_InterimInvoice_FlatrateTerm_Line.COLUMNNAME_M_InOutLine_ID, inOutsUsedForInterimInvoice)
+				.create()
+				.list()
+				.stream()
+				.map(inOutLine -> InOutAndLineId.of(InOutId.ofRepoId(inOutLine.getM_InOut_ID()), InOutLineId.ofRepoId(inOutLine.getM_InOutLine_ID())))
+				.collect(ImmutableList.toImmutableList());
+
 	}
 }

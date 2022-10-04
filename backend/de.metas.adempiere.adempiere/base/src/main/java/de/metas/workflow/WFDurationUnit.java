@@ -24,6 +24,7 @@ package de.metas.workflow;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import de.metas.util.StringUtils;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import de.metas.util.time.DurationUtils;
@@ -38,6 +39,7 @@ import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
 import java.util.Arrays;
+import java.util.Optional;
 
 public enum WFDurationUnit implements ReferenceListAwareEnum
 {
@@ -52,13 +54,16 @@ public enum WFDurationUnit implements ReferenceListAwareEnum
 	private static final ImmutableMap<TemporalUnit, WFDurationUnit> typesByTemporalUnit = Maps.uniqueIndex(Arrays.asList(values()), WFDurationUnit::getTemporalUnit);
 
 	@Getter
-	@NonNull private final String code;
+	@NonNull
+	private final String code;
 
 	@Getter
-	@NonNull private final Duration duration;
+	@NonNull
+	private final Duration duration;
 
 	@Getter
-	@NonNull private final TemporalUnit temporalUnit;
+	@NonNull
+	private final TemporalUnit temporalUnit;
 
 	WFDurationUnit(
 			@NonNull final String code,
@@ -73,6 +78,12 @@ public enum WFDurationUnit implements ReferenceListAwareEnum
 	public static WFDurationUnit ofCode(@NonNull final String code)
 	{
 		return typesByCode.ofCode(code);
+	}
+
+	public static Optional<WFDurationUnit> optionalOfNullable(@Nullable final String code)
+	{
+		return StringUtils.trimBlankToOptional(code)
+				.map(typesByCode::ofCode);
 	}
 
 	@SuppressWarnings("unused")
@@ -101,4 +112,9 @@ public enum WFDurationUnit implements ReferenceListAwareEnum
 		return DurationUtils.toWorkDurationRoundUp(durationBD, getTemporalUnit());
 	}
 
+	@Nullable
+	public static WFDurationUnit ofNullableCode(@Nullable final String code)
+	{
+		return code != null ? ofCode(code) : null;
+	}
 }

@@ -48,6 +48,8 @@ public abstract class AbstractShipmentScheduleEvent implements MaterialEvent
 
 	private final MaterialDescriptor materialDescriptor;
 
+	private final OldShipmentScheduleData oldShipmentScheduleData;
+
 	@JsonInclude(NON_NULL)
 	private final MinMaxDescriptor minMaxDescriptor;
 
@@ -58,6 +60,7 @@ public abstract class AbstractShipmentScheduleEvent implements MaterialEvent
 	public AbstractShipmentScheduleEvent(
 			final EventDescriptor eventDescriptor,
 			final MaterialDescriptor materialDescriptor,
+			@Nullable final OldShipmentScheduleData oldShipmentScheduleData,
 			@Nullable final MinMaxDescriptor minMaxDescriptor,
 			final BigDecimal reservedQuantity,
 			final int shipmentScheduleId)
@@ -65,6 +68,7 @@ public abstract class AbstractShipmentScheduleEvent implements MaterialEvent
 		this.shipmentScheduleId = shipmentScheduleId;
 		this.eventDescriptor = eventDescriptor;
 		this.materialDescriptor = materialDescriptor;
+		this.oldShipmentScheduleData = oldShipmentScheduleData;
 		this.minMaxDescriptor = minMaxDescriptor;
 		this.reservedQuantity = reservedQuantity;
 	}

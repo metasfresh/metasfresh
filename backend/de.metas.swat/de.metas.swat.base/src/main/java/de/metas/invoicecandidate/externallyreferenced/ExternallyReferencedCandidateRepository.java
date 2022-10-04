@@ -28,6 +28,7 @@ import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
@@ -43,6 +44,7 @@ import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.apache.commons.collections4.CollectionUtils;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -102,8 +104,6 @@ public class ExternallyReferencedCandidateRepository
 			final I_C_ILCandHandler handlerRecord = invoiceCandidateHandlerDAO.retrieveForClassOneOnly(Env.getCtx(), ManualCandidateHandler.class);
 			icRecord.setC_ILCandHandler_ID(handlerRecord.getC_ILCandHandler_ID());
 			icRecord.setIsManual(true);
-			icRecord.setAD_Table_ID(0);
-			icRecord.setRecord_ID(0);
 
 			icRecord.setAD_Org_ID(ic.getOrgId().getRepoId());
 			icRecord.setM_Product_ID(ic.getProductId().getRepoId());
@@ -111,6 +111,11 @@ public class ExternallyReferencedCandidateRepository
 			syncBillPartnerToRecord(ic, icRecord);
 
 			syncQtysToRecord(ic, icRecord);
+
+			if(ic.getQtyDelivered().signum() != 0)
+			{
+				icRecord.setDeliveryDate(TimeUtil.asTimestamp(ic.getDateOrdered(), timeZone));
+			}
 
 			icRecord.setIsSOTrx(ic.getSoTrx().toBoolean());
 
@@ -162,6 +167,19 @@ public class ExternallyReferencedCandidateRepository
 
 		icRecord.setExternalHeaderId(ExternalId.toValue(ic.getExternalHeaderId()));
 		icRecord.setExternalLineId(ExternalId.toValue(ic.getExternalLineId()));
+		icRecord.setC_Project_ID(ProjectId.toRepoId(ic.getProjectId()));
+
+		final TableRecordReference recordReference = ic.getRecordReference();
+		if (recordReference == null)
+		{
+			icRecord.setAD_Table_ID(0);
+			icRecord.setRecord_ID(0);
+		}
+		else
+		{
+			icRecord.setAD_Table_ID(recordReference.getAD_Table_ID());
+			icRecord.setRecord_ID(recordReference.getRecord_ID());
+		}
 
 		saveRecord(icRecord);
 		final InvoiceCandidateId persistedInvoiceCandidateId = InvoiceCandidateId.ofRepoId(icRecord.getC_Invoice_Candidate_ID());
@@ -294,6 +312,8 @@ public class ExternallyReferencedCandidateRepository
 		candidate.lineDescription(icRecord.getDescription());
 
 		candidate.taxId(TaxId.ofRepoId(icRecord.getC_Tax_ID()));
+
+		candidate.projectId(ProjectId.ofRepoIdOrNull(icRecord.getC_Project_ID()));
 
 		return candidate.build();
 	}

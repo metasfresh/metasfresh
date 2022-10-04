@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static org.adempiere.ad.dao.impl.CompareQueryFilter.Operator.STRING_LIKE_IGNORECASE;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -214,6 +215,16 @@ public class ContactPersonRepository
 				.stream()
 				.map(ContactPersonRepository::toContactPerson)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	public boolean isEmailInUse(@NonNull final String email)
+	{
+		return queryBL
+				.createQueryBuilder(I_MKTG_ContactPerson.class)
+				.addOnlyActiveRecordsFilter()
+				.addCompareFilter(I_MKTG_ContactPerson.COLUMN_EMail, STRING_LIKE_IGNORECASE ,email)
+				.create()
+				.anyMatch();
 	}
 
 	public Set<Integer> getIdsByCampaignId(final int campaignId)

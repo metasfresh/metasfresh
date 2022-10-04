@@ -16,13 +16,19 @@
  *****************************************************************************/
 package org.compiere.acct;
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.util.List;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.PostingType;
+import de.metas.acct.api.ProductAcctType;
+import de.metas.acct.doc.AcctDocContext;
+import de.metas.costing.CostAmount;
+import de.metas.document.DocBaseType;
+import de.metas.logging.LogManager;
+import de.metas.product.IProductBL;
+import de.metas.product.IProductDAO;
 import de.metas.project.ProjectId;
 import de.metas.project.service.ProjectRepository;
+import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.compiere.SpringContextHolder;
@@ -35,17 +41,10 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.PostingType;
-import de.metas.acct.api.ProductAcctType;
-import de.metas.acct.doc.AcctDocContext;
-import de.metas.costing.CostAmount;
-import de.metas.logging.LogManager;
-import de.metas.product.IProductBL;
-import de.metas.product.IProductDAO;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.List;
 
 /**
  * Project Issue.
@@ -63,7 +62,7 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 
 	public Doc_ProjectIssue(final AcctDocContext ctx)
 	{
-		super(ctx, DOCTYPE_ProjectIssue);
+		super(ctx, DocBaseType.ProjectIssue);
 	}
 
 	/** Pseudo Line */
@@ -92,7 +91,7 @@ public class Doc_ProjectIssue extends Doc<DocLine_ProjectIssue>
 	public String getDocumentNo()
 	{
 		final ProjectId projectId = ProjectId.ofRepoId(m_issue.getC_Project_ID());
-		final I_C_Project project = projectRepository.getById(projectId);
+		final I_C_Project project = projectRepository.getRecordById(projectId);
 		if (project != null)
 		{
 			return project.getValue() + " #" + m_issue.getLine();

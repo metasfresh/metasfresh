@@ -18,6 +18,7 @@ import de.metas.handlingunits.picking.job.service.commands.PickingJobCompleteCom
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobPickCommand;
+import de.metas.handlingunits.picking.job.service.commands.PickingJobRequestReviewCommand;
 import de.metas.handlingunits.picking.job.service.commands.PickingJobUnPickCommand;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderId;
@@ -28,12 +29,13 @@ import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.service.IADReferenceDAO;
+import de.metas.ad_reference.ADRefList;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -86,7 +88,6 @@ public class PickingJobService
 				.pickingJobRepository(pickingJobRepository)
 				.pickingJobLockService(pickingJobLockService)
 				.pickingCandidateService(pickingCandidateService)
-				.pickingJobSlotService(pickingSlotService)
 				.pickingJobHUReservationService(pickingJobHUReservationService)
 				.pickingConfigRepo(pickingConfigRepo)
 				.loadingSupportServices(pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices())
@@ -96,7 +97,20 @@ public class PickingJobService
 				.build().execute();
 	}
 
+	public PickingJob approveAndComplete(@NonNull final PickingJob pickingJob)
+	{
+		return prepareToComplete(pickingJob)
+				.approveIfReadyToReview(true)
+				.build().execute();
+	}
+
 	public PickingJob complete(@NonNull final PickingJob pickingJob)
+	{
+		return prepareToComplete(pickingJob)
+				.build().execute();
+	}
+
+	private PickingJobCompleteCommand.PickingJobCompleteCommandBuilder prepareToComplete(final PickingJob pickingJob)
 	{
 		return PickingJobCompleteCommand.builder()
 				.pickingJobRepository(pickingJobRepository)
@@ -104,8 +118,14 @@ public class PickingJobService
 				.pickingSlotService(pickingSlotService)
 				.pickingJobHUReservationService(pickingJobHUReservationService)
 				//
+				.pickingJob(pickingJob);
+	}
+
+	public PickingJob requestReview(final PickingJob pickingJob)
+	{
+		return PickingJobRequestReviewCommand.builder()
+				.pickingJobRepository(pickingJobRepository)
 				.pickingJob(pickingJob)
-				//
 				.build().execute();
 	}
 
@@ -131,6 +151,12 @@ public class PickingJobService
 				.ifPresent(this::abort);
 	}
 
+	public Optional<PickingJob> getByOrderId(@NonNull final OrderId orderId)
+	{
+		final PickingJobLoaderSupportingServices loadingSupportingServices = pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices();
+		return pickingJobRepository.getDraftBySalesOrderId(orderId, loadingSupportingServices);
+	}
+
 	public Stream<PickingJobReference> streamDraftPickingJobReferences(@NonNull final UserId pickerId)
 	{
 		final PickingJobLoaderSupportingServices loadingSupportingServices = pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices();
@@ -143,17 +169,17 @@ public class PickingJobService
 	{
 		return packagingDAO
 				.stream(PackageableQuery.builder()
-								.onlyFromSalesOrder(true)
-								.lockedBy(userId)
-								.includeNotLocked(true)
-								.excludeShipmentScheduleIds(excludeShipmentScheduleIds)
-								.orderBys(ImmutableSet.of(
-										PackageableQuery.OrderBy.PriorityRule,
-										PackageableQuery.OrderBy.PreparationDate,
-										PackageableQuery.OrderBy.SalesOrderId,
-										PackageableQuery.OrderBy.DeliveryBPLocationId,
-										PackageableQuery.OrderBy.WarehouseTypeId))
-								.build())
+						.onlyFromSalesOrder(true)
+						.lockedBy(userId)
+						.includeNotLocked(true)
+						.excludeShipmentScheduleIds(excludeShipmentScheduleIds)
+						.orderBys(ImmutableSet.of(
+								PackageableQuery.OrderBy.PriorityRule,
+								PackageableQuery.OrderBy.PreparationDate,
+								PackageableQuery.OrderBy.SalesOrderId,
+								PackageableQuery.OrderBy.DeliveryBPLocationId,
+								PackageableQuery.OrderBy.WarehouseTypeId))
+						.build())
 				.map(PickingJobService::extractPickingJobCandidate)
 				.distinct();
 	}
@@ -178,7 +204,7 @@ public class PickingJobService
 				|| item.getQtyPickedAndDelivered().signum() != 0;
 	}
 
-	public IADReferenceDAO.ADRefList getQtyRejectedReasons()
+	public ADRefList getQtyRejectedReasons()
 	{
 		return pickingCandidateService.getQtyRejectedReasons();
 	}
@@ -260,6 +286,17 @@ public class PickingJobService
 				throw new AdempiereException("Unhandled event type: " + event);
 			}
 		}
+	}
+
+	public boolean hasPickingJobsReadyToReview(@NonNull final ImmutableSet<PickingJobId> pickingJobIds)
+	{
+		return pickingJobRepository.hasReadyToReview(pickingJobIds);
+	}
+
+	public List<PickingJob> getByIsReadyToReview(@NonNull final ImmutableSet<PickingJobId> pickingJobIds)
+	{
+		final PickingJobLoaderSupportingServices loadingSupportingServices = pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices();
+		return pickingJobRepository.getByIsReadyToReview(pickingJobIds, loadingSupportingServices);
 	}
 
 }

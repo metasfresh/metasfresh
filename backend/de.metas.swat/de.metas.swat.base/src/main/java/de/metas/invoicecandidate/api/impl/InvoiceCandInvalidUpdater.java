@@ -23,8 +23,10 @@
 package de.metas.invoicecandidate.api.impl;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.LinkedHashMultimap;
 import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutLineId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandInvalidUpdater;
@@ -302,6 +304,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		// update qtyOrdered. we need to be up to date for that factor
 		invoiceCandidateHandlerBL.setOrderedData(icRecord);
 
+		//update isInEffect flag
+		invoiceCandidateHandlerBL.setIsInEffect(icRecord);
+
 		// i.e. QtyOrdered's signum. Used at different places throughout this method
 		final BigDecimal factor;
 		if (icRecord.getQtyOrdered().signum() < 0)
@@ -403,6 +408,16 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 	{
 		if (orderLine == null)
 		{
+			final ImmutableList<I_C_InvoiceCandidate_InOutLine> iciols = invoiceCandDAO.retrieveICIOLForInvoiceCandidate(ic);
+
+			for (final I_C_InvoiceCandidate_InOutLine iciol : iciols)
+			{
+				final InOutLineId inOutLineId = InOutLineId.ofRepoId(iciol.getM_InOutLine_ID());
+				final org.compiere.model.I_M_InOutLine inOutLine = inOutDAO.getLineByIdInTrx(inOutLineId);
+
+				Services.get(IInvoiceCandBL.class).updateICIOLAssociationFromIOL(iciol, inOutLine);
+			}
+
 			return; // nothing to do
 		}
 
