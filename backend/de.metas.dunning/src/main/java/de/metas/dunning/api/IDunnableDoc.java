@@ -22,12 +22,11 @@ package de.metas.dunning.api;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.Date;
-
+import de.metas.util.Services;
 import org.adempiere.ad.table.api.IADTableDAO;
 
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * Dunnable document.
@@ -77,4 +76,6 @@ public interface IDunnableDoc
 	// FRESH-504: Add DocumentNo
 
 	String getDocumentNo();
+
+	int getM_SectionCode_ID();
 }

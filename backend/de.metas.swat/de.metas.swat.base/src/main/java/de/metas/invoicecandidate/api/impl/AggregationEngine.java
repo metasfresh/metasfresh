@@ -4,8 +4,10 @@ import ch.qos.logback.classic.Level;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.aggregation.api.Aggregation;
 import de.metas.aggregation.api.AggregationId;
 import de.metas.aggregation.api.AggregationKey;
+import de.metas.aggregation.api.IAggregationDAO;
 import de.metas.aggregation.api.IAggregationFactory;
 import de.metas.aggregation.api.IAggregationKeyBuilder;
 import de.metas.aggregation.model.X_C_Aggregation;
@@ -48,6 +50,7 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.user.User;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -105,6 +108,7 @@ public final class AggregationEngine
 			OrderEmailPropagationSysConfigRepository.class);
 
 	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final transient IAggregationDAO aggregationDAO = Services.get(IAggregationDAO.class);
 
 	private static final AdMessageKey ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P = AdMessageKey.of("InvoiceCand_PriceList_Missing");
 
@@ -285,7 +289,7 @@ public final class AggregationEngine
 			key2headerAndAggregators.put(headerAggregationKey, headerAndAggregators);
 
 			final InvoiceHeaderImplBuilder invoiceHeader = headerAndAggregators.getInvoiceHeader();
-			addToInvoiceHeader(invoiceHeader, icRecord, inoutId);
+			addToInvoiceHeader(invoiceHeader, icRecord, inoutId, headerAggregationKey.getAggregationId());
 
 			// task 08451: log why we create a new invoice header
 			final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
@@ -298,7 +302,7 @@ public final class AggregationEngine
 		else
 		{
 			final InvoiceHeaderImplBuilder invoiceHeader = headerAndAggregators.getInvoiceHeader();
-			addToInvoiceHeader(invoiceHeader, icRecord, inoutId);
+			addToInvoiceHeader(invoiceHeader, icRecord, inoutId, headerAggregationKey.getAggregationId());
 		}
 
 		//
@@ -365,7 +369,8 @@ public final class AggregationEngine
 	private void addToInvoiceHeader(
 			@NonNull final InvoiceHeaderImplBuilder invoiceHeader,
 			@NonNull final I_C_Invoice_Candidate icRecord,
-			@Nullable final InOutId inoutId)
+			@Nullable final InOutId inoutId,
+			@Nullable final AggregationId headerAggregationId)
 	{
 		try
 		{
@@ -380,7 +385,7 @@ public final class AggregationEngine
 			invoiceHeader.setIncotermLocation(icRecord.getIncotermLocation());
 			invoiceHeader.setPOReference(icRecord.getPOReference()); // task 07978
 
-			if(orderEmailPropagationSysConfigRepository.isPropagateToCInvoice(ClientAndOrgId.ofClientAndOrg(icRecord.getAD_Client_ID(), icRecord.getAD_Org_ID())))
+			if (orderEmailPropagationSysConfigRepository.isPropagateToCInvoice(ClientAndOrgId.ofClientAndOrg(icRecord.getAD_Client_ID(), icRecord.getAD_Org_ID())))
 			{
 				invoiceHeader.setEmail(icRecord.getEMail());
 			}
@@ -459,6 +464,8 @@ public final class AggregationEngine
 
 			// 06630: set shipment id to header
 			invoiceHeader.setM_InOut_ID(InOutId.toRepoId(inoutId));
+
+			invoiceHeader.setM_SectionCode_ID(SectionCodeId.toRepoId(getSectionCodeId(icRecord, headerAggregationId)));
 		}
 		catch (final RuntimeException rte)
 		{
@@ -771,5 +778,25 @@ public final class AggregationEngine
 
 		return invoiceLinesRW.stream()
 				.collect(GuavaCollectors.toImmutableMapByKey(line -> PaymentTermId.optionalOfRepoId(line.getC_PaymentTerm_ID())));
+	}
+
+	@Nullable
+	private SectionCodeId getSectionCodeId(
+			@NonNull final I_C_Invoice_Candidate icRecord,
+			@Nullable final AggregationId headerAggregationId)
+	{
+		if (headerAggregationId == null)
+		{
+			return null;
+		}
+
+		final Aggregation icHeaderAggregation = aggregationDAO.retrieveAggregation(InterfaceWrapperHelper.getCtx(icRecord),
+																				   headerAggregationId.getRepoId());
+		if (icHeaderAggregation.hasColumnName(I_C_Invoice_Candidate.COLUMNNAME_M_SectionCode_ID))
+		{
+			return SectionCodeId.ofRepoIdOrNull(icRecord.getM_SectionCode_ID());
+		}
+
+		return null;
 	}
 }

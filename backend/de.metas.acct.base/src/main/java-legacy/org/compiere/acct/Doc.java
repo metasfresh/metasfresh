@@ -32,6 +32,7 @@ import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
@@ -1781,6 +1782,12 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 	protected final int getUser2_ID()
 	{
 		return getValueAsIntOrZero("User2_ID");
+	}
+
+	@Nullable
+	protected final SectionCodeId getSectionCodeId()
+	{
+		return getValueAsIdOrNull("M_SectionCode_ID", SectionCodeId::ofRepoIdOrNull);
 	}
 
 	protected final int getValueAsIntOrZero(final String ColumnName)

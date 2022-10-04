@@ -299,6 +299,11 @@ public class JsonOLCandCreateRequest
 	@JsonInclude(Include.NON_NULL)
 	JsonAlbertaOrderInfo albertaOrderInfo;
 
+	@ApiModelProperty(position = 490,
+			value = "Translates to `M_SectionCode.Value`. The looked up sectionCode's ID is then set to `C_OLCand.M_SectionCode_ID`.")
+	@JsonInclude(Include.NON_NULL)
+	String sectionCode;
+
 	@JsonCreator
 	@Builder(toBuilder = true)
 	private JsonOLCandCreateRequest(
@@ -350,7 +355,8 @@ public class JsonOLCandCreateRequest
 			@JsonProperty("applySalesRepFrom") final @Nullable JsonApplySalesRepFrom applySalesRepFrom,
 			@JsonProperty("bpartnerName") final @Nullable String bpartnerName,
 			@JsonProperty("email") final @Nullable String email,
-			@JsonProperty("phone") final @Nullable String phone)
+			@JsonProperty("phone") final @Nullable String phone,
+			@JsonProperty("sectionCode") final @Nullable String sectionCode)
 	{
 		this.orgCode = orgCode;
 		this.externalLineId = externalLineId;
@@ -403,6 +409,7 @@ public class JsonOLCandCreateRequest
 		this.qtyItemCapacity = qtyItemCapacity;
 		this.projectId = projectId;
 		this.applySalesRepFrom = CoalesceUtil.coalesceNotNull(applySalesRepFrom, JsonApplySalesRepFrom.CandidateFirst);
+		this.sectionCode = sectionCode;
 	}
 
 	/**

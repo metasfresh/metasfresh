@@ -113,6 +113,8 @@ public class DefaultDunningCandidateProducer implements IDunningCandidateProduce
 			candidate.setIsDunningDocProcessed(false);
 			candidate.setDunningDateEffective(null); // will be set when the dunning document will be generated and processed
 
+			candidate.setM_SectionCode_ID(sourceDoc.getM_SectionCode_ID());
+
 			// We cannot set the candidate's AD_Client_ID, but at least we can validate that we are using the right AD_Client
 			Check.assume(sourceDoc.getAD_Client_ID() == candidate.getAD_Client_ID(), "Invalid context AD_Client_ID");
 		}

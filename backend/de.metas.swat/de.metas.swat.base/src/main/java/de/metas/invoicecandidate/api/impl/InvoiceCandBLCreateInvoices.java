@@ -50,6 +50,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.tax.api.Tax;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
@@ -400,7 +401,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setIsSOTrx(header.isSOTrx());
 
 			invoice.setPOReference(invoiceHeader.getPOReference()); // task 07978
-			if(Check.isBlank(invoice.getEMail()))
+			if (Check.isBlank(invoice.getEMail()))
 			{
 				invoice.setEMail(invoiceHeader.getEMail());
 			}
@@ -414,13 +415,14 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			{
 				final I_M_InOut inout = inoutDAO.getById(InOutId.ofRepoId(invoiceHeader.getM_InOut_ID()));
 				invoice.setM_InOut_ID(inout.getM_InOut_ID()); // task 06630
-				if(!Check.isBlank(inout.getEMail()))
+				if (!Check.isBlank(inout.getEMail()))
 				{
 					invoice.setEMail(inout.getEMail());
 				}
 			}
 
 			invoice.setPaymentRule(invoiceHeader.getPaymentRule());
+			invoice.setM_SectionCode_ID(SectionCodeId.toRepoId(invoiceHeader.getM_SectionCode_ID()));
 			// Save and return the invoice
 			invoicesRepo.save(invoice);
 			return invoice;
