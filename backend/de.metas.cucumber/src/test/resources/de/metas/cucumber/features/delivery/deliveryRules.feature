@@ -24,7 +24,6 @@ Feature: Delivery rules with and without quantity in stock
   _Then validate M_ShipmentSchedule.QtyToDeliver = 0
   _And validate that M_InOut could not be generated
 
-    Given metasfresh initially has no MD_Stock data
     And metasfresh contains M_Products:
       | Identifier          | Name                | IsStocked |
       | product_A_stocked_1 | Product_A_stocked_1 | true      |
@@ -65,7 +64,6 @@ Feature: Delivery rules with and without quantity in stock
   _When M_InOut is generated for shipmentSchedule
   _Then validate that hu in stock was not picked
 
-    Given metasfresh initially has no MD_Stock data
     And metasfresh contains M_Products:
       | Identifier             | Name                   | IsStocked |
       | product_A_notStocked_1 | Product_A_notStocked_1 | false     |
@@ -112,7 +110,6 @@ Feature: Delivery rules with and without quantity in stock
   _When M_InOut is generated for shipmentSchedule
   _Then validate that hu in stock was picked
 
-    Given metasfresh initially has no MD_Stock data
     And metasfresh contains M_Products:
       | Identifier          | Name                | IsStocked |
       | product_A_stocked_2 | Product_A_stocked_2 | true      |
@@ -170,7 +167,6 @@ Feature: Delivery rules with and without quantity in stock
   _When M_InOut is generated for shipmentSchedule
   _Then validate that hu in stock was not picked
 
-    Given metasfresh initially has no MD_Stock data
     And metasfresh contains M_Products:
       | Identifier             | Name                   | IsStocked |
       | product_A_notStocked_2 | Product_A_notStocked_2 | true      |
@@ -230,7 +226,6 @@ Feature: Delivery rules with and without quantity in stock
   _When M_InOut is generated for shipmentSchedule
   _Then validate that hu in stock was not picked
 
-    Given metasfresh initially has no MD_Stock data
     And metasfresh contains M_Products:
       | Identifier             | Name                   | IsStocked |
       | product_F_notStocked_1 | Product_F_notStocked_1 | false     |
@@ -274,7 +269,6 @@ Feature: Delivery rules with and without quantity in stock
   _When M_InOut is generated for shipmentSchedule
   _Then validate that hu in stock was not picked
 
-    Given metasfresh initially has no MD_Stock data
     And metasfresh contains M_Products:
       | Identifier          | Name                | IsStocked |
       | product_F_stocked_1 | Product_F_stocked_1 | true      |
@@ -319,7 +313,6 @@ Feature: Delivery rules with and without quantity in stock
   _When M_InOut is generated for shipmentSchedule
   _Then validate that hu in stock was not picked
 
-    Given metasfresh initially has no MD_Stock data
     And metasfresh contains M_Products:
       | Identifier             | Name                   | IsStocked |
       | product_F_notStocked_2 | Product_F_notStocked_2 | true      |
@@ -380,7 +373,6 @@ Feature: Delivery rules with and without quantity in stock
   _When M_InOut is generated for shipmentSchedule
   _Then validate that hu in stock was picked
 
-    Given metasfresh initially has no MD_Stock data
     And metasfresh contains M_Products:
       | Identifier          | Name                | IsStocked |
       | product_F_stocked_2 | Product_F_stocked_2 | true      |
@@ -439,7 +431,6 @@ Feature: Delivery rules with and without quantity in stock
   _When M_InOut is generated for shipmentSchedule
   _Then validate all HUs in stock were picked in FIFO order
 
-    Given metasfresh initially has no MD_Stock data
     And metasfresh contains M_Products:
       | Identifier     | Name           | IsStocked |
       | product_FIFO_1 | Product_FIFO_1 | true      |
@@ -513,7 +504,6 @@ Feature: Delivery rules with and without quantity in stock
   _When M_InOut is generated for shipmentSchedule
   _Then validate HUs in stock were picked in FIFO order (first HU picked, second HU was the sourceHU for the actual picked HU)
 
-    Given metasfresh initially has no MD_Stock data
     And metasfresh contains M_Products:
       | Identifier     | Name           | IsStocked |
       | product_FIFO_2 | Product_FIFO_2 | true      |
