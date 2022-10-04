@@ -28,6 +28,7 @@ import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Timer;
 import lombok.NonNull;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
 
@@ -49,6 +50,9 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 	private final ThreadLocal<ArrayList<String>> calledBy = ThreadLocal.withInitial(() -> new ArrayList<>());
 	private final ThreadLocal<Boolean> isInitiatorLabelActive = ThreadLocal.withInitial(() -> false);
 
+	@Value("${performance.monitoring.enable}")
+	private String perfMonEnvVar;
+
 	public MicrometerPerformanceMonitoringService(
 			@NonNull final MeterRegistry meterRegistry)
 	{
@@ -60,6 +64,18 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 			@NonNull final Callable<V> callable,
 			@NonNull final PerformanceMonitoringService.Metadata metadata)
 	{
+		if(perfMonEnvVar != "true")
+		{
+			try
+			{
+				return callable.call();
+			}
+			catch (Exception e)
+			{
+				throw PerformanceMonitoringServiceUtil.asRTE(e);
+			}
+		}
+
 		final ArrayList<Tag> tags = createTagsFromLabels(metadata.getLabels());
 
 		mkTagIfNotNull("name", metadata.getName()).ifPresent(tags::add);

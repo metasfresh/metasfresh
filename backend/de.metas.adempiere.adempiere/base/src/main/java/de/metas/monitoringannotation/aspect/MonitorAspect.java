@@ -33,6 +33,9 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -54,11 +57,19 @@ public class MonitorAspect
 		this.service = service;
 	}
 
+	@Value("${performance.monitoring.enable}")
+	private String perfMonEnvVar;
+
 	@Around("execution(* *(..)) && @annotation(de.metas.monitoringannotation.annotation.Monitor)")
 	public Object monitorMethod(ProceedingJoinPoint pjp) throws Throwable
 	{
 		final PerformanceMonitoringService.Metadata metadata;
 		final Callable callable = getCallableFromProceedingJoinPoint( pjp );
+
+		if(perfMonEnvVar != "true")
+		{
+			callable.call();
+		}
 
 		Method method = ((MethodSignature) pjp.getSignature()).getMethod();
 		Monitor monitorAnnotation = method.getAnnotation(Monitor.class);
