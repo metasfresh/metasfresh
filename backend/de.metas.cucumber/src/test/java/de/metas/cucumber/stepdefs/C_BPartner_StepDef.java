@@ -215,16 +215,6 @@ public class C_BPartner_StepDef
 		}
 	}
 
-	@Given("update C_BPartner:")
-	public void update_c_bpartner(@NonNull final DataTable dataTable)
-	{
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
-		{
-			updateBPartner(tableRow);
-		}
-	}
-
 	private void createC_BPartner(@NonNull final Map<String, String> tableRow, final boolean addDefaultLocationIfNewBPartner)
 	{
 		final String bPartnerName = tableRow.get("Name");

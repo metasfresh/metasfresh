@@ -9,7 +9,7 @@ import java.math.BigDecimal;
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_C_OLCand 
+public interface I_C_OLCand
 {
 
 	String Table_Name = "C_OLCand";
@@ -877,53 +877,7 @@ public interface I_C_OLCand
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Grouping key.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCompensationGroupKey (@Nullable java.lang.String CompensationGroupKey);
-
-	/**
-	 * Get Grouping key.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getCompensationGroupKey();
-
-	ModelColumn<I_C_OLCand, Object> COLUMN_CompensationGroupKey = new ModelColumn<>(I_C_OLCand.class, "CompensationGroupKey", null);
-	String COLUMNNAME_CompensationGroupKey = "CompensationGroupKey";
-
-	/**
-	 * Get Created.
-	 * Date this record was created
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getCreated();
-
-	ModelColumn<I_C_OLCand, Object> COLUMN_Created = new ModelColumn<>(I_C_OLCand.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
-
-	/**
-	 * Get Created By.
-	 * User who created this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getCreatedBy();
-
-	String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set Date.
+	 * Set Kand.-Datum.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true

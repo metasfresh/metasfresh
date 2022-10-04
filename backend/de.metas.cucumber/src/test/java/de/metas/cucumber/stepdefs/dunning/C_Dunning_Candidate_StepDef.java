@@ -27,7 +27,6 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.sectioncode.M_SectionCode_StepDefData;
 import de.metas.dunning.api.IDunningBL;
-import de.metas.dunning.api.IDunningCandidateProducer;
 import de.metas.dunning.api.IDunningContext;
 import de.metas.dunning.api.IDunningDAO;
 import de.metas.dunning.api.IDunningProducer;
@@ -98,8 +97,7 @@ public class C_Dunning_Candidate_StepDef
 
 			trxManager.runInNewTrx(() ->
 								   {
-									   final IDunningContext context = dunningBL.createDunningContext(Env.getCtx(), dunningLevelRecord, dunningDate, ITrx.TRXNAME_None);
-									   context.setProperty(IDunningCandidateProducer.CONTEXT_FullUpdate, isFullUpdate);
+									   final IDunningContext context = dunningBL.createDunningContext(Env.getCtx(), dunningLevelRecord, dunningDate, ITrx.TRXNAME_None, null);
 
 									   dunningDAO.deleteNotProcessedCandidates(context, dunningLevelRecord);
 
@@ -132,7 +130,8 @@ public class C_Dunning_Candidate_StepDef
 			final IDunningContext context = dunningBL.createDunningContext(Env.getCtx(),
 																		   null, // DunningDate, not needed
 																		   null, // C_DunningLevel, not needed
-																		   ITrx.TRXNAME_None);
+																		   ITrx.TRXNAME_None,
+																		   null);
 
 			final Boolean isAutoProcess = DataTableUtil.extractBooleanForColumnNameOr(row, "AutoProcess", false);
 			context.setProperty(IDunningProducer.CONTEXT_ProcessDunningDoc, isAutoProcess);

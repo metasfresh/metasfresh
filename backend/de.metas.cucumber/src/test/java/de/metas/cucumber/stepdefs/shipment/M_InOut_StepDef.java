@@ -109,6 +109,7 @@ public class M_InOut_StepDef
 	private final C_OrderLine_StepDefData orderLineTable;
 	private final M_Warehouse_StepDefData warehouseTable;
 	private final AD_Message_StepDefData messageTable;
+	private final M_SectionCode_StepDefData sectionCodeTable;
 
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
