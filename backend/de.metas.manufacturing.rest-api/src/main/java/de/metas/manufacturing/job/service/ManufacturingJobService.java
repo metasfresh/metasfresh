@@ -20,7 +20,6 @@ import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivity;
 import de.metas.manufacturing.job.model.ManufacturingJobActivityId;
 import de.metas.manufacturing.job.model.ManufacturingJobReference;
-import de.metas.manufacturing.job.model.RawMaterialsIssueStep;
 import de.metas.manufacturing.job.model.ReceivingTarget;
 import de.metas.manufacturing.job.model.ScaleDevice;
 import de.metas.manufacturing.job.service.commands.ReceiveGoodsCommand;
@@ -54,7 +53,6 @@ import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
 @Service
@@ -251,31 +249,34 @@ public class ManufacturingJobService
 
 	private ManufacturingJob issueRawMaterialsInTrx(final @NonNull ManufacturingJob job, final @NonNull PPOrderIssueScheduleProcessRequest request)
 	{
+		final AtomicBoolean processed = new AtomicBoolean();
+
 		final ManufacturingJob changedJob = job.withChangedRawMaterialsIssueStep(
 				request.getActivityId(),
 				request.getIssueScheduleId(),
-				issuingRawMaterialsToStep(request));
+				(step) -> {
+					if (processed.getAndSet(true))
+					{
+						// shall not happen
+						logger.warn("Ignoring request because was already processed: request={}, step={}", request, step);
+						return step;
+					}
+
+					step.assertNotIssued();
+					final PPOrderIssueSchedule issueSchedule = ppOrderIssueScheduleService.issue(request);
+					return step.withIssued(issueSchedule.getIssued());
+				});
+
+		if (!processed.get())
+		{
+			throw new AdempiereException("Failed fulfilling issue request")
+					.setParameter("request", request)
+					.setParameter("job", job);
+		}
 
 		saveActivityStatuses(changedJob);
 
 		return changedJob;
-	}
-
-	private UnaryOperator<RawMaterialsIssueStep> issuingRawMaterialsToStep(final @NonNull PPOrderIssueScheduleProcessRequest request)
-	{
-		final AtomicBoolean processed = new AtomicBoolean();
-
-		return (step) -> {
-			if (processed.getAndSet(true))
-			{
-				logger.warn("Ignoring request because was already processed: request={}, step={}", request, step);
-				return step;
-			}
-
-			step.assertNotIssued();
-			final PPOrderIssueSchedule issueSchedule = ppOrderIssueScheduleService.issue(request);
-			return step.withIssued(issueSchedule.getIssued());
-		};
 	}
 
 	public ManufacturingJob receiveGoods(
