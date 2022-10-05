@@ -14,10 +14,11 @@ import java.math.BigDecimal;
 @Builder
 public class PPOrderIssueScheduleProcessRequest
 {
-	@NonNull PPOrderId ppOrderId;
 	@NonNull PPOrderRoutingActivityId activityId;
 	@NonNull PPOrderIssueScheduleId issueScheduleId;
 	@NonNull BigDecimal qtyIssued;
 	@Nullable BigDecimal qtyRejected;
 	@Nullable QtyRejectedReasonCode qtyRejectedReasonCode;
+
+	public PPOrderId getPpOrderId() {return getActivityId().getOrderId();}
 }
