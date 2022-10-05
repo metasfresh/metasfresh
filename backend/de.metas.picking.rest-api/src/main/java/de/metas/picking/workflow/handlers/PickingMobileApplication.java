@@ -178,10 +178,8 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	@Override
 	public void abortAll(final UserId callerId)
 	{
-		pickingJobRestService.getDraftJobsByPickerId(callerId)
-				.stream()
-				.map(PickingMobileApplication::toWFProcess)
-				.forEach(wfProcess -> abort(wfProcess, callerId));
+		pickingJobRestService.abortAllByUserId(callerId);
+		wfLaunchersProvider.invalidateCacheByUserId(callerId);
 	}
 
 	private static WFProcess toWFProcess(final PickingJob pickingJob)
@@ -310,6 +308,6 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	@Override
 	public void logout(final @NonNull UserId userId)
 	{
-		pickingJobRestService.logout(userId);
+		abortAll(userId);
 	}
 }

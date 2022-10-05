@@ -51,11 +51,6 @@ public class PickingJobRestService
 		this.pickingJobService = pickingJobService;
 	}
 
-	public List<PickingJob> getDraftJobsByPickerId(@NonNull final UserId pickerId)
-	{
-		return pickingJobService.getDraftJobsByPickerId(pickerId);
-	}
-
 	public PickingJob getPickingJobById(final PickingJobId pickingJobId)
 	{
 		return pickingJobService.getById(pickingJobId);
@@ -99,9 +94,14 @@ public class PickingJobRestService
 		return pickingJobService.processStepEvents(pickingJob, events);
 	}
 
-	public PickingJob abort(@NonNull final PickingJob pickingJob)
+	public void abort(@NonNull final PickingJob pickingJob)
 	{
-		return pickingJobService.abort(pickingJob);
+		pickingJobService.abort(pickingJob);
+	}
+
+	public void abortAllByUserId(final @NonNull UserId userId)
+	{
+		pickingJobService.abortAllByUserId(userId);
 	}
 
 	public PickingJob complete(@NonNull final PickingJob pickingJob)
@@ -113,10 +113,4 @@ public class PickingJobRestService
 	{
 		return pickingJobService.getQtyRejectedReasons();
 	}
-
-	public void logout(@NonNull final UserId userId)
-	{
-		pickingJobService.releaseAllForUserId(userId);
-	}
-
 }

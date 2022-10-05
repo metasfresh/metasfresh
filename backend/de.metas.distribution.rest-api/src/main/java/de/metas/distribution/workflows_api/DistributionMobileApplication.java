@@ -105,7 +105,7 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 	@Override
 	public void abortAll(final UserId callerId)
 	{
-		throw new UnsupportedOperationException(); // TODO impl
+		distributionRestService.abortAll(callerId);
 	}
 
 	@Override
@@ -163,6 +163,6 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 	@Override
 	public void logout(final @NonNull UserId userId)
 	{
-		// TODO implement
+		abortAll(userId);
 	}
 }
