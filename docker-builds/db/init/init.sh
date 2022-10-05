@@ -28,7 +28,7 @@ echo ""
 echo "==================="
 echo "Restoring pgdump"
 echo "==================="
-pg_restore -Fc --exit-on-error --username metasfresh --dbname metasfresh /metasfresh_latest.pgdump
+pg_restore -Fc --exit-on-error --username metasfresh --dbname metasfresh /metasfresh.pgdump
 echo "=========="
 echo " ...done!"
 echo "=========="

@@ -5,8 +5,8 @@ jobs:
   init:
     runs-on: ubuntu-latest
     outputs:
-      tag-floating: ${{ steps.sanitize.outputs.refname }}
-      tag-fixed: ${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}
+      tag-floating: ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}
+      tag-fixed: ${{ steps.build-info-properties.outputs.mfversion }}-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}
       build-info-properties: ${{ steps.build-info-properties.outputs.content }}
       git-properties: ${{ steps.git-properties.outputs.content }}
     steps:
@@ -23,7 +23,8 @@ jobs:
           BUILD_SYSTEM: ${{ runner.name }}
           BUILD_USER: ${{ github.actor }}
         run: |
-          echo "::set-output name=content::build.name=github actions\nbuild.system=$BUILD_SYSTEM\nbuild.time=$(date)\nbuild.user=$BUILD_USER\nbuild.version=$(cat docker-builds/version.info)-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}\nbuild.number=${{ github.run_number }}"
+          echo "::set-output name=content::build.name=github actions\nbuild.system=$BUILD_SYSTEM\nbuild.time=$(date)\nbuild.user=$BUILD_USER\nbuild.version=$(cat docker-builds/version.info).3-${{ steps.sanitize.outputs.refname }}.${{ github.run_number }}\nbuild.number=${{ github.run_number }}"
+          echo "::set-output name=mfversion::$(cat docker-builds/version.info)"
       - name: define-git-properties
         id: git-properties
         env:
@@ -92,7 +93,7 @@ jobs:
           --cache-to type=inline \
           --cache-from metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-floating }} \
           --build-arg REFNAME=${{ needs.init.outputs.tag-floating }} \
-          --build-arg VERSION=$(cat docker-builds/version.info)-${{ needs.init.outputs.tag-fixed }} \
+          --build-arg VERSION=${{ needs.init.outputs.tag-fixed }} \
           --tag metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-floating }} \
           --tag metasfresh/metas-mvn-camel-dist:${{ needs.init.outputs.tag-fixed }} \
           .
