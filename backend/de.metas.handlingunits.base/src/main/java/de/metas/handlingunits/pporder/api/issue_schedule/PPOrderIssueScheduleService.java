@@ -10,7 +10,6 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.weightable.PlainWeightable;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.inventory.InventoryService;
-import de.metas.handlingunits.inventory.draftlinescreator.InventoryLineAggregatorFactory;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.QtyRejectedWithReason;
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer;
@@ -37,16 +36,13 @@ public class PPOrderIssueScheduleService
 	private final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 	private final PPOrderIssueScheduleRepository issueScheduleRepository;
 	private final InventoryService inventoryService;
-	private final InventoryLineAggregatorFactory inventoryLineAggregatorFactory;
 
 	public PPOrderIssueScheduleService(
 			@NonNull final PPOrderIssueScheduleRepository issueScheduleRepository,
-			@NonNull final InventoryService inventoryService,
-			@NonNull final InventoryLineAggregatorFactory inventoryLineAggregatorFactory)
+			@NonNull final InventoryService inventoryService)
 	{
 		this.issueScheduleRepository = issueScheduleRepository;
 		this.inventoryService = inventoryService;
-		this.inventoryLineAggregatorFactory = inventoryLineAggregatorFactory;
 	}
 
 	public ImmutableList<PPOrderIssueSchedule> getByOrderId(final PPOrderId ppOrderId)
@@ -156,7 +152,6 @@ public class PPOrderIssueScheduleService
 
 		WeightHUCommand.builder()
 				.inventoryService(inventoryService)
-				.inventoryLineAggregatorFactory(inventoryLineAggregatorFactory)
 				//
 				.huId(huId)
 				.targetWeight(targetWeight)

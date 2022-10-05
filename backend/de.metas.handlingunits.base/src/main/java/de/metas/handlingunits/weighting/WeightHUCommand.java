@@ -63,7 +63,6 @@ public class WeightHUCommand
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final InventoryService inventoryService;
-	private final InventoryLineAggregatorFactory inventoryLineAggregatorFactory;
 
 	private final HuId huId;
 	private final PlainWeightable targetWeight;
@@ -71,13 +70,11 @@ public class WeightHUCommand
 	@Builder
 	private WeightHUCommand(
 			@NonNull final InventoryService inventoryService,
-			@NonNull final InventoryLineAggregatorFactory inventoryLineAggregatorFactory,
 			//
 			@NonNull final HuId huId,
 			@NonNull final IWeightable targetWeight)
 	{
 		this.inventoryService = inventoryService;
-		this.inventoryLineAggregatorFactory = inventoryLineAggregatorFactory;
 
 		this.huId = huId;
 		this.targetWeight = PlainWeightable.copyOf(targetWeight);
@@ -109,7 +106,7 @@ public class WeightHUCommand
 
 		final InventoryLinesCreationCtx inventoryLinesCreationCtx = InventoryLinesCreationCtx.builder()
 				.inventoryRepo(inventoryService.getInventoryRepository())
-				.inventoryLineAggregator(inventoryLineAggregatorFactory.createForAggregationMode(AggregationType.SINGLE_HU))
+				.inventoryLineAggregator(InventoryLineAggregatorFactory.getForAggregationMode(AggregationType.SINGLE_HU))
 				.inventory(inventoryHeader)
 				.strategy(HUsForInventoryStrategies.of(inventoryLineCandidate))
 				.build();

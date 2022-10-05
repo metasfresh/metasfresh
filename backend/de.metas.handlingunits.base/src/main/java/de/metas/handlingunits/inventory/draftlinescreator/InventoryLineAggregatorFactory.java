@@ -13,9 +13,9 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
-import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 
@@ -41,26 +41,27 @@ import javax.annotation.Nullable;
  * #L%
  */
 
-@Service
+@UtilityClass
 public class InventoryLineAggregatorFactory
 {
-	public InventoryLineAggregator createForDocBaseAndSubType(@NonNull final DocBaseAndSubType docBaseAndSubType)
+	public static InventoryLineAggregator getForDocBaseAndSubType(@NonNull final DocBaseAndSubType docBaseAndSubType)
 	{
 		final AggregationType aggregationMode = AggregationType.getByDocTypeOrNull(docBaseAndSubType);
-		Check.assumeNotNull(aggregationMode, "Unexpected docBaseAndSubType={} with no registered aggegationMode", docBaseAndSubType);
+		Check.assumeNotNull(aggregationMode, "Unexpected docBaseAndSubType={} with no registered aggregationMode", docBaseAndSubType);
 
 		try
 		{
-			return createForAggregationMode(aggregationMode);
+			return getForAggregationMode(aggregationMode);
 		}
 		catch (final Exception ex)
 		{
 			throw AdempiereException.wrapIfNeeded(ex)
-					.setParameter("docBaseAndSubType", docBaseAndSubType);
+					.setParameter("docBaseAndSubType", docBaseAndSubType)
+					.appendParametersToMessage();
 		}
 	}
 
-	public InventoryLineAggregator createForAggregationMode(@NonNull final AggregationType aggregationMode)
+	public static InventoryLineAggregator getForAggregationMode(@NonNull final AggregationType aggregationMode)
 	{
 		switch (aggregationMode)
 		{
@@ -71,8 +72,7 @@ public class InventoryLineAggregatorFactory
 				return MultipleHUInventoryLineAggregator.INSTANCE;
 
 			default:
-				throw new AdempiereException("Unexpected aggegationMode: " + aggregationMode)
-						.appendParametersToMessage();
+				throw new AdempiereException("Unexpected aggregationMode: " + aggregationMode);
 		}
 	}
 
