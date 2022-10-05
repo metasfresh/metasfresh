@@ -133,6 +133,7 @@ Here come the actual release notes:
 # metasfresh 5.175 (current RC)
 ## Features
 * metasfresh
+  * [#13637](https://github.com/metasfresh/metasfresh/issues/13637) Cucumber: drop MD_Stock_StepDef#truncateMDStockData
   * [#13376](https://github.com/metasfresh/metasfresh/issues/13376) Cucumber: Products (item) invoice candidates
   * [#13355](https://github.com/metasfresh/metasfresh/issues/13355) Packing material invoice candidates: shipments
   * [#13449](https://github.com/metasfresh/metasfresh/issues/13449) Empties Receive and Returns
