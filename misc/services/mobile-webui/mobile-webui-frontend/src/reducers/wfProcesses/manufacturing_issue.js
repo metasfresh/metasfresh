@@ -25,7 +25,7 @@ const reduceOnUpdateQtyIssued = (draftState, payload) => {
   const draftStep = draftWFProcess.activities[activityId].dataStored.lines[lineId].steps[stepId];
 
   draftStep.qtyIssued = qtyPicked;
-  draftStep.qtyRejected = draftStep.qtyToIssue - qtyPicked;
+  draftStep.qtyRejected = Math.max(draftStep.qtyToIssue - qtyPicked, 0);
   draftStep.qtyRejectedReasonCode = qtyRejectedReasonCode;
 
   updateStepAndRollup({
