@@ -11,7 +11,7 @@ for /F "tokens=*" %%g in ('powershell -Command "& {Get-Date -Format """"yyMMddHH
 	echo build.system=%ComputerName%
 	echo build.time=%buildtime%
 	echo build.user=%USERNAME%
-	echo build.version=%version%-%qualifier%.%buildnr%
+	echo build.version=%version%.3-%qualifier%.%buildnr%
 	echo build.number=%buildnr%
 ) > docker-builds/metadata/build-info.properties
 
