@@ -88,6 +88,7 @@ const BarcodeScannerComponent = ({ resolveScannedBarcode, onResolvedResult }) =>
     if (
       scannedBarcode &&
       triggerOnChangeIfLengthGreaterThan &&
+      triggerOnChangeIfLengthGreaterThan > 0 &&
       scannedBarcode.length >= triggerOnChangeIfLengthGreaterThan
     ) {
       inputElement.select();
