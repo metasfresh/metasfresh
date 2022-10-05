@@ -17,7 +17,7 @@ import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreator;
 import de.metas.handlingunits.inventory.draftlinescreator.HUsForInventoryStrategies;
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLine;
-import de.metas.handlingunits.inventory.draftlinescreator.InventoryLineAggregatorFactory;
+import de.metas.handlingunits.inventory.draftlinescreator.aggregator.InventoryLineAggregatorFactory;
 import de.metas.handlingunits.inventory.draftlinescreator.InventoryLinesCreationCtx;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
