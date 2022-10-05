@@ -51,7 +51,7 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 	private final ThreadLocal<Boolean> isInitiatorLabelActive = ThreadLocal.withInitial(() -> false);
 
 	@Value("${performance.monitoring.enable:false}")
-	private String perfMonEnvVar;
+	private Boolean perfMonEnvVar;
 
 	public MicrometerPerformanceMonitoringService(
 			@NonNull final MeterRegistry meterRegistry)
@@ -64,7 +64,7 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 			@NonNull final Callable<V> callable,
 			@NonNull final PerformanceMonitoringService.Metadata metadata)
 	{
-		if(perfMonEnvVar != "true")
+		if(perfMonEnvVar = false)
 		{
 			try
 			{

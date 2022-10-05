@@ -56,7 +56,7 @@ public class MonitorAspect
 	}
 
 	@Value("${performance.monitoring.enable:false}")
-	private String perfMonEnvVar;
+	private Boolean perfMonEnvVar;
 
 	@Around("execution(* *(..)) && @annotation(de.metas.monitoringannotation.annotation.Monitor)")
 	public Object monitorMethod(ProceedingJoinPoint pjp) throws Throwable
@@ -64,7 +64,7 @@ public class MonitorAspect
 		final PerformanceMonitoringService.Metadata metadata;
 		final Callable callable = getCallableFromProceedingJoinPoint( pjp );
 
-		if(perfMonEnvVar != "true")
+		if(perfMonEnvVar = false)
 		{
 			callable.call();
 		}
