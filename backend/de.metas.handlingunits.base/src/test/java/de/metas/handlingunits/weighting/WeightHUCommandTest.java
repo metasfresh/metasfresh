@@ -302,7 +302,8 @@ public class WeightHUCommandTest
 			luId = createLU("400", masterdata);
 			// dumpHU("initial", luId);
 			assertWeightable(luId)
-					.isEqualToComparingFieldByField(PlainWeightable.builder()
+					.usingRecursiveComparison()
+					.isEqualTo(PlainWeightable.builder()
 							.uom(masterdata.uomKg)
 							.weightGross(new BigDecimal("400.000"))
 							.weightNet(new BigDecimal("400.000"))
@@ -332,7 +333,8 @@ public class WeightHUCommandTest
 					.assertExpected("after weight", luId);
 
 			assertWeightable(luId)
-					.isEqualToComparingFieldByField(PlainWeightable.builder()
+					.usingRecursiveComparison()
+					.isEqualTo(PlainWeightable.builder()
 							.uom(masterdata.uomKg)
 							.weightGross(new BigDecimal("410.000"))
 							.weightNet(new BigDecimal("410.000"))
@@ -362,7 +364,8 @@ public class WeightHUCommandTest
 					.assertExpected("after weight", luId);
 
 			assertWeightable(luId)
-					.isEqualToComparingFieldByField(PlainWeightable.builder()
+					.usingRecursiveComparison()
+					.isEqualTo(PlainWeightable.builder()
 							.uom(masterdata.uomKg)
 							.weightGross(new BigDecimal("390.000"))
 							.weightNet(new BigDecimal("390.000"))
@@ -426,7 +429,8 @@ public class WeightHUCommandTest
 					.assertExpected("after -1", luId);
 
 			assertWeightable(luId)
-					.isEqualToComparingFieldByField(PlainWeightable.builder()
+					.usingRecursiveComparison()
+					.isEqualTo(PlainWeightable.builder()
 							.uom(masterdata.uomKg)
 							.weightGross(new BigDecimal("399.000"))
 							.weightNet(new BigDecimal("399.000"))
