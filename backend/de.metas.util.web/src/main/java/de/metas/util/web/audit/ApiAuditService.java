@@ -352,9 +352,11 @@ public class ApiAuditService
 
 		final AdMessageKey messageKey = isError ? MSG_API_INVOCATION_FAILED : MSG_SUCCESSFUL_API_INVOCATION;
 
+		final TableRecordReference recordReference = TableRecordReference.of(I_API_Request_Audit.Table_Name, apiRequestAudit.getIdNotNull().getRepoId());
+
 		final UserNotificationRequest.TargetRecordAction targetRecordAction = UserNotificationRequest
 				.TargetRecordAction
-				.of(I_API_Request_Audit.Table_Name, apiRequestAudit.getIdNotNull().getRepoId());
+				.of(recordReference);
 
 		userGroupRepository
 				.getByUserGroupId(userGroupToNotify.get())
@@ -363,7 +365,7 @@ public class ApiAuditService
 				.map(userId -> UserNotificationRequest.builder()
 						.recipientUserId(userId)
 						.contentADMessage(messageKey)
-						.contentADMessageParam(apiRequestAudit.getPath())
+						.contentADMessageParam(recordReference)
 						.targetAction(targetRecordAction)
 						.build())
 				.forEach(notificationBL::send);
