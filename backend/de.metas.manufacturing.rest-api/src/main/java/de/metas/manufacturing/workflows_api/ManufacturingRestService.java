@@ -27,6 +27,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.api.PPOrderId;
+import org.eevolution.api.PPOrderRoutingActivityId;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
@@ -117,7 +118,7 @@ public class ManufacturingRestService
 		{
 			final JsonManufacturingOrderEvent.IssueTo issueTo = event.getIssueTo();
 			return manufacturingJobService.issueRawMaterials(job, PPOrderIssueScheduleProcessRequest.builder()
-					.ppOrderId(job.getPpOrderId())
+					.activityId(PPOrderRoutingActivityId.ofRepoId(job.getPpOrderId(), event.getWfActivityId()))
 					.issueScheduleId(PPOrderIssueScheduleId.ofString(issueTo.getIssueStepId()))
 					.qtyIssued(issueTo.getQtyIssued())
 					.qtyRejected(issueTo.getQtyRejected())

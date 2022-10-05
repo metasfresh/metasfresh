@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.eevolution.api.PPOrderId;
+import org.eevolution.api.PPOrderRoutingActivityId;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -13,9 +14,11 @@ import java.math.BigDecimal;
 @Builder
 public class PPOrderIssueScheduleProcessRequest
 {
-	@NonNull PPOrderId ppOrderId;
+	@NonNull PPOrderRoutingActivityId activityId;
 	@NonNull PPOrderIssueScheduleId issueScheduleId;
 	@NonNull BigDecimal qtyIssued;
 	@Nullable BigDecimal qtyRejected;
 	@Nullable QtyRejectedReasonCode qtyRejectedReasonCode;
+
+	public PPOrderId getPpOrderId() {return getActivityId().getOrderId();}
 }

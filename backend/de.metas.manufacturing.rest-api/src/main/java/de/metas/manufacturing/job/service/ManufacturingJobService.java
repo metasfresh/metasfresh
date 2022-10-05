@@ -14,6 +14,7 @@ import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleSer
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.i18n.AdMessageKey;
+import de.metas.logging.LogManager;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLineId;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivity;
@@ -43,6 +44,7 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivityId;
 import org.eevolution.model.I_PP_Order;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -50,12 +52,13 @@ import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 @Service
 public class ManufacturingJobService
 {
-	private static final AdMessageKey MSG_ScaleDeviceNotRegistered = AdMessageKey.of("ScaleDeviceNotRegistered");
+	private static final Logger logger = LogManager.getLogger(ManufacturingJobService.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
@@ -66,6 +69,8 @@ public class ManufacturingJobService
 	private final DeviceAccessorsHubFactory deviceAccessorsHubFactory;
 	private final DeviceWebsocketNamingStrategy deviceWebsocketNamingStrategy;
 	private final ManufacturingJobLoaderAndSaverSupportingServices loadingAndSavingSupportServices;
+
+	private static final AdMessageKey MSG_ScaleDeviceNotRegistered = AdMessageKey.of("ScaleDeviceNotRegistered");
 
 	public ManufacturingJobService(
 			final @NonNull PPOrderIssueScheduleService ppOrderIssueScheduleService,
@@ -264,11 +269,30 @@ public class ManufacturingJobService
 
 	private ManufacturingJob issueRawMaterialsInTrx(final @NonNull ManufacturingJob job, final @NonNull PPOrderIssueScheduleProcessRequest request)
 	{
-		final ManufacturingJob changedJob = job.withChangedRawMaterialsIssueStep(request.getIssueScheduleId(), step -> {
-			step.assertNotIssued();
-			final PPOrderIssueSchedule issueSchedule = ppOrderIssueScheduleService.issue(request);
-			return step.withIssued(issueSchedule.getIssued());
-		});
+		final AtomicBoolean processed = new AtomicBoolean();
+
+		final ManufacturingJob changedJob = job.withChangedRawMaterialsIssueStep(
+				request.getActivityId(),
+				request.getIssueScheduleId(),
+				(step) -> {
+					if (processed.getAndSet(true))
+					{
+						// shall not happen
+						logger.warn("Ignoring request because was already processed: request={}, step={}", request, step);
+						return step;
+					}
+
+					step.assertNotIssued();
+					final PPOrderIssueSchedule issueSchedule = ppOrderIssueScheduleService.issue(request);
+					return step.withIssued(issueSchedule.getIssued());
+				});
+
+		if (!processed.get())
+		{
+			throw new AdempiereException("Failed fulfilling issue request")
+					.setParameter("request", request)
+					.setParameter("job", job);
+		}
 
 		saveActivityStatuses(changedJob);
 
