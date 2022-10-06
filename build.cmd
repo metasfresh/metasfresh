@@ -1,7 +1,7 @@
 @echo off
 
-set "mfversion=local"
-set "mfregistry=metasfresh"
+set "qualifier=local"
+set "pubregistry=metasfresh"
 set /P version=<docker-builds/version.info
 for /F "tokens=*" %%g in ('powershell -Command "& {Get-Date}"') do (set buildtime=%%g)
 for /F "tokens=*" %%g in ('powershell -Command "& {Get-Date -Format """"yyMMddHHmm""""}"') do (set buildnr=%%g)
@@ -11,7 +11,7 @@ for /F "tokens=*" %%g in ('powershell -Command "& {Get-Date -Format """"yyMMddHH
 	echo build.system=%ComputerName%
 	echo build.time=%buildtime%
 	echo build.user=%USERNAME%
-	echo build.version=%version%-%mfversion%.%buildnr%
+	echo build.version=%version%.3-%qualifier%.%buildnr%
 	echo build.number=%buildnr%
 ) > docker-builds/metadata/build-info.properties
 
@@ -39,14 +39,14 @@ echo.
 @echo building maven artifacts
 @echo --------------------------
 
-docker build -f docker-builds/Dockerfile.common -t %mfregistry%/metas-mvn-common:%mfversion% . || @goto error
-docker build -f docker-builds/Dockerfile.backend -t %mfregistry%/metas-mvn-backend:%mfversion% . || @goto error
-docker build -f docker-builds/Dockerfile.camel -t %mfregistry%/metas-mvn-camel:%mfversion% . || @goto error
-docker build -f docker-builds/Dockerfile.camel.dist -t %mfregistry%/metas-mvn-camel-dist:%mfversion% . || @goto error
+docker build -f docker-builds/Dockerfile.common -t %pubregistry%/metas-mvn-common:%qualifier% . || @goto error
+docker build -f docker-builds/Dockerfile.backend -t %pubregistry%/metas-mvn-backend:%qualifier% . || @goto error
+docker build -f docker-builds/Dockerfile.camel -t %pubregistry%/metas-mvn-camel:%qualifier% . || @goto error
+docker build -f docker-builds/Dockerfile.camel.dist -t %pubregistry%/metas-mvn-camel-dist:%qualifier% . || @goto error
 
-docker build -f docker-builds/Dockerfile.junit -t %mfregistry%/metas-junit:%mfversion% . || @goto error
-docker build -f docker-builds/Dockerfile.camel.junit -t %mfregistry%/metas-camel-junit:%mfversion% . || @goto error
-docker build -f docker-builds/Dockerfile.cucumber -t %mfregistry%/metas-cucumber:%mfversion% . || @goto error
+docker build -f docker-builds/Dockerfile.junit -t %pubregistry%/metas-junit:%qualifier% . || @goto error
+docker build -f docker-builds/Dockerfile.camel.junit -t %pubregistry%/metas-camel-junit:%qualifier% . || @goto error
+docker build -f docker-builds/Dockerfile.cucumber -t %pubregistry%/metas-cucumber:%qualifier% . || @goto error
 
 
 @echo.
@@ -54,27 +54,27 @@ docker build -f docker-builds/Dockerfile.cucumber -t %mfregistry%/metas-cucumber
 @echo building deployables
 @echo --------------------------
 
-docker build -f docker-builds/Dockerfile.backend.api -t %mfregistry%/metas-api:%mfversion% . || @goto error
-docker build -f docker-builds/Dockerfile.backend.app -t %mfregistry%/metas-app:%mfversion% . || @goto error
-docker build -f docker-builds/Dockerfile.camel.externalsystems -t %mfregistry%/metas-externalsystems:%mfversion% . || @goto error
-docker build -f docker-builds/Dockerfile.frontend -t %mfregistry%/metas-frontend:%mfversion% . || @goto error
-@REM docker build -f docker-builds/Dockerfile.mobile -t %mfregistry%/metas-mobile:%mfversion% . || @goto error
-docker build -f docker-builds/Dockerfile.db-standalone -t %mfregistry%/metas-db:%mfversion% . || @goto error
-docker build -f docker-builds/Dockerfile.db-preloaded -t %mfregistry%/metas-db:%mfversion%-preloaded . || @goto error
+docker build -f docker-builds/Dockerfile.backend.api -t %pubregistry%/metas-api:%qualifier% . || @goto error
+docker build -f docker-builds/Dockerfile.backend.app -t %pubregistry%/metas-app:%qualifier% . || @goto error
+docker build -f docker-builds/Dockerfile.camel.externalsystems -t %pubregistry%/metas-externalsystems:%qualifier% . || @goto error
+docker build -f docker-builds/Dockerfile.frontend -t %pubregistry%/metas-frontend:%qualifier% . || @goto error
+@REM docker build -f docker-builds/Dockerfile.mobile -t %pubregistry%/metas-mobile:%qualifier% . || @goto error
+docker build -f docker-builds/Dockerfile.db-standalone -t %pubregistry%/metas-db:%qualifier% . || @goto error
+docker build -f docker-builds/Dockerfile.db-preloaded -t %pubregistry%/metas-db:%qualifier%-preloaded . || @goto error
 
 
 @echo.
 @echo --------------------------
 @echo building classic-compatible deployables
 @echo --------------------------
-docker build -f docker-builds/Dockerfile.backend.api.compat -t %mfregistry%/metas-api:%mfversion%-compat . || @goto error
-docker build -f docker-builds/Dockerfile.backend.app.compat -t %mfregistry%/metas-app:%mfversion%-compat . || @goto error
-@REM docker build -f docker-builds/Dockerfile.mobile.compat -t %mfregistry%/metas-mobile:%mfversion%-compat . || @goto error
-docker build -f docker-builds/Dockerfile.frontend.compat -t %mfregistry%/metas-frontend:%mfversion%-compat . || @goto error
+docker build -f docker-builds/Dockerfile.backend.api.compat -t %pubregistry%/metas-api:%qualifier%-compat . || @goto error
+docker build -f docker-builds/Dockerfile.backend.app.compat -t %pubregistry%/metas-app:%qualifier%-compat . || @goto error
+@REM docker build -f docker-builds/Dockerfile.mobile.compat -t %pubregistry%/metas-mobile:%qualifier%-compat . || @goto error
+docker build -f docker-builds/Dockerfile.frontend.compat -t %pubregistry%/metas-frontend:%qualifier%-compat . || @goto error
 
 @REM ----- for a rainy day -----
-@REM docker build -f docker-builds/Dockerfile.e2e -t %mfregistry%/metas-e2e:%mfversion% . || @goto error
-@REM docker build -f docker-builds/Dockerfile.procurement.frontend -t %mfregistry%/metas-procurement-frontend:%mfversion% . || @goto error
+@REM docker build -f docker-builds/Dockerfile.e2e -t %pubregistry%/metas-e2e:%qualifier% . || @goto error
+@REM docker build -f docker-builds/Dockerfile.procurement.frontend -t %pubregistry%/metas-procurement-frontend:%qualifier% . || @goto error
 @REM ---------------------------
 
 
@@ -83,7 +83,7 @@ docker build -f docker-builds/Dockerfile.frontend.compat -t %mfregistry%/metas-f
 @echo --------------------------
 @echo success
 @echo --------------------------
-@docker images --filter=reference="%mfregistry%/metas-*"
+@docker images --filter=reference="%pubregistry%/metas-*"
 @echo.
 @exit
 
