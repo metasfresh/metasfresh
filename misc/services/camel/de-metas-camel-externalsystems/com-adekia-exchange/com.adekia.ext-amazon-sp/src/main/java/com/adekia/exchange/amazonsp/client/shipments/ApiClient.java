@@ -57,6 +57,8 @@ import com.amazon.SellingPartnerAPIAA.RateLimitConfiguration;
 
 public class ApiClient {
 
+    public boolean mock;
+
     private String basePath = "https://sellingpartnerapi-na.amazon.com";
     private boolean debugging = false;
     private Map<String, String> defaultHeaderMap = new HashMap<String, String>();
@@ -1052,8 +1054,11 @@ public class ApiClient {
             request = reqBuilder.method(method, reqBody).build();
         }
 
-        request = lwaAuthorizationSigner.sign(request);
-        request = awsSigV4Signer.sign(request);
+        if (!mock)
+        {
+            request = lwaAuthorizationSigner.sign(request);
+            request = awsSigV4Signer.sign(request);
+        }
 
         return request;
     }
