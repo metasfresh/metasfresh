@@ -69,7 +69,7 @@ public class MD_Candidate
 		this.candidateRepositoryRetrieval = candidateRepositoryRetrieval;
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW })
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_DELETE })
 	public void fireStockChangedEvent(
 			@NonNull final I_MD_Candidate candidate,
 			@NonNull final ModelChangeType timingType)
@@ -82,7 +82,7 @@ public class MD_Candidate
 
 		final I_MD_Candidate oldCandidateRecord = InterfaceWrapperHelper.createOld(candidate, I_MD_Candidate.class);
 
-		if (timingType.isChange() && isMaterialDescriptorChanged(oldCandidateRecord, candidate))
+		if (isUpdateOldStockRequired(timingType, oldCandidateRecord, candidate))
 		{
 			final CandidatesQuery findPreviousStockQuery = buildCandidateStockQueryForReplacingOld(oldCandidateRecord);
 
@@ -101,15 +101,18 @@ public class MD_Candidate
 
 			materialEventService.postEventAfterNextCommit(stockCandidateChangedEvent);
 		}
+		
+		if (isUpdateCurrentStockRequired(timingType))
+		{
+			final EventDescriptor eventDescriptor = EventDescriptor.ofClientAndOrg(candidate.getAD_Client_ID(), candidate.getAD_Org_ID());
 
-		final EventDescriptor eventDescriptor = EventDescriptor.ofClientAndOrg(candidate.getAD_Client_ID(), candidate.getAD_Org_ID());
+			final StockCandidateChangedEvent stockCandidateChangedEvent = StockCandidateChangedEvent.builder()
+					.eventDescriptor(eventDescriptor)
+					.materialDescriptor(getMaterialDescriptor(candidate))
+					.build();
 
-		final StockCandidateChangedEvent stockCandidateChangedEvent = StockCandidateChangedEvent.builder()
-				.eventDescriptor(eventDescriptor)
-				.materialDescriptor(getMaterialDescriptor(candidate))
-				.build();
-
-		materialEventService.postEventAfterNextCommit(stockCandidateChangedEvent);
+			materialEventService.postEventAfterNextCommit(stockCandidateChangedEvent);	
+		}
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_NEW }, ifColumnsChanged = I_MD_Candidate.COLUMNNAME_QtyFulfilled)
@@ -219,5 +222,18 @@ public class MD_Candidate
 				|| !candidateRecord.getStorageAttributesKey().equals(oldCandidateRecord.getStorageAttributesKey())
 				|| oldCandidateRecord.getM_Warehouse_ID() != candidateRecord.getM_Warehouse_ID()
 				|| oldCandidateRecord.getM_Product_ID() != candidateRecord.getM_Product_ID();
+	}
+	
+	private static boolean isUpdateOldStockRequired(
+			@NonNull final ModelChangeType timingType,
+			@NonNull final I_MD_Candidate oldCandidateRecord,
+			@NonNull final I_MD_Candidate candidate)
+	{
+		return timingType.isDelete() || (timingType.isChange() && isMaterialDescriptorChanged(oldCandidateRecord, candidate));
+	}
+
+	private static boolean isUpdateCurrentStockRequired(@NonNull final ModelChangeType timingType)
+	{
+		return !timingType.isDelete();
 	}
 }

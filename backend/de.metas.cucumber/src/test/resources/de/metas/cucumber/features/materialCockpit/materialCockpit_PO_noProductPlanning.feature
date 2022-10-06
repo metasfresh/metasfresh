@@ -75,7 +75,7 @@ Feature: purchase order interaction with material cockpit - no product planning
     When the order identified by o_1 is completed
     Then after not more than 30s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtySupply_PurchaseOrder_AtDate | OPT.QtySupplySum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
-      | cp_1       | p_1                     | 2021-04-16  |                              | 20                                 | 20                      | 0                          | 20                            | 0                            |
+      | cp_1       | p_1                     | 2021-04-16  |                              | 20                                 | 20                      | 20                         | 20                            | 0                            |
 
   @Id:S0189_1400
   @from:cucumber
