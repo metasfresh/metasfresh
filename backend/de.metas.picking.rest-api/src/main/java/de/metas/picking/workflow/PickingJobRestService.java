@@ -51,11 +51,6 @@ public class PickingJobRestService
 		this.pickingJobService = pickingJobService;
 	}
 
-	public List<PickingJob> getDraftJobsByPickerId(@NonNull final UserId pickerId)
-	{
-		return pickingJobService.getDraftJobsByPickerId(pickerId);
-	}
-
 	public PickingJob getPickingJobById(final PickingJobId pickingJobId)
 	{
 		return pickingJobService.getById(pickingJobId);
@@ -99,10 +94,23 @@ public class PickingJobRestService
 		return pickingJobService.processStepEvents(pickingJob, events);
 	}
 
-	public PickingJob abort(@NonNull final PickingJob pickingJob) {return pickingJobService.abort(pickingJob);}
+	public void abort(@NonNull final PickingJob pickingJob)
+	{
+		pickingJobService.abort(pickingJob);
+	}
 
-	public PickingJob complete(@NonNull final PickingJob pickingJob) {return pickingJobService.complete(pickingJob);}
+	public void abortAllByUserId(final @NonNull UserId userId)
+	{
+		pickingJobService.abortAllByUserId(userId);
+	}
 
-	public IADReferenceDAO.ADRefList getQtyRejectedReasons() {return pickingJobService.getQtyRejectedReasons();}
+	public PickingJob complete(@NonNull final PickingJob pickingJob)
+	{
+		return pickingJobService.complete(pickingJob);
+	}
 
+	public IADReferenceDAO.ADRefList getQtyRejectedReasons()
+	{
+		return pickingJobService.getQtyRejectedReasons();
+	}
 }

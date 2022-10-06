@@ -7,6 +7,7 @@ import BarcodeScannerComponent from './BarcodeScannerComponent';
 import GetQuantityDialog from './dialogs/GetQuantityDialog';
 import Button from './buttons/Button';
 import { formatQtyToHumanReadable } from '../utils/qtys';
+import { useBooleanSetting } from '../reducers/settings';
 
 const STATUS_READ_BARCODE = 'READ_BARCODE';
 const STATUS_READ_QTY = 'READ_QTY';
@@ -80,12 +81,14 @@ const ScanHUAndGetQtyComponent = ({
     });
   };
 
+  const showEligibleBarcodeDebugButton = useBooleanSetting('barcodeScanner.showEligibleBarcodeDebugButton');
+
   switch (progressStatus) {
     case STATUS_READ_BARCODE:
       return (
         <>
           <BarcodeScannerComponent resolveScannedBarcode={resolveScannedBarcode} onResolvedResult={onBarcodeScanned} />
-          {window.metasfresh_debug && eligibleBarcode && (
+          {showEligibleBarcodeDebugButton && eligibleBarcode && (
             <Button
               caption={`DEBUG: ${eligibleBarcode}`}
               onClick={() => onBarcodeScanned({ scannedBarcode: eligibleBarcode })}
@@ -108,6 +111,7 @@ const ScanHUAndGetQtyComponent = ({
           onCloseDialog={() => setProgressStatus(STATUS_READ_BARCODE)}
         />
       );
+
     default:
       return null;
   }

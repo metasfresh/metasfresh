@@ -58,6 +58,11 @@ public class ManufacturingRestService
 		manufacturingJobService.abortJob(ppOrderId, responsibleId);
 	}
 
+	public void abortAllJobs(@NonNull final UserId responsibleId)
+	{
+		manufacturingJobService.abortAllJobs(responsibleId);
+	}
+
 	public ManufacturingJob getJobById(final PPOrderId ppOrderId)
 	{
 		return manufacturingJobService.getJobById(ppOrderId);

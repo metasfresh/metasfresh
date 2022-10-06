@@ -131,11 +131,16 @@ public class ManufacturingJobService
 
 	private Stream<ManufacturingJobReference> streamAlreadyStartedJobs(@NonNull final UserId responsibleId)
 	{
-		return ppOrderBL.streamManufacturingOrders(ManufacturingOrderQuery.builder()
-						.onlyCompleted(true)
-						.responsibleId(ValueRestriction.equalsTo(responsibleId))
-						.build())
+		return streamAlreadyAssignedManufacturingOrders(responsibleId)
 				.map(ppOrder -> toManufacturingJobReference(ppOrder, true));
+	}
+
+	private Stream<de.metas.handlingunits.model.I_PP_Order> streamAlreadyAssignedManufacturingOrders(final @NonNull UserId responsibleId)
+	{
+		return ppOrderBL.streamManufacturingOrders(ManufacturingOrderQuery.builder()
+				.onlyCompleted(true)
+				.responsibleId(ValueRestriction.equalsTo(responsibleId))
+				.build());
 	}
 
 	private Stream<ManufacturingJobReference> streamJobCandidatesToCreate()
@@ -182,6 +187,11 @@ public class ManufacturingJobService
 	private void unassignFromResponsible(final @NonNull PPOrderId ppOrderId, final @NonNull UserId responsibleId)
 	{
 		final I_PP_Order ppOrder = ppOrderBL.getById(ppOrderId);
+		unassignFromResponsible(ppOrder, responsibleId);
+	}
+
+	private void unassignFromResponsible(final @NonNull I_PP_Order ppOrder, final @NonNull UserId expectedResponsibleId)
+	{
 		final UserId currentResponsibleId = ManufacturingJobLoaderAndSaver.extractResponsibleId(ppOrder);
 
 		//noinspection StatementWithEmptyBody
@@ -189,16 +199,26 @@ public class ManufacturingJobService
 		{
 			// already unassigned, do nothing
 		}
-		else if (UserId.equals(currentResponsibleId, responsibleId))
+		else if (UserId.equals(currentResponsibleId, expectedResponsibleId))
 		{
-			ppOrder.setAD_User_Responsible_ID(-1);
-			ppOrderBL.save(ppOrder);
+			unassignFromResponsible(ppOrder);
 		}
 		else
 		{
-			throw new AdempiereException("Cannot unassign " + ppOrder.getDocumentNo()
-					+ " because its assigned to a different responsible than the one we thought (expected: " + responsibleId + ", actual: " + currentResponsibleId + ")");
+			throw new AdempiereException("Cannot un-assign " + ppOrder.getDocumentNo()
+					+ " because its assigned to a different responsible than the one we thought (expected: " + expectedResponsibleId + ", actual: " + currentResponsibleId + ")");
 		}
+	}
+
+	private void unassignFromResponsible(final @NonNull I_PP_Order ppOrder)
+	{
+		ppOrder.setAD_User_Responsible_ID(-1);
+		ppOrderBL.save(ppOrder);
+	}
+
+	public void abortAllJobs(@NonNull final UserId responsibleId)
+	{
+		trxManager.runInThreadInheritedTrx(() -> streamAlreadyAssignedManufacturingOrders(responsibleId).forEach(this::unassignFromResponsible));
 	}
 
 	public ManufacturingJob withActivityCompleted(ManufacturingJob job, ManufacturingJobActivityId jobActivityId)
@@ -362,5 +382,4 @@ public class ManufacturingJobService
 				.stream(job.getWarehouseId())
 				.map(this::toScaleDevice);
 	}
-
 }

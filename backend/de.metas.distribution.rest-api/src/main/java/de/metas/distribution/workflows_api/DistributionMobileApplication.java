@@ -105,7 +105,7 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 	@Override
 	public void abortAll(final UserId callerId)
 	{
-		throw new UnsupportedOperationException(); // TODO impl
+		distributionRestService.abortAll(callerId);
 	}
 
 	@Override
@@ -158,5 +158,11 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 
 					return wfProcess.<DistributionJob>mapDocument(job -> distributionRestService.processEvent(job, event));
 				});
+	}
+
+	@Override
+	public void logout(final @NonNull UserId userId)
+	{
+		abortAll(userId);
 	}
 }
