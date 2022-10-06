@@ -91,6 +91,7 @@ public class PP_Order_PostMaterialEvent
 				.newWithPPOrderBeforeChange(ppOrderConverter, ppOrderRecord)
 				.inspectPPOrderAfterChange();
 
+		// dev-note: after reactivate, by the time this model interceptor is hit, the status on the document is not set as InProgress 
 		if (docTimingType == DocTimingType.AFTER_REACTIVATE)
 		{
 			changeEvent = changeEvent.withNewDocStatus(DocStatus.InProgress);
