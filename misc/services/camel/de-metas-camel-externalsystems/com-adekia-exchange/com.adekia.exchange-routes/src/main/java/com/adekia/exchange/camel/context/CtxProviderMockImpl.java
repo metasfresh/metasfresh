@@ -24,7 +24,6 @@ package com.adekia.exchange.camel.context;
 
 import com.adekia.exchange.context.Ctx;
 import com.adekia.exchange.context.CtxProvider;
-import com.adekia.exchange.context.OrderCtx;
 
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -55,7 +54,7 @@ public class CtxProviderMockImpl implements CtxProvider
 
     @Override
     public Ctx getCtx(final Object ctx) throws Exception {
-        return OrderCtx.builder()
+        return Ctx.builder()
                 .properties(AmazonAuthProperties)
                 .build();
     }

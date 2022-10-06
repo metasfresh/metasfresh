@@ -24,7 +24,6 @@ package com.adekia.exchange.camel.context;
 
 import com.adekia.exchange.context.Ctx;
 import com.adekia.exchange.context.CtxProvider;
-import com.adekia.exchange.context.OrderCtx;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate;
 import org.springframework.stereotype.Component;
 
@@ -37,7 +36,7 @@ public class CtxProviderSimpleImpl implements CtxProvider
 
     @Override
     public Ctx getCtx(final Object ctx) throws Exception {
-        return OrderCtx.builder()
+        return Ctx.builder()
                 .properties(new HashMap<String, String>())
                 .build();
     }

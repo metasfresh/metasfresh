@@ -25,10 +25,12 @@ package com.adekia.exchange.amazonsp.transformer;
 import com.adekia.exchange.amazonsp.util.AmazonShipment;
 import com.adekia.exchange.transformer.ShipmentTransformer;
 import oasis.names.specification.ubl.schema.xsd.despatchadvice_23.DespatchAdviceType;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.stereotype.Component;
 
 @Component
-//@ConditionalOnExpression(value = "'${shipment.sender}' matches '.*amazon.*'")
+//@ConditionalOnExpression(value = "'${shipment.sender}' matches '.*amazon.*'", matchIfMissing = true)
+@ConditionalOnExpression("T(org.springframework.util.StringUtils).isEmpty('${shipment.sender:}') || '${shipment.sender}'.contains('.*amazon.*')")
 public class AmazonShipmentTransformerImpl implements ShipmentTransformer
 {
 

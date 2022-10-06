@@ -28,10 +28,11 @@ import com.adekia.exchange.amazonsp.client.shipments.model.CreateShipmentRespons
 import com.adekia.exchange.amazonsp.util.AmazonShippingApiHelper;
 import com.adekia.exchange.context.Ctx;
 import com.adekia.exchange.sender.ShipmentSender;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 @Service
-//@ConditionalOnProperty(prefix = "shipment", name = "sender", havingValue = "amazon")
+@ConditionalOnProperty(prefix = "shipment", name = "sender", havingValue = "amazon", matchIfMissing = true)
 public class AmazonShipmentSenderImpl implements ShipmentSender
 {
 	@Override

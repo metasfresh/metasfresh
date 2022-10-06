@@ -25,14 +25,15 @@ package com.adekia.exchange.amazonsp.provider;
 import com.adekia.exchange.amazonsp.client.orders.ApiException;
 import com.adekia.exchange.amazonsp.client.orders.api.OrdersV0Api;
 import com.adekia.exchange.amazonsp.client.orders.model.GetOrderResponse;
-import com.adekia.exchange.amazonsp.util.AmazonOrderApiHelper;
 import com.adekia.exchange.amazonsp.util.AmazonOrder;
+import com.adekia.exchange.amazonsp.util.AmazonOrderApiHelper;
 import com.adekia.exchange.context.Ctx;
 import oasis.names.specification.ubl.schema.xsd.order_23.OrderType;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 @Service
-//@ConditionalOnProperty(prefix = "order", name = "provider", havingValue = "amazon-mock")
+@ConditionalOnProperty(prefix = "order", name = "provider", havingValue = "amazon-mock")
 public class AmazonGetOrderProviderMockImpl implements AmazonGetOrderProvider {
     @Override
     public OrderType getOrder(Ctx ctx) throws Exception {

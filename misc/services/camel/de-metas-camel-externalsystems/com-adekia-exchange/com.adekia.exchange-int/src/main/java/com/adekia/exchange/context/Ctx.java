@@ -22,9 +22,9 @@
 
 package com.adekia.exchange.context;
 
+import lombok.Builder;
 import lombok.Data;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -38,7 +38,7 @@ public class Ctx {
     public Ctx() {
         this.properties = new HashMap<>();
     }
-    //@Builder
+    @Builder
     public Ctx(Map<String, String> properties) {
         this.properties = properties;
     }
