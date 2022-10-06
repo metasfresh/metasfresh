@@ -58,9 +58,10 @@ ALTER TABLE  migration_data.ad_element_trl_220907_2
     OWNER TO metasfresh
 ;
 
+DROP FUNCTION IF EXISTS backup_table(p_TableName text)
+;
 
--- Needed function for tables backup, be cherry-picked or merged in the future
-CREATE FUNCTION backup_table(p_tablename text) RETURNS text
+CREATE OR REPLACE FUNCTION backup_table(p_TableName text) RETURNS text
     LANGUAGE plpgsql
 AS
 $$
