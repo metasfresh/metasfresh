@@ -111,7 +111,7 @@ public class PickingJobRestService
 
 	public PickingJob requestReview(@NonNull final PickingJob pickingJob) {return pickingJobService.requestReview(pickingJob);}
 
-	public IADReferenceDAO.ADRefList getQtyRejectedReasons()
+	public ADRefList getQtyRejectedReasons()
 	{
 		return pickingJobService.getQtyRejectedReasons();
 	}
