@@ -131,16 +131,35 @@ public class PickingJobService
 
 	public PickingJob abort(@NonNull final PickingJob pickingJob)
 	{
+		return abort()
+				.pickingJob(pickingJob)
+				.build()
+				.executeAndGetSingleResult();
+	}
+
+	public void abortAllByUserId(@NonNull final UserId userId)
+	{
+		final List<PickingJob> pickingJobs = getDraftJobsByPickerId(userId);
+		if (pickingJobs.isEmpty())
+		{
+			return;
+		}
+
+		abort()
+				.pickingJobs(pickingJobs)
+				.build()
+				.execute();
+	}
+
+	private PickingJobAbortCommand.PickingJobAbortCommandBuilder abort()
+	{
 		return PickingJobAbortCommand.builder()
 				.pickingJobRepository(pickingJobRepository)
 				.pickingJobLockService(pickingJobLockService)
 				.pickingSlotService(pickingSlotService)
 				.pickingJobHUReservationService(pickingJobHUReservationService)
-				.pickingCandidateService(pickingCandidateService)
-				//
-				.pickingJob(pickingJob)
-				//
-				.build().execute();
+				//.pickingCandidateService(pickingCandidateService)
+				;
 	}
 
 	public void abortForSalesOrderId(@NonNull final OrderId salesOrderId)
@@ -272,7 +291,6 @@ public class PickingJobService
 			{
 				return PickingJobUnPickCommand.builder()
 						.pickingJobRepository(pickingJobRepository)
-						.pickingJobHUReservationService(pickingJobHUReservationService)
 						.pickingCandidateService(pickingCandidateService)
 						//
 						.pickingJob(pickingJob)

@@ -14,6 +14,7 @@ import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleSer
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.i18n.AdMessageKey;
+import de.metas.logging.LogManager;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLineId;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivity;
@@ -43,6 +44,7 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRouting;
 import org.eevolution.api.PPOrderRoutingActivityId;
 import org.eevolution.model.I_PP_Order;
+import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -50,12 +52,13 @@ import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 @Service
 public class ManufacturingJobService
 {
-	private static final AdMessageKey MSG_ScaleDeviceNotRegistered = AdMessageKey.of("ScaleDeviceNotRegistered");
+	private static final Logger logger = LogManager.getLogger(ManufacturingJobService.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
@@ -66,6 +69,8 @@ public class ManufacturingJobService
 	private final DeviceAccessorsHubFactory deviceAccessorsHubFactory;
 	private final DeviceWebsocketNamingStrategy deviceWebsocketNamingStrategy;
 	private final ManufacturingJobLoaderAndSaverSupportingServices loadingAndSavingSupportServices;
+
+	private static final AdMessageKey MSG_ScaleDeviceNotRegistered = AdMessageKey.of("ScaleDeviceNotRegistered");
 
 	public ManufacturingJobService(
 			final @NonNull PPOrderIssueScheduleService ppOrderIssueScheduleService,
@@ -126,11 +131,16 @@ public class ManufacturingJobService
 
 	private Stream<ManufacturingJobReference> streamAlreadyStartedJobs(@NonNull final UserId responsibleId)
 	{
-		return ppOrderBL.streamManufacturingOrders(ManufacturingOrderQuery.builder()
-						.onlyCompleted(true)
-						.responsibleId(ValueRestriction.equalsTo(responsibleId))
-						.build())
+		return streamAlreadyAssignedManufacturingOrders(responsibleId)
 				.map(ppOrder -> toManufacturingJobReference(ppOrder, true));
+	}
+
+	private Stream<de.metas.handlingunits.model.I_PP_Order> streamAlreadyAssignedManufacturingOrders(final @NonNull UserId responsibleId)
+	{
+		return ppOrderBL.streamManufacturingOrders(ManufacturingOrderQuery.builder()
+				.onlyCompleted(true)
+				.responsibleId(ValueRestriction.equalsTo(responsibleId))
+				.build());
 	}
 
 	private Stream<ManufacturingJobReference> streamJobCandidatesToCreate()
@@ -177,6 +187,11 @@ public class ManufacturingJobService
 	private void unassignFromResponsible(final @NonNull PPOrderId ppOrderId, final @NonNull UserId responsibleId)
 	{
 		final I_PP_Order ppOrder = ppOrderBL.getById(ppOrderId);
+		unassignFromResponsible(ppOrder, responsibleId);
+	}
+
+	private void unassignFromResponsible(final @NonNull I_PP_Order ppOrder, final @NonNull UserId expectedResponsibleId)
+	{
 		final UserId currentResponsibleId = ManufacturingJobLoaderAndSaver.extractResponsibleId(ppOrder);
 
 		//noinspection StatementWithEmptyBody
@@ -184,16 +199,26 @@ public class ManufacturingJobService
 		{
 			// already unassigned, do nothing
 		}
-		else if (UserId.equals(currentResponsibleId, responsibleId))
+		else if (UserId.equals(currentResponsibleId, expectedResponsibleId))
 		{
-			ppOrder.setAD_User_Responsible_ID(-1);
-			ppOrderBL.save(ppOrder);
+			unassignFromResponsible(ppOrder);
 		}
 		else
 		{
-			throw new AdempiereException("Cannot unassign " + ppOrder.getDocumentNo()
-					+ " because its assigned to a different responsible than the one we thought (expected: " + responsibleId + ", actual: " + currentResponsibleId + ")");
+			throw new AdempiereException("Cannot un-assign " + ppOrder.getDocumentNo()
+					+ " because its assigned to a different responsible than the one we thought (expected: " + expectedResponsibleId + ", actual: " + currentResponsibleId + ")");
 		}
+	}
+
+	private void unassignFromResponsible(final @NonNull I_PP_Order ppOrder)
+	{
+		ppOrder.setAD_User_Responsible_ID(-1);
+		ppOrderBL.save(ppOrder);
+	}
+
+	public void abortAllJobs(@NonNull final UserId responsibleId)
+	{
+		trxManager.runInThreadInheritedTrx(() -> streamAlreadyAssignedManufacturingOrders(responsibleId).forEach(this::unassignFromResponsible));
 	}
 
 	public ManufacturingJob withActivityCompleted(ManufacturingJob job, ManufacturingJobActivityId jobActivityId)
@@ -244,11 +269,30 @@ public class ManufacturingJobService
 
 	private ManufacturingJob issueRawMaterialsInTrx(final @NonNull ManufacturingJob job, final @NonNull PPOrderIssueScheduleProcessRequest request)
 	{
-		final ManufacturingJob changedJob = job.withChangedRawMaterialsIssueStep(request.getIssueScheduleId(), step -> {
-			step.assertNotIssued();
-			final PPOrderIssueSchedule issueSchedule = ppOrderIssueScheduleService.issue(request);
-			return step.withIssued(issueSchedule.getIssued());
-		});
+		final AtomicBoolean processed = new AtomicBoolean();
+
+		final ManufacturingJob changedJob = job.withChangedRawMaterialsIssueStep(
+				request.getActivityId(),
+				request.getIssueScheduleId(),
+				(step) -> {
+					if (processed.getAndSet(true))
+					{
+						// shall not happen
+						logger.warn("Ignoring request because was already processed: request={}, step={}", request, step);
+						return step;
+					}
+
+					step.assertNotIssued();
+					final PPOrderIssueSchedule issueSchedule = ppOrderIssueScheduleService.issue(request);
+					return step.withIssued(issueSchedule.getIssued());
+				});
+
+		if (!processed.get())
+		{
+			throw new AdempiereException("Failed fulfilling issue request")
+					.setParameter("request", request)
+					.setParameter("job", job);
+		}
 
 		saveActivityStatuses(changedJob);
 
@@ -338,5 +382,4 @@ public class ManufacturingJobService
 				.stream(job.getWarehouseId())
 				.map(this::toScaleDevice);
 	}
-
 }

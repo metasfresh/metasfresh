@@ -31,7 +31,6 @@ const PickQuantityButton = ({ qtyTarget, uom, caption, isDisabled, onClick }) =>
         <GetQuantityDialog
           qtyCaption={trl('activities.mfg.receipts.qtyToReceive')}
           qtyTarget={qtyTarget}
-          qtyInitial={qtyTarget}
           uom={uom}
           validateQtyEntered={validateQtyEntered}
           onQtyChange={onQtyPickedChanged}

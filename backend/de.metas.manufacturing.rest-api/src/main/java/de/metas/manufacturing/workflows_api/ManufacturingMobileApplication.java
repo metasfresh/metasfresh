@@ -97,7 +97,7 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 	@Override
 	public void abortAll(final UserId callerId)
 	{
-		throw new UnsupportedOperationException(); // TODO
+		manufacturingRestService.abortAllJobs(callerId);
 	}
 
 	@Override
@@ -243,5 +243,11 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 						return resultBuilder.valueListId(attributes.getAttributeValueIdOrNull(attributeCode)).build();
 					}
 				});
+	}
+
+	@Override
+	public void logout(final @NonNull UserId userId)
+	{
+		abortAll(userId);
 	}
 }

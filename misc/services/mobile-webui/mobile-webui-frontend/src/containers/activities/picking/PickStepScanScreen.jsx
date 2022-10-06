@@ -71,7 +71,7 @@ const PickStepScanScreen = () => {
       eligibleBarcode={eligibleQRCode}
       qtyCaption={trl('general.QtyToPick')}
       qtyMax={qtyToPick}
-      qtyInitial={qtyToPick}
+      qtyTarget={qtyToPick}
       uom={uom}
       qtyRejectedReasons={qtyRejectedReasons}
       //

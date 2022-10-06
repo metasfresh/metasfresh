@@ -94,7 +94,10 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 
 	@Override
 	@NonNull
-	public MobileApplicationInfo getApplicationInfo() {return APPLICATION_INFO;}
+	public MobileApplicationInfo getApplicationInfo()
+	{
+		return APPLICATION_INFO;
+	}
 
 	@Override
 	public WorkflowLaunchersList provideLaunchers(
@@ -178,10 +181,8 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	@Override
 	public void abortAll(final UserId callerId)
 	{
-		pickingJobRestService.getDraftJobsByPickerId(callerId)
-				.stream()
-				.map(PickingMobileApplication::toWFProcess)
-				.forEach(wfProcess -> abort(wfProcess, callerId));
+		pickingJobRestService.abortAllByUserId(callerId);
+		wfLaunchersProvider.invalidateCacheByUserId(callerId);
 	}
 
 	private static WFProcess toWFProcess(final PickingJob pickingJob)
@@ -320,5 +321,11 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.map(wfProcess::getActivityById)
 				.map(WFActivity::getWfActivityType)
 				.forEach(ActualPickingWFActivityHandler.HANDLED_ACTIVITY_TYPE::assertActual);
+	}
+
+	@Override
+	public void logout(final @NonNull UserId userId)
+	{
+		abortAll(userId);
 	}
 }
