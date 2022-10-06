@@ -35,7 +35,7 @@ Feature: purchase order interaction with material cockpit - no product planning
     When the order identified by o_1 is completed
     Then after not more than 30s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtySupply_PurchaseOrder_AtDate | OPT.QtySupplySum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
-      | cp_1       | p_1                     | 2021-04-16  |                              | 10                                 | 10                      | 0                          | 10                            | 0                            |
+      | cp_1       | p_1                     | 2021-04-16  |                              | 10                                 | 10                      | 10                         | 10                            | 0                            |
 
   @Id:S0189_1300
   @from:cucumber
@@ -67,7 +67,7 @@ Feature: purchase order interaction with material cockpit - no product planning
     When the order identified by o_1 is completed
     Then after not more than 30s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.C_OrderLine_ID.Identifier | OPT.QtySupply_PurchaseOrder_AtDate | OPT.QtySupplySum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
-      | cp_1       | p_1                     | 2021-04-16  | ol_1                          | 10                                 | 10                      | 0                          | 10                            | 0                            |
+      | cp_1       | p_1                     | 2021-04-16  | ol_1                          | 10                                 | 10                      | 10                         | 10                            | 0                            |
     When the order identified by o_1 is reactivated
     And update C_OrderLine:
       | C_OrderLine_ID.Identifier | OPT.QtyEntered |
@@ -107,7 +107,7 @@ Feature: purchase order interaction with material cockpit - no product planning
     When the order identified by o_1 is completed
     Then after not more than 30s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtySupply_PurchaseOrder_AtDate | OPT.QtySupplySum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
-      | cp_1       | p_1                     | 2021-04-16  |                              | 10                                 | 10                      | 0                          | 10                            | 0                            |
+      | cp_1       | p_1                     | 2021-04-16  |                              | 10                                 | 10                      | 10                         | 10                            | 0                            |
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.DatePromised     |
       | o_1        | false   | endBPartner_1            | 2021-12-01  | POO             | 2021-04-16T00:00:00Z |
@@ -117,7 +117,7 @@ Feature: purchase order interaction with material cockpit - no product planning
     And the order identified by o_1 is completed
     Then after not more than 30s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtySupply_PurchaseOrder_AtDate | OPT.QtySupplySum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
-      | cp_1       | p_1                     | 2021-04-16  |                              | 20                                 | 20                      | 0                          | 20                            | 0                            |
+      | cp_1       | p_1                     | 2021-04-16  |                              | 20                                 | 20                      | 20                         | 20                            | 0                            |
 
   @Id:S0189_1500
   @from:cucumber
@@ -151,7 +151,7 @@ Feature: purchase order interaction with material cockpit - no product planning
     When the order identified by o_1 is completed
     Then after not more than 30s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtySupply_PurchaseOrder_AtDate | OPT.QtySupplySum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
-      | cp_1       | p_1                     | 2021-04-16  |                              | 10                                 | 10                      | 0                          | 10                            | 0                            |
+      | cp_1       | p_1                     | 2021-04-16  |                              | 10                                 | 10                      | 10                         | 10                            | 0                            |
     When metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.DatePromised     |
       | o_2        | false   | endBPartner_1            | 2021-12-01  | POO             | 2021-04-16T00:00:00Z |
@@ -161,8 +161,8 @@ Feature: purchase order interaction with material cockpit - no product planning
     When the order identified by o_2 is completed
     Then after not more than 30s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtySupply_PurchaseOrder_AtDate | OPT.QtySupplySum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
-      | cp_1       | p_1                     | 2021-04-16  |                              | 10                                 | 10                      | 0                          | 10                            | 0                            |
-      | cp_2       | p_2                     | 2021-04-16  |                              | 10                                 | 10                      | 0                          | 10                            | 0                            |
+      | cp_1       | p_1                     | 2021-04-16  |                              | 10                                 | 10                      | 10                         | 10                            | 0                            |
+      | cp_2       | p_2                     | 2021-04-16  |                              | 10                                 | 10                      | 10                         | 10                            | 0                            |
 
   @Id:S0189_1600
   @from:cucumber
@@ -205,7 +205,7 @@ Feature: purchase order interaction with material cockpit - no product planning
     When the order identified by o_1 is completed
     Then after not more than 30s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtySupply_PurchaseOrder_AtDate | OPT.QtySupplySum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
-      | cp_1       | p_1                     | 2021-04-16  | lineASI                      | 10                                 | 10                      | 0                          | 10                            | 0                            |
+      | cp_1       | p_1                     | 2021-04-16  | lineASI                      | 10                                 | 10                      | 10                         | 10                            | 0                            |
 
   @Id:S0189_1700
   @from:cucumber
@@ -248,7 +248,7 @@ Feature: purchase order interaction with material cockpit - no product planning
     When the order identified by o_1 is completed
     Then after not more than 30s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtySupply_PurchaseOrder_AtDate | OPT.QtySupplySum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
-      | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 10                                 | 10                      | 0                          | 10                            | 0                            |
+      | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 10                                 | 10                      | 10                         | 10                            | 0                            |
     And metasfresh contains M_AttributeSetInstance with identifier "lineASI_2":
   """
   {
@@ -269,8 +269,8 @@ Feature: purchase order interaction with material cockpit - no product planning
     When the order identified by o_2 is completed
     Then after not more than 30s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtySupply_PurchaseOrder_AtDate | OPT.QtySupplySum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
-      | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 10                                 | 10                      | 0                          | 10                            | 0                            |
-      | cp_2       | p_1                     | 2021-04-16  | lineASI_2                    | 10                                 | 10                      | 0                          | 10                            | 0                            |
+      | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 10                                 | 10                      | 10                         | 10                            | 0                            |
+      | cp_2       | p_1                     | 2021-04-16  | lineASI_2                    | 10                                 | 10                      | 10                         | 10                            | 0                            |
 
   @Id:S0189_1800
   @from:cucumber
@@ -314,8 +314,8 @@ Feature: purchase order interaction with material cockpit - no product planning
     When the order identified by o_1 is completed
     Then after not more than 30s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtySupply_PurchaseOrder_AtDate | OPT.QtySupplySum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
-      | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 10                                 | 10                      | 0                          | 10                            | 0                            |
-      | cp_2       | p_1                     | 2021-04-16  |                              | 10                                 | 10                      | 0                          | 10                            | 0                            |
+      | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 10                                 | 10                      | 10                         | 10                            | 0                            |
+      | cp_2       | p_1                     | 2021-04-16  |                              | 10                                 | 10                      | 10                         | 10                            | 0                            |
     When the order identified by o_1 is reactivated
     And update C_OrderLine:
       | C_OrderLine_ID.Identifier | OPT.M_AttributeSetInstance_ID.Identifier |
@@ -323,7 +323,7 @@ Feature: purchase order interaction with material cockpit - no product planning
     When the order identified by o_1 is completed
     Then after not more than 30s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtySupply_PurchaseOrder_AtDate | OPT.QtySupplySum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
-      | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 20                                 | 20                      | 0                          | 20                            | 0                            |
+      | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 20                                 | 20                      | 20                         | 20                            | 0                            |
       | cp_2       | p_1                     | 2021-04-16  |                              | 0                                  | 0                       | 0                          | 0                             | 0                            |
 
   @Id:S0189_1900
@@ -367,7 +367,7 @@ Feature: purchase order interaction with material cockpit - no product planning
     When the order identified by o_1 is completed
     Then after not more than 30s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtySupply_PurchaseOrder_AtDate | OPT.QtySupplySum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
-      | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 10                                 | 10                      | 0                          | 10                            | 0                            |
+      | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 10                                 | 10                      | 10                         | 10                            | 0                            |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.DatePromised     |
       | o_2        | false   | endBPartner_1            | 2021-12-01  | POO             | 2021-04-16T00:00:00Z |
@@ -377,7 +377,7 @@ Feature: purchase order interaction with material cockpit - no product planning
     When the order identified by o_2 is completed
     Then after not more than 30s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtySupply_PurchaseOrder_AtDate | OPT.QtySupplySum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
-      | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 20                                 | 20                      | 0                          | 20                            | 0                            |
+      | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 20                                 | 20                      | 20                         | 20                            | 0                            |
 
   @Id:S0189_2000
   @from:cucumber
@@ -420,7 +420,7 @@ Feature: purchase order interaction with material cockpit - no product planning
     When the order identified by o_1 is completed
     Then after not more than 30s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtySupply_PurchaseOrder_AtDate | OPT.QtySupplySum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
-      | cp_1       | p_1                     | 2021-04-16  |                              | 10                                 | 10                      | 0                          | 10                            | 0                            |
+      | cp_1       | p_1                     | 2021-04-16  |                              | 10                                 | 10                      | 10                         | 10                            | 0                            |
     When the order identified by o_1 is reactivated
     And update C_OrderLine:
       | C_OrderLine_ID.Identifier | OPT.M_AttributeSetInstance_ID.Identifier |
@@ -428,7 +428,7 @@ Feature: purchase order interaction with material cockpit - no product planning
     When the order identified by o_1 is completed
     Then after not more than 30s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtySupply_PurchaseOrder_AtDate | OPT.QtySupplySum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
-      | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 10                                 | 10                      | 0                          | 10                            | 0                            |
+      | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 10                                 | 10                      | 10                         | 10                            | 0                            |
       | cp_2       | p_1                     | 2021-04-16  |                              | 0                                  | 0                       | 0                          | 0                             | 0                            |
     When the order identified by o_1 is reactivated
     And update C_OrderLine:
@@ -437,7 +437,7 @@ Feature: purchase order interaction with material cockpit - no product planning
     When the order identified by o_1 is completed
     Then after not more than 30s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtySupply_PurchaseOrder_AtDate | OPT.QtySupplySum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
-      | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 12                                 | 12                      | 0                          | 12                            | 0                            |
+      | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 12                                 | 12                      | 12                         | 12                            | 0                            |
       | cp_2       | p_1                     | 2021-04-16  |                              | 0                                  | 0                       | 0                          | 0                             | 0                            |
 
 
@@ -471,7 +471,7 @@ Feature: purchase order interaction with material cockpit - no product planning
     When the order identified by o_1 is completed
     Then after not more than 30s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtySupply_PurchaseOrder_AtDate | OPT.QtySupplySum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
-      | cp_1       | p_1                     | 2021-04-15  |                              | 10                                 | 10                      | 0                          | 10                            | 0                            |
+      | cp_1       | p_1                     | 2021-04-15  |                              | 10                                 | 10                      | 10                         | 10                            | 0                            |
     When the order identified by o_1 is reactivated
     And update order
       | C_Order_ID.Identifier | OPT.DatePromised     |
@@ -479,7 +479,7 @@ Feature: purchase order interaction with material cockpit - no product planning
     When the order identified by o_1 is completed
     Then after not more than 30s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtySupply_PurchaseOrder_AtDate | OPT.QtySupplySum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
-      | cp_1       | p_1                     | 2021-04-17  |                              | 10                                 | 10                      | 0                          | 10                            | 0                            |
+      | cp_1       | p_1                     | 2021-04-17  |                              | 10                                 | 10                      | 10                         | 10                            | 0                            |
       | cp_2       | p_1                     | 2021-04-15  |                              | 0                                  | 0                       | 0                          | 0                             | 0                            |
 
   @Id:S0189_2200
@@ -523,7 +523,7 @@ Feature: purchase order interaction with material cockpit - no product planning
     When the order identified by o_1 is completed
     Then after not more than 30s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtySupply_PurchaseOrder_AtDate | OPT.QtySupplySum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
-      | cp_1       | p_1                     | 2021-04-16  |                              | 10                                 | 10                      | 0                          | 10                            | 0                            |
+      | cp_1       | p_1                     | 2021-04-16  |                              | 10                                 | 10                      | 10                         | 10                            | 0                            |
     When the order identified by o_1 is reactivated
     And update C_OrderLine:
       | C_OrderLine_ID.Identifier | OPT.M_AttributeSetInstance_ID.Identifier |
@@ -531,7 +531,7 @@ Feature: purchase order interaction with material cockpit - no product planning
     When the order identified by o_1 is completed
     Then after not more than 30s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtySupply_PurchaseOrder_AtDate | OPT.QtySupplySum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
-      | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 10                                 | 10                      | 0                          | 10                            | 0                            |
+      | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 10                                 | 10                      | 10                         | 10                            | 0                            |
       | cp_2       | p_1                     | 2021-04-16  |                              | 0                                  | 0                       | 0                          | 0                             | 0                            |
     When the order identified by o_1 is reactivated
     And update C_OrderLine:
@@ -540,5 +540,5 @@ Feature: purchase order interaction with material cockpit - no product planning
     When the order identified by o_1 is completed
     Then after not more than 30s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtySupply_PurchaseOrder_AtDate | OPT.QtySupplySum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
-      | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 8                                  | 8                       | 0                          | 8                             | 0                            |
+      | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 8                                  | 8                       | 8                          | 8                             | 0                            |
       | cp_2       | p_1                     | 2021-04-16  |                              | 0                                  | 0                       | 0                          | 0                             | 0                            |
