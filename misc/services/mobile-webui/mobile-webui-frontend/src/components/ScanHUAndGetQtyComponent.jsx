@@ -20,7 +20,7 @@ const ScanHUAndGetQtyComponent = ({
   eligibleBarcode,
   uom,
   qtyCaption,
-  qtyInitial,
+  qtyTarget,
   qtyMax,
   qtyRejectedReasons,
   scaleDevice,
@@ -45,7 +45,7 @@ const ScanHUAndGetQtyComponent = ({
   };
 
   const onBarcodeScanned = ({ scannedBarcode }) => {
-    const askForQty = qtyMax != null;
+    const askForQty = qtyTarget != null || qtyMax != null;
     if (askForQty) {
       setCurrentScannedBarcode(scannedBarcode);
       setProgressStatus(STATUS_READ_QTY);
@@ -97,8 +97,7 @@ const ScanHUAndGetQtyComponent = ({
       return (
         <GetQuantityDialog
           userInfo={userInfo}
-          qtyInitial={qtyInitial}
-          qtyTarget={qtyMax}
+          qtyTarget={qtyTarget}
           qtyCaption={qtyCaption}
           uom={uom}
           qtyRejectedReasons={qtyRejectedReasons}
@@ -121,7 +120,7 @@ ScanHUAndGetQtyComponent.propTypes = {
   userInfo: PropTypes.array,
   qtyCaption: PropTypes.string,
   qtyMax: PropTypes.number,
-  qtyInitial: PropTypes.number,
+  qtyTarget: PropTypes.number,
   uom: PropTypes.string,
   qtyRejectedReasons: PropTypes.array,
   // Error messages:

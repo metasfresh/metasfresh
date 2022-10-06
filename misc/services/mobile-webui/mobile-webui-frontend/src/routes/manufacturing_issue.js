@@ -1,6 +1,6 @@
 import RawMaterialIssueLineScreen from '../containers/activities/manufacturing/issue/RawMaterialIssueLineScreen';
 import RawMaterialIssueStepScreen from '../containers/activities/manufacturing/issue/RawMaterialIssueStepScreen';
-import RawMaterialIssueScanScreen from '../containers/activities/manufacturing/issue/RawMaterialIssueScanScreen';
+import RawMaterialIssueStepScanScreen from '../containers/activities/manufacturing/issue/step_scan/RawMaterialIssueStepScanScreen';
 import { getWFProcessScreenLocation } from './workflow_locations';
 
 export const manufacturingLineScreenLocation = ({ applicationId, wfProcessId, activityId, lineId }) =>
@@ -40,6 +40,6 @@ export const manufacturingIssueRoutes = [
       lineId: ':lineId',
       stepId: ':stepId',
     }),
-    Component: RawMaterialIssueScanScreen,
+    Component: RawMaterialIssueStepScanScreen,
   },
 ];
