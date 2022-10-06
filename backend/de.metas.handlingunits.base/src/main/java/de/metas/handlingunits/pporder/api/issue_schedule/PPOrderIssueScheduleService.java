@@ -141,12 +141,6 @@ public class PPOrderIssueScheduleService
 					.setParameter("targetWeight", targetWeight);
 		}
 
-		final ProductId productId = huContext.getHUStorageFactory().getStorage(hu).getSingleProductIdOrNull();
-		if (productId == null)
-		{
-			throw new AdempiereException("Not a single product HU: " + handlingUnitsBL.getDisplayName(hu));
-		}
-
 		targetWeight.setWeightGross(weightGross);
 		Weightables.updateWeightNet(targetWeight);
 
