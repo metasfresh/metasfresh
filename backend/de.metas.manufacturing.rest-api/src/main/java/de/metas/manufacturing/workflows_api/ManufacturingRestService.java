@@ -120,6 +120,7 @@ public class ManufacturingRestService
 			return manufacturingJobService.issueRawMaterials(job, PPOrderIssueScheduleProcessRequest.builder()
 					.activityId(PPOrderRoutingActivityId.ofRepoId(job.getPpOrderId(), event.getWfActivityId()))
 					.issueScheduleId(PPOrderIssueScheduleId.ofString(issueTo.getIssueStepId()))
+					.huWeightGrossBeforeIssue(issueTo.getHuWeightGrossBeforeIssue())
 					.qtyIssued(issueTo.getQtyIssued())
 					.qtyRejected(issueTo.getQtyRejected())
 					.qtyRejectedReasonCode(QtyRejectedReasonCode.ofNullableCode(issueTo.getQtyRejectedReasonCode()).orElse(null))

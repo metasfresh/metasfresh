@@ -3,7 +3,9 @@ import { getLanguage } from './translations';
 const MAX_maximumFractionDigits = 20; // ... to avoid "maximumFractionDigits value is out of range"
 
 export const formatQtyToHumanReadable = ({ qty, uom, precision = null, tolerancePercent = null }) => {
-  let qtyEffective = qty;
+  //console.log('formatQtyToHumanReadable', { qty, uom, precision, tolerancePercent });
+
+  let qtyEffective = qty ?? 0;
   let uomEffective = uom;
 
   while (qtyEffective !== 0 && Math.abs(qtyEffective) < 1) {

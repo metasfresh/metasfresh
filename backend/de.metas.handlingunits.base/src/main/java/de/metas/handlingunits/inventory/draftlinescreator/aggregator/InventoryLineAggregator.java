@@ -1,6 +1,7 @@
-package de.metas.handlingunits.inventory.draftlinescreator;
+package de.metas.handlingunits.inventory.draftlinescreator.aggregator;
 
 import de.metas.handlingunits.inventory.InventoryLine;
+import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLine;
 import de.metas.inventory.AggregationType;
 
 /*
