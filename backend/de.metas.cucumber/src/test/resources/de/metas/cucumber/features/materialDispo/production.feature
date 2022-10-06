@@ -267,6 +267,7 @@ Feature: Production dispo scenarios
       | c_2        | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 2   | 0                      |
       | c_l_1_1    | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -2  | 0                      |
 
+  @Id:S0196_100
   @from:cucumber
   Scenario: Close production candidate (S0129.2_110)
     Given metasfresh contains M_Products:
@@ -351,6 +352,7 @@ Feature: Production dispo scenarios
       | cp_1       | p_1                     | 2021-04-16  |                              | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | -10                            | -10                        | 0                             | 0                             |
       | cp_2       | p_2                     | 2021-04-16  |                              | 0                               | 0                       | 0                       | 100                          | 0                             | 100                            | 100                            | 100                        | 0                             | 0                             |
 
+  @Id:S0196_200
   @from:cucumber
   Scenario: Production candidate is closed after it has been processed (S0129.2_120)
     Given metasfresh contains M_Products:

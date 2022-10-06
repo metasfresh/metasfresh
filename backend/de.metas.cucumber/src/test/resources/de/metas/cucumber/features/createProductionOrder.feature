@@ -20,6 +20,7 @@ Feature: create production order
       | standard_category                | attributeSet_convenienceSalate   |
     And metasfresh initially has no MD_Candidate data
 
+  @Id:S0196_400
   @from:cucumber
   Scenario:  The manufacturing order is created from a manufacturing order candidate (S0129.1_100) (S0129.2_100)
     Given metasfresh contains M_Products:
@@ -211,6 +212,7 @@ Feature: create production order
       | cp_3       | p_1                     | 2021-04-10  | olASI                        | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 10                             | 10                         | 0                             | 0                             |
       | cp_2       | p_2                     | 2021-04-16  | bomLineASI                   | 0                               | 100                     | 0                       | 100                          | -100                          | 100                            | 0                              | 0                          | 0                             | 100                           |
 
+  @Id:S0196_500
   @from:cucumber
   Scenario:  The manufacturing order is created from a manufacturing order candidate, it is completed, then it is reactivated and its qtyOrdered is updated and the ordered is completed again. Then, the order is reactivated once again, its qtyOrdered updated to the initial value and the order is completed.
     Given metasfresh contains M_Products:
@@ -446,6 +448,7 @@ Feature: create production order
       | cp_2       | p_2                     | 2021-04-16  | bomLineASI                   | 0                               | 100                     | 0                       | 120                          | -100                          | 120                            | 20                             | 20                         | 0                             | 100                           |
 
 
+  @Id:S0196_600
   @from:cucumber
   Scenario:  The manufacturing order is created from a manufacturing order candidate, then the manufacturing order candidate is re-opened, and another manufacturing order is created from it (S0129.2_130) (S0129.2_150) (S0129.2_170)
     # Basic setup
@@ -735,6 +738,7 @@ Feature: create production order
       | c_l_3                      | DEMAND            | PRODUCTION                    | p_22                    | 2021-04-12T21:00:00Z | -100 | 0                      |
       | s_2                        | INVENTORY_UP      |                               | p_11                    | 2021-04-14T21:00:00Z | 10   | 10                     |
 
+  @Id:S0196_700
   @from:cucumber
   Scenario:  The manufacturing order is created from a manufacturing order candidate and the date of the manufacturing order candidate is changed in the past (S0129.2_200)
     Given metasfresh contains M_Products:
@@ -903,6 +907,7 @@ Feature: create production order
       | cp_2       | p_222                   | 2021-04-12  | bomLineASI                   | 0                               | 0                       | 0                       | 100                          | 0                             | 100                            | 100                            | 100                        | 0                             | 0                             |
       | cp_3       | p_222                   | 2021-04-11  | bomLineASI                   | 0                               | 100                     | 0                       | 100                          | -100                          | 100                            | 0                              | 0                          | 0                             | 100                           |
 
+  @Id:S0196_800
   @from:cucumber
   Scenario:  The manufacturing order is created from a manufacturing order candidate and the date of the manufacturing order candidate is changed in the future
     Given metasfresh contains M_Products:
@@ -1318,7 +1323,7 @@ Feature: create production order
       | c_ppo_l_1_d                | DEMAND            | PRODUCTION                    | p_comp_1                | 2021-04-16T21:00:00Z | 200 | 0                      |
       | c_ppo_l_2_d                | DEMAND            | PRODUCTION                    | p_comp_3                | 2021-04-16T21:00:00Z | 300 | 0                      |
 
-
+  @Id:S0196_900
   @from:cucumber
   Scenario:  The manufacturing order is created from a manufacturing order candidate, it is reactivated and its DatePromised is updated in the future
     Given metasfresh contains M_Products:
@@ -1512,6 +1517,7 @@ Feature: create production order
       | cp_3       | p_1                     | 2021-04-18  | olASI                        | 0                               | 0                       | 10                      | 0                            | 10                            | 0                              | 0                              | 0                          | 10                            | 0                             |
       | cp_2       | p_2                     | 2021-04-16  | bomLineASI                   | 0                               | 100                     | 0                       | 100                          | -100                          | 100                            | 0                              | 0                          | 0                             | 100                           |
 
+  @Id:S0196_1000
   @from:cucumber
   Scenario:  The manufacturing order is created from a manufacturing order candidate, it is reactivated and its DatePromised is updated in the past
     Given metasfresh contains M_Products:
