@@ -17,8 +17,8 @@ import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.inventory.draftlinescreator.DraftInventoryLinesCreator;
 import de.metas.handlingunits.inventory.draftlinescreator.HUsForInventoryStrategies;
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLine;
-import de.metas.handlingunits.inventory.draftlinescreator.aggregator.InventoryLineAggregatorFactory;
 import de.metas.handlingunits.inventory.draftlinescreator.InventoryLinesCreationCtx;
+import de.metas.handlingunits.inventory.draftlinescreator.aggregator.InventoryLineAggregatorFactory;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.handlingunits.storage.IHUStorage;
@@ -34,7 +34,9 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.compiere.model.X_C_DocType;
 
+import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -46,12 +48,12 @@ import java.util.List;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -80,14 +82,20 @@ public class WeightHUCommand
 		this.targetWeight = PlainWeightable.copyOf(targetWeight);
 	}
 
-	public InventoryId execute()
+	public Optional<InventoryId> execute()
 	{
 		final Inventory inventoryHeader = createAndCompleteInventory();
+		if (inventoryHeader == null)
+		{
+			return Optional.empty();
+		}
+
 		updateHUWeights();
 
-		return inventoryHeader.getId();
+		return Optional.of(inventoryHeader.getId());
 	}
 
+	@Nullable
 	private Inventory createAndCompleteInventory()
 	{
 		final Quantity targetWeightNet = Quantity.of(targetWeight.getWeightNet(), targetWeight.getWeightNetUOM());
@@ -96,6 +104,10 @@ public class WeightHUCommand
 		final ClientId clientId = ClientId.ofRepoId(hu.getAD_Client_ID());
 		final IHUProductStorage huProductStorage = getSingleStorage(hu);
 		final HuForInventoryLine inventoryLineCandidate = toHuForInventoryLine(hu, huProductStorage, targetWeightNet);
+		if (inventoryLineCandidate == null)
+		{
+			return null;
+		}
 
 		final Inventory inventoryHeader = inventoryService.createInventoryHeader(InventoryHeaderCreateRequest.builder()
 				.orgId(inventoryLineCandidate.getOrgId())
@@ -150,17 +162,23 @@ public class WeightHUCommand
 		}
 	}
 
+	@Nullable
 	private HuForInventoryLine toHuForInventoryLine(
 			final I_M_HU hu,
 			final IHUProductStorage huProductStorage,
 			final Quantity weightNet)
 	{
 		// TODO: convert weightNet to huProductStorage.getQty()'s UOM
+		final Quantity huQty = huProductStorage.getQty();
+		if (huQty.compareTo(weightNet) == 0)
+		{
+			return null;
+		}
 
 		return HuForInventoryLine.builder()
 				.orgId(OrgId.ofRepoId(hu.getAD_Org_ID()))
 				.huId(huProductStorage.getHuId())
-				.quantityBooked(huProductStorage.getQty())
+				.quantityBooked(huQty)
 				.quantityCount(weightNet)
 				.productId(huProductStorage.getProductId())
 				.storageAttributesKey(handlingUnitsBL.getStorageRelevantAttributesKey(hu))
