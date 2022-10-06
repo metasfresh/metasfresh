@@ -47,6 +47,7 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.i18n.AdMessageKey;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -140,6 +141,7 @@ import lombok.NonNull;
  */
 public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements SEPAMarshaler
 {
+	private static final AdMessageKey ERR_SEPA_Export_InvalidReference = AdMessageKey.of("de.metas.payment.sepa.SEPA_Export_InvalidReference");
 	private static final String BIC_NOTPROVIDED = "NOTPROVIDED";
 
 	/**
