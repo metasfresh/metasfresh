@@ -122,6 +122,8 @@ public final class PickingJob
 				: toBuilder().header(header.toBuilder().lockedBy(lockedBy).build()).build();
 	}
 
+	public boolean isPickingReviewRequired() { return header.isPickingReviewRequired(); }
+
 	private PickingJobProgress computeProgress(@NonNull final ImmutableList<PickingJobLine> lines)
 	{
 		final ImmutableSet<PickingJobProgress> lineProgresses = lines.stream().map(PickingJobLine::getProgress).collect(ImmutableSet.toImmutableSet());
