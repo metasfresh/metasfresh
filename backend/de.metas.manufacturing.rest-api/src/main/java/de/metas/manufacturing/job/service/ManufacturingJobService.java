@@ -100,6 +100,26 @@ public class ManufacturingJobService
 
 	public ManufacturingJob getJobById(final PPOrderId ppOrderId) {return newLoader().load(ppOrderId);}
 
+	public ManufacturingJob assignJob(@NonNull final PPOrderId ppOrderId, @NonNull final UserId newResponsibleId)
+	{
+		final I_PP_Order ppOrder = ppOrderBL.getById(ppOrderId);
+		final UserId oldResponsibleId = UserId.ofRepoIdOrNull(ppOrder.getAD_User_Responsible_ID());
+		if (oldResponsibleId == null)
+		{
+			ppOrder.setAD_User_Responsible_ID(newResponsibleId.getRepoId());
+			ppOrderBL.save(ppOrder);
+		}
+		else if (!UserId.equals(oldResponsibleId, newResponsibleId))
+		{
+			throw new AdempiereException("Already assigned")
+					.setParameter("ppOrder", ppOrder)
+					.setParameter("oldResponsibleId", oldResponsibleId)
+					.setParameter("newResponsibleId", newResponsibleId);
+		}
+
+		return newLoader().load(ppOrder);
+	}
+
 	@NonNull
 	private ManufacturingJobLoaderAndSaver newLoader() {return new ManufacturingJobLoaderAndSaver(loadingAndSavingSupportServices);}
 

@@ -104,6 +104,16 @@ public class PickingJobRestService
 		pickingJobService.abortAllByUserId(userId);
 	}
 
+	public void unassignAllByUserId(final @NonNull UserId userId)
+	{
+		pickingJobService.unassignAllByUserId(userId);
+	}
+
+	public PickingJob assignPickingJob(@NonNull final PickingJobId pickingJobId, @NonNull final UserId newResponsibleId)
+	{
+		return pickingJobService.assignPickingJob(pickingJobId, newResponsibleId);
+	}
+
 	public PickingJob complete(@NonNull final PickingJob pickingJob)
 	{
 		return pickingJobService.complete(pickingJob);

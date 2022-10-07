@@ -88,6 +88,13 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 	}
 
 	@Override
+	public WFProcess continueWorkflow(final WFProcessId wfProcessId, final UserId callerId)
+	{
+		final ManufacturingJob job = manufacturingRestService.assignJob(toPPOrderId(wfProcessId), callerId);
+		return ManufacturingRestService.toWFProcess(job);
+	}
+
+	@Override
 	public void abort(final WFProcessId wfProcessId, final UserId callerId)
 	{
 		final ManufacturingJob job = getManufacturingJob(wfProcessId);
@@ -109,8 +116,14 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 
 	private ManufacturingJob getManufacturingJob(final WFProcessId wfProcessId)
 	{
-		final PPOrderId ppOrderId = wfProcessId.getRepoId(PPOrderId::ofRepoId);
+		final PPOrderId ppOrderId = toPPOrderId(wfProcessId);
 		return manufacturingRestService.getJobById(ppOrderId);
+	}
+
+	@NonNull
+	private static PPOrderId toPPOrderId(final WFProcessId wfProcessId)
+	{
+		return wfProcessId.getRepoId(PPOrderId::ofRepoId);
 	}
 
 	@NonNull

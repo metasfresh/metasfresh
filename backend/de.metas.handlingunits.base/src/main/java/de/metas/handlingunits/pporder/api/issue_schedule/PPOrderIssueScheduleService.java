@@ -20,6 +20,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
@@ -114,7 +115,7 @@ public class PPOrderIssueScheduleService
 	@Nullable
 	private static QtyRejectedWithReason getQtyRejectedWithReason(final @NonNull PPOrderIssueScheduleProcessRequest request, final @NonNull I_C_UOM uom)
 	{
-		if(request.getQtyRejectedReasonCode() == null)
+		if (request.getQtyRejectedReasonCode() == null)
 		{
 			return null;
 		}
@@ -152,5 +153,27 @@ public class PPOrderIssueScheduleService
 				.build()
 				//
 				.execute();
+	}
+
+	public PPOrderIssueSchedule changeSeqNo(@NonNull final PPOrderIssueSchedule issueSchedule, @NonNull final SeqNo newSeqNo)
+	{
+		if (SeqNo.equals(issueSchedule.getSeqNo(), newSeqNo))
+		{
+			return issueSchedule;
+		}
+
+		final PPOrderIssueSchedule issueScheduleChanged = issueSchedule.withSeqNo(newSeqNo);
+		issueScheduleRepository.saveChanges(issueScheduleChanged);
+		return issueScheduleChanged;
+	}
+
+	public void delete(@NonNull final PPOrderIssueSchedule issueSchedule)
+	{
+		if (issueSchedule.isIssued())
+		{
+			throw new AdempiereException("Deleting issued schedules is not allowed");
+		}
+
+		issueScheduleRepository.deleteNotProcessedById(issueSchedule.getId());
 	}
 }

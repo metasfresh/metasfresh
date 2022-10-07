@@ -108,10 +108,16 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 		return wfLaunchersProvider.provideLaunchers(userId, suggestedLimit, maxStaleAccepted);
 	}
 
+	@NonNull
+	private static PickingJobId toPickingJobId(final @NonNull WFProcessId wfProcessId)
+	{
+		return wfProcessId.getRepoId(PickingJobId::ofRepoId);
+	}
+
 	@Override
 	public WFProcess getWFProcessById(@NonNull final WFProcessId wfProcessId)
 	{
-		final PickingJobId pickingJobId = wfProcessId.getRepoId(PickingJobId::ofRepoId);
+		final PickingJobId pickingJobId = toPickingJobId(wfProcessId);
 		final PickingJob pickingJob = pickingJobRestService.getPickingJobById(pickingJobId);
 		return toWFProcess(pickingJob);
 	}
@@ -163,9 +169,17 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	}
 
 	@Override
+	public WFProcess continueWorkflow(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
+	{
+		final PickingJobId pickingJobId = toPickingJobId(wfProcessId);
+		final PickingJob pickingJob = pickingJobRestService.assignPickingJob(pickingJobId, callerId);
+		return toWFProcess(pickingJob);
+	}
+
+	@Override
 	public void abort(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
 	{
-		final PickingJobId pickingJobId = wfProcessId.getRepoId(PickingJobId::ofRepoId);
+		final PickingJobId pickingJobId = toPickingJobId(wfProcessId);
 		final PickingJob pickingJob = pickingJobRestService.getPickingJobById(pickingJobId);
 		final WFProcess wfProcess = toWFProcess(pickingJob);
 		abort(wfProcess, callerId);
@@ -175,7 +189,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	{
 		wfProcess.assertHasAccess(callerId);
 		pickingJobRestService.abort(getPickingJob(wfProcess));
-		wfLaunchersProvider.invalidateCacheByUserId(wfProcess.getInvokerId());
+		wfLaunchersProvider.invalidateCacheByUserId(callerId);
 	}
 
 	@Override
@@ -187,7 +201,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 
 	private static WFProcess toWFProcess(final PickingJob pickingJob)
 	{
-		final UserId lockedBy = pickingJob.getLockedBy();
+		final UserId responsibleId = pickingJob.getLockedBy();
 
 		final ImmutableList.Builder<WFActivity> activities = ImmutableList.builder();
 		activities.add(WFActivity.builder()
@@ -228,7 +242,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 
 		return WFProcess.builder()
 				.id(WFProcessId.ofIdPart(HANDLER_ID, pickingJob.getId()))
-				.invokerId(lockedBy)
+				.responsibleId(responsibleId)
 				.caption(PickingWFProcessUtils.workflowCaption()
 						.salesOrderDocumentNo(pickingJob.getSalesOrderDocumentNo())
 						.customerName(pickingJob.getCustomerName())
@@ -326,6 +340,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	@Override
 	public void logout(final @NonNull UserId userId)
 	{
-		abortAll(userId);
+		pickingJobRestService.unassignAllByUserId(userId);
+		wfLaunchersProvider.invalidateCacheByUserId(userId);
 	}
 }
