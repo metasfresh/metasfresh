@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13733](https://github.com/metasfresh/metasfresh/issues/13733) edit translations for ad_references #13733
   * [#13707](https://github.com/metasfresh/metasfresh/issues/13707) Fix Mail notifications
   * [#13648](https://github.com/metasfresh/metasfresh/issues/13648) Propagate Section_ID from OLCand to Payment
   * [#13646](https://github.com/metasfresh/metasfresh/issues/13646) Cucumber: EffortControl coverage
