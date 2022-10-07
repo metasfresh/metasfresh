@@ -22,6 +22,7 @@ import static java.math.BigDecimal.ZERO;
 import java.math.BigDecimal;
 import java.util.Properties;
 
+import org.adempiere.ad.callout.api.ICalloutField;
 import org.compiere.util.Env;
 
 import de.metas.product.IProductBL;
@@ -43,16 +44,15 @@ public class CalloutMovement extends CalloutEngine
 	 * Product modified
 	 * Set Attribute Set Instance
 	 *
-	 * @param ctx Context
-	 * @param WindowNo current Window No
-	 * @param GridTab Model Tab
-	 * @param GridField Model Field
-	 * @param value The new value
 	 * @return Error message or ""
 	 */
-	public String product(final Properties ctx, final int WindowNo, final GridTab mTab, final GridField mField, final Object value)
+	public String product(final ICalloutField calloutField)
 	{
-		final Integer M_Product_ID = (Integer)value;
+		final I_M_MovementLine movementLineRecord = calloutField.getModel(I_M_MovementLine.class);
+		final Properties ctx = calloutField.getCtx();
+		final int WindowNo = calloutField.getWindowNo();
+		final Integer M_Product_ID = movementLineRecord.getM_Product_ID();
+
 		if (M_Product_ID == null || M_Product_ID.intValue() == 0)
 		{
 			return "";
@@ -61,38 +61,36 @@ public class CalloutMovement extends CalloutEngine
 		if (Env.getContextAsInt(ctx, WindowNo, Env.TAB_INFO, "M_Product_ID") == M_Product_ID.intValue()
 				&& Env.getContextAsInt(ctx, WindowNo, Env.TAB_INFO, "M_AttributeSetInstance_ID") != 0)
 		{
-			mTab.setValue("M_AttributeSetInstance_ID", Env.getContextAsInt(ctx, WindowNo, Env.TAB_INFO, "M_AttributeSetInstance_ID"));
+			movementLineRecord.setM_AttributeSetInstance_ID(Env.getContextAsInt(ctx, WindowNo, Env.TAB_INFO, "M_AttributeSetInstance_ID"));
 		}
 		else
 		{
-			mTab.setValue("M_AttributeSetInstance_ID", null);
+			movementLineRecord.setM_AttributeSetInstance_ID(0);
 		}
 
-		checkQtyAvailable(ctx, mTab, WindowNo, M_Product_ID, null);
+		checkQtyAvailable(ctx, calloutField, WindowNo, M_Product_ID, null);
 		return "";
 	}   // product
 
-	// Begin Armen 2006/10/01
 	/**
 	 * Movement Line - MovementQty modified
 	 * called from MovementQty
 	 *
-	 * @param ctx Context
-	 * @param WindowNo current Window No
-	 * @param GridTab Model Tab
-	 * @param GridField Model Field
-	 * @param value The new value
 	 * @return Error message or ""
 	 */
-	public String qty(final Properties ctx, final int WindowNo, final GridTab mTab, final GridField mField, final Object value)
+	public String qty(final ICalloutField calloutField)
 	{
-		if (isCalloutActive() || value == null)
+		final I_M_MovementLine movementLineRecord = calloutField.getModel(I_M_MovementLine.class);
+		final Properties ctx = calloutField.getCtx();
+		final int WindowNo = calloutField.getWindowNo();
+
+		if (isCalloutActive() || movementLineRecord.getMovementQty() == null)
 		{
 			return "";
 		}
 
 		final int M_Product_ID = Env.getContextAsInt(ctx, WindowNo, "M_Product_ID");
-		checkQtyAvailable(ctx, mTab, WindowNo, M_Product_ID, (BigDecimal)value);
+		checkQtyAvailable(ctx, calloutField, WindowNo, M_Product_ID, movementLineRecord.getMovementQty());
 		//
 		return "";
 	} // qty
@@ -100,21 +98,20 @@ public class CalloutMovement extends CalloutEngine
 	/**
 	 * Movement Line - Locator modified
 	 *
-	 * @param ctx Context
-	 * @param WindowNo current Window No
-	 * @param GridTab Model Tab
-	 * @param GridField Model Field
-	 * @param value The new value
 	 * @return Error message or ""
 	 */
-	public String locator(final Properties ctx, final int WindowNo, final GridTab mTab, final GridField mField, final Object value)
+	public String locator(final ICalloutField calloutField)
 	{
-		if (value == null)
+		final I_M_MovementLine movementLineRecord = calloutField.getModel(I_M_MovementLine.class);
+		final Properties ctx = calloutField.getCtx();
+		final int WindowNo = calloutField.getWindowNo();
+
+		if (movementLineRecord.getM_Locator_ID() <= 0)
 		{
 			return "";
 		}
 		final int M_Product_ID = Env.getContextAsInt(ctx, WindowNo, "M_Product_ID");
-		checkQtyAvailable(ctx, mTab, WindowNo, M_Product_ID, null);
+		checkQtyAvailable(ctx, calloutField, WindowNo, M_Product_ID, null);
 		return "";
 	}
 
@@ -122,20 +119,21 @@ public class CalloutMovement extends CalloutEngine
 	 * Check available qty
 	 *
 	 * @param ctx context
-	 * @param mTab Model Tab
+	 * @param calloutField Model Tab
 	 * @param WindowNo current Window No
 	 * @param M_Product_ID product ID
 	 * @param MovementQty movement qty (if null will be get from context "MovementQty")
 	 */
-	private void checkQtyAvailable(final Properties ctx, final GridTab mTab, final int WindowNo, final int M_Product_ID, BigDecimal MovementQty)
+	private void checkQtyAvailable(final Properties ctx, final ICalloutField calloutField, final int WindowNo, final int M_Product_ID, BigDecimal MovementQty)
 	{
-		// Begin Armen 2006/10/01
+		final I_M_MovementLine movementLineRecord = calloutField.getModel(I_M_MovementLine.class);
+
 		if (M_Product_ID != 0
 				&& Services.get(IProductBL.class).isStocked(ProductId.ofRepoIdOrNull(M_Product_ID)))
 		{
 			if (MovementQty == null)
 			{
-				MovementQty = (BigDecimal)mTab.getValue("MovementQty");
+				MovementQty = movementLineRecord.getMovementQty();
 			}
 			final int M_Locator_ID = Env.getContextAsInt(ctx, WindowNo, "M_Locator_ID");
 			// If no locator, don't check anything and assume is ok
@@ -151,13 +149,12 @@ public class CalloutMovement extends CalloutEngine
 			}
 			if (available.signum() == 0)
 			{
-				mTab.fireDataStatusEEvent("NoQtyAvailable", "0", false);
+				calloutField.fireDataStatusEEvent("NoQtyAvailable", "0", false);
 			}
 			else if (available.compareTo(MovementQty) < 0)
 			{
-				mTab.fireDataStatusEEvent("InsufficientQtyAvailable", available.toString(), false);
+				calloutField.fireDataStatusEEvent("InsufficientQtyAvailable", available.toString(), false);
 			}
 		}
-		// End Armen
 	}
 }	// CalloutMove
