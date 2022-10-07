@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.dimension.Dimension;
@@ -45,6 +46,7 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.X_C_DocType;
@@ -103,6 +105,8 @@ public class InOutProducer implements IInOutProducer
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	private final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 
 	private final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository = SpringContextHolder.instance.getBean(OrderEmailPropagationSysConfigRepository.class);
 
@@ -441,17 +445,7 @@ public class InOutProducer implements IInOutProducer
 		{
 			receiptHeader.setMovementType(X_M_InOut.MOVEMENTTYPE_VendorReceipts);
 			receiptHeader.setIsSOTrx(false);
-
-			// this is the doctype of the sched's source record (e.g. "Bestellung")
-			// receiptHeader.setC_DocType_ID(rs.getC_DocType_ID());
-			final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-			final DocTypeQuery query = DocTypeQuery.builder()
-					.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
-					.adClientId(rs.getAD_Client_ID())
-					.adOrgId(rs.getAD_Org_ID())
-					.build();
-			final int receiptDocTypeId = docTypeDAO.getDocTypeId(query).getRepoId();
-			receiptHeader.setC_DocType_ID(receiptDocTypeId);
+			receiptHeader.setC_DocType_ID(getReceiptDoctypeID(rs));
 		}
 
 		//
@@ -531,6 +525,28 @@ public class InOutProducer implements IInOutProducer
 		// Save & Return
 		InterfaceWrapperHelper.save(receiptHeader);
 		return receiptHeader;
+	}
+
+	private int getReceiptDoctypeID(@NonNull final I_M_ReceiptSchedule receiptSchedule)
+	{
+		// allow specific receipt doctype from order first
+		final I_C_Order order = receiptSchedule.getC_Order();
+		if (order != null && order.getC_Order_ID() > 0)
+		{
+			final I_C_DocType orderDoctype = docTypeDAO.getById(DocTypeId.ofRepoId(order.getC_DocType_ID()));
+			if (orderDoctype.getC_DocTypeShipment_ID() > 0)
+			{
+				return orderDoctype.getC_DocTypeShipment_ID();
+			}
+		}
+
+		final DocTypeQuery query = DocTypeQuery.builder()
+				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
+				.adClientId(receiptSchedule.getAD_Client_ID())
+				.adOrgId(receiptSchedule.getAD_Org_ID())
+				.build();
+
+		return docTypeDAO.getDocTypeId(query).getRepoId();
 	}
 
 	/**
