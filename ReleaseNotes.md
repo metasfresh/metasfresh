@@ -101,6 +101,7 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#13725](https://github.com/metasfresh/metasfresh/issues/13725) C_DocTypeShipment_ID not respected when generating Receipt/Shipment
   * [#13586](https://github.com/metasfresh/metasfresh/issues/13586) Fix material-dispo bug
   * [#13533](https://github.com/metasfresh/metasfresh/issues/13533) BUG: I_C_InvoiceCandidate.QtyDelivered wrongly computed for manual invoice candidates 
   * [#13550](https://github.com/metasfresh/metasfresh/issues/13550) [React] - Calendar gives blank screen when selecting a date from past
