@@ -39,6 +39,10 @@ class Translation extends Component {
         return `{${key}}`;
       });
 
+      counterpart.onError((err, entry, values) => {
+        console.error(`Got error on entry '${entry}': ${err}`, { values });
+      });
+
       deepForceUpdate(INSTANCE);
     });
   };
