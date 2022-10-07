@@ -25,7 +25,7 @@ import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.List;
+import java.util.Optional;
 
 import static de.metas.material.event.EventTestHelper.createSupplyRequiredDescriptorWithProductId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -93,9 +93,9 @@ public class ProductionAdvisedEventCreatorTest
 		final SupplyRequiredDescriptor supplyRequiredDescriptor = createSupplyRequiredDescriptorWithProductId(product.getM_Product_ID());
 
 		final PPOrderCandidateAdvisedEventCreator pPOrderCandidateAdvisedCreator = new PPOrderCandidateAdvisedEventCreator(ppOrderCandidateDemandMatcher, ppOrderCandidatePojoSupplier);
-		final List<PPOrderCandidateAdvisedEvent> events = pPOrderCandidateAdvisedCreator.createPPOrderCandidateAdvisedEvents(supplyRequiredDescriptor, mrpContext);
-		assertThat(events).hasSize(1);
-		assertThat(events.get(0).getSupplyRequiredDescriptor()).isSameAs(supplyRequiredDescriptor);
+		final Optional<PPOrderCandidateAdvisedEvent> event = pPOrderCandidateAdvisedCreator.createPPOrderCandidateAdvisedEvents(supplyRequiredDescriptor, mrpContext);
+		assertThat(event).isPresent();
+		assertThat(event.get().getSupplyRequiredDescriptor()).isSameAs(supplyRequiredDescriptor);
 	}
 
 	private static PPOrderCandidate createDummyPPOrderCandidate()

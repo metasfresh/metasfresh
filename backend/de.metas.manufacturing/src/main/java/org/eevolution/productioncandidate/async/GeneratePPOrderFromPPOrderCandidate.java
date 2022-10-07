@@ -39,6 +39,7 @@ import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import static org.eevolution.productioncandidate.async.PPOrderCandidateEnqueuer.WP_COMPLETE_DOC_PARAM;
 import static org.eevolution.productioncandidate.async.PPOrderCandidateEnqueuer.WP_PINSTANCE_ID_PARAM;
 
 public class GeneratePPOrderFromPPOrderCandidate extends WorkpackageProcessorAdapter
@@ -49,6 +50,7 @@ public class GeneratePPOrderFromPPOrderCandidate extends WorkpackageProcessorAda
 	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workPackage, @Nullable final String localTrxName)
 	{
 		final PInstanceId pInstanceId = getParameters().getParameterAsId(WP_PINSTANCE_ID_PARAM, PInstanceId.class);
+		final boolean isDocComplete = getParameters().getParameterAsBool(WP_COMPLETE_DOC_PARAM);
 
 		Check.assumeNotNull(pInstanceId, "adPInstanceId is not null");
 
@@ -57,7 +59,7 @@ public class GeneratePPOrderFromPPOrderCandidate extends WorkpackageProcessorAda
 		final Stream<I_PP_Order_Candidate> candidateStream = StreamSupport.stream(
 				Spliterators.spliteratorUnknownSize(orderCandidates, Spliterator.ORDERED), false);
 
-		final OrderGenerateResult result = ppOrderCandidateService.processCandidates(candidateStream);
+		final OrderGenerateResult result = ppOrderCandidateService.processCandidates(candidateStream, isDocComplete);
 
 		Loggables.addLog("Generated: {}", result);
 

@@ -48,6 +48,7 @@ import java.util.Properties;
 public class PPOrderCandidateEnqueuer
 {
 	public static final String WP_PINSTANCE_ID_PARAM = "pInstanceId";
+	public static final String WP_COMPLETE_DOC_PARAM = "completeDoc";
 
 	private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -62,13 +63,14 @@ public class PPOrderCandidateEnqueuer
 				.create()
 				.createSelection();
 
-		return enqueueSelection(pInstanceId, Env.getCtx());
+		return enqueueSelection(pInstanceId, Env.getCtx(), false);
 	}
 
 	@NonNull
 	public Result enqueueSelection(
 			@NonNull final PInstanceId adPInstanceId,
-			@NonNull final Properties ctx)
+			@NonNull final Properties ctx,
+			final boolean isCompleteDoc)
 	{
 		final LockOwner lockOwner = LockOwner.newOwner(PPOrderCandidateEnqueuer.class.getSimpleName(), adPInstanceId.getRepoId());
 
@@ -87,6 +89,7 @@ public class PPOrderCandidateEnqueuer
 		final I_C_Queue_WorkPackage workPackage = blockBuilder
 				.newWorkpackage()
 				.parameter(WP_PINSTANCE_ID_PARAM, adPInstanceId)
+				.parameter(WP_COMPLETE_DOC_PARAM, isCompleteDoc)
 				.setElementsLocker(elementsLocker)
 				.build();
 
