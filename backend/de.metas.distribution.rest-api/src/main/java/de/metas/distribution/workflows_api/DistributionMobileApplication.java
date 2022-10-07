@@ -25,7 +25,6 @@ import org.adempiere.ad.dao.QueryLimit;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
-import java.util.Objects;
 import java.util.function.UnaryOperator;
 
 @Component
@@ -71,11 +70,19 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 		return toWFProcess(job);
 	}
 
+	@Override
+	public WFProcess continueWorkflow(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
+	{
+		final DDOrderId ddOrderId = toDDOrderId(wfProcessId);
+		final DistributionJob job = distributionRestService.assignJob(ddOrderId, callerId);
+		return toWFProcess(job);
+	}
+
 	private static WFProcess toWFProcess(final DistributionJob job)
 	{
 		return WFProcess.builder()
 				.id(WFProcessId.ofIdPart(HANDLER_ID, job.getDdOrderId()))
-				.invokerId(Objects.requireNonNull(job.getResponsibleId()))
+				.responsibleId(job.getResponsibleId())
 				.caption(TranslatableStrings.anyLanguage("" + job.getDdOrderId().getRepoId()))
 				.document(job)
 				.activities(ImmutableList.of(
@@ -111,9 +118,15 @@ public class DistributionMobileApplication implements WorkflowBasedMobileApplica
 	@Override
 	public WFProcess getWFProcessById(final WFProcessId wfProcessId)
 	{
-		final DDOrderId ddOrderId = wfProcessId.getRepoId(DDOrderId::ofRepoId);
+		final DDOrderId ddOrderId = toDDOrderId(wfProcessId);
 		final DistributionJob job = distributionRestService.getJobById(ddOrderId);
 		return toWFProcess(job);
+	}
+
+	@NonNull
+	private static DDOrderId toDDOrderId(final WFProcessId wfProcessId)
+	{
+		return wfProcessId.getRepoId(DDOrderId::ofRepoId);
 	}
 
 	@Override

@@ -30,7 +30,6 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRoutingActivityId;
 import org.springframework.stereotype.Service;
 
-import java.util.Objects;
 import java.util.stream.Stream;
 
 @Service
@@ -68,6 +67,11 @@ public class ManufacturingRestService
 		return manufacturingJobService.getJobById(ppOrderId);
 	}
 
+	public ManufacturingJob assignJob(@NonNull final PPOrderId ppOrderId, @NonNull final UserId userId)
+	{
+		return manufacturingJobService.assignJob(ppOrderId, userId);
+	}
+
 	private static WFActivity toWFActivity(final ManufacturingJobActivity jobActivity)
 	{
 		final WFActivity.WFActivityBuilder builder = WFActivity.builder()
@@ -100,7 +104,7 @@ public class ManufacturingRestService
 	{
 		return WFProcess.builder()
 				.id(WFProcessId.ofIdPart(ManufacturingMobileApplication.HANDLER_ID, job.getPpOrderId()))
-				.invokerId(Objects.requireNonNull(job.getResponsibleId()))
+				.responsibleId(job.getResponsibleId())
 				.caption(TranslatableStrings.anyLanguage("" + job.getPpOrderId().getRepoId())) // TODO
 				.document(job)
 				.activities(job.getActivities()
