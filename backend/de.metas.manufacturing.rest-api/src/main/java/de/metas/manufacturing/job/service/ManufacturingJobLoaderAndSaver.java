@@ -65,6 +65,12 @@ public class ManufacturingJobLoaderAndSaver
 		this.supportingServices = supportingServices;
 	}
 
+	public ManufacturingJob load(@NonNull final I_PP_Order ppOrder)
+	{
+		addToCache(ppOrder);
+		return load(PPOrderId.ofRepoId(ppOrder.getPP_Order_ID()));
+	}
+
 	public ManufacturingJob load(final PPOrderId ppOrderId)
 	{
 		final I_PP_Order ppOrder = getPPOrderRecordById(ppOrderId);

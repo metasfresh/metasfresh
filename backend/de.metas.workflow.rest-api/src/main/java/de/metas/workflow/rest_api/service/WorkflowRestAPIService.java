@@ -163,6 +163,12 @@ public class WorkflowRestAPIService
 				.getWFProcessById(wfProcessId);
 	}
 
+	public WFProcess continueWFProcess(@NonNull final WFProcessId wfProcessId, @NonNull UserId userId)
+	{
+		return getWorkflowBasedMobileApplication(wfProcessId.getApplicationId())
+				.continueWorkflow(wfProcessId, userId);
+	}
+
 	public WFProcess changeWFProcessById(
 			@NonNull final WFProcessId wfProcessId,
 			@NonNull final UnaryOperator<WFProcess> remappingFunction)

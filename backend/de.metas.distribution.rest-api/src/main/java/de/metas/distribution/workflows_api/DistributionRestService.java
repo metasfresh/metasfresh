@@ -118,6 +118,30 @@ public class DistributionRestService
 				.build().execute();
 	}
 
+	public DistributionJob assignJob(
+			final @NonNull DDOrderId ddOrderId,
+			final @NonNull UserId newResponsibleId)
+	{
+		final DistributionJobLoader loader = newLoader();
+
+		final I_DD_Order ddOrderRecord = loader.getDDOrder(ddOrderId);
+		final UserId oldResponsibleId = DistributionJobLoader.extractResponsibleId(ddOrderRecord);
+		if (oldResponsibleId == null)
+		{
+			ddOrderRecord.setAD_User_Responsible_ID(newResponsibleId.getRepoId());
+			ddOrderService.save(ddOrderRecord);
+		}
+		else if (!UserId.equals(oldResponsibleId, newResponsibleId))
+		{
+			throw new AdempiereException("Already assigned")
+					.setParameter("ddOrder", ddOrderRecord)
+					.setParameter("oldResponsibleId", oldResponsibleId)
+					.setParameter("newResponsibleId", newResponsibleId);
+		}
+
+		return loader.load(ddOrderRecord);
+	}
+
 	public DistributionJob getJobById(final DDOrderId ddOrderId)
 	{
 		return newLoader().load(ddOrderId);
