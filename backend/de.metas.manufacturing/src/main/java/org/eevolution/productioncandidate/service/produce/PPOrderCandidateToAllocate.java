@@ -25,25 +25,25 @@ package org.eevolution.productioncandidate.service.produce;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.NonNull;
+import lombok.Value;
+import lombok.experimental.NonFinal;
 import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.productioncandidate.service.PPOrderCandidateHeaderAggregationKeyHelper;
 
-@AllArgsConstructor
-@Getter
+@Value
 public class PPOrderCandidateToAllocate
 {
 	@NonNull
-	private final I_PP_Order_Candidate ppOrderCandidate;
+	I_PP_Order_Candidate ppOrderCandidate;
 
 	@NonNull
-	private final String headerAggregationKey;
+	String headerAggregationKey;
 
+	@NonFinal
 	@NonNull
-	private Quantity openQty;
+	Quantity openQty;
 
 	@NonNull
 	public static PPOrderCandidateToAllocate of(@NonNull final I_PP_Order_Candidate candidate)

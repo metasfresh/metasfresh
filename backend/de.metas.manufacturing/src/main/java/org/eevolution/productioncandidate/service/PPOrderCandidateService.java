@@ -57,10 +57,11 @@ import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.productioncandidate.async.OrderGenerateResult;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
-import org.eevolution.productioncandidate.service.produce.PPOrderAllocatorBuilderService;
+import org.eevolution.productioncandidate.service.produce.PPOrderAllocatorService;
 import org.eevolution.productioncandidate.service.produce.PPOrderProducerFromCandidate;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -85,12 +86,12 @@ public class PPOrderCandidateService
 
 	private final ProductPlanningService productPlanningService;
 	private final PPOrderCandidateDAO ppOrderCandidateDAO;
-	private final PPOrderAllocatorBuilderService ppOrderAllocatorBuilderService;
+	private final PPOrderAllocatorService ppOrderAllocatorBuilderService;
 
 	public PPOrderCandidateService(
 			@NonNull final ProductPlanningService productPlanningService,
 			@NonNull final PPOrderCandidateDAO ppOrderCandidateDAO,
-			@NonNull final PPOrderAllocatorBuilderService ppOrderAllocatorBuilderService)
+			@NonNull final PPOrderAllocatorService ppOrderAllocatorBuilderService)
 	{
 		this.productPlanningService = productPlanningService;
 		this.ppOrderCandidateDAO = ppOrderCandidateDAO;
@@ -107,7 +108,7 @@ public class PPOrderCandidateService
 	}
 
 	@NonNull
-	public OrderGenerateResult processCandidates(@NonNull final Stream<I_PP_Order_Candidate> orderCandidates, final boolean isDocComplete)
+	public OrderGenerateResult processCandidates(@NonNull final Stream<I_PP_Order_Candidate> orderCandidates,@Nullable final Boolean isDocComplete)
 	{
 		return createPPOrderProducerFromCandidate().createOrders(orderCandidates, isDocComplete);
 	}
@@ -333,7 +334,13 @@ public class PPOrderCandidateService
 	@NonNull
 	private PPOrderProducerFromCandidate createPPOrderProducerFromCandidate()
 	{
-		return new PPOrderProducerFromCandidate(ppOrderAllocatorBuilderService, ppOrderService, trxManager, ppOrderCandidateDAO);
+		return PPOrderProducerFromCandidate.builder()
+				.ppOrderAllocatorBuilderService(ppOrderAllocatorBuilderService)
+				.ppOrderService(ppOrderService)
+				.trxManager(trxManager)
+				.ppOrderCandidatesDAO(ppOrderCandidateDAO)
+				.productPlanningsRepo(productPlanningDAO)
+				.build();
 	}
 
 	private void handleOutdatedLine(@NonNull final I_PP_OrderLine_Candidate orderCandidateLine)

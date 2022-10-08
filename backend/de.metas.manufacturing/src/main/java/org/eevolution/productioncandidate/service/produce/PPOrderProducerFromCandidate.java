@@ -23,45 +23,57 @@
 package org.eevolution.productioncandidate.service.produce;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.material.planning.IProductPlanningDAO;
+import de.metas.material.planning.ProductPlanningId;
 import de.metas.quantity.Quantity;
-import de.metas.util.Check;
+import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.eevolution.api.IPPOrderBL;
+import org.eevolution.api.PPOrderCreateRequest;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_Candidate;
+import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.productioncandidate.async.OrderGenerateResult;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
 
+import javax.annotation.Nullable;
 import java.util.Comparator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
 public class PPOrderProducerFromCandidate
 {
 	private final OrderGenerateResult result;
-	private final PPOrderAllocatorBuilderService ppOrderAllocatorBuilderService;
+	private final PPOrderAllocatorService ppOrderAllocatorBuilderService;
 	private final PPOrderCandidateDAO ppOrderCandidatesDAO;
 	private final IPPOrderBL ppOrderService;
 	private final ITrxManager trxManager;
+	private final IProductPlanningDAO productPlanningsRepo;
+	private final Map<ProductPlanningId, I_PP_Product_Planning> planning2RecordShortTimeIndex;
 
+	@Builder
 	public PPOrderProducerFromCandidate(
-			@NonNull final PPOrderAllocatorBuilderService ppOrderAllocatorBuilderService,
+			@NonNull final PPOrderAllocatorService ppOrderAllocatorBuilderService,
 			@NonNull final IPPOrderBL ppOrderService,
 			@NonNull final ITrxManager trxManager,
-			@NonNull final PPOrderCandidateDAO ppOrderCandidatesDAO)
+			@NonNull final PPOrderCandidateDAO ppOrderCandidatesDAO,
+			@NonNull final IProductPlanningDAO productPlanningsRepo)
 	{
 		this.ppOrderAllocatorBuilderService = ppOrderAllocatorBuilderService;
 		this.ppOrderService = ppOrderService;
 		this.trxManager = trxManager;
 		this.ppOrderCandidatesDAO = ppOrderCandidatesDAO;
+		this.productPlanningsRepo = productPlanningsRepo;
 
 		this.result = new OrderGenerateResult();
+		this.planning2RecordShortTimeIndex = new ConcurrentHashMap<>();
 	}
 
 	@NonNull
-	public OrderGenerateResult createOrders(@NonNull final Stream<I_PP_Order_Candidate> candidates, final boolean isDocComplete)
+	public OrderGenerateResult createOrders(@NonNull final Stream<I_PP_Order_Candidate> candidates, @Nullable final Boolean isDocComplete)
 	{
 		final ImmutableList<PPOrderCandidateToAllocate> sortedCandidates = candidates
 				.filter(orderCandidate -> !orderCandidate.isProcessed())
@@ -74,23 +86,21 @@ public class PPOrderProducerFromCandidate
 			return result;
 		}
 
-		allocateCandidatesBasedOnResourceCapacity(sortedCandidates, isDocComplete);
+		processPPOrderCandidates(sortedCandidates, isDocComplete);
 
 		return result;
 	}
 
-	private void allocateCandidatesBasedOnResourceCapacity(
+	private void processPPOrderCandidates(
 			@NonNull final ImmutableList<PPOrderCandidateToAllocate> ppOrderCandToAllocateSorted,
-			final boolean isDocComplete)
+			@Nullable final Boolean isDocComplete)
 	{
-		Check.assume(!ppOrderCandToAllocateSorted.isEmpty(), "PPOrder Candidates must not be empty at this stage!");
-
 		PPOrderAllocator allocator = null;
 		for (final PPOrderCandidateToAllocate ppOrderCandidateToAllocate : ppOrderCandToAllocateSorted)
 		{
 			if (allocator == null)
 			{
-				allocator = ppOrderAllocatorBuilderService.buildAllocator(ppOrderCandidateToAllocate, isDocComplete);
+				allocator = ppOrderAllocatorBuilderService.buildAllocator(ppOrderCandidateToAllocate);
 			}
 
 			boolean fullyAllocatedCandidate = false;
@@ -100,28 +110,35 @@ public class PPOrderProducerFromCandidate
 
 				if (!fullyAllocatedCandidate)
 				{
-					createPPOrderInNewTrx(allocator);
+					createPPOrderInNewTrx(allocator, isDocComplete);
 
-					allocator = ppOrderAllocatorBuilderService.buildAllocator(ppOrderCandidateToAllocate, isDocComplete);
+					allocator = ppOrderAllocatorBuilderService.buildAllocator(ppOrderCandidateToAllocate);
 				}
 			}
 		}
 
 		if (allocator != null && allocator.getAllocatedQty().signum() > 0)
 		{
-			createPPOrderInNewTrx(allocator);
+			createPPOrderInNewTrx(allocator, isDocComplete);
 		}
 	}
 
-	public void createPPOrderInNewTrx(@NonNull final PPOrderAllocator allocator)
+	public void createPPOrderInNewTrx(@NonNull final PPOrderAllocator allocator,@Nullable final Boolean completeDoc)
 	{
 		trxManager.runInNewTrx(() ->
 							   {
-								   final I_PP_Order ppOrder = ppOrderService.createOrder(allocator.getPPOrderCreateRequest());
+								   final PPOrderCreateRequest request = allocator.getPPOrderCreateRequest();
+
+								   final I_PP_Order ppOrder = ppOrderService.createOrder(request);
 
 								   createPPOrderAllocations(ppOrder, allocator.getPpOrderCand2AllocatedQty());
 
 								   ppOrderService.postPPOrderCreatedEvent(ppOrder);
+
+								   if (shouldCompletePPOrder(request.getProductPlanningId(), completeDoc))
+								   {
+									   ppOrderService.completeDocument(ppOrder);
+								   }
 
 								   result.addOrder(ppOrder);
 							   });
@@ -134,5 +151,21 @@ public class PPOrderProducerFromCandidate
 
 			ppOrderCandidatesDAO.markAsProcessed(candidateId);
 		});
+	}
+
+	private boolean shouldCompletePPOrder(@Nullable final ProductPlanningId planningId, @Nullable final Boolean completeDocOverride)
+	{
+		if (completeDocOverride != null)
+		{
+			return completeDocOverride;
+		}
+
+		if (planningId == null)
+		{
+			return false;
+		}
+
+		return planning2RecordShortTimeIndex.computeIfAbsent(planningId, productPlanningsRepo::getById)
+				.isDocComplete();
 	}
 }

@@ -47,7 +47,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 
 @Service
-public class PPOrderAllocatorBuilderService
+public class PPOrderAllocatorService
 {
 	@NonNull
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
@@ -57,32 +57,29 @@ public class PPOrderAllocatorBuilderService
 	@NonNull
 	private final PPOrderCandidatePojoConverter ppOrderCandidateConverter;
 
-	public PPOrderAllocatorBuilderService(final @NonNull PPOrderCandidatePojoConverter ppOrderCandidateConverter)
+	public PPOrderAllocatorService(final @NonNull PPOrderCandidatePojoConverter ppOrderCandidateConverter)
 	{
 		this.ppOrderCandidateConverter = ppOrderCandidateConverter;
 	}
 
 	@NonNull
-	public PPOrderAllocator buildAllocator(@NonNull final PPOrderCandidateToAllocate ppOrderCandidateToAllocate, final boolean completeDoc)
+	public PPOrderAllocator buildAllocator(@NonNull final PPOrderCandidateToAllocate ppOrderCandidateToAllocate)
 	{
 		final Quantity capacity = getCapacityPerProductionCycle(ppOrderCandidateToAllocate.getPpOrderCandidate());
 
-		final Quantity allocatedQty = capacity.toZero();
-
 		final String headerAggKey = ppOrderCandidateToAllocate.getHeaderAggregationKey();
 
-		final PPOrderCreateRequest.PPOrderCreateRequestBuilder requestBuilder = createRequestBuilder(ppOrderCandidateToAllocate.getPpOrderCandidate(), completeDoc);
+		final PPOrderCreateRequest.PPOrderCreateRequestBuilder requestBuilder = createRequestBuilder(ppOrderCandidateToAllocate.getPpOrderCandidate());
 
 		return PPOrderAllocator.builder()
 				.ppOrderCreateRequestBuilder(requestBuilder)
 				.capacityPerProductionCycle(capacity)
-				.allocatedQty(allocatedQty)
 				.headerAggKey(headerAggKey)
 				.build();
 	}
 
 	@NonNull
-	private PPOrderCreateRequest.PPOrderCreateRequestBuilder createRequestBuilder(@NonNull final I_PP_Order_Candidate candidateRecord, final boolean isDocComplete)
+	private PPOrderCreateRequest.PPOrderCreateRequestBuilder createRequestBuilder(@NonNull final I_PP_Order_Candidate candidateRecord)
 	{
 		final PPOrderCandidate ppOrderCandidatePojo = ppOrderCandidateConverter.toPPOrderCandidate(candidateRecord);
 
@@ -106,7 +103,9 @@ public class PPOrderAllocatorBuilderService
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoIdOrNull(ppOrderCandidatePojo.getPpOrderData().getShipmentScheduleIdAsRepoId()))
 				//
 				.packingMaterialId(ppOrderCandidatePojo.getPpOrderData().getPackingMaterialId())
-				.completeDocument(isDocComplete);
+				//dev-note: there is a custom logic for completing PPOrder when created from PP_Order_Candidate (due to MD_Candidates interaction)
+				//see: org.eevolution.productioncandidate.service.produce.PPOrderProducerFromCandidate.processPPOrderCandidates
+				.completeDocument(false);
 	}
 
 	@NonNull
@@ -121,21 +120,19 @@ public class PPOrderAllocatorBuilderService
 			return Quantitys.create(BigDecimal.ZERO, candidateUomId);
 		}
 
-		if (resource.getCapacityPerProductionCycle_UOM_ID() == 0)
+		if (resource.getCapacityPerProductionCycle_UOM_ID() <= 0)
 		{
 			throw new AdempiereException("Unit of measurement for capacity per production cycle cannot be missing if capacity is provided!")
 					.appendParametersToMessage()
 					.setParameter("S_Resource_ID", resource.getS_Resource_ID());
 		}
 
-		if (resource.getCapacityPerProductionCycle_UOM_ID() == candidateUomId.getRepoId())
-		{
-			return Quantitys.create(resource.getCapacityPerProductionCycle(), candidateUomId);
-		}
+		final Quantity capacityQty = Quantitys.create(resource.getCapacityPerProductionCycle(),
+													  UomId.ofRepoId(resource.getCapacityPerProductionCycle_UOM_ID()));
 
 		return uomConversionBL
 				.convertQuantityTo(
-						Quantitys.create(resource.getCapacityPerProductionCycle(), UomId.ofRepoId(resource.getCapacityPerProductionCycle_UOM_ID())),
+						capacityQty,
 						ProductId.ofRepoId(ppOrderCandidate.getM_Product_ID()),
 						candidateUomId);
 	}

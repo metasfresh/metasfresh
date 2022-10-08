@@ -38,6 +38,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -63,14 +64,14 @@ public class PPOrderCandidateEnqueuer
 				.create()
 				.createSelection();
 
-		return enqueueSelection(pInstanceId, Env.getCtx(), false);
+		return enqueueSelection(pInstanceId, Env.getCtx(), null);
 	}
 
 	@NonNull
 	public Result enqueueSelection(
 			@NonNull final PInstanceId adPInstanceId,
 			@NonNull final Properties ctx,
-			final boolean isCompleteDoc)
+			@Nullable final Boolean isCompleteDoc)
 	{
 		final LockOwner lockOwner = LockOwner.newOwner(PPOrderCandidateEnqueuer.class.getSimpleName(), adPInstanceId.getRepoId());
 

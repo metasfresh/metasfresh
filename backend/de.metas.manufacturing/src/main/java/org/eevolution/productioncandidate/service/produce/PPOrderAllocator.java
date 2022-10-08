@@ -34,7 +34,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Value
-@Builder
 public class PPOrderAllocator
 {
 	@NonNull
@@ -53,6 +52,18 @@ public class PPOrderAllocator
 	@NonFinal
 	Quantity allocatedQty;
 
+	@Builder
+	public PPOrderAllocator(
+			@NonNull final String headerAggKey,
+			@NonNull final PPOrderCreateRequest.PPOrderCreateRequestBuilder ppOrderCreateRequestBuilder,
+			@NonNull final Quantity capacityPerProductionCycle)
+	{
+		this.headerAggKey = headerAggKey;
+		this.ppOrderCreateRequestBuilder = ppOrderCreateRequestBuilder;
+		this.capacityPerProductionCycle = capacityPerProductionCycle;
+		this.allocatedQty = capacityPerProductionCycle.toZero();
+	}
+
 	public boolean allocate(@NonNull final PPOrderCandidateToAllocate ppOrderCandidateToAllocate)
 	{
 		if (!headerAggKey.equals(ppOrderCandidateToAllocate.getHeaderAggregationKey()))
@@ -60,7 +71,7 @@ public class PPOrderAllocator
 			return false;
 		}
 
-		if (isFullCapacity())
+		if (isFullCapacityReached())
 		{
 			return false;
 		}
@@ -86,7 +97,7 @@ public class PPOrderAllocator
 				.build();
 	}
 
-	private boolean isFullCapacity()
+	private boolean isFullCapacityReached()
 	{
 		return !isInfiniteCapacity() && capacityPerProductionCycle.equals(allocatedQty);
 	}
