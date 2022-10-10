@@ -64,7 +64,7 @@ public class MonitorAspect
 		final PerformanceMonitoringService.Metadata metadata;
 		final Callable callable = getCallableFromProceedingJoinPoint( pjp );
 
-		if(perfMonEnvVar = false)
+		if(perfMonEnvVar == false)
 		{
 			callable.call();
 		}

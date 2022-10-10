@@ -8,6 +8,8 @@ import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.cache.model.POCacheSourceModel;
 import de.metas.document.sequence.IDocumentNoBL;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
@@ -18,6 +20,7 @@ import org.adempiere.ad.session.ISessionDAO;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
 
 import java.util.List;
 
@@ -33,6 +36,7 @@ final class POServicesFacade
 	private IDocumentNoBL _documentNoBL;
 	private ITrxManager _trxManager;
 	private ADReferenceService _adReferenceService;
+	private PerformanceMonitoringService _performanceMonitoringService;
 
 	private IDeveloperModeBL developerModeBL()
 	{
@@ -132,6 +136,13 @@ final class POServicesFacade
 			adReferenceService = this._adReferenceService = ADReferenceService.get();
 		}
 		return adReferenceService;
+	}
+
+	public PerformanceMonitoringService performanceMonitoringService()
+	{
+		return SpringContextHolder.instance.getBeanOr(
+			PerformanceMonitoringService.class,
+			NoopPerformanceMonitoringService.INSTANCE);
 	}
 
 	//

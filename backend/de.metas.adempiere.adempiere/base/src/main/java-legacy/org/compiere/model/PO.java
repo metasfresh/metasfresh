@@ -280,7 +280,7 @@ public abstract class PO
 
 	private static final String COLUMNNAME_IsApproved = "IsApproved";
 
-	private final POServicesFacade services = new POServicesFacade();
+	private static final POServicesFacade services = new POServicesFacade();
 	private Properties p_ctx;
 	/**
 	 * Model Info
@@ -1691,6 +1691,14 @@ public abstract class PO
 		}
 	}    // load
 
+	private static final PerformanceMonitoringService.Metadata loadMetadata =
+			PerformanceMonitoringService.Metadata
+					.builder()
+					.name("PO")
+					.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
+					.action("load")
+					.build();
+
 	/**
 	 * (re)Load record with m_ID[*]
 	 *
@@ -1703,18 +1711,11 @@ public abstract class PO
 		try
 		{
 			m_loading = true;
-			final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
-					PerformanceMonitoringService.class,
-					NoopPerformanceMonitoringService.INSTANCE);
+			final PerformanceMonitoringService service = services.performanceMonitoringService();
 
 			return service.monitor(
 					() -> load0(trxName, false), // gh #986 isRetry=false because this is our first attempt to load the record;
-					PerformanceMonitoringService.Metadata
-							.builder()
-							.name("PO")
-							.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
-							.action((new Throwable().getStackTrace()[0]).getMethodName())
-							.build());
+					loadMetadata);
 		}
 		finally
 		{
@@ -1965,22 +1966,6 @@ public abstract class PO
 	 * @return true if loaded
 	 */
 	protected final boolean load(final HashMap<String, String> hmIn)
-	{
-		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
-				PerformanceMonitoringService.class,
-				NoopPerformanceMonitoringService.INSTANCE);
-
-		return service.monitor(
-				() -> load0(hmIn),
-				PerformanceMonitoringService.Metadata
-						.builder()
-						.name("PO")
-						.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
-						.action((new Throwable().getStackTrace()[0]).getMethodName())
-						.build());
-	}
-
-	private final boolean load0(final HashMap<String, String> hmIn)
 	{
 		final int size = get_ColumnCount();
 		boolean success = true;
@@ -2840,6 +2825,14 @@ public abstract class PO
 		return success;
 	}    // save
 
+	private static final PerformanceMonitoringService.Metadata saveExMetadata =
+			PerformanceMonitoringService.Metadata
+					.builder()
+					.name("PO")
+					.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
+					.action("saveEx")
+					.build();
+
 	/**
 	 * Update Value or create new record.
 	 *
@@ -2848,18 +2841,11 @@ public abstract class PO
 	 */
 	public final void saveEx() throws AdempiereException
 	{
-		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
-				PerformanceMonitoringService.class,
-				NoopPerformanceMonitoringService.INSTANCE);
+		final PerformanceMonitoringService service = services.performanceMonitoringService();
 
 		service.monitor(
 				() -> saveEx0(),
-				PerformanceMonitoringService.Metadata
-						.builder()
-						.name("PO")
-						.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
-						.action((new Throwable().getStackTrace()[0]).getMethodName())
-						.build());
+				saveExMetadata);
 	}
 	private final void saveEx0() throws AdempiereException
 	{
@@ -4611,6 +4597,14 @@ public abstract class PO
 		log.trace(sb.toString());
 	}   // dump
 
+	private static final PerformanceMonitoringService.Metadata getAllIDsMetadata =
+			PerformanceMonitoringService.Metadata
+					.builder()
+					.name("PO")
+					.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
+					.action("getAllIDs")
+					.build();
+
 	/*************************************************************************
 	 * Get All IDs of Table.
 	 * Used for listing all Entities
@@ -4630,18 +4624,11 @@ public abstract class PO
 	 */
 	public static int[] getAllIDs(final String TableName, final String WhereClause, final String trxName)
 	{
-		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
-				PerformanceMonitoringService.class,
-				NoopPerformanceMonitoringService.INSTANCE);
+		final PerformanceMonitoringService service = services.performanceMonitoringService();
 
 		return service.monitor(
 				() -> getAllIDs0(TableName, WhereClause, trxName),
-				PerformanceMonitoringService.Metadata
-						.builder()
-						.name("PO")
-						.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
-						.action((new Throwable().getStackTrace()[0]).getMethodName())
-						.build());
+				getAllIDsMetadata);
 	}
 
 	private static int[] getAllIDs0(final String TableName, final String WhereClause, final String trxName)

@@ -64,7 +64,7 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 			@NonNull final Callable<V> callable,
 			@NonNull final PerformanceMonitoringService.Metadata metadata)
 	{
-		if(perfMonEnvVar = false)
+		if(perfMonEnvVar == false)
 		{
 			try
 			{
