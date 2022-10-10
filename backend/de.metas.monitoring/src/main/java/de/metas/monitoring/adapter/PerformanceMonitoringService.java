@@ -73,7 +73,7 @@ public interface PerformanceMonitoringService
 		String action;
 
 		@Nullable
-		String window;
+		String windowNameAndId;
 
 		@Singular
 		Map<String, String> labels;

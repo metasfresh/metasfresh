@@ -29,6 +29,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.window.api.IADWindowDAO;
+import org.adempiere.exceptions.AdempiereException;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
@@ -61,29 +62,25 @@ public class MonitorAspect
 	@Around("execution(* *(..)) && @annotation(de.metas.monitoringannotation.annotation.Monitor)")
 	public Object monitorMethod(ProceedingJoinPoint pjp) throws Throwable
 	{
-		final PerformanceMonitoringService.Metadata metadata;
-		final Callable callable = getCallableFromProceedingJoinPoint( pjp );
+		final Callable callable = wrapAsCallable(pjp );
 
 		if(perfMonEnvVar == false)
 		{
 			callable.call();
 		}
 
+		final PerformanceMonitoringService.Metadata metadata;
+
 		Method method = ((MethodSignature) pjp.getSignature()).getMethod();
 		Monitor monitorAnnotation = method.getAnnotation(Monitor.class);
 
 		if(monitorAnnotation.type() == PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 		{
-			HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-			Map pathVariables = (Map) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
-			String windowId = (String)pathVariables.get("windowId");
-			String window = (Services.get(IADWindowDAO.class).retrieveWindowName(AdWindowId.ofRepoId(Integer.parseInt(windowId)))).getDefaultValue();
-
 			metadata = PerformanceMonitoringService.Metadata.builder()
 					.name(pjp.getTarget().getClass().getSimpleName())
 					.type(monitorAnnotation.type())
 					.action(method.getName())
-					.window(window + " (" + windowId + ")")
+					.windowNameAndId(getWindowNameAndId())
 					.build();
 		}
 		else
@@ -99,7 +96,7 @@ public class MonitorAspect
 
 	}
 
-	private Callable<Object> getCallableFromProceedingJoinPoint(final ProceedingJoinPoint pjp)
+	private Callable<Object> wrapAsCallable(final ProceedingJoinPoint pjp)
 	{
 		Callable<Object> callable = new Callable<Object>()
 		{
@@ -117,7 +114,7 @@ public class MonitorAspect
 				}
 				catch (Throwable t)
 				{
-					throw new RuntimeException(t);
+					throw AdempiereException.wrapIfNeeded(t);
 				}
 			}
 
@@ -129,6 +126,16 @@ public class MonitorAspect
 		};
 
 		return callable;
+	}
+
+	private String getWindowNameAndId(){
+		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+		Map pathVariables = (Map) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
+		String windowId = (String)pathVariables.get("windowId");
+		IADWindowDAO iadWindowDAO = Services.get(IADWindowDAO.class);
+		String windowName = (iadWindowDAO.retrieveWindowName(AdWindowId.ofRepoId(Integer.parseInt(windowId)))).getDefaultValue();
+
+		return windowName + " (" + windowId + ")";
 	}
 
 

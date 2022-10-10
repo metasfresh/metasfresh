@@ -27,7 +27,6 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Timer;
 import lombok.NonNull;
-import org.adempiere.util.lang.IAutoCloseable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Service;
@@ -44,11 +43,7 @@ import java.util.concurrent.Callable;
 public class MicrometerPerformanceMonitoringService implements PerformanceMonitoringService
 {
 	private final MeterRegistry meterRegistry;
-	private final ThreadLocal<Integer> depth = ThreadLocal.withInitial(() -> 0);
-	private final ThreadLocal<String> initiator = ThreadLocal.withInitial(() -> "");
-	private final ThreadLocal<String> initiatorWindow = ThreadLocal.withInitial(() -> "");
-	private final ThreadLocal<ArrayList<String>> calledBy = ThreadLocal.withInitial(() -> new ArrayList<>());
-	private final ThreadLocal<Boolean> isInitiatorLabelActive = ThreadLocal.withInitial(() -> false);
+	private final ThreadLocal<PerformanceMonitoringData> perfMonDataTL = ThreadLocal.withInitial(() -> new PerformanceMonitoringData());
 
 	@Value("${performance.monitoring.enable:false}")
 	private Boolean perfMonEnvVar;
@@ -76,49 +71,55 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 			}
 		}
 
+		PerformanceMonitoringData perfMonData = perfMonDataTL.get();
+
 		final ArrayList<Tag> tags = createTagsFromLabels(metadata.getLabels());
 
 		mkTagIfNotNull("name", metadata.getName()).ifPresent(tags::add);
 		mkTagIfNotNull("action", metadata.getAction()).ifPresent(tags::add);
-		mkTagIfNotNull("depth", String.valueOf(depth.get())).ifPresent(tags::add);
+		mkTagIfNotNull("depth", String.valueOf(perfMonData.getDepth())).ifPresent(tags::add);
 
-		if(depth.get() == 0
+		if(perfMonData.getDepth() == 0
 				&& metadata.getType() == Type.REST_CONTROLLER_WITH_WINDOW_ID
 				&& metadata.getAction() != null
-				&& metadata.getWindow() != null)
+				&& metadata.getWindowNameAndId() != null)
 		{
-			isInitiatorLabelActive.set(true);
-			initiator.set(metadata.getName() + " - " + metadata.getAction());
-			initiatorWindow.set(metadata.getWindow());
-			calledBy.get().add(0, "HTTP Request");
+			perfMonData.setIsInitiatorLabelActive(true);
+			perfMonData.setInitiator(metadata.getName() + " - " + metadata.getAction());
+			perfMonData.setInitiatorWindow(metadata.getWindowNameAndId());
+			perfMonData.getCalledBy().add(0, "HTTP Request");
 
 		}
-		else if(depth.get() == 0
+		else if(perfMonData.getDepth() == 0
 				&& metadata.getType() == Type.REST_CONTROLLER
 				&& metadata.getAction() != null)
 		{
-			isInitiatorLabelActive.set(true);
-			initiator.set(metadata.getName() + " - " + metadata.getAction());
-			initiatorWindow.set(null);
-			calledBy.get().add(0, "HTTP Request");
+			perfMonData.setIsInitiatorLabelActive(true);
+			perfMonData.setInitiator(metadata.getName() + " - " + metadata.getAction());
+			perfMonData.setInitiatorWindow(null);
+			perfMonData.getCalledBy().add(0, "HTTP Request");
 		}
-		else if(depth.get() == 0)
+		else if(perfMonData.getDepth() == 0)
 		{
-			isInitiatorLabelActive.set(false);
+			perfMonData.setIsInitiatorLabelActive(false);
 		}
 
-		if(isInitiatorLabelActive.get())
+		if(perfMonData.getIsInitiatorLabelActive())
 		{
-			mkTagIfNotNull("initiator", initiator.get()).ifPresent(tags::add);
-			mkTagIfNotNull("window", initiatorWindow.get()).ifPresent(tags::add);
+			mkTagIfNotNull("initiator", perfMonData.getInitiator()).ifPresent(tags::add);
+			mkTagIfNotNull("window", perfMonData.getInitiatorWindow()).ifPresent(tags::add);
 			mkTagIfNotNull("callerName", metadata.getName() + " - " + metadata.getAction()).ifPresent(tags::add);
-			mkTagIfNotNull("calledBy", calledBy.get().get(depth.get())).ifPresent(tags::add);
-			calledBy.get().add(depth.get() + 1 ,metadata.getName() + " - " + metadata.getAction());
+			mkTagIfNotNull("calledBy", perfMonData.getCalledBy().get(perfMonData.getDepth())).ifPresent(tags::add);
+			perfMonData.getCalledBy().add(perfMonData.getDepth() + 1 ,metadata.getName() + " - " + metadata.getAction());
 
-			depth.set(depth.get() + 1);
-			try(final IAutoCloseable ignored = this.reduceDepth())
+			perfMonData.setDepth(perfMonData.getDepth() + 1);
+			try
 			{
 				return recordCallable(callable, tags, "mf." + metadata.getType().getCode());
+			}
+			finally
+			{
+				perfMonData.setDepth(perfMonData.getDepth() - 1);
 			}
 		}
 
@@ -167,12 +168,5 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 		{
 			throw PerformanceMonitoringServiceUtil.asRTE(e);
 		}
-	}
-
-	private IAutoCloseable reduceDepth()
-	{
-		return () -> {
-			depth.set(depth.get() - 1);
-		};
 	}
 }
