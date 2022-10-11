@@ -8,6 +8,7 @@ import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutField;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.compiere.model.I_AD_Column;
@@ -45,7 +46,9 @@ import java.util.regex.Pattern;
 @Component
 public class AD_Column
 {
-	public static final String ENTITYTYPE_Dictionary = "D";
+	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+
+	private static final String ENTITYTYPE_Dictionary = "D";
 
 	public AD_Column()
 	{
@@ -355,6 +358,16 @@ public class AD_Column
 	public void onAD_Reference_Value(final I_AD_Column column)
 	{
 		updateIsExcludeFromZoomTargets(column);
+
+		if (column.getAD_Reference_ID() == DisplayType.List)
+		{
+			final ReferenceId referenceId = ReferenceId.ofRepoIdOrNull(column.getAD_Reference_Value_ID());
+			if(referenceId != null)
+			{
+				final IADReferenceDAO.ADRefList adRefList = adReferenceDAO.getRefListById(referenceId);
+				column.setFieldLength(adRefList.getFieldLength());
+			}
+		}
 	}
 
 	private void updateColumnForReferenceInteger(final I_AD_Column column)
