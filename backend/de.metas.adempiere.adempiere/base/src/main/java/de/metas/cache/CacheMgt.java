@@ -183,27 +183,6 @@ public final class CacheMgt
 			return 0;
 		}
 
-		final Metadata metadata = Metadata.builder()
-				.name("CacheMgt")
-				.action((new Throwable().getStackTrace()[0]).getMethodName())
-				.type(Type.CACHE_OPERATION)
-				.build();
-		return getPerfMonService().monitor(
-				() -> reset0(),
-				metadata);
-	}
-
-	@Nullable
-	private PerformanceMonitoringService getPerfMonService()
-	{
-		// this is called already very early in the startup phase, so we need to avoid an exception if there is no spring context yet
-		return SpringContextHolder.instance.getBeanOr(
-				PerformanceMonitoringService.class,
-				NoopPerformanceMonitoringService.INSTANCE);
-	}
-
-	private long reset0()
-	{
 		long total = 0;
 		try
 		{
@@ -350,19 +329,6 @@ public final class CacheMgt
 	 * @return how many cache entries were invalidated (estimated!)
 	 */
 	long reset(@NonNull final CacheInvalidateMultiRequest multiRequest, @NonNull final ResetMode mode)
-	{
-		final Metadata metadata = Metadata.builder()
-				.name("CacheMgt")
-				.action((new Throwable().getStackTrace()[0]).getMethodName())
-				.type(Type.CACHE_OPERATION)
-				.label("resetMode", mode.toString())
-				.build();
-		return getPerfMonService().monitor(
-				() -> reset0(multiRequest, mode),
-				metadata);
-	}
-
-	private Long reset0(final CacheInvalidateMultiRequest multiRequest, final ResetMode mode)
 	{
 		final long resetCount;
 		if (mode.isResetLocal())
