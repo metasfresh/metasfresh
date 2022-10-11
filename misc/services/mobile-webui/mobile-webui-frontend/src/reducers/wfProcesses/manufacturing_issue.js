@@ -181,6 +181,7 @@ registerHandler({
   componentType: COMPONENT_TYPE,
   normalizeComponentProps: () => {}, // don't add componentProps to state
   mergeActivityDataStored: ({ draftActivityDataStored, fromActivity }) => {
+    draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.isAlwaysAvailableToUser ?? true;
     draftActivityDataStored.lines = normalizeLines(fromActivity.componentProps.lines);
     draftActivityDataStored.scaleDevice = fromActivity.componentProps.scaleDevice;
     draftActivityDataStored.qtyRejectedReasons = fromActivity.componentProps.qtyRejectedReasons;
