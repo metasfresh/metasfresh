@@ -96,7 +96,7 @@ public class MonitorAspect
 
 	}
 
-	private Callable<Object> wrapAsCallable(final ProceedingJoinPoint pjp)
+	private static Callable<Object> wrapAsCallable(final ProceedingJoinPoint pjp)
 	{
 		Callable<Object> callable = new Callable<Object>()
 		{

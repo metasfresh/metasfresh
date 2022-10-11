@@ -301,21 +301,6 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 			final LockOwner lockOwner,
 			final IInvoiceCandidateHandler invoiceCandiateHandler)
 	{
-		final PerformanceMonitoringService performanceMonitoringService = SpringContextHolder.instance.getBean(PerformanceMonitoringService.class);
-		final Metadata request = Metadata.builder()
-				.type(PerformanceMonitoringService.Type.INVOICE)
-				.action("createMissingInvoiceCandidates")
-				.name("createMissingInvoiceCandidatesForModel")
-				.build();
-		return performanceMonitoringService.monitor(() -> createForModel0(model, lockOwner, invoiceCandiateHandler), request);
-
-	}
-
-	private ImmutableList<I_C_Invoice_Candidate> createForModel0(
-			final Object model,
-			final LockOwner lockOwner,
-			final IInvoiceCandidateHandler invoiceCandiateHandler)
-	{
 			if (!invoiceCandiateHandler.getSpecificCandidatesAutoCreateMode(model).isDoSomething())
 		{
 			return ImmutableList.of();

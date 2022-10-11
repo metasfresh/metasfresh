@@ -6,6 +6,7 @@ import java.util.concurrent.Callable;
 import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import lombok.Builder;
 import lombok.Getter;
@@ -76,13 +77,13 @@ public interface PerformanceMonitoringService
 		String windowNameAndId;
 
 		@Singular
-		Map<String, String> labels;
+		ImmutableMap<String, String> labels;
 
 		@Nullable
 		BiConsumer<String, String> distributedHeadersInjector;
 
 		@Singular
-		Map<String, String> distributedTransactionHeaders;
+		ImmutableMap<String, String> distributedTransactionHeaders;
 	}
 
 	enum Type
