@@ -370,7 +370,7 @@ public final class DefaultView implements IEditableView
 						.builder()
 						.name("DefaultView")
 						.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
-						.action((new Throwable().getStackTrace()[0]).getMethodName())
+						.action("getPage")
 						.build());
 	}
 
