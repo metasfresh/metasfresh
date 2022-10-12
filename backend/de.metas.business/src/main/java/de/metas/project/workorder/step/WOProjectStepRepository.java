@@ -38,6 +38,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_Project_WO_Step;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
@@ -63,6 +64,7 @@ public class WOProjectStepRepository
 	{
 		return queryBL.createQueryBuilder(I_C_Project_WO_Step.class)
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Project_WO_Step.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
 				.addEqualsFilter(I_C_Project_WO_Step.COLUMNNAME_C_Project_ID, projectStepId.getProjectId().getRepoId())
 				.addEqualsFilter(I_C_Project_WO_Step.COLUMNNAME_C_Project_WO_Step_ID, projectStepId.getRepoId())
 				.create()
@@ -113,6 +115,7 @@ public class WOProjectStepRepository
 		return queryBL
 				.createQueryBuilder(I_C_Project_WO_Step.class)
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Project_WO_Step.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
 				.addInArrayFilter(I_C_Project_WO_Step.COLUMNNAME_C_Project_WO_Step_ID, stepIds)
 				.stream()
 				.map(WOProjectStepRepository::ofRecord)
@@ -124,6 +127,7 @@ public class WOProjectStepRepository
 	{
 		return queryBL.createQueryBuilder(I_C_Project_WO_Step.class)
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Project_WO_Step.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
 				.addEqualsFilter(I_C_Project_WO_Step.COLUMNNAME_C_Project_ID, projectId.getRepoId())
 				.create()
 				.stream()
@@ -146,6 +150,7 @@ public class WOProjectStepRepository
 		final ImmutableListMultimap<ProjectId, WOProjectStep> stepsByProjectId = queryBL
 				.createQueryBuilder(I_C_Project_WO_Step.class)
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Project_WO_Step.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
 				.addInArrayFilter(I_C_Project_WO_Step.COLUMNNAME_C_Project_ID, projectIds)
 				.stream()
 				.map(WOProjectStepRepository::ofRecord)
@@ -253,6 +258,7 @@ public class WOProjectStepRepository
 	public List<WOProjectStep> getByQuery(@NonNull final WOProjectStepQuery query)
 	{
 		return queryBL.createQueryBuilder(I_C_Project_WO_Step.class)
+				.addEqualsFilter(I_C_Project_WO_Step.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
 				.addEqualsFilter(I_C_Project_WO_Step.COLUMNNAME_AD_Org_ID, query.getOrgId())
 				.addInArrayFilter(I_C_Project_WO_Step.COLUMNNAME_ExternalId, query.getExternalIds())
 				.create()
@@ -265,6 +271,7 @@ public class WOProjectStepRepository
 	{
 		final int lastSeqNo = queryBL.createQueryBuilder(I_C_Project_WO_Step.class)
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Project_WO_Step.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
 				.addEqualsFilter(I_C_Project_WO_Step.COLUMNNAME_C_Project_ID, projectId)
 				.create()
 				.maxInt(I_C_Project_WO_Step.COLUMNNAME_SeqNo);
@@ -284,6 +291,7 @@ public class WOProjectStepRepository
 
 		final ImmutableMap<WOProjectStepId, I_C_Project_WO_Step> recordsById = queryBL
 				.createQueryBuilder(I_C_Project_WO_Step.class)
+				.addEqualsFilter(I_C_Project_WO_Step.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
 				.addInArrayFilter(I_C_Project_WO_Step.COLUMNNAME_C_Project_WO_Step_ID, stepIds)
 				.create()
 				.map(WOProjectStepRepository::extractWOProjectStepId);
