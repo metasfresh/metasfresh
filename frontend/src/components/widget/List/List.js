@@ -200,9 +200,7 @@ class ListWidget extends Component {
   };
 
   focus = () => {
-    this.setState({
-      listFocused: true,
-    });
+    this.setState({ listFocused: true });
   };
 
   handleBlur = () => {
@@ -222,7 +220,11 @@ class ListWidget extends Component {
     );
   };
 
-  closeDropdownList = () => {
+  handleOpenDropdownRequest = () => {
+    this.activate();
+  };
+
+  handleCloseDropdownRequest = () => {
     this.setState({ listToggled: false });
   };
 
@@ -328,8 +330,8 @@ class ListWidget extends Component {
         selected={lookupList ? selectedItem : selected}
         isToggled={listToggled}
         isFocused={listFocused}
-        onOpenDropdown={this.activate}
-        onCloseDropdown={this.closeDropdownList}
+        onOpenDropdown={this.handleOpenDropdownRequest}
+        onCloseDropdown={this.handleCloseDropdownRequest}
         onFocus={this.handleFocus}
         onBlur={this.handleBlur}
         onSelect={this.handleSelect}
