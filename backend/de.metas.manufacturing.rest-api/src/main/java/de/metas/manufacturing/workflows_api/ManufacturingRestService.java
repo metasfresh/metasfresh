@@ -20,6 +20,7 @@ import de.metas.manufacturing.workflows_api.activity_handlers.work_report.WorkRe
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.WFActivity;
+import de.metas.workflow.rest_api.model.WFActivityAlwaysAvailableToUser;
 import de.metas.workflow.rest_api.model.WFActivityId;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessId;
@@ -77,7 +78,8 @@ public class ManufacturingRestService
 		final WFActivity.WFActivityBuilder builder = WFActivity.builder()
 				.id(WFActivityId.ofId(jobActivity.getId()))
 				.caption(TranslatableStrings.anyLanguage(jobActivity.getName()))
-				.status(jobActivity.getStatus());
+				.status(jobActivity.getStatus())
+				.alwaysAvailableToUser(WFActivityAlwaysAvailableToUser.ofBoolean(jobActivity.getAlwaysAvailableToUser().toBooleanObject()));
 
 		switch (jobActivity.getType())
 		{

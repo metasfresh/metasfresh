@@ -71,8 +71,7 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 				.map(line -> toJson(line, job.getCustomerId(), jsonOpts))
 				.collect(ImmutableList.toImmutableList());
 
-		return UIComponent.builder()
-				.type(COMPONENT_TYPE)
+		return UIComponent.builderFrom(COMPONENT_TYPE, wfActivity)
 				.properties(Params.builder()
 						.valueObj("lines", lines)
 						.build())
