@@ -22,13 +22,6 @@ package de.metas.invoicecandidate.agg.key.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import org.compiere.util.Util;
-import org.compiere.util.Util.ArrayKey;
-
 import de.metas.aggregation.api.AbstractAggregationKeyBuilder;
 import de.metas.aggregation.api.AggregationId;
 import de.metas.aggregation.api.AggregationKey;
@@ -37,6 +30,12 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.compiere.util.Util;
+import org.compiere.util.Util.ArrayKey;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * AggregationKey value handler for Invoice Candidates in Material Tracking

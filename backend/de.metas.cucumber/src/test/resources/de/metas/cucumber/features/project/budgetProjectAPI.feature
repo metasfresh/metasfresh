@@ -231,6 +231,8 @@ Feature: Budget Project API Test
       | C_Project | POReference | true                      |
       | C_Project | Note        | true                      |
 
+    And the metasfresh cache is reset
+
     And a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/project/budget' and fulfills with '200' status code
 
 """
@@ -303,3 +305,5 @@ Feature: Budget Project API Test
       | TableName | ColumnName  | OPT.IsRestAPICustomColumn |
       | C_Project | POReference | false                     |
       | C_Project | Note        | false                     |
+
+    And the metasfresh cache is reset

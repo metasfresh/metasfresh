@@ -1,5 +1,6 @@
 package de.metas.distribution.workflows_api;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.dao.ValueRestriction;
 import de.metas.distribution.ddorder.DDOrderId;
 import de.metas.distribution.ddorder.DDOrderQuery;
@@ -23,7 +24,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.I_C_UOM;
 import org.eevolution.model.I_DD_Order;
 import org.springframework.stereotype.Service;
 
@@ -65,13 +65,18 @@ public class DistributionRestService
 
 	public Stream<DDOrderReference> streamActiveReferencesAssignedTo(@NonNull final UserId responsibleId)
 	{
-		return ddOrderService.streamDDOrders(DDOrderQuery.builder()
-						.docStatus(DocStatus.Completed)
-						.responsibleId(ValueRestriction.equalsTo(responsibleId))
-						.orderBy(DDOrderQuery.OrderBy.PriorityRule)
-						.orderBy(DDOrderQuery.OrderBy.DatePromised)
-						.build())
+		return streamDDOrdersAssignedTo(responsibleId)
 				.map(DistributionRestService::toDDOrderReference);
+	}
+
+	private Stream<I_DD_Order> streamDDOrdersAssignedTo(final @NonNull UserId responsibleId)
+	{
+		return ddOrderService.streamDDOrders(DDOrderQuery.builder()
+				.docStatus(DocStatus.Completed)
+				.responsibleId(ValueRestriction.equalsTo(responsibleId))
+				.orderBy(DDOrderQuery.OrderBy.PriorityRule)
+				.orderBy(DDOrderQuery.OrderBy.DatePromised)
+				.build());
 	}
 
 	public Stream<DDOrderReference> streamActiveReferencesNotAssigned()
@@ -113,10 +118,39 @@ public class DistributionRestService
 				.build().execute();
 	}
 
+	public DistributionJob assignJob(
+			final @NonNull DDOrderId ddOrderId,
+			final @NonNull UserId newResponsibleId)
+	{
+		final DistributionJobLoader loader = newLoader();
+
+		final I_DD_Order ddOrderRecord = loader.getDDOrder(ddOrderId);
+		final UserId oldResponsibleId = DistributionJobLoader.extractResponsibleId(ddOrderRecord);
+		if (oldResponsibleId == null)
+		{
+			ddOrderRecord.setAD_User_Responsible_ID(newResponsibleId.getRepoId());
+			ddOrderService.save(ddOrderRecord);
+		}
+		else if (!UserId.equals(oldResponsibleId, newResponsibleId))
+		{
+			throw new AdempiereException("Already assigned")
+					.setParameter("ddOrder", ddOrderRecord)
+					.setParameter("oldResponsibleId", oldResponsibleId)
+					.setParameter("newResponsibleId", newResponsibleId);
+		}
+
+		return loader.load(ddOrderRecord);
+	}
+
 	public DistributionJob getJobById(final DDOrderId ddOrderId)
 	{
-		return new DistributionJobLoader(loadingSupportServices)
-				.load(ddOrderId);
+		return newLoader().load(ddOrderId);
+	}
+
+	@NonNull
+	private DistributionJobLoader newLoader()
+	{
+		return new DistributionJobLoader(loadingSupportServices);
 	}
 
 	public DistributionJob processEvent(@NonNull final DistributionJob job, @NonNull final JsonDistributionEvent event)
@@ -125,8 +159,6 @@ public class DistributionRestService
 
 		if (event.getPickFrom() != null)
 		{
-			final I_C_UOM uom = ddOrderMoveScheduleService.getScheduleById(scheduleId).getUOM();
-
 			final DDOrderMoveSchedule changedSchedule = ddOrderMoveScheduleService.pickFromHU(DDOrderPickFromRequest.builder()
 					.scheduleId(scheduleId)
 					//.huQRCode(StringUtils.trimBlankToOptional(event.getPickFrom().getQrCode()).map(HUQRCode::fromGlobalQRCodeJsonString).orElse(null))
@@ -163,7 +195,27 @@ public class DistributionRestService
 
 	public void abort(@NonNull final DistributionJob job)
 	{
-		distributionJobHUReservationService.releaseAllReservations(job);
-		ddOrderService.unassignFromResponsible(job.getDdOrderId());
+		abort().job(job).execute();
+	}
+
+	private DistributionJobAbortCommand.DistributionJobAbortCommandBuilder abort()
+	{
+		return DistributionJobAbortCommand.builder()
+				.ddOrderService(ddOrderService)
+				.distributionJobHUReservationService(distributionJobHUReservationService);
+	}
+
+	public void abortAll(@NonNull final UserId responsibleId)
+	{
+		final DistributionJobLoader loader = newLoader();
+		final ImmutableList<DistributionJob> jobs = streamDDOrdersAssignedTo(responsibleId)
+				.map(loader::load)
+				.collect(ImmutableList.toImmutableList());
+		if (jobs.isEmpty())
+		{
+			return;
+		}
+
+		abort().jobs(jobs).execute();
 	}
 }

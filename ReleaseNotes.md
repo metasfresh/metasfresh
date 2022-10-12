@@ -12,6 +12,9 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13733](https://github.com/metasfresh/metasfresh/issues/13733) edit translations for ad_references #13733
+  * [#13707](https://github.com/metasfresh/metasfresh/issues/13707) Fix Mail notifications
+  * [#13648](https://github.com/metasfresh/metasfresh/issues/13648) Propagate Section_ID from OLCand to Payment
   * [#13646](https://github.com/metasfresh/metasfresh/issues/13646) Cucumber: EffortControl coverage
   * [#13663](https://github.com/metasfresh/metasfresh/issues/13663) Sub-Task No 1: Test & Fix Sales/Purchase order (w/ ship & receive) - No Product Planning 
   * [#13643] https://github.com/metasfresh/metasfresh/pull/13643#pullrequestreview-1118261799 Support SEPA for QR
@@ -98,6 +101,7 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#13725](https://github.com/metasfresh/metasfresh/issues/13725) C_DocTypeShipment_ID not respected when generating Receipt/Shipment
   * [#13586](https://github.com/metasfresh/metasfresh/issues/13586) Fix material-dispo bug
   * [#13533](https://github.com/metasfresh/metasfresh/issues/13533) BUG: I_C_InvoiceCandidate.QtyDelivered wrongly computed for manual invoice candidates 
   * [#13550](https://github.com/metasfresh/metasfresh/issues/13550) [React] - Calendar gives blank screen when selecting a date from past
@@ -131,6 +135,7 @@ Here come the actual release notes:
 # metasfresh 5.175 (current RC)
 ## Features
 * metasfresh
+  * [#13637](https://github.com/metasfresh/metasfresh/issues/13637) Cucumber: drop MD_Stock_StepDef#truncateMDStockData
   * [#13376](https://github.com/metasfresh/metasfresh/issues/13376) Cucumber: Products (item) invoice candidates
   * [#13355](https://github.com/metasfresh/metasfresh/issues/13355) Packing material invoice candidates: shipments
   * [#13449](https://github.com/metasfresh/metasfresh/issues/13449) Empties Receive and Returns

@@ -34,6 +34,7 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
+import de.metas.cucumber.stepdefs.sectioncode.M_SectionCode_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.document.engine.IDocument;
@@ -72,6 +73,7 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_SectionCode;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
 
@@ -107,6 +109,7 @@ public class M_InOut_StepDef
 	private final C_OrderLine_StepDefData orderLineTable;
 	private final M_Warehouse_StepDefData warehouseTable;
 	private final AD_Message_StepDefData messageTable;
+	private final M_SectionCode_StepDefData sectionCodeTable;
 
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
@@ -127,7 +130,8 @@ public class M_InOut_StepDef
 			@NonNull final C_Order_StepDefData orderTable,
 			@NonNull final C_OrderLine_StepDefData orderLineTable,
 			@NonNull final M_Warehouse_StepDefData warehouseTable,
-			@NonNull final AD_Message_StepDefData messageTable)
+			@NonNull final AD_Message_StepDefData messageTable,
+			@NonNull final M_SectionCode_StepDefData sectionCodeTable)
 	{
 		this.shipmentTable = shipmentTable;
 		this.shipmentLineTable = shipmentLineTable;
@@ -138,6 +142,7 @@ public class M_InOut_StepDef
 		this.orderLineTable = orderLineTable;
 		this.warehouseTable = warehouseTable;
 		this.messageTable = messageTable;
+		this.sectionCodeTable = sectionCodeTable;
 	}
 
 	@And("^validate the created (shipments|material receipt)$")
@@ -195,6 +200,13 @@ public class M_InOut_StepDef
 						.firstOnlyNotNull(I_C_DocType.class);
 
 				assertThat(shipment.getC_DocType_ID()).isEqualTo(docType.getC_DocType_ID());
+			}
+
+			final String sectionCodeIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_InOut.COLUMNNAME_M_SectionCode_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(sectionCodeIdentifier))
+			{
+				final I_M_SectionCode sectionCode = sectionCodeTable.get(sectionCodeIdentifier);
+				assertThat(shipment.getM_SectionCode_ID()).isEqualTo(sectionCode.getM_SectionCode_ID());
 			}
 		}
 	}

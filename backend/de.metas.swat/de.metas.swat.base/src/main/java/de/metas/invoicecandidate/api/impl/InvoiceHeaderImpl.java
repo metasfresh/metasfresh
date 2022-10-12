@@ -3,6 +3,7 @@ package de.metas.invoicecandidate.api.impl;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.impex.InputDataSourceId;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoicecandidate.api.IInvoiceCandAggregate;
 import de.metas.invoicecandidate.api.IInvoiceHeader;
@@ -12,12 +13,12 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.Getter;
 import lombok.Setter;
 import org.compiere.model.I_C_DocType;
-import de.metas.impex.InputDataSourceId;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -97,6 +98,9 @@ import java.util.List;
 	private int C_Incoterms_ID;
 
 	private String incotermLocation;
+
+	@Setter
+	private SectionCodeId sectionCodeId;
 
 	/* package */ InvoiceHeaderImpl()
 	{
@@ -388,4 +392,9 @@ import java.util.List;
 
 	public void setAD_InputDataSource_ID(final InputDataSourceId inputDataSourceId){this.inputDataSourceId = inputDataSourceId;}
 
+	@Override
+	public SectionCodeId getM_SectionCode_ID()
+	{
+		return sectionCodeId;
+	}
 }

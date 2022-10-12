@@ -150,7 +150,7 @@ public class PPOrderIssuePlanCreateCommand
 		}
 
 		final Quantity qtyToAllocate = targetQty.subtract(allocatedQty);
-		if (qtyToAllocate.signum() != 0)
+		if (qtyToAllocate.signum() > 0)
 		{
 			throw new AdempiereException(MSG_CannotFullAllocate,
 					productBL.getProductName(productId),

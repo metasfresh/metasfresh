@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
@@ -73,6 +74,9 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -116,9 +120,9 @@ public class InOutProducerFromShipmentScheduleWithHU
 	private final transient ITrxItemProcessorExecutorService trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
 	private final transient IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 
-	final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepo = SpringContextHolder.instance.getBean(OrderEmailPropagationSysConfigRepository.class);
-
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+
+	final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepo = SpringContextHolder.instance.getBean(OrderEmailPropagationSysConfigRepository.class);
 
 	private final InOutGenerateResult result;
 	private final IAggregationKeyBuilder<I_M_ShipmentSchedule> shipmentScheduleKeyBuilder;
@@ -329,13 +333,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 
 		// Document Type
 		{
-			final DocTypeQuery query = DocTypeQuery.builder()
-					.docBaseType(DocBaseType.MaterialDelivery)
-					.adClientId(shipmentSchedule.getAD_Client_ID())
-					.adOrgId(shipmentSchedule.getAD_Org_ID())
-					.build();
-			final int docTypeId = docTypeDAO.getDocTypeId(query).getRepoId();
-			shipment.setC_DocType_ID(docTypeId);
+			shipment.setC_DocType_ID(getInoutDoctypeID(shipmentSchedule));
 			shipment.setMovementType(X_M_InOut.MOVEMENTTYPE_CustomerShipment);
 			shipment.setIsSOTrx(true);
 
@@ -383,10 +381,12 @@ public class InOutProducerFromShipmentScheduleWithHU
 				shipment.setM_Shipper_ID((order.getM_Shipper_ID()));
 				shipment.setM_Tour_ID(shipmentSchedule.getM_Tour_ID());
 
+
 				if (orderEmailPropagationSysConfigRepo.isPropagateToMInOut(ClientAndOrgId.ofClientAndOrg(shipmentSchedule.getAD_Client_ID(), shipmentSchedule.getAD_Org_ID())))
 				{
 					shipment.setEMail(order.getEMail());
 				}
+
 				shipment.setAD_InputDataSource_ID(order.getAD_InputDataSource_ID());
 
 				shipment.setSalesRep_ID(order.getSalesRep_ID());
@@ -417,6 +417,28 @@ public class InOutProducerFromShipmentScheduleWithHU
 		InterfaceWrapperHelper.save(shipment);
 
 		return shipment;
+	}
+
+	private int getInoutDoctypeID(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		// allow specific inout doctype from order first
+		final de.metas.order.model.I_C_Order order = orderDAO.getById(OrderId.ofRepoIdOrNull(shipmentSchedule.getC_Order_ID()), de.metas.order.model.I_C_Order.class);
+		if (order != null && order.getC_Order_ID() > 0)
+		{
+			final I_C_DocType orderDoctype = docTypeDAO.getById(DocTypeId.ofRepoId(order.getC_DocType_ID()));
+			if (orderDoctype.getC_DocTypeShipment_ID() > 0)
+			{
+				return orderDoctype.getC_DocTypeShipment_ID();
+			}
+		}
+
+		final DocTypeQuery query = DocTypeQuery.builder()
+				.docBaseType(DocBaseType.valueOf(X_C_DocType.DOCBASETYPE_MaterialDelivery))
+				.adClientId(shipmentSchedule.getAD_Client_ID())
+				.adOrgId(shipmentSchedule.getAD_Org_ID())
+				.build();
+
+		return docTypeDAO.getDocTypeId(query).getRepoId();
 	}
 
 	/**

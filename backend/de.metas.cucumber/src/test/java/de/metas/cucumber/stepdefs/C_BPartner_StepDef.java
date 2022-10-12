@@ -30,6 +30,7 @@ import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
 import de.metas.cucumber.stepdefs.discountschema.M_DiscountSchema_StepDefData;
+import de.metas.cucumber.stepdefs.dunning.C_Dunning_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.externalreference.ExternalIdentifier;
@@ -49,6 +50,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Dunning;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_M_DiscountSchema;
@@ -94,6 +96,7 @@ public class C_BPartner_StepDef
 	private final M_Product_StepDefData productTable;
 	private final M_DiscountSchema_StepDefData discountSchemaTable;
 	private final AD_Org_StepDefData orgTable;
+	private final C_Dunning_StepDefData dunningTable;
 
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
@@ -107,7 +110,8 @@ public class C_BPartner_StepDef
 			@NonNull final M_PricingSystem_StepDefData pricingSystemTable,
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final M_DiscountSchema_StepDefData discountSchemaTable,
-			@NonNull final AD_Org_StepDefData orgTable)
+			@NonNull final AD_Org_StepDefData orgTable,
+			@NonNull final C_Dunning_StepDefData dunningTable)
 	{
 		this.bPartnerTable = bPartnerTable;
 		this.bPartnerLocationTable = bPartnerLocationTable;
@@ -115,6 +119,7 @@ public class C_BPartner_StepDef
 		this.productTable = productTable;
 		this.discountSchemaTable = discountSchemaTable;
 		this.orgTable = orgTable;
+		this.dunningTable = dunningTable;
 	}
 
 	@Given("metasfresh contains C_BPartners:")
@@ -487,6 +492,13 @@ public class C_BPartner_StepDef
 		if (EmptyUtil.isNotBlank(poInvoiceRule))
 		{
 			bPartner.setPO_InvoiceRule(poInvoiceRule);
+		}
+
+		final String dunningIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner.COLUMNNAME_C_Dunning_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (EmptyUtil.isNotBlank(dunningIdentifier))
+		{
+			final I_C_Dunning dunning = dunningTable.get(dunningIdentifier);
+			bPartner.setC_Dunning_ID(dunning.getC_Dunning_ID());
 		}
 
 		InterfaceWrapperHelper.save(bPartner);

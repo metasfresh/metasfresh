@@ -55,14 +55,14 @@ public class JsonMetasfreshId
 	@Nullable
 	public static JsonMetasfreshId ofOrNull(@Nullable final Integer value)
 	{
-		if (isEmpty(value))
+		if (isNullOrNegative(value))
 		{
 			return null;
 		}
 		return new JsonMetasfreshId(value);
 	}
 
-	private static boolean isEmpty(@Nullable final Integer value)
+	private static boolean isNullOrNegative(@Nullable final Integer value)
 	{
 		return value == null || value < 0;
 	}

@@ -336,12 +336,13 @@ public abstract class ReceiptScheduleTestBase
 	protected I_C_Order createOrder(@Nullable final I_M_Warehouse warehouse)
 	{
 		final I_C_Order order = InterfaceWrapperHelper.create(ctx, I_C_Order.class, ITrx.TRXNAME_None);
-		order.setC_Order_ID(0);
+		order.setC_Order_ID(100);
+		order.setC_DocType_ID(receiptDocType.getC_DocType_ID());
 		order.setAD_Org_ID(warehouse == null ? 0 : warehouse.getAD_Org_ID()); // 07629
-		order.setAD_User_ID(0);
-		order.setBill_BPartner_ID(0);
-		order.setBill_Location_ID(0);
-		order.setBill_User_ID(0);
+		order.setAD_User_ID(100);
+		order.setBill_BPartner_ID(100);
+		order.setBill_Location_ID(100);
+		order.setBill_User_ID(100);
 		order.setC_BPartner_ID(bpartner1.getBpartnerId().getRepoId()); // needed to avoid an NPE in InOutGeneratedEventBus
 		order.setC_BPartner_Location_ID(bpartner1.getRepoId());
 

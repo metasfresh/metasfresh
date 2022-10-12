@@ -13,7 +13,6 @@ import { useBooleanSetting } from '../../reducers/settings';
 
 const GetQuantityDialog = ({
   userInfo,
-  qtyInitial,
   qtyTarget,
   qtyCaption,
   uom,
@@ -26,7 +25,7 @@ const GetQuantityDialog = ({
 }) => {
   const allowManualInput = useBooleanSetting('qtyInput.AllowManualInputWhenScaleDeviceExists');
 
-  const [qtyInfo, setQtyInfo] = useState(qtyInfos.invalidOfNumber(qtyInitial));
+  const [qtyInfo, setQtyInfo] = useState(qtyInfos.invalidOfNumber(qtyTarget));
   const [rejectedReason, setRejectedReason] = useState(null);
   const [useScaleDevice, setUseScaleDevice] = useState(!!scaleDevice);
 
@@ -91,8 +90,8 @@ const GetQuantityDialog = ({
                 )}
                 {userInfo &&
                   userInfo.map((item) => (
-                    <tr key={`userInfo_${item.caption}`}>
-                      <th>{item.caption}</th>
+                    <tr key={computeKeyFromUserInfoItem(item)}>
+                      <th>{computeCaptionFromUserInfoItem(item)}</th>
                       <td>{item.value}</td>
                     </tr>
                   ))}
@@ -165,10 +164,24 @@ const GetQuantityDialog = ({
   );
 };
 
+const computeKeyFromUserInfoItem = ({ caption = null, captionKey = null, value }) => {
+  return `userInfo_${caption || captionKey || value || '?'}`;
+};
+
+const computeCaptionFromUserInfoItem = ({ caption = null, captionKey = null }) => {
+  if (caption) {
+    return caption;
+  } else if (captionKey) {
+    return trl(captionKey);
+  } else {
+    // shall not happen
+    return '';
+  }
+};
+
 GetQuantityDialog.propTypes = {
   // Properties
   userInfo: PropTypes.array,
-  qtyInitial: PropTypes.number,
   qtyTarget: PropTypes.number.isRequired,
   qtyCaption: PropTypes.string,
   uom: PropTypes.string.isRequired,

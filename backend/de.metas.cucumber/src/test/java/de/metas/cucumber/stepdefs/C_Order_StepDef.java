@@ -29,6 +29,7 @@ import de.metas.cucumber.stepdefs.message.AD_Message_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
+import de.metas.cucumber.stepdefs.sectioncode.M_SectionCode_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
@@ -74,6 +75,7 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_M_PricingSystem;
+import org.compiere.model.I_M_SectionCode;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
@@ -134,6 +136,7 @@ public class C_Order_StepDef
 	private final AD_Org_StepDefData orgTable;
 	private final C_Project_StepDefData projectTable;
 	private final AD_Message_StepDefData messageTable;
+	private final M_SectionCode_StepDefData sectionCodeTable;
 
 	public C_Order_StepDef(
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
@@ -144,7 +147,8 @@ public class C_Order_StepDef
 			@NonNull final M_PricingSystem_StepDefData pricingSystemDataTable,
 			@NonNull final M_Warehouse_StepDefData warehouseTable,
 			@NonNull final AD_Org_StepDefData orgTable,
-			@NonNull final AD_Message_StepDefData messageTable)
+			@NonNull final AD_Message_StepDefData messageTable,
+			@NonNull final M_SectionCode_StepDefData sectionCodeTable)
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.orderTable = orderTable;
@@ -155,6 +159,7 @@ public class C_Order_StepDef
 		this.warehouseTable = warehouseTable;
 		this.orgTable = orgTable;
 		this.messageTable = messageTable;
+		this.sectionCodeTable = sectionCodeTable;
 	}
 
 	@Given("metasfresh contains C_Orders:")
@@ -579,7 +584,7 @@ public class C_Order_StepDef
 			{
 				order.setDatePromised(TimeUtil.asTimestamp(datePromised));
 			}
-			
+
 			InterfaceWrapperHelper.saveRecord(order);
 
 			orderTable.putOrReplace(orderIdentifier, order);
@@ -793,6 +798,13 @@ public class C_Order_StepDef
 			final I_AD_User expectedHandOverUser = userTable.get(handOverUserIdentifier);
 
 			assertThat(order.getHandOver_User_ID()).isEqualTo(expectedHandOverUser.getAD_User_ID());
+		}
+
+		final String sectionCodeIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_M_SectionCode_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if(Check.isNotBlank(sectionCodeIdentifier))
+		{
+			final I_M_SectionCode sectionCode = sectionCodeTable.get(sectionCodeIdentifier);
+			assertThat(order.getM_SectionCode_ID()).isEqualTo(sectionCode.getM_SectionCode_ID());
 		}
 	}
 

@@ -1,13 +1,8 @@
-package de.metas.handlingunits.inventory.draftlinescreator;
-
-import de.metas.handlingunits.inventory.InventoryLine;
-import de.metas.inventory.AggregationType;
-
 /*
  * #%L
- * de.metas.handlingunits.base
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,11 +20,27 @@ import de.metas.inventory.AggregationType;
  * #L%
  */
 
-public interface InventoryLineAggregator
+package de.metas.sectionCode;
+
+import de.metas.organization.OrgId;
+import lombok.NonNull;
+import org.springframework.stereotype.Service;
+
+import java.util.Optional;
+
+@Service
+public class SectionCodeService
 {
-	InventoryLineAggregationKey createAggregationKey(HuForInventoryLine huForInventoryLine);
+	private final SectionCodeRepository sectionCodeRepository;
 
-	InventoryLineAggregationKey createAggregationKey(InventoryLine inventoryLine);
+	public SectionCodeService(@NonNull final SectionCodeRepository sectionCodeRepository)
+	{
+		this.sectionCodeRepository = sectionCodeRepository;
+	}
 
-	AggregationType getAggregationType();
+	@NonNull
+	public Optional<SectionCodeId> getSectionCodeIdByValue(@NonNull final OrgId orgId, @NonNull final String value)
+	{
+		return sectionCodeRepository.getSectionCodeIdByValue(orgId, value);
+	}
 }

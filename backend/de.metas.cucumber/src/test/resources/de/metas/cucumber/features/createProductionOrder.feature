@@ -18,7 +18,6 @@ Feature: create production order
     And update M_Product_Category:
       | M_Product_Category_ID.Identifier | OPT.M_AttributeSet_ID.Identifier |
       | standard_category                | attributeSet_convenienceSalate   |
-    And metasfresh initially has no MD_Candidate data
 
   @from:cucumber
   @Id:S0129.1_100

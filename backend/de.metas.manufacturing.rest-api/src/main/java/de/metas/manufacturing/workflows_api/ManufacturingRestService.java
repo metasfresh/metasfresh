@@ -27,9 +27,9 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.api.PPOrderId;
+import org.eevolution.api.PPOrderRoutingActivityId;
 import org.springframework.stereotype.Service;
 
-import java.util.Objects;
 import java.util.stream.Stream;
 
 @Service
@@ -57,9 +57,19 @@ public class ManufacturingRestService
 		manufacturingJobService.abortJob(ppOrderId, responsibleId);
 	}
 
+	public void abortAllJobs(@NonNull final UserId responsibleId)
+	{
+		manufacturingJobService.abortAllJobs(responsibleId);
+	}
+
 	public ManufacturingJob getJobById(final PPOrderId ppOrderId)
 	{
 		return manufacturingJobService.getJobById(ppOrderId);
+	}
+
+	public ManufacturingJob assignJob(@NonNull final PPOrderId ppOrderId, @NonNull final UserId userId)
+	{
+		return manufacturingJobService.assignJob(ppOrderId, userId);
 	}
 
 	private static WFActivity toWFActivity(final ManufacturingJobActivity jobActivity)
@@ -94,7 +104,7 @@ public class ManufacturingRestService
 	{
 		return WFProcess.builder()
 				.id(WFProcessId.ofIdPart(ManufacturingMobileApplication.HANDLER_ID, job.getPpOrderId()))
-				.invokerId(Objects.requireNonNull(job.getResponsibleId()))
+				.responsibleId(job.getResponsibleId())
 				.caption(TranslatableStrings.anyLanguage("" + job.getPpOrderId().getRepoId())) // TODO
 				.document(job)
 				.activities(job.getActivities()
@@ -112,8 +122,9 @@ public class ManufacturingRestService
 		{
 			final JsonManufacturingOrderEvent.IssueTo issueTo = event.getIssueTo();
 			return manufacturingJobService.issueRawMaterials(job, PPOrderIssueScheduleProcessRequest.builder()
-					.ppOrderId(job.getPpOrderId())
+					.activityId(PPOrderRoutingActivityId.ofRepoId(job.getPpOrderId(), event.getWfActivityId()))
 					.issueScheduleId(PPOrderIssueScheduleId.ofString(issueTo.getIssueStepId()))
+					.huWeightGrossBeforeIssue(issueTo.getHuWeightGrossBeforeIssue())
 					.qtyIssued(issueTo.getQtyIssued())
 					.qtyRejected(issueTo.getQtyRejected())
 					.qtyRejectedReasonCode(QtyRejectedReasonCode.ofNullableCode(issueTo.getQtyRejectedReasonCode()).orElse(null))

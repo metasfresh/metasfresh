@@ -1,8 +1,8 @@
 import PropTypes from 'prop-types';
 import React, { useEffect, useRef } from 'react';
-import { BrowserMultiFormatReader, BarcodeFormat } from '@zxing/browser';
+import { BarcodeFormat, BrowserMultiFormatReader } from '@zxing/browser';
 import DecodeHintType from '@zxing/library/cjs/core/DecodeHintType';
-import { toastError } from '../utils/toast';
+import { toastError, toastErrorFromObj } from '../utils/toast';
 import { trl } from '../utils/translations';
 import { useBooleanSetting, useSetting } from '../reducers/settings';
 
@@ -20,37 +20,45 @@ const READER_OPTIONS = {
 const BarcodeScannerComponent = ({ resolveScannedBarcode, onResolvedResult }) => {
   const videoRef = useRef();
   const inputTextRef = useRef();
+  const scanningStatusRef = useRef({ running: false, done: false });
 
-  const validateScannedBarcodeAndForward = ({ scannedBarcode, controls = null }) => {
-    //console.log('Resolving scanned barcode', { scannedBarcode, resolveScannedBarcode, handleResolvedResult });
-    if (resolveScannedBarcode) {
-      let resolvedResultPromise;
-      try {
-        resolvedResultPromise = resolveScannedBarcode({ scannedBarcode });
-        //console.log('Got resolvedResultPromise', resolvedResultPromise);
-      } catch (error) {
-        console.error('Got unhandled error while trying to resolve the scanned barcode', error);
-        handleResolvedResult({ error: trl('error.PleaseTryAgain') }, controls);
-        return;
-      }
-
-      if (resolvedResultPromise) {
-        Promise.resolve(resolvedResultPromise)
-          .then((result) => handleResolvedResult(result, controls))
-          .catch((axiosError) => toastError({ axiosError }));
-      }
-    } else {
-      handleResolvedResult({ scannedBarcode, error: null }, controls);
+  const validateScannedBarcodeAndForward = async ({ scannedBarcode, controls = null }) => {
+    const scanningStatus = scanningStatusRef.current;
+    if (scanningStatus.running || scanningStatus.done) {
+      console.log('Ignore scanned barcode because we are already running or done', { scannedBarcode, scanningStatus });
+      return;
     }
-  };
+    scanningStatus.running = true;
 
-  const handleResolvedResult = (resolvedResult, controls = null) => {
-    // console.log('Got resolvedResult', resolvedResult);
-    if (resolvedResult.error) {
-      toastError({ plainMessage: resolvedResult.error });
-    } else {
-      controls?.stop();
-      onResolvedResult(resolvedResult);
+    console.log('Resolving scanned barcode', {
+      scannedBarcode,
+      resolveScannedBarcode,
+      onResolvedResult,
+      scanningStatus: { ...scanningStatus },
+    });
+
+    try {
+      let resolvedResult;
+      if (resolveScannedBarcode) {
+        resolvedResult = await resolveScannedBarcode({ scannedBarcode });
+      } else {
+        resolvedResult = { scannedBarcode, error: null };
+      }
+      console.log('Got resolvedResult', resolvedResult);
+
+      if (resolvedResult.error) {
+        toastError({ plainMessage: resolvedResult.error });
+        scanningStatus.done = false; // not done yet
+      } else {
+        await onResolvedResult(resolvedResult);
+
+        scanningStatus.done = true;
+        controls?.stop();
+      }
+    } catch (error) {
+      toastErrorFromObj(error);
+    } finally {
+      scanningStatus.running = false;
     }
   };
 
@@ -80,6 +88,7 @@ const BarcodeScannerComponent = ({ resolveScannedBarcode, onResolvedResult }) =>
     if (
       scannedBarcode &&
       triggerOnChangeIfLengthGreaterThan &&
+      triggerOnChangeIfLengthGreaterThan > 0 &&
       scannedBarcode.length >= triggerOnChangeIfLengthGreaterThan
     ) {
       inputElement.select();
@@ -114,9 +123,10 @@ const BarcodeScannerComponent = ({ resolveScannedBarcode, onResolvedResult }) =>
   const isShowInputText = useBooleanSetting('barcodeScanner.showInputText');
   return (
     <div className="barcode-scanner">
-      <video ref={videoRef} width="100%" height="100%" />
+      <video key="video" ref={videoRef} width="100%" height="100%" />
       {isShowInputText && (
         <input
+          key="input-text"
           ref={inputTextRef}
           className="input-text"
           type="text"
