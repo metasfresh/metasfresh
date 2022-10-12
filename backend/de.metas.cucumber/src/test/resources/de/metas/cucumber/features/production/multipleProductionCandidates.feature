@@ -61,8 +61,7 @@ Feature: create multiple production candidates
   then the sales order is re-opened and the ordered quantity is increased,
   resulting in a second manufacturing candidate to supply the additional demand
 
-    Given metasfresh initially has no MD_Candidate data
-    And metasfresh contains C_Orders:
+    Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  |
       | o_1        | true    | endcustomer_2            | 2021-04-17  | 2021-04-16T21:00:00Z |
     And metasfresh contains C_OrderLines:
@@ -129,7 +128,6 @@ Feature: create multiple production candidates
 
 
   @from:cucumber
-  @Id:S0129.2_140
   Scenario:  The manufacturing candidate is created for a sales order line and `Generate PP_Order` process is invoked resulting multiple manufacturing orders
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  |

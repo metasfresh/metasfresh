@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.resource;
 
 import de.metas.common.util.Check;
+import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;

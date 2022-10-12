@@ -34,7 +34,6 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_OrderCandidate_PP_Order;

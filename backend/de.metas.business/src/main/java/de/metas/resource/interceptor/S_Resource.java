@@ -27,6 +27,7 @@ import de.metas.resource.ResourceService;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
