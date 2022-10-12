@@ -9,13 +9,13 @@ import java.math.BigDecimal;
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_PP_Product_Planning 
+public interface I_PP_Product_Planning
 {
 
 	String Table_Name = "PP_Product_Planning";
 
-//	/** AD_Table_ID=53020 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+	//	/** AD_Table_ID=53020 */
+	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -478,7 +478,52 @@ public interface I_PP_Product_Planning
 	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
-	 * Set On material rcpt with target WH.
+	 * Set Max. quantity per manufactoring order.
+	 * Optional;
+	 steuert, wie viele Produktionsaufträge bei einer bestimmten zu produzierenden Menge durch die Material-Dispo erzeugt werden. "Leer" oder kleiner-gleich Null bedeuten "kein Maximum".
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMaxManufacturedQtyPerOrder (@Nullable BigDecimal MaxManufacturedQtyPerOrder);
+
+	/**
+	 * Get Max. quantity per manufactoring order.
+	 * Optional;
+	 steuert, wie viele Produktionsaufträge bei einer bestimmten zu produzierenden Menge durch die Material-Dispo erzeugt werden. "Leer" oder kleiner-gleich Null bedeuten "kein Maximum".
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getMaxManufacturedQtyPerOrder();
+
+	ModelColumn<I_PP_Product_Planning, Object> COLUMN_MaxManufacturedQtyPerOrder = new ModelColumn<>(I_PP_Product_Planning.class, "MaxManufacturedQtyPerOrder", null);
+	String COLUMNNAME_MaxManufacturedQtyPerOrder = "MaxManufacturedQtyPerOrder";
+
+	/**
+	 * Set Unit of measurement.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMaxManufacturedQtyPerOrder_UOM_ID (int MaxManufacturedQtyPerOrder_UOM_ID);
+
+	/**
+	 * Get Unit of measurement.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getMaxManufacturedQtyPerOrder_UOM_ID();
+
+	String COLUMNNAME_MaxManufacturedQtyPerOrder_UOM_ID = "MaxManufacturedQtyPerOrder_UOM_ID";
+
+	/**
+	 * Set OnMaterialReceiptWithDestWarehouse.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -487,7 +532,7 @@ public interface I_PP_Product_Planning
 	void setOnMaterialReceiptWithDestWarehouse (@Nullable java.lang.String OnMaterialReceiptWithDestWarehouse);
 
 	/**
-	 * Get On material rcpt with target WH.
+	 * Get OnMaterialReceiptWithDestWarehouse.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -519,7 +564,7 @@ public interface I_PP_Product_Planning
 	String COLUMNNAME_Planner_ID = "Planner_ID";
 
 	/**
-	 * Set BOM & Formula.
+	 * Set BOMVersions & Formula.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -528,7 +573,7 @@ public interface I_PP_Product_Planning
 	void setPP_Product_BOMVersions_ID (int PP_Product_BOMVersions_ID);
 
 	/**
-	 * Get BOM & Formula.
+	 * Get BOMVersions & Formula.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -545,7 +590,6 @@ public interface I_PP_Product_Planning
 
 	/**
 	 * Set Product Planning.
-	 * Product Planning
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -555,7 +599,6 @@ public interface I_PP_Product_Planning
 
 	/**
 	 * Get Product Planning.
-	 * Product Planning
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -567,7 +610,7 @@ public interface I_PP_Product_Planning
 	String COLUMNNAME_PP_Product_Planning_ID = "PP_Product_Planning_ID";
 
 	/**
-	 * Set Resource.
+	 * Set Ressource.
 	 * Resource
 	 *
 	 * <br>Type: Search
@@ -577,7 +620,7 @@ public interface I_PP_Product_Planning
 	void setS_Resource_ID (int S_Resource_ID);
 
 	/**
-	 * Get Resource.
+	 * Get Ressource.
 	 * Resource
 	 *
 	 * <br>Type: Search
@@ -596,7 +639,7 @@ public interface I_PP_Product_Planning
 	/**
 	 * Set SeqNo.
 	 * Method of ordering records;
- lowest number comes first
+	 lowest number comes first
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
@@ -607,7 +650,7 @@ public interface I_PP_Product_Planning
 	/**
 	 * Get SeqNo.
 	 * Method of ordering records;
- lowest number comes first
+	 lowest number comes first
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true

@@ -29,6 +29,7 @@ import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderCreateRequest;
 import org.eevolution.model.I_PP_Order;
@@ -52,7 +53,7 @@ public class PPOrderProducerFromCandidate
 	private final IPPOrderBL ppOrderService;
 	private final ITrxManager trxManager;
 	private final IProductPlanningDAO productPlanningsRepo;
-	private final Map<ProductPlanningId, I_PP_Product_Planning> planning2RecordShortTimeIndex;
+	private final Map<ProductPlanningId, I_PP_Product_Planning> productPlanningCache;
 
 	@Builder
 	public PPOrderProducerFromCandidate(
@@ -69,7 +70,7 @@ public class PPOrderProducerFromCandidate
 		this.productPlanningsRepo = productPlanningsRepo;
 
 		this.result = new OrderGenerateResult();
-		this.planning2RecordShortTimeIndex = new ConcurrentHashMap<>();
+		this.productPlanningCache = new ConcurrentHashMap<>();
 	}
 
 	@NonNull
@@ -103,16 +104,28 @@ public class PPOrderProducerFromCandidate
 				allocator = ppOrderAllocatorBuilderService.buildAllocator(ppOrderCandidateToAllocate);
 			}
 
-			boolean fullyAllocatedCandidate = false;
-			while (!fullyAllocatedCandidate)
+			int infiniteLoopGuard = 2000;
+			while (ppOrderCandidateToAllocate.getOpenQty().signum() > 0)
 			{
-				fullyAllocatedCandidate = allocator.allocate(ppOrderCandidateToAllocate);
+				final Quantity allocatedQty = allocator.allocate(ppOrderCandidateToAllocate);
 
-				if (!fullyAllocatedCandidate)
+				//note: if nothing could be allocated it's time to create the PPOrder and initiate a new allocator
+				if (allocatedQty.isZero())
 				{
 					createPPOrderInNewTrx(allocator, isDocComplete);
 
 					allocator = ppOrderAllocatorBuilderService.buildAllocator(ppOrderCandidateToAllocate);
+				}
+
+				ppOrderCandidateToAllocate.subtractAllocatedQty(allocatedQty);
+
+				infiniteLoopGuard--;
+
+				if (infiniteLoopGuard <= 0)
+				{
+					throw new AdempiereException("Infinite loop guard reached!")
+							.appendParametersToMessage()
+							.setParameter("PP_Order_Candidate_ID", ppOrderCandidateToAllocate.getPpOrderCandidate().getPP_Order_Candidate_ID());
 				}
 			}
 		}
@@ -165,7 +178,7 @@ public class PPOrderProducerFromCandidate
 			return false;
 		}
 
-		return planning2RecordShortTimeIndex.computeIfAbsent(planningId, productPlanningsRepo::getById)
+		return productPlanningCache.computeIfAbsent(planningId, productPlanningsRepo::getById)
 				.isDocComplete();
 	}
 }

@@ -23,6 +23,7 @@
 package org.eevolution.productioncandidate.service.produce;
 
 import de.metas.quantity.Quantity;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -58,35 +59,34 @@ public class PPOrderAllocator
 			@NonNull final PPOrderCreateRequest.PPOrderCreateRequestBuilder ppOrderCreateRequestBuilder,
 			@NonNull final Quantity capacityPerProductionCycle)
 	{
+		Check.assume(capacityPerProductionCycle.signum() >= 0, "capacityPerProductionCycle must be a positive number!");
+
 		this.headerAggKey = headerAggKey;
 		this.ppOrderCreateRequestBuilder = ppOrderCreateRequestBuilder;
 		this.capacityPerProductionCycle = capacityPerProductionCycle;
 		this.allocatedQty = capacityPerProductionCycle.toZero();
 	}
 
-	public boolean allocate(@NonNull final PPOrderCandidateToAllocate ppOrderCandidateToAllocate)
+	/**
+	 * @return the successfully allocated qty (if nothing was allocated it will return zero)
+	 */
+	public Quantity allocate(@NonNull final PPOrderCandidateToAllocate ppOrderCandidateToAllocate)
 	{
 		if (!headerAggKey.equals(ppOrderCandidateToAllocate.getHeaderAggregationKey()))
 		{
-			return false;
+			return capacityPerProductionCycle.toZero();
 		}
 
 		if (isFullCapacityReached())
 		{
-			return false;
+			return capacityPerProductionCycle.toZero();
 		}
 
-		if (candidateCanBeFullyAllocated(ppOrderCandidateToAllocate))
-		{
-			allocateQuantity(ppOrderCandidateToAllocate, ppOrderCandidateToAllocate.getOpenQty());
+		final Quantity qtyToAllocate = getQtyToAllocate(ppOrderCandidateToAllocate);
 
-			return true;
-		}
+		allocateQuantity(ppOrderCandidateToAllocate, qtyToAllocate);
 
-		final Quantity partialQtyToAllocate = capacityPerProductionCycle.subtract(allocatedQty);
-		allocateQuantity(ppOrderCandidateToAllocate, partialQtyToAllocate);
-
-		return false;
+		return qtyToAllocate;
 	}
 
 	@NonNull
@@ -99,19 +99,7 @@ public class PPOrderAllocator
 
 	private boolean isFullCapacityReached()
 	{
-		return !isInfiniteCapacity() && capacityPerProductionCycle.equals(allocatedQty);
-	}
-
-	private boolean candidateCanBeFullyAllocated(@NonNull final PPOrderCandidateToAllocate ppOrderCandidateToAllocate)
-	{
-		if (isInfiniteCapacity())
-		{
-			return true;
-		}
-
-		final Quantity remainingCapacity = capacityPerProductionCycle.subtract(allocatedQty);
-
-		return ppOrderCandidateToAllocate.getOpenQty().compareTo(remainingCapacity) <= 0;
+		return !isInfiniteCapacity() && capacityPerProductionCycle.compareTo(allocatedQty) <= 0;
 	}
 
 	private void allocateQuantity(@NonNull final PPOrderCandidateToAllocate ppOrderCandidateToAllocate, @NonNull final Quantity quantityToAllocate)
@@ -121,8 +109,19 @@ public class PPOrderAllocator
 		final PPOrderCandidateId ppOrderCandidateId = PPOrderCandidateId.ofRepoId(ppOrderCandidateToAllocate.getPpOrderCandidate().getPP_Order_Candidate_ID());
 
 		ppOrderCand2AllocatedQty.put(ppOrderCandidateId, quantityToAllocate);
+	}
 
-		ppOrderCandidateToAllocate.registerAllocatedQty(quantityToAllocate);
+	@NonNull
+	private Quantity getQtyToAllocate(@NonNull final PPOrderCandidateToAllocate ppOrderCandidateToAllocate)
+	{
+		if (isInfiniteCapacity())
+		{
+			return ppOrderCandidateToAllocate.getOpenQty();
+		}
+
+		final Quantity remainingCapacity = capacityPerProductionCycle.subtract(allocatedQty);
+
+		return ppOrderCandidateToAllocate.getOpenQty().min(remainingCapacity);
 	}
 
 	private boolean isInfiniteCapacity()

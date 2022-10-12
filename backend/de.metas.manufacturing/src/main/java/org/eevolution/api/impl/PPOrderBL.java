@@ -622,6 +622,7 @@ public class PPOrderBL implements IPPOrderBL
 		materialEventService.postEventAfterNextCommit(ppOrderCreatedEvent);
 	}
 
+	@Override
 	public void completeDocument(@NonNull final I_PP_Order ppOrder)
 	{
 		documentBL.processEx(ppOrder, IDocument.ACTION_Complete, IDocument.STATUS_Completed);

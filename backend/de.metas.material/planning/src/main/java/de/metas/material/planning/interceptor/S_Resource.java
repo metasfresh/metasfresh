@@ -63,7 +63,15 @@ public class S_Resource
 			ifColumnsChanged = { I_S_Resource.COLUMNNAME_CapacityPerProductionCycle, I_S_Resource.COLUMNNAME_CapacityPerProductionCycle_UOM_ID })
 	public void validateCapacityUOMID(final I_S_Resource resource)
 	{
-		if (resource.getCapacityPerProductionCycle().signum() != 0 && resource.getCapacityPerProductionCycle_UOM_ID() == 0)
+		if (resource.getCapacityPerProductionCycle().signum() < 0)
+		{
+			throw new AdempiereException("CapacityPerProductionCycle cannot go below 0!")
+					.appendParametersToMessage()
+					.setParameter("S_Resource_ID", resource.getS_Resource_ID())
+					.markAsUserValidationError();
+		}
+
+		if (resource.getCapacityPerProductionCycle().signum() > 0 && resource.getCapacityPerProductionCycle_UOM_ID() <= 0)
 		{
 			throw new AdempiereException("Unit of measurement for capacity per production cycle cannot be missing if capacity is provided!")
 					.appendParametersToMessage()

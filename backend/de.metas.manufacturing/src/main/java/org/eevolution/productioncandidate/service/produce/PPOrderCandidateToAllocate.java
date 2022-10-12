@@ -57,7 +57,7 @@ public class PPOrderCandidateToAllocate
 		return new PPOrderCandidateToAllocate(candidate, headerAggKey, openQty);
 	}
 
-	public void registerAllocatedQty(@NonNull final Quantity allocatedQty)
+	public void subtractAllocatedQty(@NonNull final Quantity allocatedQty)
 	{
 		openQty = openQty.subtract(allocatedQty);
 
