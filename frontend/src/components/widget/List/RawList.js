@@ -66,8 +66,8 @@ export class RawList0 extends PureComponent {
       dropdownList: [...props.list],
     };
 
+    // NOTE: we use this approach to be able to jest.spyOn
     this.focusDropdown = this.focusDropdown.bind(this);
-    this.handleSelect = this.handleSelect.bind(this);
   }
 
   componentDidMount() {
@@ -79,11 +79,19 @@ export class RawList0 extends PureComponent {
   }
 
   componentDidUpdate(prevProps) {
-    const { listHash } = this.props;
+    const { listHash, list = [] } = this.props;
     let changedValues = {};
 
-    if (listHash !== prevProps.listHash) {
-      const { list, mandatory, defaultValue, selected, emptyText } = this.props;
+    const { listHash: prevListHash, list: prevList = [] } = prevProps;
+
+    // dev-note: compare the listHashes in order to be able to update the list on the fly (but only when the dropdown is closed)
+    // OR when the dropdown was not rendered and the list is empty (display only `none` value); avoid an infinite loop call
+    const loadDropdown =
+      (listHash !== prevListHash && (list.length > 0 || prevList.length > 0)) ||
+      (listHash && !prevListHash);
+
+    if (loadDropdown) {
+      const { mandatory, defaultValue, selected, emptyText } = this.props;
       let dropdownList = [...list];
       if (!mandatory && emptyText) {
         dropdownList.push({
@@ -125,17 +133,16 @@ export class RawList0 extends PureComponent {
     }
 
     if (Object.keys(changedValues).length) {
-      this.setState({ ...changedValues }, () => this.focusDropdown());
+      this.setState({ ...changedValues }, () => {
+        // NOTE: don't request focus here because we will get a weird behaviour when multiple fields will open their dropdown at once
+        //this.focusDropdown();
+      });
     }
   }
 
   /*
    * Alternative method to open dropdown, in case of disabled opening
    * on focus.
-   */
-  /**
-   * @method handleClick
-   * @summary ToDo: Describe the method.
    */
   handleClick = () => {
     const { onOpenDropdown, isToggled, onCloseDropdown } = this.props;
@@ -162,24 +169,14 @@ export class RawList0 extends PureComponent {
         return;
       }
 
-      this.setState(
-        {
-          selected: selected || null,
-        },
-        () => {
-          onCloseDropdown();
-          onBlur();
-        }
-      );
+      this.setState({ selected: selected || null }, () => {
+        onCloseDropdown();
+        onBlur();
+      });
     }
   }
 
-  /**
-   * @method handleSelect
-   * @summary ToDo: Describe the method.
-   * @param {*} selected
-   */
-  handleSelect(selected) {
+  handleSelect = (selected) => {
     const { onSelect, onCloseDropdown } = this.props;
     const { dropdownList } = this.state;
     const changedValues = {
@@ -197,39 +194,23 @@ export class RawList0 extends PureComponent {
         }
         onCloseDropdown();
 
-        setTimeout(() => {
-          this.focusDropdown();
-        }, 0);
+        setTimeout(() => this.focusDropdown(), 0);
       });
     }
-  }
+  };
 
-  /**
-   * @method handleClear
-   * @summary ToDo: Describe the method.
-   * @param {object} event
-   */
   handleClear = (event) => {
     event.stopPropagation();
 
     this.props.onSelect(null);
   };
 
-  /**
-   * @method handleTemporarySelection
-   * @summary ToDo: Describe the method.
-   * @param {*} selected
-   */
   handleTemporarySelection = (selected) => {
     this.setState({
       selected,
     });
   };
 
-  /**
-   * @method handleCancel
-   * @summary ToDo: Describe the method.
-   */
   handleCancel = () => {
     const { disableAutofocus, onCloseDropdown } = this.props;
     disableAutofocus && disableAutofocus();
@@ -274,10 +255,6 @@ export class RawList0 extends PureComponent {
     onBlur();
   };
 
-  /**
-   * @method focusDropdown
-   * @summary ToDo: Describe the method.
-   */
   focusDropdown() {
     this.props.onFocus();
   }
@@ -383,7 +360,7 @@ export class RawList0 extends PureComponent {
                       !emptyCompositeLookup),
                 })}
                 tabIndex={tabIndex}
-                onFocus={readonly ? null : this.focusDropdown}
+                //onFocus={readonly ? null : this.focusDropdown} // not needed because cancels the effect of handleClick
                 onClick={readonly ? null : this.handleClick}
                 onKeyDown={this.handleKeyDown}
                 onKeyUp={this.handleKeyUp}
