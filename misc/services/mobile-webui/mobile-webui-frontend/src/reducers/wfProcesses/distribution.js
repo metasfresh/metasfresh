@@ -158,6 +158,8 @@ const normalizeLines = (lines) => {
 };
 
 const mergeActivityDataStored = ({ draftActivityDataStored, fromActivity }) => {
+  draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.isAlwaysAvailableToUser ?? false;
+
   //
   // Copy lines
   draftActivityDataStored.lines = normalizeLines(fromActivity.componentProps.lines);

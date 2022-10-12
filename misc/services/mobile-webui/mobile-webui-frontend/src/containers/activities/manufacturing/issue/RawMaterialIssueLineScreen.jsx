@@ -7,6 +7,7 @@ import { pushHeaderEntry } from '../../../../actions/HeaderActions';
 import { getActivityById, getLineByIdFromActivity, getStepsArrayFromLine } from '../../../../reducers/wfProcesses';
 
 import {
+  manufacturingLineScanScreenLocation,
   manufacturingLineScreenLocation,
   manufacturingStepScreenLocation,
 } from '../../../../routes/manufacturing_issue';
@@ -43,12 +44,16 @@ const RawMaterialIssueLineScreen = () => {
   }, []);
 
   const history = useHistory();
-  const onButtonClick = ({ stepId }) => {
+  const onScanHUClicked = () => {
+    history.push(manufacturingLineScanScreenLocation({ applicationId, wfProcessId, activityId, lineId }));
+  };
+  const onStepButtonClick = ({ stepId }) => {
     history.push(manufacturingStepScreenLocation({ applicationId, wfProcessId, activityId, lineId, stepId }));
   };
 
   return (
     <div className="section pt-2">
+      <ButtonWithIndicator caption={trl('general.scanQRCode')} onClick={onScanHUClicked} />
       {steps.length > 0 &&
         steps.map((stepItem) => {
           return (
@@ -56,7 +61,7 @@ const RawMaterialIssueLineScreen = () => {
               key={stepItem.id}
               caption={stepItem.locatorName + ' - ' + toQRCodeDisplayable(stepItem.huQRCode)}
               completeStatus={stepItem.completeStatus}
-              onClick={() => onButtonClick({ stepId: stepItem.id })}
+              onClick={() => onStepButtonClick({ stepId: stepItem.id })}
             >
               <ButtonQuantityProp
                 qtyCurrent={stepItem.qtyIssued ?? 0}

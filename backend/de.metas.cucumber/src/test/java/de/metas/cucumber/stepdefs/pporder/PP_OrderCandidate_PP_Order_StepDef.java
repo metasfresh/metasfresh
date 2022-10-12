@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.pporder;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
@@ -33,13 +34,21 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_OrderCandidate_PP_Order;
 import org.eevolution.model.I_PP_Order_Candidate;
 
+import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
+
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static org.assertj.core.api.Assertions.*;
 
 public class PP_OrderCandidate_PP_Order_StepDef
 {
@@ -89,6 +98,61 @@ public class PP_OrderCandidate_PP_Order_StepDef
 			};
 
 			StepDefUtil.tryAndWait(timeoutSec, 500, allocationQueryExecutor);
+		}
+	}
+
+	@And("^after not more than (.*)s, load PP_Order by candidate id: (.*)$")
+	public void loadPPOrderByCandidateId(final int timeoutSec, @NonNull final String ppOrderCandidateIdentifier, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		final I_PP_Order_Candidate ppOrderCandidate = ppOrderCandidateTable.get(ppOrderCandidateIdentifier);
+		assertThat(ppOrderCandidate).isNotNull();
+
+		final Supplier<Boolean> loadPPOrderAllocByCandidateId = () -> {
+
+			final int noOfPPOrderAlloc = queryBL.createQueryBuilder(I_PP_OrderCandidate_PP_Order.class)
+					.addEqualsFilter(I_PP_OrderCandidate_PP_Order.COLUMNNAME_PP_Order_Candidate_ID, ppOrderCandidate.getPP_Order_Candidate_ID())
+					.create()
+					.count();
+
+			return noOfPPOrderAlloc == dataTable.asMaps().size();
+		};
+
+		StepDefUtil.tryAndWait(timeoutSec, 500, loadPPOrderAllocByCandidateId);
+
+		final ImmutableList<I_PP_OrderCandidate_PP_Order> ppOrderAllocations = queryBL.createQueryBuilder(I_PP_OrderCandidate_PP_Order.class)
+				.addEqualsFilter(I_PP_OrderCandidate_PP_Order.COLUMNNAME_PP_Order_Candidate_ID, ppOrderCandidate.getPP_Order_Candidate_ID())
+				.create()
+				.stream()
+				.collect(ImmutableList.toImmutableList());
+
+		loadPPOrders(dataTable, ppOrderAllocations);
+	}
+
+	private void loadPPOrders(@NonNull final DataTable dataTable, @NonNull final ImmutableList<I_PP_OrderCandidate_PP_Order> ppOrderAllocations)
+	{
+		final Set<Integer> alreadySeenAllocRecordIds = new HashSet<>();
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalForColumnName(row, I_PP_OrderCandidate_PP_Order.COLUMNNAME_QtyEntered);
+
+			final I_PP_OrderCandidate_PP_Order record = ppOrderAllocations
+					.stream()
+					.filter(ppOrderAlloc -> !alreadySeenAllocRecordIds.contains(ppOrderAlloc.getPP_OrderCandidate_PP_Order_ID()))
+					.filter(ppOrderAlloc -> ppOrderAlloc.getQtyEntered().compareTo(qtyEntered) == 0)
+					.findFirst()
+					.orElse(null);
+
+			if (record == null)
+			{
+				throw new RuntimeException("No I_PP_OrderCandidate_PP_Order record found for qtyEntered=" + qtyEntered);
+			}
+
+			alreadySeenAllocRecordIds.add(record.getPP_OrderCandidate_PP_Order_ID());
+
+			final I_PP_Order ppOrder = InterfaceWrapperHelper.load(record.getPP_Order_ID(), I_PP_Order.class);
+
+			final String ppOrderIdentifier = DataTableUtil.extractStringForColumnName(row, I_PP_Order.COLUMNNAME_PP_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+			ppOrderTable.putOrReplace(ppOrderIdentifier, ppOrder);
 		}
 	}
 }

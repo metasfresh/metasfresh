@@ -3,13 +3,17 @@ import {
   getLineByIdFromActivity,
   getQtyRejectedReasonsFromActivity,
   getScaleDeviceFromActivity,
-  getStepByIdFromActivity,
+  getStepByIdFromLine,
 } from '../../../../../reducers/wfProcesses';
 
 export const computeStepScanPropsFromState = ({ state, wfProcessId, activityId, lineId, stepId }) => {
   const activity = getActivityById(state, wfProcessId, activityId);
+  return computeStepScanPropsFromActivity({ activity, lineId, stepId });
+};
+
+export const computeStepScanPropsFromActivity = ({ activity, lineId, stepId }) => {
   const line = getLineByIdFromActivity(activity, lineId);
-  const step = getStepByIdFromActivity(activity, lineId, stepId);
+  const step = getStepByIdFromLine(line, stepId);
 
   const lineQtyToIssue = line.qtyToIssue;
   const lineQtyToIssueMax = Math.max(line.qtyToIssueMax, lineQtyToIssue);

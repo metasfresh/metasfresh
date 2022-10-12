@@ -20,13 +20,9 @@ Feature: create multiple production candidates
     And update duration for AD_Workflow nodes
       | AD_Workflow_ID | Duration |
       | 540075         | 0        |
-
-  @from:cucumber
-  @Id:S0129.1_140
-  Scenario:  The manufacturing candidate is created for a sales order line,
-  then the sales order is re-opened and the ordered quantity is increased,
-  resulting in a second manufacturing candidate to supply the additional demand
-
+    And load S_Resource:
+      | S_Resource_ID.Identifier | S_Resource_ID |
+      | testResource             | 540006        |
     Given metasfresh contains M_Products:
       | Identifier | Name                                | OPT.M_Product_Category_ID.Identifier |
       | p_1        | trackedProduct_29032022_2           | standard_category                    |
@@ -58,12 +54,26 @@ Feature: create multiple production candidates
     And metasfresh contains C_BPartners:
       | Identifier    | Name            | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | endcustomer_2 | EndcustomerPP_2 | N            | Y              | ps_1                          |
+
+  @from:cucumber
+  @Id:S0129.1_140
+  Scenario:  The manufacturing candidate is created for a sales order line,
+  then the sales order is re-opened and the ordered quantity is increased,
+  resulting in a second manufacturing candidate to supply the additional demand
+
+    Given metasfresh initially has no MD_Candidate data
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  |
       | o_1        | true    | endcustomer_2            | 2021-04-17  | 2021-04-16T21:00:00Z |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
+    And update S_Resource:
+      | S_Resource_ID.Identifier | OPT.CapacityPerProductionCycle | OPT.CapacityPerProductionCycleUOMCode |
+      | testResource             | 2                              | KGM                                   |
+    And metasfresh contains C_UOM_Conversions
+      | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate |
+      | p_1                     | PCE                    | KGM                  | 0.1          |
     When the order identified by o_1 is completed
     And after not more than 30s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise |
@@ -102,3 +112,58 @@ Feature: create multiple production candidates
       | c_l_2                      | SUPPLY            |                               | p_2                     | 2021-04-16T21:00:00Z | 100 | 0                      |
       | c_l_3                      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | 20  | -20                    |
       | c_l_4                      | SUPPLY            |                               | p_2                     | 2021-04-16T21:00:00Z | 20  | 0                      |
+
+    When generate PP_Order process is invoked for selection, with completeDocument=false
+      | PP_Order_Candidate_ID.Identifier |
+      | oc_1                             |
+      | oc_2                             |
+
+    Then after not more than 30s, PP_Orders are found
+      | Identifier | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyOrdered | C_UOM_ID.X12DE355 | C_BPartner_ID.Identifier | DatePromised         | OPT.DocStatus |
+      | ppo_1      | p_1                     | bom_1                        | ppln_1                            | 540006        | 12         | 12         | PCE               | endcustomer_2            | 2021-04-16T21:00:00Z | DR            |
+
+    And after not more than 30s, PP_OrderCandidate_PP_Order are found
+      | PP_Order_Candidate_ID.Identifier | PP_Order_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 |
+      | oc_1                             | ppo_1                  | 10         | PCE               |
+      | oc_2                             | ppo_1                  | 2          | PCE               |
+
+
+  @from:cucumber
+  @Id:S0129.2_140
+  Scenario:  The manufacturing candidate is created for a sales order line and `Generate PP_Order` process is invoked resulting multiple manufacturing orders
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  |
+      | o_2        | true    | endcustomer_2            | 2022-10-10  | 2022-10-10T21:00:00Z |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_2       | o_2                   | p_1                     | 12         |
+    And update S_Resource:
+      | S_Resource_ID.Identifier | OPT.CapacityPerProductionCycle | OPT.CapacityPerProductionCycleUOMCode |
+      | testResource             | 5                              | PCE                                   |
+
+    When the order identified by o_2 is completed
+
+    Then after not more than 30s, PP_Order_Candidates are found
+      | Identifier       | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
+      | ppOrderCandidate | false     | p_1                     | bom_1                        | ppln_1                            | 540006        | 12         | 12           | 0            | PCE               | 2022-10-10T21:00:00Z | 2022-10-10T21:00:00Z | false    |
+
+    When generate PP_Order process is invoked for selection, with completeDocument=true
+      | PP_Order_Candidate_ID.Identifier |
+      | ppOrderCandidate                 |
+
+    Then after not more than 30s, load PP_Order by candidate id: ppOrderCandidate
+      | PP_Order_ID.Identifier | QtyEntered |
+      | ppOrder_1              | 5          |
+      | ppOrder_2              | 5          |
+      | ppOrder_3              | 2          |
+
+    And after not more than 30s, PP_Orders are found
+      | Identifier | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyOrdered | C_UOM_ID.X12DE355 | C_BPartner_ID.Identifier | DatePromised         | OPT.DocStatus |
+      | ppOrder_1  | p_1                     | bom_1                        | ppln_1                            | 540006        | 5          | 5          | PCE               | endcustomer_2            | 2022-10-10T21:00:00Z | CO            |
+      | ppOrder_2  | p_1                     | bom_1                        | ppln_1                            | 540006        | 5          | 5          | PCE               | endcustomer_2            | 2022-10-10T21:00:00Z | CO            |
+      | ppOrder_3  | p_1                     | bom_1                        | ppln_1                            | 540006        | 2          | 2          | PCE               | endcustomer_2            | 2022-10-10T21:00:00Z | CO            |
+    And after not more than 30s, PP_OrderCandidate_PP_Order are found
+      | PP_Order_Candidate_ID.Identifier | PP_Order_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 |
+      | ppOrderCandidate                 | ppOrder_1              | 5          | PCE               |
+      | ppOrderCandidate                 | ppOrder_2              | 5          | PCE               |
+      | ppOrderCandidate                 | ppOrder_3              | 2          | PCE               |
