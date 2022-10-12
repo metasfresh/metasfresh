@@ -65,6 +65,9 @@ export class RawList0 extends PureComponent {
       selected: props.selected || null,
       dropdownList: [...props.list],
     };
+
+    // NOTE: we use this approach to be able to jest.spyOn
+    this.focusDropdown = this.focusDropdown.bind(this);
   }
 
   componentDidMount() {
@@ -252,9 +255,9 @@ export class RawList0 extends PureComponent {
     onBlur();
   };
 
-  focusDropdown = () => {
+  focusDropdown() {
     this.props.onFocus();
-  };
+  }
 
   renderSingleSelect = () => {
     const {
