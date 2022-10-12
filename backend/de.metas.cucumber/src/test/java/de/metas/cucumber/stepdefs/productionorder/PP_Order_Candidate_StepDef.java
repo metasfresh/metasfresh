@@ -41,6 +41,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.OrderLineId;
+import de.metas.process.PInstanceId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -166,24 +167,7 @@ public class PP_Order_Candidate_StepDef
 	@And("the following PP_Order_Candidates are enqueued for generating PP_Orders")
 	public void enqueuePP_Order_Candidate(@NonNull final DataTable dataTable)
 	{
-		final List<I_PP_Order_Candidate> ppOrderCandidates = new ArrayList<>();
-
-		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> row : tableRows)
-		{
-			ppOrderCandidates.add(getPPOrderCandidate(row));
-		}
-
-		final ImmutableList<PPOrderCandidateId> ppOrderCandidateIds = ppOrderCandidates
-				.stream()
-				.map(I_PP_Order_Candidate::getPP_Order_Candidate_ID)
-				.map(PPOrderCandidateId::ofRepoId)
-				.collect(ImmutableList.toImmutableList());
-
-		final PPOrderCandidateEnqueuer.Result result = ppOrderCandidateEnqueuer
-				.enqueueCandidateIds(ppOrderCandidateIds);
-
-		assertThat(result.getEnqueuedPackagesCount()).isEqualTo(tableRows.size());
+		invokeGeneratePPOrderProcess(false, dataTable);
 	}
 
 	@And("the following PP_Order_Candidates are re-opened")
@@ -304,6 +288,28 @@ public class PP_Order_Candidate_StepDef
 
 		final String ppOrderCandidateIdentifier = DataTableUtil.extractStringForColumnName(tableRow, StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		ppOrderCandidateTable.putOrReplace(ppOrderCandidateIdentifier, ppOrderCandidate);
+	}
+
+	@And("^generate PP_Order process is invoked for selection, with completeDocument=(.*)$")
+	public void invokeGeneratePPOrderProcess(final boolean isDocComplete, @NonNull final DataTable table)
+	{
+		final List<PPOrderCandidateId> ppOrderCandidatesId = table.asMaps()
+				.stream()
+				.map(this::getPPOrderCandidate)
+				.map(I_PP_Order_Candidate::getPP_Order_Candidate_ID)
+				.map(PPOrderCandidateId::ofRepoId)
+				.collect(ImmutableList.toImmutableList());
+
+		final PInstanceId pInstanceId = queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
+				.addOnlyActiveRecordsFilter()
+				.addInArrayFilter(I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_ID, ppOrderCandidatesId)
+				.create()
+				.createSelection();
+
+		final PPOrderCandidateEnqueuer.Result result = ppOrderCandidateEnqueuer
+				.enqueueSelection(pInstanceId, Env.getCtx(), isDocComplete);
+
+		assertThat(result.getEnqueuedPackagesCount()).isEqualTo(1);
 	}
 
 	private void updatePPOrderCandidate(@NonNull final Map<String, String> tableRow)
