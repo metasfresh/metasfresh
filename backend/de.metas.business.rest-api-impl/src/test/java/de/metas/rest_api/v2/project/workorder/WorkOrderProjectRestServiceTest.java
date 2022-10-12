@@ -65,6 +65,7 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_ProjectType;
@@ -75,6 +76,7 @@ import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceType;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -111,6 +113,7 @@ class WorkOrderProjectRestServiceTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		Env.setClientId(Env.getCtx(), ClientId.METASFRESH);
 
 		final OrgId orgId = AdempiereTestHelper.createOrgWithTimeZone();
 		orgValue = Services.get(IOrgDAO.class).retrieveOrgValue(orgId);
