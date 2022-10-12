@@ -27,7 +27,9 @@ import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.util.api.IParams;
 import org.compiere.SpringContextHolder;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.productioncandidate.service.PPOrderCandidateService;
@@ -39,6 +41,7 @@ import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import static org.eevolution.productioncandidate.async.PPOrderCandidateEnqueuer.WP_COMPLETE_DOC_PARAM;
 import static org.eevolution.productioncandidate.async.PPOrderCandidateEnqueuer.WP_PINSTANCE_ID_PARAM;
 
 public class GeneratePPOrderFromPPOrderCandidate extends WorkpackageProcessorAdapter
@@ -49,6 +52,7 @@ public class GeneratePPOrderFromPPOrderCandidate extends WorkpackageProcessorAda
 	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workPackage, @Nullable final String localTrxName)
 	{
 		final PInstanceId pInstanceId = getParameters().getParameterAsId(WP_PINSTANCE_ID_PARAM, PInstanceId.class);
+		final Boolean isDocComplete = getCompleteDocParamValue(getParameters());
 
 		Check.assumeNotNull(pInstanceId, "adPInstanceId is not null");
 
@@ -57,10 +61,23 @@ public class GeneratePPOrderFromPPOrderCandidate extends WorkpackageProcessorAda
 		final Stream<I_PP_Order_Candidate> candidateStream = StreamSupport.stream(
 				Spliterators.spliteratorUnknownSize(orderCandidates, Spliterator.ORDERED), false);
 
-		final OrderGenerateResult result = ppOrderCandidateService.processCandidates(candidateStream);
+		final OrderGenerateResult result = ppOrderCandidateService.processCandidates(candidateStream, isDocComplete);
 
 		Loggables.addLog("Generated: {}", result);
 
 		return Result.SUCCESS;
+	}
+
+	@Nullable
+	private static Boolean getCompleteDocParamValue(@NonNull final IParams params)
+	{
+		final Object isDocComplete = params.getParameterAsObject(WP_COMPLETE_DOC_PARAM);
+
+		if (isDocComplete == null)
+		{
+			return null;
+		}
+
+		return StringUtils.toBoolean(isDocComplete);
 	}
 }

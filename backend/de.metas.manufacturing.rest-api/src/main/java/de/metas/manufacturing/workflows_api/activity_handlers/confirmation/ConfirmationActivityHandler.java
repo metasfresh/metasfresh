@@ -32,10 +32,7 @@ public class ConfirmationActivityHandler implements WFActivityHandler, UserConfi
 	@Override
 	public UIComponent getUIComponent(final @NonNull WFProcess wfProcess, final @NonNull WFActivity wfActivity, final @NonNull JsonOpts jsonOpts)
 	{
-		return UserConfirmationSupportUtil.createUIComponent(
-				UserConfirmationSupportUtil.UIComponentProps.builder()
-						.confirmed(wfActivity.getStatus().isCompleted())
-						.build());
+		return UserConfirmationSupportUtil.createUIComponent(wfActivity);
 	}
 
 	@Override

@@ -31,6 +31,7 @@ import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.DocStatus;
+import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.logging.LogManager;
 import de.metas.manufacturing.order.exportaudit.APIExportStatus;
@@ -619,5 +620,15 @@ public class PPOrderBL implements IPPOrderBL
 				.build();
 
 		materialEventService.enqueueEventAfterNextCommit(ppOrderCreatedEvent);
+	}
+
+	@Override
+	public void completeDocument(@NonNull final I_PP_Order ppOrder)
+	{
+		documentBL.processEx(ppOrder, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+
+		Loggables.addLog(
+				"Completed ppOrder; PP_Order_ID={}; DocumentNo={}",
+				ppOrder.getPP_Order_ID(), ppOrder.getDocumentNo());
 	}
 }

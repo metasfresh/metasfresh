@@ -167,7 +167,8 @@ public class ManufacturingJobLoaderAndSaver
 				.name(from.getName())
 				.type(from.getType())
 				.orderRoutingActivityId(from.getId())
-				.routingActivityStatus(from.getStatus());
+				.routingActivityStatus(from.getStatus())
+				.alwaysAvailableToUser(from.getAlwaysAvailableToUser());
 	}
 
 	private RawMaterialsIssue toRawMaterialsIssue(final @NonNull PPOrderRoutingActivity from)

@@ -6,6 +6,7 @@ import de.metas.resource.ResourceType;
 import de.metas.resource.ResourceTypeId;
 import de.metas.util.ISingletonService;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_S_Resource;
 
 /*
  * #%L
@@ -38,4 +39,6 @@ public interface IResourceProductService extends ISingletonService
 	I_M_Product getProductByResourceId(ResourceId resourceId);
 
 	ProductId getProductIdByResourceId(ResourceId resourceId);
+
+	I_S_Resource getById(ResourceId resourceId);
 }
