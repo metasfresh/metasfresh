@@ -10,8 +10,6 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
-import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterDescriptor;
 import de.metas.ui.web.document.filter.DocumentFilterList;
@@ -357,24 +355,6 @@ public final class DefaultView implements IEditableView
 
 	@Override
 	public ViewResult getPage(
-			final int firstRow,
-			final int pageLength,
-			final ViewRowsOrderBy orderBy)
-	{
-		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
-				PerformanceMonitoringService.class,
-				NoopPerformanceMonitoringService.INSTANCE);
-		return service.monitor(
-				() -> getPage0(firstRow, pageLength, orderBy),
-				PerformanceMonitoringService.Metadata
-						.builder()
-						.name("DefaultView")
-						.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
-						.action("getPage")
-						.build());
-	}
-
-	private ViewResult getPage0(
 			final int firstRow,
 			final int pageLength,
 			final ViewRowsOrderBy orderBy)
