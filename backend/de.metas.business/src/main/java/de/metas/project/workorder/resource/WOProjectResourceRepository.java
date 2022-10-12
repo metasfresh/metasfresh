@@ -45,6 +45,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Project_WO_Resource;
 import org.compiere.util.TimeUtil;
@@ -78,6 +79,7 @@ public class WOProjectResourceRepository
 
 		return queryBL.createQueryBuilder(I_C_Project_WO_Resource.class)
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Project_WO_Resource.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
 				.addInArrayFilter(I_C_Project_WO_Resource.COLUMNNAME_C_Project_WO_Resource_ID, ids)
 				.stream()
 				.map(WOProjectResourceRepository::ofRecord)
@@ -93,6 +95,7 @@ public class WOProjectResourceRepository
 
 		final ImmutableListMultimap<ProjectId, WOProjectResource> byProjectId = queryBL.createQueryBuilder(I_C_Project_WO_Resource.class)
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Project_WO_Resource.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
 				.addInArrayFilter(I_C_Project_WO_Resource.COLUMNNAME_C_Project_ID, projectIds)
 				.stream()
 				.map(WOProjectResourceRepository::ofRecord)
@@ -114,6 +117,7 @@ public class WOProjectResourceRepository
 		}
 
 		final ImmutableList<Integer> resourceRepoIds = queryBL.createQueryBuilder(I_C_Project_WO_Resource.class)
+				.addEqualsFilter(I_C_Project_WO_Resource.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
 				.addInArrayFilter(I_C_Project_WO_Resource.COLUMNNAME_C_Project_WO_Resource_ID, projectResourceIds)
 				.create()
 				.listDistinct(I_C_Project_WO_Resource.COLUMNNAME_S_Resource_ID, Integer.class);
@@ -159,6 +163,7 @@ public class WOProjectResourceRepository
 
 		final IQueryBuilder<I_C_Project_WO_Resource> queryBuilder = queryBL.createQueryBuilder(I_C_Project_WO_Resource.class)
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Project_WO_Resource.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
 				.addInArrayFilter(I_C_Project_WO_Resource.COLUMNNAME_S_Resource_ID, resourceIds);
 
 		if (onlyProjectIds != null && !onlyProjectIds.isEmpty())
@@ -186,6 +191,7 @@ public class WOProjectResourceRepository
 		}
 
 		queryBL.createQueryBuilder(I_C_Project_WO_Resource.class)
+				.addEqualsFilter(I_C_Project_WO_Resource.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
 				.addInArrayFilter(I_C_Project_WO_Resource.COLUMNNAME_C_Project_WO_Resource_ID, projectResourceIds)
 				.forEach(record -> {
 					final WOProjectResource projectResource = ofRecord(record);
@@ -202,6 +208,7 @@ public class WOProjectResourceRepository
 	public List<WOProjectResource> listByStepIds(@NonNull final Set<WOProjectStepId> woProjectStepIds)
 	{
 		return queryBL.createQueryBuilder(I_C_Project_WO_Resource.class)
+				.addEqualsFilter(I_C_Project_WO_Resource.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
 				.addInArrayFilter(I_C_Project_WO_Resource.COLUMNNAME_C_Project_WO_Step_ID, woProjectStepIds)
 				.create()
 				.stream()
@@ -331,6 +338,7 @@ public class WOProjectResourceRepository
 		}
 
 		final IQueryBuilder<I_C_Project_WO_Resource> sqlQuery = queryBL.createQueryBuilder(I_C_Project_WO_Resource.class)
+				.addEqualsFilter(I_C_Project_WO_Resource.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
 				.addInArrayFilter(I_C_Project_WO_Resource.COLUMNNAME_S_Resource_ID, resourceIds)
 				.addInArrayFilter(I_C_Project_WO_Resource.COLUMNNAME_C_Project_ID, projectIds);
 

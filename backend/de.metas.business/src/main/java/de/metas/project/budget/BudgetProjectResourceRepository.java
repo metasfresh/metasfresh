@@ -44,6 +44,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_Project_Resource_Budget;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
@@ -82,6 +83,7 @@ public class BudgetProjectResourceRepository
 	{
 		return queryBL.createQueryBuilder(I_C_Project_Resource_Budget.class)
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Project_Resource_Budget.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
 				.addEqualsFilter(I_C_Project_Resource_Budget.COLUMNNAME_C_Project_ID, projectId)
 				.addInArrayFilter(I_C_Project_Resource_Budget.COLUMNNAME_S_Resource_ID, resourceIds)
 				.stream()
@@ -93,6 +95,7 @@ public class BudgetProjectResourceRepository
 	public ImmutableList<BudgetProjectResource> getResourcesAsListByProjectId(@NonNull final ProjectId projectId)
 	{
 		return queryBL.createQueryBuilder(I_C_Project_Resource_Budget.class)
+				.addEqualsFilter(I_C_Project_Resource_Budget.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
 				.addEqualsFilter(I_C_Project_Resource_Budget.COLUMNNAME_C_Project_ID, projectId)
 				.stream()
 				.map(BudgetProjectResourceRepository::fromRecord)
@@ -107,6 +110,7 @@ public class BudgetProjectResourceRepository
 		}
 
 		final ImmutableListMultimap<ProjectId, BudgetProjectResource> budgetsByProjectId = queryBL.createQueryBuilder(I_C_Project_Resource_Budget.class)
+				.addEqualsFilter(I_C_Project_Resource_Budget.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
 				.addInArrayFilter(I_C_Project_Resource_Budget.COLUMNNAME_C_Project_ID, projectIds)
 				.stream()
 				.map(BudgetProjectResourceRepository::fromRecord)
@@ -166,6 +170,7 @@ public class BudgetProjectResourceRepository
 			@NonNull final CurrencyId newCurrencyId)
 	{
 		queryBL.createQueryBuilder(I_C_Project_Resource_Budget.class)
+				.addEqualsFilter(I_C_Project_Resource_Budget.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
 				.addEqualsFilter(I_C_Project_Resource_Budget.COLUMNNAME_C_Project_ID, projectId)
 				.forEach(record -> updateRecordAndSave(record, newOrgId, newCurrencyId));
 	}
@@ -190,6 +195,7 @@ public class BudgetProjectResourceRepository
 		}
 
 		queryBL.createQueryBuilder(I_C_Project_Resource_Budget.class)
+				.addEqualsFilter(I_C_Project_Resource_Budget.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
 				.addInArrayFilter(I_C_Project_Resource_Budget.COLUMNNAME_C_Project_Resource_Budget_ID, projectResourceIds)
 				.forEach(record -> {
 					final BudgetProjectResource projectResource = fromRecord(record);
@@ -218,6 +224,7 @@ public class BudgetProjectResourceRepository
 
 		final ImmutableList<Integer> projectRepoIdsEffective = queryBL.createQueryBuilder(I_C_Project_Resource_Budget.class)
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Project_Resource_Budget.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
 				.addInArrayFilter(I_C_Project_Resource_Budget.COLUMNNAME_S_Resource_Group_ID, resourceGroupIds)
 				.addInArrayFilter(I_C_Project_Resource_Budget.COLUMNNAME_C_Project_ID, projectIds)
 				.create()

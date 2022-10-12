@@ -40,6 +40,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_ProjectType;
 import org.compiere.util.TimeUtil;
@@ -74,6 +75,7 @@ public class BudgetProjectRepository
 		return queryBL
 				.createQueryBuilder(I_C_Project.class)
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Project.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
 				.addEqualsFilter(I_C_Project.COLUMNNAME_ProjectCategory, ProjectCategory.Budget)
 				.addInArrayFilter(I_C_Project.COLUMNNAME_C_Project_ID, projectIds)
 				.orderBy(I_C_Project.COLUMNNAME_C_Project_ID)
@@ -127,6 +129,7 @@ public class BudgetProjectRepository
 	{
 		final IQueryBuilder<I_C_Project> queryBuilder = queryBL.createQueryBuilder(I_C_Project.class)
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Project.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
 				.addEqualsFilter(I_C_Project.COLUMNNAME_ProjectCategory, ProjectCategory.Budget.getCode())
 				.addInArrayFilter(I_C_Project.COLUMNNAME_AD_Org_ID, query.getOrgId(), OrgId.ANY)
 				.orderByDescending(I_C_Project.COLUMNNAME_AD_Org_ID);

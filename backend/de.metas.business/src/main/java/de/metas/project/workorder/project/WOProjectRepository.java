@@ -41,6 +41,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_ProjectType;
@@ -172,6 +173,7 @@ public class WOProjectRepository
 		return queryBL
 				.createQueryBuilder(I_C_Project.class)
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Project.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
 				.addEqualsFilter(I_C_Project.COLUMNNAME_ProjectCategory, ProjectCategory.WorkOrderJob)
 				.create()
 				.listIds(ProjectId::ofRepoId);
@@ -208,6 +210,7 @@ public class WOProjectRepository
 	{
 		final IQueryBuilder<I_C_Project> queryBuilder = queryBL.createQueryBuilder(I_C_Project.class)
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Project.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
 				.addEqualsFilter(I_C_Project.COLUMNNAME_ProjectCategory, ProjectCategory.WorkOrderJob.getCode())
 				.addInArrayFilter(I_C_Project.COLUMNNAME_AD_Org_ID, query.getOrgId(), OrgId.ANY)
 				.orderByDescending(I_C_Project.COLUMNNAME_AD_Org_ID);
@@ -236,6 +239,7 @@ public class WOProjectRepository
 		final IQueryBuilder<I_C_Project> queryBuilder = queryBL
 				.createQueryBuilder(I_C_Project.class)
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Project.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
 				.addEqualsFilter(I_C_Project.COLUMNNAME_ProjectCategory, ProjectCategory.WorkOrderJob)
 				.addInArrayFilter(I_C_Project.COLUMNNAME_C_Project_ID, query.getProjectIds());
 
