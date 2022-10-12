@@ -340,6 +340,7 @@ public class PPOrderCandidateService
 				.trxManager(trxManager)
 				.ppOrderCandidatesDAO(ppOrderCandidateDAO)
 				.productPlanningsRepo(productPlanningDAO)
+				.createEachPPOrderInOwnTrx(true)
 				.build();
 	}
 

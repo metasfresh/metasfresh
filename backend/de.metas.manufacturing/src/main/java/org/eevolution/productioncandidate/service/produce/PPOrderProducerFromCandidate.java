@@ -43,6 +43,7 @@ import javax.annotation.Nullable;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 public class PPOrderProducerFromCandidate
@@ -54,6 +55,7 @@ public class PPOrderProducerFromCandidate
 	private final ITrxManager trxManager;
 	private final IProductPlanningDAO productPlanningsRepo;
 	private final Map<ProductPlanningId, I_PP_Product_Planning> productPlanningCache;
+	private final boolean createEachPPOrderInOwnTrx;
 
 	@Builder
 	public PPOrderProducerFromCandidate(
@@ -61,13 +63,15 @@ public class PPOrderProducerFromCandidate
 			@NonNull final IPPOrderBL ppOrderService,
 			@NonNull final ITrxManager trxManager,
 			@NonNull final PPOrderCandidateDAO ppOrderCandidatesDAO,
-			@NonNull final IProductPlanningDAO productPlanningsRepo)
+			@NonNull final IProductPlanningDAO productPlanningsRepo,
+			final boolean createEachPPOrderInOwnTrx)
 	{
 		this.ppOrderAllocatorBuilderService = ppOrderAllocatorBuilderService;
 		this.ppOrderService = ppOrderService;
 		this.trxManager = trxManager;
 		this.ppOrderCandidatesDAO = ppOrderCandidatesDAO;
 		this.productPlanningsRepo = productPlanningsRepo;
+		this.createEachPPOrderInOwnTrx = createEachPPOrderInOwnTrx;
 
 		this.result = new OrderGenerateResult();
 		this.productPlanningCache = new ConcurrentHashMap<>();
@@ -112,7 +116,7 @@ public class PPOrderProducerFromCandidate
 				//note: if nothing could be allocated it's time to create the PPOrder and initiate a new allocator
 				if (allocatedQty.isZero())
 				{
-					createPPOrderInNewTrx(allocator, isDocComplete);
+					createPPOrderInTrx(allocator, isDocComplete);
 
 					allocator = ppOrderAllocatorBuilderService.buildAllocator(ppOrderCandidateToAllocate);
 				}
@@ -132,29 +136,33 @@ public class PPOrderProducerFromCandidate
 
 		if (allocator != null && allocator.getAllocatedQty().signum() > 0)
 		{
-			createPPOrderInNewTrx(allocator, isDocComplete);
+			createPPOrderInTrx(allocator, isDocComplete);
 		}
 	}
 
-	public void createPPOrderInNewTrx(@NonNull final PPOrderAllocator allocator,@Nullable final Boolean completeDoc)
+	private void createPPOrderInTrx(@NonNull final PPOrderAllocator allocator, @Nullable final Boolean completeDoc)
 	{
-		trxManager.runInNewTrx(() ->
-							   {
-								   final PPOrderCreateRequest request = allocator.getPPOrderCreateRequest();
+		final Consumer<Runnable> runInTrx = createEachPPOrderInOwnTrx
+				? trxManager::runInNewTrx
+				: trxManager::runInThreadInheritedTrx;
 
-								   final I_PP_Order ppOrder = ppOrderService.createOrder(request);
+		runInTrx.accept(() ->
+						{
+							final PPOrderCreateRequest request = allocator.getPPOrderCreateRequest();
 
-								   createPPOrderAllocations(ppOrder, allocator.getPpOrderCand2AllocatedQty());
+							final I_PP_Order ppOrder = ppOrderService.createOrder(request);
 
-								   ppOrderService.postPPOrderCreatedEvent(ppOrder);
+							createPPOrderAllocations(ppOrder, allocator.getPpOrderCand2AllocatedQty());
 
-								   if (shouldCompletePPOrder(request.getProductPlanningId(), completeDoc))
-								   {
-									   ppOrderService.completeDocument(ppOrder);
-								   }
+							ppOrderService.postPPOrderCreatedEvent(ppOrder);
 
-								   result.addOrder(ppOrder);
-							   });
+							if (shouldCompletePPOrder(request.getProductPlanningId(), completeDoc))
+							{
+								ppOrderService.completeDocument(ppOrder);
+							}
+
+							result.addOrder(ppOrder);
+						});
 	}
 
 	private void createPPOrderAllocations(@NonNull final I_PP_Order ppOrder, @NonNull final Map<PPOrderCandidateId, Quantity> ppOrderCand2QtyToAllocate)
