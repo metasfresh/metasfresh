@@ -56,6 +56,8 @@ import de.metas.product.Product;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
+import de.metas.sectionCode.SectionCodeId;
+import de.metas.sectionCode.SectionCodeRepository;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -92,11 +94,16 @@ public class ProductRestService
 
 	private final ProductRepository productRepository;
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
+	private final SectionCodeRepository sectionCodeRepository;
 
-	public ProductRestService(final ProductRepository productRepository, final ExternalReferenceRestControllerService externalReferenceRestControllerService)
+	public ProductRestService(
+			@NonNull final ProductRepository productRepository,
+			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
+			@NonNull final SectionCodeRepository sectionCodeRepository)
 	{
 		this.productRepository = productRepository;
 		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
+		this.sectionCodeRepository = sectionCodeRepository;
 	}
 
 	@NonNull
@@ -208,7 +215,8 @@ public class ProductRestService
 									   JsonMetasfreshId.of(productId.getRepoId()),
 									   jsonRequestProductUpsertItem.getExternalVersion(),
 									   jsonRequestProductUpsertItem.getExternalReferenceUrl(),
-									   jsonRequestProductUpsertItem.getExternalSystemConfigId());
+									   jsonRequestProductUpsertItem.getExternalSystemConfigId(),
+									   jsonRequestProductUpsertItem.getIsReadOnlyInMetasfresh());
 
 		return JsonResponseUpsertItem.builder()
 				.syncOutcome(syncOutcome)
@@ -223,7 +231,8 @@ public class ProductRestService
 			@NonNull final JsonMetasfreshId metasfreshId,
 			@Nullable final String externalVersion,
 			@Nullable final String externalReferenceUrl,
-			@Nullable final JsonMetasfreshId externalSystemConfigId)
+			@Nullable final JsonMetasfreshId externalSystemConfigId,
+			@Nullable final Boolean isReadOnlyInMetasfresh)
 	{
 		final ExternalIdentifier externalIdentifier = ExternalIdentifier.of(identifier);
 
@@ -246,6 +255,7 @@ public class ProductRestService
 				.version(externalVersion)
 				.externalReferenceUrl(externalReferenceUrl)
 				.externalSystemConfigId(externalSystemConfigId)
+				.isReadOnlyMetasfresh(isReadOnlyInMetasfresh)
 				.build();
 
 		final JsonRequestExternalReferenceUpsert externalReferenceCreateRequest = JsonRequestExternalReferenceUpsert.builder()
@@ -781,6 +791,19 @@ public class ProductRestService
 			builder.stocked(existingProduct.isStocked());
 		}
 
+		if (jsonRequestProductUpsertItem.isSectionCodeSet())
+		{
+			final SectionCodeId sectionCodeId = sectionCodeRepository
+					.getSectionCodeIdByValue(orgId, jsonRequestProductUpsertItem.getSectionCode())
+					.orElse(null);
+
+			builder.sectionCodeId(sectionCodeId);
+		}
+		else
+		{
+			builder.sectionCodeId(existingProduct.getSectionCodeId());
+		}
+
 		builder.id(existingProduct.getId())
 				.orgId(orgId)
 				.productNo(existingProduct.getProductNo())
@@ -796,15 +819,18 @@ public class ProductRestService
 	private CreateProductRequest getCreateProductRequest(@NonNull final JsonRequestProduct jsonRequestProductUpsertItem, final I_AD_Org org)
 	{
 		final UomId uomId = uomDAO.getUomIdByX12DE355(X12DE355.ofCode(jsonRequestProductUpsertItem.getUomCode()));
-		final String productType;
-
-		productType = getType(jsonRequestProductUpsertItem);
+		final String productType = getType(jsonRequestProductUpsertItem);
+		final OrgId orgId = OrgId.ofRepoId(org.getAD_Org_ID());
 
 		final ProductCategoryId productCategoryId = jsonRequestProductUpsertItem.isProductCategoryIdentifierSet() ?
 				getProductCategoryId(jsonRequestProductUpsertItem.getProductCategoryIdentifier(), org) : defaultProductCategoryId;
 
+		final SectionCodeId sectionCodeId = sectionCodeRepository
+				.getSectionCodeIdByValue(orgId, jsonRequestProductUpsertItem.getSectionCode())
+				.orElse(null);
+
 		return CreateProductRequest.builder()
-				.orgId(OrgId.ofRepoId(org.getAD_Org_ID()))
+				.orgId(orgId)
 				.productName(jsonRequestProductUpsertItem.getName())
 				.productType(productType)
 				.productCategoryId(productCategoryId)
@@ -817,6 +843,7 @@ public class ProductRestService
 				.gtin(jsonRequestProductUpsertItem.getGtin())
 				.ean(jsonRequestProductUpsertItem.getEan())
 				.productValue(jsonRequestProductUpsertItem.getCode())
+				.sectionCodeId(sectionCodeId)
 				.build();
 	}
 

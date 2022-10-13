@@ -27,6 +27,8 @@ Feature:product get/create/update using metasfresh api
       "productIdentifier": "ext-ALBERTA-345",
       "externalVersion": null,
       "externalReferenceUrl": "www.ExternalReferenceURL.com",
+      "external_sys_id":"",
+      "isReadOnly": "",
       "requestProduct": {
         "code": "code345",
         "codeSet": true,

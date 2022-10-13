@@ -77,6 +77,8 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	public static final String EXTERNALSYSTEM_WooCommerce = "WooCommerce";
 	/** GRSSignum = GRSSignum */
 	public static final String EXTERNALSYSTEM_GRSSignum = "GRSSignum";
+	/** SAP = SAP */
+	public static final String EXTERNALSYSTEM_SAP = "SAP";
 	@Override
 	public void setExternalSystem (final java.lang.String ExternalSystem)
 	{

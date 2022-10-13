@@ -34,6 +34,7 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6_UOM;
@@ -43,6 +44,8 @@ import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
 import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfig;
 import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfigId;
+import de.metas.externalsystem.sap.ExternalSystemSAPConfigId;
+import de.metas.externalsystem.sap.ExternalSystemSAPConfig;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigMapping;
@@ -103,6 +106,8 @@ public class ExternalSystemConfigRepo
 				return getById(ExternalSystemWooCommerceConfigId.cast(id));
 			case GRSSignum:
 				return getById(ExternalSystemGRSSignumConfigId.cast(id));
+			case SAP:
+				return getById(ExternalSystemSAPConfigId.cast(id));
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", id.getType());
 		}
@@ -128,6 +133,9 @@ public class ExternalSystemConfigRepo
 			case RabbitMQ:
 				return getRabbitMQConfigByValue(value)
 						.map(this::getExternalSystemParentConfig);
+			case SAP:
+				return getSAPConfigByValue(value)
+						.map(this::getExternalSystemParentConfig);
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", type);
 		}
@@ -152,6 +160,8 @@ public class ExternalSystemConfigRepo
 				return getWooCommerceConfigByParentId(id);
 			case GRSSignum:
 				return getGRSSignumConfigByParentId(id);
+			case SAP:
+				return getSAPConfigByParentId(id);
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 		}
@@ -186,6 +196,9 @@ public class ExternalSystemConfigRepo
 				break;
 			case GRSSignum:
 				result = getAllByTypeGRS();
+				break;
+			case SAP:
+				result = getAllByTypeSAP();
 				break;
 			case Shopware6:
 			case Other:
@@ -775,6 +788,71 @@ public class ExternalSystemConfigRepo
 				.externalSystemShopware6ConfigId(ExternalSystemShopware6ConfigId.ofRepoId(record.getExternalSystem_Config_Shopware6_ID()))
 				.uomId(UomId.ofRepoId(record.getC_UOM_ID()))
 				.shopwareCode(record.getShopwareCode())
+				.build();
+	}
+
+	@NonNull
+	private ExternalSystemParentConfig getById(@NonNull final ExternalSystemSAPConfigId id)
+	{
+		final I_ExternalSystem_Config_SAP config = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config_SAP.class);
+
+		return getExternalSystemParentConfig(config);
+	}
+
+	@NonNull
+	private ExternalSystemParentConfig getExternalSystemParentConfig(@NonNull final I_ExternalSystem_Config_SAP config)
+	{
+		final ExternalSystemSAPConfig child = buildExternalSystemSAPConfig(config);
+
+		return getById(child.getParentId())
+				.childConfig(child)
+				.build();
+	}
+
+	@NonNull
+	private Optional<I_ExternalSystem_Config_SAP> getSAPConfigByValue(@NonNull final String value)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_SAP.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_SAP.COLUMNNAME_ExternalSystemValue, value)
+				.create()
+				.firstOnlyOptional(I_ExternalSystem_Config_SAP.class);
+	}
+
+	@NonNull
+	private Optional<IExternalSystemChildConfig> getSAPConfigByParentId(@NonNull final ExternalSystemParentConfigId id)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_SAP.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_SAP.COLUMNNAME_ExternalSystem_Config_ID, id.getRepoId())
+				.create()
+				.firstOnlyOptional(I_ExternalSystem_Config_SAP.class)
+				.map(ExternalSystemConfigRepo::buildExternalSystemSAPConfig);
+	}
+
+	@NonNull
+	private ImmutableList<ExternalSystemParentConfig> getAllByTypeSAP()
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_SAP.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.map(this::getExternalSystemParentConfig)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private static ExternalSystemSAPConfig buildExternalSystemSAPConfig(final @NonNull I_ExternalSystem_Config_SAP config)
+	{
+		return ExternalSystemSAPConfig.builder()
+				.id(ExternalSystemSAPConfigId.ofRepoId(config.getExternalSystem_Config_SAP_ID()))
+				.parentId(ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID()))
+				.sftpHostName(config.getSFTP_HostName())
+				.sftpPort(config.getSFTP_Port())
+				.sftpUsername(config.getSFTP_Username())
+				.sftpPassword(config.getSFTP_Password())
+				.value(config.getExternalSystemValue())
+				.sftpTargetDirectory(config.getSFTP_TargetDirectory())
 				.build();
 	}
 }
