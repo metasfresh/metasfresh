@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.externalsystem;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.rabbitmq.client.AMQP;
@@ -65,6 +66,7 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -226,6 +228,12 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 			{
 				validateExportPPOrderWithPLUFile(ppOrderIdentifier, requests, externalSystemConfig, tableRow);
 			}
+
+			final String expectedRawParams = DataTableUtil.extractStringOrNullForColumnName(tableRow, "JsonExternalSystemRequest.parameters.RAW");
+			if (Check.isNotBlank(expectedRawParams))
+			{
+				checkExistingJsonExternalSystemRequestForRawParams(expectedRawParams, externalSystemConfig, requests);
+			}
 		}
 	}
 
@@ -246,6 +254,8 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 
 		try
 		{
+			final ImmutableList.Builder<JsonExternalSystemRequest> collector = ImmutableList.builder();
+
 			final Connection connection = metasfreshToRabbitMQFactory.newConnection();
 			channel = connection.createChannel();
 
@@ -256,7 +266,7 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 			final DefaultConsumer consumer = new DefaultConsumer(channel)
 			{
 				@Override
-				public void handleDelivery(final String consumerTag, final Envelope envelope, final AMQP.BasicProperties properties, final byte[] body)
+				public void handleDelivery(final String consumerTag, final Envelope envelope, final AMQP.BasicProperties properties, final byte[] body) throws JsonProcessingException
 				{
 					message[0] = new String(body, StandardCharsets.UTF_8);
 
@@ -590,6 +600,12 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 			return true;
 		}
 
+		final String expectedRawParams = DataTableUtil.extractStringOrNullForColumnName(row, "JsonExternalSystemRequest.parameters.RAW");
+		if (isMatchingESRequestBasedOnRawParams(expectedRawParams, externalSystemRequest))
+		{
+			return true;
+		}
+
 		return false;
 	}
 
@@ -784,5 +800,50 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 		}
 
 		return false;
+	}
+
+	private boolean isMatchingESRequestBasedOnRawParams(@Nullable final String rawParams, @NonNull final JsonExternalSystemRequest externalSystemRequest)
+	{
+		if (Check.isBlank(rawParams))
+		{
+			return false;
+		}
+
+		final Map<String, String> externalSystemRequestParams = externalSystemRequest.getParameters();
+		if (externalSystemRequestParams == null)
+		{
+			return false;
+		}
+
+		try
+		{
+			final HashMap<String, String> params = objectMapper.readValue(rawParams, new TypeReference<HashMap<String, String>>() {});
+
+			return externalSystemRequestParams.entrySet().containsAll(params.entrySet());
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw new RuntimeException(e.getMessage());
+		}
+	}
+
+	public void checkExistingJsonExternalSystemRequestForRawParams(
+			@NonNull final String expectedRawParams,
+			@NonNull final I_ExternalSystem_Config externalSystemConfig,
+			@NonNull final List<JsonExternalSystemRequest> requests) throws JsonProcessingException
+	{
+		final HashMap<String, String> expectedParams = objectMapper.readValue(expectedRawParams, new TypeReference<HashMap<String, String>>() {});
+
+		final JsonExternalSystemRequest jsonExternalSystemRequest = requests.stream()
+				.filter(request -> request.getExternalSystemConfigId().getValue() == externalSystemConfig.getExternalSystem_Config_ID())
+				.filter(request -> request.getParameters() != null)
+				.filter(request -> request.getParameters().entrySet().containsAll(expectedParams.entrySet()))
+				.findFirst()
+				.orElse(null);
+
+		if (jsonExternalSystemRequest == null)
+		{
+			logger.info("*** Target JsonExternalSystemRequest not found, see list: " + JsonObjectMapperHolder.sharedJsonObjectMapper().writeValueAsString(requests));
+		}
 	}
 }

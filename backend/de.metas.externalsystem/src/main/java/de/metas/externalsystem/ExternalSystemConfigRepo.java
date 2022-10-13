@@ -158,6 +158,9 @@ public class ExternalSystemConfigRepo
 			case LeichUndMehl:
 				return getLeichMehlConfigByValue(value)
 						.map(this::getExternalSystemParentConfig);
+			case Other:
+				return Optional.of(getExternalSystemParentConfigByValue(value));
+
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", type);
 		}
@@ -240,7 +243,7 @@ public class ExternalSystemConfigRepo
 				.filter(ExternalSystemParentConfig::isActive)
 				.collect(ImmutableList.toImmutableList());
 	}
-	
+
 	public void saveConfig(@NonNull final ExternalSystemParentConfig config)
 	{
 		switch (config.getType())
@@ -1072,6 +1075,16 @@ public class ExternalSystemConfigRepo
 				.replacement(record.getReplacement())
 				.replaceRegExp(record.getReplaceRegExp())
 				.replacementSource(ReplacementSource.ofCode(record.getReplacementSource()))
+				.build();
+	}
+
+	@NonNull
+	private ExternalSystemParentConfig getExternalSystemParentConfigByValue(@NonNull final String value)
+	{
+		final ExternalSystemOtherConfig childConfig = externalSystemOtherConfigRepository.getByValue(value);
+
+		return getById(childConfig.getId().getExternalSystemParentConfigId())
+				.childConfig(childConfig)
 				.build();
 	}
 }

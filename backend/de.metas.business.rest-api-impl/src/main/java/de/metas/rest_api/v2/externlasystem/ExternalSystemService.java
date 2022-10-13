@@ -116,12 +116,7 @@ public class ExternalSystemService
 	@NonNull
 	public ProcessExecutionResult invokeExternalSystem(@NonNull final InvokeExternalSystemProcessRequest invokeExternalSystemProcessRequest)
 	{
-		final ExternalSystemParentConfig externalSystemParentConfig =
-				externalSystemConfigRepo.getByTypeAndValue(invokeExternalSystemProcessRequest.getExternalSystemType(),
-														   invokeExternalSystemProcessRequest.getChildSystemConfigValue())
-				.orElseThrow(() -> new AdempiereException("ExternalSystemParentConfig @NotFound@")
-						.appendParametersToMessage()
-						.setParameter("invokeExternalSystemProcessRequest", invokeExternalSystemProcessRequest));
+		final ExternalSystemParentConfig externalSystemParentConfig = getExternalSystemParentConfigFor(invokeExternalSystemProcessRequest);
 
 		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClassIfUnique(invokeExternalSystemProcessRequest
 																							.getExternalSystemType()
@@ -287,6 +282,16 @@ public class ExternalSystemService
 				.pInstance_ID(pInstanceId)
 				.orgId(RestUtils.retrieveOrgIdOrDefault(jsonErrorItem.getOrgCode()))
 				.build();
+	}
+
+	@NonNull
+	private ExternalSystemParentConfig getExternalSystemParentConfigFor(@NonNull final InvokeExternalSystemProcessRequest invokeExternalSystemProcessRequest)
+	{
+		return externalSystemConfigRepo.getByTypeAndValue(invokeExternalSystemProcessRequest.getExternalSystemType(),
+														  invokeExternalSystemProcessRequest.getChildSystemConfigValue())
+				.orElseThrow(() -> new AdempiereException("ExternalSystemParentConfig @NotFound@")
+						.appendParametersToMessage()
+						.setParameter("invokeExternalSystemProcessRequest", invokeExternalSystemProcessRequest));
 	}
 
 	@NonNull

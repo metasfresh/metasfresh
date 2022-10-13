@@ -64,6 +64,8 @@ public class InvokeOtherAction extends InvokeExternalSystemProcess
 			parameters.put(ExternalSystemConstants.PARAM_UPDATED_AFTER_OVERRIDE, String.valueOf(TimeUtil.asInstant(getSinceParameterValue())));
 		}
 
+		getParameters().forEach(param -> parameters.put(param.getParameterName(), param.getParameterAsString()));
+
 		return parameters;
 	}
 
