@@ -563,7 +563,7 @@ public class InOutProducer implements IInOutProducer
 		}
 
 		final DocTypeQuery query = DocTypeQuery.builder()
-				.docBaseType(DocBaseType.valueOf(X_C_DocType.DOCBASETYPE_MaterialReceipt))
+				.docBaseType(DocBaseType.MaterialReceipt)
 				.adClientId(receiptSchedule.getAD_Client_ID())
 				.adOrgId(receiptSchedule.getAD_Org_ID())
 				.build();
