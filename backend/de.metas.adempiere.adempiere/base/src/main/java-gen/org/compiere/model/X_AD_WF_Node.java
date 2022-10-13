@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for AD_WF_Node
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -636683421L;
+	private static final long serialVersionUID = -1109543707L;
 
     /** Standard Constructor */
     public X_AD_WF_Node (final Properties ctx, final int AD_WF_Node_ID, @Nullable final String trxName)
@@ -691,6 +691,27 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	public java.lang.String getPP_Activity_Type() 
 	{
 		return get_ValueAsString(COLUMNNAME_PP_Activity_Type);
+	}
+
+	/** 
+	 * PP_AlwaysAvailableToUser AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int PP_ALWAYSAVAILABLETOUSER_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String PP_ALWAYSAVAILABLETOUSER_Yes = "Y";
+	/** No = N */
+	public static final String PP_ALWAYSAVAILABLETOUSER_No = "N";
+	@Override
+	public void setPP_AlwaysAvailableToUser (final @Nullable java.lang.String PP_AlwaysAvailableToUser)
+	{
+		set_Value (COLUMNNAME_PP_AlwaysAvailableToUser, PP_AlwaysAvailableToUser);
+	}
+
+	@Override
+	public java.lang.String getPP_AlwaysAvailableToUser() 
+	{
+		return get_ValueAsString(COLUMNNAME_PP_AlwaysAvailableToUser);
 	}
 
 	@Override

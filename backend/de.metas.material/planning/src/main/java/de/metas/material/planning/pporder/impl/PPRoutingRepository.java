@@ -10,6 +10,7 @@ import de.metas.cache.CCache;
 import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.IPPRoutingRepository;
+import de.metas.material.planning.pporder.PPAlwaysAvailableToUser;
 import de.metas.material.planning.pporder.PPRouting;
 import de.metas.material.planning.pporder.PPRoutingActivity;
 import de.metas.material.planning.pporder.PPRoutingActivityId;
@@ -231,6 +232,7 @@ public class PPRoutingRepository implements IPPRoutingRepository
 				.subcontractingVendorId(BPartnerId.ofRepoIdOrNull(activityRecord.getC_BPartner_ID()))
 				//
 				.milestone(activityRecord.isMilestone())
+				.alwaysAvailableToUser(PPAlwaysAvailableToUser.ofNullableCode(activityRecord.getPP_AlwaysAvailableToUser()))
 				//
 				.nextActivityIds(nextActivityIds)
 				//
