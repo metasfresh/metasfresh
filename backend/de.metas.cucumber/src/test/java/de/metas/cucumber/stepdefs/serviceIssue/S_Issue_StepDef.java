@@ -128,6 +128,13 @@ public class S_Issue_StepDef
 				issue.setIssueEffort(issueEffort);
 			}
 
+			final String parentIssueIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_S_Issue.COLUMNNAME_S_Parent_Issue_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(parentIssueIdentifier))
+			{
+				final I_S_Issue parentIssue = sIssueTable.get(parentIssueIdentifier);
+				issue.setS_Parent_Issue_ID(parentIssue.getS_Issue_ID());
+			}
+
 			saveRecord(issue);
 
 			final String issueIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_S_Issue_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -138,61 +145,7 @@ public class S_Issue_StepDef
 	@And("update S_Issue:")
 	public void update_S_Issue(@NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
-			final String issueIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_S_Issue_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_S_Issue issue = sIssueTable.get(issueIdentifier);
-
-			final String activityIdentifier = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + COLUMNNAME_C_Activity_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(activityIdentifier))
-			{
-				if (DataTableUtil.nullToken2Null(activityIdentifier) != null)
-				{
-					final I_C_Activity activity = activityTable.get(activityIdentifier);
-					issue.setC_Activity_ID(activity.getC_Activity_ID());
-				}
-				else
-				{
-					issue.setC_Activity_ID(0);
-				}
-			}
-
-			final BigDecimal invoiceableEffort = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_InvoiceableEffort);
-			if (invoiceableEffort != null)
-			{
-				issue.setInvoiceableEffort(invoiceableEffort);
-			}
-
-			final String projectIdentifier = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + COLUMNNAME_C_Project_ID + "." + TABLECOLUMN_IDENTIFIER);
-			if (Check.isNotBlank(projectIdentifier))
-			{
-				if (DataTableUtil.nullToken2Null(projectIdentifier) != null)
-				{
-					final I_C_Project project = projectTable.get(projectIdentifier);
-					issue.setC_Project_ID(project.getC_Project_ID());
-				}
-				else
-				{
-					issue.setC_Project_ID(0);
-				}
-			}
-
-			final BigDecimal budgetedEffort = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_BudgetedEffort);
-			if (budgetedEffort != null)
-			{
-				issue.setBudgetedEffort(budgetedEffort);
-			}
-
-			final String status = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_Status);
-			if (Check.isNotBlank(status))
-			{
-				issue.setStatus(status);
-			}
-
-			saveRecord(issue);
-
-			sIssueTable.putOrReplace(issueIdentifier, issue);
-		}
+		dataTable.asMaps().forEach(this::updateIssue);
 	}
 
 	@And("load Cost Center Activity from issue:")
@@ -279,6 +232,12 @@ public class S_Issue_StepDef
 		}
 	}
 
+	@And("reopen S_Issue:")
+	public void reopenS_Issue(@NonNull final DataTable dataTable)
+	{
+		dataTable.asMaps().forEach(this::updateIssue);
+	}
+
 	@NonNull
 	private Boolean loadCostCenterActivityFromIssue(final @NonNull Map<String, String> row)
 	{
@@ -296,5 +255,67 @@ public class S_Issue_StepDef
 		activityTable.put(activityIdentifier, activity);
 
 		return true;
+	}
+
+	private void updateIssue(@NonNull final Map<String, String> row)
+	{
+		final String issueIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_S_Issue_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_S_Issue issue = sIssueTable.get(issueIdentifier);
+
+		final String activityIdentifier = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + COLUMNNAME_C_Activity_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(activityIdentifier))
+		{
+			if (DataTableUtil.nullToken2Null(activityIdentifier) != null)
+			{
+				final I_C_Activity activity = activityTable.get(activityIdentifier);
+				issue.setC_Activity_ID(activity.getC_Activity_ID());
+			}
+			else
+			{
+				issue.setC_Activity_ID(0);
+			}
+		}
+
+		final BigDecimal invoiceableEffort = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_InvoiceableEffort);
+		if (invoiceableEffort != null)
+		{
+			issue.setInvoiceableEffort(invoiceableEffort);
+		}
+
+		final String projectIdentifier = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + COLUMNNAME_C_Project_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(projectIdentifier))
+		{
+			if (DataTableUtil.nullToken2Null(projectIdentifier) != null)
+			{
+				final I_C_Project project = projectTable.get(projectIdentifier);
+				issue.setC_Project_ID(project.getC_Project_ID());
+			}
+			else
+			{
+				issue.setC_Project_ID(0);
+			}
+		}
+
+		final BigDecimal budgetedEffort = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_BudgetedEffort);
+		if (budgetedEffort != null)
+		{
+			issue.setBudgetedEffort(budgetedEffort);
+		}
+
+		final String status = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_Status);
+		if (Check.isNotBlank(status))
+		{
+			issue.setStatus(status);
+		}
+
+		final Boolean processed = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + I_S_Issue.COLUMNNAME_Processed);
+		if (processed != null)
+		{
+			issue.setProcessed(processed);
+		}
+
+		saveRecord(issue);
+
+		sIssueTable.putOrReplace(issueIdentifier, issue);
 	}
 }

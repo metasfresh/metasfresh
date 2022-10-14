@@ -208,4 +208,9 @@ public class IssueEntity
 	{
 		return Optional.ofNullable(status).orElse(Status.NEW);
 	}
+
+	public boolean isInvoiced()
+	{
+		return Status.INVOICED.equals(status);
+	}
 }

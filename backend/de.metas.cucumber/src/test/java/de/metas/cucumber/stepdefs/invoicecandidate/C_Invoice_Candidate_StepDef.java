@@ -40,11 +40,14 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.TableRecordReference_StepDefUtil;
+import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
 import de.metas.cucumber.stepdefs.contract.C_Flatrate_Term_StepDefData;
 import de.metas.cucumber.stepdefs.docType.C_DocType_StepDefData;
 import de.metas.cucumber.stepdefs.iinvoicecandidate.I_Invoice_Candidate_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
+import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
+import de.metas.cucumber.stepdefs.serviceIssue.S_Issue_StepDefData;
 import de.metas.cucumber.stepdefs.shipment.M_InOutLine_StepDefData;
 import de.metas.cucumber.stepdefs.uom.C_UOM_StepDefData;
 import de.metas.document.DocTypeId;
@@ -66,6 +69,7 @@ import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
+import de.metas.serviceprovider.model.I_S_Issue;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -88,12 +92,14 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOutLine;
@@ -114,6 +120,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
@@ -188,6 +195,9 @@ public class C_Invoice_Candidate_StepDef
 	private final AD_Org_StepDefData orgTable;
 	private final C_Flatrate_Term_StepDefData contractTable;
 	private final TableRecordReference_StepDefUtil tableRecordReferenceStepDefUtil;
+	private final S_Issue_StepDefData issueTable;
+	private final C_Project_StepDefData projectTable;
+	private final C_Activity_StepDefData activityTable;
 
 	public C_Invoice_Candidate_StepDef(
 			@NonNull final C_Invoice_Candidate_StepDefData invoiceCandTable,
@@ -205,7 +215,10 @@ public class C_Invoice_Candidate_StepDef
 			@NonNull final C_UOM_StepDefData uomTable,
 			@NonNull final AD_Org_StepDefData orgTable,
 			@NonNull final C_Flatrate_Term_StepDefData contractTable,
-			@NonNull final TableRecordReference_StepDefUtil tableRecordReferenceStepDefUtil)
+			@NonNull final TableRecordReference_StepDefUtil tableRecordReferenceStepDefUtil,
+			@NonNull final S_Issue_StepDefData issueTable,
+			@NonNull final C_Project_StepDefData projectTable,
+			@NonNull final C_Activity_StepDefData activityTable)
 	{
 		this.invoiceCandTable = invoiceCandTable;
 		this.invoiceTable = invoiceTable;
@@ -223,6 +236,9 @@ public class C_Invoice_Candidate_StepDef
 		this.orgTable = orgTable;
 		this.contractTable = contractTable;
 		this.tableRecordReferenceStepDefUtil = tableRecordReferenceStepDefUtil;
+		this.issueTable = issueTable;
+		this.projectTable = projectTable;
+		this.activityTable = activityTable;
 	}
 
 	@And("^locate invoice candidates for invoice: (.*)$")
@@ -682,6 +698,47 @@ public class C_Invoice_Candidate_StepDef
 				{
 					assertThat(updatedInvoiceCandidate.isInEffect()).isEqualTo(isInEffect);
 				}
+
+				final String bPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_Bill_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+				if (de.metas.util.Check.isNotBlank(bPartnerIdentifier))
+				{
+					final I_C_BPartner bPartner = bPartnerTable.get(bPartnerIdentifier);
+					assertThat(updatedInvoiceCandidate.getBill_BPartner_ID()).isEqualTo(bPartner.getC_BPartner_ID());
+				}
+
+				final String bPartnerLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_Bill_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+				if (de.metas.util.Check.isNotBlank(bPartnerLocationIdentifier))
+				{
+					final I_C_BPartner_Location bPartnerLocation = bPartnerLocationTable.get(bPartnerLocationIdentifier);
+					assertThat(updatedInvoiceCandidate.getBill_Location_ID()).isEqualTo(bPartnerLocation.getC_BPartner_Location_ID());
+				}
+
+				final String userIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_Bill_User_ID + "." + TABLECOLUMN_IDENTIFIER);
+				if (de.metas.util.Check.isNotBlank(userIdentifier))
+				{
+					final I_AD_User user = contactTable.get(userIdentifier);
+					assertThat(updatedInvoiceCandidate.getBill_User_ID()).isEqualTo(user.getAD_User_ID());
+				}
+
+				final String invoiceRule = DataTableUtil.extractStringOrNullForColumnName(row, "OPT."  + COLUMNNAME_InvoiceRule);
+				if(Check.isNotBlank(invoiceRule))
+				{
+					assertThat(updatedInvoiceCandidate.getInvoiceRule()).isEqualTo(invoiceRule);
+				}
+
+				final String projectIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_C_Project_ID + "." + TABLECOLUMN_IDENTIFIER);
+				if(Check.isNotBlank(projectIdentifier))
+				{
+					final I_C_Project project = projectTable.get(projectIdentifier);
+					assertThat(updatedInvoiceCandidate.getC_Project_ID()).isEqualTo(project.getC_Project_ID());
+				}
+
+				final String costCenterIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_C_Activity_ID + "." + TABLECOLUMN_IDENTIFIER);
+				if(Check.isNotBlank(costCenterIdentifier))
+				{
+					final I_C_Activity activity = activityTable.get(costCenterIdentifier);
+					assertThat(updatedInvoiceCandidate.getC_Activity_ID()).isEqualTo(activity.getC_Activity_ID());
+				}
 			}
 			catch (final Throwable e)
 			{
@@ -699,11 +756,16 @@ public class C_Invoice_Candidate_StepDef
 		{
 			try (final IAutoCloseable ignore = Loggables.temporarySetLoggable(new LogbackLoggable(logger, Level.INFO)))
 			{
-				final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
-				final I_C_Invoice_Candidate invoiceCandidate = invoiceCandTable.get(invoiceCandIdentifier);
+				final String invoiceCandIdentifiers = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
 
-				final InvoiceCandidateId invoiceCandidateId = InvoiceCandidateId.ofRepoId(invoiceCandidate.getC_Invoice_Candidate_ID());
-				invoiceService.generateInvoicesFromInvoiceCandidateIds(ImmutableSet.of(invoiceCandidateId));
+				final Set<InvoiceCandidateId> invoiceCandidateIds = StepDefUtil.splitIdentifiers(invoiceCandIdentifiers)
+						.stream()
+						.map(invoiceCandTable::get)
+						.map(I_C_Invoice_Candidate::getC_Invoice_Candidate_ID)
+						.map(InvoiceCandidateId::ofRepoId)
+						.collect(ImmutableSet.toImmutableSet());
+
+				invoiceService.generateInvoicesFromInvoiceCandidateIds(invoiceCandidateIds);
 			}
 		}
 	}
@@ -1621,6 +1683,9 @@ public class C_Invoice_Candidate_StepDef
 			{
 				case I_C_Flatrate_Term.Table_Name:
 					recordId = contractTable.get(referencedRecordIdentifier).getC_Flatrate_Term_ID();
+					break;
+				case I_S_Issue.Table_Name:
+					recordId = issueTable.get(referencedRecordIdentifier).getS_Issue_ID();
 					break;
 				default:
 					throw new AdempiereException("Unsupported TableName=" + referencedTableName);

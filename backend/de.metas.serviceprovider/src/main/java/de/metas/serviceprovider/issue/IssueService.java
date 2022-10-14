@@ -114,6 +114,27 @@ public class IssueService
 		}
 	}
 
+	public void processIssueHierarchy(@NonNull final IssueEntity issueEntity)
+	{
+		processIssue(issueEntity);
+
+		if (issueEntity.getParentIssueId() == null)
+		{
+			processDownStreamIssueHierarchy(issueEntity.getIssueId());
+			return;
+		}
+
+		issueRepository.buildUpStreamIssueHierarchy(issueEntity.getIssueId())
+				.getUpStreamForId(issueEntity.getParentIssueId())
+				.forEach(this::processIssue);
+	}
+
+	@NonNull
+	public IssueEntity getById(@NonNull final IssueId issueId)
+	{
+		return issueRepository.getById(issueId);
+	}
+
 	private void recomputeLatestActivityOnSubIssues(@NonNull final IssueEntity issueEntity)
 	{
 		final ImmutableList<IssueEntity> subIssues = issueRepository.getDirectlyLinkedSubIssues(issueEntity.getIssueId());
@@ -138,5 +159,27 @@ public class IssueService
 				.orElse(null);
 
 		issueEntity.setLatestActivityOnIssue(latestActivityDate);
+	}
+
+	@NonNull
+	private IssueEntity processIssue(@NonNull final IssueEntity issueEntity)
+	{
+		final IssueEntity invoicedIssue = issueEntity.toBuilder()
+				.status(Status.INVOICED)
+				.processed(true)
+				.build();
+
+		issueRepository.save(invoicedIssue);
+
+		return invoicedIssue;
+	}
+
+	@NonNull
+	private void processDownStreamIssueHierarchy(@NonNull final IssueId issueId)
+	{
+		issueRepository.getDirectlyLinkedSubIssues(issueId)
+				.stream()
+				.map(this::processIssue)
+				.forEach(invoicedIssue -> processDownStreamIssueHierarchy(invoicedIssue.getIssueId()));
 	}
 }

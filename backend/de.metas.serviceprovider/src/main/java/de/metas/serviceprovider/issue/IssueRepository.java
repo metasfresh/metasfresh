@@ -44,6 +44,7 @@ import de.metas.util.Node;
 import de.metas.util.NumberUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -207,7 +208,7 @@ public class IssueRepository
 		final IQuery<I_S_EffortControl> effortControlQuery = queryBL
 				.createQueryBuilder(I_S_EffortControl.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_S_EffortControl.COLUMNNAME_IsProcessed, false)
+				.addEqualsFilter(I_S_EffortControl.COLUMNNAME_IsIssueClosed, false)
 				.create();
 
 		return queryBL.createQueryBuilder(I_S_Issue.class)
@@ -241,15 +242,19 @@ public class IssueRepository
 	@NonNull
 	public List<IssueEntity> geyByQuery(@NonNull final IssueQuery query)
 	{
-		return queryBL.createQueryBuilder(I_S_Issue.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_S_Issue.COLUMNNAME_AD_Org_ID, query.getOrgId())
-				.addEqualsFilter(I_S_Issue.COLUMNNAME_C_Activity_ID, query.getCostCenterId())
-				.addEqualsFilter(I_S_Issue.COLUMNNAME_C_Project_ID, query.getProjectId())
+		return buildQuery(query)
 				.create()
 				.iterateAndStream()
 				.map(IssueRepository::ofRecord)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public Stream<I_S_Issue> streamByQuery(@NonNull final IssueQuery query)
+	{
+		return buildQuery(query)
+				.create()
+				.iterateAndStream();
 	}
 
 	@NonNull
@@ -308,6 +313,28 @@ public class IssueRepository
 				.addEqualsFilter(I_S_Issue.COLUMNNAME_S_Issue_ID, issueId.getRepoId())
 				.create()
 				.firstOnly(I_S_Issue.class);
+	}
+
+	@NonNull
+	private IQueryBuilder<I_S_Issue> buildQuery(@NonNull final IssueQuery query)
+	{
+		final IQueryBuilder<I_S_Issue> queryBuilder = queryBL.createQueryBuilder(I_S_Issue.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_S_Issue.COLUMNNAME_AD_Org_ID, query.getOrgId())
+				.addEqualsFilter(I_S_Issue.COLUMNNAME_C_Activity_ID, query.getCostCenterId())
+				.addEqualsFilter(I_S_Issue.COLUMNNAME_C_Project_ID, query.getProjectId());
+
+		if (query.getEffortIssue() != null)
+		{
+			queryBuilder.addEqualsFilter(I_S_Issue.COLUMNNAME_IsEffortIssue, query.getEffortIssue());
+		}
+
+		if (query.getProcessed() != null)
+		{
+			queryBuilder.addEqualsFilter(I_S_Issue.COLUMNNAME_Processed, query.getProcessed());
+		}
+
+		return queryBuilder;
 	}
 
 	@NonNull
