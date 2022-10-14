@@ -65,6 +65,7 @@ import de.metas.util.InSetPredicate;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.OldAndNewValues;
+import org.elasticsearch.common.util.set.Sets;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
@@ -231,14 +232,19 @@ public class WOProjectCalendarService implements CalendarService
 		{
 			return InSetPredicate.any();
 		}
+		final ImmutableSet<ProjectId> woProjectIds = woProjectService.getActiveProjectIds(query);
 
-		final ImmutableSet<ProjectId> projectIds = woProjectService.getActiveProjectIds(query);
-		if (projectIds.isEmpty())
+		ImmutableSet<ProjectId> budgetProjectIds = ImmutableSet.of();
+		if (onlyProjectId != null && woProjectIds.isEmpty())
 		{
-			return InSetPredicate.none();
+			final BudgetProject budgetProject = budgetProjectService.getById(onlyProjectId).orElse(null);
+			if (budgetProject != null)
+			{
+				budgetProjectIds = ImmutableSet.of(budgetProject.getProjectId());
+			}
 		}
 
-		final ImmutableSet<ProjectId> projectIdsExpanded = expandWithUpAndDownStreams(projectIds);
+		final ImmutableSet<ProjectId> projectIdsExpanded = expandWithUpAndDownStreams(Sets.union(woProjectIds, budgetProjectIds));
 		return InSetPredicate.only(projectIdsExpanded);
 	}
 
