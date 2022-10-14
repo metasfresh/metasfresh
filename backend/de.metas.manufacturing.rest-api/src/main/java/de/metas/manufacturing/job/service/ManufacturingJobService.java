@@ -1,5 +1,7 @@
 package de.metas.manufacturing.job.service;
 
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableSet;
 import de.metas.dao.ValueRestriction;
 import de.metas.device.accessor.DeviceAccessor;
 import de.metas.device.accessor.DeviceAccessorsHubFactory;
@@ -25,11 +27,13 @@ import de.metas.manufacturing.job.model.ScaleDevice;
 import de.metas.manufacturing.job.service.commands.ReceiveGoodsCommand;
 import de.metas.manufacturing.job.service.commands.create_job.ManufacturingJobCreateCommand;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonReceivingTarget;
+import de.metas.material.planning.IResourceDAO;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -37,6 +41,7 @@ import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.ManufacturingOrderQuery;
@@ -49,6 +54,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Optional;
@@ -62,6 +68,8 @@ public class ManufacturingJobService
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IResourceDAO resourceDAO = Services.get(IResourceDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IHUPPOrderBL ppOrderBL;
 	private final IPPOrderBOMBL ppOrderBOMBL;
 	private final PPOrderIssueScheduleService ppOrderIssueScheduleService;
@@ -70,6 +78,8 @@ public class ManufacturingJobService
 	private final DeviceWebsocketNamingStrategy deviceWebsocketNamingStrategy;
 	private final ManufacturingJobLoaderAndSaverSupportingServices loadingAndSavingSupportServices;
 
+	@VisibleForTesting
+	static final String SYSCONFIG_defaultFilters = "mobileui.manufacturing.defaultFilters";
 	private static final AdMessageKey MSG_ScaleDeviceNotRegistered = AdMessageKey.of("ScaleDeviceNotRegistered");
 
 	public ManufacturingJobService(
@@ -128,6 +138,7 @@ public class ManufacturingJobService
 
 	public Stream<ManufacturingJobReference> streamJobReferencesForUser(
 			final @NonNull UserId responsibleId,
+			final @NonNull Instant now,
 			final @NonNull QueryLimit suggestedLimit)
 	{
 		final ArrayList<ManufacturingJobReference> result = new ArrayList<>();
@@ -141,7 +152,7 @@ public class ManufacturingJobService
 		// New possible jobs
 		if (!suggestedLimit.isLimitHitOrExceeded(result))
 		{
-			streamJobCandidatesToCreate()
+			streamJobCandidatesToCreate(responsibleId, now)
 					.limit(suggestedLimit.minusSizeOf(result).toIntOr(Integer.MAX_VALUE))
 					.forEach(result::add);
 		}
@@ -163,13 +174,42 @@ public class ManufacturingJobService
 				.build());
 	}
 
-	private Stream<ManufacturingJobReference> streamJobCandidatesToCreate()
+	private Stream<ManufacturingJobReference> streamJobCandidatesToCreate(@NonNull final UserId userId, @Nullable Instant now)
 	{
-		return ppOrderBL.streamManufacturingOrders(ManufacturingOrderQuery.builder()
-						.onlyCompleted(true)
-						.responsibleId(ValueRestriction.isNull())
-						.build())
+		final ManufacturingOrderQuery.ManufacturingOrderQueryBuilder queryBuilder = ManufacturingOrderQuery.builder()
+				.onlyCompleted(true)
+				.responsibleId(ValueRestriction.isNull());
+
+		for (ManufacturingJobDefaultFilter defaultFilter : getDefaultFilters())
+		{
+			switch (defaultFilter)
+			{
+				case UserPlant:
+				{
+					final ImmutableSet<ResourceId> resourceIds = resourceDAO.getResourceIdsByUserId(userId);
+					queryBuilder.onlyPlantIds(resourceIds);
+					break;
+				}
+				case TodayDatePromised:
+				{
+					queryBuilder.datePromisedDay(now);
+					break;
+				}
+				default:
+				{
+					logger.warn("Skip unhandled default filter option: {}", defaultFilter);
+					break;
+				}
+			}
+		}
+
+		return ppOrderBL.streamManufacturingOrders(queryBuilder.build())
 				.map(ppOrder -> toManufacturingJobReference(ppOrder, false));
+	}
+
+	ImmutableSet<ManufacturingJobDefaultFilter> getDefaultFilters()
+	{
+		return sysConfigBL.getCommaSeparatedEnums(SYSCONFIG_defaultFilters, ManufacturingJobDefaultFilter.class);
 	}
 
 	private ManufacturingJobReference toManufacturingJobReference(final I_PP_Order ppOrder, final boolean isJobStarted)
