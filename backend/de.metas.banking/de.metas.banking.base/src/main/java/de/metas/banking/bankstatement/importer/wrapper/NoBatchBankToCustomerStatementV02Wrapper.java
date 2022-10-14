@@ -25,6 +25,9 @@ package de.metas.banking.bankstatement.importer.wrapper;
 import de.metas.banking.bankstatement.jaxb.camt053_001_02.AccountStatement2;
 import de.metas.banking.bankstatement.jaxb.camt053_001_02.BankToCustomerStatementV02;
 import de.metas.banking.bankstatement.jaxb.camt053_001_02.ReportEntry2;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
@@ -34,14 +37,23 @@ import java.util.List;
 @Value(staticConstructor = "of")
 public class NoBatchBankToCustomerStatementV02Wrapper
 {
+	private static final AdMessageKey MSG_BATCH_TRANSACTIONS_NOT_SUPPORTED = AdMessageKey.of("de.metas.banking.bankstatement.importer.wrapper.NoBatchBankToCustomerStatementV02Wrapper.BatchTransactionsNotSupported");
+
 	@NonNull
 	BankToCustomerStatementV02 bankToCustomerStatementV02;
 
-	private NoBatchBankToCustomerStatementV02Wrapper(@NonNull final BankToCustomerStatementV02 bankToCustomerStatementV02)
+	@NonNull
+	IMsgBL msgBL;
+
+	private NoBatchBankToCustomerStatementV02Wrapper(
+			@NonNull final BankToCustomerStatementV02 bankToCustomerStatementV02,
+			@NonNull final IMsgBL msgBL)
 	{
+		this.msgBL = msgBL;
+
 		bankToCustomerStatementV02
 				.getStmt()
-				.forEach(NoBatchBankToCustomerStatementV02Wrapper::validateAccountStatement2);
+				.forEach(this::validateAccountStatement2);
 
 		this.bankToCustomerStatementV02 = bankToCustomerStatementV02;
 	}
@@ -52,16 +64,17 @@ public class NoBatchBankToCustomerStatementV02Wrapper
 		return bankToCustomerStatementV02.getStmt();
 	}
 
-	private static void validateAccountStatement2(@NonNull final AccountStatement2 accountStatement2)
+	private void validateAccountStatement2(@NonNull final AccountStatement2 accountStatement2)
 	{
-		accountStatement2.getNtry().forEach(NoBatchBankToCustomerStatementV02Wrapper::validateNoBatchedTrxPresent);
+		accountStatement2.getNtry().forEach(this::validateNoBatchedTrxPresent);
 	}
 
-	private static void validateNoBatchedTrxPresent(@NonNull final ReportEntry2 reportEntry)
+	private void validateNoBatchedTrxPresent(@NonNull final ReportEntry2 reportEntry)
 	{
 		if (isBatchedTrxPresent(reportEntry))
 		{
-			throw new AdempiereException("Bank statements with batched transactions are not supported!")
+			final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_BATCH_TRANSACTIONS_NOT_SUPPORTED);
+			throw new AdempiereException(msg)
 					.markAsUserValidationError();
 		}
 	}

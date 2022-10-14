@@ -25,6 +25,8 @@ package de.metas.banking.impexp.camt53;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.bankstatement.importer.BankStatementCamt53DataSource;
 import de.metas.banking.bankstatement.importer.BankStatementCamt53Service;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ITranslatableString;
 import de.metas.process.JavaProcess;
 import de.metas.process.Param;
 import de.metas.process.ProcessExecutionResult;
@@ -39,6 +41,8 @@ import java.util.Set;
 
 public class C_BankStatement_Camt53_Import_LoadFromFile extends JavaProcess
 {
+	private static final AdMessageKey MSG_NO_STATEMENT_IMPORTED = AdMessageKey.of("de.metas.banking.impexp.camt53.C_BankStatement_Camt53_Import_LoadFromFile.NoStatementImported");
+
 	private final BankStatementCamt53Service bankStatementCamt53Service = SpringContextHolder.instance.getBean(BankStatementCamt53Service.class);
 
 	@Param(mandatory = true, parameterName = "FileName")
@@ -62,7 +66,8 @@ public class C_BankStatement_Camt53_Import_LoadFromFile extends JavaProcess
 	{
 		if (importedBankStatementIds.size() == 0)
 		{
-			throw new AdempiereException("No statement imported! File does not contain any valid statements!")
+			final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_NO_STATEMENT_IMPORTED);
+			throw new AdempiereException(msg)
 					.markAsUserValidationError();
 		}
 		else if (importedBankStatementIds.size() == 1)

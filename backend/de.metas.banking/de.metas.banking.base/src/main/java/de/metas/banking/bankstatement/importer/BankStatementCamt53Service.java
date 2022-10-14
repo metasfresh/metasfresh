@@ -37,6 +37,7 @@ import de.metas.banking.bankstatement.jaxb.camt053_001_02.ReportEntry2;
 import de.metas.banking.service.BankStatementCreateRequest;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.currency.CurrencyRepository;
+import de.metas.i18n.IMsgBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
@@ -66,6 +67,7 @@ public class BankStatementCamt53Service
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private final BankAccountService bankAccountService;
 	private final CurrencyRepository currencyRepository;
@@ -82,7 +84,7 @@ public class BankStatementCamt53Service
 	public ImmutableSet<BankStatementId> importBankToCustomerStatement(@NonNull final InputStream inputStream)
 	{
 		final NoBatchBankToCustomerStatementV02Wrapper noBatchBankToCustomerStatementV02Wrapper = NoBatchBankToCustomerStatementV02Wrapper
-				.of(loadCamt53Document(inputStream));
+				.of(loadCamt53Document(inputStream), msgBL);
 
 		return noBatchBankToCustomerStatementV02Wrapper
 				.getAccountStatements()
