@@ -25,16 +25,16 @@ package de.metas.banking.bankstatement.importer.wrapper;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import de.metas.banking.BankStatementId;
-import de.metas.banking.jaxb.camt053_001_02.ActiveOrHistoricCurrencyAndAmount;
-import de.metas.banking.jaxb.camt053_001_02.AmountAndCurrencyExchange3;
-import de.metas.banking.jaxb.camt053_001_02.AmountAndCurrencyExchangeDetails3;
-import de.metas.banking.jaxb.camt053_001_02.CurrencyExchange5;
-import de.metas.banking.jaxb.camt053_001_02.DateAndDateTimeChoice;
-import de.metas.banking.jaxb.camt053_001_02.EntryDetails1;
-import de.metas.banking.jaxb.camt053_001_02.EntryTransaction2;
-import de.metas.banking.jaxb.camt053_001_02.RemittanceInformation5;
-import de.metas.banking.jaxb.camt053_001_02.ReportEntry2;
-import de.metas.banking.jaxb.camt053_001_02.TransactionInterest2;
+import de.metas.banking.bankstatement.jaxb.camt053_001_02.ActiveOrHistoricCurrencyAndAmount;
+import de.metas.banking.bankstatement.jaxb.camt053_001_02.AmountAndCurrencyExchange3;
+import de.metas.banking.bankstatement.jaxb.camt053_001_02.AmountAndCurrencyExchangeDetails3;
+import de.metas.banking.bankstatement.jaxb.camt053_001_02.CurrencyExchange5;
+import de.metas.banking.bankstatement.jaxb.camt053_001_02.DateAndDateTimeChoice;
+import de.metas.banking.bankstatement.jaxb.camt053_001_02.EntryDetails1;
+import de.metas.banking.bankstatement.jaxb.camt053_001_02.EntryTransaction2;
+import de.metas.banking.bankstatement.jaxb.camt053_001_02.RemittanceInformation5;
+import de.metas.banking.bankstatement.jaxb.camt053_001_02.ReportEntry2;
+import de.metas.banking.bankstatement.jaxb.camt053_001_02.TransactionInterest2;
 import de.metas.banking.service.BankStatementLineCreateRequest;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyCode;
@@ -63,7 +63,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static de.metas.banking.jaxb.camt053_001_02.CreditDebitCode.CRDT;
+import static de.metas.banking.bankstatement.jaxb.camt053_001_02.CreditDebitCode.CRDT;
 
 @Value
 public class NoBatchReportEntry2Wrapper

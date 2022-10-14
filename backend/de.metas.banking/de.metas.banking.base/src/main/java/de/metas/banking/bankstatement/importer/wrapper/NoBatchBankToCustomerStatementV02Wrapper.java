@@ -22,9 +22,9 @@
 
 package de.metas.banking.bankstatement.importer.wrapper;
 
-import de.metas.banking.jaxb.camt053_001_02.AccountStatement2;
-import de.metas.banking.jaxb.camt053_001_02.BankToCustomerStatementV02;
-import de.metas.banking.jaxb.camt053_001_02.ReportEntry2;
+import de.metas.banking.bankstatement.jaxb.camt053_001_02.AccountStatement2;
+import de.metas.banking.bankstatement.jaxb.camt053_001_02.BankToCustomerStatementV02;
+import de.metas.banking.bankstatement.jaxb.camt053_001_02.ReportEntry2;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;

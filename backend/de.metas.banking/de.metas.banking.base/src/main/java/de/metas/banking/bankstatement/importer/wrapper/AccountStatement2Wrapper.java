@@ -27,10 +27,10 @@ import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankId;
 import de.metas.banking.api.BankAccountService;
-import de.metas.banking.jaxb.camt053_001_02.AccountStatement2;
-import de.metas.banking.jaxb.camt053_001_02.BalanceType12Code;
-import de.metas.banking.jaxb.camt053_001_02.CashBalance3;
-import de.metas.banking.jaxb.camt053_001_02.GenericAccountIdentification1;
+import de.metas.banking.bankstatement.jaxb.camt053_001_02.AccountStatement2;
+import de.metas.banking.bankstatement.jaxb.camt053_001_02.BalanceType12Code;
+import de.metas.banking.bankstatement.jaxb.camt053_001_02.CashBalance3;
+import de.metas.banking.bankstatement.jaxb.camt053_001_02.GenericAccountIdentification1;
 import de.metas.banking.service.BankStatementCreateRequest;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
@@ -53,7 +53,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Optional;
 
-import static de.metas.banking.jaxb.camt053_001_02.CreditDebitCode.CRDT;
+import static de.metas.banking.bankstatement.jaxb.camt053_001_02.CreditDebitCode.CRDT;
 
 @Value
 public class AccountStatement2Wrapper
