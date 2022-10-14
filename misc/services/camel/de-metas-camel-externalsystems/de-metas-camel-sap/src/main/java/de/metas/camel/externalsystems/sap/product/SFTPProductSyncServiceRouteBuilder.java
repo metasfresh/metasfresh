@@ -55,6 +55,7 @@ public class SFTPProductSyncServiceRouteBuilder extends RouteBuilder implements 
 
 	@VisibleForTesting
 	public static final String START_PRODUCTS_SYNC_ROUTE_ID = SAP_SYSTEM_NAME + "-" + START_PRODUCTS_SYNC_ROUTE;
+	@VisibleForTesting
 	public static final String STOP_PRODUCTS_SYNC_ROUTE_ID = SAP_SYSTEM_NAME + "-" + STOP_PRODUCTS_SYNC_ROUTE;
 
 	@NonNull

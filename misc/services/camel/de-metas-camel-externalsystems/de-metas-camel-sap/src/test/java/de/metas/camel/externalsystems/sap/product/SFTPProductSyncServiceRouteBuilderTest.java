@@ -45,6 +45,7 @@ import java.util.Properties;
 
 import static de.metas.camel.externalsystems.sap.product.GetProductsSFTPRouteBuilder.UPSERT_PRODUCT_ENDPOINT_ID;
 import static de.metas.camel.externalsystems.sap.product.SFTPProductSyncServiceRouteBuilder.START_PRODUCTS_SYNC_ROUTE_ID;
+import static de.metas.camel.externalsystems.sap.product.SFTPProductSyncServiceRouteBuilder.STOP_PRODUCTS_SYNC_ROUTE_ID;
 import static org.assertj.core.api.Assertions.*;
 
 public class SFTPProductSyncServiceRouteBuilderTest extends CamelTestSupport
@@ -54,7 +55,8 @@ public class SFTPProductSyncServiceRouteBuilderTest extends CamelTestSupport
 	private static final String MOCK_EXTERNAL_SYSTEM_STATUS_ENDPOINT = "mock:externalSystemStatusEndpoint";
 	private static final String MOCK_UPSERT_PRODUCT = "mock:UpsertProduct";
 
-	private static final String JSON_EXTERNAL_SYSTEM_REQUEST = "0_JsonExternalSystemRequest.json";
+	private static final String JSON_START_EXTERNAL_SYSTEM_REQUEST = "0_JsonStartExternalSystemRequest.json";
+	private static final String JSON_STOP_EXTERNAL_SYSTEM_REQUEST = "0_JsonStopExternalSystemRequest.json";
 	private static final String MATERIAL_SAMPLE_DAT_FILE = "10_MaterialSample.dat";
 	private static final String JSON_UPSERT_PRODUCT_REQUEST = "20_CamelUpsertProductRequest.json";
 
@@ -92,13 +94,13 @@ public class SFTPProductSyncServiceRouteBuilderTest extends CamelTestSupport
 	{
 		final ObjectMapper objectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
-		final InputStream invokeExternalSystemRequestIS = this.getClass().getResourceAsStream(JSON_EXTERNAL_SYSTEM_REQUEST);
+		final InputStream invokeExternalSystemRequestIS = this.getClass().getResourceAsStream(JSON_START_EXTERNAL_SYSTEM_REQUEST);
 		final JsonExternalSystemRequest externalSystemRequest = objectMapper.readValue(invokeExternalSystemRequestIS, JsonExternalSystemRequest.class);
 
 		final MockExternalSystemStatusProcessor mockExternalSystemStatusProcessor = new MockExternalSystemStatusProcessor();
 		final MockUpsertProductProcessor mockUpsertProductProcessor = new MockUpsertProductProcessor();
 
-		prepareRouteForTesting(mockExternalSystemStatusProcessor);
+		prepareEnableRouteForTesting(mockExternalSystemStatusProcessor);
 
 		context.start();
 
@@ -122,15 +124,56 @@ public class SFTPProductSyncServiceRouteBuilderTest extends CamelTestSupport
 		assertThat(mockExternalSystemStatusProcessor.called).isEqualTo(1);
 	}
 
+	@Test
+	public void disable_SyncProducts() throws Exception
+	{
+		final ObjectMapper objectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
+
+		final MockExternalSystemStatusProcessor mockExternalSystemStatusProcessor = new MockExternalSystemStatusProcessor();
+
+		prepareEnableRouteForTesting(mockExternalSystemStatusProcessor);
+		prepareDisableRouteForTesting(mockExternalSystemStatusProcessor);
+
+		final InputStream invokeStartExternalSystemRequestIS = this.getClass().getResourceAsStream(JSON_START_EXTERNAL_SYSTEM_REQUEST);
+		final JsonExternalSystemRequest startExternalSystemRequest = objectMapper.readValue(invokeStartExternalSystemRequestIS, JsonExternalSystemRequest.class);
+
+		final InputStream invokeStopExternalSystemRequestIS = this.getClass().getResourceAsStream(JSON_STOP_EXTERNAL_SYSTEM_REQUEST);
+		final JsonExternalSystemRequest stopExternalSystemRequest = objectMapper.readValue(invokeStopExternalSystemRequestIS, JsonExternalSystemRequest.class);
+
+		context.start();
+
+		//when
+		template.sendBody("direct:" + START_PRODUCTS_SYNC_ROUTE_ID, startExternalSystemRequest);
+
+		//and
+		template.sendBody("direct:" + STOP_PRODUCTS_SYNC_ROUTE_ID, stopExternalSystemRequest);
+
+		//then
+		assertMockEndpointsSatisfied();
+		assertThat(mockExternalSystemStatusProcessor.called).isEqualTo(2);
+
+		assertThat(context.getRoute(getSFTPProductsSyncRouteId(stopExternalSystemRequest))).isNull();
+	}
+
 	private String getSFTPProductsSyncRouteId(@NonNull final JsonExternalSystemRequest externalSystemRequest)
 	{
 		return "GetProductsSFTPRouteBuilder#" + externalSystemRequest.getExternalSystemChildConfigValue();
 	}
 
-	private void prepareRouteForTesting(
+	private void prepareEnableRouteForTesting(
 			@NonNull final MockExternalSystemStatusProcessor mockExternalSystemStatusProcessor) throws Exception
 	{
 		AdviceWith.adviceWith(context, START_PRODUCTS_SYNC_ROUTE_ID,
+							  advice -> advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_CREATE_EXTERNAL_SYSTEM_STATUS_V2_CAMEL_URI + "}}")
+									  .skipSendToOriginalEndpoint()
+									  .to(MOCK_EXTERNAL_SYSTEM_STATUS_ENDPOINT)
+									  .process(mockExternalSystemStatusProcessor));
+	}
+
+	private void prepareDisableRouteForTesting(
+			@NonNull final MockExternalSystemStatusProcessor mockExternalSystemStatusProcessor) throws Exception
+	{
+		AdviceWith.adviceWith(context, STOP_PRODUCTS_SYNC_ROUTE_ID,
 							  advice -> advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_CREATE_EXTERNAL_SYSTEM_STATUS_V2_CAMEL_URI + "}}")
 									  .skipSendToOriginalEndpoint()
 									  .to(MOCK_EXTERNAL_SYSTEM_STATUS_ENDPOINT)

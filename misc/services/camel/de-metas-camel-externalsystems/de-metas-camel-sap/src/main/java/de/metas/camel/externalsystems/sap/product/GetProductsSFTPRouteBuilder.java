@@ -23,11 +23,11 @@
 package de.metas.camel.externalsystems.sap.product;
 
 import com.google.common.annotations.VisibleForTesting;
+import de.metas.camel.externalsystems.common.CamelRouteUtil;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.sap.api.model.product.ProductRow;
 import de.metas.camel.externalsystems.sap.sftp.SFTPCredentials;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -37,6 +37,9 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.dataformat.bindy.csv.BindyCsvDataFormat;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_PRODUCT_V2_CAMEL_URI;
+import static de.metas.camel.externalsystems.sap.SAPConstants.SFTP_MOVE_FAILED_FOLDER_NAME;
+import static de.metas.camel.externalsystems.sap.SAPConstants.SFTP_MOVE_FOLDER_NAME;
+import static de.metas.camel.externalsystems.sap.SAPConstants.SFTP_REQUEST_DELAY;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 public class GetProductsSFTPRouteBuilder extends RouteBuilder
@@ -76,7 +79,11 @@ public class GetProductsSFTPRouteBuilder extends RouteBuilder
 	@Override
 	public void configure() throws Exception
 	{
-		final String sftpURL = "sftp://" + sftpCredentials.getSFTPConnectionString();
+		final String moveFolderName = CamelRouteUtil.resolveProperty(getContext(), SFTP_MOVE_FOLDER_NAME, "move");
+		final String moveFailedFolderName = CamelRouteUtil.resolveProperty(getContext(), SFTP_MOVE_FAILED_FOLDER_NAME, "error");
+		final String requestDelay = CamelRouteUtil.resolveProperty(getContext(), SFTP_REQUEST_DELAY, "1000");
+
+		final String sftpURL = "sftp://" + sftpCredentials.getSFTPConnectionString(moveFolderName, moveFailedFolderName, requestDelay);
 
 		//@formatter:off
 		from(sftpURL)

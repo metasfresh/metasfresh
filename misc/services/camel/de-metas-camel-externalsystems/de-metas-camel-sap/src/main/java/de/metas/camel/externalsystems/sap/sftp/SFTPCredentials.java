@@ -48,16 +48,22 @@ public class SFTPCredentials
 	@Nullable
 	String targetDirectory;
 
-	public String getSFTPConnectionString()
+	public String getSFTPConnectionString(
+			@NonNull final String moveFolderName,
+			@NonNull final String moveFailedFolderName,
+			@NonNull final String requestDelay)
 	{
 		//FIXME: move; moveFailed; delay should be injected from properties
-		final String endpointTemplate = "%s@%s:%s/%s?password=%s&move=done&moveFailed=error&delay=1000";
+		final String endpointTemplate = "%s@%s:%s/%s?password=%s&move=%s&moveFailed=%s&delay=%s";
 
 		return String.format(endpointTemplate,
 							 this.getUsername(),
 							 this.getHostName(),
 							 this.getPort(),
 							 CoalesceUtil.coalesce(this.getTargetDirectory(), ""),
-							 this.getPassword());
+							 this.getPassword(),
+							 moveFolderName,
+							 moveFailedFolderName,
+							 requestDelay);
 	}
 }

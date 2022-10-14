@@ -66,6 +66,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -124,12 +125,16 @@ public class S_ExternalReference_StepDef
 			final String type = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "Type");
 			final String externalReference = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "ExternalReference");
 			final String externalReferenceURL = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "ExternalReferenceURL");
+			final BigDecimal externalSystemParentConfigId = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableRow, "OPT." + I_S_ExternalReference.COLUMNNAME_ExternalSystem_Config_ID);
+			final Boolean isReadOnlyInMetasfresh = DataTableUtil.extractBooleanForColumnNameOr(dataTableRow, "OPT." + I_S_ExternalReference.COLUMNNAME_IsReadOnlyInMetasfresh, false);
 
 			final boolean externalRefExists = queryBL.createQueryBuilder(I_S_ExternalReference.class)
 					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem, externalSystem)
 					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, type)
 					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference, externalReference)
 					.addEqualsFilter(I_S_ExternalReference.COLUMN_ExternalReferenceURL, externalReferenceURL)
+					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem_Config_ID, externalSystemParentConfigId)
+					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_IsReadOnlyInMetasfresh, isReadOnlyInMetasfresh)
 					.create()
 					.anyMatch();
 

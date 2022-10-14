@@ -825,9 +825,10 @@ public class ProductRestService
 		final ProductCategoryId productCategoryId = jsonRequestProductUpsertItem.isProductCategoryIdentifierSet() ?
 				getProductCategoryId(jsonRequestProductUpsertItem.getProductCategoryIdentifier(), org) : defaultProductCategoryId;
 
-		final SectionCodeId sectionCodeId = sectionCodeRepository
-				.getSectionCodeIdByValue(orgId, jsonRequestProductUpsertItem.getSectionCode())
-				.orElse(null);
+		final SectionCodeId sectionCodeId = jsonRequestProductUpsertItem.isSectionCodeSet() ?
+				sectionCodeRepository.getSectionCodeIdByValue(orgId, jsonRequestProductUpsertItem.getSectionCode())
+						.orElse(null) :
+				null;
 
 		return CreateProductRequest.builder()
 				.orgId(orgId)

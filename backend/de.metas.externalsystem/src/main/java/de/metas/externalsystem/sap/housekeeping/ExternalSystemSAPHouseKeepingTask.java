@@ -24,9 +24,12 @@ package de.metas.externalsystem.sap.housekeeping;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
 import de.metas.externalsystem.ExternalSystemType;
+import de.metas.externalsystem.externalservice.common.ExternalStatus;
+import de.metas.externalsystem.externalservice.externalserviceinstance.ExternalSystemServiceInstanceRepository;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
@@ -51,10 +54,14 @@ public class ExternalSystemSAPHouseKeepingTask implements IStartupHouseKeepingTa
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
 	private final ExternalSystemConfigRepo externalSystemConfigDAO;
+	private final ExternalSystemServiceInstanceRepository externalSystemServiceInstanceRepository;
 
-	public ExternalSystemSAPHouseKeepingTask(@NonNull final ExternalSystemConfigRepo externalSystemConfigDAO)
+	public ExternalSystemSAPHouseKeepingTask(
+			@NonNull final ExternalSystemConfigRepo externalSystemConfigDAO,
+			@NonNull final ExternalSystemServiceInstanceRepository externalSystemServiceInstanceRepository)
 	{
 		this.externalSystemConfigDAO = externalSystemConfigDAO;
+		this.externalSystemServiceInstanceRepository = externalSystemServiceInstanceRepository;
 	}
 
 	@Override
@@ -73,6 +80,7 @@ public class ExternalSystemSAPHouseKeepingTask implements IStartupHouseKeepingTa
 
 		parentConfigList
 				.stream()
+				.filter(this::isExternalSystemStartupStatusActive)
 				.peek(config -> Loggables.withLogger(logger, Level.DEBUG).addLog("Firing process " + processId + " for SAP config " + config.getChildConfig().getId()))
 				.forEach((config -> ProcessInfo.builder()
 						.setAD_Process_ID(processId)
@@ -81,5 +89,11 @@ public class ExternalSystemSAPHouseKeepingTask implements IStartupHouseKeepingTa
 						.addParameter(PARAM_CHILD_CONFIG_ID, config.getChildConfig().getId().getRepoId())
 						.buildAndPrepareExecution()
 						.executeSync()));
+	}
+
+	private boolean isExternalSystemStartupStatusActive(@NonNull final ExternalSystemParentConfig config)
+	{
+		return externalSystemServiceInstanceRepository.streamByConfigIds(ImmutableSet.of(config.getId()))
+				.noneMatch(externalSystemServiceInstance -> externalSystemServiceInstance.getExpectedStatus().equals(ExternalStatus.INACTIVE));
 	}
 }

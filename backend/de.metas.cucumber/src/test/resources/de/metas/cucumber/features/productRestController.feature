@@ -27,8 +27,8 @@ Feature:product get/create/update using metasfresh api
       "productIdentifier": "ext-ALBERTA-345",
       "externalVersion": null,
       "externalReferenceUrl": "www.ExternalReferenceURL.com",
-      "external_sys_id":"",
-      "isReadOnly": "",
+      "externalSystemConfigId": 540000,
+      "isReadOnlyInMetasfresh": false,
       "requestProduct": {
         "code": "code345",
         "codeSet": true,
@@ -53,6 +53,8 @@ Feature:product get/create/update using metasfresh api
         "productCategoryIdentifier": null,
         "productCategoryIdentifierSet": false,
         "syncAdvise": null,
+        "sectionCode":"SectionCode",
+        "sectionCodeSet": true,
         "bpartnerProductItems": [
           {
             "bpartnerIdentifier": "ext-ALBERTA-345",
@@ -136,8 +138,8 @@ Feature:product get/create/update using metasfresh api
       | M_Product_ID.Identifier | externalIdentifier |
       | p_1                     | ext-ALBERTA-345    |
     Then verify product info
-      | M_Product_ID.Identifier | Value   | Name         | ProductType | C_UOM_ID.X12DE355 | UPC      | GTIN      | Description      | IsActive |
-      | p_1                     | code345 | Product_Test | ITEM        | PCE               | ean_test | gtin_test | test_description | true     |
+      | M_Product_ID.Identifier | Value   | Name         | ProductType | C_UOM_ID.X12DE355 | UPC      | GTIN      | Description      | IsActive | OPT.M_SectionCode_ID.Value |
+      | p_1                     | code345 | Product_Test | ITEM        | PCE               | ean_test | gtin_test | test_description | true     | SectionCode                |
     Then locate bpartner by external identifier
       | C_BPartner_ID.Identifier | externalIdentifier |
       | bpartner_1               | ext-ALBERTA-345    |
@@ -151,8 +153,8 @@ Feature:product get/create/update using metasfresh api
       | bp_1                             | true     | 10    | test      | test        | ean_test | gtin_test | test              | test        | true               | Test                    | false                  | null                        |
       | bp_2                             | true     | 10    | test      | test        | ean_test | gtin_test | test              | test        | false              | null                    | true                   | test                        |
     And verify that S_ExternalReference was created
-      | ExternalSystem | Type    | ExternalReference | ExternalReferenceURL         |
-      | ALBERTA        | Product | 345               | www.ExternalReferenceURL.com |
+      | ExternalSystem | Type    | ExternalReference | ExternalReferenceURL         | OPT.ExternalSystem_Config_ID | OPT.IsReadOnlyInMetasfresh |
+      | ALBERTA        | Product | 345               | www.ExternalReferenceURL.com | 540000                       | false                      |
 
   @from:cucumber
   Scenario: get Product, as a REST-API invoker
