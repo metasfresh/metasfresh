@@ -31,6 +31,7 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRoutingActivityId;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.stream.Stream;
 
 @Service
@@ -43,9 +44,12 @@ public class ManufacturingRestService
 		this.manufacturingJobService = manufacturingJobService;
 	}
 
-	public Stream<ManufacturingJobReference> streamJobReferencesForUser(final @NonNull UserId responsibleId, final @NonNull QueryLimit suggestedLimit)
+	public Stream<ManufacturingJobReference> streamJobReferencesForUser(
+			final @NonNull UserId responsibleId,
+			final @NonNull Instant now,
+			final @NonNull QueryLimit suggestedLimit)
 	{
-		return manufacturingJobService.streamJobReferencesForUser(responsibleId, suggestedLimit);
+		return manufacturingJobService.streamJobReferencesForUser(responsibleId, now, suggestedLimit);
 	}
 
 	public ManufacturingJob createJob(final PPOrderId ppOrderId, final UserId responsibleId)
