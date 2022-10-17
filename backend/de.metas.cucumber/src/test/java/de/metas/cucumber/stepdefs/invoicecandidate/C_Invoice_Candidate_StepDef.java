@@ -739,6 +739,12 @@ public class C_Invoice_Candidate_StepDef
 					final I_C_Activity activity = activityTable.get(costCenterIdentifier);
 					assertThat(updatedInvoiceCandidate.getC_Activity_ID()).isEqualTo(activity.getC_Activity_ID());
 				}
+
+				final String description = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_Description);
+				if(Check.isNotBlank(description))
+				{
+					assertThat(updatedInvoiceCandidate.getDescription()).isEqualTo(description);
+				}
 			}
 			catch (final Throwable e)
 			{

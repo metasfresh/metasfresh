@@ -278,6 +278,12 @@ public class C_InvoiceLine_StepDef
 			final I_C_Activity activity = activityTable.get(costCenterIdentifier);
 			assertThat(invoiceLine.getC_Activity_ID()).isEqualTo(activity.getC_Activity_ID());
 		}
+
+		final String description = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_Description);
+		if(Check.isNotBlank(description))
+		{
+			assertThat(invoiceLine.getDescription()).isEqualTo(description);
+		}
 	}
 
 	private void create_C_InvoiceLine(@NonNull final Map<String, String> row)

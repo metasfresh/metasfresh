@@ -135,6 +135,12 @@ public class S_Issue_StepDef
 				issue.setS_Parent_Issue_ID(parentIssue.getS_Issue_ID());
 			}
 
+			final BigDecimal externalIssueNo = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_S_Issue.COLUMNNAME_ExternalIssueNo);
+			if (externalIssueNo != null)
+			{
+				issue.setExternalIssueNo(externalIssueNo);
+			}
+
 			saveRecord(issue);
 
 			final String issueIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_S_Issue_ID + "." + TABLECOLUMN_IDENTIFIER);
