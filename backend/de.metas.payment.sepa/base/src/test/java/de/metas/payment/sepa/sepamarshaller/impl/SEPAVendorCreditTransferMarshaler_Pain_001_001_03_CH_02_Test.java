@@ -92,6 +92,39 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.isBtchBookg()).isTrue());
 	}
 
+	@Test
+	public void createDocument_batch_with_QR_IBAN() throws Exception
+	{
+		final I_SEPA_Export sepaExport = createSEPAExport(
+				"org", // SEPA_CreditorName
+				"12345", // SEPA_CreditorIdentifier
+				"INGBNL2A" // bic
+		);
+		createSEPAExportLineQRVersion(sepaExport,
+				"001",// SEPA_MandateRefNo
+				"NL31INGB0000000044",// IBAN
+				"INGBNL2A", // BIC
+				new BigDecimal("100"), // amount
+				eur, "210000000003139471430009017");
+
+		createSEPAExportLineQRVersion(sepaExport,
+				"002", // SEPA_MandateRefNo
+				"NL31INGB0000000044", // IBAN
+				"INGBNL2A",// BIC
+				new BigDecimal("40"), // amount
+				chf, "210000000003139471430009017");
+
+		// invoke the method under test
+		xmlDocument = xmlGenerator.createDocument(sepaExport);
+
+		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getCtrlSum()).isEqualByComparingTo("140");
+		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getNbOfTxs()).isEqualTo("2");
+		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getInitgPty().getNm()).isEqualTo(sepaExport.getSEPA_CreditorName());
+
+		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).hasSize(2);
+		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.isBtchBookg()).isTrue());
+	}
+
 	private I_SEPA_Export createSEPAExport(
 			final String SEPA_CreditorName,
 			final String SEPA_CreditorIdentifier,
@@ -142,17 +175,17 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 		xmlGenerator.marshal(sepaExport, sepaExportOut);
 		sepaExportOut.close();
 
-	    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-	    DocumentBuilder builder = factory.newDocumentBuilder();
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder builder = factory.newDocumentBuilder();
 		FileInputStream fis = new FileInputStream(fstream);
 		org.w3c.dom.Document sepaExportDoc = builder.parse(fis);
 
 		assertThat(sepaExportDoc.getDocumentElement().getAttributes().getNamedItem("xsi:schemaLocation").getNodeValue()).isEqualTo("http://www.six-interbank-clearing.com/de/pain.001.001.03.ch.02.xsd pain.001.001.03.ch.02.xsd");
-		
+
 		assertThat(sepaExportDoc.getDocumentElement().getAttributes().getNamedItem("xmlns").getNodeValue()).isEqualTo("http://www.six-interbank-clearing.com/de/pain.001.001.03.ch.02.xsd");
 
 	}
-	
+
 	private I_SEPA_Export_Line createSEPAExportLine(
 			final I_SEPA_Export sepaExport,
 			final String SEPA_MandateRefNo,
@@ -190,6 +223,44 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 		return line;
 	}
 
+	private I_SEPA_Export_Line createSEPAExportLineQRVersion(
+			final I_SEPA_Export sepaExport,
+			final String SEPA_MandateRefNo,
+			final String QRIban,
+			final String bic,
+			final BigDecimal amt,
+			final CurrencyId currencyId,
+			final String reference)
+	{
+		final Bank bank = bankRepository.createBank(BankCreateRequest.builder()
+				.bankName("myBank")
+				.routingNo("routingNo")
+				.build());
+
+		final I_C_BP_BankAccount bankAccount = newInstance(I_C_BP_BankAccount.class);
+		bankAccount.setC_Bank_ID(bank.getBankId().getRepoId());
+		bankAccount.setC_Currency_ID(currencyId.getRepoId());
+		bankAccount.setQR_IBAN(QRIban);
+		bankAccount.setIsEsrAccount(true);
+		bankAccount.setA_Name("bankAccount.A_Name");
+		save(bankAccount);
+
+		final I_SEPA_Export_Line line = newInstance(I_SEPA_Export_Line.class);
+		line.setIBAN(QRIban);
+		line.setSwiftCode(bic);
+		line.setAmt(amt);
+		line.setC_Currency_ID(currencyId.getRepoId());
+		line.setSEPA_MandateRefNo(SEPA_MandateRefNo);
+		line.setStructuredRemittanceInfo(reference);
+
+		line.setC_BP_BankAccount(bankAccount);
+		line.setSEPA_Export(sepaExport);
+		line.setIsActive(true);
+		line.setIsError(false);
+		save(line);
+
+		return line;
+	}
 	@Test
 	public void testReplaceForbiddenChars()
 	{
@@ -202,6 +273,22 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 	{
 		String output = SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.replaceForbiddenChars(input);
 		assertThat(output).isEqualTo(expected);
+	}
+
+
+	@Test
+	public void testIsInvalidQRReference()
+	{
+		assertIsInvalidQRReferenceWorks("", true);
+		assertIsInvalidQRReferenceWorks("33 36170 00113 54610 59304 00000", true);
+		assertIsInvalidQRReferenceWorks("333617000113546105930400000", false);
+		assertIsInvalidQRReferenceWorks("210000000003139471430009017", false);
+	}
+
+	private void assertIsInvalidQRReferenceWorks(String input, boolean expected)
+	{
+		boolean result = SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02.isInvalidQRReference(input);
+		assertThat(result).isEqualTo(expected);
 	}
 
 }
