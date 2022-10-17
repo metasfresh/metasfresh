@@ -5,8 +5,10 @@ import de.metas.calendar.simulation.SimulationPlanRepository;
 import de.metas.calendar.simulation.SimulationPlanService;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
+import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectId;
-import de.metas.project.ProjectTypeId;
+import de.metas.project.ProjectType;
+import de.metas.project.ProjectTypeRepository;
 import de.metas.project.budget.BudgetProject;
 import de.metas.project.budget.BudgetProjectRepository;
 import de.metas.project.budget.BudgetProjectResourceRepository;
@@ -25,8 +27,11 @@ import de.metas.project.workorder.resource.WOProjectResourceRepository;
 import de.metas.project.workorder.step.WOProjectStepRepository;
 import de.metas.resource.ResourceService;
 import de.metas.util.InSetPredicate;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_ProjectType;
 import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -81,6 +86,16 @@ class WOProjectCalendarServiceTest
 		);
 	}
 
+	private ProjectType projectType(@NonNull final ProjectCategory projectCategory)
+	{
+		final I_C_ProjectType projectTypeRecord = InterfaceWrapperHelper.newInstance(I_C_ProjectType.class);
+		projectTypeRecord.setProjectCategory(projectCategory.getCode());
+		projectTypeRecord.setR_StatusCategory_ID(111);
+		InterfaceWrapperHelper.save(projectTypeRecord);
+
+		return ProjectTypeRepository.toProjectType(projectTypeRecord);
+	}
+
 	@Nested
 	class getProjectIdsPredicate
 	{
@@ -104,7 +119,7 @@ class WOProjectCalendarServiceTest
 					.name("test")
 					.orgId(OrgId.MAIN)
 					.currencyId(CurrencyId.ofRepoId(102))
-					.projectTypeId(ProjectTypeId.ofRepoId(123))
+					.projectType(projectType(ProjectCategory.Budget))
 					.build());
 
 			final InSetPredicate<ProjectId> projectIds = woProjectCalendarService.getProjectIdsPredicate(
@@ -124,7 +139,7 @@ class WOProjectCalendarServiceTest
 					.name("test")
 					.orgId(OrgId.MAIN)
 					.currencyId(CurrencyId.ofRepoId(102))
-					.projectTypeId(ProjectTypeId.ofRepoId(123))
+					.projectType(projectType(ProjectCategory.WorkOrderJob))
 					.build());
 
 			final InSetPredicate<ProjectId> projectIds = woProjectCalendarService.getProjectIdsPredicate(

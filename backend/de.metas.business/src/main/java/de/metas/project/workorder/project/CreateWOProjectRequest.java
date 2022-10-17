@@ -27,7 +27,7 @@ import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.project.ProjectId;
-import de.metas.project.ProjectTypeId;
+import de.metas.project.ProjectType;
 import de.metas.user.UserId;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
@@ -56,7 +56,7 @@ public class CreateWOProjectRequest
 	String value;
 
 	@NonNull
-	ProjectTypeId projectTypeId;
+	ProjectType projectType;
 
 	boolean isActive;
 
@@ -109,7 +109,7 @@ public class CreateWOProjectRequest
 			@Nullable final ExternalId externalId, 
 			@NonNull final String name,
 			@NonNull final String value,
-			@NonNull final ProjectTypeId projectTypeId,
+			@NonNull final ProjectType projectType,
 			@Nullable final Boolean isActive,
 			@Nullable final PriceListVersionId priceListVersionId,
 			@Nullable final String description,
@@ -131,7 +131,7 @@ public class CreateWOProjectRequest
 		this.externalId = externalId;
 		this.name = name;
 		this.value = value;
-		this.projectTypeId = projectTypeId;
+		this.projectType = projectType;
 		this.priceListVersionId = priceListVersionId;
 		this.description = description;
 		this.projectParentId = projectParentId;

@@ -119,9 +119,6 @@ public class WOProjectRepository
 	@NonNull
 	public WOProject create(@NonNull final CreateWOProjectRequest createWOProjectRequest)
 	{
-		// i guess using interfacewrapperhelper like this is OK within the repository?
-		final I_C_ProjectType projectType = InterfaceWrapperHelper.loadOutOfTrx(createWOProjectRequest.getProjectTypeId(), I_C_ProjectType.class);
-
 		final I_C_Project projectRecord = InterfaceWrapperHelper.newInstance(I_C_Project.class);
 
 		projectRecord.setAD_Org_ID(OrgId.toRepoId(createWOProjectRequest.getOrgId()));
@@ -132,10 +129,10 @@ public class WOProjectRepository
 		projectRecord.setPOReference(createWOProjectRequest.getPoReference());
 		projectRecord.setDescription(createWOProjectRequest.getDescription());
 
-		projectRecord.setR_StatusCategory_ID(projectType.getR_StatusCategory_ID());
+		projectRecord.setR_StatusCategory_ID(createWOProjectRequest.getProjectType().getRequestStatusCategoryId().getRepoId());
 
 		projectRecord.setProjectCategory(X_C_Project.PROJECTCATEGORY_WorkOrderJob);
-		projectRecord.setC_ProjectType_ID(createWOProjectRequest.getProjectTypeId().getRepoId());
+		projectRecord.setC_ProjectType_ID(createWOProjectRequest.getProjectType().getId().getRepoId());
 		projectRecord.setC_Currency_ID(createWOProjectRequest.getCurrencyId().getRepoId());
 		projectRecord.setC_Project_Parent_ID(ProjectId.toRepoId(createWOProjectRequest.getProjectParentId()));
 		projectRecord.setM_PriceList_Version_ID(PriceListVersionId.toRepoId(createWOProjectRequest.getPriceListVersionId()));

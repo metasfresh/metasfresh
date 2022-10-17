@@ -27,6 +27,7 @@ import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.project.ProjectId;
+import de.metas.project.ProjectType;
 import de.metas.project.ProjectTypeId;
 import de.metas.user.UserId;
 import de.metas.util.lang.ExternalId;
@@ -54,7 +55,7 @@ public class CreateBudgetProjectRequest
 	ExternalId externalId;
 	
 	@NonNull
-	ProjectTypeId projectTypeId;
+	ProjectType projectType;
 
 	@NonNull
 	String value;
