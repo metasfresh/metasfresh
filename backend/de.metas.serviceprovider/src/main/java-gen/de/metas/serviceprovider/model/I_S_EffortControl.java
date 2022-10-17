@@ -296,27 +296,6 @@ public interface I_S_EffortControl
 	String COLUMNNAME_IsOverBudget = "IsOverBudget";
 
 	/**
-	 * Set Processed.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setIsProcessed (boolean IsProcessed);
-
-	/**
-	 * Get Processed.
-	 *
-	 * <br>Type: YesNo
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	boolean isProcessed();
-
-	ModelColumn<I_S_EffortControl, Object> COLUMN_IsProcessed = new ModelColumn<>(I_S_EffortControl.class, "IsProcessed", null);
-	String COLUMNNAME_IsProcessed = "IsProcessed";
-
-	/**
 	 * Set Pending effort sum.
 	 *
 	 * <br>Type: String

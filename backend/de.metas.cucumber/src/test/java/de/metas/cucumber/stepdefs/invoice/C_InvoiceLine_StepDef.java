@@ -29,6 +29,7 @@ import de.metas.cucumber.stepdefs.C_Tax_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.C_TaxCategory_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.invoice.service.IInvoiceLineBL;
@@ -41,6 +42,7 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_Tax;
@@ -55,7 +57,7 @@ import java.util.Map;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Tax_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyInvoiced;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Invoice_ID;
 import static org.compiere.model.I_C_TaxCategory.COLUMNNAME_C_TaxCategory_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
@@ -72,6 +74,7 @@ public class C_InvoiceLine_StepDef
 	private final C_Project_StepDefData projectTable;
 	private final C_Tax_StepDefData taxTable;
 	private final C_TaxCategory_StepDefData taxCategoryTable;
+	private final C_Activity_StepDefData activityTable;
 
 	public C_InvoiceLine_StepDef(
 			@NonNull final C_Invoice_StepDefData invoiceTable,
@@ -79,7 +82,8 @@ public class C_InvoiceLine_StepDef
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final C_Project_StepDefData projectTable,
 			@NonNull final C_Tax_StepDefData taxTable,
-			@NonNull final C_TaxCategory_StepDefData taxCategoryTable)
+			@NonNull final C_TaxCategory_StepDefData taxCategoryTable,
+			@NonNull final C_Activity_StepDefData activityTable)
 	{
 		this.invoiceTable = invoiceTable;
 		this.invoiceLineTable = invoiceLineTable;
@@ -87,6 +91,7 @@ public class C_InvoiceLine_StepDef
 		this.taxTable = taxTable;
 		this.taxCategoryTable = taxCategoryTable;
 		this.projectTable = projectTable;
+		this.activityTable = activityTable;
 	}
 
 	@And("metasfresh contains C_InvoiceLines")
@@ -265,6 +270,19 @@ public class C_InvoiceLine_StepDef
 					.orElseGet(() -> Integer.parseInt(projectIdentifier));
 
 			assertThat(invoiceLine.getC_Project_ID()).isEqualTo(projectId);
+		}
+
+		final String costCenterIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_C_Activity_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(costCenterIdentifier))
+		{
+			final I_C_Activity activity = activityTable.get(costCenterIdentifier);
+			assertThat(invoiceLine.getC_Activity_ID()).isEqualTo(activity.getC_Activity_ID());
+		}
+
+		final String description = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_Description);
+		if(Check.isNotBlank(description))
+		{
+			assertThat(invoiceLine.getDescription()).isEqualTo(description);
 		}
 	}
 
