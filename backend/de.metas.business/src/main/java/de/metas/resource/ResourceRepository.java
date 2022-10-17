@@ -204,6 +204,7 @@ class ResourceRepository
 					.map(byId::get)
 					.filter(Objects::nonNull)
 					.map(Resource::getResourceGroupId)
+					.filter(Objects::nonNull)
 					.collect(ImmutableSet.toImmutableSet());
 		}
 
