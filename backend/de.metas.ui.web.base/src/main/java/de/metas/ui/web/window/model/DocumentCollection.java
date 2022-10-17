@@ -30,7 +30,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.letters.model.MADBoilerPlate.SourceDocument;
@@ -470,7 +470,7 @@ public class DocumentCollection
 		if (documentPath.isRootDocument())
 		{
 			final DocumentEntityDescriptor entityDescriptor = documentDescriptorFactory.getDocumentEntityDescriptor(documentPath);
-			assertDeleteDocumentAllowed(entityDescriptor, documentPath);
+			assertDeleteDocumentAllowed(entityDescriptor);
 		}
 
 		final DocumentPath rootDocumentPath = documentPath.getRootDocumentPath();
@@ -480,6 +480,14 @@ public class DocumentCollection
 		}
 
 		forRootDocumentWritable(rootDocumentPath, changesCollector, rootDocument -> {
+
+			final BooleanWithReason isDeleteForbidden = rootDocument.cannotBeDeleted();
+			if (isDeleteForbidden.isTrue())
+			{
+				throw new AdempiereException(isDeleteForbidden.getReason())
+						.markAsUserValidationError();
+			}
+
 			if (documentPath.isRootDocument())
 			{
 				if (!rootDocument.isNew())
@@ -502,7 +510,7 @@ public class DocumentCollection
 		});
 	}
 
-	private void assertDeleteDocumentAllowed(@NonNull final DocumentEntityDescriptor entityDescriptor,@NonNull final DocumentPath documentPath)
+	private void assertDeleteDocumentAllowed(@NonNull final DocumentEntityDescriptor entityDescriptor)
 	{
 		final Evaluatee evalCtx = Evaluatees.mapBuilder()
 				.put(WindowConstants.FIELDNAME_Processed, false)
@@ -513,16 +521,6 @@ public class DocumentCollection
 		if (allow.isFalse())
 		{
 			throw new AdempiereException("Delete not allowed");
-		}
-
-		final DocumentKey rootDocumentKey = DocumentKey.ofRootDocumentPath(documentPath);
-		final Document rootDocument = getOrLoadDocument(rootDocumentKey);
-
-		final ITranslatableString cannotDeleteError = rootDocument.cannotBeDeleted().orElse(null);
-
-		if (cannotDeleteError != null)
-		{
-			throw new AdempiereException(cannotDeleteError);
 		}
 	}
 

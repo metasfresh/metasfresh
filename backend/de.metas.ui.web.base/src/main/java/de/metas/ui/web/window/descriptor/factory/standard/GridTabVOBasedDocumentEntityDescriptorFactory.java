@@ -56,7 +56,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.util.lang.ImmutablePair;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.GridFieldDefaultFilterDescriptor;
 import org.compiere.model.GridFieldVO;
 import org.compiere.model.GridTabVO;
@@ -72,7 +71,6 @@ import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -109,14 +107,13 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	private static final Logger logger = LogManager.getLogger(GridTabVOBasedDocumentEntityDescriptorFactory.class);
 	private final transient IColumnBL adColumnBL = Services.get(IColumnBL.class);
 
-	private final Collection<IDocumentDecorator> documentDecorators = SpringContextHolder.instance.getBeansOfType(IDocumentDecorator.class);
-
 	private final DocumentsRepository documentsRepository = SqlDocumentsRepository.instance;
 	private final LookupDataSourceFactory lookupDataSourceFactory;
 
 	private final ImmutableMap<AdFieldId, String> _adFieldId2columnName;
 	private final DefaultValueExpressionsFactory defaultValueExpressionsFactory;
 	private final SpecialDocumentFieldsCollector _specialFieldsCollector;
+	private final List<IDocumentDecorator> documentDecorators;
 
 	//
 	// State
@@ -128,11 +125,13 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	private GridTabVOBasedDocumentEntityDescriptorFactory(
 			@NonNull final LookupDataSourceFactory lookupDataSourceFactory,
 			@NonNull final GridTabVO gridTabVO,
+			final List<IDocumentDecorator> documentDecorators,
 			@Nullable final GridTabVO parentTabVO,
 			final boolean isSOTrx,
 			@NonNull final List<I_AD_UI_Element> labelsUIElements)
 	{
 		this.lookupDataSourceFactory = lookupDataSourceFactory;
+		this.documentDecorators = documentDecorators;
 
 		final boolean rootEntity = parentTabVO == null;
 

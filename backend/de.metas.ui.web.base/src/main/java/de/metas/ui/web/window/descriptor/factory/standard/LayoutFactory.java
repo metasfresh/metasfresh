@@ -33,6 +33,7 @@ import de.metas.ui.web.window.descriptor.LayoutType;
 import de.metas.ui.web.window.descriptor.QuickInputSupportDescriptor;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.ui.web.window.descriptor.WidgetSize;
+import de.metas.ui.web.window.descriptor.decorator.IDocumentDecorator;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Check;
 import lombok.NonNull;
@@ -99,6 +100,7 @@ public class LayoutFactory
 	// services
 	private static final Logger logger = LogManager.getLogger(LayoutFactory.class);
 
+	private final List<IDocumentDecorator> documentDecorators = ImmutableList.copyOf(SpringContextHolder.instance.getBeansOfType(IDocumentDecorator.class));
 	private final QuickInputDescriptorFactoryService quickInputDescriptors = SpringContextHolder.instance.getBean(QuickInputDescriptorFactoryService.class);
 	private final LookupDataSourceFactory lookupDataSourceFactory;
 
@@ -169,6 +171,7 @@ public class LayoutFactory
 		final List<I_AD_UI_Element> labelsUIElements = _uiProvider.getUIElementsOfTypeLabels(templateTabId);
 		descriptorsFactory = GridTabVOBasedDocumentEntityDescriptorFactory.builder()
 				.lookupDataSourceFactory(lookupDataSourceFactory)
+				.documentDecorators(documentDecorators)
 				.gridTabVO(gridTabVO)
 				.parentTabVO(parentTab)
 				.isSOTrx(gridWindowVO.isSOTrx())

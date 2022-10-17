@@ -5,6 +5,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Ordering;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
@@ -162,9 +163,9 @@ public class DocumentEntityDescriptor
 	@Getter
 	private final boolean cloneEnabled;
 
-	@Nullable
+	@NonNull
 	@Getter
-	private final Collection<IDocumentDecorator> documentDecorators;
+	private final List<IDocumentDecorator> documentDecorators;
 
 	private DocumentEntityDescriptor(@NonNull final Builder builder)
 	{
@@ -212,7 +213,7 @@ public class DocumentEntityDescriptor
 		soTrx = builder.getSOTrx();
 
 		cloneEnabled = builder.isCloneEnabled();
-		documentDecorators = builder.getDocumentDecorators();
+		documentDecorators = CoalesceUtil.coalesceNotNull(builder.getDocumentDecorators(), ImmutableList.of());
 	}
 
 	@Override
@@ -441,7 +442,7 @@ public class DocumentEntityDescriptor
 	{
 		private static final Logger logger = LogManager.getLogger(DocumentEntityDescriptor.Builder.class);
 		private DocumentFilterDescriptorsProvidersService filterDescriptorsProvidersService;
-		private Collection<IDocumentDecorator> documentDecorators;
+		private List<IDocumentDecorator> documentDecorators;
 
 		private boolean _built = false;
 
@@ -1113,14 +1114,14 @@ public class DocumentEntityDescriptor
 		}
 
 		@NonNull
-		public Builder setDocumentDecorators(final Collection<IDocumentDecorator> documentDecorators)
+		public Builder setDocumentDecorators(final List<IDocumentDecorator> documentDecorators)
 		{
 			this.documentDecorators = documentDecorators;
 			return this;
 		}
 
 		@Nullable
-		public Collection<IDocumentDecorator> getDocumentDecorators()
+		public List<IDocumentDecorator> getDocumentDecorators()
 		{
 			return this.documentDecorators;
 		}

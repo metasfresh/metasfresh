@@ -22,10 +22,9 @@
 
 package de.metas.ui.web.window.descriptor.decorator;
 
-import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.ui.web.window.model.Document;
-
-import java.util.Optional;
+import lombok.NonNull;
 
 public interface IDocumentDecorator
 {
@@ -34,8 +33,9 @@ public interface IDocumentDecorator
 		return false;
 	}
 
-	default Optional<ITranslatableString> cannotBeDeleted(final Document document)
+	@NonNull
+	default BooleanWithReason cannotBeDeleted(final Document document)
 	{
-		return Optional.empty();
+		return BooleanWithReason.FALSE;
 	}
 }

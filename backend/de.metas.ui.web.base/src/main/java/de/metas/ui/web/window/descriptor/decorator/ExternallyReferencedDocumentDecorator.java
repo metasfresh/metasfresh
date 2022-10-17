@@ -22,9 +22,9 @@
 
 package de.metas.ui.web.window.descriptor.decorator;
 
-import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.window.model.Document;
@@ -32,8 +32,6 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 public class ExternallyReferencedDocumentDecorator implements IDocumentDecorator
@@ -59,22 +57,21 @@ public class ExternallyReferencedDocumentDecorator implements IDocumentDecorator
 			return false;
 		}
 
-		return externalReferenceRepository.getExternalReferencesByTableRecordReference(recordReference)
-				.stream()
-				.anyMatch(ExternalReference::getIsReadOnlyInMetasfreshOrFalse);
+		return externalReferenceRepository.isReadOnlyInMetasfresh(recordReference);
 	}
 
 	@Override
-	public Optional<ITranslatableString> cannotBeDeleted(final Document document)
+	@NonNull
+	public BooleanWithReason cannotBeDeleted(final Document document)
 	{
 		if (!isReadOnly(document))
 		{
-			return Optional.empty();
+			return BooleanWithReason.FALSE;
 		}
 
 		final ITranslatableString errorMessage = msgBL.getTranslatableMsgText(EXTERNAL_REFERENCE_READ_ONLY_IN_METASFRESH_ERROR,
 																			  document.getDocumentId());
 
-		return Optional.of(errorMessage);
+		return BooleanWithReason.trueBecause(errorMessage);
 	}
 }

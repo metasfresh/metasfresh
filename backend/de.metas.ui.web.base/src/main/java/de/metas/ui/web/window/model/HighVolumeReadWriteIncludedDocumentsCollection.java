@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Sets.SetView;
-import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
@@ -353,10 +353,11 @@ public class HighVolumeReadWriteIncludedDocumentsCollection implements IIncluded
 				continue;
 			}
 
-			final ITranslatableString cannotDeleteErrorMsg = document.cannotBeDeleted().orElse(null);
-			if (cannotDeleteErrorMsg != null)
+			final BooleanWithReason isDeleteForbidden = document.cannotBeDeleted();
+			if (isDeleteForbidden.isTrue())
 			{
-				throw new AdempiereException(cannotDeleteErrorMsg);
+				throw new AdempiereException(isDeleteForbidden.getReason())
+						.markAsUserValidationError();
 			}
 
 			// assertDeleteDocumentAllowed(document);

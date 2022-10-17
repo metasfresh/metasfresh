@@ -36,17 +36,24 @@ import javax.annotation.Nullable;
 @Value
 public class JsonExternalReferenceItem
 {
+	@NonNull
 	public static JsonExternalReferenceItem of(
 			@NonNull final JsonExternalReferenceLookupItem lookupItem,
 			@NonNull final JsonMetasfreshId metasfreshId)
 	{
-		return new JsonExternalReferenceItem(lookupItem, metasfreshId, null, null, null, null, null, null, null);
+		return JsonExternalReferenceItem.builder()
+				.lookupItem(lookupItem)
+				.metasfreshId(metasfreshId)
+				.build();
 	}
 
+	@NonNull
 	public static JsonExternalReferenceItem of(
 			@NonNull final JsonExternalReferenceLookupItem lookupItem)
 	{
-		return new JsonExternalReferenceItem(lookupItem, null, null, null, null, null, null, null, null);
+		return JsonExternalReferenceItem.builder()
+				.lookupItem(lookupItem)
+				.build();
 	}
 
 	@NonNull

@@ -8,7 +8,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.exceptions.DocumentProcessingException;
-import de.metas.i18n.ITranslatableString;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.lang.SOTrx;
 import de.metas.letters.model.Letters;
 import de.metas.logging.LogManager;
@@ -54,6 +54,7 @@ import org.adempiere.ad.expression.api.LogicExpressionResult;
 import org.adempiere.ad.ui.spi.ITabCallout;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
@@ -1355,21 +1356,30 @@ public final class Document
 		getFields().forEach(documentField -> updateFieldReadOnlyAndCollect(documentField, reason));
 	}
 
+	@NonNull
 	private DocumentReadonly computeReadonly()
 	{
-		final boolean fieldsReadOnlyBasedOnDecorators = getEntityDescriptor().getDocumentDecorators() != null
-				&& getEntityDescriptor().getDocumentDecorators()
-				.stream()
-				.anyMatch(documentDecorator -> documentDecorator.isReadOnly(this));
-
-		final boolean fieldsReadOnly = fieldsReadOnlyBasedOnDecorators || computeDefaultFieldsReadOnly().booleanValue();
-
 		return DocumentReadonly.builder()
 				.parentActive(parentReadonly.isActive()).active(isActive())
 				.processed(parentReadonly.isProcessed() || isProcessed())
 				.processing(parentReadonly.isProcessing() || isProcessing())
-				.fieldsReadonly(fieldsReadOnly)
+				.fieldsReadonly(ExtendedMemorizingSupplier.of(this::computeFieldsReadOnly))
 				.build();
+	}
+
+	private boolean computeFieldsReadOnly()
+	{
+		final boolean isReadOnlyLogicTrue = computeDefaultFieldsReadOnly().booleanValue();
+
+		if (isReadOnlyLogicTrue)
+		{
+			return true;
+		}
+
+		return getEntityDescriptor()
+				.getDocumentDecorators()
+				.stream()
+				.anyMatch(documentDecorator -> documentDecorator.isReadOnly(this));
 	}
 
 	@NonNull
@@ -2095,22 +2105,15 @@ public final class Document
 		return Optional.of(TableRecordReference.of(tableName, recordId));
 	}
 
-	/**
-	 * @return error message if delete is not allowed, {@link Optional#empty} otherwise
-	 */
-	public Optional<ITranslatableString> cannotBeDeleted()
+	@NonNull
+	public BooleanWithReason cannotBeDeleted()
 	{
-		if (entityDescriptor.getDocumentDecorators() == null)
-		{
-			return Optional.empty();
-		}
-
 		return entityDescriptor.getDocumentDecorators()
 				.stream()
 				.map(decorator -> decorator.cannotBeDeleted(this))
-				.filter(Optional::isPresent)
-				.map(Optional::get)
-				.findFirst();
+				.filter(BooleanWithReason::isTrue)
+				.findFirst()
+				.orElse(BooleanWithReason.FALSE);
 	}
 
 	//
