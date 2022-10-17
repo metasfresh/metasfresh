@@ -36,6 +36,7 @@ import de.metas.order.OrderId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
@@ -105,8 +106,7 @@ public class ForwardingICAggregationKeyBuilder extends AbstractAggregationKeyBui
 
 		final Properties ctx = InterfaceWrapperHelper.getCtx(ic);
 
-		final TableRecordReference icReferencedRecord = TableRecordReference.of(ic.getAD_Table_ID(), ic.getRecord_ID());
-		final Optional<IAggregationKeyBuilder<I_C_Invoice_Candidate>> customAggregationOpt = getCustomAggregationIfAny(icReferencedRecord, ctx);
+		final Optional<IAggregationKeyBuilder<I_C_Invoice_Candidate>> customAggregationOpt = getCustomAggregationIfAny(ic, ctx);
 
 		if (customAggregationOpt.isPresent())
 		{
@@ -146,9 +146,18 @@ public class ForwardingICAggregationKeyBuilder extends AbstractAggregationKeyBui
 
 	@NonNull
 	private Optional<IAggregationKeyBuilder<I_C_Invoice_Candidate>> getCustomAggregationIfAny(
-			@NonNull final TableRecordReference icReferencedRecord,
+			@NonNull final I_C_Invoice_Candidate ic,
 			@NonNull final Properties ctx)
 	{
+		final AdTableId tableId = AdTableId.ofRepoIdOrNull(ic.getAD_Table_ID());
+
+		if(tableId == null)
+		{
+			return Optional.empty();
+		}
+
+		final TableRecordReference icReferencedRecord = TableRecordReference.of(ic.getAD_Table_ID(), ic.getRecord_ID());
+
 		//dev-note: ugly workaround to avoid circular dependency for I_S_Issue
 		if (icReferencedRecord.getTableName().equals("S_Issue"))
 		{
