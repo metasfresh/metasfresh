@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.banking.base
+ * camt53
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,20 +20,20 @@
  * #L%
  */
 
-package de.metas.banking.bankstatement.importer;
+package de.metas.banking.camt53;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableSet;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.api.BankAccountService;
-import de.metas.banking.bankstatement.importer.wrapper.AccountStatement2Wrapper;
-import de.metas.banking.bankstatement.importer.wrapper.NoBatchBankToCustomerStatementV02Wrapper;
-import de.metas.banking.bankstatement.importer.wrapper.NoBatchReportEntry2Wrapper;
-import de.metas.banking.bankstatement.jaxb.camt053_001_02.AccountStatement2;
-import de.metas.banking.bankstatement.jaxb.camt053_001_02.BankToCustomerStatementV02;
-import de.metas.banking.bankstatement.jaxb.camt053_001_02.Document;
-import de.metas.banking.bankstatement.jaxb.camt053_001_02.ObjectFactory;
-import de.metas.banking.bankstatement.jaxb.camt053_001_02.ReportEntry2;
+import de.metas.banking.camt53.jaxb.camt053_001_02.AccountStatement2;
+import de.metas.banking.camt53.jaxb.camt053_001_02.BankToCustomerStatementV02;
+import de.metas.banking.camt53.jaxb.camt053_001_02.Document;
+import de.metas.banking.camt53.jaxb.camt053_001_02.ObjectFactory;
+import de.metas.banking.camt53.jaxb.camt053_001_02.ReportEntry2;
+import de.metas.banking.camt53.wrapper.AccountStatement2Wrapper;
+import de.metas.banking.camt53.wrapper.NoBatchBankToCustomerStatementV02Wrapper;
+import de.metas.banking.camt53.wrapper.NoBatchReportEntry2Wrapper;
 import de.metas.banking.service.BankStatementCreateRequest;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.currency.CurrencyRepository;

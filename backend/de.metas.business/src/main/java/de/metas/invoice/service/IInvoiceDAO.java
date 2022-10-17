@@ -30,6 +30,7 @@ import de.metas.allocation.api.IAllocationDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
 import de.metas.document.DocBaseAndSubType;
+import de.metas.document.engine.DocStatus;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.InvoiceQuery;
@@ -178,6 +179,8 @@ public interface IInvoiceDAO extends ISingletonService
 	Optional<InvoiceId> retrieveIdByInvoiceQuery(InvoiceQuery query);
 
 	<T extends org.compiere.model.I_C_Invoice> List<T> getByDocumentNo(String documentNo, OrgId orgId, Class<T> modelClass);
+
+	List<I_C_Invoice> retrieveUnpaid(List<String> docNos, List<DocStatus> docStatuses);
 
 	Collection<InvoiceLineId> getInvoiceLineIds(final InvoiceId id);
 

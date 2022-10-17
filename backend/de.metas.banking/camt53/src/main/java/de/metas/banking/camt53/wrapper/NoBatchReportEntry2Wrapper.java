@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.banking.base
+ * camt53
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,25 +20,27 @@
  * #L%
  */
 
-package de.metas.banking.bankstatement.importer.wrapper;
+package de.metas.banking.camt53.wrapper;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
+import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.banking.BankStatementId;
-import de.metas.banking.bankstatement.jaxb.camt053_001_02.ActiveOrHistoricCurrencyAndAmount;
-import de.metas.banking.bankstatement.jaxb.camt053_001_02.AmountAndCurrencyExchange3;
-import de.metas.banking.bankstatement.jaxb.camt053_001_02.AmountAndCurrencyExchangeDetails3;
-import de.metas.banking.bankstatement.jaxb.camt053_001_02.CurrencyExchange5;
-import de.metas.banking.bankstatement.jaxb.camt053_001_02.DateAndDateTimeChoice;
-import de.metas.banking.bankstatement.jaxb.camt053_001_02.EntryDetails1;
-import de.metas.banking.bankstatement.jaxb.camt053_001_02.EntryTransaction2;
-import de.metas.banking.bankstatement.jaxb.camt053_001_02.RemittanceInformation5;
-import de.metas.banking.bankstatement.jaxb.camt053_001_02.ReportEntry2;
-import de.metas.banking.bankstatement.jaxb.camt053_001_02.TransactionInterest2;
+import de.metas.banking.camt53.jaxb.camt053_001_02.ActiveOrHistoricCurrencyAndAmount;
+import de.metas.banking.camt53.jaxb.camt053_001_02.AmountAndCurrencyExchange3;
+import de.metas.banking.camt53.jaxb.camt053_001_02.AmountAndCurrencyExchangeDetails3;
+import de.metas.banking.camt53.jaxb.camt053_001_02.CurrencyExchange5;
+import de.metas.banking.camt53.jaxb.camt053_001_02.DateAndDateTimeChoice;
+import de.metas.banking.camt53.jaxb.camt053_001_02.EntryDetails1;
+import de.metas.banking.camt53.jaxb.camt053_001_02.EntryTransaction2;
+import de.metas.banking.camt53.jaxb.camt053_001_02.RemittanceInformation5;
+import de.metas.banking.camt53.jaxb.camt053_001_02.ReportEntry2;
+import de.metas.banking.camt53.jaxb.camt053_001_02.TransactionInterest2;
 import de.metas.banking.service.BankStatementLineCreateRequest;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
+import de.metas.document.engine.DocStatus;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.logging.LogManager;
@@ -48,22 +50,22 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
-import de.metas.util.NumberUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.banking.model.I_C_Invoice;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.StringTokenizer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static de.metas.banking.bankstatement.jaxb.camt053_001_02.CreditDebitCode.CRDT;
+import static de.metas.banking.camt53.jaxb.camt053_001_02.CreditDebitCode.CRDT;
 
 @Value
 public class NoBatchReportEntry2Wrapper
@@ -112,7 +114,7 @@ public class NoBatchReportEntry2Wrapper
 		}
 
 		final Money stmtAmount = getStatementAmount();
-		
+
 		final BankStatementLineCreateRequest.BankStatementLineCreateRequestBuilder bankStatementLineCreateRequestBuilder = BankStatementLineCreateRequest.builder()
 				.orgId(orgId)
 				.bankStatementId(bankStatementId)
@@ -123,7 +125,7 @@ public class NoBatchReportEntry2Wrapper
 				.interestAmt(getInterestAmount().orElse(null))
 				.statementLineDate(TimeUtil.asLocalDate(statementLineDate, orgDAO.getTimeZone(orgId)));
 
-		getInvoiceCheckingAmounts(orgId, stmtAmount)
+		getReferencedInvoiceRecord()
 				.ifPresent(invoice -> bankStatementLineCreateRequestBuilder
 						.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
 						.bpartnerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID())));
@@ -132,19 +134,12 @@ public class NoBatchReportEntry2Wrapper
 	}
 
 	@NonNull
-	private Optional<I_C_Invoice> getInvoiceCheckingAmounts(
-			@NonNull final OrgId orgId,
-			@NonNull final Money stmtAmount)
+	private Optional<I_C_Invoice> getReferencedInvoiceRecord()
 	{
-		return getReferencedInvoiceRecord(orgId)
-				.filter(invoiceRecord -> invoiceAmountMatchesStmtAmount(invoiceRecord, stmtAmount));
-	}
+		final List<String> invoiceDocNoCandidates = getInvoiceDocNoCandidates();
+		final List<DocStatus> completedOrClosedDocStatus = ImmutableList.of(DocStatus.Completed, DocStatus.Closed);
 
-	@NonNull
-	private Optional<I_C_Invoice> getReferencedInvoiceRecord(@NonNull final OrgId orgId)
-	{
-		return getRemittanceUnstructuredInfo()
-				.map(invoiceDocNo -> invoiceDAO.getByDocumentNo(invoiceDocNo, orgId, I_C_Invoice.class))
+		return Optional.of(invoiceDAO.retrieveUnpaid(invoiceDocNoCandidates, completedOrClosedDocStatus))
 				.flatMap(this::getSingleInvoice);
 	}
 
@@ -160,17 +155,17 @@ public class NoBatchReportEntry2Wrapper
 	}
 
 	@NonNull
-	public Optional<String> getRemittanceUnstructuredInfo()
+	public List<String> getInvoiceDocNoCandidates()
 	{
-		final List<String> remittanceInfoLines = getEntryTransaction()
+		final String unstructuredRemittanceInfo = String.join(" ", getEntryTransaction()
 				.map(EntryTransaction2::getRmtInf)
 				.map(RemittanceInformation5::getUstrd)
-				.orElseGet(ImmutableList::of);
+				.orElseGet(ImmutableList::of));
 
-		final String joinedRemittanceLines = String.join("\n", remittanceInfoLines);
-
-		return Optional.of(joinedRemittanceLines)
-				.filter(Check::isNotBlank);
+		return Collections.list(new StringTokenizer(unstructuredRemittanceInfo))
+				.stream()
+				.map(token -> (String)token)
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	@NonNull
@@ -212,7 +207,7 @@ public class NoBatchReportEntry2Wrapper
 	}
 
 	@NonNull
-	public Optional<I_C_Invoice> getSingleInvoice(@NonNull final List<I_C_Invoice> invoiceList)
+	public Optional<de.metas.adempiere.model.I_C_Invoice> getSingleInvoice(@NonNull final List<de.metas.adempiere.model.I_C_Invoice> invoiceList)
 	{
 		if (invoiceList.isEmpty())
 		{
@@ -227,7 +222,7 @@ public class NoBatchReportEntry2Wrapper
 
 			Loggables.withLogger(logger, Level.WARN).addLog(
 					"Multiple invoices found for ReportEntry2={}! MatchedInvoicedIds={}", entry.getNtryRef(), matchedInvoiceIds);
-			
+
 			return Optional.empty();
 		}
 		else
@@ -243,37 +238,10 @@ public class NoBatchReportEntry2Wrapper
 				.map(EntryTransaction2::getAddtlTxInf)
 				.filter(Check::isNotBlank)
 				.orElse(null);
-		
+
 		return Stream.of(trxDetails, entry.getAddtlNtryInf())
 				.filter(Check::isNotBlank)
 				.collect(Collectors.joining("\n"));
-	}
-
-	private boolean invoiceAmountMatchesStmtAmount(
-			@NonNull final I_C_Invoice invoiceRecord,
-			@NonNull final Money stmtAmount)
-	{
-		if (invoiceRecord.getC_Currency_ID() != stmtAmount.getCurrencyId().getRepoId())
-		{
-			Loggables.withLogger(logger, Level.INFO).addLog(
-					"Skipping invoice due to currency! InvoiceId={}, StmtCurrency={}, InvoiceCurrency={}",
-					invoiceRecord.getC_Invoice_ID(), stmtAmount.getCurrencyId(), invoiceRecord.getC_Currency_ID());
-			
-			return false;
-		}
-		
-		final BigDecimal invoiceAmount = NumberUtils.stripTrailingDecimalZeros(invoiceRecord.getGrandTotal());
-		final BigDecimal stmtAmountAbs = NumberUtils.stripTrailingDecimalZeros(stmtAmount.toBigDecimal()).abs();
-
-		final boolean invoiceAmountMatchesStmtAmount = invoiceAmount.equals(stmtAmountAbs);
-		if (!invoiceAmountMatchesStmtAmount)
-		{
-			Loggables.withLogger(logger, Level.INFO).addLog(
-					"Skipping invoice due to amounts not matching! InvoiceId={}, StmtCurrency={}, InvoiceCurrency={}",
-					invoiceRecord.getC_Invoice_ID(), stmtAmount, invoiceRecord.getGrandTotal());
-		}
-
-		return invoiceAmountMatchesStmtAmount;
 	}
 
 	@NonNull

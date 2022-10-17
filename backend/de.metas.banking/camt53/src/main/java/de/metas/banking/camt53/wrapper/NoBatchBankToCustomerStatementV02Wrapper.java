@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.banking.base
+ * camt53
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,11 +20,11 @@
  * #L%
  */
 
-package de.metas.banking.bankstatement.importer.wrapper;
+package de.metas.banking.camt53.wrapper;
 
-import de.metas.banking.bankstatement.jaxb.camt053_001_02.AccountStatement2;
-import de.metas.banking.bankstatement.jaxb.camt053_001_02.BankToCustomerStatementV02;
-import de.metas.banking.bankstatement.jaxb.camt053_001_02.ReportEntry2;
+import de.metas.banking.camt53.jaxb.camt053_001_02.AccountStatement2;
+import de.metas.banking.camt53.jaxb.camt053_001_02.BankToCustomerStatementV02;
+import de.metas.banking.camt53.jaxb.camt053_001_02.ReportEntry2;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -37,7 +37,7 @@ import java.util.List;
 @Value(staticConstructor = "of")
 public class NoBatchBankToCustomerStatementV02Wrapper
 {
-	private static final AdMessageKey MSG_BATCH_TRANSACTIONS_NOT_SUPPORTED = AdMessageKey.of("de.metas.banking.bankstatement.importer.wrapper.NoBatchBankToCustomerStatementV02Wrapper.BatchTransactionsNotSupported");
+	private static final AdMessageKey MSG_BATCH_TRANSACTIONS_NOT_SUPPORTED = AdMessageKey.of("de.metas.banking.camt53.wrapper.NoBatchBankToCustomerStatementV02Wrapper.BatchTransactionsNotSupported");
 
 	@NonNull
 	BankToCustomerStatementV02 bankToCustomerStatementV02;

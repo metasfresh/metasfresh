@@ -20,38 +20,44 @@
  * #L%
  */
 
-package de.metas.banking.bankstatement.importer;
+package de.metas.banking.importfile;
 
-import lombok.Builder;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.util.Check;
+import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
-import org.compiere.util.Util;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.InputStream;
+import javax.annotation.Nullable;
 
 @Value
-@Builder
-public class BankStatementCamt53DataSource
+public class BankStatementImportFileId implements RepoIdAware
 {
 	@NonNull
-	public static BankStatementCamt53DataSource ofFile(@NonNull final String filename)
+	@JsonCreator
+	public static BankStatementImportFileId ofRepoId(final int repoId)
 	{
-		return builder()
-				.filename(filename)
-				.content(Util.readBytes(new File(filename)))
-				.build();
-	}
-	
-	@NonNull
-	public InputStream getContentAsInputStream()
-	{
-		return new ByteArrayInputStream(content);
+		return new BankStatementImportFileId(repoId);
 	}
 
-	@NonNull
-	String filename;
+	@Nullable
+	public static BankStatementImportFileId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : null;
+	}
 
-	byte[] content;
+	int repoId;
+
+	private BankStatementImportFileId(final int repoId)
+	{
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_BankStatement_Import_File_ID");
+	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
+	}
 }

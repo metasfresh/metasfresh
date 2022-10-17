@@ -502,6 +502,21 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.create()
 				.list(modelClass);
 	}
+	
+	@Override
+	public List<I_C_Invoice> retrieveUnpaid(
+			@NonNull final List<String> docNos,
+			@NonNull final List<DocStatus> docStatuses)
+	{
+		return queryBL
+				.createQueryBuilder(I_C_Invoice.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsPaid, false)
+				.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocumentNo, docNos)
+				.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocStatus, docStatuses)
+				.create()
+				.listImmutable(I_C_Invoice.class);
+	}
 
 	private Optional<InvoiceId> getInvoiceIdByDocumentIdIfExists(@NonNull final InvoiceQuery query)
 	{
