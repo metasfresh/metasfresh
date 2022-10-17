@@ -42,7 +42,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_Project;
-import org.compiere.model.I_C_ProjectType;
+import org.compiere.model.X_C_Project;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
@@ -186,16 +186,13 @@ public class BudgetProjectRepository
 	@NonNull
 	public BudgetProject create(@NonNull final CreateBudgetProjectRequest request)
 	{
-		// i guess using interfacewrapperhelper like this is OK within the repository?
-		final I_C_ProjectType projectType = InterfaceWrapperHelper.loadOutOfTrx(request.getProjectTypeId(), I_C_ProjectType.class);
-
 		final I_C_Project projectRecord = InterfaceWrapperHelper.newInstance(I_C_Project.class);
 
 		projectRecord.setName(request.getName());
 		projectRecord.setValue(request.getValue());
 		projectRecord.setExternalId(ExternalId.toValue(request.getExternalId()));
+		projectRecord.setProjectCategory(X_C_Project.PROJECTCATEGORY_Budget);
 		projectRecord.setC_ProjectType_ID(ProjectTypeId.toRepoId(request.getProjectTypeId()));
-		projectRecord.setR_StatusCategory_ID(projectType.getR_StatusCategory_ID());
 		projectRecord.setIsActive(request.isActive());
 		projectRecord.setC_Currency_ID(CurrencyId.toRepoId(request.getCurrencyId()));
 		projectRecord.setAD_Org_ID(OrgId.toRepoId(request.getOrgId()));
