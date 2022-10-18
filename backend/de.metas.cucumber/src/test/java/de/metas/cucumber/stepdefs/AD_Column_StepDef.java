@@ -44,6 +44,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_S_ResourceType;
+import de.metas.cache.CacheMgt;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -110,6 +111,8 @@ public class AD_Column_StepDef
 
 			targetColumn.setIsRestAPICustomColumn(isRestAPICustomColumn);
 			saveRecord(targetColumn);
+			
+			CacheMgt.get().reset();
 		}
 	}
 
