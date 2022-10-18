@@ -25,7 +25,9 @@ package de.metas.cucumber.stepdefs;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
+import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
+import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
@@ -56,6 +58,7 @@ import org.adempiere.model.copy.CopyRecordRequest;
 import org.adempiere.model.copy.CopyRecordService;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -64,6 +67,7 @@ import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_M_PricingSystem;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -85,14 +89,18 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocSubType;
+import static org.compiere.model.I_C_Order.COLUMNNAME_AD_Org_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Bill_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Bill_Location_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_Bill_User_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_Order_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_DocStatus;
 import static org.compiere.model.I_C_Order.COLUMNNAME_DropShip_BPartner_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_DropShip_Location_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Link_Order_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_PricingSystem_ID;
+import static org.compiere.model.I_C_Order.COLUMNNAME_M_Warehouse_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_PaymentRule;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Processing;
 
@@ -112,19 +120,25 @@ public class C_Order_StepDef
 	private final C_BPartner_Location_StepDefData bpartnerLocationTable;
 	private final AD_User_StepDefData userTable;
 	private final M_PricingSystem_StepDefData pricingSystemDataTable;
+	private final M_Warehouse_StepDefData warehouseTable;
+	private final AD_Org_StepDefData orgTable;
 
 	public C_Order_StepDef(
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final C_Order_StepDefData orderTable,
 			@NonNull final C_BPartner_Location_StepDefData bpartnerLocationTable,
 			@NonNull final AD_User_StepDefData userTable,
-			@NonNull final M_PricingSystem_StepDefData pricingSystemDataTable)
+			@NonNull final M_PricingSystem_StepDefData pricingSystemDataTable,
+			@NonNull final M_Warehouse_StepDefData warehouseTable,
+			@NonNull final AD_Org_StepDefData orgTable)
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.orderTable = orderTable;
 		this.bpartnerLocationTable = bpartnerLocationTable;
 		this.userTable = userTable;
 		this.pricingSystemDataTable = pricingSystemDataTable;
+		this.warehouseTable = warehouseTable;
+		this.orgTable = orgTable;
 	}
 
 	@Given("metasfresh contains C_Orders:")
@@ -134,7 +148,6 @@ public class C_Order_StepDef
 		for (final Map<String, String> tableRow : tableRows)
 		{
 			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final int warehouseId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT.Warehouse_ID");
 			final String poReference = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_POReference);
 			final int paymentTermId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + I_C_Order.COLUMNNAME_C_PaymentTerm_ID);
 			final String pricingSystemIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_PricingSystem_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -143,18 +156,22 @@ public class C_Order_StepDef
 			final int dropShipPartnerId = DataTableUtil.extractIntOrMinusOneForColumnName(tableRow, "OPT." + COLUMNNAME_DropShip_BPartner_ID);
 			final boolean isDropShip = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_Order.COLUMNNAME_IsDropShip, false);
 
+			final int orgId = Optional.ofNullable(DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_AD_Org_ID + "." + TABLECOLUMN_IDENTIFIER))
+					.map(orgTable::get)
+					.map(I_AD_Org::getAD_Org_ID)
+					.orElse(StepDefConstants.ORG_ID.getRepoId());
+
 			final Integer bPartnerID = bpartnerTable.getOptional(bpartnerIdentifier)
 					.map(I_C_BPartner::getC_BPartner_ID)
 					.orElseGet(() -> Integer.parseInt(bpartnerIdentifier));
 
 			final I_C_Order order = newInstance(I_C_Order.class);
-			order.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 			order.setC_BPartner_ID(bPartnerID);
-			order.setM_Warehouse_ID(warehouseId);
 			order.setIsSOTrx(DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsSOTrx));
 			order.setDateOrdered(DataTableUtil.extractDateTimestampForColumnName(tableRow, I_C_Order.COLUMNNAME_DateOrdered));
 			order.setDropShip_BPartner_ID(dropShipPartnerId);
 			order.setIsDropShip(isDropShip);
+			order.setAD_Org_ID(orgId);
 
 			if (paymentTermId > 0)
 			{
@@ -273,6 +290,30 @@ public class C_Order_StepDef
 			if (Check.isNotBlank(paymentRule))
 			{
 				order.setPaymentRule(paymentRule);
+			}
+
+			final String warehouseIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(warehouseIdentifier))
+			{
+				final int warehouseId = warehouseTable.getOptional(warehouseIdentifier)
+						.map(I_M_Warehouse::getM_Warehouse_ID)
+						.orElseGet(() -> Integer.parseInt(warehouseIdentifier));
+				order.setM_Warehouse_ID(warehouseId);
+			}
+
+			final String billUserIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_Bill_User_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(billUserIdentifier))
+			{
+				final I_AD_User billUser = userTable.get(billUserIdentifier);
+				order.setBill_User_ID(billUser.getAD_User_ID());
+			}
+
+			final String dropShipLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_DropShip_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(dropShipLocationIdentifier))
+			{
+				final I_C_BPartner_Location dropShipLocation = bpartnerLocationTable.get(dropShipLocationIdentifier);
+				order.setDropShip_Location_ID(dropShipLocation.getC_BPartner_Location_ID());
+				order.setDropShip_BPartner_ID(dropShipLocation.getC_BPartner_ID());
 			}
 
 			saveRecord(order);

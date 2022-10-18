@@ -4,6 +4,11 @@ Feature: EDI_cctop_invoic_v export format
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
 
+  #   Convenience Salat 250g
+    And load M_Product:
+      | M_Product_ID.Identifier | OPT.M_Product_ID |
+      | convenienceSalate       | 2005577          |
+
   Scenario: As a user I want to export C_Invoice using EDI_cctop_invoic_v export format
 
   #   IFCO 6410 x 10 Stk
@@ -11,10 +16,9 @@ Feature: EDI_cctop_invoic_v export format
       | M_HU_PI_Item_Product_ID.Identifier | OPT.GTIN        |
       | 3010001                            | itemProductGTIN |
 
-  # Convenience Salat 250g
     And update M_Product:
       | M_Product_ID.Identifier | OPT.GTIN    |
-      | 2005577                 | productGTIN |
+      | convenienceSalate       | productGTIN |
 
   # Test Kunde 1
     And the following c_bpartner is changed
@@ -28,7 +32,7 @@ Feature: EDI_cctop_invoic_v export format
 
     And metasfresh contains C_BPartner_Product
       | C_BPartner_Product_ID.Identifier | C_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.GTIN            | OPT.EAN_CU           |
-      | bp_1                             | 2156425                  | 2005577                 | bPartnerProductGTIN | bPartnerProductEANCU |
+      | bp_1                             | 2156425                  | convenienceSalate       | bPartnerProductGTIN | bPartnerProductEANCU |
 
     And update C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | OPT.GLN             |
@@ -66,7 +70,7 @@ Feature: EDI_cctop_invoic_v export format
       | o_1        | true    | 2156425                  | 2021-04-17  | po_ref_mock     |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
-      | ol_1       | o_1                   | 2005577                 | 10         | 3010001                                |
+      | ol_1       | o_1                   | convenienceSalate       | 10         | 3010001                                |
 
     When the order identified by o_1 is completed
 
@@ -92,7 +96,7 @@ Feature: EDI_cctop_invoic_v export format
 
     And validate created invoice lines
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed |
-      | il1                         | invoice_1               | 2005577                 | 10          | true      |
+      | il1                         | invoice_1               | convenienceSalate       | 10          | true      |
 
     And invoice is EDI exported
       | C_Invoice_ID.Identifier |
@@ -126,7 +130,7 @@ Feature: EDI_cctop_invoic_v export format
 
     And update M_Product:
       | M_Product_ID.Identifier | OPT.GTIN |
-      | 2005577                 | null     |
+      | convenienceSalate       | null     |
 
     And update C_BPartner_Location:
       | C_BPartner_Location_ID.Identifier | OPT.GLN |
@@ -175,7 +179,7 @@ Feature: EDI_cctop_invoic_v export format
       | o_1        | true    | 2156425                  | 2021-04-17  | testReference   |
     And metasfresh contains C_OrderLines:
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.M_HU_PI_Item_Product_ID.Identifier |
-      | ol_1       | o_1                   | 2005577                 | 100        | 3010001                                |
+      | ol_1       | o_1                   | convenienceSalate       | 100        | 3010001                                |
 
     When the order identified by o_1 is completed
 

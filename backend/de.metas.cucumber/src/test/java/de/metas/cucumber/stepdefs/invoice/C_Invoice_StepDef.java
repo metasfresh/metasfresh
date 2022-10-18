@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.banking.payment.paymentallocation.InvoiceToAllocate;
 import de.metas.banking.payment.paymentallocation.InvoiceToAllocateQuery;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
+import de.metas.cucumber.stepdefs.AD_User_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
@@ -74,6 +75,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_ConversionType;
@@ -118,6 +120,7 @@ import static org.compiere.model.I_C_Invoice.COLUMNNAME_IsSOTrx;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_POReference;
 import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_C_InvoiceLine_ID;
 import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_PriceEntered;
+import static org.compiere.model.I_C_Order.COLUMNNAME_AD_User_ID;
 
 public class C_Invoice_StepDef
 {
@@ -144,6 +147,7 @@ public class C_Invoice_StepDef
 	private final C_OrderLine_StepDefData orderLineTable;
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
+	private final AD_User_StepDefData userTable;
 
 	public C_Invoice_StepDef(
 			@NonNull final C_Invoice_StepDefData invoiceTable,
@@ -152,7 +156,8 @@ public class C_Invoice_StepDef
 			@NonNull final C_Order_StepDefData orderTable,
 			@NonNull final C_OrderLine_StepDefData orderLineTable,
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
-			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable)
+			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
+			@NonNull final AD_User_StepDefData userTable)
 	{
 		this.invoiceTable = invoiceTable;
 		this.invoiceCandTable = invoiceCandTable;
@@ -161,6 +166,7 @@ public class C_Invoice_StepDef
 		this.bpartnerTable = bpartnerTable;
 		this.bPartnerLocationTable = bPartnerLocationTable;
 		this.orderLineTable = orderLineTable;
+		this.userTable = userTable;
 	}
 
 	@And("validate created invoices")
@@ -433,6 +439,13 @@ public class C_Invoice_StepDef
 		{
 			final I_AD_InputDataSource dataSource = inputDataSourceDAO.retrieveInputDataSource(Env.getCtx(), internalName, true, Trx.TRXNAME_None);
 			assertThat(invoice.getAD_InputDataSource_ID()).isEqualTo(dataSource.getAD_InputDataSource_ID());
+		}
+
+		final String adUserIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(adUserIdentifier))
+		{
+			final I_AD_User contact = userTable.get(adUserIdentifier);
+			assertThat(invoice.getAD_User_ID()).isEqualTo(contact.getAD_User_ID());
 		}
 
 		{// payment related

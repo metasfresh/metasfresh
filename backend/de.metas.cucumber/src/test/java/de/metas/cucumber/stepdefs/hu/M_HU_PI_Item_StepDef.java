@@ -28,6 +28,7 @@ import de.metas.cucumber.stepdefs.M_HU_PackingMaterial_StepDefData;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
+import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -47,6 +48,7 @@ import static de.metas.handlingunits.model.I_M_HU_PI_Item.COLUMNNAME_IsActive;
 import static de.metas.handlingunits.model.I_M_HU_PI_Item.COLUMNNAME_ItemType;
 import static de.metas.handlingunits.model.I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Item_ID;
 import static de.metas.handlingunits.model.I_M_HU_PI_Item.COLUMNNAME_M_HU_PI_Version_ID;
+import static de.metas.handlingunits.model.I_M_HU_PI_Item.COLUMNNAME_M_HU_PackingMaterial_ID;
 import static de.metas.handlingunits.model.I_M_HU_PI_Item.COLUMNNAME_Qty;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
@@ -87,7 +89,6 @@ public class M_HU_PI_Item_StepDef
 
 			final IQueryBuilder<I_M_HU_PI_Item> piItemQueryBuilder = queryBL.createQueryBuilder(I_M_HU_PI_Item.class)
 					.addEqualsFilter(COLUMNNAME_M_HU_PI_Version_ID, huPiVersion.getM_HU_PI_Version_ID())
-					.addEqualsFilter(COLUMNNAME_Qty, qty)
 					.addEqualsFilter(COLUMNNAME_ItemType, itemType)
 					.addEqualsFilter(COLUMNNAME_IsActive, active);
 
