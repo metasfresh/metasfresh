@@ -28,7 +28,7 @@ Feature: import bank statement in camt53 import format
 
     And metasfresh contains C_BPartner_Locations:
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
-      | l_1        | cl_bPLocation | bpartner_1               | true                | true         |
+      | l_1        | 1111111111111 | bpartner_1               | true                | true         |
 
     And load C_DataImport:
       | C_DataImport_ID.Identifier | OPT.C_DataImport_ID |
@@ -45,6 +45,7 @@ Feature: import bank statement in camt53 import format
     And metasfresh contains C_InvoiceLines
       | Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 |
       | invl_1     | inv_1                   | p_1                     | 10          | PCE               |
+    And the invoice identified by inv_1 is completed
     And bank statement is imported with identifiers bs_1
     """
     <?xml version="1.0" encoding="utf-8"?>
@@ -228,7 +229,6 @@ Feature: import bank statement in camt53 import format
       | C_BankStatementLine_ID.Identifier | OPT.ValutaDate | OPT.DateAcct | OPT.C_Currency_ID.ISO_Code | OPT.TrxAmt | OPT.StmtAmt | OPT.StatementLineDate | OPT.C_BPartner_ID.Identifier | OPT.C_Invoice_ID.Identifier | OPT.Processed | OPT.IsReconciled |
       | bsl_1                             | 2022-05-11     | 2022-05-11   | EUR                        | -119       | -119        | 2022-05-11            | bpartner_1                   | inv_1                       | true          | true             |
       | bsl_2                             | 2022-09-07     | 2022-09-07   | EUR                        | 41772      | 41772       | 2022-09-07            |                              |                             | true          | false            |
-    And the invoice identified by inv_1 is completed
     Then validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | paymentTerm   | processed | docStatus | OPT.IsPaid |
       | inv_1                   | bpartner_1               | l_1                               | 30 Tage netto | true      | CO        | true       |
