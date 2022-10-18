@@ -180,7 +180,7 @@ public interface IInvoiceDAO extends ISingletonService
 
 	<T extends org.compiere.model.I_C_Invoice> List<T> getByDocumentNo(String documentNo, OrgId orgId, Class<T> modelClass);
 
-	List<I_C_Invoice> retrieveUnpaid(List<String> docNos, List<DocStatus> docStatuses);
+	ImmutableSet<I_C_Invoice> retrieveUnpaid(ImmutableSet<String> docNos, ImmutableSet<DocStatus> docStatuses);
 
 	Collection<InvoiceLineId> getInvoiceLineIds(final InvoiceId id);
 

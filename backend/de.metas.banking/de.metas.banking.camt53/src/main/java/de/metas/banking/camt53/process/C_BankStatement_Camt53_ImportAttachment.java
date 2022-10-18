@@ -27,6 +27,7 @@ import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.camt53.BankStatementCamt53Service;
+import de.metas.banking.importfile.BankStatementImportFile;
 import de.metas.banking.importfile.BankStatementImportFileId;
 import de.metas.banking.importfile.BankStatementImportFileService;
 import de.metas.i18n.AdMessageKey;
@@ -44,6 +45,7 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_AttachmentEntry;
 import org.compiere.model.I_C_BankStatement;
 
+import java.time.Instant;
 import java.util.Set;
 
 public class C_BankStatement_Camt53_ImportAttachment extends JavaProcess implements IProcessPrecondition
@@ -88,17 +90,29 @@ public class C_BankStatement_Camt53_ImportAttachment extends JavaProcess impleme
 
 		openImportedRecords(importedBankStatementIds);
 
-		processSelectedRecord();
+		markRecordAsProcessed(data.getFilename());
 
 		return JavaProcess.MSG_OK;
 	}
 
-	private void processSelectedRecord()
+	private void markRecordAsProcessed(@NonNull final String filename)
 	{
-		final BankStatementImportFileId bankStatementImportFileId = BankStatementImportFileId.ofRepoId(getRecord_ID());
-		bankStatementImportFileService.processRecord(bankStatementImportFileId);
+		final BankStatementImportFile bankStatementImportFile = buildBankStatementImportFile(filename);
+		
+		bankStatementImportFileService.save(bankStatementImportFile);
 	}
 
+	@NonNull
+	private BankStatementImportFile buildBankStatementImportFile(@NonNull final String filename)
+	{
+		return BankStatementImportFile.builder()
+				.bankStatementImportFileId(BankStatementImportFileId.ofRepoId(getRecord_ID()))
+				.filename(filename)
+				.importedTimestamp(Instant.now())
+				.processed(true)
+				.build();
+	}
+	
 	private void openImportedRecords(@NonNull final Set<BankStatementId> importedBankStatementIds)
 	{
 		if (importedBankStatementIds.size() == 0)

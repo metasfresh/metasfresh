@@ -50,6 +50,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BankStatement;
@@ -153,58 +154,63 @@ public class C_Payment_StepDef
 			final Boolean paymentIsAllocated = DataTableUtil.extractBooleanForColumnName(dataTableRow, COLUMNNAME_C_Payment_ID + "." + COLUMNNAME_IsAllocated);
 			final BigDecimal expectedAvailableAmt = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableRow, "OPT.OpenAmt");
 			final I_C_Payment payment = paymentTable.get(paymentIdentifier);
+
+			final SoftAssertions softly = new SoftAssertions();
+			softly.assertThat(payment).isNotNull();
 			InterfaceWrapperHelper.refresh(payment);
 
 			final BigDecimal paymentAvailableAmt = paymentDAO.getAvailableAmount(PaymentId.ofRepoId(payment.getC_Payment_ID()));
 
-			assertThat(payment.isAllocated()).isEqualTo(paymentIsAllocated);
+			softly.assertThat(payment.isAllocated()).isEqualTo(paymentIsAllocated);
 			if (expectedAvailableAmt != null)
 			{
-				assertThat(paymentAvailableAmt).isEqualTo(payment.isReceipt() ? expectedAvailableAmt : expectedAvailableAmt.negate());
+				softly.assertThat(paymentAvailableAmt).isEqualTo(payment.isReceipt() ? expectedAvailableAmt : expectedAvailableAmt.negate());
 			}
 
 			final String sectionCodeIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_Dunning_Candidate.COLUMNNAME_M_SectionCode_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(sectionCodeIdentifier))
 			{
 				final I_M_SectionCode sectionCode = sectionCodeTable.get(sectionCodeIdentifier);
-				assertThat(payment.getM_SectionCode_ID()).isEqualTo(sectionCode.getM_SectionCode_ID());
+				softly.assertThat(payment.getM_SectionCode_ID()).isEqualTo(sectionCode.getM_SectionCode_ID());
 			}
 
 			final String invoiceIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_Payment.COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(invoiceIdentifier))
 			{
 				final I_C_Invoice invoiceRecord = invoiceTable.get(invoiceIdentifier);
-				assertThat(invoiceRecord).isNotNull();
-				assertThat(payment.getC_Invoice_ID()).isEqualTo(invoiceRecord.getC_Invoice_ID());
+				softly.assertThat(invoiceRecord).isNotNull();
+				softly.assertThat(payment.getC_Invoice_ID()).isEqualTo(invoiceRecord.getC_Invoice_ID());
 			}
 
 			final Timestamp dateTrx = DataTableUtil.extractDateTimestampForColumnNameOrNull(dataTableRow, "OPT." + I_C_Payment.COLUMNNAME_DateTrx);
 			if (dateTrx != null)
 			{
-				assertThat(payment.getDateTrx()).isEqualTo(dateTrx);
+				softly.assertThat(payment.getDateTrx()).isEqualTo(dateTrx);
 			}
 
 			final String bPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_Payment.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(bPartnerIdentifier))
 			{
 				final I_C_BPartner bPartnerRecord = bpartnerTable.get(bPartnerIdentifier);
-				assertThat(bPartnerRecord).isNotNull();
-				assertThat(payment.getC_BPartner_ID()).isEqualTo(bPartnerRecord.getC_BPartner_ID());
+				softly.assertThat(bPartnerRecord).isNotNull();
+				softly.assertThat(payment.getC_BPartner_ID()).isEqualTo(bPartnerRecord.getC_BPartner_ID());
 			}
 
 			final String bankAccountIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_Payment.COLUMNNAME_C_BP_BankAccount_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(bankAccountIdentifier))
 			{
 				final I_C_BP_BankAccount bankAccountRecord = bpBankAccountTable.get(bankAccountIdentifier);
-				assertThat(bankAccountRecord).isNotNull();
-				assertThat(payment.getC_BP_BankAccount_ID()).isEqualTo(bankAccountRecord.getC_BP_BankAccount_ID());
+				softly.assertThat(bankAccountRecord).isNotNull();
+				softly.assertThat(payment.getC_BP_BankAccount_ID()).isEqualTo(bankAccountRecord.getC_BP_BankAccount_ID());
 			}
 
 			final BigDecimal payAmt = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableRow, "OPT." + COLUMNNAME_PayAmt);
 			if (payAmt != null)
 			{
-				assertThat(payment.getPayAmt()).isEqualByComparingTo(payAmt);
+				softly.assertThat(payment.getPayAmt()).isEqualByComparingTo(payAmt);
 			}
+
+			softly.assertAll();
 		}
 	}
 

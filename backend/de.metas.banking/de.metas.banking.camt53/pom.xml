@@ -32,7 +32,7 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <artifactId>camt53</artifactId>
+    <artifactId>de.metas.banking.camt53</artifactId>
     <packaging>jar</packaging>
 
     <properties>

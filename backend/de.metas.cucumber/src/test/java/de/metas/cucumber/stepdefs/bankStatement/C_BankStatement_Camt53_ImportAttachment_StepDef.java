@@ -25,7 +25,7 @@ package de.metas.cucumber.stepdefs.bankStatement;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.banking.BankStatementId;
-import de.metas.banking.bankstatement.importer.BankStatementCamt53Service;
+import de.metas.banking.camt53.BankStatementCamt53Service;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.util.Services;

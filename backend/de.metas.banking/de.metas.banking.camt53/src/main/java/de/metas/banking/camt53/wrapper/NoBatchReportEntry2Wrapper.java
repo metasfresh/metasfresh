@@ -24,6 +24,7 @@ package de.metas.banking.camt53.wrapper;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.camt53.jaxb.camt053_001_02.ActiveOrHistoricCurrencyAndAmount;
@@ -58,10 +59,7 @@ import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
-import java.util.StringTokenizer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -136,8 +134,8 @@ public class NoBatchReportEntry2Wrapper
 	@NonNull
 	private Optional<I_C_Invoice> getReferencedInvoiceRecord()
 	{
-		final List<String> invoiceDocNoCandidates = getInvoiceDocNoCandidates();
-		final List<DocStatus> completedOrClosedDocStatus = ImmutableList.of(DocStatus.Completed, DocStatus.Closed);
+		final ImmutableSet<String> invoiceDocNoCandidates = getInvoiceDocNoCandidates();
+		final ImmutableSet<DocStatus> completedOrClosedDocStatus = ImmutableSet.of(DocStatus.Completed, DocStatus.Closed);
 
 		return Optional.of(invoiceDAO.retrieveUnpaid(invoiceDocNoCandidates, completedOrClosedDocStatus))
 				.flatMap(this::getSingleInvoice);
@@ -155,17 +153,14 @@ public class NoBatchReportEntry2Wrapper
 	}
 
 	@NonNull
-	public List<String> getInvoiceDocNoCandidates()
+	public ImmutableSet<String> getInvoiceDocNoCandidates()
 	{
 		final String unstructuredRemittanceInfo = String.join(" ", getEntryTransaction()
 				.map(EntryTransaction2::getRmtInf)
 				.map(RemittanceInformation5::getUstrd)
 				.orElseGet(ImmutableList::of));
 
-		return Collections.list(new StringTokenizer(unstructuredRemittanceInfo))
-				.stream()
-				.map(token -> (String)token)
-				.collect(ImmutableList.toImmutableList());
+		return ImmutableSet.copyOf(unstructuredRemittanceInfo.split(" "));
 	}
 
 	@NonNull
@@ -207,15 +202,15 @@ public class NoBatchReportEntry2Wrapper
 	}
 
 	@NonNull
-	public Optional<de.metas.adempiere.model.I_C_Invoice> getSingleInvoice(@NonNull final List<de.metas.adempiere.model.I_C_Invoice> invoiceList)
+	public Optional<I_C_Invoice> getSingleInvoice(@NonNull final ImmutableSet<I_C_Invoice> invoiceSet)
 	{
-		if (invoiceList.isEmpty())
+		if (invoiceSet.isEmpty())
 		{
 			return Optional.empty();
 		}
-		else if (invoiceList.size() > 1)
+		else if (invoiceSet.size() > 1)
 		{
-			final String matchedInvoiceIds = invoiceList.stream()
+			final String matchedInvoiceIds = invoiceSet.stream()
 					.map(org.compiere.model.I_C_Invoice::getC_Invoice_ID)
 					.map(String::valueOf)
 					.collect(Collectors.joining(","));
@@ -227,7 +222,7 @@ public class NoBatchReportEntry2Wrapper
 		}
 		else
 		{
-			return Optional.of(invoiceList.get(0));
+			return Optional.of(invoiceSet.iterator().next());
 		}
 	}
 

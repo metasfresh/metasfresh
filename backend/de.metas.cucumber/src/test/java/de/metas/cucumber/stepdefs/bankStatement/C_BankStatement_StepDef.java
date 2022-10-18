@@ -33,6 +33,7 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_BankStatement;
 
 import java.math.BigDecimal;
@@ -41,7 +42,6 @@ import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.*;
 
 public class C_BankStatement_StepDef
 {
@@ -80,45 +80,49 @@ public class C_BankStatement_StepDef
 	{
 		final String identifier = DataTableUtil.extractStringForColumnName(row, I_C_BankStatement.COLUMNNAME_C_BankStatement_ID + "." + TABLECOLUMN_IDENTIFIER);
 
+		final SoftAssertions softly = new SoftAssertions();
+		
 		final I_C_BankStatement bankStatementRecord = bankStatementTable.get(identifier);
-		assertThat(bankStatementRecord).isNotNull();
+		softly.assertThat(bankStatementRecord).isNotNull();
 		InterfaceWrapperHelper.refresh(bankStatementRecord);
 		
 		final BigDecimal beginningBalance = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_BankStatement.COLUMNNAME_BeginningBalance);
 		if (beginningBalance != null)
 		{
-			assertThat(bankStatementRecord.getBeginningBalance()).isEqualByComparingTo(beginningBalance);
+			softly.assertThat(bankStatementRecord.getBeginningBalance()).isEqualByComparingTo(beginningBalance);
 		}
 
 		final BigDecimal endingBalance = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_BankStatement.COLUMNNAME_EndingBalance);
 		if (endingBalance != null)
 		{
-			assertThat(bankStatementRecord.getEndingBalance()).isEqualByComparingTo(endingBalance);
+			softly.assertThat(bankStatementRecord.getEndingBalance()).isEqualByComparingTo(endingBalance);
 		}
 
 		final BigDecimal statementDifference = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_BankStatement.COLUMNNAME_StatementDifference);
 		if (statementDifference != null)
 		{
-			assertThat(bankStatementRecord.getStatementDifference()).isEqualByComparingTo(statementDifference);
+			softly.assertThat(bankStatementRecord.getStatementDifference()).isEqualByComparingTo(statementDifference);
 		}
 
 		final boolean isProcessed = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_C_BankStatement.COLUMNNAME_Processed, false);
-		assertThat(bankStatementRecord.isProcessed()).isEqualTo(isProcessed);
+		softly.assertThat(bankStatementRecord.isProcessed()).isEqualTo(isProcessed);
 
 		final String bankAccountIdentifier = DataTableUtil.extractStringForColumnName(row, "OPT." + I_C_BankStatement.COLUMNNAME_C_BP_BankAccount_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(bankAccountIdentifier))
 		{
 			final int bankAccountId = bankAccountTable.get(bankAccountIdentifier).getC_BP_BankAccount_ID();
-			assertThat(bankStatementRecord.getC_BP_BankAccount_ID()).isEqualTo(bankAccountId);
+			softly.assertThat(bankStatementRecord.getC_BP_BankAccount_ID()).isEqualTo(bankAccountId);
 		}
 
 		final Timestamp statementDate = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + I_C_BankStatement.COLUMNNAME_StatementDate);
 		if (statementDate != null)
 		{
-			assertThat(bankStatementRecord.getStatementDate()).isEqualTo(statementDate);
+			softly.assertThat(bankStatementRecord.getStatementDate()).isEqualTo(statementDate);
 		}
 
 		final boolean isReconciled = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_C_BankStatement.COLUMNNAME_IsReconciled, false);
-		assertThat(bankStatementRecord.isReconciled()).isEqualTo(isReconciled);
+		softly.assertThat(bankStatementRecord.isReconciled()).isEqualTo(isReconciled);
+
+		softly.assertAll();
 	}
 }

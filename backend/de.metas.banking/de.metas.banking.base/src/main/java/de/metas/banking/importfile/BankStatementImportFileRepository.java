@@ -26,6 +26,7 @@ import lombok.NonNull;
 import org.adempiere.banking.model.I_C_BankStatement_Import_File;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -39,12 +40,14 @@ public class BankStatementImportFileRepository
 		return ofRecord(getRecordById(bankStatementImportFileId));
 	}
 
-	public void processRecord(@NonNull final BankStatementImportFileId bankStatementImportFileId)
+	public void save(@NonNull final BankStatementImportFile bankStatementImportFile)
 	{
-		final I_C_BankStatement_Import_File bankStatementImportFileRecord = getRecordById(bankStatementImportFileId);
+		final I_C_BankStatement_Import_File bankStatementImportFileRecord = getRecordById(bankStatementImportFile.getBankStatementImportFileId());
 
-		bankStatementImportFileRecord.setProcessed(true);
-
+		bankStatementImportFileRecord.setProcessed(bankStatementImportFile.isProcessed());
+		bankStatementImportFileRecord.setFileName(bankStatementImportFile.getFilename());
+		bankStatementImportFileRecord.setImported(TimeUtil.asTimestamp(bankStatementImportFile.getImportedTimestamp()));
+		
 		saveRecord(bankStatementImportFileRecord);
 	}
 
@@ -68,7 +71,7 @@ public class BankStatementImportFileRepository
 		return BankStatementImportFile.builder()
 				.bankStatementImportFileId(BankStatementImportFileId.ofRepoId(record.getC_BankStatement_Import_File_ID()))
 				.filename(record.getFileName())
-				.importedTimestamp(record.getImported())
+				.importedTimestamp(TimeUtil.asInstant(record.getImported()))
 				.processed(record.isProcessed())
 				.build();
 	}

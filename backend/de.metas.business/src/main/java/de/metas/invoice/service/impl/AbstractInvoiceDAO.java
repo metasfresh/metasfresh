@@ -502,20 +502,31 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.create()
 				.list(modelClass);
 	}
-	
+
 	@Override
-	public List<I_C_Invoice> retrieveUnpaid(
-			@NonNull final List<String> docNos,
-			@NonNull final List<DocStatus> docStatuses)
+	public ImmutableSet<I_C_Invoice> retrieveUnpaid(
+			@NonNull final ImmutableSet<String> docNos,
+			@NonNull final ImmutableSet<DocStatus> docStatuses)
 	{
-		return queryBL
+		final IQueryBuilder<I_C_Invoice> queryBuilder = queryBL
 				.createQueryBuilder(I_C_Invoice.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsPaid, false)
-				.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocumentNo, docNos)
-				.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocStatus, docStatuses)
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsPaid, false);
+
+		if (!docNos.isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocumentNo, docNos);
+		}
+
+		if (!docStatuses.isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocStatus, docStatuses);
+		}
+
+		return queryBuilder
 				.create()
-				.listImmutable(I_C_Invoice.class);
+				.stream()
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	private Optional<InvoiceId> getInvoiceIdByDocumentIdIfExists(@NonNull final InvoiceQuery query)

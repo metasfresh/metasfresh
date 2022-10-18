@@ -41,8 +41,8 @@ public class BankStatementImportFileService
 		return bankStatementImportFileRepository.getById(bankStatementImportFileId);
 	}
 
-	public void processRecord(@NonNull final BankStatementImportFileId bankStatementImportFileId)
+	public void save(@NonNull final BankStatementImportFile bankStatementImportFile)
 	{
-		bankStatementImportFileRepository.processRecord(bankStatementImportFileId);
+		bankStatementImportFileRepository.save(bankStatementImportFile);
 	}
 }

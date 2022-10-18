@@ -27,7 +27,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.sql.Timestamp;
+import java.time.Instant;
 
 @Value
 @Builder
@@ -35,12 +35,12 @@ public class BankStatementImportFile
 {
 	@NonNull
 	BankStatementImportFileId bankStatementImportFileId;
-	
+
 	@NonNull
 	String filename;
-	
+
 	@Nullable
-	Timestamp importedTimestamp;
-	
+	Instant importedTimestamp;
+
 	boolean processed;
 }
