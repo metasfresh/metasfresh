@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import PropTypes from 'prop-types';
 
 import FullCalendar from '@fullcalendar/react';
@@ -116,6 +116,8 @@ const Calendar = ({
   // noinspection UnnecessaryLocalVariableJS
   const calendarKey = view;
 
+  const calendarRef = useRef();
+
   return (
     <div className="calendar">
       <div className="calendar-top">
@@ -150,6 +152,7 @@ const Calendar = ({
         <FullCalendar
           schedulerLicenseKey="GPL-My-Project-Is-Open-Source"
           key={calendarKey}
+          ref={calendarRef}
           height="100%"
           locales={[deLocale]}
           locale={getCurrentActiveLanguage()}
@@ -188,6 +191,14 @@ const Calendar = ({
             const newView = params.view.type;
             if (view !== newView) {
               notifyParamsChanged({ view: newView });
+            }
+
+            // WORKAROUND: resource lane height is not updated after events are loaded,
+            // so we have to refresh it manually,
+            // but we have to schedule it after the events are really fetched from API
+            const calendarApi = calendarRef?.current?.getApi();
+            if (calendarApi) {
+              setTimeout(() => calendarApi.updateSize(), 100);
             }
           }}
           //dateClick={handleDateClick}
