@@ -152,7 +152,7 @@
         </dependency>
         <dependency>
             <groupId>de.metas.banking</groupId>
-            <artifactId>camt53</artifactId>
+            <artifactId>de.metas.banking.camt53</artifactId>
             <version>${metasfresh.version}</version>
             <scope>test</scope>
         </dependency>
