@@ -23,18 +23,19 @@
 package de.metas.ui.web.window.descriptor.decorator;
 
 import de.metas.i18n.BooleanWithReason;
-import de.metas.ui.web.window.model.Document;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 public interface IDocumentDecorator
 {
-	default boolean isReadOnly(final Document document)
+	default boolean isReadOnly(@NonNull final TableRecordReference tableRecordReference)
 	{
 		return false;
 	}
 
 	@NonNull
-	default BooleanWithReason isDeleteForbidden(final Document document)
+	default BooleanWithReason isDeleteForbidden(@NonNull final DocumentId documentId, @NonNull final TableRecordReference tableRecordReference)
 	{
 		return BooleanWithReason.FALSE;
 	}

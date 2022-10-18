@@ -442,7 +442,7 @@ public class DocumentEntityDescriptor
 	{
 		private static final Logger logger = LogManager.getLogger(DocumentEntityDescriptor.Builder.class);
 		private DocumentFilterDescriptorsProvidersService filterDescriptorsProvidersService;
-		private List<IDocumentDecorator> documentDecorators;
+		private ImmutableList<IDocumentDecorator> documentDecorators;
 
 		private boolean _built = false;
 
@@ -1114,14 +1114,14 @@ public class DocumentEntityDescriptor
 		}
 
 		@NonNull
-		public Builder setDocumentDecorators(final List<IDocumentDecorator> documentDecorators)
+		public Builder setDocumentDecorators(final ImmutableList<IDocumentDecorator> documentDecorators)
 		{
 			this.documentDecorators = documentDecorators;
 			return this;
 		}
 
 		@Nullable
-		public List<IDocumentDecorator> getDocumentDecorators()
+		public ImmutableList<IDocumentDecorator> getDocumentDecorators()
 		{
 			return this.documentDecorators;
 		}

@@ -1376,10 +1376,16 @@ public final class Document
 			return true;
 		}
 
+		final TableRecordReference recordReference = this.getTableRecordReference().orElse(null);
+		if (recordReference == null)
+		{
+			return false;
+		}
+
 		return getEntityDescriptor()
 				.getDocumentDecorators()
 				.stream()
-				.anyMatch(documentDecorator -> documentDecorator.isReadOnly(this));
+				.anyMatch(documentDecorator -> documentDecorator.isReadOnly(recordReference));
 	}
 
 	@NonNull
@@ -2108,9 +2114,16 @@ public final class Document
 	@NonNull
 	public BooleanWithReason isDeleteForbidden()
 	{
+		final TableRecordReference recordReference = getTableRecordReference().orElse(null);
+
+		if (recordReference == null)
+		{
+			return BooleanWithReason.FALSE;
+		}
+
 		return entityDescriptor.getDocumentDecorators()
 				.stream()
-				.map(decorator -> decorator.isDeleteForbidden(this))
+				.map(decorator -> decorator.isDeleteForbidden(getDocumentId(), recordReference))
 				.filter(BooleanWithReason::isTrue)
 				.findFirst()
 				.orElse(BooleanWithReason.FALSE);

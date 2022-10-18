@@ -27,7 +27,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
-import de.metas.ui.web.window.model.Document;
+import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -48,29 +48,21 @@ public class ExternallyReferencedDocumentDecorator implements IDocumentDecorator
 	}
 
 	@Override
-	public boolean isReadOnly(final Document document)
+	public boolean isReadOnly(@NonNull final TableRecordReference recordReference)
 	{
-		final TableRecordReference recordReference = document.getTableRecordReference().orElse(null);
-
-		if (recordReference == null)
-		{
-			return false;
-		}
-
 		return externalReferenceRepository.isReadOnlyInMetasfresh(recordReference);
 	}
 
 	@Override
 	@NonNull
-	public BooleanWithReason isDeleteForbidden(final Document document)
+	public BooleanWithReason isDeleteForbidden(@NonNull final DocumentId documentId, @NonNull final TableRecordReference recordReference)
 	{
-		if (!isReadOnly(document))
+		if (!isReadOnly(recordReference))
 		{
 			return BooleanWithReason.FALSE;
 		}
 
-		final ITranslatableString errorMessage = msgBL.getTranslatableMsgText(EXTERNAL_REFERENCE_READ_ONLY_IN_METASFRESH_ERROR,
-																			  document.getDocumentId());
+		final ITranslatableString errorMessage = msgBL.getTranslatableMsgText(EXTERNAL_REFERENCE_READ_ONLY_IN_METASFRESH_ERROR, documentId);
 
 		return BooleanWithReason.trueBecause(errorMessage);
 	}
