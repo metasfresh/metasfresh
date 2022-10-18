@@ -48,6 +48,8 @@ public class MacAddressGenerator implements IComponentGenerator
 {
 	private static final int NUMBER_OF_DIGITS = 12;
 
+	private static final String EMPTY_MAC_ADDRESS = "-";
+
 	private final ImmutableList<AttributeCode> supportedAttributes = ImmutableList.of(
 			AttributeConstants.RouterMAC1,
 			AttributeConstants.RouterMAC2,
@@ -127,6 +129,13 @@ public class MacAddressGenerator implements IComponentGenerator
 
 			result.attributeValue(attributeCode, macAddress.getAddress());
 		}
+
+		for(int i=countRemainingToGenerate; i<attributesAvailableToGenerate.size(); i++)
+		{
+			final AttributeCode attributeCode = attributesAvailableToGenerate.get(i);
+			result.attributeValue(attributeCode, EMPTY_MAC_ADDRESS);
+		}
+
 		return result.build();
 	}
 
