@@ -353,7 +353,7 @@ public class HighVolumeReadWriteIncludedDocumentsCollection implements IIncluded
 				continue;
 			}
 
-			final BooleanWithReason isDeleteForbidden = document.cannotBeDeleted();
+			final BooleanWithReason isDeleteForbidden = document.isDeleteForbidden();
 			if (isDeleteForbidden.isTrue())
 			{
 				throw new AdempiereException(isDeleteForbidden.getReason())

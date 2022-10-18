@@ -2106,11 +2106,11 @@ public final class Document
 	}
 
 	@NonNull
-	public BooleanWithReason cannotBeDeleted()
+	public BooleanWithReason isDeleteForbidden()
 	{
 		return entityDescriptor.getDocumentDecorators()
 				.stream()
-				.map(decorator -> decorator.cannotBeDeleted(this))
+				.map(decorator -> decorator.isDeleteForbidden(this))
 				.filter(BooleanWithReason::isTrue)
 				.findFirst()
 				.orElse(BooleanWithReason.FALSE);

@@ -1,5 +1,6 @@
 package de.metas.ui.web.window.descriptor.factory.standard;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.ad_reference.ReferenceId;
 import de.metas.adempiere.service.IColumnBL;
@@ -113,7 +114,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	private final ImmutableMap<AdFieldId, String> _adFieldId2columnName;
 	private final DefaultValueExpressionsFactory defaultValueExpressionsFactory;
 	private final SpecialDocumentFieldsCollector _specialFieldsCollector;
-	private final List<IDocumentDecorator> documentDecorators;
+	private final ImmutableList<IDocumentDecorator> documentDecorators;
 
 	//
 	// State
@@ -125,7 +126,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	private GridTabVOBasedDocumentEntityDescriptorFactory(
 			@NonNull final LookupDataSourceFactory lookupDataSourceFactory,
 			@NonNull final GridTabVO gridTabVO,
-			final List<IDocumentDecorator> documentDecorators,
+			final ImmutableList<IDocumentDecorator> documentDecorators,
 			@Nullable final GridTabVO parentTabVO,
 			final boolean isSOTrx,
 			@NonNull final List<I_AD_UI_Element> labelsUIElements)

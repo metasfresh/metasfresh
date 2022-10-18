@@ -165,7 +165,7 @@ public class DocumentEntityDescriptor
 
 	@NonNull
 	@Getter
-	private final List<IDocumentDecorator> documentDecorators;
+	private final ImmutableList<IDocumentDecorator> documentDecorators;
 
 	private DocumentEntityDescriptor(@NonNull final Builder builder)
 	{

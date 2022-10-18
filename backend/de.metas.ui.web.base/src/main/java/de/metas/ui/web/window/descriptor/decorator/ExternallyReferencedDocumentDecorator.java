@@ -36,7 +36,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ExternallyReferencedDocumentDecorator implements IDocumentDecorator
 {
-	private static final AdMessageKey EXTERNAL_REFERENCE_READ_ONLY_IN_METASFRESH_ERROR = AdMessageKey.of("externalReferenceReadOnlyInMetasfresh");
+	private static final AdMessageKey EXTERNAL_REFERENCE_READ_ONLY_IN_METASFRESH_ERROR = AdMessageKey.of("CannotDeleteExternalReferenceReadOnlyInMetasfresh");
 
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
@@ -62,7 +62,7 @@ public class ExternallyReferencedDocumentDecorator implements IDocumentDecorator
 
 	@Override
 	@NonNull
-	public BooleanWithReason cannotBeDeleted(final Document document)
+	public BooleanWithReason isDeleteForbidden(final Document document)
 	{
 		if (!isReadOnly(document))
 		{

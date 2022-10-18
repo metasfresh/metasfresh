@@ -48,7 +48,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
@@ -59,7 +58,7 @@ public class ExternalReferenceRepository
 
 	private final ExternalReferenceTypes externalReferenceTypes;
 	private final ExternalSystems externalSystems;
-	private final CCache<Integer, Set<AdTableId>> tableIdsWithReadOnlyReferences;
+	private final CCache<Integer, ImmutableSet<AdTableId>> tableIdsWithReadOnlyReferences;
 
 	public ExternalReferenceRepository(
 			@NonNull final IQueryBL queryBL,
@@ -69,7 +68,7 @@ public class ExternalReferenceRepository
 		this.queryBL = queryBL;
 		this.externalReferenceTypes = externalReferenceTypes;
 		this.externalSystems = externalSystems;
-		this.tableIdsWithReadOnlyReferences = CCache.<Integer, Set<AdTableId>>builder()
+		this.tableIdsWithReadOnlyReferences = CCache.<Integer, ImmutableSet<AdTableId>>builder()
 				.tableName(I_S_ExternalReference.Table_Name)
 				.cacheMapType(CCache.CacheMapType.LRU)
 				.initialCapacity(1)
@@ -343,13 +342,13 @@ public class ExternalReferenceRepository
 	}
 
 	@NonNull
-	private Set<AdTableId> getTablesWithReadOnlyReferencesCache()
+	private ImmutableSet<AdTableId> getTablesWithReadOnlyReferencesCache()
 	{
 		return tableIdsWithReadOnlyReferences.getOrLoad(0, this::retreiveTableIdsWithReadOnlyReferences);
 	}
 
 	@NonNull
-	private Set<AdTableId> retreiveTableIdsWithReadOnlyReferences()
+	private ImmutableSet<AdTableId> retreiveTableIdsWithReadOnlyReferences()
 	{
 		return queryBL.createQueryBuilder(I_S_ExternalReference.class)
 				.addOnlyActiveRecordsFilter()

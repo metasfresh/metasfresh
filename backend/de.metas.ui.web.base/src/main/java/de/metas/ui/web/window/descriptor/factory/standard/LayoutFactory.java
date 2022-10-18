@@ -100,7 +100,7 @@ public class LayoutFactory
 	// services
 	private static final Logger logger = LogManager.getLogger(LayoutFactory.class);
 
-	private final List<IDocumentDecorator> documentDecorators = ImmutableList.copyOf(SpringContextHolder.instance.getBeansOfType(IDocumentDecorator.class));
+	private final ImmutableList<IDocumentDecorator> documentDecorators = ImmutableList.copyOf(SpringContextHolder.instance.getBeansOfType(IDocumentDecorator.class));
 	private final QuickInputDescriptorFactoryService quickInputDescriptors = SpringContextHolder.instance.getBean(QuickInputDescriptorFactoryService.class);
 	private final LookupDataSourceFactory lookupDataSourceFactory;
 

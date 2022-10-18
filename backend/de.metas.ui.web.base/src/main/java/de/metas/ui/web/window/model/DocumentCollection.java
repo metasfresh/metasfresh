@@ -481,7 +481,7 @@ public class DocumentCollection
 
 		forRootDocumentWritable(rootDocumentPath, changesCollector, rootDocument -> {
 
-			final BooleanWithReason isDeleteForbidden = rootDocument.cannotBeDeleted();
+			final BooleanWithReason isDeleteForbidden = rootDocument.isDeleteForbidden();
 			if (isDeleteForbidden.isTrue())
 			{
 				throw new AdempiereException(isDeleteForbidden.getReason())

@@ -34,7 +34,7 @@ public interface IDocumentDecorator
 	}
 
 	@NonNull
-	default BooleanWithReason cannotBeDeleted(final Document document)
+	default BooleanWithReason isDeleteForbidden(final Document document)
 	{
 		return BooleanWithReason.FALSE;
 	}
