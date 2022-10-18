@@ -28,7 +28,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static de.metas.common.util.CoalesceUtil.coalesce;
 
 /*
  * #%L

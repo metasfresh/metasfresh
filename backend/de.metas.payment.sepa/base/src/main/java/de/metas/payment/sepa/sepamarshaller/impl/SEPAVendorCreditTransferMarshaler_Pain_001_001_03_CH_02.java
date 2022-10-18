@@ -705,7 +705,6 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 						rmtInf.setUstrd(validReference);
 					}
 			}
-		}
 		else
 		{
 			// task 07789
