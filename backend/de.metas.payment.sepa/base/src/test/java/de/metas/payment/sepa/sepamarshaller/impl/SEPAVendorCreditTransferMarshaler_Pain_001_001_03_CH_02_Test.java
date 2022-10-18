@@ -242,6 +242,39 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.isBtchBookg()).isTrue());
 	}
 
+	@Test
+	public void createDocument_batch_with_QR_IBAN() throws Exception
+	{
+		final I_SEPA_Export sepaExport = createSEPAExport(
+				"org", // SEPA_CreditorName
+				"12345", // SEPA_CreditorIdentifier
+				"INGBNL2A" // bic
+		);
+		createSEPAExportLineQRVersion(sepaExport,
+				"001",// SEPA_MandateRefNo
+				"NL31INGB0000000044",// IBAN
+				"INGBNL2A", // BIC
+				new BigDecimal("100"), // amount
+				eur, "210000000003139471430009017");
+
+		createSEPAExportLineQRVersion(sepaExport,
+				"002", // SEPA_MandateRefNo
+				"NL31INGB0000000044", // IBAN
+				"INGBNL2A",// BIC
+				new BigDecimal("40"), // amount
+				chf, "210000000003139471430009017");
+
+		// invoke the method under test
+		xmlDocument = xmlGenerator.createDocument(sepaExport);
+
+		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getCtrlSum()).isEqualByComparingTo("140");
+		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getNbOfTxs()).isEqualTo("2");
+		assertThat(xmlDocument.getCstmrCdtTrfInitn().getGrpHdr().getInitgPty().getNm()).isEqualTo(sepaExport.getSEPA_CreditorName());
+
+		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).hasSize(2);
+		assertThat(xmlDocument.getCstmrCdtTrfInitn().getPmtInf()).allSatisfy(pmtInf -> assertThat(pmtInf.isBtchBookg()).isTrue());
+	}
+
 	private I_SEPA_Export createSEPAExport(
 			final String SEPA_CreditorName,
 			final String SEPA_CreditorIdentifier,
@@ -392,6 +425,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02_Test
 
 		return line;
 	}
+
 	@Test
 	public void testReplaceForbiddenChars()
 	{
