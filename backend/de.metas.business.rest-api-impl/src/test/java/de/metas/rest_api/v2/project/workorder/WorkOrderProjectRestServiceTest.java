@@ -149,6 +149,7 @@ class WorkOrderProjectRestServiceTest
 
 		final ProjectService mockProjectService = Mockito.mock(ProjectService.class);
 		Mockito.when(mockProjectService.getNextProjectValue(any())).thenReturn(nextValue);
+		Mockito.when(mockProjectService.getProjectTypeById(ProjectTypeId.ofRepoId(projectType.getC_ProjectType_ID()))).thenReturn(ProjectTypeRepository.toProjectType(projectType));
 
 		final WOProjectStepRepository workOrderProjectStepRepository = new WOProjectStepRepository();
 		final WorkOrderProjectObjectUnderTestRepository workOrderProjectObjectUnderTestRepository = new WorkOrderProjectObjectUnderTestRepository();
