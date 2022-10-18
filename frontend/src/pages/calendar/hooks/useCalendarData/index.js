@@ -132,7 +132,7 @@ export const useCalendarData = ({
         loading: false,
         error,
         query,
-        queryResolved,
+        queryResolved: queryResolved ?? {},
         array,
       };
     });
@@ -223,7 +223,7 @@ export const useCalendarData = ({
         });
       })
       .catch((error) => {
-        console.log('Got error while loading entries', error);
+        console.log('Got error while loading entries', { error, query });
         setEntriesLoadingDone({
           error: true,
           query,
