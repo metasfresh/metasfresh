@@ -169,6 +169,7 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		orderBOMLine.setScrap(bomLine.getScrap());
 		orderBOMLine.setIsEnforceTolerance(bomLine.isEnforceTolerance());
 		orderBOMLine.setTolerance_Perc(bomLine.getTolerance_Perc());
+		orderBOMLine.setIsManualQtyInput(bomLine.isManualQtyInput());
 		orderBOMLine.setValidFrom(bomLine.getValidFrom());
 		orderBOMLine.setValidTo(bomLine.getValidTo());
 		orderBOMLine.setBackflushGroup(bomLine.getBackflushGroup());
