@@ -32,7 +32,7 @@ public interface I_C_OLCand
 
 	/**
 	 * Set Data destination.
-	 * Legt fest, welcher Teil von metafresh den jeweiligen Datensatz weiterverarbeiten soll
+	 * Specifies which part of metasfresh shall process the given record
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -42,7 +42,7 @@ public interface I_C_OLCand
 
 	/**
 	 * Get Data destination.
-	 * Legt fest, welcher Teil von metafresh den jeweiligen Datensatz weiterverarbeiten soll
+	 * Specifies which part of metasfresh shall process the given record
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true
@@ -75,8 +75,7 @@ public interface I_C_OLCand
 	String COLUMNNAME_AD_InputDataSource_ID = "AD_InputDataSource_ID";
 
 	/**
-	 * Set Statusmeldung.
-	 * System-Nachricht
+	 * Set Note.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -85,8 +84,7 @@ public interface I_C_OLCand
 	void setAD_Note_ID (int AD_Note_ID);
 
 	/**
-	 * Get Statusmeldung.
-	 * System-Nachricht
+	 * Get Note.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -141,7 +139,7 @@ public interface I_C_OLCand
 	String COLUMNNAME_AD_Table_ID = "AD_Table_ID";
 
 	/**
-	 * Set Erfasst durch.
+	 * Set Recorded By.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -150,7 +148,7 @@ public interface I_C_OLCand
 	void setAD_User_EnteredBy_ID (int AD_User_EnteredBy_ID);
 
 	/**
-	 * Get Erfasst durch.
+	 * Get Recorded By.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -331,6 +329,75 @@ public interface I_C_OLCand
 	String COLUMNNAME_C_Async_Batch_ID = "C_Async_Batch_ID";
 
 	/**
+	 * Set Location eff..
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setC_BP_Location_Effective_ID (int C_BP_Location_Effective_ID);
+
+	/**
+	 * Get Location eff..
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
+	 */
+	@Deprecated
+	int getC_BP_Location_Effective_ID();
+
+	String COLUMNNAME_C_BP_Location_Effective_ID = "C_BP_Location_Effective_ID";
+
+	/**
+	 * Set Location override.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BP_Location_Override_ID (int C_BP_Location_Override_ID);
+
+	/**
+	 * Get Location override.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BP_Location_Override_ID();
+
+	String COLUMNNAME_C_BP_Location_Override_ID = "C_BP_Location_Override_ID";
+
+	/**
+	 * Set Standort abw..
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_BP_Location_Override_Value_ID (int C_BP_Location_Override_Value_ID);
+
+	/**
+	 * Get Standort abw..
+	 *
+	 * <br>Type: Location
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_BP_Location_Override_Value_ID();
+
+	@Nullable org.compiere.model.I_C_Location getC_BP_Location_Override_Value();
+
+	void setC_BP_Location_Override_Value(@Nullable org.compiere.model.I_C_Location C_BP_Location_Override_Value);
+
+	ModelColumn<I_C_OLCand, org.compiere.model.I_C_Location> COLUMN_C_BP_Location_Override_Value_ID = new ModelColumn<>(I_C_OLCand.class, "C_BP_Location_Override_Value_ID", org.compiere.model.I_C_Location.class);
+	String COLUMNNAME_C_BP_Location_Override_Value_ID = "C_BP_Location_Override_Value_ID";
+
+	/**
 	 * Set Eff. Business Partner.
 	 *
 	 * <br>Type: Search
@@ -420,7 +487,7 @@ public interface I_C_OLCand
 	String COLUMNNAME_C_BPartner_Location_Value_ID = "C_BPartner_Location_Value_ID";
 
 	/**
-	 * Set Geschäftspartner abw..
+	 * Set Alt. Business Partner.
 	 * Bezeichnet einen Geschäftspartner
 	 *
 	 * <br>Type: Search
@@ -430,7 +497,7 @@ public interface I_C_OLCand
 	void setC_BPartner_Override_ID (int C_BPartner_Override_ID);
 
 	/**
-	 * Get Geschäftspartner abw..
+	 * Get Alt. Business Partner.
 	 * Bezeichnet einen Geschäftspartner
 	 *
 	 * <br>Type: Search
@@ -482,81 +549,7 @@ public interface I_C_OLCand
 	String COLUMNNAME_C_BPartner_SalesRep_Internal_ID = "C_BPartner_SalesRep_Internal_ID";
 
 	/**
-	 * Set Standort eff..
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a virtual column
-	 */
-	@Deprecated
-	void setC_BP_Location_Effective_ID (int C_BP_Location_Effective_ID);
-
-	/**
-	 * Get Standort eff..
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: true (lazy loading)
-	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
-	 */
-	@Deprecated
-	int getC_BP_Location_Effective_ID();
-
-	String COLUMNNAME_C_BP_Location_Effective_ID = "C_BP_Location_Effective_ID";
-
-	/**
-	 * Set Standort abw..
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_BP_Location_Override_ID (int C_BP_Location_Override_ID);
-
-	/**
-	 * Get Standort abw..
-	 * Identifiziert die (Liefer-) Adresse des Geschäftspartners
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_BP_Location_Override_ID();
-
-	String COLUMNNAME_C_BP_Location_Override_ID = "C_BP_Location_Override_ID";
-
-	/**
-	 * Set Standort abw..
-	 *
-	 * <br>Type: Location
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_BP_Location_Override_Value_ID (int C_BP_Location_Override_Value_ID);
-
-	/**
-	 * Get Standort abw..
-	 *
-	 * <br>Type: Location
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_BP_Location_Override_Value_ID();
-
-	@Nullable org.compiere.model.I_C_Location getC_BP_Location_Override_Value();
-
-	void setC_BP_Location_Override_Value(@Nullable org.compiere.model.I_C_Location C_BP_Location_Override_Value);
-
-	ModelColumn<I_C_OLCand, org.compiere.model.I_C_Location> COLUMN_C_BP_Location_Override_Value_ID = new ModelColumn<>(I_C_OLCand.class, "C_BP_Location_Override_Value_ID", org.compiere.model.I_C_Location.class);
-	String COLUMNNAME_C_BP_Location_Override_Value_ID = "C_BP_Location_Override_Value_ID";
-
-	/**
-	 * Set Kosten.
-	 * Zusätzliche Kosten
+	 * Set Costs.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -565,8 +558,7 @@ public interface I_C_OLCand
 	void setC_Charge_ID (int C_Charge_ID);
 
 	/**
-	 * Get Kosten.
-	 * Zusätzliche Kosten
+	 * Get Costs.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -685,27 +677,6 @@ public interface I_C_OLCand
 	String COLUMNNAME_C_OLCand_ID = "C_OLCand_ID";
 
 	/**
-	 * Set Grouping key.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setCompensationGroupKey (@Nullable java.lang.String CompensationGroupKey);
-
-	/**
-	 * Get Grouping key.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getCompensationGroupKey();
-
-	ModelColumn<I_C_OLCand, Object> COLUMN_CompensationGroupKey = new ModelColumn<>(I_C_OLCand.class, "CompensationGroupKey", null);
-	String COLUMNNAME_CompensationGroupKey = "CompensationGroupKey";
-
-	/**
 	 * Set Payment Term.
 	 * The terms of Payment (timing, discount)
 	 *
@@ -726,31 +697,6 @@ public interface I_C_OLCand
 	int getC_PaymentTerm_ID();
 
 	String COLUMNNAME_C_PaymentTerm_ID = "C_PaymentTerm_ID";
-
-	/**
-	 * Get Created.
-	 * Date this record was created
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getCreated();
-
-	ModelColumn<I_C_OLCand, Object> COLUMN_Created = new ModelColumn<>(I_C_OLCand.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
-
-	/**
-	 * Get Created By.
-	 * User who created this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getCreatedBy();
-
-	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Tax Category.
@@ -797,7 +743,7 @@ public interface I_C_OLCand
 	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
-	 * Set Maßeinheit int..
+	 * Set UOM.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -806,7 +752,7 @@ public interface I_C_OLCand
 	void setC_UOM_Internal_ID (int C_UOM_Internal_ID);
 
 	/**
-	 * Get Maßeinheit int..
+	 * Get UOM.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -817,7 +763,53 @@ public interface I_C_OLCand
 	String COLUMNNAME_C_UOM_Internal_ID = "C_UOM_Internal_ID";
 
 	/**
-	 * Set Kand.-Datum.
+	 * Set Grouping key.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCompensationGroupKey (@Nullable java.lang.String CompensationGroupKey);
+
+	/**
+	 * Get Grouping key.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCompensationGroupKey();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_CompensationGroupKey = new ModelColumn<>(I_C_OLCand.class, "CompensationGroupKey", null);
+	String COLUMNNAME_CompensationGroupKey = "CompensationGroupKey";
+
+	/**
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
+
+	ModelColumn<I_C_OLCand, Object> COLUMN_Created = new ModelColumn<>(I_C_OLCand.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCreatedBy();
+
+	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
@@ -826,7 +818,7 @@ public interface I_C_OLCand
 	void setDateCandidate (java.sql.Timestamp DateCandidate);
 
 	/**
-	 * Get Kand.-Datum.
+	 * Get Date.
 	 *
 	 * <br>Type: Date
 	 * <br>Mandatory: true
@@ -930,8 +922,8 @@ public interface I_C_OLCand
 	String COLUMNNAME_DatePromised_Override = "DatePromised_Override";
 
 	/**
-	 * Set Lieferart.
-	 * Definiert die zeitliche Steuerung von Lieferungen
+	 * Set Delivery Rule.
+	 * Defines the timing of Delivery
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -940,8 +932,8 @@ public interface I_C_OLCand
 	void setDeliveryRule (java.lang.String DeliveryRule);
 
 	/**
-	 * Get Lieferart.
-	 * Definiert die zeitliche Steuerung von Lieferungen
+	 * Get Delivery Rule.
+	 * Defines the timing of Delivery
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: true
@@ -997,7 +989,7 @@ public interface I_C_OLCand
 	String COLUMNNAME_Description = "Description";
 
 	/**
-	 * Set Schlusstext.
+	 * Set End note.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1006,7 +998,7 @@ public interface I_C_OLCand
 	void setDescriptionBottom (@Nullable java.lang.String DescriptionBottom);
 
 	/**
-	 * Get Schlusstext.
+	 * Get End note.
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1018,7 +1010,7 @@ public interface I_C_OLCand
 	String COLUMNNAME_DescriptionBottom = "DescriptionBottom";
 
 	/**
-	 * Set Description Header.
+	 * Set Description (GL Journal).
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1027,7 +1019,7 @@ public interface I_C_OLCand
 	void setDescriptionHeader (@Nullable java.lang.String DescriptionHeader);
 
 	/**
-	 * Get Description Header.
+	 * Get Description (GL Journal).
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -1062,7 +1054,7 @@ public interface I_C_OLCand
 	String COLUMNNAME_Discount = "Discount";
 
 	/**
-	 * Set Lieferempfänger eff..
+	 * Set Ship Business Partner eff..
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1073,7 +1065,7 @@ public interface I_C_OLCand
 	void setDropShip_BPartner_Effective_ID (int DropShip_BPartner_Effective_ID);
 
 	/**
-	 * Get Lieferempfänger eff..
+	 * Get Ship Business Partner eff..
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1106,7 +1098,7 @@ public interface I_C_OLCand
 	String COLUMNNAME_DropShip_BPartner_ID = "DropShip_BPartner_ID";
 
 	/**
-	 * Set Lieferempfänger abw..
+	 * Set Ship Business Partner override.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1115,7 +1107,7 @@ public interface I_C_OLCand
 	void setDropShip_BPartner_Override_ID (int DropShip_BPartner_Override_ID);
 
 	/**
-	 * Get Lieferempfänger abw..
+	 * Get Ship Business Partner override.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1126,7 +1118,7 @@ public interface I_C_OLCand
 	String COLUMNNAME_DropShip_BPartner_Override_ID = "DropShip_BPartner_Override_ID";
 
 	/**
-	 * Set Lieferadresse eff..
+	 * Set Ship Location eff..
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1137,7 +1129,7 @@ public interface I_C_OLCand
 	void setDropShip_Location_Effective_ID (int DropShip_Location_Effective_ID);
 
 	/**
-	 * Get Lieferadresse eff..
+	 * Get Ship Location eff..
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1168,7 +1160,7 @@ public interface I_C_OLCand
 	String COLUMNNAME_DropShip_Location_ID = "DropShip_Location_ID";
 
 	/**
-	 * Set Lieferadresse abw..
+	 * Set Ship Location override.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1177,7 +1169,7 @@ public interface I_C_OLCand
 	void setDropShip_Location_Override_ID (int DropShip_Location_Override_ID);
 
 	/**
-	 * Get Lieferadresse abw..
+	 * Get Ship Location override.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1386,7 +1378,7 @@ public interface I_C_OLCand
 	String COLUMNNAME_GroupingErrorMessage = "GroupingErrorMessage";
 
 	/**
-	 * Set Übergabeadresse eff..
+	 * Set Handover Location eff..
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1397,7 +1389,7 @@ public interface I_C_OLCand
 	void setHandOver_Location_Effective_ID (int HandOver_Location_Effective_ID);
 
 	/**
-	 * Get Übergabeadresse eff..
+	 * Get Handover Location eff..
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1410,7 +1402,7 @@ public interface I_C_OLCand
 	String COLUMNNAME_HandOver_Location_Effective_ID = "HandOver_Location_Effective_ID";
 
 	/**
-	 * Set Übergabeadresse.
+	 * Set unloading address.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1419,7 +1411,7 @@ public interface I_C_OLCand
 	void setHandOver_Location_ID (int HandOver_Location_ID);
 
 	/**
-	 * Get Übergabeadresse.
+	 * Get unloading address.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1430,7 +1422,7 @@ public interface I_C_OLCand
 	String COLUMNNAME_HandOver_Location_ID = "HandOver_Location_ID";
 
 	/**
-	 * Set Übergabeadresse abw..
+	 * Set Handover Location override.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1439,7 +1431,7 @@ public interface I_C_OLCand
 	void setHandOver_Location_Override_ID (int HandOver_Location_Override_ID);
 
 	/**
-	 * Get Übergabeadresse abw..
+	 * Get Handover Location override.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1823,8 +1815,8 @@ public interface I_C_OLCand
 	String COLUMNNAME_Line = "Line";
 
 	/**
-	 * Set Merkmals-Satz.
-	 * Merkmals-Satz zum Produkt
+	 * Set Attribute Set.
+	 * Product Attribute Set
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -1833,8 +1825,8 @@ public interface I_C_OLCand
 	void setM_AttributeSet_ID (int M_AttributeSet_ID);
 
 	/**
-	 * Get Merkmals-Satz.
-	 * Merkmals-Satz zum Produkt
+	 * Get Attribute Set.
+	 * Product Attribute Set
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -1877,7 +1869,7 @@ public interface I_C_OLCand
 	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
-	 * Set Packvorschrift-Produkt Zuordnung eff..
+	 * Set Packing Instruction eff..
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1888,7 +1880,7 @@ public interface I_C_OLCand
 	void setM_HU_PI_Item_Product_Effective_ID (int M_HU_PI_Item_Product_Effective_ID);
 
 	/**
-	 * Get Packvorschrift-Produkt Zuordnung eff..
+	 * Get Packing Instruction eff..
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1923,7 +1915,7 @@ public interface I_C_OLCand
 	String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
 
 	/**
-	 * Set Packvorschrift-Produkt Zuordnung abw..
+	 * Set Packing Instruction Override.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1932,7 +1924,7 @@ public interface I_C_OLCand
 	void setM_HU_PI_Item_Product_Override_ID (int M_HU_PI_Item_Product_Override_ID);
 
 	/**
-	 * Get Packvorschrift-Produkt Zuordnung abw..
+	 * Get Packing Instruction Override.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -1964,7 +1956,7 @@ public interface I_C_OLCand
 	String COLUMNNAME_M_PricingSystem_ID = "M_PricingSystem_ID";
 
 	/**
-	 * Set Produkt eff..
+	 * Set Product eff..
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -1975,7 +1967,7 @@ public interface I_C_OLCand
 	void setM_Product_Effective_ID (int M_Product_Effective_ID);
 
 	/**
-	 * Get Produkt eff..
+	 * Get Product eff..
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -2010,7 +2002,7 @@ public interface I_C_OLCand
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set Produkt abw..
+	 * Set Product override.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -2019,7 +2011,7 @@ public interface I_C_OLCand
 	void setM_Product_Override_ID (int M_Product_Override_ID);
 
 	/**
-	 * Get Produkt abw..
+	 * Get Product override.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -2051,7 +2043,7 @@ public interface I_C_OLCand
 	String COLUMNNAME_M_ProductPrice_Attribute_ID = "M_ProductPrice_Attribute_ID";
 
 	/**
-	 * Set Produkt-Preis.
+	 * Set Product Price.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -2060,7 +2052,7 @@ public interface I_C_OLCand
 	void setM_ProductPrice_ID (int M_ProductPrice_ID);
 
 	/**
-	 * Get Produkt-Preis.
+	 * Get Product Price.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
@@ -2074,6 +2066,31 @@ public interface I_C_OLCand
 
 	ModelColumn<I_C_OLCand, org.compiere.model.I_M_ProductPrice> COLUMN_M_ProductPrice_ID = new ModelColumn<>(I_C_OLCand.class, "M_ProductPrice_ID", org.compiere.model.I_M_ProductPrice.class);
 	String COLUMNNAME_M_ProductPrice_ID = "M_ProductPrice_ID";
+
+	/**
+	 * Set Section Code.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_SectionCode_ID (int M_SectionCode_ID);
+
+	/**
+	 * Get Section Code.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_SectionCode_ID();
+
+	@Nullable org.compiere.model.I_M_SectionCode getM_SectionCode();
+
+	void setM_SectionCode(@Nullable org.compiere.model.I_M_SectionCode M_SectionCode);
+
+	ModelColumn<I_C_OLCand, org.compiere.model.I_M_SectionCode> COLUMN_M_SectionCode_ID = new ModelColumn<>(I_C_OLCand.class, "M_SectionCode_ID", org.compiere.model.I_M_SectionCode.class);
+	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
 
 	/**
 	 * Set Shipper.
@@ -2256,6 +2273,26 @@ public interface I_C_OLCand
 	String COLUMNNAME_PresetDateShipped = "PresetDateShipped";
 
 	/**
+	 * Set Price UOM.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPrice_UOM_Internal_ID (int Price_UOM_Internal_ID);
+
+	/**
+	 * Get Price UOM.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPrice_UOM_Internal_ID();
+
+	String COLUMNNAME_Price_UOM_Internal_ID = "Price_UOM_Internal_ID";
+
+	/**
 	 * Set Price Actual.
 	 *
 	 * <br>Type: CostPrice
@@ -2344,28 +2381,6 @@ public interface I_C_OLCand
 	String COLUMNNAME_PriceInternal = "PriceInternal";
 
 	/**
-	 * Set Preiseinheit int..
-	 * Interne Preiseinheit laut Stammdaten
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setPrice_UOM_Internal_ID (int Price_UOM_Internal_ID);
-
-	/**
-	 * Get Preiseinheit int..
-	 * Interne Preiseinheit laut Stammdaten
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getPrice_UOM_Internal_ID();
-
-	String COLUMNNAME_Price_UOM_Internal_ID = "Price_UOM_Internal_ID";
-
-	/**
 	 * Set Processed.
 	 *
 	 * <br>Type: YesNo
@@ -2387,8 +2402,8 @@ public interface I_C_OLCand
 	String COLUMNNAME_Processed = "Processed";
 
 	/**
-	 * Set Produktbeschreibung.
-	 * Produktbeschreibung
+	 * Set Product Description.
+	 * Product Description
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2397,8 +2412,8 @@ public interface I_C_OLCand
 	void setProductDescription (@Nullable java.lang.String ProductDescription);
 
 	/**
-	 * Get Produktbeschreibung.
-	 * Produktbeschreibung
+	 * Get Product Description.
+	 * Product Description
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -2544,6 +2559,4 @@ public interface I_C_OLCand
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
-
-	
 }

@@ -106,4 +106,6 @@ public interface IAllocationDAO extends ISingletonService
 	SetMultimap<PaymentId, InvoiceId> retrieveInvoiceIdsByPaymentIds(@NonNull Collection<PaymentId> paymentIds);
 
 	@NonNull I_C_AllocationHdr getById(@NonNull PaymentAllocationId allocationId);
+
+	List<I_C_AllocationLine> retrieveAllPaymentAllocationLines(@NonNull PaymentId paymentId);
 }

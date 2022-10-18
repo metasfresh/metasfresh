@@ -1,14 +1,13 @@
 package de.metas.ordercandidate.api;
 
-import java.util.Comparator;
-import java.util.List;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.util.Check;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
+
+import java.util.Comparator;
+import java.util.List;
 
 /*
  * #%L
@@ -66,6 +65,14 @@ public class OLCandAggregation
 		groupByColumns = this.columns.stream()
 				.filter(OLCandAggregationColumn::isGroupByColumn)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	public boolean isSplitByDiscriminatorColumn(@NonNull final String columnName)
+	{
+		return getSplitOrderDiscriminatorColumns()
+				.stream()
+				.map(OLCandAggregationColumn::getColumnName)
+				.anyMatch(name -> name.equals(columnName));
 	}
 
 	private Comparator<OLCand> createOrderingComparator()
