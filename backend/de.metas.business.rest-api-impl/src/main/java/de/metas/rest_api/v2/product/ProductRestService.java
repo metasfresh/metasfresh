@@ -793,8 +793,8 @@ public class ProductRestService
 
 		if (jsonRequestProductUpsertItem.isSectionCodeSet())
 		{
-			final SectionCodeId sectionCodeId = sectionCodeRepository
-					.getSectionCodeIdByValue(orgId, jsonRequestProductUpsertItem.getSectionCode())
+			final SectionCodeId sectionCodeId = Optional.ofNullable(jsonRequestProductUpsertItem.getSectionCode())
+					.flatMap(code -> sectionCodeRepository.getSectionCodeIdByValue(orgId, code))
 					.orElse(null);
 
 			builder.sectionCodeId(sectionCodeId);
@@ -825,10 +825,9 @@ public class ProductRestService
 		final ProductCategoryId productCategoryId = jsonRequestProductUpsertItem.isProductCategoryIdentifierSet() ?
 				getProductCategoryId(jsonRequestProductUpsertItem.getProductCategoryIdentifier(), org) : defaultProductCategoryId;
 
-		final SectionCodeId sectionCodeId = jsonRequestProductUpsertItem.isSectionCodeSet() ?
-				sectionCodeRepository.getSectionCodeIdByValue(orgId, jsonRequestProductUpsertItem.getSectionCode())
-						.orElse(null) :
-				null;
+		final SectionCodeId sectionCodeId = Optional.ofNullable(jsonRequestProductUpsertItem.getSectionCode())
+				.flatMap(code -> sectionCodeRepository.getSectionCodeIdByValue(orgId, code))
+				.orElse(null);
 
 		return CreateProductRequest.builder()
 				.orgId(orgId)

@@ -1,27 +1,6 @@
-/*
- * #%L
- * de.metas.externalsystem
- * %%
- * Copyright (C) 2022 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package de.metas.externalsystem.model;
 
+import java.math.BigDecimal;
 import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
@@ -96,6 +75,29 @@ public interface I_ExternalSystem_Config_SAP
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Errored Directory.
+	 * Defines where files should be moved after attempting to process them with error.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setErroredDirectory (java.lang.String ErroredDirectory);
+
+	/**
+	 * Get Errored Directory.
+	 * Defines where files should be moved after attempting to process them with error.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getErroredDirectory();
+
+	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_ErroredDirectory = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "ErroredDirectory", null);
+	String COLUMNNAME_ErroredDirectory = "ErroredDirectory";
 
 	/**
 	 * Set External System Config.
@@ -186,6 +188,52 @@ public interface I_ExternalSystem_Config_SAP
 
 	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_IsActive = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Polling Frequency.
+	 * Defines how frequently should the process poll for new files.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPollingFrequency (BigDecimal PollingFrequency);
+
+	/**
+	 * Get Polling Frequency.
+	 * Defines how frequently should the process poll for new files.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getPollingFrequency();
+
+	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_PollingFrequency = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "PollingFrequency", null);
+	String COLUMNNAME_PollingFrequency = "PollingFrequency";
+
+	/**
+	 * Set Processed Directory.
+	 * Defines where files should be moved after being successfully processed.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setProcessedDirectory (java.lang.String ProcessedDirectory);
+
+	/**
+	 * Get Processed Directory.
+	 * Defines where files should be moved after being successfully processed.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getProcessedDirectory();
+
+	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_ProcessedDirectory = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "ProcessedDirectory", null);
+	String COLUMNNAME_ProcessedDirectory = "ProcessedDirectory";
 
 	/**
 	 * Set SFTP Hostname.

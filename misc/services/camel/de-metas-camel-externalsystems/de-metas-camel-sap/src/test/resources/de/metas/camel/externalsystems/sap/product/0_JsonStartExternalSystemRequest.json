@@ -12,6 +12,9 @@
     "SFTP_Port" : "22",
     "SFTP_Username" : "doesntmatter",
     "SFTP_Password" : "doesntmatter",
-    "SFTP_Target_Directory" : "doesntmatter"
+    "SFTP_Target_Directory" : "doesntmatter",
+    "ProcessedDirectory": "doesnmatter",
+    "ErroredDirectory": "doesnmatter",
+    "PollingFrequency": "1000"
   }
 }

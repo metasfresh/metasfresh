@@ -33,6 +33,7 @@ import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.product.ProductType;
 import de.metas.rest_api.v2.product.ProductRestService;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.sectionCode.SectionCodeRepository;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
@@ -286,12 +287,13 @@ public class M_Product_StepDef
 		assertThat(productRecord.getDescription()).isEqualTo(description);
 		assertThat(productRecord.isActive()).isEqualTo(isActive);
 
-		final String sectionCode = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Product.COLUMNNAME_M_SectionCode_ID + "." + I_M_SectionCode.COLUMNNAME_Value);
-		if (Check.isNotBlank(sectionCode))
+		final String sectionCodeValue = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Product.COLUMNNAME_M_SectionCode_ID + "." + I_M_SectionCode.COLUMNNAME_Value);
+		if (Check.isNotBlank(sectionCodeValue))
 		{
-			sectionCodeRepository.getSectionCodeIdByValue(ORG_ID, sectionCode)
-					.ifPresent(sectionCodeId ->
-									   assertThat(productRecord.getM_SectionCode_ID()).isEqualTo(sectionCodeId.getRepoId()));
+			final SectionCodeId sectionCodeId = sectionCodeRepository.getSectionCodeIdByValue(ORG_ID, sectionCodeValue).orElse(null);
+
+			assertThat(sectionCodeId).isNotNull();
+			assertThat(productRecord.getM_SectionCode_ID()).isEqualTo(sectionCodeId.getRepoId());
 		}
 	}
 

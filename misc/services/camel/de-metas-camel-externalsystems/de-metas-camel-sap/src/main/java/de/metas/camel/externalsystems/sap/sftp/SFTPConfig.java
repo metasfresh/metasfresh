@@ -24,14 +24,14 @@ package de.metas.camel.externalsystems.sap.sftp;
 
 import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
-import lombok.Data;
 import lombok.NonNull;
+import lombok.Value;
 
 import javax.annotation.Nullable;
 
-@Data
+@Value
 @Builder
-public class SFTPCredentials
+public class SFTPConfig
 {
 	@NonNull
 	String username;
@@ -48,10 +48,16 @@ public class SFTPCredentials
 	@Nullable
 	String targetDirectory;
 
-	public String getSFTPConnectionString(
-			@NonNull final String moveFolderName,
-			@NonNull final String moveFailedFolderName,
-			@NonNull final String requestDelay)
+	@NonNull
+	String processedFilesFolder;
+
+	@NonNull
+	String erroredFilesFolder;
+
+	@NonNull
+	String pollingFrequency;
+
+	public String getSFTPConnectionString()
 	{
 		//FIXME: move; moveFailed; delay should be injected from properties
 		final String endpointTemplate = "%s@%s:%s/%s?password=%s&move=%s&moveFailed=%s&delay=%s";
@@ -62,8 +68,8 @@ public class SFTPCredentials
 							 this.getPort(),
 							 CoalesceUtil.coalesce(this.getTargetDirectory(), ""),
 							 this.getPassword(),
-							 moveFolderName,
-							 moveFailedFolderName,
-							 requestDelay);
+							 this.getProcessedFilesFolder(),
+							 this.getErroredFilesFolder(),
+							 this.getPollingFrequency());
 	}
 }

@@ -28,7 +28,7 @@ import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.common.v2.ExternalStatusCreateCamelRequest;
 import de.metas.camel.externalsystems.sap.SAPRouteContext;
-import de.metas.camel.externalsystems.sap.sftp.SFTPCredentials;
+import de.metas.camel.externalsystems.sap.sftp.SFTPConfig;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.IExternalSystemService;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
@@ -115,20 +115,23 @@ public class SFTPProductSyncServiceRouteBuilder extends RouteBuilder implements 
 
 		final Map<String, String> requestParameters = request.getParameters();
 
-		final SFTPCredentials sftpCredentials = SFTPCredentials.builder()
+		final SFTPConfig sftpConfig = SFTPConfig.builder()
 				.username(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_USERNAME))
 				.password(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_PASSWORD))
 				.hostName(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_HOST_NAME))
 				.port(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_PORT))
 				.targetDirectory(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_TARGET_DIRECTORY))
+				.processedFilesFolder(requestParameters.get(ExternalSystemConstants.PARAM_PROCESSED_DIRECTORY))
+				.erroredFilesFolder(requestParameters.get(ExternalSystemConstants.PARAM_ERRORED_DIRECTORY))
+				.pollingFrequency(requestParameters.get(ExternalSystemConstants.PARAM_POLLING_FREQUENCY))
 				.build();
 
-		exchange.getIn().setBody(sftpCredentials, SFTPCredentials.class);
+		exchange.getIn().setBody(sftpConfig, SFTPConfig.class);
 	}
 
 	private void enableSFTPRouteProcessor(@NonNull final Exchange exchange) throws Exception
 	{
-		final SFTPCredentials sftpCredentials = exchange.getIn().getBody(SFTPCredentials.class);
+		final SFTPConfig sftpConfig = exchange.getIn().getBody(SFTPConfig.class);
 
 		final SAPRouteContext sapRouteContext = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_SAP_ROUTE_CONTEXT, SAPRouteContext.class);
 
@@ -136,7 +139,7 @@ public class SFTPProductSyncServiceRouteBuilder extends RouteBuilder implements 
 
 		final GetProductsSFTPRouteBuilder getProductsSFTPRouteBuilder = GetProductsSFTPRouteBuilder
 				.builder()
-				.sftpCredentials(sftpCredentials)
+				.sftpCredentials(sftpConfig)
 				.camelContext(exchange.getContext())
 				.enabledByExternalSystemRequest(sapRouteContext.getRequest())
 				.processLogger(processLogger)

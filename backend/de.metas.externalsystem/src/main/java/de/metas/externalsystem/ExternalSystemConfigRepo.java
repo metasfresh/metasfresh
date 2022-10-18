@@ -853,6 +853,9 @@ public class ExternalSystemConfigRepo
 				.sftpPassword(config.getSFTP_Password())
 				.value(config.getExternalSystemValue())
 				.sftpTargetDirectory(config.getSFTP_TargetDirectory())
+				.processedDirectory(config.getProcessedDirectory())
+				.erroredDirectory(config.getErroredDirectory())
+				.pollingFrequency(config.getPollingFrequency())
 				.build();
 	}
 }

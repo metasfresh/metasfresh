@@ -27,8 +27,4 @@ public interface SAPConstants
 	String ROUTE_PROPERTY_SAP_ROUTE_CONTEXT = "SAPRouteContext";
 
 	String SAP_SYSTEM_NAME = "SAP";
-
-	String SFTP_MOVE_FOLDER_NAME = "sftp.move.folder.name";
-	String SFTP_MOVE_FAILED_FOLDER_NAME = "sftp.move.failed.folder.name";
-	String SFTP_REQUEST_DELAY = "sftp.request.freq.time";
 }

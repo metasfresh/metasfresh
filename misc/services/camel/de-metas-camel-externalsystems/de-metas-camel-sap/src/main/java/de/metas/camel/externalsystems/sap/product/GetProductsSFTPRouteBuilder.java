@@ -23,10 +23,9 @@
 package de.metas.camel.externalsystems.sap.product;
 
 import com.google.common.annotations.VisibleForTesting;
-import de.metas.camel.externalsystems.common.CamelRouteUtil;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.sap.api.model.product.ProductRow;
-import de.metas.camel.externalsystems.sap.sftp.SFTPCredentials;
+import de.metas.camel.externalsystems.sap.sftp.SFTPConfig;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.Builder;
 import lombok.Getter;
@@ -37,9 +36,6 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.dataformat.bindy.csv.BindyCsvDataFormat;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_PRODUCT_V2_CAMEL_URI;
-import static de.metas.camel.externalsystems.sap.SAPConstants.SFTP_MOVE_FAILED_FOLDER_NAME;
-import static de.metas.camel.externalsystems.sap.SAPConstants.SFTP_MOVE_FOLDER_NAME;
-import static de.metas.camel.externalsystems.sap.SAPConstants.SFTP_REQUEST_DELAY;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 public class GetProductsSFTPRouteBuilder extends RouteBuilder
@@ -49,7 +45,7 @@ public class GetProductsSFTPRouteBuilder extends RouteBuilder
 	private static final String UPSERT_PRODUCT_PROCESSOR_ID = "SAP-Products-upsertProductProcessorId";
 
 	@NonNull
-	private final SFTPCredentials sftpCredentials;
+	private final SFTPConfig sftpCredentials;
 
 	@Getter
 	@NonNull
@@ -63,7 +59,7 @@ public class GetProductsSFTPRouteBuilder extends RouteBuilder
 
 	@Builder
 	private GetProductsSFTPRouteBuilder(
-			@NonNull final SFTPCredentials sftpCredentials,
+			@NonNull final SFTPConfig sftpCredentials,
 			@NonNull final CamelContext camelContext,
 			@NonNull final String routeId,
 			@NonNull final JsonExternalSystemRequest enabledByExternalSystemRequest,
@@ -79,11 +75,7 @@ public class GetProductsSFTPRouteBuilder extends RouteBuilder
 	@Override
 	public void configure() throws Exception
 	{
-		final String moveFolderName = CamelRouteUtil.resolveProperty(getContext(), SFTP_MOVE_FOLDER_NAME, "move");
-		final String moveFailedFolderName = CamelRouteUtil.resolveProperty(getContext(), SFTP_MOVE_FAILED_FOLDER_NAME, "error");
-		final String requestDelay = CamelRouteUtil.resolveProperty(getContext(), SFTP_REQUEST_DELAY, "1000");
-
-		final String sftpURL = "sftp://" + sftpCredentials.getSFTPConnectionString(moveFolderName, moveFailedFolderName, requestDelay);
+		final String sftpURL = "sftp://" + sftpCredentials.getSFTPConnectionString();
 
 		//@formatter:off
 		from(sftpURL)

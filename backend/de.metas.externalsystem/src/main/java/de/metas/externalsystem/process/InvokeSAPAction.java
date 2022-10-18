@@ -38,6 +38,9 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CHILD_CONFIG_VALUE;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ERRORED_DIRECTORY;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_POLLING_FREQUENCY;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PROCESSED_DIRECTORY;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_HOST_NAME;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_PASSWORD;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_PORT;
@@ -82,6 +85,9 @@ public class InvokeSAPAction extends AlterExternalSystemServiceStatusAction
 		parameters.put(PARAM_SFTP_PASSWORD, sapConfig.getSftpPassword());
 		parameters.put(PARAM_CHILD_CONFIG_VALUE, sapConfig.getValue());
 		parameters.put(PARAM_SFTP_TARGET_DIRECTORY, sapConfig.getSftpTargetDirectory());
+		parameters.put(PARAM_PROCESSED_DIRECTORY, sapConfig.getProcessedDirectory());
+		parameters.put(PARAM_ERRORED_DIRECTORY, sapConfig.getErroredDirectory());
+		parameters.put(PARAM_POLLING_FREQUENCY, sapConfig.getPollingFrequency().toString());
 
 		return parameters;
 	}

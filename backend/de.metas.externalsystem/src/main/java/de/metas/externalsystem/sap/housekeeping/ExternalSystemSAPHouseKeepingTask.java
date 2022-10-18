@@ -24,23 +24,29 @@ package de.metas.externalsystem.sap.housekeeping;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfig;
+import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.externalservice.common.ExternalStatus;
+import de.metas.externalsystem.externalservice.externalserviceinstance.ExternalSystemServiceInstance;
 import de.metas.externalsystem.externalservice.externalserviceinstance.ExternalSystemServiceInstanceRepository;
+import de.metas.externalsystem.externalservice.model.ExternalSystemServiceModel;
+import de.metas.externalsystem.externalservice.model.ExternalSystemServiceRepository;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessInfo;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 import static de.metas.externalsystem.process.InvokeExternalSystemProcess.PARAM_CHILD_CONFIG_ID;
 import static de.metas.externalsystem.process.InvokeExternalSystemProcess.PARAM_EXTERNAL_REQUEST;
@@ -49,19 +55,21 @@ import static de.metas.externalsystem.process.InvokeExternalSystemProcess.PARAM_
 public class ExternalSystemSAPHouseKeepingTask implements IStartupHouseKeepingTask
 {
 	private static final Logger logger = LogManager.getLogger(ExternalSystemSAPHouseKeepingTask.class);
-	private static final String SAP_COMMAND = "startProductsSync";
 
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 
 	private final ExternalSystemConfigRepo externalSystemConfigDAO;
 	private final ExternalSystemServiceInstanceRepository externalSystemServiceInstanceRepository;
+	private final ExternalSystemServiceRepository externalSystemServiceRepository;
 
 	public ExternalSystemSAPHouseKeepingTask(
 			@NonNull final ExternalSystemConfigRepo externalSystemConfigDAO,
-			@NonNull final ExternalSystemServiceInstanceRepository externalSystemServiceInstanceRepository)
+			@NonNull final ExternalSystemServiceInstanceRepository externalSystemServiceInstanceRepository,
+			@NonNull final ExternalSystemServiceRepository externalSystemServiceRepository)
 	{
 		this.externalSystemConfigDAO = externalSystemConfigDAO;
 		this.externalSystemServiceInstanceRepository = externalSystemServiceInstanceRepository;
+		this.externalSystemServiceRepository = externalSystemServiceRepository;
 	}
 
 	@Override
@@ -78,22 +86,31 @@ public class ExternalSystemSAPHouseKeepingTask implements IStartupHouseKeepingTa
 
 		final ImmutableList<ExternalSystemParentConfig> parentConfigList = externalSystemConfigDAO.getActiveByType(ExternalSystemType.SAP);
 
-		parentConfigList
-				.stream()
-				.filter(this::isExternalSystemStartupStatusActive)
-				.peek(config -> Loggables.withLogger(logger, Level.DEBUG).addLog("Firing process " + processId + " for SAP config " + config.getChildConfig().getId()))
-				.forEach((config -> ProcessInfo.builder()
-						.setAD_Process_ID(processId)
-						.setAD_User_ID(UserId.METASFRESH.getRepoId())
-						.addParameter(PARAM_EXTERNAL_REQUEST, SAP_COMMAND)
-						.addParameter(PARAM_CHILD_CONFIG_ID, config.getChildConfig().getId().getRepoId())
-						.buildAndPrepareExecution()
-						.executeSync()));
+		for (final ExternalSystemParentConfig config : parentConfigList)
+		{
+			final List<ExternalSystemServiceModel> serviceModels = externalSystemServiceRepository.getAllByType(ExternalSystemType.SAP);
+
+			serviceModels
+					.stream()
+					.filter(service -> Check.isNotBlank(service.getEnableCommand()))
+					.filter(service -> shouldStartExternalService(service, config.getId()))
+					.forEach(service -> ProcessInfo.builder()
+							.setAD_Process_ID(processId)
+							.setAD_User_ID(UserId.METASFRESH.getRepoId())
+							.addParameter(PARAM_EXTERNAL_REQUEST, service.getEnableCommand())
+							.addParameter(PARAM_CHILD_CONFIG_ID, config.getChildConfig().getId().getRepoId())
+							.buildAndPrepareExecution()
+							.executeSync());
+		}
 	}
 
-	private boolean isExternalSystemStartupStatusActive(@NonNull final ExternalSystemParentConfig config)
+	private boolean shouldStartExternalService(
+			@NonNull final ExternalSystemServiceModel externalService,
+			@NonNull final ExternalSystemParentConfigId configId)
 	{
-		return externalSystemServiceInstanceRepository.streamByConfigIds(ImmutableSet.of(config.getId()))
-				.noneMatch(externalSystemServiceInstance -> externalSystemServiceInstance.getExpectedStatus().equals(ExternalStatus.INACTIVE));
+		return externalSystemServiceInstanceRepository.getByConfigAndServiceId(configId, externalService.getId())
+				.map(ExternalSystemServiceInstance::getExpectedStatus)
+				.map(status -> status == ExternalStatus.ACTIVE)
+				.orElse(true);
 	}
 }

@@ -173,6 +173,8 @@ Feature:product get/create/update using metasfresh api
       "productIdentifier": "ext-ALBERTA-345",
       "externalVersion": null,
       "externalReferenceUrl": "www.ExternalReferenceURL.com",
+      "externalSystemConfigId": 540000,
+      "isReadOnlyInMetasfresh": true,
       "requestProduct": {
         "code": "code345_2",
         "codeSet": true,
@@ -259,8 +261,8 @@ Feature:product get/create/update using metasfresh api
       | C_BPartner_Product_ID.Identifier | IsActive | SeqNo | ProductNo | Description | EAN_CU   | GTIN      | CustomerLabelName | Ingredients | IsExcludedFromSale | ExclusionFromSaleReason | IsExcludedFromPurchase | ExclusionFromPurchaseReason |
       | bp_1                             | true     | 10    | test      | test        | ean_test | gtin_test | test              | test        | true               | testForSale             | true                   | testForPurchase             |
     And verify that S_ExternalReference was created
-      | ExternalSystem | Type    | ExternalReference | ExternalReferenceURL         |
-      | ALBERTA        | Product | 345               | www.ExternalReferenceURL.com |
+      | ExternalSystem | Type    | ExternalReference | ExternalReferenceURL         | OPT.ExternalSystem_Config_ID | OPT.IsReadOnlyInMetasfresh |
+      | ALBERTA        | Product | 345               | www.ExternalReferenceURL.com | 540000                       | true                       |
     When a 'GET' request with the below payload is sent to the metasfresh REST-API 'api/v2/products' and fulfills with '200' status code
 """
 """

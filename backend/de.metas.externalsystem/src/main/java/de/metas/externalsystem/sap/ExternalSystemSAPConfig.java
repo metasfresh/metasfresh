@@ -29,6 +29,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 @Value
 public class ExternalSystemSAPConfig implements IExternalSystemChildConfig
@@ -57,6 +58,15 @@ public class ExternalSystemSAPConfig implements IExternalSystemChildConfig
 	@Nullable
 	String sftpTargetDirectory;
 
+	@NonNull
+	String processedDirectory;
+
+	@NonNull
+	String erroredDirectory;
+
+	@NonNull
+	BigDecimal pollingFrequency;
+
 	@Builder
 	public ExternalSystemSAPConfig(
 			@NonNull final ExternalSystemSAPConfigId id,
@@ -66,7 +76,10 @@ public class ExternalSystemSAPConfig implements IExternalSystemChildConfig
 			@NonNull final String sftpPort,
 			@NonNull final String sftpUsername,
 			@NonNull final String sftpPassword,
-			@Nullable final String sftpTargetDirectory)
+			@Nullable final String sftpTargetDirectory,
+			@NonNull final String processedDirectory,
+			@NonNull final String erroredDirectory,
+			@NonNull final BigDecimal pollingFrequency)
 	{
 		this.id = id;
 		this.parentId = parentId;
@@ -76,6 +89,9 @@ public class ExternalSystemSAPConfig implements IExternalSystemChildConfig
 		this.sftpUsername = sftpUsername;
 		this.sftpPassword = sftpPassword;
 		this.sftpTargetDirectory = sanitizeTargetDirectory(sftpTargetDirectory);
+		this.processedDirectory = processedDirectory;
+		this.erroredDirectory = erroredDirectory;
+		this.pollingFrequency = pollingFrequency;
 	}
 
 	@NonNull

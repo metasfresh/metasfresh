@@ -1,28 +1,7 @@
-/*
- * #%L
- * de.metas.externalsystem
- * %%
- * Copyright (C) 2022 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 // Generated Model - DO NOT CHANGE
 package de.metas.externalsystem.model;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 import javax.annotation.Nullable;
@@ -34,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_ExternalSystem_Config_SAP extends org.compiere.model.PO implements I_ExternalSystem_Config_SAP, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -303109327L;
+	private static final long serialVersionUID = -1897653887L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config_SAP (final Properties ctx, final int ExternalSystem_Config_SAP_ID, @Nullable final String trxName)
@@ -54,6 +33,18 @@ public class X_ExternalSystem_Config_SAP extends org.compiere.model.PO implement
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setErroredDirectory (final java.lang.String ErroredDirectory)
+	{
+		set_Value (COLUMNNAME_ErroredDirectory, ErroredDirectory);
+	}
+
+	@Override
+	public java.lang.String getErroredDirectory() 
+	{
+		return get_ValueAsString(COLUMNNAME_ErroredDirectory);
 	}
 
 	@Override
@@ -108,6 +99,31 @@ public class X_ExternalSystem_Config_SAP extends org.compiere.model.PO implement
 	public java.lang.String getExternalSystemValue() 
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalSystemValue);
+	}
+
+	@Override
+	public void setPollingFrequency (final BigDecimal PollingFrequency)
+	{
+		set_Value (COLUMNNAME_PollingFrequency, PollingFrequency);
+	}
+
+	@Override
+	public BigDecimal getPollingFrequency() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PollingFrequency);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setProcessedDirectory (final java.lang.String ProcessedDirectory)
+	{
+		set_Value (COLUMNNAME_ProcessedDirectory, ProcessedDirectory);
+	}
+
+	@Override
+	public java.lang.String getProcessedDirectory() 
+	{
+		return get_ValueAsString(COLUMNNAME_ProcessedDirectory);
 	}
 
 	@Override

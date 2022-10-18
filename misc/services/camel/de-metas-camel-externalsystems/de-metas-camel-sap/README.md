@@ -13,12 +13,29 @@
 * `JsonExternalSystemRequest.parameters.SFTP_Username`
 * `JsonExternalSystemRequest.parameters.SFTP_Password`
 * `JsonExternalSystemRequest.parameters.SFTP_Target_Directory`
+* `JsonExternalSystemRequest.parameters.ProcessedDirectory`
+* `JsonExternalSystemRequest.parameters.ErroredDirectory`
+* `JsonExternalSystemRequest.parameters.PollingFrequency`
 
 ## **SAP => metasfresh product**
 
 * `Product` - pulled via an SFTP camel route
 
-we need to invoke the sftp server configured for SAP external system (`Externalsystem_Config_SAP`)
+First, the SFTP consumer must be configured using `Externalsystem_Config_SAP` and started by invoking the `SAP-startProductsSync` dedicated route.
+
+Configs available in `Externalsystem_Config_SAP`:
+
+| Column name         | Accepted values | Description                                                                  |
+|---------------------|-----------------|------------------------------------------------------------------------------|
+| Hostname            | string          | sftp server hostname                                                         |
+| Port                | number          | sftp server port                                                             |
+| Username            | string          | sftp server authentication username                                          |
+| Password            | string          | sftp server authentication password                                          | 
+| Target Directory    | string          | the location used to pull from the sftp server                               | 
+| Processed Directory | string          | the location where the processed files will be moved                         | 
+| Errored Directory   | string          | the location where the files will be moved in case of error while processing |
+| Polling Frequency   | number          | the frequency with which the files are polled from the sftp server           |
+
 
 1. Product - all `metasfresh-column` values refer to `M_Product` columns
 
