@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13751](https://github.com/metasfresh/metasfresh/issues/13751) Renumber C_OLCand.Line when sending from excel to metasfresh
   * [#13651](https://github.com/metasfresh/metasfresh/issues/13651) Allow invoking "Other" ExternalSystem via API
   * [#13740](https://github.com/metasfresh/metasfresh/issues/13740) Fix inventory move line
   * [#13716](https://github.com/metasfresh/metasfresh/issues/13716) Creating PP Order by machine size
