@@ -644,28 +644,23 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 				// prefer IBAN, unless we have paypent type 1 (because then we use the ISR participant number)
 				id.setIBAN(iban.replaceAll(" ", "")); // this is ofc the more frequent case (..on a global scale)
 			}
-			else {
+			else
+			{
 				final String otherAccountIdentification = line.getOtherAccountIdentification();
 				final String accountNo = bankAccount.getAccountNo();
 
 				final GenericAccountIdentification1CH othr = objectFactory.createGenericAccountIdentification1CH();
 				id.setOthr(othr);
 
-				if (Check.isEmpty(otherAccountIdentification, true) && Check.isEmpty(accountNo, true))
+
+				if (!Check.isEmpty(otherAccountIdentification, true))
 				{
-					othr.setId(iban.replaceAll(" ", ""));
+					// task 07789
+					othr.setId(otherAccountIdentification); // for task 07789, this needs to contain the ESR TeilehmerNr or PostkontoNr
 				}
 				else
 				{
-					if (!Check.isEmpty(otherAccountIdentification, true))
-					{
-						// task 07789
-						othr.setId(otherAccountIdentification); // for task 07789, this needs to contain the ESR TeilehmerNr or PostkontoNr
-					}
-					else
-					{
-						othr.setId(bankAccount.getAccountNo());
-					}
+					othr.setId(bankAccount.getAccountNo());
 				}
 			}
 		}
@@ -1033,9 +1028,9 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	}
 
 	@VisibleForTesting
-	static boolean isInvalidQRReference(final String reference)
+	static boolean isInvalidQRReference(@NonNull final String reference)
 	{
-		if(reference == null || reference.length() != 27)
+		if(reference.length() != 27)
 		{
 			return true;
 		}
