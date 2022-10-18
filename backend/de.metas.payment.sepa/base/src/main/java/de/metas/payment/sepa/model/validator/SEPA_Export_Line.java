@@ -22,19 +22,17 @@ package de.metas.payment.sepa.model.validator;
  * #L%
  */
 
-
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.ModelValidator;
-
 import de.metas.payment.esr.api.IESRBPBankAccountBL;
 import de.metas.payment.esr.api.IESRImportBL;
 import de.metas.payment.esr.model.I_C_BP_BankAccount;
 import de.metas.payment.sepa.model.I_SEPA_Export_Line;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.modelvalidator.annotations.Validator;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.ModelValidator;
 
 @Validator(I_SEPA_Export_Line.class)
 public class SEPA_Export_Line

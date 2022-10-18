@@ -54,7 +54,6 @@ public class OLCandProcessingHelper
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final LocalDate defaultDateDoc = SystemTime.asLocalDate();
 	private final InputDataSourceId processorDataDestinationId;
 
 	public OLCandProcessingHelper()
@@ -79,6 +78,7 @@ public class OLCandProcessingHelper
 				continue;
 			}
 
+			final LocalDate defaultDateDoc = SystemTime.asLocalDate();
 			final OLCand candidate = prepareOLCandBeforeProcessing(currentCandidate, defaultDateDoc);
 			candidatesCollector.add(candidate);
 		}
