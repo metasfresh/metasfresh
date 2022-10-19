@@ -22,11 +22,8 @@
 
 package de.metas.banking.camt53.wrapper;
 
-import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.banking.BankStatementId;
 import de.metas.banking.camt53.jaxb.camt053_001_02.ActiveOrHistoricCurrencyAndAmount;
 import de.metas.banking.camt53.jaxb.camt053_001_02.AmountAndCurrencyExchange3;
 import de.metas.banking.camt53.jaxb.camt053_001_02.AmountAndCurrencyExchangeDetails3;
@@ -37,25 +34,15 @@ import de.metas.banking.camt53.jaxb.camt053_001_02.EntryTransaction2;
 import de.metas.banking.camt53.jaxb.camt053_001_02.RemittanceInformation5;
 import de.metas.banking.camt53.jaxb.camt053_001_02.ReportEntry2;
 import de.metas.banking.camt53.jaxb.camt053_001_02.TransactionInterest2;
-import de.metas.banking.service.BankStatementLineCreateRequest;
-import de.metas.bpartner.BPartnerId;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
-import de.metas.document.engine.DocStatus;
-import de.metas.invoice.InvoiceId;
-import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
 import de.metas.util.Check;
-import de.metas.util.Loggables;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.ad.dao.QueryLimit;
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
@@ -72,74 +59,20 @@ public class NoBatchReportEntry2Wrapper
 	private static final Logger logger = LogManager.getLogger(NoBatchReportEntry2Wrapper.class);
 
 	@NonNull
-	IOrgDAO orgDAO;
-
-	@NonNull
-	IInvoiceDAO invoiceDAO;
+	CurrencyRepository currencyRepository;
 
 	@NonNull
 	ReportEntry2 entry;
 
-	@NonNull
-	CurrencyRepository currencyRepository;
-
 	@Builder
 	private NoBatchReportEntry2Wrapper(
-			@NonNull final IOrgDAO orgDAO,
-			@NonNull final IInvoiceDAO invoiceDAO,
 			@NonNull final CurrencyRepository currencyRepository,
 			@NonNull final ReportEntry2 entry)
 	{
 		Check.assume(Check.isEmpty(entry.getNtryDtls()) || entry.getNtryDtls().size() == 1, "Batched transactions are not supported!");
 
-		this.orgDAO = orgDAO;
-		this.invoiceDAO = invoiceDAO;
 		this.currencyRepository = currencyRepository;
 		this.entry = entry;
-	}
-
-	@NonNull
-	public Optional<BankStatementLineCreateRequest> buildBankStatementLineCreateRequest(
-			@NonNull final BankStatementId bankStatementId,
-			@NonNull final OrgId orgId)
-	{
-		final Instant statementLineDate = getStatementLineDate().orElse(null);
-
-		if (statementLineDate == null)
-		{
-			Loggables.withLogger(logger, Level.INFO).addLog(
-					"Skipping this ReportEntry={} because StatementLineDate is missing! BankStatementId={}", entry, bankStatementId);
-			return Optional.empty();
-		}
-
-		final Money stmtAmount = getStatementAmount();
-
-		final BankStatementLineCreateRequest.BankStatementLineCreateRequestBuilder bankStatementLineCreateRequestBuilder = BankStatementLineCreateRequest.builder()
-				.orgId(orgId)
-				.bankStatementId(bankStatementId)
-				.lineDescription(getLineDescription())
-				.statementAmt(stmtAmount)
-				.trxAmt(stmtAmount)
-				.currencyRate(getCurrencyRate().orElse(null))
-				.interestAmt(getInterestAmount().orElse(null))
-				.statementLineDate(TimeUtil.asLocalDate(statementLineDate));
-
-		getReferencedInvoiceRecord()
-				.ifPresent(invoice -> bankStatementLineCreateRequestBuilder
-						.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
-						.bpartnerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID())));
-
-		return Optional.of(bankStatementLineCreateRequestBuilder.build());
-	}
-
-	@NonNull
-	private Optional<I_C_Invoice> getReferencedInvoiceRecord()
-	{
-		final ImmutableSet<String> invoiceDocNoCandidates = getInvoiceDocNoCandidates();
-		final ImmutableSet<DocStatus> completedOrClosedDocStatus = ImmutableSet.of(DocStatus.Completed, DocStatus.Closed);
-
-		return Optional.of(invoiceDAO.retrieveUnpaid(invoiceDocNoCandidates, completedOrClosedDocStatus, QueryLimit.TWO))
-				.flatMap(this::getSingleInvoice);
 	}
 
 	@NonNull
@@ -200,31 +133,6 @@ public class NoBatchReportEntry2Wrapper
 				.map(AmountAndCurrencyExchange3::getCntrValAmt)
 				.map(AmountAndCurrencyExchangeDetails3::getCcyXchg)
 				.map(CurrencyExchange5::getXchgRate);
-	}
-
-	@NonNull
-	public Optional<I_C_Invoice> getSingleInvoice(@NonNull final ImmutableList<I_C_Invoice> invoiceSet)
-	{
-		if (invoiceSet.isEmpty())
-		{
-			return Optional.empty();
-		}
-		else if (invoiceSet.size() > 1)
-		{
-			final String matchedInvoiceIds = invoiceSet.stream()
-					.map(org.compiere.model.I_C_Invoice::getC_Invoice_ID)
-					.map(String::valueOf)
-					.collect(Collectors.joining(","));
-
-			Loggables.withLogger(logger, Level.WARN).addLog(
-					"Multiple invoices found for ReportEntry2={}! MatchedInvoicedIds={}", entry.getNtryRef(), matchedInvoiceIds);
-
-			return Optional.empty();
-		}
-		else
-		{
-			return Optional.of(invoiceSet.iterator().next());
-		}
 	}
 
 	@NonNull

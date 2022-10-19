@@ -23,7 +23,9 @@
 package de.metas.banking.camt53;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.banking.BankAccount;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
@@ -37,18 +39,24 @@ import de.metas.banking.camt53.wrapper.AccountStatement2Wrapper;
 import de.metas.banking.camt53.wrapper.NoBatchBankToCustomerStatementV02Wrapper;
 import de.metas.banking.camt53.wrapper.NoBatchReportEntry2Wrapper;
 import de.metas.banking.service.BankStatementCreateRequest;
+import de.metas.banking.service.BankStatementLineCreateRequest;
 import de.metas.banking.service.IBankStatementDAO;
+import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
+import de.metas.document.engine.DocStatus;
 import de.metas.i18n.ExplainedOptional;
+import de.metas.invoice.InvoiceId;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.logging.LogManager;
+import de.metas.money.Money;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -63,9 +71,11 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class BankStatementCamt53Service
@@ -130,14 +140,14 @@ public class BankStatementCamt53Service
 	private Optional<BankStatementCreateRequest> buildBankStatementCreateRequest(@NonNull final AccountStatement2Wrapper accountStatement2Wrapper)
 	{
 		final ExplainedOptional<BankAccountId> bankAccountIdOpt = accountStatement2Wrapper.getBPartnerBankAccountId();
-		
+
 		if (!bankAccountIdOpt.isPresent())
 		{
 			Loggables.withLogger(logger, Level.DEBUG).addLog(bankAccountIdOpt.getExplanation().getDefaultValue());
 
 			return Optional.empty();
 		}
-		
+
 		final BankAccountId bankAccountId = bankAccountIdOpt.get();
 
 		if (!isStatementCurrencyMatchingBankAccount(bankAccountId, accountStatement2Wrapper))
@@ -167,18 +177,61 @@ public class BankStatementCamt53Service
 			@NonNull final BankStatementId bankStatementId,
 			@NonNull final OrgId orgId)
 	{
-		entryWrapper.buildBankStatementLineCreateRequest(bankStatementId, orgId)
+		buildBankStatementLineCreateRequest(entryWrapper, bankStatementId, orgId)
 				.ifPresent(bankStatementDAO::createBankStatementLine);
+	}
+
+	@NonNull
+	private Optional<BankStatementLineCreateRequest> buildBankStatementLineCreateRequest(
+			@NonNull final NoBatchReportEntry2Wrapper entryWrapper,
+			@NonNull final BankStatementId bankStatementId,
+			@NonNull final OrgId orgId)
+	{
+		final Instant statementLineDate = entryWrapper.getStatementLineDate().orElse(null);
+
+		if (statementLineDate == null)
+		{
+			Loggables.withLogger(logger, Level.INFO).addLog(
+					"Skipping this ReportEntry={} because StatementLineDate is missing! BankStatementId={}", entryWrapper.getEntry().getNtryRef(), bankStatementId);
+			return Optional.empty();
+		}
+
+		final Money stmtAmount = entryWrapper.getStatementAmount();
+
+		final BankStatementLineCreateRequest.BankStatementLineCreateRequestBuilder bankStatementLineCreateRequestBuilder = BankStatementLineCreateRequest.builder()
+				.orgId(orgId)
+				.bankStatementId(bankStatementId)
+				.lineDescription(entryWrapper.getLineDescription())
+				.statementAmt(stmtAmount)
+				.trxAmt(stmtAmount)
+				.currencyRate(entryWrapper.getCurrencyRate().orElse(null))
+				.interestAmt(entryWrapper.getInterestAmount().orElse(null))
+				.statementLineDate(TimeUtil.asLocalDate(statementLineDate));
+
+		getReferencedInvoiceRecord(entryWrapper)
+				.ifPresent(invoice -> bankStatementLineCreateRequestBuilder
+						.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
+						.bpartnerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID())));
+
+		return Optional.of(bankStatementLineCreateRequestBuilder.build());
+	}
+
+	@NonNull
+	private Optional<I_C_Invoice> getReferencedInvoiceRecord(@NonNull final NoBatchReportEntry2Wrapper entryWrapper)
+	{
+		final ImmutableSet<String> invoiceDocNoCandidates = entryWrapper.getInvoiceDocNoCandidates();
+		final ImmutableSet<DocStatus> completedOrClosedDocStatus = ImmutableSet.of(DocStatus.Completed, DocStatus.Closed);
+
+		return Optional.of(invoiceDAO.retrieveUnpaid(invoiceDocNoCandidates, completedOrClosedDocStatus, QueryLimit.TWO))
+				.flatMap(invoices -> getSingleInvoice(invoices, entryWrapper));
 	}
 
 	@NonNull
 	private NoBatchReportEntry2Wrapper buildNoBatchReportEntry2Wrapper(@NonNull final ReportEntry2 reportEntry2)
 	{
 		return NoBatchReportEntry2Wrapper.builder()
-				.entry(reportEntry2)
-				.invoiceDAO(invoiceDAO)
 				.currencyRepository(currencyRepository)
-				.orgDAO(orgDAO)
+				.entry(reportEntry2)
 				.build();
 	}
 
@@ -238,6 +291,33 @@ public class BankStatementCamt53Service
 		catch (final XMLStreamException e)
 		{
 			throw AdempiereException.wrapIfNeeded(e);
+		}
+	}
+
+	@NonNull
+	private static Optional<I_C_Invoice> getSingleInvoice(
+			@NonNull final ImmutableList<I_C_Invoice> invoiceList,
+			@NonNull final NoBatchReportEntry2Wrapper entryWrapper)
+	{
+		if (invoiceList.isEmpty())
+		{
+			return Optional.empty();
+		}
+		else if (invoiceList.size() > 1)
+		{
+			final String matchedInvoiceIds = invoiceList.stream()
+					.map(org.compiere.model.I_C_Invoice::getC_Invoice_ID)
+					.map(String::valueOf)
+					.collect(Collectors.joining(","));
+
+			Loggables.withLogger(logger, Level.WARN).addLog(
+					"Multiple invoices found for ReportEntry2={}! MatchedInvoicedIds={}", entryWrapper.getEntry().getNtryRef(), matchedInvoiceIds);
+
+			return Optional.empty();
+		}
+		else
+		{
+			return Optional.of(invoiceList.get(0));
 		}
 	}
 }
