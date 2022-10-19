@@ -28,6 +28,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.time.Duration;
 
 @Value
 @Builder
@@ -55,7 +56,7 @@ public class SFTPConfig
 	String erroredFilesFolder;
 
 	@NonNull
-	Integer pollingFrequency;
+	Duration pollingFrequency;
 
 	public String getSFTPConnectionString()
 	{

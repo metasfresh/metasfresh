@@ -189,27 +189,27 @@ public interface I_ExternalSystem_Config_SAP
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Polling Frequency.
+	 * Set Frequency In Milliseconds.
 	 * Defines how frequently should the process poll for new files.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setPollingFrequency (int PollingFrequency);
+	void setPollingFrequencyInMs (int PollingFrequencyInMs);
 
 	/**
-	 * Get Polling Frequency.
+	 * Get Frequency In Milliseconds.
 	 * Defines how frequently should the process poll for new files.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getPollingFrequency();
+	int getPollingFrequencyInMs();
 
-	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_PollingFrequency = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "PollingFrequency", null);
-	String COLUMNNAME_PollingFrequency = "PollingFrequency";
+	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_PollingFrequencyInMs = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "PollingFrequencyInMs", null);
+	String COLUMNNAME_PollingFrequencyInMs = "PollingFrequencyInMs";
 
 	/**
 	 * Set Processed Directory.

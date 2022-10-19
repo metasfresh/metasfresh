@@ -267,3 +267,62 @@ INSERT INTO t_alter_column values('externalsystem_config_sap','PollingFrequency'
 -- 2022-10-19T10:55:20.200896800Z
 UPDATE ExternalSystem_Config_SAP SET PollingFrequency=1000 WHERE PollingFrequency IS NULL
 ;
+
+-- 2022-10-19T13:43:45.815500900Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,581586,0,'PollingFrequencyInMs',TO_TIMESTAMP('2022-10-19 16:43:45','YYYY-MM-DD HH24:MI:SS'),100,'Legt fest, wie häufig der Prozess nach neuen Dateien suchen soll.','U','Y','Abfragefrequenz in Millisekunden','Abfragefrequenz in Millisekunden',TO_TIMESTAMP('2022-10-19 16:43:45','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-10-19T13:43:45.823432600Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=581586 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- 2022-10-19T13:44:44.487034500Z
+UPDATE AD_Element SET EntityType='D',Updated=TO_TIMESTAMP('2022-10-19 16:44:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581586
+;
+
+-- 2022-10-19T13:44:44.507520300Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581586,'de_DE')
+;
+
+-- Element: PollingFrequencyInMs
+-- 2022-10-19T13:45:32.025532300Z
+UPDATE AD_Element_Trl SET Description='Defines how frequently should the process poll for new files.', Name='Frequency In Milliseconds', PrintName='Frequency In Milliseconds',Updated=TO_TIMESTAMP('2022-10-19 16:45:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581586 AND AD_Language='nl_NL'
+;
+
+-- 2022-10-19T13:45:32.026564200Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581586,'nl_NL')
+;
+
+-- Element: PollingFrequencyInMs
+-- 2022-10-19T13:45:35.959356500Z
+UPDATE AD_Element_Trl SET Name='Frequency In Milliseconds', PrintName='Frequency In Milliseconds',Updated=TO_TIMESTAMP('2022-10-19 16:45:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581586 AND AD_Language='en_US'
+;
+
+-- 2022-10-19T13:45:35.960816300Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581586,'en_US')
+;
+
+-- Element: PollingFrequencyInMs
+-- 2022-10-19T13:45:43.424342600Z
+UPDATE AD_Element_Trl SET Description='Defines how frequently should the process poll for new files.',Updated=TO_TIMESTAMP('2022-10-19 16:45:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581586 AND AD_Language='en_US'
+;
+
+-- 2022-10-19T13:45:43.426341600Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581586,'en_US')
+;
+
+-- Column: ExternalSystem_Config_SAP.PollingFrequencyInMs
+-- 2022-10-19T13:46:25.748827400Z
+UPDATE AD_Column SET AD_Element_ID=581586, ColumnName='PollingFrequencyInMs', Description='Legt fest, wie häufig der Prozess nach neuen Dateien suchen soll.', Help=NULL, Name='Abfragefrequenz in Millisekunden',Updated=TO_TIMESTAMP('2022-10-19 16:46:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=584770
+;
+
+-- 2022-10-19T13:46:25.750830Z
+UPDATE AD_Field SET Name='Abfragefrequenz in Millisekunden', Description='Legt fest, wie häufig der Prozess nach neuen Dateien suchen soll.', Help=NULL WHERE AD_Column_ID=584770
+;
+
+-- 2022-10-19T13:46:25.754825900Z
+/* DDL */  select update_Column_Translation_From_AD_Element(581586)
+;
+
+/* DDL */ select db_alter_table('ExternalSystem_Config_SAP', 'ALTER TABLE ExternalSystem_Config_SAP RENAME COLUMN PollingFrequency to PollingFrequencyInMs;');
+;

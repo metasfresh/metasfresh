@@ -76,7 +76,7 @@ public class ExternalSystemConstants
 	public static final String PARAM_SFTP_TARGET_DIRECTORY = "SFTP_Target_Directory";
 	public static final String PARAM_PROCESSED_DIRECTORY = "SFTPProcessedDirectory";
 	public static final String PARAM_ERRORED_DIRECTORY = "SFTPErroredDirectory";
-	public static final String PARAM_POLLING_FREQUENCY = "SFTPPollingFrequency";
+	public static final String PARAM_POLLING_FREQUENCY_MS = "SFTPPollingFrequencyInMs";
 
 	public static final String QUEUE_NAME_MF_TO_ES = "MF_TO_ExternalSystem";
 

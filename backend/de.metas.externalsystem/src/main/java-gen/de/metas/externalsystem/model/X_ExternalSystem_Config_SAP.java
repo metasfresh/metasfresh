@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_ExternalSystem_Config_SAP extends org.compiere.model.PO implements I_ExternalSystem_Config_SAP, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -332835538L;
+	private static final long serialVersionUID = 581655576L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config_SAP (final Properties ctx, final int ExternalSystem_Config_SAP_ID, @Nullable final String trxName)
@@ -101,15 +101,15 @@ public class X_ExternalSystem_Config_SAP extends org.compiere.model.PO implement
 	}
 
 	@Override
-	public void setPollingFrequency (final int PollingFrequency)
+	public void setPollingFrequencyInMs (final int PollingFrequencyInMs)
 	{
-		set_Value (COLUMNNAME_PollingFrequency, PollingFrequency);
+		set_Value (COLUMNNAME_PollingFrequencyInMs, PollingFrequencyInMs);
 	}
 
 	@Override
-	public int getPollingFrequency() 
+	public int getPollingFrequencyInMs() 
 	{
-		return get_ValueAsInt(COLUMNNAME_PollingFrequency);
+		return get_ValueAsInt(COLUMNNAME_PollingFrequencyInMs);
 	}
 
 	@Override

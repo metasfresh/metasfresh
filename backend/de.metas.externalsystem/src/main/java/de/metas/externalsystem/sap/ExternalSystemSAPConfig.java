@@ -29,7 +29,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
+import java.time.Duration;
 
 @Value
 public class ExternalSystemSAPConfig implements IExternalSystemChildConfig
@@ -65,7 +65,7 @@ public class ExternalSystemSAPConfig implements IExternalSystemChildConfig
 	String erroredDirectory;
 
 	@NonNull
-	Integer pollingFrequency;
+	Duration pollingFrequency;
 
 	@Builder
 	public ExternalSystemSAPConfig(
@@ -79,7 +79,7 @@ public class ExternalSystemSAPConfig implements IExternalSystemChildConfig
 			@Nullable final String sftpTargetDirectory,
 			@NonNull final String processedDirectory,
 			@NonNull final String erroredDirectory,
-			@NonNull final Integer pollingFrequency)
+			@NonNull final Duration pollingFrequency)
 	{
 		this.id = id;
 		this.parentId = parentId;

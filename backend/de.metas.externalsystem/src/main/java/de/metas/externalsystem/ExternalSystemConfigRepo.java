@@ -68,6 +68,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 
@@ -855,7 +856,7 @@ public class ExternalSystemConfigRepo
 				.sftpTargetDirectory(config.getSFTP_TargetDirectory())
 				.processedDirectory(config.getProcessedDirectory())
 				.erroredDirectory(config.getErroredDirectory())
-				.pollingFrequency(config.getPollingFrequency())
+				.pollingFrequency(Duration.ofMillis(config.getPollingFrequencyInMs()))
 				.build();
 	}
 }

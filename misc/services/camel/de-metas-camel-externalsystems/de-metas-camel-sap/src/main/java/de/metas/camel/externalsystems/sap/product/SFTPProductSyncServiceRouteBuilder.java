@@ -39,6 +39,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
 import java.util.Map;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
@@ -123,7 +124,7 @@ public class SFTPProductSyncServiceRouteBuilder extends RouteBuilder implements 
 				.targetDirectory(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_TARGET_DIRECTORY))
 				.processedFilesFolder(requestParameters.get(ExternalSystemConstants.PARAM_PROCESSED_DIRECTORY))
 				.erroredFilesFolder(requestParameters.get(ExternalSystemConstants.PARAM_ERRORED_DIRECTORY))
-				.pollingFrequency(Integer.parseInt(requestParameters.get(ExternalSystemConstants.PARAM_POLLING_FREQUENCY)))
+				.pollingFrequency(Duration.parse(requestParameters.get(ExternalSystemConstants.PARAM_POLLING_FREQUENCY_MS)))
 				.build();
 
 		exchange.getIn().setBody(sftpConfig, SFTPConfig.class);
