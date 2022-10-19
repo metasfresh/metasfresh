@@ -24,6 +24,7 @@ package de.metas.banking.camt53.wrapper;
 
 import de.metas.banking.camt53.jaxb.camt053_001_02.AccountStatement2;
 import de.metas.banking.camt53.jaxb.camt053_001_02.BankToCustomerStatementV02;
+import de.metas.banking.camt53.jaxb.camt053_001_02.EntryTransaction2;
 import de.metas.banking.camt53.jaxb.camt053_001_02.ReportEntry2;
 import de.metas.i18n.AdMessageKey;
 import lombok.NonNull;
@@ -55,6 +56,9 @@ public class NoBatchBankToCustomerStatementV02Wrapper
 		return bankToCustomerStatementV02.getStmt();
 	}
 
+	/**
+	 * Validates that the {@link AccountStatement2} contains only single transactions.
+	 */
 	private static void validateAccountStatement2(@NonNull final AccountStatement2 accountStatement2)
 	{
 		accountStatement2.getNtry().forEach(NoBatchBankToCustomerStatementV02Wrapper::validateNoBatchedTrxPresent);
@@ -69,8 +73,16 @@ public class NoBatchBankToCustomerStatementV02Wrapper
 		}
 	}
 
+	/**
+	 * Checks if there are any batched transactions within given {@link ReportEntry2};
+	 * Notes:
+	 * - there will be one {@link de.metas.banking.camt53.jaxb.camt053_001_02.EntryDetails1} for each batch of transactions included in the given {@link ReportEntry2}
+	 * - there will be one {@link EntryTransaction2} for each transaction included in a batch i.e. in a EntryDetails1 
+	 */
 	private static boolean isBatchedTrxPresent(@NonNull final ReportEntry2 reportEntry)
 	{
-		return reportEntry.getNtryDtls().size() > 1;
+		return reportEntry.getNtryDtls().size() > 1 
+				// dev-note: we consider batch with one trx non-batched as it doesn't make any difference
+				|| reportEntry.getNtryDtls().size() == 1 && reportEntry.getNtryDtls().get(0).getTxDtls().size() > 1;
 	}
 }
