@@ -16,6 +16,7 @@ import de.metas.handlingunits.pporder.api.HUPPOrderIssueProducer;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IssueCandidateGeneratedBy;
 import de.metas.handlingunits.weighting.WeightHUCommand;
+import de.metas.i18n.AdMessageKey;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -37,6 +38,8 @@ public class PPOrderIssueScheduleService
 	private final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 	private final PPOrderIssueScheduleRepository issueScheduleRepository;
 	private final InventoryService inventoryService;
+
+	public static final AdMessageKey MSG_AlreadyIssued = AdMessageKey.of("de.metas.handlingunits.pporder.AlreadyIssuedError");
 
 	public PPOrderIssueScheduleService(
 			@NonNull final PPOrderIssueScheduleRepository issueScheduleRepository,
@@ -62,7 +65,8 @@ public class PPOrderIssueScheduleService
 		PPOrderIssueSchedule issueSchedule = issueScheduleRepository.getById(issueScheduleId);
 		if (issueSchedule.getIssued() != null)
 		{
-			throw new AdempiereException("Already issued")
+			throw new AdempiereException(MSG_AlreadyIssued)
+					.markAsUserValidationError()
 					.setParameter("request", request)
 					.setParameter("issueSchedule", issueSchedule);
 		}
