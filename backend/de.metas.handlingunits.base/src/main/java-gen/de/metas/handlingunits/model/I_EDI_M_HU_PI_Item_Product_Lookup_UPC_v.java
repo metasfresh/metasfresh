@@ -1,7 +1,8 @@
 package de.metas.handlingunits.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for EDI_M_HU_PI_Item_Product_Lookup_UPC_v
  *  @author metasfresh (generated) 
@@ -15,6 +16,27 @@ public interface I_EDI_M_HU_PI_Item_Product_Lookup_UPC_v
 //	/** AD_Table_ID=540548 */
 //	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
+
+	/**
+	 * Set GLN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setGLN (@Nullable java.lang.String GLN);
+
+	/**
+	 * Get GLN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getGLN();
+
+	ModelColumn<I_EDI_M_HU_PI_Item_Product_Lookup_UPC_v, Object> COLUMN_GLN = new ModelColumn<>(I_EDI_M_HU_PI_Item_Product_Lookup_UPC_v.class, "GLN", null);
+	String COLUMNNAME_GLN = "GLN";
 
 	/**
 	 * Set Active.
@@ -58,6 +80,27 @@ public interface I_EDI_M_HU_PI_Item_Product_Lookup_UPC_v
 	int getM_HU_PI_Item_Product_ID();
 
 	String COLUMNNAME_M_HU_PI_Item_Product_ID = "M_HU_PI_Item_Product_ID";
+
+	/**
+	 * Set StoreGLN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setStoreGLN (@Nullable java.lang.String StoreGLN);
+
+	/**
+	 * Get StoreGLN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getStoreGLN();
+
+	ModelColumn<I_EDI_M_HU_PI_Item_Product_Lookup_UPC_v, Object> COLUMN_StoreGLN = new ModelColumn<>(I_EDI_M_HU_PI_Item_Product_Lookup_UPC_v.class, "StoreGLN", null);
+	String COLUMNNAME_StoreGLN = "StoreGLN";
 
 	/**
 	 * Set UPC.
