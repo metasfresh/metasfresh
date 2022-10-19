@@ -57,7 +57,7 @@ import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductRepository;
 import de.metas.sectionCode.SectionCodeId;
-import de.metas.sectionCode.SectionCodeRepository;
+import de.metas.sectionCode.SectionCodeService;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -94,16 +94,16 @@ public class ProductRestService
 
 	private final ProductRepository productRepository;
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
-	private final SectionCodeRepository sectionCodeRepository;
+	private final SectionCodeService sectionCodeService;
 
 	public ProductRestService(
 			@NonNull final ProductRepository productRepository,
 			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
-			@NonNull final SectionCodeRepository sectionCodeRepository)
+			@NonNull final SectionCodeService sectionCodeService)
 	{
 		this.productRepository = productRepository;
 		this.externalReferenceRestControllerService = externalReferenceRestControllerService;
-		this.sectionCodeRepository = sectionCodeRepository;
+		this.sectionCodeService = sectionCodeService;
 	}
 
 	@NonNull
@@ -794,7 +794,7 @@ public class ProductRestService
 		if (jsonRequestProductUpsertItem.isSectionCodeSet())
 		{
 			final SectionCodeId sectionCodeId = Optional.ofNullable(jsonRequestProductUpsertItem.getSectionCode())
-					.flatMap(code -> sectionCodeRepository.getSectionCodeIdByValue(orgId, code))
+					.map(code -> sectionCodeService.getSectionCodeIdByValue(orgId, code))
 					.orElse(null);
 
 			builder.sectionCodeId(sectionCodeId);
@@ -826,7 +826,7 @@ public class ProductRestService
 				getProductCategoryId(jsonRequestProductUpsertItem.getProductCategoryIdentifier(), org) : defaultProductCategoryId;
 
 		final SectionCodeId sectionCodeId = Optional.ofNullable(jsonRequestProductUpsertItem.getSectionCode())
-				.flatMap(code -> sectionCodeRepository.getSectionCodeIdByValue(orgId, code))
+				.map(code -> sectionCodeService.getSectionCodeIdByValue(orgId, code))
 				.orElse(null);
 
 		return CreateProductRequest.builder()

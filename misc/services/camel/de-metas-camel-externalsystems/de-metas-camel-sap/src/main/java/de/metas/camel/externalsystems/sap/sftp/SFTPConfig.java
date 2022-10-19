@@ -59,8 +59,7 @@ public class SFTPConfig
 
 	public String getSFTPConnectionString()
 	{
-		//FIXME: move; moveFailed; delay should be injected from properties
-		final String endpointTemplate = "%s@%s:%s/%s?password=%s&move=%s&moveFailed=%s&delay=%s";
+		final String endpointTemplate = "sftp://%s@%s:%s/%s?password=%s&move=%s&moveFailed=%s&delay=%s";
 
 		return String.format(endpointTemplate,
 							 this.getUsername(),

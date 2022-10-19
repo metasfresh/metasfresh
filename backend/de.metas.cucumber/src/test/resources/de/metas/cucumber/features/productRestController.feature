@@ -19,6 +19,10 @@ Feature:product get/create/update using metasfresh api
       | ALBERTA        | 345               | BPartner |
       | ALBERTA        | 456               | BPartner |
 
+    And metasfresh contains M_SectionCode:
+      | M_SectionCode_ID.Identifier | Value                   |
+      | ALBERTA_345_sectionCode     | ALBERTA_345_sectionCode |
+
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/products/001' and fulfills with '200' status code
   """
   {
@@ -53,7 +57,7 @@ Feature:product get/create/update using metasfresh api
         "productCategoryIdentifier": null,
         "productCategoryIdentifierSet": false,
         "syncAdvise": null,
-        "sectionCode":"SectionCode",
+        "sectionCode":"ALBERTA_345_sectionCode",
         "sectionCodeSet": true,
         "bpartnerProductItems": [
           {
@@ -139,7 +143,7 @@ Feature:product get/create/update using metasfresh api
       | p_1                     | ext-ALBERTA-345    |
     Then verify product info
       | M_Product_ID.Identifier | Value   | Name         | ProductType | C_UOM_ID.X12DE355 | UPC      | GTIN      | Description      | IsActive | OPT.M_SectionCode_ID.Value |
-      | p_1                     | code345 | Product_Test | ITEM        | PCE               | ean_test | gtin_test | test_description | true     | SectionCode                |
+      | p_1                     | code345 | Product_Test | ITEM        | PCE               | ean_test | gtin_test | test_description | true     | ALBERTA_345_sectionCode    |
     Then locate bpartner by external identifier
       | C_BPartner_ID.Identifier | externalIdentifier |
       | bpartner_1               | ext-ALBERTA-345    |

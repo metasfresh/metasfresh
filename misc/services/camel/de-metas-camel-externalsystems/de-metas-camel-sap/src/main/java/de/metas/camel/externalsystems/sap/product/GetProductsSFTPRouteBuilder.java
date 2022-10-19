@@ -45,7 +45,7 @@ public class GetProductsSFTPRouteBuilder extends RouteBuilder
 	private static final String UPSERT_PRODUCT_PROCESSOR_ID = "SAP-Products-upsertProductProcessorId";
 
 	@NonNull
-	private final SFTPConfig sftpCredentials;
+	private final SFTPConfig sftpConfig;
 
 	@Getter
 	@NonNull
@@ -59,14 +59,14 @@ public class GetProductsSFTPRouteBuilder extends RouteBuilder
 
 	@Builder
 	private GetProductsSFTPRouteBuilder(
-			@NonNull final SFTPConfig sftpCredentials,
+			@NonNull final SFTPConfig sftpConfig,
 			@NonNull final CamelContext camelContext,
 			@NonNull final String routeId,
 			@NonNull final JsonExternalSystemRequest enabledByExternalSystemRequest,
 			@NonNull final ProcessLogger processLogger)
 	{
 		super(camelContext);
-		this.sftpCredentials = sftpCredentials;
+		this.sftpConfig = sftpConfig;
 		this.routeId = routeId;
 		this.enabledByExternalSystemRequest = enabledByExternalSystemRequest;
 		this.processLogger = processLogger;
@@ -75,11 +75,8 @@ public class GetProductsSFTPRouteBuilder extends RouteBuilder
 	@Override
 	public void configure() throws Exception
 	{
-		final String sftpURL = "sftp://" + sftpCredentials.getSFTPConnectionString();
-
 		//@formatter:off
-		from(sftpURL)
-				.autoStartup(true)
+		from(sftpConfig.getSFTPConnectionString())
 				.id(routeId)
 				.log("Product Sync Route Started")
 				.unmarshal(new BindyCsvDataFormat(ProductRow.class))

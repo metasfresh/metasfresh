@@ -45,6 +45,7 @@ import de.metas.rest_api.v2.externlasystem.ExternalSystemService;
 import de.metas.rest_api.v2.externlasystem.JsonExternalSystemRetriever;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.sectionCode.SectionCodeRepository;
+import de.metas.sectionCode.SectionCodeService;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -125,7 +126,7 @@ public class ProductsRestControllerTest
 				new ExternalReferenceRestControllerService(externalReferenceRepository, new ExternalSystems(), new ExternalReferenceTypes());
 		final AlbertaProductService albertaProductService = new AlbertaProductService(new AlbertaProductDAO(), externalReferenceRepository);
 
-		final ProductRestService productRestService = new ProductRestService(productRepository, externalReferenceRestControllerService, sectionCodeRepository);
+		final ProductRestService productRestService = new ProductRestService(productRepository, externalReferenceRestControllerService, new SectionCodeService(sectionCodeRepository));
 
 		restController = new ProductsRestController(productsServicesFacade, albertaProductService, externalSystemService, productRestService);
 	}

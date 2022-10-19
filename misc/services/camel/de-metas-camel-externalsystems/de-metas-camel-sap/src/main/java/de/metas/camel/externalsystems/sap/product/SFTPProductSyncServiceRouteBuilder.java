@@ -139,7 +139,7 @@ public class SFTPProductSyncServiceRouteBuilder extends RouteBuilder implements 
 
 		final GetProductsSFTPRouteBuilder getProductsSFTPRouteBuilder = GetProductsSFTPRouteBuilder
 				.builder()
-				.sftpCredentials(sftpConfig)
+				.sftpConfig(sftpConfig)
 				.camelContext(exchange.getContext())
 				.enabledByExternalSystemRequest(sapRouteContext.getRequest())
 				.processLogger(processLogger)

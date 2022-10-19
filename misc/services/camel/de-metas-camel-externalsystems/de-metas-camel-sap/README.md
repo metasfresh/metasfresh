@@ -36,17 +36,18 @@ Configs available in `Externalsystem_Config_SAP`:
 | Errored Directory   | string          | the location where the files will be moved in case of error while processing |
 | Polling Frequency   | number          | the frequency with which the files are polled from the sftp server           |
 
-
 1. Product - all `metasfresh-column` values refer to `M_Product` columns
 
-SAP | metasfresh-column           | mandatory in mf | metasfresh-json                     | note                                      |
----- |-----------------------------|-----------------|-------------------------------------|-------------------------------------------|
-ProductRow.materialCode + "_" + ProductRow.name | `value`                     | Y               | JsonRequestProduct.code             |                                           |
-ProductRow.uom | `c_uom_id`                  | Y               | JsonRequestProduct.uomCode          |                                           |
-ProductRow.name | `name`                      | Y               | JsonRequestProduct.name             |                                           |
-ProductRow.sectionCode | `m_sectioncode_id`          | N               | JsonRequestProduct.sectionCode      |                                           |
----- | `isstocked`                 | Y               | JsonRequestProduct.stocked          |                                           |
----- | `discontinued`              | N               | JsonRequestProduct.discontinued     |                                           |
-ProductRow.materialGroup | `producttype` - ?           | Y               | ?                                   | default value STANDARD                    |
-ProductRow.materialCategory | `m_product_category_id` - ? | Y               | ?                                   | deault value JsonRequestProduct.Type.ITEM |
---- | ----                        | N               | JsonRequestProductUpsert.syncAdvise | default value CREATE_OR_MERGE             |
+SAP | metasfresh-column                     | mandatory in mf | metasfresh-json                                | note                                                               |
+---- |---------------------------------------|-----------------|------------------------------------------------|--------------------------------------------------------------------|
+ProductRow.materialCode + "_" + ProductRow.name | `value`                               | Y               | JsonRequestProduct.code                        |                                                                    |
+ProductRow.uom | `c_uom_id`                            | Y               | JsonRequestProduct.uomCode                     |                                                                    |
+ProductRow.name | `name`                                | Y               | JsonRequestProduct.name                        |                                                                    |
+ProductRow.sectionCode | `m_sectioncode_id`                    | N               | JsonRequestProduct.sectionCode                 |                                                                    |
+---- | `isstocked`                           | Y               | JsonRequestProduct.stocked                     | always set to `true`                                               |
+---- | `discontinued`                        | N               | JsonRequestProduct.discontinued                | always set to `false`                                              |
+ProductRow.materialGroup | `producttype`                         | Y               | JsonRequestProduct.type                        | alwasys set to JsonRequestProduct.Type.ITEM                        |
+ProductRow.materialCategory | `m_product_category_id`               | Y               | JsonRequestProduct.productCategoryIdentifier   | never set, but will be STANDARD due to default value in metasfresh |
+--- | ----                                  | N               | JsonRequestProductUpsert.syncAdvise            | default value CREATE_OR_MERGE                                      |
+ProductRow.materialCode | S_ExternalReference.externalReference | N               | JsonRequestProductUpsertItem.productIdentifier | ext-SAP-MaterialCode                                               |
+
