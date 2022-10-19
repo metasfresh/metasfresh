@@ -69,6 +69,7 @@ public class M_ShipmentSchedule_PostMaterialEvent
 			ModelValidator.TYPE_AFTER_CHANGE,
 			ModelValidator.TYPE_BEFORE_DELETE /* before delete because we still need the M_ShipmentSchedule_ID */
 	}, ifColumnsChanged = {
+			I_M_ShipmentSchedule.COLUMNNAME_IsClosed,
 			I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Calculated,
 			I_M_ShipmentSchedule.COLUMNNAME_QtyOrdered_Override,
 			I_M_ShipmentSchedule.COLUMNNAME_QtyReserved,
