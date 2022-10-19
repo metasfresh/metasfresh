@@ -2123,7 +2123,7 @@ public final class Document
 
 		return entityDescriptor.getDocumentDecorators()
 				.stream()
-				.map(decorator -> decorator.isDeleteForbidden(getDocumentId(), recordReference))
+				.map(decorator -> decorator.isDeleteForbidden(recordReference))
 				.filter(BooleanWithReason::isTrue)
 				.findFirst()
 				.orElse(BooleanWithReason.FALSE);

@@ -481,15 +481,15 @@ public class DocumentCollection
 
 		forRootDocumentWritable(rootDocumentPath, changesCollector, rootDocument -> {
 
-			final BooleanWithReason isDeleteForbidden = rootDocument.isDeleteForbidden();
-			if (isDeleteForbidden.isTrue())
-			{
-				throw new AdempiereException(isDeleteForbidden.getReason())
-						.markAsUserValidationError();
-			}
-
 			if (documentPath.isRootDocument())
 			{
+				final BooleanWithReason isDeleteForbidden = rootDocument.isDeleteForbidden();
+				if (isDeleteForbidden.isTrue())
+				{
+					throw new AdempiereException(isDeleteForbidden.getReason())
+							.markAsUserValidationError();
+				}
+
 				if (!rootDocument.isNew())
 				{
 					rootDocument.deleteFromRepository();

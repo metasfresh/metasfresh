@@ -27,7 +27,6 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
-import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -55,14 +54,14 @@ public class ExternallyReferencedDocumentDecorator implements IDocumentDecorator
 
 	@Override
 	@NonNull
-	public BooleanWithReason isDeleteForbidden(@NonNull final DocumentId documentId, @NonNull final TableRecordReference recordReference)
+	public BooleanWithReason isDeleteForbidden(@NonNull final TableRecordReference recordReference)
 	{
 		if (!isReadOnly(recordReference))
 		{
 			return BooleanWithReason.FALSE;
 		}
 
-		final ITranslatableString errorMessage = msgBL.getTranslatableMsgText(EXTERNAL_REFERENCE_READ_ONLY_IN_METASFRESH_ERROR, documentId);
+		final ITranslatableString errorMessage = msgBL.getTranslatableMsgText(EXTERNAL_REFERENCE_READ_ONLY_IN_METASFRESH_ERROR, recordReference.getTableName() + "_" + recordReference.getRecord_ID());
 
 		return BooleanWithReason.trueBecause(errorMessage);
 	}

@@ -23,7 +23,6 @@
 package de.metas.ui.web.window.descriptor.decorator;
 
 import de.metas.i18n.BooleanWithReason;
-import de.metas.ui.web.window.datatypes.DocumentId;
 import lombok.NonNull;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
@@ -35,7 +34,7 @@ public interface IDocumentDecorator
 	}
 
 	@NonNull
-	default BooleanWithReason isDeleteForbidden(@NonNull final DocumentId documentId, @NonNull final TableRecordReference tableRecordReference)
+	default BooleanWithReason isDeleteForbidden(@NonNull final TableRecordReference tableRecordReference)
 	{
 		return BooleanWithReason.FALSE;
 	}
