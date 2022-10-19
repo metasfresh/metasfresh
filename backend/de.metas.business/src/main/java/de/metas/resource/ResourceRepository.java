@@ -110,6 +110,11 @@ class ResourceRepository
 		return getResourcesMap().getGroupIdsByResourceIds(resourceIds);
 	}
 
+	public ImmutableSet<ResourceId> getResourceIdsByUserId(@NonNull final UserId userId)
+	{
+		return getResourcesMap().getResourceIdsByUserId(userId);
+	}
+
 	private ResourcesMap getResourcesMap()
 	{
 		return cache.getOrLoad(0, this::retrieveResourcesMap);
@@ -214,6 +219,14 @@ class ResourceRepository
 					.map(byId::get)
 					.filter(Objects::nonNull)
 					.collect(ImmutableList.toImmutableList());
+		}
+
+		public ImmutableSet<ResourceId> getResourceIdsByUserId(@NonNull final UserId userId)
+		{
+			return allActive.stream()
+					.filter(resource -> UserId.equals(resource.getResponsibleId(), userId))
+					.map(Resource::getResourceId)
+					.collect(ImmutableSet.toImmutableSet());
 		}
 	}
 }

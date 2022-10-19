@@ -27,13 +27,13 @@ import de.metas.manufacturing.job.model.ScaleDevice;
 import de.metas.manufacturing.job.service.commands.ReceiveGoodsCommand;
 import de.metas.manufacturing.job.service.commands.create_job.ManufacturingJobCreateCommand;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonReceivingTarget;
-import de.metas.material.planning.IResourceDAO;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
+import de.metas.resource.ResourceService;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -68,7 +68,7 @@ public class ManufacturingJobService
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final IResourceDAO resourceDAO = Services.get(IResourceDAO.class);
+	private final ResourceService resourceService;
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IHUPPOrderBL ppOrderBL;
 	private final IPPOrderBOMBL ppOrderBOMBL;
@@ -83,12 +83,14 @@ public class ManufacturingJobService
 	private static final AdMessageKey MSG_ScaleDeviceNotRegistered = AdMessageKey.of("ScaleDeviceNotRegistered");
 
 	public ManufacturingJobService(
+			final @NonNull ResourceService resourceService,
 			final @NonNull PPOrderIssueScheduleService ppOrderIssueScheduleService,
 			final @NonNull HUReservationService huReservationService,
 			final @NonNull DeviceAccessorsHubFactory deviceAccessorsHubFactory,
 			final @NonNull DeviceWebsocketNamingStrategy deviceWebsocketNamingStrategy,
 			final @NonNull HUQRCodesService huQRCodeService)
 	{
+		this.resourceService = resourceService;
 		this.ppOrderIssueScheduleService = ppOrderIssueScheduleService;
 		this.huReservationService = huReservationService;
 		this.deviceAccessorsHubFactory = deviceAccessorsHubFactory;
@@ -186,7 +188,7 @@ public class ManufacturingJobService
 			{
 				case UserPlant:
 				{
-					final ImmutableSet<ResourceId> resourceIds = resourceDAO.getResourceIdsByUserId(userId);
+					final ImmutableSet<ResourceId> resourceIds = resourceService.getResourceIdsByUserId(userId);
 					queryBuilder.onlyPlantIds(resourceIds);
 					break;
 				}
