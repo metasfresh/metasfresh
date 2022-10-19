@@ -65,7 +65,7 @@ public class ExternalSystemSAPConfig implements IExternalSystemChildConfig
 	String erroredDirectory;
 
 	@NonNull
-	BigDecimal pollingFrequency;
+	Integer pollingFrequency;
 
 	@Builder
 	public ExternalSystemSAPConfig(
@@ -79,7 +79,7 @@ public class ExternalSystemSAPConfig implements IExternalSystemChildConfig
 			@Nullable final String sftpTargetDirectory,
 			@NonNull final String processedDirectory,
 			@NonNull final String erroredDirectory,
-			@NonNull final BigDecimal pollingFrequency)
+			@NonNull final Integer pollingFrequency)
 	{
 		this.id = id;
 		this.parentId = parentId;

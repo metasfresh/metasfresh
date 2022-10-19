@@ -1,6 +1,5 @@
 package de.metas.externalsystem.model;
 
-import java.math.BigDecimal;
 import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
@@ -193,21 +192,21 @@ public interface I_ExternalSystem_Config_SAP
 	 * Set Polling Frequency.
 	 * Defines how frequently should the process poll for new files.
 	 *
-	 * <br>Type: Number
+	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setPollingFrequency (BigDecimal PollingFrequency);
+	void setPollingFrequency (int PollingFrequency);
 
 	/**
 	 * Get Polling Frequency.
 	 * Defines how frequently should the process poll for new files.
 	 *
-	 * <br>Type: Number
+	 * <br>Type: Integer
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	BigDecimal getPollingFrequency();
+	int getPollingFrequency();
 
 	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_PollingFrequency = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "PollingFrequency", null);
 	String COLUMNNAME_PollingFrequency = "PollingFrequency";

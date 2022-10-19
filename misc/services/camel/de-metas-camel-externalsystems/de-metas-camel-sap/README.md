@@ -49,5 +49,5 @@ ProductRow.sectionCode | `m_sectioncode_id`                    | N              
 ProductRow.materialGroup | `producttype`                         | Y               | JsonRequestProduct.type                        | alwasys set to JsonRequestProduct.Type.ITEM                        |
 ProductRow.materialCategory | `m_product_category_id`               | Y               | JsonRequestProduct.productCategoryIdentifier   | never set, but will be STANDARD due to default value in metasfresh |
 --- | ----                                  | N               | JsonRequestProductUpsert.syncAdvise            | default value CREATE_OR_MERGE                                      |
-ProductRow.materialCode | S_ExternalReference.externalReference | N               | JsonRequestProductUpsertItem.productIdentifier | ext-SAP-MaterialCode                                               |
+ProductRow.materialCode | `S_ExternalReference.externalReference` | Y               | JsonRequestProductUpsertItem.productIdentifier | ext-SAP-MaterialCode                                               |
 

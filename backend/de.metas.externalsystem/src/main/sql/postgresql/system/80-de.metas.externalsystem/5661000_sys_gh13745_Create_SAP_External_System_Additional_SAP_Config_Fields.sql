@@ -241,3 +241,29 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 -- 2022-10-18T16:36:33.404377600Z
 /* DDL */ SELECT public.db_alter_table('ExternalSystem_Config_SAP','ALTER TABLE public.ExternalSystem_Config_SAP ADD COLUMN PollingFrequency NUMERIC DEFAULT 1000 NOT NULL')
 ;
+
+-- Column: ExternalSystem_Config_SAP.PollingFrequency
+-- 2022-10-19T10:54:34.565920100Z
+UPDATE AD_Column SET AD_Reference_ID=11, DefaultValue='0',Updated=TO_TIMESTAMP('2022-10-19 13:54:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=584770
+;
+
+-- 2022-10-19T10:54:39.839803Z
+INSERT INTO t_alter_column values('externalsystem_config_sap','PollingFrequency','NUMERIC(10)',null,'0')
+;
+
+-- 2022-10-19T10:54:39.981116800Z
+UPDATE ExternalSystem_Config_SAP SET PollingFrequency=0 WHERE PollingFrequency IS NULL
+;
+
+-- Column: ExternalSystem_Config_SAP.PollingFrequency
+-- 2022-10-19T10:55:16.499602800Z
+UPDATE AD_Column SET DefaultValue='1000',Updated=TO_TIMESTAMP('2022-10-19 13:55:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=584770
+;
+
+-- 2022-10-19T10:55:20.185125500Z
+INSERT INTO t_alter_column values('externalsystem_config_sap','PollingFrequency','NUMERIC(10)',null,'1000')
+;
+
+-- 2022-10-19T10:55:20.200896800Z
+UPDATE ExternalSystem_Config_SAP SET PollingFrequency=1000 WHERE PollingFrequency IS NULL
+;

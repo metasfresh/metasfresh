@@ -55,7 +55,7 @@ public class SFTPConfig
 	String erroredFilesFolder;
 
 	@NonNull
-	String pollingFrequency;
+	Integer pollingFrequency;
 
 	public String getSFTPConnectionString()
 	{

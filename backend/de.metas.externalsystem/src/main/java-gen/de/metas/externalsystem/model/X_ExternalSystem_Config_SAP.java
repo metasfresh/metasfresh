@@ -1,7 +1,6 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.externalsystem.model;
 
-import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
 import javax.annotation.Nullable;
@@ -13,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_ExternalSystem_Config_SAP extends org.compiere.model.PO implements I_ExternalSystem_Config_SAP, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1897653887L;
+	private static final long serialVersionUID = -332835538L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config_SAP (final Properties ctx, final int ExternalSystem_Config_SAP_ID, @Nullable final String trxName)
@@ -102,16 +101,15 @@ public class X_ExternalSystem_Config_SAP extends org.compiere.model.PO implement
 	}
 
 	@Override
-	public void setPollingFrequency (final BigDecimal PollingFrequency)
+	public void setPollingFrequency (final int PollingFrequency)
 	{
 		set_Value (COLUMNNAME_PollingFrequency, PollingFrequency);
 	}
 
 	@Override
-	public BigDecimal getPollingFrequency() 
+	public int getPollingFrequency() 
 	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PollingFrequency);
-		return bd != null ? bd : BigDecimal.ZERO;
+		return get_ValueAsInt(COLUMNNAME_PollingFrequency);
 	}
 
 	@Override

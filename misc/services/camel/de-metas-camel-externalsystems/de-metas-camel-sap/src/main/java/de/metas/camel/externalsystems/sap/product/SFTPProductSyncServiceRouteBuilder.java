@@ -123,7 +123,7 @@ public class SFTPProductSyncServiceRouteBuilder extends RouteBuilder implements 
 				.targetDirectory(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_TARGET_DIRECTORY))
 				.processedFilesFolder(requestParameters.get(ExternalSystemConstants.PARAM_PROCESSED_DIRECTORY))
 				.erroredFilesFolder(requestParameters.get(ExternalSystemConstants.PARAM_ERRORED_DIRECTORY))
-				.pollingFrequency(requestParameters.get(ExternalSystemConstants.PARAM_POLLING_FREQUENCY))
+				.pollingFrequency(Integer.parseInt(requestParameters.get(ExternalSystemConstants.PARAM_POLLING_FREQUENCY)))
 				.build();
 
 		exchange.getIn().setBody(sftpConfig, SFTPConfig.class);
