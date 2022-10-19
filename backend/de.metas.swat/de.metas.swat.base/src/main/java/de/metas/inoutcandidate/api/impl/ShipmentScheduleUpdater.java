@@ -270,6 +270,8 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			{
 				final I_M_ShipmentSchedule sched = olAndSched.getSched();
 
+				shipmentScheduleHandlerBL.updateShipmentScheduleFromReferencedRecord(sched);
+
 				updateCatchUomId(sched);
 
 				updateWarehouseId(sched);

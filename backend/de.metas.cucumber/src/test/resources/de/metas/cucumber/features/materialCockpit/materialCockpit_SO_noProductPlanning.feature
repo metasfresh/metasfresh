@@ -4,6 +4,7 @@ Feature: sales order interaction with material cockpit - no product planning
   Background: Initial Data
     Given metasfresh has date and time 2021-04-16T13:30:13+01:00[Europe/Berlin]
 
+  @Id:S0189_100
   @from:cucumber
   Scenario: SO with qty = 10, no ASI
     Given metasfresh contains M_Products:
@@ -34,7 +35,28 @@ Feature: sales order interaction with material cockpit - no product planning
     Then after not more than 30s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 10                              | 10                      | 0                          | -10                           | 0                            |
+    And after not more than 30s, M_ShipmentSchedules are found:
+      | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
+      | s_s_1      | ol_1                      | N             |
+    And 'generate shipments' process is invoked
+      | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
+      | s_s_1                            | D            | true                | false       |
+    And after not more than 30s, M_InOut is found:
+      | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
+      | s_s_1                            | s_1                   |
+    And after not more than 30s, metasfresh has this MD_Cockpit data
+      | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
+      | cp_1       | p_1                     | 2021-04-16  |                              | 0                               | 0                       | 0                          | 0                             | 0                            |
+    And the shipment identified by s_1 is reactivated
+    And after not more than 30s, metasfresh has this MD_Cockpit data
+      | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
+      | cp_1       | p_1                     | 2021-04-16  |                              | 10                              | 10                      | 0                          | -10                           | 0                            |
+    And the shipment identified by s_1 is completed
+    And after not more than 30s, metasfresh has this MD_Cockpit data
+      | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
+      | cp_1       | p_1                     | 2021-04-16  |                              | 0                               | 0                       | 0                          | 0                             | 0                            |
 
+  @Id:S0189_200
   @from:cucumber
   Scenario: SO with qty = 10, no ASI, reactivated, changed the qty to 12
     Given metasfresh contains M_Products:
@@ -74,6 +96,8 @@ Feature: sales order interaction with material cockpit - no product planning
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 12                              | 12                      | 0                          | -12                           | 0                            |
 
+  @Id:S0189_300
+  @from:cucumber
   Scenario: 2 SOs, each with qty = 10, no ASI, same product
     Given metasfresh contains M_Products:
       | Identifier | Name                    |
@@ -114,6 +138,8 @@ Feature: sales order interaction with material cockpit - no product planning
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  |                              | 20                              | 20                      | 0                          | -20                           | 0                            |
 
+  @Id:S0189_400
+  @from:cucumber
   Scenario: 2 SOs, each with qty = 10, no ASI, different product
     Given metasfresh contains M_Products:
       | Identifier | Name                    |
@@ -157,6 +183,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | cp_1       | p_1                     | 2021-04-16  |                              | 10                              | 10                      | 0                          | -10                           | 0                            |
       | cp_2       | p_2                     | 2021-04-16  |                              | 10                              | 10                      | 0                          | -10                           | 0                            |
 
+  @Id:S0189_500
   @from:cucumber
   Scenario: SO with qty = 10 and ASI
     Given metasfresh contains M_Products:
@@ -199,6 +226,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | lineASI                      | 10                              | 10                      | 0                          | -10                           | 0                            |
 
+  @Id:S0189_600
   @from:cucumber
   Scenario: 2 SOs with qty = 10 and different ASI
     Given metasfresh contains M_Products:
@@ -263,6 +291,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 10                              | 10                      | 0                          | -10                           | 0                            |
       | cp_2       | p_1                     | 2021-04-16  | lineASI_2                    | 10                              | 10                      | 0                          | -10                           | 0                            |
 
+  @Id:S0189_700
   @from:cucumber
   Scenario: SO with 2 lines (qty=10, same product) and different ASIs, reactivated, changed ASI to the same one
     Given metasfresh contains M_Products:
@@ -316,6 +345,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 20                              | 20                      | 0                          | -20                           | 0                            |
       | cp_2       | p_1                     | 2021-04-16  |                              | 0                               | 0                       | 0                          | 0                             | 0                            |
 
+  @Id:S0189_800
   @from:cucumber
   Scenario: 2 SOs with qty = 10 and same ASI
     Given metasfresh contains M_Products:
@@ -368,6 +398,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtyInventoryCount_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 20                              | 20                      | 0                          | -20                           | 0                            |
 
+  @Id:S0189_900
   @from:cucumber
   Scenario: SO with 1 line (qty=10) and ASI, reactivated, changed ASI and qty=12
     Given metasfresh contains M_Products:
@@ -428,6 +459,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | cp_1       | p_1                     | 2021-04-16  | lineASI_1                    | 12                              | 12                      | 0                          | -12                           | 0                            |
       | cp_2       | p_1                     | 2021-04-16  |                              | 0                               | 0                       | 0                          | 0                             | 0                            |
 
+  @Id:S0189_1000
   @from:cucumber
   Scenario: SO with 1 line (qty=10), no ASI, reactivated, changed the date promised
     Given metasfresh contains M_Products:
@@ -468,6 +500,7 @@ Feature: sales order interaction with material cockpit - no product planning
       | cp_1       | p_1                     | 2021-04-17  |                              | 10                              | 10                      | 0                          | -10                           | 0                            |
       | cp_2       | p_1                     | 2021-04-15  |                              | 0                               | 0                       | 0                          | 0                             | 0                            |
 
+  @Id:S0189_1100
   @from:cucumber
   Scenario: SO with 1 line (qty=10) and ASI, reactivated, changed ASI and qty=8
     Given metasfresh contains M_Products:
