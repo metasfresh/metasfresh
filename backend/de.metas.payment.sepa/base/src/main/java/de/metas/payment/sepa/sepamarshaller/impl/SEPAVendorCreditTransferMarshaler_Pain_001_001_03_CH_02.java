@@ -668,7 +668,6 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 				final GenericAccountIdentification1CH othr = objectFactory.createGenericAccountIdentification1CH();
 				id.setOthr(othr);
 
-
 				if (!Check.isEmpty(otherAccountIdentification, true))
 				{
 					// task 07789
