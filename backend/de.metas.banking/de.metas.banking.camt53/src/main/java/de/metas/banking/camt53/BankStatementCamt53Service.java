@@ -24,6 +24,8 @@ package de.metas.banking.camt53;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableSet;
+import de.metas.banking.BankAccount;
+import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.api.BankAccountService;
 import de.metas.banking.camt53.jaxb.camt053_001_02.AccountStatement2;
@@ -36,8 +38,10 @@ import de.metas.banking.camt53.wrapper.NoBatchBankToCustomerStatementV02Wrapper;
 import de.metas.banking.camt53.wrapper.NoBatchReportEntry2Wrapper;
 import de.metas.banking.service.BankStatementCreateRequest;
 import de.metas.banking.service.IBankStatementDAO;
+import de.metas.currency.Currency;
+import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
-import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
@@ -46,6 +50,7 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
@@ -57,6 +62,9 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.InputStream;
+import java.math.BigDecimal;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Optional;
 
 @Service
@@ -67,7 +75,6 @@ public class BankStatementCamt53Service
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private final BankAccountService bankAccountService;
 	private final CurrencyRepository currencyRepository;
@@ -84,7 +91,7 @@ public class BankStatementCamt53Service
 	public ImmutableSet<BankStatementId> importBankToCustomerStatement(@NonNull final InputStream inputStream)
 	{
 		final NoBatchBankToCustomerStatementV02Wrapper noBatchBankToCustomerStatementV02Wrapper = NoBatchBankToCustomerStatementV02Wrapper
-				.of(loadCamt53Document(inputStream), msgBL);
+				.of(loadCamt53Document(inputStream));
 
 		return noBatchBankToCustomerStatementV02Wrapper
 				.getAccountStatements()
@@ -98,9 +105,7 @@ public class BankStatementCamt53Service
 	@NonNull
 	private Optional<BankStatementId> importBankStatement(@NonNull final AccountStatement2 accountStatement2)
 	{
-		final AccountStatement2Wrapper accountStatement2Wrapper = buildAccountStatement2Wrapper(accountStatement2);
-
-		final BankStatementCreateRequest bankStatementCreateRequest = accountStatement2Wrapper.buildBankStatementCreateRequest()
+		final BankStatementCreateRequest bankStatementCreateRequest = buildBankStatementCreateRequest(buildAccountStatement2Wrapper(accountStatement2))
 				.orElse(null);
 
 		if (bankStatementCreateRequest == null)
@@ -119,6 +124,42 @@ public class BankStatementCamt53Service
 				.forEach(entry -> importBankStatementLine(entry, bankStatementId, bankStatementCreateRequest.getOrgId()));
 
 		return Optional.of(bankStatementId);
+	}
+
+	@NonNull
+	private Optional<BankStatementCreateRequest> buildBankStatementCreateRequest(@NonNull final AccountStatement2Wrapper accountStatement2Wrapper)
+	{
+		final ExplainedOptional<BankAccountId> bankAccountIdOpt = accountStatement2Wrapper.getBPartnerBankAccountId();
+		
+		if (!bankAccountIdOpt.isPresent())
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog(bankAccountIdOpt.getExplanation().getDefaultValue());
+
+			return Optional.empty();
+		}
+		
+		final BankAccountId bankAccountId = bankAccountIdOpt.get();
+
+		if (!isStatementCurrencyMatchingBankAccount(bankAccountId, accountStatement2Wrapper))
+		{
+			Loggables.withLogger(logger, Level.WARN).addLog(
+					"Skipping AccountStatement={} because currency of the statement does not match currency of the bank account!", accountStatement2Wrapper.getAccountStatement2());
+			return Optional.empty();
+		}
+
+		final BigDecimal beginningBalance = accountStatement2Wrapper.getBeginningBalance();
+		final OrgId orgId = accountStatement2Wrapper.getOrgId(bankAccountId);
+		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
+
+		final ZonedDateTime statementDate = accountStatement2Wrapper.getStatementDate(timeZone);
+
+		return Optional.of(BankStatementCreateRequest.builder()
+								   .orgId(orgId)
+								   .orgBankAccountId(bankAccountId)
+								   .statementDate(TimeUtil.asLocalDate(statementDate, timeZone))
+								   .name(statementDate.toString())
+								   .beginningBalance(beginningBalance)
+								   .build());
 	}
 
 	private void importBankStatementLine(
@@ -150,6 +191,22 @@ public class BankStatementCamt53Service
 				.currencyRepository(currencyRepository)
 				.orgDAO(orgDAO)
 				.build();
+	}
+
+	private boolean isStatementCurrencyMatchingBankAccount(@NonNull final BankAccountId bankAccountId, @NonNull final AccountStatement2Wrapper statement2Wrapper)
+	{
+		final CurrencyCode statementCurrencyCode = statement2Wrapper.getStatementCurrencyCode().orElse(null);
+		if (statementCurrencyCode == null)
+		{
+			return false;
+		}
+
+		return Optional.of(bankAccountService.getById(bankAccountId))
+				.map(BankAccount::getCurrencyId)
+				.map(currencyRepository::getById)
+				.map(Currency::getCurrencyCode)
+				.filter(currencyCode -> currencyCode.equals(statementCurrencyCode))
+				.isPresent();
 	}
 
 	@NonNull

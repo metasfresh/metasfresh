@@ -54,11 +54,12 @@ import de.metas.util.Loggables;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.QueryLimit;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -86,15 +87,15 @@ public class NoBatchReportEntry2Wrapper
 	private NoBatchReportEntry2Wrapper(
 			@NonNull final IOrgDAO orgDAO,
 			@NonNull final IInvoiceDAO invoiceDAO,
-			@NonNull final ReportEntry2 entry,
-			@NonNull final CurrencyRepository currencyRepository)
+			@NonNull final CurrencyRepository currencyRepository,
+			@NonNull final ReportEntry2 entry)
 	{
 		Check.assume(Check.isEmpty(entry.getNtryDtls()) || entry.getNtryDtls().size() == 1, "Batched transactions are not supported!");
 
 		this.orgDAO = orgDAO;
 		this.invoiceDAO = invoiceDAO;
-		this.entry = entry;
 		this.currencyRepository = currencyRepository;
+		this.entry = entry;
 	}
 
 	@NonNull
@@ -102,7 +103,7 @@ public class NoBatchReportEntry2Wrapper
 			@NonNull final BankStatementId bankStatementId,
 			@NonNull final OrgId orgId)
 	{
-		final Timestamp statementLineDate = getStatementLineDate().orElse(null);
+		final Instant statementLineDate = getStatementLineDate().orElse(null);
 
 		if (statementLineDate == null)
 		{
@@ -121,7 +122,7 @@ public class NoBatchReportEntry2Wrapper
 				.trxAmt(stmtAmount)
 				.currencyRate(getCurrencyRate().orElse(null))
 				.interestAmt(getInterestAmount().orElse(null))
-				.statementLineDate(TimeUtil.asLocalDate(statementLineDate, orgDAO.getTimeZone(orgId)));
+				.statementLineDate(TimeUtil.asLocalDate(statementLineDate));
 
 		getReferencedInvoiceRecord()
 				.ifPresent(invoice -> bankStatementLineCreateRequestBuilder
@@ -137,7 +138,7 @@ public class NoBatchReportEntry2Wrapper
 		final ImmutableSet<String> invoiceDocNoCandidates = getInvoiceDocNoCandidates();
 		final ImmutableSet<DocStatus> completedOrClosedDocStatus = ImmutableSet.of(DocStatus.Completed, DocStatus.Closed);
 
-		return Optional.of(invoiceDAO.retrieveUnpaid(invoiceDocNoCandidates, completedOrClosedDocStatus))
+		return Optional.of(invoiceDAO.retrieveUnpaid(invoiceDocNoCandidates, completedOrClosedDocStatus, QueryLimit.TWO))
 				.flatMap(this::getSingleInvoice);
 	}
 
@@ -164,11 +165,11 @@ public class NoBatchReportEntry2Wrapper
 	}
 
 	@NonNull
-	public Optional<Timestamp> getStatementLineDate()
+	public Optional<Instant> getStatementLineDate()
 	{
 		return Optional.ofNullable(entry.getValDt())
 				.map(DateAndDateTimeChoice::getDt)
-				.map(xmlGregorianCalendar -> new Timestamp(xmlGregorianCalendar.toGregorianCalendar().getTimeInMillis()));
+				.map(xmlGregorianCalendar -> xmlGregorianCalendar.toGregorianCalendar().toInstant());
 	}
 
 	@NonNull
@@ -202,7 +203,7 @@ public class NoBatchReportEntry2Wrapper
 	}
 
 	@NonNull
-	public Optional<I_C_Invoice> getSingleInvoice(@NonNull final ImmutableSet<I_C_Invoice> invoiceSet)
+	public Optional<I_C_Invoice> getSingleInvoice(@NonNull final ImmutableList<I_C_Invoice> invoiceSet)
 	{
 		if (invoiceSet.isEmpty())
 		{

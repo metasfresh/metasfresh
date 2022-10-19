@@ -30,8 +30,8 @@ import de.metas.banking.camt53.BankStatementCamt53Service;
 import de.metas.banking.importfile.BankStatementImportFile;
 import de.metas.banking.importfile.BankStatementImportFileId;
 import de.metas.banking.importfile.BankStatementImportFileService;
+import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.ITranslatableString;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -45,7 +45,6 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_AttachmentEntry;
 import org.compiere.model.I_C_BankStatement;
 
-import java.time.Instant;
 import java.util.Set;
 
 public class C_BankStatement_Camt53_ImportAttachment extends JavaProcess implements IProcessPrecondition
@@ -108,45 +107,30 @@ public class C_BankStatement_Camt53_ImportAttachment extends JavaProcess impleme
 		return BankStatementImportFile.builder()
 				.bankStatementImportFileId(BankStatementImportFileId.ofRepoId(getRecord_ID()))
 				.filename(filename)
-				.importedTimestamp(Instant.now())
+				.importedTimestamp(SystemTime.asInstant())
 				.processed(true)
 				.build();
 	}
 	
 	private void openImportedRecords(@NonNull final Set<BankStatementId> importedBankStatementIds)
 	{
-		if (importedBankStatementIds.size() == 0)
+		if (importedBankStatementIds.isEmpty())
 		{
-			final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_NO_STATEMENT_IMPORTED);
-			throw new AdempiereException(msg)
+			throw new AdempiereException(MSG_NO_STATEMENT_IMPORTED)
 					.markAsUserValidationError();
 		}
-		else if (importedBankStatementIds.size() == 1)
-		{
-			setRecordToOpen(importedBankStatementIds.iterator().next());
-		}
-		else
-		{
-			setRecordsToOpen(importedBankStatementIds);
-		}
+
+		setRecordsToOpen(importedBankStatementIds);
 	}
 
 	private void setRecordsToOpen(@NonNull final Set<BankStatementId> importedBankStatementIds)
 	{
 		getResult().setRecordToOpen(ProcessExecutionResult.RecordsToOpen.builder()
 											.records(TableRecordReference.ofRecordIds(I_C_BankStatement.Table_Name, BankStatementId.toIntSet(importedBankStatementIds)))
-											.target(ProcessExecutionResult.RecordsToOpen.OpenTarget.GridView)
-											.targetTab(ProcessExecutionResult.RecordsToOpen.TargetTab.SAME_TAB_OVERLAY)
-											.automaticallySetReferencingDocumentPaths(true)
-											.build());
-	}
-
-	private void setRecordToOpen(@NonNull final BankStatementId importedBankStatementId)
-	{
-		getResult().setRecordToOpen(ProcessExecutionResult.RecordsToOpen.builder()
-											.record(TableRecordReference.of(I_C_BankStatement.Table_Name, importedBankStatementId))
-											.target(ProcessExecutionResult.RecordsToOpen.OpenTarget.SingleDocument)
-											.targetTab(ProcessExecutionResult.RecordsToOpen.TargetTab.SAME_TAB)
+											.targetTab(ProcessExecutionResult.RecordsToOpen.TargetTab.NEW_TAB)
+											.target(importedBankStatementIds.size() == 1
+															? ProcessExecutionResult.RecordsToOpen.OpenTarget.SingleDocument
+															: ProcessExecutionResult.RecordsToOpen.OpenTarget.GridView)
 											.build());
 	}
 

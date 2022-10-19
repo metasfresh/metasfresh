@@ -1,5 +1,6 @@
 package de.metas.invoice.service.impl;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
@@ -33,6 +34,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
@@ -504,29 +506,31 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 	}
 
 	@Override
-	public ImmutableSet<I_C_Invoice> retrieveUnpaid(
-			@NonNull final ImmutableSet<String> docNos,
-			@NonNull final ImmutableSet<DocStatus> docStatuses)
+	public ImmutableList<I_C_Invoice> retrieveUnpaid(
+			@NonNull final ImmutableSet<String> onlyDocumentNos,
+			@NonNull final ImmutableSet<DocStatus> onlyDocStatuses,
+			@NonNull final QueryLimit limit)
 	{
 		final IQueryBuilder<I_C_Invoice> queryBuilder = queryBL
 				.createQueryBuilder(I_C_Invoice.class)
 				.addOnlyActiveRecordsFilter()
+				.setLimit(limit)
 				.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsPaid, false);
 
-		if (!docNos.isEmpty())
+		if (!onlyDocumentNos.isEmpty())
 		{
-			queryBuilder.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocumentNo, docNos);
+			queryBuilder.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocumentNo, onlyDocumentNos);
 		}
 
-		if (!docStatuses.isEmpty())
+		if (!onlyDocStatuses.isEmpty())
 		{
-			queryBuilder.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocStatus, docStatuses);
+			queryBuilder.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocStatus, onlyDocStatuses);
 		}
 
 		return queryBuilder
 				.create()
 				.stream()
-				.collect(ImmutableSet.toImmutableSet());
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private Optional<InvoiceId> getInvoiceIdByDocumentIdIfExists(@NonNull final InvoiceQuery query)

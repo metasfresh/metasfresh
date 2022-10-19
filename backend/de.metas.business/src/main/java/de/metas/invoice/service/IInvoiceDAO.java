@@ -22,6 +22,7 @@ package de.metas.invoice.service;
  * #L%
  */
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
@@ -40,6 +41,7 @@ import de.metas.util.ISingletonService;
 import de.metas.util.time.InstantInterval;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.QueryLimit;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_C_InvoiceTax;
 import org.compiere.model.I_C_LandedCost;
@@ -180,7 +182,7 @@ public interface IInvoiceDAO extends ISingletonService
 
 	<T extends org.compiere.model.I_C_Invoice> List<T> getByDocumentNo(String documentNo, OrgId orgId, Class<T> modelClass);
 
-	ImmutableSet<I_C_Invoice> retrieveUnpaid(ImmutableSet<String> docNos, ImmutableSet<DocStatus> docStatuses);
+	ImmutableList<I_C_Invoice> retrieveUnpaid(ImmutableSet<String> onlyDocumentNos, ImmutableSet<DocStatus> onlyDocStatuses, QueryLimit limit);
 
 	Collection<InvoiceLineId> getInvoiceLineIds(final InvoiceId id);
 

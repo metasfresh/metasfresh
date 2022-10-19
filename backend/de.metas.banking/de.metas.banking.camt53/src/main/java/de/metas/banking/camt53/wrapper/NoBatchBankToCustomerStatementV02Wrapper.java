@@ -26,8 +26,6 @@ import de.metas.banking.camt53.jaxb.camt053_001_02.AccountStatement2;
 import de.metas.banking.camt53.jaxb.camt053_001_02.BankToCustomerStatementV02;
 import de.metas.banking.camt53.jaxb.camt053_001_02.ReportEntry2;
 import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
@@ -42,18 +40,11 @@ public class NoBatchBankToCustomerStatementV02Wrapper
 	@NonNull
 	BankToCustomerStatementV02 bankToCustomerStatementV02;
 
-	@NonNull
-	IMsgBL msgBL;
-
-	private NoBatchBankToCustomerStatementV02Wrapper(
-			@NonNull final BankToCustomerStatementV02 bankToCustomerStatementV02,
-			@NonNull final IMsgBL msgBL)
+	private NoBatchBankToCustomerStatementV02Wrapper(@NonNull final BankToCustomerStatementV02 bankToCustomerStatementV02)
 	{
-		this.msgBL = msgBL;
-
 		bankToCustomerStatementV02
 				.getStmt()
-				.forEach(this::validateAccountStatement2);
+				.forEach(NoBatchBankToCustomerStatementV02Wrapper::validateAccountStatement2);
 
 		this.bankToCustomerStatementV02 = bankToCustomerStatementV02;
 	}
@@ -64,17 +55,16 @@ public class NoBatchBankToCustomerStatementV02Wrapper
 		return bankToCustomerStatementV02.getStmt();
 	}
 
-	private void validateAccountStatement2(@NonNull final AccountStatement2 accountStatement2)
+	private static void validateAccountStatement2(@NonNull final AccountStatement2 accountStatement2)
 	{
-		accountStatement2.getNtry().forEach(this::validateNoBatchedTrxPresent);
+		accountStatement2.getNtry().forEach(NoBatchBankToCustomerStatementV02Wrapper::validateNoBatchedTrxPresent);
 	}
 
-	private void validateNoBatchedTrxPresent(@NonNull final ReportEntry2 reportEntry)
+	private static void validateNoBatchedTrxPresent(@NonNull final ReportEntry2 reportEntry)
 	{
 		if (isBatchedTrxPresent(reportEntry))
 		{
-			final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_BATCH_TRANSACTIONS_NOT_SUPPORTED);
-			throw new AdempiereException(msg)
+			throw new AdempiereException(MSG_BATCH_TRANSACTIONS_NOT_SUPPORTED)
 					.markAsUserValidationError();
 		}
 	}
