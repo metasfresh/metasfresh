@@ -1,7 +1,8 @@
 package de.metas.externalreference.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for S_ExternalReference
  *  @author metasfresh (generated) 
@@ -143,6 +144,27 @@ public interface I_S_ExternalReference
 	String COLUMNNAME_ExternalSystem = "ExternalSystem";
 
 	/**
+	 * Set External System Config.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalSystem_Config_ID (int ExternalSystem_Config_ID);
+
+	/**
+	 * Get External System Config.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getExternalSystem_Config_ID();
+
+	ModelColumn<I_S_ExternalReference, Object> COLUMN_ExternalSystem_Config_ID = new ModelColumn<>(I_S_ExternalReference.class, "ExternalSystem_Config_ID", null);
+	String COLUMNNAME_ExternalSystem_Config_ID = "ExternalSystem_Config_ID";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *
@@ -164,6 +186,27 @@ public interface I_S_ExternalReference
 
 	ModelColumn<I_S_ExternalReference, Object> COLUMN_IsActive = new ModelColumn<>(I_S_ExternalReference.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Read Only In Metasfresh.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsReadOnlyInMetasfresh (boolean IsReadOnlyInMetasfresh);
+
+	/**
+	 * Get Read Only In Metasfresh.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isReadOnlyInMetasfresh();
+
+	ModelColumn<I_S_ExternalReference, Object> COLUMN_IsReadOnlyInMetasfresh = new ModelColumn<>(I_S_ExternalReference.class, "IsReadOnlyInMetasfresh", null);
+	String COLUMNNAME_IsReadOnlyInMetasfresh = "IsReadOnlyInMetasfresh";
 
 	/**
 	 * Set Record ID.

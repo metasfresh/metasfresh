@@ -30,6 +30,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.letters.model.MADBoilerPlate;
 import de.metas.letters.model.MADBoilerPlate.BoilerPlateContext;
 import de.metas.letters.model.MADBoilerPlate.SourceDocument;
@@ -479,8 +480,16 @@ public class DocumentCollection
 		}
 
 		forRootDocumentWritable(rootDocumentPath, changesCollector, rootDocument -> {
+
 			if (documentPath.isRootDocument())
 			{
+				final BooleanWithReason isDeleteForbidden = rootDocument.isDeleteForbidden();
+				if (isDeleteForbidden.isTrue())
+				{
+					throw new AdempiereException(isDeleteForbidden.getReason())
+							.markAsUserValidationError();
+				}
+
 				if (!rootDocument.isNew())
 				{
 					rootDocument.deleteFromRepository();
@@ -501,7 +510,7 @@ public class DocumentCollection
 		});
 	}
 
-	private void assertDeleteDocumentAllowed(final DocumentEntityDescriptor entityDescriptor)
+	private void assertDeleteDocumentAllowed(@NonNull final DocumentEntityDescriptor entityDescriptor)
 	{
 		final Evaluatee evalCtx = Evaluatees.mapBuilder()
 				.put(WindowConstants.FIELDNAME_Processed, false)

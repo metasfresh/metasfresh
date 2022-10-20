@@ -3,6 +3,7 @@ package de.metas.ui.web.window.model;
 import de.metas.ui.web.window.WindowConstants;
 import lombok.Builder;
 import lombok.Value;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 
 /*
  * #%L
@@ -37,7 +38,7 @@ public class DocumentReadonly
 			.processing(false)
 			.build();
 
-	public static DocumentReadonly ofParent(DocumentReadonly parentDocumentReadonly)
+	public static DocumentReadonly ofParent(final DocumentReadonly parentDocumentReadonly)
 	{
 		return builder()
 				.parentActive(parentDocumentReadonly.active)
@@ -52,7 +53,7 @@ public class DocumentReadonly
 	boolean active;
 	boolean processed;
 	boolean processing;
-	Boolean fieldsReadonly;
+	ExtendedMemorizingSupplier<Boolean> fieldsReadonly;
 
 	public boolean computeFieldReadonly(final String fieldName, final boolean alwaysUpdateable)
 	{
@@ -84,6 +85,6 @@ public class DocumentReadonly
 
 		// If we reached this point, it means the document and parent document are active and not processed
 		// => readonly if fields are readonly.
-		return fieldsReadonly != null ? fieldsReadonly : false;
+		return fieldsReadonly != null && Boolean.TRUE.equals(fieldsReadonly.get());
 	}
 }

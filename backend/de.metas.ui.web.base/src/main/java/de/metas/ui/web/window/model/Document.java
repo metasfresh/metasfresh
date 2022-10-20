@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.exceptions.DocumentProcessingException;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.lang.SOTrx;
 import de.metas.letters.model.Letters;
 import de.metas.logging.LogManager;
@@ -53,7 +54,9 @@ import org.adempiere.ad.expression.api.LogicExpressionResult;
 import org.adempiere.ad.ui.spi.ITabCallout;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -1353,13 +1356,47 @@ public final class Document
 		getFields().forEach(documentField -> updateFieldReadOnlyAndCollect(documentField, reason));
 	}
 
+	@NonNull
 	private DocumentReadonly computeReadonly()
 	{
+		return DocumentReadonly.builder()
+				.parentActive(parentReadonly.isActive()).active(isActive())
+				.processed(parentReadonly.isProcessed() || isProcessed())
+				.processing(parentReadonly.isProcessing() || isProcessing())
+				.fieldsReadonly(ExtendedMemorizingSupplier.of(this::computeFieldsReadOnly))
+				.build();
+	}
+
+	private boolean computeFieldsReadOnly()
+	{
+		final boolean isReadOnlyLogicTrue = computeDefaultFieldsReadOnly().booleanValue();
+
+		if (isReadOnlyLogicTrue)
+		{
+			return true;
+		}
+
+		final TableRecordReference recordReference = this.getTableRecordReference().orElse(null);
+		if (recordReference == null)
+		{
+			return false;
+		}
+
+		return getEntityDescriptor()
+				.getDocumentDecorators()
+				.stream()
+				.anyMatch(documentDecorator -> documentDecorator.isReadOnly(recordReference));
+	}
+
+	@NonNull
+	private LogicExpressionResult computeDefaultFieldsReadOnly()
+	{
 		final ILogicExpression allFieldsReadonlyLogic = getEntityDescriptor().getReadonlyLogic();
-		LogicExpressionResult allFieldsReadonly;
+
+		final LogicExpressionResult allFieldsReadonly;
 		try
 		{
-			allFieldsReadonly = allFieldsReadonlyLogic.evaluateToResult(asEvaluatee(), OnVariableNotFound.Fail);
+			return allFieldsReadonlyLogic.evaluateToResult(asEvaluatee(), OnVariableNotFound.Fail);
 		}
 		catch (final Exception e)
 		{
@@ -1367,13 +1404,7 @@ public final class Document
 			logger.warn("Failed evaluating entity readonly logic {} for {}. Considering {}", allFieldsReadonlyLogic, this, allFieldsReadonly, e);
 		}
 
-		final DocumentReadonly readonlyComputed = DocumentReadonly.builder()
-				.parentActive(parentReadonly.isActive()).active(isActive())
-				.processed(parentReadonly.isProcessed() || isProcessed())
-				.processing(parentReadonly.isProcessing() || isProcessing())
-				.fieldsReadonly(allFieldsReadonly.booleanValue())
-				.build();
-		return readonlyComputed;
+		return allFieldsReadonly;
 	}
 
 	private void updateFieldReadOnlyAndCollect(final IDocumentField documentField, final ReasonSupplier reason)
@@ -2064,6 +2095,38 @@ public final class Document
 		}
 
 		return standardActions;
+	}
+
+	@NonNull
+	public Optional<TableRecordReference> getTableRecordReference()
+	{
+		final String tableName = entityDescriptor.getTableName();
+		final Integer recordId = getDocumentId().isInt() ? getDocumentIdAsInt() : null;
+
+		if (tableName == null || recordId == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(TableRecordReference.of(tableName, recordId));
+	}
+
+	@NonNull
+	public BooleanWithReason isDeleteForbidden()
+	{
+		final TableRecordReference recordReference = getTableRecordReference().orElse(null);
+
+		if (recordReference == null)
+		{
+			return BooleanWithReason.FALSE;
+		}
+
+		return entityDescriptor.getDocumentDecorators()
+				.stream()
+				.map(decorator -> decorator.isDeleteForbidden(recordReference))
+				.filter(BooleanWithReason::isTrue)
+				.findFirst()
+				.orElse(BooleanWithReason.FALSE);
 	}
 
 	//
