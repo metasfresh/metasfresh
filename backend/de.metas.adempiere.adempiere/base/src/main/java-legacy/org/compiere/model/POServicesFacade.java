@@ -10,7 +10,6 @@ import de.metas.document.sequence.IDocumentNoBL;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringServiceUtil;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
@@ -23,7 +22,6 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -39,7 +37,6 @@ final class POServicesFacade
 	private IDocumentNoBL _documentNoBL;
 	private ITrxManager _trxManager;
 	private ADReferenceService _adReferenceService;
-	@Nullable
 	private PerformanceMonitoringService _performanceMonitoringService;
 
 	private static final String PM_METADATA_CLASS_NAME = "PO";
