@@ -10,6 +10,7 @@ import de.metas.document.sequence.IDocumentNoBL;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringServiceUtil;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
@@ -22,7 +23,9 @@ import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 
+import javax.annotation.Nullable;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 final class POServicesFacade
 {
@@ -36,7 +39,26 @@ final class POServicesFacade
 	private IDocumentNoBL _documentNoBL;
 	private ITrxManager _trxManager;
 	private ADReferenceService _adReferenceService;
+	@Nullable
 	private PerformanceMonitoringService _performanceMonitoringService;
+
+	private static final String PM_METADATA_CLASS_NAME = "PO";
+	private static final String PM_METADATA_SAVE_EX_ACTION = "saveEx";
+	private static final String PM_METADATA_LOAD_ACTION = "load";
+	private static final PerformanceMonitoringService.Metadata PM_METADATA_SAVE_EX =
+			PerformanceMonitoringService.Metadata
+					.builder()
+					.name(PM_METADATA_CLASS_NAME)
+					.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
+					.action(PM_METADATA_SAVE_EX_ACTION)
+					.build();
+	private static final PerformanceMonitoringService.Metadata PM_METADATA_LOAD =
+			PerformanceMonitoringService.Metadata
+					.builder()
+					.name(PM_METADATA_CLASS_NAME)
+					.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
+					.action(PM_METADATA_LOAD_ACTION)
+					.build();
 
 	private IDeveloperModeBL developerModeBL()
 	{
@@ -138,11 +160,58 @@ final class POServicesFacade
 		return adReferenceService;
 	}
 
-	public PerformanceMonitoringService performanceMonitoringService()
+	public void performanceMonitoringServiceSaveEx(@NonNull final Callable<Void> callable)
 	{
-		return SpringContextHolder.instance.getBeanOr(
-			PerformanceMonitoringService.class,
-			NoopPerformanceMonitoringService.INSTANCE);
+		PerformanceMonitoringService performanceMonitoringService = this._performanceMonitoringService;
+		if (performanceMonitoringService == null || performanceMonitoringService instanceof NoopPerformanceMonitoringService)
+		{
+			performanceMonitoringService = this._performanceMonitoringService = SpringContextHolder.instance.getBeanOr(
+					PerformanceMonitoringService.class,
+					NoopPerformanceMonitoringService.INSTANCE);
+		}
+		try
+		{
+			performanceMonitoringService.monitor(callable, PM_METADATA_SAVE_EX);
+		}
+		catch (final NullPointerException npe)
+		{
+			try
+			{
+				callable.call();
+			}
+			catch (final Exception e)
+			{
+				throw PerformanceMonitoringServiceUtil.asRTE(e);
+			}
+		}
+
+	}
+
+	public boolean performanceMonitoringServiceLoad(@NonNull final Callable<Boolean> callable)
+	{
+		PerformanceMonitoringService performanceMonitoringService = this._performanceMonitoringService;
+		if (performanceMonitoringService == null || performanceMonitoringService instanceof NoopPerformanceMonitoringService)
+		{
+			performanceMonitoringService = this._performanceMonitoringService = SpringContextHolder.instance.getBeanOr(
+					PerformanceMonitoringService.class,
+					NoopPerformanceMonitoringService.INSTANCE);
+		}
+
+		try
+		{
+			return performanceMonitoringService.monitor(callable, PM_METADATA_LOAD);
+		}
+		catch (final NullPointerException npe)
+		{
+			try
+			{
+				return callable.call();
+			}
+			catch (final Exception e)
+			{
+				throw PerformanceMonitoringServiceUtil.asRTE(e);
+			}
+		}
 	}
 
 	//

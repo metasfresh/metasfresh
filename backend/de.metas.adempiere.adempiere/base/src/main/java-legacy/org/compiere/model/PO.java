@@ -34,8 +34,6 @@ import de.metas.i18n.po.POTrlInfo;
 import de.metas.i18n.po.POTrlRepository;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
-import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.process.PInstanceId;
 import de.metas.security.TableAccessLevel;
 import de.metas.user.UserId;
@@ -63,7 +61,6 @@ import org.adempiere.model.CopyRecordSupport;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
-import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
@@ -280,7 +277,7 @@ public abstract class PO
 
 	private static final String COLUMNNAME_IsApproved = "IsApproved";
 
-	private static final POServicesFacade services = new POServicesFacade();
+	private final POServicesFacade services = new POServicesFacade();
 	private Properties p_ctx;
 	/**
 	 * Model Info
@@ -1691,14 +1688,6 @@ public abstract class PO
 		}
 	}    // load
 
-	private static final PerformanceMonitoringService.Metadata loadMetadata =
-			PerformanceMonitoringService.Metadata
-					.builder()
-					.name("PO")
-					.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
-					.action("load")
-					.build();
-
 	/**
 	 * (re)Load record with m_ID[*]
 	 *
@@ -1711,11 +1700,9 @@ public abstract class PO
 		try
 		{
 			m_loading = true;
-			final PerformanceMonitoringService service = services.performanceMonitoringService();
 
-			return service.monitor(
-					() -> load0(trxName, false), // gh #986 isRetry=false because this is our first attempt to load the record;
-					loadMetadata);
+			return services.performanceMonitoringServiceLoad(
+					() -> load0(trxName, false)); // gh #986 isRetry=false because this is our first attempt to load the record;
 		}
 		finally
 		{
@@ -2825,14 +2812,6 @@ public abstract class PO
 		return success;
 	}    // save
 
-	private static final PerformanceMonitoringService.Metadata saveExMetadata =
-			PerformanceMonitoringService.Metadata
-					.builder()
-					.name("PO")
-					.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
-					.action("saveEx")
-					.build();
-
 	/**
 	 * Update Value or create new record.
 	 *
@@ -2841,13 +2820,10 @@ public abstract class PO
 	 */
 	public final void saveEx() throws AdempiereException
 	{
-		final PerformanceMonitoringService service = services.performanceMonitoringService();
-
-		service.monitor(
-				() -> saveEx0(),
-				saveExMetadata);
+		services.performanceMonitoringServiceSaveEx(() -> saveEx0());
 	}
-	private final void saveEx0() throws AdempiereException
+
+	private final Void saveEx0() throws AdempiereException
 	{
 		//
 		// Check and prepare the saving
@@ -2855,7 +2831,7 @@ public abstract class PO
 		final boolean saveNeeded = savePrepare();
 		if (!saveNeeded)
 		{
-			return;
+			return null;
 		}
 
 		final ITrxManager trxManager = get_TrxManager();
@@ -2885,6 +2861,7 @@ public abstract class PO
 				m_trxName = trxNameInitial;
 			}
 		});
+		return null;
 	}
 
 	/**
@@ -4597,14 +4574,6 @@ public abstract class PO
 		log.trace(sb.toString());
 	}   // dump
 
-	private static final PerformanceMonitoringService.Metadata getAllIDsMetadata =
-			PerformanceMonitoringService.Metadata
-					.builder()
-					.name("PO")
-					.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
-					.action("getAllIDs")
-					.build();
-
 	/*************************************************************************
 	 * Get All IDs of Table.
 	 * Used for listing all Entities
@@ -4623,15 +4592,6 @@ public abstract class PO
 	 * @param trxName transaction
 	 */
 	public static int[] getAllIDs(final String TableName, final String WhereClause, final String trxName)
-	{
-		final PerformanceMonitoringService service = services.performanceMonitoringService();
-
-		return service.monitor(
-				() -> getAllIDs0(TableName, WhereClause, trxName),
-				getAllIDsMetadata);
-	}
-
-	private static int[] getAllIDs0(final String TableName, final String WhereClause, final String trxName)
 	{
 		final ArrayList<Integer> list = new ArrayList<>();
 		final StringBuilder sql = new StringBuilder("SELECT ");
