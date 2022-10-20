@@ -8,6 +8,8 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.user.UserId;
 import org.compiere.model.I_C_DocType;
@@ -87,4 +89,10 @@ public interface IInvoiceHeader
 
 	@Nullable
 	SectionCodeId getM_SectionCode_ID();
+
+	@Nullable
+	ProjectId getProjectId();
+
+	@Nullable
+	ActivityId getActivityId();
 }

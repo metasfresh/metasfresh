@@ -49,6 +49,8 @@ import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.tax.api.Tax;
@@ -423,6 +425,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 			invoice.setPaymentRule(invoiceHeader.getPaymentRule());
 			invoice.setM_SectionCode_ID(SectionCodeId.toRepoId(invoiceHeader.getM_SectionCode_ID()));
+			invoice.setC_Project_ID(ProjectId.toRepoId(invoiceHeader.getProjectId()));
+			invoice.setC_Activity_ID(ActivityId.toRepoId(invoiceHeader.getActivityId()));
 			// Save and return the invoice
 			invoicesRepo.save(invoice);
 			return invoice;

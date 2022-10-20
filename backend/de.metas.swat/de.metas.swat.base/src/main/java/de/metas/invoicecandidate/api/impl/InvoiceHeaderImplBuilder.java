@@ -8,6 +8,8 @@ import de.metas.impex.InputDataSourceId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -88,6 +90,10 @@ public class InvoiceHeaderImplBuilder
 
 	private int M_SectionCode_ID;
 
+	private int C_Project_ID;
+
+	private int C_Activity_ID;
+
 	/* package */ InvoiceHeaderImplBuilder()
 	{
 		super();
@@ -146,6 +152,9 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setIncotermLocation(getIncotermLocation());
 
 		invoiceHeader.setSectionCodeId(SectionCodeId.ofRepoIdOrNull(getM_SectionCode_ID()));
+
+		invoiceHeader.setProjectId(ProjectId.ofRepoIdOrNull(getC_Project_ID()));
+		invoiceHeader.setActivityId(ActivityId.ofRepoIdOrNull(getC_Activity_ID()));
 
 		return invoiceHeader;
 	}
@@ -568,5 +577,25 @@ public class InvoiceHeaderImplBuilder
 	public void setM_SectionCode_ID(final int sectionCodeId)
 	{
 		M_SectionCode_ID = checkOverrideID("M_SectionCode_ID", M_SectionCode_ID, sectionCodeId);
+	}
+
+	private int getC_Project_ID()
+	{
+		return C_Project_ID;
+	}
+
+	public void setC_Project_ID(final int projectId)
+	{
+		C_Project_ID = checkOverrideID("C_Project_ID", C_Project_ID, projectId);
+	}
+
+	private int getC_Activity_ID()
+	{
+		return C_Activity_ID;
+	}
+
+	public void setC_Activity_ID(final int activityId)
+	{
+		C_Activity_ID = checkOverrideID("C_Activity_ID", C_Activity_ID, activityId);
 	}
 }

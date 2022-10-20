@@ -23,25 +23,38 @@
 package de.metas.serviceprovider.effortcontrol;
 
 import de.metas.common.util.CoalesceUtil;
+import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.serviceprovider.effortcontrol.repository.EffortControl;
 import de.metas.serviceprovider.eventbus.EffortControlEventBusService;
 import de.metas.serviceprovider.eventbus.EffortControlEventRequest;
 import de.metas.serviceprovider.issue.IssueEntity;
+import de.metas.serviceprovider.issue.IssueQuery;
+import de.metas.serviceprovider.issue.IssueRepository;
+import de.metas.serviceprovider.model.I_S_Issue;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Service
 public class EffortControlService
 {
 	private final EffortControlEventBusService effortControlEventBusService;
+	private final IssueRepository issueRepository;
 
-	public EffortControlService(@NonNull final EffortControlEventBusService effortControlEventBusService)
+	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
+
+	public EffortControlService(
+			@NonNull final EffortControlEventBusService effortControlEventBusService,
+			@NonNull final IssueRepository issueRepository)
 	{
 		this.effortControlEventBusService = effortControlEventBusService;
+		this.issueRepository = issueRepository;
 	}
 
 	public void handleEffortChanges(@NonNull final EffortChange effortChange)
@@ -73,8 +86,28 @@ public class EffortControlService
 										   .build());
 	}
 
+	public void generateICFromEffortControl(@NonNull final EffortControl effortControl)
+	{
+		streamUnprocessedBudgetIssues(effortControl)
+				.forEach(invoiceCandidateHandlerBL::scheduleCreateMissingCandidatesFor);
+	}
+
 	@NonNull
-	private EffortControlEventRequest buildEffortControlEventRequestForTarget(@NonNull final EffortTarget effortTarget, @NonNull final EffortChange effortChange)
+	private Stream<I_S_Issue> streamUnprocessedBudgetIssues(@NonNull final EffortControl effortControl)
+	{
+		final IssueQuery query = IssueQuery.builder()
+				.orgId(effortControl.getOrgId())
+				.projectId(effortControl.getProjectId())
+				.costCenterId(effortControl.getCostCenterId())
+				.effortIssue(false)
+				.processed(false)
+				.build();
+
+		return issueRepository.streamByQuery(query);
+	}
+
+	@NonNull
+	private static EffortControlEventRequest buildEffortControlEventRequestForTarget(@NonNull final EffortTarget effortTarget, @NonNull final EffortChange effortChange)
 	{
 		return EffortControlEventRequest.builder()
 				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(effortChange.getClientId(), effortTarget.getOrgId()))

@@ -153,6 +153,9 @@ public class IssueEntity
 	@Nullable
 	private ActivityId costCenterActivityId;
 
+	@Nullable
+	private String invoicingErrorMsg;
+
 	public void setEstimatedEffortIfNotSet(@Nullable final BigDecimal estimatedEffort)
 	{
 		if (this.estimatedEffort == null || this.estimatedEffort.signum() == 0)
@@ -207,5 +210,10 @@ public class IssueEntity
 	public Status getStatusOrNew()
 	{
 		return Optional.ofNullable(status).orElse(Status.NEW);
+	}
+
+	public boolean isInvoiced()
+	{
+		return Status.INVOICED.equals(status);
 	}
 }

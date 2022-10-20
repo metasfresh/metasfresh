@@ -46,8 +46,8 @@ Feature: effort issue interaction with effort control
       | S_EffortControl_ID.Identifier | C_Activity_ID.Identifier | C_Project_ID.Identifier | OPT.PendingEffortSum | OPT.EffortSum | OPT.Budget | OPT.IsOverBudget | OPT.IsIssueClosed |
       | effortTest100EffortControl    | costCenterEffortTest100  | testProject             | 15:00                | 15:00         | 12         | Y                | N                 |
     And update S_Issue:
-      | S_Issue_ID.Identifier | OPT.Status |
-      | effortTest100Issue    | Invoiced   |
+      | S_Issue_ID.Identifier | OPT.Status | OPT.Processed |
+      | effortTest100Issue    | Invoiced   | true          |
     And after not more than 10s, S_EffortControl is validated:
       | S_EffortControl_ID.Identifier | C_Activity_ID.Identifier | C_Project_ID.Identifier | OPT.PendingEffortSum | OPT.EffortSum | OPT.Budget | OPT.IsOverBudget | OPT.IsIssueClosed |
       | effortTest100EffortControl    | costCenterEffortTest100  | testProject             | 0:00                 | 15:00         | 12         | Y                | Y                 |
@@ -73,8 +73,8 @@ Feature: effort issue interaction with effort control
       | S_EffortControl_ID.Identifier | C_Activity_ID.Identifier | C_Project_ID.Identifier | OPT.PendingEffortSum | OPT.EffortSum | OPT.Budget | OPT.IsOverBudget | OPT.IsIssueClosed |
       | effortTest200EffortControl    | costCenterEffortTest200  | testProject             | 3:00                 | 3:00          | 30         | N                | N                 |
     And update S_Issue:
-      | S_Issue_ID.Identifier | OPT.Status |
-      | effortTest200Issue    | Invoiced   |
+      | S_Issue_ID.Identifier | OPT.Status | OPT.Processed |
+      | effortTest200Issue    | Invoiced   | true          |
     And after not more than 10s, S_EffortControl is validated:
       | S_EffortControl_ID.Identifier | C_Activity_ID.Identifier | C_Project_ID.Identifier | OPT.PendingEffortSum | OPT.EffortSum | OPT.Budget | OPT.IsOverBudget | OPT.IsIssueClosed |
       | effortTest200EffortControl    | costCenterEffortTest200  | testProject             | 1:00                 | 3:00          | 30         | N                | Y                 |
