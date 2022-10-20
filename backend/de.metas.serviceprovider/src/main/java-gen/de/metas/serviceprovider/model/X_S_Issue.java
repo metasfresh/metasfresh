@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1459096620L;
+	private static final long serialVersionUID = -1766186262L;
 
     /** Standard Constructor */
     public X_S_Issue (final Properties ctx, final int S_Issue_ID, @Nullable final String trxName)
@@ -440,6 +440,18 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 	public java.sql.Timestamp getInvoicedDate() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_InvoicedDate);
+	}
+
+	@Override
+	public void setInvoicingErrorMsg (final @Nullable java.lang.String InvoicingErrorMsg)
+	{
+		set_Value (COLUMNNAME_InvoicingErrorMsg, InvoicingErrorMsg);
+	}
+
+	@Override
+	public java.lang.String getInvoicingErrorMsg()
+	{
+		return get_ValueAsString(COLUMNNAME_InvoicingErrorMsg);
 	}
 
 	@Override

@@ -1,13 +1,14 @@
 package de.metas.invoicecandidate.spi;
 
-import java.util.List;
-
-import javax.annotation.Nullable;
-
 import com.google.common.collect.ImmutableList;
-
+import com.google.common.collect.ImmutableMap;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Map;
 
 /*
  * #%L
@@ -35,7 +36,6 @@ import lombok.NonNull;
  * Result of {@link IInvoiceCandidateHandler#createCandidatesFor(InvoiceCandidateGenerateRequest)}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public final class InvoiceCandidateGenerateResult
 {
@@ -64,15 +64,33 @@ public final class InvoiceCandidateGenerateResult
 		return new InvoiceCandidateGenerateResult(handler, invoiceCandidates);
 	}
 
+	public static InvoiceCandidateGenerateResult of(
+			@NonNull final IInvoiceCandidateHandler handler,
+			@NonNull final Map<TableRecordReference, String> candidateRecordRef2Message)
+	{
+		final List<I_C_Invoice_Candidate> invoiceCandidates = ImmutableList.of();
+		return new InvoiceCandidateGenerateResult(handler, invoiceCandidates, candidateRecordRef2Message);
+	}
+
 	private final IInvoiceCandidateHandler handler;
 	private final List<I_C_Invoice_Candidate> invoiceCandidates;
+	private final Map<TableRecordReference, String> candidateRecordRef2Message;
 
 	private InvoiceCandidateGenerateResult(
 			@NonNull final IInvoiceCandidateHandler handler,
 			@NonNull final List<? extends I_C_Invoice_Candidate> invoiceCandidates)
 	{
+		this(handler, invoiceCandidates, ImmutableMap.of());
+	}
+
+	private InvoiceCandidateGenerateResult(
+			@NonNull final IInvoiceCandidateHandler handler,
+			@NonNull final List<? extends I_C_Invoice_Candidate> invoiceCandidates,
+			@NonNull final Map<TableRecordReference, String> candidateRecordRef2Message)
+	{
 		this.handler = handler;
 		this.invoiceCandidates = ImmutableList.copyOf(invoiceCandidates);
+		this.candidateRecordRef2Message = candidateRecordRef2Message;
 	}
 
 	public IInvoiceCandidateHandler getHandler()
@@ -83,5 +101,10 @@ public final class InvoiceCandidateGenerateResult
 	public List<I_C_Invoice_Candidate> getC_Invoice_Candidates()
 	{
 		return invoiceCandidates;
+	}
+
+	public Map<TableRecordReference, String> getCandidateRecordRef2Message()
+	{
+		return candidateRecordRef2Message;
 	}
 }

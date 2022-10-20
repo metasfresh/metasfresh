@@ -153,6 +153,9 @@ public class IssueEntity
 	@Nullable
 	private ActivityId costCenterActivityId;
 
+	@Nullable
+	private String invoicingErrorMsg;
+
 	public void setEstimatedEffortIfNotSet(@Nullable final BigDecimal estimatedEffort)
 	{
 		if (this.estimatedEffort == null || this.estimatedEffort.signum() == 0)

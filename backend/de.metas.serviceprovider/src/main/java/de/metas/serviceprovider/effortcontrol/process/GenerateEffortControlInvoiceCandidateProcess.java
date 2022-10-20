@@ -27,13 +27,15 @@ import de.metas.serviceprovider.effortcontrol.EffortControlService;
 import de.metas.serviceprovider.effortcontrol.repository.EffortControl;
 import de.metas.serviceprovider.effortcontrol.repository.EffortControlRepository;
 import de.metas.serviceprovider.model.I_S_EffortControl;
+import de.metas.serviceprovider.model.I_S_Issue;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.IQuery;
 
-import java.util.Iterator;
+import java.util.stream.Stream;
 
 public class GenerateEffortControlInvoiceCandidateProcess extends JavaProcess
 {
@@ -44,37 +46,31 @@ public class GenerateEffortControlInvoiceCandidateProcess extends JavaProcess
 	@Override
 	protected String doIt() throws Exception
 	{
-		final Iterator<I_S_EffortControl> effortControlIterator = retrieveSelectedIterator();
-
-		while (effortControlIterator.hasNext())
-		{
-			final I_S_EffortControl record = effortControlIterator.next();
-
-			if (record.isIssueClosed())
-			{
-				continue;
-			}
-
-			final EffortControl effortControl = EffortControlRepository.fromRecord(record);
-
-			effortControlService.generateICFromEffortControl(effortControl);
-		}
+		retrieveSelectedEffort().forEach(effortControlService::generateICFromEffortControl);
 
 		return MSG_OK;
 	}
 
 	@NonNull
-	private Iterator<I_S_EffortControl> retrieveSelectedIterator()
+	private Stream<EffortControl> retrieveSelectedEffort()
 	{
-		final IQueryFilter<I_S_EffortControl> allActiveRecordsFilter = queryBL.createCompositeQueryFilter(I_S_EffortControl.class)
-				.addOnlyActiveRecordsFilter();
+		final IQuery<I_S_Issue> issuesWithOpenEffort = queryBL.createQueryBuilder(I_S_Issue.class)
+				.addOnlyActiveRecordsFilter()
+				.addNotNull(I_S_Issue.COLUMNNAME_EffortAggregationKey)
+				.addEqualsFilter(I_S_Issue.COLUMNNAME_Processed, false)
+				.create();
+
+		final IQueryFilter<I_S_EffortControl> openEffortFilter = queryBL.createCompositeQueryFilter(I_S_EffortControl.class)
+				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(I_S_EffortControl.COLUMNNAME_EffortAggregationKey, I_S_Issue.COLUMNNAME_EffortAggregationKey, issuesWithOpenEffort);
 
 		final IQueryFilter<I_S_EffortControl> selectedFilter = getProcessInfo()
-				.getQueryFilterOrElse(allActiveRecordsFilter);
+				.getQueryFilterOrElse(openEffortFilter);
 
 		return queryBL.createQueryBuilder(I_S_EffortControl.class)
 				.addFilter(selectedFilter)
 				.create()
-				.iterate(I_S_EffortControl.class);
+				.iterateAndStream()
+				.map(EffortControlRepository::fromRecord);
 	}
 }

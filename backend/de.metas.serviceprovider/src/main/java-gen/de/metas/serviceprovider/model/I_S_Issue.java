@@ -757,6 +757,29 @@ public interface I_S_Issue
 	String COLUMNNAME_InvoicedDate = "InvoicedDate";
 
 	/**
+	 * Set Error message.
+	 * Error that occured while metasfresh tried to invoice this record.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInvoicingErrorMsg (@Nullable java.lang.String InvoicingErrorMsg);
+
+	/**
+	 * Get Error message.
+	 * Error that occured while metasfresh tried to invoice this record.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getInvoicingErrorMsg();
+
+	ModelColumn<I_S_Issue, Object> COLUMN_InvoicingErrorMsg = new ModelColumn<>(I_S_Issue.class, "InvoicingErrorMsg", null);
+	String COLUMNNAME_InvoicingErrorMsg = "InvoicingErrorMsg";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *

@@ -56,13 +56,13 @@ public class IssueService
 			issueHierarchy
 					.getUpStreamForId(request.getCurrentParentId())
 					.forEach(issue -> {
-						issue.addAggregatedEffort(request.getCurrentAggregatedEffort());
-						issue.addInvoiceableChildEffort(request.getCurrentInvoicableEffort());
-						recomputeLatestActivityOnSubIssues(issue);
+								 issue.addAggregatedEffort(request.getCurrentAggregatedEffort());
+								 issue.addInvoiceableChildEffort(request.getCurrentInvoicableEffort());
+								 recomputeLatestActivityOnSubIssues(issue);
 
-						issueRepository.save(issue);
-					}
-			);
+								 issueRepository.save(issue);
+							 }
+					);
 		}
 
 		if (request.getOldParentId() != null)
@@ -98,24 +98,25 @@ public class IssueService
 
 		issueRepository.save(issueEntity);
 
-		if(issueEntity.getParentIssueId() != null)
+		if (issueEntity.getParentIssueId() != null)
 		{
 			issueRepository
 					.buildUpStreamIssueHierarchy(issueEntity.getParentIssueId())
 					.getUpStreamForId(issueEntity.getParentIssueId())
 					.forEach(parentIssue ->
-					{
-						parentIssue.addAggregatedEffort(request.getBookedEffort());
+							 {
+								 parentIssue.addAggregatedEffort(request.getBookedEffort());
 
-						recomputeLatestActivityOnSubIssues(parentIssue);
+								 recomputeLatestActivityOnSubIssues(parentIssue);
 
-						issueRepository.save(parentIssue);
-					});
+								 issueRepository.save(parentIssue);
+							 });
 		}
 	}
 
-	public void processIssueHierarchy(@NonNull final IssueEntity issueEntity)
+	public void processIssueHierarchy(@NonNull final IssueId issueId)
 	{
+		final IssueEntity issueEntity = getById(issueId);
 		processIssue(issueEntity);
 
 		if (issueEntity.getParentIssueId() == null)
@@ -133,6 +134,12 @@ public class IssueService
 	public IssueEntity getById(@NonNull final IssueId issueId)
 	{
 		return issueRepository.getById(issueId);
+	}
+
+	@NonNull
+	public void save(@NonNull final IssueEntity issueEntity)
+	{
+		issueRepository.save(issueEntity);
 	}
 
 	private void recomputeLatestActivityOnSubIssues(@NonNull final IssueEntity issueEntity)
@@ -167,6 +174,7 @@ public class IssueService
 		final IssueEntity invoicedIssue = issueEntity.toBuilder()
 				.status(Status.INVOICED)
 				.processed(true)
+				.invoicingErrorMsg(null)
 				.build();
 
 		issueRepository.save(invoicedIssue);

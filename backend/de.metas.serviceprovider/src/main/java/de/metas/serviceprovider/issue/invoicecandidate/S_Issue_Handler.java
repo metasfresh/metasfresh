@@ -23,6 +23,7 @@
 package de.metas.serviceprovider.issue.invoicecandidate;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -58,6 +59,7 @@ import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxNotFoundException;
 import de.metas.tax.api.TaxQuery;
 import de.metas.uom.UomId;
+import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -77,6 +79,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
@@ -126,7 +129,7 @@ public class S_Issue_Handler extends AbstractInvoiceCandidateHandler
 	{
 		final I_S_Issue issue = request.getModel(I_S_Issue.class);
 
-		return InvoiceCandidateGenerateResult.of(this, createCandidateFor(issue));
+		return createCandidateFor(issue);
 	}
 
 	@Override
@@ -186,42 +189,61 @@ public class S_Issue_Handler extends AbstractInvoiceCandidateHandler
 				.map(candidate -> TableRecordReference.of(candidate.getAD_Table_ID(), candidate.getRecord_ID()))
 				.filter(recordReference -> recordReference.isOfType(I_S_Issue.class))
 				.map(recordReference -> recordReference.getIdAssumingTableName(I_S_Issue.Table_Name, IssueId::ofRepoId))
-				.map(issueService::getById)
 				.forEach(issueService::processIssueHierarchy);
+
+		for (final Map.Entry<TableRecordReference, String> entry : result.getCandidateRecordRef2Message().entrySet())
+		{
+			final TableRecordReference tableRecordReference = entry.getKey();
+			if (!tableRecordReference.isOfType(I_S_Issue.class))
+			{
+				continue;
+			}
+
+			final String errorMsg = entry.getValue();
+			final IssueId issueId = tableRecordReference.getIdAssumingTableName(I_S_Issue.Table_Name, IssueId::ofRepoId);
+
+			final IssueEntity issueWithErrorMsg = issueService.getById(issueId)
+					.toBuilder()
+					.invoicingErrorMsg(errorMsg)
+					.processed(false)
+					.build();
+
+			issueService.save(issueWithErrorMsg);
+		}
 	}
 
-	@Nullable
-	private I_C_Invoice_Candidate createCandidateFor(@NonNull final I_S_Issue record)
+	@NonNull
+	private InvoiceCandidateGenerateResult createCandidateFor(@NonNull final I_S_Issue record)
 	{
 		final IssueEntity issue = IssueRepository.ofRecord(record);
+		final TableRecordReference recordReference = TableRecordReference.of(I_S_Issue.Table_Name, issue.getIssueId());
 
 		if (issue.getIssueId() == null)
 		{
-			Loggables.withLogger(log, Level.DEBUG).addLog("Something went wrong! Missing issueId for record: {} ", record);
-			return null;
+			final String issueIdErrorMsg = "Something went wrong! Missing issueId for record: " + record;
+			return InvoiceCandidateGenerateResult.of(this, ImmutableMap.of(recordReference, issueIdErrorMsg));
 		}
 
 		final I_C_Invoice_Candidate invoiceCandidate = retrieveInvoiceCandidate(issue);
 
 		invoiceCandidate.setC_ILCandHandler_ID(getHandlerRecord().getC_ILCandHandler_ID());
 
-		final TableRecordReference recordReference = TableRecordReference.of(I_S_Issue.Table_Name, issue.getIssueId());
 		invoiceCandidate.setAD_Table_ID(recordReference.getAD_Table_ID());
 		invoiceCandidate.setRecord_ID(recordReference.getRecord_ID());
 		invoiceCandidate.setAD_Org_ID(OrgId.toRepoId(issue.getOrgId()));
 
 		if (issue.getProjectId() == null)
 		{
-			Loggables.withLogger(log, Level.DEBUG).addLog("IssueId: {} skipped! Missing projectId on issue record.", issue.getIssueId());
-			return null;
+			final String projectIdErrorMsg = "IssueId: " + issue.getIssueId() + " skipped! Missing projectId on issue record.";
+			return InvoiceCandidateGenerateResult.of(this, ImmutableMap.of(recordReference, projectIdErrorMsg));
 		}
 
 		invoiceCandidate.setC_Project_ID(issue.getProjectId().getRepoId());
 
 		if (issue.getCostCenterActivityId() == null)
 		{
-			Loggables.withLogger(log, Level.DEBUG).addLog("IssueId: {} skipped! Missing costCenterId on issue record.", issue.getIssueId());
-			return null;
+			final String costCenterIdErrorMsg = "IssueId: " + issue.getIssueId() + " skipped! Missing costCenterId on issue record.";
+			return InvoiceCandidateGenerateResult.of(this, ImmutableMap.of(recordReference, costCenterIdErrorMsg));
 		}
 
 		invoiceCandidate.setC_Activity_ID(issue.getCostCenterActivityId().getRepoId());
@@ -229,15 +251,15 @@ public class S_Issue_Handler extends AbstractInvoiceCandidateHandler
 		final I_C_Project project = projectRepository.getRecordById(issue.getProjectId());
 		if (project == null)
 		{
-			Loggables.withLogger(log, Level.DEBUG).addLog("IssueId: {} skipped! Missing project for ProjectId: {}", issue.getIssueId(), issue.getProjectId());
-			return null;
+			final String projectDataErrorMsg = "IssueId: " + issue.getIssueId() + " skipped! Missing project for ProjectId: " + issue.getProjectId();
+			return InvoiceCandidateGenerateResult.of(this, ImmutableMap.of(recordReference, projectDataErrorMsg));
 		}
 
 		final ProductId productId = ProductId.ofRepoIdOrNull(project.getM_Product_ID());
 		if (productId == null)
 		{
-			Loggables.withLogger(log, Level.DEBUG).addLog("IssueId: {} skipped! Missing invoiceable product from ProjectId: {}", issue.getIssueId(), issue.getProjectId());
-			return null;
+			final String productIdErrorMsg = "IssueId: " + issue.getIssueId() + " skipped! Missing ProductId from ProjectId: " + issue.getProjectId();
+			return InvoiceCandidateGenerateResult.of(this, ImmutableMap.of(recordReference, productIdErrorMsg));
 		}
 
 		invoiceCandidate.setM_Product_ID(productId.getRepoId());
@@ -248,11 +270,10 @@ public class S_Issue_Handler extends AbstractInvoiceCandidateHandler
 		final SOTrx soTrx = SOTrx.SALES;
 		invoiceCandidate.setIsSOTrx(soTrx.toBoolean());
 
-		final boolean bpartnerDataSet = setBPartnerData(invoiceCandidate, project);
-		if (!bpartnerDataSet)
+		final String bpartnerErrorMsg = setBPartnerData(invoiceCandidate, project);
+		if (Check.isNotBlank(bpartnerErrorMsg))
 		{
-			Loggables.withLogger(log, Level.DEBUG).addLog("IssueId: {} skipped! Missing bpartner details from ProjectId: {}", issue.getIssueId(), issue.getProjectId());
-			return null;
+			return InvoiceCandidateGenerateResult.of(this, ImmutableMap.of(recordReference, bpartnerErrorMsg));
 		}
 
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(invoiceCandidate.getBill_BPartner_ID());
@@ -312,7 +333,7 @@ public class S_Issue_Handler extends AbstractInvoiceCandidateHandler
 
 		invoiceCandidate.setC_Tax_ID(tax.getTaxId().getRepoId());
 
-		return invoiceCandidate;
+		return InvoiceCandidateGenerateResult.of(this, invoiceCandidate);
 	}
 
 	@NonNull
@@ -380,15 +401,15 @@ public class S_Issue_Handler extends AbstractInvoiceCandidateHandler
 		invoiceCandidate.setC_Order_ID(-1);
 	}
 
-	private boolean setBPartnerData(
+	@Nullable
+	private String setBPartnerData(
 			@NonNull final I_C_Invoice_Candidate invoiceCandidate,
 			@NonNull final I_C_Project project)
 	{
 		final BPartnerId bPartnerId = BPartnerId.ofRepoIdOrNull(project.getC_BPartner_ID());
 		if (bPartnerId == null)
 		{
-			Loggables.withLogger(log, Level.DEBUG).addLog("Missing business partner from ProjectId: {}", project.getC_Project_ID());
-			return false;
+			return "Missing business partner from ProjectId: " + project.getC_Project_ID();
 		}
 
 		invoiceCandidate.setBill_BPartner_ID(bPartnerId.getRepoId());
@@ -397,13 +418,13 @@ public class S_Issue_Handler extends AbstractInvoiceCandidateHandler
 		if (bPartnerLocationId == null)
 		{
 			Loggables.withLogger(log, Level.DEBUG).addLog("Missing business partner location from ProjectId: {}", project.getC_Project_ID());
-			return false;
+			return "Missing business partner location from ProjectId: " + project.getC_Project_ID();
 		}
 
 		invoiceCandidate.setBill_Location_ID(bPartnerLocationId.getRepoId());
 		invoiceCandidate.setBill_User_ID(project.getAD_User_ID());
 
-		return true;
+		return null;
 	}
 
 	@NonNull
