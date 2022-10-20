@@ -75,12 +75,6 @@ public class C_BPartner_Location_StepDef
 		bPartnerLocationRecord.setIsBillToDefault(true);
 		bPartnerLocationRecord.setIsShipTo(true);
 
-		final Boolean isHandOverLocation = DataTableUtil.extractBooleanForColumnNameOrNull(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsHandOverLocation);
-		if (isHandOverLocation != null)
-		{
-			bPartnerLocationRecord.setIsHandOverLocation(isHandOverLocation);
-		}
-
 		saveRecord(bPartnerLocationRecord);
 
 		bPartnerLocationTable.put(DataTableUtil.extractRecordIdentifier(tableRow, "C_BPartner_Location"), bPartnerLocationRecord);

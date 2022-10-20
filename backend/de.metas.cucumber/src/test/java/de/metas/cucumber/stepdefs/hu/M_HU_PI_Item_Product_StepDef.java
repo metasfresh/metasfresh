@@ -22,7 +22,6 @@
 
 package de.metas.cucumber.stepdefs.hu;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
@@ -36,14 +35,11 @@ import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
-import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
@@ -87,30 +83,6 @@ public class M_HU_PI_Item_Product_StepDef
 		{
 			createHUPIItemProduct(tableRow);
 		}
-	}
-
-	@And("load last created M_HU_PI_Item_Product for GLN:")
-	public void loadPIIP_forGLN(@NonNull final DataTable dataTable)
-	{
-		final Map<String, String> row = dataTable.asMaps().get(0);
-
-		final String gln = DataTableUtil.extractStringForColumnName(row, I_C_BPartner_Location.COLUMNNAME_GLN);
-
-		final IQuery<I_C_BPartner_Location> queryWithGivenGLN = queryBL.createQueryBuilder(I_C_BPartner_Location.class)
-				.addEqualsFilter(I_C_BPartner_Location.COLUMNNAME_GLN, gln)
-				.create();
-
-		final ImmutableList<I_M_HU_PI_Item_Product> piips = queryBL.createQueryBuilder(I_M_HU_PI_Item_Product.class)
-				.addInSubQueryFilter(I_M_HU_PI_Item_Product.COLUMNNAME_C_BPartner_ID, I_C_BPartner_Location.COLUMNNAME_C_BPartner_ID, queryWithGivenGLN)
-				.orderByDescending(I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID)
-				.create()
-				.stream()
-				.collect(ImmutableList.toImmutableList());
-
-		assertThat(piips.size()).isGreaterThan(0);
-		final String piipIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-
-		huPiItemProductTable.putOrReplace(piipIdentifier, piips.get(0));
 	}
 
 	private void createHUPIItemProduct(@NonNull final Map<String, String> tableRow)

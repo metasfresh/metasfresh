@@ -121,10 +121,10 @@ public class IMP_Processor_StepDef
 		impProcessor.setFrequency(frequency);
 
 		final String impProcessorTypeIdentifier = DataTableUtil.extractStringForColumnName(row, I_IMP_Processor_Type.COLUMNNAME_IMP_Processor_Type_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final Integer impProcessorTypeId = impProcessorTypeStepDefData.getOptional(impProcessorTypeIdentifier)
-				.map(I_IMP_Processor_Type::getIMP_Processor_Type_ID)
-				.orElseGet(() -> Integer.parseInt(impProcessorTypeIdentifier));
-		impProcessor.setIMP_Processor_Type_ID(impProcessorTypeId);
+		final I_IMP_Processor_Type impProcessorType = impProcessorTypeStepDefData.get(impProcessorTypeIdentifier);
+		assertThat(impProcessorType).isNotNull();
+
+		impProcessor.setIMP_Processor_Type_ID(impProcessorType.getIMP_Processor_Type_ID());
 
 		final ServerBoot serverBoot = SpringContextHolder.instance.getBean(ServerBoot.class);
 		final CommandLineParser.CommandLineOptions commandLineOptions = serverBoot.getCommandLineOptions();

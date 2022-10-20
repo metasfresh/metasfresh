@@ -56,13 +56,14 @@ Feature: import order candidate to metasfresh
 
 
   @from:cucumber
-  Scenario: Properly identify M_HU_PI_Item_Product when metasfresh contains two different BPartners that share their main location but have different store locations and the same UPC is set on C_BPartner_Product
-  _Given one main C_BPartner and one Subsidiary_BPartner that shares their main location but their store locations are different
-  _And 2 x M_HU_PI_Item_Product for each C_BPartner, having the same product
-  _And set the same UPC on C_BPartner_Product for both partners
-  _When a message that contains an XML to lookup: M_HU_PI_Item_Product(storeGLN is sent)
-  _Then validate that C_OLCand was created and all specified fields were properly resolved
-  _And M_HU_PI_Item_Product_ID = `101` - default M_HU_PI_Item_Product_ID when there is no UPC set on piip record
+  Scenario: Properly identify M_HU_PI_Item_Product when metasfresh contains two different BPartners that share their main location but have different store locations; UPC is set on C_BPartner_Product
+  _Given one main C_BPartner and one Subsidiary_BPartner that share their main location but their store locations are different
+  _And 2 x M_HU_PI_Item_Product for each C_BPartner and for the same product
+  _And UPC is set on C_BPartner_Product for both partners
+  _When importing OLCand via EDIImportXML with: M_HU_PI_Item_Product(storeGLN is sent)
+  _Then validate that C_OLCand was created
+  _And M_HU_PI_Item_Product_ID = `101`- default M_HU_PI_Item_Product_ID when there is no UPC set on PIIP record
+
     Given metasfresh contains C_BPartners:
       | Identifier  | Name                 | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | bpartner1_1 | MainBPartner_1       | N            | Y              | ps_1                          |
@@ -133,48 +134,47 @@ Feature: import order candidate to metasfresh
     </EDI_Imp_C_OLCand>
 """
 
-    Then after not more than 30s, C_OLCand is found
-      | C_OLCand_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.C_BPartner_ID.Identifier | QtyEntered |
-      | olCand_1               | 101                                    | bpartner1_1                  | 10         |
+    Then after not more than 90s, C_OLCand is found
+      | C_OLCand_ID.Identifier | M_Product_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.C_BPartner_ID.Identifier | QtyEntered |
+      | olCand_1               | product                 | 101                                    | bpartner1_1                  | 10         |
 
     And validate C_OLCand:
       | C_OLCand_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyEntered | DeliveryRule | DeliveryViaRule | OPT.POReference | IsError | OPT.Processed | OPT.M_HU_PI_Item_Product_ID.Identifier |
       | olCand_1               | bpartner1_1              | bpLocation_main1_1                | product                 | 10         | F            | S               | PORefTest       | Y       | N             | 101                                    |
 
-
   @from:cucumber
   Scenario: Properly identify M_HU_PI_Item_Product when metasfresh contains three different BPartners:first partner shares the same main location with the second one and same store location with the third one.
-    _Given one main C_BPartner, one DropShip_BPartner and one HandOver_BPartner each of them having two locations: main and store
-    _And C_BPartner shares its main location with DropShip_BPartner
-    _And C_BPartner shares its store location with HandOver_BPartner
-    _And 3 x M_HU_PI_Item_Product for each C_BPartner, having the same product and UPC
-    _When a message that contains an XML to lookup: M_HU_PI_Item_Product(storeGLN is sent), C_BPartner, C_BPartner_Location, DropShip_BPartner, DropShip_Location, HandOverBPartner, HandOver_Location
-    _Then validate that C_OLCand was created and all specified fields were properly resolved
-    _And M_HU_PI_Item_Product_ID was chosen based on `storeGLN`
-    _When a message that contains an XML to lookup: M_HU_PI_Item_Product(storeGLN is not sent), C_BPartner, C_BPartner_Location, DropShip_BPartner, DropShip_Location, HandOverBPartner, HandOver_Location
-    _Then load most recently created M_HU_PI_Item_Product_ID for given GLN
-    _And validate that C_OLCand was created and all specified fields were properly resolved
-    _And C_OLCand.M_HU_PI_Item_Product_ID was the most recently created for given GLN
+  _Given three BPartners, each of them having two locations: main and store
+  _And MainBPartner shares its main location with BPartner2
+  _And MainBPartner shares its store location with BPartner3
+  _And 3 x M_HU_PI_Item_Product for each C_BPartner, having the same product and UPC
+  _When importing OLCand via EDIImportXML that also contains: M_HU_PI_Item_Product(storeGLN is sent), C_BPartner, C_BPartner_Location, DropShip_BPartner, DropShip_Location, HandOverBPartner, HandOver_Location
+  _Then validate that C_OLCand was created and all specified fields were properly resolved
+  _And M_HU_PI_Item_Product_ID was chosen based on `storeGLN`
+  _When importing OLCand via EDIImportXML that also contains: M_HU_PI_Item_Product(storeGLN is not sent), C_BPartner, C_BPartner_Location, DropShip_BPartner, DropShip_Location, HandOverBPartner, HandOver_Location
+  _Then validate that C_OLCand was created and all specified fields were properly resolved
+  _And C_OLCand.M_HU_PI_Item_Product_ID is set to the most recently created PIIP for the given GLN
+
     Given metasfresh contains C_BPartners:
-      | Identifier         | Name               | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | bpartner_2         | MainBPartner_2     | N            | Y              | ps_1                          |
-      | dropShipBPartner_2 | DropShipBPartner_2 | N            | Y              | ps_1                          |
-      | handOverBPartner_2 | HandOverBPartner_2 | N            | Y              | ps_1                          |
-      | orgBPartner_2      | OrgBPartner_2      | N            | Y              | ps_1                          |
+      | Identifier    | Name           | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | bpartner1_2   | MainBPartner_2 | N            | Y              | ps_1                          |
+      | bpartner2_2   | BPartner2_2    | N            | Y              | ps_1                          |
+      | bpartner3_2   | BPartner3_2    | N            | Y              | ps_1                          |
+      | orgBPartner_2 | OrgBPartner_2  | N            | Y              | ps_1                          |
     And metasfresh contains M_HU_PI_Item_Product:
       | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  | OPT.Name            | OPT.C_UOM_ID.X12DE355 | OPT.C_BPartner_ID.Identifier | OPT.UPC       |
-      | huItemProduct_1_2                  | huPiItemTU_1               | product                 | 2   | 2022-10-01 | IFCO_Test_1 x 2 PCE | PCE                   | bpartner_2                   | 1111111111112 |
-      | huItemProduct_2_2                  | huPiItemTU_2               | product                 | 9   | 2022-10-01 | IFCO_Test_1 x 9 PCE | PCE                   | dropShipBPartner_2           | 1111111111112 |
-      | huItemProduct_3_2                  | huPiItemTU_3               | product                 | 7   | 2022-10-01 | IFCO_Test_1 x 7 PCE | PCE                   | handOverBPartner_2           | 1111111111112 |
+      | huItemProduct_1_2                  | huPiItemTU_1               | product                 | 2   | 2022-10-01 | IFCO_Test_1 x 2 PCE | PCE                   | bpartner1_2                  | 1111111111112 |
+      | huItemProduct_2_2                  | huPiItemTU_2               | product                 | 9   | 2022-10-01 | IFCO_Test_1 x 9 PCE | PCE                   | bpartner2_2                  | 1111111111112 |
+      | huItemProduct_3_2                  | huPiItemTU_3               | product                 | 7   | 2022-10-01 | IFCO_Test_1 x 7 PCE | PCE                   | bpartner3_2                  | 1111111111112 |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier              | GLN           | C_BPartner_ID.Identifier | OPT.IsShipTo | OPT.IsHandOverLocation |
-      | mainBPLocation_2        | 2234567890000 | bpartner_2               | false        | false                  |
-      | storeBPLocation_2       | 2234567890001 | bpartner_2               | true         | false                  |
-      | dropShipMainLocation_2  | 2234567890000 | dropShipBPartner_2       | false        | false                  |
-      | dropShipStoreLocation_2 | 2234567890002 | dropShipBPartner_2       | true         | false                  |
-      | handOverMainLocation_2  | 2234567890003 | handOverBPartner_2       | false        | true                   |
-      | handOverStoreLocation_2 | 2234567890001 | handOverBPartner_2       | true         | false                  |
-      | orgBPLocation_2         | 2222222222222 | orgBPartner_2            | false        | false                  |
+      | Identifier         | GLN           | C_BPartner_ID.Identifier | OPT.IsShipTo |
+      | mainBPLocation1_2  | 2234567890000 | bpartner1_2              | false        |
+      | storeBPLocation1_2 | 2234567890001 | bpartner1_2              | true         |
+      | mainBPLocation2_2  | 2234567890000 | bpartner2_2              | false        |
+      | storeBPLocation2_2 | 2234567890002 | bpartner2_2              | true         |
+      | mainBPLocation3_2  | 2234567890003 | bpartner3_2              | false        |
+      | storeBPLocation3_2 | 2234567890001 | bpartner3_2              | true         |
+      | orgBPLocation_2    | 2222222222222 | orgBPartner_2            | false        |
 
     When send message to RabbitMQ queue defined by:impProcessor
   """
@@ -184,7 +184,7 @@ Feature: import order candidate to metasfresh
     </AD_DataDestination_ID>
     <AD_InputDataSource_ID>540217</AD_InputDataSource_ID>
     <AD_Org_ID>
-        <GLN>2222222222221</GLN>
+        <GLN>2222222222222</GLN>
     </AD_Org_ID>
     <AD_User_EnteredBy_ID>2188223</AD_User_EnteredBy_ID>
     <C_BPartner_ID>
@@ -193,10 +193,10 @@ Feature: import order candidate to metasfresh
     </C_BPartner_ID>
     <DropShip_BPartner_ID>
         <GLN>2234567890000</GLN>
-        <StoreGLN>2234567890002</StoreGLN>
+        <StoreGLN>2234567890001</StoreGLN>
     </DropShip_BPartner_ID>
     <HandOver_Partner_ID>
-        <GLN>2234567890003</GLN>
+        <GLN>2234567890000</GLN>
         <StoreGLN>2234567890001</StoreGLN>
     </HandOver_Partner_ID>
     <C_BPartner_Location_ID>
@@ -209,16 +209,16 @@ Feature: import order candidate to metasfresh
     <DropShip_Location_ID>
         <C_BPartner_ID>
             <GLN>2234567890000</GLN>
-            <StoreGLN>2234567890002</StoreGLN>
+            <StoreGLN>2234567890001</StoreGLN>
         </C_BPartner_ID>
-        <GLN>2234567890000</GLN>
+        <GLN>2234567890001</GLN>
     </DropShip_Location_ID>
     <HandOver_Location_ID>
         <C_BPartner_ID>
-            <GLN>2234567890003</GLN>
-            <StoreGLN>2234567890001</StoreGLN>
+            <GLN>2234567890000</GLN>
+        <StoreGLN>2234567890001</StoreGLN>
         </C_BPartner_ID>
-        <GLN>2234567890003</GLN>
+        <GLN>2234567890000</GLN>
     </HandOver_Location_ID>
     <C_Currency_ID>
         <ISO_Code>EUR</ISO_Code>
@@ -246,13 +246,13 @@ Feature: import order candidate to metasfresh
 </EDI_Imp_C_OLCand>
 """
 
-    Then after not more than 30s, C_OLCand is found
-      | C_OLCand_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.C_BPartner_ID.Identifier | QtyEntered |
-      | olCand_2               | huItemProduct_1_2                      | bpartner_2                   | 2          |
+    Then after not more than 90s, C_OLCand is found
+      | C_OLCand_ID.Identifier | M_Product_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.C_BPartner_ID.Identifier | QtyEntered |
+      | olCand_2               | product                 | huItemProduct_1_2                      | bpartner1_2                  | 2          |
 
     And validate C_OLCand:
-      | C_OLCand_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.DropShip_BPartner_ID | OPT.DropShip_Location_ID | OPT.HandOver_Partner_ID | OPT.HandOver_Location_ID | M_Product_ID.Identifier | QtyEntered | DeliveryRule | DeliveryViaRule | OPT.POReference | IsError | OPT.Processed |
-      | olCand_2               | huItemProduct_1_2                      | bpartner_2               | mainBPLocation_2                  | dropShipBPartner_2       | dropShipMainLocation_2   | handOverBPartner_2      | handOverMainLocation_2   | product                 | 2          | F            | S               | PORefTest       | Y       | N             |
+      | C_OLCand_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.DropShip_BPartner_ID.Identifier | OPT.DropShip_Location_ID.Identifier | OPT.HandOver_Partner_ID.Identifier | OPT.HandOver_Location_ID.Identifier | M_Product_ID.Identifier | QtyEntered | DeliveryRule | DeliveryViaRule | OPT.POReference | IsError | OPT.Processed |
+      | olCand_2               | huItemProduct_1_2                      | bpartner1_2              | mainBPLocation1_2                 | bpartner1_2                         | storeBPLocation1_2                  | bpartner1_2                        | mainBPLocation1_2                   | product                 | 2          | F            | S               | PORefTest       | Y       | N             |
 
     When send message to RabbitMQ queue defined by:impProcessor
   """
@@ -262,7 +262,7 @@ Feature: import order candidate to metasfresh
     </AD_DataDestination_ID>
     <AD_InputDataSource_ID>540217</AD_InputDataSource_ID>
     <AD_Org_ID>
-        <GLN>2222222222221</GLN>
+        <GLN>2222222222222</GLN>
     </AD_Org_ID>
     <AD_User_EnteredBy_ID>2188223</AD_User_EnteredBy_ID>
     <C_BPartner_ID>
@@ -271,10 +271,10 @@ Feature: import order candidate to metasfresh
     </C_BPartner_ID>
     <DropShip_BPartner_ID>
         <GLN>2234567890000</GLN>
-        <StoreGLN>2234567890002</StoreGLN>
+        <StoreGLN>2234567890001</StoreGLN>
     </DropShip_BPartner_ID>
     <HandOver_Partner_ID>
-        <GLN>2234567890003</GLN>
+        <GLN>2234567890000</GLN>
         <StoreGLN>2234567890001</StoreGLN>
     </HandOver_Partner_ID>
     <C_BPartner_Location_ID>
@@ -287,16 +287,16 @@ Feature: import order candidate to metasfresh
     <DropShip_Location_ID>
         <C_BPartner_ID>
             <GLN>2234567890000</GLN>
-            <StoreGLN>2234567890002</StoreGLN>
+            <StoreGLN>2234567890001</StoreGLN>
         </C_BPartner_ID>
-        <GLN>2234567890000</GLN>
+        <GLN>2234567890001</GLN>
     </DropShip_Location_ID>
     <HandOver_Location_ID>
         <C_BPartner_ID>
-            <GLN>2234567890003</GLN>
-            <StoreGLN>2234567890001</StoreGLN>
+            <GLN>2234567890000</GLN>
+        <StoreGLN>2234567890001</StoreGLN>
         </C_BPartner_ID>
-        <GLN>2234567890003</GLN>
+        <GLN>2234567890000</GLN>
     </HandOver_Location_ID>
     <C_Currency_ID>
         <ISO_Code>EUR</ISO_Code>
@@ -322,14 +322,11 @@ Feature: import order candidate to metasfresh
     <DatePromised>2022-11-20T23:59:59+03:00</DatePromised>
 </EDI_Imp_C_OLCand>
 """
-    Then load last created M_HU_PI_Item_Product for GLN:
-      | M_HU_PI_Item_Product_ID.Identifier | GLN           |
-      | lastCreatedPIIP                    | 2234567890000 |
 
-    And after not more than 30s, C_OLCand is found
-      | C_OLCand_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.C_BPartner_ID.Identifier | QtyEntered |
-      | olCand_3               | lastCreatedPIIP                        | bpartner_2                   | 2          |
+    Then after not more than 90s, C_OLCand is found
+      | C_OLCand_ID.Identifier | M_Product_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.C_BPartner_ID.Identifier | QtyEntered |
+      | olCand_3               | product                 | huItemProduct_2_2                      | bpartner1_2                  | 2          |
 
     And validate C_OLCand:
-      | C_OLCand_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.DropShip_BPartner_ID | OPT.DropShip_Location_ID | OPT.HandOver_Partner_ID | OPT.HandOver_Location_ID | M_Product_ID.Identifier | QtyEntered | DeliveryRule | DeliveryViaRule | OPT.POReference | IsError | OPT.Processed |
-      | olCand_3               | lastCreatedPIIP                        | bpartner_2               | mainBPLocation_2                  | dropShipBPartner_2       | dropShipMainLocation_2   | handOverBPartner_2      | handOverMainLocation_2   | product                 | 2          | F            | S               | PORefTest       | Y       | N             |
+      | C_OLCand_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.DropShip_BPartner_ID.Identifier | OPT.DropShip_Location_ID.Identifier | OPT.HandOver_Partner_ID.Identifier | OPT.HandOver_Location_ID.Identifier | M_Product_ID.Identifier | QtyEntered | DeliveryRule | DeliveryViaRule | OPT.POReference | IsError | OPT.Processed |
+      | olCand_3               | huItemProduct_2_2                      | bpartner1_2              | mainBPLocation1_2                 | bpartner1_2                         | storeBPLocation1_2                  | bpartner1_2                        | mainBPLocation1_2                   | product                 | 2          | F            | S               | PORefTest       | Y       | N             |
