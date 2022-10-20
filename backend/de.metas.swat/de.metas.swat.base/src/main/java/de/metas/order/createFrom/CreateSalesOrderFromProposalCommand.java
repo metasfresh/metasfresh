@@ -59,6 +59,7 @@ public class CreateSalesOrderFromProposalCommand
 	private final Timestamp newOrderDateOrdered;
 	private final String poReference;
 	private final boolean completeIt;
+	private final boolean isKeepProposalPrices;
 
 	@Builder
 	private CreateSalesOrderFromProposalCommand(
@@ -66,13 +67,16 @@ public class CreateSalesOrderFromProposalCommand
 			@NonNull final DocTypeId newOrderDocTypeId,
 			@Nullable final Timestamp newOrderDateOrdered,
 			@Nullable final String poReference,
-			final boolean completeIt)
+			final boolean completeIt,
+			final boolean isKeepProposalPrices
+			)
 	{
 		this.fromProposalId = fromProposalId;
 		this.newOrderDocTypeId = newOrderDocTypeId;
 		this.newOrderDateOrdered = newOrderDateOrdered;
 		this.poReference = poReference;
 		this.completeIt = completeIt;
+		this.isKeepProposalPrices = isKeepProposalPrices;
 	}
 
 	public I_C_Order execute()
@@ -80,11 +84,13 @@ public class CreateSalesOrderFromProposalCommand
 		final I_C_Order fromProposal = orderBL.getById(fromProposalId);
 		if (!orderBL.isSalesProposalOrQuotation(fromProposal))
 		{
-			throw new AdempiereException("Not an quotation/proposal: " + fromProposal);
+			throw new AdempiereException("Not a quotation/proposal: " + fromProposal);
 		}
 
-		final I_C_Order newSalesOrder = copyProposalHeader(fromProposal);
+		// prepare proposal lines
 		prepareProposalLines(fromProposal);
+
+		final I_C_Order newSalesOrder = copyProposalHeader(fromProposal);
 		copyProposalLines(fromProposal, newSalesOrder);
 		completeSalesOrderIfNeeded(newSalesOrder);
 		return newSalesOrder;
@@ -122,16 +128,17 @@ public class CreateSalesOrderFromProposalCommand
 		return newSalesOrder;
 	}
 
-	private void prepareProposalLines(@NonNull final I_C_Order proposal){
+	private void prepareProposalLines(@NonNull final I_C_Order proposal)
+	{
 
-		// flag proposal lines as manual discount/price to avoid price recalculation and have the same prices
-		// see 13784
+		if (isKeepProposalPrices)
 		{
 			final DocTypeId docTypeId = DocTypeId.ofRepoId(proposal.getC_DocType_ID());
-			if(docTypeBL.isSalesQuotation(docTypeId))
+			if (docTypeBL.isSalesProposal(docTypeId))
 			{
 				for (final I_C_OrderLine line : orderDAO.retrieveOrderLines(proposal))
 				{
+					// flag proposal lines as manual discount/price to avoid price recalculation and have the same prices. See #13784
 					line.setIsManualPrice(true);
 					line.setIsManualDiscount(true);
 					orderDAO.save(line);
@@ -139,7 +146,7 @@ public class CreateSalesOrderFromProposalCommand
 			}
 		}
 
-    }
+	}
 
 	private void copyProposalLines(
 			@NonNull final I_C_Order fromProposal,
