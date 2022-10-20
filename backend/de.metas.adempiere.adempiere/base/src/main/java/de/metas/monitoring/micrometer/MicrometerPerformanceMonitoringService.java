@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.monitoring
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,9 +20,11 @@
  * #L%
  */
 
-package de.metas.monitoring.adapter;
+package de.metas.monitoring.micrometer;
 
 import de.metas.common.util.EmptyUtil;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringServiceUtil;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Timer;
@@ -59,7 +61,7 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 			@NonNull final Callable<V> callable,
 			@NonNull final PerformanceMonitoringService.Metadata metadata)
 	{
-		if(perfMonEnvVar == false)
+		if(perfMonEnvVar != false)
 		{
 			try
 			{

@@ -20,11 +20,11 @@
  * #L%
  */
 
-package de.metas.monitoringannotation.aspect;
+package de.metas.monitoring.aspect;
 
-import de.metas.monitoring.adapter.MicrometerPerformanceMonitoringService;
+import de.metas.monitoring.micrometer.MicrometerPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoringannotation.annotation.Monitor;
+import de.metas.monitoring.annotation.Monitor;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
@@ -59,12 +59,12 @@ public class MonitorAspect
 	@Value("${performance.monitoring.enable:false}")
 	private Boolean perfMonEnvVar;
 
-	@Around("execution(* *(..)) && @annotation(de.metas.monitoringannotation.annotation.Monitor)")
+	@Around("execution(* *(..)) && @annotation(de.metas.monitoring.annotation.Monitor)")
 	public Object monitorMethod(ProceedingJoinPoint pjp) throws Throwable
 	{
 		final Callable callable = wrapAsCallable(pjp );
 
-		if(perfMonEnvVar == false)
+		if(perfMonEnvVar != false)
 		{
 			callable.call();
 		}

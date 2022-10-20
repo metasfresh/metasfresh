@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.monitoring
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,20 +20,15 @@
  * #L%
  */
 
-package de.metas.monitoring.adapter;
+package de.metas.monitoring.annotation;
 
-import lombok.Getter;
-import lombok.Setter;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
 
-import java.util.ArrayList;
+import java.lang.annotation.*;
 
-@Getter
-@Setter
-public class PerformanceMonitoringData
-{
-	private int depth = 0;
-	private String initiator = "";
-	private String initiatorWindow = "";
-	private ArrayList<String> calledBy = new ArrayList<>();
-	private Boolean isInitiatorLabelActive = false;
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Monitor {
+	PerformanceMonitoringService.Type type();
 }
+

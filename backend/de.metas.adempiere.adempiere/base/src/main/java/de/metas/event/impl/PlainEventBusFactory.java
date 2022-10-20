@@ -8,14 +8,12 @@ import de.metas.event.IEventListener;
 import de.metas.event.Topic;
 import de.metas.event.log.EventLogService;
 import de.metas.event.log.EventLogsRepository;
-import de.metas.monitoring.adapter.MicrometerPerformanceMonitoringService;
+import de.metas.monitoring.micrometer.MicrometerPerformanceMonitoringService;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.compiere.Adempiere;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 
 /*

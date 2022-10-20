@@ -27,7 +27,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.impexp.spreadsheet.excel.ExcelFormat;
 import de.metas.impexp.spreadsheet.excel.ExcelFormats;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoringannotation.annotation.Monitor;
+import de.metas.monitoring.annotation.Monitor;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
 import de.metas.rest_api.utils.JsonErrors;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;

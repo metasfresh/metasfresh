@@ -20,15 +20,20 @@
  * #L%
  */
 
-package de.metas.monitoringannotation.annotation;
+package de.metas.monitoring.micrometer;
 
-import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import lombok.Getter;
+import lombok.Setter;
 
-import java.lang.annotation.*;
+import java.util.ArrayList;
 
-@Target(ElementType.METHOD)
-@Retention(RetentionPolicy.RUNTIME)
-public @interface Monitor {
-	PerformanceMonitoringService.Type type();
+@Getter
+@Setter
+public class PerformanceMonitoringData
+{
+	private int depth = 0;
+	private String initiator = "";
+	private String initiatorWindow = "";
+	private ArrayList<String> calledBy = new ArrayList<>();
+	private Boolean isInitiatorLabelActive = false;
 }
-

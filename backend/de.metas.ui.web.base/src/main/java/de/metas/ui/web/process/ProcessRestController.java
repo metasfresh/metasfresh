@@ -5,7 +5,7 @@ import com.google.common.collect.Maps;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoringannotation.annotation.Monitor;
+import de.metas.monitoring.annotation.Monitor;
 import de.metas.process.PInstanceId;
 import de.metas.process.ProcessClassInfo;
 import de.metas.process.ProcessMDC;

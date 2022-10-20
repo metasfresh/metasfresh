@@ -26,7 +26,7 @@ import ch.qos.logback.classic.Level;
 import de.metas.Profiles;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoringannotation.annotation.Monitor;
+import de.metas.monitoring.annotation.Monitor;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessBasicInfo;

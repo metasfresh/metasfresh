@@ -7,7 +7,7 @@ import de.metas.document.references.related_documents.RelatedDocumentsPermission
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoringannotation.annotation.Monitor;
+import de.metas.monitoring.annotation.Monitor;
 import de.metas.ui.web.document.references.WebuiDocumentReference;
 import de.metas.ui.web.document.references.WebuiDocumentReferenceCandidate;
 import de.metas.ui.web.document.references.service.WebuiDocumentReferencesService;
