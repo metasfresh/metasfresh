@@ -134,7 +134,7 @@ public class CreateSalesOrderFromProposalCommand
 		if (isKeepProposalPrices)
 		{
 			final DocTypeId docTypeId = DocTypeId.ofRepoId(proposal.getC_DocType_ID());
-			if (docTypeBL.isSalesProposal(docTypeId))
+			if (docTypeBL.isSalesQuotation(docTypeId))
 			{
 				for (final I_C_OrderLine line : orderDAO.retrieveOrderLines(proposal))
 				{
