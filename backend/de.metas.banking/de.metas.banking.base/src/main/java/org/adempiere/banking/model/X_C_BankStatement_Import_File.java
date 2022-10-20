@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_C_BankStatement_Import_File extends org.compiere.model.PO implements I_C_BankStatement_Import_File, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -380263195L;
+	private static final long serialVersionUID = -988637955L;
 
     /** Standard Constructor */
     public X_C_BankStatement_Import_File (final Properties ctx, final int C_BankStatement_Import_File_ID, @Nullable final String trxName)
@@ -71,6 +71,18 @@ public class X_C_BankStatement_Import_File extends org.compiere.model.PO impleme
 	public java.sql.Timestamp getImported() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_Imported);
+	}
+
+	@Override
+	public void setIsMatchAmounts (final boolean IsMatchAmounts)
+	{
+		set_Value (COLUMNNAME_IsMatchAmounts, IsMatchAmounts);
+	}
+
+	@Override
+	public boolean isMatchAmounts() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsMatchAmounts);
 	}
 
 	@Override

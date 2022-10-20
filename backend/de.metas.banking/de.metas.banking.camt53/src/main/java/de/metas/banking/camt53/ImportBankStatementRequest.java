@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.banking.base
+ * de.metas.banking.camt53
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,29 +20,20 @@
  * #L%
  */
 
-package de.metas.banking.importfile;
+package de.metas.banking.camt53;
 
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-import java.time.Instant;
+import java.io.InputStream;
 
 @Value
-@Builder(toBuilder = true)
-public class BankStatementImportFile
+@Builder
+public class ImportBankStatementRequest
 {
 	@NonNull
-	BankStatementImportFileId bankStatementImportFileId;
-
-	@NonNull
-	String filename;
-
-	@Nullable
-	Instant importedTimestamp;
+	InputStream camt53File;
 
 	boolean isMatchAmounts;
-	
-	boolean processed;
 }

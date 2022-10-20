@@ -165,6 +165,29 @@ public interface I_C_BankStatement_Import_File
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Match Amounts.
+	 * If set, the import process will also take into consideration the invoice open amount when looking for corresponding invoices.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsMatchAmounts (boolean IsMatchAmounts);
+
+	/**
+	 * Get Match Amounts.
+	 * If set, the import process will also take into consideration the invoice open amount when looking for corresponding invoices.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isMatchAmounts();
+
+	ModelColumn<I_C_BankStatement_Import_File, Object> COLUMN_IsMatchAmounts = new ModelColumn<>(I_C_BankStatement_Import_File.class, "IsMatchAmounts", null);
+	String COLUMNNAME_IsMatchAmounts = "IsMatchAmounts";
+
+	/**
 	 * Set Processed.
 	 *
 	 * <br>Type: YesNo

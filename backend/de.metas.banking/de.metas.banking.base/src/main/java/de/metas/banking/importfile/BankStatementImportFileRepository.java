@@ -47,6 +47,7 @@ public class BankStatementImportFileRepository
 		bankStatementImportFileRecord.setProcessed(bankStatementImportFile.isProcessed());
 		bankStatementImportFileRecord.setFileName(bankStatementImportFile.getFilename());
 		bankStatementImportFileRecord.setImported(TimeUtil.asTimestamp(bankStatementImportFile.getImportedTimestamp()));
+		bankStatementImportFileRecord.setIsMatchAmounts(bankStatementImportFile.isMatchAmounts());
 		
 		saveRecord(bankStatementImportFileRecord);
 	}
@@ -72,6 +73,7 @@ public class BankStatementImportFileRepository
 				.bankStatementImportFileId(BankStatementImportFileId.ofRepoId(record.getC_BankStatement_Import_File_ID()))
 				.filename(record.getFileName())
 				.importedTimestamp(TimeUtil.asInstant(record.getImported()))
+				.isMatchAmounts(record.isMatchAmounts())
 				.processed(record.isProcessed())
 				.build();
 	}

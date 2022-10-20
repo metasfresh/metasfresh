@@ -46,7 +46,7 @@ Feature: import bank statement in camt53 import format
       | Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | QtyInvoiced | C_UOM_ID.X12DE355 |
       | invl_1     | inv_1                   | p_1                     | 10          | PCE               |
     And the invoice identified by inv_1 is completed
-    And bank statement is imported with identifiers bs_1
+    And bank statement is imported with identifiers bs_1, matching invoice amounts
     """
     <?xml version="1.0" encoding="utf-8"?>
 <Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.02">

@@ -48,6 +48,7 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.invoice.InvoiceId;
+import de.metas.invoice.UnpaidInvoiceQuery;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.logging.LogManager;
 import de.metas.money.Money;
@@ -55,7 +56,9 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
@@ -75,6 +78,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -98,22 +102,24 @@ public class BankStatementCamt53Service
 	}
 
 	@NonNull
-	public ImmutableSet<BankStatementId> importBankToCustomerStatement(@NonNull final InputStream inputStream)
+	public ImmutableSet<BankStatementId> importBankToCustomerStatement(@NonNull final ImportBankStatementRequest importBankStatementRequest)
 	{
 		final NoBatchBankToCustomerStatementV02Wrapper noBatchBankToCustomerStatementV02Wrapper = NoBatchBankToCustomerStatementV02Wrapper
-				.of(loadCamt53Document(inputStream));
+				.of(loadCamt53Document(importBankStatementRequest.getCamt53File()));
 
 		return noBatchBankToCustomerStatementV02Wrapper
 				.getAccountStatements()
 				.stream()
-				.map(this::importBankStatement)
+				.map(accountStatement2 -> importBankStatement(accountStatement2, importBankStatementRequest))
 				.filter(Optional::isPresent)
 				.map(Optional::get)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	@NonNull
-	private Optional<BankStatementId> importBankStatement(@NonNull final AccountStatement2 accountStatement2)
+	private Optional<BankStatementId> importBankStatement(
+			@NonNull final AccountStatement2 accountStatement2,
+			@NonNull final ImportBankStatementRequest importBankStatementRequest)
 	{
 		final BankStatementCreateRequest bankStatementCreateRequest = buildBankStatementCreateRequest(buildAccountStatement2Wrapper(accountStatement2))
 				.orElse(null);
@@ -127,11 +133,19 @@ public class BankStatementCamt53Service
 
 		Loggables.withLogger(logger, Level.DEBUG).addLog(
 				"One bank statement with id={} created for BankStatementCreateRequest={}", bankStatementId, bankStatementCreateRequest);
+		
+		final Function<NoBatchReportEntry2Wrapper, ImportBankStatementLineRequest> getImportBankStatementLineRequest = entry ->  ImportBankStatementLineRequest.builder()
+				.entryWrapper(entry)
+				.bankStatementId(bankStatementId)
+				.orgId(bankStatementCreateRequest.getOrgId())
+				.isMatchAmounts(importBankStatementRequest.isMatchAmounts())
+				.build();
+		
 
 		accountStatement2.getNtry()
 				.stream()
 				.map(this::buildNoBatchReportEntry2Wrapper)
-				.forEach(entry -> importBankStatementLine(entry, bankStatementId, bankStatementCreateRequest.getOrgId()));
+				.forEach(entry -> importBankStatementLine(getImportBankStatementLineRequest.apply(entry)));
 
 		return Optional.of(bankStatementId);
 	}
@@ -172,35 +186,33 @@ public class BankStatementCamt53Service
 								   .build());
 	}
 
-	private void importBankStatementLine(
-			@NonNull final NoBatchReportEntry2Wrapper entryWrapper,
-			@NonNull final BankStatementId bankStatementId,
-			@NonNull final OrgId orgId)
+	private void importBankStatementLine(@NonNull final ImportBankStatementLineRequest importBankStatementLineRequest)
 	{
-		buildBankStatementLineCreateRequest(entryWrapper, bankStatementId, orgId)
+		buildBankStatementLineCreateRequest(importBankStatementLineRequest)
 				.ifPresent(bankStatementDAO::createBankStatementLine);
 	}
 
 	@NonNull
-	private Optional<BankStatementLineCreateRequest> buildBankStatementLineCreateRequest(
-			@NonNull final NoBatchReportEntry2Wrapper entryWrapper,
-			@NonNull final BankStatementId bankStatementId,
-			@NonNull final OrgId orgId)
+	private Optional<BankStatementLineCreateRequest> buildBankStatementLineCreateRequest(@NonNull final ImportBankStatementLineRequest importBankStatementLineRequest)
 	{
+		final NoBatchReportEntry2Wrapper entryWrapper = importBankStatementLineRequest.getEntryWrapper();
 		final Instant statementLineDate = entryWrapper.getStatementLineDate().orElse(null);
 
 		if (statementLineDate == null)
 		{
 			Loggables.withLogger(logger, Level.INFO).addLog(
-					"Skipping this ReportEntry={} because StatementLineDate is missing! BankStatementId={}", entryWrapper.getEntry().getNtryRef(), bankStatementId);
+					"Skipping this ReportEntry={} because StatementLineDate is missing! BankStatementId={}",
+					entryWrapper.getEntry().getNtryRef(),
+					importBankStatementLineRequest.getBankStatementId());
+
 			return Optional.empty();
 		}
 
 		final Money stmtAmount = entryWrapper.getStatementAmount();
 
 		final BankStatementLineCreateRequest.BankStatementLineCreateRequestBuilder bankStatementLineCreateRequestBuilder = BankStatementLineCreateRequest.builder()
-				.orgId(orgId)
-				.bankStatementId(bankStatementId)
+				.orgId(importBankStatementLineRequest.getOrgId())
+				.bankStatementId(importBankStatementLineRequest.getBankStatementId())
 				.lineDescription(entryWrapper.getLineDescription())
 				.statementAmt(stmtAmount)
 				.trxAmt(stmtAmount)
@@ -208,7 +220,7 @@ public class BankStatementCamt53Service
 				.interestAmt(entryWrapper.getInterestAmount().orElse(null))
 				.statementLineDate(TimeUtil.asLocalDate(statementLineDate));
 
-		getReferencedInvoiceRecord(entryWrapper)
+		getReferencedInvoiceRecord(importBankStatementLineRequest, statementLineDate)
 				.ifPresent(invoice -> bankStatementLineCreateRequestBuilder
 						.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
 						.bpartnerId(BPartnerId.ofRepoId(invoice.getC_BPartner_ID())));
@@ -217,12 +229,22 @@ public class BankStatementCamt53Service
 	}
 
 	@NonNull
-	private Optional<I_C_Invoice> getReferencedInvoiceRecord(@NonNull final NoBatchReportEntry2Wrapper entryWrapper)
+	private Optional<I_C_Invoice> getReferencedInvoiceRecord(
+			@NonNull final ImportBankStatementLineRequest importBankStatementLineRequest,
+			@NonNull final Instant statementLineDate)
 	{
-		final ImmutableSet<String> invoiceDocNoCandidates = entryWrapper.getInvoiceDocNoCandidates();
-		final ImmutableSet<DocStatus> completedOrClosedDocStatus = ImmutableSet.of(DocStatus.Completed, DocStatus.Closed);
+		final NoBatchReportEntry2Wrapper entryWrapper = importBankStatementLineRequest.getEntryWrapper();
 
-		return Optional.of(invoiceDAO.retrieveUnpaid(invoiceDocNoCandidates, completedOrClosedDocStatus, QueryLimit.TWO))
+		final ImmutableSet<String> invoiceDocNoCandidates = entryWrapper.getInvoiceDocNoCandidates();
+
+		if (invoiceDocNoCandidates.isEmpty())
+		{
+			return Optional.empty();
+		}
+
+		final UnpaidInvoiceQuery unpaidInvoiceQuery = buildUnpaidInvoiceQuery(statementLineDate, importBankStatementLineRequest);
+
+		return Optional.of(invoiceDAO.retrieveUnpaid(unpaidInvoiceQuery))
 				.flatMap(invoices -> getSingleInvoice(invoices, entryWrapper));
 	}
 
@@ -319,5 +341,44 @@ public class BankStatementCamt53Service
 		{
 			return Optional.of(invoiceList.get(0));
 		}
+	}
+
+	@NonNull
+	private static UnpaidInvoiceQuery buildUnpaidInvoiceQuery(
+			@NonNull final Instant statementLineDate,
+			@NonNull final ImportBankStatementLineRequest importBankStatementLineRequest)
+	{
+		final NoBatchReportEntry2Wrapper entryWrapper = importBankStatementLineRequest.getEntryWrapper();
+
+		final UnpaidInvoiceQuery.UnpaidInvoiceQueryBuilder unpaidInvoiceQueryBuilder = UnpaidInvoiceQuery.builder()
+				.onlyDocumentNos(entryWrapper.getInvoiceDocNoCandidates())
+				.onlyDocStatuses(ImmutableSet.of(DocStatus.Completed, DocStatus.Closed))
+				.queryLimit(QueryLimit.TWO);
+
+		if (importBankStatementLineRequest.isMatchAmounts())
+		{
+			unpaidInvoiceQueryBuilder
+					.openAmountAtDate(entryWrapper.getStatementAmount())
+					.openAmountEvaluationDate(statementLineDate);
+		}
+
+		return unpaidInvoiceQueryBuilder.build();
+	}
+	
+
+	@Value
+	@Builder
+	private static class ImportBankStatementLineRequest
+	{
+		@NonNull
+		NoBatchReportEntry2Wrapper entryWrapper;
+
+		@NonNull
+		BankStatementId bankStatementId;
+
+		@NonNull
+		OrgId orgId;
+
+		boolean isMatchAmounts;
 	}
 }

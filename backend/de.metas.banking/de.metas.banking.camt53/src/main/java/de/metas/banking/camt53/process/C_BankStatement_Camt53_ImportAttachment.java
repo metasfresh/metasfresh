@@ -27,6 +27,7 @@ import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.camt53.BankStatementCamt53Service;
+import de.metas.banking.camt53.ImportBankStatementRequest;
 import de.metas.banking.importfile.BankStatementImportFile;
 import de.metas.banking.importfile.BankStatementImportFileId;
 import de.metas.banking.importfile.BankStatementImportFileService;
@@ -84,32 +85,32 @@ public class C_BankStatement_Camt53_ImportAttachment extends JavaProcess impleme
 	protected String doIt()
 	{
 		final AttachmentEntryDataResource data = attachmentEntryService.retrieveDataResource(getAttachmentEntryId());
+		
+		final BankStatementImportFile selectedRecord = bankStatementImportFileService.getById(BankStatementImportFileId.ofRepoId(getRecord_ID()));
 
-		final Set<BankStatementId> importedBankStatementIds = bankStatementCamt53Service.importBankToCustomerStatement(data.getInputStream());
+		final ImportBankStatementRequest request = ImportBankStatementRequest.builder()
+				.camt53File(data.getInputStream())
+				.isMatchAmounts(selectedRecord.isMatchAmounts())
+				.build();
+
+		final Set<BankStatementId> importedBankStatementIds = bankStatementCamt53Service.importBankToCustomerStatement(request);
 
 		openImportedRecords(importedBankStatementIds);
 
-		markRecordAsProcessed(data.getFilename());
+		markRecordAsProcessed(selectedRecord, data.getFilename());
 
 		return JavaProcess.MSG_OK;
 	}
-
-	private void markRecordAsProcessed(@NonNull final String filename)
+	
+	private void markRecordAsProcessed(
+			@NonNull final BankStatementImportFile bankStatementImportFile, 
+			@NonNull final String filename)
 	{
-		final BankStatementImportFile bankStatementImportFile = buildBankStatementImportFile(filename);
-		
-		bankStatementImportFileService.save(bankStatementImportFile);
-	}
-
-	@NonNull
-	private BankStatementImportFile buildBankStatementImportFile(@NonNull final String filename)
-	{
-		return BankStatementImportFile.builder()
-				.bankStatementImportFileId(BankStatementImportFileId.ofRepoId(getRecord_ID()))
-				.filename(filename)
-				.importedTimestamp(SystemTime.asInstant())
-				.processed(true)
-				.build();
+		bankStatementImportFileService.save(bankStatementImportFile.toBuilder()
+													.filename(filename)
+													.importedTimestamp(SystemTime.asInstant())
+													.processed(true)
+													.build());
 	}
 	
 	private void openImportedRecords(@NonNull final Set<BankStatementId> importedBankStatementIds)

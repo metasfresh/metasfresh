@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.camt53.BankStatementCamt53Service;
+import de.metas.banking.camt53.ImportBankStatementRequest;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.util.Services;
@@ -51,14 +52,17 @@ public class C_BankStatement_Camt53_ImportAttachment_StepDef
 		this.bankStatementTable = bankStatementTable;
 	}
 
-	@And("^bank statement is imported with identifiers (.*)$")
+	@And("^bank statement is imported with identifiers (.*), matching invoice amounts$")
 	public void import_camt53_document(@NonNull final String identifier, @NonNull final String fileContent)
 	{
 		final ImmutableList<String> bankStatementIdentifiers = StepDefUtil.extractIdentifiers(identifier);
 		final InputStream documentIS = new ByteArrayInputStream(fileContent.getBytes());
 		assertThat(documentIS).isNotNull();
 
-		final ImmutableSet<BankStatementId> bankStatementIds = bankStatementCamt53Service.importBankToCustomerStatement(documentIS);
+		final ImmutableSet<BankStatementId> bankStatementIds = bankStatementCamt53Service.importBankToCustomerStatement(ImportBankStatementRequest.builder()
+																																.camt53File(documentIS)
+																																.isMatchAmounts(true)
+																																.build());
 		assertThat(bankStatementIds).isNotEmpty();
 		assertThat(bankStatementIdentifiers.size()).isEqualTo(bankStatementIds.size());
 
