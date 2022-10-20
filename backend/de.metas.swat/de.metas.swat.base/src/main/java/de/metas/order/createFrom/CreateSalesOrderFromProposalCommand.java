@@ -23,6 +23,7 @@
 package de.metas.order.createFrom;
 
 import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -50,6 +51,8 @@ public class CreateSalesOrderFromProposalCommand
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+
 
 	private final OrderId fromProposalId;
 	private final DocTypeId newOrderDocTypeId;
@@ -124,11 +127,15 @@ public class CreateSalesOrderFromProposalCommand
 		// flag proposal lines as manual discount/price to avoid price recalculation and have the same prices
 		// see 13784
 		{
-			for (final I_C_OrderLine line : orderDAO.retrieveOrderLines(proposal))
+			final DocTypeId docTypeId = DocTypeId.ofRepoId(proposal.getC_DocType_ID());
+			if(docTypeBL.isSalesQuotation(docTypeId))
 			{
-				line.setIsManualPrice(true);
-				line.setIsManualDiscount(true);
-				orderDAO.save(line);
+				for (final I_C_OrderLine line : orderDAO.retrieveOrderLines(proposal))
+				{
+					line.setIsManualPrice(true);
+					line.setIsManualDiscount(true);
+					orderDAO.save(line);
+				}
 			}
 		}
 
