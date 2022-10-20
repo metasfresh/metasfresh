@@ -2100,7 +2100,7 @@ public final class Document
 	@NonNull
 	public Optional<TableRecordReference> getTableRecordReference()
 	{
-		final String tableName = entityDescriptor.getTableName();
+		final String tableName = entityDescriptor.getTableNameOrNull();
 		final Integer recordId = getDocumentId().isInt() ? getDocumentIdAsInt() : null;
 
 		if (tableName == null || recordId == null)
