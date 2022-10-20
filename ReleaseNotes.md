@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13772](https://github.com/metasfresh/metasfresh/issues/13772) Set "-" in MAC Address instead of null 
   * [#13717](https://github.com/metasfresh/metasfresh/issues/13717) Sub-Task No 2: Test & Fix Sales order (w/ ship ) - ProductPlanning - Manufacturing 
   * [#13751](https://github.com/metasfresh/metasfresh/issues/13751) Renumber C_OLCand.Line when sending from excel to metasfresh
   * [#13651](https://github.com/metasfresh/metasfresh/issues/13651) Allow invoking "Other" ExternalSystem via API
