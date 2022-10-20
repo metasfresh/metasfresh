@@ -169,22 +169,8 @@ final class POServicesFacade
 					PerformanceMonitoringService.class,
 					NoopPerformanceMonitoringService.INSTANCE);
 		}
-		try
-		{
-			performanceMonitoringService.monitor(runnable, PM_METADATA_SAVE_EX);
-		}
-		catch (final NullPointerException npe)
-		{
-			try
-			{
-				runnable.run();
-			}
-			catch (final Exception e)
-			{
-				throw PerformanceMonitoringServiceUtil.asRTE(e);
-			}
-		}
 
+		performanceMonitoringService.monitor(runnable, PM_METADATA_SAVE_EX);
 	}
 
 	public boolean performanceMonitoringServiceLoad(@NonNull final Callable<Boolean> callable)
@@ -197,21 +183,7 @@ final class POServicesFacade
 					NoopPerformanceMonitoringService.INSTANCE);
 		}
 
-		try
-		{
-			return performanceMonitoringService.monitor(callable, PM_METADATA_LOAD);
-		}
-		catch (final NullPointerException npe)
-		{
-			try
-			{
-				return callable.call();
-			}
-			catch (final Exception e)
-			{
-				throw PerformanceMonitoringServiceUtil.asRTE(e);
-			}
-		}
+		return performanceMonitoringService.monitor(callable, PM_METADATA_LOAD);
 	}
 
 	//
