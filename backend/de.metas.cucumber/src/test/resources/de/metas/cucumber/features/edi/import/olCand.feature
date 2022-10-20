@@ -134,9 +134,9 @@ Feature: import order candidate to metasfresh
     </EDI_Imp_C_OLCand>
 """
 
-    Then after not more than 90s, C_OLCand is found
-      | C_OLCand_ID.Identifier | M_Product_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.C_BPartner_ID.Identifier | QtyEntered |
-      | olCand_1               | product                 | 101                                    | bpartner1_1                  | 10         |
+    Then after not more than 120s, C_OLCand is found
+      | C_OLCand_ID.Identifier | M_Product_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.C_BPartner_ID.Identifier | QtyEntered | OPT.IMP_Processor_ID.Identifier |
+      | olCand_1               | product                 | 101                                    | bpartner1_1                  | 10         | impProcessor                    |
 
     And validate C_OLCand:
       | C_OLCand_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyEntered | DeliveryRule | DeliveryViaRule | OPT.POReference | IsError | OPT.Processed | OPT.M_HU_PI_Item_Product_ID.Identifier |
@@ -246,9 +246,9 @@ Feature: import order candidate to metasfresh
 </EDI_Imp_C_OLCand>
 """
 
-    Then after not more than 90s, C_OLCand is found
-      | C_OLCand_ID.Identifier | M_Product_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.C_BPartner_ID.Identifier | QtyEntered |
-      | olCand_2               | product                 | huItemProduct_1_2                      | bpartner1_2                  | 2          |
+    Then after not more than 120s, C_OLCand is found
+      | C_OLCand_ID.Identifier | M_Product_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.C_BPartner_ID.Identifier | QtyEntered | OPT.IMP_Processor_ID.Identifier |
+      | olCand_2               | product                 | huItemProduct_1_2                      | bpartner1_2                  | 2          | impProcessor                    |
 
     And validate C_OLCand:
       | C_OLCand_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.DropShip_BPartner_ID.Identifier | OPT.DropShip_Location_ID.Identifier | OPT.HandOver_Partner_ID.Identifier | OPT.HandOver_Location_ID.Identifier | M_Product_ID.Identifier | QtyEntered | DeliveryRule | DeliveryViaRule | OPT.POReference | IsError | OPT.Processed |
@@ -323,9 +323,9 @@ Feature: import order candidate to metasfresh
 </EDI_Imp_C_OLCand>
 """
 
-    Then after not more than 90s, C_OLCand is found
-      | C_OLCand_ID.Identifier | M_Product_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.C_BPartner_ID.Identifier | QtyEntered |
-      | olCand_3               | product                 | huItemProduct_2_2                      | bpartner1_2                  | 2          |
+    Then after not more than 120s, C_OLCand is found
+      | C_OLCand_ID.Identifier | M_Product_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | OPT.C_BPartner_ID.Identifier | QtyEntered | OPT.IMP_Processor_ID.Identifier |
+      | olCand_3               | product                 | huItemProduct_2_2                      | bpartner1_2                  | 2          | impProcessor                    |
 
     And validate C_OLCand:
       | C_OLCand_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.DropShip_BPartner_ID.Identifier | OPT.DropShip_Location_ID.Identifier | OPT.HandOver_Partner_ID.Identifier | OPT.HandOver_Location_ID.Identifier | M_Product_ID.Identifier | QtyEntered | DeliveryRule | DeliveryViaRule | OPT.POReference | IsError | OPT.Processed |

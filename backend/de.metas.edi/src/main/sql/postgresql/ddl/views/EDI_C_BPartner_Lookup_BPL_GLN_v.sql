@@ -12,8 +12,8 @@ FROM
             -- Note: The GLN is unique per BPL.
             -- We're just filtering by two locations here and will add them to the whereclause in the EXP_Format_Line filter.
             --
-            TRIM(BOTH ' ' FROM l_main.GLN) AS GLN, -- The Selector's GLN
-            TRIM(BOTH ' ' FROM l_store.GLN) AS StoreGLN -- The Store's GLN
+            REGEXP_REPLACE(l_main.GLN, '\s+$', '')   AS GLN, -- The Selector's GLN
+            REGEXP_REPLACE(l_store.GLN, '\s+$', '')  AS StoreGLN -- The Store's GLN
         FROM C_BPartner bp
                  -- Many-to-many
                  LEFT JOIN C_BPartner_Location l_main ON l_main.C_BPartner_ID=bp.C_BPartner_ID

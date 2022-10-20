@@ -41,6 +41,7 @@ import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.edi.impprocessor.IMP_Processor_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
 import de.metas.cucumber.stepdefs.issue.AD_Issue_StepDefData;
@@ -62,14 +63,13 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_IMP_Processor;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
 
@@ -85,8 +85,6 @@ import static org.assertj.core.api.Assertions.*;
 
 public class C_OLCand_StepDef
 {
-	private static final Logger logger = LogManager.getLogger(C_OLCand_StepDef.class);
-
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	private final C_Order_StepDefData orderTable;
@@ -98,6 +96,7 @@ public class C_OLCand_StepDef
 	private final M_Product_StepDefData productTable;
 	private final AD_Issue_StepDefData issueTable;
 	private final M_HU_PI_Item_Product_StepDefData huItemProductTable;
+	private final IMP_Processor_StepDefData impProcessorTable;
 
 	private final TestContext testContext;
 
@@ -117,6 +116,7 @@ public class C_OLCand_StepDef
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final AD_Issue_StepDefData issueTable,
 			@NonNull final M_HU_PI_Item_Product_StepDefData huItemProductTable,
+			@NonNull final IMP_Processor_StepDefData impProcessorTable,
 			@NonNull final TestContext testContext)
 	{
 		this.orderTable = orderTable;
@@ -128,6 +128,7 @@ public class C_OLCand_StepDef
 		this.productTable = productTable;
 		this.issueTable = issueTable;
 		this.huItemProductTable = huItemProductTable;
+		this.impProcessorTable = impProcessorTable;
 		this.testContext = testContext;
 	}
 
@@ -510,10 +511,21 @@ public class C_OLCand_StepDef
 		final String huItemProductIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_OLCand.COLUMNNAME_M_HU_PI_Item_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(huItemProductIdentifier))
 		{
-			final I_M_HU_PI_Item_Product piip = huItemProductTable.get(huItemProductIdentifier);
-			assertThat(piip).isNotNull();
+			final int huPiItemProductId = huItemProductTable.getOptional(huItemProductIdentifier)
+					.map(I_M_HU_PI_Item_Product::getM_HU_PI_Item_Product_ID)
+					.orElseGet(() -> Integer.parseInt(huItemProductIdentifier));
 
-			message.append(I_C_OLCand.COLUMNNAME_M_HU_PI_Item_Product_ID).append(" : ").append(piip.getM_HU_PI_Item_Product_ID()).append("\n");
+			message.append(I_C_OLCand.COLUMNNAME_M_HU_PI_Item_Product_ID).append(" : ").append(huPiItemProductId).append("\n");
+		}
+
+		final String impProcessorIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_IMP_Processor.COLUMNNAME_IMP_Processor_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(impProcessorIdentifier))
+		{
+			final I_IMP_Processor impProcessor = impProcessorTable.get(impProcessorIdentifier);
+			assertThat(impProcessor).isNotNull();
+
+			message.append(I_IMP_Processor.COLUMNNAME_DateLastRun).append(" : ").append(impProcessor.getDateLastRun()).append("\n")
+					.append(I_IMP_Processor.COLUMNNAME_DateNextRun).append(" : ").append(impProcessor.getDateNextRun()).append("\n");
 		}
 
 		message.append("See all C_OLCand records for M_Product_ID = ").append(product.getM_Product_ID()).append(":\n");
