@@ -101,7 +101,7 @@
 
         <dependency>
             <groupId>de.metas.camel.externalsystems</groupId>
-            <artifactId>de-metas-camel-sap</artifactId>
+            <artifactId>de-metas-camel-sap-file-import</artifactId>
             <version>10.0.0</version>
 
         </dependency>

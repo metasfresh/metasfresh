@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
   ~ #%L
-  ~ de-metas-camel-sap
+  ~ de-metas-camel-sap-file-import
   ~ %%
   ~ Copyright (C) 2022 metas GmbH
   ~ %%
@@ -32,7 +32,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>de-metas-camel-sap</artifactId>
+    <artifactId>de-metas-camel-sap-file-import</artifactId>
 
     <properties>
         <java.version>14</java.version>

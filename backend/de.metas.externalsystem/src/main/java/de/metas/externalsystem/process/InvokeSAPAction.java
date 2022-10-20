@@ -87,7 +87,7 @@ public class InvokeSAPAction extends AlterExternalSystemServiceStatusAction
 		parameters.put(PARAM_SFTP_TARGET_DIRECTORY, sapConfig.getSftpTargetDirectory());
 		parameters.put(PARAM_PROCESSED_DIRECTORY, sapConfig.getProcessedDirectory());
 		parameters.put(PARAM_ERRORED_DIRECTORY, sapConfig.getErroredDirectory());
-		parameters.put(PARAM_POLLING_FREQUENCY_MS, String.valueOf(sapConfig.getPollingFrequency()));
+		parameters.put(PARAM_POLLING_FREQUENCY_MS, String.valueOf(sapConfig.getPollingFrequency().toMillis()));
 
 		return parameters;
 	}

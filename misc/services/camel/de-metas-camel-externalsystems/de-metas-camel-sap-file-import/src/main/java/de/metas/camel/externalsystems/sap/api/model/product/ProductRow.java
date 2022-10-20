@@ -39,7 +39,6 @@ public class ProductRow
 	@DataField(pos = 4)
 	private String name;
 
-	//FIXME: pending mappings
 	@DataField(pos = 5)
 	private String uom;
 

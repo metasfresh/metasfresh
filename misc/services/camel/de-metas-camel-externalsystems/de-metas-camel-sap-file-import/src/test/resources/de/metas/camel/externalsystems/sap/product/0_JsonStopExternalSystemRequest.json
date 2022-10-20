@@ -13,8 +13,8 @@
     "SFTP_Username" : "doesntmatter",
     "SFTP_Password" : "doesntmatter",
     "SFTP_Target_Directory" : "doesntmatter",
-    "ProcessedDirectory": "doesnmatter",
-    "ErroredDirectory": "doesnmatter",
-    "PollingFrequency": "1000"
+    "SFTPProcessedDirectory": "doesntmatter",
+    "SFTPErroredDirectory": "doesntmatter",
+    "SFTPPollingFrequencyInMs": 1000
   }
 }

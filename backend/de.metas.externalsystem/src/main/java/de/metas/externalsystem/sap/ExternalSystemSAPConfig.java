@@ -112,6 +112,10 @@ public class ExternalSystemSAPConfig implements IExternalSystemChildConfig
 		{
 			return sftpTargetDirectory.replaceFirst("/", "");
 		}
+		else if (sftpTargetDirectory.startsWith("."))
+		{
+			return sftpTargetDirectory.replaceFirst("./", "");
+		}
 
 		return sftpTargetDirectory;
 	}
