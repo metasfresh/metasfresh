@@ -213,8 +213,7 @@ public class IssueRepository
 		return queryBL.createQueryBuilder(I_S_Issue.class)
 				.addOnlyActiveRecordsFilter()
 				.addNotNull(I_S_Issue.COLUMNNAME_C_Project_ID)
-				.addNotNull(I_S_Issue.COLUMNNAME_C_Activity_ID)
-				.addEqualsFilter(I_S_Issue.COLUMNNAME_Processed, false)
+				.addNotNull(I_S_Issue.COLUMNNAME_C_Activity_ID) //FIXME
 				.addNotInSubQueryFilter(I_S_Issue.COLUMNNAME_EffortAggregationKey, I_S_EffortControl.COLUMNNAME_EffortAggregationKey, effortControlQuery)
 				.create()
 				.iterateAndStream()
@@ -250,7 +249,7 @@ public class IssueRepository
 	}
 
 	@NonNull
-	public Stream<I_S_Issue> streamByQuery(@NonNull final IssueQuery query)
+	public Stream<I_S_Issue> streamRecordsByQuery(@NonNull final IssueQuery query)
 	{
 		return buildQuery(query)
 				.create()

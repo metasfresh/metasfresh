@@ -23,12 +23,12 @@
 package de.metas.serviceprovider.issue.invoicecandidate;
 
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
@@ -66,10 +66,10 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Project;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -79,7 +79,6 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
@@ -112,15 +111,14 @@ public class S_Issue_Handler extends AbstractInvoiceCandidateHandler
 	{
 		final I_S_Issue issue = create(model, I_S_Issue.class);
 
-		final boolean recordHasAnInvoiceCandidate = recordHasAnInvoiceCandidate(issue);
-
-		return issue.isProcessed() && recordHasAnInvoiceCandidate ? CandidatesAutoCreateMode.DONT : CandidatesAutoCreateMode.CREATE_CANDIDATES;
+		return recordHasAnInvoiceCandidate(issue) ? CandidatesAutoCreateMode.DONT : CandidatesAutoCreateMode.CREATE_CANDIDATES;
 	}
 
 	@Override
 	public Iterator<?> retrieveAllModelsWithMissingCandidates(@NonNull final QueryLimit limit)
 	{
-		return createIssueWithMissingICsQuery().iterate(I_S_Issue.class);
+		//we don't want to create invoice candidates for issues that were not manually enqueued
+		return ImmutableList.of().iterator();
 	}
 
 	@Override
@@ -129,7 +127,14 @@ public class S_Issue_Handler extends AbstractInvoiceCandidateHandler
 	{
 		final I_S_Issue issue = request.getModel(I_S_Issue.class);
 
-		return createCandidateFor(issue);
+		try
+		{
+			return createCandidateFor(issue);
+		}
+		catch (final Throwable throwable)
+		{
+			throw throwable;//FIXME
+		}
 	}
 
 	@Override
@@ -151,9 +156,18 @@ public class S_Issue_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@Override
-	public void setOrderedData(final I_C_Invoice_Candidate ic)
+	public void setOrderedData(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
 	{
-		setOrderedData(ic, null);
+		final IssueEntity issueEntity = getReferencedIssue(invoiceCandidate);
+
+		final UomId uomId = productBL.getStockUOMId(invoiceCandidate.getM_Product_ID());
+
+		invoiceCandidate.setQtyEntered(issueEntity.getInvoiceableHours());
+		invoiceCandidate.setC_UOM_ID(uomId.getRepoId());
+		invoiceCandidate.setQtyOrdered(issueEntity.getInvoiceableHours());
+
+		final Instant todayDate = Instant.now();
+		invoiceCandidate.setDateOrdered(TimeUtil.asTimestamp(todayDate));
 	}
 
 	@Override
@@ -169,14 +183,12 @@ public class S_Issue_Handler extends AbstractInvoiceCandidateHandler
 
 		if (issue.getProjectId() == null)
 		{
-			return;
+			throw new AdempiereException("S_Issue.C_Project_ID cannot be missing on an invoiceable S_Issue! S_Issue_ID = " + issue.getIssueId());
 		}
 
-		final I_C_Project project = projectRepository.getRecordById(issue.getProjectId());
-		if (project == null)
-		{
-			return;
-		}
+		final I_C_Project project = Optional.ofNullable(projectRepository.getRecordById(issue.getProjectId()))
+				//dev-note: not a real scenario
+				.orElseThrow(() -> new AdempiereException("NO C_Project found for S_Issue.C_Project_ID! S_Issue_ID = " + issue.getIssueId()));
 
 		setBPartnerData(ic, project);
 	}
@@ -186,45 +198,17 @@ public class S_Issue_Handler extends AbstractInvoiceCandidateHandler
 	{
 		result.getC_Invoice_Candidates()
 				.stream()
-				.map(candidate -> TableRecordReference.of(candidate.getAD_Table_ID(), candidate.getRecord_ID()))
-				.filter(recordReference -> recordReference.isOfType(I_S_Issue.class))
-				.map(recordReference -> recordReference.getIdAssumingTableName(I_S_Issue.Table_Name, IssueId::ofRepoId))
-				.forEach(issueService::processIssueHierarchy);
-
-		for (final Map.Entry<TableRecordReference, String> entry : result.getCandidateRecordRef2Message().entrySet())
-		{
-			final TableRecordReference tableRecordReference = entry.getKey();
-			if (!tableRecordReference.isOfType(I_S_Issue.class))
-			{
-				continue;
-			}
-
-			final String errorMsg = entry.getValue();
-			final IssueId issueId = tableRecordReference.getIdAssumingTableName(I_S_Issue.Table_Name, IssueId::ofRepoId);
-
-			final IssueEntity issueWithErrorMsg = issueService.getById(issueId)
-					.toBuilder()
-					.invoicingErrorMsg(errorMsg)
-					.processed(false)
-					.build();
-
-			issueService.save(issueWithErrorMsg);
-		}
+				.map(candidate -> IssueId.ofRepoId(candidate.getRecord_ID()))
+				.forEach(issueService::processIssue);
 	}
 
 	@NonNull
 	private InvoiceCandidateGenerateResult createCandidateFor(@NonNull final I_S_Issue record)
 	{
 		final IssueEntity issue = IssueRepository.ofRecord(record);
-		final TableRecordReference recordReference = TableRecordReference.of(I_S_Issue.Table_Name, issue.getIssueId());
+		final TableRecordReference recordReference = TableRecordReference.of(I_S_Issue.Table_Name, record.getS_Issue_ID());
 
-		if (issue.getIssueId() == null)
-		{
-			final String issueIdErrorMsg = "Something went wrong! Missing issueId for record: " + record;
-			return InvoiceCandidateGenerateResult.of(this, ImmutableMap.of(recordReference, issueIdErrorMsg));
-		}
-
-		final I_C_Invoice_Candidate invoiceCandidate = retrieveInvoiceCandidate(issue);
+		final I_C_Invoice_Candidate invoiceCandidate = InterfaceWrapperHelper.newInstance(I_C_Invoice_Candidate.class);
 
 		invoiceCandidate.setC_ILCandHandler_ID(getHandlerRecord().getC_ILCandHandler_ID());
 
@@ -265,7 +249,7 @@ public class S_Issue_Handler extends AbstractInvoiceCandidateHandler
 		invoiceCandidate.setM_Product_ID(productId.getRepoId());
 		invoiceCandidate.setDescription(getDescription(issue));
 
-		setOrderedData(invoiceCandidate, issue);
+		setOrderedData(invoiceCandidate);
 
 		final SOTrx soTrx = SOTrx.SALES;
 		invoiceCandidate.setIsSOTrx(soTrx.toBoolean());
@@ -336,23 +320,6 @@ public class S_Issue_Handler extends AbstractInvoiceCandidateHandler
 		return InvoiceCandidateGenerateResult.of(this, invoiceCandidate);
 	}
 
-	@NonNull
-	private I_C_Invoice_Candidate retrieveInvoiceCandidate(@NonNull final IssueEntity issueEntity)
-	{
-		final TableRecordReference recordReference = TableRecordReference.of(I_S_Issue.Table_Name, issueEntity.getIssueId());
-
-		return CoalesceUtil
-				.coalesceSuppliersNotNull(() -> retrieveICsThatReferenceQueryBuilder()
-												  .addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Org_ID, issueEntity.getOrgId())
-												  .addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Project_ID, issueEntity.getProjectId())
-												  .addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_C_Activity_ID, issueEntity.getCostCenterActivityId())
-												  .addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, recordReference.getAD_Table_ID())
-												  .addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_Record_ID, recordReference.getRecord_ID())
-												  .create()
-												  .firstOnlyOrNull(I_C_Invoice_Candidate.class),
-										  () -> InterfaceWrapperHelper.newInstance(I_C_Invoice_Candidate.class));
-	}
-
 	public boolean recordHasAnInvoiceCandidate(@NonNull final I_S_Issue issueRecord)
 	{
 		return retrieveICsThatReferenceQueryBuilder()
@@ -367,38 +334,6 @@ public class S_Issue_Handler extends AbstractInvoiceCandidateHandler
 		return queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, getTableId(I_S_Issue.class));
-	}
-
-	@NonNull
-	private IQuery<I_S_Issue> createIssueWithMissingICsQuery()
-	{
-		return queryBL
-				.createQueryBuilder(I_S_Issue.class)
-				.addOnlyActiveRecordsFilter()
-				.addNotNull(I_S_Issue.COLUMNNAME_C_Project_ID)
-				.addNotNull(I_S_Issue.COLUMNNAME_C_Activity_ID)
-				.addNotNull(I_S_Issue.COLUMNNAME_EffortAggregationKey)
-				.addNotInSubQueryFilter(I_S_Issue.COLUMN_S_Issue_ID, I_C_Invoice_Candidate.COLUMN_Record_ID, retrieveICsThatReferenceQueryBuilder().create())
-				.create();
-	}
-
-	private void setOrderedData(
-			@NonNull final I_C_Invoice_Candidate invoiceCandidate,
-			@Nullable final IssueEntity existingIssueEntity)
-	{
-		final IssueEntity issueEntity = Optional.ofNullable(existingIssueEntity)
-				.orElseGet(() -> getReferencedIssue(invoiceCandidate));
-
-		final UomId uomId = productBL.getStockUOMId(invoiceCandidate.getM_Product_ID());
-
-		invoiceCandidate.setQtyEntered(issueEntity.getInvoiceableHours());
-		invoiceCandidate.setC_UOM_ID(uomId.getRepoId());
-		invoiceCandidate.setQtyOrdered(issueEntity.getInvoiceableHours());
-
-		final Instant todayDate = Instant.now();
-		invoiceCandidate.setDateOrdered(TimeUtil.asTimestamp(todayDate));
-
-		invoiceCandidate.setC_Order_ID(-1);
 	}
 
 	@Nullable
@@ -439,12 +374,8 @@ public class S_Issue_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@NonNull
-	private static IssueEntity getReferencedIssue(@NonNull final I_C_Invoice_Candidate ic)
+	private IssueEntity getReferencedIssue(@NonNull final I_C_Invoice_Candidate ic)
 	{
-		final I_S_Issue record = TableRecordReference
-				.ofReferenced(ic)
-				.getModel(I_S_Issue.class);
-
-		return IssueRepository.ofRecord(record);
+		return issueService.getById(IssueId.ofRepoId(ic.getRecord_ID()));
 	}
 }

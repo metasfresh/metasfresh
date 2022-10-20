@@ -425,8 +425,16 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 			invoice.setPaymentRule(invoiceHeader.getPaymentRule());
 			invoice.setM_SectionCode_ID(SectionCodeId.toRepoId(invoiceHeader.getM_SectionCode_ID()));
-			invoice.setC_Project_ID(ProjectId.toRepoId(invoiceHeader.getProjectId()));
-			invoice.setC_Activity_ID(ActivityId.toRepoId(invoiceHeader.getActivityId()));
+
+			if (invoiceHeader.getProjectId() != null)
+			{
+				invoice.setC_Project_ID(ProjectId.toRepoId(invoiceHeader.getProjectId()));
+			}
+
+			if (invoiceHeader.getActivityId() != null)
+			{
+				invoice.setC_Activity_ID(ActivityId.toRepoId(invoiceHeader.getActivityId()));
+			}
 			// Save and return the invoice
 			invoicesRepo.save(invoice);
 			return invoice;

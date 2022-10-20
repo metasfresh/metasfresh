@@ -114,20 +114,10 @@ public class IssueService
 		}
 	}
 
-	public void processIssueHierarchy(@NonNull final IssueId issueId)
+	public void processIssue(@NonNull final IssueId issueId)
 	{
 		final IssueEntity issueEntity = getById(issueId);
 		processIssue(issueEntity);
-
-		if (issueEntity.getParentIssueId() == null)
-		{
-			processDownStreamIssueHierarchy(issueEntity.getIssueId());
-			return;
-		}
-
-		issueRepository.buildUpStreamIssueHierarchy(issueEntity.getIssueId())
-				.getUpStreamForId(issueEntity.getParentIssueId())
-				.forEach(this::processIssue);
 	}
 
 	@NonNull
@@ -169,7 +159,7 @@ public class IssueService
 	}
 
 	@NonNull
-	private IssueEntity processIssue(@NonNull final IssueEntity issueEntity)
+	private void processIssue(@NonNull final IssueEntity issueEntity)
 	{
 		final IssueEntity invoicedIssue = issueEntity.toBuilder()
 				.status(Status.INVOICED)
@@ -178,16 +168,5 @@ public class IssueService
 				.build();
 
 		issueRepository.save(invoicedIssue);
-
-		return invoicedIssue;
-	}
-
-	@NonNull
-	private void processDownStreamIssueHierarchy(@NonNull final IssueId issueId)
-	{
-		issueRepository.getDirectlyLinkedSubIssues(issueId)
-				.stream()
-				.map(this::processIssue)
-				.forEach(invoicedIssue -> processDownStreamIssueHierarchy(invoicedIssue.getIssueId()));
 	}
 }

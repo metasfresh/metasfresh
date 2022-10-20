@@ -103,7 +103,7 @@ public class EffortControlService
 				.processed(false)
 				.build();
 
-		return issueRepository.streamByQuery(query);
+		return issueRepository.streamRecordsByQuery(query);
 	}
 
 	@NonNull

@@ -54,21 +54,22 @@ public class GenerateEffortControlInvoiceCandidateProcess extends JavaProcess
 	@NonNull
 	private Stream<EffortControl> retrieveSelectedEffort()
 	{
-		final IQuery<I_S_Issue> issuesWithOpenEffort = queryBL.createQueryBuilder(I_S_Issue.class)
+		final IQuery<I_S_Issue> notProcessedIssues = queryBL.createQueryBuilder(I_S_Issue.class)
 				.addOnlyActiveRecordsFilter()
 				.addNotNull(I_S_Issue.COLUMNNAME_EffortAggregationKey)
 				.addEqualsFilter(I_S_Issue.COLUMNNAME_Processed, false)
 				.create();
 
-		final IQueryFilter<I_S_EffortControl> openEffortFilter = queryBL.createCompositeQueryFilter(I_S_EffortControl.class)
+		final IQueryFilter<I_S_EffortControl> notProcessedEffortControlFilter = queryBL.createCompositeQueryFilter(I_S_EffortControl.class)
 				.addOnlyActiveRecordsFilter()
-				.addInSubQueryFilter(I_S_EffortControl.COLUMNNAME_EffortAggregationKey, I_S_Issue.COLUMNNAME_EffortAggregationKey, issuesWithOpenEffort);
+				.addInSubQueryFilter(I_S_EffortControl.COLUMNNAME_EffortAggregationKey, I_S_Issue.COLUMNNAME_EffortAggregationKey, notProcessedIssues);
 
 		final IQueryFilter<I_S_EffortControl> selectedFilter = getProcessInfo()
-				.getQueryFilterOrElse(openEffortFilter);
+				.getQueryFilterOrElseTrue();
 
 		return queryBL.createQueryBuilder(I_S_EffortControl.class)
 				.addFilter(selectedFilter)
+				.addFilter(notProcessedEffortControlFilter)
 				.create()
 				.iterateAndStream()
 				.map(EffortControlRepository::fromRecord);
