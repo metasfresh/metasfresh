@@ -160,7 +160,7 @@ final class POServicesFacade
 		return adReferenceService;
 	}
 
-	public void performanceMonitoringServiceSaveEx(@NonNull final Callable<Void> callable)
+	public void performanceMonitoringServiceSaveEx(@NonNull final Runnable runnable)
 	{
 		PerformanceMonitoringService performanceMonitoringService = this._performanceMonitoringService;
 		if (performanceMonitoringService == null || performanceMonitoringService instanceof NoopPerformanceMonitoringService)
@@ -171,13 +171,13 @@ final class POServicesFacade
 		}
 		try
 		{
-			performanceMonitoringService.monitor(callable, PM_METADATA_SAVE_EX);
+			performanceMonitoringService.monitor(runnable, PM_METADATA_SAVE_EX);
 		}
 		catch (final NullPointerException npe)
 		{
 			try
 			{
-				callable.call();
+				runnable.run();
 			}
 			catch (final Exception e)
 			{

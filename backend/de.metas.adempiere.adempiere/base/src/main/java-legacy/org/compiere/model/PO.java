@@ -2823,7 +2823,7 @@ public abstract class PO
 		services.performanceMonitoringServiceSaveEx(() -> saveEx0());
 	}
 
-	private final Void saveEx0() throws AdempiereException
+	private final void saveEx0() throws AdempiereException
 	{
 		//
 		// Check and prepare the saving
@@ -2831,7 +2831,7 @@ public abstract class PO
 		final boolean saveNeeded = savePrepare();
 		if (!saveNeeded)
 		{
-			return null;
+			return;
 		}
 
 		final ITrxManager trxManager = get_TrxManager();
@@ -2861,7 +2861,6 @@ public abstract class PO
 				m_trxName = trxNameInitial;
 			}
 		});
-		return null;
 	}
 
 	/**
