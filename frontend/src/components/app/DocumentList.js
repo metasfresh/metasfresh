@@ -223,7 +223,6 @@ export default class DocumentList extends Component {
 
               {windowId === INVOICE_TO_ALLOCATE_WINDOW_ID && (
                 <InvoiceToAllocateViewHeader
-                  viewLayout={layout}
                   windowId={windowId}
                   viewId={viewId}
                   selectedRowIds={selected}

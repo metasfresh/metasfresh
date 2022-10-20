@@ -23,12 +23,15 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useSelector } from 'react-redux';
+import counterpart from 'counterpart';
 import { getTable, getTableId } from '../../reducers/tables';
+
+import '../../assets/css/InvoiceToAllocateViewHeader.scss';
+import AmountIndicator from './AmountIndicator';
 
 export const INVOICE_TO_ALLOCATE_WINDOW_ID = 'invoicesToAllocate';
 
 export const InvoiceToAllocateViewHeader = ({
-  viewLayout,
   windowId,
   viewId,
   selectedRowIds,
@@ -36,79 +39,67 @@ export const InvoiceToAllocateViewHeader = ({
   const tableId = getTableId({ windowId, viewId });
   const table = useSelector((state) => getTable(state, tableId));
 
-  const { grandTotal, openAmt, discountAmt } = computeFields(
+  const { grandTotal, discountAmt, grandTotalMinusDiscountAmt } = computeFields(
     table,
     selectedRowIds
   );
 
-  console.log('InvoiceToAllocateViewHeader', { viewLayout });
   return (
-    <table className="invoiceToAllocateViewHeader">
-      <thead>
-        <tr>
-          <th>{getFieldCaption(viewLayout, 'grandTotal')}</th>
-          <th>{getFieldCaption(viewLayout, 'openAmt')}</th>
-          <th>{getFieldCaption(viewLayout, 'discountAmt')}</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>{grandTotal}</td>
-          <td>{openAmt}</td>
-          <td>{discountAmt}</td>
-        </tr>
-      </tbody>
-    </table>
+    <div className="invoiceToAllocateViewHeader">
+      <AmountIndicator
+        caption={counterpart.translate('view.invoiceToAllocate.grandTotal')}
+        value={grandTotal}
+      />
+      <AmountIndicator
+        caption={counterpart.translate('view.invoiceToAllocate.discountAmt')}
+        value={discountAmt}
+      />
+      <AmountIndicator
+        caption={counterpart.translate('view.invoiceToAllocate.netAmt')}
+        value={grandTotalMinusDiscountAmt}
+      />
+    </div>
   );
 };
 
 InvoiceToAllocateViewHeader.propTypes = {
-  viewLayout: PropTypes.object.isRequired,
   windowId: PropTypes.string.isRequired,
   viewId: PropTypes.string.isRequired,
   selectedRowIds: PropTypes.arrayOf(PropTypes.string),
 };
 
-const getFieldCaption = (viewLayout, fieldName) => {
-  if (!viewLayout?.elements) {
-    return '';
-  }
-
-  for (const element of viewLayout.elements) {
-    if (!element?.fields) {
-      return '';
-    }
-
-    for (const field of element.fields) {
-      if (field.field === fieldName) {
-        return element.caption;
-      }
-    }
-  }
-
-  return '';
-};
-
 const computeFields = (table, selectedRowIds) => {
-  let grandTotal = 0.0;
-  let openAmt = 0.0;
-  let discountAmt = 0.0;
-
   if (table?.rows?.length && selectedRowIds?.length > 0) {
+    let grandTotal = 0.0;
+    let discountAmt = 0.0;
+
     const rows = table.rows;
     rows
       .filter((row) => selectedRowIds.includes(row.id))
       .forEach((row) => {
         const fieldsByName = row.fieldsByName;
+        //console.log('fieldsByName', fieldsByName);
         grandTotal += parseFloat(fieldsByName.grandTotal?.value || 0);
-        openAmt += parseFloat(fieldsByName.openAmt?.value || 0);
         discountAmt += parseFloat(fieldsByName.discountAmt?.value || 0);
       });
-  }
 
-  return {
-    grandTotal: parseFloat(grandTotal).toFixed(2),
-    openAmt: parseFloat(openAmt).toFixed(2),
-    discountAmt: parseFloat(discountAmt).toFixed(2),
-  };
+    return {
+      grandTotal: formatNumberToString(grandTotal, 2),
+      discountAmt: formatNumberToString(discountAmt, 2),
+      grandTotalMinusDiscountAmt: formatNumberToString(
+        grandTotal - discountAmt,
+        2
+      ),
+    };
+  } else {
+    return {
+      grandTotal: null,
+      discountAmt: null,
+      grandTotalMinusDiscountAmt: null,
+    };
+  }
+};
+
+const formatNumberToString = (number, precision) => {
+  return parseFloat(number ?? 0).toFixed(precision);
 };
