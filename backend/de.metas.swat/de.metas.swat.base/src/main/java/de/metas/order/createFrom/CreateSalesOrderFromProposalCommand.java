@@ -81,6 +81,7 @@ public class CreateSalesOrderFromProposalCommand
 		}
 
 		final I_C_Order newSalesOrder = copyProposalHeader(fromProposal);
+		prepareProposalLines(fromProposal);
 		copyProposalLines(fromProposal, newSalesOrder);
 		completeSalesOrderIfNeeded(newSalesOrder);
 		return newSalesOrder;
@@ -117,6 +118,21 @@ public class CreateSalesOrderFromProposalCommand
 
 		return newSalesOrder;
 	}
+
+	private void prepareProposalLines(@NonNull final I_C_Order proposal){
+
+		// flag proposal lines as manual discount/price to avoid price recalculation and have the same prices
+		// see 13784
+		{
+			for (final I_C_OrderLine line : orderDAO.retrieveOrderLines(proposal))
+			{
+				line.setIsManualPrice(true);
+				line.setIsManualDiscount(true);
+				orderDAO.save(line);
+			}
+		}
+
+    }
 
 	private void copyProposalLines(
 			@NonNull final I_C_Order fromProposal,
