@@ -119,7 +119,7 @@ class MasterWindowContainer extends PureComponent {
     } = this.props;
     const urlParams = new URLSearchParams(search);
 
-    let doRemoteURLParams = false;
+    let doRemoveURLParams = false;
     for (const fieldName of urlParams.keys()) {
       const field = getFieldFromLayout(layout, fieldName);
       if (!field) {
@@ -127,7 +127,7 @@ class MasterWindowContainer extends PureComponent {
         continue;
       }
 
-      doRemoteURLParams = true;
+      doRemoveURLParams = true;
 
       const value = urlParams.get(fieldName);
       if (value === 'NEW' && field.newRecordWindowId) {
@@ -148,7 +148,7 @@ class MasterWindowContainer extends PureComponent {
       }
     }
 
-    if (doRemoteURLParams) {
+    if (doRemoveURLParams) {
       //console.log('Replacing URL with: ', pathname);
       history.replace(pathname);
     }
