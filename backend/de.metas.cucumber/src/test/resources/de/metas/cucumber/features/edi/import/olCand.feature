@@ -84,7 +84,7 @@ Feature: import order candidate to metasfresh
       | bpLocation_store1_1 | 1234567890001 | bpartner1_1              | true         |
       | bpLocation_main2_1  | 1234567890000 | bpartner2_1              | false        |
       | bpLocation_store2_1 | 1234567890002 | bpartner2_1              | true         |
-      | bpLocation_org_1    | 2222222222221 | bpartner3_1              | false        |
+      | bpLocation_org_1    | 2222222222220 | bpartner3_1              | false        |
 
     When send message to RabbitMQ queue defined by:impProcessor
   """
@@ -94,7 +94,7 @@ Feature: import order candidate to metasfresh
       </AD_DataDestination_ID>
       <AD_InputDataSource_ID>540217</AD_InputDataSource_ID>
       <AD_Org_ID>
-      <GLN>2222222222221</GLN>
+      <GLN>2222222222220</GLN>
       </AD_Org_ID>
       <AD_User_EnteredBy_ID>2188223</AD_User_EnteredBy_ID>
       <C_BPartner_ID>
@@ -174,7 +174,7 @@ Feature: import order candidate to metasfresh
       | storeBPLocation2_2 | 2234567890002 | bpartner2_2              | true         |
       | mainBPLocation3_2  | 2234567890003 | bpartner3_2              | false        |
       | storeBPLocation3_2 | 2234567890001 | bpartner3_2              | true         |
-      | orgBPLocation_2    | 2222222222222 | orgBPartner_2            | false        |
+      | orgBPLocation_2    | 2222222222221 | orgBPartner_2            | false        |
 
     When send message to RabbitMQ queue defined by:impProcessor
   """
@@ -184,7 +184,7 @@ Feature: import order candidate to metasfresh
     </AD_DataDestination_ID>
     <AD_InputDataSource_ID>540217</AD_InputDataSource_ID>
     <AD_Org_ID>
-        <GLN>2222222222222</GLN>
+        <GLN>2222222222221</GLN>
     </AD_Org_ID>
     <AD_User_EnteredBy_ID>2188223</AD_User_EnteredBy_ID>
     <C_BPartner_ID>
@@ -262,7 +262,7 @@ Feature: import order candidate to metasfresh
     </AD_DataDestination_ID>
     <AD_InputDataSource_ID>540217</AD_InputDataSource_ID>
     <AD_Org_ID>
-        <GLN>2222222222222</GLN>
+        <GLN>2222222222221</GLN>
     </AD_Org_ID>
     <AD_User_EnteredBy_ID>2188223</AD_User_EnteredBy_ID>
     <C_BPartner_ID>
