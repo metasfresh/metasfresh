@@ -38,7 +38,7 @@ import de.metas.banking.camt53.jaxb.camt053_001_02.ReportEntry2;
 import de.metas.banking.camt53.wrapper.AccountStatement2Wrapper;
 import de.metas.banking.camt53.wrapper.NoBatchBankToCustomerStatementV02Wrapper;
 import de.metas.banking.camt53.wrapper.NoBatchReportEntry2Wrapper;
-import de.metas.banking.payment.PaymentAllocationService;
+import de.metas.banking.payment.paymentallocation.service.PaymentAllocationService;
 import de.metas.banking.service.BankStatementCreateRequest;
 import de.metas.banking.service.BankStatementLineCreateRequest;
 import de.metas.banking.service.IBankStatementDAO;
