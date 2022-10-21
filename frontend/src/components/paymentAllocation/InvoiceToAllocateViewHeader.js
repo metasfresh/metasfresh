@@ -72,34 +72,56 @@ const computeFields = (table, selectedRowIds) => {
   if (table?.rows?.length && selectedRowIds?.length > 0) {
     let grandTotal = 0.0;
     let discountAmt = 0.0;
+    let currencyCode = null;
+    let multipleCurrencies = false;
 
     const rows = table.rows;
     rows
       .filter((row) => selectedRowIds.includes(row.id))
       .forEach((row) => {
+        if (multipleCurrencies) {
+          return;
+        }
+
         const fieldsByName = row.fieldsByName;
         //console.log('fieldsByName', fieldsByName);
+
+        const rowCurrencyCode = fieldsByName.currencyCodeString?.value ?? '-';
+        //console.log('rowCurrencyCode', rowCurrencyCode);
+
+        if (currencyCode == null) {
+          currencyCode = rowCurrencyCode;
+        } else if (currencyCode !== rowCurrencyCode) {
+          multipleCurrencies = true;
+          return;
+        }
+
         grandTotal += parseFloat(fieldsByName.grandTotal?.value || 0);
         discountAmt += parseFloat(fieldsByName.discountAmt?.value || 0);
       });
 
+    if (multipleCurrencies) {
+      return {};
+    }
+
     return {
-      grandTotal: formatNumberToString(grandTotal, 2),
-      discountAmt: formatNumberToString(discountAmt, 2),
-      grandTotalMinusDiscountAmt: formatNumberToString(
+      grandTotal: formatAmountToString(grandTotal, 2, currencyCode),
+      discountAmt: formatAmountToString(discountAmt, 2, currencyCode),
+      grandTotalMinusDiscountAmt: formatAmountToString(
         grandTotal - discountAmt,
-        2
+        2,
+        currencyCode
       ),
     };
   } else {
-    return {
-      grandTotal: null,
-      discountAmt: null,
-      grandTotalMinusDiscountAmt: null,
-    };
+    return {};
   }
 };
 
-const formatNumberToString = (number, precision) => {
-  return parseFloat(number ?? 0).toFixed(precision);
+const formatAmountToString = (amount, precision, currencyCode) => {
+  let result = parseFloat(amount ?? 0).toFixed(precision);
+  if (currencyCode && currencyCode !== '-') {
+    result += ' ' + currencyCode;
+  }
+  return result;
 };
