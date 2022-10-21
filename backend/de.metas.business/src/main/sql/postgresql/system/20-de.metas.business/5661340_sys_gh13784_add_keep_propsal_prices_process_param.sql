@@ -15,7 +15,7 @@ INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Hel
 ;
 
 -- 2022-10-20T16:08:11.931Z
-UPDATE AD_Element_Trl SET Description='Pflegen Sie die Angebotspreise, es ist keine Preiskalkulation erforderlich', Name='Angebotspreise beibehalten', PrintName='Angebotspreise beibehalten',Updated=TO_TIMESTAMP('2022-10-20 17:08:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581589 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET Description='Wenn angehakt, dann findet keine Preis-Neuberechnung aufgrund der aktuellen Preis-Stammdaten statt', Name='Angebotspreise beibehalten', PrintName='Angebotspreise beibehalten',Updated=TO_TIMESTAMP('2022-10-20 17:08:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581589 AND AD_Language='de_DE'
 ;
 
 -- 2022-10-20T16:08:11.959Z
@@ -27,7 +27,7 @@ UPDATE AD_Element_Trl SET Description='Pflegen Sie die Angebotspreise, es ist ke
 ;
 
 -- 2022-10-20T16:08:44.311Z
-UPDATE AD_Element_Trl SET Description='Pflegen Sie die Angebotspreise, es ist keine Preiskalkulation erforderlich', Name='Angebotspreise beibehalten', PrintName='Angebotspreise beibehalten',Updated=TO_TIMESTAMP('2022-10-20 17:08:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581589 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET Description='Wenn angehakt, dann findet keine Preis-Neuberechnung aufgrund der aktuellen Preis-Stammdaten statt', Name='Angebotspreise beibehalten', PrintName='Angebotspreise beibehalten',Updated=TO_TIMESTAMP('2022-10-20 17:08:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581589 AND AD_Language='de_CH'
 ;
 
 -- 2022-10-20T16:08:44.317Z
