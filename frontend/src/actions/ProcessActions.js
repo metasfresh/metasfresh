@@ -3,7 +3,7 @@ import {
   setProcessPending,
   setProcessSaved,
 } from './AppActions';
-import { openInNewTab } from '../utils';
+import { getQueryString, openInNewTab } from '../utils';
 import history from '../services/History';
 import { setIncludedView, unsetIncludedView } from './ViewActions';
 import { getTableId } from '../reducers/tables';
@@ -152,6 +152,18 @@ export const handleProcessResponse = (
             );
 
             break;
+          }
+          case 'newRecord': {
+            const { windowId, fieldValues } = action;
+            let urlPath = `/window/${windowId}/NEW`;
+            const urlQueryString = getQueryString(fieldValues ?? {});
+            if (urlQueryString) {
+              urlPath += '?' + urlQueryString;
+            }
+
+            window.open(urlPath, '_self');
+            return false;
+            //break;
           }
           default: {
             console.warn('Unhandled action', action);
