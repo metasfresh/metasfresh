@@ -1,18 +1,8 @@
 package de.metas.ui.web.process.descriptor;
 
-import java.time.Duration;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
-
-import org.adempiere.util.lang.ExtendedMemorizingSupplier;
-import org.compiere.model.I_AD_Process;
-import org.slf4j.MDC.MDCCloseable;
-
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.TableRecordMDC;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -23,6 +13,14 @@ import lombok.NonNull;
 import lombok.Singular;
 import lombok.ToString;
 import lombok.Value;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+import org.compiere.model.I_AD_Process;
+import org.slf4j.MDC.MDCCloseable;
+
+import java.time.Duration;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -48,11 +46,10 @@ import lombok.Value;
 
 /**
  * Webui related process descriptor.
- *
+ * <p>
  * NOTE: this is a short living object and it shall not be cached
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @ToString
 public final class WebuiRelatedProcessDescriptor
@@ -80,7 +77,6 @@ public final class WebuiRelatedProcessDescriptor
 
 	private final String debugProcessClassname;
 
-	@Getter
 	private final int sortNo;
 
 	@lombok.Builder
@@ -109,7 +105,7 @@ public final class WebuiRelatedProcessDescriptor
 		// Also we assume this is a short living instance which was created right before checking
 		this.preconditionsResolutionSupplier = ExtendedMemorizingSupplier.of(() -> ValueAndDuration.fromSupplier(preconditionsResolutionSupplier));
 
-		this.sortNo = sortNo > 0 ? sortNo : 0;
+		this.sortNo = Math.max(sortNo, 0);
 
 		this.debugProcessClassname = debugProcessClassname;
 
@@ -123,6 +119,11 @@ public final class WebuiRelatedProcessDescriptor
 	public String getDescription(final String adLanguage)
 	{
 		return processDescription.translate(adLanguage);
+	}
+
+	public int getSortNo()
+	{
+		return getPreconditionsResolution().getSortNo().orElse(this.sortNo);
 	}
 
 	private ProcessPreconditionsResolution getPreconditionsResolution()
@@ -148,7 +149,7 @@ public final class WebuiRelatedProcessDescriptor
 
 	public boolean isEnabledOrNotSilent()
 	{
-		try (final MDCCloseable processMDC = TableRecordMDC.putTableRecordReference(I_AD_Process.Table_Name, processId == null ? null : processId.toAdProcessIdOrNull()))
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(I_AD_Process.Table_Name, processId == null ? null : processId.toAdProcessIdOrNull()))
 		{
 			final ProcessPreconditionsResolution preconditionsResolution = getPreconditionsResolution();
 			return preconditionsResolution.isAccepted() || !preconditionsResolution.isInternal();
@@ -168,7 +169,7 @@ public final class WebuiRelatedProcessDescriptor
 
 	public Map<String, Object> getDebugProperties()
 	{
-		final ImmutableMap.Builder<String, Object> debugProperties = ImmutableMap.<String, Object> builder();
+		final ImmutableMap.Builder<String, Object> debugProperties = ImmutableMap.builder();
 
 		if (debugProcessClassname != null)
 		{
@@ -184,7 +185,7 @@ public final class WebuiRelatedProcessDescriptor
 	}
 
 	@Value
-	private static final class ValueAndDuration<T>
+	private static class ValueAndDuration<T>
 	{
 		public static <T> ValueAndDuration<T> fromSupplier(final Supplier<T> supplier)
 		{
@@ -194,8 +195,8 @@ public final class WebuiRelatedProcessDescriptor
 			return new ValueAndDuration<>(value, duration);
 		}
 
-		private final T value;
-		private final Duration duration;
+		T value;
+		Duration duration;
 
 		private ValueAndDuration(final T value, final Duration duration)
 		{

@@ -76,7 +76,12 @@ public class RecordWindowFinder
 
 	public static RecordWindowFinder newInstance(final String tableName)
 	{
-		return new RecordWindowFinder(tableName);
+		return new RecordWindowFinder(tableName, null);
+	}
+
+	public static RecordWindowFinder newInstance(final String tableName, final SOTrx soTrx)
+	{
+		return new RecordWindowFinder(tableName, soTrx);
 	}
 
 	public static Optional<AdWindowId> findAdWindowId(final TableRecordReference record)
@@ -153,11 +158,12 @@ public class RecordWindowFinder
 		alreadyKnownWindowId = null;
 	}
 
-	private RecordWindowFinder(final @NonNull String tableName)
+	private RecordWindowFinder(final @NonNull String tableName, final @Nullable SOTrx soTrx)
 	{
 		Check.assumeNotEmpty(tableName, "tableName is not empty");
 		_tableName = tableName;
 		_recordId = -1;
+		_recordSOTrx_Effective = soTrx;
 		_query_Provided = null;
 		alreadyKnownWindowId = null;
 	}

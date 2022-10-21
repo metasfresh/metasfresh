@@ -4,11 +4,13 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableMap;
 import de.metas.logging.LogManager;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.ui.web.process.ProcessInstanceResult;
 import de.metas.ui.web.process.ProcessInstanceResult.CloseViewAction;
 import de.metas.ui.web.process.ProcessInstanceResult.DisplayQRCodeAction;
+import de.metas.ui.web.process.ProcessInstanceResult.NewRecordAction;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenIncludedViewAction;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenReportAction;
 import de.metas.ui.web.process.ProcessInstanceResult.OpenSingleDocument;
@@ -27,6 +29,8 @@ import lombok.NonNull;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /*
@@ -115,7 +119,7 @@ public final class JSONProcessInstanceResult
 			final DocumentPath documentPath = openDocumentAction.getDocumentPath();
 			return new JSONOpenSingleDocumentAction(documentPath.getWindowId(), documentPath.getDocumentId().toJson(), openDocumentAction.getTargetTab());
 		}
-		else if(resultAction instanceof CloseViewAction)
+		else if (resultAction instanceof CloseViewAction)
 		{
 			return JSONCloseView.instance;
 		}
@@ -128,6 +132,14 @@ public final class JSONProcessInstanceResult
 		{
 			final DisplayQRCodeAction displayQRCodeAction = (DisplayQRCodeAction)resultAction;
 			return new JSONDisplayQRCodeAction(displayQRCodeAction.getCode());
+		}
+		else if (resultAction instanceof NewRecordAction)
+		{
+			final NewRecordAction newRecordAction = (NewRecordAction)resultAction;
+			return new JSONNewRecordAction(
+					WindowId.fromJson(newRecordAction.getWindowId()),
+					newRecordAction.getFieldValues()
+			);
 		}
 		else
 		{
@@ -266,6 +278,23 @@ public final class JSONProcessInstanceResult
 		{
 			super("displayQRCode");
 			this.code = code;
+		}
+	}
+
+	@JsonAutoDetect(fieldVisibility = Visibility.ANY, getterVisibility = Visibility.NONE, isGetterVisibility = Visibility.NONE, setterVisibility = Visibility.NONE)
+	@lombok.Getter
+	public static class JSONNewRecordAction extends JSONResultAction
+	{
+		@NonNull private final WindowId windowId;
+		@NonNull Map<String, String> fieldValues;
+
+		public JSONNewRecordAction(@NonNull final WindowId windowId, @Nullable final Map<String, String> fieldValues)
+		{
+			super("newRecord");
+			this.windowId = windowId;
+			this.fieldValues = fieldValues != null && !fieldValues.isEmpty()
+					? new HashMap<>(fieldValues)
+					: ImmutableMap.of();
 		}
 	}
 }
