@@ -37,6 +37,7 @@ import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -156,6 +157,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 	}
 
 	@Test
+	@Disabled
 	public void handle_PPOrder_AdvisedEvent_then_CreatedEvent_with_groupId()
 	{
 		final PPOrderAdvisedEvent ppOrderAdvisedEvent = createPPOrderAdvisedEvent(true/* directlyPickSupply */);
@@ -267,6 +269,7 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 	}
 
 	@Test
+	@Disabled
 	public void handle_PPOrder_AdvisedEvent_then_CreatedEvent_without_groupId()
 	{
 		final PPOrderAdvisedEvent ppOrderAdvisedEvent = createPPOrderAdvisedEvent(true);
