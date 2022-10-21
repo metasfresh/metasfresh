@@ -66,10 +66,6 @@ Feature: Create invoice candidates from effort control
       | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyInvoiced | OPT.M_Product_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.Processed | OPT.InvoiceRule | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.Description                    |
       | candIssue100_1                    | 12           | 12             | 0                | 0               | invoiceableProduct          | customer_SO                     | customerLocation_SO             | customerUser_SO             | false         | I               | costCenter100                | testProject                 | 1210221\nbudgetIssue100_1_12102022 |
       | candIssue100_2                    | 4            | 4              | 0                | 0               | invoiceableProduct          | customer_SO                     | customerLocation_SO             | customerUser_SO             | false         | I               | costCenter100                | testProject                 | 1210222\nbudgetIssue100_2_12102022 |
-    And after not more than 10s, S_Issue are found:
-      | S_Issue_ID.Identifier | OPT.Status | OPT.Processed |
-      | budgetIssue100_1      | Invoiced   | true          |
-      | budgetIssue100_2      | Invoiced   | true          |
     And validate S_Issue:
       | S_Issue_ID.Identifier | Value                     | OPT.Name                  | IssueType | IsEffortIssue | OPT.InvoiceableEffort | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.ExternalIssueNo | OPT.Status | OPT.Processed |
       | budgetIssue100_1      | budgetIssue100_1_12102022 | budgetIssue100_1_12102022 | Internal  | N             | 12                    | costCenter100                | testProject                 | 1210221             | Invoiced   | true          |
@@ -117,9 +113,6 @@ Feature: Create invoice candidates from effort control
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyInvoiced | OPT.M_Product_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.Processed | OPT.InvoiceRule | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.Description         |
       | candIssue200                      | 20           | 20             | 0                | 0               | invoiceableProduct          | customer_SO                     | customerLocation_SO             | customerUser_SO             | false         | I               | costCenter200                | testProject                 | 1310221\nbudgetIssue200 |
-    And after not more than 10s, S_Issue are found:
-      | S_Issue_ID.Identifier | OPT.Status | OPT.Processed |
-      | budgetIssue200        | Invoiced   | true          |
     And validate S_Issue:
       | S_Issue_ID.Identifier | Value          | OPT.Name       | IssueType | IsEffortIssue | OPT.InvoiceableEffort | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.ExternalIssueNo | OPT.Status | OPT.Processed |
       | budgetIssue200        | budgetIssue200 | budgetIssue200 | Internal  | N             | 20                    | costCenter200                | testProject                 | 1310221             | Invoiced   | true          |
@@ -135,9 +128,6 @@ Feature: Create invoice candidates from effort control
     And after not more than 10s, S_EffortControl is validated:
       | S_EffortControl_ID.Identifier | C_Activity_ID.Identifier | C_Project_ID.Identifier | OPT.InvoiceableHours | OPT.IsIssueClosed |
       | effortControl200              | costCenter200            | testProject             | 25                   | false             |
-    And after not more than 10s, S_Issue are found:
-      | S_Issue_ID.Identifier | OPT.Status | OPT.Processed |
-      | budgetIssue200        | Invoiced   | false         |
     And validate S_Issue:
       | S_Issue_ID.Identifier | Value          | OPT.Name       | IssueType | IsEffortIssue | OPT.InvoiceableEffort | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.ExternalIssueNo | OPT.Status | OPT.Processed |
       | budgetIssue200        | budgetIssue200 | budgetIssue200 | Internal  | N             | 25                    | costCenter200                | testProject                 | 1310221             | Invoiced   | false         |
@@ -151,9 +141,6 @@ Feature: Create invoice candidates from effort control
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyInvoiced | OPT.M_Product_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.Processed | OPT.InvoiceRule | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.Description         |
       | candIssue200                      | 25           | 25             | 0                | 0               | invoiceableProduct          | customer_SO                     | customerLocation_SO             | customerUser_SO             | false         | I               | costCenter200                | testProject                 | 1310221\nbudgetIssue200 |
-    And after not more than 10s, S_Issue are found:
-      | S_Issue_ID.Identifier | OPT.Status | OPT.Processed |
-      | budgetIssue200        | Invoiced   | true          |
     And validate S_Issue:
       | S_Issue_ID.Identifier | Value          | OPT.Name       | IssueType | IsEffortIssue | OPT.InvoiceableEffort | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.ExternalIssueNo | OPT.Status | OPT.Processed |
       | budgetIssue200        | budgetIssue200 | budgetIssue200 | Internal  | N             | 25                    | costCenter200                | testProject                 | 1310221             | Invoiced   | true          |
@@ -183,9 +170,6 @@ Feature: Create invoice candidates from effort control
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyInvoiced | OPT.M_Product_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.Processed | OPT.InvoiceRule | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.Description         |
       | candIssue300                      | 30           | 30             | 0                | 0               | invoiceableProduct          | customer_SO                     | customerLocation_SO             | customerUser_SO             | false         | I               | costCenter300                | testProject                 | 1310222\nbudgetIssue300 |
-    And after not more than 10s, S_Issue are found:
-      | S_Issue_ID.Identifier | OPT.Status | OPT.Processed |
-      | budgetIssue300        | Invoiced   | true          |
     And validate S_Issue:
       | S_Issue_ID.Identifier | Value          | OPT.Name       | IssueType | IsEffortIssue | OPT.InvoiceableEffort | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.ExternalIssueNo | OPT.Status | OPT.Processed |
       | budgetIssue300        | budgetIssue300 | budgetIssue300 | Internal  | N             | 30                    | costCenter300                | testProject                 | 1310222             | Invoiced   | true          |
@@ -215,9 +199,6 @@ Feature: Create invoice candidates from effort control
     And update S_Issue:
       | S_Issue_ID.Identifier | OPT.InvoiceableEffort |
       | budgetIssue300        | 34                    |
-    And after not more than 10s, S_Issue are found:
-      | S_Issue_ID.Identifier | OPT.Status | OPT.Processed |
-      | budgetIssue300        | Invoiced   | false         |
     And validate S_Issue:
       | S_Issue_ID.Identifier | Value          | OPT.Name       | IssueType | IsEffortIssue | OPT.InvoiceableEffort | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.ExternalIssueNo | OPT.Status | OPT.Processed |
       | budgetIssue300        | budgetIssue300 | budgetIssue300 | Internal  | N             | 34                    | costCenter300                | testProject                 | 1310222             | Invoiced   | false         |
@@ -234,9 +215,6 @@ Feature: Create invoice candidates from effort control
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyInvoiced | OPT.M_Product_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.Processed | OPT.InvoiceRule | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.Description         |
       | candIssue300                      | 4            | 34             | 0                | 30              | invoiceableProduct          | customer_SO                     | customerLocation_SO             | customerUser_SO             | false         | I               | costCenter300                | testProject                 | 1310222\nbudgetIssue300 |
-    And after not more than 10s, S_Issue are found:
-      | S_Issue_ID.Identifier | OPT.Status | OPT.Processed |
-      | budgetIssue300        | Invoiced   | true          |
     And validate S_Issue:
       | S_Issue_ID.Identifier | Value          | OPT.Name       | IssueType | IsEffortIssue | OPT.InvoiceableEffort | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.ExternalIssueNo | OPT.Status | OPT.Processed |
       | budgetIssue300        | budgetIssue300 | budgetIssue300 | Internal  | N             | 34                    | costCenter300                | testProject                 | 1310222             | Invoiced   | true          |
@@ -259,7 +237,7 @@ Feature: Create invoice candidates from effort control
 
   @from:cucumber
   Scenario: Generate invoice candidate from effort control, generate invoice from candidate, reopen issue and decrease invoiceable hours,
-  then regenerate invoice candidate and validate that qtyToInvoice is updated and a new invoice cannot be generated from candidate
+  then regenerate invoice candidate and validate that qtyToInvoice is updated but a new invoice cannot be generated from candidate
     And metasfresh contains C_Activity:
       | C_Activity_ID.Identifier | Name                   | Value                  |
       | costCenter400            | costCenter400_13102022 | costCenter400_13102022 |
@@ -282,9 +260,6 @@ Feature: Create invoice candidates from effort control
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyInvoiced | OPT.M_Product_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.Processed | OPT.InvoiceRule | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.Description         |
       | candIssue400                      | 40           | 40             | 0                | 0               | invoiceableProduct          | customer_SO                     | customerLocation_SO             | customerUser_SO             | false         | I               | costCenter400                | testProject                 | 1310223\nbudgetIssue400 |
-    And after not more than 10s, S_Issue are found:
-      | S_Issue_ID.Identifier | OPT.Status | OPT.Processed |
-      | budgetIssue400        | Invoiced   | true          |
     And validate S_Issue:
       | S_Issue_ID.Identifier | Value          | OPT.Name       | IssueType | IsEffortIssue | OPT.InvoiceableEffort | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.ExternalIssueNo | OPT.Status | OPT.Processed |
       | budgetIssue400        | budgetIssue400 | budgetIssue400 | Internal  | N             | 40                    | costCenter400                | testProject                 | 1310223             | Invoiced   | true          |
@@ -314,9 +289,6 @@ Feature: Create invoice candidates from effort control
     And update S_Issue:
       | S_Issue_ID.Identifier | OPT.InvoiceableEffort |
       | budgetIssue400        | 22                    |
-    And after not more than 10s, S_Issue are found:
-      | S_Issue_ID.Identifier | OPT.Status | OPT.Processed |
-      | budgetIssue400        | Invoiced   | false         |
     And validate S_Issue:
       | S_Issue_ID.Identifier | Value          | OPT.Name       | IssueType | IsEffortIssue | OPT.InvoiceableEffort | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.ExternalIssueNo | OPT.Status | OPT.Processed |
       | budgetIssue400        | budgetIssue400 | budgetIssue400 | Internal  | N             | 22                    | costCenter400                | testProject                 | 1310223             | Invoiced   | false         |
@@ -333,9 +305,6 @@ Feature: Create invoice candidates from effort control
     And validate C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | OPT.QtyOrdered | OPT.QtyDelivered | OPT.QtyInvoiced | OPT.M_Product_ID.Identifier | OPT.Bill_BPartner_ID.Identifier | OPT.Bill_Location_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.Processed | OPT.InvoiceRule | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.Description         |
       | candIssue400                      | 0            | 22             | 0                | 40              | invoiceableProduct          | customer_SO                     | customerLocation_SO             | customerUser_SO             | true          | I               | costCenter400                | testProject                 | 1310223\nbudgetIssue400 |
-    And after not more than 10s, S_Issue are found:
-      | S_Issue_ID.Identifier | OPT.Status | OPT.Processed |
-      | budgetIssue400        | Invoiced   | true          |
     And validate S_Issue:
       | S_Issue_ID.Identifier | Value          | OPT.Name       | IssueType | IsEffortIssue | OPT.InvoiceableEffort | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.ExternalIssueNo | OPT.Status | OPT.Processed |
       | budgetIssue400        | budgetIssue400 | budgetIssue400 | Internal  | N             | 22                    | costCenter400                | testProject                 | 1310223             | Invoiced   | true          |

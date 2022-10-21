@@ -83,6 +83,8 @@ import javax.annotation.Nullable;
 import java.time.ZoneId;
 import java.util.Iterator;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
@@ -324,12 +326,9 @@ public class S_Issue_Handler extends AbstractInvoiceCandidateHandler
 	@NonNull
 	private String getDescription(@NonNull final IssueEntity issueEntity)
 	{
-		final StringBuilder sb = new StringBuilder();
-		Optional.ofNullable(issueEntity.getExternalIssueNo())
-				.map(sb::append);
-		sb.append("\n").append(issueEntity.getName());
-
-		return sb.toString();
+		return Stream.of(issueEntity.getExternalIssueNo(), issueEntity.getName())
+				.map(String::valueOf)
+				.collect(Collectors.joining("\n"));
 	}
 
 	@NonNull

@@ -252,15 +252,6 @@ public class S_Issue_StepDef
 		dataTable.asMaps().forEach(this::validateIssue);
 	}
 
-	@And("^after not more than (.*)s, S_Issue are found:$")
-	public void findS_Issue(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
-	{
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
-			StepDefUtil.tryAndWait(timeoutSec, 1000, () -> loadS_Issue(row));
-		}
-	}
-
 	@NonNull
 	private Boolean loadCostCenterActivityFromIssue(final @NonNull Map<String, String> row)
 	{
@@ -401,38 +392,5 @@ public class S_Issue_StepDef
 		}
 
 		sIssueTable.putOrReplace(issueIdentifier, issue);
-	}
-
-	private boolean loadS_Issue(@NonNull final Map<String, String> row)
-	{
-		final String issueIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_S_Issue_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_S_Issue issue = sIssueTable.get(issueIdentifier);
-
-		final IQueryBuilder<I_S_Issue> queryBuilder = queryBL.createQueryBuilder(I_S_Issue.class)
-				.addEqualsFilter(I_S_Issue.COLUMN_S_Issue_ID, issue.getS_Issue_ID());
-
-		final String status = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_Status);
-		if (Check.isNotBlank(status))
-		{
-			queryBuilder.addEqualsFilter(COLUMNNAME_Status, status);
-		}
-
-		final Boolean processed = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + I_S_Issue.COLUMNNAME_Processed);
-		if (processed != null)
-		{
-			queryBuilder.addEqualsFilter(I_S_Issue.COLUMNNAME_Processed, processed);
-		}
-
-		final Optional<I_S_Issue> issueRecord = queryBuilder.create()
-				.firstOnlyOptional(I_S_Issue.class);
-
-		if (!issueRecord.isPresent())
-		{
-			return false;
-		}
-
-		sIssueTable.putOrReplace(issueIdentifier, issueRecord.get());
-
-		return true;
 	}
 }
