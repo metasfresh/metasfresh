@@ -1,5 +1,6 @@
 package de.metas.invoice.service.impl;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
@@ -20,6 +21,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.InvoiceQuery;
+import de.metas.invoice.UnpaidInvoiceQuery;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.money.CurrencyId;
@@ -36,6 +38,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.SpringContextHolder;
@@ -45,12 +48,17 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.model.I_M_InOutLine;
+import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
@@ -522,6 +530,55 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 			queryBuilder.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocStatus, query.getOnlyDocStatuses());
 		}
 
+		query.getCurrencyId().ifPresent(currencyId -> queryBuilder.addEqualsFilter(I_C_Invoice.COLUMNNAME_C_Currency_ID, currencyId));
+
+		return queryBuilder
+				.create()
+				.stream()
+				.filter(invoice -> isMatchAmounts(invoice, query))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private boolean isMatchAmounts(
+			@NonNull final I_C_Invoice invoice,
+			@NonNull final UnpaidInvoiceQuery query)
+	{
+		if (query.getOpenAmountAtDate() == null || query.getOpenAmountEvaluationDate() == null)
+		{
+			return true;
+		}
+
+		if (invoice.getC_Currency_ID() != query.getOpenAmountAtDate().getCurrencyId().getRepoId())
+		{
+			return false;
+		}
+
+		return retrieveOpenAmtToDate(invoice, query.getOpenAmountEvaluationDate())
+				.filter(openAmtAtDate -> invoice.isSOTrx()
+						? query.getOpenAmountAtDate().toBigDecimal().stripTrailingZeros().equals(openAmtAtDate.stripTrailingZeros())
+						: query.getOpenAmountAtDate().toBigDecimal().abs().stripTrailingZeros().equals(openAmtAtDate.stripTrailingZeros()))
+				.isPresent();
+	}
+
+	@Override
+	public ImmutableList<I_C_Invoice> retrieveUnpaid(@NonNull final UnpaidInvoiceQuery query)
+	{
+		final IQueryBuilder<I_C_Invoice> queryBuilder = queryBL
+				.createQueryBuilder(I_C_Invoice.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsPaid, false)
+				.setLimit(query.getQueryLimit());
+
+		if (!query.getOnlyDocumentNos().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocumentNo, query.getOnlyDocumentNos());
+		}
+
+		if (!query.getOnlyDocStatuses().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocStatus, query.getOnlyDocStatuses());
+		}
+
 		return queryBuilder
 				.create()
 				.listImmutable(I_C_Invoice.class);
@@ -631,5 +688,38 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 		final DocBaseAndSubType docBaseAndSubType = DocBaseAndSubType.of(docTypeRecord.getDocBaseType(), docTypeRecord.getDocSubType());
 
 		return docBaseAndSubType.equals(targetDocType);
+	}
+
+	@NonNull
+	private Optional<BigDecimal> retrieveOpenAmtToDate(
+			@NonNull final org.compiere.model.I_C_Invoice invoice,
+			@NonNull final Instant date)
+	{
+		final String finalSql = "SELECT invoiceOpenToDate(?::numeric, null::numeric, ?::timestamp)";
+
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = DB.prepareStatement(finalSql, InterfaceWrapperHelper.getTrxName(invoice));
+			DB.setParameters(pstmt, invoice.getC_Invoice_ID(), date);
+
+			rs = pstmt.executeQuery();
+
+			if (!rs.next())
+			{
+				return Optional.empty();
+			}
+
+			return Optional.of(rs.getBigDecimal(1));
+		}
+		catch (final SQLException e)
+		{
+			throw new DBException(e, finalSql);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+		}
 	}
 }

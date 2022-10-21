@@ -50,6 +50,8 @@ import de.metas.document.engine.DocStatus;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.UnpaidInvoiceMatchingAmtQuery;
+import de.metas.invoice.UnpaidInvoiceQuery;
+import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.logging.LogManager;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
@@ -75,6 +77,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.InputStream;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Optional;
@@ -88,6 +91,7 @@ public class BankStatementCamt53Service
 
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 	private final BankAccountService bankAccountService;
 	private final CurrencyRepository currencyRepository;
@@ -96,7 +100,7 @@ public class BankStatementCamt53Service
 
 	public BankStatementCamt53Service(
 			@NonNull final BankAccountService bankAccountService,
-			@NonNull final CurrencyRepository currencyRepository,
+			@NonNull final CurrencyRepository currencyRepository)
 			@NonNull final PaymentAllocationService paymentAllocationService,
 			@NonNull final MoneyService moneyService)
 	{
@@ -139,12 +143,13 @@ public class BankStatementCamt53Service
 		Loggables.withLogger(logger, Level.DEBUG).addLog(
 				"One bank statement with id={} created for BankStatementCreateRequest={}", bankStatementId, bankStatementCreateRequest);
 
-		final Function<NoBatchReportEntry2Wrapper, ImportBankStatementLineRequest> getImportBankStatementLineRequest = entry -> ImportBankStatementLineRequest.builder()
+		final Function<NoBatchReportEntry2Wrapper, ImportBankStatementLineRequest> getImportBankStatementLineRequest = entry ->  ImportBankStatementLineRequest.builder()
 				.entryWrapper(entry)
 				.bankStatementId(bankStatementId)
 				.orgId(bankStatementCreateRequest.getOrgId())
 				.isMatchAmounts(importBankStatementRequest.isMatchAmounts())
 				.build();
+
 
 		accountStatement2.getNtry()
 				.stream()
@@ -201,7 +206,7 @@ public class BankStatementCamt53Service
 	{
 		final NoBatchReportEntry2Wrapper entryWrapper = importBankStatementLineRequest.getEntryWrapper();
 		final OrgId orgId = importBankStatementLineRequest.getOrgId();
-		
+
 		final ZonedDateTime statementLineDate = entryWrapper.getStatementLineDate()
 				.map(instant -> instant.atZone(orgDAO.getTimeZone(orgId)))
 				.orElse(null);
@@ -224,7 +229,7 @@ public class BankStatementCamt53Service
 				.lineDescription(entryWrapper.getLineDescription())
 				.memo(entryWrapper.getUnstructuredRemittanceInfo())
 				.referenceNo(entryWrapper.getAcctSvcrRef())
-				.updateAmountsFromInvoice(false) // don't change the amounts; they are coming from the bank  
+				.updateAmountsFromInvoice(false) // don't change the amounts; they are coming from the bank
 				.statementAmt(stmtAmount)
 				.trxAmt(stmtAmount)
 				.currencyRate(entryWrapper.getCurrencyRate().orElse(null))

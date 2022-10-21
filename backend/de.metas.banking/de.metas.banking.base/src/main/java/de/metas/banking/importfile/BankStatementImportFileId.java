@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.banking.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,56 +20,38 @@
  * #L%
  */
 
-package de.metas.banking;
+package de.metas.banking.importfile;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.google.common.collect.ImmutableSet;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.Set;
 
 @Value
-public class BankStatementId implements RepoIdAware
+public class BankStatementImportFileId implements RepoIdAware
 {
-	int repoId;
-
 	@NonNull
 	@JsonCreator
-	public static BankStatementId ofRepoId(final int repoId)
+	public static BankStatementImportFileId ofRepoId(final int repoId)
 	{
-		return new BankStatementId(repoId);
+		return new BankStatementImportFileId(repoId);
 	}
 
 	@Nullable
-	public static BankStatementId ofRepoIdOrNull(final int repoId)
+	public static BankStatementImportFileId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
-	public static Set<Integer> toIntSet(final Collection<BankStatementId> bankStatementIds)
+	int repoId;
+
+	private BankStatementImportFileId(final int repoId)
 	{
-		if (bankStatementIds == null || bankStatementIds.isEmpty())
-		{
-			return ImmutableSet.of();
-		}
-		else
-		{
-			return bankStatementIds
-					.stream()
-					.map(BankStatementId::getRepoId)
-					.collect(ImmutableSet.toImmutableSet());
-		}
-	}
-	
-	private BankStatementId(final int repoId)
-	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "C_BankStatement_ID");
+		this.repoId = Check.assumeGreaterThanZero(repoId, "C_BankStatement_Import_File_ID");
 	}
 
 	@Override

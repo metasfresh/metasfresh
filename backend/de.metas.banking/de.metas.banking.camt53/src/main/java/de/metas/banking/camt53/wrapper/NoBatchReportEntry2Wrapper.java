@@ -38,6 +38,7 @@ import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.logging.LogManager;
+import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.util.Check;
 import lombok.Builder;
@@ -98,14 +99,17 @@ public class NoBatchReportEntry2Wrapper
 	{
 		return getUnstructuredRemittanceInfo("\n");
 	}
-	
+
 	@NonNull
 	private String getUnstructuredRemittanceInfo(@NonNull final String delimiter)
 	{
 		return String.join(delimiter, getEntryTransaction()
+		final String unstructuredRemittanceInfo = String.join(" ", getEntryTransaction()
 				.map(EntryTransaction2::getRmtInf)
 				.map(RemittanceInformation5::getUstrd)
 				.orElseGet(ImmutableList::of));
+
+		return ImmutableSet.copyOf(unstructuredRemittanceInfo.split(" "));
 	}
 
 	@NonNull
@@ -160,12 +164,12 @@ public class NoBatchReportEntry2Wrapper
 	}
 
 	@NonNull
-	public Amount getStatementAmount()
+	public Money getStatementAmount()
 	{
 		final BigDecimal value = getStatementAmountValue();
-		final CurrencyCode currencyCode = CurrencyCode.ofThreeLetterCode(entry.getAmt().getCcy());
+		final CurrencyId currencyId = getStatementAmountCurrencyId(entry.getAmt().getCcy());
 
-		return Amount.of(value, currencyCode);
+		return Money.of(value, currencyId);
 	}
 
 	@NonNull
@@ -178,8 +182,16 @@ public class NoBatchReportEntry2Wrapper
 				.orElse(BigDecimal.ZERO);
 	}
 
+	@NonNull
+	private CurrencyId getStatementAmountCurrencyId(@NonNull final String currencyCodeStr)
+	{
+		final CurrencyCode currencyCode = CurrencyCode.ofThreeLetterCode(currencyCodeStr);
+		return currencyRepository.getCurrencyIdByCurrencyCode(currencyCode);
+	}
+
 	public String getAcctSvcrRef()
 	{
 		return entry.getAcctSvcrRef();
 	}
+
 }

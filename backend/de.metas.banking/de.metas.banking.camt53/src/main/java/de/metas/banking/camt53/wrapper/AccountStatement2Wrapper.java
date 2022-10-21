@@ -209,5 +209,6 @@ public class AccountStatement2Wrapper
 	{
 		return Optional.ofNullable(accountStatement2.getAcct().getId().getOthr())
 				.map(GenericAccountIdentification1::getId);
+
 	}
 }

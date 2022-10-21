@@ -22,15 +22,18 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.cucumber.stepdefs.bank.C_Bank_StepDefData;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.money.CurrencyId;
+import de.metas.util.Check;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Bank;
 import org.compiere.model.I_C_Currency;
 
 import java.util.List;
@@ -45,16 +48,18 @@ public class C_BP_BankAccount_StepDef
 	private final C_BP_BankAccount_StepDefData bpBankAccountTable;
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final CurrencyRepository currencyRepository;
+	private final C_Bank_StepDefData bankTable;
 
 	public C_BP_BankAccount_StepDef(
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final CurrencyRepository currencyRepository,
-			@NonNull final C_BP_BankAccount_StepDefData bpBankAccountTable
-	)
+			@NonNull final C_BP_BankAccount_StepDefData bpBankAccountTable,
+			@NonNull final C_Bank_StepDefData bankTable)
 	{
 		this.bpartnerTable = bpartnerTable;
 		this.currencyRepository = currencyRepository;
 		this.bpBankAccountTable = bpBankAccountTable;
+		this.bankTable = bankTable;
 	}
 
 	@And("metasfresh contains C_BP_BankAccount")
@@ -82,6 +87,20 @@ public class C_BP_BankAccount_StepDef
 
 		bpBankAccount.setC_BPartner_ID(bPartnerId);
 		bpBankAccount.setC_Currency_ID(currencyId.getRepoId());
+
+		final String accountNo = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BP_BankAccount.COLUMNNAME_AccountNo);
+		if (Check.isNotBlank(accountNo))
+		{
+			bpBankAccount.setAccountNo(accountNo);
+		}
+
+		final String bankIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BP_BankAccount.COLUMNNAME_C_Bank_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(bankIdentifier))
+		{
+			final I_C_Bank bankRecord = bankTable.get(bankIdentifier);
+
+			bpBankAccount.setC_Bank_ID(bankRecord.getC_Bank_ID());
+		}
 
 		InterfaceWrapperHelper.save(bpBankAccount);
 
