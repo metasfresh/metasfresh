@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.hu;
 
 import de.metas.common.util.CoalesceUtil;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_HU_PackagingCode_StepDefData;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
@@ -39,6 +40,7 @@ import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
@@ -66,17 +68,20 @@ public class M_HU_PI_Item_Product_StepDef
 	private final M_HU_PI_Item_StepDefData huPiItemTable;
 	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
 	private final M_HU_PackagingCode_StepDefData huPackagingCodeTable;
+	private final C_BPartner_StepDefData bpartnerTable;
 
 	public M_HU_PI_Item_Product_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final M_HU_PI_Item_StepDefData huPiItemTable,
 			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable,
-			@NonNull final M_HU_PackagingCode_StepDefData huPackagingCodeTable)
+			@NonNull final M_HU_PackagingCode_StepDefData huPackagingCodeTable,
+			@NonNull final C_BPartner_StepDefData bpartnerTable)
 	{
 		this.productTable = productTable;
 		this.huPiItemTable = huPiItemTable;
 		this.huPiItemProductTable = huPiItemProductTable;
 		this.huPackagingCodeTable = huPackagingCodeTable;
+		this.bpartnerTable = bpartnerTable;
 	}
 
 	@Given("metasfresh contains M_HU_PI_Item_Product:")
@@ -184,10 +189,25 @@ public class M_HU_PI_Item_Product_StepDef
 			huPiItemProductRecord.setGTIN_LU_PackingMaterial_Fallback(DataTableUtil.nullToken2Null(gtinLuPackagingMaterialFallback));
 		}
 
+		final String bpartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_HU_PI_Item_Product.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(bpartnerIdentifier))
+		{
+			final I_C_BPartner bPartner = bpartnerTable.get(bpartnerIdentifier);
+			assertThat(bPartner).isNotNull();
+
+			huPiItemProductRecord.setC_BPartner_ID(bPartner.getC_BPartner_ID());
+		}
+
+		final String upc = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_HU_PI_Item_Product.COLUMNNAME_UPC);
+		if (Check.isNotBlank(upc))
+		{
+			huPiItemProductRecord.setUPC(upc);
+		}
+
 		saveRecord(huPiItemProductRecord);
 
-		final String huPiItemProductIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_HU_PI_Item_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-		huPiItemProductTable.put(huPiItemProductIdentifier, huPiItemProductRecord);
+		final String huPiItemProductIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+		huPiItemProductTable.putOrReplace(huPiItemProductIdentifier, huPiItemProductRecord);
 	}
 
 	@And("update M_HU_PI_Item_Product:")
