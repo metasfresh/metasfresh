@@ -23,7 +23,9 @@
 package de.metas.serviceprovider.effortcontrol;
 
 import de.metas.common.util.CoalesceUtil;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.serviceprovider.effortcontrol.repository.EffortControl;
 import de.metas.serviceprovider.eventbus.EffortControlEventBusService;
@@ -34,20 +36,23 @@ import de.metas.serviceprovider.issue.IssueRepository;
 import de.metas.serviceprovider.model.I_S_Issue;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.Duration;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 @Service
 public class EffortControlService
 {
+	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
+	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+
 	private final EffortControlEventBusService effortControlEventBusService;
 	private final IssueRepository issueRepository;
-
-	private final IInvoiceCandidateHandlerBL invoiceCandidateHandlerBL = Services.get(IInvoiceCandidateHandlerBL.class);
 
 	public EffortControlService(
 			@NonNull final EffortControlEventBusService effortControlEventBusService,
@@ -88,12 +93,26 @@ public class EffortControlService
 
 	public void generateICFromEffortControl(@NonNull final EffortControl effortControl)
 	{
-		streamUnprocessedBudgetIssues(effortControl)
-				.forEach(invoiceCandidateHandlerBL::scheduleCreateMissingCandidatesFor);
+		final Iterator<I_S_Issue> budgetRecordIterator = iterateUnprocessedBudgetIssues(effortControl);
+
+		while (budgetRecordIterator.hasNext())
+		{
+			final I_S_Issue budgetRecord = budgetRecordIterator.next();
+
+			final List<I_C_Invoice_Candidate> existingCandidates = invoiceCandDAO.retrieveReferencing(TableRecordReference.of(budgetRecord));
+			if (existingCandidates.isEmpty())
+			{
+				invoiceCandidateHandlerBL.scheduleCreateMissingCandidatesFor(budgetRecord);
+			}
+			else
+			{
+				invoiceCandDAO.invalidateCands(existingCandidates);
+			}
+		}
 	}
 
 	@NonNull
-	private Stream<I_S_Issue> streamUnprocessedBudgetIssues(@NonNull final EffortControl effortControl)
+	private Iterator<I_S_Issue> iterateUnprocessedBudgetIssues(@NonNull final EffortControl effortControl)
 	{
 		final IssueQuery query = IssueQuery.builder()
 				.orgId(effortControl.getOrgId())
@@ -103,7 +122,7 @@ public class EffortControlService
 				.processed(false)
 				.build();
 
-		return issueRepository.streamRecordsByQuery(query);
+		return issueRepository.iterateRecordsByQuery(query);
 	}
 
 	@NonNull

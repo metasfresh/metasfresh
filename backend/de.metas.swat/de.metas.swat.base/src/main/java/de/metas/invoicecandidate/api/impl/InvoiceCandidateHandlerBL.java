@@ -587,4 +587,11 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 		final IInvoiceCandidateHandler handler = createInvoiceCandidateHandler(ic);
 		handler.setIsInEffect(ic);
 	}
+
+	@Override
+	public void postUpdate(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		final IInvoiceCandidateHandler handler = createInvoiceCandidateHandler(ic);
+		handler.postUpdate(ic);
+	}
 }

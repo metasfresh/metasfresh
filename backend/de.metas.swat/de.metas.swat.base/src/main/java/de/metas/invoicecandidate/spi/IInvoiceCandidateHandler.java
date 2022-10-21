@@ -297,6 +297,14 @@ public interface IInvoiceCandidateHandler
 	}
 
 	/**
+	 * So that a handler is given the chance to do additional logic once the invoice candidates have been updated.
+	 */
+	default void postUpdate(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		//do nothing
+	}
+
+	/**
 	 * Price and tax info calculation result.
 	 * <p>
 	 * All fields are optional and only those filled will be set back to invoice candidate.

@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.serviceIssue;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.serviceprovider.model.I_S_Issue;
@@ -33,6 +34,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_Project;
 
@@ -244,6 +246,21 @@ public class S_Issue_StepDef
 		dataTable.asMaps().forEach(this::updateIssue);
 	}
 
+	@And("validate S_Issue:")
+	public void validateS_Issue(@NonNull final DataTable dataTable)
+	{
+		dataTable.asMaps().forEach(this::validateIssue);
+	}
+
+	@And("^after not more than (.*)s, S_Issue are found:$")
+	public void findS_Issue(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			StepDefUtil.tryAndWait(timeoutSec, 1000, () -> loadS_Issue(row));
+		}
+	}
+
 	@NonNull
 	private Boolean loadCostCenterActivityFromIssue(final @NonNull Map<String, String> row)
 	{
@@ -323,5 +340,99 @@ public class S_Issue_StepDef
 		saveRecord(issue);
 
 		sIssueTable.putOrReplace(issueIdentifier, issue);
+	}
+
+	private void validateIssue(@NonNull final Map<String, String> row)
+	{
+		final String issueIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_S_Issue_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_S_Issue issue = sIssueTable.get(issueIdentifier);
+
+		final String value = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Value);
+		assertThat(issue.getValue()).isEqualTo(value);
+
+		final String name = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_Name);
+		if (Check.isNotBlank(name))
+		{
+			assertThat(issue.getName()).isEqualTo(name);
+		}
+
+		final String issueType = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_IssueType);
+		assertThat(issue.getIssueType()).isEqualTo(issueType);
+
+		final boolean isEffortIssue = DataTableUtil.extractBooleanForColumnName(row, COLUMNNAME_IsEffortIssue);
+		assertThat(issue.isEffortIssue()).isEqualTo(isEffortIssue);
+
+		final BigDecimal invoiceableEffort = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_InvoiceableEffort);
+		if (invoiceableEffort != null)
+		{
+			assertThat(issue.getInvoiceableEffort()).isEqualTo(invoiceableEffort);
+		}
+
+		final String activityIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_Activity_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(activityIdentifier))
+		{
+			final I_C_Activity costCenter = activityTable.get(activityIdentifier);
+			assertThat(issue.getC_Activity_ID()).isEqualTo(costCenter.getC_Activity_ID());
+		}
+
+		final String projectIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_Project_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(projectIdentifier))
+		{
+			final I_C_Project project = projectTable.get(projectIdentifier);
+			assertThat(issue.getC_Project_ID()).isEqualTo(project.getC_Project_ID());
+		}
+
+		final BigDecimal externalIssueNo = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_S_Issue.COLUMNNAME_ExternalIssueNo);
+		if (externalIssueNo != null)
+		{
+			assertThat(issue.getExternalIssueNo()).isEqualTo(externalIssueNo);
+		}
+
+		final String status = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_Status);
+		if (Check.isNotBlank(status))
+		{
+			assertThat(issue.getStatus()).isEqualTo(status);
+		}
+
+		final Boolean processed = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + I_S_Issue.COLUMNNAME_Processed);
+		if (processed != null)
+		{
+			assertThat(issue.isProcessed()).isEqualTo(processed);
+		}
+
+		sIssueTable.putOrReplace(issueIdentifier, issue);
+	}
+
+	private boolean loadS_Issue(@NonNull final Map<String, String> row)
+	{
+		final String issueIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_S_Issue_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_S_Issue issue = sIssueTable.get(issueIdentifier);
+
+		final IQueryBuilder<I_S_Issue> queryBuilder = queryBL.createQueryBuilder(I_S_Issue.class)
+				.addEqualsFilter(I_S_Issue.COLUMN_S_Issue_ID, issue.getS_Issue_ID());
+
+		final String status = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_Status);
+		if (Check.isNotBlank(status))
+		{
+			queryBuilder.addEqualsFilter(COLUMNNAME_Status, status);
+		}
+
+		final Boolean processed = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + I_S_Issue.COLUMNNAME_Processed);
+		if (processed != null)
+		{
+			queryBuilder.addEqualsFilter(I_S_Issue.COLUMNNAME_Processed, processed);
+		}
+
+		final Optional<I_S_Issue> issueRecord = queryBuilder.create()
+				.firstOnlyOptional(I_S_Issue.class);
+
+		if (!issueRecord.isPresent())
+		{
+			return false;
+		}
+
+		sIssueTable.putOrReplace(issueIdentifier, issueRecord.get());
+
+		return true;
 	}
 }

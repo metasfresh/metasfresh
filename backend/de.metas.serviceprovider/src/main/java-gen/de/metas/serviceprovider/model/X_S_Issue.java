@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.serviceprovider.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for S_Issue
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1766186262L;
+	private static final long serialVersionUID = -64523088L;
 
     /** Standard Constructor */
     public X_S_Issue (final Properties ctx, final int S_Issue_ID, @Nullable final String trxName)
@@ -476,6 +476,18 @@ public class X_S_Issue extends org.compiere.model.PO implements I_S_Issue, org.c
 	public boolean isEffortIssue() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsEffortIssue);
+	}
+
+	@Override
+	public void setIsInvoicingError (final boolean IsInvoicingError)
+	{
+		set_Value (COLUMNNAME_IsInvoicingError, IsInvoicingError);
+	}
+
+	@Override
+	public boolean isInvoicingError() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsInvoicingError);
 	}
 
 	@Override

@@ -22,13 +22,15 @@
 
 package de.metas.serviceprovider.issue.invoicecandidate;
 
-import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.time.SystemTime;
+import de.metas.document.location.DocumentLocation;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
@@ -36,7 +38,6 @@ import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.lang.SOTrx;
-import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
@@ -56,11 +57,15 @@ import de.metas.serviceprovider.issue.IssueService;
 import de.metas.serviceprovider.model.I_S_Issue;
 import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxId;
 import de.metas.tax.api.TaxNotFoundException;
 import de.metas.tax.api.TaxQuery;
 import de.metas.uom.UomId;
-import de.metas.util.Check;
-import de.metas.util.Loggables;
+import de.metas.user.User;
+import de.metas.user.UserId;
+import de.metas.user.UserRepository;
+import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -70,13 +75,11 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Project;
 import org.compiere.util.TimeUtil;
-import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Iterator;
 import java.util.Optional;
@@ -86,8 +89,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 
 public class S_Issue_Handler extends AbstractInvoiceCandidateHandler
 {
-	private static final Logger log = LogManager.getLogger(S_Issue_Handler.class);
-
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
@@ -96,9 +97,12 @@ public class S_Issue_Handler extends AbstractInvoiceCandidateHandler
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
+	private final IUserDAO userDAO = Services.get(IUserDAO.class);
+	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
 
 	private final IssueService issueService = SpringContextHolder.instance.getBean(IssueService.class);
 	private final ProjectRepository projectRepository = SpringContextHolder.instance.getBean(ProjectRepository.class);
+	private final UserRepository userRepository = SpringContextHolder.instance.getBean(UserRepository.class);
 
 	@Override
 	public CandidatesAutoCreateMode getGeneralCandidatesAutoCreateMode()
@@ -133,7 +137,15 @@ public class S_Issue_Handler extends AbstractInvoiceCandidateHandler
 		}
 		catch (final Throwable throwable)
 		{
-			throw throwable;//FIXME
+			final IssueEntity issueWithInvoicingError = IssueRepository.ofRecord(issue)
+					.toBuilder()
+					.invoicingErrorMsg(throwable.getMessage())
+					.isInvoicingError(true)
+					.build();
+
+			issueService.save(issueWithInvoicingError);
+
+			return InvoiceCandidateGenerateResult.of(this);
 		}
 	}
 
@@ -166,8 +178,7 @@ public class S_Issue_Handler extends AbstractInvoiceCandidateHandler
 		invoiceCandidate.setC_UOM_ID(uomId.getRepoId());
 		invoiceCandidate.setQtyOrdered(issueEntity.getInvoiceableHours());
 
-		final Instant todayDate = Instant.now();
-		invoiceCandidate.setDateOrdered(TimeUtil.asTimestamp(todayDate));
+		invoiceCandidate.setDateOrdered(SystemTime.asTimestamp());
 	}
 
 	@Override
@@ -196,10 +207,14 @@ public class S_Issue_Handler extends AbstractInvoiceCandidateHandler
 	@Override
 	public void postSave(final @NonNull InvoiceCandidateGenerateResult result)
 	{
-		result.getC_Invoice_Candidates()
-				.stream()
-				.map(candidate -> IssueId.ofRepoId(candidate.getRecord_ID()))
-				.forEach(issueService::processIssue);
+		result.getC_Invoice_Candidates().forEach(this::postUpdate);
+	}
+
+	@Override
+	public void postUpdate(final @NonNull I_C_Invoice_Candidate ic)
+	{
+		final IssueId issueId = IssueId.ofRepoId(ic.getRecord_ID());
+		issueService.processIssue(issueId);
 	}
 
 	@NonNull
@@ -218,32 +233,35 @@ public class S_Issue_Handler extends AbstractInvoiceCandidateHandler
 
 		if (issue.getProjectId() == null)
 		{
-			final String projectIdErrorMsg = "IssueId: " + issue.getIssueId() + " skipped! Missing projectId on issue record.";
-			return InvoiceCandidateGenerateResult.of(this, ImmutableMap.of(recordReference, projectIdErrorMsg));
+			throw new AdempiereException("Missing ProjectId on S_Issue!")
+					.appendParametersToMessage()
+					.setParameter("S_Issue_ID", record.getS_Issue_ID());
 		}
 
 		invoiceCandidate.setC_Project_ID(issue.getProjectId().getRepoId());
 
 		if (issue.getCostCenterActivityId() == null)
 		{
-			final String costCenterIdErrorMsg = "IssueId: " + issue.getIssueId() + " skipped! Missing costCenterId on issue record.";
-			return InvoiceCandidateGenerateResult.of(this, ImmutableMap.of(recordReference, costCenterIdErrorMsg));
+			throw new AdempiereException("Missing CostCenterId on S_Issue!")
+					.appendParametersToMessage()
+					.setParameter("S_Issue_ID", record.getS_Issue_ID());
 		}
 
 		invoiceCandidate.setC_Activity_ID(issue.getCostCenterActivityId().getRepoId());
 
-		final I_C_Project project = projectRepository.getRecordById(issue.getProjectId());
-		if (project == null)
-		{
-			final String projectDataErrorMsg = "IssueId: " + issue.getIssueId() + " skipped! Missing project for ProjectId: " + issue.getProjectId();
-			return InvoiceCandidateGenerateResult.of(this, ImmutableMap.of(recordReference, projectDataErrorMsg));
-		}
+		final I_C_Project project = Optional.ofNullable(projectRepository.getRecordById(issue.getProjectId()))
+				//dev-note: not a real scenario
+				.orElseThrow(() -> new AdempiereException("No C_Project found for S_Issue.C_Project_ID!")
+						.appendParametersToMessage()
+						.setParameter("S_Issue_ID", record.getS_Issue_ID()));
 
 		final ProductId productId = ProductId.ofRepoIdOrNull(project.getM_Product_ID());
 		if (productId == null)
 		{
-			final String productIdErrorMsg = "IssueId: " + issue.getIssueId() + " skipped! Missing ProductId from ProjectId: " + issue.getProjectId();
-			return InvoiceCandidateGenerateResult.of(this, ImmutableMap.of(recordReference, productIdErrorMsg));
+			throw new AdempiereException("Missing invoiceable ProductId on C_Project!")
+					.appendParametersToMessage()
+					.setParameter("S_Issue_ID", record.getS_Issue_ID())
+					.setParameter("C_Project_ID", project.getC_Project_ID());
 		}
 
 		invoiceCandidate.setM_Product_ID(productId.getRepoId());
@@ -254,40 +272,14 @@ public class S_Issue_Handler extends AbstractInvoiceCandidateHandler
 		final SOTrx soTrx = SOTrx.SALES;
 		invoiceCandidate.setIsSOTrx(soTrx.toBoolean());
 
-		final String bpartnerErrorMsg = setBPartnerData(invoiceCandidate, project);
-		if (Check.isNotBlank(bpartnerErrorMsg))
-		{
-			return InvoiceCandidateGenerateResult.of(this, ImmutableMap.of(recordReference, bpartnerErrorMsg));
-		}
+		setBPartnerData(invoiceCandidate, project);
 
-		final BPartnerId bPartnerId = BPartnerId.ofRepoId(invoiceCandidate.getBill_BPartner_ID());
-		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(bPartnerId, invoiceCandidate.getBill_Location_ID());
-
-		final PricingSystemId pricingSystemId = bPartnerDAO.retrievePricingSystemIdOrNull(bPartnerId, soTrx);
-
-		final BPartnerLocationAndCaptureId bPartnerLocationAndCaptureId = BPartnerLocationAndCaptureId.of(bPartnerLocationId);
-
-		final PriceListId priceListId = priceListDAO.retrievePriceListIdByPricingSyst(pricingSystemId, bPartnerLocationAndCaptureId, soTrx);
-
-		final ZoneId timeZone = orgDAO.getTimeZone(issue.getOrgId());
-
-		final IEditablePricingContext pricingContext = pricingBL
-				.createInitialContext(
-						issue.getOrgId(),
-						productId,
-						bPartnerId,
-						Quantitys.create(BigDecimal.ONE, productId),
-						soTrx)
-				.setPriceListId(priceListId)
-				.setPriceDate(TimeUtil.asLocalDate(invoiceCandidate.getDateOrdered(), timeZone))
-				.setFailIfNotCalculated();
-
-		final IPricingResult pricingResult = pricingBL.calculatePrice(pricingContext);
+		final IPricingResult pricingResult = calculatePrice(invoiceCandidate);
 
 		invoiceCandidate.setInvoiceRule(X_C_Invoice_Candidate.INVOICERULE_Immediate);
 		invoiceCandidate.setInvoicableQtyBasedOn(X_C_Invoice_Candidate.INVOICABLEQTYBASEDON_Nominal);
 
-		invoiceCandidate.setM_PricingSystem_ID(PricingSystemId.toRepoId(pricingSystemId));
+		invoiceCandidate.setM_PricingSystem_ID(pricingResult.getPricingSystemId().getRepoId());
 		invoiceCandidate.setM_PriceList_Version_ID(pricingResult.getPriceListVersionId().getRepoId());
 		invoiceCandidate.setC_Currency_ID(pricingResult.getCurrencyId().getRepoId());
 		invoiceCandidate.setPriceActual(pricingResult.getPriceStd());
@@ -296,26 +288,8 @@ public class S_Issue_Handler extends AbstractInvoiceCandidateHandler
 		invoiceCandidate.setPriceEntered(pricingResult.getPriceStd());
 		invoiceCandidate.setDiscount(pricingResult.getDiscount().toBigDecimal());
 
-		final Tax tax = taxDAO.getBy(TaxQuery.builder()
-											 .orgId(issue.getOrgId())
-											 .bPartnerLocationId(bPartnerLocationAndCaptureId)
-											 .dateOfInterest(invoiceCandidate.getDeliveryDate())
-											 .soTrx(soTrx)
-											 .taxCategoryId(pricingResult.getTaxCategoryId())
-											 .build());
-		if (tax == null)
-		{
-			throw TaxNotFoundException.builder()
-					.taxCategoryId(pricingResult.getTaxCategoryId())
-					.isSOTrx(soTrx.toBoolean())
-					.billDate(invoiceCandidate.getDeliveryDate())
-					.orgId(issue.getOrgId())
-					.build()
-					.appendParametersToMessage()
-					.setParameter("S_Issue_ID", issue.getIssueId());
-		}
-
-		invoiceCandidate.setC_Tax_ID(tax.getTaxId().getRepoId());
+		final TaxId taxId = getTaxId(invoiceCandidate, pricingResult.getTaxCategoryId());
+		invoiceCandidate.setC_Tax_ID(taxId.getRepoId());
 
 		return InvoiceCandidateGenerateResult.of(this, invoiceCandidate);
 	}
@@ -336,30 +310,15 @@ public class S_Issue_Handler extends AbstractInvoiceCandidateHandler
 				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID, getTableId(I_S_Issue.class));
 	}
 
-	@Nullable
-	private String setBPartnerData(
+	private void setBPartnerData(
 			@NonNull final I_C_Invoice_Candidate invoiceCandidate,
 			@NonNull final I_C_Project project)
 	{
-		final BPartnerId bPartnerId = BPartnerId.ofRepoIdOrNull(project.getC_BPartner_ID());
-		if (bPartnerId == null)
-		{
-			return "Missing business partner from ProjectId: " + project.getC_Project_ID();
-		}
+		final DocumentLocation billingDocumentLocation = getBillingBPartnerDetails(project);
 
-		invoiceCandidate.setBill_BPartner_ID(bPartnerId.getRepoId());
-
-		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(bPartnerId, project.getC_BPartner_Location_ID());
-		if (bPartnerLocationId == null)
-		{
-			Loggables.withLogger(log, Level.DEBUG).addLog("Missing business partner location from ProjectId: {}", project.getC_Project_ID());
-			return "Missing business partner location from ProjectId: " + project.getC_Project_ID();
-		}
-
-		invoiceCandidate.setBill_Location_ID(bPartnerLocationId.getRepoId());
-		invoiceCandidate.setBill_User_ID(project.getAD_User_ID());
-
-		return null;
+		invoiceCandidate.setBill_BPartner_ID(BPartnerId.toRepoId(billingDocumentLocation.getBpartnerId()));
+		invoiceCandidate.setBill_Location_ID(BPartnerLocationId.toRepoId(billingDocumentLocation.getBpartnerLocationId()));
+		invoiceCandidate.setBill_User_ID(BPartnerContactId.toRepoId(billingDocumentLocation.getContactId()));
 	}
 
 	@NonNull
@@ -377,5 +336,142 @@ public class S_Issue_Handler extends AbstractInvoiceCandidateHandler
 	private IssueEntity getReferencedIssue(@NonNull final I_C_Invoice_Candidate ic)
 	{
 		return issueService.getById(IssueId.ofRepoId(ic.getRecord_ID()));
+	}
+
+	@NonNull
+	private DocumentLocation getBillingBPartnerDetails(@NonNull final I_C_Project project)
+	{
+		final BPartnerLocationId billingLocationId = getBillToLocationId(project);
+
+		final BPartnerContactId billContactId = getContactId(project, billingLocationId);
+
+		return DocumentLocation.builder()
+				.bpartnerId(billingLocationId.getBpartnerId())
+				.bpartnerLocationId(billingLocationId)
+				.contactId(billContactId)
+				.build();
+	}
+
+	@NonNull
+	private BPartnerLocationAndCaptureId getBpartnerLocationAndCapture(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
+	{
+		final BPartnerId bPartnerId = BPartnerId.ofRepoId(invoiceCandidate.getBill_BPartner_ID());
+		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(bPartnerId, invoiceCandidate.getBill_Location_ID());
+
+		return BPartnerLocationAndCaptureId.of(bPartnerLocationId);
+	}
+
+	@NonNull
+	private IPricingResult calculatePrice(@NonNull final I_C_Invoice_Candidate invoiceCandidate)
+	{
+		final OrgId orgId = OrgId.ofRepoId(invoiceCandidate.getAD_Org_ID());
+		final ProductId productId = ProductId.ofRepoId(invoiceCandidate.getM_Product_ID());
+		final SOTrx soTrx = SOTrx.ofBoolean(invoiceCandidate.isSOTrx());
+		final BPartnerLocationAndCaptureId bPartnerLocationAndCaptureId = getBpartnerLocationAndCapture(invoiceCandidate);
+
+		final PricingSystemId pricingSystemId = bPartnerDAO.retrievePricingSystemIdOrNull(bPartnerLocationAndCaptureId.getBpartnerId(), soTrx);
+
+		final PriceListId priceListId = priceListDAO.retrievePriceListIdByPricingSyst(pricingSystemId, bPartnerLocationAndCaptureId, soTrx);
+
+		final ZoneId timeZone = orgDAO.getTimeZone(orgId);
+
+		final IEditablePricingContext pricingContext = pricingBL
+				.createInitialContext(
+						orgId,
+						productId,
+						bPartnerLocationAndCaptureId.getBpartnerId(),
+						Quantitys.create(invoiceCandidate.getQtyOrdered(), productId),
+						soTrx)
+				.setPriceListId(priceListId)
+				.setPriceDate(TimeUtil.asLocalDate(invoiceCandidate.getDateOrdered(), timeZone))
+				.setFailIfNotCalculated();
+
+		return pricingBL.calculatePrice(pricingContext);
+	}
+
+	@NonNull
+	private TaxId getTaxId(
+			@NonNull final I_C_Invoice_Candidate invoiceCandidate,
+			@NonNull final TaxCategoryId taxCategoryId)
+	{
+		final BPartnerLocationAndCaptureId bPartnerLocationAndCaptureId = getBpartnerLocationAndCapture(invoiceCandidate);
+		final OrgId orgId = OrgId.ofRepoId(invoiceCandidate.getAD_Org_ID());
+		final SOTrx soTrx = SOTrx.ofBoolean(invoiceCandidate.isSOTrx());
+
+		final Tax tax = taxDAO.getBy(TaxQuery.builder()
+											 .orgId(orgId)
+											 .bPartnerLocationId(bPartnerLocationAndCaptureId)
+											 .dateOfInterest(invoiceCandidate.getDeliveryDate())
+											 .soTrx(soTrx)
+											 .taxCategoryId(taxCategoryId)
+											 .build());
+		if (tax == null)
+		{
+			throw TaxNotFoundException.builder()
+					.taxCategoryId(taxCategoryId)
+					.isSOTrx(soTrx.toBoolean())
+					.billDate(invoiceCandidate.getDeliveryDate())
+					.orgId(orgId)
+					.build()
+					.appendParametersToMessage()
+					.setParameter("S_Issue_ID", invoiceCandidate.getRecord_ID());
+		}
+
+		return tax.getTaxId();
+	}
+
+	@NonNull
+	private BPartnerLocationId getBillToLocationId(@NonNull final I_C_Project project)
+	{
+		final BPartnerId projectBPartnerId = BPartnerId.ofRepoIdOrNull(project.getC_BPartner_ID());
+		if (projectBPartnerId == null)
+		{
+			throw new AdempiereException("Missing business partner from C_Project")
+					.appendParametersToMessage()
+					.setParameter("C_Project_ID", project.getC_Project_ID());
+		}
+
+		final BPartnerLocationId projectBPartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(projectBPartnerId, project.getC_BPartner_Location_ID());
+
+		// prefer the project's C_BPartner_Location_ID, but if it's not a billTolocation, then fall back to another bill-location of the bpartner
+		final BPartnerLocationId billingLocationId = Optional.ofNullable(projectBPartnerLocationId)
+				.map(bPartnerDAO::getBPartnerLocationByIdInTrx)
+				.filter(I_C_BPartner_Location::isBillTo)
+				.map(billToLocation -> BPartnerLocationId.ofRepoId(billToLocation.getC_BPartner_ID(), billToLocation.getC_BPartner_Location_ID()))
+				.orElseGet(() -> bPartnerDAO.retrieveBPartnerLocationId(IBPartnerDAO.BPartnerLocationQuery.builder()
+																				.type(IBPartnerDAO.BPartnerLocationQuery.Type.BILL_TO)
+																				.bpartnerId(projectBPartnerId)
+																				.build()));
+		if (billingLocationId == null)
+		{
+			throw new AdempiereException("Fail to resolve a business partner billing location.")
+					.appendParametersToMessage()
+					.setParameter("C_Project_ID", project.getC_Project_ID())
+					.setParameter("C_BPartner_ID", project.getC_BPartner_ID());
+		}
+
+		return billingLocationId;
+	}
+
+	@Nullable
+	private BPartnerContactId getContactId(@NonNull final I_C_Project project, @NonNull final BPartnerLocationId billToLocationId)
+	{
+		final UserId projectContactId = UserId.ofRepoIdOrNull(project.getAD_User_ID());
+
+		return Optional.ofNullable(projectContactId)
+				.map(userId -> BPartnerContactId.ofRepoIdOrNull(billToLocationId.getBpartnerId(), userId.getRepoId()))
+				.orElseGet(() -> {
+
+					final User bpartnerBillingUser = bpartnerBL.retrieveContactOrNull(IBPartnerBL.RetrieveContactRequest.builder()
+																							  .onlyActive(true)
+																							  .contactType(IBPartnerBL.RetrieveContactRequest.ContactType.BILL_TO_DEFAULT)
+																							  .bpartnerId(billToLocationId.getBpartnerId())
+																							  .bPartnerLocationId(billToLocationId)
+																							  .ifNotFound(IBPartnerBL.RetrieveContactRequest.IfNotFound.RETURN_NULL)
+																							  .build());
+					return Optional.ofNullable(bpartnerBillingUser)
+							.flatMap(User::getBPartnerContactId)
+							.orElse(null);
+				});
 	}
 }

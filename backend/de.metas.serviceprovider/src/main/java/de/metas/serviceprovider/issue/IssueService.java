@@ -116,8 +116,15 @@ public class IssueService
 
 	public void processIssue(@NonNull final IssueId issueId)
 	{
-		final IssueEntity issueEntity = getById(issueId);
-		processIssue(issueEntity);
+		final IssueEntity invoicedIssue = getById(issueId)
+				.toBuilder()
+				.status(Status.INVOICED)
+				.processed(true)
+				.invoicingErrorMsg(null)
+				.isInvoicingError(false)
+				.build();
+
+		issueRepository.save(invoicedIssue);
 	}
 
 	@NonNull
@@ -156,17 +163,5 @@ public class IssueService
 				.orElse(null);
 
 		issueEntity.setLatestActivityOnIssue(latestActivityDate);
-	}
-
-	@NonNull
-	private void processIssue(@NonNull final IssueEntity issueEntity)
-	{
-		final IssueEntity invoicedIssue = issueEntity.toBuilder()
-				.status(Status.INVOICED)
-				.processed(true)
-				.invoicingErrorMsg(null)
-				.build();
-
-		issueRepository.save(invoicedIssue);
 	}
 }

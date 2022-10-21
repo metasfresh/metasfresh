@@ -1,9 +1,8 @@
 package de.metas.serviceprovider.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for S_Issue
  *  @author metasfresh (generated) 
@@ -845,6 +844,27 @@ public interface I_S_Issue
 
 	ModelColumn<I_S_Issue, Object> COLUMN_IsEffortIssue = new ModelColumn<>(I_S_Issue.class, "IsEffortIssue", null);
 	String COLUMNNAME_IsEffortIssue = "IsEffortIssue";
+
+	/**
+	 * Set Invoicing error.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsInvoicingError (boolean IsInvoicingError);
+
+	/**
+	 * Get Invoicing error.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isInvoicingError();
+
+	ModelColumn<I_S_Issue, Object> COLUMN_IsInvoicingError = new ModelColumn<>(I_S_Issue.class, "IsInvoicingError", null);
+	String COLUMNNAME_IsInvoicingError = "IsInvoicingError";
 
 	/**
 	 * Set Issue effort (H:mm).

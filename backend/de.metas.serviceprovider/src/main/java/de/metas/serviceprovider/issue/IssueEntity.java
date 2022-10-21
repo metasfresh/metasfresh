@@ -156,6 +156,8 @@ public class IssueEntity
 	@Nullable
 	private String invoicingErrorMsg;
 
+	boolean isInvoicingError;
+
 	public void setEstimatedEffortIfNotSet(@Nullable final BigDecimal estimatedEffort)
 	{
 		if (this.estimatedEffort == null || this.estimatedEffort.signum() == 0)

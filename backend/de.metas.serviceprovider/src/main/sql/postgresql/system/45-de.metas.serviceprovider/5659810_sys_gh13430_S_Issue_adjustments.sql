@@ -153,3 +153,143 @@ INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_Ele
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,707809,0,542340,613288,549983,'F',TO_TIMESTAMP('2022-10-19 17:42:56.076','YYYY-MM-DD HH24:MI:SS.US'),100,'Fehler, der beim Versuch aufgetreten ist, diesen Datensatz zu Fakturieren.','Y','N','N','Y','N','N','N',0,'Fehlermeldung',10,0,0,TO_TIMESTAMP('2022-10-19 17:42:56.076','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
+
+-- Column: S_Issue.IsInvoicingError
+-- 2022-10-21T05:48:38.063Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,584776,579262,0,20,541468,'IsInvoicingError',TO_TIMESTAMP('2022-10-21 08:48:36.8','YYYY-MM-DD HH24:MI:SS.US'),100,'N','N','de.metas.serviceprovider',0,1,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','Y','N',0,'Fakturierungsfehler',0,0,TO_TIMESTAMP('2022-10-21 08:48:36.8','YYYY-MM-DD HH24:MI:SS.US'),100,0)
+;
+
+-- 2022-10-21T05:48:38.079Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Column_ID=584776 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2022-10-21T05:48:38.157Z
+/* DDL */  select update_Column_Translation_From_AD_Element(579262)
+;
+
+-- 2022-10-21T05:48:42.808Z
+/* DDL */ SELECT public.db_alter_table('S_Issue','ALTER TABLE public.S_Issue ADD COLUMN IsInvoicingError CHAR(1) DEFAULT ''N'' CHECK (IsInvoicingError IN (''Y'',''N'')) NOT NULL')
+;
+
+-- Field: Budget-Issue(540859,de.metas.serviceprovider) -> Issue(542341,de.metas.serviceprovider) -> Fakturierungsfehler
+-- Column: S_Issue.IsInvoicingError
+-- 2022-10-21T05:51:14.140Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,584776,707814,0,542341,TO_TIMESTAMP('2022-10-21 08:51:13.905','YYYY-MM-DD HH24:MI:SS.US'),100,1,'de.metas.serviceprovider','Y','N','N','N','N','N','N','N','Fakturierungsfehler',TO_TIMESTAMP('2022-10-21 08:51:13.905','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2022-10-21T05:51:14.149Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=707814 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-10-21T05:51:14.160Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(579262)
+;
+
+-- 2022-10-21T05:51:14.198Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=707814
+;
+
+-- 2022-10-21T05:51:14.211Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(707814)
+;
+
+-- UI Element: Budget-Issue(540859,de.metas.serviceprovider) -> Issue(542341,de.metas.serviceprovider) -> main -> 20 -> flags.Fakturierungsfehler
+-- Column: S_Issue.IsInvoicingError
+-- 2022-10-21T05:52:11.863Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,707814,0,542341,613293,543570,'F',TO_TIMESTAMP('2022-10-21 08:52:11.399','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','N','N','Y','N','N','N',0,'Fakturierungsfehler',90,0,0,TO_TIMESTAMP('2022-10-21 08:52:11.399','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- UI Element: Budget-Issue(540859,de.metas.serviceprovider) -> Issue(542341,de.metas.serviceprovider) -> main -> 20 -> flags.Fakturierungsfehler
+-- Column: S_Issue.IsInvoicingError
+-- 2022-10-21T05:52:52.648Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=270,Updated=TO_TIMESTAMP('2022-10-21 08:52:52.647','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=613293
+;
+
+-- UI Element: Budget-Issue(540859,de.metas.serviceprovider) -> Issue(542341,de.metas.serviceprovider) -> main -> 20 -> org.Sektion
+-- Column: S_Issue.AD_Org_ID
+-- 2022-10-21T05:52:52.654Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=280,Updated=TO_TIMESTAMP('2022-10-21 08:52:52.653','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=566873
+;
+
+-- UI Element: Budget-Issue(540859,de.metas.serviceprovider) -> Issue(542341,de.metas.serviceprovider) -> main -> 20 -> flags.Fakturierungsfehler
+-- Column: S_Issue.IsInvoicingError
+-- 2022-10-21T05:53:32.925Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2022-10-21 08:53:32.925','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=613293
+;
+
+-- UI Element: Budget-Issue(540859,de.metas.serviceprovider) -> Issue(542341,de.metas.serviceprovider) -> main -> 20 -> org.Sektion
+-- Column: S_Issue.AD_Org_ID
+-- 2022-10-21T05:53:32.930Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=270,Updated=TO_TIMESTAMP('2022-10-21 08:53:32.93','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=566873
+;
+
+-- Column: S_Issue.IsInvoicingError
+-- 2022-10-21T05:53:52.955Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=190,Updated=TO_TIMESTAMP('2022-10-21 08:53:52.955','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=584776
+;
+
+-- Column: S_Issue.hasInternalEffortIssue
+-- 2022-10-21T05:53:53.343Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=200,Updated=TO_TIMESTAMP('2022-10-21 08:53:53.343','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=570683
+;
+
+-- Column: S_Issue.Status
+-- 2022-10-21T05:53:53.730Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=210,Updated=TO_TIMESTAMP('2022-10-21 08:53:53.73','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=570687
+;
+
+-- Column: S_Issue.Name
+-- 2022-10-21T05:53:54.120Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=220,Updated=TO_TIMESTAMP('2022-10-21 08:53:54.12','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=570200
+;
+
+-- Column: S_Issue.Value
+-- 2022-10-21T05:53:54.504Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=230,Updated=TO_TIMESTAMP('2022-10-21 08:53:54.504','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=570207
+;
+
+-- Column: S_Issue.AD_Org_ID
+-- 2022-10-21T05:53:54.920Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=240,Updated=TO_TIMESTAMP('2022-10-21 08:53:54.919','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=570187
+;
+
+-- Field: Budget-Issue(540859,de.metas.serviceprovider) -> Issue(542341,de.metas.serviceprovider) -> Fakturierungsfehler
+-- Column: S_Issue.IsInvoicingError
+-- 2022-10-21T05:56:39.496Z
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2022-10-21 08:56:39.496','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Field_ID=707814
+;
+
+-- Field: Effort issue(540871,de.metas.serviceprovider) -> Issue(542340,de.metas.serviceprovider) -> Fakturierungsfehler
+-- Column: S_Issue.IsInvoicingError
+-- 2022-10-21T05:57:50.500Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,584776,707815,0,542340,TO_TIMESTAMP('2022-10-21 08:57:50.348','YYYY-MM-DD HH24:MI:SS.US'),100,1,'de.metas.serviceprovider','Y','N','N','N','N','N','N','N','Fakturierungsfehler',TO_TIMESTAMP('2022-10-21 08:57:50.348','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2022-10-21T05:57:50.503Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=707815 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-10-21T05:57:50.507Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(579262)
+;
+
+-- 2022-10-21T05:57:50.511Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=707815
+;
+
+-- 2022-10-21T05:57:50.518Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(707815)
+;
+
+-- UI Element: Effort issue(540871,de.metas.serviceprovider) -> Issue(542340,de.metas.serviceprovider) -> main -> 20 -> flags.Fakturierungsfehler
+-- Column: S_Issue.IsInvoicingError
+-- 2022-10-21T05:58:33.895Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,707815,0,542340,613294,543564,'F',TO_TIMESTAMP('2022-10-21 08:58:33.763','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','N','N','Y','N','N','N',0,'Fakturierungsfehler',80,0,0,TO_TIMESTAMP('2022-10-21 08:58:33.763','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- Field: Effort issue(540871,de.metas.serviceprovider) -> Issue(542340,de.metas.serviceprovider) -> Fakturierungsfehler
+-- Column: S_Issue.IsInvoicingError
+-- 2022-10-21T05:59:32.674Z
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2022-10-21 08:59:32.674','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Field_ID=707815
+;
+

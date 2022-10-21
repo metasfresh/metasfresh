@@ -22,6 +22,8 @@
 
 package de.metas.serviceprovider.effortcontrol.interceptor;
 
+import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
 import de.metas.serviceprovider.effortcontrol.EffortChange;
@@ -29,32 +31,35 @@ import de.metas.serviceprovider.effortcontrol.EffortControlService;
 import de.metas.serviceprovider.effortcontrol.EffortInfo;
 import de.metas.serviceprovider.issue.IssueEntity;
 import de.metas.serviceprovider.issue.IssueRepository;
+import de.metas.serviceprovider.issue.Status;
 import de.metas.serviceprovider.issue.agg.key.impl.IssueEffortKeyBuilder;
 import de.metas.serviceprovider.model.I_S_Issue;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
+import java.util.Set;
 
 @Interceptor(I_S_Issue.class)
 @Component
 public class S_Issue
 {
-	private final EffortControlService effortControlService;
-	private final IssueRepository issueRepository;
+	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 
-	public S_Issue(
-			@NonNull final EffortControlService effortControlService,
-			@NonNull final IssueRepository issueRepository)
+	private final EffortControlService effortControlService;
+
+	public S_Issue(@NonNull final EffortControlService effortControlService)
 	{
 		this.effortControlService = effortControlService;
-		this.issueRepository = issueRepository;
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
@@ -109,6 +114,50 @@ public class S_Issue
 				.build();
 
 		effortControlService.handleEffortChanges(effortChange);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = {
+					I_S_Issue.COLUMNNAME_AD_Org_ID,
+					I_S_Issue.COLUMNNAME_C_Activity_ID,
+					I_S_Issue.COLUMNNAME_C_Project_ID })
+	public void forbidUpdatesOnInvoicedIssue(@NonNull final I_S_Issue record)
+	{
+		final Status status = Status.ofCode(record.getStatus());
+
+		if (status.equals(Status.INVOICED))
+		{
+			throw new AdempiereException("OrgId, ActivityId & ProjectId cannot be changed for an INVOICED issue record!")
+					.appendParametersToMessage()
+					.setParameter("S_Issue_ID", record.getS_Issue_ID())
+					.setParameter("AD_Org_ID", record.getAD_Org_ID())
+					.setParameter("C_Project_ID", record.getC_Project_ID())
+					.setParameter("C_Activity_ID", record.getC_Activity_ID());
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_S_Issue.COLUMNNAME_Status })
+	public void forbidStatusChangeOnIssueWithIC(@NonNull final I_S_Issue record)
+	{
+		final Status status = Status.ofCode(record.getStatus());
+
+		if (status.equals(Status.INVOICED))
+		{
+			return;
+		}
+
+		final Set<InvoiceCandidateId> existingCandidateIds = invoiceCandDAO.retrieveReferencingIds(TableRecordReference.of(record));
+
+		if (existingCandidateIds.isEmpty())
+		{
+			return;
+		}
+
+		throw new AdempiereException("There are existing invoice candidates for the given issue. Status cannot be changed from INVOICED!")
+				.appendParametersToMessage()
+				.setParameter("S_Issue_ID", record.getS_Issue_ID())
+				.setParameter("InvoiceCandidateIds", existingCandidateIds);
 	}
 
 	@Nullable
