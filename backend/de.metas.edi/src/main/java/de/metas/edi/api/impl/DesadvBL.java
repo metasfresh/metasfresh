@@ -1143,6 +1143,11 @@ public class DesadvBL implements IDesadvBL
 			return Optional.empty();
 		}
 
+		if(desadvLine.getQtyEnteredInBPartnerUOM().signum() <= 0)
+		{
+			return Optional.of(ZERO); // return zero and don't run the risk of an ArithmeticException if both the new and old value are zero.
+		}
+		
 		final UomId stockUOMId = productBL.getStockUOMId(desadvLine.getM_Product_ID());
 		final I_C_UOM stockUOM = uomDAO.getById(stockUOMId);
 
