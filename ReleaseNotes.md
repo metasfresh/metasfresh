@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13755](https://github.com/metasfresh/metasfresh/issues/13755) Look up C_OLcand.M_HU_PI_Item_Product_ID also via StoreGLN
   * [#13772](https://github.com/metasfresh/metasfresh/issues/13772) Set "-" in MAC Address instead of null 
   * [#13717](https://github.com/metasfresh/metasfresh/issues/13717) Sub-Task No 2: Test & Fix Sales order (w/ ship ) - ProductPlanning - Manufacturing 
   * [#13751](https://github.com/metasfresh/metasfresh/issues/13751) Renumber C_OLCand.Line when sending from excel to metasfresh
