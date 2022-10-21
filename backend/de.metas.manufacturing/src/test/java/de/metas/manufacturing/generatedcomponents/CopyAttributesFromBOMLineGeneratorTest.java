@@ -28,10 +28,12 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_M_Attribute;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Disabled
 class CopyAttributesFromBOMLineGeneratorTest
 {
 	private static final AttributeCode ATTR_Attribute1 = AttributeCode.ofString("Attribute1");
