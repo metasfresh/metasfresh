@@ -70,6 +70,8 @@ InvoiceToAllocateViewHeader.propTypes = {
 
 const computeFields = (table, selectedRowIds) => {
   if (table?.rows?.length && selectedRowIds?.length > 0) {
+    const isAllRowsSelected = selectedRowIds.includes('all');
+
     let grandTotal = 0.0;
     let discountAmt = 0.0;
     let currencyCode = null;
@@ -77,7 +79,7 @@ const computeFields = (table, selectedRowIds) => {
 
     const rows = table.rows;
     rows
-      .filter((row) => selectedRowIds.includes(row.id))
+      .filter((row) => isAllRowsSelected || selectedRowIds.includes(row.id))
       .forEach((row) => {
         if (multipleCurrencies) {
           return;
