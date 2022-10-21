@@ -38,6 +38,7 @@ import de.metas.banking.camt53.jaxb.camt053_001_02.ReportEntry2;
 import de.metas.banking.camt53.wrapper.AccountStatement2Wrapper;
 import de.metas.banking.camt53.wrapper.NoBatchBankToCustomerStatementV02Wrapper;
 import de.metas.banking.camt53.wrapper.NoBatchReportEntry2Wrapper;
+import de.metas.banking.payment.paymentallocation.service.PaymentAllocationService;
 import de.metas.banking.service.BankStatementCreateRequest;
 import de.metas.banking.service.BankStatementLineCreateRequest;
 import de.metas.banking.service.IBankStatementDAO;
@@ -48,10 +49,10 @@ import de.metas.currency.CurrencyRepository;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.invoice.InvoiceId;
-import de.metas.invoice.UnpaidInvoiceQuery;
-import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.invoice.UnpaidInvoiceMatchingAmtQuery;
 import de.metas.logging.LogManager;
 import de.metas.money.Money;
+import de.metas.money.MoneyService;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.util.Loggables;
@@ -74,7 +75,6 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import java.io.InputStream;
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Optional;
@@ -88,17 +88,22 @@ public class BankStatementCamt53Service
 
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 
 	private final BankAccountService bankAccountService;
 	private final CurrencyRepository currencyRepository;
+	private final PaymentAllocationService paymentAllocationService;
+	private final MoneyService moneyService;
 
 	public BankStatementCamt53Service(
 			@NonNull final BankAccountService bankAccountService,
-			@NonNull final CurrencyRepository currencyRepository)
+			@NonNull final CurrencyRepository currencyRepository,
+			@NonNull final PaymentAllocationService paymentAllocationService,
+			@NonNull final MoneyService moneyService)
 	{
 		this.bankAccountService = bankAccountService;
 		this.currencyRepository = currencyRepository;
+		this.paymentAllocationService = paymentAllocationService;
+		this.moneyService = moneyService;
 	}
 
 	@NonNull
@@ -133,14 +138,13 @@ public class BankStatementCamt53Service
 
 		Loggables.withLogger(logger, Level.DEBUG).addLog(
 				"One bank statement with id={} created for BankStatementCreateRequest={}", bankStatementId, bankStatementCreateRequest);
-		
-		final Function<NoBatchReportEntry2Wrapper, ImportBankStatementLineRequest> getImportBankStatementLineRequest = entry ->  ImportBankStatementLineRequest.builder()
+
+		final Function<NoBatchReportEntry2Wrapper, ImportBankStatementLineRequest> getImportBankStatementLineRequest = entry -> ImportBankStatementLineRequest.builder()
 				.entryWrapper(entry)
 				.bankStatementId(bankStatementId)
 				.orgId(bankStatementCreateRequest.getOrgId())
 				.isMatchAmounts(importBankStatementRequest.isMatchAmounts())
 				.build();
-		
 
 		accountStatement2.getNtry()
 				.stream()
@@ -196,7 +200,11 @@ public class BankStatementCamt53Service
 	private Optional<BankStatementLineCreateRequest> buildBankStatementLineCreateRequest(@NonNull final ImportBankStatementLineRequest importBankStatementLineRequest)
 	{
 		final NoBatchReportEntry2Wrapper entryWrapper = importBankStatementLineRequest.getEntryWrapper();
-		final Instant statementLineDate = entryWrapper.getStatementLineDate().orElse(null);
+		final OrgId orgId = importBankStatementLineRequest.getOrgId();
+		
+		final ZonedDateTime statementLineDate = entryWrapper.getStatementLineDate()
+				.map(instant -> instant.atZone(orgDAO.getTimeZone(orgId)))
+				.orElse(null);
 
 		if (statementLineDate == null)
 		{
@@ -208,17 +216,17 @@ public class BankStatementCamt53Service
 			return Optional.empty();
 		}
 
-		final Money stmtAmount = entryWrapper.getStatementAmount();
+		final Money stmtAmount = entryWrapper.getStatementAmount().toMoney(moneyService::getCurrencyIdByCurrencyCode);
 
 		final BankStatementLineCreateRequest.BankStatementLineCreateRequestBuilder bankStatementLineCreateRequestBuilder = BankStatementLineCreateRequest.builder()
-				.orgId(importBankStatementLineRequest.getOrgId())
+				.orgId(orgId)
 				.bankStatementId(importBankStatementLineRequest.getBankStatementId())
 				.lineDescription(entryWrapper.getLineDescription())
 				.statementAmt(stmtAmount)
 				.trxAmt(stmtAmount)
 				.currencyRate(entryWrapper.getCurrencyRate().orElse(null))
 				.interestAmt(entryWrapper.getInterestAmount().orElse(null))
-				.statementLineDate(TimeUtil.asLocalDate(statementLineDate));
+				.statementLineDate(statementLineDate.toLocalDate());
 
 		getReferencedInvoiceRecord(importBankStatementLineRequest, statementLineDate)
 				.ifPresent(invoice -> bankStatementLineCreateRequestBuilder
@@ -231,7 +239,7 @@ public class BankStatementCamt53Service
 	@NonNull
 	private Optional<I_C_Invoice> getReferencedInvoiceRecord(
 			@NonNull final ImportBankStatementLineRequest importBankStatementLineRequest,
-			@NonNull final Instant statementLineDate)
+			@NonNull final ZonedDateTime statementLineDate)
 	{
 		final NoBatchReportEntry2Wrapper entryWrapper = importBankStatementLineRequest.getEntryWrapper();
 
@@ -242,9 +250,9 @@ public class BankStatementCamt53Service
 			return Optional.empty();
 		}
 
-		final UnpaidInvoiceQuery unpaidInvoiceQuery = buildUnpaidInvoiceQuery(statementLineDate, importBankStatementLineRequest);
+		final UnpaidInvoiceMatchingAmtQuery unpaidInvoiceMatchingAmtQuery = buildUnpaidInvoiceMatchingAmtQuery(statementLineDate, importBankStatementLineRequest);
 
-		return Optional.of(invoiceDAO.retrieveUnpaid(unpaidInvoiceQuery))
+		return Optional.of(paymentAllocationService.retrieveUnpaidInvoices(unpaidInvoiceMatchingAmtQuery))
 				.flatMap(invoices -> getSingleInvoice(invoices, entryWrapper));
 	}
 
@@ -344,27 +352,26 @@ public class BankStatementCamt53Service
 	}
 
 	@NonNull
-	private static UnpaidInvoiceQuery buildUnpaidInvoiceQuery(
-			@NonNull final Instant statementLineDate,
+	private static UnpaidInvoiceMatchingAmtQuery buildUnpaidInvoiceMatchingAmtQuery(
+			@NonNull final ZonedDateTime statementLineDate,
 			@NonNull final ImportBankStatementLineRequest importBankStatementLineRequest)
 	{
 		final NoBatchReportEntry2Wrapper entryWrapper = importBankStatementLineRequest.getEntryWrapper();
 
-		final UnpaidInvoiceQuery.UnpaidInvoiceQueryBuilder unpaidInvoiceQueryBuilder = UnpaidInvoiceQuery.builder()
+		final UnpaidInvoiceMatchingAmtQuery.UnpaidInvoiceMatchingAmtQueryBuilder unpaidInvoiceMatchingAmtQueryBuilder = UnpaidInvoiceMatchingAmtQuery.builder()
 				.onlyDocumentNos(entryWrapper.getInvoiceDocNoCandidates())
 				.onlyDocStatuses(ImmutableSet.of(DocStatus.Completed, DocStatus.Closed))
 				.queryLimit(QueryLimit.TWO);
 
 		if (importBankStatementLineRequest.isMatchAmounts())
 		{
-			unpaidInvoiceQueryBuilder
+			unpaidInvoiceMatchingAmtQueryBuilder
 					.openAmountAtDate(entryWrapper.getStatementAmount())
 					.openAmountEvaluationDate(statementLineDate);
 		}
 
-		return unpaidInvoiceQueryBuilder.build();
+		return unpaidInvoiceMatchingAmtQueryBuilder.build();
 	}
-	
 
 	@Value
 	@Builder

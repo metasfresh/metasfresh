@@ -39,6 +39,8 @@ import de.metas.banking.payment.BankStatementLineMultiPaymentLinkRequest.Payment
 import de.metas.banking.payment.BankStatementLineMultiPaymentLinkResult;
 import de.metas.banking.payment.PaymentLinkResult;
 import de.metas.banking.payment.impl.BankStatementPaymentBL;
+import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
+import de.metas.banking.payment.paymentallocation.service.PaymentAllocationService;
 import de.metas.banking.service.BankStatementCreateRequest;
 import de.metas.banking.service.BankStatementLineCreateRequest;
 import de.metas.banking.service.IBankStatementDAO;
@@ -51,6 +53,8 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.engine.DocStatus;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyConfigRepository;
+import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
@@ -125,10 +129,17 @@ class BankStatementPaymentBLTest
 			}
 		};
 
+		final CurrencyRepository currencyRepository = new CurrencyRepository();
+		final MoneyService moneyService = new MoneyService(currencyRepository);
+		SpringContextHolder.registerJUnitBean(moneyService);
+
+		final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService = new InvoiceProcessingServiceCompanyService(new InvoiceProcessingServiceCompanyConfigRepository(), moneyService);
+
 		bankStatementListenerService = Services.get(IBankStatementListenerService.class);
 		bankStatementPaymentBL = new BankStatementPaymentBL(
 				bankStatementBL,
-				new MoneyService(new CurrencyRepository()));
+				moneyService,
+				new PaymentAllocationService(moneyService, invoiceProcessingServiceCompanyService, new PaymentAllocationRepository()));
 
 		final IModelInterceptorRegistry modelInterceptorRegistry = Services.get(IModelInterceptorRegistry.class);
 		modelInterceptorRegistry.addModelInterceptor(new C_BankStatementLine_MockedInterceptor(bankStatementBL));

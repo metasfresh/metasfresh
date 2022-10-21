@@ -34,10 +34,10 @@ import de.metas.banking.camt53.jaxb.camt053_001_02.EntryTransaction2;
 import de.metas.banking.camt53.jaxb.camt053_001_02.RemittanceInformation5;
 import de.metas.banking.camt53.jaxb.camt053_001_02.ReportEntry2;
 import de.metas.banking.camt53.jaxb.camt053_001_02.TransactionInterest2;
+import de.metas.currency.Amount;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.logging.LogManager;
-import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.util.Check;
 import lombok.Builder;
@@ -149,12 +149,12 @@ public class NoBatchReportEntry2Wrapper
 	}
 
 	@NonNull
-	public Money getStatementAmount()
+	public Amount getStatementAmount()
 	{
 		final BigDecimal value = getStatementAmountValue();
-		final CurrencyId currencyId = getStatementAmountCurrencyId(entry.getAmt().getCcy());
+		final CurrencyCode currencyCode = CurrencyCode.ofThreeLetterCode(entry.getAmt().getCcy());
 
-		return Money.of(value, currencyId);
+		return Amount.of(value, currencyCode);
 	}
 
 	@NonNull
@@ -165,12 +165,5 @@ public class NoBatchReportEntry2Wrapper
 						? value
 						: value.negate())
 				.orElse(BigDecimal.ZERO);
-	}
-
-	@NonNull
-	private CurrencyId getStatementAmountCurrencyId(@NonNull final String currencyCodeStr)
-	{
-		final CurrencyCode currencyCode = CurrencyCode.ofThreeLetterCode(currencyCodeStr);
-		return currencyRepository.getCurrencyIdByCurrencyCode(currencyCode);
 	}
 }
