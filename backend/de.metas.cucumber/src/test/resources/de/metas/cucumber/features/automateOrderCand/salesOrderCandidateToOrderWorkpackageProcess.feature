@@ -143,7 +143,7 @@ Feature: Enqueue order candidate in multiple workpackages for processing to orde
       | olCand_4               | olCand_Customer          | olCand_Customer_location          | product_14042022             | 3          | F            | S               | 14042022_new2   | Shopware                       | N       | N             | 14042022             | 14042022_3         | 10.00           |
 
     And update M_ProductPrice:
-      | Identifier             | IsActive |
+      | M_ProductPrice_ID.Identifier | IsActive |
       | pp_product_priceChange | false    |
 
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates/process' and fulfills with '200' status code
