@@ -51,6 +51,9 @@ public final class C_Order_CreateFromProposal extends C_Order_CreationProcess
 	@Param(parameterName = "CompleteIt")
 	private boolean completeIt;
 
+	@Param(parameterName = "IsKeepProposalPrices")
+	private boolean keepProposalPrices;
+
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull I_C_Order order)
 	{
@@ -77,6 +80,7 @@ public final class C_Order_CreateFromProposal extends C_Order_CreationProcess
 				.newOrderDateOrdered(newOrderDateOrdered)
 				.poReference(poReference)
 				.completeIt(completeIt)
+				.isKeepProposalPrices(keepProposalPrices)
 				.build()
 				.execute();
 
