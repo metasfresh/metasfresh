@@ -23,7 +23,6 @@
 package de.metas.cucumber.stepdefs.serviceIssue;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.serviceprovider.model.I_S_Issue;
@@ -34,7 +33,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_Project;
 
@@ -335,62 +334,66 @@ public class S_Issue_StepDef
 
 	private void validateIssue(@NonNull final Map<String, String> row)
 	{
+		final SoftAssertions softly = new SoftAssertions();
+
 		final String issueIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_S_Issue_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_S_Issue issue = sIssueTable.get(issueIdentifier);
 
 		final String value = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Value);
-		assertThat(issue.getValue()).isEqualTo(value);
+		softly.assertThat(issue.getValue()).isEqualTo(value);
 
 		final String name = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_Name);
 		if (Check.isNotBlank(name))
 		{
-			assertThat(issue.getName()).isEqualTo(name);
+			softly.assertThat(issue.getName()).isEqualTo(name);
 		}
 
 		final String issueType = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_IssueType);
-		assertThat(issue.getIssueType()).isEqualTo(issueType);
+		softly.assertThat(issue.getIssueType()).isEqualTo(issueType);
 
 		final boolean isEffortIssue = DataTableUtil.extractBooleanForColumnName(row, COLUMNNAME_IsEffortIssue);
-		assertThat(issue.isEffortIssue()).isEqualTo(isEffortIssue);
+		softly.assertThat(issue.isEffortIssue()).isEqualTo(isEffortIssue);
 
 		final BigDecimal invoiceableEffort = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_InvoiceableEffort);
 		if (invoiceableEffort != null)
 		{
-			assertThat(issue.getInvoiceableEffort()).isEqualTo(invoiceableEffort);
+			softly.assertThat(issue.getInvoiceableEffort()).isEqualTo(invoiceableEffort);
 		}
 
 		final String activityIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_Activity_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(activityIdentifier))
 		{
 			final I_C_Activity costCenter = activityTable.get(activityIdentifier);
-			assertThat(issue.getC_Activity_ID()).isEqualTo(costCenter.getC_Activity_ID());
+			softly.assertThat(issue.getC_Activity_ID()).isEqualTo(costCenter.getC_Activity_ID());
 		}
 
 		final String projectIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_Project_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(projectIdentifier))
 		{
 			final I_C_Project project = projectTable.get(projectIdentifier);
-			assertThat(issue.getC_Project_ID()).isEqualTo(project.getC_Project_ID());
+			softly.assertThat(issue.getC_Project_ID()).isEqualTo(project.getC_Project_ID());
 		}
 
 		final BigDecimal externalIssueNo = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_S_Issue.COLUMNNAME_ExternalIssueNo);
 		if (externalIssueNo != null)
 		{
-			assertThat(issue.getExternalIssueNo()).isEqualTo(externalIssueNo);
+			softly.assertThat(issue.getExternalIssueNo()).isEqualTo(externalIssueNo);
 		}
 
 		final String status = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_Status);
 		if (Check.isNotBlank(status))
 		{
-			assertThat(issue.getStatus()).isEqualTo(status);
+			softly.assertThat(issue.getStatus()).isEqualTo(status);
 		}
 
 		final Boolean processed = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + I_S_Issue.COLUMNNAME_Processed);
 		if (processed != null)
 		{
-			assertThat(issue.isProcessed()).isEqualTo(processed);
+			softly.assertThat(issue.isProcessed()).isEqualTo(processed);
 		}
 
 		sIssueTable.putOrReplace(issueIdentifier, issue);
+
+		softly.assertAll();
 	}
 }
