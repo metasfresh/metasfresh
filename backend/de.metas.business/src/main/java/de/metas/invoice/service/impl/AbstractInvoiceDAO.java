@@ -503,6 +503,30 @@ public abstract class AbstractInvoiceDAO implements IInvoiceDAO
 				.list(modelClass);
 	}
 
+	@Override
+	public ImmutableList<I_C_Invoice> retrieveUnpaid(@NonNull final UnpaidInvoiceQuery query)
+	{
+		final IQueryBuilder<I_C_Invoice> queryBuilder = queryBL
+				.createQueryBuilder(I_C_Invoice.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice.COLUMNNAME_IsPaid, false)
+				.setLimit(query.getQueryLimit());
+
+		if (!query.getOnlyDocumentNos().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocumentNo, query.getOnlyDocumentNos());
+		}
+
+		if (!query.getOnlyDocStatuses().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_C_Invoice.COLUMNNAME_DocStatus, query.getOnlyDocStatuses());
+		}
+
+		return queryBuilder
+				.create()
+				.listImmutable(I_C_Invoice.class);
+	}
+
 	private Optional<InvoiceId> getInvoiceIdByDocumentIdIfExists(@NonNull final InvoiceQuery query)
 	{
 		final String documentNo = assumeNotNull(query.getDocumentNo(), "Param query needs to have a non-null docId; query={}", query);
