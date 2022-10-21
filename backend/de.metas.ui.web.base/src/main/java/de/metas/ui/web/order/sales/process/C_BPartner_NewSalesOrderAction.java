@@ -18,6 +18,8 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 public class C_BPartner_NewSalesOrderAction extends ViewBasedProcessTemplate
 		implements IProcessPrecondition
 {
+	static final int SORT_NO = -100000; // show it first
+
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable()
 	{
@@ -27,7 +29,7 @@ public class C_BPartner_NewSalesOrderAction extends ViewBasedProcessTemplate
 			return ProcessPreconditionsResolution.rejectWithInternalReason(partnerId.getExplanation());
 		}
 
-		return ProcessPreconditionsResolution.accept();
+		return ProcessPreconditionsResolution.accept().withSortNo(SORT_NO);
 	}
 
 	@Override
