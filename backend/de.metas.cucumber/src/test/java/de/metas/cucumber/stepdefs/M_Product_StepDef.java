@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
@@ -107,11 +108,19 @@ public class M_Product_StepDef
 			bPartnerProduct.setAD_Org_ID(StepDefConstants.ORG_ID.getRepoId());
 			bPartnerProduct.setM_Product_ID(productTable.get(productIdentifier).getM_Product_ID());
 			bPartnerProduct.setC_BPartner_ID(bpartnerTable.get(bpartnerIdentifier).getC_BPartner_ID());
-			bPartnerProduct.setIsCurrentVendor(true);
 			bPartnerProduct.setUsedForVendor(true);
 			bPartnerProduct.setUsedForCustomer(true);
 			bPartnerProduct.setShelfLifeMinPct(0);
 			bPartnerProduct.setShelfLifeMinDays(0);
+
+			final Boolean isCurrentVendor = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_BPartner_Product.COLUMNNAME_IsCurrentVendor, true);
+			bPartnerProduct.setIsCurrentVendor(isCurrentVendor);
+
+			final String upc = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner_Product.COLUMNNAME_UPC);
+			if (Check.isNotBlank(upc))
+			{
+				bPartnerProduct.setUPC(upc);
+			}
 
 			InterfaceWrapperHelper.saveRecord(bPartnerProduct);
 		}
