@@ -63,12 +63,10 @@ import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.And;
-import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
@@ -78,7 +76,6 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -140,23 +137,6 @@ public class MD_Candidate_StepDef
 		Env.setClientId(Env.getCtx(), ClientId.METASFRESH);
 	}
 
-	@Given("metasfresh initially has no MD_Candidate data")
-	public void setupMD_Candidate_Data()
-	{
-		truncateMDCandidateData();
-	}
-
-	private void truncateMDCandidateData()
-	{
-		DB.executeUpdateEx("TRUNCATE TABLE MD_Candidate cascade", ITrx.TRXNAME_None);
-	}
-
-	@And("metasfresh initially has no MD_Candidate_StockChange_detail data")
-	public void setupMD_Candidate_StockChange_detail_Data()
-	{
-		DB.executeUpdateEx("TRUNCATE TABLE md_candidate_stockChange_detail cascade", ITrx.TRXNAME_None);
-	}
-
 	@When("metasfresh receives a ShipmentScheduleCreatedEvent")
 	public void shipmentScheduleCreatedEvent(@NonNull final DataTable dataTable)
 	{
@@ -183,7 +163,6 @@ public class MD_Candidate_StepDef
 	@When("metasfresh initially has this MD_Candidate data")
 	public void metasfresh_has_this_md_candidate_data1(@NonNull final MD_Candidate_StepDefTable table)
 	{
-		truncateMDCandidateData();
 		for (final MaterialDispoTableRow tableRow : table.getRows())
 		{
 			final I_MD_Candidate mdCandidateRecord = InterfaceWrapperHelper.newInstance(I_MD_Candidate.class);
@@ -361,7 +340,12 @@ public class MD_Candidate_StepDef
 	{
 		final Map<String, String> row = dataTable.asMaps().get(0);
 
-		final int productId = DataTableUtil.extractIntForColumnName(row, "M_Product_ID");
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, "M_Product_ID");
+
+		final int productId = productTable.getOptional(productIdentifier)
+				.map(I_M_Product::getM_Product_ID)
+				.orElseGet(() -> Integer.parseInt(productIdentifier));
+
 		final int freshQtyOnHandId = DataTableUtil.extractIntForColumnName(row, "Fresh_QtyOnHand_ID");
 		final int freshQtyOnHandLineId = DataTableUtil.extractIntForColumnName(row, "Fresh_QtyOnHand_Line_ID");
 		final Instant dateDoc = DataTableUtil.extractInstantForColumnName(row, "DateDoc");
@@ -520,16 +504,16 @@ public class MD_Candidate_StepDef
 		final Runnable logContext = () -> logger.error("MD_Candidate not found\n"
 															   + "**tableRow:**\n{}\n" + "**candidatesQuery:**\n{}\n"
 															   + "**query result candidates:**\n{}\n"
-															   + "**all candidates:**\n{}",
-													   tableRow, candidatesQuery,
+															   + "**all product related candidates:**\n{}",
+													   tableRow,
+													   candidatesQuery,
 													   materialDispoRecordRepository.getAllByQueryAsString(candidatesQuery),
-													   materialDispoRecordRepository.getAllAsString());
+													   materialDispoRecordRepository.getAllAsString(tableRow.getProductId()));
 
-		final MaterialDispoDataItem materialDispoRecord = StepDefUtil
+		return StepDefUtil
 				.tryAndWaitForItem(timeoutSec, 1000,
 								   itemProvider,
 								   logContext);
-		return materialDispoRecord;
 	}
 
 	private void validate_md_candidate_stock(@NonNull final Map<String, String> tableRow)
