@@ -88,7 +88,7 @@ public class ExternalSystemSAPConfig implements IExternalSystemChildConfig
 		this.sftpPort = sftpPort;
 		this.sftpUsername = sftpUsername;
 		this.sftpPassword = sftpPassword;
-		this.sftpTargetDirectory = sanitizeTargetDirectory(sftpTargetDirectory);
+		this.sftpTargetDirectory = sftpTargetDirectory;
 		this.processedDirectory = processedDirectory;
 		this.erroredDirectory = erroredDirectory;
 		this.pollingFrequency = pollingFrequency;
@@ -98,25 +98,5 @@ public class ExternalSystemSAPConfig implements IExternalSystemChildConfig
 	public static ExternalSystemSAPConfig cast(@NonNull final IExternalSystemChildConfig childCondig)
 	{
 		return (ExternalSystemSAPConfig)childCondig;
-	}
-
-	@Nullable
-	private static String sanitizeTargetDirectory(@Nullable final String sftpTargetDirectory)
-	{
-		if (sftpTargetDirectory == null)
-		{
-			return null;
-		}
-
-		if (sftpTargetDirectory.startsWith("/"))
-		{
-			return sftpTargetDirectory.replaceFirst("/", "");
-		}
-		else if (sftpTargetDirectory.startsWith("."))
-		{
-			return sftpTargetDirectory.replaceFirst("./", "");
-		}
-
-		return sftpTargetDirectory;
 	}
 }

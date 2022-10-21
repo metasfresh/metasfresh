@@ -39,6 +39,7 @@ public class ProductRow
 	@DataField(pos = 4)
 	private String name;
 
+	//FIXME: pending mappings ? might be that the SAP UOM format will not match ours
 	@DataField(pos = 5)
 	private String uom;
 

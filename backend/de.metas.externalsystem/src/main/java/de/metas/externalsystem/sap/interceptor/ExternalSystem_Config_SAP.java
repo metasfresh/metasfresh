@@ -30,6 +30,8 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.ModelValidator;
 
+import javax.annotation.Nullable;
+
 public class ExternalSystem_Config_SAP
 {
 	public final ExternalSystemConfigRepo externalSystemConfigRepo;
@@ -50,5 +52,32 @@ public class ExternalSystem_Config_SAP
 		{
 			throw new AdempiereException("Invalid external system type!");
 		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_ExternalSystem_Config_SAP.COLUMNNAME_SFTP_TargetDirectory })
+	public void sanitizeTargetDirectory(final I_ExternalSystem_Config_SAP sapConfig)
+	{
+		sapConfig.setSFTP_TargetDirectory(sanitizeTargetDirectory(sapConfig.getSFTP_TargetDirectory()));
+	}
+
+	@Nullable
+	private static String sanitizeTargetDirectory(@Nullable final String sftpTargetDirectory)
+	{
+		if (sftpTargetDirectory == null)
+		{
+			return null;
+		}
+
+		if (sftpTargetDirectory.startsWith("/"))
+		{
+			return sftpTargetDirectory.replaceFirst("/", "");
+		}
+		else if (sftpTargetDirectory.startsWith("./"))
+		{
+			return sftpTargetDirectory.replaceFirst("\\./", "");
+		}
+
+		return sftpTargetDirectory;
 	}
 }
