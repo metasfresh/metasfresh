@@ -1,54 +1,6 @@
 package de.metas.banking.service.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.Date;
-
-/*
- * #%L
- * de.metas.banking.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BankStatement;
-import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.model.I_Fact_Acct;
-import org.compiere.util.TimeUtil;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementAndLineAndRefId;
 import de.metas.banking.BankStatementId;
@@ -73,6 +25,29 @@ import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.model.I_Fact_Acct;
+import org.compiere.util.TimeUtil;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.loadByRepoIdAwares;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 public class BankStatementDAO implements IBankStatementDAO
 {
@@ -266,15 +241,16 @@ public class BankStatementDAO implements IBankStatementDAO
 		Check.assumeNotEmpty(name, "name is not empty");
 
 		return Optional.ofNullable(queryBL.createQueryBuilder(I_C_BankStatement.class)
-				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_C_BP_BankAccount_ID, orgBankAccountId)
-				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_StatementDate, statementDate)
-				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_Name, name)
-				.addEqualsFilter(I_C_BankStatement.COLUMNNAME_DocStatus, docStatus.getCode())
-				.create()
-				.firstId(BankStatementId::ofRepoIdOrNull));
+										   .addEqualsFilter(I_C_BankStatement.COLUMNNAME_C_BP_BankAccount_ID, orgBankAccountId)
+										   .addEqualsFilter(I_C_BankStatement.COLUMNNAME_StatementDate, statementDate)
+										   .addEqualsFilter(I_C_BankStatement.COLUMNNAME_Name, name)
+										   .addEqualsFilter(I_C_BankStatement.COLUMNNAME_DocStatus, docStatus.getCode())
+										   .create()
+										   .firstId(BankStatementId::ofRepoIdOrNull));
 	}
 
 	@Override
+	@NonNull
 	public BankStatementId createBankStatement(@NonNull final BankStatementCreateRequest request)
 	{
 		final I_C_BankStatement record = newInstance(I_C_BankStatement.class);
@@ -287,6 +263,7 @@ public class BankStatementDAO implements IBankStatementDAO
 		record.setStatementDate(TimeUtil.asTimestamp(request.getStatementDate()));
 		record.setDocStatus(DocStatus.Drafted.getCode());
 		record.setDocAction(IDocument.ACTION_Complete);
+		record.setBeginningBalance(request.getBeginningBalance());
 
 		final BankStatementCreateRequest.ElectronicFundsTransfer eft = request.getEft();
 		if (eft != null)
@@ -337,7 +314,9 @@ public class BankStatementDAO implements IBankStatementDAO
 		record.setChargeAmt(request.getChargeAmt().toBigDecimal());
 		record.setInterestAmt(request.getInterestAmt().toBigDecimal());
 		record.setC_Charge_ID(ChargeId.toRepoId(request.getChargeId()));
-		record.setDebitorOrCreditorId(request.getDebitorOrCreditorId());
+		record.setDebitorOrCreditorId(request.getDebtorOrCreditorId());
+		record.setC_Invoice_ID(InvoiceId.toRepoId(request.getInvoiceId()));
+		record.setCurrencyRate(request.getCurrencyRate());
 
 		final BankStatementLineCreateRequest.ElectronicFundsTransfer eft = request.getEft();
 		if (eft != null)
