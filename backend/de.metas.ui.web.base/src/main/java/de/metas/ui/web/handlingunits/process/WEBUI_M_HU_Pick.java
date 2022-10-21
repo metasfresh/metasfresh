@@ -9,7 +9,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.requests.PickRequest;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
 import de.metas.picking.api.PickingSlotId;

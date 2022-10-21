@@ -1,6 +1,5 @@
 package de.metas.contracts.impl;
 
-import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.contracts.inoutcandidate.SubscriptionShipmentScheduleHandler;
 import de.metas.contracts.interceptor.MainValidator;
 import de.metas.contracts.invoicecandidate.FlatrateTerm_Handler;
@@ -9,11 +8,9 @@ import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.order.ContractOrderService;
 import de.metas.contracts.pricing.ContractDiscount;
 import de.metas.contracts.pricing.SubscriptionPricingRule;
-import de.metas.document.location.IDocumentLocationBL;
 import de.metas.inout.invoicecandidate.InOutLinesWithMissingInvoiceCandidate;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler;
 import de.metas.invoicecandidate.model.I_C_ILCandHandler;
-import de.metas.location.impl.DummyDocumentLocationBL;
 import de.metas.order.compensationGroup.FlatrateConditionsExcludedProductsRepository;
 import de.metas.order.compensationGroup.GroupCompensationLineCreateRequestFactory;
 import de.metas.order.compensationGroup.GroupTemplateRepository;
@@ -25,7 +22,6 @@ import de.metas.organization.OrgInfoUpdateRequest;
 import de.metas.pricing.attributebased.impl.AttributePricing;
 import de.metas.pricing.rules.Discount;
 import de.metas.pricing.rules.PriceListVersion;
-import de.metas.user.UserRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;

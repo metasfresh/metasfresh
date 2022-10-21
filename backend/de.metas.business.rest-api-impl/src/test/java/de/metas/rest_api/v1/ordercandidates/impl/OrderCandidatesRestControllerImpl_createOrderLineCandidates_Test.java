@@ -53,6 +53,7 @@ import de.metas.organization.StoreCreditCardNumberMode;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.ProductScalePriceService;
+import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.rest_api.utils.BPartnerQueryService;
@@ -118,7 +119,8 @@ import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_ExternalId;
 
 /*

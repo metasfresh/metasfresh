@@ -1,19 +1,18 @@
 package de.metas.inoutcandidate.invalidation;
 
-import java.util.Collection;
-import java.util.Set;
-
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
-
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
-import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
 import de.metas.util.ISingletonService;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
+
+import java.util.Collection;
+import java.util.Set;
 
 public interface IShipmentScheduleInvalidateBL extends ISingletonService
 {

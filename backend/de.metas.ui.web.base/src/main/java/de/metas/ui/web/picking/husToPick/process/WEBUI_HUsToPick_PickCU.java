@@ -1,19 +1,7 @@
 package de.metas.ui.web.picking.husToPick.process;
 
-import static de.metas.ui.web.handlingunits.WEBUI_HU_Constants.MSG_WEBUI_SELECT_ACTIVE_UNSELECTED_HU;
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.FillMandatoryException;
-import org.compiere.model.I_C_UOM;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import com.google.common.collect.ImmutableSet;
-
+import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -26,7 +14,7 @@ import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessDefaultParametersProvider;
@@ -43,6 +31,16 @@ import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
+import org.compiere.model.I_C_UOM;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import static de.metas.ui.web.handlingunits.WEBUI_HU_Constants.MSG_WEBUI_SELECT_ACTIVE_UNSELECTED_HU;
 
 /*
  * #%L

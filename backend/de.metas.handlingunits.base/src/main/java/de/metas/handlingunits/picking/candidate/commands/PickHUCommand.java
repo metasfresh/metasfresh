@@ -1,13 +1,6 @@
 package de.metas.handlingunits.picking.candidate.commands;
 
-import java.util.List;
-
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_UOM;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuPackingInstructionsId;
@@ -24,16 +17,21 @@ import de.metas.handlingunits.picking.PickingCandidateStatus;
 import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.handlingunits.picking.requests.PickRequest.IssueToPickingOrderRequest;
 import de.metas.handlingunits.storage.IHUProductStorage;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
-import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_UOM;
+
+import java.util.List;
 
 /*
  * #%L

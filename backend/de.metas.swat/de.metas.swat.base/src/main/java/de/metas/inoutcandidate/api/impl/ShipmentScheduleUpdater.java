@@ -8,7 +8,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner_product.IBPartnerProductDAO;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;

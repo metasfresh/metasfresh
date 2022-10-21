@@ -23,7 +23,7 @@ package de.metas.inoutcandidate.api;
  */
 
 import de.metas.document.engine.DocStatus;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.product.ProductId;

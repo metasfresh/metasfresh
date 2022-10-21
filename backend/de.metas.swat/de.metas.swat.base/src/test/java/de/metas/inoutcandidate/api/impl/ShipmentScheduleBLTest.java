@@ -1,27 +1,26 @@
 package de.metas.inoutcandidate.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.refresh;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.util.Properties;
-import java.util.Set;
-
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.IDeliverRequest;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.inoutcandidate.spi.ModelWithoutShipmentScheduleVetoer;
+import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
+import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_OrderLine;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.metas.inoutcandidate.api.IDeliverRequest;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
-import de.metas.inoutcandidate.api.IShipmentScheduleHandlerBL;
-import de.metas.inoutcandidate.ShipmentScheduleId;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.spi.ModelWithoutShipmentScheduleVetoer;
-import de.metas.inoutcandidate.spi.ShipmentScheduleHandler;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.util.Properties;
+import java.util.Set;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.refresh;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ShipmentScheduleBLTest
 {
