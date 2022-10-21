@@ -76,7 +76,7 @@ public class LogicExpressionResult
 
 	private transient String _toString = null; // lazy
 
-	private LogicExpressionResult(final String name, final Boolean value, final ILogicExpression expression, final Map<CtxName, String> usedParameters)
+	public LogicExpressionResult(final String name, final Boolean value, final ILogicExpression expression, final Map<CtxName, String> usedParameters)
 	{
 		this.name = name;
 		this.value = value == null ? false : value;
@@ -180,6 +180,11 @@ public class LogicExpressionResult
 	public String getName()
 	{
 		return name;
+	}
+
+	public ILogicExpression getExpression()
+	{
+		return expression;
 	}
 
 	/**

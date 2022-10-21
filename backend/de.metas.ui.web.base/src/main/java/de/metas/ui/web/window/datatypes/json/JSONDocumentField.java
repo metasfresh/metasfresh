@@ -18,6 +18,7 @@ import de.metas.ui.web.window.model.IDocumentFieldView;
 import io.swagger.annotations.ApiModel;
 import lombok.Getter;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
+import org.adempiere.ad.expression.api.LogicExpressionResultWithReason;
 
 import javax.annotation.Nullable;
 import java.util.LinkedHashMap;
@@ -67,7 +68,7 @@ public final class JSONDocumentField
 
 		final JSONDocumentField jsonField = new JSONDocumentField(name, jsonWidgetType)
 				.setValue(valueJSON, null)
-				.setReadonly(field.getReadonly())
+				.setReadonly(field.getReadonly(), jsonOpts)
 				.setMandatory(field.getMandatory())
 				.setDisplayed(field.getDisplayed())
 				.setValidStatus(field.getValidStatus());
@@ -305,6 +306,18 @@ public final class JSONDocumentField
 
 	public JSONDocumentField setReadonly(final LogicExpressionResult readonly)
 	{
+		setReadonly(readonly.booleanValue(), readonly.getName());
+		return this;
+	}
+
+	public JSONDocumentField setReadonly(final LogicExpressionResult readonly, final JSONOptions options)
+	{
+		if (readonly instanceof LogicExpressionResultWithReason)
+		{
+			setReadonly(readonly.booleanValue(), ((LogicExpressionResultWithReason)readonly).getTranslatedReason(options.getAdLanguage()));
+			return this;
+		}
+
 		setReadonly(readonly.booleanValue(), readonly.getName());
 		return this;
 	}

@@ -37,6 +37,8 @@ public class ExternallyReferencedDocumentDecorator implements IDocumentDecorator
 {
 	private static final AdMessageKey EXTERNAL_REFERENCE_READ_ONLY_IN_METASFRESH_ERROR = AdMessageKey.of("CannotDeleteExternalReferenceReadOnlyInMetasfresh");
 
+	private static final AdMessageKey EXTERNAL_REFERENCE_READ_ONLY_IN_METASFRESH_REASON = AdMessageKey.of("ExternalReferenceReadOnlyInMetasfreshReason");
+
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private final ExternalReferenceRepository externalReferenceRepository;
@@ -47,16 +49,19 @@ public class ExternallyReferencedDocumentDecorator implements IDocumentDecorator
 	}
 
 	@Override
-	public boolean isReadOnly(@NonNull final TableRecordReference recordReference)
+	@NonNull
+	public BooleanWithReason isReadOnly(@NonNull final TableRecordReference recordReference)
 	{
-		return externalReferenceRepository.isReadOnlyInMetasfresh(recordReference);
+		return externalReferenceRepository.isReadOnlyInMetasfresh(recordReference) ?
+				BooleanWithReason.trueBecause(msgBL.getTranslatableMsgText(EXTERNAL_REFERENCE_READ_ONLY_IN_METASFRESH_REASON)) :
+				BooleanWithReason.FALSE;
 	}
 
 	@Override
 	@NonNull
 	public BooleanWithReason isDeleteForbidden(@NonNull final TableRecordReference recordReference)
 	{
-		if (!isReadOnly(recordReference))
+		if (isReadOnly(recordReference).isFalse())
 		{
 			return BooleanWithReason.FALSE;
 		}

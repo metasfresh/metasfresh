@@ -51,6 +51,7 @@ import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
+import org.adempiere.ad.expression.api.LogicExpressionResultWithReason;
 import org.adempiere.ad.ui.spi.ITabCallout;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
@@ -1364,28 +1365,33 @@ public final class Document
 				.processed(parentReadonly.isProcessed() || isProcessed())
 				.processing(parentReadonly.isProcessing() || isProcessing())
 				.fieldsReadonly(ExtendedMemorizingSupplier.of(this::computeFieldsReadOnly))
+				.fieldsReadonly(ExtendedMemorizingSupplier.of(this::computeFieldsReadOnly))
 				.build();
 	}
 
-	private boolean computeFieldsReadOnly()
+	@NonNull
+	private BooleanWithReason computeFieldsReadOnly()
 	{
 		final boolean isReadOnlyLogicTrue = computeDefaultFieldsReadOnly().booleanValue();
 
 		if (isReadOnlyLogicTrue)
 		{
-			return true;
+			return BooleanWithReason.TRUE;
 		}
 
 		final TableRecordReference recordReference = this.getTableRecordReference().orElse(null);
 		if (recordReference == null)
 		{
-			return false;
+			return BooleanWithReason.FALSE;
 		}
 
 		return getEntityDescriptor()
 				.getDocumentDecorators()
 				.stream()
-				.anyMatch(documentDecorator -> documentDecorator.isReadOnly(recordReference));
+				.map(documentDecorator -> documentDecorator.isReadOnly(recordReference))
+				.filter(BooleanWithReason::isTrue)
+				.findFirst()
+				.orElse(BooleanWithReason.FALSE);
 	}
 
 	@NonNull
@@ -1422,8 +1428,15 @@ public final class Document
 	{
 		// Check document's readonly logic
 		final DocumentReadonly documentReadonlyLogic = getReadonly();
-		if (documentReadonlyLogic.computeFieldReadonly(documentField.getFieldName(), documentField.isAlwaysUpdateable()))
+		final BooleanWithReason isReadOnly = documentReadonlyLogic.computeFieldReadonly(documentField.getFieldName(), documentField.isAlwaysUpdateable());
+
+		if (isReadOnly.isTrue())
 		{
+			if (WindowConstants.FIELDNAME_DocumentSummary.equals(documentField.getFieldName()))
+			{
+				return new LogicExpressionResultWithReason(LogicExpressionResult.TRUE, isReadOnly.getReason()); //todo mi: si aici
+			}
+
 			return LogicExpressionResult.TRUE;
 		}
 
