@@ -89,7 +89,7 @@ select ('SPC' || E'\n' || --QRType
            end)
                                                                                     AS referenceno,
 
-       i.bpartneraddress as DR_Address,
+       i.bpartneraddress                                                            as DR_Address,
        i.grandtotal - coalesce(y.zuordnung, 0)                                      as Amount,
        cur.iso_code                                                                 as currency,
        i.description                                                                as additional_informations,
@@ -154,5 +154,3 @@ WHERE dd.C_DunningDoc_ID = p_C_DunningDoc_ID
 $$
     LANGUAGE sql STABLE
 ;
-
-
