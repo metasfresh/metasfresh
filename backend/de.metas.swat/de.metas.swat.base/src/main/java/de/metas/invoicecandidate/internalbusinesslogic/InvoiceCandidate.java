@@ -344,7 +344,7 @@ public class InvoiceCandidate
 		if (invoicedData != null)
 		{
 			// subtract the qty that was already invoiced
-			final boolean expectingPositiveValues = orderedData.getQty().signum() > 0;
+			final boolean expectingPositiveValues = orderedData.getQty().signum() >= 0;
 
 			final StockQtyAndUOMQty qtysRaw;
 			final StockQtyAndUOMQty qtyCalc;
