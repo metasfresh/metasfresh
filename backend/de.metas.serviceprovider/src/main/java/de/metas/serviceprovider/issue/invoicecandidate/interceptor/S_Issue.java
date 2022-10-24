@@ -24,6 +24,8 @@ package de.metas.serviceprovider.issue.invoicecandidate.interceptor;
 
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.serviceprovider.effortcontrol.EffortControlService;
+import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.issue.Status;
 import de.metas.serviceprovider.model.I_S_Issue;
 import de.metas.util.Services;
@@ -42,6 +44,13 @@ import java.util.Set;
 public class S_Issue
 {
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+
+	private final EffortControlService effortControlService;
+
+	public S_Issue(@NonNull final EffortControlService effortControlService)
+	{
+		this.effortControlService = effortControlService;
+	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = {
@@ -85,5 +94,60 @@ public class S_Issue
 				.appendParametersToMessage()
 				.setParameter("S_Issue_ID", record.getS_Issue_ID())
 				.setParameter("InvoiceCandidateIds", existingCandidateIds);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },
+			ifColumnsChanged = { I_S_Issue.COLUMNNAME_Status, I_S_Issue.COLUMNNAME_Processed })
+	public void processVendorInvoiceCandidateFromBudgetIssue(@NonNull final I_S_Issue record)
+	{
+		if (record.isEffortIssue())
+		{
+			return;
+		}
+
+		final Status status = Status.ofCode(record.getStatus());
+
+		if (!status.equals(Status.INVOICED) || !record.isProcessed())
+		{
+			return;
+		}
+
+		final Set<InvoiceCandidateId> existingCandidateIds = invoiceCandDAO.retrieveReferencingIds(TableRecordReference.of(record));
+
+		if (existingCandidateIds.isEmpty())
+		{
+			return;
+		}
+
+		effortControlService.generateVendorInvoiceCandidate(IssueId.ofRepoId(record.getS_Issue_ID()));
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },
+			ifColumnsChanged = {
+					I_S_Issue.COLUMNNAME_IssueEffort,
+					I_S_Issue.COLUMNNAME_Status,
+					I_S_Issue.COLUMNNAME_Processed
+			})
+	public void processVendorInvoiceCandidateFromEffortIssue(@NonNull final I_S_Issue record)
+	{
+		if (!record.isEffortIssue())
+		{
+			return;
+		}
+
+		final IssueId effortIssueParent = IssueId.ofRepoIdOrNull(record.getS_Parent_Issue_ID());
+		if (effortIssueParent == null)
+		{
+			return;
+		}
+
+		final Status status = Status.ofCode(record.getStatus());
+
+		if (!status.equals(Status.INVOICED) || !record.isProcessed())
+		{
+			return;
+		}
+
+		effortControlService.generateVendorInvoiceCandidate(IssueId.ofRepoId(record.getS_Issue_ID()));
 	}
 }

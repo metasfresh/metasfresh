@@ -1,5 +1,6 @@
 package de.metas.cucumber.stepdefs.factacct;
 
+import de.metas.acct.api.PostingType;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.StepDefUtil;
@@ -15,6 +16,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_AD_Table;
 import org.compiere.model.I_C_Invoice;
@@ -48,6 +50,8 @@ public class Fact_Acct_StepDef
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
+			final SoftAssertions softly = new SoftAssertions();
+
 			final List<I_Fact_Acct> factAcctRecords = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> load_Fact_Acct(row));
 
 			final String sectionCodeIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_SectionCode.COLUMNNAME_M_SectionCode_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -57,8 +61,20 @@ public class Fact_Acct_StepDef
 				final boolean allFactAcctRecordsMatch = factAcctRecords.stream()
 						.allMatch(factAcct -> sectionCode.getM_SectionCode_ID() == factAcct.getM_SectionCode_ID());
 
-				assertThat(allFactAcctRecordsMatch).isTrue();
+				softly.assertThat(allFactAcctRecordsMatch).isTrue();
 			}
+
+			final String postingType = DataTableUtil.extractStringForColumnName(row, "OPT." + I_Fact_Acct.COLUMNNAME_PostingType);
+			if (Check.isNotBlank(postingType))
+			{
+				final PostingType type = PostingType.valueOf(postingType);
+
+				final boolean allFactAcctRecordsMatchPostingType = factAcctRecords.stream()
+						.allMatch(factAcct -> factAcct.getPostingType().equals(type.getCode()));
+				softly.assertThat(allFactAcctRecordsMatchPostingType).isTrue();
+			}
+
+			softly.assertAll();
 		}
 	}
 

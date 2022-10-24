@@ -749,6 +749,23 @@ public class C_Invoice_Candidate_StepDef
 					softly.assertThat(updatedInvoiceCandidate.getDescription()).isEqualTo(description);
 				}
 
+				final Boolean soTrx = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + COLUMNNAME_IsSOTrx);
+				if(soTrx != null)
+				{
+					softly.assertThat(updatedInvoiceCandidate.isSOTrx()).isEqualTo(soTrx);
+				}
+
+				final String invoiceDocTypeName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_DocTypeInvoice_ID + ".Name");
+				if(Check.isNotBlank(invoiceDocTypeName))
+				{
+					final DocTypeId docTypeId = queryBL.createQueryBuilder(I_C_DocType.class)
+							.addEqualsFilter(I_C_DocType.COLUMNNAME_Name, invoiceDocTypeName)
+							.create()
+							.firstId(DocTypeId::ofRepoId);
+
+					softly.assertThat(updatedInvoiceCandidate.getC_DocTypeInvoice_ID()).isEqualTo(docTypeId.getRepoId());
+				}
+
 				softly.assertAll();
 			}
 			catch (final Throwable e)
