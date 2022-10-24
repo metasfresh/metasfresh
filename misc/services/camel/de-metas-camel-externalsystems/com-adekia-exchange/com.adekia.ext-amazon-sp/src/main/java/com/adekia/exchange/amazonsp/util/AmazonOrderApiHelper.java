@@ -33,20 +33,20 @@ import java.util.UUID;
 public class AmazonOrderApiHelper
 {
 
-	public static OrdersV0Api getOrdersAPI(Ctx ctx)
+	public static OrdersV0Api getOrdersAPI(final Ctx ctx)
 	{
-		AWSAuthenticationCredentials awsAuthenticationCredentials = AWSAuthenticationCredentials.builder()
+		final AWSAuthenticationCredentials awsAuthenticationCredentials = AWSAuthenticationCredentials.builder()
 				.accessKeyId(ctx.getProperties().get("accessKeyId"))
 				.secretKey(ctx.getProperties().get("secretKey"))
-				.region(ctx.getProperties().get("region"))
+				.region(ctx.getProperties().get("regionName"))
 				.build();
 
-		AWSAuthenticationCredentialsProvider awsAuthenticationCredentialsProvider = AWSAuthenticationCredentialsProvider.builder()
+		final AWSAuthenticationCredentialsProvider awsAuthenticationCredentialsProvider = AWSAuthenticationCredentialsProvider.builder()
 				.roleArn(ctx.getProperties().get("roleArn"))
 				.roleSessionName(UUID.randomUUID().toString())
 				.build();
 
-		LWAAuthorizationCredentials lwaAuthorizationCredentials = LWAAuthorizationCredentials.builder()
+		final LWAAuthorizationCredentials lwaAuthorizationCredentials = LWAAuthorizationCredentials.builder()
 				.clientId(ctx.getProperties().get("clientId"))
 				.clientSecret(ctx.getProperties().get("clientSecret"))
 				.refreshToken(ctx.getProperties().get("refreshToken"))
@@ -62,7 +62,7 @@ public class AmazonOrderApiHelper
 						.endpoint("https://api.amazon.com/auth/o2/token")
 						.build();
 */
-		OrdersV0Api ordersApi = new OrdersV0Api.Builder()
+		final OrdersV0Api ordersApi = new OrdersV0Api.Builder()
 				.awsAuthenticationCredentials(awsAuthenticationCredentials)
 				.lwaAuthorizationCredentials(lwaAuthorizationCredentials)
 				.awsAuthenticationCredentialsProvider(awsAuthenticationCredentialsProvider)
