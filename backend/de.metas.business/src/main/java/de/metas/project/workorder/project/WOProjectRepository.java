@@ -41,6 +41,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_ProjectType;
@@ -118,9 +119,6 @@ public class WOProjectRepository
 	@NonNull
 	public WOProject create(@NonNull final CreateWOProjectRequest createWOProjectRequest)
 	{
-		// i guess using interfacewrapperhelper like this is OK within the repository?
-		final I_C_ProjectType projectType = InterfaceWrapperHelper.loadOutOfTrx(createWOProjectRequest.getProjectTypeId(), I_C_ProjectType.class);
-
 		final I_C_Project projectRecord = InterfaceWrapperHelper.newInstance(I_C_Project.class);
 
 		projectRecord.setAD_Org_ID(OrgId.toRepoId(createWOProjectRequest.getOrgId()));
@@ -131,10 +129,10 @@ public class WOProjectRepository
 		projectRecord.setPOReference(createWOProjectRequest.getPoReference());
 		projectRecord.setDescription(createWOProjectRequest.getDescription());
 
-		projectRecord.setR_StatusCategory_ID(projectType.getR_StatusCategory_ID());
+		projectRecord.setR_StatusCategory_ID(createWOProjectRequest.getProjectType().getRequestStatusCategoryId().getRepoId());
 
 		projectRecord.setProjectCategory(X_C_Project.PROJECTCATEGORY_WorkOrderJob);
-		projectRecord.setC_ProjectType_ID(createWOProjectRequest.getProjectTypeId().getRepoId());
+		projectRecord.setC_ProjectType_ID(createWOProjectRequest.getProjectType().getId().getRepoId());
 		projectRecord.setC_Currency_ID(createWOProjectRequest.getCurrencyId().getRepoId());
 		projectRecord.setC_Project_Parent_ID(ProjectId.toRepoId(createWOProjectRequest.getProjectParentId()));
 		projectRecord.setM_PriceList_Version_ID(PriceListVersionId.toRepoId(createWOProjectRequest.getPriceListVersionId()));
@@ -172,6 +170,7 @@ public class WOProjectRepository
 		return queryBL
 				.createQueryBuilder(I_C_Project.class)
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Project.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
 				.addEqualsFilter(I_C_Project.COLUMNNAME_ProjectCategory, ProjectCategory.WorkOrderJob)
 				.create()
 				.listIds(ProjectId::ofRepoId);
@@ -208,6 +207,7 @@ public class WOProjectRepository
 	{
 		final IQueryBuilder<I_C_Project> queryBuilder = queryBL.createQueryBuilder(I_C_Project.class)
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Project.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
 				.addEqualsFilter(I_C_Project.COLUMNNAME_ProjectCategory, ProjectCategory.WorkOrderJob.getCode())
 				.addInArrayFilter(I_C_Project.COLUMNNAME_AD_Org_ID, query.getOrgId(), OrgId.ANY)
 				.orderByDescending(I_C_Project.COLUMNNAME_AD_Org_ID);
@@ -236,6 +236,7 @@ public class WOProjectRepository
 		final IQueryBuilder<I_C_Project> queryBuilder = queryBL
 				.createQueryBuilder(I_C_Project.class)
 				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Project.COLUMNNAME_AD_Client_ID, ClientId.METASFRESH)
 				.addEqualsFilter(I_C_Project.COLUMNNAME_ProjectCategory, ProjectCategory.WorkOrderJob)
 				.addInArrayFilter(I_C_Project.COLUMNNAME_C_Project_ID, query.getProjectIds());
 

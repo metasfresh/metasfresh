@@ -65,6 +65,7 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_ProjectType;
@@ -77,6 +78,7 @@ import org.compiere.model.I_R_StatusCategory;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceType;
 import org.compiere.model.X_C_ProjectType;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -115,6 +117,7 @@ class WorkOrderProjectRestServiceTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
+		Env.setClientId(Env.getCtx(), ClientId.METASFRESH);
 
 		final OrgId orgId = AdempiereTestHelper.createOrgWithTimeZone();
 		orgValue = Services.get(IOrgDAO.class).retrieveOrgValue(orgId);
@@ -146,6 +149,7 @@ class WorkOrderProjectRestServiceTest
 
 		final ProjectService mockProjectService = Mockito.mock(ProjectService.class);
 		Mockito.when(mockProjectService.getNextProjectValue(any())).thenReturn(nextValue);
+		Mockito.when(mockProjectService.getProjectTypeById(ProjectTypeId.ofRepoId(projectType.getC_ProjectType_ID()))).thenReturn(ProjectTypeRepository.toProjectType(projectType));
 
 		final WOProjectStepRepository workOrderProjectStepRepository = new WOProjectStepRepository();
 		final WorkOrderProjectObjectUnderTestRepository workOrderProjectObjectUnderTestRepository = new WorkOrderProjectObjectUnderTestRepository();

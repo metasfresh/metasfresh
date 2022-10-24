@@ -251,4 +251,9 @@ public class ProjectService
 				.setFailOnError(false)
 				.build();
 	}
+
+	public ProjectType getProjectTypeById(@NonNull final ProjectTypeId projectTypeId)
+	{
+		return projectTypeRepository.getById(projectTypeId);
+	}
 }

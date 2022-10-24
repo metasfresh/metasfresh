@@ -5,9 +5,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
       "activities" : [ {
         "activityId" : "A10",
         "caption" : "Kommissionierplatz scannen",
-        "componentProps" : {
-          "isAlwaysAvailableToUser" : false
-        },
+        "componentProps" : { },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
       }, {
@@ -300,9 +298,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
       "activities" : [ {
         "activityId" : "A10",
         "caption" : "Kommissionierplatz scannen",
-        "componentProps" : {
-          "isAlwaysAvailableToUser" : false
-        },
+        "componentProps" : { },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
       }, {
@@ -601,9 +597,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
       "activities" : [ {
         "activityId" : "A10",
         "caption" : "Kommissionierplatz scannen",
-        "componentProps" : {
-          "isAlwaysAvailableToUser" : false
-        },
+        "componentProps" : { },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
       }, {
@@ -902,9 +896,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "activities" : [ {
         "activityId" : "A10",
         "caption" : "Kommissionierplatz scannen",
-        "componentProps" : {
-          "isAlwaysAvailableToUser" : false
-        },
+        "componentProps" : { },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
       }, {
@@ -1197,9 +1189,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "activities" : [ {
         "activityId" : "A10",
         "caption" : "Kommissionierplatz scannen",
-        "componentProps" : {
-          "isAlwaysAvailableToUser" : false
-        },
+        "componentProps" : { },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
       }, {
@@ -1535,9 +1525,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "activities" : [ {
         "activityId" : "A10",
         "caption" : "Kommissionierplatz scannen",
-        "componentProps" : {
-          "isAlwaysAvailableToUser" : false
-        },
+        "componentProps" : { },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
       }, {
@@ -1879,9 +1867,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "activities" : [ {
         "activityId" : "A10",
         "caption" : "Kommissionierplatz scannen",
-        "componentProps" : {
-          "isAlwaysAvailableToUser" : false
-        },
+        "componentProps" : { },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
       }, {
@@ -1985,8 +1971,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "currentValue" : {
             "caption" : "1",
             "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
-          },
-          "isAlwaysAvailableToUser" : false
+          }
         },
         "componentType" : "common/scanBarcode",
         "status" : "COMPLETED"
@@ -2312,8 +2297,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "currentValue" : {
             "caption" : "1",
             "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
-          },
-          "isAlwaysAvailableToUser" : false
+          }
         },
         "componentType" : "common/scanBarcode",
         "status" : "COMPLETED"
@@ -2832,8 +2816,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "currentValue" : {
             "caption" : "1",
             "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
-          },
-          "isAlwaysAvailableToUser" : false
+          }
         },
         "componentType" : "common/scanBarcode",
         "status" : "COMPLETED"
@@ -3134,8 +3117,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "currentValue" : {
             "caption" : "1",
             "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
-          },
-          "isAlwaysAvailableToUser" : false
+          }
         },
         "componentType" : "common/scanBarcode",
         "status" : "COMPLETED"
@@ -3454,9 +3436,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "activities" : [ {
         "activityId" : "A10",
         "caption" : "Kommissionierplatz scannen",
-        "componentProps" : {
-          "isAlwaysAvailableToUser" : false
-        },
+        "componentProps" : { },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
       }, {
@@ -3560,8 +3540,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "currentValue" : {
             "caption" : "1",
             "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
-          },
-          "isAlwaysAvailableToUser" : false
+          }
         },
         "componentType" : "common/scanBarcode",
         "status" : "COMPLETED"
@@ -3855,9 +3834,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
       "activities" : [ {
         "activityId" : "A10",
         "caption" : "Kommissionierplatz scannen",
-        "componentProps" : {
-          "isAlwaysAvailableToUser" : false
-        },
+        "componentProps" : { },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
       }, {
@@ -4344,8 +4321,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "currentValue" : {
             "caption" : "1",
             "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
-          },
-          "isAlwaysAvailableToUser" : false
+          }
         },
         "componentType" : "common/scanBarcode",
         "status" : "COMPLETED"
@@ -4646,8 +4622,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "currentValue" : {
             "caption" : "1",
             "qrCode" : "PICKING_SLOT#1#{\"pickingSlotId\":1000000,\"caption\":\"1\"}"
-          },
-          "isAlwaysAvailableToUser" : false
+          }
         },
         "componentType" : "common/scanBarcode",
         "status" : "COMPLETED"

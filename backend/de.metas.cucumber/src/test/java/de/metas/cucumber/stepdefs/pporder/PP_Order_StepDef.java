@@ -26,6 +26,7 @@ import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_BOM_StepDefData;
@@ -33,6 +34,8 @@ import de.metas.cucumber.stepdefs.externalsystem.ExternalSystem_Config_LeichMehl
 import de.metas.cucumber.stepdefs.hu.M_HU_PI_Item_Product_StepDefData;
 import de.metas.cucumber.stepdefs.productplanning.PP_Product_Planning_StepDefData;
 import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
 import de.metas.externalsystem.export.pporder.ExportPPOrderToExternalSystem;
 import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
@@ -55,7 +58,9 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -66,6 +71,7 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_S_Resource;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderCreateRequest;
 import org.eevolution.api.PPOrderDocBaseType;
@@ -79,11 +85,13 @@ import org.eevolution.model.I_PP_Product_Planning;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID;
 
@@ -95,6 +103,7 @@ public class PP_Order_StepDef
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IHUPPOrderBL huPPOrderBL = Services.get(IHUPPOrderBL.class);
 	private final IADPInstanceDAO pinstanceDAO = Services.get(IADPInstanceDAO.class);
+	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 
 	private final ExportPPOrderToExternalSystem exportPPOrderToExternalSystem = SpringContextHolder.instance.getBean(ExportPPOrderToExternalSystem.class);
 
@@ -288,6 +297,40 @@ public class PP_Order_StepDef
 		}
 	}
 
+	@And("update PP_Order:")
+	public void update_PP_Order(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> row : tableRows)
+		{
+			updatePPOrder(row);
+		}
+	}
+
+	@And("^the manufacturing order identified by (.*) is (reactivated|completed)$")
+	public void order_action(
+			@NonNull final String orderIdentifier,
+			@NonNull final String action)
+	{
+		final I_PP_Order orderRecord = ppOrderTable.get(orderIdentifier);
+
+		switch (StepDefDocAction.valueOf(action))
+		{
+			case reactivated:
+				orderRecord.setDocAction(IDocument.ACTION_Complete);
+				documentBL.processEx(orderRecord, IDocument.ACTION_ReActivate, IDocument.STATUS_InProgress);
+				break;
+			case completed:
+				orderRecord.setDocAction(IDocument.ACTION_Complete);
+				documentBL.processEx(orderRecord, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+				break;
+			default:
+				throw new AdempiereException("Unhandled PP_Order action")
+						.appendParametersToMessage()
+						.setParameter("action:", action);
+		}
+	}
+
 	private void validatePP_Order_BomLine(
 			final int timeoutSec,
 			@NonNull final Map<String, String> tableRow) throws InterruptedException
@@ -375,10 +418,12 @@ public class PP_Order_StepDef
 
 		final Instant datePromised = DataTableUtil.extractInstantForColumnName(tableRow, I_PP_Order_Candidate.COLUMNNAME_DatePromised);
 
+		final String docStatus = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Order.COLUMNNAME_DocStatus);
+
 		final String orderRecordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, I_PP_Order.Table_Name);
 		final Supplier<Boolean> ppOrderQueryExecutor = () -> {
 
-			final I_PP_Order orderRecord = queryBL.createQueryBuilder(I_PP_Order.class)
+			final IQueryBuilder<I_PP_Order> queryBuilder = queryBL.createQueryBuilder(I_PP_Order.class)
 					.addEqualsFilter(I_PP_Order.COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
 					.addEqualsFilter(I_PP_Order.COLUMNNAME_PP_Product_BOM_ID, productBOMRecord.getPP_Product_BOM_ID())
 					.addEqualsFilter(I_PP_Order.COLUMNNAME_PP_Product_Planning_ID, productPlanningRecord.getPP_Product_Planning_ID())
@@ -387,7 +432,17 @@ public class PP_Order_StepDef
 					.addEqualsFilter(I_PP_Order.COLUMNNAME_QtyOrdered, qtyOrdered)
 					.addEqualsFilter(I_PP_Order.COLUMNNAME_C_UOM_ID, uomId.getRepoId())
 					.addEqualsFilter(I_PP_Order.COLUMNNAME_C_BPartner_ID, bPartnerRecord.getC_BPartner_ID())
-					.addEqualsFilter(I_PP_Order.COLUMNNAME_DatePromised, datePromised)
+					.addEqualsFilter(I_PP_Order.COLUMNNAME_DatePromised, datePromised);
+
+			if (Check.isNotBlank(docStatus))
+			{
+				queryBuilder.addEqualsFilter(I_PP_Order.COLUMNNAME_DocStatus, docStatus);
+			}
+
+			ppOrderTable.getOptional(orderRecordIdentifier)
+					.ifPresent(ppOrder -> queryBuilder.addEqualsFilter(I_PP_Order.COLUMNNAME_PP_Order_ID, ppOrder.getPP_Order_ID()));
+
+			final I_PP_Order orderRecord = queryBuilder
 					.create()
 					.firstOnly(I_PP_Order.class);
 
@@ -431,5 +486,26 @@ public class PP_Order_StepDef
 
 			assertThat(ppOrder.getM_HU_PI_Item_Product_ID()).isEqualTo(huPiItemProductRecordID);
 		}
+	}
+
+	private void updatePPOrder(@NonNull final Map<String, String> row)
+	{
+		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, I_PP_Order.COLUMNNAME_PP_Order_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final I_PP_Order ppOrderRecord = ppOrderTable.get(orderIdentifier);
+
+		final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_PP_Order.COLUMNNAME_QtyEntered);
+		if (qtyEntered != null)
+		{
+			ppOrderRecord.setQtyEntered(qtyEntered);
+			ppOrderRecord.setQtyOrdered(qtyEntered);
+		}
+
+		final ZonedDateTime datePromised = DataTableUtil.extractZonedDateTimeOrNullForColumnName(row, "OPT." + I_PP_Order.COLUMNNAME_DatePromised);
+		if (datePromised != null)
+		{
+			ppOrderRecord.setDatePromised(TimeUtil.asTimestampNotNull(datePromised));
+		}
+
+		saveRecord(ppOrderRecord);
 	}
 }

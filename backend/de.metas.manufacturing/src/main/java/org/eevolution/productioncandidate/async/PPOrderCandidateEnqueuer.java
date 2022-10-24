@@ -37,6 +37,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -47,6 +48,7 @@ import java.util.Properties;
 public class PPOrderCandidateEnqueuer
 {
 	public static final String WP_PINSTANCE_ID_PARAM = "pInstanceId";
+	public static final String WP_COMPLETE_DOC_PARAM = "completeDoc";
 
 	private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -61,13 +63,14 @@ public class PPOrderCandidateEnqueuer
 				.create()
 				.createSelection();
 
-		return enqueueSelection(pInstanceId, Env.getCtx());
+		return enqueueSelection(pInstanceId, Env.getCtx(), null);
 	}
 
 	@NonNull
 	public Result enqueueSelection(
 			@NonNull final PInstanceId adPInstanceId,
-			@NonNull final Properties ctx)
+			@NonNull final Properties ctx,
+			@Nullable final Boolean isCompleteDoc)
 	{
 		final LockOwner lockOwner = LockOwner.newOwner(PPOrderCandidateEnqueuer.class.getSimpleName(), adPInstanceId.getRepoId());
 
@@ -83,6 +86,7 @@ public class PPOrderCandidateEnqueuer
 		final I_C_Queue_WorkPackage workPackage = queue
 				.newWorkPackage()
 				.parameter(WP_PINSTANCE_ID_PARAM, adPInstanceId)
+				.parameter(WP_COMPLETE_DOC_PARAM, isCompleteDoc)
 				.setElementsLocker(elementsLocker)
 				.buildAndEnqueue();
 

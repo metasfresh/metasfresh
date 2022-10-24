@@ -12,6 +12,13 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13755](https://github.com/metasfresh/metasfresh/issues/13755) Look up C_OLcand.M_HU_PI_Item_Product_ID also via StoreGLN
+  * [#13772](https://github.com/metasfresh/metasfresh/issues/13772) Set "-" in MAC Address instead of null 
+  * [#13717](https://github.com/metasfresh/metasfresh/issues/13717) Sub-Task No 2: Test & Fix Sales order (w/ ship ) - ProductPlanning - Manufacturing 
+  * [#13751](https://github.com/metasfresh/metasfresh/issues/13751) Renumber C_OLCand.Line when sending from excel to metasfresh
+  * [#13651](https://github.com/metasfresh/metasfresh/issues/13651) Allow invoking "Other" ExternalSystem via API
+  * [#13740](https://github.com/metasfresh/metasfresh/issues/13740) Fix inventory move line
+  * [#13716](https://github.com/metasfresh/metasfresh/issues/13716) Creating PP Order by machine size
   * [#13733](https://github.com/metasfresh/metasfresh/issues/13733) edit translations for ad_references #13733
   * [#13707](https://github.com/metasfresh/metasfresh/issues/13707) Fix Mail notifications
   * [#13648](https://github.com/metasfresh/metasfresh/issues/13648) Propagate Section_ID from OLCand to Payment
@@ -101,6 +108,7 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#13753](https://github.com/metasfresh/metasfresh/issues/13753) Adjust auto-vacuum settings on translation tables
   * [#13725](https://github.com/metasfresh/metasfresh/issues/13725) C_DocTypeShipment_ID not respected when generating Receipt/Shipment
   * [#13586](https://github.com/metasfresh/metasfresh/issues/13586) Fix material-dispo bug
   * [#13533](https://github.com/metasfresh/metasfresh/issues/13533) BUG: I_C_InvoiceCandidate.QtyDelivered wrongly computed for manual invoice candidates 

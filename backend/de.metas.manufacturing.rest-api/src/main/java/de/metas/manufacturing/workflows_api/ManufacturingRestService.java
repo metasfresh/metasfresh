@@ -20,6 +20,7 @@ import de.metas.manufacturing.workflows_api.activity_handlers.work_report.WorkRe
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.WFActivity;
+import de.metas.workflow.rest_api.model.WFActivityAlwaysAvailableToUser;
 import de.metas.workflow.rest_api.model.WFActivityId;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessId;
@@ -30,6 +31,7 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRoutingActivityId;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.util.stream.Stream;
 
 @Service
@@ -42,9 +44,12 @@ public class ManufacturingRestService
 		this.manufacturingJobService = manufacturingJobService;
 	}
 
-	public Stream<ManufacturingJobReference> streamJobReferencesForUser(final @NonNull UserId responsibleId, final @NonNull QueryLimit suggestedLimit)
+	public Stream<ManufacturingJobReference> streamJobReferencesForUser(
+			final @NonNull UserId responsibleId,
+			final @NonNull Instant now,
+			final @NonNull QueryLimit suggestedLimit)
 	{
-		return manufacturingJobService.streamJobReferencesForUser(responsibleId, suggestedLimit);
+		return manufacturingJobService.streamJobReferencesForUser(responsibleId, now, suggestedLimit);
 	}
 
 	public ManufacturingJob createJob(final PPOrderId ppOrderId, final UserId responsibleId)
@@ -77,7 +82,8 @@ public class ManufacturingRestService
 		final WFActivity.WFActivityBuilder builder = WFActivity.builder()
 				.id(WFActivityId.ofId(jobActivity.getId()))
 				.caption(TranslatableStrings.anyLanguage(jobActivity.getName()))
-				.status(jobActivity.getStatus());
+				.status(jobActivity.getStatus())
+				.alwaysAvailableToUser(WFActivityAlwaysAvailableToUser.ofBoolean(jobActivity.getAlwaysAvailableToUser().toBooleanObject()));
 
 		switch (jobActivity.getType())
 		{

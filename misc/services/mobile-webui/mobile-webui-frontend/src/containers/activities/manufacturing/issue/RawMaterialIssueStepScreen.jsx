@@ -3,7 +3,7 @@ import { useHistory, useRouteMatch } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 
 import { trl } from '../../../../utils/translations';
-import { manufacturingScanScreenLocation } from '../../../../routes/manufacturing_issue';
+import { manufacturingStepScanScreenLocation } from '../../../../routes/manufacturing_issue';
 import * as CompleteStatus from '../../../../constants/CompleteStatus';
 import { getStepById } from '../../../../reducers/wfProcesses';
 import { pushHeaderEntry } from '../../../../actions/HeaderActions';
@@ -45,7 +45,7 @@ const RawMaterialIssueStepScreen = () => {
 
   const history = useHistory();
   const onScanButtonClick = () => {
-    history.push(manufacturingScanScreenLocation({ applicationId, wfProcessId, activityId, lineId, stepId }));
+    history.push(manufacturingStepScanScreenLocation({ applicationId, wfProcessId, activityId, lineId, stepId }));
   };
 
   const isIssued = qtyIssued > 0 || qtyRejected > 0;

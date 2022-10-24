@@ -151,7 +151,7 @@ registerHandler({
   computeActivityStatus,
   mergeActivityDataStored: ({ draftActivityDataStored, fromActivity }) => {
     draftActivityDataStored.lines = normalizeLines(fromActivity.componentProps.lines);
-    draftActivityDataStored.isAlwaysAvailableToUser = true;
+    draftActivityDataStored.isAlwaysAvailableToUser = fromActivity.isAlwaysAvailableToUser ?? true;
     return draftActivityDataStored;
   },
 });

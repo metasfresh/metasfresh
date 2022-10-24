@@ -65,7 +65,6 @@ public class Database
 		return TO_DATE(instant.atZone(SystemTime.zoneId()));
 	}
 
-
 	/**
 	 * Create SQL TO Date String from LocalDate (without time zone)
 	 *
@@ -177,7 +176,7 @@ public class Database
 
 	/**
 	 * Convert {@link DecimalFormat} pattern to PostgreSQL's number formatting pattern
-	 *
+	 * <p>
 	 * See http://www.postgresql.org/docs/9.1/static/functions-formatting.html#FUNCTIONS-FORMATTING-NUMERIC-TABLE.
 	 *
 	 * @param formatPattern

@@ -2,6 +2,7 @@ package de.metas.manufacturing.job.model;
 
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleId;
+import de.metas.material.planning.pporder.PPAlwaysAvailableToUser;
 import de.metas.material.planning.pporder.PPRoutingActivityType;
 import de.metas.workflow.rest_api.model.WFActivityStatus;
 import lombok.Builder;
@@ -30,6 +31,8 @@ public class ManufacturingJobActivity
 
 	@NonNull WFActivityStatus status;
 
+	@NonNull PPAlwaysAvailableToUser alwaysAvailableToUser;
+
 	@Builder(toBuilder = true)
 	private ManufacturingJobActivity(
 			@NonNull final ManufacturingJobActivityId id,
@@ -38,7 +41,8 @@ public class ManufacturingJobActivity
 			@Nullable final RawMaterialsIssue rawMaterialsIssue,
 			@Nullable final FinishedGoodsReceive finishedGoodsReceive,
 			@NonNull final PPOrderRoutingActivityId orderRoutingActivityId,
-			@NonNull final PPOrderRoutingActivityStatus routingActivityStatus)
+			@NonNull final PPOrderRoutingActivityStatus routingActivityStatus,
+			@NonNull final PPAlwaysAvailableToUser alwaysAvailableToUser)
 	{
 		if (CoalesceUtil.countNotNulls(rawMaterialsIssue, finishedGoodsReceive) > 1)
 		{
@@ -54,6 +58,8 @@ public class ManufacturingJobActivity
 
 		this.status = computeStatus(rawMaterialsIssue, finishedGoodsReceive, routingActivityStatus);
 		this.routingActivityStatus = toPPOrderRoutingActivityStatus(this.status);
+
+		this.alwaysAvailableToUser = alwaysAvailableToUser;
 	}
 
 	private static WFActivityStatus computeStatus(

@@ -624,6 +624,7 @@
         <xsd:sequence>
             <xsd:element name="UPC" type="xsd:string"/>
             <xsd:element name="GLN" type="xsd:string"/>
+            <xsd:element minOccurs="0" name="StoreGLN" type="xsd:string"/>
         </xsd:sequence>
     </xsd:complexType>
     <xsd:complexType name="EDI_Imp_C_OLCandType">

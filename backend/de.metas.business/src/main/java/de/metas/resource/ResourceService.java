@@ -29,6 +29,7 @@ import de.metas.product.ProductType;
 import de.metas.product.ResourceId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -287,6 +288,11 @@ public class ResourceService
 	public void onResourceGroupBeforeDelete(final ResourceGroupId resourceGroupId)
 	{
 		productDAO.deleteProductByResourceGroupId(resourceGroupId);
+	}
+
+	public ImmutableSet<ResourceId> getResourceIdsByUserId(@NonNull final UserId userId)
+	{
+		return resourceRepository.getResourceIdsByUserId(userId);
 	}
 
 	//

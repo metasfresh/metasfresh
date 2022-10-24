@@ -6,10 +6,10 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 /** Generated Interface for S_Resource
- *  @author metasfresh (generated) 
+ *  @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
-public interface I_S_Resource 
+public interface I_S_Resource
 {
 
 	String Table_Name = "S_Resource";
@@ -73,6 +73,48 @@ public interface I_S_Resource
 	int getAD_User_ID();
 
 	String COLUMNNAME_AD_User_ID = "AD_User_ID";
+
+
+	/**
+	 * Set Capacity Per Production Cycle.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCapacityPerProductionCycle (@Nullable BigDecimal CapacityPerProductionCycle);
+
+	/**
+	 * Get Capacity Per Production Cycle.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getCapacityPerProductionCycle();
+
+	ModelColumn<I_S_Resource, Object> COLUMN_CapacityPerProductionCycle = new ModelColumn<>(I_S_Resource.class, "CapacityPerProductionCycle", null);
+	String COLUMNNAME_CapacityPerProductionCycle = "CapacityPerProductionCycle";
+
+	/**
+	 * Set Unit of measurement.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCapacityPerProductionCycle_UOM_ID (int CapacityPerProductionCycle_UOM_ID);
+
+	/**
+	 * Get Unit of measurement.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getCapacityPerProductionCycle_UOM_ID();
+
+	String COLUMNNAME_CapacityPerProductionCycle_UOM_ID = "CapacityPerProductionCycle_UOM_ID";
 
 	/**
 	 * Set Abrechenbare Menge.

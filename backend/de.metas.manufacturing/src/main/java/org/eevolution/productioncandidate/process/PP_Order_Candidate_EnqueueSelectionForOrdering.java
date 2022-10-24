@@ -26,6 +26,7 @@ import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.PInstanceId;
+import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
 import de.metas.security.permissions.Access;
@@ -50,6 +51,10 @@ public class PP_Order_Candidate_EnqueueSelectionForOrdering extends JavaProcess 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final PPOrderCandidateEnqueuer ppOrderCandidateEnqueuer = SpringContextHolder.instance.getBean(PPOrderCandidateEnqueuer.class);
 
+	private static final String PARAM_COMPLETE_DOCUMENT = "IsDocComplete";
+	@Param(parameterName = PARAM_COMPLETE_DOCUMENT)
+	private boolean isDocComplete;
+
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
@@ -67,7 +72,7 @@ public class PP_Order_Candidate_EnqueueSelectionForOrdering extends JavaProcess 
 		final PInstanceId pinstanceId = getPinstanceId();
 
 		ppOrderCandidateEnqueuer
-				.enqueueSelection(pinstanceId, getCtx());
+				.enqueueSelection(pinstanceId, getCtx(), isDocComplete);
 
 		return MSG_OK;
 	}

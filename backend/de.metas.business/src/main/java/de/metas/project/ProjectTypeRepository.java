@@ -66,7 +66,7 @@ public class ProjectTypeRepository
 	}
 
 	@Nullable
-	private static ProjectType toProjectType(@Nullable final I_C_ProjectType record)
+	public static ProjectType toProjectType(@Nullable final I_C_ProjectType record)
 	{
 		if(record == null)
 		{

@@ -201,7 +201,7 @@ public class WorkOrderMapper
 				.currencyId(currencyId)
 				.name(projectName)
 				.value(projectValue)
-				.projectTypeId(projectTypeId)
+				.projectType(projectService.getProjectTypeById(projectTypeId))
 				.isActive(request.getIsActive())
 				.priceListVersionId(priceListVersionId)
 				.description(request.getDescription())

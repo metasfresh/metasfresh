@@ -12,6 +12,8 @@ import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 
+import java.time.Instant;
+
 public class ManufacturingWorkflowLaunchersProvider
 {
 	private final ManufacturingRestService manufacturingRestService;
@@ -22,19 +24,16 @@ public class ManufacturingWorkflowLaunchersProvider
 		this.manufacturingRestService = manufacturingRestService;
 	}
 
-	public WorkflowLaunchersList provideLaunchers(@NonNull final UserId userId, @NonNull final QueryLimit suggestedLimit) {return computeLaunchers(userId, suggestedLimit);}
-
-	private WorkflowLaunchersList computeLaunchers(
-			final @NonNull UserId userId,
-			final @NonNull QueryLimit limit)
+	public WorkflowLaunchersList provideLaunchers(@NonNull final UserId userId, @NonNull final QueryLimit limit)
 	{
-		final ImmutableList<WorkflowLauncher> launchers = manufacturingRestService.streamJobReferencesForUser(userId, limit)
+		final Instant now = SystemTime.asInstant();
+		final ImmutableList<WorkflowLauncher> launchers = manufacturingRestService.streamJobReferencesForUser(userId, now, limit)
 				.map(this::toWorkflowLauncher)
 				.collect(ImmutableList.toImmutableList());
 
 		return WorkflowLaunchersList.builder()
 				.launchers(launchers)
-				.timestamp(SystemTime.asInstant())
+				.timestamp(now)
 				.build();
 	}
 

@@ -167,7 +167,8 @@ public class ManufacturingJobLoaderAndSaver
 				.name(from.getName())
 				.type(from.getType())
 				.orderRoutingActivityId(from.getId())
-				.routingActivityStatus(from.getStatus());
+				.routingActivityStatus(from.getStatus())
+				.alwaysAvailableToUser(from.getAlwaysAvailableToUser());
 	}
 
 	private RawMaterialsIssue toRawMaterialsIssue(final @NonNull PPOrderRoutingActivity from)
@@ -198,12 +199,14 @@ public class ManufacturingJobLoaderAndSaver
 		final PPOrderId ppOrderId = PPOrderId.ofRepoId(orderBOMLine.getPP_Order_ID());
 		final PPOrderBOMLineId ppOrderBOMLineId = PPOrderBOMLineId.ofRepoId(orderBOMLine.getPP_Order_BOMLine_ID());
 		final ProductId productId = ProductId.ofRepoId(orderBOMLine.getM_Product_ID());
-		final OrderBOMLineQuantities bomLineQuantities = supportingServices.getQuantities(orderBOMLine);
+		final Quantity qtyToIssue = supportingServices.getQuantities(orderBOMLine).getQtyRequired();
+		final boolean isWeightable = !orderBOMLine.isManualQtyInput() && qtyToIssue.isWeightable();
 
 		return RawMaterialsIssueLine.builder()
 				.productId(productId)
 				.productName(supportingServices.getProductName(productId))
-				.qtyToIssue(bomLineQuantities.getQtyRequired())
+				.isWeightable(isWeightable)
+				.qtyToIssue(qtyToIssue)
 				.qtyToIssueTolerance(PPOrderBOMBL.extractQtyToIssueTolerance(orderBOMLine))
 				//.qtyIssued(bomLineQuantities.getQtyIssuedOrReceived())
 				.steps(getIssueSchedules(ppOrderId)
