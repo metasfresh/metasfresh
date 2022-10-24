@@ -14,6 +14,7 @@ import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -49,6 +50,7 @@ import static org.assertj.core.api.Assertions.*;
  * #L%
  */
 
+@Disabled
 public class TransactionEventHandlerTest
 {
 	private DimensionService dimensionService = Mockito.mock(DimensionService.class);

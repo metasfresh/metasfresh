@@ -38,6 +38,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_OrgInfo;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -83,6 +84,7 @@ import static org.compiere.model.X_AD_OrgInfo.STORECREDITCARDDATA_Speichern;
  */
 
 @ExtendWith(AdempiereTestWatcher.class)
+@Disabled
 public class PPOrderCreatedHandlerTests
 {
 	public static final int rawProduct1Id = 50;

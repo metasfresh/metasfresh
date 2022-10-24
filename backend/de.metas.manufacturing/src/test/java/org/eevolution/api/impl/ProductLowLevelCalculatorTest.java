@@ -31,10 +31,12 @@ import org.eevolution.exceptions.BOMCycleException;
 import org.eevolution.mrp.api.impl.MRPTestHelper;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import de.metas.product.ProductId;
 
+@Ignore
 public class ProductLowLevelCalculatorTest
 {
 	private MRPTestHelper helper;
