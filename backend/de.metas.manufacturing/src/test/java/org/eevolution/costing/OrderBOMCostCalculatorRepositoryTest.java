@@ -40,10 +40,12 @@ import org.eevolution.api.IPPOrderCostBL;
 import org.eevolution.api.impl.PPOrderCostsTestHelper;
 import org.eevolution.model.I_PP_Order;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
+@Disabled
 class OrderBOMCostCalculatorRepositoryTest
 {
 	private PPOrderCostsTestHelper helper;

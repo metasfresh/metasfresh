@@ -19,6 +19,7 @@ import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.mrp.api.impl.MRPTestHelper;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -57,6 +58,7 @@ public class PPOrderBOMBLTest
 
 	@Test
 	//@Disabled("gh #523: test doesn't work right now, and we might drop it in future")
+	@Disabled
 	public void qualityMultiplierTest()
 	{
 		// Mocking the AB Alicesalat 250g case from db
