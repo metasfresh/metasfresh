@@ -109,6 +109,18 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	}
 
 	@Override
+	public void setIsReadOnlyInMetasfresh (final boolean IsReadOnlyInMetasfresh)
+	{
+		set_Value (COLUMNNAME_IsReadOnlyInMetasfresh, IsReadOnlyInMetasfresh);
+	}
+
+	@Override
+	public boolean isReadOnlyInMetasfresh()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsReadOnlyInMetasfresh);
+	}
+
+	@Override
 	public void setRecord_ID (final int Record_ID)
 	{
 		if (Record_ID < 0) 

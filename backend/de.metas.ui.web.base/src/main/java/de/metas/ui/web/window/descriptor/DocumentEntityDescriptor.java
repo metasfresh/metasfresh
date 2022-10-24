@@ -5,6 +5,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Ordering;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.lang.SOTrx;
@@ -20,6 +21,7 @@ import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.descriptor.DocumentEntityDataBindingDescriptor.DocumentEntityDataBindingDescriptorBuilder;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyType;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
+import de.metas.ui.web.window.descriptor.decorator.IDocumentDecorator;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentQueryOrderBy;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
@@ -165,6 +167,10 @@ public class DocumentEntityDescriptor
 	@Getter
 	private final boolean queryIfNoFilters;
 
+	@NonNull
+	@Getter
+	private final ImmutableList<IDocumentDecorator> documentDecorators;
+
 	private DocumentEntityDescriptor(@NonNull final Builder builder)
 	{
 		documentType = builder.getDocumentType();
@@ -213,6 +219,8 @@ public class DocumentEntityDescriptor
 		cloneEnabled = builder.isCloneEnabled();
 
 		queryIfNoFilters = builder.queryIfNoFilters;
+
+		documentDecorators = CoalesceUtil.coalesceNotNull(builder.getDocumentDecorators(), ImmutableList.of());
 	}
 
 	@Override
@@ -439,6 +447,7 @@ public class DocumentEntityDescriptor
 	{
 		private static final Logger logger = LogManager.getLogger(DocumentEntityDescriptor.Builder.class);
 		private DocumentFilterDescriptorsProvidersService filterDescriptorsProvidersService;
+		private ImmutableList<IDocumentDecorator> documentDecorators;
 
 		private boolean _built = false;
 
@@ -1104,6 +1113,19 @@ public class DocumentEntityDescriptor
 		{
 			this.filterDescriptorsProvidersService = filterDescriptorsProvidersService;
 			return this;
+		}
+
+		@NonNull
+		public Builder setDocumentDecorators(final ImmutableList<IDocumentDecorator> documentDecorators)
+		{
+			this.documentDecorators = documentDecorators;
+			return this;
+		}
+
+		@Nullable
+		public ImmutableList<IDocumentDecorator> getDocumentDecorators()
+		{
+			return this.documentDecorators;
 		}
 
 		public Builder setRefreshViewOnChangeEvents(final boolean refreshViewOnChangeEvents)
