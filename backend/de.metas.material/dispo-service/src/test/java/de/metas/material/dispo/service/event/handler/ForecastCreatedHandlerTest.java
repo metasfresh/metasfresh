@@ -29,6 +29,7 @@ import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_ForecastLine;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -73,6 +74,7 @@ import static org.mockito.Mockito.when;
  */
 
 @ExtendWith(AdempiereTestWatcher.class)
+@Disabled
 public class ForecastCreatedHandlerTest
 {
 	private ForecastCreatedHandler forecastCreatedHandler;
