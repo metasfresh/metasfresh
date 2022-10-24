@@ -229,8 +229,8 @@ Feature: Create invoice candidates from effort control
       | C_Invoice_Candidate_ID.Identifier |
       | candIssue300                      |
     Then after not more than 30s, C_Invoice are found:
-      | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
-      | invoice300_2            | candIssue300                      |
+      | C_Invoice_ID.Identifier   | C_Invoice_Candidate_ID.Identifier |
+      | invoice300_1,invoice300_2 | candIssue300                      |
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | AD_User_ID.Identifier | processed | docStatus | OPT.C_DocType_ID.Name | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier |
       | invoice300_2            | customer_SO              | customerLocation_SO               | customerUser_SO       | true      | CO        | Ausgangsrechnung      | costCenter300                | testProject                 |
