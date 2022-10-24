@@ -199,6 +199,7 @@ import java.util.stream.StreamSupport;
 
 import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 import static de.metas.inoutcandidate.spi.ModelWithoutInvoiceCandidateVetoer.OnMissingCandidate.I_VETO;
+import static de.metas.invoicecandidate.api.impl.InvoiceLineAllocType.InvoiceVoided;
 import static de.metas.util.Check.assume;
 import static de.metas.util.Check.assumeGreaterThanZero;
 import static java.math.BigDecimal.ONE;
@@ -1416,11 +1417,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			return ic.isTaxIncluded();
 		}
 
-		return taxIncludedOverride.booleanValue();
+		return taxIncludedOverride;
 	}
 
 	@Override
-	public void handleReversalForInvoice(final org.compiere.model.I_C_Invoice invoice)
+	public void handleReversalForInvoice(final @NonNull org.compiere.model.I_C_Invoice invoice)
 	{
 		final int reversalInvoiceId = invoice.getReversal_ID();
 		Check.assume(reversalInvoiceId > invoice.getC_Invoice_ID(), "Invoice {} shall be the original invoice and not it's reversal", invoice);
@@ -1561,6 +1562,36 @@ public class InvoiceCandBL implements IInvoiceCandBL
 		}
 	}
 
+	@Override
+	public void handleVoidingForInvoice(final @NonNull org.compiere.model.I_C_Invoice invoice)
+	{
+		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+		
+		for (final I_C_InvoiceLine il : invoiceDAO.retrieveLines(invoice))
+		{
+			for (final I_C_Invoice_Line_Alloc ilaToReverse : invoiceCandDAO.retrieveIlaForIl(il))
+			{
+				final I_C_Invoice_Candidate invoiceCandidate = ilaToReverse.getC_Invoice_Candidate();
+				invoiceCandidate.setProcessed_Override(null); // reset processed_override, because now that the invoice was reversed, the users might want to do something new with the IC.
+
+				final ProductId productId = ProductId.ofRepoId(il.getM_Product_ID());
+				final UomId uomId = UomId.ofRepoId(il.getC_UOM_ID());
+
+				final String note = "@C_InvoiceLine@ @QtyInvoiced@ = " + 0 + "; @VO@";
+				
+				final InvoiceCandidateAllocCreateRequest request = InvoiceCandidateAllocCreateRequest.builder()
+						.invoiceCand(invoiceCandidate)
+						.invoiceLine(il)
+						.qtysInvoiced(StockQtyAndUOMQtys.createZero(productId, uomId))
+						.note(note)
+				.invoiceLineAllocType(InvoiceLineAllocType.InvoiceVoided)
+						.build();
+
+				createUpdateIla(request);
+			}
+		}
+	}
+	
 	/**
 	 * Set the qtyToInvoice_Override and Price_Entered_Override in the invoice candidate given by its ID.
 	 */
