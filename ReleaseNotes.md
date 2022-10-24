@@ -12,6 +12,8 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13758](https://github.com/metasfresh/metasfresh/issues/13758) IEUE045.U01 Incoming payment management
+  * [#13685](https://github.com/metasfresh/metasfresh/issues/13685) Allow externally maintained records to be read-only in metasfresh 
   * [#13755](https://github.com/metasfresh/metasfresh/issues/13755) Look up C_OLcand.M_HU_PI_Item_Product_ID also via StoreGLN
   * [#13772](https://github.com/metasfresh/metasfresh/issues/13772) Set "-" in MAC Address instead of null 
   * [#13717](https://github.com/metasfresh/metasfresh/issues/13717) Sub-Task No 2: Test & Fix Sales order (w/ ship ) - ProductPlanning - Manufacturing 
