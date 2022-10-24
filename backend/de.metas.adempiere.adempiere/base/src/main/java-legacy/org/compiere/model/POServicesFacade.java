@@ -37,8 +37,8 @@ final class POServicesFacade
 	private IDocumentNoBL _documentNoBL;
 	private ITrxManager _trxManager;
 	private ADReferenceService _adReferenceService;
-	private PerformanceMonitoringService _performanceMonitoringService;
 
+	private static PerformanceMonitoringService _performanceMonitoringService;
 	private static final String PM_METADATA_CLASS_NAME = "PO";
 	private static final String PM_METADATA_SAVE_EX_ACTION = "saveEx";
 	private static final String PM_METADATA_LOAD_ACTION = "load";
@@ -46,14 +46,14 @@ final class POServicesFacade
 			PerformanceMonitoringService.Metadata
 					.builder()
 					.name(PM_METADATA_CLASS_NAME)
-					.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
+					.type(PerformanceMonitoringService.Type.PO)
 					.action(PM_METADATA_SAVE_EX_ACTION)
 					.build();
 	private static final PerformanceMonitoringService.Metadata PM_METADATA_LOAD =
 			PerformanceMonitoringService.Metadata
 					.builder()
 					.name(PM_METADATA_CLASS_NAME)
-					.type(PerformanceMonitoringService.Type.REST_API_PROCESSING)
+					.type(PerformanceMonitoringService.Type.PO)
 					.action(PM_METADATA_LOAD_ACTION)
 					.build();
 
@@ -195,6 +195,11 @@ final class POServicesFacade
 	public boolean getSysConfigBooleanValue(final String sysConfigName, final boolean defaultValue, final int ad_client_id, final int ad_org_id)
 	{
 		return sysConfigBL().getBooleanValue(sysConfigName, defaultValue, ad_client_id, ad_org_id);
+	}
+
+	public boolean getSysConfigBooleanValue(final String sysConfigName, final boolean defaultValue)
+	{
+		return sysConfigBL().getBooleanValue(sysConfigName, defaultValue);
 	}
 
 	public boolean isChangeLogEnabled()

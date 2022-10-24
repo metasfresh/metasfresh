@@ -22,7 +22,7 @@
 
 package de.metas.monitoring.aspect;
 
-import de.metas.monitoring.micrometer.MicrometerPerformanceMonitoringService;
+import de.metas.monitoring.adapter.MicrometerPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.monitoring.annotation.Monitor;
 import de.metas.util.Services;
@@ -30,11 +30,11 @@ import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -50,25 +50,24 @@ import java.util.concurrent.Callable;
 public class MonitorAspect
 {
 	private final MicrometerPerformanceMonitoringService service;
+	private static final String PERF_MON_SYSCONFIG_NAME = "de.metas.monitoring.annotation.enable";
+	private static final ISysConfigBL SYS_CONFIG_BL = Services.get(ISysConfigBL.class);
+	private static final boolean SYS_CONFIG_DEFAULT_VALUE = false;
 
 	public MonitorAspect(@NonNull final MicrometerPerformanceMonitoringService service)
 	{
 		this.service = service;
 	}
 
-	@Value("${performance.monitoring.enable:false}")
-	private Boolean perfMonEnvVar;
-
 	@Around("execution(* *(..)) && @annotation(de.metas.monitoring.annotation.Monitor)")
 	public Object monitorMethod(ProceedingJoinPoint pjp) throws Throwable
 	{
-		final Callable callable = wrapAsCallable(pjp );
-
-		if(perfMonEnvVar != false)
+		if(!perfMonIsActive(PERF_MON_SYSCONFIG_NAME))
 		{
-			callable.call();
+			return pjp.proceed();
 		}
 
+		final Callable callable = wrapAsCallable(pjp);
 		final PerformanceMonitoringService.Metadata metadata;
 
 		Method method = ((MethodSignature) pjp.getSignature()).getMethod();
@@ -96,7 +95,12 @@ public class MonitorAspect
 
 	}
 
-	private static Callable<Object> wrapAsCallable(final ProceedingJoinPoint pjp)
+	private boolean perfMonIsActive(String sysconfigName)
+	{
+		return SYS_CONFIG_BL.getBooleanValue(sysconfigName, SYS_CONFIG_DEFAULT_VALUE);
+	}
+
+	private Callable<Object> wrapAsCallable(final ProceedingJoinPoint pjp)
 	{
 		Callable<Object> callable = new Callable<Object>()
 		{

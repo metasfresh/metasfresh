@@ -106,7 +106,9 @@ public interface PerformanceMonitoringService
 
 		REST_CONTROLLER_WITH_WINDOW_ID("rest-controller-with-windowId"),
 
-		INVOICE("invoice");
+		INVOICE("invoice"),
+
+		PO("po");
 
 		Type(final String code)
 		{
@@ -129,11 +131,7 @@ public interface PerformanceMonitoringService
 
 		EVENT_SEND("event-send"),
 
-		EVENT_RECEIVE("event-receive"),
-
-		SAVE("save"),
-
-		LOAD("load");
+		EVENT_RECEIVE("event-receive");
 
 		SubType(final String code)
 		{

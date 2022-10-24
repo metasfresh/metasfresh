@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.monitoring
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.monitoring.micrometer;
+package de.metas.monitoring.adapter;
 
 import lombok.Getter;
 import lombok.Setter;

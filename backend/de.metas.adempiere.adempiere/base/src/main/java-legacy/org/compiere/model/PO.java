@@ -266,6 +266,12 @@ public abstract class PO
 	}    // PO
 
 	/**
+	 * Performance Monitoring sysconfig
+	 */
+	private static final String PERF_MON_SYSCONFIG_NAME = "de.metas.monitoring.po.enable";
+	private static final boolean SYS_CONFIG_DEFAULT_VALUE = false;
+
+	/**
 	 * Logger
 	 */
 	protected transient final Logger log = LogManager.getLogger(getClass());
@@ -1701,6 +1707,11 @@ public abstract class PO
 		{
 			m_loading = true;
 
+			final boolean isPerfMonActive = services.getSysConfigBooleanValue(PERF_MON_SYSCONFIG_NAME, SYS_CONFIG_DEFAULT_VALUE);
+			if(!isPerfMonActive)
+			{
+				return load0(trxName, false); // gh #986 isRetry=false because this is our first attempt to load the record;
+			}
 			return services.performanceMonitoringServiceLoad(
 					() -> load0(trxName, false)); // gh #986 isRetry=false because this is our first attempt to load the record;
 		}
@@ -2820,6 +2831,11 @@ public abstract class PO
 	 */
 	public final void saveEx() throws AdempiereException
 	{
+		final boolean isPerfMonActive = services.getSysConfigBooleanValue(PERF_MON_SYSCONFIG_NAME, SYS_CONFIG_DEFAULT_VALUE);
+		if(!isPerfMonActive)
+		{
+			saveEx0();
+		}
 		services.performanceMonitoringServiceSaveEx(() -> saveEx0());
 	}
 

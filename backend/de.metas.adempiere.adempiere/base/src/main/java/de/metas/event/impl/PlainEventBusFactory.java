@@ -8,7 +8,7 @@ import de.metas.event.IEventListener;
 import de.metas.event.Topic;
 import de.metas.event.log.EventLogService;
 import de.metas.event.log.EventLogsRepository;
-import de.metas.monitoring.micrometer.MicrometerPerformanceMonitoringService;
+import de.metas.monitoring.adapter.MicrometerPerformanceMonitoringService;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import org.compiere.Adempiere;
 
