@@ -286,3 +286,153 @@ INSERT INTO t_alter_column values('externalsystem_config_sap','SFTP_Username',nu
 -- 2022-10-20T11:52:40.700570700Z
 INSERT INTO t_alter_column values('externalsystem_config_sap','SFTP_TargetDirectory','VARCHAR(255)',null,null)
 ;
+
+-- Element: ProcessedDirectory
+-- 2022-10-24T11:29:07.473517500Z
+UPDATE AD_Element_Trl SET Name='Verarbeitet-Verzeichnis', PrintName='Verarbeitet-Verzeichnis',Updated=TO_TIMESTAMP('2022-10-24 14:29:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581583 AND AD_Language='de_CH'
+;
+
+-- 2022-10-24T11:29:07.492898600Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581583,'de_CH')
+;
+
+-- Element: ProcessedDirectory
+-- 2022-10-24T11:29:12.719038300Z
+UPDATE AD_Element_Trl SET Name='Verarbeitet-Verzeichnis', PrintName='Verarbeitet-Verzeichnis',Updated=TO_TIMESTAMP('2022-10-24 14:29:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581583 AND AD_Language='de_DE'
+;
+
+-- 2022-10-24T11:29:12.720343500Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(581583,'de_DE')
+;
+
+-- 2022-10-24T11:29:12.724304Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581583,'de_DE')
+;
+
+-- Element: ProcessedDirectory
+-- 2022-10-24T11:31:39.853029800Z
+UPDATE AD_Element_Trl SET Description='Defines where files should be moved after being successfully processed relative to the sftp target location.',Updated=TO_TIMESTAMP('2022-10-24 14:31:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581583 AND AD_Language='en_US'
+;
+
+-- 2022-10-24T11:31:39.855042300Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581583,'en_US')
+;
+
+-- Element: ProcessedDirectory
+-- 2022-10-24T11:31:43.579539900Z
+UPDATE AD_Element_Trl SET Description='Defines where files should be moved after being successfully processed relative to the sftp target location.',Updated=TO_TIMESTAMP('2022-10-24 14:31:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581583 AND AD_Language='nl_NL'
+;
+
+-- 2022-10-24T11:31:43.581499400Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581583,'nl_NL')
+;
+
+-- Element: ProcessedDirectory
+-- 2022-10-24T11:32:11.690137300Z
+UPDATE AD_Element_Trl SET Description='Defines where files should be moved after being successfully processed relative to the current sftp target location.',Updated=TO_TIMESTAMP('2022-10-24 14:32:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581583 AND AD_Language='en_US'
+;
+
+-- 2022-10-24T11:32:11.691106Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581583,'en_US')
+;
+
+-- Element: ProcessedDirectory
+-- 2022-10-24T11:32:20.796852100Z
+UPDATE AD_Element_Trl SET Description='Defines where files should be moved after being successfully processed relative to the current sftp target location.',Updated=TO_TIMESTAMP('2022-10-24 14:32:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581583 AND AD_Language='nl_NL'
+;
+
+-- 2022-10-24T11:32:20.798856Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581583,'nl_NL')
+;
+
+-- Element: ProcessedDirectory
+-- 2022-10-24T11:32:47.882169Z
+UPDATE AD_Element_Trl SET Description='Legt fest, wohin die Dateien nach erfolgreicher Verarbeitung relativ zum aktuellen sftp-Zielspeicherort verschoben werden sollen.',Updated=TO_TIMESTAMP('2022-10-24 14:32:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581583 AND AD_Language='de_DE'
+;
+
+-- 2022-10-24T11:32:47.884172500Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(581583,'de_DE')
+;
+
+-- 2022-10-24T11:32:47.884172500Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581583,'de_DE')
+;
+
+-- Element: ProcessedDirectory
+-- 2022-10-24T11:32:53.372111Z
+UPDATE AD_Element_Trl SET Description='Legt fest, wohin die Dateien nach erfolgreicher Verarbeitung relativ zum aktuellen sftp-Zielspeicherort verschoben werden sollen.',Updated=TO_TIMESTAMP('2022-10-24 14:32:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581583 AND AD_Language='de_CH'
+;
+
+-- 2022-10-24T11:32:53.373189400Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581583,'de_CH')
+;
+
+-- 2022-10-24T11:33:08.309931300Z
+INSERT INTO t_alter_column values('externalsystem_config_sap','ProcessedDirectory','VARCHAR(255)',null,'move')
+;
+
+-- 2022-10-24T11:33:08.317825600Z
+UPDATE ExternalSystem_Config_SAP SET ProcessedDirectory='move' WHERE ProcessedDirectory IS NULL
+;
+
+-- Element: ErroredDirectory
+-- 2022-10-24T11:33:41.935578200Z
+UPDATE AD_Element_Trl SET Name='Fehler-Verzeichnis', PrintName='Fehler-Verzeichnis',Updated=TO_TIMESTAMP('2022-10-24 14:33:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581584 AND AD_Language='de_CH'
+;
+
+-- 2022-10-24T11:33:41.937653600Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581584,'de_CH')
+;
+
+-- Element: ErroredDirectory
+-- 2022-10-24T11:33:47.287142300Z
+UPDATE AD_Element_Trl SET Name='Fehler-Verzeichnis', PrintName='Fehler-Verzeichnis',Updated=TO_TIMESTAMP('2022-10-24 14:33:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581584 AND AD_Language='de_DE'
+;
+
+-- 2022-10-24T11:33:47.289142100Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(581584,'de_DE')
+;
+
+-- 2022-10-24T11:33:47.294145200Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581584,'de_DE')
+;
+
+-- Element: ErroredDirectory
+-- 2022-10-24T11:34:08.263874300Z
+UPDATE AD_Element_Trl SET Description='Defines where files should be moved after attempting to process them with error, relative to the current sftp target location.',Updated=TO_TIMESTAMP('2022-10-24 14:34:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581584 AND AD_Language='en_US'
+;
+
+-- 2022-10-24T11:34:08.265875700Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581584,'en_US')
+;
+
+-- Element: ErroredDirectory
+-- 2022-10-24T11:34:13.235094400Z
+UPDATE AD_Element_Trl SET Description='Defines where files should be moved after attempting to process them with error, relative to the current sftp target location.',Updated=TO_TIMESTAMP('2022-10-24 14:34:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581584 AND AD_Language='nl_NL'
+;
+
+-- 2022-10-24T11:34:13.237097900Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581584,'nl_NL')
+;
+
+-- Element: ErroredDirectory
+-- 2022-10-24T11:34:40.199883600Z
+UPDATE AD_Element_Trl SET Description='Legt fest, wohin die Dateien nach einem fehlerhaften Verarbeitungsversuch verschoben werden sollen, relativ zum aktuellen sftp-Zielort.',Updated=TO_TIMESTAMP('2022-10-24 14:34:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581584 AND AD_Language='de_DE'
+;
+
+-- 2022-10-24T11:34:40.200883100Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(581584,'de_DE')
+;
+
+-- 2022-10-24T11:34:40.201901400Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581584,'de_DE')
+;
+
+-- Element: ErroredDirectory
+-- 2022-10-24T11:34:44.655378100Z
+UPDATE AD_Element_Trl SET Description='Legt fest, wohin die Dateien nach einem fehlerhaften Verarbeitungsversuch verschoben werden sollen, relativ zum aktuellen sftp-Zielort.',Updated=TO_TIMESTAMP('2022-10-24 14:34:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581584 AND AD_Language='de_CH'
+;
+
+-- 2022-10-24T11:34:44.657447500Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581584,'de_CH')
+;

@@ -58,11 +58,25 @@ public class ExternalSystem_Config_SAP
 			ifColumnsChanged = { I_ExternalSystem_Config_SAP.COLUMNNAME_SFTP_TargetDirectory })
 	public void sanitizeTargetDirectory(final I_ExternalSystem_Config_SAP sapConfig)
 	{
-		sapConfig.setSFTP_TargetDirectory(sanitizeTargetDirectory(sapConfig.getSFTP_TargetDirectory()));
+		sapConfig.setSFTP_TargetDirectory(sanitizeDirectoryRelativePath(sapConfig.getSFTP_TargetDirectory()));
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_ExternalSystem_Config_SAP.COLUMNNAME_ProcessedDirectory })
+	public void sanitizeProcessedDirectory(final I_ExternalSystem_Config_SAP sapConfig)
+	{
+		sapConfig.setSFTP_TargetDirectory(sanitizeDirectoryRelativePath(sapConfig.getProcessedDirectory()));
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_ExternalSystem_Config_SAP.COLUMNNAME_ErroredDirectory })
+	public void sanitizeErroredDirectory(final I_ExternalSystem_Config_SAP sapConfig)
+	{
+		sapConfig.setSFTP_TargetDirectory(sanitizeDirectoryRelativePath(sapConfig.getErroredDirectory()));
 	}
 
 	@Nullable
-	private static String sanitizeTargetDirectory(@Nullable final String sftpTargetDirectory)
+	private static String sanitizeDirectoryRelativePath(@Nullable final String sftpTargetDirectory)
 	{
 		if (sftpTargetDirectory == null)
 		{
