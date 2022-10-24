@@ -52,15 +52,13 @@ public class ExternalSystemAmazonConfig implements IExternalSystemChildConfig
 	@NonNull
 	String refreshToken;
 	@NonNull
-	String region;
+	String regionName;
 	@NonNull
 	String clientId;
 	@NonNull
 	String roleArn;
-	@NonNull
 	boolean active;
-	@NonNull
-	boolean debug;
+	boolean debugProtocol;
 
 	@Builder(toBuilder = true)
 	public ExternalSystemAmazonConfig(final @NonNull ExternalSystemAmazonConfigId id,
@@ -74,10 +72,10 @@ public class ExternalSystemAmazonConfig implements IExternalSystemChildConfig
 			final @NonNull String lwaEndpoint,
 			final @NonNull String secretKey,
 			final @NonNull String refreshToken,
-			final @NonNull String region,
+			final @NonNull String regionName,
 			final @NonNull String roleArn,
-			final @NonNull boolean active,
-			final @NonNull boolean debug)
+			final boolean active,
+			final boolean debugProtocol)
 	{
 		this.id = id;
 		this.parentId = parentId;
@@ -90,10 +88,10 @@ public class ExternalSystemAmazonConfig implements IExternalSystemChildConfig
 		this.lwaEndpoint = lwaEndpoint;
 		this.secretKey = secretKey;
 		this.refreshToken = refreshToken;
-		this.region = region;
+		this.regionName = regionName;
 		this.roleArn = roleArn;
 		this.active = active;
-		this.debug = debug;
+		this.debugProtocol = debugProtocol;
 	}
 
 	public static ExternalSystemAmazonConfig cast(@NonNull final IExternalSystemChildConfig childConfig)

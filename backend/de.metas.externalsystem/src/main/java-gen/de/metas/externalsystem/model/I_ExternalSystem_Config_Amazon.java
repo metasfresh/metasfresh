@@ -22,19 +22,20 @@
 
 package de.metas.externalsystem.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
-/** Generated Interface for ExternalSystem_Config_AdkEx_Amazon
+import javax.annotation.Nullable;
+
+/** Generated Interface for ExternalSystem_Config_Amazon
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_ExternalSystem_Config_AdkEx_Amazon 
+public interface I_ExternalSystem_Config_Amazon 
 {
 
-	String Table_Name = "ExternalSystem_Config_AdkEx_Amazon";
+	String Table_Name = "ExternalSystem_Config_Amazon";
 
-//	/** AD_Table_ID=542201 */
+//	/** AD_Table_ID=542249 */
 //	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
@@ -58,7 +59,7 @@ public interface I_ExternalSystem_Config_AdkEx_Amazon
 	 */
 	java.lang.String getAccessKeyId();
 
-	ModelColumn<I_ExternalSystem_Config_AdkEx_Amazon, Object> COLUMN_AccessKeyId = new ModelColumn<>(I_ExternalSystem_Config_AdkEx_Amazon.class, "AccessKeyId", null);
+	ModelColumn<I_ExternalSystem_Config_Amazon, Object> COLUMN_AccessKeyId = new ModelColumn<>(I_ExternalSystem_Config_Amazon.class, "AccessKeyId", null);
 	String COLUMNNAME_AccessKeyId = "AccessKeyId";
 
 	/**
@@ -77,7 +78,7 @@ public interface I_ExternalSystem_Config_AdkEx_Amazon
 	 * Set Organisation.
 	 * Organisational entity within client
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -87,7 +88,7 @@ public interface I_ExternalSystem_Config_AdkEx_Amazon
 	 * Get Organisation.
 	 * Organisational entity within client
 	 *
-	 * <br>Type: Search
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -97,7 +98,6 @@ public interface I_ExternalSystem_Config_AdkEx_Amazon
 
 	/**
 	 * Set Base Path.
-	 * Base Path
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -107,7 +107,6 @@ public interface I_ExternalSystem_Config_AdkEx_Amazon
 
 	/**
 	 * Get Base Path.
-	 * Base Path
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -115,12 +114,11 @@ public interface I_ExternalSystem_Config_AdkEx_Amazon
 	 */
 	java.lang.String getBasePath();
 
-	ModelColumn<I_ExternalSystem_Config_AdkEx_Amazon, Object> COLUMN_BasePath = new ModelColumn<>(I_ExternalSystem_Config_AdkEx_Amazon.class, "BasePath", null);
+	ModelColumn<I_ExternalSystem_Config_Amazon, Object> COLUMN_BasePath = new ModelColumn<>(I_ExternalSystem_Config_Amazon.class, "BasePath", null);
 	String COLUMNNAME_BasePath = "BasePath";
 
 	/**
-	 * Set ClientID.
-	 * LWA client identifier
+	 * Set Client ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -129,8 +127,7 @@ public interface I_ExternalSystem_Config_AdkEx_Amazon
 	void setClientID (java.lang.String ClientID);
 
 	/**
-	 * Get ClientID.
-	 * LWA client identifier
+	 * Get Client ID.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -138,12 +135,11 @@ public interface I_ExternalSystem_Config_AdkEx_Amazon
 	 */
 	java.lang.String getClientID();
 
-	ModelColumn<I_ExternalSystem_Config_AdkEx_Amazon, Object> COLUMN_ClientID = new ModelColumn<>(I_ExternalSystem_Config_AdkEx_Amazon.class, "ClientID", null);
+	ModelColumn<I_ExternalSystem_Config_Amazon, Object> COLUMN_ClientID = new ModelColumn<>(I_ExternalSystem_Config_Amazon.class, "ClientID", null);
 	String COLUMNNAME_ClientID = "ClientID";
 
 	/**
-	 * Set ClientSecret.
-	 * LWA client secret
+	 * Set Client Secret.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -152,8 +148,7 @@ public interface I_ExternalSystem_Config_AdkEx_Amazon
 	void setClientSecret (java.lang.String ClientSecret);
 
 	/**
-	 * Get ClientSecret.
-	 * LWA client secret
+	 * Get Client Secret.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -161,7 +156,7 @@ public interface I_ExternalSystem_Config_AdkEx_Amazon
 	 */
 	java.lang.String getClientSecret();
 
-	ModelColumn<I_ExternalSystem_Config_AdkEx_Amazon, Object> COLUMN_ClientSecret = new ModelColumn<>(I_ExternalSystem_Config_AdkEx_Amazon.class, "ClientSecret", null);
+	ModelColumn<I_ExternalSystem_Config_Amazon, Object> COLUMN_ClientSecret = new ModelColumn<>(I_ExternalSystem_Config_Amazon.class, "ClientSecret", null);
 	String COLUMNNAME_ClientSecret = "ClientSecret";
 
 	/**
@@ -174,12 +169,11 @@ public interface I_ExternalSystem_Config_AdkEx_Amazon
 	 */
 	java.sql.Timestamp getCreated();
 
-	ModelColumn<I_ExternalSystem_Config_AdkEx_Amazon, Object> COLUMN_Created = new ModelColumn<>(I_ExternalSystem_Config_AdkEx_Amazon.class, "Created", null);
+	ModelColumn<I_ExternalSystem_Config_Amazon, Object> COLUMN_Created = new ModelColumn<>(I_ExternalSystem_Config_Amazon.class, "Created", null);
 	String COLUMNNAME_Created = "Created";
 
 	/**
-	 * Get Created By.
-	 * User who created this records
+	 * Get Created by.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -190,25 +184,27 @@ public interface I_ExternalSystem_Config_AdkEx_Amazon
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set Amazon Config.
+	 * Set External system config Amazon.
+	 * External system config Amazon
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setExternalSystem_Config_AdkEx_Amazon_ID (int ExternalSystem_Config_AdkEx_Amazon_ID);
+	void setExternalSystem_Config_Amazon_ID (int ExternalSystem_Config_Amazon_ID);
 
 	/**
-	 * Get Amazon Config.
+	 * Get External system config Amazon.
+	 * External system config Amazon
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getExternalSystem_Config_AdkEx_Amazon_ID();
+	int getExternalSystem_Config_Amazon_ID();
 
-	ModelColumn<I_ExternalSystem_Config_AdkEx_Amazon, Object> COLUMN_ExternalSystem_Config_AdkEx_Amazon_ID = new ModelColumn<>(I_ExternalSystem_Config_AdkEx_Amazon.class, "ExternalSystem_Config_AdkEx_Amazon_ID", null);
-	String COLUMNNAME_ExternalSystem_Config_AdkEx_Amazon_ID = "ExternalSystem_Config_AdkEx_Amazon_ID";
+	ModelColumn<I_ExternalSystem_Config_Amazon, Object> COLUMN_ExternalSystem_Config_Amazon_ID = new ModelColumn<>(I_ExternalSystem_Config_Amazon.class, "ExternalSystem_Config_Amazon_ID", null);
+	String COLUMNNAME_ExternalSystem_Config_Amazon_ID = "ExternalSystem_Config_Amazon_ID";
 
 	/**
 	 * Set External System Config.
@@ -228,7 +224,7 @@ public interface I_ExternalSystem_Config_AdkEx_Amazon
 	 */
 	int getExternalSystem_Config_ID();
 
-	ModelColumn<I_ExternalSystem_Config_AdkEx_Amazon, Object> COLUMN_ExternalSystem_Config_ID = new ModelColumn<>(I_ExternalSystem_Config_AdkEx_Amazon.class, "ExternalSystem_Config_ID", null);
+	ModelColumn<I_ExternalSystem_Config_Amazon, Object> COLUMN_ExternalSystem_Config_ID = new ModelColumn<>(I_ExternalSystem_Config_Amazon.class, "ExternalSystem_Config_ID", null);
 	String COLUMNNAME_ExternalSystem_Config_ID = "ExternalSystem_Config_ID";
 
 	/**
@@ -249,7 +245,7 @@ public interface I_ExternalSystem_Config_AdkEx_Amazon
 	 */
 	java.lang.String getExternalSystemValue();
 
-	ModelColumn<I_ExternalSystem_Config_AdkEx_Amazon, Object> COLUMN_ExternalSystemValue = new ModelColumn<>(I_ExternalSystem_Config_AdkEx_Amazon.class, "ExternalSystemValue", null);
+	ModelColumn<I_ExternalSystem_Config_Amazon, Object> COLUMN_ExternalSystemValue = new ModelColumn<>(I_ExternalSystem_Config_Amazon.class, "ExternalSystemValue", null);
 	String COLUMNNAME_ExternalSystemValue = "ExternalSystemValue";
 
 	/**
@@ -272,34 +268,32 @@ public interface I_ExternalSystem_Config_AdkEx_Amazon
 	 */
 	boolean isActive();
 
-	ModelColumn<I_ExternalSystem_Config_AdkEx_Amazon, Object> COLUMN_IsActive = new ModelColumn<>(I_ExternalSystem_Config_AdkEx_Amazon.class, "IsActive", null);
+	ModelColumn<I_ExternalSystem_Config_Amazon, Object> COLUMN_IsActive = new ModelColumn<>(I_ExternalSystem_Config_Amazon.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set IsDebug.
-	 * Enable/disable debugging for this API
+	 * Set Debug protocol.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setIsDebug (boolean IsDebug);
+	void setIsDebugProtocol (boolean IsDebugProtocol);
 
 	/**
-	 * Get IsDebug.
-	 * Enable/disable debugging for this API
+	 * Get Debug protocol.
 	 *
 	 * <br>Type: YesNo
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	boolean isDebug();
+	boolean isDebugProtocol();
 
-	ModelColumn<I_ExternalSystem_Config_AdkEx_Amazon, Object> COLUMN_IsDebug = new ModelColumn<>(I_ExternalSystem_Config_AdkEx_Amazon.class, "IsDebug", null);
-	String COLUMNNAME_IsDebug = "IsDebug";
+	ModelColumn<I_ExternalSystem_Config_Amazon, Object> COLUMN_IsDebugProtocol = new ModelColumn<>(I_ExternalSystem_Config_Amazon.class, "IsDebugProtocol", null);
+	String COLUMNNAME_IsDebugProtocol = "IsDebugProtocol";
 
 	/**
-	 * Set LWAEndpoint.
+	 * Set LWA Endpoint.
 	 * LWA authentication server URI
 	 *
 	 * <br>Type: String
@@ -309,7 +303,7 @@ public interface I_ExternalSystem_Config_AdkEx_Amazon
 	void setLWAEndpoint (java.lang.String LWAEndpoint);
 
 	/**
-	 * Get LWAEndpoint.
+	 * Get LWA Endpoint.
 	 * LWA authentication server URI
 	 *
 	 * <br>Type: String
@@ -318,7 +312,7 @@ public interface I_ExternalSystem_Config_AdkEx_Amazon
 	 */
 	java.lang.String getLWAEndpoint();
 
-	ModelColumn<I_ExternalSystem_Config_AdkEx_Amazon, Object> COLUMN_LWAEndpoint = new ModelColumn<>(I_ExternalSystem_Config_AdkEx_Amazon.class, "LWAEndpoint", null);
+	ModelColumn<I_ExternalSystem_Config_Amazon, Object> COLUMN_LWAEndpoint = new ModelColumn<>(I_ExternalSystem_Config_Amazon.class, "LWAEndpoint", null);
 	String COLUMNNAME_LWAEndpoint = "LWAEndpoint";
 
 	/**
@@ -339,52 +333,52 @@ public interface I_ExternalSystem_Config_AdkEx_Amazon
 	 */
 	java.lang.String getName();
 
-	ModelColumn<I_ExternalSystem_Config_AdkEx_Amazon, Object> COLUMN_Name = new ModelColumn<>(I_ExternalSystem_Config_AdkEx_Amazon.class, "Name", null);
+	ModelColumn<I_ExternalSystem_Config_Amazon, Object> COLUMN_Name = new ModelColumn<>(I_ExternalSystem_Config_Amazon.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
 
 	/**
-	 * Set RefreshToken.
-	 * LWA refresh token
+	 * Set Refresh Token.
 	 *
-	 * <br>Type: Text
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setRefreshToken (@Nullable java.lang.String RefreshToken);
 
 	/**
-	 * Get RefreshToken.
-	 * LWA refresh token
+	 * Get Refresh Token.
 	 *
-	 * <br>Type: Text
+	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	@Nullable java.lang.String getRefreshToken();
 
-	ModelColumn<I_ExternalSystem_Config_AdkEx_Amazon, Object> COLUMN_RefreshToken = new ModelColumn<>(I_ExternalSystem_Config_AdkEx_Amazon.class, "RefreshToken", null);
+	ModelColumn<I_ExternalSystem_Config_Amazon, Object> COLUMN_RefreshToken = new ModelColumn<>(I_ExternalSystem_Config_Amazon.class, "RefreshToken", null);
 	String COLUMNNAME_RefreshToken = "RefreshToken";
 
 	/**
-	 * Set Region.
+	 * Set Region Name.
+	 * Name of the Region
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setRegion (@Nullable java.lang.String Region);
+	void setRegionName (@Nullable java.lang.String RegionName);
 
 	/**
-	 * Get Region.
+	 * Get Region Name.
+	 * Name of the Region
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getRegion();
+	@Nullable java.lang.String getRegionName();
 
-	ModelColumn<I_ExternalSystem_Config_AdkEx_Amazon, Object> COLUMN_Region = new ModelColumn<>(I_ExternalSystem_Config_AdkEx_Amazon.class, "Region", null);
-	String COLUMNNAME_Region = "Region";
+	ModelColumn<I_ExternalSystem_Config_Amazon, Object> COLUMN_RegionName = new ModelColumn<>(I_ExternalSystem_Config_Amazon.class, "RegionName", null);
+	String COLUMNNAME_RegionName = "RegionName";
 
 	/**
 	 * Set RoleArn.
@@ -406,7 +400,7 @@ public interface I_ExternalSystem_Config_AdkEx_Amazon
 	 */
 	java.lang.String getRoleArn();
 
-	ModelColumn<I_ExternalSystem_Config_AdkEx_Amazon, Object> COLUMN_RoleArn = new ModelColumn<>(I_ExternalSystem_Config_AdkEx_Amazon.class, "RoleArn", null);
+	ModelColumn<I_ExternalSystem_Config_Amazon, Object> COLUMN_RoleArn = new ModelColumn<>(I_ExternalSystem_Config_Amazon.class, "RoleArn", null);
 	String COLUMNNAME_RoleArn = "RoleArn";
 
 	/**
@@ -414,22 +408,22 @@ public interface I_ExternalSystem_Config_AdkEx_Amazon
 	 * AWS secret access key
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setSecretKey (java.lang.String SecretKey);
+	void setSecretKey (@Nullable java.lang.String SecretKey);
 
 	/**
 	 * Get Secret Key.
 	 * AWS secret access key
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getSecretKey();
+	@Nullable java.lang.String getSecretKey();
 
-	ModelColumn<I_ExternalSystem_Config_AdkEx_Amazon, Object> COLUMN_SecretKey = new ModelColumn<>(I_ExternalSystem_Config_AdkEx_Amazon.class, "SecretKey", null);
+	ModelColumn<I_ExternalSystem_Config_Amazon, Object> COLUMN_SecretKey = new ModelColumn<>(I_ExternalSystem_Config_Amazon.class, "SecretKey", null);
 	String COLUMNNAME_SecretKey = "SecretKey";
 
 	/**
@@ -442,12 +436,11 @@ public interface I_ExternalSystem_Config_AdkEx_Amazon
 	 */
 	java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_ExternalSystem_Config_AdkEx_Amazon, Object> COLUMN_Updated = new ModelColumn<>(I_ExternalSystem_Config_AdkEx_Amazon.class, "Updated", null);
+	ModelColumn<I_ExternalSystem_Config_Amazon, Object> COLUMN_Updated = new ModelColumn<>(I_ExternalSystem_Config_Amazon.class, "Updated", null);
 	String COLUMNNAME_Updated = "Updated";
 
 	/**
-	 * Get Updated By.
-	 * User who updated this records
+	 * Get Updated by.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: true

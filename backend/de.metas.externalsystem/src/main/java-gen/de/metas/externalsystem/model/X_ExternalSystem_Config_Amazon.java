@@ -27,23 +27,23 @@ import java.sql.ResultSet;
 import java.util.Properties;
 import javax.annotation.Nullable;
 
-/** Generated Model for ExternalSystem_Config_AdkEx_Amazon
+/** Generated Model for ExternalSystem_Config_Amazon
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public class X_ExternalSystem_Config_AdkEx_Amazon extends org.compiere.model.PO implements I_ExternalSystem_Config_AdkEx_Amazon, org.compiere.model.I_Persistent 
+public class X_ExternalSystem_Config_Amazon extends org.compiere.model.PO implements I_ExternalSystem_Config_Amazon, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1852558116L;
+	private static final long serialVersionUID = -1618278417L;
 
     /** Standard Constructor */
-    public X_ExternalSystem_Config_AdkEx_Amazon (final Properties ctx, final int ExternalSystem_Config_AdkEx_Amazon_ID, @Nullable final String trxName)
+    public X_ExternalSystem_Config_Amazon (final Properties ctx, final int ExternalSystem_Config_Amazon_ID, @Nullable final String trxName)
     {
-      super (ctx, ExternalSystem_Config_AdkEx_Amazon_ID, trxName);
+      super (ctx, ExternalSystem_Config_Amazon_ID, trxName);
     }
 
     /** Load Constructor */
-    public X_ExternalSystem_Config_AdkEx_Amazon (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
+    public X_ExternalSystem_Config_Amazon (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
@@ -105,18 +105,18 @@ public class X_ExternalSystem_Config_AdkEx_Amazon extends org.compiere.model.PO 
 	}
 
 	@Override
-	public void setExternalSystem_Config_AdkEx_Amazon_ID (final int ExternalSystem_Config_AdkEx_Amazon_ID)
+	public void setExternalSystem_Config_Amazon_ID (final int ExternalSystem_Config_Amazon_ID)
 	{
-		if (ExternalSystem_Config_AdkEx_Amazon_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_ExternalSystem_Config_AdkEx_Amazon_ID, null);
+		if (ExternalSystem_Config_Amazon_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_ExternalSystem_Config_Amazon_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_ExternalSystem_Config_AdkEx_Amazon_ID, ExternalSystem_Config_AdkEx_Amazon_ID);
+			set_ValueNoCheck (COLUMNNAME_ExternalSystem_Config_Amazon_ID, ExternalSystem_Config_Amazon_ID);
 	}
 
 	@Override
-	public int getExternalSystem_Config_AdkEx_Amazon_ID() 
+	public int getExternalSystem_Config_Amazon_ID() 
 	{
-		return get_ValueAsInt(COLUMNNAME_ExternalSystem_Config_AdkEx_Amazon_ID);
+		return get_ValueAsInt(COLUMNNAME_ExternalSystem_Config_Amazon_ID);
 	}
 
 	@Override
@@ -147,15 +147,15 @@ public class X_ExternalSystem_Config_AdkEx_Amazon extends org.compiere.model.PO 
 	}
 
 	@Override
-	public void setIsDebug (final boolean IsDebug)
+	public void setIsDebugProtocol (final boolean IsDebugProtocol)
 	{
-		set_Value (COLUMNNAME_IsDebug, IsDebug);
+		set_Value (COLUMNNAME_IsDebugProtocol, IsDebugProtocol);
 	}
 
 	@Override
-	public boolean isDebug() 
+	public boolean isDebugProtocol() 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsDebug);
+		return get_ValueAsBoolean(COLUMNNAME_IsDebugProtocol);
 	}
 
 	@Override
@@ -195,15 +195,15 @@ public class X_ExternalSystem_Config_AdkEx_Amazon extends org.compiere.model.PO 
 	}
 
 	@Override
-	public void setRegion (final @Nullable java.lang.String Region)
+	public void setRegionName (final @Nullable java.lang.String RegionName)
 	{
-		set_Value (COLUMNNAME_Region, Region);
+		set_Value (COLUMNNAME_RegionName, RegionName);
 	}
 
 	@Override
-	public java.lang.String getRegion() 
+	public java.lang.String getRegionName() 
 	{
-		return get_ValueAsString(COLUMNNAME_Region);
+		return get_ValueAsString(COLUMNNAME_RegionName);
 	}
 
 	@Override
@@ -219,7 +219,7 @@ public class X_ExternalSystem_Config_AdkEx_Amazon extends org.compiere.model.PO 
 	}
 
 	@Override
-	public void setSecretKey (final java.lang.String SecretKey)
+	public void setSecretKey (final @Nullable java.lang.String SecretKey)
 	{
 		set_Value (COLUMNNAME_SecretKey, SecretKey);
 	}

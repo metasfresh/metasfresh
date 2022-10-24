@@ -29,7 +29,7 @@ import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.amazon.ExternalSystemAmazonConfig;
 import de.metas.externalsystem.amazon.ExternalSystemAmazonConfigId;
-import de.metas.externalsystem.model.I_ExternalSystem_Config_AdkEx_Amazon;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_Amazon;
 import de.metas.order.impl.DocTypeService;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.process.IProcessPreconditionsContext;
@@ -91,14 +91,14 @@ public class InvokeAmazonAction extends InvokeExternalSystemProcess
 		parameters.put(PARAM_BASE_PATH, amazonConfig.getBasePath());
 		parameters.put("AccessKeyId", amazonConfig.getAccessKeyId());
 		parameters.put("RefreshToken", amazonConfig.getRefreshToken());
-		parameters.put("Region", amazonConfig.getRegion());
+		parameters.put("Region", amazonConfig.getRegionName());
 		parameters.put("RoleArn", amazonConfig.getRoleArn());
 		parameters.put(PARAM_CLIENT_ID, amazonConfig.getClientId());
 		parameters.put(PARAM_CLIENT_SECRET, amazonConfig.getClientSecret());
 		parameters.put("LwaEndpoint", amazonConfig.getLwaEndpoint());
 
 		parameters.put("Active", Boolean.toString(amazonConfig.isActive()));
-		parameters.put("Debug", Boolean.toString(amazonConfig.isDebug()));
+		parameters.put("Debug", Boolean.toString(amazonConfig.isDebugProtocol()));
 
 		parameters.put(PARAM_CHILD_CONFIG_VALUE, amazonConfig.getValue());
 
@@ -131,7 +131,7 @@ public class InvokeAmazonAction extends InvokeExternalSystemProcess
 	{
 		return context.getSelectedIncludedRecords()
 				.stream()
-				.filter(recordRef -> I_ExternalSystem_Config_AdkEx_Amazon.Table_Name.equals(recordRef.getTableName()))
+				.filter(recordRef -> I_ExternalSystem_Config_Amazon.Table_Name.equals(recordRef.getTableName()))
 				.count();
 	}
 

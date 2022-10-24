@@ -45,8 +45,8 @@ import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlPluFileConfigId;
 import de.metas.externalsystem.leichmehl.ReplacementSource;
 import de.metas.externalsystem.leichmehl.TargetFieldType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
-import de.metas.externalsystem.model.I_ExternalSystem_Config_AdkEx_Amazon;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_Amazon;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Ebay;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Ebay_Mapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
@@ -1099,26 +1099,34 @@ public class ExternalSystemConfigRepo
 	}
 
 	@NonNull
-	private Optional<I_ExternalSystem_Config_AdkEx_Amazon> getAmazonConfigByValue(@NonNull final String value)
+	private ExternalSystemParentConfig getById(@NonNull final ExternalSystemAmazonConfigId id)
 	{
-		return queryBL.createQueryBuilder(I_ExternalSystem_Config_AdkEx_Amazon.class)
+		final I_ExternalSystem_Config_Amazon config = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config_Amazon.class);
+
+		return getExternalSystemParentConfig(config);
+	}
+
+	@NonNull
+	private Optional<I_ExternalSystem_Config_Amazon> getAmazonConfigByValue(@NonNull final String value)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_Amazon.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_ExternalSystem_Config_AdkEx_Amazon.COLUMNNAME_ExternalSystemValue, value)
+				.addEqualsFilter(I_ExternalSystem_Config_Amazon.COLUMNNAME_ExternalSystemValue, value)
 				.create()
-				.firstOnlyOptional(I_ExternalSystem_Config_AdkEx_Amazon.class);
+				.firstOnlyOptional(I_ExternalSystem_Config_Amazon.class);
 	}
 	@NonNull
 	private Optional<IExternalSystemChildConfig> getAmazonConfigByParentId(@NonNull final ExternalSystemParentConfigId id)
 	{
-		return queryBL.createQueryBuilder(I_ExternalSystem_Config_AdkEx_Amazon.class)
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_Amazon.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_ExternalSystem_Config_AdkEx_Amazon.COLUMNNAME_ExternalSystem_Config_ID, id.getRepoId())
+				.addEqualsFilter(I_ExternalSystem_Config_Amazon.COLUMNNAME_ExternalSystem_Config_ID, id.getRepoId())
 				.create()
-				.firstOnlyOptional(I_ExternalSystem_Config_AdkEx_Amazon.class)
+				.firstOnlyOptional(I_ExternalSystem_Config_Amazon.class)
 				.map(ex -> buildExternalSystemAmazonConfig(ex, id));
 	}
 	@NonNull
-	private ExternalSystemParentConfig getExternalSystemParentConfig(@NonNull final I_ExternalSystem_Config_AdkEx_Amazon config)
+	private ExternalSystemParentConfig getExternalSystemParentConfig(@NonNull final I_ExternalSystem_Config_Amazon config)
 	{
 		final ExternalSystemParentConfigId parentConfigId = ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID());
 
@@ -1130,11 +1138,11 @@ public class ExternalSystemConfigRepo
 	}
 	@NonNull
 	private ExternalSystemAmazonConfig buildExternalSystemAmazonConfig(
-			@NonNull final I_ExternalSystem_Config_AdkEx_Amazon config,
+			@NonNull final I_ExternalSystem_Config_Amazon config,
 			@NonNull final ExternalSystemParentConfigId parentConfigId)
 	{
 		final ExternalSystemAmazonConfigId externalSystemAmazonConfigId =
-				ExternalSystemAmazonConfigId.ofRepoId(config.getExternalSystem_Config_AdkEx_Amazon_ID());
+				ExternalSystemAmazonConfigId.ofRepoId(config.getExternalSystem_Config_Amazon_ID());
 
 		final ExternalSystemAmazonConfig.ExternalSystemAmazonConfigBuilder configBuilder = ExternalSystemAmazonConfig.builder();
 
@@ -1150,9 +1158,9 @@ public class ExternalSystemConfigRepo
 				.lwaEndpoint(config.getLWAEndpoint())
 				.secretKey(config.getSecretKey())
 				.refreshToken(config.getRefreshToken())
-				.region(config.getRegion())
+				.regionName(config.getRegionName())
 				.roleArn(config.getRoleArn())
-				.debug(config.isDebug())
+				.debugProtocol(config.isDebugProtocol())
 				.active(config.isActive())
 				.build();
 	}
