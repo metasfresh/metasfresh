@@ -34,7 +34,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 
-@Interceptor(ExternalSystem_Config_SAP.class)
+@Interceptor(I_ExternalSystem_Config_SAP.class)
 @Component
 public class ExternalSystem_Config_SAP
 {
