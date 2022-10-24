@@ -29,6 +29,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -147,6 +148,7 @@ public class DemandCandiateHandlerTest
 	 * => min and max=0, so we expect a demand event with 13
 	 */
 	@Test
+	@Disabled
 	public void onCandidateNewOrChange_unsufficient_stock()
 	{
 		final Candidate candidate = createDemandCandidateWithQuantity("23");
