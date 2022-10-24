@@ -70,7 +70,7 @@ UPDATE AD_Message SET MsgText='Ausgewählter Datensatz ist bereits bearbeitet!',
 ;
 
 -- 2022-10-20T10:28:14.055Z
-INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,581588,0,'IsMatchAmounts',TO_TIMESTAMP('2022-10-20 13:28:13','YYYY-MM-DD HH24:MI:SS'),100,'Wenn diese Option gesetzt ist, berücksichtigt der Importprozess bei der Suche nach entsprechenden Rechnungen auch den offenen Rechnungsbetrag.','D','Y','Spielbeträge','Spielbeträge',TO_TIMESTAMP('2022-10-20 13:28:13','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,Description,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,581588,0,'IsMatchAmounts',TO_TIMESTAMP('2022-10-20 13:28:13','YYYY-MM-DD HH24:MI:SS'),100,'Wenn diese Option gesetzt ist, berücksichtigt der Importprozess bei der Suche nach entsprechenden Rechnungen auch den offenen Rechnungsbetrag.','D','Y','Beträge abgleichen','Beträge abgleichen',TO_TIMESTAMP('2022-10-20 13:28:13','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2022-10-20T10:28:14.064Z
@@ -88,7 +88,7 @@ UPDATE AD_Element_Trl SET Description='If set, the import process will also take
 
 -- Column: C_BankStatement_Import_File.IsMatchAmounts
 -- 2022-10-20T10:29:38.849Z
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,Description,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,584775,581588,0,20,542246,'IsMatchAmounts',TO_TIMESTAMP('2022-10-20 13:29:38','YYYY-MM-DD HH24:MI:SS'),100,'N','Y','Wenn diese Option gesetzt ist, berücksichtigt der Importprozess bei der Suche nach entsprechenden Rechnungen auch den offenen Rechnungsbetrag.','D',0,1,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N',0,'Spielbeträge',0,0,TO_TIMESTAMP('2022-10-20 13:29:38','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,Description,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,584775,581588,0,20,542246,'IsMatchAmounts',TO_TIMESTAMP('2022-10-20 13:29:38','YYYY-MM-DD HH24:MI:SS'),100,'N','Y','Wenn diese Option gesetzt ist, berücksichtigt der Importprozess bei der Suche nach entsprechenden Rechnungen auch den offenen Rechnungsbetrag.','D',0,1,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N',0,'Beträge abgleichen',0,0,TO_TIMESTAMP('2022-10-20 13:29:38','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 2022-10-20T10:29:38.851Z
@@ -103,10 +103,10 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */ SELECT public.db_alter_table('C_BankStatement_Import_File','ALTER TABLE public.C_BankStatement_Import_File ADD COLUMN IsMatchAmounts CHAR(1) DEFAULT ''Y'' CHECK (IsMatchAmounts IN (''Y'',''N'')) NOT NULL')
 ;
 
--- Field: Kontoauszug Import-Datei(541623,D) -> Kontoauszug Import-Datei(546658,D) -> Spielbeträge
+-- Field: Kontoauszug Import-Datei(541623,D) -> Kontoauszug Import-Datei(546658,D) -> Beträge abgleichen
 -- Column: C_BankStatement_Import_File.IsMatchAmounts
 -- 2022-10-20T10:30:14.868Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,584775,707812,0,546658,TO_TIMESTAMP('2022-10-20 13:30:14','YYYY-MM-DD HH24:MI:SS'),100,'Wenn diese Option gesetzt ist, berücksichtigt der Importprozess bei der Suche nach entsprechenden Rechnungen auch den offenen Rechnungsbetrag.',1,'D','Y','N','N','N','N','N','N','N','Spielbeträge',TO_TIMESTAMP('2022-10-20 13:30:14','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,584775,707812,0,546658,TO_TIMESTAMP('2022-10-20 13:30:14','YYYY-MM-DD HH24:MI:SS'),100,'Wenn diese Option gesetzt ist, berücksichtigt der Importprozess bei der Suche nach entsprechenden Rechnungen auch den offenen Rechnungsbetrag.',1,'D','Y','N','N','N','N','N','N','N','Beträge abgleichen',TO_TIMESTAMP('2022-10-20 13:30:14','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2022-10-20T10:30:14.870Z
@@ -125,8 +125,8 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=707812
 /* DDL */ select AD_Element_Link_Create_Missing_Field(707812)
 ;
 
--- UI Element: Kontoauszug Import-Datei(541623,D) -> Kontoauszug Import-Datei(546658,D) -> main -> 10 -> main.Spielbeträge
+-- UI Element: Kontoauszug Import-Datei(541623,D) -> Kontoauszug Import-Datei(546658,D) -> main -> 10 -> main.Beträge abgleichen
 -- Column: C_BankStatement_Import_File.IsMatchAmounts
 -- 2022-10-20T10:31:01.590Z
-INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,707812,0,546658,613291,549978,'F',TO_TIMESTAMP('2022-10-20 13:31:01','YYYY-MM-DD HH24:MI:SS'),100,'Wenn diese Option gesetzt ist, berücksichtigt der Importprozess bei der Suche nach entsprechenden Rechnungen auch den offenen Rechnungsbetrag.','Y','N','N','Y','N','N','N',0,'Spielbeträge',12,0,0,TO_TIMESTAMP('2022-10-20 13:31:01','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Element_ID,AD_UI_ElementGroup_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayed_SideList,IsDisplayedGrid,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNo_SideList,SeqNoGrid,Updated,UpdatedBy) VALUES (0,707812,0,546658,613291,549978,'F',TO_TIMESTAMP('2022-10-20 13:31:01','YYYY-MM-DD HH24:MI:SS'),100,'Wenn diese Option gesetzt ist, berücksichtigt der Importprozess bei der Suche nach entsprechenden Rechnungen auch den offenen Rechnungsbetrag.','Y','N','N','Y','N','N','N',0,'Beträge abgleichen',12,0,0,TO_TIMESTAMP('2022-10-20 13:31:01','YYYY-MM-DD HH24:MI:SS'),100)
 ;
