@@ -26,12 +26,16 @@ import de.metas.externalsystem.ExternalSystemConfigRepo;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
 
+@Interceptor(ExternalSystem_Config_SAP.class)
+@Component
 public class ExternalSystem_Config_SAP
 {
 	public final ExternalSystemConfigRepo externalSystemConfigRepo;
