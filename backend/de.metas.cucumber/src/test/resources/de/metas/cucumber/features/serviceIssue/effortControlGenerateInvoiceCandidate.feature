@@ -37,6 +37,7 @@ Feature: Create invoice candidates from effort control
       | testProject             | testProject_12102022 | testProject_12102022 | EUR                    | customer_SO                  | customerLocation_SO                   | customerUser_SO           | invoiceableProduct          |
 
   @from:cucumber
+  @Id:S0199_100
   Scenario: Generate invoice candidate from effort control with two budget issues
     #  `Generate invoice candidate` process generates two invoice candidates for each budget issue
     #  invoke `generate invoice` process for the created invoice candidates
@@ -90,6 +91,7 @@ Feature: Create invoice candidates from effort control
       | invoiceLine100_2            | invoiceableProduct      | 4           | true      | 10               | 10              | 40             | costCenter100                | testProject                 | 1210222\nbudgetIssue100_2_12102022 |
 
   @from:cucumber
+  @Id:S0199_200
   Scenario: Generate invoice candidate from effort control, reopen issue and increase invoiceable hours, then regenerate invoice candidate and validate that qtyToInvoice is updated
     Given metasfresh contains C_Activity:
       | C_Activity_ID.Identifier | Name                   | Value                  |
@@ -146,6 +148,7 @@ Feature: Create invoice candidates from effort control
       | budgetIssue200        | budgetIssue200 | budgetIssue200 | Internal  | N             | 25                    | costCenter200                | testProject                 | 1310221             | Invoiced   | true          |
 
   @from:cucumber
+  @Id:S0199_300
   Scenario: Generate invoice candidate from effort control, generate invoice from candidate, reopen issue and increase invoiceable hours,
   then regenerate invoice candidate and validate that qtyToInvoice is updated and a new invoice is generated from the increased value
     And metasfresh contains C_Activity:
@@ -236,6 +239,7 @@ Feature: Create invoice candidates from effort control
       | invoiceLine300_2            | invoiceableProduct      | 4           | true      | 10               | 10              | 40             | costCenter300                | testProject                 | 1310222\nbudgetIssue300 |
 
   @from:cucumber
+  @Id:S0199_400
   Scenario: Generate invoice candidate from effort control, generate invoice from candidate, reopen issue and decrease invoiceable hours,
   then regenerate invoice candidate and validate that qtyToInvoice is updated but a new invoice cannot be generated from candidate
     And metasfresh contains C_Activity:
