@@ -8,6 +8,7 @@ import de.metas.bpartner_product.CreateBPartnerProductRequest;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -169,6 +170,11 @@ public class ProductRepository
 			product.setIsStocked(request.getStocked());
 		}
 
+		if (request.getSectionCodeId() != null)
+		{
+			product.setM_SectionCode_ID(request.getSectionCodeId().getRepoId());
+		}
+
 		saveRecord(product);
 
 		return ofProductRecord(product);
@@ -304,6 +310,7 @@ public class ProductRepository
 				.gtin(productRecord.getGTIN())
 				.ean(productRecord.getUPC())
 				.orgId(OrgId.ofRepoId(productRecord.getAD_Org_ID()))
+				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(productRecord.getM_SectionCode_ID()))
 				.build();
 	}
 
@@ -343,6 +350,7 @@ public class ProductRepository
 		record.setUPC(product.getEan());
 		record.setAD_Org_ID(product.getOrgId().getRepoId());
 		record.setM_Product_Category_ID(product.getProductCategoryId() != null ? product.getProductCategoryId().getRepoId() : record.getM_Product_Category_ID());
+		record.setM_SectionCode_ID(SectionCodeId.toRepoId(product.getSectionCodeId()));
 
 		return record;
 	}
