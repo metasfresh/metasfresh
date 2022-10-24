@@ -2836,7 +2836,10 @@ public abstract class PO
 		{
 			saveEx0();
 		}
-		services.performanceMonitoringServiceSaveEx(() -> saveEx0());
+		else
+		{
+			services.performanceMonitoringServiceSaveEx(() -> saveEx0());
+		}
 	}
 
 	private final void saveEx0() throws AdempiereException

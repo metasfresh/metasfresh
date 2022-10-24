@@ -159,28 +159,28 @@ final class POServicesFacade
 
 	public void performanceMonitoringServiceSaveEx(@NonNull final Runnable runnable)
 	{
-		PerformanceMonitoringService performanceMonitoringService = this._performanceMonitoringService;
-		if (performanceMonitoringService == null || performanceMonitoringService instanceof NoopPerformanceMonitoringService)
-		{
-			performanceMonitoringService = this._performanceMonitoringService = SpringContextHolder.instance.getBeanOr(
-					PerformanceMonitoringService.class,
-					NoopPerformanceMonitoringService.INSTANCE);
-		}
+		final PerformanceMonitoringService performanceMonitoringService = performanceMonitoringService();
 
 		performanceMonitoringService.monitor(runnable, PM_METADATA_SAVE_EX);
 	}
 
 	public boolean performanceMonitoringServiceLoad(@NonNull final Callable<Boolean> callable)
 	{
-		PerformanceMonitoringService performanceMonitoringService = this._performanceMonitoringService;
+		final PerformanceMonitoringService performanceMonitoringService = performanceMonitoringService();
+
+		return performanceMonitoringService.monitor(callable, PM_METADATA_LOAD);
+	}
+
+	private PerformanceMonitoringService performanceMonitoringService()
+	{
+		PerformanceMonitoringService performanceMonitoringService = _performanceMonitoringService;
 		if (performanceMonitoringService == null || performanceMonitoringService instanceof NoopPerformanceMonitoringService)
 		{
-			performanceMonitoringService = this._performanceMonitoringService = SpringContextHolder.instance.getBeanOr(
+			performanceMonitoringService = _performanceMonitoringService = SpringContextHolder.instance.getBeanOr(
 					PerformanceMonitoringService.class,
 					NoopPerformanceMonitoringService.INSTANCE);
 		}
-
-		return performanceMonitoringService.monitor(callable, PM_METADATA_LOAD);
+		return performanceMonitoringService;
 	}
 
 	//

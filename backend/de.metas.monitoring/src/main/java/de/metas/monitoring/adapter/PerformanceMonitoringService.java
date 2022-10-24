@@ -96,15 +96,11 @@ public interface PerformanceMonitoringService
 
 		REST_API_PROCESSING("rest-API-processing"),
 
-		CACHE_OPERATION("cache-operation"),
-
 		EVENTBUS_REMOTE_ENDPOINT("eventbus-remote-endpoint"),
 
 		REST_CONTROLLER("rest-controller"),
 
 		REST_CONTROLLER_WITH_WINDOW_ID("rest-controller-with-windowId"),
-
-		INVOICE("invoice"),
 
 		PO("po");
 
