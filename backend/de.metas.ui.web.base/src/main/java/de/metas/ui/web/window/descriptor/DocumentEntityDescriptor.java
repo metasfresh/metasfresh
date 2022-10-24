@@ -810,8 +810,8 @@ public class DocumentEntityDescriptor
 			final DocumentFieldDependencyMap.Builder dependenciesBuilder = DocumentFieldDependencyMap.builder();
 
 			dependenciesBuilder.add(DocumentFieldDependencyMap.DOCUMENT_Readonly,
-					getReadonlyLogic().getParameterNames(),
-					DependencyType.DocumentReadonlyLogic);
+									getReadonlyLogic().getParameterNames(),
+									DependencyType.DocumentReadonlyLogic);
 
 			getFields().values().forEach(field -> dependenciesBuilder.add(field.getDependencies()));
 			return dependenciesBuilder.build();

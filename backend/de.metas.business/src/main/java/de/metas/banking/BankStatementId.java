@@ -67,7 +67,7 @@ public class BankStatementId implements RepoIdAware
 					.collect(ImmutableSet.toImmutableSet());
 		}
 	}
-	
+
 	private BankStatementId(final int repoId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "C_BankStatement_ID");

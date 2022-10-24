@@ -24,7 +24,6 @@ package de.metas.externalreference;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.metas.audit.data.ExternalSystemParentConfigId;
 import com.google.common.collect.ImmutableSet;
 import de.metas.audit.data.ExternalSystemParentConfigId;
 import de.metas.cache.CCache;
