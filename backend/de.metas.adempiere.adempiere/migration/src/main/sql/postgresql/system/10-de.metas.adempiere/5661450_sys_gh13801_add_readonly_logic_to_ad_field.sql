@@ -11,10 +11,6 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(1663) 
 ;
 
--- 2022-10-22T05:45:23.437Z
-/* DDL */ SELECT public.db_alter_table('AD_Field','ALTER TABLE public.AD_Field ADD COLUMN ReadOnlyLogic VARCHAR(2000)')
-;
-
 -- Field: Fenster Verwaltung(102,D) -> Feld(107,D) -> Read Only Logic
 -- Column: AD_Field.ReadOnlyLogic
 -- 2022-10-22T05:48:17.798Z
