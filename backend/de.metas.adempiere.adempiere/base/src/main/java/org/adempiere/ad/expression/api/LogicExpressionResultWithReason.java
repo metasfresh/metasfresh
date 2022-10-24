@@ -23,6 +23,7 @@
 package org.adempiere.ad.expression.api;
 
 import de.metas.i18n.ITranslatableString;
+import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -30,6 +31,7 @@ import javax.annotation.Nullable;
 import java.util.Optional;
 
 @Value
+@EqualsAndHashCode(callSuper = true)
 public class LogicExpressionResultWithReason extends LogicExpressionResult
 {
 	@Nullable
@@ -51,7 +53,8 @@ public class LogicExpressionResultWithReason extends LogicExpressionResult
 	@Nullable
 	public String getTranslatedReason(@NonNull final String adLanguage)
 	{
-		return Optional.ofNullable(reason).map(res -> res.translate(adLanguage))
+		return Optional.ofNullable(reason)
+				.map(res -> res.translate(adLanguage))
 				.orElse(null);
 	}
 }

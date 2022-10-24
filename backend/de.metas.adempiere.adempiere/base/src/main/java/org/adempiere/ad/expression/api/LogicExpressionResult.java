@@ -1,15 +1,13 @@
 package org.adempiere.ad.expression.api;
 
-import java.util.Map;
-import java.util.Objects;
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableMap;
+import org.compiere.util.CtxName;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.Immutable;
-
-import org.compiere.util.CtxName;
-
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableMap;
+import java.util.Map;
+import java.util.Objects;
 
 /*
  * #%L
@@ -76,7 +74,7 @@ public class LogicExpressionResult
 
 	private transient String _toString = null; // lazy
 
-	public LogicExpressionResult(final String name, final Boolean value, final ILogicExpression expression, final Map<CtxName, String> usedParameters)
+	protected LogicExpressionResult(final String name, final Boolean value, final ILogicExpression expression, final Map<CtxName, String> usedParameters)
 	{
 		this.name = name;
 		this.value = value == null ? false : value;

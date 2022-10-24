@@ -17,6 +17,7 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import io.swagger.annotations.ApiModel;
 import lombok.Getter;
+import lombok.NonNull;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
 import org.adempiere.ad.expression.api.LogicExpressionResultWithReason;
 
@@ -310,7 +311,8 @@ public final class JSONDocumentField
 		return this;
 	}
 
-	public JSONDocumentField setReadonly(final LogicExpressionResult readonly, final JSONOptions options)
+	@NonNull
+	public JSONDocumentField setReadonly(@NonNull final LogicExpressionResult readonly,@NonNull final JSONOptions options)
 	{
 		if (readonly instanceof LogicExpressionResultWithReason)
 		{

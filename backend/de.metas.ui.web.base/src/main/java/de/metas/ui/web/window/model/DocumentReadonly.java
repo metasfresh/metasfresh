@@ -71,7 +71,7 @@ public class DocumentReadonly
 		// Case: this or parent document is processed => fields of this document shall be completely readonly if they were not flagged with AlwaysUpdateable
 		if (processed || processing)
 		{
-			return !alwaysUpdateable ? BooleanWithReason.TRUE : BooleanWithReason.FALSE; // readonly if not always updateable
+			return alwaysUpdateable ? BooleanWithReason.FALSE : BooleanWithReason.TRUE; // readonly if not always updateable
 		}
 
 		// Case: this document is not active => fields of this document shall be completely readonly, BUT NOT the IsActive flag.

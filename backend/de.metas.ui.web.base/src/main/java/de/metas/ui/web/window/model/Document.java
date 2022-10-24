@@ -1365,7 +1365,6 @@ public final class Document
 				.processed(parentReadonly.isProcessed() || isProcessed())
 				.processing(parentReadonly.isProcessing() || isProcessing())
 				.fieldsReadonly(ExtendedMemorizingSupplier.of(this::computeFieldsReadOnly))
-				.fieldsReadonly(ExtendedMemorizingSupplier.of(this::computeFieldsReadOnly))
 				.build();
 	}
 
@@ -1434,7 +1433,7 @@ public final class Document
 		{
 			if (WindowConstants.FIELDNAME_DocumentSummary.equals(documentField.getFieldName()))
 			{
-				return new LogicExpressionResultWithReason(LogicExpressionResult.TRUE, isReadOnly.getReason()); //todo mi: si aici
+				return new LogicExpressionResultWithReason(LogicExpressionResult.TRUE, isReadOnly.getReason());
 			}
 
 			return LogicExpressionResult.TRUE;
