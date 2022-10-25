@@ -12,6 +12,9 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13778](https://github.com/metasfresh/metasfresh/issues/13778) Externally referenced records: show ReadOnly reason in UI
+  * [#13745](https://github.com/metasfresh/metasfresh/issues/13745) Import material (product) data from SAP
+  * [#13685](https://github.com/metasfresh/metasfresh/issues/13685) Allow externally maintained records to be read-only in metasfresh
   * [#13758](https://github.com/metasfresh/metasfresh/issues/13758) IEUE045.U01 Incoming payment management
   * [#13685](https://github.com/metasfresh/metasfresh/issues/13685) Allow externally maintained records to be read-only in metasfresh 
   * [#13755](https://github.com/metasfresh/metasfresh/issues/13755) Look up C_OLcand.M_HU_PI_Item_Product_ID also via StoreGLN
