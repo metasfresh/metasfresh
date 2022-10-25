@@ -69,14 +69,14 @@ public class ExternalSystem_Config_SAP
 			ifColumnsChanged = { I_ExternalSystem_Config_SAP.COLUMNNAME_ProcessedDirectory })
 	public void sanitizeProcessedDirectory(final I_ExternalSystem_Config_SAP sapConfig)
 	{
-		sapConfig.setSFTP_TargetDirectory(sanitizeDirectoryRelativePath(sapConfig.getProcessedDirectory()));
+		sapConfig.setProcessedDirectory(sanitizeDirectoryRelativePath(sapConfig.getProcessedDirectory()));
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = { I_ExternalSystem_Config_SAP.COLUMNNAME_ErroredDirectory })
 	public void sanitizeErroredDirectory(final I_ExternalSystem_Config_SAP sapConfig)
 	{
-		sapConfig.setSFTP_TargetDirectory(sanitizeDirectoryRelativePath(sapConfig.getErroredDirectory()));
+		sapConfig.setErroredDirectory(sanitizeDirectoryRelativePath(sapConfig.getErroredDirectory()));
 	}
 
 	@Nullable
