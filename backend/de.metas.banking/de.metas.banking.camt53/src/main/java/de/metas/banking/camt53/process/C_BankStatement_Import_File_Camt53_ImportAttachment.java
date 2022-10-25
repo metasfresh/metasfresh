@@ -48,7 +48,7 @@ import org.compiere.model.I_C_BankStatement;
 
 import java.util.Set;
 
-public class C_BankStatement_Camt53_ImportAttachment extends JavaProcess implements IProcessPrecondition
+public class C_BankStatement_Import_File_Camt53_ImportAttachment extends JavaProcess implements IProcessPrecondition
 {
 	private static final AdMessageKey MSG_NO_STATEMENT_IMPORTED = AdMessageKey.of("de.metas.banking.camt53.process.C_BankStatement_Camt53_ImportAttachment.NoStatementImported");
 	private static final AdMessageKey MSG_SELECTED_RECORD_ALREADY_PROCESSED = AdMessageKey.of("de.metas.banking.camt53.process.C_BankStatement_Camt53_ImportAttachment.SelectedRecordIsProcessed");
