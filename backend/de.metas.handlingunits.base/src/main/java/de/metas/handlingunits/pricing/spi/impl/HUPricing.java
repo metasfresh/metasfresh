@@ -1,7 +1,6 @@
 package de.metas.handlingunits.pricing.spi.impl;
 
 import ch.qos.logback.classic.Level;
-import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.model.I_M_ProductPrice;
 import de.metas.interfaces.I_M_HU_PI_Item_Product_Aware;
@@ -21,7 +20,6 @@ import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList_Version;
-import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -107,10 +105,7 @@ public class HUPricing extends AttributePricing
 		}
 
 		final ProductId productId = pricingCtx.getProductId();
-		final I_M_ProductPrice productPrice = ProductPrices.iterateAllPriceListVersionsAndFindProductPrice(
-				ctxPriceListVersion,
-				priceListVersion -> findMatchingProductPriceOrNull(priceListVersion, productId, attributeSetInstance, packingMaterialId),
-				TimeUtil.asZonedDateTime(pricingCtx.getPriceDate(), SystemTime.zoneId()));
+		final I_M_ProductPrice productPrice = findMatchingProductPriceOrNull(ctxPriceListVersion, productId, attributeSetInstance, packingMaterialId);
 
 		if (productPrice == null)
 		{
@@ -133,9 +128,10 @@ public class HUPricing extends AttributePricing
 				.setProductId(productId);
 
 		//match packing material if we have a real packing material
-		if(packingMaterialId != null && packingMaterialId.isRegular())
+		if (packingMaterialId != null)
 		{
 			productPriceQuery.matching(createHUPIItemProductMatcher(packingMaterialId));
+
 			noAttributeRelatedConditionSet = false;
 		}
 
@@ -194,14 +190,11 @@ public class HUPricing extends AttributePricing
 
 		//
 		// Get the default product price attribute, if any
-		final I_M_ProductPrice defaultPrice = ProductPrices.iterateAllPriceListVersionsAndFindProductPrice(
-				ctxPriceListVersion,
-				priceListVersion -> ProductPrices.newQuery(priceListVersion)
-						.setProductId(pricingCtx.getProductId())
-						.onlyAttributePricing()
-						.onlyValidPrices(true)
-						.retrieveDefault(I_M_ProductPrice.class),
-				TimeUtil.asZonedDateTime(pricingCtx.getPriceDate(), de.metas.common.util.time.SystemTime.zoneId()));
+		final I_M_ProductPrice defaultPrice = ProductPrices.newQuery(ctxPriceListVersion)
+				.setProductId(pricingCtx.getProductId())
+				.onlyAttributePricing()
+				.onlyValidPrices(true)
+				.retrieveDefault(I_M_ProductPrice.class);
 		if (defaultPrice == null)
 		{
 			return null;
@@ -264,9 +257,9 @@ public class HUPricing extends AttributePricing
 		return null;
 	}
 
-	public static IProductPriceQueryMatcher createHUPIItemProductMatcher(final HUPIItemProductId packingMaterialId)
+	public static IProductPriceQueryMatcher createHUPIItemProductMatcher(@Nullable final HUPIItemProductId packingMaterialId)
 	{
-		if (packingMaterialId == null)
+		if (packingMaterialId == null || !packingMaterialId.isRegular())
 		{
 			return HUPIItemProductMatcher_None;
 		}
