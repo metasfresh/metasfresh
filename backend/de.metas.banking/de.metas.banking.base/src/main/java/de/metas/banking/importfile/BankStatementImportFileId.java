@@ -47,6 +47,11 @@ public class BankStatementImportFileId implements RepoIdAware
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
+	public static int toRepoId(@Nullable final BankStatementImportFileId bankStatementImportFileId)
+	{
+		return bankStatementImportFileId != null ? bankStatementImportFileId.getRepoId() : 0;
+	}
+	
 	int repoId;
 
 	private BankStatementImportFileId(final int repoId)
