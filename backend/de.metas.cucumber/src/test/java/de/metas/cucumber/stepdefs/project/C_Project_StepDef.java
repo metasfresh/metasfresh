@@ -164,17 +164,25 @@ public class C_Project_StepDef
 				project.setAD_User_ID(user.getAD_User_ID());
 			}
 
-			final String productIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Project.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String productIdentifier = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + I_C_Project.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(productIdentifier))
 			{
-				final I_M_Product product = productTable.get(productIdentifier);
-				project.setM_Product_ID(product.getM_Product_ID());
+				final String nullableIdentifier = DataTableUtil.nullToken2Null(productIdentifier);
+				if (nullableIdentifier == null)
+				{
+					project.setM_Product_ID(-1);
+				}
+				else
+				{
+					final I_M_Product product = productTable.get(productIdentifier);
+					project.setM_Product_ID(product.getM_Product_ID());
+				}
 			}
 
 			InterfaceWrapperHelper.saveRecord(project);
 
 			final String projectIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_Project.COLUMNNAME_C_Project_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-			projectTable.put(projectIdentifier, project);
+			projectTable.putOrReplace(projectIdentifier, project);
 		}
 	}
 

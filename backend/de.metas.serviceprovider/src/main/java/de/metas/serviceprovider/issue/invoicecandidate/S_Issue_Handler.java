@@ -67,7 +67,6 @@ import de.metas.tax.api.TaxQuery;
 import de.metas.uom.UomId;
 import de.metas.user.User;
 import de.metas.user.UserId;
-import de.metas.user.UserRepository;
 import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -110,7 +109,6 @@ public class S_Issue_Handler extends AbstractInvoiceCandidateHandler
 
 	private final IssueService issueService = SpringContextHolder.instance.getBean(IssueService.class);
 	private final ProjectRepository projectRepository = SpringContextHolder.instance.getBean(ProjectRepository.class);
-	private final UserRepository userRepository = SpringContextHolder.instance.getBean(UserRepository.class);
 
 	@Override
 	public CandidatesAutoCreateMode getGeneralCandidatesAutoCreateMode()

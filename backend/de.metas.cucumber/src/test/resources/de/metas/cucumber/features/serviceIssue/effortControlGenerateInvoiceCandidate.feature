@@ -1,5 +1,5 @@
 @from:cucumber
-Feature: Create invoice candidates from effort control
+Feature: Create customer invoice candidates from effort control
 
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
@@ -319,3 +319,29 @@ Feature: Create invoice candidates from effort control
       | C_Invoice_Candidate_ID.Identifier |
       | candIssue400                      |
 
+  @from:cucumber
+  Scenario: Validate that invoice candidate is not created from budget issue when there is no product configured on project
+    Given create or update C_Project:
+      | C_Project_ID.Identifier | Name                 | Value                | C_Currency_ID.ISO_Code | OPT.M_Product_ID.Identifier |
+      | testProject             | testProject_12102022 | testProject_12102022 | EUR                    | null                        |
+    And metasfresh contains C_Activity:
+      | C_Activity_ID.Identifier | Name                   | Value                  |
+      | costCenter500            | costCenter500_13102022 | costCenter500_13102022 |
+    And metasfresh contains S_Issue:
+      | S_Issue_ID.Identifier | Value                 | OPT.Name              | IssueType | IsEffortIssue | OPT.InvoiceableEffort | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.ExternalIssueNo | OPT.Status |
+      | budgetIssue500        | budgetIssue500_241022 | budgetIssue500_241022 | Internal  | N             | 50                    | costCenter500                | testProject                 | 241022              | New        |
+    And after not more than 10s, S_EffortControl is found:
+      | S_EffortControl_ID.Identifier | C_Activity_ID.Identifier | C_Project_ID.Identifier |
+      | effortControl500              | costCenter500            | testProject             |
+    And after not more than 10s, S_EffortControl is validated:
+      | S_EffortControl_ID.Identifier | C_Activity_ID.Identifier | C_Project_ID.Identifier | OPT.InvoiceableHours | OPT.IsIssueClosed |
+      | effortControl500              | costCenter500            | testProject             | 50                   | false             |
+    When 'generate invoice candidate' from effort control process is invoked
+      | S_EffortControl_ID.Identifier |
+      | effortControl500              |
+    And there is no C_Invoice_Candidate for:
+      | TableName | Record_ID.Identifier |
+      | S_Issue   | budgetIssue500       |
+    And validate S_Issue:
+      | S_Issue_ID.Identifier | Value                 | OPT.Name              | IssueType | IsEffortIssue | OPT.InvoiceableEffort | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.ExternalIssueNo | OPT.Status | OPT.Processed | OPT.InvoicingErrorMsg                      | OPT.IsInvoicingError |
+      | budgetIssue500        | budgetIssue500_241022 | budgetIssue500_241022 | Internal  | N             | 50                    | costCenter500                | testProject                 | 241022              | New        | false         | Missing invoiceable ProductId on C_Project | true                 |

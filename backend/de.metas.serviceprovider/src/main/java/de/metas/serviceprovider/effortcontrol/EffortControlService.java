@@ -104,7 +104,7 @@ public class EffortControlService
 		}
 	}
 
-	public void generateVendorInvoiceCandidate(@NonNull final IssueId issueId)
+	public void createOrUpdateInvoiceCandidateForLinkedSubIssues(@NonNull final IssueId issueId)
 	{
 		issueRepository.getDirectlyLinkedSubIssues(issueId)
 				.stream()

@@ -24,6 +24,7 @@ package de.metas.serviceprovider.issue.invoicecandidate.interceptor;
 
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.serviceprovider.effortcontrol.EffortControlService;
 import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.issue.Status;
@@ -37,6 +38,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Set;
 
 @Interceptor(I_S_Issue.class)
@@ -98,13 +100,8 @@ public class S_Issue
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },
 			ifColumnsChanged = { I_S_Issue.COLUMNNAME_Status, I_S_Issue.COLUMNNAME_Processed })
-	public void processVendorInvoiceCandidateFromBudgetIssue(@NonNull final I_S_Issue record)
+	public void createOrUpdateInvoiceCandidateForChildIssues(@NonNull final I_S_Issue record)
 	{
-		if (record.isEffortIssue())
-		{
-			return;
-		}
-
 		final Status status = Status.ofCode(record.getStatus());
 
 		if (!status.equals(Status.INVOICED) || !record.isProcessed())
@@ -119,24 +116,20 @@ public class S_Issue
 			return;
 		}
 
-		effortControlService.generateVendorInvoiceCandidate(IssueId.ofRepoId(record.getS_Issue_ID()));
+		effortControlService.createOrUpdateInvoiceCandidateForLinkedSubIssues(IssueId.ofRepoId(record.getS_Issue_ID()));
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },
-			ifColumnsChanged = {
-					I_S_Issue.COLUMNNAME_IssueEffort,
-					I_S_Issue.COLUMNNAME_Status,
-					I_S_Issue.COLUMNNAME_Processed
-			})
-	public void processVendorInvoiceCandidateFromEffortIssue(@NonNull final I_S_Issue record)
+			ifColumnsChanged = { I_S_Issue.COLUMNNAME_IssueEffort })
+	public void recomputeInvoiceCandidateOnEffortIssueChange(@NonNull final I_S_Issue record)
 	{
 		if (!record.isEffortIssue())
 		{
 			return;
 		}
 
-		final IssueId effortIssueParent = IssueId.ofRepoIdOrNull(record.getS_Parent_Issue_ID());
-		if (effortIssueParent == null)
+		final IssueId parentIssue = IssueId.ofRepoIdOrNull(record.getS_Parent_Issue_ID());
+		if (parentIssue == null)
 		{
 			return;
 		}
@@ -148,6 +141,13 @@ public class S_Issue
 			return;
 		}
 
-		effortControlService.generateVendorInvoiceCandidate(IssueId.ofRepoId(record.getS_Issue_ID()));
+		final List<I_C_Invoice_Candidate> existingCandidates = invoiceCandDAO.retrieveReferencing(TableRecordReference.of(record));
+
+		if (existingCandidates.isEmpty())
+		{
+			return;
+		}
+
+		invoiceCandDAO.invalidateCands(existingCandidates);
 	}
 }

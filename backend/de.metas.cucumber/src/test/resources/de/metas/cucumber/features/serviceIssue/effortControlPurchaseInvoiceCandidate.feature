@@ -43,7 +43,7 @@ Feature: Create vendor invoice candidates from effort control
       | testProject             | testProject_24102022 | testProject_24102022 | EUR                    | customer_SO                  | customerLocation_SO                   | customerUser              | invoiceableProduct          |
 
   @from:cucumber
-  Scenario: Generate invoice candidate from effort control with one budget issue and two effort issues
+  Scenario: Generate invoice candidate from effort control with one budget issue and two effort issues and invoice the invoice candidates
     Given metasfresh contains C_Activity:
       | C_Activity_ID.Identifier | Name                   | Value                  |
       | costCenter100            | costCenter100_24102022 | costCenter100_24102022 |
@@ -94,8 +94,8 @@ Feature: Create vendor invoice candidates from effort control
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.Description                  |
       | customerInvoiceLine100      | invoiceableProduct      | 16          | true      | 10               | 10              | 160            | costCenter100                | testProject                 | 2410220\nbudgetIssue100_24102022 |
     And after not more than 30s, Fact_Acct are found
-      | TableName | Record_ID.Identifier | OPT.PostingType |
-      | C_Invoice | customerInvoice100   | Actual          |
+      | TableName | Record_ID.Identifier | OPT.PostingType | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier |
+      | C_Invoice | customerInvoice100   | Actual          | costCenter100                | testProject                 |
 
     When process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
@@ -111,8 +111,8 @@ Feature: Create vendor invoice candidates from effort control
       | vendorInvoiceLine100        | invoiceableProduct      | 8           | true      | 5                | 5               | 40             | costCenter100                | testProject                 | 2410221\neffortIssue100_24102022 |
       | vendorInvoiceLine101        | invoiceableProduct      | 2           | true      | 5                | 5               | 10             | costCenter100                | testProject                 | 2410222\neffortIssue101_24102022 |
     And after not more than 30s, Fact_Acct are found
-      | TableName | Record_ID.Identifier | OPT.PostingType |
-      | C_Invoice | vendorInvoice100     | Statistical     |
+      | TableName | Record_ID.Identifier | OPT.PostingType | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier |
+      | C_Invoice | vendorInvoice100     | Statistical     | costCenter100                | testProject                 |
 
   @from:cucumber
   Scenario: Generate invoice candidate from effort control, increase `IssueEffort` on effort issue and validate date `QtyToInvoice` on vendor invoice candidate is updated
@@ -223,8 +223,8 @@ Feature: Create vendor invoice candidates from effort control
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.Description                  |
       | vendorInvoiceLine300        | invoiceableProduct      | 19          | true      | 5                | 5               | 95             | costCenter300                | testProject                 | 2510221\neffortIssue300_24102022 |
     And after not more than 30s, Fact_Acct are found
-      | TableName | Record_ID.Identifier | OPT.PostingType |
-      | C_Invoice | vendorInvoice300     | Statistical     |
+      | TableName | Record_ID.Identifier | OPT.PostingType | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier |
+      | C_Invoice | vendorInvoice300     | Statistical     | costCenter300                | testProject                 |
 
     #  increase `IssueEffort` on effort issue
     When metasfresh contains S_TimeBooking:
@@ -259,8 +259,8 @@ Feature: Create vendor invoice candidates from effort control
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.Description                  |
       | vendorInvoiceLine301        | invoiceableProduct      | 6           | true      | 5                | 5               | 30             | costCenter300                | testProject                 | 2510221\neffortIssue300_24102022 |
     And after not more than 30s, Fact_Acct are found
-      | TableName | Record_ID.Identifier | OPT.PostingType |
-      | C_Invoice | vendorInvoice300     | Statistical     |
+      | TableName | Record_ID.Identifier | OPT.PostingType | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier |
+      | C_Invoice | vendorInvoice300     | Statistical     | costCenter300                | testProject                 |
 
   @from:cucumber
   Scenario: Generate invoice candidate from effort control and invoice it, decrease `IssueEffort` on effort issue and invoice again. validate that an invoice cannot be generated
@@ -313,13 +313,13 @@ Feature: Create vendor invoice candidates from effort control
       | C_InvoiceLine_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.PriceEntered | OPT.PriceActual | OPT.LineNetAmt | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.Description                  |
       | vendorInvoiceLine400        | invoiceableProduct      | 22          | true      | 5                | 5               | 110            | costCenter400                | testProject                 | 2510221\neffortIssue400_24102022 |
     And after not more than 30s, Fact_Acct are found
-      | TableName | Record_ID.Identifier | OPT.PostingType |
-      | C_Invoice | vendorInvoice400     | Statistical     |
+      | TableName | Record_ID.Identifier | OPT.PostingType | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier |
+      | C_Invoice | vendorInvoice400     | Statistical     | costCenter400                | testProject                 |
 
     #  decrease `IssueEffort` on effort issue
     When metasfresh contains S_TimeBooking:
       | S_TimeBooking_ID.Identifier | S_Issue_ID.Identifier | HoursAndMinutes | AD_User_Performing_ID.Identifier | BookedDate |
-      | effortTimeBooking400        | effortIssue400        | 15              | vendorUser                       | 2022-10-17 |
+      | effortTimeBooking400        | effortIssue400        | 15:00           | vendorUser                       | 2022-10-17 |
     Then after not more than 10s, S_EffortControl is validated:
       | S_EffortControl_ID.Identifier | C_Activity_ID.Identifier | C_Project_ID.Identifier | OPT.PendingEffortSum | OPT.EffortSum | OPT.InvoiceableHours | OPT.IsIssueClosed |
       | effortControl400              | costCenter400            | testProject             | 0:00                 | 15:00         | 42                   | true              |
@@ -338,3 +338,35 @@ Feature: Create vendor invoice candidates from effort control
     And invoice candidates are not billable
       | C_Invoice_Candidate_ID.Identifier |
       | vendorIC400                       |
+
+  @from:cucumber
+  Scenario: Validate that vendor invoice candidate is not created when effort issue has no assignee
+    Given metasfresh contains C_Activity:
+      | C_Activity_ID.Identifier | Name                   | Value                  |
+      | costCenter500            | costCenter500_24102022 | costCenter500_24102022 |
+    And metasfresh contains S_Issue:
+      | S_Issue_ID.Identifier | Value                   | OPT.Name                | OPT.S_Parent_Issue_ID.Identifier | IssueType | IsEffortIssue | OPT.InvoiceableEffort | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.ExternalIssueNo | OPT.Status | OPT.AD_User_ID.Identifier |
+      | budgetIssue500        | budgetIssue500_24102022 | budgetIssue500_24102022 |                                  | Internal  | N             | 16                    | costCenter500                | testProject                 | 2510220             | New        |                           |
+      | effortIssue500        | effortIssue500_24102022 | effortIssue500_24102022 | budgetIssue500                   | Internal  | Y             | 0                     | costCenter500                | testProject                 | 2510221             | New        | null                      |
+    And metasfresh contains S_TimeBooking:
+      | S_TimeBooking_ID.Identifier | S_Issue_ID.Identifier | HoursAndMinutes | AD_User_Performing_ID.Identifier | BookedDate |
+      | effortTimeBooking500        | effortIssue500        | 8:00            | vendorUser                       | 2022-10-20 |
+    And after not more than 10s, S_EffortControl is found:
+      | S_EffortControl_ID.Identifier | C_Activity_ID.Identifier | C_Project_ID.Identifier |
+      | effortControl500              | costCenter500            | testProject             |
+    And after not more than 10s, S_EffortControl is validated:
+      | S_EffortControl_ID.Identifier | C_Activity_ID.Identifier | C_Project_ID.Identifier | OPT.PendingEffortSum | OPT.EffortSum | OPT.InvoiceableHours | OPT.IsIssueClosed |
+      | effortControl500              | costCenter500            | testProject             | 8:00                 | 8:00          | 16                   | false             |
+    When 'generate invoice candidate' from effort control process is invoked
+      | S_EffortControl_ID.Identifier |
+      | effortControl500              |
+    Then after not more than 30s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | QtyToInvoice | OPT.AD_Table_ID.TableName | OPT.Record_ID.Identifier |
+      | customerIC500                     | 16           | S_Issue                   | budgetIssue500           |
+    And there is no C_Invoice_Candidate for:
+      | TableName | Record_ID.Identifier |
+      | S_Issue   | effortIssue500       |
+    And validate S_Issue:
+      | S_Issue_ID.Identifier | Value                   | OPT.Name                | OPT.S_Parent_Issue_ID.Identifier | IssueType | IsEffortIssue | OPT.InvoiceableEffort | OPT.IssueEffort | OPT.C_Activity_ID.Identifier | OPT.C_Project_ID.Identifier | OPT.ExternalIssueNo | OPT.Status | OPT.Processed | OPT.InvoicingErrorMsg         | OPT.IsInvoicingError |
+      | budgetIssue500        | budgetIssue500_24102022 | budgetIssue500_24102022 |                                  | Internal  | N             | 16                    |                 | costCenter500                | testProject                 | 2510220             | Invoiced   | true          |                               | false                |
+      | effortIssue500        | effortIssue500_24102022 | effortIssue500_24102022 | budgetIssue500                   | Internal  | Y             | 0                     | 8:00            | costCenter500                | testProject                 | 2510221             | New        | false         | Missing assignee from S_Issue | true                 |

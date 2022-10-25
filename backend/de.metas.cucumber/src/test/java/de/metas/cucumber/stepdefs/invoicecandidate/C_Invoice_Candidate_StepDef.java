@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.invoicecandidate;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.Check;
 import de.metas.common.util.EmptyUtil;
@@ -69,10 +70,12 @@ import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
+import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.model.I_S_Issue;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import de.metas.util.lang.RepoIdAware;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
@@ -1187,6 +1190,27 @@ public class C_Invoice_Candidate_StepDef
 				.update();
 	}
 
+	@And("there is no C_Invoice_Candidate for:")
+	public void validate_no_C_Invoice_Candidate_created_for_record(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final Map<RepoIdAware, Object> repoId2Object = mapRepoId2Object(row);
+
+			repoId2Object.entrySet()
+					.forEach(entry -> {
+						final I_C_Invoice_Candidate candidate = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
+								.addEqualsFilter(COLUMNNAME_Record_ID, entry.getKey().getRepoId())
+								.create()
+								.firstOnlyOrNull(I_C_Invoice_Candidate.class);
+						Assertions.assertThat(candidate).isNull();
+
+						final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandidateHandlerBL.createMissingCandidatesFor(entry.getValue());
+						Assertions.assertThat(invoiceCandidates).isEmpty();
+					});
+		}
+	}
+
 	private ItemProvider.ProviderResult<I_C_Invoice_Candidate> retrieveInvoiceCandidate(
 			final @NonNull Map<String, String> row,
 			final @NonNull IQuery<I_C_Invoice_Candidate> candidateIQuery)
@@ -1722,6 +1746,22 @@ public class C_Invoice_Candidate_StepDef
 
 			invCandQueryBuilder.addEqualsFilter(COLUMNNAME_AD_Table_ID, tableRecordReference.getAD_Table_ID());
 			invCandQueryBuilder.addEqualsFilter(COLUMNNAME_Record_ID, tableRecordReference.getRecord_ID());
+		}
+	}
+
+	@NonNull
+	private Map<RepoIdAware, Object> mapRepoId2Object(@NonNull final Map<String, String> row)
+	{
+		final String tableName = DataTableUtil.extractStringForColumnName(row, I_AD_Table.COLUMNNAME_TableName);
+		final String recordIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Record_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+		switch (tableName)
+		{
+			case I_S_Issue.Table_Name:
+				final I_S_Issue issue = issueTable.get(recordIdentifier);
+				return ImmutableMap.of(IssueId.ofRepoId(issue.getS_Issue_ID()), issue);
+			default:
+				throw new AdempiereException("Table not supported! TableName:" + tableName);
 		}
 	}
 }

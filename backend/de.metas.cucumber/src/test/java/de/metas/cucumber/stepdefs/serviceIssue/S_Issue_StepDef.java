@@ -147,12 +147,19 @@ public class S_Issue_StepDef
 				issue.setExternalIssueNo(externalIssueNo);
 			}
 
-			final String userIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_S_Issue.COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String userIdentifier = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + I_S_Issue.COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (Check.isNotBlank(userIdentifier))
 			{
-				final I_AD_User user = userTable.get(userIdentifier);
-
-				issue.setAD_User_ID(user.getAD_User_ID());
+				final String nullableIdentifier = DataTableUtil.nullToken2Null(userIdentifier);
+				if (nullableIdentifier == null)
+				{
+					issue.setAD_User_ID(-1);
+				}
+				else
+				{
+					final I_AD_User user = userTable.get(userIdentifier);
+					issue.setAD_User_ID(user.getAD_User_ID());
+				}
 			}
 
 			saveRecord(issue);
@@ -415,7 +422,7 @@ public class S_Issue_StepDef
 		if (Check.isNotBlank(parentIssueIdentifier))
 		{
 			final I_S_Issue parentIssue = sIssueTable.get(parentIssueIdentifier);
-
+			softly.assertThat(issue.getS_Parent_Issue_ID()).isEqualTo(parentIssue.getS_Issue_ID());
 		}
 
 		final String userIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_S_Issue.COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -424,6 +431,18 @@ public class S_Issue_StepDef
 			final I_AD_User user = userTable.get(userIdentifier);
 
 			softly.assertThat(issue.getAD_User_ID()).isEqualTo(user.getAD_User_ID());
+		}
+
+		final String invoicingErrorMsg = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_S_Issue.COLUMNNAME_InvoicingErrorMsg);
+		if (Check.isNotBlank(invoicingErrorMsg))
+		{
+			softly.assertThat(issue.getInvoicingErrorMsg()).contains(invoicingErrorMsg);
+		}
+
+		final Boolean isInvoicingError = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + I_S_Issue.COLUMNNAME_IsInvoicingError);
+		if (isInvoicingError != null)
+		{
+			softly.assertThat(issue.isInvoicingError()).isEqualTo(isInvoicingError);
 		}
 
 		sIssueTable.putOrReplace(issueIdentifier, issue);
