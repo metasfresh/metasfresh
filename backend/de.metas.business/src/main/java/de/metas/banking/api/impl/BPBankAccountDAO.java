@@ -123,4 +123,17 @@ public class BPBankAccountDAO extends de.metas.bpartner.service.impl.BPBankAccou
 				.firstOnlyOptional(I_C_BP_BankAccount.class)
 				.map(bpBankAccount -> BankAccountId.ofRepoId(bpBankAccount.getC_BP_BankAccount_ID()));
 	}
+
+	@Override
+	@NonNull
+	public Optional<BankAccountId> getBankAccountIdByIBAN(
+			@NonNull final String iban)
+	{
+		return queryBL.createQueryBuilder(I_C_BP_BankAccount.class)
+				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_IBAN, iban)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.firstOnlyOptional(I_C_BP_BankAccount.class)
+				.map(bpBankAccount -> BankAccountId.ofRepoId(bpBankAccount.getC_BP_BankAccount_ID()));
+	}
 }
