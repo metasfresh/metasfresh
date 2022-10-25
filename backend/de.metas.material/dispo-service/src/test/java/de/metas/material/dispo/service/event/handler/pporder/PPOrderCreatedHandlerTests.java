@@ -38,7 +38,6 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_OrgInfo;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -84,7 +83,6 @@ import static org.compiere.model.X_AD_OrgInfo.STORECREDITCARDDATA_Speichern;
  */
 
 @ExtendWith(AdempiereTestWatcher.class)
-@Disabled
 public class PPOrderCreatedHandlerTests
 {
 	public static final int rawProduct1Id = 50;
@@ -159,9 +157,9 @@ public class PPOrderCreatedHandlerTests
 
 	private MaterialDispoGroupId assert_data_after_ppOrderEvent(@NonNull final PPOrderCreatedEvent ppOrderEvent)
 	{
-		assertThat(DispoTestUtils.filter(CandidateType.SUPPLY)).hasSize(1); //
-		assertThat(DispoTestUtils.filter(CandidateType.DEMAND)).hasSize(0); // even if the ppOrder has two different input/issue lines, we will generate candidates when the order is completed
-		assertThat(DispoTestUtils.filter(CandidateType.STOCK)).hasSize(1); // one stock record per supply, one per demand
+		assertThat(DispoTestUtils.filter(CandidateType.SUPPLY)).hasSize(1); // for the produced qty
+		assertThat(DispoTestUtils.filter(CandidateType.DEMAND)).hasSize(2); // for the consumed qty (we have 2 bom components )
+		assertThat(DispoTestUtils.filter(CandidateType.STOCK)).hasSize(3); // one stock record per supply, one per demand
 
 		//
 		// Check finished goods supply candidates
@@ -228,7 +226,7 @@ public class PPOrderCreatedHandlerTests
 					.createQueryBuilder(I_MD_Candidate_Prod_Detail.class)
 					.create()
 					.list();
-			assertThat(allProductionDetails).as("each (non-stock) candidate shall have one production detail").hasSize(1);
+			assertThat(allProductionDetails).as("each (non-stock) candidate shall have one production detail").hasSize(3);
 
 			assertThat(allProductionDetails)
 					.allSatisfy(d -> assertThat(d.isPickDirectlyIfFeasible()).isFalse());
@@ -262,7 +260,7 @@ public class PPOrderCreatedHandlerTests
 		// the system did not map the ppOrderCreatedEvent to the existing candidates because it did not have their groupId
 		// without the groupId we can't assume that a give event maps to any existing candidate
 		assertThat(DispoTestUtils.filter(CandidateType.SUPPLY)).hasSize(1);
-		assertThat(DispoTestUtils.filter(CandidateType.DEMAND)).hasSize(0);
+		assertThat(DispoTestUtils.filter(CandidateType.DEMAND)).hasSize(2);
 	}
 
 	private PPOrderCreatedEvent createPPOrderCreatedEvent(final int ppOrderId, final MaterialDispoGroupId groupId)
