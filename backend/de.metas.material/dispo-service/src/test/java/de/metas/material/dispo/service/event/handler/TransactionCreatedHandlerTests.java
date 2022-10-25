@@ -1,6 +1,7 @@
 package de.metas.material.dispo.service.event.handler;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.inout.InOutAndLineId;
 import de.metas.material.dispo.commons.candidate.Candidate;
 import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateId;
@@ -19,7 +20,6 @@ import de.metas.material.event.transactions.TransactionCreatedEvent.TransactionC
 import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -63,11 +63,9 @@ public class TransactionCreatedHandlerTests
 {
 	private static final BigDecimal SIXTY_THREE = new BigDecimal("63");
 
-	private static final BigDecimal SIXTY_FOUR = new BigDecimal("65");
-
 	private static final int TRANSACTION_ID = 60;
 
-	private static final int SHIPMENT_SCHEDULE_ID = 40;
+	private static final int SHIPMENT_LINE_ID = 10;
 
 	private TransactionEventHandler transactionEventHandler;
 
@@ -223,10 +221,10 @@ public class TransactionCreatedHandlerTests
 	}
 
 	@Test
-	@Disabled
 	public void createCandidate_unrelated_transaction_with_shipmentSchedule()
 	{
 		final TransactionCreatedEvent relatedEvent = createTransactionEventBuilderWithQuantity(TEN.negate(), Instant.now())
+				.shipmentId(InOutAndLineId.ofRepoId(1, SHIPMENT_LINE_ID))
 				.build();
 
 		Mockito.when(candidateRepository.retrieveLatestMatchOrNull(Mockito.any()))
@@ -252,13 +250,12 @@ public class TransactionCreatedHandlerTests
 		assertThat(candidate.getType()).isEqualTo(CandidateType.UNEXPECTED_DECREASE);
 		final DemandDetail demandDetail = DemandDetail.castOrNull(candidate.getBusinessCaseDetail());
 		assertThat(demandDetail).as("created candidate shall have a demand detail").isNotNull();
-		assertThat(demandDetail.getShipmentScheduleId()).isEqualTo(SHIPMENT_SCHEDULE_ID);
+		assertThat(demandDetail.getInOutLineId()).isEqualTo(SHIPMENT_LINE_ID);
 		assertThat(candidate.getTransactionDetails()).hasSize(1);
 		assertThat(candidate.getTransactionDetails().get(0).getQuantity()).isEqualByComparingTo(TEN);
 	}
 
 	@Test
-	@Disabled
 	public void createCandidate_related_transaction_with_shipmentSchedule()
 	{
 		final Instant date = SystemTime.asInstant();
@@ -274,11 +271,9 @@ public class TransactionCreatedHandlerTests
 						.date(date)
 						.build())
 				.businessCase(CandidateBusinessCase.SHIPMENT)
-				.businessCaseDetail(DemandDetail.forShipmentScheduleIdAndOrderLineId(
-						SHIPMENT_SCHEDULE_ID,
-						-1,
-						-1,
-						SIXTY_FOUR))
+				.businessCaseDetail(DemandDetail.forShipmentLineId(
+						SHIPMENT_LINE_ID,
+						SIXTY_THREE))
 				.build();
 
 		Mockito.when(candidateRepository.retrieveLatestMatchOrNull(Mockito.any()))
@@ -286,6 +281,7 @@ public class TransactionCreatedHandlerTests
 
 		final TransactionCreatedEvent relatedEvent = createTransactionEventBuilderWithQuantity(TEN.negate(), date)
 				.transactionId(TRANSACTION_ID)
+				.shipmentId(InOutAndLineId.ofRepoId(1, SHIPMENT_LINE_ID))
 				.build();
 
 		// invoke the method under test
@@ -307,12 +303,12 @@ public class TransactionCreatedHandlerTests
 		assertThat(candidate.getType()).isEqualTo(CandidateType.DEMAND);
 		assertThat(candidate.getQuantity())
 				.as("The demand candidate's quantity needs to be updated because there is now a transaction with a real qty that is bigger")
-				.isEqualByComparingTo(SIXTY_FOUR);
+				.isEqualByComparingTo(TEN);
 		makeCommonAssertions(candidate);
 
 		assertThat(candidate.getBusinessCaseDetail()).isNotNull();
 		assertThat(candidate.getBusinessCaseDetail()).isInstanceOf(DemandDetail.class);
-		assertThat(DemandDetail.cast(candidate.getBusinessCaseDetail()).getShipmentScheduleId()).isEqualTo(SHIPMENT_SCHEDULE_ID);
+		assertThat(DemandDetail.cast(candidate.getBusinessCaseDetail()).getInOutLineId()).isEqualTo(SHIPMENT_LINE_ID);
 		assertThat(candidate.getTransactionDetails()).hasSize(1);
 		assertThat(candidate.getTransactionDetails().get(0).getTransactionId()).isEqualTo(TRANSACTION_ID);
 		assertThat(candidate.getTransactionDetails().get(0).getQuantity()).isEqualByComparingTo(TEN);
@@ -321,8 +317,9 @@ public class TransactionCreatedHandlerTests
 	private static void assertDemandDetailQuery(final CandidatesQuery query)
 	{
 		assertThat(query).isNotNull();
-		assertThat(query.getDemandDetailsQuery().getShipmentScheduleId()).isEqualTo(SHIPMENT_SCHEDULE_ID);
 
+		assertThat(query.getBusinessCase()).isEqualTo(CandidateBusinessCase.SHIPMENT);
+		assertThat(query.getDemandDetailsQuery().getInOutLineId()).isEqualTo(SHIPMENT_LINE_ID);
 		// note: If we have a demand detail, then only query via that demand detail *and maybe* the transaction's attributes-key
 
 		assertThat(query.getTransactionDetails()).as("only search via the demand detail, if we have one").isEmpty();
