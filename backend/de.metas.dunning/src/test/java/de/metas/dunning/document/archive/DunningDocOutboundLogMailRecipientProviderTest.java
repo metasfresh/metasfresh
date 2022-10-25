@@ -20,6 +20,7 @@ import de.metas.dunning.model.I_C_DunningDoc_Line;
 import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
@@ -39,6 +40,7 @@ import org.junit.Test;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.Optional;
 
@@ -283,7 +285,7 @@ public class DunningDocOutboundLogMailRecipientProviderTest extends DunningTestB
 				.setTotalAmt(BigDecimal.valueOf(100)) // totalAmt,
 				.setOpenAmt(BigDecimal.valueOf(100)) // openAmt,
 				//
-				.setDueDate(TimeUtil.getDay(2013, 01, 01)) // dueDate,
+				.setDueDate(LocalDateAndOrgId.ofLocalDate(LocalDate.of(2013, 1, 1), OrgId.MAIN)) // dueDate,
 				.setGraceDate(null)
 				.setDaysDue(15) // daysDue,
 				.create();
