@@ -28,11 +28,11 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 
 public interface IDocumentDecorator
 {
-	default boolean isReadOnly(@NonNull final TableRecordReference tableRecordReference)
+	@NonNull
+	default BooleanWithReason isReadOnly(@NonNull final TableRecordReference tableRecordReference)
 	{
-		return false;
+		return BooleanWithReason.FALSE;
 	}
-
 	@NonNull
 	default BooleanWithReason isDeleteForbidden(@NonNull final TableRecordReference tableRecordReference)
 	{

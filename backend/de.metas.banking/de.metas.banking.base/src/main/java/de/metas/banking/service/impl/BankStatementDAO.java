@@ -20,6 +20,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.organization.IOrgDAO;
 import de.metas.payment.PaymentId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -37,6 +38,7 @@ import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
@@ -52,6 +54,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 public class BankStatementDAO implements IBankStatementDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
 	public I_C_BankStatement getById(@NonNull final BankStatementId bankStatementId)
@@ -302,14 +305,17 @@ public class BankStatementDAO implements IBankStatementDAO
 		record.setReferenceNo(request.getReferenceNo());
 		record.setDescription(request.getLineDescription());
 		record.setMemo(request.getMemo());
+		
+		final ZoneId timeZone = orgDAO.getTimeZone(request.getOrgId());
+		record.setStatementLineDate(TimeUtil.asTimestamp(request.getStatementLineDate(), timeZone));
+		record.setDateAcct(TimeUtil.asTimestamp(request.getDateAcct(), timeZone));
+		record.setValutaDate(TimeUtil.asTimestamp(request.getValutaDate(), timeZone));
 
-		record.setStatementLineDate(TimeUtil.asTimestamp(request.getStatementLineDate()));
-		record.setDateAcct(TimeUtil.asTimestamp(request.getDateAcct()));
-		record.setValutaDate(TimeUtil.asTimestamp(request.getValutaDate()));
-
+		record.setIsUpdateAmountsFromInvoice(request.isUpdateAmountsFromInvoice());
 		record.setC_Currency_ID(request.getStatementAmt().getCurrencyId().getRepoId());
 		record.setStmtAmt(request.getStatementAmt().toBigDecimal());
 		record.setTrxAmt(request.getTrxAmt().toBigDecimal());
+		
 		record.setBankFeeAmt(request.getBankFeeAmt().toBigDecimal());
 		record.setChargeAmt(request.getChargeAmt().toBigDecimal());
 		record.setInterestAmt(request.getInterestAmt().toBigDecimal());
