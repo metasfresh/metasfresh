@@ -164,6 +164,29 @@ public interface I_AD_User
 	String COLUMNNAME_AD_User_InCharge_ID = "AD_User_InCharge_ID";
 
 	/**
+	 * Set Geschlecht.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setAlberta_Gender (@Nullable java.lang.String Alberta_Gender);
+
+	/**
+	 * Get Geschlecht.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	@Nullable java.lang.String getAlberta_Gender();
+
+	ModelColumn<I_AD_User, Object> COLUMN_Alberta_Gender = new ModelColumn<>(I_AD_User.class, "Alberta_Gender", null);
+	String COLUMNNAME_Alberta_Gender = "Alberta_Gender";
+
+	/**
 	 * Set Title.
 	 *
 	 * <br>Type: List
@@ -212,7 +235,7 @@ public interface I_AD_User
 	String COLUMNNAME_Avatar_ID = "Avatar_ID";
 
 	/**
-	 * Set Geburtstag.
+	 * Set Birthday.
 	 * Birthday or Anniversary day
 	 *
 	 * <br>Type: Date
@@ -222,7 +245,7 @@ public interface I_AD_User
 	void setBirthday (@Nullable java.sql.Timestamp Birthday);
 
 	/**
-	 * Get Geburtstag.
+	 * Get Birthday.
 	 * Birthday or Anniversary day
 	 *
 	 * <br>Type: Date
@@ -342,31 +365,6 @@ public interface I_AD_User
 
 	ModelColumn<I_AD_User, org.compiere.model.I_C_Job> COLUMN_C_Job_ID = new ModelColumn<>(I_AD_User.class, "C_Job_ID", org.compiere.model.I_C_Job.class);
 	String COLUMNNAME_C_Job_ID = "C_Job_ID";
-
-	/**
-	 * Set Titel.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Title_ID (int C_Title_ID);
-
-	/**
-	 * Get Titel.
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Title_ID();
-
-	@Nullable org.compiere.model.I_C_Title getC_Title();
-
-	void setC_Title(@Nullable org.compiere.model.I_C_Title C_Title);
-
-	ModelColumn<I_AD_User, org.compiere.model.I_C_Title> COLUMN_C_Title_ID = new ModelColumn<>(I_AD_User.class, "C_Title_ID", org.compiere.model.I_C_Title.class);
-	String COLUMNNAME_C_Title_ID = "C_Title_ID";
 
 	/**
 	 * Set Comments.
@@ -507,6 +505,31 @@ public interface I_AD_User
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set Titel.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Title_ID (int C_Title_ID);
+
+	/**
+	 * Get Titel.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Title_ID();
+
+	@Nullable org.compiere.model.I_C_Title getC_Title();
+
+	void setC_Title(@Nullable org.compiere.model.I_C_Title C_Title);
+
+	ModelColumn<I_AD_User, org.compiere.model.I_C_Title> COLUMN_C_Title_ID = new ModelColumn<>(I_AD_User.class, "C_Title_ID", org.compiere.model.I_C_Title.class);
+	String COLUMNNAME_C_Title_ID = "C_Title_ID";
+
+	/**
 	 * Set Löschdatum.
 	 *
 	 * <br>Type: Date
@@ -612,6 +635,27 @@ public interface I_AD_User
 
 	ModelColumn<I_AD_User, Object> COLUMN_EMail3 = new ModelColumn<>(I_AD_User.class, "EMail3", null);
 	String COLUMNNAME_EMail3 = "EMail3";
+
+	/**
+	 * Set eMail Private.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setEmail_private (@Nullable java.lang.String Email_private);
+
+	/**
+	 * Get eMail Private.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getEmail_private();
+
+	ModelColumn<I_AD_User, Object> COLUMN_Email_private = new ModelColumn<>(I_AD_User.class, "Email_private", null);
+	String COLUMNNAME_Email_private = "Email_private";
 
 	/**
 	 * Set EMail Nutzer-ID.
@@ -794,27 +838,25 @@ public interface I_AD_User
 	String COLUMNNAME_Fresh_xmas_Gift = "Fresh_xmas_Gift";
 
 	/**
-	 * Set Gender.
+	 * Set Hobbies/Interests.
 	 *
-	 * <br>Type: List
+	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
-	 * @deprecated Please don't use it because this is a virtual column
+	 * <br>Virtual Column: false
 	 */
-	@Deprecated
-	void setGender (@Nullable java.lang.String Gender);
+	void setHobbies_interests (@Nullable java.lang.String Hobbies_interests);
 
 	/**
-	 * Get Gender.
+	 * Get Hobbies/Interests.
 	 *
-	 * <br>Type: List
+	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: true
+	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getGender();
+	@Nullable java.lang.String getHobbies_interests();
 
-	ModelColumn<I_AD_User, Object> COLUMN_Gender = new ModelColumn<>(I_AD_User.class, "Gender", null);
-	String COLUMNNAME_Gender = "Gender";
+	ModelColumn<I_AD_User, Object> COLUMN_Hobbies_interests = new ModelColumn<>(I_AD_User.class, "Hobbies_interests", null);
+	String COLUMNNAME_Hobbies_interests = "Hobbies_interests";
 
 	/**
 	 * Set Included Tab.
@@ -953,6 +995,31 @@ public interface I_AD_User
 
 	ModelColumn<I_AD_User, Object> COLUMN_IsBillToContact_Default = new ModelColumn<>(I_AD_User.class, "IsBillToContact_Default", null);
 	String COLUMNNAME_IsBillToContact_Default = "IsBillToContact_Default";
+
+	/**
+	 * Set User restriction.
+	 * If checked and this role is assigned to a user/contact, then customised restrictions can be implemented (e.g. read-only rules).
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setIsCustomUserRestriction (boolean IsCustomUserRestriction);
+
+	/**
+	 * Get User restriction.
+	 * If checked and this role is assigned to a user/contact, then customised restrictions can be implemented (e.g. read-only rules).
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	boolean isCustomUserRestriction();
+
+	ModelColumn<I_AD_User, Object> COLUMN_IsCustomUserRestriction = new ModelColumn<>(I_AD_User.class, "IsCustomUserRestriction", null);
+	String COLUMNNAME_IsCustomUserRestriction = "IsCustomUserRestriction";
 
 	/**
 	 * Set Default Contact.
@@ -1565,6 +1632,52 @@ public interface I_AD_User
 
 	ModelColumn<I_AD_User, Object> COLUMN_Phone2 = new ModelColumn<>(I_AD_User.class, "Phone2", null);
 	String COLUMNNAME_Phone2 = "Phone2";
+
+	/**
+	 * Set Photo.
+	 *
+	 * <br>Type: Image
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPhoto_ID (int Photo_ID);
+
+	/**
+	 * Get Photo.
+	 *
+	 * <br>Type: Image
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPhoto_ID();
+
+	@Nullable org.compiere.model.I_AD_Image getPhoto();
+
+	void setPhoto(@Nullable org.compiere.model.I_AD_Image Photo);
+
+	ModelColumn<I_AD_User, org.compiere.model.I_AD_Image> COLUMN_Photo_ID = new ModelColumn<>(I_AD_User.class, "Photo_ID", org.compiere.model.I_AD_Image.class);
+	String COLUMNNAME_Photo_ID = "Photo_ID";
+
+	/**
+	 * Set Previous Company.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPrevious_company (@Nullable java.lang.String Previous_company);
+
+	/**
+	 * Get Previous Company.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPrevious_company();
+
+	ModelColumn<I_AD_User, Object> COLUMN_Previous_company = new ModelColumn<>(I_AD_User.class, "Previous_company", null);
+	String COLUMNNAME_Previous_company = "Previous_company";
 
 	/**
 	 * Set Process Now.
