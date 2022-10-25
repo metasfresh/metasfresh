@@ -29,7 +29,6 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -214,7 +213,6 @@ public class DemandCandiateHandlerTest
 	}
 
 	@Test
-	@Disabled
 	public void decrease_stock()
 	{
 		final Candidate candidate = createCandidateWithType(CandidateType.UNEXPECTED_DECREASE);
@@ -234,7 +232,7 @@ public class DemandCandiateHandlerTest
 		assertThat(stockCandidate.getMD_Candidate_Parent_ID()).isEqualTo(unrelatedTransactionCandidate.getMD_Candidate_ID());
 
 		Mockito.verify(postMaterialEventService, Mockito.times(0))
-				.postEventNow(Mockito.any(), null);
+				.postEventNow(Mockito.any(), Mockito.any());
 	}
 
 	private static Candidate createCandidateWithType(@NonNull final CandidateType type)
