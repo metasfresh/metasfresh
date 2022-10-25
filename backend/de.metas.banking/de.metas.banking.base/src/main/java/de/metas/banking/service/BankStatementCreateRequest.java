@@ -1,6 +1,7 @@
 package de.metas.banking.service;
 
 import de.metas.banking.BankAccountId;
+import de.metas.banking.importfile.BankStatementImportFileId;
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -36,6 +37,9 @@ import java.time.LocalDate;
 @Builder
 public class BankStatementCreateRequest
 {
+	@Nullable
+	BankStatementImportFileId bankStatementImportFileId;
+	
 	@NonNull
 	OrgId orgId;
 

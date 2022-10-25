@@ -8,6 +8,7 @@ import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineRefId;
 import de.metas.banking.BankStatementLineReference;
 import de.metas.banking.BankStatementLineReferenceList;
+import de.metas.banking.importfile.BankStatementImportFileId;
 import de.metas.banking.model.I_C_BankStatementLine_Ref;
 import de.metas.banking.service.BankStatementCreateRequest;
 import de.metas.banking.service.BankStatementLineCreateRequest;
@@ -30,8 +31,8 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.banking.model.I_C_BankStatement;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_Fact_Acct;
 import org.compiere.util.TimeUtil;
@@ -86,7 +87,7 @@ public class BankStatementDAO implements IBankStatementDAO
 	}
 
 	@Override
-	public void save(final @NonNull I_C_BankStatement bankStatement)
+	public void save(final @NonNull org.compiere.model.I_C_BankStatement bankStatement)
 	{
 		InterfaceWrapperHelper.save(bankStatement);
 	}
@@ -256,14 +257,16 @@ public class BankStatementDAO implements IBankStatementDAO
 	@NonNull
 	public BankStatementId createBankStatement(@NonNull final BankStatementCreateRequest request)
 	{
+		final ZoneId timeZone = orgDAO.getTimeZone(request.getOrgId());
+		
 		final I_C_BankStatement record = newInstance(I_C_BankStatement.class);
-
+		record.setC_BankStatement_Import_File_ID(BankStatementImportFileId.toRepoId(request.getBankStatementImportFileId()));
 		record.setEndingBalance(BigDecimal.ZERO);
 		record.setAD_Org_ID(request.getOrgId().getRepoId());
 		record.setC_BP_BankAccount_ID(request.getOrgBankAccountId().getRepoId());
 		record.setName(request.getName());
 		record.setDescription(request.getDescription());
-		record.setStatementDate(TimeUtil.asTimestamp(request.getStatementDate()));
+		record.setStatementDate(TimeUtil.asTimestamp(request.getStatementDate(), timeZone));
 		record.setDocStatus(DocStatus.Drafted.getCode());
 		record.setDocAction(IDocument.ACTION_Complete);
 		record.setBeginningBalance(request.getBeginningBalance());
@@ -271,7 +274,7 @@ public class BankStatementDAO implements IBankStatementDAO
 		final BankStatementCreateRequest.ElectronicFundsTransfer eft = request.getEft();
 		if (eft != null)
 		{
-			record.setEftStatementDate(TimeUtil.asTimestamp(eft.getStatementDate()));
+			record.setEftStatementDate(TimeUtil.asTimestamp(eft.getStatementDate(), timeZone));
 			record.setEftStatementReference(eft.getStatementReference());
 		}
 

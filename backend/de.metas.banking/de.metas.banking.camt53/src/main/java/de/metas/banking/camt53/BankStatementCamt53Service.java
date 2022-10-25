@@ -38,6 +38,7 @@ import de.metas.banking.camt53.jaxb.camt053_001_02.ReportEntry2;
 import de.metas.banking.camt53.wrapper.AccountStatement2Wrapper;
 import de.metas.banking.camt53.wrapper.NoBatchBankToCustomerStatementV02Wrapper;
 import de.metas.banking.camt53.wrapper.NoBatchReportEntry2Wrapper;
+import de.metas.banking.importfile.BankStatementImportFileId;
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationService;
 import de.metas.banking.service.BankStatementCreateRequest;
 import de.metas.banking.service.BankStatementLineCreateRequest;
@@ -126,7 +127,11 @@ public class BankStatementCamt53Service
 			@NonNull final AccountStatement2 accountStatement2,
 			@NonNull final ImportBankStatementRequest importBankStatementRequest)
 	{
-		final BankStatementCreateRequest bankStatementCreateRequest = buildBankStatementCreateRequest(buildAccountStatement2Wrapper(accountStatement2))
+		final AccountStatement2Wrapper accountStatement2Wrapper = buildAccountStatement2Wrapper(accountStatement2);
+
+		final BankStatementCreateRequest bankStatementCreateRequest = buildBankStatementCreateRequest(
+				accountStatement2Wrapper,
+				importBankStatementRequest.getBankStatementImportFileId())
 				.orElse(null);
 
 		if (bankStatementCreateRequest == null)
@@ -155,7 +160,9 @@ public class BankStatementCamt53Service
 	}
 
 	@NonNull
-	private Optional<BankStatementCreateRequest> buildBankStatementCreateRequest(@NonNull final AccountStatement2Wrapper accountStatement2Wrapper)
+	private Optional<BankStatementCreateRequest> buildBankStatementCreateRequest(
+			@NonNull final AccountStatement2Wrapper accountStatement2Wrapper,
+			@NonNull final BankStatementImportFileId bankStatementImportFileId)
 	{
 		final ExplainedOptional<BankAccountId> bankAccountIdOpt = accountStatement2Wrapper.getBPartnerBankAccountId();
 
@@ -187,6 +194,7 @@ public class BankStatementCamt53Service
 								   .statementDate(TimeUtil.asLocalDate(statementDate, timeZone))
 								   .name(statementDate.toString())
 								   .beginningBalance(beginningBalance)
+								   .bankStatementImportFileId(bankStatementImportFileId)
 								   .build());
 	}
 

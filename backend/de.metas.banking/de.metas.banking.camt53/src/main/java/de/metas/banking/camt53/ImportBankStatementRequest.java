@@ -22,6 +22,7 @@
 
 package de.metas.banking.camt53;
 
+import de.metas.banking.importfile.BankStatementImportFileId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -32,6 +33,9 @@ import java.io.InputStream;
 @Builder
 public class ImportBankStatementRequest
 {
+	@NonNull
+	BankStatementImportFileId bankStatementImportFileId;
+	
 	@NonNull
 	InputStream camt53File;
 
