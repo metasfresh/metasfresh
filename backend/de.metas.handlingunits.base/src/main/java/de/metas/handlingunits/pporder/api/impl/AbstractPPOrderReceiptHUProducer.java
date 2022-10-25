@@ -90,6 +90,7 @@ import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.IClientOrgAware;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.eevolution.api.PPCostCollectorId;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
@@ -384,7 +385,12 @@ import java.util.Map;
 		if (clearanceStatus != null)
 		{
 			final String language = getOrgUserOrLoggedInUSerLanguage(referencedModel);
-			clearanceStatusInfo = ClearanceStatusInfo.of(clearanceStatus, msgBL.getMsg(language, MESSAGE_ClearanceStatusInfo_Manufactured));
+			clearanceStatusInfo = ClearanceStatusInfo.builder()
+					.clearanceStatus(clearanceStatus)
+					.clearanceNote(msgBL.getMsg(language, MESSAGE_ClearanceStatusInfo_Manufactured))
+					.clearanceDate(TimeUtil.asInstant(date))
+					.build();
+
 		}
 		else
 		{

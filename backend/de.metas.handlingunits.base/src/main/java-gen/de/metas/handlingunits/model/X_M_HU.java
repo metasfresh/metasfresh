@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 753592895L;
+	private static final long serialVersionUID = -1836855192L;
 
     /** Standard Constructor */
     public X_M_HU (final Properties ctx, final int M_HU_ID, @Nullable final String trxName)
@@ -62,6 +62,18 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 	public int getC_BPartner_Location_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
+	}
+
+	@Override
+	public void setClearanceDate (final @Nullable java.sql.Timestamp ClearanceDate)
+	{
+		set_Value (COLUMNNAME_ClearanceDate, ClearanceDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getClearanceDate() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_ClearanceDate);
 	}
 
 	@Override

@@ -97,6 +97,7 @@ import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Transaction;
+import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -1118,6 +1119,7 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 		hu.setClearanceStatus(clearanceStatusInfo.getClearanceStatus().getCode());
 		hu.setClearanceNote(clearanceStatusInfo.getClearanceNote());
+		hu.setClearanceDate(TimeUtil.asTimestamp(clearanceStatusInfo.getClearanceDate()));
 
 		handlingUnitsRepo.saveHU(hu);
 
