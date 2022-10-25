@@ -61,7 +61,7 @@ $BODY$
 						where bom.M_Product_ID=bomLineProduct.M_Product_ID
 						and bom.IsActive='Y'
 						and bom.Value=bomLineProduct.Value
-						order by bom.PP_Product_BOM_ID
+                        ORDER BY bom.validfrom DESC
 						limit 1)
 					else null
 					end)::numeric(10,0) as PP_Product_BOM_ID,
