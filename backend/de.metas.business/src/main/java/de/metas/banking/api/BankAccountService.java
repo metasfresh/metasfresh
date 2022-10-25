@@ -13,6 +13,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -99,5 +100,24 @@ public class BankAccountService
 		final BankId bankId = bankAccountDAO.getBankId(bankAccountId);
 
 		return bankRepo.retrieveDataImportConfigIdForBank(bankId);
+	}
+
+	@NonNull
+	public Optional<BankId> getBankIdBySwiftCode(@NonNull final String swiftCode)
+	{
+		return bankRepo.getBankIdBySwiftCode(swiftCode);
+	}
+	
+	@NonNull
+	public Optional<BankAccountId> getBankAccountId(
+			@NonNull final BankId bankId,
+			@NonNull final String accountNo)
+	{
+		return bankAccountDAO.getBankAccountId(bankId, accountNo);
+	}
+
+	public Optional<BankAccountId> getBankAccountIdByIBAN(@NonNull final String iban)
+	{
+		return bankAccountDAO.getBankAccountIdByIBAN(iban);
 	}
 }
