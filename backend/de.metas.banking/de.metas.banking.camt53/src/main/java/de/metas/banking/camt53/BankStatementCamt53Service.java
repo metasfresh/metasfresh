@@ -236,6 +236,15 @@ public class BankStatementCamt53Service
 				.interestAmt(entryWrapper.getInterestAmount().orElse(null))
 				.statementLineDate(statementLineDate.toLocalDate());
 
+		if (entryWrapper.isCRDT())
+		{ // if this is CREDIT (i.e. we get money), then we are interested in the name of the debitor from whom we the money is coming
+			bankStatementLineCreateRequestBuilder.importedBillPartnerName(entryWrapper.getDbtrNames());
+		}
+		else
+		{
+			bankStatementLineCreateRequestBuilder.importedBillPartnerName(entryWrapper.getCdtrNames());
+		}
+
 		getReferencedInvoiceRecord(importBankStatementLineRequest, statementLineDate)
 				.ifPresent(invoice -> bankStatementLineCreateRequestBuilder
 						.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
@@ -308,7 +317,8 @@ public class BankStatementCamt53Service
 			final JAXBContext context = JAXBContext.newInstance(ObjectFactory.class);
 			final Unmarshaller unmarshaller = context.createUnmarshaller();
 
-			@SuppressWarnings("unchecked") final JAXBElement<Document> e = (JAXBElement<Document>)unmarshaller.unmarshal(getXMLStreamReader(dataInputStream));
+			@SuppressWarnings("unchecked")
+			final JAXBElement<Document> e = (JAXBElement<Document>)unmarshaller.unmarshal(getXMLStreamReader(dataInputStream));
 
 			return e.getValue().getBkToCstmrStmt();
 		}

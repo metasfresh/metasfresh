@@ -90,8 +90,11 @@ public class NoBatchReportEntry2Wrapper
 	@NonNull
 	public ImmutableSet<String> getInvoiceDocNoCandidates()
 	{
-		final String unstructuredRemittanceInfo = getUnstructuredRemittanceInfo(" ");
-		return ImmutableSet.copyOf(unstructuredRemittanceInfo.split(" "));
+		final String string = getUnstructuredRemittanceInfo(" ")
+				+ " "
+				+ getLineDescription(" ");
+
+		return ImmutableSet.copyOf(string.split(" "));
 	}
 
 	@NonNull
@@ -153,6 +156,12 @@ public class NoBatchReportEntry2Wrapper
 	@NonNull
 	public String getLineDescription()
 	{
+		return getLineDescription("\n");
+	}
+
+	@NonNull
+	private String getLineDescription(@NonNull final String delimiter)
+	{
 		final String trxDetails = getEntryTransaction()
 				.map(EntryTransaction2::getAddtlTxInf)
 				.filter(Check::isNotBlank)
@@ -160,23 +169,23 @@ public class NoBatchReportEntry2Wrapper
 
 		return Stream.of(trxDetails, entry.getAddtlNtryInf())
 				.filter(Check::isNotBlank)
-				.collect(Collectors.joining("\n"));
+				.collect(Collectors.joining(delimiter));
 	}
 
 	@NonNull
-	public Money getStatementAmount()
+	public Amount getStatementAmount()
 	{
 		final BigDecimal value = getStatementAmountValue();
-		final CurrencyId currencyId = getStatementAmountCurrencyId(entry.getAmt().getCcy());
+		final CurrencyCode currencyCode = CurrencyCode.ofThreeLetterCode(entry.getAmt().getCcy());
 
-		return Money.of(value, currencyId);
+		return Amount.of(value, currencyCode);
 	}
 
 	@NonNull
 	private BigDecimal getStatementAmountValue()
 	{
 		return Optional.ofNullable(entry.getAmt().getValue())
-				.map(value -> CRDT == entry.getCdtDbtInd()
+				.map(value -> isCRDT()
 						? value
 						: value.negate())
 				.orElse(BigDecimal.ZERO);
@@ -189,9 +198,38 @@ public class NoBatchReportEntry2Wrapper
 		return currencyRepository.getCurrencyIdByCurrencyCode(currencyCode);
 	}
 
+	/**
+	 * @return true if this is a "credit" line (i.e. we get money)
+	 */
+	public boolean isCRDT()
+	{
+		return CRDT == entry.getCdtDbtInd();
+	}
+
 	public String getAcctSvcrRef()
 	{
 		return entry.getAcctSvcrRef();
 	}
 
+	public String getDbtrNames()
+	{
+		return entry.getNtryDtls().stream()
+				.flatMap(entryDetails1 -> entryDetails1.getTxDtls().stream())
+				.map(EntryTransaction2::getRltdPties)
+				.filter(party -> party!= null && party.getDbtr() != null)
+				.map(party -> party.getDbtr().getNm())
+				.filter(Check::isNotBlank)
+				.collect(Collectors.joining(" "));
+	}
+
+	public String getCdtrNames()
+	{
+		return entry.getNtryDtls().stream()
+				.flatMap(entryDetails1 -> entryDetails1.getTxDtls().stream())
+				.map(EntryTransaction2::getRltdPties)
+				.filter(party -> party!= null && party.getCdtr() != null)
+				.map(party -> party.getCdtr().getNm())
+				.filter(Check::isNotBlank)
+				.collect(Collectors.joining(" "));
+	}
 }

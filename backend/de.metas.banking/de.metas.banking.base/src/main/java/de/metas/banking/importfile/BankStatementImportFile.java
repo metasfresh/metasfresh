@@ -36,7 +36,10 @@ public class BankStatementImportFile
 	@NonNull
 	BankStatementImportFileId bankStatementImportFileId;
 
-	@NonNull
+	/**
+	 * Can be null if the file was not yet imported
+	 */
+	@Nullable
 	String filename;
 
 	@Nullable
