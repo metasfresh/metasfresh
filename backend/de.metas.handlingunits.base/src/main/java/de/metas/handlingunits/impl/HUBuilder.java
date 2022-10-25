@@ -57,6 +57,7 @@ import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IPair;
 import org.adempiere.warehouse.LocatorId;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -493,11 +494,13 @@ import java.util.stream.Collectors;
 		{
 			hu.setClearanceStatus(parentHU.getClearanceStatus());
 			hu.setClearanceNote(parentHU.getClearanceNote());
+			hu.setClearanceDate(parentHU.getClearanceDate());
 		}
 		else
 		{
 			hu.setClearanceStatus(configuredStatusInfo != null ? configuredStatusInfo.getClearanceStatus().getCode() : null);
 			hu.setClearanceNote(configuredStatusInfo != null ? configuredStatusInfo.getClearanceNote() : null);
+			hu.setClearanceDate(configuredStatusInfo != null ? TimeUtil.asTimestamp(configuredStatusInfo.getClearanceDate()) : null);
 		}
 	}
 
