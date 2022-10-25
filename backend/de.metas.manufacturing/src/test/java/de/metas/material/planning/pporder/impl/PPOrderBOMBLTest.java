@@ -17,17 +17,16 @@ import org.compiere.model.I_M_Product;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Product_BOM;
+import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.mrp.api.impl.MRPTestHelper;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
-@Disabled
 /**
  * This class tests {@link IPPOrderBOMBL} in convert with {@link IPPOrderBOMDAO}.
  *
@@ -97,11 +96,13 @@ public class PPOrderBOMBLTest
 				.fromToMultiplier(new BigDecimal("1500000"))
 				.build());
 
+		final I_PP_Product_BOMVersions bomVersions = helper.createBOMVersions(ProductId.ofRepoId(pSalad.getM_Product_ID()));
 		//
 		// Define BOM
 		//@formatter:off
 		final I_PP_Product_BOM saladProductBom = helper.newProductBOM()
 				.product(pSalad).uom(uomStuck)
+				.bomVersions(bomVersions)
 				// Carrot
 				.newBOMLine()
 					.product(pCarrot).uom(uomKillogram)
