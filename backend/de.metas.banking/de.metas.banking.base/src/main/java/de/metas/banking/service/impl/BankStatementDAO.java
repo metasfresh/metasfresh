@@ -68,6 +68,7 @@ import de.metas.document.engine.IDocument;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.organization.IOrgDAO;
 import de.metas.payment.PaymentId;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -77,6 +78,7 @@ import lombok.NonNull;
 public class BankStatementDAO implements IBankStatementDAO
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
 	public I_C_BankStatement getById(@NonNull final BankStatementId bankStatementId)
@@ -275,6 +277,7 @@ public class BankStatementDAO implements IBankStatementDAO
 	}
 
 	@Override
+	@NonNull
 	public BankStatementId createBankStatement(@NonNull final BankStatementCreateRequest request)
 	{
 		final I_C_BankStatement record = newInstance(I_C_BankStatement.class);
@@ -287,6 +290,7 @@ public class BankStatementDAO implements IBankStatementDAO
 		record.setStatementDate(TimeUtil.asTimestamp(request.getStatementDate()));
 		record.setDocStatus(DocStatus.Drafted.getCode());
 		record.setDocAction(IDocument.ACTION_Complete);
+		record.setBeginningBalance(request.getBeginningBalance());
 
 		final BankStatementCreateRequest.ElectronicFundsTransfer eft = request.getEft();
 		if (eft != null)
@@ -326,18 +330,23 @@ public class BankStatementDAO implements IBankStatementDAO
 		record.setDescription(request.getLineDescription());
 		record.setMemo(request.getMemo());
 
-		record.setStatementLineDate(TimeUtil.asTimestamp(request.getStatementLineDate()));
-		record.setDateAcct(TimeUtil.asTimestamp(request.getDateAcct()));
-		record.setValutaDate(TimeUtil.asTimestamp(request.getValutaDate()));
+		final ZoneId timeZone = orgDAO.getTimeZone(request.getOrgId());
+		record.setStatementLineDate(TimeUtil.asTimestamp(request.getStatementLineDate(), timeZone));
+		record.setDateAcct(TimeUtil.asTimestamp(request.getDateAcct(), timeZone));
+		record.setValutaDate(TimeUtil.asTimestamp(request.getValutaDate(), timeZone));
 
+		record.setIsUpdateAmountsFromInvoice(request.isUpdateAmountsFromInvoice());
 		record.setC_Currency_ID(request.getStatementAmt().getCurrencyId().getRepoId());
 		record.setStmtAmt(request.getStatementAmt().toBigDecimal());
 		record.setTrxAmt(request.getTrxAmt().toBigDecimal());
+
 		record.setBankFeeAmt(request.getBankFeeAmt().toBigDecimal());
 		record.setChargeAmt(request.getChargeAmt().toBigDecimal());
 		record.setInterestAmt(request.getInterestAmt().toBigDecimal());
 		record.setC_Charge_ID(ChargeId.toRepoId(request.getChargeId()));
-		record.setDebitorOrCreditorId(request.getDebitorOrCreditorId());
+		record.setDebitorOrCreditorId(request.getDebtorOrCreditorId());
+		record.setC_Invoice_ID(InvoiceId.toRepoId(request.getInvoiceId()));
+		record.setCurrencyRate(request.getCurrencyRate());
 
 		final BankStatementLineCreateRequest.ElectronicFundsTransfer eft = request.getEft();
 		if (eft != null)
