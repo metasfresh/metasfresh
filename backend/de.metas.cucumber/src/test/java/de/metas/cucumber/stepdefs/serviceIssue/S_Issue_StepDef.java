@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.serviceIssue;
 
+import de.metas.cucumber.stepdefs.AD_User_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
@@ -34,6 +35,7 @@ import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.assertj.core.api.SoftAssertions;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_Project;
 
@@ -67,17 +69,20 @@ public class S_Issue_StepDef
 	private final S_IssueLabel_StepDefData sIssueLabelTable;
 	private final C_Activity_StepDefData activityTable;
 	private final C_Project_StepDefData projectTable;
+	private final AD_User_StepDefData userTable;
 
 	public S_Issue_StepDef(
 			@NonNull final S_Issue_StepDefData sIssueTable,
 			@NonNull final S_IssueLabel_StepDefData sIssueLabelTable,
 			@NonNull final C_Activity_StepDefData activityTable,
-			@NonNull final C_Project_StepDefData projectTable)
+			@NonNull final C_Project_StepDefData projectTable,
+			@NonNull final AD_User_StepDefData userTable)
 	{
 		this.sIssueTable = sIssueTable;
 		this.sIssueLabelTable = sIssueLabelTable;
 		this.activityTable = activityTable;
 		this.projectTable = projectTable;
+		this.userTable = userTable;
 	}
 
 	@And("metasfresh contains S_Issue:")
@@ -140,6 +145,21 @@ public class S_Issue_StepDef
 			if (externalIssueNo != null)
 			{
 				issue.setExternalIssueNo(externalIssueNo);
+			}
+
+			final String userIdentifier = DataTableUtil.extractNullableStringForColumnName(row, "OPT." + I_S_Issue.COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(userIdentifier))
+			{
+				final String nullableIdentifier = DataTableUtil.nullToken2Null(userIdentifier);
+				if (nullableIdentifier == null)
+				{
+					issue.setAD_User_ID(-1);
+				}
+				else
+				{
+					final I_AD_User user = userTable.get(userIdentifier);
+					issue.setAD_User_ID(user.getAD_User_ID());
+				}
 			}
 
 			saveRecord(issue);
@@ -390,6 +410,39 @@ public class S_Issue_StepDef
 		if (processed != null)
 		{
 			softly.assertThat(issue.isProcessed()).isEqualTo(processed);
+		}
+
+		final String issueEffort = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_IssueEffort);
+		if (Check.isNotBlank(issueEffort))
+		{
+			softly.assertThat(issue.getIssueEffort()).isEqualTo(issueEffort);
+		}
+
+		final String parentIssueIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_S_Issue.COLUMNNAME_S_Parent_Issue_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(parentIssueIdentifier))
+		{
+			final I_S_Issue parentIssue = sIssueTable.get(parentIssueIdentifier);
+			softly.assertThat(issue.getS_Parent_Issue_ID()).isEqualTo(parentIssue.getS_Issue_ID());
+		}
+
+		final String userIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_S_Issue.COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(userIdentifier))
+		{
+			final I_AD_User user = userTable.get(userIdentifier);
+
+			softly.assertThat(issue.getAD_User_ID()).isEqualTo(user.getAD_User_ID());
+		}
+
+		final String invoicingErrorMsg = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_S_Issue.COLUMNNAME_InvoicingErrorMsg);
+		if (Check.isNotBlank(invoicingErrorMsg))
+		{
+			softly.assertThat(issue.getInvoicingErrorMsg()).contains(invoicingErrorMsg);
+		}
+
+		final Boolean isInvoicingError = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + I_S_Issue.COLUMNNAME_IsInvoicingError);
+		if (isInvoicingError != null)
+		{
+			softly.assertThat(issue.isInvoicingError()).isEqualTo(isInvoicingError);
 		}
 
 		sIssueTable.putOrReplace(issueIdentifier, issue);

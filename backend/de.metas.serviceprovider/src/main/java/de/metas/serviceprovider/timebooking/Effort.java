@@ -27,6 +27,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.Duration;
 
 @Value
@@ -80,6 +81,14 @@ public class Effort
 	public Effort negate()
 	{
 		return new Effort(-seconds);
+	}
+
+	@NonNull
+	public BigDecimal toHours()
+	{
+		final Duration duration = Duration.ofSeconds(seconds);
+
+		return new BigDecimal(duration.toHours());
 	}
 
 	private Effort(final long seconds)
