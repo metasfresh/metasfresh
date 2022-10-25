@@ -17,6 +17,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.util.TimeUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -123,7 +124,11 @@ public class HandlingUnitsBLTest
 			final I_M_HU_Item cu = createHU(tu);
 
 			//when
-			final ClearanceStatusInfo clearanceStatusInfo = ClearanceStatusInfo.of(ClearanceStatus.Locked,"LockedNote");
+			final ClearanceStatusInfo clearanceStatusInfo = ClearanceStatusInfo.builder()
+					.clearanceStatus(ClearanceStatus.Locked)
+					.clearanceNote("LockedNote")
+					.clearanceDate(TimeUtil.asInstant(helper.getTodayTimestamp()))
+					.build();
 			handlingUnitsBL.setClearanceStatusRecursively(HuId.ofRepoId(lu.getM_HU_ID()), clearanceStatusInfo);
 
 			//then
@@ -149,7 +154,11 @@ public class HandlingUnitsBLTest
 			final I_M_HU_Item cu = createHU(tu);
 
 			//when
-			final ClearanceStatusInfo clearanceStatusInfo = ClearanceStatusInfo.of(ClearanceStatus.Locked,"LockedNote");
+			final ClearanceStatusInfo clearanceStatusInfo = ClearanceStatusInfo.builder()
+					.clearanceStatus(ClearanceStatus.Locked)
+					.clearanceNote("LockedNote")
+					.clearanceDate(TimeUtil.asInstant(helper.getTodayTimestamp()))
+					.build();
 			handlingUnitsBL.setClearanceStatusRecursively(HuId.ofRepoId(tu.getM_HU_ID()), clearanceStatusInfo);
 
 			//then
@@ -197,7 +206,11 @@ public class HandlingUnitsBLTest
 			final I_M_HU_Item tu = createHU(lu);
 			final I_M_HU_Item cu = createHU(tu);
 
-			final ClearanceStatusInfo clearanceStatusInfo = ClearanceStatusInfo.of(ClearanceStatus.Locked,"Locked HU");
+			final ClearanceStatusInfo clearanceStatusInfo = ClearanceStatusInfo.builder()
+					.clearanceStatus(ClearanceStatus.Locked)
+					.clearanceNote("Locked HU")
+					.clearanceDate(TimeUtil.asInstant(helper.getTodayTimestamp()))
+					.build();
 			handlingUnitsBL.setClearanceStatusRecursively(HuId.ofRepoId(lu.getM_HU_ID()), clearanceStatusInfo);
 
 			//when
