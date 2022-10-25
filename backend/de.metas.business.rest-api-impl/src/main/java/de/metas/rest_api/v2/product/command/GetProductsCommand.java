@@ -45,6 +45,8 @@ import de.metas.pricing.PriceListId;
 import de.metas.product.ProductId;
 import de.metas.rest_api.v2.externlasystem.ExternalSystemService;
 import de.metas.rest_api.v2.product.ProductsServicesFacade;
+import de.metas.sectionCode.SectionCode;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -190,6 +192,11 @@ public class GetProductsCommand
 				? TimeUtil.asLocalDate(productRecord.getDiscontinuedFrom(), zoneId)
 				: null;
 
+		final String sectionCode = SectionCodeId.optionalOfRepoId(productRecord.getM_SectionCode_ID())
+				.map(servicesFacade::getSectionCode)
+				.map(SectionCode::getValue)
+				.orElse(null);
+
 		return JsonProduct.builder()
 				.id(JsonMetasfreshId.of(productId.getRepoId()))
 				.externalId(productRecord.getExternalId())
@@ -205,6 +212,7 @@ public class GetProductsCommand
 				.discontinuedFrom(discontinuedFrom)
 				.bpartners(productBPartners.get(productId))
 				.albertaProductInfo(getJsonAlbertaProductInfoFor(productId))
+				.sectionCode(sectionCode)
 				.build();
 	}
 

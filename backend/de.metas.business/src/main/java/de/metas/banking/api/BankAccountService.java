@@ -116,4 +116,9 @@ public class BankAccountService
 	{
 		return bankAccountDAO.getBankAccountId(bankId, accountNo);
 	}
+
+	public Optional<BankAccountId> getBankAccountIdByIBAN(@NonNull final String iban)
+	{
+		return bankAccountDAO.getBankAccountIdByIBAN(iban);
+	}
 }
