@@ -3,7 +3,6 @@ package de.metas.monitoring.adapter;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
-import java.util.function.BiConsumer;
 import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableSet;
 import lombok.Builder;
@@ -76,12 +75,6 @@ public interface PerformanceMonitoringService
 
 		@Singular
 		Map<String, String> labels;
-
-		@Nullable
-		BiConsumer<String, String> distributedHeadersInjector;
-
-		@Singular
-		Map<String, String> distributedTransactionHeaders;
 	}
 
 	enum Type
