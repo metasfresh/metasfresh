@@ -56,6 +56,8 @@ public class BankStatementLineCreateRequest
 	String lineDescription;
 	String memo;
 
+	boolean updateAmountsFromInvoice;
+	
 	@NonNull
 	LocalDate statementLineDate;
 	@NonNull
@@ -111,7 +113,8 @@ public class BankStatementLineCreateRequest
 			final int debtorOrCreditorId,
 			@Nullable final BigDecimal currencyRate,
 			@Nullable final InvoiceId invoiceId,
-			//
+			@Nullable final Boolean updateAmountsFromInvoice,
+
 			@Nullable final ElectronicFundsTransfer eft)
 	{
 		this.bankStatementId = bankStatementId;
@@ -127,8 +130,8 @@ public class BankStatementLineCreateRequest
 		this.memo = memo;
 		//
 		this.statementLineDate = statementLineDate;
-		this.dateAcct = CoalesceUtil.coalesce(dateAcct, statementLineDate);
-		this.valutaDate = CoalesceUtil.coalesce(valutaDate, statementLineDate);
+		this.dateAcct = CoalesceUtil.coalesceNotNull(dateAcct, statementLineDate);
+		this.valutaDate = CoalesceUtil.coalesceNotNull(valutaDate, statementLineDate);
 		//
 		this.statementAmt = statementAmt;
 		this.trxAmt = trxAmt != null ? trxAmt : statementAmt.toZero();
@@ -140,7 +143,9 @@ public class BankStatementLineCreateRequest
 		Money.getCommonCurrencyIdOfAll(this.statementAmt, this.trxAmt, this.chargeAmt, this.interestAmt);
 		this.currencyRate = currencyRate;
 		this.invoiceId = invoiceId;
-		//
+		
+		this.updateAmountsFromInvoice = CoalesceUtil.coalesceNotNull(updateAmountsFromInvoice, true); // true for backwards compatibility
+		
 		this.eft = eft;
 	}
 

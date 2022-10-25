@@ -89,12 +89,23 @@ public class NoBatchReportEntry2Wrapper
 	@NonNull
 	public ImmutableSet<String> getInvoiceDocNoCandidates()
 	{
-		final String unstructuredRemittanceInfo = String.join(" ", getEntryTransaction()
+		final String unstructuredRemittanceInfo = getUnstructuredRemittanceInfo(" ");
+		return ImmutableSet.copyOf(unstructuredRemittanceInfo.split(" "));
+	}
+
+	@NonNull
+	public String getUnstructuredRemittanceInfo()
+	{
+		return getUnstructuredRemittanceInfo("\n");
+	}
+	
+	@NonNull
+	private String getUnstructuredRemittanceInfo(@NonNull final String delimiter)
+	{
+		return String.join(delimiter, getEntryTransaction()
 				.map(EntryTransaction2::getRmtInf)
 				.map(RemittanceInformation5::getUstrd)
 				.orElseGet(ImmutableList::of));
-
-		return ImmutableSet.copyOf(unstructuredRemittanceInfo.split(" "));
 	}
 
 	@NonNull
@@ -165,5 +176,10 @@ public class NoBatchReportEntry2Wrapper
 						? value
 						: value.negate())
 				.orElse(BigDecimal.ZERO);
+	}
+
+	public String getAcctSvcrRef()
+	{
+		return entry.getAcctSvcrRef();
 	}
 }

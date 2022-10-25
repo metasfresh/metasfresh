@@ -222,6 +222,9 @@ public class BankStatementCamt53Service
 				.orgId(orgId)
 				.bankStatementId(importBankStatementLineRequest.getBankStatementId())
 				.lineDescription(entryWrapper.getLineDescription())
+				.memo(entryWrapper.getUnstructuredRemittanceInfo())
+				.referenceNo(entryWrapper.getAcctSvcrRef())
+				.updateAmountsFromInvoice(false) // don't change the amounts; they are coming from the bank  
 				.statementAmt(stmtAmount)
 				.trxAmt(stmtAmount)
 				.currencyRate(entryWrapper.getCurrencyRate().orElse(null))
