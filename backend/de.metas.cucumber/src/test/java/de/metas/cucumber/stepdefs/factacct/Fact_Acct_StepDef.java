@@ -74,7 +74,7 @@ public class Fact_Acct_StepDef
 				softly.assertThat(allFactAcctRecordsMatch).isTrue();
 			}
 
-			final String postingType = DataTableUtil.extractStringForColumnName(row, "OPT." + I_Fact_Acct.COLUMNNAME_PostingType);
+			final String postingType = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_Fact_Acct.COLUMNNAME_PostingType);
 			if (Check.isNotBlank(postingType))
 			{
 				final PostingType type = PostingType.valueOf(postingType);

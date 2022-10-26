@@ -1196,11 +1196,14 @@ public class C_Invoice_Candidate_StepDef
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
 			final Map<RepoIdAware, Object> repoId2Object = mapRepoId2Object(row);
+			final String tableName = DataTableUtil.extractStringForColumnName(row, I_AD_Table.COLUMNNAME_TableName);
+			final int tableId = tableDAO.retrieveTableId(tableName);;
 
 			repoId2Object.entrySet()
 					.forEach(entry -> {
 						final I_C_Invoice_Candidate candidate = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
 								.addEqualsFilter(COLUMNNAME_Record_ID, entry.getKey().getRepoId())
+								.addEqualsFilter(COLUMNNAME_AD_Table_ID, tableId)
 								.create()
 								.firstOnlyOrNull(I_C_Invoice_Candidate.class);
 						Assertions.assertThat(candidate).isNull();
