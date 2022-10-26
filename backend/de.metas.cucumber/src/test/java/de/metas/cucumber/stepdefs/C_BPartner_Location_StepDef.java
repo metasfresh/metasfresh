@@ -74,6 +74,7 @@ public class C_BPartner_Location_StepDef
 		bPartnerLocationRecord.setGLN(gln);
 		bPartnerLocationRecord.setIsBillToDefault(true);
 		bPartnerLocationRecord.setIsShipTo(true);
+
 		saveRecord(bPartnerLocationRecord);
 
 		bPartnerLocationTable.put(DataTableUtil.extractRecordIdentifier(tableRow, "C_BPartner_Location"), bPartnerLocationRecord);

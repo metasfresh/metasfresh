@@ -30,11 +30,7 @@ import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
@@ -658,6 +654,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 				Check.errorIf(paymentType == PAYMENT_TYPE_1, SepaMarshallerException.class,
 						"SEPA_ExportLine {} has to have StructuredRemittanceInfo", createInfo(line));
 
+
 				if (!Check.isBlank(bankAccount.getQR_IBAN()))
 				{
 					final String QRReference = StringUtils.cleanWhitespace(line.getStructuredRemittanceInfo());
@@ -679,23 +676,25 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 
 					cdtrRefInf.setRef(QRReference);
 				}
-				else {
-
+				else
+				{
 					// note: we use the structuredRemittanceInfo in ustrd, if we do SEPA (zahlart 5),
 					// because it's much less complicated
-					final String reference = Check.isBlank(line.getStructuredRemittanceInfo())
-							? line.getDescription()
-							: line.getStructuredRemittanceInfo();
+					final String reference = StringUtils.trimBlankToOptional(line.getStructuredRemittanceInfo()).orElseGet(line::getDescription);
 
 					// provide the line-description (if set) as unstructured remittance info
-					if (Check.isBlank(reference)) {
+					if (Check.isBlank(reference))
+					{
 						// at least add a "." to make sure the node exists.
 						rmtInf.setUstrd(".");
-					} else {
+					}
+					else
+					{
 						final String validReference = StringUtils.trunc(replaceForbiddenChars(reference), 140, TruncateAt.STRING_START);
 						rmtInf.setUstrd(validReference);
 					}
 				}
+
 			}
 			else
 			{
@@ -817,6 +816,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	 *
 	 * @see <a href="http://www.swissiban.com/de.htm">http://www.swissiban.com/de.htm</a> for what it does (it's simple).
 	 */
+	@Nullable
 	private String extractBCFromIban(
 			@Nullable final String iban,
 			@NonNull final I_SEPA_Export_Line line)
@@ -975,6 +975,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	 * @return
 	 */
 	@VisibleForTesting
+	@Nullable
 	static String replaceForbiddenChars(@Nullable final String input)
 	{
 		if (input == null)
