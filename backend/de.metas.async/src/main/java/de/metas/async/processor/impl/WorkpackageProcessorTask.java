@@ -184,7 +184,8 @@ class WorkpackageProcessorTask implements Runnable
 					this::run0,
 					Metadata.builder()
 							.type(Type.ASYNC_WORKPACKAGE)
-							.name("Workpackage-Processor - " + queueProcessor.getName())
+							.className("WorkpackageProcessorTask")
+							.functionName("run")
 							.label("de.metas.async.queueProcessor.name", queueProcessor.getName())
 							.label(PerformanceMonitoringService.LABEL_WORKPACKAGE_ID, Integer.toString(workPackage.getC_Queue_WorkPackage_ID()))
 							.build());

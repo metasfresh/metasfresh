@@ -710,9 +710,9 @@ public class ModelValidationEngine implements IModelValidationEngine
 					() -> fireModelChange0(po, changeType),
 					Metadata
 							.builder()
-							.name("ModelValidationEngine")
+							.className("ModelValidationEngine")
 							.type(Type.MODEL_INTERCEPTOR)
-							.action("fireModelChange")
+							.functionName("fireModelChange")
 							.label("changeType", changeTypeStr)
 							.label("tableName", tableName)
 							.label(PerformanceMonitoringService.LABEL_RECORD_ID, Integer.toString(po.get_ID()))
@@ -1089,9 +1089,9 @@ public class ModelValidationEngine implements IModelValidationEngine
 						() -> fireDocValidate0(model, docTiming),
 						Metadata
 								.builder()
-								.name("ModelValidationEngine")
+								.className("ModelValidationEngine")
 								.type(Type.MODEL_INTERCEPTOR)
-								.action("fireDocValidate")
+								.functionName("fireDocValidate")
 								.label("docTiming", docTimingStr)
 								.label("tableName", tableName)
 								.label(PerformanceMonitoringService.LABEL_RECORD_ID, Integer.toString(recordId))

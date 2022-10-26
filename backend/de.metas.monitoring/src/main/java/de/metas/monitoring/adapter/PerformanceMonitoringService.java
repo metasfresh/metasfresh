@@ -59,13 +59,13 @@ public interface PerformanceMonitoringService
 	class Metadata
 	{
 		@NonNull
-		String name;
+		String className;
 
 		@NonNull
 		Type type;
 
-		@Nullable
-		String action;
+		@NonNull
+		String functionName;
 
 		@Nullable
 		String windowNameAndId;

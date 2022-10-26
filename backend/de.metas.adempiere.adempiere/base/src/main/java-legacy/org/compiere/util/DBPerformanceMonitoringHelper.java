@@ -47,17 +47,17 @@ public class DBPerformanceMonitoringHelper
 	private static final PerformanceMonitoringService.Metadata PM_METADATA_PREPARE_STATEMENT =
 			PerformanceMonitoringService.Metadata
 					.builder()
-					.name(PM_METADATA_CLASS_NAME)
+					.className(PM_METADATA_CLASS_NAME)
 					.type(PerformanceMonitoringService.Type.DB)
-					.action(PM_METADATA_PREPARE_STATEMENT_ACTION)
+					.functionName(PM_METADATA_PREPARE_STATEMENT_ACTION)
 					.build();
 
 	private static final PerformanceMonitoringService.Metadata PM_METADATA_EXECUTE_UPDATE =
 			PerformanceMonitoringService.Metadata
 					.builder()
-					.name(PM_METADATA_CLASS_NAME)
+					.className(PM_METADATA_CLASS_NAME)
 					.type(PerformanceMonitoringService.Type.DB)
-					.action(PM_METADATA_EXECUTE_UPDATE_ACTION)
+					.functionName(PM_METADATA_EXECUTE_UPDATE_ACTION)
 					.build();
 
 	public CPreparedStatement performanceMonitoringServicePrepareStatement(@NonNull final Callable<CPreparedStatement> callable)

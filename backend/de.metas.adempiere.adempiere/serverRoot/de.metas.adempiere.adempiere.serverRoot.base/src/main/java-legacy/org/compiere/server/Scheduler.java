@@ -215,7 +215,8 @@ public class Scheduler extends AdempiereServer
 			service.monitor(
 					this::doWork0,
 					Metadata.builder()
-							.name("Scheduler - " + m_model.getName())
+							.className("Scheduler")
+							.functionName("doWork")
 							.type(Type.SCHEDULER)
 							.label("scheduler.name", m_model.getName())
 							.build());

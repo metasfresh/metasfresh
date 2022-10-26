@@ -78,18 +78,18 @@ public class MonitorAspect
 		if(monitorAnnotation.type() == PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 		{
 			metadata = PerformanceMonitoringService.Metadata.builder()
-					.name(pjp.getTarget().getClass().getSimpleName())
+					.className(pjp.getTarget().getClass().getSimpleName())
 					.type(monitorAnnotation.type())
-					.action(method.getName())
+					.functionName(method.getName())
 					.windowNameAndId(getWindowNameAndId())
 					.build();
 		}
 		else
 		{
 			metadata = PerformanceMonitoringService.Metadata.builder()
-					.name(pjp.getTarget().getClass().getSimpleName())
+					.className(pjp.getTarget().getClass().getSimpleName())
 					.type(monitorAnnotation.type())
-					.action(method.getName())
+					.functionName(method.getName())
 					.build();
 		}
 

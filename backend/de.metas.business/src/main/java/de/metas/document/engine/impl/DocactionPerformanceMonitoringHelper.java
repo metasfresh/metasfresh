@@ -40,9 +40,10 @@ public class DocactionPerformanceMonitoringHelper
 
 		return Metadata
 				.builder()
-				.name("DocAction - " + docAction + " " + tableName)
+				.className("AbstractDocumentBL")
 				.type(Type.DOC_ACTION)
-				.action(docAction)
+				.functionName("processIt")
+				.label("docAction", docAction)
 				.label("tableName", tableName)
 				.label(PerformanceMonitoringService.LABEL_RECORD_ID, Integer.toString(document.get_ID()))
 				.build();

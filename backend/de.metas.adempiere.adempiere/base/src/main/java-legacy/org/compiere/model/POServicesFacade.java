@@ -45,16 +45,16 @@ final class POServicesFacade
 	private static final PerformanceMonitoringService.Metadata PM_METADATA_SAVE_EX =
 			PerformanceMonitoringService.Metadata
 					.builder()
-					.name(PM_METADATA_CLASS_NAME)
+					.className(PM_METADATA_CLASS_NAME)
 					.type(PerformanceMonitoringService.Type.PO)
-					.action(PM_METADATA_SAVE_EX_ACTION)
+					.functionName(PM_METADATA_SAVE_EX_ACTION)
 					.build();
 	private static final PerformanceMonitoringService.Metadata PM_METADATA_LOAD =
 			PerformanceMonitoringService.Metadata
 					.builder()
-					.name(PM_METADATA_CLASS_NAME)
+					.className(PM_METADATA_CLASS_NAME)
 					.type(PerformanceMonitoringService.Type.PO)
-					.action(PM_METADATA_LOAD_ACTION)
+					.functionName(PM_METADATA_LOAD_ACTION)
 					.build();
 
 	private IDeveloperModeBL developerModeBL()

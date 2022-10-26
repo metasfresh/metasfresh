@@ -48,8 +48,8 @@ public class EventBusMonitoringService
 		final Event.Builder eventToSendBuilder = event.toBuilder();
 		final PerformanceMonitoringService.Metadata request = PerformanceMonitoringService.Metadata.builder()
 				.type(de.metas.monitoring.adapter.PerformanceMonitoringService.Type.EVENTBUS_REMOTE_ENDPOINT)
-				.action("event-send")
-				.name("Enqueue distributed-event on topic " + topic.getName())
+				.className("EventBus")
+				.functionName("enqueueEvent")
 				.label("de.metas.event.distributed-event.senderId", event.getSenderId())
 				.label("de.metas.event.distributed-event.topicName", topic.getName())
 				.build();
@@ -65,7 +65,8 @@ public class EventBusMonitoringService
 			@NonNull final Runnable processEvent)
 	{
 		final PerformanceMonitoringService.Metadata metadata = PerformanceMonitoringService.Metadata.builder()
-				.name("Process remote-event; topic=" + topic.getName())
+				.className("RabbitMQEventBusRemoteEndpoint")
+				.functionName("onEvent")
 				.type(de.metas.monitoring.adapter.PerformanceMonitoringService.Type.EVENTBUS_REMOTE_ENDPOINT)
 				.label("de.metas.event.remote-event.senderId", event.getSenderId())
 				.label("de.metas.event.remote-event.topicName", topic.getName())
