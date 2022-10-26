@@ -27,11 +27,14 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.camt53.BankStatementCamt53Service;
 import de.metas.banking.camt53.ImportBankStatementRequest;
+import de.metas.banking.importfile.BankStatementImportFileId;
 import de.metas.banking.service.IBankStatementDAO;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.util.Services;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import org.adempiere.banking.model.I_C_BankStatement_Import_File;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 
 import java.io.ByteArrayInputStream;
@@ -55,14 +58,20 @@ public class C_BankStatement_Camt53_ImportAttachment_StepDef
 	@And("^bank statement is imported with identifiers (.*), matching invoice amounts$")
 	public void import_camt53_document(@NonNull final String identifier, @NonNull final String fileContent)
 	{
+		final I_C_BankStatement_Import_File importFileRecord = InterfaceWrapperHelper.newInstance(I_C_BankStatement_Import_File.class);
+		InterfaceWrapperHelper.saveRecord(importFileRecord);
+
 		final ImmutableList<String> bankStatementIdentifiers = StepDefUtil.extractIdentifiers(identifier);
 		final InputStream documentIS = new ByteArrayInputStream(fileContent.getBytes());
 		assertThat(documentIS).isNotNull();
 
-		final ImmutableSet<BankStatementId> bankStatementIds = bankStatementCamt53Service.importBankToCustomerStatement(ImportBankStatementRequest.builder()
-																																.camt53File(documentIS)
-																																.isMatchAmounts(true)
-																																.build());
+		final ImmutableSet<BankStatementId> bankStatementIds = bankStatementCamt53Service
+				.importBankToCustomerStatement(ImportBankStatementRequest
+													   .builder()
+													   .camt53File(documentIS)
+													   .isMatchAmounts(true)
+													   .bankStatementImportFileId(BankStatementImportFileId.ofRepoId(importFileRecord.getC_BankStatement_Import_File_ID()))
+													   .build());
 		assertThat(bankStatementIds).isNotEmpty();
 		assertThat(bankStatementIdentifiers.size()).isEqualTo(bankStatementIds.size());
 
