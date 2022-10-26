@@ -25,7 +25,6 @@ package de.metas.device.scales.impl.soehenle;
 /**
  * Generates the command string <code><H>\r\n</code> which requests the "stable" weight from the scale.
  * If the scale is unable to measure a stable weight within a certain timeout, it returns an error.
- *
  */
 public final class SoehenleStableGrossWeightCmd implements ISoehenleCmd
 {
@@ -44,12 +43,6 @@ public final class SoehenleStableGrossWeightCmd implements ISoehenleCmd
 	public static SoehenleStableGrossWeightCmd getInstance()
 	{
 		return instance;
-	}
-
-	@Override
-	public int getStartingOffset()
-	{
-		return 8;
 	}
 
 	@Override

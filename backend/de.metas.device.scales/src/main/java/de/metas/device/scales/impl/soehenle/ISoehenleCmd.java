@@ -29,18 +29,16 @@ import java.util.LinkedHashMap;
 public interface ISoehenleCmd extends ICmd
 {
 	String CMD_TERMINATOR = "\r\n"; // we need to terminate the command string with "Carriage Return, Line Feed"
-
-	default int getStartingOffset()
-	{
-		return 0;
-	}
+	String RESULT_ELEMENT_STATUS = "Status";
+	String RESULT_ELEMENT_WEIGHT_VALUE = "WeightValue";
+	String RESULT_ELEMENT_UNIT = "Unit";
 
 	default LinkedHashMap<String, SoehenleResultStringElement> getResultElements()
 	{
 		final LinkedHashMap<String, SoehenleResultStringElement> result = new LinkedHashMap<String, SoehenleResultStringElement>();
-		result.put("Status", new SoehenleResultStringElement("Status", 1, null));
-		result.put("WeightValue", new SoehenleResultStringElement("WeightValue", 2, null));
-		result.put("Unit", new SoehenleResultStringElement("Unit", 3, null));
+		result.put(RESULT_ELEMENT_STATUS, new SoehenleResultStringElement(RESULT_ELEMENT_STATUS, 1, null));
+		result.put(RESULT_ELEMENT_WEIGHT_VALUE, new SoehenleResultStringElement(RESULT_ELEMENT_WEIGHT_VALUE, 2, null));
+		result.put(RESULT_ELEMENT_UNIT, new SoehenleResultStringElement(RESULT_ELEMENT_UNIT, 3, null));
 
 		return result;
 	}

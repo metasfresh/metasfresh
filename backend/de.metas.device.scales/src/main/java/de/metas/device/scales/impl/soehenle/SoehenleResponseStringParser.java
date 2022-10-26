@@ -26,9 +26,11 @@ import ch.qos.logback.classic.Level;
 import de.metas.device.scales.impl.IParser;
 import de.metas.device.scales.impl.ParserException;
 import de.metas.logging.LogManager;
+import de.metas.util.Check;
 import de.metas.util.Loggables;
 import org.slf4j.Logger;
 
+import static de.metas.device.scales.impl.soehenle.ISoehenleCmd.RESULT_ELEMENT_STATUS;
 import static java.math.BigDecimal.ZERO;
 
 public class SoehenleResponseStringParser implements IParser<ISoehenleCmd>
@@ -41,30 +43,31 @@ public class SoehenleResponseStringParser implements IParser<ISoehenleCmd>
 	{
 		try
 		{
-			final int startingOffset = cmd.getStartingOffset();
-			if (stringToParse == null || stringToParse.length() < startingOffset)
+			if (Check.isBlank(stringToParse))
 			{
-				Loggables.withLogger(logger, Level.WARN).addLog("The scale returned {} for cmd={};", stringToParse, cmd);
-				return (T)ZERO.toString();
-			}
-			final String stringToParseWithoutPrefix = stringToParse.substring(startingOffset);
-			//underweight
-			if (stringToParseWithoutPrefix.startsWith("1"))
-			{
-				Loggables.withLogger(logger, Level.WARN).addLog("The scale returned an underweight measurement {} for cmd={};Returning 0;", stringToParse, cmd);
-				return (T)ZERO.toString();
-			}
-
-			//overweight
-			if (stringToParseWithoutPrefix.startsWith("01"))
-			{
-				Loggables.withLogger(logger, Level.WARN).addLog("The scale returned an overweight measurement {} for cmd={};Returning 0;", stringToParse, cmd);
+				Loggables.withLogger(logger, Level.INFO).addLog("The scale returned no value for cmd={};", cmd);
 				return (T)ZERO.toString();
 			}
 
 			final SoehenleResultStringElement elementInfo = cmd.getResultElements().get(elementName);
+			final String[] tokens = stringToParse.split(" +"); // split string around spaces
 
-			final String[] tokens = stringToParseWithoutPrefix.split(" +"); // split string around spaces
+			final String status = getStatus(cmd, tokens);
+
+			//underweight
+			if (status.startsWith("1"))
+			{
+				Loggables.withLogger(logger, Level.INFO).addLog("The scale returned an underweight measurement {} for cmd={};Returning 0;", stringToParse, cmd);
+				return (T)ZERO.toString();
+			}
+
+			//overweight
+			if (status.startsWith("01"))
+			{
+				Loggables.withLogger(logger, Level.INFO).addLog("The scale returned an overweight measurement {} for cmd={};Returning 0;", stringToParse, cmd);
+				return (T)ZERO.toString();
+			}
+
 			final String resultToken = tokens[elementInfo.getPosition() - 1];
 
 			return (T)resultToken;
@@ -73,6 +76,21 @@ public class SoehenleResponseStringParser implements IParser<ISoehenleCmd>
 		{
 			throw new ParserException(cmd, stringToParse, elementName, clazz, e);
 		}
+	}
+
+	private static String getStatus(final ISoehenleCmd cmd, final String[] tokens)
+	{
+		final SoehenleResultStringElement statusInfo = cmd.getResultElements().get(RESULT_ELEMENT_STATUS);
+		final String status = tokens[statusInfo.getPosition() - 1];
+		if (status.length() == 12) //Message is in Alibispeicher format, drop the first 8 characters
+		{
+			return status.substring(8);
+		}
+		if (status.length() != 4)
+		{
+			Loggables.withLogger(logger, Level.WARN).addLog("Found an incorrectly formatted status: {} ", status);
+		}
+		return status;
 	}
 
 	@Override
