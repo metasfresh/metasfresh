@@ -52,6 +52,7 @@ import de.metas.organization.OrgId;
 import de.metas.organization.StoreCreditCardNumberMode;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.service.ProductScalePriceService;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
@@ -118,7 +119,8 @@ import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 import static org.compiere.model.I_C_BPartner_Location.COLUMNNAME_ExternalId;
 
 /*
@@ -194,6 +196,8 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
 		Services.registerService(IBPartnerBL.class, bpartnerBL);
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
+
+		SpringContextHolder.registerJUnitBean(new ProductScalePriceService());
 
 		olCandBL = new OLCandBL(bpartnerBL, new BPartnerOrderParamsRepository());
 		Services.registerService(IOLCandBL.class, olCandBL);
@@ -910,7 +914,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		final JsonOLCand olCand = olCands.get(0);
 
 		// assert That the OLCand record has the C_BPartner_Location_ID that was not specified in JSON, but looked up
-		final List<I_C_OLCand> olCandRecords = POJOLookupMap.getNonNull().getRecords(I_C_OLCand.class);
+		final List<I_C_OLCand> olCandRecords = POJOLookupMap.get().getRecords(I_C_OLCand.class);
 		assertThat(olCandRecords).hasSize(1)
 				.extracting(COLUMNNAME_C_OLCand_ID)
 				.contains(olCand.getId());
@@ -1036,7 +1040,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		assertThat(olCand.getBillBPartner().getBpartner().getChangeInfo().getLastUpdatedMillis()).isEqualTo(FIXED_TIME.toInstant().toEpochMilli());
 
 		// assert That the OLCand record has the C_BPartner_Location_ID that was not specified in JSON, but looked up
-		final List<I_C_OLCand> olCandRecords = POJOLookupMap.getNonNull().getRecords(I_C_OLCand.class);
+		final List<I_C_OLCand> olCandRecords = POJOLookupMap.get().getRecords(I_C_OLCand.class);
 		assertThat(olCandRecords).hasSize(1)
 				.extracting(COLUMNNAME_C_OLCand_ID)
 				.contains(olCand.getId());
@@ -1077,7 +1081,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		final JsonOLCand jsonOLCand = assertResultOKForTest_1_JSON(result);
 		expect(jsonOLCand).toMatchSnapshot();
 
-		final List<I_C_BPartner_Location> bplRecords = POJOLookupMap.getNonNull().getRecords(I_C_BPartner_Location.class);
+		final List<I_C_BPartner_Location> bplRecords = POJOLookupMap.get().getRecords(I_C_BPartner_Location.class);
 		assertThat(bplRecords)
 				.extracting(COLUMNNAME_ExternalId, "shipTo", "billTo", "billToDefault")
 				.containsExactlyInAnyOrder(
@@ -1150,7 +1154,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		final JsonOLCand jsonOLCand = assertResultOKForTest_1_JSON(result);
 		expect(jsonOLCand).toMatchSnapshot();
 
-		final List<I_C_BPartner_Location> bplRecords = POJOLookupMap.getNonNull().getRecords(I_C_BPartner_Location.class);
+		final List<I_C_BPartner_Location> bplRecords = POJOLookupMap.get().getRecords(I_C_BPartner_Location.class);
 		assertThat(bplRecords)
 				.extracting(COLUMNNAME_ExternalId, "shipTo", "billTo", "billToDefault")
 				.containsExactlyInAnyOrder(

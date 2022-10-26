@@ -1,13 +1,13 @@
 package de.metas.inoutcandidate.lock;
 
-import java.time.ZonedDateTime;
-import java.util.Objects;
-
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import java.time.ZonedDateTime;
+import java.util.Objects;
 
 /*
  * #%L

@@ -1,13 +1,13 @@
 package de.metas.inoutcandidate.api;
 
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.quantity.Quantity;
+import de.metas.util.ISingletonService;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
-
-import de.metas.inoutcandidate.ShipmentScheduleId;
-import de.metas.quantity.Quantity;
-import de.metas.util.ISingletonService;
 
 /**
  * Packaging related DAO

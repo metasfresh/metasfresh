@@ -1,22 +1,21 @@
 package de.metas.handlingunits.trace.repository;
 
-import static org.adempiere.model.InterfaceWrapperHelper.isNull;
-
-import java.util.Optional;
-import java.util.OptionalInt;
-
-import org.compiere.util.TimeUtil;
-
 import de.metas.document.DocTypeId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.trace.HUTraceEvent;
 import de.metas.handlingunits.trace.HUTraceEvent.HUTraceEventBuilder;
 import de.metas.handlingunits.trace.HUTraceType;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import lombok.NonNull;
+import org.compiere.util.TimeUtil;
+
+import java.util.Optional;
+import java.util.OptionalInt;
+
+import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 
 /*
  * #%L

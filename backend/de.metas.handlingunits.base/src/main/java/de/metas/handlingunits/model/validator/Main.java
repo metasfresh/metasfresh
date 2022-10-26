@@ -22,24 +22,6 @@ package de.metas.handlingunits.model.validator;
  * #L%
  */
 
-import java.util.Arrays;
-
-import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.dao.impl.EqualsQueryFilter;
-import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
-import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.ad.ui.api.ITabCalloutFactory;
-import org.adempiere.mm.attributes.spi.impl.WeightGenerateHUTrxListener;
-import org.adempiere.ui.api.IGridTabSummaryInfoFactory;
-import org.adempiere.util.agg.key.IAggregationKeyRegistry;
-import org.compiere.apps.search.dao.IInvoiceHistoryDAO;
-import org.compiere.apps.search.dao.impl.HUInvoiceHistoryDAO;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_I_Inventory;
-import org.eevolution.model.I_DD_OrderLine;
-import org.springframework.stereotype.Component;
-
 import de.metas.adempiere.callout.OrderFastInput;
 import de.metas.adempiere.gui.search.impl.HUOrderFastInputHandler;
 import de.metas.cache.CacheMgt;
@@ -56,6 +38,7 @@ import de.metas.handlingunits.invoicecandidate.ui.spi.impl.HUC_Invoice_Candidate
 import de.metas.handlingunits.materialtracking.impl.QualityInspectionWarehouseDestProvider;
 import de.metas.handlingunits.materialtracking.spi.impl.HUDocumentLineLineMaterialTrackingListener;
 import de.metas.handlingunits.materialtracking.spi.impl.HUHandlingUnitsInfoFactory;
+import de.metas.handlingunits.model.I_DD_OrderLine;
 import de.metas.handlingunits.model.I_M_ForecastLine;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
@@ -98,15 +81,29 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.materialtracking.IMaterialTrackingBL;
 import de.metas.materialtracking.spi.IHandlingUnitsInfoFactory;
 import de.metas.materialtracking.spi.IPPOrderMInOutLineRetrievalService;
-import de.metas.order.invoicecandidate.IC_OrderLine_HandlerDAO;
 import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsBL;
 import de.metas.order.createFrom.po_from_so.IC_Order_CreatePOFromSOsDAO;
-import de.metas.pricing.attributebased.impl.AttributePricing;
-import de.metas.pricing.service.ProductPrices;
+import de.metas.order.invoicecandidate.IC_OrderLine_HandlerDAO;
 import de.metas.storage.IStorageEngineService;
 import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.dao.impl.EqualsQueryFilter;
+import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
+import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.adempiere.ad.ui.api.ITabCalloutFactory;
+import org.adempiere.mm.attributes.spi.impl.WeightGenerateHUTrxListener;
+import org.adempiere.ui.api.IGridTabSummaryInfoFactory;
+import org.adempiere.util.agg.key.IAggregationKeyRegistry;
+import org.compiere.apps.search.dao.IInvoiceHistoryDAO;
+import org.compiere.apps.search.dao.impl.HUInvoiceHistoryDAO;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_I_Inventory;
+import org.springframework.stereotype.Component;
+
+import java.util.Arrays;
 
 @Component
 public final class Main extends AbstractModuleInterceptor
@@ -178,7 +175,7 @@ public final class Main extends AbstractModuleInterceptor
 		// https://github.com/metasfresh/metasfresh/issues/2298
 		engine.addModelValidator(de.metas.handlingunits.picking.interceptor.M_HU.INSTANCE);
 	}
-	
+
 	@Override
 	protected void registerCallouts(@NonNull final IProgramaticCalloutProvider programaticCalloutProvider)
 	{
@@ -215,34 +212,13 @@ public final class Main extends AbstractModuleInterceptor
 		// Register GridTabSummaryInfo entries (08734) - override de.metas.swat implementation
 		final IGridTabSummaryInfoFactory gridTabSummaryInfoFactory = Services.get(IGridTabSummaryInfoFactory.class);
 		gridTabSummaryInfoFactory.register(I_C_Invoice_Candidate.Table_Name, new HUC_Invoice_Candidate_GridTabSummaryInfoProvider(), true); // forceOverride
-		
+
 		registerImportProcesses();
 	}
 
 	public static void setupPricing()
 	{
-		ProductPrices.registerMainProductPriceMatcher(HUPricing.HUPIItemProductMatcher_None);
-
-		// Registers a default matcher to make sure that the AttributePricing ignores all product prices that have an M_HU_PI_Item_Product_ID set.
-		//
-		// From skype chat:
-		// <pre>
-		// [Dienstag, 4. Februar 2014 15:33] Cis:
-		//
-		// if the HU pricing rule (that runs first) doesn't find a match, the attribute pricing rule runs next and can find a wrong match, because it can't "see" the M_HU_PI_Item_Product
-		// more concretely: we have two rules:
-		// IFCO A, with Red
-		// IFCO B with Blue
-		//
-		// And we put a product in IFCO A with Blue
-		//
-		// HU pricing rule won't find a match,
-		// Attribute pricing rule will match it with "Blue", which is wrong, since it should fall back to the "base" productPrice
-		//
-		// <pre>
-		// ..and that's why we register the filter here.
-		//
-		AttributePricing.registerDefaultMatcher(HUPricing.HUPIItemProductMatcher_None);
+		HUPricing.install();
 	}
 
 	public void setupTourPlanning()
@@ -308,7 +284,7 @@ public final class Main extends AbstractModuleInterceptor
 
 	/**
 	 * Register handling unit specific factories, builders etc
-	 *
+	 * <p>
 	 * NOTE: we are doing it in a separate method because we are calling this method in JUnit tests too
 	 */
 	public void registerFactories()
@@ -431,7 +407,7 @@ public final class Main extends AbstractModuleInterceptor
 		// Register Handlers
 		keyRegistry.registerAggregationKeyValueHandler(registrationKey, new HUShipmentScheduleKeyValueHandler());
 	}
-	
+
 	private void registerImportProcesses()
 	{
 		final IImportProcessFactory importProcessesFactory = Services.get(IImportProcessFactory.class);
