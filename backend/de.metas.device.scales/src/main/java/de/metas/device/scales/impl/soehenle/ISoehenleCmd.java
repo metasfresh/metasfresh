@@ -28,7 +28,7 @@ import java.util.LinkedHashMap;
 
 public interface ISoehenleCmd extends ICmd
 {
-	String CMD_TERMINATOR = "\r\n"; // we need to terminal the command string with "Carriage Return, Line Feed"
+	String CMD_TERMINATOR = "\r\n"; // we need to terminate the command string with "Carriage Return, Line Feed"
 
 	default int getStartingOffset()
 	{
