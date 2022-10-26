@@ -22,23 +22,21 @@ package de.metas.device.scales.impl;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-
-import org.slf4j.Logger;
-
 import de.metas.device.api.DeviceException;
 import de.metas.device.api.IDeviceRequest;
 import de.metas.device.api.IDeviceRequestHandler;
 import de.metas.device.scales.endpoint.ITcpConnectionEndPoint;
 import de.metas.device.scales.request.GetWeightResponse;
 import de.metas.logging.LogManager;
+import org.slf4j.Logger;
 
-public class ScalesGetGrossWeightHandler<C extends ICmd> implements IDeviceRequestHandler<IDeviceRequest<GetWeightResponse>, GetWeightResponse>
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
+public class ScalesGetWeightHandler<C extends ICmd> implements IDeviceRequestHandler<IDeviceRequest<GetWeightResponse>, GetWeightResponse>
 {
 
-	private static final transient Logger logger = LogManager.getLogger(ScalesGetGrossWeightHandler.class);
+	private static final Logger logger = LogManager.getLogger(ScalesGetWeightHandler.class);
 
 	private ITcpConnectionEndPoint endpoint;
 
@@ -59,11 +57,11 @@ public class ScalesGetGrossWeightHandler<C extends ICmd> implements IDeviceReque
 	public GetWeightResponse handleRequest(final IDeviceRequest<GetWeightResponse> request)
 	{
 		final String endpointResultStr = endpoint.sendCmd(cmd.getCmd());
-		logger.trace("Received result string {} from endpoint {}; command: {}", new Object[] { endpointResultStr, endpoint, cmd });
+		logger.trace("Received result string {} from endpoint {}; command: {}", endpointResultStr, endpoint, cmd);
 
 		final String endPointWeight = parser.parse(cmd, endpointResultStr, weightFieldName, String.class);
 		logger.trace("Parsed weight number string {} from the result string; will round according to roundWeightToPrecision={}",
-				new Object[] { endPointWeight, roundWeightToPrecision });
+				endPointWeight, roundWeightToPrecision);
 		final BigDecimal weight;
 		try
 		{
@@ -77,39 +75,38 @@ public class ScalesGetGrossWeightHandler<C extends ICmd> implements IDeviceReque
 		final String endPointUom = parser.parse(cmd, endpointResultStr, uomFieldName, String.class);
 		logger.trace("Parsed uom string {} from the result string", endPointUom);
 
-		final GetWeightResponse response = new GetWeightResponse(
+		return new GetWeightResponse(
 				roundWeightToPrecision < 0  // task 09207: only round if a precision >=0 was supplied
 				? weight
 						: weight.setScale(roundWeightToPrecision, RoundingMode.HALF_UP),
 				endPointUom);
-		return response;
 	}
 
-	public ScalesGetGrossWeightHandler<C> setEndpoint(final ITcpConnectionEndPoint endpoint)
+	public ScalesGetWeightHandler<C> setEndpoint(final ITcpConnectionEndPoint endpoint)
 	{
 		this.endpoint = endpoint;
 		return this;
 	}
 
-	public ScalesGetGrossWeightHandler<C> setParser(final IParser<C> parser)
+	public ScalesGetWeightHandler<C> setParser(final IParser<C> parser)
 	{
 		this.parser = parser;
 		return this;
 	}
 
-	public ScalesGetGrossWeightHandler<C> setCmd(final C cmd)
+	public ScalesGetWeightHandler<C> setCmd(final C cmd)
 	{
 		this.cmd = cmd;
 		return this;
 	}
 
-	public ScalesGetGrossWeightHandler<C> setWeightFieldName(final String fieldName)
+	public ScalesGetWeightHandler<C> setWeightFieldName(final String fieldName)
 	{
 		this.weightFieldName = fieldName;
 		return this;
 	}
 
-	public ScalesGetGrossWeightHandler<C> setUOMFieldName(final String fieldName)
+	public ScalesGetWeightHandler<C> setUOMFieldName(final String fieldName)
 	{
 		this.uomFieldName = fieldName;
 		return this;
@@ -122,7 +119,7 @@ public class ScalesGetGrossWeightHandler<C extends ICmd> implements IDeviceReque
 	 * @param roundWeightToPrecision
 	 * @task http://dewiki908/mediawiki/index.php/09207_Wiegen_nur_eine_Nachkommastelle_%28101684670982%29
 	 */
-	public ScalesGetGrossWeightHandler<C> setroundWeightToPrecision(final int roundWeightToPrecision)
+	public ScalesGetWeightHandler<C> setroundWeightToPrecision(final int roundWeightToPrecision)
 	{
 		this.roundWeightToPrecision = roundWeightToPrecision;
 		return this;
@@ -132,7 +129,7 @@ public class ScalesGetGrossWeightHandler<C extends ICmd> implements IDeviceReque
 	public String toString()
 	{
 		return String.format(
-				"ScalesGetGrossWeightHandler [endpoint=%s, parser=%s, cmd=%s, weightFieldName=%s, uomFieldName=%s, weigthRoundToPrecision=%s]",
-				endpoint, parser, cmd, weightFieldName, uomFieldName);
+				"ScalesGetWeightHandler [endpoint=%s, parser=%s, cmd=%s, weightFieldName=%s, uomFieldName=%s, weightRoundToPrecision=%s]",
+				endpoint, parser, cmd, weightFieldName, uomFieldName, roundWeightToPrecision);
 	}
 }

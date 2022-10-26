@@ -27,8 +27,6 @@ import java.util.LinkedHashMap;
 /**
  * Base class for the Soehenle commands that request a weight from a scale. Note that the Response message shall be the same for all different command subclasses.
  *
- * @author metas-dev <dev@metasfresh.com>
- *
  */
 public abstract class AbstractSoehenleWeighCmd implements ISoehenleCmd
 {

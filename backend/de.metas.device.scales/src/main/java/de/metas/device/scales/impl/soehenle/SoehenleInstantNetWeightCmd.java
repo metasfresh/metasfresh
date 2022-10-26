@@ -26,12 +26,10 @@ package de.metas.device.scales.impl.soehenle;
  * Generates the command string <code><A></>\r\n</code> which requests the "instant" weight from the scale.
  * This result might be "stable" or "dynamic".
  *
- * @author metas-dev <dev@metasfresh.com>
- *
  */
-public final class SoehenleInstantNetWeighCmd extends AbstractSoehenleWeighCmd
+public final class SoehenleInstantNetWeightCmd extends AbstractSoehenleWeighCmd
 {
-	private static final SoehenleInstantNetWeighCmd instance = new SoehenleInstantNetWeighCmd();
+	private static final SoehenleInstantNetWeightCmd instance = new SoehenleInstantNetWeightCmd();
 
 	/**
 	 * @return the string <code><A></code> that shall be send to the scale hardware in order to get the current weight.
@@ -42,7 +40,7 @@ public final class SoehenleInstantNetWeighCmd extends AbstractSoehenleWeighCmd
 		return "<A>" + CMD_TERMINATOR;
 	}
 
-	public static SoehenleInstantNetWeighCmd getInstance()
+	public static SoehenleInstantNetWeightCmd getInstance()
 	{
 		return instance;
 	}

@@ -1,7 +1,4 @@
-package de.metas.device.scales.impl;
-
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
+package de.metas.device.scales.request;
 
 /*
  * #%L
@@ -16,18 +13,34 @@ import java.nio.charset.StandardCharsets;
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
+ * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
 
-public interface ICmd
-{
-	Charset DEFAULT_CMD_CHARSET = StandardCharsets.US_ASCII;
 
-	String getCmd();
+import de.metas.device.api.IDeviceRequest;
+
+/**
+ * Requests the "instant" weight from the scale.
+ * This result might be "stable" or "dynamic".
+ *
+ */
+public class GetInstantNetWeighRequest implements IDeviceRequest<GetWeightResponse>
+{
+	@Override
+	public Class<GetWeightResponse> getResponseClass()
+	{
+		return GetWeightResponse.class;
+	}
+
+	@Override
+	public String toString()
+	{
+		return "GetInstantNetWeighRequest []";
+	}
 }

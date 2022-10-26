@@ -26,7 +26,6 @@ package de.metas.device.scales.impl.soehenle;
  * Generates the command string <code><B>\r\n</code> which requests the "stable" weight from the scale.
  * If the scale is unable to measure a stable weight within a certain timeout, it returns an error.
  *
- * @author metas-dev <dev@metasfresh.com>
  */
 public final class SoehenleStableNetWeightCmd extends AbstractSoehenleWeighCmd
 {
