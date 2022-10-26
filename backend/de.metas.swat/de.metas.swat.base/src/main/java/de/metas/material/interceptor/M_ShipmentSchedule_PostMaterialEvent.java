@@ -17,6 +17,7 @@ import de.metas.material.event.shipmentschedule.AbstractShipmentScheduleEvent;
 import de.metas.material.event.shipmentschedule.OldShipmentScheduleData;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleDeletedEvent;
+import de.metas.material.event.shipmentschedule.ShipmentScheduleDetail;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleUpdatedEvent;
 import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.organization.ClientAndOrgId;
@@ -87,18 +88,11 @@ public class M_ShipmentSchedule_PostMaterialEvent
 	{
 		final AbstractShipmentScheduleEvent event = createShipmentScheduleEvent(schedule, timing);
 
-		final boolean nothingActuallyChanged = //
-				event.getOrderedQuantityDelta().signum() == 0
-						&& event.getReservedQuantityDelta().signum() == 0;
-		if (nothingActuallyChanged)
-		{
-			return;
-		}
-
 		postMaterialEventService.postEventAfterNextCommit(event);
 	}
 
 	@VisibleForTesting
+	@NonNull
 	AbstractShipmentScheduleEvent createShipmentScheduleEvent(
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule,
 			@NonNull final ModelChangeType timing)
@@ -118,6 +112,7 @@ public class M_ShipmentSchedule_PostMaterialEvent
 		return createUpdatedEvent(shipmentSchedule);
 	}
 
+	@NonNull
 	private ShipmentScheduleCreatedEvent createCreatedEvent(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		final MaterialDescriptor materialDescriptor = //
@@ -136,13 +131,20 @@ public class M_ShipmentSchedule_PostMaterialEvent
 		return ShipmentScheduleCreatedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(clientAndOrgId))
 				.materialDescriptor(materialDescriptor)
-				.reservedQuantity(shipmentSchedule.getQtyReserved())
+				.shipmentScheduleDetail(ShipmentScheduleDetail.builder()
+												.orderedQuantity(shipmentScheduleEffectiveBL.computeQtyOrdered(shipmentSchedule))
+												.reservedQuantity(shipmentSchedule.getQtyReserved())
+												.reservedQuantityDelta(shipmentSchedule.getQtyReserved())
+												// dev-note: no old data
+												.oldShipmentScheduleData(null)
+												.build())
 				.shipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID())
 				.documentLineDescriptor(documentLineDescriptor)
 				.minMaxDescriptor(minMaxDescriptor)
 				.build();
 	}
 
+	@NonNull
 	private ShipmentScheduleUpdatedEvent createUpdatedEvent(
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
@@ -160,17 +162,16 @@ public class M_ShipmentSchedule_PostMaterialEvent
 		shipmentScheduleUpdatedEventBuilder
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(shipmentSchedule.getAD_Client_ID(), shipmentSchedule.getAD_Org_ID()))
 				.materialDescriptor(materialDescriptor)
-				.reservedQuantity(shipmentSchedule.getQtyReserved())
 				.shipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID())
 				.documentLineDescriptor(documentLineDescriptor)
 				.minMaxDescriptor(minMaxDescriptor);
 
-		setQuantities(shipmentScheduleUpdatedEventBuilder, materialDescriptor, shipmentSchedule);
+		setShipmentScheduleDetail(shipmentScheduleUpdatedEventBuilder, materialDescriptor, shipmentSchedule);
 
 		return shipmentScheduleUpdatedEventBuilder.build();
 	}
 
-	private void setQuantities(
+	private void setShipmentScheduleDetail(
 			@NonNull final ShipmentScheduleUpdatedEvent.ShipmentScheduleUpdatedEventBuilder shipmentScheduleUpdatedEventBuilder,
 			@NonNull final MaterialDescriptor currentMaterialDescriptor,
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule)
@@ -178,18 +179,24 @@ public class M_ShipmentSchedule_PostMaterialEvent
 		final I_M_ShipmentSchedule oldShipmentSchedule = toOldValues(shipmentSchedule);
 		final MaterialDescriptor oldMaterialDescriptor = createMaterialDescriptor(oldShipmentSchedule);
 
+		final ShipmentScheduleDetail.ShipmentScheduleDetailBuilder shipmentScheduleDetailBuilder = ShipmentScheduleDetail.builder()
+				.orderedQuantity(shipmentScheduleEffectiveBL.computeQtyOrdered(shipmentSchedule))
+				.reservedQuantity(shipmentSchedule.getQtyReserved());
+		
 		if (targetMaterialDescriptorChanged(currentMaterialDescriptor, oldMaterialDescriptor))
 		{
 			shipmentScheduleUpdatedEventBuilder
-					.oldShipmentScheduleData(buildOldShipmentScheduleData(oldMaterialDescriptor, oldShipmentSchedule))
-					.reservedQuantityDelta(shipmentSchedule.getQtyReserved())
-					.orderedQuantityDelta(currentMaterialDescriptor.getQuantity());
+					.shipmentScheduleDetail(shipmentScheduleDetailBuilder
+													.reservedQuantityDelta(shipmentSchedule.getQtyReserved())
+													.oldShipmentScheduleData(buildOldShipmentScheduleData(oldMaterialDescriptor, oldShipmentSchedule))
+													.build());
 		}
 		else
 		{
 			shipmentScheduleUpdatedEventBuilder
-					.reservedQuantityDelta(shipmentSchedule.getQtyReserved().subtract(oldShipmentSchedule.getQtyReserved()))
-					.orderedQuantityDelta(currentMaterialDescriptor.getQuantity().subtract(oldMaterialDescriptor.getQuantity()));
+					.shipmentScheduleDetail(shipmentScheduleDetailBuilder
+													.reservedQuantityDelta(shipmentSchedule.getQtyReserved().subtract(oldShipmentSchedule.getQtyReserved()))
+													.build());
 		}
 	}
 
@@ -200,7 +207,6 @@ public class M_ShipmentSchedule_PostMaterialEvent
 	{
 		return OldShipmentScheduleData.builder()
 				.oldMaterialDescriptor(oldMaterialDescriptor)
-				.oldOrderedQuantity(oldMaterialDescriptor.getQuantity())
 				.oldReservedQuantity(oldShipmentSchedule.getQtyReserved())
 				.build();
 	}
@@ -209,7 +215,7 @@ public class M_ShipmentSchedule_PostMaterialEvent
 			@NonNull final MaterialDescriptor materialDescriptor,
 			@NonNull final MaterialDescriptor oldMaterialDescriptor)
 	{
-		return !materialDescriptor.getStorageAttributesKey().equals(oldMaterialDescriptor.getStorageAttributesKey()) 
+		return !materialDescriptor.getStorageAttributesKey().equals(oldMaterialDescriptor.getStorageAttributesKey())
 				|| !materialDescriptor.getDate().equals(oldMaterialDescriptor.getDate())
 				|| materialDescriptor.getProductId() != oldMaterialDescriptor.getProductId()
 				|| !Objects.equals(materialDescriptor.getWarehouseId(), oldMaterialDescriptor.getWarehouseId());
@@ -221,6 +227,7 @@ public class M_ShipmentSchedule_PostMaterialEvent
 		return InterfaceWrapperHelper.createOld(shipmentSchedule, I_M_ShipmentSchedule.class);
 	}
 
+	@NonNull
 	private ShipmentScheduleDeletedEvent createDeletedEvent(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		final MaterialDescriptor materialDescriptor = createMaterialDescriptor(shipmentSchedule);
@@ -228,7 +235,11 @@ public class M_ShipmentSchedule_PostMaterialEvent
 		return ShipmentScheduleDeletedEvent.builder()
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(shipmentSchedule.getAD_Client_ID(), shipmentSchedule.getAD_Org_ID()))
 				.materialDescriptor(materialDescriptor)
-				.reservedQuantity(shipmentSchedule.getQtyReserved())
+				.shipmentScheduleDetail(ShipmentScheduleDetail.builder()
+												.orderedQuantity(shipmentScheduleEffectiveBL.computeQtyOrdered(shipmentSchedule))
+												.reservedQuantity(shipmentSchedule.getQtyReserved())							
+												.reservedQuantityDelta(shipmentSchedule.getQtyReserved())
+												.build())
 				.shipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID())
 				.build();
 	}
@@ -245,12 +256,12 @@ public class M_ShipmentSchedule_PostMaterialEvent
 				.productDescriptor(productDescriptor)
 				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule))
 				.customerId(shipmentScheduleEffectiveBL.getBPartnerId(shipmentSchedule))
-				.quantity(orderedQuantity.subtract(getActualDeliveredQty(shipmentSchedule)))
+				.quantity(orderedQuantity.subtract(getDeliveredQtyFromHUs(shipmentSchedule)))
 				.build();
 	}
 
 	@NonNull
-	private BigDecimal getActualDeliveredQty(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	private BigDecimal getDeliveredQtyFromHUs(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		final List<I_M_ShipmentSchedule_QtyPicked> shipmentScheduleQtyPicked = shipmentScheduleAllocDAO
 				.retrieveAllQtyPickedRecords(shipmentSchedule, I_M_ShipmentSchedule_QtyPicked.class);
