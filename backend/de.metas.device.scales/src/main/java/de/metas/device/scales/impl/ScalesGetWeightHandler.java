@@ -65,7 +65,8 @@ public class ScalesGetWeightHandler<C extends ICmd> implements IDeviceRequestHan
 		final BigDecimal weight;
 		try
 		{
-			weight = new BigDecimal(endPointWeight);
+			final String formattedEndpointWeight = endPointWeight.replace(",", ".");
+			weight = new BigDecimal(formattedEndpointWeight);
 		}
 		catch (final NumberFormatException e)
 		{

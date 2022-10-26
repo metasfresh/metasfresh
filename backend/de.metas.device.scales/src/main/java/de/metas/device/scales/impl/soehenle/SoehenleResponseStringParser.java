@@ -36,6 +36,8 @@ import static java.math.BigDecimal.ZERO;
 public class SoehenleResponseStringParser implements IParser<ISoehenleCmd>
 {
 	private static final Logger logger = LogManager.getLogger(SoehenleResponseStringParser.class);
+	public static final int STATUS_IN_ALIBISPEICHER_EXPECTED_LENGTH = 15;
+	public static final int STATUS_EXPECTED_LENGTH = 7;
 
 	@SuppressWarnings("unchecked")
 	@Override
@@ -82,11 +84,11 @@ public class SoehenleResponseStringParser implements IParser<ISoehenleCmd>
 	{
 		final SoehenleResultStringElement statusInfo = cmd.getResultElements().get(RESULT_ELEMENT_STATUS);
 		final String status = tokens[statusInfo.getPosition() - 1];
-		if (status.length() == 12) //Message is in Alibispeicher format, drop the first 8 characters
+		if (status.length() == STATUS_IN_ALIBISPEICHER_EXPECTED_LENGTH) //Message is in Alibispeicher format, drop the first 8 characters
 		{
 			return status.substring(8);
 		}
-		if (status.length() != 4)
+		if (status.length() != STATUS_EXPECTED_LENGTH)
 		{
 			Loggables.withLogger(logger, Level.WARN).addLog("Found an incorrectly formatted status: {} ", status);
 		}
