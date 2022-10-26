@@ -817,6 +817,17 @@ public class DB
 
 	private SQLUpdateResult executeUpdate(@NonNull final ExecuteUpdateRequest request)
 	{
+		final boolean isPerfMonActive = dbPerformanceMonitoringHelper.isPerfMonActive();
+		if(!isPerfMonActive)
+		{
+			return executeUpdate0(request);
+		}
+		return dbPerformanceMonitoringHelper.performanceMonitoringServiceExecuteUpdate(
+				() -> executeUpdate0(request));
+	}
+
+	private SQLUpdateResult executeUpdate0(@NonNull final ExecuteUpdateRequest request)
+	{
 		if (Check.isEmpty(request.getSql(), true))
 		{
 			throw new IllegalArgumentException("Required parameter missing - " + request.getSql());

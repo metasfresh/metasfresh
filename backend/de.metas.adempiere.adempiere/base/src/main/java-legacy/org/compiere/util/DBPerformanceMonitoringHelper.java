@@ -42,6 +42,7 @@ public class DBPerformanceMonitoringHelper
 	private static final boolean SYS_CONFIG_DEFAULT_VALUE = false;
 	private static final String PM_METADATA_CLASS_NAME = "DB";
 	private static final String PM_METADATA_PREPARE_STATEMENT_ACTION = "prepareStatement";
+	private static final String PM_METADATA_EXECUTE_UPDATE_ACTION = "executeUpdate";
 
 	private static final PerformanceMonitoringService.Metadata PM_METADATA_PREPARE_STATEMENT =
 			PerformanceMonitoringService.Metadata
@@ -51,11 +52,26 @@ public class DBPerformanceMonitoringHelper
 					.action(PM_METADATA_PREPARE_STATEMENT_ACTION)
 					.build();
 
+	private static final PerformanceMonitoringService.Metadata PM_METADATA_EXECUTE_UPDATE =
+			PerformanceMonitoringService.Metadata
+					.builder()
+					.name(PM_METADATA_CLASS_NAME)
+					.type(PerformanceMonitoringService.Type.DB)
+					.action(PM_METADATA_EXECUTE_UPDATE_ACTION)
+					.build();
+
 	public CPreparedStatement performanceMonitoringServicePrepareStatement(@NonNull final Callable<CPreparedStatement> callable)
 	{
 		final PerformanceMonitoringService performanceMonitoringService = performanceMonitoringService();
 
 		return performanceMonitoringService.monitor(callable, PM_METADATA_PREPARE_STATEMENT);
+	}
+
+	public SQLUpdateResult performanceMonitoringServiceExecuteUpdate(@NonNull final Callable<SQLUpdateResult> callable)
+	{
+		final PerformanceMonitoringService performanceMonitoringService = performanceMonitoringService();
+
+		return performanceMonitoringService.monitor(callable, PM_METADATA_EXECUTE_UPDATE);
 	}
 
 	private PerformanceMonitoringService performanceMonitoringService()
