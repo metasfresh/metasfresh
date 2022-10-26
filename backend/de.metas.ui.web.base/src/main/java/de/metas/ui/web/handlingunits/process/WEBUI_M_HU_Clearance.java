@@ -5,6 +5,7 @@ import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.organization.InstantAndOrgId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -53,7 +54,7 @@ public class WEBUI_M_HU_Clearance extends HUEditorProcessTemplate implements IPr
 		final ClearanceStatusInfo clearanceStatusInfo = ClearanceStatusInfo.builder()
 				.clearanceStatus(ClearanceStatus.ofCode(clearanceStatus))
 				.clearanceNote(clearanceNote)
-				.clearanceDate(clearanceDate)
+				.clearanceDate(InstantAndOrgId.ofInstant(clearanceDate, getOrgId()))
 				.build();
 
 		streamSelectedHUs(HUEditorRowFilter.Select.ALL)

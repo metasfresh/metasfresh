@@ -69,6 +69,7 @@ import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
+import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
@@ -89,6 +90,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.IClientOrgAware;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.PPCostCollectorId;
@@ -240,7 +242,7 @@ import java.util.Map;
 
 		//
 		// Create Allocation Request
-		final IAllocationRequest allocationRequest = createAllocationRequest(huContext, qtyToReceive);
+		final IAllocationRequest allocationRequest = createAllocationRequest(huContext, qtyToReceive, ppOrderReceiptCandidateCollector.orgId);
 
 		//
 		// Execute transfer
@@ -374,13 +376,14 @@ import java.util.Map;
 		return locatorId;
 	}
 
-	private IAllocationRequest createAllocationRequest(final IHUContext huContext, final Quantity qtyToReceive)
+	private IAllocationRequest createAllocationRequest(final IHUContext huContext, final Quantity qtyToReceive, final OrgId orgId)
 	{
 		final ProductId productId = getProductId();
 		final ZonedDateTime date = getMovementDate();
 		final Object referencedModel = getAllocationRequestReferencedModel();
 
-		final ClearanceStatus clearanceStatus = ClearanceStatus.ofNullableCode(productDAO.getById(productId).getHUClearanceStatus());
+		final I_M_Product product = productDAO.getById(productId);
+		final ClearanceStatus clearanceStatus = ClearanceStatus.ofNullableCode(product.getHUClearanceStatus());
 		final ClearanceStatusInfo clearanceStatusInfo;
 		if (clearanceStatus != null)
 		{
@@ -388,7 +391,7 @@ import java.util.Map;
 			clearanceStatusInfo = ClearanceStatusInfo.builder()
 					.clearanceStatus(clearanceStatus)
 					.clearanceNote(msgBL.getMsg(language, MESSAGE_ClearanceStatusInfo_Manufactured))
-					.clearanceDate(TimeUtil.asInstant(date))
+					.clearanceDate(InstantAndOrgId.ofInstant(TimeUtil.asInstant(date), OrgId.ofRepoId(product.getAD_Org_ID())))
 					.build();
 
 		}

@@ -21,6 +21,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.InstantAndOrgId;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
@@ -257,7 +258,7 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends ReceiptScheduleBasedProc
 			clearanceStatusInfo = ClearanceStatusInfo.builder()
 					.clearanceStatus(clearanceStatus)
 					.clearanceNote(msgBL.getMsg(language, MESSAGE_ClearanceStatusInfo_Receipt))
-					.clearanceDate(SystemTime.asInstant())
+					.clearanceDate(InstantAndOrgId.ofInstant(SystemTime.asInstant(), clientAndOrgId.getOrgId()))
 					.build();
 
 		}
