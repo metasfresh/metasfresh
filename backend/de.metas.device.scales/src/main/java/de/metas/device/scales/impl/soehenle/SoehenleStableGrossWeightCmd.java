@@ -23,17 +23,17 @@
 package de.metas.device.scales.impl.soehenle;
 
 /**
- * Generates the command string <code><B>\r\n</code> which requests the "stable" weight from the scale.
+ * Generates the command string <code><H>\r\n</code> which requests the "stable" weight from the scale.
  * If the scale is unable to measure a stable weight within a certain timeout, it returns an error.
  *
  */
-public final class SoehenleStableGrossWeightCmd extends AbstractSoehenleWeighCmd
+public final class SoehenleStableGrossWeightCmd implements ISoehenleCmd
 {
 
 	private static final SoehenleStableGrossWeightCmd instance = new SoehenleStableGrossWeightCmd();
 
 	/**
-	 * @return the string <code><B></code> that shall be sent to the scale hardware in order to get the current weight.
+	 * @return the string <code><H></code> that shall be sent to the scale hardware in order to get the current weight.
 	 */
 	@Override
 	public String getCmd()

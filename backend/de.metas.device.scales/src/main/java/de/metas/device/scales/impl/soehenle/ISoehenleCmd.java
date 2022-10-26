@@ -35,5 +35,13 @@ public interface ISoehenleCmd extends ICmd
 		return 0;
 	}
 
-	LinkedHashMap<String, SoehenleResultStringElement> getResultElements();
+	default LinkedHashMap<String, SoehenleResultStringElement> getResultElements()
+	{
+		final LinkedHashMap<String, SoehenleResultStringElement> result = new LinkedHashMap<String, SoehenleResultStringElement>();
+		result.put("Status", new SoehenleResultStringElement("Status", 1, null));
+		result.put("WeightValue", new SoehenleResultStringElement("WeightValue", 2, null));
+		result.put("Unit", new SoehenleResultStringElement("Unit", 3, null));
+
+		return result;
+	}
 }

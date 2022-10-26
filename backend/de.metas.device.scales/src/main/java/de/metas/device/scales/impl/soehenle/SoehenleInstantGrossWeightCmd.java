@@ -27,7 +27,7 @@ package de.metas.device.scales.impl.soehenle;
  * This result might be "stable" or "dynamic".
  *
  */
-public final class SoehenleInstantGrossWeightCmd extends AbstractSoehenleWeighCmd
+public final class SoehenleInstantGrossWeightCmd implements ISoehenleCmd
 {
 	private static final SoehenleInstantGrossWeightCmd instance = new SoehenleInstantGrossWeightCmd();
 
