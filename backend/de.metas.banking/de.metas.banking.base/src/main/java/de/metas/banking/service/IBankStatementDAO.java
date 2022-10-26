@@ -1,19 +1,6 @@
 package de.metas.banking.service;
 
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-
-import org.compiere.model.I_C_BankStatement;
-import org.compiere.model.I_C_BankStatementLine;
-import org.compiere.model.I_C_Payment;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
@@ -24,6 +11,17 @@ import de.metas.document.engine.DocStatus;
 import de.metas.payment.PaymentId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+import org.adempiere.banking.model.I_C_BankStatement;
+import org.compiere.model.I_C_BankStatementLine;
+import org.compiere.model.I_C_Payment;
+
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
 
 /*
  * #%L
@@ -84,7 +82,7 @@ public interface IBankStatementDAO extends ISingletonService
 	@NonNull
 	ImmutableSet<PaymentId> getLinesPaymentIds(@NonNull final BankStatementId bankStatementId);
 
-	void save(@NonNull final I_C_BankStatement bankStatement);
+	void save(@NonNull final org.compiere.model.I_C_BankStatement bankStatement);
 
 	void save(@NonNull final I_C_BankStatementLine bankStatementLine);
 
