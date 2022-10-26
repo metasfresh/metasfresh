@@ -30,6 +30,7 @@ import org.adempiere.ad.trx.api.TrxCallable;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_DocType;
@@ -57,6 +58,10 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 	private static final Logger logger = LogManager.getLogger(AbstractDocumentBL.class);
 
 	private final Supplier<Map<String, DocumentHandlerProvider>> docActionHandlerProvidersByTableName = Suppliers.memoize(AbstractDocumentBL::retrieveDocActionHandlerProvidersIndexedByTableName);
+
+	private final ISysConfigBL SYS_CONFIG_BL = Services.get(ISysConfigBL.class);
+	private static final String PERF_MON_SYSCONFIG_NAME = "de.metas.monitoring.docAction.enable";
+	private static final boolean SYS_CONFIG_DEFAULT_VALUE = false;
 
 	protected abstract String retrieveString(int adTableId, int recordId, final String columnName);
 
@@ -105,10 +110,13 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 			final boolean throwExIfNotSuccess)
 	{
 		final PerformanceMonitoringService perfMonServicew = SpringContextHolder.instance.getBeanOr(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
-
-		return perfMonServicew.monitor(
-				() -> processIt0(document, action, throwExIfNotSuccess),
-				DocactionPerformanceMonitoringHelper.createMetadataFor(document, action));
+		final boolean perfMonIsActive = SYS_CONFIG_BL.getBooleanValue(PERF_MON_SYSCONFIG_NAME, SYS_CONFIG_DEFAULT_VALUE);
+		if(perfMonIsActive){
+			return perfMonServicew.monitor(
+					() -> processIt0(document, action, throwExIfNotSuccess),
+					DocactionPerformanceMonitoringHelper.createMetadataFor(document, action));
+		}
+		return processIt0(document, action, throwExIfNotSuccess);
 	}
 
 	private boolean processIt0(@NonNull final IDocument document,

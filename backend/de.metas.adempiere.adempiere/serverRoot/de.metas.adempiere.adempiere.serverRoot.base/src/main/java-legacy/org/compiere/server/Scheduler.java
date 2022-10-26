@@ -143,6 +143,10 @@ public class Scheduler extends AdempiereServer
 	private it.sauronsoftware.cron4j.Scheduler cronScheduler;
 	private Predictor predictor;
 
+	private static final String PERF_MON_SYSCONFIG_NAME = "de.metas.monitoring.scheduler.enable";
+	private static final boolean SYS_CONFIG_DEFAULT_VALUE = false;
+	private final ISysConfigBL SYS_CONFIG_BL = Services.get(ISysConfigBL.class);
+
 	/**
 	 * Sets AD_Scheduler.Status and save the record
 	 */
@@ -197,22 +201,30 @@ public class Scheduler extends AdempiereServer
 	@Override
 	protected void doWork()
 	{
-		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
-				PerformanceMonitoringService.class,
-				NoopPerformanceMonitoringService.INSTANCE);
+		final boolean perfMonIsActive = SYS_CONFIG_BL.getBooleanValue(PERF_MON_SYSCONFIG_NAME, SYS_CONFIG_DEFAULT_VALUE);
+		if(!perfMonIsActive)
+		{
+			doWork0();
+		}
+		else
+		{
+			final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+					PerformanceMonitoringService.class,
+					NoopPerformanceMonitoringService.INSTANCE);
 
-		service.monitor(
-				this::doWork0,
-				Metadata.builder()
-						.name("Scheduler - " + m_model.getName())
-						.type(Type.SCHEDULER)
-						.label("scheduler.name", m_model.getName())
-						.build());
+			service.monitor(
+					this::doWork0,
+					Metadata.builder()
+							.name("Scheduler - " + m_model.getName())
+							.type(Type.SCHEDULER)
+							.label("scheduler.name", m_model.getName())
+							.build());
+		}
 	}
 
 	private void doWork0()
 	{
-		// metas us1030 updating staus
+		// metas us1030 updating status
 		setSchedulerStatus(X_AD_Scheduler.STATUS_Running, null);
 
 		m_summary = new StringBuffer(m_model.toString()).append(" - ");

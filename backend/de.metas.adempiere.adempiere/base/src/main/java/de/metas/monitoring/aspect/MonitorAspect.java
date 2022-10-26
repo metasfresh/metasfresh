@@ -51,8 +51,9 @@ public class MonitorAspect
 {
 	private final MicrometerPerformanceMonitoringService service;
 	private static final String PERF_MON_SYSCONFIG_NAME = "de.metas.monitoring.annotation.enable";
-	private static final ISysConfigBL SYS_CONFIG_BL = Services.get(ISysConfigBL.class);
 	private static final boolean SYS_CONFIG_DEFAULT_VALUE = false;
+	private final ISysConfigBL SYS_CONFIG_BL = Services.get(ISysConfigBL.class);
+
 
 	public MonitorAspect(@NonNull final MicrometerPerformanceMonitoringService service)
 	{
@@ -62,16 +63,17 @@ public class MonitorAspect
 	@Around("execution(* *(..)) && @annotation(de.metas.monitoring.annotation.Monitor)")
 	public Object monitorMethod(ProceedingJoinPoint pjp) throws Throwable
 	{
-		if(!perfMonIsActive(PERF_MON_SYSCONFIG_NAME))
+		final boolean perfMonIsActive = SYS_CONFIG_BL.getBooleanValue(PERF_MON_SYSCONFIG_NAME, SYS_CONFIG_DEFAULT_VALUE);
+		if(!perfMonIsActive)
 		{
 			return pjp.proceed();
 		}
 
-		final Callable callable = wrapAsCallable(pjp);
+		final Callable<?> callable = wrapAsCallable(pjp);
 		final PerformanceMonitoringService.Metadata metadata;
 
-		Method method = ((MethodSignature) pjp.getSignature()).getMethod();
-		Monitor monitorAnnotation = method.getAnnotation(Monitor.class);
+		final Method method = ((MethodSignature) pjp.getSignature()).getMethod();
+		final Monitor monitorAnnotation = method.getAnnotation(Monitor.class);
 
 		if(monitorAnnotation.type() == PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 		{
@@ -95,14 +97,9 @@ public class MonitorAspect
 
 	}
 
-	private boolean perfMonIsActive(String sysconfigName)
-	{
-		return SYS_CONFIG_BL.getBooleanValue(sysconfigName, SYS_CONFIG_DEFAULT_VALUE);
-	}
-
 	private Callable<Object> wrapAsCallable(final ProceedingJoinPoint pjp)
 	{
-		Callable<Object> callable = new Callable<Object>()
+		final Callable<Object> callable = new Callable<Object>()
 		{
 
 			@Override
@@ -112,11 +109,11 @@ public class MonitorAspect
 				{
 					return pjp.proceed();
 				}
-				catch (Exception e)
+				catch (final Exception e)
 				{
 					throw e;
 				}
-				catch (Throwable t)
+				catch (final Throwable t)
 				{
 					throw AdempiereException.wrapIfNeeded(t);
 				}
@@ -133,11 +130,11 @@ public class MonitorAspect
 	}
 
 	private String getWindowNameAndId(){
-		HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-		Map pathVariables = (Map) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
-		String windowId = (String)pathVariables.get("windowId");
-		IADWindowDAO iadWindowDAO = Services.get(IADWindowDAO.class);
-		String windowName = (iadWindowDAO.retrieveWindowName(AdWindowId.ofRepoId(Integer.parseInt(windowId)))).getDefaultValue();
+		final HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+		final Map pathVariables = (Map) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
+		final String windowId = (String)pathVariables.get("windowId");
+		final IADWindowDAO iadWindowDAO = Services.get(IADWindowDAO.class);
+		final String windowName = (iadWindowDAO.retrieveWindowName(AdWindowId.ofRepoId(Integer.parseInt(windowId)))).getDefaultValue();
 
 		return windowName + " (" + windowId + ")";
 	}

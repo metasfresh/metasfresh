@@ -81,6 +81,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBDeadLockDetectedException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.api.IParams;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.IMutable;
@@ -135,6 +136,10 @@ class WorkpackageProcessorTask implements Runnable
 	// task 09933 just adding this member for now, because it's unclear if in future we want to or have to extend on it or not.
 	private final boolean retryOnDeadLock = true;
 
+	private final ISysConfigBL SYS_CONFIG_BL = Services.get(ISysConfigBL.class);
+	private static final String PERF_MON_SYSCONFIG_NAME = "de.metas.monitoring.asyncWorkpackage.enable";
+	private static final boolean SYS_CONFIG_DEFAULT_VALUE = false;
+
 	public WorkpackageProcessorTask(
 			final IQueueProcessor queueProcessor,
 			final IWorkpackageProcessor workPackageProcessor,
@@ -165,18 +170,25 @@ class WorkpackageProcessorTask implements Runnable
 	@Override
 	public void run()
 	{
-		final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
-				PerformanceMonitoringService.class,
-				NoopPerformanceMonitoringService.INSTANCE);
+		final boolean perfMonIsActive = SYS_CONFIG_BL.getBooleanValue(PERF_MON_SYSCONFIG_NAME, SYS_CONFIG_DEFAULT_VALUE);
+		if(!perfMonIsActive){
+			run0();
+		}
+		else
+		{
+			final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
+					PerformanceMonitoringService.class,
+					NoopPerformanceMonitoringService.INSTANCE);
 
-		service.monitor(
-				this::run0,
-				Metadata.builder()
-						.type(Type.ASYNC_WORKPACKAGE)
-						.name("Workpackage-Processor - " + queueProcessor.getName())
-						.label("de.metas.async.queueProcessor.name", queueProcessor.getName())
-						.label(PerformanceMonitoringService.LABEL_WORKPACKAGE_ID, Integer.toString(workPackage.getC_Queue_WorkPackage_ID()))
-						.build());
+			service.monitor(
+					this::run0,
+					Metadata.builder()
+							.type(Type.ASYNC_WORKPACKAGE)
+							.name("Workpackage-Processor - " + queueProcessor.getName())
+							.label("de.metas.async.queueProcessor.name", queueProcessor.getName())
+							.label(PerformanceMonitoringService.LABEL_WORKPACKAGE_ID, Integer.toString(workPackage.getC_Queue_WorkPackage_ID()))
+							.build());
+		}
 	}
 
 	private void run0()

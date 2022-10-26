@@ -42,7 +42,7 @@ import java.util.concurrent.Callable;
 public class MicrometerPerformanceMonitoringService implements PerformanceMonitoringService
 {
 	private final MeterRegistry meterRegistry;
-	private final ThreadLocal<PerformanceMonitoringData> perfMonDataTL = ThreadLocal.withInitial(PerformanceMonitoringData::new);
+	private static final ThreadLocal<PerformanceMonitoringData> perfMonDataTL = ThreadLocal.withInitial(PerformanceMonitoringData::new);
 
 	public MicrometerPerformanceMonitoringService(
 			@NonNull final MeterRegistry meterRegistry)
@@ -145,7 +145,7 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 		return Optional.of(Tag.of(name, value));
 	}
 
-	private boolean isAnyRestControllerType(Metadata metadata)
+	private boolean isAnyRestControllerType(final Metadata metadata)
 	{
 		return metadata.getType() == Type.REST_CONTROLLER || metadata.getType() == Type.REST_CONTROLLER_WITH_WINDOW_ID;
 	}

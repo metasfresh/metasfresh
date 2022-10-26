@@ -28,6 +28,7 @@ import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.organization.OrgId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
@@ -155,6 +156,12 @@ public class DB
 	 * SQL Statement Separator "; "
 	 */
 	public final String SQLSTATEMENT_SEPARATOR = "; ";
+
+	/**
+	 * Performance Monitoring
+	 */
+
+	private static final DBPerformanceMonitoringHelper dbPerformanceMonitoringHelper = new DBPerformanceMonitoringHelper();
 
 	/**************************************************************************
 	 * Set connection.
@@ -483,6 +490,17 @@ public class DB
 	}    // prepareStatement
 
 	public CPreparedStatement prepareStatement(final String sql, @Nullable final String trxName)
+	{
+		final boolean isPerfMonActive = dbPerformanceMonitoringHelper.isPerfMonActive();
+		if(!isPerfMonActive)
+		{
+			return prepareStatement0(sql, trxName);
+		}
+		return dbPerformanceMonitoringHelper.performanceMonitoringServicePrepareStatement(
+				() -> prepareStatement0(sql, trxName));
+	}
+
+	private CPreparedStatement prepareStatement0(final String sql, @Nullable final String trxName)
 	{
 		int concurrency = ResultSet.CONCUR_READ_ONLY;
 		final String upper = sql.toUpperCase();

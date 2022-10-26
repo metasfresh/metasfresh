@@ -65,9 +65,6 @@ public interface PerformanceMonitoringService
 		Type type;
 
 		@Nullable
-		SubType subType;
-
-		@Nullable
 		String action;
 
 		@Nullable
@@ -95,32 +92,11 @@ public interface PerformanceMonitoringService
 
 		REST_CONTROLLER_WITH_WINDOW_ID("rest-controller-with-windowId"),
 
-		PO("po");
+		PO("po"),
+
+		DB("db");
 
 		Type(final String code)
-		{
-			this.code = code;
-		}
-
-		@Getter
-		private final String code;
-	}
-
-	enum SubType
-	{
-		MODEL_CHANGE("modelChange"),
-
-		DOC_VALIDATE("docValidate"),
-
-		CACHE_INVALIDATE("cache-invalidate"),
-
-		ADD_TO_CACHE("addToCache"),
-
-		EVENT_SEND("event-send"),
-
-		EVENT_RECEIVE("event-receive");
-
-		SubType(final String code)
 		{
 			this.code = code;
 		}

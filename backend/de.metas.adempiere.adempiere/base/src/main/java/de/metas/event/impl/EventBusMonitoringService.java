@@ -48,7 +48,7 @@ public class EventBusMonitoringService
 		final Event.Builder eventToSendBuilder = event.toBuilder();
 		final PerformanceMonitoringService.Metadata request = PerformanceMonitoringService.Metadata.builder()
 				.type(de.metas.monitoring.adapter.PerformanceMonitoringService.Type.EVENTBUS_REMOTE_ENDPOINT)
-				.subType(PerformanceMonitoringService.SubType.EVENT_SEND)
+				.action("event-send")
 				.name("Enqueue distributed-event on topic " + topic.getName())
 				.label("de.metas.event.distributed-event.senderId", event.getSenderId())
 				.label("de.metas.event.distributed-event.topicName", topic.getName())
