@@ -61,7 +61,7 @@ WITH RECURSIVE bomNode AS ((SELECT ARRAY [1::integer]                      AS pa
                                                   WHERE bom.M_Product_ID = bomLineProduct.M_Product_ID
                                                     AND bom.IsActive = 'Y'
                                                     AND bom.Value = bomLineProduct.Value
-                                                  ORDER BY bom.validfrom DESC
+                                                  ORDER BY bom.validfrom DESC, bom.PP_Product_BOM_ID DESC
                                                   LIMIT 1)
                                             ELSE NULL
                                     END)::numeric(10, 0)                                                                                                       AS PP_Product_BOM_ID,
