@@ -87,9 +87,6 @@ public class CreateSalesOrderFromProposalCommand
 			throw new AdempiereException("Not a quotation/proposal: " + fromProposal);
 		}
 
-		// prepare proposal lines
-		prepareProposalLines(fromProposal);
-
 		final I_C_Order newSalesOrder = copyProposalHeader(fromProposal);
 		copyProposalLines(fromProposal, newSalesOrder);
 		completeSalesOrderIfNeeded(newSalesOrder);
@@ -128,26 +125,6 @@ public class CreateSalesOrderFromProposalCommand
 		return newSalesOrder;
 	}
 
-	private void prepareProposalLines(@NonNull final I_C_Order proposal)
-	{
-
-		if (isKeepProposalPrices)
-		{
-			final DocTypeId docTypeId = DocTypeId.ofRepoId(proposal.getC_DocType_ID());
-			if (docTypeBL.isSalesQuotation(docTypeId))
-			{
-				for (final I_C_OrderLine line : orderDAO.retrieveOrderLines(proposal))
-				{
-					// flag proposal lines as manual discount/price to avoid price recalculation and have the same prices. See #13784
-					line.setIsManualPrice(true);
-					line.setIsManualDiscount(true);
-					orderDAO.save(line);
-				}
-			}
-		}
-
-	}
-
 	private void copyProposalLines(
 			@NonNull final I_C_Order fromProposal,
 			@NonNull final I_C_Order newSalesOrder)
@@ -167,6 +144,15 @@ public class CreateSalesOrderFromProposalCommand
 			final I_C_OrderLine fromProposalLine = InterfaceWrapperHelper.create(from, I_C_OrderLine.class);
 
 			newSalesOrderLine.setRef_ProposalLine_ID(fromProposalLine.getC_OrderLine_ID());
+
+			final I_C_Order fromProposal = fromProposalLine.getC_Order();
+			final DocTypeId proposalDocType = DocTypeId.ofRepoId(fromProposal.getC_DocType_ID());
+			if (isKeepProposalPrices
+					&& docTypeBL.isSalesQuotation(proposalDocType))
+			{
+				newSalesOrderLine.setIsManualPrice(true);
+				newSalesOrderLine.setPriceActual(fromProposalLine.getPriceActual());
+			}
 		}
 	}
 
