@@ -27,12 +27,12 @@ package de.metas.device.scales.impl.soehenle;
  * This result might be "stable" or "dynamic".
  *
  */
-public final class SoehenleInstantNetWeightCmd extends AbstractSoehenleWeighCmd
+public final class SoehenleInstantGrossWeightCmd extends AbstractSoehenleWeighCmd
 {
-	private static final SoehenleInstantNetWeightCmd instance = new SoehenleInstantNetWeightCmd();
+	private static final SoehenleInstantGrossWeightCmd instance = new SoehenleInstantGrossWeightCmd();
 
 	/**
-	 * @return the string <code><A></code> that shall be send to the scale hardware in order to get the current weight.
+	 * @return the string <code><A></code> that shall be sent to the scale hardware in order to get the current weight.
 	 */
 	@Override
 	public String getCmd()
@@ -40,7 +40,7 @@ public final class SoehenleInstantNetWeightCmd extends AbstractSoehenleWeighCmd
 		return "<A>" + CMD_TERMINATOR;
 	}
 
-	public static SoehenleInstantNetWeightCmd getInstance()
+	public static SoehenleInstantGrossWeightCmd getInstance()
 	{
 		return instance;
 	}
@@ -48,6 +48,6 @@ public final class SoehenleInstantNetWeightCmd extends AbstractSoehenleWeighCmd
 	@Override
 	public String toString()
 	{
-		return "SoehenleInstantNetWeighCmd []";
+		return "SoehenleInstantGrossWeighCmd []";
 	}
 }

@@ -24,12 +24,12 @@ package de.metas.device.scales;
 
 import de.metas.device.scales.impl.ScalesGetWeightHandler;
 import de.metas.device.scales.impl.soehenle.ISoehenleCmd;
-import de.metas.device.scales.impl.soehenle.SoehenleInstantNetWeightCmd;
+import de.metas.device.scales.impl.soehenle.SoehenleInstantGrossWeightCmd;
 import de.metas.device.scales.impl.soehenle.SoehenleResponseStringParser;
-import de.metas.device.scales.impl.soehenle.SoehenleStableNetWeightCmd;
+import de.metas.device.scales.impl.soehenle.SoehenleStableGrossWeightCmd;
 import de.metas.device.scales.request.GetGrossWeighRequest;
-import de.metas.device.scales.request.GetInstantNetWeighRequest;
-import de.metas.device.scales.request.GetStableNetWeighRequest;
+import de.metas.device.scales.request.GetInstantGrossWeighRequest;
+import de.metas.device.scales.request.GetStableGrossWeighRequest;
 
 public class SoehenleScales extends AbstractTcpScales
 {
@@ -38,10 +38,9 @@ public class SoehenleScales extends AbstractTcpScales
 	@Override
 	public void configureStatic()
 	{
-		registerHandler(GetInstantNetWeighRequest.class, mkHandler(SoehenleInstantNetWeightCmd.getInstance()));
-		registerHandler(GetGrossWeighRequest.class, mkHandler(SoehenleStableNetWeightCmd.getInstance()));
-
-		registerHandler(GetStableNetWeighRequest.class, mkHandler(SoehenleStableNetWeightCmd.getInstance()));
+		registerHandler(GetInstantGrossWeighRequest.class, mkHandler(SoehenleInstantGrossWeightCmd.getInstance()));
+		registerHandler(GetGrossWeighRequest.class, mkHandler(SoehenleStableGrossWeightCmd.getInstance()));
+		registerHandler(GetStableGrossWeighRequest.class, mkHandler(SoehenleStableGrossWeightCmd.getInstance()));
 	}
 
 	@SuppressWarnings({ "rawtypes" })

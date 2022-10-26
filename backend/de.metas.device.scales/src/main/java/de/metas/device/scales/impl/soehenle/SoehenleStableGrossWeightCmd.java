@@ -27,21 +27,21 @@ package de.metas.device.scales.impl.soehenle;
  * If the scale is unable to measure a stable weight within a certain timeout, it returns an error.
  *
  */
-public final class SoehenleStableNetWeightCmd extends AbstractSoehenleWeighCmd
+public final class SoehenleStableGrossWeightCmd extends AbstractSoehenleWeighCmd
 {
 
-	private static final SoehenleStableNetWeightCmd instance = new SoehenleStableNetWeightCmd();
+	private static final SoehenleStableGrossWeightCmd instance = new SoehenleStableGrossWeightCmd();
 
 	/**
-	 * @return the string <code><B></code> that shall be send to the scale hardware in order to get the current weight.
+	 * @return the string <code><B></code> that shall be sent to the scale hardware in order to get the current weight.
 	 */
 	@Override
 	public String getCmd()
 	{
-		return "<B>" + CMD_TERMINATOR;
+		return "<H>" + CMD_TERMINATOR;
 	}
 
-	public static SoehenleStableNetWeightCmd getInstance()
+	public static SoehenleStableGrossWeightCmd getInstance()
 	{
 		return instance;
 	}
@@ -55,6 +55,6 @@ public final class SoehenleStableNetWeightCmd extends AbstractSoehenleWeighCmd
 	@Override
 	public String toString()
 	{
-		return "SoehenleStableWeighCmd []";
+		return "SoehenleStableGrossWeightCmd []";
 	}
 }
