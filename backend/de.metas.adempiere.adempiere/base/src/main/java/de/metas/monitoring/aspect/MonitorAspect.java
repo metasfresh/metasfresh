@@ -134,10 +134,15 @@ public class MonitorAspect
 		final Map pathVariables = (Map) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
 		final String windowId = (String)pathVariables.get("windowId");
 		final IADWindowDAO iadWindowDAO = Services.get(IADWindowDAO.class);
-		final String windowName = (iadWindowDAO.retrieveWindowName(AdWindowId.ofRepoId(Integer.parseInt(windowId)))).getDefaultValue();
-
+		String windowName;
+		try
+		{
+			windowName = (iadWindowDAO.retrieveWindowName(AdWindowId.ofRepoId(Integer.parseInt(windowId)))).getDefaultValue();
+		}
+		catch (final NumberFormatException nfe)
+		{
+			windowName = "unknown";
+		}
 		return windowName + " (" + windowId + ")";
 	}
-
-
 }
