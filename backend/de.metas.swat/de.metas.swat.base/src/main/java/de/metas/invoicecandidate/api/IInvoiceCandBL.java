@@ -240,6 +240,8 @@ public interface IInvoiceCandBL extends ISingletonService
 
 	void handleReversalForInvoice(org.compiere.model.I_C_Invoice invoice);
 
+	void handleVoidingForInvoice(@NonNull org.compiere.model.I_C_Invoice invoice);
+
 	/**
 	 * Updates/Creates {@link I_C_Invoice_Line_Alloc}s for the case of an invoice (including credit memo) completion. Also makes sure that ICs are created on the fly if they are still missing.
 	 */
