@@ -36,6 +36,7 @@ import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_OrgInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -55,7 +56,10 @@ import static de.metas.material.event.EventTestHelper.createProductDescriptor;
 import static de.metas.material.event.EventTestHelper.createSupplyRequiredDescriptor;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
+import static org.compiere.model.X_AD_OrgInfo.STORECREDITCARDDATA_Speichern;
 
 /*
  * #%L
@@ -103,6 +107,11 @@ public class PPOrderAdvisedOrCreatedHandlerTests
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
+
+		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
+		orgInfo.setAD_Org_ID(20);
+		orgInfo.setStoreCreditCardData(STORECREDITCARDDATA_Speichern);
+		saveRecord(orgInfo);
 
 		final List<DimensionFactory<?>> dimensionFactories = new ArrayList<>();
 		dimensionFactories.add(new MDCandidateDimensionFactory());
