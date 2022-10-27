@@ -1243,7 +1243,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public I_C_Invoice_Line_Alloc createUpdateIla(InvoiceCandidateAllocCreateRequest request)
+	public I_C_Invoice_Line_Alloc createUpdateIla(@NonNull final InvoiceCandidateAllocCreateRequest request)
 	{
 		final I_C_Invoice_Candidate invoiceCand = request.getInvoiceCand();
 		final I_C_InvoiceLine invoiceLine = request.getInvoiceLine();
@@ -1262,9 +1262,15 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			translateAndPrependNote(existingIla, note);
 			existingIla.setC_Invoice_Line_Alloc_Type(invoiceLineAllocType.getCode());
 
+			// 2022-10-27 metas-ts: 
+			// We ignore requests with existing ila with and requested qtysInvoiced:=zero for a long time and IDK why exactly,
+			// though it's very probably related to issue "#5664 Rest endpoint which allows the client to create invoices"
+			// I'm going to leave it like that for now, *unless* we are voiding the invoice in question.
+			final boolean invoiceVoided = InvoiceLineAllocType.InvoiceVoided.equals(request.getInvoiceLineAllocType());
+			
 			//
 			// FIXME in follow-up task! (06162)
-			if (qtysInvoiced.signum() == 0)
+			if (qtysInvoiced.signum() == 0 && !invoiceVoided)
 			{
 				return existingIla;
 			}
@@ -1277,8 +1283,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		//
 		// Create new invoice line allocation
-		final Object contextProvider = invoiceCand;
-		final I_C_Invoice_Line_Alloc newIla = InterfaceWrapperHelper.newInstance(I_C_Invoice_Line_Alloc.class, contextProvider);
+		final I_C_Invoice_Line_Alloc newIla = InterfaceWrapperHelper.newInstance(I_C_Invoice_Line_Alloc.class, invoiceCand);
 		newIla.setAD_Org_ID(invoiceCand.getAD_Org_ID());
 		newIla.setC_Invoice_Candidate(invoiceCand);
 		newIla.setC_InvoiceLine(invoiceLine);
@@ -1566,7 +1571,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	public void handleVoidingForInvoice(final @NonNull org.compiere.model.I_C_Invoice invoice)
 	{
 		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
-		
+
 		for (final I_C_InvoiceLine il : invoiceDAO.retrieveLines(invoice))
 		{
 			for (final I_C_Invoice_Line_Alloc ilaToReverse : invoiceCandDAO.retrieveIlaForIl(il))
@@ -1577,21 +1582,21 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				final ProductId productId = ProductId.ofRepoId(il.getM_Product_ID());
 				final UomId uomId = UomId.ofRepoId(il.getC_UOM_ID());
 
-				final String note = "@C_InvoiceLine@ @QtyInvoiced@ = " + 0 + "; @VO@";
-				
+				final String note = "@C_InvoiceLine@ @QtyInvoiced@ => " + 0;
+
 				final InvoiceCandidateAllocCreateRequest request = InvoiceCandidateAllocCreateRequest.builder()
 						.invoiceCand(invoiceCandidate)
 						.invoiceLine(il)
 						.qtysInvoiced(StockQtyAndUOMQtys.createZero(productId, uomId))
 						.note(note)
-				.invoiceLineAllocType(InvoiceLineAllocType.InvoiceVoided)
+						.invoiceLineAllocType(InvoiceLineAllocType.InvoiceVoided)
 						.build();
 
 				createUpdateIla(request);
 			}
 		}
 	}
-	
+
 	/**
 	 * Set the qtyToInvoice_Override and Price_Entered_Override in the invoice candidate given by its ID.
 	 */
@@ -2210,7 +2215,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 				{
 					try (final MDCCloseable candidateMDC = TableRecordMDC.putTableRecordReference(candidate))
 					{
-					
+
 						final InvoiceRule candidateInvoiceRule = InvoiceRule.ofCode(candidate.getInvoiceRule());
 
 						if (!canCloseBasedOnInvoiceRule(candidateInvoiceRule))
@@ -2218,7 +2223,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 							logger.debug("candidate.invoiceRule={} ; => not closing invoice candidate with id={}", candidateInvoiceRule, candidate.getC_Invoice_Candidate_ID());
 							continue;
 						}
-					
+
 						if (ilRecord.getQtyInvoiced().compareTo(candidate.getQtyOrdered()) < 0)
 						{
 							logger.debug("invoiceLine.qtyInvoiced={} is < invoiceCandidate.qtyOrdered={}; -> closing invoice candidate",

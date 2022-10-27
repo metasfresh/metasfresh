@@ -261,7 +261,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 			if(getInvoicingParams().isCompleteInvoices())
 			{
-				// Complete the invoice and assume it's status is COmpleted.
+				// Complete the invoice and assume its status is COmpleted.
 				docActionBL.processEx(invoice, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
 			}
 			else 
