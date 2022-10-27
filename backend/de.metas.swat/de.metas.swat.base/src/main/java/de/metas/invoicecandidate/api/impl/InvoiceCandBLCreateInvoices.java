@@ -83,6 +83,7 @@ import org.compiere.util.TrxRunnable2;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -192,6 +193,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 		private IInvoiceHeader header;
 		private Properties ctx;
 
+		@Nullable
 		private I_C_Invoice createdInvoice = null;
 		private final List<I_AD_Note> notifications = new ArrayList<>();
 
@@ -257,9 +259,15 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoiceCandListeners.onBeforeInvoiceComplete(invoice, allCands);
 			}
 
-			//
-			// Complete the invoice and assume it's status is COmpleted.
-			docActionBL.processEx(invoice, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+			if(getInvoicingParams().isCompleteInvoices())
+			{
+				// Complete the invoice and assume its status is COmpleted.
+				docActionBL.processEx(invoice, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
+			}
+			else 
+			{
+				docActionBL.processEx(invoice, IDocument.ACTION_Prepare, IDocument.STATUS_InProgress);	
+			}
 
 			//
 			// Set the created invoice which will be retrieved by the caller.
@@ -1195,7 +1203,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 	}
 
 	@Override
-	public IInvoiceGenerator setInvoicingParams(IInvoicingParams invoicingParams)
+	public IInvoiceGenerator setInvoicingParams(final @NonNull IInvoicingParams invoicingParams)
 	{
 		this._invoicingParams = invoicingParams;
 		return this;

@@ -22,19 +22,24 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.bank.C_Bank_StepDefData;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.money.CurrencyId;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Bank;
 import org.compiere.model.I_C_Currency;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Map;
@@ -45,6 +50,8 @@ import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_BPartner_ID;
 
 public class C_BP_BankAccount_StepDef
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	private final C_BP_BankAccount_StepDefData bpBankAccountTable;
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final CurrencyRepository currencyRepository;
@@ -83,7 +90,9 @@ public class C_BP_BankAccount_StepDef
 		final String isoCode = DataTableUtil.extractStringForColumnName(row, I_C_Currency.Table_Name + "." + I_C_Currency.COLUMNNAME_ISO_Code);
 		final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(CurrencyCode.ofThreeLetterCode(isoCode));
 
-		final I_C_BP_BankAccount bpBankAccount = newInstance(I_C_BP_BankAccount.class);
+		final I_C_BP_BankAccount bpBankAccount = CoalesceUtil.coalesceSuppliersNotNull(
+				() -> resolveExitingBankAccount(row),
+				() -> newInstance(I_C_BP_BankAccount.class));
 
 		bpBankAccount.setC_BPartner_ID(bPartnerId);
 		bpBankAccount.setC_Currency_ID(currencyId.getRepoId());
@@ -102,9 +111,54 @@ public class C_BP_BankAccount_StepDef
 			bpBankAccount.setC_Bank_ID(bankRecord.getC_Bank_ID());
 		}
 
+		final String iban = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BP_BankAccount.COLUMNNAME_IBAN);
+		if (Check.isNotBlank(iban))
+		{
+			bpBankAccount.setIBAN(iban);
+		}
+
 		InterfaceWrapperHelper.save(bpBankAccount);
 
 		final String bankAccountIdentifier = DataTableUtil.extractStringForColumnName(row, TABLECOLUMN_IDENTIFIER);
 		bpBankAccountTable.putOrReplace(bankAccountIdentifier, bpBankAccount);
+	}
+
+	@Nullable
+	private I_C_BP_BankAccount resolveExitingBankAccount(@NonNull final Map<String, String> row)
+	{
+		final String bPartnerIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final Integer bPartnerId = bpartnerTable.getOptional(bPartnerIdentifier)
+				.map(I_C_BPartner::getC_BPartner_ID)
+				.orElseGet(() -> Integer.parseInt(bPartnerIdentifier));
+
+		final String isoCode = DataTableUtil.extractStringForColumnName(row, I_C_Currency.Table_Name + "." + I_C_Currency.COLUMNNAME_ISO_Code);
+		final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(CurrencyCode.ofThreeLetterCode(isoCode));
+
+		final IQueryBuilder<I_C_BP_BankAccount> queryBuilder = queryBL.createQueryBuilder(I_C_BP_BankAccount.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_C_BPartner_ID, bPartnerId)
+				.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_C_Currency_ID, currencyId.getRepoId());
+
+		final String accountNo = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BP_BankAccount.COLUMNNAME_AccountNo);
+		if (Check.isNotBlank(accountNo))
+		{
+			queryBuilder.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_AccountNo, accountNo);
+		}
+
+		final String bankIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BP_BankAccount.COLUMNNAME_C_Bank_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(bankIdentifier))
+		{
+			final I_C_Bank bankRecord = bankTable.get(bankIdentifier);
+			queryBuilder.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_C_Bank_ID, bankRecord.getC_Bank_ID());
+		}
+
+		final String iban = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BP_BankAccount.COLUMNNAME_IBAN);
+		if (Check.isNotBlank(iban))
+		{
+			queryBuilder.addEqualsFilter(I_C_BP_BankAccount.COLUMNNAME_IBAN, iban);
+		}
+
+		return queryBuilder.create()
+				.firstOnly(I_C_BP_BankAccount.class);
 	}
 }

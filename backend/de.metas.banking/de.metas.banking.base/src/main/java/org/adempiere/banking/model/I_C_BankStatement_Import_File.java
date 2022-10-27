@@ -102,7 +102,7 @@ public interface I_C_BankStatement_Import_File
 	 * Name of the local file or URL
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setFileName (String FileName);
@@ -112,7 +112,7 @@ public interface I_C_BankStatement_Import_File
 	 * Name of the local file or URL
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	String getFileName();

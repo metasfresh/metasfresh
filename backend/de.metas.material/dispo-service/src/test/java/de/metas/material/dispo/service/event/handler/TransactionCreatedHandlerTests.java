@@ -327,6 +327,17 @@ public class TransactionCreatedHandlerTests
 		assertThat(candidate.getTransactionDetails().get(0).getQuantity()).isEqualByComparingTo(TEN);
 	}
 
+	private static void assertDemandDetailQuery(final CandidatesQuery query)
+	{
+		assertThat(query).isNotNull();
+
+		assertThat(query.getBusinessCase()).isEqualTo(CandidateBusinessCase.SHIPMENT);
+		assertThat(query.getDemandDetailsQuery().getInOutLineId()).isEqualTo(SHIPMENT_LINE_ID);
+		// note: If we have a demand detail, then only query via that demand detail *and maybe* the transaction's attributes-key
+
+		assertThat(query.getTransactionDetails()).as("only search via the demand detail, if we have one").isEmpty();
+	}
+
 	private TransactionCreatedEventBuilder createTransactionEventBuilderWithQuantity(
 			@NonNull final BigDecimal quantity,
 			@NonNull final Instant date)

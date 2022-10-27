@@ -235,7 +235,11 @@ public class C_Order
 	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_C_BPartner_ID)
 	public void setIncoterms(final I_C_Order order)
 	{
-		final I_C_BPartner bpartner = Services.get(IOrderBL.class).getBPartner(order);
+		final I_C_BPartner bpartner = orderBL.getBPartnerOrNull(order);
+		if (bpartner == null)
+		{
+			return; // nothing to do yet
+		}
 
 		final int c_Incoterms;
 

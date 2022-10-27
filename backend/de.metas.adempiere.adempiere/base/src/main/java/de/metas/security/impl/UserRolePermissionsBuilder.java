@@ -52,7 +52,9 @@ import java.util.List;
 
 class UserRolePermissionsBuilder
 {
-	public static UserRolePermissionsBuilder of(final UserRolePermissionsDAO userRolePermissionsRepo, final UserRolePermissions permissions)
+	public static UserRolePermissionsBuilder of(
+			@NonNull final UserRolePermissionsDAO userRolePermissionsRepo, 
+			@NonNull final UserRolePermissions permissions)
 	{
 		return new UserRolePermissionsBuilder(userRolePermissionsRepo)
 				.setRoleId(permissions.getRoleId())

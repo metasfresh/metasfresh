@@ -6,6 +6,7 @@ import de.metas.organization.OrgId;
 import de.metas.security.RoleId;
 import de.metas.security.TableAccessLevel;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
@@ -172,11 +173,19 @@ public class LoginContext
 		setProperty("#SysAdmin", sysAdmin);
 	}
 
-	public void setRole(final RoleId roleId, final String roleName)
+	public void setRole(
+			final RoleId roleId, 
+			final String roleName,
+			final String roleGroup)
 	{
 		setProperty(Env.CTXNAME_AD_Role_ID, RoleId.toRepoId(roleId));
 		setProperty(Env.CTXNAME_AD_Role_Name, roleName);
 
+		if (Check.isNotBlank(roleGroup))
+		{
+			setProperty(Env.CTXNAME_AD_Role_Group, roleGroup);
+		}
+		
 		Ini.setProperty(Ini.P_ROLE, roleName);
 	}
 

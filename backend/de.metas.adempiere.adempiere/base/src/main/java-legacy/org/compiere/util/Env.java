@@ -252,6 +252,11 @@ public final class Env
 	public static final String CTXNAME_AD_Role_Name = "#AD_Role_Name";
 	public static final String CTXNAME_AD_Role_UserLevel = "#User_Level";
 
+	/**
+	 * Supposed to be used e.g. in read-only or display-logic expressions
+	 */
+	public static final String CTXNAME_AD_Role_Group = "#AD_Role_Group";
+
 	public static final String CTXNAME_AD_PInstance_ID = "#AD_PInstance_ID"; // FRESH-314
 
 	/**
