@@ -427,6 +427,25 @@ public class DocumentCollection
 		return result;
 	}
 
+	/**
+	 * If this instance's cache contains Documents that depend on global context values, then those documents are evicted from the cache.
+	 * An example might be a field with a read-only-logic expression that contains e.g. {@code @#AD_Role_Name@}.
+	 */
+	public void cacheResetGlobalContextValues()
+	{
+		final List<DocumentKey> documentKeysToInvalidate = new ArrayList<>();
+		for (final Map.Entry<DocumentKey, Document> entry : rootDocuments.asMap().entrySet())
+		{
+			final Document document = entry.getValue();
+			if(document.getEntityDescriptor().getDependencies().isDependsOnGlobalContextValues())
+			{
+				documentKeysToInvalidate.add(entry.getKey());
+			}
+		}
+		rootDocuments.invalidateAll(documentKeysToInvalidate);
+		rootDocuments.cleanUp();
+	}
+	
 	private void commitRootDocument(@NonNull final Document rootDocument)
 	{
 		Preconditions.checkState(rootDocument.isRootDocument(), "{} is not a root document", rootDocument);
