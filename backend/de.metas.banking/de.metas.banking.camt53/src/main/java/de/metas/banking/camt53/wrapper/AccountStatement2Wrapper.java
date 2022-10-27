@@ -83,16 +83,25 @@ public class AccountStatement2Wrapper
 	@NonNull
 	public ExplainedOptional<BankAccountId> getBPartnerBankAccountId()
 	{
+		final Optional<String> accountIBANOpt = getAccountIBAN();
+		if (accountIBANOpt.isPresent())
+		{
+			final Optional<BankAccountId> bankAccountIdByIBAN = bankAccountService.getBankAccountIdByIBAN(accountIBANOpt.get());
+			return bankAccountIdByIBAN
+					.map(ExplainedOptional::of)
+					.orElseGet(() -> ExplainedOptional.emptyBecause("Skipping Stmt with Id=" + accountStatement2.getId() + ", because no account with IBAN=" + bankAccountIdByIBAN.get() + " was found"));
+		}
+
 		final ExplainedOptional<BankId> bankIdOpt = getBankId();
-		
 		if (!bankIdOpt.isPresent())
 		{
 			return ExplainedOptional.emptyBecause(bankIdOpt.getExplanation());
 		}
-		
-		return getAccountNo().flatMap(accountNo -> bankAccountService.getBankAccountId(bankIdOpt.get(), accountNo))
+
+		final Optional<String> accountNoOpt = getAccountNo();
+		return accountNoOpt.map(s -> bankAccountService.getBankAccountId(bankIdOpt.get(), s)
 				.map(ExplainedOptional::of)
-				.orElseGet(() -> ExplainedOptional.emptyBecause("Skipping because no Bank Account was found for AccountStatement=" + accountStatement2));
+				.orElseGet(() -> ExplainedOptional.emptyBecause("Skipping Stmt with Id=" + accountStatement2.getId() + ", because the bank with C_Bank_ID=" + bankIdOpt.get().getRepoId() + " has no account with AccountNo=" + s))).orElseGet(() -> ExplainedOptional.emptyBecause("Skipping Stmt with Id=" + accountStatement2.getId() + ", because it has no account number (.../Acct/Id/Othr)"));
 	}
 
 	@NonNull
@@ -129,7 +138,7 @@ public class AccountStatement2Wrapper
 		return Optional.ofNullable(accountStatement2.getAcct().getCcy())
 				.map(CurrencyCode::ofThreeLetterCode);
 	}
-	
+
 	@NonNull
 	private Optional<CashBalance3> findOPBDCashBalance()
 	{
@@ -151,9 +160,15 @@ public class AccountStatement2Wrapper
 	@NonNull
 	private ExplainedOptional<BankId> getBankId()
 	{
-		return getSwiftCode().flatMap(bankAccountService::getBankIdBySwiftCode)
+		if (!getSwiftCode().isPresent())
+		{
+			return ExplainedOptional.emptyBecause("Skipping Stmt with Id=" + accountStatement2.getId() + ", because it has no swiftcode");
+		}
+		final String swiftCode = getSwiftCode().get();
+
+		return bankAccountService.getBankIdBySwiftCode(swiftCode)
 				.map(ExplainedOptional::of)
-				.orElseGet(() -> ExplainedOptional.emptyBecause("Skipping because no bank was found for AccountStatement=" + accountStatement2));
+				.orElseGet(() -> ExplainedOptional.emptyBecause("Skipping Stmt with Id=" + accountStatement2.getId() + ", because no bank was found for SwiftCode=" + swiftCode));
 	}
 
 	private static boolean isPRCDCashBalance(@NonNull final CashBalance3 cashBalance)
@@ -176,6 +191,12 @@ public class AccountStatement2Wrapper
 	}
 
 	@NonNull
+	private Optional<String> getAccountIBAN()
+	{
+		return Optional.ofNullable(accountStatement2.getAcct().getId().getIBAN());
+	}
+
+	@NonNull
 	private Optional<String> getSwiftCode()
 	{
 		return Optional.ofNullable(accountStatement2.getAcct().getSvcr())
@@ -188,6 +209,5 @@ public class AccountStatement2Wrapper
 	{
 		return Optional.ofNullable(accountStatement2.getAcct().getId().getOthr())
 				.map(GenericAccountIdentification1::getId);
-
 	}
 }

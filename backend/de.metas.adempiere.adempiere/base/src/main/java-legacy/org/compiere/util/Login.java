@@ -310,7 +310,9 @@ public class Login
 
 		//
 		// Update login context
-		ctx.setRole(rolePermissions.getRoleId(), rolePermissions.getName());
+		final Role role = roleDAO.getById(roleId);
+		ctx.setRole(roleId, role.getName(), role.getRoleGroup());
+		
 		ctx.setRoleUserLevel(rolePermissions.getUserLevel());
 		ctx.setAllowLoginDateOverride(rolePermissions.hasPermission(IUserRolePermissions.PERMISSION_AllowLoginDateOverride));
 

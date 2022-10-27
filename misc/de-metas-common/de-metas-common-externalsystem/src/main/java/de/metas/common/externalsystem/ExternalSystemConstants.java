@@ -69,6 +69,15 @@ public class ExternalSystemConstants
 
 	public static final String PARAM_CAMEL_HTTP_RESOURCE_AUTH_KEY = "CamelHttpResourceAuthKey";
 
+	public static final String PARAM_SFTP_HOST_NAME = "SFTP_HostName";
+	public static final String PARAM_SFTP_PORT = "SFTP_Port";
+	public static final String PARAM_SFTP_USERNAME = "SFTP_Username";
+	public static final String PARAM_SFTP_PASSWORD = "SFTP_Password";
+	public static final String PARAM_SFTP_TARGET_DIRECTORY = "SFTP_Target_Directory";
+	public static final String PARAM_PROCESSED_DIRECTORY = "SFTPProcessedDirectory";
+	public static final String PARAM_ERRORED_DIRECTORY = "SFTPErroredDirectory";
+	public static final String PARAM_POLLING_FREQUENCY_MS = "SFTPPollingFrequencyInMs";
+
 	public static final String QUEUE_NAME_MF_TO_ES = "MF_TO_ExternalSystem";
 
 	public static final String QUEUE_NAME_ES_TO_MF_CUSTOM = "Custom_ExternalSystem_To_Metasfresh";

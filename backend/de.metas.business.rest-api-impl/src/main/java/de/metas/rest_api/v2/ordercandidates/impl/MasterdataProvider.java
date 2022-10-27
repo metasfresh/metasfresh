@@ -442,7 +442,6 @@ final class MasterdataProvider
 			return null;
 		}
 
-		return sectionCodeService.getSectionCodeIdByValue(orgId, sectionCode)
-				.orElse(null);
+		return sectionCodeService.getSectionCodeIdByValue(orgId, sectionCode);
 	}
 }
