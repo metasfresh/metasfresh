@@ -54,6 +54,15 @@ INSERT INTO AD_Reference_Trl (AD_Language,AD_Reference_ID, Description,Help,Name
 INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Reference_ID,AD_Ref_List_ID,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value,ValueName) VALUES (0,0,541681,543318,TO_TIMESTAMP('2022-10-25 14:20:26','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Buchhaltung',TO_TIMESTAMP('2022-10-25 14:20:26','YYYY-MM-DD HH24:MI:SS'),100,'Accounting','Accounting')
 ;
 
+-- Reference: Role_Group
+-- Value: Accounting
+-- ValueName: Accounting
+-- 2022-10-27T09:54:58.386Z
+UPDATE AD_Ref_List SET Name='Accounting',Updated=TO_TIMESTAMP('2022-10-27 11:54:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=543318
+;
+
+
+
 -- 2022-10-25T12:20:26.524Z
 INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Ref_List_ID=543318 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
 ;
