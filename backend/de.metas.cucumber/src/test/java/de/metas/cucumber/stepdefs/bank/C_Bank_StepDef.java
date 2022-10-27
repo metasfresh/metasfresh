@@ -22,11 +22,14 @@
 
 package de.metas.cucumber.stepdefs.bank;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.C_DataImport_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Bank;
 import org.compiere.model.I_C_DataImport;
@@ -40,6 +43,8 @@ import static org.assertj.core.api.Assertions.*;
 
 public class C_Bank_StepDef
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	private final C_DataImport_StepDefData dataImportTable;
 	private final C_Bank_StepDefData bankTable;
 
@@ -71,7 +76,15 @@ public class C_Bank_StepDef
 		final I_C_DataImport dataImportRecord = dataImportTable.get(dataImportIdentifier);
 		assertThat(dataImportRecord).isNotNull();
 
-		final I_C_Bank bankRecord = InterfaceWrapperHelper.newInstance(I_C_Bank.class);
+		final I_C_Bank bankRecord = CoalesceUtil
+				.coalesceSuppliersNotNull(() -> queryBL.createQueryBuilder(I_C_Bank.class)
+												  .addOnlyActiveRecordsFilter()
+												  .addEqualsFilter(I_C_Bank.COLUMNNAME_Name, name)
+												  .addEqualsFilter(I_C_Bank.COLUMNNAME_RoutingNo, routingNo)
+												  .create()
+												  .firstOnly(I_C_Bank.class),
+										  () -> InterfaceWrapperHelper.newInstance(I_C_Bank.class));
+
 		bankRecord.setC_DataImport_ID(dataImportRecord.getC_DataImport_ID());
 		bankRecord.setName(name);
 		bankRecord.setRoutingNo(routingNo);
