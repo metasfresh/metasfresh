@@ -12,6 +12,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -45,6 +47,13 @@ public class Role
 	String name;
 	String description;
 
+	/**
+	 * See {@link org.compiere.model.I_AD_Role#COLUMNNAME_Role_Group}.
+	 * Not using an ReferenceListAwareEnum but string to be more flexible in allowing to introduce and use new roleGroups without coding. 
+	 */
+	@Nullable
+	String roleGroup;
+	
 	@NonNull
 	ClientId clientId;
 
