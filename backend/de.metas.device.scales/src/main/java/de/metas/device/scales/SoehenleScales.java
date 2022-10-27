@@ -23,36 +23,35 @@ package de.metas.device.scales;
  */
 
 import de.metas.device.scales.impl.ScalesGetWeightHandler;
-import de.metas.device.scales.impl.sics.ISiscCmd;
-import de.metas.device.scales.impl.sics.SicsResponseStringParser;
-import de.metas.device.scales.impl.sics.SicsWeighCmdS;
-import de.metas.device.scales.impl.sics.SicsWeighCmdSI;
+import de.metas.device.scales.impl.soehenle.ISoehenleCmd;
+import de.metas.device.scales.impl.soehenle.SoehenleInstantGrossWeightCmd;
+import de.metas.device.scales.impl.soehenle.SoehenleResponseStringParser;
+import de.metas.device.scales.impl.soehenle.SoehenleStableGrossWeightCmd;
 import de.metas.device.scales.request.GetGrossWeighRequest;
 import de.metas.device.scales.request.GetInstantGrossWeighRequest;
 import de.metas.device.scales.request.GetStableGrossWeighRequest;
 
-public class SicsScales extends AbstractTcpScales
+public class SoehenleScales extends AbstractTcpScales
 {
 
 	@SuppressWarnings({ "unchecked" })
 	@Override
 	public void configureStatic()
 	{
-		registerHandler(GetInstantGrossWeighRequest.class, mkHandler(SicsWeighCmdSI.getInstance()));
-		registerHandler(GetGrossWeighRequest.class, mkHandler(SicsWeighCmdSI.getInstance()));
-
-		registerHandler(GetStableGrossWeighRequest.class,  mkHandler(SicsWeighCmdS.getInstance()));
+		registerHandler(GetInstantGrossWeighRequest.class, mkHandler(SoehenleInstantGrossWeightCmd.getInstance()));
+		registerHandler(GetGrossWeighRequest.class, mkHandler(SoehenleStableGrossWeightCmd.getInstance()));
+		registerHandler(GetStableGrossWeighRequest.class, mkHandler(SoehenleStableGrossWeightCmd.getInstance()));
 	}
 
 	@SuppressWarnings({ "rawtypes" })
-	private ScalesGetWeightHandler mkHandler(final ISiscCmd cmd)
+	private ScalesGetWeightHandler mkHandler(final ISoehenleCmd cmd)
 	{
-		return new ScalesGetWeightHandler<ISiscCmd>()
+		return new ScalesGetWeightHandler<ISoehenleCmd>()
 				.setCmd(cmd)
 				.setWeightFieldName("WeightValue")
 				.setUOMFieldName("Unit")
 				.setEndpoint(getEndPoint())
-				.setParser(new SicsResponseStringParser())
+				.setParser(new SoehenleResponseStringParser())
 				.setroundWeightToPrecision(getRoundToPrecision())// task 09207; note that in future we might not configure the parser like this, but send some according command to the scale itself.
 				;
 	}
