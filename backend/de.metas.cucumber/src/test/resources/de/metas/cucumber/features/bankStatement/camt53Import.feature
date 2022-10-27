@@ -35,8 +35,8 @@ Feature: import bank statement in camt53 import format
       | C_Bank_ID.Identifier | Name            | RoutingNo | SwiftCode   | C_DataImport_ID.Identifier |
       | b_1                  | bank_12102022_1 | 2234567   | AAAAAAAA82A | di_1                       |
     And metasfresh contains C_BP_BankAccount
-      | Identifier | C_BPartner_ID.Identifier | C_Currency.ISO_Code | OPT.AccountNo | C_Bank_ID.Identifier | OPT.IBAN               |
-      | bpb_1      | bpartner_1               | EUR                 | 2234567       | b_1                  | GB33BUKB20201555555555 |
+      | Identifier | C_BPartner_ID.Identifier | C_Currency.ISO_Code | OPT.AccountNo | OPT.C_Bank_ID.Identifier | OPT.IBAN               |
+      | bpb_1      | bpartner_1               | EUR                 | 2234567       | b_1                      | GB33BUKB20201555555555 |
 
   @from:cucumber
   @Id:S0203_100
