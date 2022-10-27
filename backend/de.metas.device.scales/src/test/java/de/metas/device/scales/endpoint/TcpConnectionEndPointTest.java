@@ -1,9 +1,13 @@
 package de.metas.device.scales.endpoint;
 
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import de.metas.device.scales.impl.ICmd;
+import de.metas.device.scales.impl.sics.ISiscCmd;
+import de.metas.device.scales.impl.sics.SicsWeighCmdS;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Ignore;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,15 +18,10 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import de.metas.device.scales.impl.ICmd;
-import de.metas.device.scales.impl.sics.ISiscCmd;
-import de.metas.device.scales.impl.sics.SicsWeighCmdS;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 /*
  * #%L
@@ -111,25 +110,25 @@ public class TcpConnectionEndPointTest
 							final int read = in.read(bytes);
 							if (read > 0)
 							{
-								final String string = new String(bytes, 0, read, ICmd.SICS_CMD_CHARSET);
+								final String string = new String(bytes, 0, read, ICmd.DEFAULT_CMD_CHARSET);
 								System.out.println("TcpConnectionEndPointTest" + ": server-socked-thread received: '" + string + "'; weight=" + weight);
 								serverSocketReceived.add(string);
 
 								// returning CRLF, thx http://stackoverflow.com/questions/13821578/crlf-into-java-string#13821601
 								// first sending a wrong result. the client EP is supposed to only take the last line.
 								final String wrongServerReturnString = MockedEndpoint.createWeightString(new BigDecimal(weight - 10)) + ISiscCmd.SICS_CMD_TERMINATOR;
-								out.write(wrongServerReturnString.getBytes(ICmd.SICS_CMD_CHARSET));
+								out.write(wrongServerReturnString.getBytes(ICmd.DEFAULT_CMD_CHARSET));
 								System.out.println("TcpConnectionEndPointTest" + ": server-socked-thread replied with wrongServerReturnString=" + wrongServerReturnString);
 
 								final String serverReturnString = MockedEndpoint.createWeightString(new BigDecimal(weight)) + ISiscCmd.SICS_CMD_TERMINATOR;
-								out.write(serverReturnString.getBytes(ICmd.SICS_CMD_CHARSET));
+								out.write(serverReturnString.getBytes(ICmd.DEFAULT_CMD_CHARSET));
 								System.out.println("TcpConnectionEndPointTest" + ": server-socked-thread replied with serverReturnString=" + serverReturnString);
 
 								// before sending out the 3rd message, which is once again wrong, we wait longer than the endpoint's timeout.
 								// therefore we expect this message to be ignored
 								Thread.sleep(readTimeoutMillis + 50);
 								final String anotherWrongServerReturnString = MockedEndpoint.createWeightString(new BigDecimal(weight + 10)) + ISiscCmd.SICS_CMD_TERMINATOR;
-								out.write(anotherWrongServerReturnString.getBytes(ICmd.SICS_CMD_CHARSET));
+								out.write(anotherWrongServerReturnString.getBytes(ICmd.DEFAULT_CMD_CHARSET));
 								System.out.println("TcpConnectionEndPointTest" + ": server-socked-thread replied with anotherWrongServerReturnString=" + anotherWrongServerReturnString);
 							}
 						}
