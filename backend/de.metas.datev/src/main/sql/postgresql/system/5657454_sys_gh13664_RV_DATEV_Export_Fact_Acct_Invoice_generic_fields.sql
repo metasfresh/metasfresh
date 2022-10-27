@@ -1,3 +1,5 @@
+drop view if exists RV_DATEV_Export_Fact_Acct_Invoice;
+
 CREATE VIEW RV_DATEV_Export_Fact_Acct_Invoice
             (DebitOrCreditIndicator, Currency, dr_account, cr_account, amt, activityname, c_activity_id, documentno, dateacct, bpvalue, bpname, duedate, description, c_bpartner_id, c_invoice_id, docbasetype,
              c_tax_rate,
