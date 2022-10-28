@@ -68,6 +68,7 @@ import lombok.Value;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -426,6 +427,8 @@ public class BankStatementCamt53Service
 		return BankStatementImportFileLoggable.builder()
 				.bankStatementImportFileLogRepository(bankStatementImportFileLogRepository)
 				.bankStatementImportFileId(id)
+				.clientId(Env.getClientId())
+				.userId(Env.getLoggedUserId())
 				.bufferSize(100)
 				.build();
 	}

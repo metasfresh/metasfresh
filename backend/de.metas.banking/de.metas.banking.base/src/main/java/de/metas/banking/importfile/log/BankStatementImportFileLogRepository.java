@@ -23,13 +23,11 @@
 package de.metas.banking.importfile.log;
 
 import de.metas.organization.OrgId;
-import de.metas.user.UserId;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.banking.model.I_C_BankStatement_Import_File_Log;
 import org.adempiere.exceptions.DBException;
 import org.compiere.util.DB;
-import org.compiere.util.Env;
 import org.springframework.stereotype.Repository;
 
 import java.sql.PreparedStatement;
@@ -76,22 +74,20 @@ public class BankStatementImportFileLogRepository
 		PreparedStatement pstmt = null;
 		try
 		{
-			final UserId userId = Env.getLoggedUserIdIfExists().orElse(UserId.SYSTEM);
-
 			// NOTE: always create the logs out of transaction because we want them to be persisted even if the api processing trx fails
 			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
 
 			for (final BankStatementImportFileRequestLog logEntry : logEntries)
 			{
 				DB.setParameters(pstmt,
-								 Env.getAD_Client_ID(), // 1 - AD_Client_ID
+								 logEntry.getClientId(), // 1 - AD_Client_ID
 								 OrgId.ANY, // 2 - AD_Org_ID
 								 logEntry.getTimestamp(), // 3 - Created
-								 userId.getRepoId(), // 4 - CreatedBy
+								 logEntry.getClientId(), // 4 - CreatedBy
 								 // + "'Y'," // 5 - IsActive
 								 logEntry.getMessage(), // 6 - LogMessage
 								 logEntry.getTimestamp(), // 7 - Updated
-								 userId.getRepoId(), // 8 - UpdatedBy
+								 logEntry.getClientId(), // 8 - UpdatedBy
 								 logEntry.getAdIssueId(), // 9 - AD_Issue_ID
 								 logEntry.getBankStatementImportFileId() // 10 - C_BankStatement_Import_File_ID
 				);

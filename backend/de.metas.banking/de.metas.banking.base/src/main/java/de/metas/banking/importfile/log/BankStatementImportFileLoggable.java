@@ -27,11 +27,13 @@ import de.metas.banking.importfile.BankStatementImportFileId;
 import de.metas.common.util.time.SystemTime;
 import de.metas.error.LoggableWithThrowableUtil;
 import de.metas.logging.LogManager;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
+import org.adempiere.service.ClientId;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -45,6 +47,8 @@ public class BankStatementImportFileLoggable implements ILoggable
 
 	private final BankStatementImportFileLogRepository bankStatementImportFileLogRepository;
 	private final BankStatementImportFileId bankStatementImportFileId;
+	private final ClientId clientId;
+	private final UserId userId;
 	private final int bufferSize;
 
 	@Nullable
@@ -54,12 +58,16 @@ public class BankStatementImportFileLoggable implements ILoggable
 	public BankStatementImportFileLoggable(
 			@NonNull final BankStatementImportFileLogRepository bankStatementImportFileLogRepository,
 			@NonNull final BankStatementImportFileId bankStatementImportFileId,
+			@NonNull final ClientId clientId,
+			@NonNull final UserId userId,
 			final int bufferSize)
 	{
 		Check.assumeGreaterThanZero(bufferSize, "bufferSize");
 
 		this.bankStatementImportFileLogRepository = bankStatementImportFileLogRepository;
 		this.bankStatementImportFileId = bankStatementImportFileId;
+		this.clientId = clientId;
+		this.userId = userId;
 		this.bufferSize = bufferSize;
 	}
 
@@ -110,6 +118,8 @@ public class BankStatementImportFileLoggable implements ILoggable
 				.adIssueId(msgAndAdIssueId.getAdIsueId().orElse(null))
 				.timestamp(SystemTime.asInstant())
 				.bankStatementImportFileId(bankStatementImportFileId)
+				.clientId(clientId)
+				.userId(userId)
 				.build();
 	}
 

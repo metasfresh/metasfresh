@@ -24,9 +24,11 @@ package de.metas.banking.importfile.log;
 
 import de.metas.banking.importfile.BankStatementImportFileId;
 import de.metas.error.AdIssueId;
+import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -40,6 +42,12 @@ public class BankStatementImportFileRequestLog
 
 	@NonNull
 	Instant timestamp;
+
+	@NonNull
+	ClientId clientId;
+
+	@NonNull
+	UserId userId;
 
 	@Nullable
 	AdIssueId adIssueId;
