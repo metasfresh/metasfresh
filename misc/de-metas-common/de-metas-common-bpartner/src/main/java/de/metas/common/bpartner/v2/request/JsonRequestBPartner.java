@@ -40,6 +40,16 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.PARENT_SYNC_ADVISE
 @ApiModel(description = "Note that given the respective use-case, either one of both properties might be `null`, but not both at once.")
 public class JsonRequestBPartner
 {
+	public enum DeliveryRule
+	{
+		AVAILABILITY
+	}
+
+	public enum DeliveryViaRule
+	{
+		SHIPPER
+	}
+
 	@ApiModelProperty(position = 20,  //
 			value = BPARTNER_VALUE_DOC)
 	private String code;
@@ -176,7 +186,49 @@ public class JsonRequestBPartner
 
 	private boolean memoIsSet;
 
-	@ApiModelProperty(position = 170, // shall be last
+	@ApiModelProperty(position = 170, //
+			value = "Translates to `C_BPartner.M_SectionCode_ID`")
+	private String sectionCode;
+
+	private boolean sectionCodeSet;
+
+	@ApiModelProperty(position = 180, //
+			value = "Translates to `C_BPartner.Description`")
+	private String description;
+
+	private boolean descriptionSet;
+
+	@ApiModelProperty(position = 190, //
+			value = "Translates to `C_BPartner.DeliveryRule`")
+	private DeliveryRule deliveryRule;
+
+	private boolean deliveryRuleSet;
+
+	@ApiModelProperty(position = 200, //
+			value = "Translates to `C_BPartner.DeliveryViaRule`")
+	private DeliveryViaRule deliveryViaRule;
+
+	private boolean deliveryViaRuleSet;
+
+	@ApiModelProperty(position = 210, //
+			value = "Translates to `C_BPartner.IsStorageWarehouse`")
+	private Boolean storageWarehouse;
+
+	private boolean storageWarehouseSet;
+
+	@ApiModelProperty(position = 220, //
+			value = "Translates to `C_BPartner.C_Incoterms_Customer_ID`")
+	private String incotermsCustomer;
+
+	private boolean incotermsCustomerSet;
+
+	@ApiModelProperty(position = 230, //
+			value = "Translates to `C_BPartner.C_Incoterms_Vendor_ID`")
+	private String incotermsVendor;
+
+	private boolean incotermsVendorSet;
+
+	@ApiModelProperty(position = 220, // shall be last
 			value = "Sync advise about this bPartner's individual properties.\n"
 					+ "IfExists is ignored on this level!\n" + PARENT_SYNC_ADVISE_DOC)
 	private SyncAdvise syncAdvise;
@@ -308,5 +360,47 @@ public class JsonRequestBPartner
 	{
 		this.memo = memo;
 		this.memoIsSet = true;
+	}
+
+	public void setSectionCode(final String sectionCode)
+	{
+		this.sectionCode = sectionCode;
+		this.sectionCodeSet = true;
+	}
+
+	public void setDescription(final String description)
+	{
+		this.description = description;
+		this.descriptionSet = true;
+	}
+
+	public void setDeliveryRule(final DeliveryRule deliveryRule)
+	{
+		this.deliveryRule = deliveryRule;
+		this.deliveryRuleSet = true;
+	}
+
+	public void setDeliveryViaRule(final DeliveryViaRule deliveryViaRule)
+	{
+		this.deliveryViaRule = deliveryViaRule;
+		this.deliveryViaRuleSet = true;
+	}
+
+	public void setStorageWarehouse(final Boolean storageWarehouse)
+	{
+		this.storageWarehouse = storageWarehouse;
+		this.storageWarehouseSet = true;
+	}
+
+	public void setIncotermsCustomer(final String incotermsCustomer)
+	{
+		this.incotermsCustomer = incotermsCustomer;
+		this.incotermsCustomerSet = true;
+	}
+
+	public void setIncotermsVendor(final String incotermsVendor)
+	{
+		this.incotermsVendor = incotermsVendor;
+		this.incotermsVendorSet = true;
 	}
 }

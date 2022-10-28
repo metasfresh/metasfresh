@@ -21,6 +21,7 @@ import de.metas.document.DocTypeId;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
+import de.metas.incoterms.IncotermsId;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
@@ -32,6 +33,7 @@ import de.metas.location.impl.PostalQueryFilter;
 import de.metas.logging.TableRecordMDC;
 import de.metas.marketing.base.model.CampaignId;
 import de.metas.organization.OrgId;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.security.permissions2.PermissionServiceFactories;
 import de.metas.title.TitleId;
 import de.metas.util.Check;
@@ -254,6 +256,15 @@ final class BPartnerCompositeSaver
 		{
 			assertCanCreateOrUpdate(bpartnerRecord);
 		}
+
+		bpartnerRecord.setM_SectionCode_ID(SectionCodeId.toRepoId(bpartner.getSectionCodeId()));
+		bpartnerRecord.setDescription(bpartner.getDescription());
+		bpartnerRecord.setDeliveryRule(bpartner.getDeliveryRule());
+		bpartnerRecord.setDeliveryViaRule(bpartner.getDeliveryViaRule());
+		bpartnerRecord.setIsStorageWarehouse(bpartner.isStorageWarehouse());
+		bpartnerRecord.setC_Incoterms_Customer_ID(IncotermsId.toRepoId(bpartner.getIncotermsCustomerId()));
+		bpartnerRecord.setC_Incoterms_Vendor_ID(IncotermsId.toRepoId(bpartner.getIncotermsVendorId()));
+
 		saveRecord(bpartnerRecord);
 
 		//

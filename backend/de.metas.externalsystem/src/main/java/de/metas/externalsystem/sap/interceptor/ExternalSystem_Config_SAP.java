@@ -59,10 +59,17 @@ public class ExternalSystem_Config_SAP
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = { I_ExternalSystem_Config_SAP.COLUMNNAME_SFTP_TargetDirectory })
-	public void sanitizeTargetDirectory(final I_ExternalSystem_Config_SAP sapConfig)
+			ifColumnsChanged = { I_ExternalSystem_Config_SAP.COLUMNNAME_SFTP_Product_TargetDirectory })
+	public void sanitizeProductTargetDirectory(final I_ExternalSystem_Config_SAP sapConfig)
 	{
-		sapConfig.setSFTP_TargetDirectory(sanitizeDirectoryRelativePath(sapConfig.getSFTP_TargetDirectory()));
+		sapConfig.setSFTP_Product_TargetDirectory(sanitizeDirectoryRelativePath(sapConfig.getSFTP_Product_TargetDirectory()));
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_ExternalSystem_Config_SAP.COLUMNNAME_SFTP_BPartner_TargetDirectory })
+	public void sanitizeBPartnerTargetDirectory(final I_ExternalSystem_Config_SAP sapConfig)
+	{
+		sapConfig.setSFTP_BPartner_TargetDirectory(sanitizeDirectoryRelativePath(sapConfig.getSFTP_BPartner_TargetDirectory()));
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },

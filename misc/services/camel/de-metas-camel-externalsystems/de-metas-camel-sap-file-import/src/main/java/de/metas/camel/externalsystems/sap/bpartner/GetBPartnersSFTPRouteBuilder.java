@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-sap
+ * de-metas-camel-sap-file-import
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,11 +20,11 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.sap.product;
+package de.metas.camel.externalsystems.sap.bpartner;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.camel.externalsystems.common.ProcessLogger;
-import de.metas.camel.externalsystems.sap.mapping.model.product.ProductRow;
+import de.metas.camel.externalsystems.sap.mapping.model.bpartner.BPartnerRow;
 import de.metas.camel.externalsystems.sap.sftp.SFTPConfig;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.Builder;
@@ -35,16 +35,13 @@ import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.dataformat.bindy.csv.BindyCsvDataFormat;
 
-import java.util.stream.Stream;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI;
 
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_PRODUCT_V2_CAMEL_URI;
-import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
-
-public class GetProductsSFTPRouteBuilder extends RouteBuilder
+public class GetBPartnersSFTPRouteBuilder extends RouteBuilder
 {
 	@VisibleForTesting
-	public static final String UPSERT_PRODUCT_ENDPOINT_ID = "SAP-Products-upsertProductEndpointId";
-	private static final String UPSERT_PRODUCT_PROCESSOR_ID = "SAP-Products-upsertProductProcessorId";
+	public static final String UPSERT_BPARTNER_ENDPOINT_ID = "SAP-BPartners-upsertBPartnerEndpointId";
+	private static final String UPSERT_BPARTNER_PROCESSOR_ID = "SAP-BPartners-upsertBPartnerProcessorId";
 
 	@NonNull
 	private final SFTPConfig sftpConfig;
@@ -60,7 +57,7 @@ public class GetProductsSFTPRouteBuilder extends RouteBuilder
 	private final ProcessLogger processLogger;
 
 	@Builder
-	private GetProductsSFTPRouteBuilder(
+	private GetBPartnersSFTPRouteBuilder(
 			@NonNull final SFTPConfig sftpConfig,
 			@NonNull final CamelContext camelContext,
 			@NonNull final String routeId,
@@ -78,18 +75,18 @@ public class GetProductsSFTPRouteBuilder extends RouteBuilder
 	public void configure() throws Exception
 	{
 		//@formatter:off
-		from(sftpConfig.getSFTPConnectionStringProduct())
+		from(sftpConfig.getSFTPConnectionStringBPartner())
 				.id(routeId)
-				.log("Product Sync Route Started")
-				.unmarshal(new BindyCsvDataFormat(ProductRow.class))
+				.log("Business Partner Sync Route Started")
+				.unmarshal(new BindyCsvDataFormat(BPartnerRow.class))
 				.split(body())
-					.process(new ProductUpsertProcessor(enabledByExternalSystemRequest, processLogger)).id(UPSERT_PRODUCT_PROCESSOR_ID)
+					.process(new BPartnerUpsertProcessor(enabledByExternalSystemRequest, processLogger)).id(UPSERT_BPARTNER_PROCESSOR_ID)
 					.choice()
 						.when(body().isNull())
-							.log(LoggingLevel.INFO, "Nothing to do! No product to upsert!")
-						.otherwise()
-							.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert Product: ${body}")
-							.to(direct(MF_UPSERT_PRODUCT_V2_CAMEL_URI)).id(UPSERT_PRODUCT_ENDPOINT_ID)
+						.log(LoggingLevel.INFO, "Nothing to do! No business partner to upsert!")
+					.otherwise()
+						.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert Business Partner: ${body}")
+						.to("{{" + MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}").id(UPSERT_BPARTNER_ENDPOINT_ID)
 					.endChoice()
 					.end();
 		//@formatter:on
@@ -98,6 +95,6 @@ public class GetProductsSFTPRouteBuilder extends RouteBuilder
 	@NonNull
 	public static String buildRouteId(@NonNull final String externalSystemConfigValue)
 	{
-		return GetProductsSFTPRouteBuilder.class.getSimpleName() + "#" + externalSystemConfigValue;
+		return GetBPartnersSFTPRouteBuilder.class.getSimpleName() + "#" + externalSystemConfigValue;
 	}
 }

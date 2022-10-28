@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-sap
+ * de.metas.business
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,9 +20,23 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.sap;
+package de.metas.incoterms;
 
-public interface SAPConstants
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Data;
+import lombok.experimental.FieldDefaults;
+
+@Data
+@Builder(toBuilder = true)
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+public class Incoterms
 {
-	String SAP_SYSTEM_NAME = "SAP";
+	IncotermsId incotermsId;
+
+	String name;
+
+	String value;
+
+	String description;
 }

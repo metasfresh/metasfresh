@@ -77,7 +77,7 @@ public interface I_ExternalSystem_Config_SAP
 
 	/**
 	 * Set Errored Directory.
-	 * Defines where files should be moved after attempting to process them with error.
+	 * Defines where files should be moved after attempting to process them with error, relative to the current sftp target location.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -87,7 +87,7 @@ public interface I_ExternalSystem_Config_SAP
 
 	/**
 	 * Get Errored Directory.
-	 * Defines where files should be moved after attempting to process them with error.
+	 * Defines where files should be moved after attempting to process them with error, relative to the current sftp target location.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -213,7 +213,7 @@ public interface I_ExternalSystem_Config_SAP
 
 	/**
 	 * Set Processed Directory.
-	 * Defines where files should be moved after being successfully processed.
+	 * Defines where files should be moved after being successfully processed relative to the current sftp target location.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -223,7 +223,7 @@ public interface I_ExternalSystem_Config_SAP
 
 	/**
 	 * Get Processed Directory.
-	 * Defines where files should be moved after being successfully processed.
+	 * Defines where files should be moved after being successfully processed relative to the current sftp target location.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -235,7 +235,31 @@ public interface I_ExternalSystem_Config_SAP
 	String COLUMNNAME_ProcessedDirectory = "ProcessedDirectory";
 
 	/**
+	 * Set SFTP Business Partner Target Directory.
+	 * The directory used to pull business partners from the sftp server. (If no value set here, the files will be pulled from the root location of the sftp server.)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSFTP_BPartner_TargetDirectory (@Nullable java.lang.String SFTP_BPartner_TargetDirectory);
+
+	/**
+	 * Get SFTP Business Partner Target Directory.
+	 * The directory used to pull business partners from the sftp server. (If no value set here, the files will be pulled from the root location of the sftp server.)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSFTP_BPartner_TargetDirectory();
+
+	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_SFTP_BPartner_TargetDirectory = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "SFTP_BPartner_TargetDirectory", null);
+	String COLUMNNAME_SFTP_BPartner_TargetDirectory = "SFTP_BPartner_TargetDirectory";
+
+	/**
 	 * Set SFTP Hostname.
+	 * The host of the sftp server.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -245,6 +269,7 @@ public interface I_ExternalSystem_Config_SAP
 
 	/**
 	 * Get SFTP Hostname.
+	 * The host of the sftp server.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -257,6 +282,7 @@ public interface I_ExternalSystem_Config_SAP
 
 	/**
 	 * Set SFTP Password.
+	 * The password used to authenticate into the sftp server.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -266,6 +292,7 @@ public interface I_ExternalSystem_Config_SAP
 
 	/**
 	 * Get SFTP Password.
+	 * The password used to authenticate into the sftp server.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -278,6 +305,7 @@ public interface I_ExternalSystem_Config_SAP
 
 	/**
 	 * Set SFTP Port.
+	 * The port of the sftp server.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -287,6 +315,7 @@ public interface I_ExternalSystem_Config_SAP
 
 	/**
 	 * Get SFTP Port.
+	 * The port of the sftp server.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -298,28 +327,31 @@ public interface I_ExternalSystem_Config_SAP
 	String COLUMNNAME_SFTP_Port = "SFTP_Port";
 
 	/**
-	 * Set SFTP Target Directory.
+	 * Set SFTP Product Target Directory.
+	 * The directory used to pull products from the sftp server. (If no value set here, the files will be pulled from the root location of the sftp server.)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setSFTP_TargetDirectory (@Nullable java.lang.String SFTP_TargetDirectory);
+	void setSFTP_Product_TargetDirectory (@Nullable java.lang.String SFTP_Product_TargetDirectory);
 
 	/**
-	 * Get SFTP Target Directory.
+	 * Get SFTP Product Target Directory.
+	 * The directory used to pull products from the sftp server. (If no value set here, the files will be pulled from the root location of the sftp server.)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getSFTP_TargetDirectory();
+	@Nullable java.lang.String getSFTP_Product_TargetDirectory();
 
-	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_SFTP_TargetDirectory = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "SFTP_TargetDirectory", null);
-	String COLUMNNAME_SFTP_TargetDirectory = "SFTP_TargetDirectory";
+	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_SFTP_Product_TargetDirectory = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "SFTP_Product_TargetDirectory", null);
+	String COLUMNNAME_SFTP_Product_TargetDirectory = "SFTP_Product_TargetDirectory";
 
 	/**
 	 * Set SFTP Username.
+	 * The username used to authenticate into the sftp server.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -329,6 +361,7 @@ public interface I_ExternalSystem_Config_SAP
 
 	/**
 	 * Get SFTP Username.
+	 * The username used to authenticate into the sftp server.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true

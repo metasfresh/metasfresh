@@ -32,6 +32,8 @@ import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.rest_api.v2.bpartner.BPartnerEndpointService;
+import de.metas.sectionCode.SectionCodeId;
+import de.metas.sectionCode.SectionCodeRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -41,11 +43,13 @@ import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_M_SectionCode;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
@@ -57,6 +61,7 @@ public class CreateBPartnerV2_StepDef
 	private final AD_User_StepDefData userTable;
 
 	final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final SectionCodeRepository sectionCodeRepository;
 
 	public CreateBPartnerV2_StepDef(
 			@NonNull final C_BPartner_StepDefData bPartnerTable,
@@ -65,6 +70,7 @@ public class CreateBPartnerV2_StepDef
 		this.bPartnerTable = bPartnerTable;
 		this.userTable = userTable;
 		this.bpartnerEndpointService = SpringContextHolder.instance.getBean(BPartnerEndpointService.class);
+		this.sectionCodeRepository = SpringContextHolder.instance.getBean(SectionCodeRepository.class);
 	}
 
 	@Then("^verify that bPartner was (updated|created) for externalIdentifier$")
@@ -115,6 +121,21 @@ public class CreateBPartnerV2_StepDef
 
 				assertThat(userRecord).isNotNull();
 				assertThat(bPartnerRecord.getCreatedBy()).isEqualTo(userRecord.getAD_User_ID());
+			}
+
+			final String sectionCodeValue = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_M_SectionCode_ID + "." + I_M_SectionCode.COLUMNNAME_Value);
+			if (Check.isNotBlank(sectionCodeValue))
+			{
+				final SectionCodeId sectionCodeId = sectionCodeRepository.getSectionCodeIdByValue(ORG_ID, sectionCodeValue).orElse(null);
+
+				assertThat(sectionCodeId).isNotNull();
+				assertThat(bPartnerRecord.getM_SectionCode_ID()).isEqualTo(sectionCodeId.getRepoId());
+			}
+
+			final String description = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_Description);
+			if (Check.isNotBlank(description))
+			{
+				assertThat(bPartnerRecord.getDescription()).isEqualTo(description);
 			}
 
 			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);

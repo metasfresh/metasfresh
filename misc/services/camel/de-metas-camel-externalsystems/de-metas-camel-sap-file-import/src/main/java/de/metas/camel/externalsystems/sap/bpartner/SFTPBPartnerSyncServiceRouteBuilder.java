@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-sap
+ * de-metas-camel-sap-file-import
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.sap.product;
+package de.metas.camel.externalsystems.sap.bpartner;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
@@ -48,22 +48,22 @@ import static de.metas.camel.externalsystems.sap.SAPConstants.SAP_SYSTEM_NAME;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
-public class SFTPProductSyncServiceRouteBuilder extends RouteBuilder implements IExternalSystemService
+public class SFTPBPartnerSyncServiceRouteBuilder extends RouteBuilder implements IExternalSystemService
 {
-	private static final String START_PRODUCTS_SYNC_ROUTE = "startProductsSync";
-	private static final String STOP_PRODUCTS_SYNC_ROUTE = "stopProductsSync";
+	private static final String START_BPARTNERS_SYNC_ROUTE = "startBPartnerSync";
+	private static final String STOP_BPARTNERS_SYNC_ROUTE = "stopBPartnerSync";
 
-	private static final String ROUTE_PROPERTY_SAP_ROUTE_CONTEXT_PRODUCTS = "SAPRouteContextProducts";
+	private static final String ROUTE_PROPERTY_SAP_ROUTE_CONTEXT_BPARTNERS = "SAPRouteContextBPartners";
 
 	@VisibleForTesting
-	public static final String START_PRODUCTS_SYNC_ROUTE_ID = SAP_SYSTEM_NAME + "-" + START_PRODUCTS_SYNC_ROUTE;
+	public static final String START_BPARTNERS_SYNC_ROUTE_ID = SAP_SYSTEM_NAME + "-" + START_BPARTNERS_SYNC_ROUTE;
 	@VisibleForTesting
-	public static final String STOP_PRODUCTS_SYNC_ROUTE_ID = SAP_SYSTEM_NAME + "-" + STOP_PRODUCTS_SYNC_ROUTE;
+	public static final String STOP_BPARTNERS_SYNC_ROUTE_ID = SAP_SYSTEM_NAME + "-" + STOP_BPARTNERS_SYNC_ROUTE;
 
 	@NonNull
 	private final ProcessLogger processLogger;
 
-	public SFTPProductSyncServiceRouteBuilder(final @NonNull ProcessLogger processLogger)
+	public SFTPBPartnerSyncServiceRouteBuilder(final @NonNull ProcessLogger processLogger)
 	{
 		this.processLogger = processLogger;
 	}
@@ -75,8 +75,8 @@ public class SFTPProductSyncServiceRouteBuilder extends RouteBuilder implements 
 		onException(Exception.class)
 				.to(direct(MF_ERROR_ROUTE_ID));
 
-		from(direct(START_PRODUCTS_SYNC_ROUTE_ID))
-				.routeId(START_PRODUCTS_SYNC_ROUTE_ID)
+		from(direct(START_BPARTNERS_SYNC_ROUTE_ID))
+				.routeId(START_BPARTNERS_SYNC_ROUTE_ID)
 				.log("Route invoked")
 				.process(this::prepareSAPContext)
 				.process(this::setSFTPCredentials)
@@ -85,8 +85,8 @@ public class SFTPProductSyncServiceRouteBuilder extends RouteBuilder implements 
 				.to("{{" + ExternalSystemCamelConstants.MF_CREATE_EXTERNAL_SYSTEM_STATUS_V2_CAMEL_URI + "}}")
 				.end();
 
-		from(direct(STOP_PRODUCTS_SYNC_ROUTE_ID))
-				.routeId(STOP_PRODUCTS_SYNC_ROUTE_ID)
+		from(direct(STOP_BPARTNERS_SYNC_ROUTE_ID))
+				.routeId(STOP_BPARTNERS_SYNC_ROUTE_ID)
 				.log("Route invoked")
 				.process(this::prepareSAPContext)
 				.process(this::disableSFTPRouteProcessor)
@@ -108,7 +108,7 @@ public class SFTPProductSyncServiceRouteBuilder extends RouteBuilder implements 
 				.request(request)
 				.build();
 
-		exchange.setProperty(ROUTE_PROPERTY_SAP_ROUTE_CONTEXT_PRODUCTS, context);
+		exchange.setProperty(ROUTE_PROPERTY_SAP_ROUTE_CONTEXT_BPARTNERS, context);
 	}
 
 	private void setSFTPCredentials(@NonNull final Exchange exchange)
@@ -122,7 +122,7 @@ public class SFTPProductSyncServiceRouteBuilder extends RouteBuilder implements 
 				.password(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_PASSWORD))
 				.hostName(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_HOST_NAME))
 				.port(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_PORT))
-				.targetDirectoryProduct(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_PRODUCT_TARGET_DIRECTORY))
+				.targetDirectoryBPartner(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_BPARTNER_TARGET_DIRECTORY))
 				.processedFilesFolder(requestParameters.get(ExternalSystemConstants.PARAM_PROCESSED_DIRECTORY))
 				.erroredFilesFolder(requestParameters.get(ExternalSystemConstants.PARAM_ERRORED_DIRECTORY))
 				.pollingFrequency(Duration.ofMillis(Long.parseLong(requestParameters.get(ExternalSystemConstants.PARAM_POLLING_FREQUENCY_MS))))
@@ -135,17 +135,17 @@ public class SFTPProductSyncServiceRouteBuilder extends RouteBuilder implements 
 	{
 		final SFTPConfig sftpConfig = exchange.getIn().getBody(SFTPConfig.class);
 
-		final SAPRouteContext sapRouteContext = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_SAP_ROUTE_CONTEXT_PRODUCTS, SAPRouteContext.class);
+		final SAPRouteContext sapRouteContext = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_SAP_ROUTE_CONTEXT_BPARTNERS, SAPRouteContext.class);
 
-		final String sftpProductsSyncRouteId = getSFTPProductsSyncRouteId(sapRouteContext);
+		final String sftpBPartnersSyncRouteId = getSFTPBPartnersSyncRouteId(sapRouteContext);
 
-		final GetProductsSFTPRouteBuilder getProductsSFTPRouteBuilder = GetProductsSFTPRouteBuilder
+		final GetBPartnersSFTPRouteBuilder getProductsSFTPRouteBuilder = GetBPartnersSFTPRouteBuilder
 				.builder()
 				.sftpConfig(sftpConfig)
 				.camelContext(exchange.getContext())
 				.enabledByExternalSystemRequest(sapRouteContext.getRequest())
 				.processLogger(processLogger)
-				.routeId(sftpProductsSyncRouteId)
+				.routeId(sftpBPartnersSyncRouteId)
 				.build();
 
 		final boolean routeWasAlreadyCreated = getContext().getRoute(getProductsSFTPRouteBuilder.getRouteId()) != null;
@@ -163,23 +163,23 @@ public class SFTPProductSyncServiceRouteBuilder extends RouteBuilder implements 
 
 	private void disableSFTPRouteProcessor(@NonNull final Exchange exchange) throws Exception
 	{
-		final SAPRouteContext sapRouteContext = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_SAP_ROUTE_CONTEXT_PRODUCTS, SAPRouteContext.class);
+		final SAPRouteContext sapRouteContext = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_SAP_ROUTE_CONTEXT_BPARTNERS, SAPRouteContext.class);
 
-		final String sftpProductsSyncRouteId = getSFTPProductsSyncRouteId(sapRouteContext);
+		final String sftpBPartnersSyncRouteId = getSFTPBPartnersSyncRouteId(sapRouteContext);
 
-		if (getContext().getRoute(sftpProductsSyncRouteId) == null)
+		if (getContext().getRoute(sftpBPartnersSyncRouteId) == null)
 		{
 			return;
 		}
 
-		getContext().getRouteController().stopRoute(sftpProductsSyncRouteId);
+		getContext().getRouteController().stopRoute(sftpBPartnersSyncRouteId);
 
-		getContext().removeRoute(sftpProductsSyncRouteId);
+		getContext().removeRoute(sftpBPartnersSyncRouteId);
 	}
 
 	private void prepareExternalStatusCreateRequest(@NonNull final Exchange exchange, @NonNull final JsonExternalStatus externalStatus)
 	{
-		final SAPRouteContext context = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_SAP_ROUTE_CONTEXT_PRODUCTS, SAPRouteContext.class);
+		final SAPRouteContext context = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_SAP_ROUTE_CONTEXT_BPARTNERS, SAPRouteContext.class);
 
 		final JsonExternalSystemRequest request = context.getRequest();
 
@@ -199,15 +199,15 @@ public class SFTPProductSyncServiceRouteBuilder extends RouteBuilder implements 
 	}
 
 	@NonNull
-	private static String getSFTPProductsSyncRouteId(@NonNull final SAPRouteContext sapRouteContext)
+	private static String getSFTPBPartnersSyncRouteId(@NonNull final SAPRouteContext sapRouteContext)
 	{
-		return GetProductsSFTPRouteBuilder.buildRouteId(sapRouteContext.getRequest().getExternalSystemChildConfigValue());
+		return GetBPartnersSFTPRouteBuilder.buildRouteId(sapRouteContext.getRequest().getExternalSystemChildConfigValue());
 	}
 
 	@Override
 	public String getServiceValue()
 	{
-		return "SFTPSyncProducts";
+		return "SFTPSyncBPartners";
 	}
 
 	@Override
@@ -219,12 +219,12 @@ public class SFTPProductSyncServiceRouteBuilder extends RouteBuilder implements 
 	@Override
 	public String getEnableCommand()
 	{
-		return START_PRODUCTS_SYNC_ROUTE;
+		return START_BPARTNERS_SYNC_ROUTE;
 	}
 
 	@Override
 	public String getDisableCommand()
 	{
-		return STOP_PRODUCTS_SYNC_ROUTE;
+		return STOP_BPARTNERS_SYNC_ROUTE;
 	}
 }

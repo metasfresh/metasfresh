@@ -47,7 +47,10 @@ public class SFTPConfig
 	String hostName;
 
 	@Nullable
-	String targetDirectory;
+	String targetDirectoryProduct;
+
+	@Nullable
+	String targetDirectoryBPartner;
 
 	@NonNull
 	String processedFilesFolder;
@@ -58,7 +61,7 @@ public class SFTPConfig
 	@NonNull
 	Duration pollingFrequency;
 
-	public String getSFTPConnectionString()
+	public String getSFTPConnectionStringProduct()
 	{
 		final String endpointTemplate = "sftp://%s@%s:%s/%s?password=%s&move=%s&moveFailed=%s&delay=%s";
 
@@ -66,7 +69,22 @@ public class SFTPConfig
 							 this.getUsername(),
 							 this.getHostName(),
 							 this.getPort(),
-							 CoalesceUtil.coalesce(this.getTargetDirectory(), ""),
+							 CoalesceUtil.coalesce(this.getTargetDirectoryProduct(), ""),
+							 this.getPassword(),
+							 this.getProcessedFilesFolder(),
+							 this.getErroredFilesFolder(),
+							 this.getPollingFrequency());
+	}
+
+	public String getSFTPConnectionStringBPartner()
+	{
+		final String endpointTemplate = "sftp://%s@%s:%s/%s?password=%s&move=%s&moveFailed=%s&delay=%s";
+
+		return String.format(endpointTemplate,
+							 this.getUsername(),
+							 this.getHostName(),
+							 this.getPort(),
+							 CoalesceUtil.coalesce(this.getTargetDirectoryBPartner(), ""),
 							 this.getPassword(),
 							 this.getProcessedFilesFolder(),
 							 this.getErroredFilesFolder(),

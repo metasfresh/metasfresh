@@ -15,6 +15,6 @@
     "SFTP_Target_Directory" : "doesntmatter",
     "SFTPProcessedDirectory": "doesntmatter",
     "SFTPErroredDirectory": "doesntmatter",
-    "SFTPPollingFrequencyInMs": 1000
+    "SFTPPollingFrequencyInMs": "1000"
   }
 }

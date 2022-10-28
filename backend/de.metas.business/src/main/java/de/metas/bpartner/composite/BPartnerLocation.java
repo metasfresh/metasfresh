@@ -143,7 +143,7 @@ public class BPartnerLocation
 	final String setupPlaceNo;
 
 	final boolean remitTo;
-	final boolean handOverLocation;
+	boolean handOverLocation;
 	final boolean replicationLookupDefault;
 	final boolean visitorsAddress;
 

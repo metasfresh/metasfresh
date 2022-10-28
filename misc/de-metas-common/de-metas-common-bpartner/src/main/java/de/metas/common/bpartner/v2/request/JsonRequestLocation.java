@@ -190,6 +190,13 @@ public class JsonRequestLocation
 	@ApiModelProperty(hidden = true)
 	private boolean visitorsAddressSet;
 
+	@ApiModelProperty(position = 240, //
+			value = "Translates to C_BPartner_Location.IsHandoverLocation")
+	private Boolean handoverLocation;
+
+	@ApiModelProperty(hidden = true)
+	private boolean handoverLocationSet;
+
 	public void setActive(final Boolean active)
 	{
 		this.active = active;
@@ -320,5 +327,11 @@ public class JsonRequestLocation
 	{
 		this.visitorsAddress = visitorsAddress;
 		this.visitorsAddressSet = true;
+	}
+
+	public void setHandoverLocation(final Boolean handoverLocation)
+	{
+		this.handoverLocation = handoverLocation;
+		this.handoverLocationSet = true;
 	}
 }

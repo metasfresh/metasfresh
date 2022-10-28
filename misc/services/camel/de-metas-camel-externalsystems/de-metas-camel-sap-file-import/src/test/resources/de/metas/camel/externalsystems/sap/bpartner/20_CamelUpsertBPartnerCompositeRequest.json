@@ -1,0 +1,58 @@
+{
+  "orgCode": "orgCode",
+  "jsonRequestBPartnerUpsert": {
+    "requestItems": [
+      {
+        "bpartnerIdentifier": "ext-SAP-ZAU0_DC00103500",
+        "externalSystemConfigId": 1,
+        "isReadOnlyInMetasfresh": true,
+        "bpartnerComposite": {
+          "orgCode": "orgCode",
+          "bpartner": {
+            "code": "DC00103500",
+            "name":"TOKCZUA",
+            "companyName": "MITSUBISHI CORPORATION",
+            "vendor": true,
+            "sectionCode": "ZAU0",
+            "description": "TOKCZUA",
+            "deliveryRule": "AVAILABILITY",
+            "deliveryViaRule": "SHIPPER",
+            "syncAdvise": {
+              "ifNotExists": "CREATE",
+              "ifExists": "UPDATE_MERGE"
+            }
+          },
+          "locations": {
+            "requestItems": [
+              {
+                "locationIdentifier": "ext-SAP-ZAU0_DC00103500",
+                "location": {
+                  "address1": "TOKYO",
+                  "address2": "6-3, MARUNOUCHI 2-CHOME",
+                  "address3": "CHIYODA-KU",
+                  "address4": "JAPAN",
+                  "postal": "1008086",
+                  "city": "TOKYO",
+                  "countryCode": "JP",
+                  "handoverLocation": true
+                }
+              }
+            ],
+            "syncAdvise": {
+              "ifNotExists": "CREATE",
+              "ifExists": "UPDATE_MERGE"
+            }
+          },
+          "syncAdvise": {
+            "ifNotExists": "CREATE",
+            "ifExists": "UPDATE_MERGE"
+          }
+        }
+      }
+    ],
+    "syncAdvise": {
+      "ifNotExists": "CREATE",
+      "ifExists": "UPDATE_MERGE"
+    }
+  }
+}

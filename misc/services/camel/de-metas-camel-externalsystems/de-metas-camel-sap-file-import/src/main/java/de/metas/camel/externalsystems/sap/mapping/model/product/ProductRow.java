@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-sap
+ * de-metas-camel-sap-file-import
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.sap.api.model.product;
+package de.metas.camel.externalsystems.sap.mapping.model.product;
 
 import lombok.Getter;
 import org.apache.camel.dataformat.bindy.annotation.CsvRecord;

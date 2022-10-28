@@ -9,11 +9,13 @@ import de.metas.greeting.GreetingId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.incoterms.IncotermsId;
 import de.metas.marketing.base.model.CampaignId;
 import de.metas.order.InvoiceRule;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.Data;
@@ -171,6 +173,26 @@ public class BPartner
 	private final Integer creditorId;
 	private final Integer debtorId;
 
+	@Nullable
+	private SectionCodeId sectionCodeId;
+
+	@Nullable
+	private String description;
+
+	@Nullable
+	private String deliveryRule;
+
+	@Nullable
+	private String deliveryViaRule;
+
+	private boolean storageWarehouse;
+
+	@Nullable
+	private IncotermsId incotermsCustomerId;
+
+	@Nullable
+	private IncotermsId incotermsVendorId;
+
 	/**
 	 * They are all nullable because we can create a completely empty instance which we then fill.
 	 */
@@ -219,7 +241,14 @@ public class BPartner
 			@Nullable final String firstName,
 			@Nullable final String lastName,
 			@Nullable final Integer creditorId,
-			@Nullable final Integer debtorId)
+			@Nullable final Integer debtorId,
+			@Nullable final SectionCodeId sectionCodeId,
+			@Nullable final String description,
+			@Nullable final String deliveryRule,
+			@Nullable final String deliveryViaRule,
+			@Nullable final Boolean storageWarehouse,
+			@Nullable final IncotermsId incotermsCustomerId,
+			@Nullable final IncotermsId incotermsVendorId)
 	{
 		this.id = id;
 		this.externalId = externalId;
@@ -270,6 +299,13 @@ public class BPartner
 
 		this.creditorId = creditorId;
 		this.debtorId = debtorId;
+		this.sectionCodeId = sectionCodeId;
+		this.description = description;
+		this.deliveryRule = deliveryRule;
+		this.deliveryViaRule = deliveryViaRule;
+		this.storageWarehouse = coalesce(storageWarehouse, false);
+		this.incotermsCustomerId = incotermsCustomerId;
+		this.incotermsVendorId = incotermsVendorId;
 	}
 
 	/**

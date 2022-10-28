@@ -70,9 +70,12 @@ import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
+import de.metas.incoterms.repository.IncotermsRepository;
 import de.metas.job.JobRepository;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
+import de.metas.sectionCode.SectionCodeRepository;
+import de.metas.sectionCode.SectionCodeService;
 import de.metas.test.SnapshotFunctionFactory;
 import de.metas.title.TitleRepository;
 import de.metas.user.UserId;
@@ -144,6 +147,8 @@ class BpartnerRestControllerTest
 	private BPartnerCompositeRepository bpartnerCompositeRepository;
 	private CurrencyRepository currencyRepository;
 	private ExternalReferenceRestControllerService externalReferenceRestControllerService;
+	private SectionCodeRepository sectionCodeRepository;
+	private IncotermsRepository incotermsRepository;
 
 	@BeforeAll
 	static void beforeAll()
@@ -179,6 +184,10 @@ class BpartnerRestControllerTest
 		bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository());
 		currencyRepository = new CurrencyRepository();
 
+		sectionCodeRepository = new SectionCodeRepository();
+
+		incotermsRepository = new IncotermsRepository();
+
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
 				new JsonRequestConsolidateService(),
 				new BPartnerQueryService(),
@@ -189,6 +198,8 @@ class BpartnerRestControllerTest
 				currencyRepository,
 				new JobRepository(),
 				externalReferenceRestControllerService,
+				new SectionCodeService(sectionCodeRepository),
+				incotermsRepository,
 				Mockito.mock(AlbertaBPartnerCompositeService.class));
 
 		bpartnerRestController = new BpartnerRestController(

@@ -85,6 +85,9 @@ import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.incoterms.Incoterms;
+import de.metas.incoterms.IncotermsId;
+import de.metas.incoterms.repository.IncotermsRepository;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
@@ -92,6 +95,8 @@ import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.BPartnerCompositeRestUtils;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
+import de.metas.sectionCode.SectionCodeId;
+import de.metas.sectionCode.SectionCodeService;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -105,6 +110,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.compiere.model.X_C_BPartner;
 import org.slf4j.Logger;
 import org.springframework.util.CollectionUtils;
 
@@ -138,6 +144,8 @@ public class JsonPersisterService
 	private final transient BPGroupRepository bpGroupRepository;
 	private final transient CurrencyRepository currencyRepository;
 	private final transient AlbertaBPartnerCompositeService albertaBPartnerCompositeService;
+	private final transient SectionCodeService sectionCodeService;
+	private final transient IncotermsRepository incotermsRepository;
 
 	/**
 	 * A unique indentifier for this instance.
@@ -153,6 +161,8 @@ public class JsonPersisterService
 			@NonNull final CurrencyRepository currencyRepository,
 			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
 			@NonNull final AlbertaBPartnerCompositeService albertaBPartnerCompositeService,
+			@NonNull final SectionCodeService sectionCodeService,
+			@NonNull final IncotermsRepository incotermsRepository,
 			@NonNull final String identifier)
 	{
 		this.jsonRetrieverService = jsonRetrieverService;
@@ -162,6 +172,8 @@ public class JsonPersisterService
 		this.bpGroupRepository = bpGroupRepository;
 		this.currencyRepository = currencyRepository;
 		this.albertaBPartnerCompositeService = albertaBPartnerCompositeService;
+		this.sectionCodeService = sectionCodeService;
+		this.incotermsRepository = incotermsRepository;
 
 		this.identifier = assumeNotEmpty(identifier, "Param Identifier may not be empty");
 	}
@@ -961,6 +973,55 @@ public class JsonPersisterService
 			bpartner.setMemo(jsonBPartner.getMemo());
 		}
 
+		if (jsonBPartner.isSectionCodeSet())
+		{
+			final SectionCodeId sectionCodeId = Optional.ofNullable(jsonBPartner.getSectionCode())
+					.map(code -> sectionCodeService.getSectionCodeIdByValue(bpartnerComposite.getOrgId(), code))
+					.orElse(null);
+
+			bpartner.setSectionCodeId(sectionCodeId);
+		}
+
+		if (jsonBPartner.isDescriptionSet())
+		{
+			bpartner.setDescription(jsonBPartner.getDescription());
+		}
+
+		if (jsonBPartner.isDeliveryRuleSet())
+		{
+			bpartner.setDeliveryRule(getDeliveryRule(jsonBPartner));
+		}
+
+		if (jsonBPartner.isDeliveryViaRuleSet())
+		{
+			bpartner.setDeliveryViaRule(getDeliveryViaRule(jsonBPartner));
+		}
+
+		if (jsonBPartner.isStorageWarehouseSet())
+		{
+			bpartner.setStorageWarehouse(jsonBPartner.getStorageWarehouse());
+		}
+
+		if (jsonBPartner.isIncotermsCustomerSet())
+		{
+			final IncotermsId incotermsCustomerId = Optional.ofNullable(jsonBPartner.getIncotermsCustomer())
+					.map(incotermsRepository::getIncotermsByValue)
+					.map(Incoterms::getIncotermsId)
+					.orElse(null);
+
+			bpartner.setIncotermsCustomerId(incotermsCustomerId);
+		}
+
+		if (jsonBPartner.isIncotermsVendorSet())
+		{
+			final IncotermsId incotermsVendorId = Optional.ofNullable(jsonBPartner.getIncotermsVendor())
+					.map(incotermsRepository::getIncotermsByValue)
+					.map(Incoterms::getIncotermsId)
+					.orElse(null);
+
+			bpartner.setIncotermsVendorId(incotermsVendorId);
+		}
+
 		return BooleanWithReason.TRUE;
 	}
 
@@ -1691,6 +1752,11 @@ public class JsonPersisterService
 			location.setPhone(jsonBPartnerLocation.getPhone());
 		}
 
+		if (jsonBPartnerLocation.isHandoverLocationSet())
+		{
+			location.setHandOverLocation(jsonBPartnerLocation.getHandoverLocation());
+		}
+
 		final BPartnerLocationType locationType = syncJsonToLocationType(jsonBPartnerLocation);
 		location.setLocationType(locationType);
 	}
@@ -1763,7 +1829,9 @@ public class JsonPersisterService
 			@NonNull final JsonResponseUpsertItem responseUpsertItem,
 			@NonNull final IExternalReferenceType externalReferenceType,
 			@Nullable final String externalVersion,
-			@Nullable final String externalReferenceURL)
+			@Nullable final String externalReferenceURL,
+			@Nullable final JsonMetasfreshId externalSystemConfigId,
+			@Nullable final Boolean isReadOnlyInMetasfresh)
 	{
 		if (SyncOutcome.NOTHING_DONE.equals(responseUpsertItem.getSyncOutcome()))
 		{
@@ -1786,6 +1854,8 @@ public class JsonPersisterService
 				.metasfreshId(responseUpsertItem.getMetasfreshId())
 				.version(externalVersion)
 				.externalReferenceUrl(externalReferenceURL)
+				.externalSystemConfigId(externalSystemConfigId)
+				.isReadOnlyMetasfresh(isReadOnlyInMetasfresh)
 				.build();
 
 		final JsonRequestExternalReferenceUpsert jsonRequestExternalReferenceUpsert = JsonRequestExternalReferenceUpsert
@@ -1810,7 +1880,9 @@ public class JsonPersisterService
 				mapToJsonRequestExternalReferenceUpsert(bPartnerResult,
 														BPartnerExternalReferenceType.BPARTNER,
 														requestItem.getExternalVersion(),
-														requestItem.getExternalReferenceUrl());
+														requestItem.getExternalReferenceUrl(),
+														requestItem.getExternalSystemConfigId(),
+														requestItem.getIsReadOnlyInMetasfresh());
 
 		upsertExternalRefRequest.ifPresent(externalReferenceCreateReqs::add);
 
@@ -1831,7 +1903,9 @@ public class JsonPersisterService
 													   .map(bPartnerLocation -> mapToJsonRequestExternalReferenceUpsert(bPartnerLocation,
 																														BPLocationExternalReferenceType.BPARTNER_LOCATION,
 																														bpartnerLocationIdentifier2externalVersion.get(bPartnerLocation.getIdentifier()),
-																														null))
+																														null,
+																														requestItem.getExternalSystemConfigId(),
+																														requestItem.getIsReadOnlyInMetasfresh()))
 													   .filter(Optional::isPresent)
 													   .map(Optional::get)
 													   .collect(Collectors.toSet()));
@@ -1845,7 +1919,9 @@ public class JsonPersisterService
 													   .map(bPartnerContact -> mapToJsonRequestExternalReferenceUpsert(bPartnerContact,
 																													   ExternalUserReferenceType.USER_ID,
 																													   null,
-																													   null))
+																													   null,
+																													   requestItem.getExternalSystemConfigId(),
+																													   requestItem.getIsReadOnlyInMetasfresh()))
 													   .filter(Optional::isPresent)
 													   .map(Optional::get)
 													   .collect(Collectors.toSet()));
@@ -1902,5 +1978,35 @@ public class JsonPersisterService
 																			 effectiveSyncAdvise);
 					});
 		}
+	}
+
+	@NonNull
+	private String getDeliveryRule(final @NonNull JsonRequestBPartner jsonRequestBPartner)
+	{
+		final String deliveryRule;
+		switch (jsonRequestBPartner.getDeliveryRule())
+		{
+			case AVAILABILITY:
+				deliveryRule = X_C_BPartner.DELIVERYRULE_Availability;
+				break;
+			default:
+				throw Check.fail("Unexpected deliveryRule={}; jsonRequestBPartner={}", jsonRequestBPartner.getDeliveryRule(), jsonRequestBPartner);
+		}
+		return deliveryRule;
+	}
+
+	@NonNull
+	private String getDeliveryViaRule(final @NonNull JsonRequestBPartner jsonRequestBPartner)
+	{
+		final String deliveryViaRule;
+		switch (jsonRequestBPartner.getDeliveryViaRule())
+		{
+			case SHIPPER:
+				deliveryViaRule = X_C_BPartner.DELIVERYVIARULE_Shipper;
+				break;
+			default:
+				throw Check.fail("Unexpected deliveryViaRule={}; jsonRequestBPartner={}", jsonRequestBPartner.getDeliveryViaRule(), jsonRequestBPartner);
+		}
+		return deliveryViaRule;
 	}
 }
