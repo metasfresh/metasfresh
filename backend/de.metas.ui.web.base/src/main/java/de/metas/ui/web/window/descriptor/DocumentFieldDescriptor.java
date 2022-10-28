@@ -812,10 +812,9 @@ public final class DocumentFieldDescriptor
 			return _entityReadonlyLogic;
 		}
 
-		public Builder setReadonlyLogic(final ILogicExpression readonlyLogic)
+		public Builder setReadonlyLogic(@NonNull final ILogicExpression readonlyLogic)
 		{
 			assertNotBuilt();
-			_readonlyLogic = Preconditions.checkNotNull(readonlyLogic);
 			return this;
 		}
 
