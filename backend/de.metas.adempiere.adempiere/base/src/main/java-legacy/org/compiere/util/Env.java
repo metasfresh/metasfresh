@@ -17,6 +17,7 @@
 package org.compiere.util;
 
 import com.google.common.base.Supplier;
+import com.google.common.collect.ImmutableMap;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.model.I_AD_Role;
 import de.metas.cache.CacheMgt;
@@ -417,9 +418,12 @@ public final class Env
 		return sysCtx;
 	}
 
-	public static Properties createGlobalValuesContext(@NonNull final Properties ctx)
+	/**
+	 * Dev-Note: Not returning Properties because what we currently need is an immutable map.
+	 */
+	public static ImmutableMap<String, Object> createGlobalValuesCtxMap(@NonNull final Properties ctx)
 	{
-		final Properties newCtx = new Properties();
+		final ImmutableMap.Builder newCtx = ImmutableMap.builder();
 		
 		for (final Enumeration<?> en = ctx.propertyNames(); en.hasMoreElements();)
 		{
@@ -435,7 +439,7 @@ public final class Env
 			}
 			newCtx.put(key, value);
 		}
-		return newCtx;
+		return newCtx.build();
 	}
 	
 	/**
