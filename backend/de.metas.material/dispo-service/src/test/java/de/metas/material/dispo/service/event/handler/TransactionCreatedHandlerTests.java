@@ -66,6 +66,9 @@ public class TransactionCreatedHandlerTests
 	private static final int TRANSACTION_ID = 60;
 
 	private static final int SHIPMENT_LINE_ID = 10;
+	private static final int SHIPMENT_LINE_ID = 10;
+
+	private static final int SHIPMENT_SCHEDULE_ID = 40;
 
 	private TransactionEventHandler transactionEventHandler;
 
@@ -222,6 +225,7 @@ public class TransactionCreatedHandlerTests
 
 	@Test
 	public void createCandidate_unrelated_transaction_with_shipmentLineId()
+	public void createCandidate_unrelated_transaction_with_shipmentId()
 	{
 		final TransactionCreatedEvent relatedEvent = createTransactionEventBuilderWithQuantity(TEN.negate(), Instant.now())
 				.shipmentId(InOutAndLineId.ofRepoId(1, SHIPMENT_LINE_ID))
@@ -242,7 +246,6 @@ public class TransactionCreatedHandlerTests
 			final ArgumentCaptor<CandidatesQuery> queryCaptor = ArgumentCaptor.forClass(CandidatesQuery.class);
 			Mockito.verify(candidateRepository, Mockito.times(2))
 					.retrieveLatestMatchOrNull(queryCaptor.capture());
-
 			final CandidatesQuery query = queryCaptor.getValue();
 			//
 			//
@@ -264,6 +267,7 @@ public class TransactionCreatedHandlerTests
 
 	@Test
 	public void createCandidate_related_transaction_with_shipmentLineId()
+	public void createCandidate_related_transaction_with_shipmentId()
 	{
 		final Instant date = SystemTime.asInstant();
 
@@ -314,6 +318,8 @@ public class TransactionCreatedHandlerTests
 		assertThat(candidate.getId().getRepoId()).isEqualTo(11);
 		assertThat(candidate.getType()).isEqualTo(CandidateType.DEMAND);
 		assertThat(candidate.getQuantity())
+				.as("The demand candidate's quantity needs to be updated because there is now a transaction with a real qty that is bigger")
+				.isEqualByComparingTo(TEN);
 				.as("The demand candidate's quantity needs to be updated because there is now a transaction with a real qty.")
 				.isEqualByComparingTo(TEN);
 
@@ -330,6 +336,8 @@ public class TransactionCreatedHandlerTests
 	private static void assertDemandDetailQuery(final CandidatesQuery query)
 	{
 		assertThat(query).isNotNull();
+		assertThat(query.getBusinessCase()).isEqualTo(CandidateBusinessCase.SHIPMENT);
+		assertThat(query.getDemandDetailsQuery().getInOutLineId()).isEqualTo(SHIPMENT_LINE_ID);
 
 		assertThat(query.getBusinessCase()).isEqualTo(CandidateBusinessCase.SHIPMENT);
 		assertThat(query.getDemandDetailsQuery().getInOutLineId()).isEqualTo(SHIPMENT_LINE_ID);

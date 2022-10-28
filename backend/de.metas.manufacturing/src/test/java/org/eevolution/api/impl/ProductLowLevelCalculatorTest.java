@@ -145,6 +145,7 @@ public class ProductLowLevelCalculatorTest
 				.product(pE)
 				.bomVersions(bomVersionsE)
 				.newBOMLine().product(pF).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE).endLine()
+				.bomVersions(bomVersionsE)
 				//
 				// NOTE: this line shall throw BOMCycleException ... because model validator is called and it tries to update product's LLC
 				.newBOMLine().product(pA).setIsQtyPercentage(false).setQtyBOM(BigDecimal.ONE).endLine()
