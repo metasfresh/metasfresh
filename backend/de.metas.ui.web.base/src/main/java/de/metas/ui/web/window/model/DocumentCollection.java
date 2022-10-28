@@ -701,7 +701,7 @@ public class DocumentCollection
 		{
 			// Invalidate the root documents
 			rootDocuments.invalidateAll(key2keysWithCtxMaps.get(documentKey));
-			
+
 			// Notify frontend
 			websocketPublisher.staleRootDocument(documentKey.getWindowId(), documentKey.getDocumentId());
 		}
@@ -724,7 +724,10 @@ public class DocumentCollection
 
 	public void invalidateAll(final Collection<DocumentToInvalidate> documentToInvalidateList)
 	{
-		documentToInvalidateList.forEach(this::invalidate);
+		for (final DocumentToInvalidate documentToInvalidate : documentToInvalidateList)
+		{
+			invalidate(documentToInvalidate);
+		}
 	}
 
 	private void invalidate(@NonNull final DocumentToInvalidate documentToInvalidate)
@@ -744,7 +747,12 @@ public class DocumentCollection
 		{
 			final WindowId windowId = entityDescriptor.getWindowId();
 			final DocumentKey rootDocumentKey = DocumentKey.of(windowId, rootDocumentId);
-			for (final DocumentKeyWithCtxMap cacheKey : key2keysWithCtxMaps.get(rootDocumentKey))
+			final Set<DocumentKeyWithCtxMap> cacheKeysForDocumentKey = key2keysWithCtxMaps.get(rootDocumentKey);
+			if (cacheKeysForDocumentKey == null)
+			{
+				continue;
+			}
+			for (final DocumentKeyWithCtxMap cacheKey : cacheKeysForDocumentKey)
 			{
 				final Document rootDocument = rootDocuments.getIfPresent(cacheKey);
 				if (rootDocument != null)
