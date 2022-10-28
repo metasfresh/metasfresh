@@ -107,6 +107,9 @@ public class CreateOrderCandidateCommand
 			ppOrderCandidateRecord.setProcessed(true);
 		}
 
+		final I_PP_Product_Planning productPlanning = productPlanningsRepo.getById(request.getProductPlanningId());
+		ppOrderCandidateRecord.setSeqNo(productPlanning.getSeqNo());
+
 		ppOrderCandidateRecord.setM_HU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(request.getPackingMaterialId()));
 
 		ppOrderCandidateDAO.save(ppOrderCandidateRecord);

@@ -165,7 +165,7 @@ final class CreateOrderCommand
 		// I_PP_Order_BOM and I_PP_Order_BOMLines are created via a model interceptor
 		ppOrdersRepo.save(ppOrderRecord);
 
-		ppOrderRecord.setDocumentNo(ppOrderRecord.getDocumentNo() + request.getSeqNo());
+		ppOrderRecord.setDocumentNo(ppOrderRecord.getDocumentNo().concat(String.valueOf(request.getSeqNo())));
 		Loggables.addLog(
 				"Created ppOrder; PP_Order_ID={}; DocumentNo={}",
 				ppOrderRecord.getPP_Order_ID(), ppOrderRecord.getDocumentNo());
