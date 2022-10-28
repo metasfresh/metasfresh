@@ -212,7 +212,6 @@ public class ForecastCreatedHandlerTest
 		final ArgumentCaptor<MaterialEvent> eventCaptor = ArgumentCaptor.forClass(MaterialEvent.class);
 		verify(postMaterialEventService)
 				.enqueueEventNow(eventCaptor.capture());
-				.postEventAsync(eventCaptor.capture());
 
 		final SupplyRequiredEvent event = (SupplyRequiredEvent)eventCaptor.getValue();
 

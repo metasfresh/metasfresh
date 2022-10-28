@@ -68,19 +68,10 @@ class CopyAttributesFromBOMLineGeneratorTest
 									.build())
 				.clientId(ClientId.METASFRESH)
 				.build());
-																		.existingAttributes(ImmutableAttributeSet.builder().attributeValue(ATTR_Attribute1, "value1").build())
-																		.bomLineAttributes(ImmutableAttributeSet.builder().attributeValue(ATTR_Attribute2, "value2").build())
-																		.parameters(ComponentGeneratorParams.builder()
-																							.sequenceId(DocSequenceId.ofRepoId(123456))
-																							.build())
-																		.clientId(ClientId.METASFRESH)
-																		.build());
 
 		assertThat(result)
 				.isEqualTo(ImmutableAttributeSet.builder()
 						.attributeValue(ATTR_Attribute2, "value2")
 						.build());
-								   .attributeValue(ATTR_Attribute2, "value2")
-								   .build());
 	}
 }

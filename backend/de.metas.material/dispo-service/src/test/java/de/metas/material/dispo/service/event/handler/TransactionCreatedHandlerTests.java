@@ -66,7 +66,6 @@ public class TransactionCreatedHandlerTests
 	private static final int TRANSACTION_ID = 60;
 
 	private static final int SHIPMENT_LINE_ID = 10;
-	private static final int SHIPMENT_LINE_ID = 10;
 
 	private static final int SHIPMENT_SCHEDULE_ID = 40;
 
@@ -224,7 +223,6 @@ public class TransactionCreatedHandlerTests
 	}
 
 	@Test
-	public void createCandidate_unrelated_transaction_with_shipmentLineId()
 	public void createCandidate_unrelated_transaction_with_shipmentId()
 	{
 		final TransactionCreatedEvent relatedEvent = createTransactionEventBuilderWithQuantity(TEN.negate(), Instant.now())
@@ -267,7 +265,6 @@ public class TransactionCreatedHandlerTests
 
 	@Test
 	public void createCandidate_related_transaction_with_shipmentLineId()
-	public void createCandidate_related_transaction_with_shipmentId()
 	{
 		final Instant date = SystemTime.asInstant();
 
@@ -319,8 +316,6 @@ public class TransactionCreatedHandlerTests
 		assertThat(candidate.getType()).isEqualTo(CandidateType.DEMAND);
 		assertThat(candidate.getQuantity())
 				.as("The demand candidate's quantity needs to be updated because there is now a transaction with a real qty that is bigger")
-				.isEqualByComparingTo(TEN);
-				.as("The demand candidate's quantity needs to be updated because there is now a transaction with a real qty.")
 				.isEqualByComparingTo(TEN);
 
 		makeCommonAssertions(candidate);
