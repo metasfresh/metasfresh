@@ -125,7 +125,6 @@ public class LoginRestController
 		this.imageService = imageService;
 		this.userAuthTokenService = userAuthTokenService;
 		this.userDashboardContextHolder = userDashboardContextHolder;
-		//this.documentCollection = documentCollection;
 	}
 
 	private Login getLoginService()
