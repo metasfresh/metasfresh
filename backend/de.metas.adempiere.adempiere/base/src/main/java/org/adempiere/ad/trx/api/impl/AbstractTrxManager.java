@@ -679,7 +679,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 		}
 	}
 
-	private final <T> T call0(
+	private <T> T call0(
 			@NonNull final TrxCallable<T> callable,
 			@NonNull final ITrxRunConfig cfg,
 			@Nullable final String trxName)

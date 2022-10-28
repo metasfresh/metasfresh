@@ -1867,7 +1867,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { }
+                "type2name2dependencies" : { },
+                "dependsOnGlobalContextValues" : false
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -1921,7 +1922,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { }
+                "type2name2dependencies" : { },
+                "dependsOnGlobalContextValues" : false
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -1975,7 +1977,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { }
+                "type2name2dependencies" : { },
+                "dependsOnGlobalContextValues" : false
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -2029,7 +2032,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { }
+                "type2name2dependencies" : { },
+                "dependsOnGlobalContextValues" : false
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -2083,7 +2087,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { }
+                "type2name2dependencies" : { },
+                "dependsOnGlobalContextValues" : false
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -2137,7 +2142,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { }
+                "type2name2dependencies" : { },
+                "dependsOnGlobalContextValues" : false
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -2191,7 +2197,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { }
+                "type2name2dependencies" : { },
+                "dependsOnGlobalContextValues" : false
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -2245,7 +2252,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { }
+                "type2name2dependencies" : { },
+                "dependsOnGlobalContextValues" : false
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -2299,7 +2307,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { }
+                "type2name2dependencies" : { },
+                "dependsOnGlobalContextValues" : false
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -2353,7 +2362,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { }
+                "type2name2dependencies" : { },
+                "dependsOnGlobalContextValues" : false
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -2410,8 +2420,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                       "numericKey" : false,
                       "cached" : true
                     },
-                    "highVolume" : false,
-                    "numericKey" : true
+                    "numericKey" : true,
+                    "highVolume" : false
                   },
                   "present" : true
                 },
@@ -2445,7 +2455,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { }
+                "type2name2dependencies" : { },
+                "dependsOnGlobalContextValues" : false
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -2499,7 +2510,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { }
+                "type2name2dependencies" : { },
+                "dependsOnGlobalContextValues" : false
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -2552,7 +2564,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { }
+                "type2name2dependencies" : { },
+                "dependsOnGlobalContextValues" : false
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -2606,7 +2619,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { }
+                "type2name2dependencies" : { },
+                "dependsOnGlobalContextValues" : false
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -2661,7 +2675,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { }
+                "type2name2dependencies" : { },
+                "dependsOnGlobalContextValues" : false
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -2716,7 +2731,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "present" : true
             },
             "dependencies" : {
-              "type2name2dependencies" : { }
+              "type2name2dependencies" : { },
+              "dependsOnGlobalContextValues" : false
             },
             "deviceDescriptorsProvider" : { },
             "readonlyVirtualField" : false
@@ -2726,7 +2742,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "versioningSupported" : false
           },
           "dependencies" : {
-            "type2name2dependencies" : { }
+            "type2name2dependencies" : { },
+            "dependsOnGlobalContextValues" : false
           },
           "_fieldNamesByCharacteristic" : { },
           "calloutsEnabled" : false,
@@ -2816,7 +2833,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { }
+                "type2name2dependencies" : { },
+                "dependsOnGlobalContextValues" : false
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -2870,7 +2888,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { }
+                "type2name2dependencies" : { },
+                "dependsOnGlobalContextValues" : false
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -2924,7 +2943,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { }
+                "type2name2dependencies" : { },
+                "dependsOnGlobalContextValues" : false
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -2978,7 +2998,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { }
+                "type2name2dependencies" : { },
+                "dependsOnGlobalContextValues" : false
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -3032,7 +3053,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { }
+                "type2name2dependencies" : { },
+                "dependsOnGlobalContextValues" : false
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -3086,7 +3108,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { }
+                "type2name2dependencies" : { },
+                "dependsOnGlobalContextValues" : false
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -3140,7 +3163,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { }
+                "type2name2dependencies" : { },
+                "dependsOnGlobalContextValues" : false
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -3194,7 +3218,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { }
+                "type2name2dependencies" : { },
+                "dependsOnGlobalContextValues" : false
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -3248,7 +3273,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { }
+                "type2name2dependencies" : { },
+                "dependsOnGlobalContextValues" : false
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -3302,7 +3328,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { }
+                "type2name2dependencies" : { },
+                "dependsOnGlobalContextValues" : false
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -3359,8 +3386,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                       "numericKey" : false,
                       "cached" : true
                     },
-                    "highVolume" : false,
-                    "numericKey" : true
+                    "numericKey" : true,
+                    "highVolume" : false
                   },
                   "present" : true
                 },
@@ -3394,7 +3421,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { }
+                "type2name2dependencies" : { },
+                "dependsOnGlobalContextValues" : false
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -3448,7 +3476,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { }
+                "type2name2dependencies" : { },
+                "dependsOnGlobalContextValues" : false
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -3501,7 +3530,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { }
+                "type2name2dependencies" : { },
+                "dependsOnGlobalContextValues" : false
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -3555,7 +3585,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { }
+                "type2name2dependencies" : { },
+                "dependsOnGlobalContextValues" : false
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -3610,7 +3641,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { }
+                "type2name2dependencies" : { },
+                "dependsOnGlobalContextValues" : false
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -3665,7 +3697,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "present" : true
             },
             "dependencies" : {
-              "type2name2dependencies" : { }
+              "type2name2dependencies" : { },
+              "dependsOnGlobalContextValues" : false
             },
             "deviceDescriptorsProvider" : { },
             "readonlyVirtualField" : false
@@ -3675,7 +3708,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "versioningSupported" : false
           },
           "dependencies" : {
-            "type2name2dependencies" : { }
+            "type2name2dependencies" : { },
+            "dependsOnGlobalContextValues" : false
           },
           "_fieldNamesByCharacteristic" : { },
           "calloutsEnabled" : false,
@@ -3700,7 +3734,8 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
         "versioningSupported" : false
       },
       "dependencies" : {
-        "type2name2dependencies" : { }
+        "type2name2dependencies" : { },
+        "dependsOnGlobalContextValues" : false
       },
       "_fieldNamesByCharacteristic" : { },
       "calloutsEnabled" : false,
