@@ -27,6 +27,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.i18n.AdMessageKey;
@@ -77,6 +78,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.PO;
+import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
@@ -90,6 +92,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
@@ -226,7 +229,7 @@ public class DocumentCollection
 
 	public <R> R forRootDocumentReadonly(@NonNull final DocumentPath documentPath, final Function<Document, R> rootDocumentProcessor)
 	{
-		final DocumentKey rootDocumentKey = DocumentKey.ofRootDocumentPath(documentPath.getRootDocumentPath());
+		final DocumentKey rootDocumentKey = DocumentKey.ofRootDocumentPathWithGlobalCtx(documentPath.getRootDocumentPath());
 
 		try (@SuppressWarnings("unused") final IAutoCloseable readLock = getOrLoadDocument(rootDocumentKey).lockForReading())
 		{
@@ -282,12 +285,12 @@ public class DocumentCollection
 		{
 			final Document newRootDocument = createRootDocument(rootDocumentPathOrNew, changesCollector);
 			lockHolder = newRootDocument;
-			rootDocumentKey = DocumentKey.ofRootDocumentPath(newRootDocument.getDocumentPath());
+			rootDocumentKey = DocumentKey.ofRootDocumentPathWithGlobalCtx(newRootDocument.getDocumentPath());
 			isNewRootDocument = true;
 		}
 		else
 		{
-			rootDocumentKey = DocumentKey.ofRootDocumentPath(rootDocumentPathOrNew);
+			rootDocumentKey = DocumentKey.ofRootDocumentPathWithGlobalCtx(rootDocumentPathOrNew);
 			lockHolder = getOrLoadDocument(rootDocumentKey);
 			isNewRootDocument = false;
 		}
@@ -458,8 +461,8 @@ public class DocumentCollection
 			if (!collectedFieldNames.isEmpty())
 			{
 				logger.warn("We would expect all events to be auto-magically collected but it seems that not all of them were collected!"
-						+ "\n Missed (but collected now) field names were: {}" //
-						+ "\n Document path: {}", collectedFieldNames, rootDocument.getDocumentPath());
+									+ "\n Missed (but collected now) field names were: {}" //
+									+ "\n Document path: {}", collectedFieldNames, rootDocument.getDocumentPath());
 			}
 		}
 
@@ -769,7 +772,7 @@ public class DocumentCollection
 	 */
 	public void invalidateRootDocument(@NonNull final DocumentPath documentPath)
 	{
-		final DocumentKey documentKey = DocumentKey.ofRootDocumentPath(documentPath);
+		final DocumentKey documentKey = DocumentKey.ofRootDocumentPathWithGlobalCtx(documentPath);
 
 		//
 		// Invalidate the root documents
@@ -881,13 +884,27 @@ public class DocumentCollection
 	@Immutable
 	private static final class DocumentKey
 	{
-		public static DocumentKey of(final Document document)
+		public static DocumentKey of(@NonNull final Document document)
 		{
 			final DocumentPath documentPath = document.getDocumentPath();
-			return ofRootDocumentPath(documentPath);
+			return ofRootDocumentPathWithGlobalCtx(documentPath);
 		}
 
-		public static DocumentKey ofRootDocumentPath(final DocumentPath documentPath)
+		public static DocumentKey ofRootDocumentPathWithGlobalCtx(@NonNull final DocumentPath documentPath)
+		{
+			verifyRootDocumentPath(documentPath);
+
+			final Properties globalValuesContext = Env.createGlobalValuesContext(Env.getCtx());
+			final ImmutableMap<Object, Object> immutablePropertiesMap = ImmutableMap.copyOf(globalValuesContext);
+
+			return new DocumentKey(
+					documentPath.getDocumentType(),
+					documentPath.getDocumentTypeId(),
+					documentPath.getDocumentId(),
+					immutablePropertiesMap);
+		}
+		
+		private static void verifyRootDocumentPath(final DocumentPath documentPath)
 		{
 			if (!documentPath.isRootDocument())
 			{
@@ -897,25 +914,32 @@ public class DocumentCollection
 			{
 				throw new InvalidDocumentPathException(documentPath, "document path for creating new documents is not allowed");
 			}
-			return new DocumentKey(documentPath.getDocumentType(), documentPath.getDocumentTypeId(), documentPath.getDocumentId());
 		}
 
-		public static DocumentKey of(@NonNull final WindowId windowId, @NonNull final DocumentId documentId)
+		public static DocumentKey of(
+				@NonNull final WindowId windowId, 
+				@NonNull final DocumentId documentId)
 		{
-			return new DocumentKey(DocumentType.Window, windowId.toDocumentId(), documentId);
+			return new DocumentKey(DocumentType.Window, windowId.toDocumentId(), documentId, null);
 		}
 
 		private final DocumentType documentType;
 		private final DocumentId documentTypeId;
 		private final DocumentId documentId;
-
+		private final ImmutableMap<Object, Object> immutablePropertiesMap;
+		
 		private Integer _hashcode = null;
 
-		private DocumentKey(final DocumentType documentType, final DocumentId documentTypeId, final DocumentId documentId)
+		private DocumentKey(
+				@NonNull final DocumentType documentType,
+				@NonNull final DocumentId documentTypeId,
+				@NonNull final DocumentId documentId,
+				@Nullable final ImmutableMap<Object, Object> immutablePropertiesMap)
 		{
-			this.documentType = Preconditions.checkNotNull(documentType, "documentType");
-			this.documentTypeId = Preconditions.checkNotNull(documentTypeId, "documentTypeId");
-			this.documentId = Preconditions.checkNotNull(documentId, "documentId");
+			this.documentType = documentType;
+			this.documentTypeId = documentTypeId;
+			this.documentId = documentId;
+			this.immutablePropertiesMap = immutablePropertiesMap;
 		}
 
 		@Override
@@ -925,6 +949,7 @@ public class DocumentCollection
 					.add("type", documentType)
 					.add("typeId", documentTypeId)
 					.add("documentId", documentId)
+					.add("immutablePropertiesMap", immutablePropertiesMap)
 					.toString();
 		}
 
@@ -933,7 +958,7 @@ public class DocumentCollection
 		{
 			if (_hashcode == null)
 			{
-				_hashcode = Objects.hash(documentType, documentTypeId, documentId);
+				_hashcode = Objects.hash(immutablePropertiesMap, documentType, documentTypeId, documentId);
 			}
 			return _hashcode;
 		}
@@ -953,7 +978,8 @@ public class DocumentCollection
 			final DocumentKey other = (DocumentKey)obj;
 			return Objects.equals(documentType, other.documentType)
 					&& Objects.equals(documentTypeId, other.documentTypeId)
-					&& Objects.equals(documentId, other.documentId);
+					&& Objects.equals(documentId, other.documentId)
+					&& Objects.equals(immutablePropertiesMap, other.immutablePropertiesMap);
 		}
 
 		public WindowId getWindowId()

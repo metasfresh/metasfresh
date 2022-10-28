@@ -43,8 +43,8 @@ SELECT t.ad_window_id
      , COALESCE(f.ad_reference_id, c.ad_reference_id)             AS ad_reference_id
      , COALESCE(f.ad_val_rule_id, c.ad_val_rule_id)               AS ad_val_rule_id
      , c.ad_process_id
-     , c.isalwaysupdateable
-     , c.readonlylogic
+     , COALESCE(f.isalwaysupdateable, c.isalwaysupdateable)       AS isalwaysupdateable
+     , COALESCE(f.readonlylogic, c.readonlylogic)                 AS readonlylogic
      , c.mandatorylogic
      , c.isupdateable
      , c.isencrypted                                              AS isencryptedcolumn

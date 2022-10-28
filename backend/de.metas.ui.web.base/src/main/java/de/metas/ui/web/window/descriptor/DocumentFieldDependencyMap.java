@@ -12,6 +12,11 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Multimap;
+import lombok.Getter;
+import lombok.NonNull;
+import org.compiere.util.CtxName;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -39,11 +44,10 @@ import com.google.common.collect.Multimap;
  * Immutable document field's dependencies map.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public final class DocumentFieldDependencyMap
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
@@ -65,7 +69,7 @@ public final class DocumentFieldDependencyMap
 		LookupValues,
 		/** Field's value */
 		FieldValue,
-	};
+	}
 
 	public static final EnumSet<DependencyType> DEPENDENCYTYPES_DocumentLevel = EnumSet.of(DependencyType.DocumentReadonlyLogic);
 	public static final EnumSet<DependencyType> DEPENDENCYTYPES_FieldLevel = EnumSet.complementOf(DEPENDENCYTYPES_DocumentLevel);
@@ -74,7 +78,7 @@ public final class DocumentFieldDependencyMap
 	public static final Set<String> DOCUMENT_ALL_FIELDS = ImmutableSet.of(DOCUMENT_Readonly);
 
 	@FunctionalInterface
-	public static interface IDependencyConsumer
+	public interface IDependencyConsumer
 	{
 		void consume(String dependentFieldName, DependencyType dependencyType);
 	}
@@ -82,17 +86,24 @@ public final class DocumentFieldDependencyMap
 	/** Map: "dependency type" to "depends on field name" to list of "dependent field name" */
 	private final ImmutableMap<DependencyType, Multimap<String, String>> type2name2dependencies;
 
+	/**
+	 * {@code true} if this map contains "fieldNames" that are actually global context values, such as {@code #AD_Role_Name}.
+	 * Dev-Note: as of 2022-10-28 we are not doing anything with this info, but in future we might threat them differently in the cache.
+	 */
+	@Getter
+	private final boolean dependsOnGlobalContextValues;
+	
 	private DocumentFieldDependencyMap(final Builder builder)
 	{
-		super();
 		type2name2dependencies = builder.getType2Name2DependenciesMap();
+		dependsOnGlobalContextValues = builder.dependsOnGlobalContextValues;
 	}
 
 	/** Empty constructor */
 	private DocumentFieldDependencyMap()
 	{
-		super();
 		type2name2dependencies = ImmutableMap.of();
+		dependsOnGlobalContextValues = false;
 	}
 
 	@Override
@@ -153,6 +164,8 @@ public final class DocumentFieldDependencyMap
 	{
 		private final Map<DependencyType, ImmutableSetMultimap.Builder<String, String>> type2name2dependencies = new HashMap<>();
 
+		private boolean dependsOnGlobalContextValues = false;
+		
 		private Builder()
 		{
 			super();
@@ -185,29 +198,32 @@ public final class DocumentFieldDependencyMap
 			return builder.build();
 		}
 
-		public Builder add(final String fieldName, final Collection<String> dependsOnFieldNames, final DependencyType dependencyType)
+		public Builder add(
+				@NonNull final String fieldName, 
+				@Nullable final Collection<String> dependsOnFieldNames, 
+				@NonNull final DependencyType dependencyType)
 		{
 			if (dependsOnFieldNames == null || dependsOnFieldNames.isEmpty())
 			{
 				return this;
 			}
 
-			ImmutableSetMultimap.Builder<String, String> fieldName2dependsOnFieldNames = type2name2dependencies.get(dependencyType);
-			if (fieldName2dependsOnFieldNames == null)
-			{
-				fieldName2dependsOnFieldNames = ImmutableSetMultimap.builder();
-				type2name2dependencies.put(dependencyType, fieldName2dependsOnFieldNames);
-			}
+			final ImmutableSetMultimap.Builder<String, String> fieldName2dependsOnFieldNames
+					= type2name2dependencies.computeIfAbsent(dependencyType, k -> ImmutableSetMultimap.builder());
 
 			for (final String dependsOnFieldName : dependsOnFieldNames)
 			{
+				if(!dependsOnGlobalContextValues && CtxName.isExplicitGlobal(dependsOnFieldName))
+				{
+					dependsOnGlobalContextValues = true;
+				}
 				fieldName2dependsOnFieldNames.put(dependsOnFieldName, fieldName);
 			}
 
 			return this;
 		}
 
-		public Builder add(final DocumentFieldDependencyMap dependencies)
+		public Builder add(@Nullable final DocumentFieldDependencyMap dependencies)
 		{
 			if (dependencies == null || dependencies == EMPTY)
 			{
@@ -218,14 +234,11 @@ public final class DocumentFieldDependencyMap
 			{
 				final DependencyType dependencyType = l1.getKey();
 
-				ImmutableSetMultimap.Builder<String, String> name2dependencies = type2name2dependencies.get(dependencyType);
-				if (name2dependencies == null)
-				{
-					name2dependencies = ImmutableSetMultimap.builder();
-					type2name2dependencies.put(dependencyType, name2dependencies);
-				}
+				final ImmutableSetMultimap.Builder<String, String> name2dependencies
+						= type2name2dependencies.computeIfAbsent(dependencyType, k -> ImmutableSetMultimap.builder());
 
 				name2dependencies.putAll(l1.getValue());
+				this.dependsOnGlobalContextValues = this.dependsOnGlobalContextValues || dependencies.isDependsOnGlobalContextValues();
 			}
 
 			return this;

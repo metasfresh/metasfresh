@@ -111,7 +111,8 @@ public class CtxNames
 		);
 	}
 
-	public static CtxName parse(final String contextWithoutMarkers)
+	@Nullable
+	public static CtxName parse(@Nullable final String contextWithoutMarkers)
 	{
 		if (contextWithoutMarkers == null)
 		{
