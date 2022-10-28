@@ -161,6 +161,7 @@ final class CreateOrderCommand
 		ppOrderRecord.setIsPickingOrder(productPlanning != null && productPlanning.isPickingOrder());
 		ppOrderRecord.setM_HU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(request.getPackingMaterialId()));
 
+		ppOrderRecord.setDocumentNo(ppOrderRecord.getDocumentNo() + request.getSeqNo());
 		//
 		// Save the manufacturing order
 		// I_PP_Order_BOM and I_PP_Order_BOMLines are created via a model interceptor
