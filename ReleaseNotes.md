@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13822](https://github.com/metasfresh/metasfresh/issues/13822) Add fields for Sales 
   * [#13840](https://github.com/metasfresh/metasfresh/issues/13840) Add support for Soehenle scales
   * [#13831](https://github.com/metasfresh/metasfresh/issues/13831) [Cucumber] Import file - identify account by IBAN
   * [#13833](https://github.com/metasfresh/metasfresh/issues/13833) Add Role_Group to role window and context
