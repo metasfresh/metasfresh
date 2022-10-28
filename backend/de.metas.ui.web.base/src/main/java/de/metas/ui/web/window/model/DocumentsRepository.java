@@ -34,7 +34,7 @@ public interface DocumentsRepository
 	{
 		SAVED,
 		DELETED,
-	};
+	}
 
 	OrderedDocumentsList retrieveDocuments(DocumentQuery query, IDocumentChangesCollector changesCollector);
 
@@ -50,8 +50,6 @@ public interface DocumentsRepository
 	/**
 	 * Retrieves parent's {@link DocumentId} for a child document identified by given query.
 	 *
-	 * @param parentEntityDescriptor
-	 * @param childDocumentQuery
 	 * @return parent's {@link DocumentId}; never returns null
 	 */
 	DocumentId retrieveParentDocumentId(DocumentEntityDescriptor parentEntityDescriptor, DocumentQuery childDocumentQuery);

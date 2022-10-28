@@ -1114,8 +1114,6 @@ public class DB
 		finally
 		{
 			close(rs, pstmt);
-			rs = null;
-			pstmt = null;
 		}
 		return retValue;
 	}

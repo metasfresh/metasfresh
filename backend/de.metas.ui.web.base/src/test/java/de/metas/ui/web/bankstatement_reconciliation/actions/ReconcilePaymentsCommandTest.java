@@ -220,7 +220,7 @@ public class ReconcilePaymentsCommandTest
 
 	@Builder(builderMethodName = "bankStatementLineRow", builderClassName = "BankStatementLineRowBuilder")
 	private BankStatementLineRow createBankStatementLineRow(
-			@NonNull DocStatus docStatus,
+			@NonNull final DocStatus docStatus,
 			@NonNull final Money statementAmt)
 	{
 		final BankStatementLineId bankStatementLineId = bankStatementDAO.createBankStatementLine(BankStatementLineCreateRequest.builder()
