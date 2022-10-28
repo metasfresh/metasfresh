@@ -88,6 +88,7 @@ public final class DocumentFieldDependencyMap
 
 	/**
 	 * {@code true} if this map contains "fieldNames" that are actually global context values, such as {@code #AD_Role_Name}.
+	 * Dev-Note: as of 2022-10-28 we are not doing anything with this info, but in future we might threat them differently in the cache.
 	 */
 	@Getter
 	private final boolean dependsOnGlobalContextValues;

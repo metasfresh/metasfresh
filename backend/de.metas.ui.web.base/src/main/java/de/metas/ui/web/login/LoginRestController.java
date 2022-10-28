@@ -108,7 +108,6 @@ public class LoginRestController
 	private final WebuiImageService imageService;
 	private final UserAuthTokenService userAuthTokenService;
 	private final UserDashboardSessionContextHolder userDashboardContextHolder;
-	//private final DocumentCollection documentCollection;
 	
 	private final static AdMessageKey MSG_UserLoginInternalError = AdMessageKey.of("UserLoginInternalError");
 
@@ -118,9 +117,7 @@ public class LoginRestController
 			@NonNull final UserNotificationsService userNotificationsService,
 			@NonNull final WebuiImageService imageService,
 			@NonNull final UserAuthTokenService userAuthTokenService,
-			@NonNull final UserDashboardSessionContextHolder userDashboardContextHolder
-			//, @NonNull final DocumentCollection documentCollection
-	)
+			@NonNull final UserDashboardSessionContextHolder userDashboardContextHolder)
 	{
 		this.userSession = userSession;
 		this.userSessionRepo = userSessionRepo;
@@ -411,9 +408,6 @@ public class LoginRestController
 		userDashboardContextHolder.putSessionContext(
 				userSession.getSessionId(),
 				KPIDataContext.ofUserSession(userSession));
-
-		// // global env variables might have changed, so we need to revict affected documents from the cache
-		// documentCollection.cacheResetGlobalContextValues();
 	}
 
 	@GetMapping("/isLoggedIn")
