@@ -1,13 +1,8 @@
-package de.metas.device.scales.impl;
-
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-
 /*
  * #%L
  * de.metas.device.scales
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,9 +20,43 @@ import java.nio.charset.StandardCharsets;
  * #L%
  */
 
-public interface ICmd
-{
-	Charset DEFAULT_CMD_CHARSET = StandardCharsets.US_ASCII;
+package de.metas.device.scales.impl.soehenle;
 
-	String getCmd();
+import java.text.Format;
+
+public class SoehenleResultStringElement
+{
+	private final String name;
+
+	private final int position;
+
+	private final Format format;
+
+	public SoehenleResultStringElement(final String name, final int position, final Format format)
+	{
+		this.name = name;
+		this.position = position;
+		this.format = format;
+	}
+
+	public String getName()
+	{
+		return name;
+	}
+
+	public int getPosition()
+	{
+		return position;
+	}
+
+	public Format getFormat()
+	{
+		return format;
+	}
+
+	@Override
+	public String toString()
+	{
+		return "SoehenleResultStringElement [name=" + name + ", position=" + position + ", format=" + format + "]";
+	}
 }
