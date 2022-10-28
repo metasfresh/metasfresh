@@ -724,7 +724,10 @@ public class DocumentCollection
 
 	public void invalidateAll(final Collection<DocumentToInvalidate> documentToInvalidateList)
 	{
-		documentToInvalidateList.forEach(this::invalidate);
+		for (DocumentToInvalidate documentToInvalidate : documentToInvalidateList)
+		{
+			invalidate(documentToInvalidate);
+		}
 	}
 
 	private void invalidate(@NonNull final DocumentToInvalidate documentToInvalidate)
