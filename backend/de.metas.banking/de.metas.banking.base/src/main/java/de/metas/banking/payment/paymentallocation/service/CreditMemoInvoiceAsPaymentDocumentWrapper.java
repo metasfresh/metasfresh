@@ -22,12 +22,12 @@
 
 package de.metas.banking.payment.paymentallocation.service;
 
-import de.metas.payment.PaymentCurrencyContext;
 import de.metas.banking.payment.paymentallocation.service.PayableDocument.PayableDocumentType;
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentDirection;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
@@ -111,16 +111,25 @@ final class CreditMemoInvoiceAsPaymentDocumentWrapper implements IPaymentDocumen
 		creditMemoPayableDoc.addAllocatedAmounts(AllocationAmounts.ofPayAmt(allocatedPayAmtToAdd.negate()));
 	}
 
+	/**
+	 * Check only the payAmt as that's the only value we are allocating. see {@link  CreditMemoInvoiceAsPaymentDocumentWrapper#addAllocatedAmt(Money)}
+	 */
 	@Override
 	public boolean isFullyAllocated()
 	{
-		return creditMemoPayableDoc.isFullyAllocated();
+		return creditMemoPayableDoc.getAmountsToAllocate().getPayAmt().isZero();
 	}
 
+	/**
+	 * Check only the payAmt as that's the only value we are allocating. see {@link  CreditMemoInvoiceAsPaymentDocumentWrapper#addAllocatedAmt(Money)}
+	 */
 	@Override
 	public Money calculateProjectedOverUnderAmt(@NonNull final Money payAmountToAllocate)
 	{
-		return creditMemoPayableDoc.computeProjectedOverUnderAmt(AllocationAmounts.ofPayAmt(payAmountToAllocate.negate()));
+		final Money initialOpenAmtWithDiscount = creditMemoPayableDoc.getAmountsToAllocateInitial().getPayAmt();
+		final Money remainingOpenAmtWithDiscount = initialOpenAmtWithDiscount.subtract(creditMemoPayableDoc.getTotalAllocatedAmount()); 
+
+		return remainingOpenAmtWithDiscount.subtract(payAmountToAllocate.negate());
 	}
 
 	@Override
@@ -169,5 +178,11 @@ final class CreditMemoInvoiceAsPaymentDocumentWrapper implements IPaymentDocumen
 				.paymentCurrencyId(creditMemoPayableDoc.getCurrencyId())
 				.currencyConversionTypeId(creditMemoPayableDoc.getCurrencyConversionTypeId())
 				.build();
+	}
+
+	@Override
+	public Money getPaymentDiscountAmt()
+	{
+		return creditMemoPayableDoc.getAmountsToAllocate().getDiscountAmt();
 	}
 }
