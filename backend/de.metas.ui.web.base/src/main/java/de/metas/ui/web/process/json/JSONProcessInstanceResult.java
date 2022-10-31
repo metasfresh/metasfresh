@@ -138,7 +138,8 @@ public final class JSONProcessInstanceResult
 			final NewRecordAction newRecordAction = (NewRecordAction)resultAction;
 			return new JSONNewRecordAction(
 					WindowId.fromJson(newRecordAction.getWindowId()),
-					newRecordAction.getFieldValues()
+					newRecordAction.getFieldValues(),
+					newRecordAction.getTargetTab()
 			);
 		}
 		else
@@ -286,15 +287,21 @@ public final class JSONProcessInstanceResult
 	public static class JSONNewRecordAction extends JSONResultAction
 	{
 		@NonNull private final WindowId windowId;
-		@NonNull Map<String, String> fieldValues;
+		@NonNull private final Map<String, String> fieldValues;
 
-		public JSONNewRecordAction(@NonNull final WindowId windowId, @Nullable final Map<String, String> fieldValues)
+		@NonNull private final String targetTab;
+
+		public JSONNewRecordAction(
+				@NonNull final WindowId windowId,
+				@Nullable final Map<String, String> fieldValues,
+				@NonNull final ProcessExecutionResult.WebuiNewRecord.TargetTab targetTab)
 		{
 			super("newRecord");
 			this.windowId = windowId;
 			this.fieldValues = fieldValues != null && !fieldValues.isEmpty()
 					? new HashMap<>(fieldValues)
 					: ImmutableMap.of();
+			this.targetTab = targetTab.name();
 		}
 	}
 }

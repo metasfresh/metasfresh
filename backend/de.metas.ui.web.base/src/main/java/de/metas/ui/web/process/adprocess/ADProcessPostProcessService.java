@@ -420,6 +420,7 @@ public class ADProcessPostProcessService
 			return ProcessInstanceResult.NewRecordAction.builder()
 					.windowId(processExecutionResult.getWebuiNewRecord().getWindowId())
 					.fieldValues(processExecutionResult.getWebuiNewRecord().getFieldValues())
+					.targetTab(processExecutionResult.getWebuiNewRecord().getTargetTab())
 					.build();
 		}
 		//

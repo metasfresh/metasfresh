@@ -998,5 +998,12 @@ public class ProcessExecutionResult
 		 * Field values to be set by frontend, after the NEW record is created
 		 */
 		@NonNull @Singular Map<String, String> fieldValues;
+
+		public enum TargetTab
+		{
+			SAME_TAB, NEW_TAB,
+		}
+
+		@NonNull @Builder.Default TargetTab targetTab = TargetTab.SAME_TAB;
 	}
 }
