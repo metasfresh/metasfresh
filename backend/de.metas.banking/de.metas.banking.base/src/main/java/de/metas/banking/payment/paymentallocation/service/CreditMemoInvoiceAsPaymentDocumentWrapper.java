@@ -121,7 +121,12 @@ final class CreditMemoInvoiceAsPaymentDocumentWrapper implements IPaymentDocumen
 	}
 
 	/**
-	 * Check only the payAmt as that's the only value we are allocating. see {@link  CreditMemoInvoiceAsPaymentDocumentWrapper#addAllocatedAmt(Money)}
+	 * Computes projected over under amt taking into account discount.
+	 *
+	 * @implNote for credit memo as payment, the negated discount needs to be added to the open amount. Negated value is used
+	 * as it actually needs to increase the open amount.
+	 * 
+	 * e.g. Having a credit memo with totalGrandAmount = 10 and paymentTerm.Discount=10% translates to 11 total payment amount available.
 	 */
 	@Override
 	public Money calculateProjectedOverUnderAmt(@NonNull final Money payAmountToAllocate)
