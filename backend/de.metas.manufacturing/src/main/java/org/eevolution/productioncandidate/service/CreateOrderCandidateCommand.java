@@ -33,10 +33,11 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
-import org.compiere.util.DB;
+import org.compiere.model.IQuery;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.ProductBOMVersionsId;
@@ -123,13 +124,13 @@ public class CreateOrderCandidateCommand
 
 	private int calculatePPOrderCandidateSeqNo(final I_PP_Order_Candidate ppOrderCandidateRecord)
 	{
-		final String sql = "SELECT COALESCE(MAX(seqno),0)+1 ROM PP_Order_Candidate WHERE M_Product_ID=?";
-		final String trxName = InterfaceWrapperHelper.getTrxName(ppOrderCandidateRecord);
+		final int lastSeqNo = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_PP_Order_Candidate.class, ppOrderCandidateRecord)
+				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_M_Product_ID, ppOrderCandidateRecord.getM_Product_ID())
+				.create()
+				.aggregate(I_PP_Order_Candidate.COLUMNNAME_SeqNo, IQuery.Aggregate.MAX, int.class);
 
-		int lastSeqNo = DB.getSQLValueEx(trxName, sql, ppOrderCandidateRecord.getM_Product_ID());
-		if (lastSeqNo < 0)
-			lastSeqNo = 0;
-		return lastSeqNo;
+		return (Math.max(lastSeqNo, 0)) / 10 * 10 + 10;
 	}
 
 	@NonNull
