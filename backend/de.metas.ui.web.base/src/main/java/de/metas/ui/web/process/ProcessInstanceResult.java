@@ -184,5 +184,6 @@ public class ProcessInstanceResult
 	{
 		@NonNull String windowId;
 		@NonNull @Singular Map<String, String> fieldValues;
+		@NonNull @Builder.Default ProcessExecutionResult.WebuiNewRecord.TargetTab targetTab = ProcessExecutionResult.WebuiNewRecord.TargetTab.SAME_TAB;
 	}
 }

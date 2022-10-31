@@ -154,14 +154,7 @@ export const handleProcessResponse = (
             break;
           }
           case 'newRecord': {
-            const { windowId, fieldValues } = action;
-            let urlPath = `/window/${windowId}/NEW`;
-            const urlQueryString = getQueryString(fieldValues ?? {});
-            if (urlQueryString) {
-              urlPath += '?' + urlQueryString;
-            }
-
-            window.open(urlPath, '_self');
+            handleProcessResponse_newRecord(action, dispatch);
             return false;
             //break;
           }
@@ -182,6 +175,26 @@ export const handleProcessResponse = (
       }
     }
   };
+};
+
+const handleProcessResponse_newRecord = (action, dispatch) => {
+  console.log('handleProcessResponse_newRecord', { action });
+
+  const { windowId, fieldValues, targetTab } = action;
+  let urlPath = `/window/${windowId}/NEW`;
+  const urlQueryString = getQueryString(fieldValues ?? {});
+  if (urlQueryString) {
+    urlPath += '?' + urlQueryString;
+  }
+
+  if (targetTab === 'NEW_TAB') {
+    openInNewTab({ urlPath, dispatch, actionName: setProcessSaved });
+  } else if (targetTab === 'SAME_TAB' || !targetTab) {
+    window.open(urlPath, '_self');
+  } else {
+    console.warn(`Unknown targetTab '${targetTab}'. Opening in same tab.`);
+    window.open(urlPath, '_self');
+  }
 };
 
 export const createProcess = ({

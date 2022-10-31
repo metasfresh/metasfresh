@@ -13,6 +13,8 @@ import org.adempiere.exceptions.AdempiereException;
 @UtilityClass
 class BPartnerNewSalesOrderUtils
 {
+	private static final WebuiNewRecord.TargetTab DEFAULT_TARGET_TAB = WebuiNewRecord.TargetTab.NEW_TAB;
+
 	public WebuiNewRecord openNewSalesOrderWindowAndSetBPartner(@NonNull final BPartnerId bpartnerId)
 	{
 		final AdWindowId adWindowId = getSalesOrderWindowId();
@@ -20,6 +22,7 @@ class BPartnerNewSalesOrderUtils
 		return WebuiNewRecord.builder()
 				.windowId(String.valueOf(adWindowId.getRepoId()))
 				.fieldValue(I_C_Order.COLUMNNAME_C_BPartner_ID, String.valueOf(bpartnerId.getRepoId()))
+				.targetTab(DEFAULT_TARGET_TAB)
 				.build();
 	}
 
@@ -30,6 +33,7 @@ class BPartnerNewSalesOrderUtils
 		return WebuiNewRecord.builder()
 				.windowId(String.valueOf(adWindowId.getRepoId()))
 				.fieldValue(I_C_Order.COLUMNNAME_C_BPartner_ID, WebuiNewRecord.FIELD_VALUE_NEW)
+				.targetTab(DEFAULT_TARGET_TAB)
 				.build();
 	}
 
