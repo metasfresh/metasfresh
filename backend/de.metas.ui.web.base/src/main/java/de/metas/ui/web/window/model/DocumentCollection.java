@@ -724,7 +724,7 @@ public class DocumentCollection
 
 	public void invalidateAll(final Collection<DocumentToInvalidate> documentToInvalidateList)
 	{
-		for (DocumentToInvalidate documentToInvalidate : documentToInvalidateList)
+		for (final DocumentToInvalidate documentToInvalidate : documentToInvalidateList)
 		{
 			invalidate(documentToInvalidate);
 		}
