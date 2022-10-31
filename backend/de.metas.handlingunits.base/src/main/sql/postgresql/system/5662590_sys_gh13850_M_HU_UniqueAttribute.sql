@@ -250,3 +250,651 @@ UPDATE AD_Index_Table SET WhereClause='IsActive = ''Y'' AND Value IS NOT NULL',U
 CREATE UNIQUE INDEX M_HU_UniqueAttribute_Unique_Product_Attribute_And_Value ON M_HU_UniqueAttribute (M_Product_ID,M_Attribute_ID,Value) WHERE IsActive = 'Y' AND Value IS NOT NULL
 ;
 
+-- Window: Handling Unit Unique Attributes, InternalName=null
+-- 2022-10-31T15:39:05.453Z
+INSERT INTO AD_Window (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,EntityType,IsActive,IsBetaFunctionality,IsDefault,IsEnableRemoteCacheInvalidation,IsExcludeFromZoomTargets,IsOneInstanceOnly,IsOverrideInMenu,IsSOTrx,Name,Processing,Updated,UpdatedBy,WindowType,WinHeight,WinWidth,ZoomIntoPriority) VALUES (0,581628,0,541626,TO_TIMESTAMP('2022-10-31 17:39:05.262','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.handlingunits','Y','N','N','N','N','N','N','Y','Handling Unit Unique Attributes','N',TO_TIMESTAMP('2022-10-31 17:39:05.262','YYYY-MM-DD HH24:MI:SS.US'),100,'T',0,0,100)
+;
+
+-- 2022-10-31T15:39:05.456Z
+INSERT INTO AD_Window_Trl (AD_Language,AD_Window_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Window_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Window t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Window_ID=541626 AND NOT EXISTS (SELECT 1 FROM AD_Window_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Window_ID=t.AD_Window_ID)
+;
+
+-- 2022-10-31T15:39:05.461Z
+/* DDL */  select update_window_translation_from_ad_element(581628) 
+;
+
+-- 2022-10-31T15:39:05.481Z
+DELETE FROM AD_Element_Link WHERE AD_Window_ID=541626
+;
+
+-- 2022-10-31T15:39:05.483Z
+/* DDL */ select AD_Element_Link_Create_Missing_Window(541626)
+;
+
+-- Tab: Handling Unit Unique Attributes -> Handling Unit Unique Attributes
+-- Table: M_HU_UniqueAttribute
+-- 2022-10-31T15:39:29.101Z
+INSERT INTO AD_Tab (AD_Client_ID,AD_Element_ID,AD_Org_ID,AD_Tab_ID,AD_Table_ID,AD_Window_ID,AllowQuickInput,Created,CreatedBy,EntityType,HasTree,ImportFields,IncludedTabNewRecordInputMode,InternalName,IsActive,IsAdvancedTab,IsAutodetectDefaultDateFilter,IsCheckParentsChanged,IsGenericZoomTarget,IsGridModeOnly,IsInfoTab,IsInsertRecord,IsQueryOnLoad,IsReadOnly,IsRefreshAllOnActivate,IsRefreshViewOnChangeEvents,IsSearchActive,IsSearchCollapsed,IsSingleRow,IsSortTab,IsTranslationTab,MaxQueryRecords,Name,Processing,SeqNo,TabLevel,Updated,UpdatedBy) VALUES (0,581628,0,546663,542252,541626,'Y',TO_TIMESTAMP('2022-10-31 17:39:28.958','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.handlingunits','N','N','A','M_HU_UniqueAttribute','Y','N','Y','Y','N','N','N','Y','Y','N','N','N','Y','Y','N','N','N',0,'Handling Unit Unique Attributes','N',10,0,TO_TIMESTAMP('2022-10-31 17:39:28.958','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2022-10-31T15:39:29.103Z
+INSERT INTO AD_Tab_Trl (AD_Language,AD_Tab_ID, CommitWarning,Description,Help,Name,QuickInput_CloseButton_Caption,QuickInput_OpenButton_Caption, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Tab_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.QuickInput_CloseButton_Caption,t.QuickInput_OpenButton_Caption, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Tab t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Tab_ID=546663 AND NOT EXISTS (SELECT 1 FROM AD_Tab_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Tab_ID=t.AD_Tab_ID)
+;
+
+-- 2022-10-31T15:39:29.105Z
+/* DDL */  select update_tab_translation_from_ad_element(581628) 
+;
+
+-- 2022-10-31T15:39:29.107Z
+/* DDL */ select AD_Element_Link_Create_Missing_Tab(546663)
+;
+
+-- Field: Handling Unit Unique Attributes -> Handling Unit Unique Attributes -> Mandant
+-- Column: M_HU_UniqueAttribute.AD_Client_ID
+-- 2022-10-31T15:40:44.503Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,584847,707916,0,546663,TO_TIMESTAMP('2022-10-31 17:40:44.346','YYYY-MM-DD HH24:MI:SS.US'),100,'Mandant für diese Installation.',10,'de.metas.handlingunits','Ein Mandant ist eine Firma oder eine juristische Person. Sie können keine Daten über Mandanten hinweg verwenden. .','Y','Y','N','N','N','Y','N','Mandant',TO_TIMESTAMP('2022-10-31 17:40:44.346','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2022-10-31T15:40:44.504Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=707916 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-10-31T15:40:44.506Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(102) 
+;
+
+-- 2022-10-31T15:40:44.593Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=707916
+;
+
+-- 2022-10-31T15:40:44.595Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(707916)
+;
+
+-- Field: Handling Unit Unique Attributes -> Handling Unit Unique Attributes -> Sektion
+-- Column: M_HU_UniqueAttribute.AD_Org_ID
+-- 2022-10-31T15:40:44.699Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,584848,707917,0,546663,TO_TIMESTAMP('2022-10-31 17:40:44.598','YYYY-MM-DD HH24:MI:SS.US'),100,'Organisatorische Einheit des Mandanten',10,'de.metas.handlingunits','Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie können Daten über Organisationen hinweg gemeinsam verwenden.','Y','Y','N','N','N','N','N','Sektion',TO_TIMESTAMP('2022-10-31 17:40:44.598','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2022-10-31T15:40:44.701Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=707917 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-10-31T15:40:44.702Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(113) 
+;
+
+-- 2022-10-31T15:40:44.774Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=707917
+;
+
+-- 2022-10-31T15:40:44.775Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(707917)
+;
+
+-- Field: Handling Unit Unique Attributes -> Handling Unit Unique Attributes -> Erstellt
+-- Column: M_HU_UniqueAttribute.Created
+-- 2022-10-31T15:40:44.909Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,584849,707918,0,546663,TO_TIMESTAMP('2022-10-31 17:40:44.778','YYYY-MM-DD HH24:MI:SS.US'),100,'Datum, an dem dieser Eintrag erstellt wurde',29,'de.metas.handlingunits','Das Feld Erstellt zeigt an, zu welchem Datum dieser Eintrag erstellt wurde.','Y','Y','N','N','N','N','N','Erstellt',TO_TIMESTAMP('2022-10-31 17:40:44.778','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2022-10-31T15:40:44.910Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=707918 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-10-31T15:40:44.911Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(245) 
+;
+
+-- 2022-10-31T15:40:44.933Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=707918
+;
+
+-- 2022-10-31T15:40:44.934Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(707918)
+;
+
+-- Field: Handling Unit Unique Attributes -> Handling Unit Unique Attributes -> Erstellt durch
+-- Column: M_HU_UniqueAttribute.CreatedBy
+-- 2022-10-31T15:40:45.030Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,584850,707919,0,546663,TO_TIMESTAMP('2022-10-31 17:40:44.937','YYYY-MM-DD HH24:MI:SS.US'),100,'Nutzer, der diesen Eintrag erstellt hat',10,'de.metas.handlingunits','Das Feld Erstellt durch zeigt an, welcher Nutzer diesen Eintrag erstellt hat.','Y','Y','N','N','N','N','N','Erstellt durch',TO_TIMESTAMP('2022-10-31 17:40:44.937','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2022-10-31T15:40:45.031Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=707919 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-10-31T15:40:45.033Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(246) 
+;
+
+-- 2022-10-31T15:40:45.049Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=707919
+;
+
+-- 2022-10-31T15:40:45.051Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(707919)
+;
+
+-- Field: Handling Unit Unique Attributes -> Handling Unit Unique Attributes -> Aktiv
+-- Column: M_HU_UniqueAttribute.IsActive
+-- 2022-10-31T15:40:45.159Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,584851,707920,0,546663,TO_TIMESTAMP('2022-10-31 17:40:45.054','YYYY-MM-DD HH24:MI:SS.US'),100,'Der Eintrag ist im System aktiv',1,'de.metas.handlingunits','Es gibt zwei Möglichkeiten, einen Datensatz nicht mehr verfügbar zu machen: einer ist, ihn zu löschen; der andere, ihn zu deaktivieren. Ein deaktivierter Eintrag ist nicht mehr für eine Auswahl verfügbar, aber verfügbar für die Verwendung in Berichten. Es gibt zwei Gründe, Datensätze zu deaktivieren und nicht zu löschen: (1) Das System braucht den Datensatz für Revisionszwecke. (2) Der Datensatz wird von anderen Datensätzen referenziert. Z.B. können Sie keinen Geschäftspartner löschen, wenn es Rechnungen für diesen Geschäftspartner gibt. Sie deaktivieren den Geschäftspartner und verhindern, dass dieser Eintrag in zukünftigen Vorgängen verwendet wird.','Y','Y','N','N','N','N','N','Aktiv',TO_TIMESTAMP('2022-10-31 17:40:45.054','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2022-10-31T15:40:45.160Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=707920 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-10-31T15:40:45.162Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(348) 
+;
+
+-- 2022-10-31T15:40:45.235Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=707920
+;
+
+-- 2022-10-31T15:40:45.236Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(707920)
+;
+
+-- Field: Handling Unit Unique Attributes -> Handling Unit Unique Attributes -> Aktualisiert
+-- Column: M_HU_UniqueAttribute.Updated
+-- 2022-10-31T15:40:45.348Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,584852,707921,0,546663,TO_TIMESTAMP('2022-10-31 17:40:45.239','YYYY-MM-DD HH24:MI:SS.US'),100,'Datum, an dem dieser Eintrag aktualisiert wurde',29,'de.metas.handlingunits','Aktualisiert zeigt an, wann dieser Eintrag aktualisiert wurde.','Y','Y','N','N','N','N','N','Aktualisiert',TO_TIMESTAMP('2022-10-31 17:40:45.239','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2022-10-31T15:40:45.350Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=707921 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-10-31T15:40:45.351Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(607) 
+;
+
+-- 2022-10-31T15:40:45.375Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=707921
+;
+
+-- 2022-10-31T15:40:45.376Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(707921)
+;
+
+-- Field: Handling Unit Unique Attributes -> Handling Unit Unique Attributes -> Aktualisiert durch
+-- Column: M_HU_UniqueAttribute.UpdatedBy
+-- 2022-10-31T15:40:45.479Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,584853,707922,0,546663,TO_TIMESTAMP('2022-10-31 17:40:45.379','YYYY-MM-DD HH24:MI:SS.US'),100,'Nutzer, der diesen Eintrag aktualisiert hat',10,'de.metas.handlingunits','Aktualisiert durch zeigt an, welcher Nutzer diesen Eintrag aktualisiert hat.','Y','Y','N','N','N','N','N','Aktualisiert durch',TO_TIMESTAMP('2022-10-31 17:40:45.379','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2022-10-31T15:40:45.480Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=707922 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-10-31T15:40:45.481Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(608) 
+;
+
+-- 2022-10-31T15:40:45.503Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=707922
+;
+
+-- 2022-10-31T15:40:45.505Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(707922)
+;
+
+-- Field: Handling Unit Unique Attributes -> Handling Unit Unique Attributes -> Handling Unit Unique Attributes
+-- Column: M_HU_UniqueAttribute.M_HU_UniqueAttribute_ID
+-- 2022-10-31T15:40:45.604Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,584854,707923,0,546663,TO_TIMESTAMP('2022-10-31 17:40:45.507','YYYY-MM-DD HH24:MI:SS.US'),100,10,'de.metas.handlingunits','Y','N','N','N','N','N','N','N','Handling Unit Unique Attributes',TO_TIMESTAMP('2022-10-31 17:40:45.507','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2022-10-31T15:40:45.605Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=707923 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-10-31T15:40:45.607Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(581628) 
+;
+
+-- 2022-10-31T15:40:45.608Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=707923
+;
+
+-- 2022-10-31T15:40:45.609Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(707923)
+;
+
+-- Field: Handling Unit Unique Attributes -> Handling Unit Unique Attributes -> Produkt
+-- Column: M_HU_UniqueAttribute.M_Product_ID
+-- 2022-10-31T15:40:45.707Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,584855,707924,0,546663,TO_TIMESTAMP('2022-10-31 17:40:45.612','YYYY-MM-DD HH24:MI:SS.US'),100,'Produkt, Leistung, Artikel',10,'de.metas.handlingunits','Bezeichnet eine Einheit, die in dieser Organisation gekauft oder verkauft wird.','Y','Y','N','N','N','N','N','Produkt',TO_TIMESTAMP('2022-10-31 17:40:45.612','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2022-10-31T15:40:45.708Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=707924 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-10-31T15:40:45.710Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(454) 
+;
+
+-- 2022-10-31T15:40:45.729Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=707924
+;
+
+-- 2022-10-31T15:40:45.731Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(707924)
+;
+
+-- Field: Handling Unit Unique Attributes -> Handling Unit Unique Attributes -> Merkmal
+-- Column: M_HU_UniqueAttribute.M_Attribute_ID
+-- 2022-10-31T15:40:45.833Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,584856,707925,0,546663,TO_TIMESTAMP('2022-10-31 17:40:45.734','YYYY-MM-DD HH24:MI:SS.US'),100,'Produkt-Merkmal',10,'de.metas.handlingunits','Product Attribute like Color, Size','Y','Y','N','N','N','N','N','Merkmal',TO_TIMESTAMP('2022-10-31 17:40:45.734','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2022-10-31T15:40:45.835Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=707925 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-10-31T15:40:45.837Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(2015) 
+;
+
+-- 2022-10-31T15:40:45.839Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=707925
+;
+
+-- 2022-10-31T15:40:45.840Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(707925)
+;
+
+-- Field: Handling Unit Unique Attributes -> Handling Unit Unique Attributes -> Handling Unit
+-- Column: M_HU_UniqueAttribute.M_HU_ID
+-- 2022-10-31T15:40:45.938Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,584857,707926,0,546663,TO_TIMESTAMP('2022-10-31 17:40:45.842','YYYY-MM-DD HH24:MI:SS.US'),100,10,'de.metas.handlingunits','Y','Y','N','N','N','N','N','Handling Unit',TO_TIMESTAMP('2022-10-31 17:40:45.842','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2022-10-31T15:40:45.939Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=707926 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-10-31T15:40:45.940Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(542140) 
+;
+
+-- 2022-10-31T15:40:45.943Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=707926
+;
+
+-- 2022-10-31T15:40:45.943Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(707926)
+;
+
+-- Field: Handling Unit Unique Attributes -> Handling Unit Unique Attributes -> Suchschlüssel
+-- Column: M_HU_UniqueAttribute.Value
+-- 2022-10-31T15:40:46.037Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,584858,707927,0,546663,TO_TIMESTAMP('2022-10-31 17:40:45.946','YYYY-MM-DD HH24:MI:SS.US'),100,'Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein',250,'de.metas.handlingunits','A search key allows you a fast method of finding a particular record.
+If you leave the search key empty, the system automatically creates a numeric number.  The document sequence used for this fallback number is defined in the "Maintain Sequence" window with the name "DocumentNo_<TableName>", where TableName is the actual name of the table (e.g. C_Order).','Y','Y','N','N','N','N','N','Suchschlüssel',TO_TIMESTAMP('2022-10-31 17:40:45.946','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2022-10-31T15:40:46.038Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=707927 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-10-31T15:40:46.040Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(620) 
+;
+
+-- 2022-10-31T15:40:46.053Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=707927
+;
+
+-- 2022-10-31T15:40:46.054Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(707927)
+;
+
+-- Field: Handling Unit Unique Attributes -> Handling Unit Unique Attributes -> Handling Units Packing Instructions Attribute
+-- Column: M_HU_UniqueAttribute.M_HU_PI_Attribute_ID
+-- 2022-10-31T15:40:46.161Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,584859,707928,0,546663,TO_TIMESTAMP('2022-10-31 17:40:46.056','YYYY-MM-DD HH24:MI:SS.US'),100,10,'de.metas.handlingunits','Y','Y','N','N','N','N','N','Handling Units Packing Instructions Attribute',TO_TIMESTAMP('2022-10-31 17:40:46.056','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2022-10-31T15:40:46.162Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=707928 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-10-31T15:40:46.163Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(542131) 
+;
+
+-- 2022-10-31T15:40:46.165Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=707928
+;
+
+-- 2022-10-31T15:40:46.166Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(707928)
+;
+
+-- Field: Handling Unit Unique Attributes -> Handling Unit Unique Attributes -> Handling Unit Attribute
+-- Column: M_HU_UniqueAttribute.M_HU_Attribute_ID
+-- 2022-10-31T15:40:46.264Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,584860,707929,0,546663,TO_TIMESTAMP('2022-10-31 17:40:46.168','YYYY-MM-DD HH24:MI:SS.US'),100,10,'de.metas.handlingunits','Y','Y','N','N','N','N','N','Handling Unit Attribute',TO_TIMESTAMP('2022-10-31 17:40:46.168','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2022-10-31T15:40:46.266Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=707929 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-10-31T15:40:46.267Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(542128) 
+;
+
+-- 2022-10-31T15:40:46.268Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=707929
+;
+
+-- 2022-10-31T15:40:46.269Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(707929)
+;
+
+-- 2022-10-31T15:42:03.875Z
+INSERT INTO AD_UI_Section (AD_Client_ID,AD_Org_ID,AD_Tab_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy,Value) VALUES (0,0,546663,545287,TO_TIMESTAMP('2022-10-31 17:42:03.742','YYYY-MM-DD HH24:MI:SS.US'),100,'Y',10,TO_TIMESTAMP('2022-10-31 17:42:03.742','YYYY-MM-DD HH24:MI:SS.US'),100,'main')
+;
+
+-- 2022-10-31T15:42:03.877Z
+INSERT INTO AD_UI_Section_Trl (AD_Language,AD_UI_Section_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_UI_Section_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_UI_Section t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_UI_Section_ID=545287 AND NOT EXISTS (SELECT 1 FROM AD_UI_Section_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_UI_Section_ID=t.AD_UI_Section_ID)
+;
+
+-- 2022-10-31T15:42:04Z
+INSERT INTO AD_UI_Column (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,0,546432,545287,TO_TIMESTAMP('2022-10-31 17:42:03.913','YYYY-MM-DD HH24:MI:SS.US'),100,'Y',10,TO_TIMESTAMP('2022-10-31 17:42:03.913','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2022-10-31T15:42:04.094Z
+INSERT INTO AD_UI_Column (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_Section_ID,Created,CreatedBy,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,0,546433,545287,TO_TIMESTAMP('2022-10-31 17:42:04.003','YYYY-MM-DD HH24:MI:SS.US'),100,'Y',20,TO_TIMESTAMP('2022-10-31 17:42:04.003','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2022-10-31T15:42:04.230Z
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,UIStyle,Updated,UpdatedBy) VALUES (0,0,546432,549989,TO_TIMESTAMP('2022-10-31 17:42:04.148','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','default',10,'primary',TO_TIMESTAMP('2022-10-31 17:42:04.148','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- UI Element: Handling Unit Unique Attributes -> Handling Unit Unique Attributes.Mandant
+-- Column: M_HU_UniqueAttribute.AD_Client_ID
+-- 2022-10-31T15:42:04.370Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,707916,0,546663,549989,613350,'F',TO_TIMESTAMP('2022-10-31 17:42:04.275','YYYY-MM-DD HH24:MI:SS.US'),100,'Mandant für diese Installation.','Ein Mandant ist eine Firma oder eine juristische Person. Sie können keine Daten über Mandanten hinweg verwenden. .','Y','N','Y','Y','N','Mandant',10,10,0,TO_TIMESTAMP('2022-10-31 17:42:04.275','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- UI Element: Handling Unit Unique Attributes -> Handling Unit Unique Attributes.Sektion
+-- Column: M_HU_UniqueAttribute.AD_Org_ID
+-- 2022-10-31T15:42:04.454Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,707917,0,546663,549989,613351,'F',TO_TIMESTAMP('2022-10-31 17:42:04.373','YYYY-MM-DD HH24:MI:SS.US'),100,'Organisatorische Einheit des Mandanten','Eine Organisation ist ein Bereich ihres Mandanten - z.B. Laden oder Abteilung. Sie können Daten über Organisationen hinweg gemeinsam verwenden.','Y','N','Y','Y','N','Sektion',20,20,0,TO_TIMESTAMP('2022-10-31 17:42:04.373','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- UI Element: Handling Unit Unique Attributes -> Handling Unit Unique Attributes.Erstellt
+-- Column: M_HU_UniqueAttribute.Created
+-- 2022-10-31T15:42:04.574Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,707918,0,546663,549989,613352,'F',TO_TIMESTAMP('2022-10-31 17:42:04.458','YYYY-MM-DD HH24:MI:SS.US'),100,'Datum, an dem dieser Eintrag erstellt wurde','Das Feld Erstellt zeigt an, zu welchem Datum dieser Eintrag erstellt wurde.','Y','N','Y','Y','N','Erstellt',30,30,0,TO_TIMESTAMP('2022-10-31 17:42:04.458','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- UI Element: Handling Unit Unique Attributes -> Handling Unit Unique Attributes.Erstellt durch
+-- Column: M_HU_UniqueAttribute.CreatedBy
+-- 2022-10-31T15:42:04.659Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,707919,0,546663,549989,613353,'F',TO_TIMESTAMP('2022-10-31 17:42:04.579','YYYY-MM-DD HH24:MI:SS.US'),100,'Nutzer, der diesen Eintrag erstellt hat','Das Feld Erstellt durch zeigt an, welcher Nutzer diesen Eintrag erstellt hat.','Y','N','Y','Y','N','Erstellt durch',40,40,0,TO_TIMESTAMP('2022-10-31 17:42:04.579','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- UI Element: Handling Unit Unique Attributes -> Handling Unit Unique Attributes.Aktiv
+-- Column: M_HU_UniqueAttribute.IsActive
+-- 2022-10-31T15:42:04.747Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,707920,0,546663,549989,613354,'F',TO_TIMESTAMP('2022-10-31 17:42:04.663','YYYY-MM-DD HH24:MI:SS.US'),100,'Der Eintrag ist im System aktiv','Es gibt zwei Möglichkeiten, einen Datensatz nicht mehr verfügbar zu machen: einer ist, ihn zu löschen; der andere, ihn zu deaktivieren. Ein deaktivierter Eintrag ist nicht mehr für eine Auswahl verfügbar, aber verfügbar für die Verwendung in Berichten. Es gibt zwei Gründe, Datensätze zu deaktivieren und nicht zu löschen: (1) Das System braucht den Datensatz für Revisionszwecke. (2) Der Datensatz wird von anderen Datensätzen referenziert. Z.B. können Sie keinen Geschäftspartner löschen, wenn es Rechnungen für diesen Geschäftspartner gibt. Sie deaktivieren den Geschäftspartner und verhindern, dass dieser Eintrag in zukünftigen Vorgängen verwendet wird.','Y','N','Y','Y','N','Aktiv',50,50,0,TO_TIMESTAMP('2022-10-31 17:42:04.663','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- UI Element: Handling Unit Unique Attributes -> Handling Unit Unique Attributes.Aktualisiert
+-- Column: M_HU_UniqueAttribute.Updated
+-- 2022-10-31T15:42:04.838Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,707921,0,546663,549989,613355,'F',TO_TIMESTAMP('2022-10-31 17:42:04.75','YYYY-MM-DD HH24:MI:SS.US'),100,'Datum, an dem dieser Eintrag aktualisiert wurde','Aktualisiert zeigt an, wann dieser Eintrag aktualisiert wurde.','Y','N','Y','Y','N','Aktualisiert',60,60,0,TO_TIMESTAMP('2022-10-31 17:42:04.75','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- UI Element: Handling Unit Unique Attributes -> Handling Unit Unique Attributes.Aktualisiert durch
+-- Column: M_HU_UniqueAttribute.UpdatedBy
+-- 2022-10-31T15:42:04.919Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,707922,0,546663,549989,613356,'F',TO_TIMESTAMP('2022-10-31 17:42:04.841','YYYY-MM-DD HH24:MI:SS.US'),100,'Nutzer, der diesen Eintrag aktualisiert hat','Aktualisiert durch zeigt an, welcher Nutzer diesen Eintrag aktualisiert hat.','Y','N','Y','Y','N','Aktualisiert durch',70,70,0,TO_TIMESTAMP('2022-10-31 17:42:04.841','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- UI Element: Handling Unit Unique Attributes -> Handling Unit Unique Attributes.Produkt
+-- Column: M_HU_UniqueAttribute.M_Product_ID
+-- 2022-10-31T15:42:05.005Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,707924,0,546663,549989,613357,'F',TO_TIMESTAMP('2022-10-31 17:42:04.922','YYYY-MM-DD HH24:MI:SS.US'),100,'Produkt, Leistung, Artikel','Bezeichnet eine Einheit, die in dieser Organisation gekauft oder verkauft wird.','Y','N','Y','Y','N','Produkt',80,80,0,TO_TIMESTAMP('2022-10-31 17:42:04.922','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- UI Element: Handling Unit Unique Attributes -> Handling Unit Unique Attributes.Merkmal
+-- Column: M_HU_UniqueAttribute.M_Attribute_ID
+-- 2022-10-31T15:42:05.098Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,707925,0,546663,549989,613358,'F',TO_TIMESTAMP('2022-10-31 17:42:05.009','YYYY-MM-DD HH24:MI:SS.US'),100,'Produkt-Merkmal','Product Attribute like Color, Size','Y','N','Y','Y','N','Merkmal',90,90,0,TO_TIMESTAMP('2022-10-31 17:42:05.009','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- UI Element: Handling Unit Unique Attributes -> Handling Unit Unique Attributes.Handling Unit
+-- Column: M_HU_UniqueAttribute.M_HU_ID
+-- 2022-10-31T15:42:05.198Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,707926,0,546663,549989,613359,'F',TO_TIMESTAMP('2022-10-31 17:42:05.101','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','N','Y','Y','N','Handling Unit',100,100,0,TO_TIMESTAMP('2022-10-31 17:42:05.101','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- UI Element: Handling Unit Unique Attributes -> Handling Unit Unique Attributes.Suchschlüssel
+-- Column: M_HU_UniqueAttribute.Value
+-- 2022-10-31T15:42:05.284Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,707927,0,546663,549989,613360,'F',TO_TIMESTAMP('2022-10-31 17:42:05.202','YYYY-MM-DD HH24:MI:SS.US'),100,'Suchschlüssel für den Eintrag im erforderlichen Format - muss eindeutig sein','A search key allows you a fast method of finding a particular record.
+If you leave the search key empty, the system automatically creates a numeric number.  The document sequence used for this fallback number is defined in the "Maintain Sequence" window with the name "DocumentNo_<TableName>", where TableName is the actual name of the table (e.g. C_Order).','Y','N','Y','Y','N','Suchschlüssel',110,110,0,TO_TIMESTAMP('2022-10-31 17:42:05.202','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- UI Element: Handling Unit Unique Attributes -> Handling Unit Unique Attributes.Handling Units Packing Instructions Attribute
+-- Column: M_HU_UniqueAttribute.M_HU_PI_Attribute_ID
+-- 2022-10-31T15:42:05.373Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,707928,0,546663,549989,613361,'F',TO_TIMESTAMP('2022-10-31 17:42:05.287','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','N','Y','Y','N','Handling Units Packing Instructions Attribute',120,120,0,TO_TIMESTAMP('2022-10-31 17:42:05.287','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- UI Element: Handling Unit Unique Attributes -> Handling Unit Unique Attributes.Handling Unit Attribute
+-- Column: M_HU_UniqueAttribute.M_HU_Attribute_ID
+-- 2022-10-31T15:42:05.465Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,707929,0,546663,549989,613362,'F',TO_TIMESTAMP('2022-10-31 17:42:05.376','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','N','Y','Y','N','Handling Unit Attribute',130,130,0,TO_TIMESTAMP('2022-10-31 17:42:05.376','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2022-10-31T15:42:46.217Z
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,546433,549990,TO_TIMESTAMP('2022-10-31 17:42:46.086','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','flags',10,TO_TIMESTAMP('2022-10-31 17:42:46.086','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2022-10-31T15:42:53.660Z
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,546433,549991,TO_TIMESTAMP('2022-10-31 17:42:53.534','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','other',20,TO_TIMESTAMP('2022-10-31 17:42:53.534','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2022-10-31T15:42:56.981Z
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,546433,549992,TO_TIMESTAMP('2022-10-31 17:42:56.88','YYYY-MM-DD HH24:MI:SS.US'),100,'Y','org',30,TO_TIMESTAMP('2022-10-31 17:42:56.88','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- UI Element: Handling Unit Unique Attributes -> Handling Unit Unique Attributes.Sektion
+-- Column: M_HU_UniqueAttribute.AD_Org_ID
+-- 2022-10-31T15:48:15.434Z
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=549992, SeqNo=10,Updated=TO_TIMESTAMP('2022-10-31 17:48:15.434','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=613351
+;
+
+-- UI Element: Handling Unit Unique Attributes -> Handling Unit Unique Attributes.Mandant
+-- Column: M_HU_UniqueAttribute.AD_Client_ID
+-- 2022-10-31T15:58:25.171Z
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=549992, SeqNo=20,Updated=TO_TIMESTAMP('2022-10-31 17:58:25.171','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=613350
+;
+
+-- UI Element: Handling Unit Unique Attributes -> Handling Unit Unique Attributes.Aktiv
+-- Column: M_HU_UniqueAttribute.IsActive
+-- 2022-10-31T15:58:36.151Z
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=549990, SeqNo=10,Updated=TO_TIMESTAMP('2022-10-31 17:58:36.151','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=613354
+;
+
+-- UI Element: Handling Unit Unique Attributes -> Handling Unit Unique Attributes.Erstellt
+-- Column: M_HU_UniqueAttribute.Created
+-- 2022-10-31T15:58:44.355Z
+UPDATE AD_UI_Element SET IsDisplayed='N',Updated=TO_TIMESTAMP('2022-10-31 17:58:44.355','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=613352
+;
+
+-- UI Element: Handling Unit Unique Attributes -> Handling Unit Unique Attributes.Erstellt durch
+-- Column: M_HU_UniqueAttribute.CreatedBy
+-- 2022-10-31T15:58:45.192Z
+UPDATE AD_UI_Element SET IsDisplayed='N',Updated=TO_TIMESTAMP('2022-10-31 17:58:45.192','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=613353
+;
+
+-- UI Element: Handling Unit Unique Attributes -> Handling Unit Unique Attributes.Aktualisiert
+-- Column: M_HU_UniqueAttribute.Updated
+-- 2022-10-31T15:58:46.764Z
+UPDATE AD_UI_Element SET IsDisplayed='N',Updated=TO_TIMESTAMP('2022-10-31 17:58:46.764','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=613355
+;
+
+-- UI Element: Handling Unit Unique Attributes -> Handling Unit Unique Attributes.Aktualisiert durch
+-- Column: M_HU_UniqueAttribute.UpdatedBy
+-- 2022-10-31T15:58:55.903Z
+UPDATE AD_UI_Element SET IsDisplayed='N',Updated=TO_TIMESTAMP('2022-10-31 17:58:55.902','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=613356
+;
+
+-- UI Element: Handling Unit Unique Attributes -> Handling Unit Unique Attributes.Suchschlüssel
+-- Column: M_HU_UniqueAttribute.Value
+-- 2022-10-31T15:59:10.498Z
+UPDATE AD_UI_Element SET SeqNo=100,Updated=TO_TIMESTAMP('2022-10-31 17:59:10.497','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=613360
+;
+
+-- UI Element: Handling Unit Unique Attributes -> Handling Unit Unique Attributes.Handling Unit
+-- Column: M_HU_UniqueAttribute.M_HU_ID
+-- 2022-10-31T15:59:16.631Z
+UPDATE AD_UI_Element SET SeqNo=110,Updated=TO_TIMESTAMP('2022-10-31 17:59:16.631','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=613359
+;
+
+-- UI Element: Handling Unit Unique Attributes -> Handling Unit Unique Attributes.Mandant
+-- Column: M_HU_UniqueAttribute.AD_Client_ID
+-- 2022-10-31T15:59:43.499Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2022-10-31 17:59:43.499','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=613350
+;
+
+-- UI Element: Handling Unit Unique Attributes -> Handling Unit Unique Attributes.Erstellt
+-- Column: M_HU_UniqueAttribute.Created
+-- 2022-10-31T15:59:43.514Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2022-10-31 17:59:43.513','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=613352
+;
+
+-- UI Element: Handling Unit Unique Attributes -> Handling Unit Unique Attributes.Erstellt durch
+-- Column: M_HU_UniqueAttribute.CreatedBy
+-- 2022-10-31T15:59:43.520Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2022-10-31 17:59:43.519','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=613353
+;
+
+-- UI Element: Handling Unit Unique Attributes -> Handling Unit Unique Attributes.Aktiv
+-- Column: M_HU_UniqueAttribute.IsActive
+-- 2022-10-31T15:59:43.525Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2022-10-31 17:59:43.525','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=613354
+;
+
+-- UI Element: Handling Unit Unique Attributes -> Handling Unit Unique Attributes.Aktualisiert
+-- Column: M_HU_UniqueAttribute.Updated
+-- 2022-10-31T15:59:43.531Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2022-10-31 17:59:43.531','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=613355
+;
+
+-- UI Element: Handling Unit Unique Attributes -> Handling Unit Unique Attributes.Aktualisiert durch
+-- Column: M_HU_UniqueAttribute.UpdatedBy
+-- 2022-10-31T15:59:43.538Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='N', SeqNoGrid=0,Updated=TO_TIMESTAMP('2022-10-31 17:59:43.538','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=613356
+;
+
+-- UI Element: Handling Unit Unique Attributes -> Handling Unit Unique Attributes.Produkt
+-- Column: M_HU_UniqueAttribute.M_Product_ID
+-- 2022-10-31T15:59:43.543Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=10,Updated=TO_TIMESTAMP('2022-10-31 17:59:43.543','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=613357
+;
+
+-- UI Element: Handling Unit Unique Attributes -> Handling Unit Unique Attributes.Merkmal
+-- Column: M_HU_UniqueAttribute.M_Attribute_ID
+-- 2022-10-31T15:59:43.549Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=20,Updated=TO_TIMESTAMP('2022-10-31 17:59:43.549','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=613358
+;
+
+-- UI Element: Handling Unit Unique Attributes -> Handling Unit Unique Attributes.Handling Unit
+-- Column: M_HU_UniqueAttribute.M_HU_ID
+-- 2022-10-31T15:59:43.555Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=30,Updated=TO_TIMESTAMP('2022-10-31 17:59:43.555','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=613359
+;
+
+-- UI Element: Handling Unit Unique Attributes -> Handling Unit Unique Attributes.Suchschlüssel
+-- Column: M_HU_UniqueAttribute.Value
+-- 2022-10-31T15:59:43.560Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=40,Updated=TO_TIMESTAMP('2022-10-31 17:59:43.56','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=613360
+;
+
+-- UI Element: Handling Unit Unique Attributes -> Handling Unit Unique Attributes.Handling Units Packing Instructions Attribute
+-- Column: M_HU_UniqueAttribute.M_HU_PI_Attribute_ID
+-- 2022-10-31T15:59:43.566Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=50,Updated=TO_TIMESTAMP('2022-10-31 17:59:43.566','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=613361
+;
+
+-- UI Element: Handling Unit Unique Attributes -> Handling Unit Unique Attributes.Handling Unit Attribute
+-- Column: M_HU_UniqueAttribute.M_HU_Attribute_ID
+-- 2022-10-31T15:59:43.571Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=60,Updated=TO_TIMESTAMP('2022-10-31 17:59:43.571','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=613362
+;
+
+-- UI Element: Handling Unit Unique Attributes -> Handling Unit Unique Attributes.Sektion
+-- Column: M_HU_UniqueAttribute.AD_Org_ID
+-- 2022-10-31T15:59:43.578Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=70,Updated=TO_TIMESTAMP('2022-10-31 17:59:43.578','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=613351
+;
+
+-- UI Element: Handling Unit Unique Attributes -> Handling Unit Unique Attributes.Suchschlüssel
+-- Column: M_HU_UniqueAttribute.Value
+-- 2022-10-31T15:59:50.787Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=30,Updated=TO_TIMESTAMP('2022-10-31 17:59:50.787','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=613360
+;
+
+-- UI Element: Handling Unit Unique Attributes -> Handling Unit Unique Attributes.Handling Unit
+-- Column: M_HU_UniqueAttribute.M_HU_ID
+-- 2022-10-31T15:59:50.796Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=40,Updated=TO_TIMESTAMP('2022-10-31 17:59:50.796','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_UI_Element_ID=613359
+;
+
+-- Column: M_HU_UniqueAttribute.M_Attribute_ID
+-- 2022-10-31T16:00:19.649Z
+UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2022-10-31 18:00:19.647','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=584856
+;
+
+-- Column: M_HU_UniqueAttribute.M_HU_ID
+-- 2022-10-31T16:00:33.697Z
+UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2022-10-31 18:00:33.695','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=584857
+;
+
+-- Column: M_HU_UniqueAttribute.M_Product_ID
+-- 2022-10-31T16:00:51.319Z
+UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2022-10-31 18:00:51.317','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=584855
+;
+
+-- Column: M_HU_UniqueAttribute.Value
+-- 2022-10-31T16:01:05.288Z
+UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2022-10-31 18:01:05.286','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=584858
+;
+
+-- Column: M_HU_UniqueAttribute.M_Product_ID
+-- 2022-10-31T16:01:16.784Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=10,Updated=TO_TIMESTAMP('2022-10-31 18:01:16.784','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=584855
+;
+
+-- Column: M_HU_UniqueAttribute.M_Attribute_ID
+-- 2022-10-31T16:01:17.146Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=20,Updated=TO_TIMESTAMP('2022-10-31 18:01:17.146','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=584856
+;
+
+-- Column: M_HU_UniqueAttribute.Value
+-- 2022-10-31T16:01:17.554Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=30,Updated=TO_TIMESTAMP('2022-10-31 18:01:17.554','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=584858
+;
+
+-- Column: M_HU_UniqueAttribute.M_HU_ID
+-- 2022-10-31T16:01:17.910Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=40,Updated=TO_TIMESTAMP('2022-10-31 18:01:17.91','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=584857
+;
+
+-- Column: M_HU_UniqueAttribute.AD_Org_ID
+-- 2022-10-31T16:01:18.335Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=50,Updated=TO_TIMESTAMP('2022-10-31 18:01:18.335','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=584848
+;
+
