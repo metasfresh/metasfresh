@@ -36,6 +36,7 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
+import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IProductBOMDAO;
 import org.eevolution.api.ProductBOMVersionsId;
@@ -107,8 +108,7 @@ public class CreateOrderCandidateCommand
 			ppOrderCandidateRecord.setProcessed(true);
 		}
 
-		final I_PP_Product_Planning productPlanning = productPlanningsRepo.getById(request.getProductPlanningId());
-		ppOrderCandidateRecord.setSeqNo(productPlanning.getSeqNo());
+		ppOrderCandidateRecord.setSeqNo(calculatePPOrderCandidateSeqNo(ppOrderCandidateRecord));
 
 		ppOrderCandidateRecord.setM_HU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(request.getPackingMaterialId()));
 
@@ -119,6 +119,17 @@ public class CreateOrderCandidateCommand
 				ppOrderCandidateRecord.getPP_Order_Candidate_ID());
 
 		return ppOrderCandidateRecord;
+	}
+
+	private int calculatePPOrderCandidateSeqNo(final I_PP_Order_Candidate ppOrderCandidateRecord)
+	{
+		final String sql = "SELECT COALESCE(MAX(seqno),0)+1 ROM PP_Order_Candidate WHERE M_Product_ID=?";
+		final String trxName = InterfaceWrapperHelper.getTrxName(ppOrderCandidateRecord);
+
+		int lastSeqNo = DB.getSQLValueEx(trxName, sql, ppOrderCandidateRecord.getM_Product_ID());
+		if (lastSeqNo < 0)
+			lastSeqNo = 0;
+		return lastSeqNo;
 	}
 
 	@NonNull
