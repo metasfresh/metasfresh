@@ -184,7 +184,7 @@ final class AllocationLineCandidateSaver
 				// Amounts
 				.amount(payAmt.negate().toBigDecimal())
 				.overUnderAmt(candidate.getPaymentOverUnderAmt().toBigDecimal())
-				.discountAmt(Optional.ofNullable(candidate.getPayAmtDiscountInPaymentCurrency())
+				.discountAmt(Optional.ofNullable(candidate.getPayAmtDiscountInInvoiceCurrency())
 									 .map(Money::toBigDecimal)
 									 .orElse(BigDecimal.ZERO))
 				//

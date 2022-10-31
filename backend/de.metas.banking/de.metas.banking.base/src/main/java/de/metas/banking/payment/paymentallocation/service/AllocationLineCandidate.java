@@ -58,7 +58,7 @@ public class AllocationLineCandidate
 	 *  This is about the paymentTerm invoice discount when used as payment. (i.e. CreditMemo or PurchaseInvoice allocated against a SalesInvoice)
 	 */
 	@Nullable
-	Money payAmtDiscountInPaymentCurrency;
+	Money payAmtDiscountInInvoiceCurrency;
 
 	@Builder(toBuilder = true)
 	private AllocationLineCandidate(
@@ -78,7 +78,7 @@ public class AllocationLineCandidate
 			@Nullable final Money payableOverUnderAmt,
 			@Nullable final Money paymentOverUnderAmt,
 			@Nullable final InvoiceProcessingFeeCalculation invoiceProcessingFeeCalculation,
-			@Nullable final Money payAmtDiscountInPaymentCurrency)
+			@Nullable final Money payAmtDiscountInInvoiceCurrency)
 	{
 		if (!orgId.isRegular())
 		{
@@ -123,6 +123,6 @@ public class AllocationLineCandidate
 		this.payableOverUnderAmt = payableOverUnderAmt != null ? payableOverUnderAmt : Money.zero(amounts.getCurrencyId());
 		this.paymentOverUnderAmt = paymentOverUnderAmt != null ? paymentOverUnderAmt : Money.zero(amounts.getCurrencyId());
 		this.invoiceProcessingFeeCalculation = invoiceProcessingFeeCalculation;
-		this.payAmtDiscountInPaymentCurrency = payAmtDiscountInPaymentCurrency;
+		this.payAmtDiscountInInvoiceCurrency = payAmtDiscountInInvoiceCurrency != null ? payAmtDiscountInInvoiceCurrency : Money.zero(amounts.getCurrencyId()); 
 	}
 }

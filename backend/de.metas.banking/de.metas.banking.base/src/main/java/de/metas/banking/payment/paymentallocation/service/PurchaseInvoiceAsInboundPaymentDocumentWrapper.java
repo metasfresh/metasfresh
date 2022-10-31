@@ -130,13 +130,17 @@ final class PurchaseInvoiceAsInboundPaymentDocumentWrapper implements IPaymentDo
 	}
 
 	/**
-	 * Check only the payAmt as that's the only value we are allocating. see {@link  PurchaseInvoiceAsInboundPaymentDocumentWrapper#addAllocatedAmt(Money)}
+	 * Computes projected over under amt taking into account discount.
+	 * 
+	 * @implNote for purchase invoices used as inbound payment, the discount needs to be subtracted from the open amount. 
 	 */
 	@Override
 	public Money calculateProjectedOverUnderAmt(final Money amountToAllocate)
 	{
-		final Money initialOpenAmtWithDiscount = purchaseInvoicePayableDoc.getAmountsToAllocateInitial().getPayAmt();
-		final Money remainingOpenAmtWithDiscount = initialOpenAmtWithDiscount.subtract(purchaseInvoicePayableDoc.getTotalAllocatedAmount());
+		final Money openAmtWithDiscount = purchaseInvoicePayableDoc.getOpenAmtInitial()
+				.subtract(purchaseInvoicePayableDoc.getAmountsToAllocateInitial().getDiscountAmt());
+		
+		final Money remainingOpenAmtWithDiscount = openAmtWithDiscount.subtract(purchaseInvoicePayableDoc.getTotalAllocatedAmount());
 
 		return remainingOpenAmtWithDiscount.subtract(amountToAllocate.negate());
 	}

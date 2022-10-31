@@ -313,9 +313,7 @@ public class PaymentAllocationBuilder
 				payment.addAllocatedAmt(amountsToAllocate.getPayAmtInPaymentCurrency());
 
 				//dev-note: register payment discount when fully allocated
-				final Money paymentDiscountAmtInPayCurrency = payment.isFullyAllocated()
-						? payment.getPaymentDiscountAmt()
-						: amountsToAllocate.getPayAmtInPaymentCurrency().toZero();
+				final Money paymentDiscountAmtInInvoiceCurrency = computePaymentDiscountAmtInInvoiceCurrency(payment, amountsToAllocate);
 
 				// Create new Allocation Line
 				final LocalDate dateTrx = TimeUtil.max(payable.getDate(), payment.getDate());
@@ -335,7 +333,7 @@ public class PaymentAllocationBuilder
 						.amounts(amountsToAllocate.getInvoiceAmountsToAllocateInInvoiceCurrency())
 						.payableOverUnderAmt(payableOverUnderAmt)
 						.paymentOverUnderAmt(paymentOverUnderAmt)
-						.payAmtDiscountInPaymentCurrency(paymentDiscountAmtInPayCurrency)
+						.payAmtDiscountInInvoiceCurrency(paymentDiscountAmtInInvoiceCurrency)
 						//
 						.build();
 				allocationLineCandidates.add(allocationLine);
@@ -356,12 +354,24 @@ public class PaymentAllocationBuilder
 	}
 
 	@NonNull
-	private Money computePaymentOverUnderAmtInInvoiceCurrency(@NonNull final IPaymentDocument payment, @NonNull final InvoiceAndPaymentAmountsToAllocate amountsToAllocate)
+	private static Money computePaymentOverUnderAmtInInvoiceCurrency(@NonNull final IPaymentDocument payment, @NonNull final InvoiceAndPaymentAmountsToAllocate amountsToAllocate)
 	{
 		final Money paymentOverUnderAmtInPaymentCurrency = payment.calculateProjectedOverUnderAmt(amountsToAllocate.getPayAmtInPaymentCurrency());
 		return amountsToAllocate.currencyRate.convertAmount(paymentOverUnderAmtInPaymentCurrency);
 	}
 
+	@NonNull
+	private static Money computePaymentDiscountAmtInInvoiceCurrency(
+			@NonNull final IPaymentDocument payment,
+			@NonNull final InvoiceAndPaymentAmountsToAllocate amountsToAllocate)
+	{
+		final Money paymentDiscountAmtInPaymentCurrency = payment.isFullyAllocated()
+				? payment.getPaymentDiscountAmt()
+				: payment.getPaymentDiscountAmt().toZero();
+
+		return amountsToAllocate.currencyRate.convertAmount(paymentDiscountAmtInPaymentCurrency);
+	}
+	
 	@Nullable
 	private AllocationLineCandidate createAllocationLineCandidate_ForRemainingOpenAmt(@NonNull final PayableDocument payable)
 	{
