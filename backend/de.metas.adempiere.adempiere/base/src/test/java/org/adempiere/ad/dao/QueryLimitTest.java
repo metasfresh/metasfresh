@@ -1,11 +1,11 @@
 package org.adempiere.ad.dao;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -17,12 +17,12 @@ import org.junit.jupiter.api.Test;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -42,6 +42,7 @@ public class QueryLimitTest
 		assertThat(QueryLimit.ofInt(2)).isSameAs(QueryLimit.TWO);
 		assertThat(QueryLimit.ofInt(100)).isSameAs(QueryLimit.ONE_HUNDRED);
 		assertThat(QueryLimit.ofInt(500)).isSameAs(QueryLimit.FIVE_HUNDRED);
+		assertThat(QueryLimit.ofInt(1000)).isSameAs(QueryLimit.ONE_THOUSAND);
 
 		assertThat(QueryLimit.ofInt(5).toInt()).isEqualTo(5);
 
