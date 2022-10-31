@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import de.metas.handlingunits.HuPackingInstructionsAttributeId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
@@ -15,6 +16,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
+import org.compiere.model.I_C_Project;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -159,5 +161,11 @@ public class HUPIAttributesDAO implements IHUPIAttributesDAO
 				.addEqualsFilter(I_M_HU_PI_Attribute.COLUMN_M_HU_PI_Version_ID, versionId)
 				.create()
 				.delete();
+	}
+
+	@Override
+	public I_M_HU_PI_Attribute getById(HuPackingInstructionsAttributeId huPIAttributeId)
+	{
+		return InterfaceWrapperHelper.load(huPIAttributeId, I_M_HU_PI_Attribute.class);
 	}
 }

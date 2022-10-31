@@ -2,11 +2,15 @@ package de.metas.handlingunits.model.validator;
 
 import java.util.List;
 
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.attribute.impl.HUUniqueAttributesService;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
+import org.compiere.Adempiere;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
 
@@ -42,6 +46,7 @@ public class M_HU
 	public void validate(final I_M_HU hu)
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
 		//
 		// Check: LUs shall always be Top-Level
@@ -50,7 +55,7 @@ public class M_HU
 			if (!handlingUnitsBL.isTopLevel(hu))
 			{
 				throw new HUException("Loading units shall always be top level"
-						+ "\n@M_HU_ID@: " + hu.getValue() + " (ID=" + hu.getM_HU_ID() + ")");
+											  + "\n@M_HU_ID@: " + hu.getValue() + " (ID=" + hu.getM_HU_ID() + ")");
 			}
 		}
 
@@ -61,8 +66,8 @@ public class M_HU
 			if (trxName == null || trxName.startsWith("POSave"))
 			{
 				final HUException ex = new HUException("Changing HUs out of transaction is not allowed"
-						+ "\n HU: " + hu
-						+ "\n trxName: " + trxName);
+															   + "\n HU: " + hu
+															   + "\n trxName: " + trxName);
 				if (Services.get(IDeveloperModeBL.class).isEnabled())
 				{
 					throw ex;
@@ -83,6 +88,23 @@ public class M_HU
 		huStatusBL.assertStatusChangeIsAllowed(hu, oldHu.getHUStatus(), hu.getHUStatus());
 	}
 
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_M_HU.COLUMNNAME_HUStatus)
+	public void handleHUUniqueAttributes(@NonNull final I_M_HU hu)
+	{
+		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+		final HUUniqueAttributesService huUniqueAttributesService = SpringContextHolder.instance.getBean(HUUniqueAttributesService.class);
+
+		if (huStatusBL.isQtyOnHand(hu.getHUStatus()))
+		{
+			huUniqueAttributesService.createHUUniqueAttributes(HuId.ofRepoId(hu.getM_HU_ID()));
+
+		}
+		else
+		{
+
+		}
+	}
+
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = I_M_HU.COLUMNNAME_M_Locator_ID)
 	public void validateLocatorChange(@NonNull final I_M_HU hu)
 	{
@@ -92,7 +114,7 @@ public class M_HU
 
 	/**
 	 * Updates the status, locator BP and BPL for child handling units.
-	 *
+	 * <p>
 	 * Note that this method only updates the direct children, but that will cause it to be called again and so on.
 	 *
 	 * @param hu

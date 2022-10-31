@@ -898,3 +898,326 @@ UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=40,Updated=TO_T
 UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=50,Updated=TO_TIMESTAMP('2022-10-31 18:01:18.335','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=584848
 ;
 
+
+
+
+-- 2022-10-31T20:00:03.159Z
+INSERT INTO AD_Menu (Action,AD_Client_ID,AD_Element_ID,AD_Menu_ID,AD_Org_ID,AD_Window_ID,Created,CreatedBy,EntityType,InternalName,IsActive,IsCreateNew,IsReadOnly,IsSOTrx,IsSummary,Name,Updated,UpdatedBy) VALUES ('W',0,581628,542018,0,541626,TO_TIMESTAMP('2022-10-31 22:00:02.994','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.handlingunits','M_HU_UniqueAttribute','Y','N','N','N','N','Handling Unit Unique Attributes',TO_TIMESTAMP('2022-10-31 22:00:02.994','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+-- 2022-10-31T20:00:03.160Z
+INSERT INTO AD_Menu_Trl (AD_Language,AD_Menu_ID, Description,Name,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Menu_ID, t.Description,t.Name,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Menu t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Menu_ID=542018 AND NOT EXISTS (SELECT 1 FROM AD_Menu_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Menu_ID=t.AD_Menu_ID)
+;
+
+-- 2022-10-31T20:00:03.162Z
+INSERT INTO AD_TreeNodeMM (AD_Client_ID,AD_Org_ID, IsActive,Created,CreatedBy,Updated,UpdatedBy, AD_Tree_ID, Node_ID, Parent_ID, SeqNo) SELECT t.AD_Client_ID,0, 'Y', now(), 100, now(), 100,t.AD_Tree_ID, 542018, 0, 999 FROM AD_Tree t WHERE t.AD_Client_ID=0 AND t.IsActive='Y' AND t.IsAllNodes='Y' AND t.AD_Table_ID=116 AND NOT EXISTS (SELECT * FROM AD_TreeNodeMM e WHERE e.AD_Tree_ID=t.AD_Tree_ID AND Node_ID=542018)
+;
+
+-- 2022-10-31T20:00:03.171Z
+/* DDL */  select update_menu_translation_from_ad_element(581628) 
+;
+
+-- Reordering children of `Logistics`
+-- Node name: `Tour (M_Tour)`
+-- 2022-10-31T20:00:03.753Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=0, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540796 AND AD_Tree_ID=10
+;
+
+-- Node name: `Tourversion (M_TourVersion)`
+-- 2022-10-31T20:00:03.755Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=1, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540798 AND AD_Tree_ID=10
+;
+
+-- Node name: `Delivery Days (M_DeliveryDay)`
+-- 2022-10-31T20:00:03.756Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=2, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540797 AND AD_Tree_ID=10
+;
+
+-- Node name: `Distribution Order (DD_Order)`
+-- 2022-10-31T20:00:03.757Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=3, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540829 AND AD_Tree_ID=10
+;
+
+-- Node name: `Distributions Editor (DD_OrderLine)`
+-- 2022-10-31T20:00:03.757Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=4, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540973 AND AD_Tree_ID=10
+;
+
+-- Node name: `Packing Instruction (M_HU_PI)`
+-- 2022-10-31T20:00:03.758Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=5, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540830 AND AD_Tree_ID=10
+;
+
+-- Node name: `Packing Instruction Version (M_HU_PI_Version)`
+-- 2022-10-31T20:00:03.759Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=6, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540831 AND AD_Tree_ID=10
+;
+
+-- Node name: `CU-TU Allocation (M_HU_PI_Item_Product)`
+-- 2022-10-31T20:00:03.760Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=7, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541375 AND AD_Tree_ID=10
+;
+
+-- Node name: `Packing Material (M_HU_PackingMaterial)`
+-- 2022-10-31T20:00:03.761Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=8, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540844 AND AD_Tree_ID=10
+;
+
+-- Node name: `Handling Unit (M_HU)`
+-- 2022-10-31T20:00:03.762Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=9, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540846 AND AD_Tree_ID=10
+;
+
+-- Node name: `Packaging code (M_HU_PackagingCode)`
+-- 2022-10-31T20:00:03.762Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=10, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541384 AND AD_Tree_ID=10
+;
+
+-- Node name: `Handling Unit Transaction (M_HU_Trx_Line)`
+-- 2022-10-31T20:00:03.763Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=11, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540977 AND AD_Tree_ID=10
+;
+
+-- Node name: `Handling Unit Trace (M_HU_Trace)`
+-- 2022-10-31T20:00:03.764Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=12, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540900 AND AD_Tree_ID=10
+;
+
+-- Node name: `Transport Disposition (M_Tour_Instance)`
+-- 2022-10-31T20:00:03.765Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=13, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540856 AND AD_Tree_ID=10
+;
+
+-- Node name: `Transport Delivery (M_DeliveryDay_Alloc)`
+-- 2022-10-31T20:00:03.766Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=14, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540857 AND AD_Tree_ID=10
+;
+
+-- Node name: `Material Transactions (M_Transaction)`
+-- 2022-10-31T20:00:03.767Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=15, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540860 AND AD_Tree_ID=10
+;
+
+-- Node name: `Transportation Order (M_ShipperTransportation)`
+-- 2022-10-31T20:00:03.768Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=16, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540866 AND AD_Tree_ID=10
+;
+
+-- Node name: `Package (M_Package)`
+-- 2022-10-31T20:00:03.769Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=17, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541057 AND AD_Tree_ID=10
+;
+
+-- Node name: `Internal Use (M_Inventory)`
+-- 2022-10-31T20:00:03.770Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=18, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540918 AND AD_Tree_ID=10
+;
+
+-- Node name: `GO! Delivery Orders (GO_DeliveryOrder)`
+-- 2022-10-31T20:00:03.771Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=19, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541011 AND AD_Tree_ID=10
+;
+
+-- Node name: `Der Kurier Delivery Orders (DerKurier_DeliveryOrder)`
+-- 2022-10-31T20:00:03.771Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=20, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541083 AND AD_Tree_ID=10
+;
+
+-- Node name: `DHL Delivery Order (DHL_ShipmentOrder)`
+-- 2022-10-31T20:00:03.772Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=21, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541388 AND AD_Tree_ID=10
+;
+
+-- Node name: `DPD Delivery Order (DPD_StoreOrder)`
+-- 2022-10-31T20:00:03.773Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=22, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541394 AND AD_Tree_ID=10
+;
+
+-- Node name: `Actions`
+-- 2022-10-31T20:00:03.774Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=23, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000057 AND AD_Tree_ID=10
+;
+
+-- Node name: `Reports`
+-- 2022-10-31T20:00:03.775Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=24, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000065 AND AD_Tree_ID=10
+;
+
+-- Node name: `Settings`
+-- 2022-10-31T20:00:03.775Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=25, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000075 AND AD_Tree_ID=10
+;
+
+-- Node name: `HU Reservierung (M_HU_Reservation)`
+-- 2022-10-31T20:00:03.776Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=26, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541117 AND AD_Tree_ID=10
+;
+
+-- Node name: `Service Handling Units (M_HU)`
+-- 2022-10-31T20:00:03.777Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=27, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541572 AND AD_Tree_ID=10
+;
+
+-- Node name: `HU QR Code (M_HU_QRCode)`
+-- 2022-10-31T20:00:03.778Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=28, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541905 AND AD_Tree_ID=10
+;
+
+-- Node name: `Handling Unit Unique Attributes`
+-- 2022-10-31T20:00:03.779Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=29, Updated=now(), UpdatedBy=100 WHERE  Node_ID=542018 AND AD_Tree_ID=10
+;
+
+-- Reordering children of `Logistics`
+-- Node name: `Tour (M_Tour)`
+-- 2022-10-31T20:01:34.068Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=0, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540796 AND AD_Tree_ID=10
+;
+
+-- Node name: `Tourversion (M_TourVersion)`
+-- 2022-10-31T20:01:34.069Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=1, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540798 AND AD_Tree_ID=10
+;
+
+-- Node name: `Delivery Days (M_DeliveryDay)`
+-- 2022-10-31T20:01:34.070Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=2, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540797 AND AD_Tree_ID=10
+;
+
+-- Node name: `Distribution Order (DD_Order)`
+-- 2022-10-31T20:01:34.071Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=3, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540829 AND AD_Tree_ID=10
+;
+
+-- Node name: `Distributions Editor (DD_OrderLine)`
+-- 2022-10-31T20:01:34.072Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=4, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540973 AND AD_Tree_ID=10
+;
+
+-- Node name: `Packing Instruction (M_HU_PI)`
+-- 2022-10-31T20:01:34.073Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=5, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540830 AND AD_Tree_ID=10
+;
+
+-- Node name: `Packing Instruction Version (M_HU_PI_Version)`
+-- 2022-10-31T20:01:34.073Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=6, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540831 AND AD_Tree_ID=10
+;
+
+-- Node name: `CU-TU Allocation (M_HU_PI_Item_Product)`
+-- 2022-10-31T20:01:34.075Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=7, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541375 AND AD_Tree_ID=10
+;
+
+-- Node name: `Packing Material (M_HU_PackingMaterial)`
+-- 2022-10-31T20:01:34.076Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=8, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540844 AND AD_Tree_ID=10
+;
+
+-- Node name: `Handling Unit (M_HU)`
+-- 2022-10-31T20:01:34.076Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=9, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540846 AND AD_Tree_ID=10
+;
+
+-- Node name: `Packaging code (M_HU_PackagingCode)`
+-- 2022-10-31T20:01:34.077Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=10, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541384 AND AD_Tree_ID=10
+;
+
+-- Node name: `Handling Unit Transaction (M_HU_Trx_Line)`
+-- 2022-10-31T20:01:34.078Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=11, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540977 AND AD_Tree_ID=10
+;
+
+-- Node name: `Handling Unit Trace (M_HU_Trace)`
+-- 2022-10-31T20:01:34.079Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=12, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540900 AND AD_Tree_ID=10
+;
+
+-- Node name: `Handling Unit Unique Attributes`
+-- 2022-10-31T20:01:34.080Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=13, Updated=now(), UpdatedBy=100 WHERE  Node_ID=542018 AND AD_Tree_ID=10
+;
+
+-- Node name: `Transport Disposition (M_Tour_Instance)`
+-- 2022-10-31T20:01:34.081Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=14, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540856 AND AD_Tree_ID=10
+;
+
+-- Node name: `Transport Delivery (M_DeliveryDay_Alloc)`
+-- 2022-10-31T20:01:34.082Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=15, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540857 AND AD_Tree_ID=10
+;
+
+-- Node name: `Material Transactions (M_Transaction)`
+-- 2022-10-31T20:01:34.082Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=16, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540860 AND AD_Tree_ID=10
+;
+
+-- Node name: `Transportation Order (M_ShipperTransportation)`
+-- 2022-10-31T20:01:34.083Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=17, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540866 AND AD_Tree_ID=10
+;
+
+-- Node name: `Package (M_Package)`
+-- 2022-10-31T20:01:34.084Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=18, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541057 AND AD_Tree_ID=10
+;
+
+-- Node name: `Internal Use (M_Inventory)`
+-- 2022-10-31T20:01:34.085Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=19, Updated=now(), UpdatedBy=100 WHERE  Node_ID=540918 AND AD_Tree_ID=10
+;
+
+-- Node name: `GO! Delivery Orders (GO_DeliveryOrder)`
+-- 2022-10-31T20:01:34.086Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=20, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541011 AND AD_Tree_ID=10
+;
+
+-- Node name: `Der Kurier Delivery Orders (DerKurier_DeliveryOrder)`
+-- 2022-10-31T20:01:34.087Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=21, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541083 AND AD_Tree_ID=10
+;
+
+-- Node name: `DHL Delivery Order (DHL_ShipmentOrder)`
+-- 2022-10-31T20:01:34.087Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=22, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541388 AND AD_Tree_ID=10
+;
+
+-- Node name: `DPD Delivery Order (DPD_StoreOrder)`
+-- 2022-10-31T20:01:34.088Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=23, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541394 AND AD_Tree_ID=10
+;
+
+-- Node name: `Actions`
+-- 2022-10-31T20:01:34.089Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=24, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000057 AND AD_Tree_ID=10
+;
+
+-- Node name: `Reports`
+-- 2022-10-31T20:01:34.090Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=25, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000065 AND AD_Tree_ID=10
+;
+
+-- Node name: `Settings`
+-- 2022-10-31T20:01:34.090Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=26, Updated=now(), UpdatedBy=100 WHERE  Node_ID=1000075 AND AD_Tree_ID=10
+;
+
+-- Node name: `HU Reservierung (M_HU_Reservation)`
+-- 2022-10-31T20:01:34.091Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=27, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541117 AND AD_Tree_ID=10
+;
+
+-- Node name: `Service Handling Units (M_HU)`
+-- 2022-10-31T20:01:34.093Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=28, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541572 AND AD_Tree_ID=10
+;
+
+-- Node name: `HU QR Code (M_HU_QRCode)`
+-- 2022-10-31T20:01:34.093Z
+UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=29, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541905 AND AD_Tree_ID=10
+;
+
+
+

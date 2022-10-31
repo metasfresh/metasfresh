@@ -35,6 +35,7 @@ import de.metas.distribution.ddorder.interceptor.DD_Order;
 import de.metas.distribution.ddorder.interceptor.DD_OrderLine;
 import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleService;
 import de.metas.handlingunits.IHUDocumentHandlerFactory;
+import de.metas.handlingunits.attribute.impl.HUUniqueAttributesService;
 import de.metas.handlingunits.document.IHUDocumentFactoryService;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.inout.HuInOutInvoiceCandidateVetoer;
@@ -120,14 +121,18 @@ public final class Main extends AbstractModuleInterceptor
 	private final DDOrderService ddOrderService;
 	private final PickingBOMService pickingBOMService;
 
+	private final HUUniqueAttributesService huUniqueAttributesService;
+
 	public Main(
 			@NonNull final DDOrderMoveScheduleService ddOrderMoveScheduleService,
 			@NonNull final DDOrderService ddOrderService,
-			@NonNull final PickingBOMService pickingBOMService)
+			@NonNull final PickingBOMService pickingBOMService,
+			@NonNull final HUUniqueAttributesService huUniqueAttributesService)
 	{
 		this.ddOrderMoveScheduleService = ddOrderMoveScheduleService;
 		this.ddOrderService = ddOrderService;
 		this.pickingBOMService = pickingBOMService;
+		this.huUniqueAttributesService = huUniqueAttributesService;
 	}
 
 	@Override
@@ -143,7 +148,7 @@ public final class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.C_Order());
 		engine.addModelValidator(de.metas.handlingunits.model.validator.M_Movement.instance);
 		engine.addModelValidator(de.metas.handlingunits.model.validator.M_HU.INSTANCE);
-		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_Attribute());
+		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_Attribute(huUniqueAttributesService));
 		engine.addModelValidator(de.metas.handlingunits.model.validator.M_HU_Storage.INSTANCE);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_Assignment());
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_LUTU_Configuration());

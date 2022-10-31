@@ -1,0 +1,163 @@
+/*
+ * #%L
+ * de.metas.handlingunits.base
+ * %%
+ * Copyright (C) 2022 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.handlingunits.attribute.impl;
+
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsAttributeId;
+import de.metas.handlingunits.IHUStatusBL;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.attribute.IHUAttributesDAO;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_HU_Attribute;
+import de.metas.handlingunits.model.I_M_HU_Storage;
+import de.metas.handlingunits.model.I_M_HU_UniqueAttribute;
+import de.metas.handlingunits.storage.IHUStorageDAO;
+import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.product.ProductId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.mm.attributes.AttributeId;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+
+@Repository
+public class HUUniqueAttributesRepository
+{
+	final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
+	final IHUStorageDAO huStorageDAO = storageFactory.getHUStorageDAO();
+	final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+
+	final IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
+
+	final IHandlingUnitsDAO huDAO = Services.get(IHandlingUnitsDAO.class);
+	private IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	public void createHUUniqueAttributes(@NonNull final HuPackingInstructionsAttributeId huPIAttributeId)
+	{
+
+		final List<I_M_HU_Attribute> huAttributes = retrieveHUAttributes(huPIAttributeId);
+
+		for (I_M_HU_Attribute huAttribute : huAttributes)
+		{
+			createHUUniqueAttributes(huAttribute);
+		}
+
+	}
+
+	public void createHUUniqueAttributes(@NonNull final I_M_HU_Attribute huAttribute)
+	{
+
+		if (Check.isBlank(huAttribute.getValue()))
+		{
+			// nothing to do
+			return;
+		}
+
+		final I_M_HU huRecord = huDAO.getById(HuId.ofRepoId(huAttribute.getM_HU_ID()));
+
+		if (!huStatusBL.isQtyOnHand(huRecord.getHUStatus()))
+		{
+			// HU doesn't count for QtyOnHand
+			return;
+		}
+
+		final List<I_M_HU_Storage> huStorages = huStorageDAO.retrieveStorages(huRecord);
+
+		for (final I_M_HU_Storage huStorage : huStorages)
+		{
+			final HUUniqueAttributeRequest request = HUUniqueAttributeRequest.builder()
+					.huPIAttributeId(HuPackingInstructionsAttributeId.ofRepoId(huAttribute.getM_HU_PI_Attribute_ID()))
+					.huAttributeId(huAttribute.getM_HU_Attribute_ID())
+					.huId(HuId.ofRepoId(huRecord.getM_HU_ID()))
+					.productId(ProductId.ofRepoId(huStorage.getM_Product_ID()))
+					.attributeId(AttributeId.ofRepoId(huAttribute.getM_Attribute_ID()))
+					.attributeValue(huAttribute.getValue())
+					.build();
+
+
+			createHUUniqueAttribute(request);
+		}
+	}
+
+	private static void createHUUniqueAttribute(@NonNull final HUUniqueAttributeRequest huUniqueAttributeRequest)
+	{
+		final I_M_HU_UniqueAttribute huUniqueAttributeRecord = newInstance(I_M_HU_UniqueAttribute.class);
+
+		huUniqueAttributeRecord.setM_HU_PI_Attribute_ID(huUniqueAttributeRequest.getHuPIAttributeId().getRepoId());
+		huUniqueAttributeRecord.setM_HU_Attribute_ID(huUniqueAttributeRequest.getHuAttributeId());
+		huUniqueAttributeRecord.setM_HU_ID(huUniqueAttributeRequest.getHuId().getRepoId());
+		huUniqueAttributeRecord.setM_Product_ID(huUniqueAttributeRequest.getProductId().getRepoId());
+		huUniqueAttributeRecord.setM_Attribute_ID(huUniqueAttributeRequest.getAttributeId().getRepoId());
+		huUniqueAttributeRecord.setValue(huUniqueAttributeRequest.getAttributeValue());
+
+		save(huUniqueAttributeRecord);
+	}
+
+
+
+	private List<I_M_HU_Attribute> retrieveHUAttributes(@NonNull final HuPackingInstructionsAttributeId huPIAttributeId)
+	{
+		return queryBL.createQueryBuilder(I_M_HU_Attribute.class)
+				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_M_HU_PI_Attribute_ID, huPIAttributeId)
+				.create()
+				.list(I_M_HU_Attribute.class);
+	}
+
+	public void deleteHUUniqueAttributesForHUPIAttribute(final HuPackingInstructionsAttributeId huPIAttributeId)
+	{
+		queryBL.createQueryBuilder(I_M_HU_UniqueAttribute.class)
+				.addEqualsFilter(I_M_HU_UniqueAttribute.COLUMNNAME_M_HU_PI_Attribute_ID, huPIAttributeId)
+				.create().delete();
+	}
+
+	public void deleteHUUniqueAttributesForHUAttribute(final I_M_HU_Attribute huAttribute)
+	{
+		queryBL.createQueryBuilder(I_M_HU_UniqueAttribute.class)
+				.addEqualsFilter(I_M_HU_UniqueAttribute.COLUMNNAME_M_HU_Attribute_ID, huAttribute.getM_HU_Attribute_ID())
+				.create().delete();
+	}
+
+	public void createHUUniqueAttributes(final HuId huId)
+	{
+		final I_M_HU hu = huDAO.getById(huId);
+		final List<I_M_HU_Attribute> huAttributes = huAttributesDAO.retrieveAttributesOrdered(hu).getHuAttributes();
+
+
+		for (final I_M_HU_Attribute huAttribute : huAttributes)
+		{
+			// HUUniqueAttributeRequest.builder()
+			// 		.huPIAttributeId(HuPackingInstructionsAttributeId.ofRepoId(huAttribute.getM_HU_PI_Attribute_ID()))
+			// 		.huAttributeId(huAttribute.getM_HU_Attribute_ID())
+			// 		.huId(huId)
+			// 		.productId(hua)
+			//TODO
+		}
+	}
+}
