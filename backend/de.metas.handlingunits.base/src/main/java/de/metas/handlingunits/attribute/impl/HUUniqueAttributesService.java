@@ -24,28 +24,48 @@ package de.metas.handlingunits.attribute.impl;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsAttributeId;
+import de.metas.handlingunits.IHUStatusBL;
+import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.attribute.IHUAttributesDAO;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
+import de.metas.handlingunits.model.I_M_HU_Storage;
+import de.metas.handlingunits.storage.IHUStorageDAO;
+import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.i18n.AdMessageKey;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 @Service
 public class HUUniqueAttributesService
 {
+
+	private static final String ERR_HU_Invalid_For_Unique_Attribute = "ERR_HU_Invalid_For_Unique_Attribute_Placeholder"; // TODO
 	private final HUUniqueAttributesRepository repo;
+	final IHandlingUnitsDAO huDAO = Services.get(IHandlingUnitsDAO.class);
+	final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
+	final IHUStorageDAO huStorageDAO = storageFactory.getHUStorageDAO();
+	final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+
+	final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+
+	final IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
 
 	public HUUniqueAttributesService(@NonNull final HUUniqueAttributesRepository repo)
 	{
 		this.repo = repo;
-	}
-
-	public void createHUUniqueAttributes(final @NonNull HuPackingInstructionsAttributeId huPIAttributeId)
-	{
-		repo.createHUUniqueAttributes(huPIAttributeId);
-	}
-
-	public void createHUUniqueAttributes(final @NonNull I_M_HU_Attribute huAttribute)
-	{
-		repo.createHUUniqueAttributes(huAttribute);
 	}
 
 	public void deleteHUUniqueAttributesForHUPIAttribute(final @NonNull HuPackingInstructionsAttributeId huPiAttributeId)
@@ -58,11 +78,6 @@ public class HUUniqueAttributesService
 		repo.deleteHUUniqueAttributesForHUAttribute(huAttribute);
 	}
 
-	public void createHUUniqueAttributes(final HuId huId)
-	{
-		repo.createHUUniqueAttributes(huId);
-	}
-
 	public void updateLinkedHUAttributes(@NonNull final HuPackingInstructionsAttributeId huPiAttributeId, final boolean isUnique)
 	{
 		repo.updateLinkedHUAttributes(huPiAttributeId, isUnique);
@@ -71,5 +86,84 @@ public class HUUniqueAttributesService
 	public void deleteHUUniqueAttributesForHUAttribute(@NonNull final HuId huId)
 	{
 		repo.deleteHUUniqueAttributesForHUAttribute(huId);
+	}
+
+	public void validateHUForUniqueAttribute(@NonNull final HuId huId)
+	{
+		final I_M_HU huRecord = huDAO.getById(huId);
+
+		final List<I_M_HU_Storage> huStorages = huStorageDAO.retrieveStorages(huRecord);
+
+		for (final I_M_HU_Storage huStorage : huStorages)
+		{
+			if(!isValidHUStorageForUniqueAttribute(huStorage))
+			{
+				throw new AdempiereException(AdMessageKey.of(ERR_HU_Invalid_For_Unique_Attribute), huRecord);
+			}
+		}
+
+	}
+
+	private boolean isValidHUStorageForUniqueAttribute(@NonNull final I_M_HU_Storage huStorage)
+	{
+		if (uomDAO.isUOMEach(UomId.ofRepoId(huStorage.getC_UOM_ID()))
+				&& BigDecimal.ONE.equals(huStorage.getQty()))
+		{
+			return true;
+		}
+
+		return false;
+	}
+
+	public void createHUUniqueAttributes(@NonNull final I_M_HU_Attribute huAttribute)
+	{
+		if (Check.isBlank(huAttribute.getValue()))
+		{
+			// nothing to do
+			return;
+		}
+
+		final I_M_HU huRecord = huDAO.getById(HuId.ofRepoId(huAttribute.getM_HU_ID()));
+
+		if (!huStatusBL.isQtyOnHand(huRecord.getHUStatus()))
+		{
+			// HU doesn't count for QtyOnHand
+			return;
+		}
+
+		final List<I_M_HU_Storage> huStorages = huStorageDAO.retrieveStorages(huRecord);
+
+		for (final I_M_HU_Storage huStorage : huStorages)
+		{
+			final HUUniqueAttributeRequest request = HUUniqueAttributeRequest.builder()
+					.huPIAttributeId(HuPackingInstructionsAttributeId.ofRepoId(huAttribute.getM_HU_PI_Attribute_ID()))
+					.huAttributeId(huAttribute.getM_HU_Attribute_ID())
+					.huId(HuId.ofRepoId(huRecord.getM_HU_ID()))
+					.productId(ProductId.ofRepoId(huStorage.getM_Product_ID()))
+					.attributeId(AttributeId.ofRepoId(huAttribute.getM_Attribute_ID()))
+					.attributeValue(huAttribute.getValue())
+					.build();
+
+			repo.createHUUniqueAttribute(request);
+		}
+	}
+
+	public void createHUUniqueAttributes(@NonNull final HuPackingInstructionsAttributeId huPIAttributeId)
+	{
+		final List<I_M_HU_Attribute> huAttributes = repo.retrieveHUAttributes(huPIAttributeId);
+
+		for (final I_M_HU_Attribute huAttribute : huAttributes)
+		{
+			createHUUniqueAttributes(huAttribute);
+		}
+	}
+
+	public void createHUUniqueAttributes(@NonNull final HuId huId)
+	{
+		final I_M_HU hu = huDAO.getById(huId);
+		huAttributesDAO.retrieveAttributesOrdered(hu).getHuAttributes()
+				.stream()
+				.filter(I_M_HU_Attribute::isUnique)
+				.forEach(this::createHUUniqueAttributes);
 	}
 }

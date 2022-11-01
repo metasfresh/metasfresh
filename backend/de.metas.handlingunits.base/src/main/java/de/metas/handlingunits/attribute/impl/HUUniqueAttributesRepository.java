@@ -24,22 +24,11 @@ package de.metas.handlingunits.attribute.impl;
 
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsAttributeId;
-import de.metas.handlingunits.IHUStatusBL;
-import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.IHandlingUnitsDAO;
-import de.metas.handlingunits.attribute.IHUAttributesDAO;
-import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
-import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_HU_UniqueAttribute;
-import de.metas.handlingunits.storage.IHUStorageDAO;
-import de.metas.handlingunits.storage.IHUStorageFactory;
-import de.metas.product.ProductId;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.mm.attributes.AttributeId;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -50,60 +39,10 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 @Repository
 public class HUUniqueAttributesRepository
 {
-	final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
-	final IHUStorageDAO huStorageDAO = storageFactory.getHUStorageDAO();
-	final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
-	final IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
-
-	final IHandlingUnitsDAO huDAO = Services.get(IHandlingUnitsDAO.class);
 	final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public void createHUUniqueAttributes(@NonNull final HuPackingInstructionsAttributeId huPIAttributeId)
-	{
-		final List<I_M_HU_Attribute> huAttributes = retrieveHUAttributes(huPIAttributeId);
-
-		for (final I_M_HU_Attribute huAttribute : huAttributes)
-		{
-			createHUUniqueAttributes(huAttribute);
-		}
-	}
-
-	public void createHUUniqueAttributes(@NonNull final I_M_HU_Attribute huAttribute)
-	{
-
-		if (Check.isBlank(huAttribute.getValue()))
-		{
-			// nothing to do
-			return;
-		}
-
-		final I_M_HU huRecord = huDAO.getById(HuId.ofRepoId(huAttribute.getM_HU_ID()));
-
-		if (!huStatusBL.isQtyOnHand(huRecord.getHUStatus()))
-		{
-			// HU doesn't count for QtyOnHand
-			return;
-		}
-
-		final List<I_M_HU_Storage> huStorages = huStorageDAO.retrieveStorages(huRecord);
-
-		for (final I_M_HU_Storage huStorage : huStorages)
-		{
-			final HUUniqueAttributeRequest request = HUUniqueAttributeRequest.builder()
-					.huPIAttributeId(HuPackingInstructionsAttributeId.ofRepoId(huAttribute.getM_HU_PI_Attribute_ID()))
-					.huAttributeId(huAttribute.getM_HU_Attribute_ID())
-					.huId(HuId.ofRepoId(huRecord.getM_HU_ID()))
-					.productId(ProductId.ofRepoId(huStorage.getM_Product_ID()))
-					.attributeId(AttributeId.ofRepoId(huAttribute.getM_Attribute_ID()))
-					.attributeValue(huAttribute.getValue())
-					.build();
-
-			createHUUniqueAttribute(request);
-		}
-	}
-
-	private static void createHUUniqueAttribute(@NonNull final HUUniqueAttributeRequest huUniqueAttributeRequest)
+	public void createHUUniqueAttribute(@NonNull final HUUniqueAttributeRequest huUniqueAttributeRequest)
 	{
 		final I_M_HU_UniqueAttribute huUniqueAttributeRecord = newInstance(I_M_HU_UniqueAttribute.class);
 
@@ -117,7 +56,7 @@ public class HUUniqueAttributesRepository
 		save(huUniqueAttributeRecord);
 	}
 
-	private List<I_M_HU_Attribute> retrieveHUAttributes(@NonNull final HuPackingInstructionsAttributeId huPIAttributeId)
+	public List<I_M_HU_Attribute> retrieveHUAttributes(@NonNull final HuPackingInstructionsAttributeId huPIAttributeId)
 	{
 		return queryBL.createQueryBuilder(I_M_HU_Attribute.class)
 				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_M_HU_PI_Attribute_ID, huPIAttributeId)
@@ -137,15 +76,6 @@ public class HUUniqueAttributesRepository
 		queryBL.createQueryBuilder(I_M_HU_UniqueAttribute.class)
 				.addEqualsFilter(I_M_HU_UniqueAttribute.COLUMNNAME_M_HU_Attribute_ID, huAttribute.getM_HU_Attribute_ID())
 				.create().delete();
-	}
-
-	public void createHUUniqueAttributes(@NonNull final HuId huId)
-	{
-		final I_M_HU hu = huDAO.getById(huId);
-		huAttributesDAO.retrieveAttributesOrdered(hu).getHuAttributes()
-				.stream()
-				.filter(I_M_HU_Attribute::isUnique)
-				.forEach(this::createHUUniqueAttributes);
 	}
 
 	public void updateLinkedHUAttributes(@NonNull final HuPackingInstructionsAttributeId huPiAttributeId, final boolean isUnique)

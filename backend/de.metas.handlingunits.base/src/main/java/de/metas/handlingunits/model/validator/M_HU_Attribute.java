@@ -22,6 +22,7 @@ package de.metas.handlingunits.model.validator;
  * #L%
  */
 
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsAttributeId;
 import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
 import de.metas.handlingunits.attribute.impl.HUUniqueAttributesService;
@@ -90,6 +91,7 @@ public class M_HU_Attribute
 		final String attributeValue = huAttribute.getValue();
 		if (!Check.isBlank(attributeValue))
 		{
+			huUniqueAttributesService.validateHUForUniqueAttribute(HuId.ofRepoId(huAttribute.getM_HU_ID()));
 			huUniqueAttributesService.createHUUniqueAttributes(huAttribute);
 		}
 		else
