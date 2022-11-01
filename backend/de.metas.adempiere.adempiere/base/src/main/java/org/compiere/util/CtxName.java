@@ -1,23 +1,20 @@
 package org.compiere.util;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.util.Check;
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import javax.annotation.Nullable;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.util.Check;
-import lombok.NonNull;
-
 /**
  * Immutable Context Name. Use the methods for {@link CtxNames} to obtain instances.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "OptionalAssignedToNull" })
 public final class CtxName
@@ -107,13 +104,6 @@ public final class CtxName
 			}
 		}
 		return defaultValueDate.orElse(null);
-	}
-
-	public CtxName withoutDefaultValue()
-	{
-		return isDefaultValuePresent(defaultValue)
-				? new CtxName(name, modifiers, null)
-				: this;
 	}
 
 	@SuppressWarnings("BooleanMethodIsAlwaysInverted")

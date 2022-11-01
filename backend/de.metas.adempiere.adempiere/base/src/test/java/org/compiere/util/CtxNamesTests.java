@@ -301,12 +301,6 @@ public class CtxNamesTests
 		void validName(String name)
 		{
 			CtxNames.parse(name);
-
-			// CtxNames.parse("Test");
-			// CtxNames.parse("Test0_ID");
-			// CtxNames.parse("#Test0_ID");
-			// CtxNames.parse("$Test0_ID");
-			// CtxNames.parse("$Test0-ID"); // not sure if this shall be tolerated, but for now we tolerate it
 		}
 
 		@ParameterizedTest
@@ -364,31 +358,5 @@ public class CtxNamesTests
 			assertThat(ofNameAndDefaultValue.getValueAsBoolean(evaluatee)).isNull();
 			assertThat(ofNameAndDefaultValue.getValueAsDate(evaluatee)).isNull();
 		}
-	}
-
-	@Nested
-	class withoutDefaultValue
-	{
-		@Test
-		void null_defaultValue()
-		{
-			final CtxName ctxName = CtxNames.ofNameAndDefaultValue("name", null);
-			assertThat(ctxName.withoutDefaultValue()).isSameAs(ctxName);
-		}
-
-		@Test
-		void empty_defaultValue()
-		{
-			final CtxName ctxName = CtxNames.ofNameAndDefaultValue("name", "");
-			assertThat(ctxName.withoutDefaultValue()).isSameAs(ctxName);
-		}
-
-		@Test
-		void actual_defaultValue()
-		{
-			final CtxName ctxName = CtxNames.ofNameAndDefaultValue("name", "default");
-			assertThat(ctxName.withoutDefaultValue()).isEqualTo(CtxNames.ofNameAndDefaultValue("name", null));
-		}
-
 	}
 }
