@@ -1,23 +1,11 @@
 package de.metas.handlingunits.model.validator;
 
-import java.util.List;
-
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.attribute.impl.HUUniqueAttributesService;
-import org.adempiere.ad.modelvalidator.annotations.Interceptor;
-import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.service.IDeveloperModeBL;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-import org.compiere.Adempiere;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.ModelValidator;
-import org.slf4j.Logger;
-
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.attribute.impl.HUUniqueAttributesService;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.shipmentschedule.segments.ShipmentScheduleSegmentFromHU;
@@ -25,6 +13,16 @@ import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.ModelValidator;
+import org.slf4j.Logger;
+
+import java.util.List;
 
 @Interceptor(I_M_HU.class)
 public class M_HU
@@ -39,14 +37,11 @@ public class M_HU
 
 	/**
 	 * Checks if HU is valid.
-	 *
-	 * @param hu
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void validate(final I_M_HU hu)
 	{
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
 		//
 		// Check: LUs shall always be Top-Level
@@ -93,15 +88,14 @@ public class M_HU
 	{
 		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 		final HUUniqueAttributesService huUniqueAttributesService = SpringContextHolder.instance.getBean(HUUniqueAttributesService.class);
-
+		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
 		if (huStatusBL.isQtyOnHand(hu.getHUStatus()))
 		{
-			huUniqueAttributesService.createHUUniqueAttributes(HuId.ofRepoId(hu.getM_HU_ID()));
-
+			huUniqueAttributesService.createHUUniqueAttributes(huId);
 		}
 		else
 		{
-
+			huUniqueAttributesService.deleteHUUniqueAttributesForHUAttribute(huId);
 		}
 	}
 
@@ -116,8 +110,6 @@ public class M_HU
 	 * Updates the status, locator BP and BPL for child handling units.
 	 * <p>
 	 * Note that this method only updates the direct children, but that will cause it to be called again and so on.
-	 *
-	 * @param hu
 	 */
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged = {
 			I_M_HU.COLUMNNAME_HUStatus,

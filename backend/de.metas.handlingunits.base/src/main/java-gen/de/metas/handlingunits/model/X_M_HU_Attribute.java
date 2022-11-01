@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_HU_Attribute extends org.compiere.model.PO implements I_M_HU_Attribute, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 489210147L;
+	private static final long serialVersionUID = 1697825680L;
 
     /** Standard Constructor */
     public X_M_HU_Attribute (final Properties ctx, final int M_HU_Attribute_ID, @Nullable final String trxName)
@@ -33,6 +33,18 @@ public class X_M_HU_Attribute extends org.compiere.model.PO implements I_M_HU_At
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setIsUnique (final boolean IsUnique)
+	{
+		set_ValueNoCheck (COLUMNNAME_IsUnique, IsUnique);
+	}
+
+	@Override
+	public boolean isUnique() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsUnique);
 	}
 
 	@Override

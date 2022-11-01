@@ -58,5 +58,7 @@ public class M_HU_PI_Attribute
 			service.deleteHUUniqueAttributesForHUPIAttribute(huPiAttributeId);
 		}
 
+		service.updateLinkedHUAttributes(huPiAttributeId, isUnique);
+
 	}
 }

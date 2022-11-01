@@ -57,18 +57,16 @@ public class HUUniqueAttributesRepository
 	final IHUAttributesDAO huAttributesDAO = Services.get(IHUAttributesDAO.class);
 
 	final IHandlingUnitsDAO huDAO = Services.get(IHandlingUnitsDAO.class);
-	private IQueryBL queryBL = Services.get(IQueryBL.class);
+	final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public void createHUUniqueAttributes(@NonNull final HuPackingInstructionsAttributeId huPIAttributeId)
 	{
-
 		final List<I_M_HU_Attribute> huAttributes = retrieveHUAttributes(huPIAttributeId);
 
-		for (I_M_HU_Attribute huAttribute : huAttributes)
+		for (final I_M_HU_Attribute huAttribute : huAttributes)
 		{
 			createHUUniqueAttributes(huAttribute);
 		}
-
 	}
 
 	public void createHUUniqueAttributes(@NonNull final I_M_HU_Attribute huAttribute)
@@ -101,7 +99,6 @@ public class HUUniqueAttributesRepository
 					.attributeValue(huAttribute.getValue())
 					.build();
 
-
 			createHUUniqueAttribute(request);
 		}
 	}
@@ -120,8 +117,6 @@ public class HUUniqueAttributesRepository
 		save(huUniqueAttributeRecord);
 	}
 
-
-
 	private List<I_M_HU_Attribute> retrieveHUAttributes(@NonNull final HuPackingInstructionsAttributeId huPIAttributeId)
 	{
 		return queryBL.createQueryBuilder(I_M_HU_Attribute.class)
@@ -130,34 +125,44 @@ public class HUUniqueAttributesRepository
 				.list(I_M_HU_Attribute.class);
 	}
 
-	public void deleteHUUniqueAttributesForHUPIAttribute(final HuPackingInstructionsAttributeId huPIAttributeId)
+	public void deleteHUUniqueAttributesForHUPIAttribute(@NonNull final HuPackingInstructionsAttributeId huPIAttributeId)
 	{
 		queryBL.createQueryBuilder(I_M_HU_UniqueAttribute.class)
 				.addEqualsFilter(I_M_HU_UniqueAttribute.COLUMNNAME_M_HU_PI_Attribute_ID, huPIAttributeId)
 				.create().delete();
 	}
 
-	public void deleteHUUniqueAttributesForHUAttribute(final I_M_HU_Attribute huAttribute)
+	public void deleteHUUniqueAttributesForHUAttribute(@NonNull final I_M_HU_Attribute huAttribute)
 	{
 		queryBL.createQueryBuilder(I_M_HU_UniqueAttribute.class)
 				.addEqualsFilter(I_M_HU_UniqueAttribute.COLUMNNAME_M_HU_Attribute_ID, huAttribute.getM_HU_Attribute_ID())
 				.create().delete();
 	}
 
-	public void createHUUniqueAttributes(final HuId huId)
+	public void createHUUniqueAttributes(@NonNull final HuId huId)
 	{
 		final I_M_HU hu = huDAO.getById(huId);
-		final List<I_M_HU_Attribute> huAttributes = huAttributesDAO.retrieveAttributesOrdered(hu).getHuAttributes();
+		huAttributesDAO.retrieveAttributesOrdered(hu).getHuAttributes()
+				.stream()
+				.filter(I_M_HU_Attribute::isUnique)
+				.forEach(this::createHUUniqueAttributes);
+	}
 
+	public void updateLinkedHUAttributes(@NonNull final HuPackingInstructionsAttributeId huPiAttributeId, final boolean isUnique)
+	{
+		final List<I_M_HU_Attribute> huAttributes = retrieveHUAttributes(huPiAttributeId);
 
 		for (final I_M_HU_Attribute huAttribute : huAttributes)
 		{
-			// HUUniqueAttributeRequest.builder()
-			// 		.huPIAttributeId(HuPackingInstructionsAttributeId.ofRepoId(huAttribute.getM_HU_PI_Attribute_ID()))
-			// 		.huAttributeId(huAttribute.getM_HU_Attribute_ID())
-			// 		.huId(huId)
-			// 		.productId(hua)
-			//TODO
+			huAttribute.setIsUnique(isUnique);
+			save(huAttribute);
 		}
+	}
+
+	public void deleteHUUniqueAttributesForHUAttribute(@NonNull final HuId huId)
+	{
+		queryBL.createQueryBuilder(I_M_HU_UniqueAttribute.class)
+				.addEqualsFilter(I_M_HU_UniqueAttribute.COLUMNNAME_M_HU_ID, huId)
+				.create().delete();
 	}
 }

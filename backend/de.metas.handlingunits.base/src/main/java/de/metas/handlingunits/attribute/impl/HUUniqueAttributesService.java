@@ -33,7 +33,7 @@ public class HUUniqueAttributesService
 {
 	private final HUUniqueAttributesRepository repo;
 
-	public HUUniqueAttributesService (@NonNull final HUUniqueAttributesRepository repo)
+	public HUUniqueAttributesService(@NonNull final HUUniqueAttributesRepository repo)
 	{
 		this.repo = repo;
 	}
@@ -47,12 +47,13 @@ public class HUUniqueAttributesService
 	{
 		repo.createHUUniqueAttributes(huAttribute);
 	}
-	public void deleteHUUniqueAttributesForHUPIAttribute(final @NonNull HuPackingInstructionsAttributeId  huPiAttributeId)
+
+	public void deleteHUUniqueAttributesForHUPIAttribute(final @NonNull HuPackingInstructionsAttributeId huPiAttributeId)
 	{
 		repo.deleteHUUniqueAttributesForHUPIAttribute(huPiAttributeId);
 	}
 
-	public void deleteHUUniqueAttributesForHUAttribute(final I_M_HU_Attribute huAttribute)
+	public void deleteHUUniqueAttributesForHUAttribute(@NonNull final I_M_HU_Attribute huAttribute)
 	{
 		repo.deleteHUUniqueAttributesForHUAttribute(huAttribute);
 	}
@@ -60,5 +61,15 @@ public class HUUniqueAttributesService
 	public void createHUUniqueAttributes(final HuId huId)
 	{
 		repo.createHUUniqueAttributes(huId);
+	}
+
+	public void updateLinkedHUAttributes(@NonNull final HuPackingInstructionsAttributeId huPiAttributeId, final boolean isUnique)
+	{
+		repo.updateLinkedHUAttributes(huPiAttributeId, isUnique);
+	}
+
+	public void deleteHUUniqueAttributesForHUAttribute(@NonNull final HuId huId)
+	{
+		repo.deleteHUUniqueAttributesForHUAttribute(huId);
 	}
 }
