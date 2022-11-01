@@ -83,11 +83,11 @@ public class BankStatementImportFileLogRepository
 								 logEntry.getClientId(), // 1 - AD_Client_ID
 								 OrgId.ANY, // 2 - AD_Org_ID
 								 logEntry.getTimestamp(), // 3 - Created
-								 logEntry.getClientId(), // 4 - CreatedBy
+								 logEntry.getUserId(), // 4 - CreatedBy
 								 // + "'Y'," // 5 - IsActive
 								 logEntry.getMessage(), // 6 - LogMessage
 								 logEntry.getTimestamp(), // 7 - Updated
-								 logEntry.getClientId(), // 8 - UpdatedBy
+								 logEntry.getUserId(), // 8 - UpdatedBy
 								 logEntry.getAdIssueId(), // 9 - AD_Issue_ID
 								 logEntry.getBankStatementImportFileId() // 10 - C_BankStatement_Import_File_ID
 				);

@@ -43,7 +43,7 @@ UPDATE AD_Message_Trl SET MsgText='Stmt mit Id={0} wird übersprungen, da es kei
 
 -- Value: de.metas.banking.camt53.BankStatementCamt53Service.MissingMetasfreshBankAcctWithSwiftCode
 -- 2022-10-28T13:51:17.225Z
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545180,0,TO_TIMESTAMP('2022-10-28 16:51:17','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.banking','Y','Überspringen von Stmt mit Id={0}, da keine Bank für SwiftCode={1} gefunden wurde','I',TO_TIMESTAMP('2022-10-28 16:51:17','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.banking.camt53.BankStatementCamt53Service.MissingMetasfreshBankAcctWithSwiftCode')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545180,0,TO_TIMESTAMP('2022-10-28 16:51:17','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.banking','Y','Stmt mit Id={0} wird übersprungen, da keine Bank für SwiftCode={1} gefunden wurde','I',TO_TIMESTAMP('2022-10-28 16:51:17','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.banking.camt53.BankStatementCamt53Service.MissingMetasfreshBankAcctWithSwiftCode')
 ;
 
 -- 2022-10-28T13:51:17.225Z
@@ -57,7 +57,7 @@ UPDATE AD_Message_Trl SET MsgText='Skipping Stmt with Id={0}, because no bank wa
 
 -- Value: de.metas.banking.camt53.BankStatementCamt53Service.MissingMetasfreshBankAcctWithAccountNo
 -- 2022-10-28T13:51:48.723Z
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545181,0,TO_TIMESTAMP('2022-10-28 16:51:48','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.banking','Y','Überspringen von Stmt mit Id={0}, da die Bank mit C_Bank_ID={1} kein Konto mit AccountNo={2} hat','I',TO_TIMESTAMP('2022-10-28 16:51:48','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.banking.camt53.BankStatementCamt53Service.MissingMetasfreshBankAcctWithAccountNo')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545181,0,TO_TIMESTAMP('2022-10-28 16:51:48','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.banking','Y','Stmt mit Id={0} wird übersprungen, da die Bank mit C_Bank_ID={1} kein Konto mit AccountNo={2} hat','I',TO_TIMESTAMP('2022-10-28 16:51:48','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.banking.camt53.BankStatementCamt53Service.MissingMetasfreshBankAcctWithAccountNo')
 ;
 
 -- 2022-10-28T13:51:48.723Z
@@ -71,7 +71,7 @@ UPDATE AD_Message_Trl SET MsgText='Skipping Stmt with Id={0}, because the bank w
 
 -- Value: de.metas.banking.camt53.BankStatementCamt53Service.MissingBankStatementAccountNo
 -- 2022-10-28T13:53:03.314Z
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545182,0,TO_TIMESTAMP('2022-10-28 16:53:03','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.banking','Y','Stmt mit Id={0} wird übersprungen, weil es keine Kontonummer hat (.../Acct/Id/Othr)','I',TO_TIMESTAMP('2022-10-28 16:53:03','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.banking.camt53.BankStatementCamt53Service.MissingBankStatementAccountNo')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545182,0,TO_TIMESTAMP('2022-10-28 16:53:03','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.banking','Y','Stmt mit Id={0} wird übersprungen, da es keine Kontonummer hat (.../Acct/Id/Othr)','I',TO_TIMESTAMP('2022-10-28 16:53:03','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.banking.camt53.BankStatementCamt53Service.MissingBankStatementAccountNo')
 ;
 
 -- 2022-10-28T13:53:03.314Z
@@ -85,7 +85,7 @@ UPDATE AD_Message_Trl SET MsgText='Skipping Stmt with Id={0}, because it has no 
 
 -- Value: de.metas.banking.camt53.BankStatementCamt53Service.SkippedStmtNoMatchingCurrency
 -- 2022-10-28T13:53:30.832Z
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545183,0,TO_TIMESTAMP('2022-10-28 16:53:30','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.banking','Y','Überspringen von AccountStatementId={0}, da die Währung des Auszugs nicht mit der Währung des Bankkontos übereinstimmt!','I',TO_TIMESTAMP('2022-10-28 16:53:30','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.banking.camt53.BankStatementCamt53Service.SkippedStmtNoMatchingCurrency')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545183,0,TO_TIMESTAMP('2022-10-28 16:53:30','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.banking','Y','Stmt mit Id={0} wird übersprungen, da die Währung des Auszugs nicht mit der Währung des Bankkontos übereinstimmt!','I',TO_TIMESTAMP('2022-10-28 16:53:30','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.banking.camt53.BankStatementCamt53Service.SkippedStmtNoMatchingCurrency')
 ;
 
 -- 2022-10-28T13:53:30.832Z
@@ -99,7 +99,7 @@ UPDATE AD_Message_Trl SET MsgText='Skipping AccountStatementId={0} because curre
 
 -- Value: de.metas.banking.camt53.BankStatementCamt53Service.MissingReportEntryDate
 -- 2022-10-28T13:54:04.080Z
-INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545184,0,TO_TIMESTAMP('2022-10-28 16:54:03','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.banking','Y','Überspringen dieses ReportEntry={0}, da StatementLineDate fehlt! BankStatementId={1}','I',TO_TIMESTAMP('2022-10-28 16:54:03','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.banking.camt53.BankStatementCamt53Service.MissingReportEntryDate')
+INSERT INTO AD_Message (AD_Client_ID,AD_Message_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,MsgText,MsgType,Updated,UpdatedBy,Value) VALUES (0,545184,0,TO_TIMESTAMP('2022-10-28 16:54:03','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.banking','Y','Stmt mit Id={0} wird übersprungen, da StatementLineDate fehlt! BankStatementId={1}','I',TO_TIMESTAMP('2022-10-28 16:54:03','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.banking.camt53.BankStatementCamt53Service.MissingReportEntryDate')
 ;
 
 -- 2022-10-28T13:54:04.080Z

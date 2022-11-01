@@ -123,7 +123,7 @@ public class BankStatementImportFileLoggable implements ILoggable
 				.build();
 	}
 
-	private void addToBuffer(final BankStatementImportFileRequestLog logEntry)
+	private void addToBuffer(@NonNull final BankStatementImportFileRequestLog logEntry)
 	{
 		List<BankStatementImportFileRequestLog> buffer = this.buffer;
 		if (buffer == null)

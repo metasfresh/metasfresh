@@ -100,11 +100,12 @@ public class AccountStatement2Wrapper
 		final Optional<String> accountIBANOpt = getAccountIBAN();
 		if (accountIBANOpt.isPresent())
 		{
-			final Optional<BankAccountId> bankAccountIdByIBAN = bankAccountService.getBankAccountIdByIBAN(accountIBANOpt.get());
+			final String iban = accountIBANOpt.get();
+			final Optional<BankAccountId> bankAccountIdByIBAN = bankAccountService.getBankAccountIdByIBAN(iban);
 			return bankAccountIdByIBAN
 					.map(ExplainedOptional::of)
 					.orElseGet(() -> {
-						final String msg = getMsg(MSG_MISSING_MF_BANK_ACCT_WITH_IBAN, accountStatement2.getId(), accountIBANOpt.get());
+						final String msg = getMsg(MSG_MISSING_MF_BANK_ACCT_WITH_IBAN, accountStatement2.getId(), iban);
 						return ExplainedOptional.emptyBecause(msg);
 					});
 		}

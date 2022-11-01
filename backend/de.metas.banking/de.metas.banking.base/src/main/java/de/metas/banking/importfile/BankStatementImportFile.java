@@ -37,7 +37,7 @@ public class BankStatementImportFile
 	BankStatementImportFileId bankStatementImportFileId;
 
 	/**
-	 * Can be null if the file was not yet imported
+	 * Can be null if a file was not yet attached
 	 */
 	@Nullable
 	String filename;
