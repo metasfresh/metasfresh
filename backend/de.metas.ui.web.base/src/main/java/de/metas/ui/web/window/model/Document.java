@@ -1167,12 +1167,12 @@ public final class Document
 			@NonNull final String fieldName,
 			@Nullable final Object value,
 			@Nullable final ReasonSupplier reason,
-			final boolean ignoreReadonlyFlag)
+			@NonNull final DocumentFieldReadonlyChecker fieldReadonlyChecker)
 			throws DocumentFieldReadonlyException
 	{
 		final IDocumentField documentField = getField(fieldName);
 
-		if (!ignoreReadonlyFlag && documentField.isReadonly())
+		if (fieldReadonlyChecker.isReadonly(documentField))
 		{
 			throw new DocumentFieldReadonlyException(fieldName, value);
 		}
@@ -1187,14 +1187,23 @@ public final class Document
 		}
 	}
 
-	public void processValueChanges(@NonNull final List<JSONDocumentChangedEvent> events, @Nullable final ReasonSupplier reason) throws DocumentFieldReadonlyException
+	public void processValueChanges(
+			@NonNull final List<JSONDocumentChangedEvent> events,
+			@Nullable final ReasonSupplier reason) throws DocumentFieldReadonlyException
+	{
+		processValueChanges(events, reason, DocumentFieldReadonlyChecker.DEFAULT);
+	}
+
+	public void processValueChanges(
+			@NonNull final List<JSONDocumentChangedEvent> events,
+			@Nullable final ReasonSupplier reason,
+			@NonNull final DocumentFieldReadonlyChecker fieldReadonlyChecker) throws DocumentFieldReadonlyException
 	{
 		for (final JSONDocumentChangedEvent event : events)
 		{
 			if (JSONDocumentChangedEvent.JSONOperation.replace == event.getOperation())
 			{
-				final boolean ignoreReadonlyFlag = false;
-				processValueChange(event.getPath(), event.getValue(), reason, ignoreReadonlyFlag);
+				processValueChange(event.getPath(), event.getValue(), reason, fieldReadonlyChecker);
 			}
 			else
 			{
@@ -1422,6 +1431,7 @@ public final class Document
 			changesCollector.collectReadonlyIfChanged(documentField, readonlyOld, reason);
 		}
 	}
+
 	@Nullable
 	private LogicExpressionResult computeFieldReadOnly(final IDocumentField documentField)
 	{
@@ -1752,8 +1762,7 @@ public final class Document
 			return defaultValue;
 		}
 
-		@SuppressWarnings("unchecked")
-		final T value = (T)valueObj;
+		@SuppressWarnings("unchecked") final T value = (T)valueObj;
 		return value;
 	}
 

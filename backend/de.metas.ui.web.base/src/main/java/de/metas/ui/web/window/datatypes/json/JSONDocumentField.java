@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.google.common.base.MoreObjects;
+import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.process.IProcessInstanceParameter;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.Password;
@@ -48,6 +49,7 @@ import java.util.Map;
  * #L%
  */
 
+@SuppressWarnings("UnusedReturnValue")
 @ApiModel("document-field")
 @JsonPropertyOrder({
 		"field",
@@ -312,16 +314,32 @@ public final class JSONDocumentField
 	}
 
 	@NonNull
-	public JSONDocumentField setReadonly(@NonNull final LogicExpressionResult readonly,@NonNull final JSONOptions options)
+	public JSONDocumentField setReadonly(@NonNull final LogicExpressionResult readonly, @NonNull final JSONOptions options)
 	{
-		if (readonly instanceof LogicExpressionResultWithReason)
-		{
-			setReadonly(readonly.booleanValue(), ((LogicExpressionResultWithReason)readonly).getTranslatedReason(options.getAdLanguage()));
-			return this;
-		}
+		final LogicExpressionResult readonlyEffective = options.getDocumentFieldReadonlyChecker().revaluate(readonly);
+		setReadonly(
+				readonlyEffective.isTrue(),
+				extractReason(readonlyEffective, options.getAdLanguage()));
 
-		setReadonly(readonly.booleanValue(), readonly.getName());
 		return this;
+	}
+
+	private static String extractReason(@NonNull final LogicExpressionResult result, @Nullable final String adLanguage)
+	{
+		if (result instanceof LogicExpressionResultWithReason)
+		{
+			final ITranslatableString reason = ((LogicExpressionResultWithReason)result).getReason();
+			if (reason == null)
+			{
+				return null;
+			}
+
+			return adLanguage != null ? reason.translate(adLanguage) : reason.getDefaultValue();
+		}
+		else
+		{
+			return result.getName();
+		}
 	}
 
 	public JSONDocumentField setReadonly(final boolean readonly)
@@ -338,7 +356,7 @@ public final class JSONDocumentField
 
 	public JSONDocumentField setMandatory(final LogicExpressionResult mandatory)
 	{
-		setMandatory(mandatory.booleanValue(), mandatory.getName());
+		setMandatory(mandatory.booleanValue(), extractReason(mandatory, null));
 		return this;
 	}
 
@@ -357,7 +375,7 @@ public final class JSONDocumentField
 
 	public JSONDocumentField setDisplayed(final LogicExpressionResult displayed)
 	{
-		setDisplayed(displayed.booleanValue(), displayed.getName());
+		setDisplayed(displayed.booleanValue(), extractReason(displayed, null));
 		return this;
 	}
 
