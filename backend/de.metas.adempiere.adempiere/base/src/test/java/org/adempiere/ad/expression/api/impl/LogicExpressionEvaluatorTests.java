@@ -3,12 +3,15 @@ package org.adempiere.ad.expression.api.impl;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.ILogicExpression;
+import org.adempiere.ad.expression.api.LogicExpressionResult;
 import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.AbstractBooleanAssert;
+import org.compiere.util.CtxNames;
 import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatee2;
+import org.compiere.util.Evaluatees;
 import org.compiere.util.Evaluator;
 import org.compiere.util.MockedEvaluatee;
 import org.junit.jupiter.api.BeforeAll;
@@ -906,6 +909,21 @@ public class LogicExpressionEvaluatorTests
 			assertThat(LogicExpressionEvaluator.evaluateLogicTuple("10.0001000000000000000000", "=", "10.0001")).isTrue();
 			assertThat(LogicExpressionEvaluator.evaluateLogicTuple("+10.0001000000000000000000", "=", "+10.0001")).isTrue();
 			assertThat(LogicExpressionEvaluator.evaluateLogicTuple("-10.0001000000000000000000", "=", "-10.0001")).isTrue();
+		}
+	}
+
+	@Nested
+	class evaluateToResult
+	{
+		@Test
+		void check_UsedParameters()
+		{
+			final ILogicExpression expr = compiler.compile("@Var1/A@=X | @Var1/B@=X");
+			final LogicExpressionResult result = expr.evaluateToResult(Evaluatees.empty(), OnVariableNotFound.Fail);
+			assertThat(result.getUsedParameters())
+					.hasSize(2)
+					.containsEntry(CtxNames.parse("Var1/A"), "A")
+					.containsEntry(CtxNames.parse("Var1/B"), "B");
 		}
 	}
 }
