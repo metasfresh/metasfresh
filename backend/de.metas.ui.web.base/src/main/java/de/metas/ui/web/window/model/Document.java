@@ -1167,12 +1167,12 @@ public final class Document
 			@NonNull final String fieldName,
 			@Nullable final Object value,
 			@Nullable final ReasonSupplier reason,
-			@NonNull final DocumentFieldReadonlyChecker fieldReadonlyChecker)
+			@NonNull final DocumentFieldLogicExpressionResultRevaluator readonlyRevaluator)
 			throws DocumentFieldReadonlyException
 	{
 		final IDocumentField documentField = getField(fieldName);
 
-		if (fieldReadonlyChecker.isReadonly(documentField))
+		if (readonlyRevaluator.isReadonly(documentField))
 		{
 			throw new DocumentFieldReadonlyException(fieldName, value);
 		}
@@ -1191,19 +1191,19 @@ public final class Document
 			@NonNull final List<JSONDocumentChangedEvent> events,
 			@Nullable final ReasonSupplier reason) throws DocumentFieldReadonlyException
 	{
-		processValueChanges(events, reason, DocumentFieldReadonlyChecker.DEFAULT);
+		processValueChanges(events, reason, DocumentFieldLogicExpressionResultRevaluator.DEFAULT);
 	}
 
 	public void processValueChanges(
 			@NonNull final List<JSONDocumentChangedEvent> events,
 			@Nullable final ReasonSupplier reason,
-			@NonNull final DocumentFieldReadonlyChecker fieldReadonlyChecker) throws DocumentFieldReadonlyException
+			@NonNull final DocumentFieldLogicExpressionResultRevaluator readonlyRevaluator) throws DocumentFieldReadonlyException
 	{
 		for (final JSONDocumentChangedEvent event : events)
 		{
 			if (JSONDocumentChangedEvent.JSONOperation.replace == event.getOperation())
 			{
-				processValueChange(event.getPath(), event.getValue(), reason, fieldReadonlyChecker);
+				processValueChange(event.getPath(), event.getValue(), reason, readonlyRevaluator);
 			}
 			else
 			{

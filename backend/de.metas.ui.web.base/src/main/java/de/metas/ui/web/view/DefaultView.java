@@ -30,7 +30,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
-import de.metas.ui.web.window.model.DocumentFieldReadonlyChecker;
+import de.metas.ui.web.window.model.DocumentFieldLogicExpressionResultRevaluator;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.DocumentSaveStatus;
 import de.metas.ui.web.window.model.DocumentValidStatus;
@@ -698,7 +698,7 @@ public final class DefaultView implements IEditableView
 		final DocumentId rowId = ctx.getRowId();
 		final DocumentCollection documentsCollection = ctx.getDocumentsCollection();
 		final DocumentPath documentPath = getRowDocumentPath(rowId);
-		final DocumentFieldReadonlyChecker fieldReadonlyChecker = DocumentFieldReadonlyChecker.using(ctx.getUserRolePermissions());
+		final DocumentFieldLogicExpressionResultRevaluator readonlyRevaluator = DocumentFieldLogicExpressionResultRevaluator.using(ctx.getUserRolePermissions());
 
 		Services.get(ITrxManager.class)
 				.runInThreadInheritedTrx(
@@ -706,7 +706,7 @@ public final class DefaultView implements IEditableView
 								documentPath,
 								NullDocumentChangesCollector.instance,
 								document -> {
-									patchDocument(document, fieldChangeRequests, fieldReadonlyChecker);
+									patchDocument(document, fieldChangeRequests, readonlyRevaluator);
 									return null;
 								}));
 
@@ -725,11 +725,11 @@ public final class DefaultView implements IEditableView
 	private void patchDocument(
 			@NonNull final Document document,
 			@NonNull final List<JSONDocumentChangedEvent> fieldChangeRequests,
-			@NonNull final DocumentFieldReadonlyChecker fieldReadonlyChecker)
+			@NonNull final DocumentFieldLogicExpressionResultRevaluator readonlyRevaluator)
 	{
 		//
 		// Process changes and the save the document
-		document.processValueChanges(fieldChangeRequests, ReasonSupplier.NONE, fieldReadonlyChecker);
+		document.processValueChanges(fieldChangeRequests, ReasonSupplier.NONE, readonlyRevaluator);
 		document.saveIfValidAndHasChanges();
 
 		//

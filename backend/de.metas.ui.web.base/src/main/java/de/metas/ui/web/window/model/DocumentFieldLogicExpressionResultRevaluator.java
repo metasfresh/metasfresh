@@ -18,51 +18,45 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-public class DocumentFieldReadonlyChecker
+/**
+ * Re-evaluates DocumentField's logic expressions based on user role permissions and some other flags.
+ */
+public class DocumentFieldLogicExpressionResultRevaluator
 {
-	public static final DocumentFieldReadonlyChecker ALWAYS_READ_WRITE = new DocumentFieldReadonlyChecker(true, null);
-	public static final DocumentFieldReadonlyChecker DEFAULT = new DocumentFieldReadonlyChecker(false, null);
+	public static final DocumentFieldLogicExpressionResultRevaluator ALWAYS_RETURN_FALSE = new DocumentFieldLogicExpressionResultRevaluator(
+			new LogicExpressionResultWithReason(LogicExpressionResult.FALSE, TranslatableStrings.constant("Always false")),
+			null);
 
-	private static final Logger logger = LogManager.getLogger(DocumentFieldReadonlyChecker.class);
+	public static final DocumentFieldLogicExpressionResultRevaluator DEFAULT = new DocumentFieldLogicExpressionResultRevaluator(null, null);
 
-	private static final LogicExpressionResultWithReason READONLY_FALSE_BECAUSE_ALWAYS_READWRITE = new LogicExpressionResultWithReason(
-			LogicExpressionResult.FALSE,
-			TranslatableStrings.constant("Always read-write")
-	);
+	private static final Logger logger = LogManager.getLogger(DocumentFieldLogicExpressionResultRevaluator.class);
 
-	private final boolean alwaysReadWrite;
+	private final LogicExpressionResultWithReason alwaysReturnResult;
 	@Nullable private final IUserRolePermissions userRolePermissions;
 
-	private DocumentFieldReadonlyChecker(
-			final boolean alwaysReadWrite,
+	private DocumentFieldLogicExpressionResultRevaluator(
+			@Nullable final LogicExpressionResultWithReason alwaysReturnResult,
 			@Nullable final IUserRolePermissions userRolePermissions)
 	{
-		this.alwaysReadWrite = alwaysReadWrite;
+		this.alwaysReturnResult = alwaysReturnResult;
 		this.userRolePermissions = userRolePermissions;
 	}
 
-	public static DocumentFieldReadonlyChecker using(@NonNull final IUserRolePermissions userRolePermissions)
+	public static DocumentFieldLogicExpressionResultRevaluator using(@NonNull final IUserRolePermissions userRolePermissions)
 	{
-		return new DocumentFieldReadonlyChecker(false, userRolePermissions);
+		return new DocumentFieldLogicExpressionResultRevaluator(null, userRolePermissions);
 	}
 
 	public boolean isReadonly(@NonNull final IDocumentField documentField)
 	{
-		return revaluate(documentField.getReadonly()).booleanValue();
+		return revaluate(documentField.getReadonly()).isTrue();
 	}
 
 	public LogicExpressionResult revaluate(final LogicExpressionResult readonly)
 	{
-		if (alwaysReadWrite)
+		if (alwaysReturnResult != null)
 		{
-			if (readonly.isFalse())
-			{
-				return readonly;
-			}
-			else
-			{
-				return READONLY_FALSE_BECAUSE_ALWAYS_READWRITE;
-			}
+			return alwaysReturnResult;
 		}
 
 		if (userRolePermissions == null)
@@ -79,8 +73,12 @@ public class DocumentFieldReadonlyChecker
 			@NonNull final Map<CtxName, String> usedParameters,
 			@NonNull final IUserRolePermissions userRolePermissions)
 	{
-		HashMap<String, String> newParameters = null; // lazy, instantiated only if needed
+		if (usedParameters.isEmpty())
+		{
+			return null;
+		}
 
+		HashMap<String, String> newParameters = null; // lazy, instantiated only if needed
 		for (final Map.Entry<CtxName, String> usedParameterEntry : usedParameters.entrySet())
 		{
 			final String name = usedParameterEntry.getKey().getName();

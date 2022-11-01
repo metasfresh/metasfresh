@@ -13,6 +13,7 @@ import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.Password;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.ui.web.window.model.DocumentFieldChange;
+import de.metas.ui.web.window.model.DocumentFieldLogicExpressionResultRevaluator;
 import de.metas.ui.web.window.model.DocumentValidStatus;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentFieldView;
@@ -69,11 +70,14 @@ public final class JSONDocumentField
 		final JSONLayoutWidgetType jsonWidgetType = JSONLayoutWidgetType.fromNullable(field.getWidgetType());
 		final Object valueJSON = field.getValueAsJsonObject(jsonOpts);
 
+		final DocumentFieldLogicExpressionResultRevaluator expressionRevaluator = jsonOpts.getLogicExpressionResultRevaluator();
+		final String adLanguage = jsonOpts.getAdLanguage();
+
 		final JSONDocumentField jsonField = new JSONDocumentField(name, jsonWidgetType)
 				.setValue(valueJSON, null)
-				.setReadonly(field.getReadonly(), jsonOpts)
-				.setMandatory(field.getMandatory())
-				.setDisplayed(field.getDisplayed())
+				.setReadonly(expressionRevaluator.revaluate(field.getReadonly()), adLanguage)
+				.setMandatory(field.getMandatory(), adLanguage) // NOTE: don't re-evaluate because we cannot apply the same logic when we evaluate if the document is valid
+				.setDisplayed(expressionRevaluator.revaluate(field.getDisplayed()), adLanguage)
 				.setValidStatus(field.getValidStatus());
 		if (field.isLookupValuesStale())
 		{
@@ -94,13 +98,16 @@ public final class JSONDocumentField
 		final JSONLayoutWidgetType jsonWidgetType = JSONLayoutWidgetType.fromNullable(parameter.getWidgetType());
 		final Object valueJSON = parameter.getValueAsJsonObject(jsonOpts);
 
+		final DocumentFieldLogicExpressionResultRevaluator expressionRevaluator = jsonOpts.getLogicExpressionResultRevaluator();
+		final String adLanguage = jsonOpts.getAdLanguage();
+
 		final JSONDocumentField jsonField = new JSONDocumentField(name, jsonWidgetType)
 				.setValue(valueJSON, null)
-				.setReadonly(parameter.getReadonly())
-				.setMandatory(parameter.getMandatory())
-				.setDisplayed(parameter.getDisplayed())
+				.setReadonly(expressionRevaluator.revaluate(parameter.getReadonly()), adLanguage)
+				.setMandatory(parameter.getMandatory(), adLanguage) // NOTE: don't re-evaluate because we cannot apply the same logic when we evaluate if the document is valid
+				.setDisplayed(expressionRevaluator.revaluate(parameter.getDisplayed()), adLanguage)
 				.setValidStatus(parameter.getValidStatus())
-				.setDevices(JSONDeviceDescriptor.ofList(parameter.getDevices(), jsonOpts.getAdLanguage()));
+				.setDevices(JSONDeviceDescriptor.ofList(parameter.getDevices(), adLanguage));
 		if (WindowConstants.isProtocolDebugging())
 		{
 			jsonField.putDebugProperty(DocumentFieldChange.DEBUGPROPERTY_FieldInfo, parameter.toString());
@@ -307,19 +314,10 @@ public final class JSONDocumentField
 		setViewEditorRenderMode(readonly ? ViewEditorRenderMode.NEVER : ViewEditorRenderMode.ALWAYS);
 	}
 
-	public JSONDocumentField setReadonly(final LogicExpressionResult readonly)
-	{
-		setReadonly(readonly.booleanValue(), readonly.getName());
-		return this;
-	}
-
 	@NonNull
-	public JSONDocumentField setReadonly(@NonNull final LogicExpressionResult readonly, @NonNull final JSONOptions options)
+	public JSONDocumentField setReadonly(@NonNull final LogicExpressionResult readonly, @NonNull final String adLanguage)
 	{
-		final LogicExpressionResult readonlyEffective = options.getDocumentFieldReadonlyChecker().revaluate(readonly);
-		setReadonly(
-				readonlyEffective.isTrue(),
-				extractReason(readonlyEffective, options.getAdLanguage()));
+		setReadonly(readonly.isTrue(), extractReason(readonly, adLanguage));
 
 		return this;
 	}
@@ -354,9 +352,9 @@ public final class JSONDocumentField
 		mandatoryReason = reason;
 	}
 
-	public JSONDocumentField setMandatory(final LogicExpressionResult mandatory)
+	public JSONDocumentField setMandatory(final LogicExpressionResult mandatory, String adLanguage)
 	{
-		setMandatory(mandatory.booleanValue(), extractReason(mandatory, null));
+		setMandatory(mandatory.booleanValue(), extractReason(mandatory, adLanguage));
 		return this;
 	}
 
@@ -373,9 +371,9 @@ public final class JSONDocumentField
 		return this;
 	}
 
-	public JSONDocumentField setDisplayed(final LogicExpressionResult displayed)
+	public JSONDocumentField setDisplayed(final LogicExpressionResult displayed, String adLanguage)
 	{
-		setDisplayed(displayed.booleanValue(), extractReason(displayed, null));
+		setDisplayed(displayed.booleanValue(), extractReason(displayed, adLanguage));
 		return this;
 	}
 

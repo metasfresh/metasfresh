@@ -5,7 +5,7 @@ import de.metas.i18n.ILanguageDAO;
 import de.metas.i18n.Language;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.session.UserSession;
-import de.metas.ui.web.window.model.DocumentFieldReadonlyChecker;
+import de.metas.ui.web.window.model.DocumentFieldLogicExpressionResultRevaluator;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
@@ -158,9 +158,9 @@ public class JSONOptions
 		return ((ServletRequestAttributes)requestAttributes).getRequest();
 	}
 
-	public DocumentFieldReadonlyChecker getDocumentFieldReadonlyChecker()
+	public DocumentFieldLogicExpressionResultRevaluator getLogicExpressionResultRevaluator()
 	{
-		return documentPermissions != null ? documentPermissions.getDocumentFieldReadonlyChecker() : DocumentFieldReadonlyChecker.DEFAULT;
+		return documentPermissions != null ? documentPermissions.getLogicExpressionResultRevaluator() : DocumentFieldLogicExpressionResultRevaluator.DEFAULT;
 	}
 
 }

@@ -9,7 +9,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
-import de.metas.ui.web.window.model.DocumentFieldReadonlyChecker;
+import de.metas.ui.web.window.model.DocumentFieldLogicExpressionResultRevaluator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
 
@@ -225,7 +225,7 @@ final class HUReportProcessInstance implements IProcessInstanceController
 
 	public void setCopies(final int copies)
 	{
-		parameters.processValueChange(PARAM_Copies, copies, ReasonSupplier.NONE, DocumentFieldReadonlyChecker.ALWAYS_READ_WRITE);
+		parameters.processValueChange(PARAM_Copies, copies, ReasonSupplier.NONE, DocumentFieldLogicExpressionResultRevaluator.ALWAYS_RETURN_FALSE);
 	}
 
 	public int getCopies()

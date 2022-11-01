@@ -4,7 +4,7 @@ import de.metas.security.IUserRolePermissions;
 import de.metas.ui.web.window.controller.DocumentPermissionsHelper;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.model.Document;
-import de.metas.ui.web.window.model.DocumentFieldReadonlyChecker;
+import de.metas.ui.web.window.model.DocumentFieldLogicExpressionResultRevaluator;
 import lombok.NonNull;
 
 import java.util.HashMap;
@@ -37,7 +37,7 @@ public class JSONDocumentPermissions
 	@NonNull private final IUserRolePermissions permissions;
 
 	private final Map<DocumentPath, Boolean> readonlyDocuments = new HashMap<>();
-	private DocumentFieldReadonlyChecker fieldReadonlyChecker; // lazy
+	private DocumentFieldLogicExpressionResultRevaluator logicExpressionRevaluator; // lazy
 
 	JSONDocumentPermissions(@NonNull final IUserRolePermissions permissions)
 	{
@@ -84,13 +84,13 @@ public class JSONDocumentPermissions
 		return readonlyDocuments.computeIfAbsent(document.getDocumentPath(), documentPath -> !DocumentPermissionsHelper.canEdit(document, permissions));
 	}
 
-	public DocumentFieldReadonlyChecker getDocumentFieldReadonlyChecker()
+	public DocumentFieldLogicExpressionResultRevaluator getLogicExpressionResultRevaluator()
 	{
-		DocumentFieldReadonlyChecker fieldReadonlyChecker = this.fieldReadonlyChecker;
-		if (fieldReadonlyChecker == null)
+		DocumentFieldLogicExpressionResultRevaluator logicExpressionRevaluator = this.logicExpressionRevaluator;
+		if (logicExpressionRevaluator == null)
 		{
-			fieldReadonlyChecker = this.fieldReadonlyChecker = DocumentFieldReadonlyChecker.using(permissions);
+			logicExpressionRevaluator = this.logicExpressionRevaluator = DocumentFieldLogicExpressionResultRevaluator.using(permissions);
 		}
-		return fieldReadonlyChecker;
+		return logicExpressionRevaluator;
 	}
 }

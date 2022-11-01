@@ -30,7 +30,7 @@ import de.metas.ui.web.view.descriptor.SqlViewKeyColumnNamesMap;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.Document;
-import de.metas.ui.web.window.model.DocumentFieldReadonlyChecker;
+import de.metas.ui.web.window.model.DocumentFieldLogicExpressionResultRevaluator;
 import de.metas.ui.web.window.model.sql.SqlComposedKey;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -53,7 +53,7 @@ public class AdvancedSearchBPartnerProcessor implements AdvancedSearchDescriptor
 			@NonNull final String bpartnerFieldName,
 			@NonNull final String selectionIdStr)
 	{
-		final DocumentFieldReadonlyChecker fieldReadonlyChecker = DocumentFieldReadonlyChecker.DEFAULT;
+		final DocumentFieldLogicExpressionResultRevaluator readonlyRevaluator = DocumentFieldLogicExpressionResultRevaluator.DEFAULT;
 
 		final SqlViewKeyColumnNamesMap keyColumnNamesMap = sqlViewFactory.getKeyColumnNamesMap(windowId);
 		final SqlComposedKey composedKey = keyColumnNamesMap.extractComposedKey(DocumentId.of(selectionIdStr));
@@ -65,7 +65,7 @@ public class AdvancedSearchBPartnerProcessor implements AdvancedSearchDescriptor
 		{
 			throw new AdempiereException("@NoSelection@"); // shall not happen
 		}
-		document.processValueChange(bpartnerFieldName, bpartnerId, null, fieldReadonlyChecker);
+		document.processValueChange(bpartnerFieldName, bpartnerId, null, readonlyRevaluator);
 
 		//
 		// Location
@@ -75,7 +75,7 @@ public class AdvancedSearchBPartnerProcessor implements AdvancedSearchDescriptor
 		if (bpLocationId != null)
 		{
 			final String locationFieldName = getLocationFieldNameForBPartnerField(bpartnerFieldName);
-			document.processValueChange(locationFieldName, bpLocationId.getRepoId(), null, fieldReadonlyChecker);
+			document.processValueChange(locationFieldName, bpLocationId.getRepoId(), null, readonlyRevaluator);
 		}
 
 		//
@@ -86,7 +86,7 @@ public class AdvancedSearchBPartnerProcessor implements AdvancedSearchDescriptor
 		if (bpContactId != null)
 		{
 			final String bpContactIdFieldName = getUserIdFieldNameForBPartnerField(bpartnerFieldName);
-			document.processValueChange(bpContactIdFieldName, bpContactId.getRepoId(), null, fieldReadonlyChecker);
+			document.processValueChange(bpContactIdFieldName, bpContactId.getRepoId(), null, readonlyRevaluator);
 		}
 	}
 

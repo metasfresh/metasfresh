@@ -37,7 +37,7 @@ import de.metas.ui.web.window.descriptor.factory.DocumentDescriptorFactory;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
-import de.metas.ui.web.window.model.DocumentFieldReadonlyChecker;
+import de.metas.ui.web.window.model.DocumentFieldLogicExpressionResultRevaluator;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentEvaluatee;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
@@ -186,7 +186,7 @@ public class ADProcessInstancesRepository implements IProcessInstancesRepository
 							parameter.getColumnName(),
 							value,
 							() -> "default parameter value",
-							DocumentFieldReadonlyChecker.ALWAYS_READ_WRITE
+							DocumentFieldLogicExpressionResultRevaluator.ALWAYS_RETURN_FALSE
 					))
 					.updateDefaultValue(parametersDoc.getFieldViews(), field -> DocumentFieldAsProcessDefaultParameter.of(windowNo, field));
 

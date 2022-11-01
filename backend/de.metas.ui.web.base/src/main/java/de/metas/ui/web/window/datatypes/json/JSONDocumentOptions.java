@@ -5,7 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.printing.esb.base.util.Check;
 import de.metas.ui.web.session.UserSession;
 import de.metas.ui.web.window.model.DocumentFieldChange;
-import de.metas.ui.web.window.model.DocumentFieldReadonlyChecker;
+import de.metas.ui.web.window.model.DocumentFieldLogicExpressionResultRevaluator;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import lombok.Builder;
 import lombok.Getter;
@@ -127,9 +127,9 @@ public class JSONDocumentOptions
 		return documentPermissions;
 	}
 
-	public DocumentFieldReadonlyChecker getDocumentFieldReadonlyChecker()
+	public DocumentFieldLogicExpressionResultRevaluator getDocumentFieldReadonlyChecker()
 	{
-		return documentPermissions.getDocumentFieldReadonlyChecker();
+		return documentPermissions.getLogicExpressionResultRevaluator();
 	}
 
 	//

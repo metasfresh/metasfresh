@@ -15,7 +15,7 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.Document.CopyMode;
-import de.metas.ui.web.window.model.DocumentFieldReadonlyChecker;
+import de.metas.ui.web.window.model.DocumentFieldLogicExpressionResultRevaluator;
 import de.metas.ui.web.window.model.IDocumentChangesCollector;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
@@ -102,7 +102,7 @@ public class AddressRepository
 								field.getFieldName(),
 								value,
 								() -> "update from " + fromLocation,
-								DocumentFieldReadonlyChecker.ALWAYS_READ_WRITE
+								DocumentFieldLogicExpressionResultRevaluator.ALWAYS_RETURN_FALSE
 						);
 
 					});
