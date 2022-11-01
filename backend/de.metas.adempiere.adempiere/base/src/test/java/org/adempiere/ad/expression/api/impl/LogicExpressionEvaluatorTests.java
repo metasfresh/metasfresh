@@ -4,8 +4,6 @@ import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.expression.exceptions.ExpressionEvaluationException;
-import org.adempiere.ad.expression.exceptions.ExpressionException;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.AbstractBooleanAssert;
 import org.compiere.util.Env;
@@ -13,7 +11,6 @@ import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatee2;
 import org.compiere.util.Evaluator;
 import org.compiere.util.MockedEvaluatee;
-import org.junit.Assert;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -25,15 +22,13 @@ import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.Assert.assertEquals;
 
 /**
- *
  * @author ad
  * @author tsa
  * @see <a
- *      href="http://dewiki908/mediawiki/index.php/03093:_Introduce_paranthesis_support_for_our_logic_expressions_%282012080710000021%29">http://dewiki908/mediawiki/index.php/03093:
- *      _Introduce_paranthesis_support_for_our_logic_expressions_%282012080710000021%29</a>
+ * href="http://dewiki908/mediawiki/index.php/03093:_Introduce_paranthesis_support_for_our_logic_expressions_%282012080710000021%29">http://dewiki908/mediawiki/index.php/03093:
+ * _Introduce_paranthesis_support_for_our_logic_expressions_%282012080710000021%29</a>
  */
 public class LogicExpressionEvaluatorTests
 {
@@ -97,6 +92,7 @@ public class LogicExpressionEvaluatorTests
 		compiler = LogicExpressionCompiler.instance;
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private void assertExpression(final boolean expectedValue, final String expressionStr, final Params params)
 	{
 		final boolean failOnMissingParam = true;
@@ -112,28 +108,7 @@ public class LogicExpressionEvaluatorTests
 		final boolean actualValue = expr.evaluate(params, ignoreUnparsable);
 
 		final String message = "Wrongly evaluated: " + expressionStr + ", params=" + params;
-		Assert.assertEquals(message, expectedValue, actualValue);
-	}
-
-	private void assertException(final String expressionStr, final boolean failOnMissingParam, final Params params)
-	{
-		compiler.setUseOperatorPrecedence(false);
-
-		try
-		{
-			final ILogicExpression expr = compiler.compile(expressionStr);
-			final boolean ignoreUnparsable = !failOnMissingParam;
-			final boolean value = expr.evaluate(params, ignoreUnparsable);
-			Assert.fail("Expression should throw parse exception: " + expressionStr + ", params=" + params + ", value=" + value);
-		}
-		catch (final ExpressionException e)
-		{
-			// System.out.println(e.getLocalizedMessage());
-		}
-		catch (final AdempiereException e)
-		{
-			// System.out.println(e.getLocalizedMessage());
-		}
+		assertThat(actualValue).as(message).isEqualTo(expectedValue);
 	}
 
 	@Test
@@ -226,10 +201,16 @@ public class LogicExpressionEvaluatorTests
 		@Test
 		public void failOnMissing()
 		{
-			assertException("@a@=5 & @b@=3 | @c@=4", FAIL_ON_MISSING, new Params()
+			final Params params = new Params()
 					.addParam("a", "5")
 					// .addParam("b", "3")
-					.addParam("c", "3"));
+					.addParam("c", "3");
+
+			compiler.setUseOperatorPrecedence(false);
+			final ILogicExpression expr = compiler.compile("@a@=5 & @b@=3 | @c@=4");
+			assertThatThrownBy(() -> expr.evaluate(params, false))
+					.isInstanceOf(ExpressionEvaluationException.class)
+					.hasMessageStartingWith("Parameter 'b' not found in context");
 		}
 
 		@Test
@@ -282,7 +263,7 @@ public class LogicExpressionEvaluatorTests
 	public class evaluateLogic
 	{
 		@SuppressWarnings("deprecation")
-		private final boolean evaluateLogicExpression(final String expressionStr, final Evaluatee evalCtx)
+		private boolean evaluateLogicExpression_usingDeprecatedMethod(final String expressionStr, final Evaluatee evalCtx)
 		{
 			return Evaluator.evaluateLogic(evalCtx, expressionStr);
 		}
@@ -297,23 +278,23 @@ public class LogicExpressionEvaluatorTests
 			ev.put("name1", "value1");
 
 			// guard: the case, where we don't need the default should work, too
-			assertEquals(true, evaluateLogicExpression("@name1@=value1", ev));
-			assertEquals(false, evaluateLogicExpression("@name1@!value1", ev));
+			assertThat(evaluateLogicExpression_usingDeprecatedMethod("@name1@=value1", ev)).isTrue();
+			assertThat(evaluateLogicExpression_usingDeprecatedMethod("@name1@!value1", ev)).isFalse();
 
-			assertEquals(true, evaluateLogicExpression("@noSuchName1/defaultVal@=defaultVal", ev));
-			assertEquals(false, evaluateLogicExpression("@noSuchName1/defaultVal@!defaultVal", ev));
+			assertThat(evaluateLogicExpression_usingDeprecatedMethod("@noSuchName1/defaultVal@=defaultVal", ev)).isTrue();
+			assertThat(evaluateLogicExpression_usingDeprecatedMethod("@noSuchName1/defaultVal@!defaultVal", ev)).isFalse();
 
-			// 'and " outside of the @ tags should be stripped
-			assertEquals(true, evaluateLogicExpression("@noSuchName1/defaultVal@='defaultVal'", ev));
-			assertEquals(true, evaluateLogicExpression("@noSuchName1/defaultVal@=\"defaultVal\"", ev));
+			// 'and " outside the @ tags should be stripped
+			assertThat(evaluateLogicExpression_usingDeprecatedMethod("@noSuchName1/defaultVal@='defaultVal'", ev)).isTrue();
+			assertThat(evaluateLogicExpression_usingDeprecatedMethod("@noSuchName1/defaultVal@=\"defaultVal\"", ev)).isTrue();
 
-			// because ' and " are stripped outside of @ tags, they need to be ignored, when evaluating default values, too
-			assertEquals(true, evaluateLogicExpression("@noSuchName1/'defaultVal'@='defaultVal'", ev));
-			assertEquals(true, evaluateLogicExpression("@noSuchName1/'defaultVal'@=defaultVal", ev));
+			// because ' and " are stripped outside @ tags, they need to be ignored, when evaluating default values, too
+			assertThat(evaluateLogicExpression_usingDeprecatedMethod("@noSuchName1/'defaultVal'@='defaultVal'", ev)).isTrue();
+			assertThat(evaluateLogicExpression_usingDeprecatedMethod("@noSuchName1/'defaultVal'@=defaultVal", ev)).isTrue();
 
 			// make sure that partial quotes are not stripped out
-			assertEquals(true, evaluateLogicExpression("@noSuchName1/'defaultVal@='defaultVal", ev));
-			assertEquals(true, evaluateLogicExpression("@noSuchName1/defaultVal'@=defaultVal'", ev));
+			assertThat(evaluateLogicExpression_usingDeprecatedMethod("@noSuchName1/'defaultVal@='defaultVal", ev)).isTrue();
+			assertThat(evaluateLogicExpression_usingDeprecatedMethod("@noSuchName1/defaultVal'@=defaultVal'", ev)).isTrue();
 		}
 
 		@Test
@@ -392,8 +373,8 @@ public class LogicExpressionEvaluatorTests
 		/**
 		 * Test for backward compatibility: when using {@link OnVariableNotFound#ReturnNoResult} and variable not found,
 		 * but variable ends with "_ID" it shall be evaluated to ZERO.
-		 *
-		 * NOTE: i know it's not obvious, but it's backward compatible.
+		 * <p>
+		 * NOTE: I know it's not obvious, but it's backward compatible.
 		 */
 		@Test
 		public void OnVariableNotFound_ReturnNoResult_IDVariable()
@@ -440,8 +421,8 @@ public class LogicExpressionEvaluatorTests
 		}
 
 		private void test_evaluateLogic_MissingVariablesWhichDoesNotMatter(final boolean expectedValue,
-				final String expressionStr,
-				final Params params)
+																		   final String expressionStr,
+																		   final Params params)
 		{
 			for (OnVariableNotFound onVariableNotFound : Arrays.asList(OnVariableNotFound.ReturnNoResult, OnVariableNotFound.Fail))
 			{
@@ -489,10 +470,10 @@ public class LogicExpressionEvaluatorTests
 			test_evaluateLogic_MissingVariablesWhichDoesNotMatter(true, "(@A@=1 & @B@=1) & @C@=1 | @Z@=1", params);
 		}
 
-		private final void test_evaluateLogic_OnVariableNotFound(final Boolean expectedValue,
-				final String expressionStr,
-				final OnVariableNotFound onVariableNotFound,
-				final Params params)
+		private void test_evaluateLogic_OnVariableNotFound(final Boolean expectedValue,
+														   final String expressionStr,
+														   final OnVariableNotFound onVariableNotFound,
+														   final Params params)
 		{
 			// Compile
 			compiler.setUseOperatorPrecedence(true);
@@ -501,10 +482,10 @@ public class LogicExpressionEvaluatorTests
 			test_evaluateLogic_OnVariableNotFound(expectedValue, expression, onVariableNotFound, params);
 		}
 
-		private final void test_evaluateLogic_OnVariableNotFound(final Boolean expectedValue,
-				final ILogicExpression expression,
-				final OnVariableNotFound onVariableNotFound,
-				final Params params)
+		private void test_evaluateLogic_OnVariableNotFound(final Boolean expectedValue,
+														   final ILogicExpression expression,
+														   final OnVariableNotFound onVariableNotFound,
+														   final Params params)
 		{
 			// Evaluate
 			final Boolean actualValue = expression.evaluate(params, onVariableNotFound);
@@ -513,7 +494,7 @@ public class LogicExpressionEvaluatorTests
 					+ "\n Params=" + params
 					+ "\n OnVariableNotFound: " + onVariableNotFound
 					+ "\n";
-			Assert.assertEquals(message, expectedValue, actualValue);
+			assertThat(actualValue).as(message).isEqualTo(expectedValue);
 		}
 
 		@Test
@@ -540,35 +521,33 @@ public class LogicExpressionEvaluatorTests
 			final ILogicExpression expr = compiler.compile("@A@=1");
 			final ILogicExpression exprNegated = expr.negate();
 
-			Assert.assertEquals(true, expr.evaluate(Params.singleton("A", "1"), OnVariableNotFound.Fail));
-			Assert.assertEquals(false, exprNegated.evaluate(Params.singleton("A", "1"), OnVariableNotFound.Fail));
+			assertThat(expr.evaluate(Params.singleton("A", "1"), OnVariableNotFound.Fail)).isTrue();
+			assertThat(exprNegated.evaluate(Params.singleton("A", "1"), OnVariableNotFound.Fail)).isFalse();
 
-			Assert.assertEquals(false, expr.evaluate(Params.singleton("A", "not1"), OnVariableNotFound.Fail));
-			Assert.assertEquals(true, exprNegated.evaluate(Params.singleton("A", "not1"), OnVariableNotFound.Fail));
+			assertThat(expr.evaluate(Params.singleton("A", "not1"), OnVariableNotFound.Fail)).isFalse();
+			assertThat(exprNegated.evaluate(Params.singleton("A", "not1"), OnVariableNotFound.Fail)).isTrue();
 		}
 	}
 
 	@Nested
 	public class checkExpressionWithPrecedence
 	{
-		private void assertPrecedenceExpression(final boolean expectedValue, final String expressionStr, final boolean failOnMissingParam, final Params params)
+		private void assertPrecedenceExpression(final boolean expectedValue, final String expressionStr, final Params params)
 		{
-			final boolean ignoreUnparsable = !failOnMissingParam;
 			compiler.setUseOperatorPrecedence(true);
-			Assert.assertTrue("Invalid UseOperatorPrecedence", compiler.isUseOperatorPrecedence());
+			assertThat(compiler.isUseOperatorPrecedence()).as("Invalid UseOperatorPrecedence").isTrue();
 
 			final ILogicExpression expr = compiler.compile(expressionStr);
-			final boolean actualValue = expr.evaluate(params, ignoreUnparsable);
+			final boolean actualValue = expr.evaluate(params, true);
 
-			final String message = "Wrongly evaluated: " + expressionStr + ", params=" + params;
-			Assert.assertEquals(message, expectedValue, actualValue);
+			assertThat(actualValue).as("Wrongly evaluated: " + expressionStr + ", params=" + params).isEqualTo(expectedValue);
 		}
 
 		@Test
 		public void case1_no_parenthesis()
 		{
 			// shall be evaluated as: 5=5 | 3=2 & 3=4 => (5=5) | (3=2 & 3=4) => TRUE
-			assertPrecedenceExpression(true, "5=@a@ | @b@=2 & @c@=4", false, new Params()
+			assertPrecedenceExpression(true, "5=@a@ | @b@=2 & @c@=4", new Params()
 					.addParam("a", "5")
 					.addParam("b", "3")
 					.addParam("c", "3"));
@@ -577,7 +556,7 @@ public class LogicExpressionEvaluatorTests
 		@Test
 		public void case1_with_parenthesis()
 		{
-			assertPrecedenceExpression(false, "(5=@a@ | @b@=2)& @c@=4", false, new Params()
+			assertPrecedenceExpression(false, "(5=@a@ | @b@=2)& @c@=4", new Params()
 					.addParam("a", "5")
 					.addParam("b", "3")
 					.addParam("c", "3"));
@@ -586,19 +565,19 @@ public class LogicExpressionEvaluatorTests
 		@Test
 		public void case2()
 		{
-			assertPrecedenceExpression(true, "5=@a@ & (@b@=3 | @c@=4)", false, new Params()
+			assertPrecedenceExpression(true, "5=@a@ & (@b@=3 | @c@=4)", new Params()
 					.addParam("a", "5")
 					.addParam("b", "3")
 					.addParam("c", "4"));
-			assertPrecedenceExpression(false, "5=@a@ & (@b@=3 | @c@=4)", false, new Params()
+			assertPrecedenceExpression(false, "5=@a@ & (@b@=3 | @c@=4)", new Params()
 					.addParam("a", "0")
 					.addParam("b", "3")
 					.addParam("c", "4"));
-			assertPrecedenceExpression(true, "5=@a@ & (@b@=3 | @c@=4)", false, new Params()
+			assertPrecedenceExpression(true, "5=@a@ & (@b@=3 | @c@=4)", new Params()
 					.addParam("a", "5")
 					.addParam("b", "0")
 					.addParam("c", "4"));
-			assertPrecedenceExpression(false, "5=@a@ & (@b@=3 | @c@=4)", false, new Params()
+			assertPrecedenceExpression(false, "5=@a@ & (@b@=3 | @c@=4)", new Params()
 					.addParam("a", "5")
 					.addParam("b", "0")
 					.addParam("c", "0"));
@@ -607,7 +586,7 @@ public class LogicExpressionEvaluatorTests
 		@Test
 		public void case3()
 		{
-			assertPrecedenceExpression(true, "((@a@='5' | @b@!@c@) & @d@>3)| (   @x@<'10'& (@y@!@z@) )", false, new Params()
+			assertPrecedenceExpression(true, "((@a@='5' | @b@!@c@) & @d@>3)| (   @x@<'10'& (@y@!@z@) )", new Params()
 					.addParam("a", "5")
 					.addParam("b", "3")
 					.addParam("c", "3")
@@ -621,7 +600,7 @@ public class LogicExpressionEvaluatorTests
 		@Test
 		public void case4()
 		{
-			assertPrecedenceExpression(true, "@a@=5   &    (@b@=3 | @c@=4)", false, new Params()
+			assertPrecedenceExpression(true, "@a@=5   &    (@b@=3 | @c@=4)", new Params()
 					.addParam("a", "5")
 					.addParam("b", "3")
 					.addParam("c", "3"));
@@ -630,14 +609,14 @@ public class LogicExpressionEvaluatorTests
 		@Test
 		public void case5()
 		{
-			assertPrecedenceExpression(true, "@a@=5", false, new Params()
+			assertPrecedenceExpression(true, "@a@=5", new Params()
 					.addParam("a", "5"));
 		}
 
 		@Test
 		public void case6()
 		{
-			assertPrecedenceExpression(true, "@a@=5 & @b@=3 | @c@=4", false, new Params()
+			assertPrecedenceExpression(true, "@a@=5 & @b@=3 | @c@=4", new Params()
 					.addParam("a", "5")
 					.addParam("b", "3")
 					.addParam("c", "3"));
@@ -646,18 +625,18 @@ public class LogicExpressionEvaluatorTests
 		@Test
 		public void case7()
 		{
-			assertPrecedenceExpression(false, "@b@=3", false, new Params()
+			assertPrecedenceExpression(false, "@b@=3", new Params()
 					.addParam("b", "2"));
-			assertPrecedenceExpression(true, "@b@=3", false, new Params()
+			assertPrecedenceExpression(true, "@b@=3", new Params()
 					.addParam("b", "3"));
-			assertPrecedenceExpression(false, "3=@b@", false, new Params()
+			assertPrecedenceExpression(false, "3=@b@", new Params()
 					.addParam("b", "2"));
-			assertPrecedenceExpression(true, "3=@b@", false, new Params()
+			assertPrecedenceExpression(true, "3=@b@", new Params()
 					.addParam("b", "3"));
 
-			assertPrecedenceExpression(false, "(@b@=3)", false, new Params()
+			assertPrecedenceExpression(false, "(@b@=3)", new Params()
 					.addParam("b", "2"));
-			assertPrecedenceExpression(true, "(@b@=3)", false, new Params()
+			assertPrecedenceExpression(true, "(@b@=3)", new Params()
 					.addParam("b", "3"));
 
 		}
@@ -665,7 +644,7 @@ public class LogicExpressionEvaluatorTests
 		@Test
 		public void case8()
 		{
-			assertPrecedenceExpression(true, "5=@a@ & @b@=2 | @c@=4", false, new Params()
+			assertPrecedenceExpression(true, "5=@a@ & @b@=2 | @c@=4", new Params()
 					.addParam("a", "3")
 					.addParam("b", "3")
 					.addParam("c", "4"));
@@ -675,7 +654,7 @@ public class LogicExpressionEvaluatorTests
 		@Test
 		public void case9()
 		{
-			assertPrecedenceExpression(true, "@a@=5   &    @b@=3 | @c@=4 & @d@=5", false, new Params()
+			assertPrecedenceExpression(true, "@a@=5   &    @b@=3 | @c@=4 & @d@=5", new Params()
 					.addParam("a", "5")
 					.addParam("b", "3")
 					.addParam("c", "3")
@@ -685,7 +664,7 @@ public class LogicExpressionEvaluatorTests
 		@Test
 		public void case10()
 		{
-			assertPrecedenceExpression(true, "(((@a@=5|@b@=3|@c@=5)&@d@=4|@x@=5)&@y@=3)&@z@=3", false, new Params()
+			assertPrecedenceExpression(true, "(((@a@=5|@b@=3|@c@=5)&@d@=4|@x@=5)&@y@=3)&@z@=3", new Params()
 					.addParam("a", "5")
 					.addParam("b", "3")
 					.addParam("c", "3")
@@ -699,9 +678,8 @@ public class LogicExpressionEvaluatorTests
 	@Nested
 	public class transformationTests
 	{
-		private void assertTransformedExpression(final String expressionStr, final boolean failOnMissingParam, final Params params)
+		private void assertTransformedExpression(final String expressionStr, final Params params)
 		{
-			final boolean ignoreUnparsable = !failOnMissingParam;
 
 			compiler.setUseOperatorPrecedence(false);
 			final ILogicExpression expression = compiler.compile(expressionStr);
@@ -710,39 +688,40 @@ public class LogicExpressionEvaluatorTests
 
 			// Recompile the expression
 			compiler.setUseOperatorPrecedence(true);
-			Assert.assertTrue("UseOperatorPrecedence shall be set", compiler.isUseOperatorPrecedence());
+			assertThat(compiler.isUseOperatorPrecedence()).as("UseOperatorPrecedence shall be set").isTrue();
 			final ILogicExpression expressionNew = compiler.compile(expressionFormattedStr);
 			final String expressionNewFormattedStr = expressionNew.getFormatedExpressionString();
 
 			// Assume both expressions are equal
-			Assert.assertEquals("Compiled and recompiled expressions shall be equal", expression, expressionNew);
+			assertThat(expressionNew).as("Compiled and recompiled expressions shall be equal").isEqualTo(expression);
 
-			final boolean valueOld = expression.evaluate(params, ignoreUnparsable);
-			final boolean valueNew = expressionNew.evaluate(params, ignoreUnparsable);
-			final String message = "Wrongly evaluated:"
-					+ "\n              expression=[" + expressionStr + "]"
-					+ "\n, expressionFormattedStr=[" + expressionFormattedStr + "]"
-					+ "\n,          expressionNew=[" + expressionNewFormattedStr + "]"
-					+ "\n,                 params=" + params;
-			Assert.assertEquals(message, valueNew, valueOld);
+			final boolean valueOld = expression.evaluate(params, true);
+			final boolean valueNew = expressionNew.evaluate(params, true);
+			assertThat(valueOld)
+					.as("Wrongly evaluated:"
+							+ "\n              expression=[" + expressionStr + "]"
+							+ "\n, expressionFormattedStr=[" + expressionFormattedStr + "]"
+							+ "\n,          expressionNew=[" + expressionNewFormattedStr + "]"
+							+ "\n,                 params=" + params)
+					.isEqualTo(valueNew);
 		}
 
 		@Test
 		public void transformationTests_case01()
 		{
-			assertTransformedExpression("5=@a@ & (@b@=3 | @c@=4)", false, new Params()
+			assertTransformedExpression("5=@a@ & (@b@=3 | @c@=4)", new Params()
 					.addParam("a", "5")
 					.addParam("b", "3")
 					.addParam("c", "4"));
-			assertTransformedExpression("5=@a@ & (@b@=3 | @c@=4)", false, new Params()
+			assertTransformedExpression("5=@a@ & (@b@=3 | @c@=4)", new Params()
 					.addParam("a", "0")
 					.addParam("b", "3")
 					.addParam("c", "4"));
-			assertTransformedExpression("5=@a@ & (@b@=3 | @c@=4)", false, new Params()
+			assertTransformedExpression("5=@a@ & (@b@=3 | @c@=4)", new Params()
 					.addParam("a", "5")
 					.addParam("b", "0")
 					.addParam("c", "4"));
-			assertTransformedExpression("5=@a@ & (@b@=3 | @c@=4)", false, new Params()
+			assertTransformedExpression("5=@a@ & (@b@=3 | @c@=4)", new Params()
 					.addParam("a", "5")
 					.addParam("b", "0")
 					.addParam("c", "0"));
@@ -751,7 +730,7 @@ public class LogicExpressionEvaluatorTests
 		@Test
 		public void transformationTests_case02()
 		{
-			assertTransformedExpression("((@a@='5' | @b@!@c@) & @d@>3)| (   @x@<'10'& (@y@!@z@) )", false, new Params()
+			assertTransformedExpression("((@a@='5' | @b@!@c@) & @d@>3)| (   @x@<'10'& (@y@!@z@) )", new Params()
 					.addParam("a", "5")
 					.addParam("b", "3")
 					.addParam("c", "3")
@@ -764,44 +743,44 @@ public class LogicExpressionEvaluatorTests
 		@Test
 		public void transformationTests_case03()
 		{
-			assertTransformedExpression("@a@=5   &    (@b@=3 | @c@=4)", false, new Params()
+			assertTransformedExpression("@a@=5   &    (@b@=3 | @c@=4)", new Params()
 					.addParam("a", "5")
 					.addParam("b", "3")
 					.addParam("c", "3"));
 
-			assertTransformedExpression("@a@=5", false, new Params()
+			assertTransformedExpression("@a@=5", new Params()
 					.addParam("a", "5"));
 
-			assertTransformedExpression("@a@=5 & @b@=3 | @c@=4", false, new Params()
+			assertTransformedExpression("@a@=5 & @b@=3 | @c@=4", new Params()
 					.addParam("a", "5")
 					.addParam("b", "3")
 					.addParam("c", "3"));
 
-			assertTransformedExpression("@a@=5 | @b@=3 & @c@=4", false, new Params()
+			assertTransformedExpression("@a@=5 | @b@=3 & @c@=4", new Params()
 					.addParam("a", "5")
 					.addParam("b", "3")
 					.addParam("c", "3"));
 
-			assertTransformedExpression("@b@=3", false, new Params()
+			assertTransformedExpression("@b@=3", new Params()
 					.addParam("b", "2"));
-			assertTransformedExpression("@b@=3", false, new Params()
+			assertTransformedExpression("@b@=3", new Params()
 					.addParam("b", "3"));
-			assertTransformedExpression("3=@b@", false, new Params()
+			assertTransformedExpression("3=@b@", new Params()
 					.addParam("b", "2"));
-			assertTransformedExpression("3=@b@", false, new Params()
-					.addParam("b", "3"));
-
-			assertTransformedExpression("(@b@=3)", false, new Params()
-					.addParam("b", "2"));
-			assertTransformedExpression("(@b@=3)", false, new Params()
+			assertTransformedExpression("3=@b@", new Params()
 					.addParam("b", "3"));
 
-			assertTransformedExpression("5=@a@ & @b@=2 | @c@=4", false, new Params()
+			assertTransformedExpression("(@b@=3)", new Params()
+					.addParam("b", "2"));
+			assertTransformedExpression("(@b@=3)", new Params()
+					.addParam("b", "3"));
+
+			assertTransformedExpression("5=@a@ & @b@=2 | @c@=4", new Params()
 					.addParam("a", "3")
 					.addParam("b", "3")
 					.addParam("c", "4"));
 
-			assertTransformedExpression("@a@=5   &    @b@=3 | @c@=4 & @d@=5", false, new Params()
+			assertTransformedExpression("@a@=5   &    @b@=3 | @c@=4 & @d@=5", new Params()
 					.addParam("a", "5")
 					.addParam("b", "3")
 					.addParam("c", "3")
@@ -815,30 +794,30 @@ public class LogicExpressionEvaluatorTests
 		@Test
 		public void null_and_empty()
 		{
-			Assert.assertEquals(null, LogicExpressionEvaluator.stripQuotes(null));
-			Assert.assertEquals("", LogicExpressionEvaluator.stripQuotes(""));
+			assertThat(LogicExpressionEvaluator.stripQuotes(null)).isNull();
+			assertThat(LogicExpressionEvaluator.stripQuotes("")).isEmpty();
 		}
 
 		@Test
 		public void singleQuote()
 		{
-			Assert.assertEquals("'", LogicExpressionEvaluator.stripQuotes("'"));
-			Assert.assertEquals("", LogicExpressionEvaluator.stripQuotes("''"));
-			Assert.assertEquals("test", LogicExpressionEvaluator.stripQuotes("test"));
-			Assert.assertEquals("'test", LogicExpressionEvaluator.stripQuotes("'test"));
-			Assert.assertEquals("test'", LogicExpressionEvaluator.stripQuotes("test'"));
-			Assert.assertEquals("test", LogicExpressionEvaluator.stripQuotes("test"));
+			assertThat(LogicExpressionEvaluator.stripQuotes("'")).isEqualTo("'");
+			assertThat(LogicExpressionEvaluator.stripQuotes("''")).isEmpty();
+			assertThat(LogicExpressionEvaluator.stripQuotes("test")).isEqualTo("test");
+			assertThat(LogicExpressionEvaluator.stripQuotes("'test")).isEqualTo("'test");
+			assertThat(LogicExpressionEvaluator.stripQuotes("test'")).isEqualTo("test'");
+			assertThat(LogicExpressionEvaluator.stripQuotes("test")).isEqualTo("test");
 		}
 
 		@Test
 		public void doubleQuote()
 		{
-			Assert.assertEquals("\"", LogicExpressionEvaluator.stripQuotes("\""));
-			Assert.assertEquals("", LogicExpressionEvaluator.stripQuotes("\"\""));
-			Assert.assertEquals("test", LogicExpressionEvaluator.stripQuotes("test"));
-			Assert.assertEquals("\"test", LogicExpressionEvaluator.stripQuotes("\"test"));
-			Assert.assertEquals("test\"", LogicExpressionEvaluator.stripQuotes("test\""));
-			Assert.assertEquals("test", LogicExpressionEvaluator.stripQuotes("test"));
+			assertThat(LogicExpressionEvaluator.stripQuotes("\"")).isEqualTo("\"");
+			assertThat(LogicExpressionEvaluator.stripQuotes("\"\"")).isEmpty();
+			assertThat(LogicExpressionEvaluator.stripQuotes("test")).isEqualTo("test");
+			assertThat(LogicExpressionEvaluator.stripQuotes("\"test")).isEqualTo("\"test");
+			assertThat(LogicExpressionEvaluator.stripQuotes("test\"")).isEqualTo("test\"");
+			assertThat(LogicExpressionEvaluator.stripQuotes("test")).isEqualTo("test");
 		}
 
 		/**
@@ -847,17 +826,17 @@ public class LogicExpressionEvaluatorTests
 		@Test
 		public void combined_single_and_double_quotes()
 		{
-			Assert.assertEquals("''", LogicExpressionEvaluator.stripQuotes("\"''\""));
-			Assert.assertEquals("\"\"", LogicExpressionEvaluator.stripQuotes("'\"\"'"));
-			Assert.assertEquals("'test'", LogicExpressionEvaluator.stripQuotes("\"'test'\""));
-			Assert.assertEquals("\"test\"", LogicExpressionEvaluator.stripQuotes("'\"test\"'"));
+			assertThat(LogicExpressionEvaluator.stripQuotes("\"''\"")).isEqualTo("''");
+			assertThat(LogicExpressionEvaluator.stripQuotes("'\"\"'")).isEqualTo("\"\"");
+			assertThat(LogicExpressionEvaluator.stripQuotes("\"'test'\"")).isEqualTo("'test'");
+			assertThat(LogicExpressionEvaluator.stripQuotes("'\"test\"'")).isEqualTo("\"test\"");
 		}
 
 		@Test
 		public void do_not_strip_quotes_from_middle()
 		{
-			Assert.assertEquals("this is a 'test' string", LogicExpressionEvaluator.stripQuotes("this is a 'test' string"));
-			Assert.assertEquals("this is a \"test\" string", LogicExpressionEvaluator.stripQuotes("this is a \"test\" string"));
+			assertThat(LogicExpressionEvaluator.stripQuotes("this is a 'test' string")).isEqualTo("this is a 'test' string");
+			assertThat(LogicExpressionEvaluator.stripQuotes("this is a \"test\" string")).isEqualTo("this is a \"test\" string");
 		}
 	}
 
