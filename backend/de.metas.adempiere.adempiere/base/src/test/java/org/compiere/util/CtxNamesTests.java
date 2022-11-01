@@ -366,4 +366,29 @@ public class CtxNamesTests
 		}
 	}
 
+	@Nested
+	class withoutDefaultValue
+	{
+		@Test
+		void null_defaultValue()
+		{
+			final CtxName ctxName = CtxNames.ofNameAndDefaultValue("name", null);
+			assertThat(ctxName.withoutDefaultValue()).isSameAs(ctxName);
+		}
+
+		@Test
+		void empty_defaultValue()
+		{
+			final CtxName ctxName = CtxNames.ofNameAndDefaultValue("name", "");
+			assertThat(ctxName.withoutDefaultValue()).isSameAs(ctxName);
+		}
+
+		@Test
+		void actual_defaultValue()
+		{
+			final CtxName ctxName = CtxNames.ofNameAndDefaultValue("name", "default");
+			assertThat(ctxName.withoutDefaultValue()).isEqualTo(CtxNames.ofNameAndDefaultValue("name", null));
+		}
+
+	}
 }

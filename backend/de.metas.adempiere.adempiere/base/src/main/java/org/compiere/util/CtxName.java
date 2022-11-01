@@ -19,6 +19,7 @@ import lombok.NonNull;
  * @author metas-dev <dev@metasfresh.com>
  *
  */
+@SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "OptionalAssignedToNull" })
 public final class CtxName
 {
 	private final String name;
@@ -78,7 +79,7 @@ public final class CtxName
 	{
 		if (defaultValueBoolean == null)
 		{
-			defaultValueBoolean = Optional.ofNullable(DisplayType.toBoolean(defaultValue, (Boolean)null));
+			defaultValueBoolean = Optional.ofNullable(DisplayType.toBoolean(defaultValue, null));
 		}
 		return defaultValueBoolean.orElse(null);
 	}
@@ -108,6 +109,14 @@ public final class CtxName
 		return defaultValueDate.orElse(null);
 	}
 
+	public CtxName withoutDefaultValue()
+	{
+		return isDefaultValuePresent(defaultValue)
+				? new CtxName(name, modifiers, null)
+				: this;
+	}
+
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	private boolean isOld()
 	{
 		return hasModifier(CtxNames.MODIFIER_Old);
@@ -127,7 +136,7 @@ public final class CtxName
 	}
 
 	/**
-	 * @name context name
+	 * @param name context name
 	 * @return true if this context name is an explicit global variable (i.e. starts with # or $)
 	 */
 	public static boolean isExplicitGlobal(final String name)
@@ -141,13 +150,12 @@ public final class CtxName
 
 	/**
 	 * Evaluates this context name and gets it's value from given source/context.
-	 *
 	 * In case the source/context is <code>null</code> then {@link #getDefaultValue()} will be returned.
 	 *
-	 * @param source evaluation context/source; <code>null</code> is accept
-	 * @return {@link Evaluatee}'s variable value or {@link #VALUE_NULL}
+	 * @param source evaluation context/source; <code>null</code> is accepted
+	 * @return {@link Evaluatee}'s variable value or default value
 	 */
-	public String getValueAsString(final Evaluatee source)
+	public String getValueAsString(@Nullable final Evaluatee source)
 	{
 		if (source == null)
 		{
@@ -395,13 +403,18 @@ public final class CtxName
 					sb.append(CtxNames.SEPARATOR).append(m);
 				}
 			}
-			if (!Check.isEmpty(defaultValue))
+			if (isDefaultValuePresent(defaultValue))
 			{
 				sb.append(CtxNames.SEPARATOR).append(defaultValue);
 			}
 			cachedToStringWithoutTagMarkers = sb.toString();
 		}
 		return cachedToStringWithoutTagMarkers;
+	}
+
+	private static boolean isDefaultValuePresent(@Nullable String defaultValue)
+	{
+		return !Check.isEmpty(defaultValue);
 	}
 
 	@Override
