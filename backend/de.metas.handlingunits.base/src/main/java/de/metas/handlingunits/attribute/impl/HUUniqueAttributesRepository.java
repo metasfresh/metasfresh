@@ -42,8 +42,15 @@ public class HUUniqueAttributesRepository
 
 	final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public void createHUUniqueAttribute(@NonNull final HUUniqueAttributeRequest huUniqueAttributeRequest)
+	public void createHUUniqueAttributeIfNotExists(@NonNull final HUUniqueAttributeRequest huUniqueAttributeRequest)
 	{
+		final boolean existsHUUniqueAttribute = existsHUUniqueAttribute(huUniqueAttributeRequest);
+
+		if(existsHUUniqueAttribute)
+		{
+			// hu was unique attribute was already recorded. Nothing to do
+			return;
+		}
 		final I_M_HU_UniqueAttribute huUniqueAttributeRecord = newInstance(I_M_HU_UniqueAttribute.class);
 
 		huUniqueAttributeRecord.setM_HU_PI_Attribute_ID(huUniqueAttributeRequest.getHuPIAttributeId().getRepoId());
@@ -54,6 +61,17 @@ public class HUUniqueAttributesRepository
 		huUniqueAttributeRecord.setValue(huUniqueAttributeRequest.getAttributeValue());
 
 		save(huUniqueAttributeRecord);
+	}
+
+	private boolean existsHUUniqueAttribute(@NonNull final HUUniqueAttributeRequest huUniqueAttributeRequest)
+	{
+		return queryBL.createQueryBuilder(I_M_HU_UniqueAttribute.class)
+				.addEqualsFilter(I_M_HU_UniqueAttribute.COLUMNNAME_M_HU_ID, huUniqueAttributeRequest.getHuId())
+				.addEqualsFilter(I_M_HU_UniqueAttribute.COLUMNNAME_M_Product_ID, huUniqueAttributeRequest.getProductId())
+				.addEqualsFilter(I_M_HU_UniqueAttribute.COLUMNNAME_M_Attribute_ID, huUniqueAttributeRequest.getAttributeId())
+				.addEqualsFilter(I_M_HU_UniqueAttribute.COLUMNNAME_Value, huUniqueAttributeRequest.getAttributeValue())
+				.create()
+				.anyMatch();
 	}
 
 	public List<I_M_HU_Attribute> retrieveHUAttributes(@NonNull final HuPackingInstructionsAttributeId huPIAttributeId)

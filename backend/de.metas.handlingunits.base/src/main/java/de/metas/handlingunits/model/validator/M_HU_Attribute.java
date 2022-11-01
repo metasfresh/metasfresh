@@ -75,7 +75,7 @@ public class M_HU_Attribute
 		Services.get(IShipmentScheduleInvalidateBL.class).notifySegmentChanged(storageSegment);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE },
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE , ModelValidator.TYPE_BEFORE_NEW},
 			ifColumnsChanged = {
 					I_M_HU_Attribute.COLUMNNAME_Value
 			})

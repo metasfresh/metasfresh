@@ -35,7 +35,6 @@ import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.i18n.AdMessageKey;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -92,6 +91,12 @@ public class HUUniqueAttributesService
 	{
 		final I_M_HU huRecord = huDAO.getById(huId);
 
+		if(!huStatusBL.isQtyOnHand(huRecord.getHUStatus()))
+		{
+			// nothing to validate
+			return;
+		}
+
 		final List<I_M_HU_Storage> huStorages = huStorageDAO.retrieveStorages(huRecord);
 
 		for (final I_M_HU_Storage huStorage : huStorages)
@@ -117,19 +122,7 @@ public class HUUniqueAttributesService
 
 	public void createHUUniqueAttributes(@NonNull final I_M_HU_Attribute huAttribute)
 	{
-		if (Check.isBlank(huAttribute.getValue()))
-		{
-			// nothing to do
-			return;
-		}
-
 		final I_M_HU huRecord = huDAO.getById(HuId.ofRepoId(huAttribute.getM_HU_ID()));
-
-		if (!huStatusBL.isQtyOnHand(huRecord.getHUStatus()))
-		{
-			// HU doesn't count for QtyOnHand
-			return;
-		}
 
 		final List<I_M_HU_Storage> huStorages = huStorageDAO.retrieveStorages(huRecord);
 
@@ -144,7 +137,7 @@ public class HUUniqueAttributesService
 					.attributeValue(huAttribute.getValue())
 					.build();
 
-			repo.createHUUniqueAttribute(request);
+			repo.createHUUniqueAttributeIfNotExists(request);
 		}
 	}
 
@@ -154,6 +147,12 @@ public class HUUniqueAttributesService
 
 		for (final I_M_HU_Attribute huAttribute : huAttributes)
 		{
+			if (Check.isBlank(huAttribute.getValue()))
+			{
+				// nothing to do
+				continue;
+			}
+
 			createHUUniqueAttributes(huAttribute);
 		}
 	}
