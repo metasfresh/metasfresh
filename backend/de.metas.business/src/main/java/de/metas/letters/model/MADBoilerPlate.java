@@ -268,7 +268,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		{
 			rq.setC_Project_ID(parent_record_id);
 		}
-		else if (parent_table_id == I_A_Asset.Table_ID)
+		else if (parent_table_id == getTableId(I_A_Asset.class))
 		{
 			rq.setA_Asset_ID(parent_record_id);
 		}

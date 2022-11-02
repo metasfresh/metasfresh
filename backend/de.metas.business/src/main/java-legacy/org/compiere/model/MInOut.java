@@ -46,7 +46,6 @@ import de.metas.order.DeliveryRule;
 import de.metas.order.IMatchPOBL;
 import de.metas.order.IMatchPODAO;
 import de.metas.order.IOrderDAO;
-import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.ClientAndOrgId;
@@ -2080,10 +2079,9 @@ public class MInOut extends X_M_InOut implements IDocument
 			else if (getMovementType().compareTo(MInOut.MOVEMENTTYPE_VendorReturns) == 0 || getMovementType().compareTo(MInOut.MOVEMENTTYPE_CustomerShipment) == 0)
 			{
 				final String MMPolicy = Services.get(IProductBL.class).getMMPolicy(product);
-				final Timestamp minGuaranteeDate = getMovementDate();
 				final MStorage[] storages = MStorage.getWarehouse(getCtx(),
 						getM_Warehouse_ID(), line.getM_Product_ID(), line.getM_AttributeSetInstance_ID(),
-						minGuaranteeDate, MClient.MMPOLICY_FiFo.equals(MMPolicy), true, line.getM_Locator_ID(), get_TrxName());
+						MClient.MMPOLICY_FiFo.equals(MMPolicy), true, line.getM_Locator_ID(), get_TrxName());
 				BigDecimal qtyToDeliver = line.getMovementQty();
 				for (final MStorage storage : storages)
 				{
