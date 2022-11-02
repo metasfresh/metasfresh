@@ -72,8 +72,6 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_PriceList;
-import org.compiere.model.I_M_Product_Acct;
-import org.compiere.model.I_M_Product_Category_Acct;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.PO;
 import org.compiere.util.Env;
