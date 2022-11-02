@@ -100,9 +100,6 @@ public final class ASIEditingInfo
 	private ImmutableList<I_M_Attribute> _availableAttributes;
 	private I_M_AttributeSetInstance _attributeSetInstance;
 	private final boolean _allowSelectExistingASI;
-	private final boolean isLotEnabled;
-	private final boolean isSerNoEnabled;
-	private final boolean isGuaranteeDateEnabled;
 
 	@Builder
 	private ASIEditingInfo(
@@ -136,17 +133,6 @@ public final class ASIEditingInfo
 		// Flags
 		_allowSelectExistingASI = _type == WindowType.Regular;
 
-		isLotEnabled = _type == WindowType.Regular
-				&& _attributeSet != null && _attributeSet.isLot();
-		isSerNoEnabled = _type == WindowType.Regular
-				&& _attributeSet != null && _attributeSet.isSerNo();
-		// isGuaranteeDateEnabled:
-		// We are displaying it if we deal with a pure product ASI (i.e. user is not editing the ASI from product window),
-		// and if:
-		// * the attribute set requires a GuaranteeDate
-		// * or if the ASI has a GuaranteeDate already set
-		isGuaranteeDateEnabled = _type == WindowType.Regular
-				&& (_attributeSet != null && _attributeSet.isGuaranteeDate() || _attributeSetInstance != null && _attributeSetInstance.getGuaranteeDate() != null);
 	}
 
 	private static WindowType extractType(String callerTableName, final int callerColumnId)
@@ -326,21 +312,6 @@ public final class ASIEditingInfo
 		}
 
 		return productBL.getProductMasterDataSchemaOrNull(productId);
-	}
-
-	public boolean isLotEnabled()
-	{
-		return isLotEnabled;
-	}
-
-	public boolean isSerNoEnabled()
-	{
-		return isSerNoEnabled;
-	}
-
-	public boolean isGuaranteeDateEnabled()
-	{
-		return isGuaranteeDateEnabled;
 	}
 
 	public boolean isExcludedAttributeSet()
