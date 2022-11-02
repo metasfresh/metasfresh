@@ -845,6 +845,7 @@ DELETE FROM AD_Field WHERE AD_Field_ID=12260
 
 -- 2022-11-01T13:37:50.523Z
 /* DDL */ SELECT public.db_alter_table('M_AttributeSetInstance', 'ALTER TABLE M_AttributeSetInstance DROP COLUMN IF EXISTS SerNo')
+;
 
 -- Column: M_AttributeSetInstance.SerNo
 -- 2022-11-01T13:37:50.525Z
