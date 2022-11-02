@@ -87,10 +87,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "publicField" : true,
                                     "lookupTableName" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -121,10 +123,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -188,10 +192,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "publicField" : true,
                                     "lookupTableName" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -222,10 +228,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -281,10 +289,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "publicField" : true,
                                     "lookupTableName" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -315,10 +325,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -398,10 +410,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "publicField" : true,
                                     "lookupTableName" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -432,10 +446,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -491,10 +507,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "publicField" : true,
                                     "lookupTableName" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -525,10 +543,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -584,10 +604,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "publicField" : true,
                                     "lookupTableName" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -618,10 +640,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -733,10 +757,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "publicField" : true,
                                     "lookupTableName" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -767,10 +793,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -834,10 +862,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "publicField" : true,
                                     "lookupTableName" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -868,10 +898,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -927,10 +959,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "publicField" : true,
                                     "lookupTableName" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -961,10 +995,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -1044,10 +1080,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "publicField" : true,
                                     "lookupTableName" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -1078,10 +1116,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -1137,10 +1177,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "publicField" : true,
                                     "lookupTableName" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -1171,10 +1213,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -1230,10 +1274,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     },
                                     "publicField" : true,
                                     "lookupTableName" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -1264,10 +1310,12 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                                     "publicField" : true,
                                     "lookupSource" : "text",
                                     "lookupTableName" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "lookupSearchStringMinLength" : -1,
                                     "lookupSearchStartDelay" : {
+                                      "empty" : true,
                                       "present" : false
                                     },
                                     "listNullItemCaption" : {
@@ -1842,9 +1890,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
+                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
+                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -1864,11 +1914,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
                 },
+                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { },
-                "dependsOnGlobalContextValues" : false
+                "type2name2dependencies" : { }
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -1897,9 +1947,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
+                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
+                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -1919,11 +1971,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
                 },
+                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { },
-                "dependsOnGlobalContextValues" : false
+                "type2name2dependencies" : { }
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -1952,9 +2004,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
+                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
+                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -1974,11 +2028,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
                 },
+                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { },
-                "dependsOnGlobalContextValues" : false
+                "type2name2dependencies" : { }
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -2007,9 +2061,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
+                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
+                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -2029,11 +2085,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
                 },
+                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { },
-                "dependsOnGlobalContextValues" : false
+                "type2name2dependencies" : { }
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -2062,9 +2118,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
+                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
+                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -2084,11 +2142,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
                 },
+                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { },
-                "dependsOnGlobalContextValues" : false
+                "type2name2dependencies" : { }
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -2117,9 +2175,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
+                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
+                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -2139,11 +2199,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
                 },
+                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { },
-                "dependsOnGlobalContextValues" : false
+                "type2name2dependencies" : { }
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -2172,9 +2232,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
+                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
+                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -2194,11 +2256,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
                 },
+                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { },
-                "dependsOnGlobalContextValues" : false
+                "type2name2dependencies" : { }
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -2227,9 +2289,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
+                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
+                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -2249,11 +2313,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
                 },
+                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { },
-                "dependsOnGlobalContextValues" : false
+                "type2name2dependencies" : { }
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -2282,9 +2346,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
+                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
+                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -2304,11 +2370,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
                 },
+                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { },
-                "dependsOnGlobalContextValues" : false
+                "type2name2dependencies" : { }
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -2337,9 +2403,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
+                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
+                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -2359,11 +2427,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
                 },
+                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { },
-                "dependsOnGlobalContextValues" : false
+                "type2name2dependencies" : { }
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -2417,12 +2485,13 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                           "active" : true
                         }
                       },
-                      "numericKey" : false,
-                      "cached" : true
+                      "cached" : true,
+                      "numericKey" : false
                     },
-                    "numericKey" : true,
-                    "highVolume" : false
+                    "highVolume" : false,
+                    "numericKey" : true
                   },
+                  "empty" : false,
                   "present" : true
                 },
                 "numericKey" : true
@@ -2430,9 +2499,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : true,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
+                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
+                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -2452,11 +2523,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
                 },
+                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { },
-                "dependsOnGlobalContextValues" : false
+                "type2name2dependencies" : { }
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -2485,9 +2556,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
+                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
+                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -2507,11 +2580,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
                 },
+                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { },
-                "dependsOnGlobalContextValues" : false
+                "type2name2dependencies" : { }
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -2540,9 +2613,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : true,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
+                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
+                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -2561,11 +2636,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
                 },
+                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { },
-                "dependsOnGlobalContextValues" : false
+                "type2name2dependencies" : { }
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -2595,9 +2670,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
+                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
+                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -2616,11 +2693,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
                 },
+                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { },
-                "dependsOnGlobalContextValues" : false
+                "type2name2dependencies" : { }
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -2651,9 +2728,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : true,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
+                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
+                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -2672,11 +2751,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
                 },
+                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { },
-                "dependsOnGlobalContextValues" : false
+                "type2name2dependencies" : { }
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -2707,9 +2786,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "supportZoomInto" : false,
             "virtualField" : false,
             "virtualFieldValueProvider" : {
+              "empty" : true,
               "present" : false
             },
             "defaultValueExpression" : {
+              "empty" : true,
               "present" : false
             },
             "callouts" : [ ],
@@ -2728,11 +2809,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "defaultOrderBy" : false,
                 "defaultOrderByAscending" : true
               },
+              "empty" : false,
               "present" : true
             },
             "dependencies" : {
-              "type2name2dependencies" : { },
-              "dependsOnGlobalContextValues" : false
+              "type2name2dependencies" : { }
             },
             "deviceDescriptorsProvider" : { },
             "readonlyVirtualField" : false
@@ -2742,8 +2823,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "versioningSupported" : false
           },
           "dependencies" : {
-            "type2name2dependencies" : { },
-            "dependsOnGlobalContextValues" : false
+            "type2name2dependencies" : { }
           },
           "_fieldNamesByCharacteristic" : { },
           "calloutsEnabled" : false,
@@ -2751,12 +2831,15 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           "filterDescriptors" : { },
           "refreshViewOnChangeEvents" : false,
           "adTabId" : {
+            "empty" : true,
             "present" : false
           },
           "tableName" : {
+            "empty" : true,
             "present" : false
           },
           "soTrx" : {
+            "empty" : true,
             "present" : false
           },
           "cloneEnabled" : false,
@@ -2808,9 +2891,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
+                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
+                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -2830,11 +2915,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
                 },
+                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { },
-                "dependsOnGlobalContextValues" : false
+                "type2name2dependencies" : { }
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -2863,9 +2948,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
+                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
+                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -2885,11 +2972,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
                 },
+                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { },
-                "dependsOnGlobalContextValues" : false
+                "type2name2dependencies" : { }
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -2918,9 +3005,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
+                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
+                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -2940,11 +3029,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
                 },
+                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { },
-                "dependsOnGlobalContextValues" : false
+                "type2name2dependencies" : { }
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -2973,9 +3062,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
+                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
+                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -2995,11 +3086,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
                 },
+                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { },
-                "dependsOnGlobalContextValues" : false
+                "type2name2dependencies" : { }
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -3028,9 +3119,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
+                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
+                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -3050,11 +3143,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
                 },
+                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { },
-                "dependsOnGlobalContextValues" : false
+                "type2name2dependencies" : { }
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -3083,9 +3176,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
+                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
+                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -3105,11 +3200,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
                 },
+                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { },
-                "dependsOnGlobalContextValues" : false
+                "type2name2dependencies" : { }
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -3138,9 +3233,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
+                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
+                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -3160,11 +3257,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
                 },
+                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { },
-                "dependsOnGlobalContextValues" : false
+                "type2name2dependencies" : { }
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -3193,9 +3290,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
+                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
+                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -3215,11 +3314,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
                 },
+                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { },
-                "dependsOnGlobalContextValues" : false
+                "type2name2dependencies" : { }
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -3248,9 +3347,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
+                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
+                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -3270,11 +3371,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
                 },
+                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { },
-                "dependsOnGlobalContextValues" : false
+                "type2name2dependencies" : { }
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -3303,9 +3404,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
+                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
+                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -3325,11 +3428,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
                 },
+                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { },
-                "dependsOnGlobalContextValues" : false
+                "type2name2dependencies" : { }
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -3383,12 +3486,13 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                           "active" : true
                         }
                       },
-                      "numericKey" : false,
-                      "cached" : true
+                      "cached" : true,
+                      "numericKey" : false
                     },
-                    "numericKey" : true,
-                    "highVolume" : false
+                    "highVolume" : false,
+                    "numericKey" : true
                   },
+                  "empty" : false,
                   "present" : true
                 },
                 "numericKey" : true
@@ -3396,9 +3500,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : true,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
+                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
+                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -3418,11 +3524,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
                 },
+                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { },
-                "dependsOnGlobalContextValues" : false
+                "type2name2dependencies" : { }
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -3451,9 +3557,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
+                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
+                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -3473,11 +3581,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
                 },
+                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { },
-                "dependsOnGlobalContextValues" : false
+                "type2name2dependencies" : { }
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -3506,9 +3614,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : true,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
+                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
+                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -3527,11 +3637,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
                 },
+                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { },
-                "dependsOnGlobalContextValues" : false
+                "type2name2dependencies" : { }
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -3561,9 +3671,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : false,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
+                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
+                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -3582,11 +3694,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
                 },
+                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { },
-                "dependsOnGlobalContextValues" : false
+                "type2name2dependencies" : { }
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -3617,9 +3729,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
               "supportZoomInto" : true,
               "virtualField" : false,
               "virtualFieldValueProvider" : {
+                "empty" : true,
                 "present" : false
               },
               "defaultValueExpression" : {
+                "empty" : true,
                 "present" : false
               },
               "callouts" : [ ],
@@ -3638,11 +3752,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                   "defaultOrderBy" : false,
                   "defaultOrderByAscending" : true
                 },
+                "empty" : false,
                 "present" : true
               },
               "dependencies" : {
-                "type2name2dependencies" : { },
-                "dependsOnGlobalContextValues" : false
+                "type2name2dependencies" : { }
               },
               "deviceDescriptorsProvider" : { },
               "readonlyVirtualField" : false
@@ -3673,9 +3787,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "supportZoomInto" : false,
             "virtualField" : false,
             "virtualFieldValueProvider" : {
+              "empty" : true,
               "present" : false
             },
             "defaultValueExpression" : {
+              "empty" : true,
               "present" : false
             },
             "callouts" : [ ],
@@ -3694,11 +3810,11 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
                 "defaultOrderBy" : false,
                 "defaultOrderByAscending" : true
               },
+              "empty" : false,
               "present" : true
             },
             "dependencies" : {
-              "type2name2dependencies" : { },
-              "dependsOnGlobalContextValues" : false
+              "type2name2dependencies" : { }
             },
             "deviceDescriptorsProvider" : { },
             "readonlyVirtualField" : false
@@ -3708,8 +3824,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
             "versioningSupported" : false
           },
           "dependencies" : {
-            "type2name2dependencies" : { },
-            "dependsOnGlobalContextValues" : false
+            "type2name2dependencies" : { }
           },
           "_fieldNamesByCharacteristic" : { },
           "calloutsEnabled" : false,
@@ -3717,12 +3832,15 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           "filterDescriptors" : { },
           "refreshViewOnChangeEvents" : false,
           "adTabId" : {
+            "empty" : true,
             "present" : false
           },
           "tableName" : {
+            "empty" : true,
             "present" : false
           },
           "soTrx" : {
+            "empty" : true,
             "present" : false
           },
           "cloneEnabled" : false,
@@ -3734,8 +3852,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
         "versioningSupported" : false
       },
       "dependencies" : {
-        "type2name2dependencies" : { },
-        "dependsOnGlobalContextValues" : false
+        "type2name2dependencies" : { }
       },
       "_fieldNamesByCharacteristic" : { },
       "calloutsEnabled" : false,
@@ -3743,12 +3860,15 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
       "filterDescriptors" : { },
       "refreshViewOnChangeEvents" : false,
       "adTabId" : {
+        "empty" : true,
         "present" : false
       },
       "tableName" : {
+        "empty" : true,
         "present" : false
       },
       "soTrx" : {
+        "empty" : true,
         "present" : false
       },
       "cloneEnabled" : false,
