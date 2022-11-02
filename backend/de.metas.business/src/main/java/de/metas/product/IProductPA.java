@@ -26,7 +26,6 @@ import de.metas.adempiere.model.I_M_Product;
 import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.util.ISingletonService;
 import org.adempiere.model.I_M_ProductScalePrice;
-import org.compiere.model.MAttributeSetInstance;
 
 import java.math.BigDecimal;
 import java.util.Collection;
@@ -37,8 +36,6 @@ public interface IProductPA extends ISingletonService
 	I_M_Product retrieveProduct(Properties ctx, String value, boolean throwEx, String trxName);
 
 	I_M_Product retrieveProduct(Properties ctx, int productId, boolean throwEx, String trxName);
-
-	Collection<MAttributeSetInstance> retrieveSerno(int productId, String text, String trxName);
 
 	/**
 	 * 

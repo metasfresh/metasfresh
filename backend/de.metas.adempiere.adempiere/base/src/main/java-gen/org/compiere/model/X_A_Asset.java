@@ -1,1092 +1,670 @@
-/******************************************************************************
- * Product: Adempiere ERP & CRM Smart Business Solution                       *
- * Copyright (C) 1999-2007 ComPiere, Inc. All Rights Reserved.                *
- * This program is free software, you can redistribute it and/or modify it    *
- * under the terms version 2 of the GNU General Public License as published   *
- * by the Free Software Foundation. This program is distributed in the hope   *
- * that it will be useful, but WITHOUT ANY WARRANTY, without even the implied *
- * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.           *
- * See the GNU General Public License for more details.                       *
- * You should have received a copy of the GNU General Public License along    *
- * with this program, if not, write to the Free Software Foundation, Inc.,    *
- * 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.                     *
- * For the text or an alternative of this public license, you may reach us    *
- * ComPiere, Inc., 2620 Augustine Dr. #245, Santa Clara, CA 95054, USA        *
- * or via info@compiere.org or http://www.compiere.org/license.html           *
- *****************************************************************************/
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
-import java.sql.Timestamp;
 import java.util.Properties;
-import org.compiere.util.Env;
-import org.compiere.util.KeyNamePair;
 
 /** Generated Model for A_Asset
- *  @author Adempiere (generated) 
- *  @version Release 3.5.4a - $Id$ */
-public class X_A_Asset extends PO implements I_A_Asset, I_Persistent 
+ *  @author metasfresh (generated) 
+ */
+@SuppressWarnings("unused")
+public class X_A_Asset extends org.compiere.model.PO implements I_A_Asset, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 20090915L;
+	private static final long serialVersionUID = -1887586493L;
 
     /** Standard Constructor */
-    public X_A_Asset (Properties ctx, int A_Asset_ID, String trxName)
+    public X_A_Asset (final Properties ctx, final int A_Asset_ID, @Nullable final String trxName)
     {
       super (ctx, A_Asset_ID, trxName);
-      /** if (A_Asset_ID == 0)
-        {
-			setA_Asset_Group_ID (0);
-			setA_Asset_ID (0);
-			setIsDepreciated (false);
-			setIsDisposed (false);
-			setIsFullyDepreciated (false);
-// N
-			setIsInPosession (false);
-			setIsOwned (false);
-			setM_AttributeSetInstance_ID (0);
-			setName (null);
-			setValue (null);
-        } */
     }
 
     /** Load Constructor */
-    public X_A_Asset (Properties ctx, ResultSet rs, String trxName)
+    public X_A_Asset (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
-    /** AccessLevel
-      * @return 3 - Client - Org 
-      */
-    protected int get_AccessLevel()
-    {
-      return accessLevel.intValue();
-    }
 
-    /** Load Meta Data */
-    protected POInfo initPO (Properties ctx)
-    {
-      POInfo poi = POInfo.getPOInfo (ctx, Table_ID, get_TrxName());
-      return poi;
-    }
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
 
-    public String toString()
-    {
-      StringBuffer sb = new StringBuffer ("X_A_Asset[")
-        .append(get_ID()).append("]");
-      return sb.toString();
-    }
-
-	/** Set A_Asset_CreateDate.
-		@param A_Asset_CreateDate A_Asset_CreateDate	  */
-	public void setA_Asset_CreateDate (Timestamp A_Asset_CreateDate)
+	@Override
+	public void setA_Asset_CreateDate (final @Nullable java.sql.Timestamp A_Asset_CreateDate)
 	{
 		set_ValueNoCheck (COLUMNNAME_A_Asset_CreateDate, A_Asset_CreateDate);
 	}
 
-	/** Get A_Asset_CreateDate.
-		@return A_Asset_CreateDate	  */
-	public Timestamp getA_Asset_CreateDate () 
+	@Override
+	public java.sql.Timestamp getA_Asset_CreateDate() 
 	{
-		return (Timestamp)get_Value(COLUMNNAME_A_Asset_CreateDate);
+		return get_ValueAsTimestamp(COLUMNNAME_A_Asset_CreateDate);
 	}
 
-	public I_A_Asset_Group getA_Asset_Group() throws RuntimeException
-    {
-		return (I_A_Asset_Group)MTable.get(getCtx(), I_A_Asset_Group.Table_Name)
-			.getPO(getA_Asset_Group_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_A_Asset_Group getA_Asset_Group()
+	{
+		return get_ValueAsPO(COLUMNNAME_A_Asset_Group_ID, org.compiere.model.I_A_Asset_Group.class);
+	}
 
-	/** Set Asset Group.
-		@param A_Asset_Group_ID 
-		Group of Assets
-	  */
-	public void setA_Asset_Group_ID (int A_Asset_Group_ID)
+	@Override
+	public void setA_Asset_Group(final org.compiere.model.I_A_Asset_Group A_Asset_Group)
+	{
+		set_ValueFromPO(COLUMNNAME_A_Asset_Group_ID, org.compiere.model.I_A_Asset_Group.class, A_Asset_Group);
+	}
+
+	@Override
+	public void setA_Asset_Group_ID (final int A_Asset_Group_ID)
 	{
 		if (A_Asset_Group_ID < 1) 
 			set_Value (COLUMNNAME_A_Asset_Group_ID, null);
 		else 
-			set_Value (COLUMNNAME_A_Asset_Group_ID, Integer.valueOf(A_Asset_Group_ID));
+			set_Value (COLUMNNAME_A_Asset_Group_ID, A_Asset_Group_ID);
 	}
 
-	/** Get Asset Group.
-		@return Group of Assets
-	  */
-	public int getA_Asset_Group_ID () 
+	@Override
+	public int getA_Asset_Group_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_A_Asset_Group_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_A_Asset_Group_ID);
 	}
 
-	/** Set Asset.
-		@param A_Asset_ID 
-		Asset used internally or by customers
-	  */
-	public void setA_Asset_ID (int A_Asset_ID)
+	@Override
+	public void setA_Asset_ID (final int A_Asset_ID)
 	{
 		if (A_Asset_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_A_Asset_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_A_Asset_ID, Integer.valueOf(A_Asset_ID));
+			set_ValueNoCheck (COLUMNNAME_A_Asset_ID, A_Asset_ID);
 	}
 
-	/** Get Asset.
-		@return Asset used internally or by customers
-	  */
-	public int getA_Asset_ID () 
+	@Override
+	public int getA_Asset_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_A_Asset_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_A_Asset_ID);
 	}
 
-	/** Set A_Asset_RevalDate.
-		@param A_Asset_RevalDate A_Asset_RevalDate	  */
-	public void setA_Asset_RevalDate (Timestamp A_Asset_RevalDate)
+	@Override
+	public void setA_Asset_RevalDate (final @Nullable java.sql.Timestamp A_Asset_RevalDate)
 	{
 		set_Value (COLUMNNAME_A_Asset_RevalDate, A_Asset_RevalDate);
 	}
 
-	/** Get A_Asset_RevalDate.
-		@return A_Asset_RevalDate	  */
-	public Timestamp getA_Asset_RevalDate () 
+	@Override
+	public java.sql.Timestamp getA_Asset_RevalDate() 
 	{
-		return (Timestamp)get_Value(COLUMNNAME_A_Asset_RevalDate);
+		return get_ValueAsTimestamp(COLUMNNAME_A_Asset_RevalDate);
 	}
 
-	public I_AD_User getAD_User() throws RuntimeException
-    {
-		return (I_AD_User)MTable.get(getCtx(), I_AD_User.Table_Name)
-			.getPO(getAD_User_ID(), get_TrxName());	}
-
-	/** Set User/Contact.
-		@param AD_User_ID 
-		User within the system - Internal or Business Partner Contact
-	  */
-	public void setAD_User_ID (int AD_User_ID)
+	@Override
+	public void setAD_User_ID (final int AD_User_ID)
 	{
-		if (AD_User_ID < 1) 
+		if (AD_User_ID < 0) 
 			set_Value (COLUMNNAME_AD_User_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_User_ID, Integer.valueOf(AD_User_ID));
+			set_Value (COLUMNNAME_AD_User_ID, AD_User_ID);
 	}
 
-	/** Get User/Contact.
-		@return User within the system - Internal or Business Partner Contact
-	  */
-	public int getAD_User_ID () 
+	@Override
+	public int getAD_User_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_User_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_User_ID);
 	}
 
-	public I_A_Asset getA_Parent_Asset() throws RuntimeException
-    {
-		return (I_A_Asset)MTable.get(getCtx(), I_A_Asset.Table_Name)
-			.getPO(getA_Parent_Asset_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_A_Asset getA_Parent_Asset()
+	{
+		return get_ValueAsPO(COLUMNNAME_A_Parent_Asset_ID, org.compiere.model.I_A_Asset.class);
+	}
 
-	/** Set Asset ID.
-		@param A_Parent_Asset_ID Asset ID	  */
-	public void setA_Parent_Asset_ID (int A_Parent_Asset_ID)
+	@Override
+	public void setA_Parent_Asset(final org.compiere.model.I_A_Asset A_Parent_Asset)
+	{
+		set_ValueFromPO(COLUMNNAME_A_Parent_Asset_ID, org.compiere.model.I_A_Asset.class, A_Parent_Asset);
+	}
+
+	@Override
+	public void setA_Parent_Asset_ID (final int A_Parent_Asset_ID)
 	{
 		if (A_Parent_Asset_ID < 1) 
 			set_Value (COLUMNNAME_A_Parent_Asset_ID, null);
 		else 
-			set_Value (COLUMNNAME_A_Parent_Asset_ID, Integer.valueOf(A_Parent_Asset_ID));
+			set_Value (COLUMNNAME_A_Parent_Asset_ID, A_Parent_Asset_ID);
 	}
 
-	/** Get Asset ID.
-		@return Asset ID	  */
-	public int getA_Parent_Asset_ID () 
+	@Override
+	public int getA_Parent_Asset_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_A_Parent_Asset_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_A_Parent_Asset_ID);
 	}
 
-	/** Set Quantity.
-		@param A_QTY_Current Quantity	  */
-	public void setA_QTY_Current (BigDecimal A_QTY_Current)
+	@Override
+	public void setA_QTY_Current (final @Nullable BigDecimal A_QTY_Current)
 	{
 		set_Value (COLUMNNAME_A_QTY_Current, A_QTY_Current);
 	}
 
-	/** Get Quantity.
-		@return Quantity	  */
-	public BigDecimal getA_QTY_Current () 
+	@Override
+	public BigDecimal getA_QTY_Current() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_A_QTY_Current);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_A_QTY_Current);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Original Qty.
-		@param A_QTY_Original Original Qty	  */
-	public void setA_QTY_Original (BigDecimal A_QTY_Original)
+	@Override
+	public void setA_QTY_Original (final @Nullable BigDecimal A_QTY_Original)
 	{
 		set_Value (COLUMNNAME_A_QTY_Original, A_QTY_Original);
 	}
 
-	/** Get Original Qty.
-		@return Original Qty	  */
-	public BigDecimal getA_QTY_Original () 
+	@Override
+	public BigDecimal getA_QTY_Original() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_A_QTY_Original);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_A_QTY_Original);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Asset Depreciation Date.
-		@param AssetDepreciationDate 
-		Date of last depreciation
-	  */
-	public void setAssetDepreciationDate (Timestamp AssetDepreciationDate)
+	@Override
+	public void setAssetDepreciationDate (final @Nullable java.sql.Timestamp AssetDepreciationDate)
 	{
 		set_Value (COLUMNNAME_AssetDepreciationDate, AssetDepreciationDate);
 	}
 
-	/** Get Asset Depreciation Date.
-		@return Date of last depreciation
-	  */
-	public Timestamp getAssetDepreciationDate () 
+	@Override
+	public java.sql.Timestamp getAssetDepreciationDate() 
 	{
-		return (Timestamp)get_Value(COLUMNNAME_AssetDepreciationDate);
+		return get_ValueAsTimestamp(COLUMNNAME_AssetDepreciationDate);
 	}
 
-	/** Set Asset Disposal Date.
-		@param AssetDisposalDate 
-		Date when the asset is/was disposed
-	  */
-	public void setAssetDisposalDate (Timestamp AssetDisposalDate)
+	@Override
+	public void setAssetDisposalDate (final @Nullable java.sql.Timestamp AssetDisposalDate)
 	{
 		set_Value (COLUMNNAME_AssetDisposalDate, AssetDisposalDate);
 	}
 
-	/** Get Asset Disposal Date.
-		@return Date when the asset is/was disposed
-	  */
-	public Timestamp getAssetDisposalDate () 
+	@Override
+	public java.sql.Timestamp getAssetDisposalDate() 
 	{
-		return (Timestamp)get_Value(COLUMNNAME_AssetDisposalDate);
+		return get_ValueAsTimestamp(COLUMNNAME_AssetDisposalDate);
 	}
 
-	/** Set In Service Date.
-		@param AssetServiceDate 
-		Date when Asset was put into service
-	  */
-	public void setAssetServiceDate (Timestamp AssetServiceDate)
+	@Override
+	public void setAssetServiceDate (final @Nullable java.sql.Timestamp AssetServiceDate)
 	{
 		set_Value (COLUMNNAME_AssetServiceDate, AssetServiceDate);
 	}
 
-	/** Get In Service Date.
-		@return Date when Asset was put into service
-	  */
-	public Timestamp getAssetServiceDate () 
+	@Override
+	public java.sql.Timestamp getAssetServiceDate() 
 	{
-		return (Timestamp)get_Value(COLUMNNAME_AssetServiceDate);
+		return get_ValueAsTimestamp(COLUMNNAME_AssetServiceDate);
 	}
 
-	public I_C_BPartner getC_BPartner() throws RuntimeException
-    {
-		return (I_C_BPartner)MTable.get(getCtx(), I_C_BPartner.Table_Name)
-			.getPO(getC_BPartner_ID(), get_TrxName());	}
-
-	/** Set Business Partner .
-		@param C_BPartner_ID 
-		Identifies a Business Partner
-	  */
-	public void setC_BPartner_ID (int C_BPartner_ID)
+	@Override
+	public void setC_BPartner_ID (final int C_BPartner_ID)
 	{
 		if (C_BPartner_ID < 1) 
 			set_Value (COLUMNNAME_C_BPartner_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_BPartner_ID, Integer.valueOf(C_BPartner_ID));
+			set_Value (COLUMNNAME_C_BPartner_ID, C_BPartner_ID);
 	}
 
-	/** Get Business Partner .
-		@return Identifies a Business Partner
-	  */
-	public int getC_BPartner_ID () 
+	@Override
+	public int getC_BPartner_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_ID);
 	}
 
-	public I_C_BPartner_Location getC_BPartner_Location() throws RuntimeException
-    {
-		return (I_C_BPartner_Location)MTable.get(getCtx(), I_C_BPartner_Location.Table_Name)
-			.getPO(getC_BPartner_Location_ID(), get_TrxName());	}
-
-	/** Set Partner Location.
-		@param C_BPartner_Location_ID 
-		Identifies the (ship to) address for this Business Partner
-	  */
-	public void setC_BPartner_Location_ID (int C_BPartner_Location_ID)
+	@Override
+	public void setC_BPartner_Location_ID (final int C_BPartner_Location_ID)
 	{
 		if (C_BPartner_Location_ID < 1) 
 			set_Value (COLUMNNAME_C_BPartner_Location_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_BPartner_Location_ID, Integer.valueOf(C_BPartner_Location_ID));
+			set_Value (COLUMNNAME_C_BPartner_Location_ID, C_BPartner_Location_ID);
 	}
 
-	/** Get Partner Location.
-		@return Identifies the (ship to) address for this Business Partner
-	  */
-	public int getC_BPartner_Location_ID () 
+	@Override
+	public int getC_BPartner_Location_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartner_Location_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_BPartner_Location_ID);
 	}
 
-	public I_C_BPartner getC_BPartnerSR() throws RuntimeException
-    {
-		return (I_C_BPartner)MTable.get(getCtx(), I_C_BPartner.Table_Name)
-			.getPO(getC_BPartnerSR_ID(), get_TrxName());	}
-
-	/** Set BPartner (Agent).
-		@param C_BPartnerSR_ID 
-		Business Partner (Agent or Sales Rep)
-	  */
-	public void setC_BPartnerSR_ID (int C_BPartnerSR_ID)
+	@Override
+	public void setC_BPartnerSR_ID (final int C_BPartnerSR_ID)
 	{
 		if (C_BPartnerSR_ID < 1) 
 			set_Value (COLUMNNAME_C_BPartnerSR_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_BPartnerSR_ID, Integer.valueOf(C_BPartnerSR_ID));
+			set_Value (COLUMNNAME_C_BPartnerSR_ID, C_BPartnerSR_ID);
 	}
 
-	/** Get BPartner (Agent).
-		@return Business Partner (Agent or Sales Rep)
-	  */
-	public int getC_BPartnerSR_ID () 
+	@Override
+	public int getC_BPartnerSR_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_BPartnerSR_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_BPartnerSR_ID);
 	}
 
-	public I_C_Location getC_Location() throws RuntimeException
-    {
-		return (I_C_Location)MTable.get(getCtx(), I_C_Location.Table_Name)
-			.getPO(getC_Location_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_C_Location getC_Location()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Location_ID, org.compiere.model.I_C_Location.class);
+	}
 
-	/** Set Address.
-		@param C_Location_ID 
-		Location or Address
-	  */
-	public void setC_Location_ID (int C_Location_ID)
+	@Override
+	public void setC_Location(final org.compiere.model.I_C_Location C_Location)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Location_ID, org.compiere.model.I_C_Location.class, C_Location);
+	}
+
+	@Override
+	public void setC_Location_ID (final int C_Location_ID)
 	{
 		if (C_Location_ID < 1) 
 			set_Value (COLUMNNAME_C_Location_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Location_ID, Integer.valueOf(C_Location_ID));
+			set_Value (COLUMNNAME_C_Location_ID, C_Location_ID);
 	}
 
-	/** Get Address.
-		@return Location or Address
-	  */
-	public int getC_Location_ID () 
+	@Override
+	public int getC_Location_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Location_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Location_ID);
 	}
 
-	public I_C_Project getC_Project() throws RuntimeException
-    {
-		return (I_C_Project)MTable.get(getCtx(), I_C_Project.Table_Name)
-			.getPO(getC_Project_ID(), get_TrxName());	}
-
-	/** Set Project.
-		@param C_Project_ID 
-		Financial Project
-	  */
-	public void setC_Project_ID (int C_Project_ID)
+	@Override
+	public void setC_Project_ID (final int C_Project_ID)
 	{
 		if (C_Project_ID < 1) 
 			set_Value (COLUMNNAME_C_Project_ID, null);
 		else 
-			set_Value (COLUMNNAME_C_Project_ID, Integer.valueOf(C_Project_ID));
+			set_Value (COLUMNNAME_C_Project_ID, C_Project_ID);
 	}
 
-	/** Get Project.
-		@return Financial Project
-	  */
-	public int getC_Project_ID () 
+	@Override
+	public int getC_Project_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_Project_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_Project_ID);
 	}
 
-	/** Set Description.
-		@param Description 
-		Optional short description of the record
-	  */
-	public void setDescription (String Description)
+	@Override
+	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
 	}
 
-	/** Get Description.
-		@return Optional short description of the record
-	  */
-	public String getDescription () 
+	@Override
+	public java.lang.String getDescription() 
 	{
-		return (String)get_Value(COLUMNNAME_Description);
+		return get_ValueAsString(COLUMNNAME_Description);
 	}
 
-	/** Set Guarantee Date.
-		@param GuaranteeDate 
-		Date when guarantee expires
-	  */
-	public void setGuaranteeDate (Timestamp GuaranteeDate)
-	{
-		set_Value (COLUMNNAME_GuaranteeDate, GuaranteeDate);
-	}
-
-	/** Get Guarantee Date.
-		@return Date when guarantee expires
-	  */
-	public Timestamp getGuaranteeDate () 
-	{
-		return (Timestamp)get_Value(COLUMNNAME_GuaranteeDate);
-	}
-
-	/** Set Comment/Help.
-		@param Help 
-		Comment or Hint
-	  */
-	public void setHelp (String Help)
+	@Override
+	public void setHelp (final @Nullable java.lang.String Help)
 	{
 		set_Value (COLUMNNAME_Help, Help);
 	}
 
-	/** Get Comment/Help.
-		@return Comment or Hint
-	  */
-	public String getHelp () 
+	@Override
+	public java.lang.String getHelp() 
 	{
-		return (String)get_Value(COLUMNNAME_Help);
+		return get_ValueAsString(COLUMNNAME_Help);
 	}
 
-	/** Set Depreciate.
-		@param IsDepreciated 
-		The asset will be depreciated
-	  */
-	public void setIsDepreciated (boolean IsDepreciated)
+	@Override
+	public void setIsDepreciated (final boolean IsDepreciated)
 	{
-		set_Value (COLUMNNAME_IsDepreciated, Boolean.valueOf(IsDepreciated));
+		set_Value (COLUMNNAME_IsDepreciated, IsDepreciated);
 	}
 
-	/** Get Depreciate.
-		@return The asset will be depreciated
-	  */
-	public boolean isDepreciated () 
+	@Override
+	public boolean isDepreciated() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsDepreciated);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsDepreciated);
 	}
 
-	/** Set Disposed.
-		@param IsDisposed 
-		The asset is disposed
-	  */
-	public void setIsDisposed (boolean IsDisposed)
+	@Override
+	public void setIsDisposed (final boolean IsDisposed)
 	{
-		set_Value (COLUMNNAME_IsDisposed, Boolean.valueOf(IsDisposed));
+		set_Value (COLUMNNAME_IsDisposed, IsDisposed);
 	}
 
-	/** Get Disposed.
-		@return The asset is disposed
-	  */
-	public boolean isDisposed () 
+	@Override
+	public boolean isDisposed() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsDisposed);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsDisposed);
 	}
 
-	/** Set Fully depreciated.
-		@param IsFullyDepreciated 
-		The asset is fully depreciated
-	  */
-	public void setIsFullyDepreciated (boolean IsFullyDepreciated)
+	@Override
+	public void setIsFullyDepreciated (final boolean IsFullyDepreciated)
 	{
-		set_ValueNoCheck (COLUMNNAME_IsFullyDepreciated, Boolean.valueOf(IsFullyDepreciated));
+		set_ValueNoCheck (COLUMNNAME_IsFullyDepreciated, IsFullyDepreciated);
 	}
 
-	/** Get Fully depreciated.
-		@return The asset is fully depreciated
-	  */
-	public boolean isFullyDepreciated () 
+	@Override
+	public boolean isFullyDepreciated() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsFullyDepreciated);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsFullyDepreciated);
 	}
 
-	/** Set In Possession.
-		@param IsInPosession 
-		The asset is in the possession of the organization
-	  */
-	public void setIsInPosession (boolean IsInPosession)
+	@Override
+	public void setIsInPosession (final boolean IsInPosession)
 	{
-		set_Value (COLUMNNAME_IsInPosession, Boolean.valueOf(IsInPosession));
+		set_Value (COLUMNNAME_IsInPosession, IsInPosession);
 	}
 
-	/** Get In Possession.
-		@return The asset is in the possession of the organization
-	  */
-	public boolean isInPosession () 
+	@Override
+	public boolean isInPosession() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsInPosession);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsInPosession);
 	}
 
-	/** Set Owned.
-		@param IsOwned 
-		The asset is owned by the organization
-	  */
-	public void setIsOwned (boolean IsOwned)
+	@Override
+	public void setIsOwned (final boolean IsOwned)
 	{
-		set_Value (COLUMNNAME_IsOwned, Boolean.valueOf(IsOwned));
+		set_Value (COLUMNNAME_IsOwned, IsOwned);
 	}
 
-	/** Get Owned.
-		@return The asset is owned by the organization
-	  */
-	public boolean isOwned () 
+	@Override
+	public boolean isOwned() 
 	{
-		Object oo = get_Value(COLUMNNAME_IsOwned);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_IsOwned);
 	}
 
-	/** Set Last Maintenance.
-		@param LastMaintenanceDate 
-		Last Maintenance Date
-	  */
-	public void setLastMaintenanceDate (Timestamp LastMaintenanceDate)
+	@Override
+	public void setLastMaintenanceDate (final @Nullable java.sql.Timestamp LastMaintenanceDate)
 	{
 		set_Value (COLUMNNAME_LastMaintenanceDate, LastMaintenanceDate);
 	}
 
-	/** Get Last Maintenance.
-		@return Last Maintenance Date
-	  */
-	public Timestamp getLastMaintenanceDate () 
+	@Override
+	public java.sql.Timestamp getLastMaintenanceDate() 
 	{
-		return (Timestamp)get_Value(COLUMNNAME_LastMaintenanceDate);
+		return get_ValueAsTimestamp(COLUMNNAME_LastMaintenanceDate);
 	}
 
-	/** Set Last Note.
-		@param LastMaintenanceNote 
-		Last Maintenance Note
-	  */
-	public void setLastMaintenanceNote (String LastMaintenanceNote)
+	@Override
+	public void setLastMaintenanceNote (final @Nullable java.lang.String LastMaintenanceNote)
 	{
 		set_Value (COLUMNNAME_LastMaintenanceNote, LastMaintenanceNote);
 	}
 
-	/** Get Last Note.
-		@return Last Maintenance Note
-	  */
-	public String getLastMaintenanceNote () 
+	@Override
+	public java.lang.String getLastMaintenanceNote() 
 	{
-		return (String)get_Value(COLUMNNAME_LastMaintenanceNote);
+		return get_ValueAsString(COLUMNNAME_LastMaintenanceNote);
 	}
 
-	/** Set Last Unit.
-		@param LastMaintenanceUnit 
-		Last Maintenance Unit
-	  */
-	public void setLastMaintenanceUnit (int LastMaintenanceUnit)
+	@Override
+	public void setLastMaintenanceUnit (final int LastMaintenanceUnit)
 	{
-		set_Value (COLUMNNAME_LastMaintenanceUnit, Integer.valueOf(LastMaintenanceUnit));
+		set_Value (COLUMNNAME_LastMaintenanceUnit, LastMaintenanceUnit);
 	}
 
-	/** Get Last Unit.
-		@return Last Maintenance Unit
-	  */
-	public int getLastMaintenanceUnit () 
+	@Override
+	public int getLastMaintenanceUnit() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_LastMaintenanceUnit);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_LastMaintenanceUnit);
 	}
 
-	public I_C_BPartner getLease_BPartner() throws RuntimeException
-    {
-		return (I_C_BPartner)MTable.get(getCtx(), I_C_BPartner.Table_Name)
-			.getPO(getLease_BPartner_ID(), get_TrxName());	}
-
-	/** Set Lessor.
-		@param Lease_BPartner_ID 
-		The Business Partner who rents or leases
-	  */
-	public void setLease_BPartner_ID (int Lease_BPartner_ID)
+	@Override
+	public void setLease_BPartner_ID (final int Lease_BPartner_ID)
 	{
 		if (Lease_BPartner_ID < 1) 
 			set_Value (COLUMNNAME_Lease_BPartner_ID, null);
 		else 
-			set_Value (COLUMNNAME_Lease_BPartner_ID, Integer.valueOf(Lease_BPartner_ID));
+			set_Value (COLUMNNAME_Lease_BPartner_ID, Lease_BPartner_ID);
 	}
 
-	/** Get Lessor.
-		@return The Business Partner who rents or leases
-	  */
-	public int getLease_BPartner_ID () 
+	@Override
+	public int getLease_BPartner_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_Lease_BPartner_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_Lease_BPartner_ID);
 	}
 
-	/** Set Lease Termination.
-		@param LeaseTerminationDate 
-		Lease Termination Date
-	  */
-	public void setLeaseTerminationDate (Timestamp LeaseTerminationDate)
+	@Override
+	public void setLeaseTerminationDate (final @Nullable java.sql.Timestamp LeaseTerminationDate)
 	{
 		set_Value (COLUMNNAME_LeaseTerminationDate, LeaseTerminationDate);
 	}
 
-	/** Get Lease Termination.
-		@return Lease Termination Date
-	  */
-	public Timestamp getLeaseTerminationDate () 
+	@Override
+	public java.sql.Timestamp getLeaseTerminationDate() 
 	{
-		return (Timestamp)get_Value(COLUMNNAME_LeaseTerminationDate);
+		return get_ValueAsTimestamp(COLUMNNAME_LeaseTerminationDate);
 	}
 
-	/** Set Life use.
-		@param LifeUseUnits 
-		Units of use until the asset is not usable anymore
-	  */
-	public void setLifeUseUnits (int LifeUseUnits)
+	@Override
+	public void setLifeUseUnits (final int LifeUseUnits)
 	{
-		set_Value (COLUMNNAME_LifeUseUnits, Integer.valueOf(LifeUseUnits));
+		set_Value (COLUMNNAME_LifeUseUnits, LifeUseUnits);
 	}
 
-	/** Get Life use.
-		@return Units of use until the asset is not usable anymore
-	  */
-	public int getLifeUseUnits () 
+	@Override
+	public int getLifeUseUnits() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_LifeUseUnits);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_LifeUseUnits);
 	}
 
-	/** Set Location comment.
-		@param LocationComment 
-		Additional comments or remarks concerning the location
-	  */
-	public void setLocationComment (String LocationComment)
+	@Override
+	public void setLocationComment (final @Nullable java.lang.String LocationComment)
 	{
 		set_Value (COLUMNNAME_LocationComment, LocationComment);
 	}
 
-	/** Get Location comment.
-		@return Additional comments or remarks concerning the location
-	  */
-	public String getLocationComment () 
+	@Override
+	public java.lang.String getLocationComment() 
 	{
-		return (String)get_Value(COLUMNNAME_LocationComment);
+		return get_ValueAsString(COLUMNNAME_LocationComment);
 	}
 
-	/** Set Lot No.
-		@param Lot 
-		Lot number (alphanumeric)
-	  */
-	public void setLot (String Lot)
+	@Override
+	public org.compiere.model.I_M_AttributeSetInstance getM_AttributeSetInstance()
 	{
-		set_Value (COLUMNNAME_Lot, Lot);
+		return get_ValueAsPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class);
 	}
 
-	/** Get Lot No.
-		@return Lot number (alphanumeric)
-	  */
-	public String getLot () 
+	@Override
+	public void setM_AttributeSetInstance(final org.compiere.model.I_M_AttributeSetInstance M_AttributeSetInstance)
 	{
-		return (String)get_Value(COLUMNNAME_Lot);
+		set_ValueFromPO(COLUMNNAME_M_AttributeSetInstance_ID, org.compiere.model.I_M_AttributeSetInstance.class, M_AttributeSetInstance);
 	}
 
-	public I_M_AttributeSetInstance getM_AttributeSetInstance() throws RuntimeException
-    {
-		return (I_M_AttributeSetInstance)MTable.get(getCtx(), I_M_AttributeSetInstance.Table_Name)
-			.getPO(getM_AttributeSetInstance_ID(), get_TrxName());	}
-
-	/** Set Attribute Set Instance.
-		@param M_AttributeSetInstance_ID 
-		Product Attribute Set Instance
-	  */
-	public void setM_AttributeSetInstance_ID (int M_AttributeSetInstance_ID)
+	@Override
+	public void setM_AttributeSetInstance_ID (final int M_AttributeSetInstance_ID)
 	{
 		if (M_AttributeSetInstance_ID < 0) 
 			set_ValueNoCheck (COLUMNNAME_M_AttributeSetInstance_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_AttributeSetInstance_ID, Integer.valueOf(M_AttributeSetInstance_ID));
+			set_ValueNoCheck (COLUMNNAME_M_AttributeSetInstance_ID, M_AttributeSetInstance_ID);
 	}
 
-	/** Get Attribute Set Instance.
-		@return Product Attribute Set Instance
-	  */
-	public int getM_AttributeSetInstance_ID () 
+	@Override
+	public int getM_AttributeSetInstance_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_AttributeSetInstance_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_AttributeSetInstance_ID);
 	}
 
-	public I_M_InOutLine getM_InOutLine() throws RuntimeException
-    {
-		return (I_M_InOutLine)MTable.get(getCtx(), I_M_InOutLine.Table_Name)
-			.getPO(getM_InOutLine_ID(), get_TrxName());	}
+	@Override
+	public org.compiere.model.I_M_InOutLine getM_InOutLine()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_InOutLine_ID, org.compiere.model.I_M_InOutLine.class);
+	}
 
-	/** Set Shipment/Receipt Line.
-		@param M_InOutLine_ID 
-		Line on Shipment or Receipt document
-	  */
-	public void setM_InOutLine_ID (int M_InOutLine_ID)
+	@Override
+	public void setM_InOutLine(final org.compiere.model.I_M_InOutLine M_InOutLine)
+	{
+		set_ValueFromPO(COLUMNNAME_M_InOutLine_ID, org.compiere.model.I_M_InOutLine.class, M_InOutLine);
+	}
+
+	@Override
+	public void setM_InOutLine_ID (final int M_InOutLine_ID)
 	{
 		if (M_InOutLine_ID < 1) 
 			set_Value (COLUMNNAME_M_InOutLine_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_InOutLine_ID, Integer.valueOf(M_InOutLine_ID));
+			set_Value (COLUMNNAME_M_InOutLine_ID, M_InOutLine_ID);
 	}
 
-	/** Get Shipment/Receipt Line.
-		@return Line on Shipment or Receipt document
-	  */
-	public int getM_InOutLine_ID () 
+	@Override
+	public int getM_InOutLine_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_InOutLine_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_InOutLine_ID);
 	}
 
-	public I_M_Locator getM_Locator() throws RuntimeException
-    {
-		return (I_M_Locator)MTable.get(getCtx(), I_M_Locator.Table_Name)
-			.getPO(getM_Locator_ID(), get_TrxName());	}
-
-	/** Set Locator.
-		@param M_Locator_ID 
-		Warehouse Locator
-	  */
-	public void setM_Locator_ID (int M_Locator_ID)
+	@Override
+	public void setM_Locator_ID (final int M_Locator_ID)
 	{
 		if (M_Locator_ID < 1) 
 			set_Value (COLUMNNAME_M_Locator_ID, null);
 		else 
-			set_Value (COLUMNNAME_M_Locator_ID, Integer.valueOf(M_Locator_ID));
+			set_Value (COLUMNNAME_M_Locator_ID, M_Locator_ID);
 	}
 
-	/** Get Locator.
-		@return Warehouse Locator
-	  */
-	public int getM_Locator_ID () 
+	@Override
+	public int getM_Locator_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Locator_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Locator_ID);
 	}
 
-	public I_M_Product getM_Product() throws RuntimeException
-    {
-		return (I_M_Product)MTable.get(getCtx(), I_M_Product.Table_Name)
-			.getPO(getM_Product_ID(), get_TrxName());	}
-
-	/** Set Product.
-		@param M_Product_ID 
-		Product, Service, Item
-	  */
-	public void setM_Product_ID (int M_Product_ID)
+	@Override
+	public void setM_Product_ID (final int M_Product_ID)
 	{
 		if (M_Product_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_M_Product_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_M_Product_ID, Integer.valueOf(M_Product_ID));
+			set_ValueNoCheck (COLUMNNAME_M_Product_ID, M_Product_ID);
 	}
 
-	/** Get Product.
-		@return Product, Service, Item
-	  */
-	public int getM_Product_ID () 
+	@Override
+	public int getM_Product_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_M_Product_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_M_Product_ID);
 	}
 
-	/** Set Name.
-		@param Name 
-		Alphanumeric identifier of the entity
-	  */
-	public void setName (String Name)
+	@Override
+	public void setName (final java.lang.String Name)
 	{
 		set_Value (COLUMNNAME_Name, Name);
 	}
 
-	/** Get Name.
-		@return Alphanumeric identifier of the entity
-	  */
-	public String getName () 
+	@Override
+	public java.lang.String getName() 
 	{
-		return (String)get_Value(COLUMNNAME_Name);
+		return get_ValueAsString(COLUMNNAME_Name);
 	}
 
-    /** Get Record ID/ColumnName
-        @return ID/ColumnName pair
-      */
-    public KeyNamePair getKeyNamePair() 
-    {
-        return new KeyNamePair(get_ID(), getName());
-    }
-
-	/** Set Next Maintenence.
-		@param NextMaintenenceDate 
-		Next Maintenence Date
-	  */
-	public void setNextMaintenenceDate (Timestamp NextMaintenenceDate)
+	@Override
+	public void setNextMaintenenceDate (final @Nullable java.sql.Timestamp NextMaintenenceDate)
 	{
 		set_Value (COLUMNNAME_NextMaintenenceDate, NextMaintenenceDate);
 	}
 
-	/** Get Next Maintenence.
-		@return Next Maintenence Date
-	  */
-	public Timestamp getNextMaintenenceDate () 
+	@Override
+	public java.sql.Timestamp getNextMaintenenceDate() 
 	{
-		return (Timestamp)get_Value(COLUMNNAME_NextMaintenenceDate);
+		return get_ValueAsTimestamp(COLUMNNAME_NextMaintenenceDate);
 	}
 
-	/** Set Next Unit.
-		@param NextMaintenenceUnit 
-		Next Maintenence Unit
-	  */
-	public void setNextMaintenenceUnit (int NextMaintenenceUnit)
+	@Override
+	public void setNextMaintenenceUnit (final int NextMaintenenceUnit)
 	{
-		set_Value (COLUMNNAME_NextMaintenenceUnit, Integer.valueOf(NextMaintenenceUnit));
+		set_Value (COLUMNNAME_NextMaintenenceUnit, NextMaintenenceUnit);
 	}
 
-	/** Get Next Unit.
-		@return Next Maintenence Unit
-	  */
-	public int getNextMaintenenceUnit () 
+	@Override
+	public int getNextMaintenenceUnit() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_NextMaintenenceUnit);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_NextMaintenenceUnit);
 	}
 
-	/** Set Process Now.
-		@param Processing Process Now	  */
-	public void setProcessing (boolean Processing)
+	@Override
+	public void setProcessing (final boolean Processing)
 	{
-		set_Value (COLUMNNAME_Processing, Boolean.valueOf(Processing));
+		set_Value (COLUMNNAME_Processing, Processing);
 	}
 
-	/** Get Process Now.
-		@return Process Now	  */
-	public boolean isProcessing () 
+	@Override
+	public boolean isProcessing() 
 	{
-		Object oo = get_Value(COLUMNNAME_Processing);
-		if (oo != null) 
-		{
-			 if (oo instanceof Boolean) 
-				 return ((Boolean)oo).booleanValue(); 
-			return "Y".equals(oo);
-		}
-		return false;
+		return get_ValueAsBoolean(COLUMNNAME_Processing);
 	}
 
-	/** Set Quantity.
-		@param Qty 
-		Quantity
-	  */
-	public void setQty (BigDecimal Qty)
+	@Override
+	public void setQty (final @Nullable BigDecimal Qty)
 	{
 		set_Value (COLUMNNAME_Qty, Qty);
 	}
 
-	/** Get Quantity.
-		@return Quantity
-	  */
-	public BigDecimal getQty () 
+	@Override
+	public BigDecimal getQty() 
 	{
-		BigDecimal bd = (BigDecimal)get_Value(COLUMNNAME_Qty);
-		if (bd == null)
-			 return Env.ZERO;
-		return bd;
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Qty);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** Set Serial No.
-		@param SerNo 
-		Product Serial Number 
-	  */
-	public void setSerNo (String SerNo)
+	@Override
+	public void setUseLifeMonths (final int UseLifeMonths)
 	{
-		set_Value (COLUMNNAME_SerNo, SerNo);
+		set_Value (COLUMNNAME_UseLifeMonths, UseLifeMonths);
 	}
 
-	/** Get Serial No.
-		@return Product Serial Number 
-	  */
-	public String getSerNo () 
+	@Override
+	public int getUseLifeMonths() 
 	{
-		return (String)get_Value(COLUMNNAME_SerNo);
+		return get_ValueAsInt(COLUMNNAME_UseLifeMonths);
 	}
 
-	/** Set Usable Life - Months.
-		@param UseLifeMonths 
-		Months of the usable life of the asset
-	  */
-	public void setUseLifeMonths (int UseLifeMonths)
+	@Override
+	public void setUseLifeYears (final int UseLifeYears)
 	{
-		set_Value (COLUMNNAME_UseLifeMonths, Integer.valueOf(UseLifeMonths));
+		set_Value (COLUMNNAME_UseLifeYears, UseLifeYears);
 	}
 
-	/** Get Usable Life - Months.
-		@return Months of the usable life of the asset
-	  */
-	public int getUseLifeMonths () 
+	@Override
+	public int getUseLifeYears() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_UseLifeMonths);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_UseLifeYears);
 	}
 
-	/** Set Usable Life - Years.
-		@param UseLifeYears 
-		Years of the usable life of the asset
-	  */
-	public void setUseLifeYears (int UseLifeYears)
+	@Override
+	public void setUseUnits (final int UseUnits)
 	{
-		set_Value (COLUMNNAME_UseLifeYears, Integer.valueOf(UseLifeYears));
+		set_ValueNoCheck (COLUMNNAME_UseUnits, UseUnits);
 	}
 
-	/** Get Usable Life - Years.
-		@return Years of the usable life of the asset
-	  */
-	public int getUseLifeYears () 
+	@Override
+	public int getUseUnits() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_UseLifeYears);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_UseUnits);
 	}
 
-	/** Set Use units.
-		@param UseUnits 
-		Currently used units of the assets
-	  */
-	public void setUseUnits (int UseUnits)
-	{
-		set_ValueNoCheck (COLUMNNAME_UseUnits, Integer.valueOf(UseUnits));
-	}
-
-	/** Get Use units.
-		@return Currently used units of the assets
-	  */
-	public int getUseUnits () 
-	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_UseUnits);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
-	}
-
-	/** Set Search Key.
-		@param Value 
-		Search key for the record in the format required - must be unique
-	  */
-	public void setValue (String Value)
+	@Override
+	public void setValue (final java.lang.String Value)
 	{
 		set_Value (COLUMNNAME_Value, Value);
 	}
 
-	/** Get Search Key.
-		@return Search key for the record in the format required - must be unique
-	  */
-	public String getValue () 
+	@Override
+	public java.lang.String getValue() 
 	{
-		return (String)get_Value(COLUMNNAME_Value);
+		return get_ValueAsString(COLUMNNAME_Value);
 	}
 
-	/** Set Version No.
-		@param VersionNo 
-		Version Number
-	  */
-	public void setVersionNo (String VersionNo)
+	@Override
+	public void setVersionNo (final @Nullable java.lang.String VersionNo)
 	{
 		set_Value (COLUMNNAME_VersionNo, VersionNo);
 	}
 
-	/** Get Version No.
-		@return Version Number
-	  */
-	public String getVersionNo () 
+	@Override
+	public java.lang.String getVersionNo() 
 	{
-		return (String)get_Value(COLUMNNAME_VersionNo);
+		return get_ValueAsString(COLUMNNAME_VersionNo);
 	}
 }

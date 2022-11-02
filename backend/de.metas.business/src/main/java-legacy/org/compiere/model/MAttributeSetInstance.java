@@ -16,18 +16,13 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.sql.ResultSet;
-import java.util.Properties;
-
-import org.adempiere.exceptions.AdempiereException;
+import de.metas.product.IProductBL;
+import de.metas.util.Services;
 import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.util.LegacyAdapters;
-import org.compiere.util.DB;
-import org.compiere.util.KeyNamePair;
 
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
-import de.metas.util.Services;
+import java.sql.ResultSet;
+import java.util.Properties;
 
 /**
  * Product Attribute Set Instance
@@ -128,101 +123,6 @@ public class MAttributeSetInstance extends X_M_AttributeSetInstance
 	}	// getMAttributeSet
 
 	/**
-	 * Get Lot No
-	 * 
-	 * @param getNew if true create/set new lot
-	 * @param productId product used if new
-	 * @return lot
-	 */
-	private String getLot(boolean getNew, final ProductId productId)
-	{
-		if (getNew)
-			createLot(productId);
-		return getLot();
-	}	// getLot
-
-	/**
-	 * Create Lot
-	 * 
-	 * @param productId product used if new
-	 * @return lot info
-	 */
-	private KeyNamePair createLot(final ProductId productId)
-	{
-		final KeyNamePair retValue = getMAttributeSet().createLot(productId);
-		if(retValue != null)
-		{
-			setM_Lot_ID(retValue.getKey());
-			setLot(retValue.getName());
-		}
-		return retValue;
-	}	// createLot
-
-	/**
-	 * To to find lot and set Lot/ID
-	 * 
-	 * @param Lot lot
-	 * @param M_Product_ID product
-	 */
-	public void setLot(String Lot, int M_Product_ID)
-	{
-		// Try to find it
-		MLot mLot = MLot.getProductLot(getCtx(), M_Product_ID, Lot, get_TrxName());
-		if (mLot != null)
-			setM_Lot_ID(mLot.getM_Lot_ID());
-		setLot(Lot);
-	}	// setLot
-
-	/**
-	 * Exclude Lot creation
-	 * 
-	 * @param AD_Column_ID column
-	 * @param isSOTrx SO
-	 * @return true if excluded
-	 */
-	public boolean isExcludeLot(int AD_Column_ID, boolean isSOTrx)
-	{
-		getMAttributeSet();
-		if (m_mas != null)
-			return m_mas.isExcludeLot(AD_Column_ID, isSOTrx);
-		return false;
-	}	// isExcludeLot
-
-	/**
-	 * Get Serial No
-	 * 
-	 * @param getNew if true create/set new Ser No
-	 * @return Serial Number
-	 */
-	public String getSerNo(final boolean getNew)
-	{
-		if (getNew)
-		{
-			final String serNo = getMAttributeSet().createSerNo();
-			if(serNo != null)
-			{
-				setSerNo(serNo);
-			}
-		}
-		return getSerNo();
-	}	// getSerNo
-
-	/**
-	 * Exclude SerNo creation
-	 * 
-	 * @param AD_Column_ID column
-	 * @param isSOTrx SO
-	 * @return true if excluded
-	 */
-	public boolean isExcludeSerNo(int AD_Column_ID, boolean isSOTrx)
-	{
-		getMAttributeSet();
-		if (m_mas != null)
-			return m_mas.isExcludeSerNo(AD_Column_ID, isSOTrx);
-		return false;
-	}	// isExcludeSerNo
-
-	/**
 	 * Create & save a new ASI for given product. Automatically creates Lot#, Serial#.
 	 * 
 	 * NOTE: Guarantee Date needs to be explicitly calculated and set.
@@ -239,17 +139,6 @@ public class MAttributeSetInstance extends X_M_AttributeSetInstance
 		MAttributeSetInstance asi = new MAttributeSetInstance(ctx, 0, trxName);
 		asi.setClientOrg(product.getAD_Client_ID(), 0);
 		asi.setM_AttributeSet_ID(attributeSetId.getRepoId());
-		// Create new Lot, Serial# and Guarantee Date
-		if (asi.getM_AttributeSet_ID() > 0)
-		{
-			asi.getLot(true, ProductId.ofRepoId(product.getM_Product_ID()));
-			asi.getSerNo(true);
-			
-			// metas-tsa: guarantee date needs to be explicitly set because for calculating it we need more info (vendor bpartner, product, receipt date).
-			// see task #09363.
-			//asi.getGuaranteeDate(true);
-		}
-		//
 		asi.saveEx();
 		return asi;
 	}

@@ -16,22 +16,21 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.email.EMail;
+import de.metas.logging.LogManager;
+import de.metas.product.IProductDAO;
+import de.metas.product.ProductCategoryId;
+import de.metas.util.Services;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Properties;
-
-import de.metas.product.IProductDAO;
-import de.metas.product.ProductCategoryId;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.email.EMail;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
 
 /**
  *  Asset Model
@@ -163,8 +162,8 @@ public class MAsset extends X_A_Asset
 		{
 			MAttributeSetInstance asi = new MAttributeSetInstance (getCtx(), shipLine.getM_AttributeSetInstance_ID(), get_TrxName()); 
 			setM_AttributeSetInstance_ID(asi.getM_AttributeSetInstance_ID());
-			setLot(asi.getLot());
-			setSerNo(asi.getSerNo());
+			// setLot(asi.getLot());
+			// setSerNo(asi.getSerNo());
 		}
 		setHelp(shipLine.getDescription());
 		if (deliveryCount != 0)

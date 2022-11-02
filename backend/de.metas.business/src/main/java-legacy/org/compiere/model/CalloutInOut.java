@@ -16,7 +16,6 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import de.metas.adempiere.form.IClientUI;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -661,21 +660,6 @@ public class CalloutInOut extends CalloutEngine
 			final int C_UOM_To_ID = inoutLine.getC_UOM_ID();
 			BigDecimal QtyEntered = inoutLine.getQtyEntered();
 
-			// metas: make sure that MovementQty must be 1 for a product with a serial number.
-			final I_M_AttributeSetInstance attributeSetInstance = inoutLine.getM_AttributeSetInstance();
-			if (attributeSetInstance != null && attributeSetInstance.getM_AttributeSetInstance_ID() > 0)
-			{
-				final String serNo = attributeSetInstance.getSerNo();
-				if (!Check.isEmpty(serNo, true)
-						&& QtyEntered.compareTo(BigDecimal.ONE) > 0)
-				{
-					Services.get(IClientUI.class).info(calloutField.getWindowNo(), MSG_SERIALNO_QTY_ONE);
-					QtyEntered = BigDecimal.ONE;
-					inoutLine.setQtyEntered(QtyEntered);
-				}
-			}
-			// metas end
-
 			final BigDecimal QtyEntered1 = QtyEntered.setScale(MUOM.getPrecision(calloutField.getCtx(), C_UOM_To_ID), BigDecimal.ROUND_HALF_UP);
 			if (QtyEntered.compareTo(QtyEntered1) != 0)
 			{
@@ -774,23 +758,6 @@ public class CalloutInOut extends CalloutEngine
 				inoutLine.setM_Locator_ID(selectedM_Locator_ID);
 			}
 		}
-
-		//
-		// metas: make sure that MovementQty must be 1 for a product with a serial number.
-		final I_M_AttributeSetInstance attributeSetInstance = inoutLine.getM_AttributeSetInstance();
-		if (attributeSetInstance != null)
-		{
-			final BigDecimal qtyEntered = inoutLine.getQtyEntered();
-			final String serNo = attributeSetInstance.getSerNo();
-			if (!Check.isEmpty(serNo, true)
-					&& (qtyEntered == null || qtyEntered.compareTo(BigDecimal.ONE) != 0))
-			{
-				final int windowNo = calloutField.getWindowNo();
-				Services.get(IClientUI.class).info(windowNo, MSG_SERIALNO_QTY_ONE);
-				inoutLine.setQtyEntered(BigDecimal.ONE);
-			}
-		}
-		// metas end
 
 		return NO_ERROR;
 	} // asi
