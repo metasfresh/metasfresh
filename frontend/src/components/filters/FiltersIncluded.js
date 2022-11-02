@@ -109,8 +109,10 @@ class FiltersIncluded extends PureComponent {
       [];
     let panelCaption = activeFilter.isActive ? activeFilter.caption : '';
     let buttonCaption = activeFilter.isActive
-      ? (activeFilter.caption)
-      : counterpart.translate('window.filters.noActiveFilter.caption', {fallback: 'Filter' });
+      ? activeFilter.caption
+      : counterpart.translate('window.filters.noActiveFilter.caption', {
+          fallback: 'Filter',
+        });
 
     if (captions.length) {
       buttonCaption = captions[0];
@@ -150,7 +152,9 @@ class FiltersIncluded extends PureComponent {
               )}: ${buttonCaption}`
             )
           ) : (
-            `${counterpart.translate('window.filters.noActiveFilter.caption', {fallback: 'Filter'})}`
+            `${counterpart.translate('window.filters.noActiveFilter.caption', {
+              fallback: 'Filter',
+            })}`
           )}
         </button>
 
