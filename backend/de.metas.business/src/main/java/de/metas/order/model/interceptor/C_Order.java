@@ -218,8 +218,13 @@ public class C_Order
 			ifColumnsChanged = {
 					I_C_Order.COLUMNNAME_C_BPartner_ID })
 	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_C_BPartner_ID)
-	public void setIncoterms(final I_C_Order order)
+	public void setIncoterms(@NonNull final I_C_Order order)
 	{
+		if (InterfaceWrapperHelper.isCopying(order))
+		{
+			return; // nothing to do ; the value shall be cloned
+		}
+
 		final I_C_BPartner bpartner = orderBL.getBPartnerOrNull(order);
 		if (bpartner == null)
 		{
@@ -237,15 +242,7 @@ public class C_Order
 			incotermsId = bpartner.getC_Incoterms_Vendor_ID();
 		}
 
-		if (InterfaceWrapperHelper.getDynAttribute(order, PO.DYNATTR_CopyRecordSupport) != null)
-		{
-			return; // nothing to do ; the value shall be cloned
-		}
-
-		if (incotermsId > 0)
-		{
-			order.setC_Incoterms_ID(incotermsId);
-		}
+		order.setC_Incoterms_ID(incotermsId);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })
