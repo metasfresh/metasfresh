@@ -72,7 +72,10 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_PriceList;
+import org.compiere.model.I_M_Product_Acct;
+import org.compiere.model.I_M_Product_Category_Acct;
 import org.compiere.model.ModelValidator;
+import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
@@ -234,6 +237,11 @@ public class C_Order
 		else
 		{
 			incotermsId = bpartner.getC_Incoterms_Vendor_ID();
+		}
+
+		if (InterfaceWrapperHelper.getDynAttribute(order, PO.DYNATTR_CopyRecordSupport) != null)
+		{
+			return; // nothing to do ; the value shall be cloned
 		}
 
 		if (incotermsId > 0)
