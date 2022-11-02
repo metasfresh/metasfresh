@@ -60,6 +60,5 @@ public class M_HU_PI_Attribute
 		}
 
 		service.updateLinkedHUAttributes(huPiAttributeId, isUnique);
-
 	}
 }
