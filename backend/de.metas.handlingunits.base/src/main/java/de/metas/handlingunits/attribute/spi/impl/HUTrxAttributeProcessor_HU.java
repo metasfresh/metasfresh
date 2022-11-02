@@ -48,7 +48,7 @@ public class HUTrxAttributeProcessor_HU implements IHUTrxAttributeProcessor
 			huAttribute.setM_Attribute_ID(trxAttribute.getM_Attribute_ID());
 
 			huAttribute.setM_HU_PI_Attribute_ID(trxAttribute.getM_HU_PI_Attribute_ID());
-			huAttribute.setIsUnique(huPIAttributeRecord == null ? false : huPIAttributeRecord.isUnique());
+			huAttribute.setIsUnique(huPIAttributeRecord != null && huPIAttributeRecord.isUnique());
 		}
 		else
 		{
