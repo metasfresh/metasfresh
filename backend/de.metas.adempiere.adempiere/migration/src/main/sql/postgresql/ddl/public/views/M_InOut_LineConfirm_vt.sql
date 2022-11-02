@@ -1,7 +1,7 @@
-DROP VIEW RV_DD_OrderDetail
+DROP VIEW M_InOut_LineConfirm_vt
 ;
 
-CREATE OR REPLACE VIEW RV_DD_OrderDetail AS
+CREATE OR REPLACE VIEW M_InOut_LineConfirm_vt AS
 SELECT iolc.ad_client_id,
        iolc.ad_org_id,
        iolc.isactive,
