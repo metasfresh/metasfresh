@@ -87,16 +87,19 @@ public class M_HU_Attribute
 			// nothing to do
 			return;
 		}
+		// todo is hu status needed?
 
 		final String attributeValue = huAttribute.getValue();
-		if (!Check.isBlank(attributeValue))
-		{
-			huUniqueAttributesService.validateHUForUniqueAttribute(HuId.ofRepoId(huAttribute.getM_HU_ID()));
-			huUniqueAttributesService.createHUUniqueAttributes(huAttribute);
-		}
-		else
+		if (Check.isBlank(attributeValue))
 		{
 			huUniqueAttributesService.deleteHUUniqueAttributesForHUAttribute(huAttribute);
+		}
+
+		else
+		{
+			huUniqueAttributesService.validateHUForUniqueAttribute(HuId.ofRepoId(huAttribute.getM_HU_ID()));
+			huUniqueAttributesService.validateHUUniqueAttributeValue(huAttribute);
+			huUniqueAttributesService.createHUUniqueAttributes(huAttribute);
 		}
 
 	}

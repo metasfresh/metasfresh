@@ -42,15 +42,22 @@ public class HUUniqueAttributesRepository
 
 	final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public void createHUUniqueAttributeIfNotExists(@NonNull final HUUniqueAttributeRequest huUniqueAttributeRequest)
+	public void createOrUpdateHUUniqueAttribute(@NonNull final HUUniqueAttributeRequest huUniqueAttributeRequest)
 	{
-		final boolean existsHUUniqueAttribute = existsHUUniqueAttribute(huUniqueAttributeRequest);
+		final I_M_HU_UniqueAttribute existingHUUniqueAttribute = retrieveHUUniqueAttribute(huUniqueAttributeRequest);
 
-		if(existsHUUniqueAttribute)
+		if (existingHUUniqueAttribute != null)
 		{
-			// hu was unique attribute was already recorded. Nothing to do
+			// hu was unique attribute was already recorded. Update the value if needed
+			if (!existingHUUniqueAttribute.getValue().equals(huUniqueAttributeRequest.getAttributeValue()))
+			{
+				existingHUUniqueAttribute.setValue(huUniqueAttributeRequest.getAttributeValue());
+				save(existingHUUniqueAttribute);
+			}
+
 			return;
 		}
+
 		final I_M_HU_UniqueAttribute huUniqueAttributeRecord = newInstance(I_M_HU_UniqueAttribute.class);
 
 		huUniqueAttributeRecord.setM_HU_PI_Attribute_ID(huUniqueAttributeRequest.getHuPIAttributeId().getRepoId());
@@ -63,7 +70,7 @@ public class HUUniqueAttributesRepository
 		save(huUniqueAttributeRecord);
 	}
 
-	private boolean existsHUUniqueAttribute(@NonNull final HUUniqueAttributeRequest huUniqueAttributeRequest)
+	private I_M_HU_UniqueAttribute retrieveHUUniqueAttribute(@NonNull final HUUniqueAttributeRequest huUniqueAttributeRequest)
 	{
 		return queryBL.createQueryBuilder(I_M_HU_UniqueAttribute.class)
 				.addEqualsFilter(I_M_HU_UniqueAttribute.COLUMNNAME_M_HU_ID, huUniqueAttributeRequest.getHuId())
@@ -71,7 +78,7 @@ public class HUUniqueAttributesRepository
 				.addEqualsFilter(I_M_HU_UniqueAttribute.COLUMNNAME_M_Attribute_ID, huUniqueAttributeRequest.getAttributeId())
 				.addEqualsFilter(I_M_HU_UniqueAttribute.COLUMNNAME_Value, huUniqueAttributeRequest.getAttributeValue())
 				.create()
-				.anyMatch();
+				.firstOnly(I_M_HU_UniqueAttribute.class);
 	}
 
 	public List<I_M_HU_Attribute> retrieveHUAttributes(@NonNull final HuPackingInstructionsAttributeId huPIAttributeId)

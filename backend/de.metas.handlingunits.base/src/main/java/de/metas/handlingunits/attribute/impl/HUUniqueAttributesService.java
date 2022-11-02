@@ -137,7 +137,7 @@ public class HUUniqueAttributesService
 					.attributeValue(huAttribute.getValue())
 					.build();
 
-			repo.createHUUniqueAttributeIfNotExists(request);
+			repo.createOrUpdateHUUniqueAttribute(request);
 		}
 	}
 
@@ -164,5 +164,10 @@ public class HUUniqueAttributesService
 				.stream()
 				.filter(I_M_HU_Attribute::isUnique)
 				.forEach(this::createHUUniqueAttributes);
+	}
+
+	public void validateHUUniqueAttributeValue(final I_M_HU_Attribute huAttribute)
+	{
+		//todo
 	}
 }

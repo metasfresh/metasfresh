@@ -91,6 +91,7 @@ public class M_HU
 		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
 		if (huStatusBL.isQtyOnHand(hu.getHUStatus()))
 		{
+			huUniqueAttributesService.validateHUForUniqueAttribute(huId);
 			huUniqueAttributesService.createHUUniqueAttributes(huId);
 		}
 		else
