@@ -8,8 +8,9 @@ import lombok.NonNull;
 import org.adempiere.ad.expression.api.IExpressionEvaluator;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
 import org.adempiere.ad.expression.api.LogicExpressionResultWithReason;
+import org.adempiere.ad.expression.api.impl.LogicExpressionEvaluator;
 import org.compiere.util.CtxName;
-import org.compiere.util.Env;
+import org.compiere.util.CtxNames;
 import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
 
@@ -30,6 +31,8 @@ public class DocumentFieldLogicExpressionResultRevaluator
 	public static final DocumentFieldLogicExpressionResultRevaluator DEFAULT = new DocumentFieldLogicExpressionResultRevaluator(null, null);
 
 	private static final Logger logger = LogManager.getLogger(DocumentFieldLogicExpressionResultRevaluator.class);
+
+	private static final CtxName CTXNAME_AD_Role_Group = CtxNames.parse("#AD_Role_Group");
 
 	private final LogicExpressionResultWithReason alwaysReturnResult;
 	@Nullable private final IUserRolePermissions userRolePermissions;
@@ -81,20 +84,27 @@ public class DocumentFieldLogicExpressionResultRevaluator
 		HashMap<String, String> newParameters = null; // lazy, instantiated only if needed
 		for (final Map.Entry<CtxName, String> usedParameterEntry : usedParameters.entrySet())
 		{
-			final String name = usedParameterEntry.getKey().getName();
-			if (Env.CTXNAME_AD_Role_Group.equals(name))
+			final CtxName usedParameterName = usedParameterEntry.getKey();
+			if (CTXNAME_AD_Role_Group.equalsByName(usedParameterName))
 			{
-				final String usedValue = StringUtils.trimBlankToNull(usedParameterEntry.getValue());
-				final String newValue = userRolePermissions.getRoleGroup() != null ? userRolePermissions.getRoleGroup().getName() : null;
+				final String usedValue = normalizeRoleGroupValue(usedParameterEntry.getValue());
+				final String newValue = normalizeRoleGroupValue(userRolePermissions.getRoleGroup() != null ? userRolePermissions.getRoleGroup().getName() : null);
 				if (!Objects.equals(usedValue, newValue))
 				{
 					newParameters = newParameters == null ? copyToNewParameters(usedParameters) : newParameters;
-					newParameters.put(Env.CTXNAME_AD_Role_Group, newValue);
+					newParameters.put(CTXNAME_AD_Role_Group.getName(), newValue);
 				}
 			}
 		}
 
 		return newParameters;
+	}
+
+	private static String normalizeRoleGroupValue(String roleGroupValue)
+	{
+		String result = LogicExpressionEvaluator.stripQuotes(roleGroupValue);
+		result = StringUtils.trimBlankToNull(result);
+		return result != null ? result : "";
 	}
 
 	@NonNull

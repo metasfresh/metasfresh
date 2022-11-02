@@ -432,8 +432,7 @@ public class LogicExpressionEvaluator implements ILogicExpressionEvaluator
 	 * @return string without quotes
 	 */
 	@Nullable
-	@VisibleForTesting
-	/* package */ static String stripQuotes(final String s)
+	public static String stripQuotes(@Nullable final String s)
 	{
 		if (s == null || s.isEmpty())
 		{
