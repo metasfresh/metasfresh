@@ -60,6 +60,8 @@ public interface IUserRolePermissions
 	/** @return role name */
 	String getName();
 
+	RoleGroup getRoleGroup();
+
 	RoleId getRoleId();
 
 	ClientId getClientId();

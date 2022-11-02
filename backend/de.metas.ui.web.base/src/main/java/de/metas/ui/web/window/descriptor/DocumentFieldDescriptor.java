@@ -815,6 +815,7 @@ public final class DocumentFieldDescriptor
 		public Builder setReadonlyLogic(@NonNull final ILogicExpression readonlyLogic)
 		{
 			assertNotBuilt();
+			_readonlyLogic = Preconditions.checkNotNull(readonlyLogic);
 			return this;
 		}
 
