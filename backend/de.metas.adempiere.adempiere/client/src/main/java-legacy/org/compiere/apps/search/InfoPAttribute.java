@@ -135,8 +135,6 @@ public class InfoPAttribute extends CDialog
 	{
 		int row = addAttributes();
 		//
-		final String s = msgBL.translate(Env.getCtx(), "GuaranteeDate");
-		//
 		Dimension d = centerPanel.getPreferredSize();
 		d.width = 400;
 		centerPanel.setPreferredSize(d);

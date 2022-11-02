@@ -21,24 +21,19 @@
  */
 package org.compiere.model;
 
-import java.sql.ResultSet;
-import java.util.Properties;
-
-import de.metas.organization.OrgId;
-import de.metas.product.ProductCategoryId;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.LegacyAdapters;
-import org.compiere.util.DB;
-
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
-import de.metas.product.IProductPlanningSchemaBL;
-import de.metas.product.ProductId;
-import de.metas.product.ProductPlanningSchemaSelector;
+import de.metas.product.ProductCategoryId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMPrecision;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.LegacyAdapters;
+import org.compiere.util.DB;
+
+import java.sql.ResultSet;
+import java.util.Properties;
 
 /**
  * Product Model
@@ -311,7 +306,6 @@ public class MProduct extends X_M_Product
 					+ "FROM M_Product p "
 					+ "WHERE p.M_Product_ID=a.M_Product_ID) "
 					+ "WHERE IsActive='Y'"
-					// + " AND GuaranteeDate > now()"
 					+ "  AND M_Product_ID=" + getM_Product_ID());
 			int no = DB.executeUpdate(sql, get_TrxName());
 			log.debug("Asset Description updated #" + no);

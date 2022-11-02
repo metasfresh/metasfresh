@@ -47,7 +47,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.Timestamp;
 
 
 /**
@@ -148,9 +147,6 @@ public class PAttributeInstance extends CDialog
 	{
 		new ColumnInfo(" ", "s.M_AttributeSetInstance_ID", IDColumn.class),
 		new ColumnInfo(Msg.translate(Env.getCtx(), "Description"), "asi.Description", String.class),
-		new ColumnInfo(Msg.translate(Env.getCtx(), "Lot"), "asi.Lot", String.class),
-		new ColumnInfo(Msg.translate(Env.getCtx(), "SerNo"), "asi.SerNo", String.class), 
-		new ColumnInfo(Msg.translate(Env.getCtx(), "GuaranteeDate"), "asi.GuaranteeDate", Timestamp.class),
 		new ColumnInfo(Msg.translate(Env.getCtx(), "M_Locator_ID"), "l.Value", KeyNamePair.class, "s.M_Locator_ID"),
 		new ColumnInfo(Msg.translate(Env.getCtx(), "QtyOnHand"), "s.QtyOnHand", Double.class),
 		new ColumnInfo(Msg.translate(Env.getCtx(), "QtyReserved"), "s.QtyReserved", Double.class),

@@ -16,11 +16,7 @@
  *****************************************************************************/
 package org.compiere.apps.search;
 
-import java.awt.Frame;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Timestamp;
-
+import de.metas.i18n.Msg;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.plaf.AdempierePLAF;
 import org.compiere.apps.AEnv;
@@ -36,7 +32,10 @@ import org.compiere.swing.CTextField;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 
-import de.metas.i18n.Msg;
+import java.awt.*;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 
 /**
  *	Asset Information
@@ -103,7 +102,6 @@ public class InfoAsset extends Info
 		new Info_Column(Msg.translate(Env.getCtx(), "C_BPartner_ID"), "bp.Name",  String.class),
 		new Info_Column(Msg.translate(Env.getCtx(), "AD_User_ID"), "u.Name", String.class),
 		new Info_Column(Msg.translate(Env.getCtx(), "AssetServiceDate"), "a.AssetServiceDate", Timestamp.class),
-		new Info_Column(Msg.translate(Env.getCtx(), "GuaranteeDate"), "a.GuaranteeDate", Timestamp.class),
 		new Info_Column(Msg.translate(Env.getCtx(), "VersionNo"), "a.VersionNo", String.class)
 	};
 	
