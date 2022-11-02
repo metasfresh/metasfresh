@@ -1759,10 +1759,8 @@ public class InterfaceWrapperHelper
 	 * So basically, after you are calling this method you will be able to change the values for any not updateable column.
 	 *
 	 * WARNING: please make sure you know what are you doing before calling this method. If you are not sure, please don't use it.
-	 *
-	 * @param model
 	 */
-	public static final void disableReadOnlyColumnCheck(final Object model)
+	public static void disableReadOnlyColumnCheck(final Object model)
 	{
 		Check.assumeNotNull(model, "model not null");
 		ATTR_ReadOnlyColumnCheckDisabled.setValue(model, Boolean.TRUE);
@@ -1776,7 +1774,7 @@ public class InterfaceWrapperHelper
 	}
 
 	// NOTE: public until we move everything to "org.adempiere.ad.model.util" package.
-	public static final Object checkZeroIdValue(final String columnName, final Object value)
+	public static Object checkZeroIdValue(final String columnName, final Object value)
 	{
 		return POWrapper.checkZeroIdValue(columnName, value);
 	}
