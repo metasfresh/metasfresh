@@ -275,8 +275,7 @@ SELECT it.ad_client_id,
        NULL::numeric                     AS c_projecttask_id
 FROM c_invoicetax it
          JOIN c_tax t ON it.c_tax_id = t.c_tax_id;
-
-')
+');
 
 -- rv_orderdetail
 SELECT public.db_alter_view('rv_orderdetail','SELECT l.ad_client_id,
