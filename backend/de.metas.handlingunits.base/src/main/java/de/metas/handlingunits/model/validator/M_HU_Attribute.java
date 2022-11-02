@@ -22,6 +22,9 @@ package de.metas.handlingunits.model.validator;
  * #L%
  */
 
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUStatusBL;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
 import de.metas.handlingunits.attribute.impl.HUUniqueAttributesService;
 import de.metas.handlingunits.model.I_M_HU;
@@ -42,6 +45,8 @@ import org.springframework.stereotype.Component;
 public class M_HU_Attribute
 {
 	private final HUUniqueAttributesService huUniqueAttributesService;
+	final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+	final IHandlingUnitsDAO huDAO = Services.get(IHandlingUnitsDAO.class);
 
 	public M_HU_Attribute(@NonNull HUUniqueAttributesService huUniqueAttributesService)
 	{
@@ -72,7 +77,7 @@ public class M_HU_Attribute
 		Services.get(IShipmentScheduleInvalidateBL.class).notifySegmentChanged(storageSegment);
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE , ModelValidator.TYPE_BEFORE_NEW},
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE, ModelValidator.TYPE_BEFORE_NEW },
 			ifColumnsChanged = {
 					I_M_HU_Attribute.COLUMNNAME_Value
 			})
@@ -93,7 +98,12 @@ public class M_HU_Attribute
 		else
 		{
 			huUniqueAttributesService.validateHUUniqueAttribute(huAttribute);
-			huUniqueAttributesService.createOrUpdateHUUniqueAttribute(huAttribute);
+
+			final I_M_HU huRecord = huDAO.getById(HuId.ofRepoId(huAttribute.getM_HU_ID()));
+			if (huStatusBL.isQtyOnHand(huRecord.getHUStatus()))
+			{
+				huUniqueAttributesService.createOrUpdateHUUniqueAttribute(huAttribute);
+			}
 		}
 
 	}

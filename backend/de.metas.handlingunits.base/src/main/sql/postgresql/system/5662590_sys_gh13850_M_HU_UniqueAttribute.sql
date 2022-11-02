@@ -1219,5 +1219,11 @@ UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=28, Updated=now(), UpdatedBy=1
 UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=29, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541905 AND AD_Tree_ID=10
 ;
 
+-- Tab: Handling Unit Unique Attributes -> Handling Unit Unique Attributes
+-- Table: M_HU_UniqueAttribute
+-- 2022-11-02T16:01:25.109Z
+UPDATE AD_Tab SET IsInsertRecord='N', IsReadOnly='Y',Updated=TO_TIMESTAMP('2022-11-02 18:01:25.109','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Tab_ID=546663
+;
+
 
 
