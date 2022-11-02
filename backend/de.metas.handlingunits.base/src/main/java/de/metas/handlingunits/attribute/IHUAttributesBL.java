@@ -3,11 +3,9 @@ package de.metas.handlingunits.attribute;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.compiere.model.I_M_Attribute;
 
@@ -80,9 +78,4 @@ public interface IHUAttributesBL extends ISingletonService
 
 	boolean areMandatoryPickingAttributesFulfilled(@NonNull HuId huId,
 			@NonNull ProductId productId);
-
-	void validateAttributeValuesUniqueForVirtualPI (@NonNull AttributeSetInstanceId asiId,
-			@NonNull ProductId productId,
-			@NonNull Quantity qtyToTransfer,
-			@NonNull HuId huToIgnore);
 }
