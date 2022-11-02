@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.cache.CCache;
 import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.i18n.IMsgBL;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.RelatedProcessDescriptor;
@@ -63,6 +64,8 @@ public class PPOrderLinesViewFactory implements IViewFactory
 {
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final IPPOrderBL ppOrderBL = Services.get(IPPOrderBL.class);
+
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final ASIRepository asiRepository;
 	private final DefaultHUEditorViewFactory huEditorViewFactory;
 	private final HUReservationService huReservationService;
@@ -143,8 +146,8 @@ public class PPOrderLinesViewFactory implements IViewFactory
 		return ViewLayout.builder()
 				.setWindowId(windowId)
 				.setCaption("PP Order Issue/Receipt")
-				.setEmptyResultText(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_TEXT)
-				.setEmptyResultHint(LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_HINT)
+				.setEmptyResultText(msgBL.getTranslatableMsgText(LayoutFactory.TAB_EMPTY_RESULT_TEXT))
+				.setEmptyResultHint(msgBL.getTranslatableMsgText(LayoutFactory.TAB_EMPTY_RESULT_HINT))
 				//
 				.setHasAttributesSupport(true)
 				.setHasTreeSupport(true)
