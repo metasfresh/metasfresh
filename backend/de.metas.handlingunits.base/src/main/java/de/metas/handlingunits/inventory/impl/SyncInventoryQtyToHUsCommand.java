@@ -5,9 +5,7 @@ import java.util.List;
 import java.util.Objects;
 
 import de.metas.handlingunits.IMutableHUContext;
-import de.metas.handlingunits.attribute.IHUAttributesBL;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.PlainAttributeSetInstanceAware;
 
 import de.metas.handlingunits.HuId;
@@ -76,9 +74,6 @@ import org.adempiere.util.lang.IContextAware;
 public class SyncInventoryQtyToHUsCommand
 {
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
-
-	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
-
 	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final InventoryRepository inventoryRepository;
