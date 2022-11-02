@@ -584,7 +584,6 @@ public class ViewLayout implements ETagAware
 		@Nullable private ITranslatableString description;
 		private ITranslatableString emptyResultText = LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_TEXT;
 		private ITranslatableString emptyResultHint = LayoutFactory.HARDCODED_TAB_EMPTY_RESULT_HINT;
-		private int pageLength = 0;
 
 		private Collection<DocumentFilterDescriptor> filters = null;
 		private DocumentQueryOrderByList defaultOrderBys = null;
