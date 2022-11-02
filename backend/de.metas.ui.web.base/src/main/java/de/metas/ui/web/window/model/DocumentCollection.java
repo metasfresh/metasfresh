@@ -27,7 +27,9 @@ import com.google.common.base.Preconditions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
@@ -60,6 +62,7 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.ILogicExpression;
@@ -77,6 +80,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.PO;
+import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
@@ -109,8 +113,9 @@ public class DocumentCollection
 	private final DocumentWebsocketPublisher websocketPublisher;
 	private final CopyRecordService copyRecordService;
 
-	private final Cache<DocumentKey, Document> rootDocuments;
-	private final ConcurrentHashMap<String, Set<WindowId>> tableName2windowIds = new ConcurrentHashMap<>();
+	private final Cache<DocumentKeyWithCtxMap, Document> rootDocuments;
+	private final ConcurrentHashMap<DocumentKey, Set<DocumentKeyWithCtxMap>> key2keysWithCtxMaps = new ConcurrentHashMap<>();
+	private final ConcurrentHashMap<String, Set<WindowId>> tableName2windowIds = new ConcurrentHashMap<>(); // no need to evict unused records because the map can't grow beyond the number of tables
 
 	/* package */ DocumentCollection(
 			@NonNull final DocumentDescriptorFactory documentDescriptorFactory,
@@ -131,7 +136,10 @@ public class DocumentCollection
 		rootDocuments = CacheBuilder
 				.newBuilder()
 				.maximumSize(cacheSize)
-				.build();
+				.removalListener(notification -> { // note: i'm missing an addition-lister. If one is found, if would be great to use it, to maintain the two ConcurrentHashMaps that we have
+					if (notification.getKey() != null)
+						key2keysWithCtxMaps.remove(notification.getKey());
+				}).build();
 	}
 
 	public DocumentDescriptorFactory getDocumentDescriptorFactory()
@@ -142,7 +150,8 @@ public class DocumentCollection
 	/**
 	 * Delegates to the {@link DocumentDescriptorFactory#isWindowIdSupported(WindowId)} of this instance's {@code documentDescriptorFactory}.
 	 */
-	public boolean isWindowIdSupported(@Nullable final WindowId windowId)
+	public boolean isWindowIdSupported(
+			@Nullable final WindowId windowId)
 	{
 		return documentDescriptorFactory.isWindowIdSupported(windowId);
 	}
@@ -176,12 +185,15 @@ public class DocumentCollection
 		return windowIds != null && !windowIds.isEmpty() ? ImmutableSet.copyOf(windowIds) : ImmutableSet.of();
 	}
 
-	public Document getDocumentReadonly(@NonNull final DocumentPath documentPath)
+	public Document getDocumentReadonly(
+			@NonNull final DocumentPath documentPath)
 	{
 		return forDocumentReadonly(documentPath, Function.identity());
 	}
 
-	public <R> R forDocumentReadonly(@NonNull final DocumentPath documentPath, @NonNull final Function<Document, R> documentProcessor)
+	public <R> R forDocumentReadonly(
+			@NonNull final DocumentPath documentPath,
+			@NonNull final Function<Document, R> documentProcessor)
 	{
 		final DocumentPath rootDocumentPath = documentPath.getRootDocumentPath();
 
@@ -205,16 +217,19 @@ public class DocumentCollection
 		});
 	}
 
-	private Document getOrLoadDocument(@NonNull final DocumentKey documentKey)
+	private Document getOrLoadDocument(
+			@NonNull final DocumentKey documentKey)
 	{
 		try
 		{
-			return rootDocuments.get(documentKey, () -> {
+			final DocumentKeyWithCtxMap cacheKey = DocumentKeyWithCtxMap.of(documentKey);
+			return rootDocuments.get(cacheKey, () -> {
 
 				final Document rootDocument = retrieveRootDocumentFromRepository(documentKey)
 						.copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance);
 
 				addToTableName2WindowIdsCache(rootDocument.getEntityDescriptor());
+				addToKeysWithCtxMaps(cacheKey);
 				return rootDocument;
 			});
 		}
@@ -224,7 +239,8 @@ public class DocumentCollection
 		}
 	}
 
-	public <R> R forRootDocumentReadonly(@NonNull final DocumentPath documentPath, final Function<Document, R> rootDocumentProcessor)
+	public <R> R forRootDocumentReadonly(
+			@NonNull final DocumentPath documentPath, final Function<Document, R> rootDocumentProcessor)
 	{
 		final DocumentKey rootDocumentKey = DocumentKey.ofRootDocumentPath(documentPath.getRootDocumentPath());
 
@@ -316,7 +332,7 @@ public class DocumentCollection
 			// Commit or remove it from cache if deleted
 			if (rootDocument.isDeleted())
 			{
-				rootDocuments.invalidate(rootDocumentKey);
+				rootDocuments.invalidateAll(key2keysWithCtxMaps.get(rootDocumentKey));
 				changesCollector.collectDeleted(rootDocument.getDocumentPath());
 			}
 			else
@@ -366,7 +382,8 @@ public class DocumentCollection
 	/**
 	 * Retrieves document from repository
 	 */
-	private Document retrieveRootDocumentFromRepository(final DocumentKey documentKey)
+	private Document retrieveRootDocumentFromRepository(
+			@NonNull final DocumentKey documentKey)
 	{
 		final DocumentEntityDescriptor entityDescriptor = getDocumentEntityDescriptor(documentKey.getWindowId());
 
@@ -401,23 +418,30 @@ public class DocumentCollection
 		else
 		{
 			long countDocumentsWithChanges = 0;
-			final List<DocumentKey> documentKeysToInvalidate = new ArrayList<>();
-			for (final Map.Entry<DocumentKey, Document> entry : rootDocuments.asMap().entrySet())
+			final List<DocumentKeyWithCtxMap> cacheKeysToInvalidate = new ArrayList<>();
+			for (final Map.Entry<DocumentKey, Set<DocumentKeyWithCtxMap>> entry : this.key2keysWithCtxMaps.entrySet())
 			{
-				final Document document = entry.getValue();
-				if (document.hasChangesRecursivelly())
+				for (final DocumentKeyWithCtxMap cacheKey : entry.getValue())
 				{
-					countDocumentsWithChanges++;
-				}
-				else
-				{
-					documentKeysToInvalidate.add(entry.getKey());
+					final Document document = rootDocuments.getIfPresent(cacheKey);
+					if (document == null)
+					{
+						continue; // if there is some race condition and the document is actually removed, don't bother
+					}
+					else if (document.hasChangesRecursivelly())
+					{
+						countDocumentsWithChanges++;
+					}
+					else
+					{
+						cacheKeysToInvalidate.add(cacheKey);
+					}
 				}
 			}
 
-			rootDocuments.invalidateAll(documentKeysToInvalidate);
+			rootDocuments.invalidateAll(cacheKeysToInvalidate);
 
-			result = "invalidate " + documentKeysToInvalidate.size() + " documents with no changes;"
+			result = "invalidate " + cacheKeysToInvalidate.size() + " documents with no changes;"
 					+ " skipped " + countDocumentsWithChanges + " documents with changes";
 		}
 
@@ -427,7 +451,8 @@ public class DocumentCollection
 		return result;
 	}
 
-	private void commitRootDocument(@NonNull final Document rootDocument)
+	private void commitRootDocument(
+			@NonNull final Document rootDocument)
 	{
 		Preconditions.checkState(rootDocument.isRootDocument(), "{} is not a root document", rootDocument);
 
@@ -445,7 +470,11 @@ public class DocumentCollection
 		//
 		// Add the saved and changed document back to index
 		final DocumentKey rootDocumentKey = DocumentKey.of(rootDocument);
-		rootDocuments.put(rootDocumentKey, rootDocument.copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance));
+
+		final DocumentKeyWithCtxMap cacheKey = DocumentKeyWithCtxMap.of(rootDocumentKey);
+		addToKeysWithCtxMaps(cacheKey);
+
+		rootDocuments.put(cacheKey, rootDocument.copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance));
 		addToTableName2WindowIdsCache(rootDocument.getEntityDescriptor());
 
 		//
@@ -458,11 +487,18 @@ public class DocumentCollection
 			if (!collectedFieldNames.isEmpty())
 			{
 				logger.warn("We would expect all events to be auto-magically collected but it seems that not all of them were collected!"
-						+ "\n Missed (but collected now) field names were: {}" //
-						+ "\n Document path: {}", collectedFieldNames, rootDocument.getDocumentPath());
+									+ "\n Missed (but collected now) field names were: {}" //
+									+ "\n Document path: {}", collectedFieldNames, rootDocument.getDocumentPath());
 			}
 		}
 
+	}
+
+	private void addToKeysWithCtxMaps(
+			@NonNull final DocumentKeyWithCtxMap cacheKey)
+	{
+		final Set<DocumentKeyWithCtxMap> documentKeyWithCtxMaps = key2keysWithCtxMaps.computeIfAbsent(cacheKey.getDocumentKey(), k -> Sets.newConcurrentHashSet());
+		documentKeyWithCtxMaps.add(cacheKey);
 	}
 
 	public void delete(final DocumentPath documentPath, final IDocumentChangesCollector changesCollector)
@@ -510,7 +546,8 @@ public class DocumentCollection
 		});
 	}
 
-	private void assertDeleteDocumentAllowed(@NonNull final DocumentEntityDescriptor entityDescriptor)
+	private void assertDeleteDocumentAllowed(
+			@NonNull final DocumentEntityDescriptor entityDescriptor)
 	{
 		final Evaluatee evalCtx = Evaluatees.mapBuilder()
 				.put(WindowConstants.FIELDNAME_Processed, false)
@@ -539,7 +576,8 @@ public class DocumentCollection
 		return documentDescriptorFactory.getTableRecordReference(documentPath);
 	}
 
-	public WindowId getWindowId(@NonNull final DocumentZoomIntoInfo zoomIntoInfo)
+	public WindowId getWindowId(
+			@NonNull final DocumentZoomIntoInfo zoomIntoInfo)
 	{
 		if (zoomIntoInfo.getWindowId() != null)
 		{
@@ -579,7 +617,8 @@ public class DocumentCollection
 	/**
 	 * Retrieves document path for given ZoomInto info.
 	 */
-	public DocumentPath getDocumentPath(@NonNull final DocumentZoomIntoInfo zoomIntoInfo)
+	public DocumentPath getDocumentPath(
+			@NonNull final DocumentZoomIntoInfo zoomIntoInfo)
 	{
 		if (!zoomIntoInfo.isRecordIdPresent())
 		{
@@ -658,35 +697,40 @@ public class DocumentCollection
 			return;
 		}
 
-		//
-		// Invalidate the root documents
-		rootDocuments.invalidateAll(documentKeys);
+		for (final DocumentKey documentKey : documentKeys)
+		{
+			// Invalidate the root documents
+			rootDocuments.invalidateAll(key2keysWithCtxMaps.get(documentKey));
 
-		//
-		// Notify frontend
-		documentKeys.forEach(documentKey -> websocketPublisher.staleRootDocument(documentKey.getWindowId(), documentKey.getDocumentId()));
+			// Notify frontend
+			websocketPublisher.staleRootDocument(documentKey.getWindowId(), documentKey.getDocumentId());
+		}
 	}
 
-	public void invalidateDocumentsByWindowId(@NonNull final WindowId windowId)
+	public void invalidateDocumentsByWindowId(
+			@NonNull final WindowId windowId)
 
 	{
-		final ImmutableList<DocumentKey> documentKeys = rootDocuments.asMap().keySet()
+		final ImmutableList<DocumentKeyWithCtxMap> cacheKeys = rootDocuments.asMap().keySet()
 				.stream()
-				.filter(documentKey -> windowId.equals(documentKey.getWindowId()))
+				.filter(cacheKey -> windowId.equals(cacheKey.getDocumentKey().getWindowId()))
 				.collect(ImmutableList.toImmutableList());
-		if (documentKeys.isEmpty())
+		if (cacheKeys.isEmpty())
 		{
 			return;
 		}
-		rootDocuments.invalidateAll(documentKeys);
+		rootDocuments.invalidateAll(cacheKeys);
 	}
 
 	public void invalidateAll(final Collection<DocumentToInvalidate> documentToInvalidateList)
 	{
-		documentToInvalidateList.forEach(this::invalidate);
+		for (final DocumentToInvalidate documentToInvalidate : documentToInvalidateList)
+		{
+			invalidate(documentToInvalidate);
+		}
 	}
 
-	private void invalidate(final DocumentToInvalidate documentToInvalidate)
+	private void invalidate(@NonNull final DocumentToInvalidate documentToInvalidate)
 	{
 		final ImmutableList<DocumentEntityDescriptor> entityDescriptors = getCachedWindowIdsForTableName(documentToInvalidate.getTableName())
 				.stream()
@@ -703,36 +747,43 @@ public class DocumentCollection
 		{
 			final WindowId windowId = entityDescriptor.getWindowId();
 			final DocumentKey rootDocumentKey = DocumentKey.of(windowId, rootDocumentId);
-			final Document rootDocument = rootDocuments.getIfPresent(rootDocumentKey);
-			if (rootDocument != null)
+			final Set<DocumentKeyWithCtxMap> cacheKeysForDocumentKey = key2keysWithCtxMaps.get(rootDocumentKey);
+			if (cacheKeysForDocumentKey == null)
 			{
-				try (final IAutoCloseable ignored = rootDocument.lockForWriting())
+				continue;
+			}
+			for (final DocumentKeyWithCtxMap cacheKey : cacheKeysForDocumentKey)
+			{
+				final Document rootDocument = rootDocuments.getIfPresent(cacheKey);
+				if (rootDocument != null)
 				{
-					for (final IncludedDocumentToInvalidate includedDocumentToInvalidate : documentToInvalidate.getIncludedDocuments())
+					try (final IAutoCloseable ignored = rootDocument.lockForWriting())
 					{
-						final DocumentIdsSelection includedRowIds = includedDocumentToInvalidate.toDocumentIdsSelection();
-						if (includedRowIds.isEmpty())
+						for (final IncludedDocumentToInvalidate includedDocumentToInvalidate : documentToInvalidate.getIncludedDocuments())
 						{
-							continue;
-						}
+							final DocumentIdsSelection includedRowIds = includedDocumentToInvalidate.toDocumentIdsSelection();
+							if (includedRowIds.isEmpty())
+							{
+								continue;
+							}
 
-						for (final DocumentEntityDescriptor includedEntityDescriptor : entityDescriptor.getIncludedEntitiesByTableName(includedDocumentToInvalidate.getTableName()))
-						{
-							final DetailId detailId = includedEntityDescriptor.getDetailId();
+							for (final DocumentEntityDescriptor includedEntityDescriptor : entityDescriptor.getIncludedEntitiesByTableName(includedDocumentToInvalidate.getTableName()))
+							{
+								final DetailId detailId = includedEntityDescriptor.getDetailId();
 
-							rootDocument.getIncludedDocumentsCollection(Check.assumeNotNull(detailId, "Expected detailId not null")).markStale(includedRowIds);
+								rootDocument.getIncludedDocumentsCollection(Check.assumeNotNull(detailId, "Expected detailId not null")).markStale(includedRowIds);
+							}
 						}
 					}
 				}
-			}
 
-			//
-			// Invalidate the root document
-			if (documentToInvalidate.isInvalidateDocument())
-			{
-				rootDocuments.invalidate(rootDocumentKey);
+				//
+				// Invalidate the root document
+				if (documentToInvalidate.isInvalidateDocument())
+				{
+					rootDocuments.invalidate(cacheKey);
+				}
 			}
-
 			//
 			// Notify frontend, even if the root document does not exist (or it was not cached).
 			sendWebsocketChangeEvents(documentToInvalidate, entityDescriptor);
@@ -767,13 +818,14 @@ public class DocumentCollection
 	/**
 	 * Invalidates all root documents identified by tableName/recordId and notifies frontend (via websocket).
 	 */
-	public void invalidateRootDocument(@NonNull final DocumentPath documentPath)
+	public void invalidateRootDocument(
+			@NonNull final DocumentPath documentPath)
 	{
 		final DocumentKey documentKey = DocumentKey.ofRootDocumentPath(documentPath);
 
 		//
 		// Invalidate the root documents
-		rootDocuments.invalidate(documentKey);
+		rootDocuments.invalidateAll(key2keysWithCtxMaps.get(documentKey));
 
 		//
 		// Notify frontend
@@ -811,7 +863,10 @@ public class DocumentCollection
 		return DocumentPath.rootDocumentPath(fromDocumentPath.getWindowId(), DocumentId.of(toPO.get_ID()));
 	}
 
-	public void duplicateTabRowInTrx(@NonNull final TableRecordReference parentRef, @NonNull final TableRecordReference fromRecordRef, @NonNull final AdWindowId windowId)
+	public void duplicateTabRowInTrx(
+			@NonNull final TableRecordReference parentRef,
+			@NonNull final TableRecordReference fromRecordRef,
+			@NonNull final AdWindowId windowId)
 	{
 		final Object fromModel = fromRecordRef.getModel(PlainContextAware.newWithThreadInheritedTrx());
 		final String tableName = InterfaceWrapperHelper.getModelTableName(fromModel);
@@ -881,13 +936,23 @@ public class DocumentCollection
 	@Immutable
 	private static final class DocumentKey
 	{
-		public static DocumentKey of(final Document document)
+		public static DocumentKey of(@NonNull final Document document)
 		{
 			final DocumentPath documentPath = document.getDocumentPath();
 			return ofRootDocumentPath(documentPath);
 		}
 
-		public static DocumentKey ofRootDocumentPath(final DocumentPath documentPath)
+		public static DocumentKey ofRootDocumentPath(@NonNull final DocumentPath documentPath)
+		{
+			verifyRootDocumentPath(documentPath);
+
+			return new DocumentKey(
+					documentPath.getDocumentType(),
+					documentPath.getDocumentTypeId(),
+					documentPath.getDocumentId());
+		}
+
+		private static void verifyRootDocumentPath(final DocumentPath documentPath)
 		{
 			if (!documentPath.isRootDocument())
 			{
@@ -897,10 +962,11 @@ public class DocumentCollection
 			{
 				throw new InvalidDocumentPathException(documentPath, "document path for creating new documents is not allowed");
 			}
-			return new DocumentKey(documentPath.getDocumentType(), documentPath.getDocumentTypeId(), documentPath.getDocumentId());
 		}
 
-		public static DocumentKey of(@NonNull final WindowId windowId, @NonNull final DocumentId documentId)
+		public static DocumentKey of(
+				@NonNull final WindowId windowId,
+				@NonNull final DocumentId documentId)
 		{
 			return new DocumentKey(DocumentType.Window, windowId.toDocumentId(), documentId);
 		}
@@ -911,11 +977,14 @@ public class DocumentCollection
 
 		private Integer _hashcode = null;
 
-		private DocumentKey(final DocumentType documentType, final DocumentId documentTypeId, final DocumentId documentId)
+		private DocumentKey(
+				@NonNull final DocumentType documentType,
+				@NonNull final DocumentId documentTypeId,
+				@NonNull final DocumentId documentId)
 		{
-			this.documentType = Preconditions.checkNotNull(documentType, "documentType");
-			this.documentTypeId = Preconditions.checkNotNull(documentTypeId, "documentTypeId");
-			this.documentId = Preconditions.checkNotNull(documentId, "documentId");
+			this.documentType = documentType;
+			this.documentTypeId = documentTypeId;
+			this.documentId = documentId;
 		}
 
 		@Override
@@ -972,4 +1041,26 @@ public class DocumentCollection
 			return DocumentPath.rootDocumentPath(documentType, documentTypeId, documentId);
 		}
 	} // DocumentKey
+
+	@Immutable
+	@Value
+	private static class DocumentKeyWithCtxMap
+	{
+		DocumentKey documentKey;
+
+		// The current global values context is part of the key because the window might have logic expressions that depend on e.g. #AD_Role_Name
+		// This is not optimal, but we do need *some* way of making sure to not have stale Documents when a global env changed
+		ImmutableMap<String, Object> ctxMap;
+
+		static DocumentKeyWithCtxMap of(@NonNull final DocumentKey documentKey)
+		{
+			return new DocumentKeyWithCtxMap(documentKey, Env.createGlobalValuesCtxMap(Env.getCtx()));
+		}
+
+		private DocumentKeyWithCtxMap(@NonNull final DocumentKey documentKey, @NonNull final ImmutableMap<String, Object> ctxMap)
+		{
+			this.documentKey = documentKey;
+			this.ctxMap = ctxMap;
+		}
+	}
 }

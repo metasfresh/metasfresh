@@ -14,7 +14,6 @@ import java.util.Optional;
  * Immutable Context Name. Use the methods for {@link CtxNames} to obtain instances.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 @SuppressWarnings({ "OptionalUsedAsFieldOrParameterType", "OptionalAssignedToNull" })
 public final class CtxName
@@ -106,6 +105,7 @@ public final class CtxName
 		return defaultValueDate.orElse(null);
 	}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	private boolean isOld()
 	{
 		return hasModifier(CtxNames.MODIFIER_Old);
@@ -140,9 +140,10 @@ public final class CtxName
 	 * Evaluates this context name and gets its value from given source/context.
 	 * In case the source/context is <code>null</code> then {@link #getDefaultValue()} will be returned.
 	 *
-	 * @param source evaluation context/source; <code>null</code> is accept
+	 * @param source evaluation context/source; <code>null</code> is accepted
+	 * @return {@link Evaluatee}'s variable value or default value
 	 */
-	public String getValueAsString(final Evaluatee source)
+	public String getValueAsString(@Nullable final Evaluatee source)
 	{
 		if (source == null)
 		{
@@ -383,13 +384,18 @@ public final class CtxName
 					sb.append(CtxNames.SEPARATOR).append(m);
 				}
 			}
-			if (!Check.isEmpty(defaultValue))
+			if (isDefaultValuePresent(defaultValue))
 			{
 				sb.append(CtxNames.SEPARATOR).append(defaultValue);
 			}
 			cachedToStringWithoutTagMarkers = sb.toString();
 		}
 		return cachedToStringWithoutTagMarkers;
+	}
+
+	private static boolean isDefaultValuePresent(@Nullable String defaultValue)
+	{
+		return !Check.isEmpty(defaultValue);
 	}
 
 	@Override
@@ -463,5 +469,10 @@ public final class CtxName
 			return false;
 		}
 		return true;
+	}
+
+	public boolean equalsByName(@Nullable final CtxName other)
+	{
+		return other != null && this.name.equals(other.name);
 	}
 }

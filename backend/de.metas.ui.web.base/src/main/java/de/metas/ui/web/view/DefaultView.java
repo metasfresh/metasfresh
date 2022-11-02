@@ -30,6 +30,7 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.Document;
 import de.metas.ui.web.window.model.DocumentCollection;
+import de.metas.ui.web.window.model.DocumentFieldLogicExpressionResultRevaluator;
 import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import de.metas.ui.web.window.model.DocumentSaveStatus;
 import de.metas.ui.web.window.model.DocumentValidStatus;
@@ -37,6 +38,7 @@ import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.NullDocumentChangesCollector;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.ui.web.window.model.sql.SqlValueConverters;
+import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.collections.IteratorUtils;
@@ -707,7 +709,8 @@ public final class DefaultView implements IEditableView
 	{
 		final DocumentId rowId = ctx.getRowId();
 		final DocumentCollection documentsCollection = ctx.getDocumentsCollection();
-		final DocumentPath documentPath = getById(rowId).getDocumentPath();
+		final DocumentPath documentPath = getRowDocumentPath(rowId);
+		final DocumentFieldLogicExpressionResultRevaluator readonlyRevaluator = DocumentFieldLogicExpressionResultRevaluator.using(ctx.getUserRolePermissions());
 
 		Services.get(ITrxManager.class)
 				.runInThreadInheritedTrx(
@@ -715,7 +718,7 @@ public final class DefaultView implements IEditableView
 								documentPath,
 								NullDocumentChangesCollector.instance,
 								document -> {
-									patchDocument(document, fieldChangeRequests);
+									patchDocument(document, fieldChangeRequests, readonlyRevaluator);
 									return null;
 								}));
 
@@ -725,13 +728,20 @@ public final class DefaultView implements IEditableView
 		documentsCollection.invalidateRootDocument(documentPath);
 	}
 
+	@NonNull
+	private DocumentPath getRowDocumentPath(final DocumentId rowId)
+	{
+		return Check.assumeNotNull(getById(rowId).getDocumentPath(), "No documentPath for {}", rowId);
+	}
+
 	private void patchDocument(
 			@NonNull final Document document,
-			@NonNull final List<JSONDocumentChangedEvent> fieldChangeRequests)
+			@NonNull final List<JSONDocumentChangedEvent> fieldChangeRequests,
+			@NonNull final DocumentFieldLogicExpressionResultRevaluator readonlyRevaluator)
 	{
 		//
 		// Process changes and the save the document
-		document.processValueChanges(fieldChangeRequests, ReasonSupplier.NONE);
+		document.processValueChanges(fieldChangeRequests, ReasonSupplier.NONE, readonlyRevaluator);
 		document.saveIfValidAndHasChanges();
 
 		//
@@ -753,9 +763,8 @@ public final class DefaultView implements IEditableView
 	@Override
 	public LookupValuesPage getFieldTypeahead(final RowEditingContext ctx, final String fieldName, final String query)
 	{
-		final DocumentId rowId = ctx.getRowId();
 		final DocumentCollection documentsCollection = ctx.getDocumentsCollection();
-		final DocumentPath documentPath = getById(rowId).getDocumentPath();
+		final DocumentPath documentPath = getRowDocumentPath(ctx.getRowId());
 
 		return documentsCollection.forDocumentReadonly(documentPath, document -> document.getFieldLookupValuesForQuery(fieldName, query));
 	}
@@ -763,9 +772,8 @@ public final class DefaultView implements IEditableView
 	@Override
 	public LookupValuesList getFieldDropdown(final RowEditingContext ctx, final String fieldName)
 	{
-		final DocumentId rowId = ctx.getRowId();
 		final DocumentCollection documentsCollection = ctx.getDocumentsCollection();
-		final DocumentPath documentPath = getById(rowId).getDocumentPath();
+		final DocumentPath documentPath = getRowDocumentPath(ctx.getRowId());
 
 		return documentsCollection.forDocumentReadonly(documentPath, document -> document.getFieldLookupValues(fieldName));
 	}
