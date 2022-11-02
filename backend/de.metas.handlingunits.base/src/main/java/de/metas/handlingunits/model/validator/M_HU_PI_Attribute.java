@@ -42,7 +42,7 @@ public class M_HU_PI_Attribute
 		this.service = service;
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+	@ModelChange(timings = {ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = I_M_HU_PI_Attribute.COLUMNNAME_IsUnique)
 	public void handleHUUniqueAttributes(final I_M_HU_PI_Attribute huPIAttribute)
 	{
