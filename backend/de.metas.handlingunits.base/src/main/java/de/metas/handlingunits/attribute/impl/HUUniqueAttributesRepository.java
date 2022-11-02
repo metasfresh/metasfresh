@@ -26,12 +26,10 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsAttributeId;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_UniqueAttribute;
-import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.mm.attributes.AttributeId;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -42,7 +40,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 @Repository
 public class HUUniqueAttributesRepository
 {
-
 	final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public void createOrUpdateHUUniqueAttribute(@NonNull final HUUniqueAttributeCreateRequest huUniqueAttributeCreateRequest)
@@ -52,7 +49,7 @@ public class HUUniqueAttributesRepository
 		if (existingHUUniqueAttribute != null)
 		{
 			// hu was unique attribute was already recorded. Update the value if needed
-			if (!existingHUUniqueAttribute.getValue().equals(huUniqueAttributeCreateRequest.getAttributeValue()))
+			if (!huUniqueAttributeCreateRequest.getAttributeValue().equals(existingHUUniqueAttribute.getValue()))
 			{
 				existingHUUniqueAttribute.setValue(huUniqueAttributeCreateRequest.getAttributeValue());
 				save(existingHUUniqueAttribute);
@@ -81,14 +78,14 @@ public class HUUniqueAttributesRepository
 				.firstOnly(I_M_HU_UniqueAttribute.class);
 	}
 
-	public I_M_HU_UniqueAttribute retrieveHUUniqueAttributeForProductAndAttributeValue(@NonNull HUUniqueAttributeParameters huUniqueAttributeParameters)
+	public I_M_HU_UniqueAttribute retrieveHUUniqueAttributeForProductAndAttributeValue(@NonNull final HUUniqueAttributeParameters huUniqueAttributeParameters)
 	{
 		final IQueryBuilder<I_M_HU_UniqueAttribute> queryBuilder = queryBL.createQueryBuilder(I_M_HU_UniqueAttribute.class)
 				.addEqualsFilter(I_M_HU_UniqueAttribute.COLUMNNAME_M_Product_ID, huUniqueAttributeParameters.getProductId())
 				.addEqualsFilter(I_M_HU_UniqueAttribute.COLUMNNAME_M_Attribute_ID, huUniqueAttributeParameters.getAttributeId())
 				.addEqualsFilter(I_M_HU_UniqueAttribute.COLUMNNAME_Value, huUniqueAttributeParameters.getAttributeValue());
 
-		if(huUniqueAttributeParameters.getHuIdToIgnore()!= null)
+		if (huUniqueAttributeParameters.getHuIdToIgnore() != null)
 		{
 			queryBuilder.addNotEqualsFilter(I_M_HU_UniqueAttribute.COLUMNNAME_M_HU_ID, huUniqueAttributeParameters.getHuIdToIgnore());
 		}
