@@ -12,6 +12,9 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13857](https://github.com/metasfresh/metasfresh/pull/13857) webui: (re)evaluate document field readonly and display logic based on user's role
+  * [#13855](https://github.com/metasfresh/metasfresh/pull/13855) Tax window: fix field names
+  * [#13789](https://github.com/metasfresh/metasfresh/issues/13789) Investigate github actions failures 
   * [#13801](https://github.com/metasfresh/metasfresh/issues/13801) Add IsAlwaysUpdatable and ReadOnlyLogic to AD_Field 
   * [#13822](https://github.com/metasfresh/metasfresh/issues/13822) Add fields for Sales 
   * [#13840](https://github.com/metasfresh/metasfresh/issues/13840) Add support for Soehenle scales
