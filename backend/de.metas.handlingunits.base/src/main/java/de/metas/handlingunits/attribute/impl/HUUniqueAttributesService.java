@@ -107,7 +107,7 @@ public class HUUniqueAttributesService
 				.forEach(this::validateHUUniqueAttribute);
 	}
 
-	private void validateHUQty(@NonNull final I_M_HU_Storage huStorage, @NonNull AttributeId attributeId)
+	private void validateHUQty(@NonNull final I_M_HU_Storage huStorage, @NonNull final AttributeId attributeId)
 	{
 		if (!(uomDAO.isUOMEach(UomId.ofRepoId(huStorage.getC_UOM_ID()))
 				&& BigDecimal.ONE.equals(huStorage.getQty())))
