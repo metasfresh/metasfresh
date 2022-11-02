@@ -22,13 +22,10 @@ package de.metas.handlingunits.model.validator;
  * #L%
  */
 
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.HuPackingInstructionsAttributeId;
 import de.metas.handlingunits.attribute.IHUPIAttributesDAO;
 import de.metas.handlingunits.attribute.impl.HUUniqueAttributesService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
-import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 import de.metas.handlingunits.shipmentschedule.segments.ShipmentScheduleSegmentFromHUAttribute;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
@@ -81,13 +78,11 @@ public class M_HU_Attribute
 			})
 	public void handleHUUniqueAttributes(final I_M_HU_Attribute huAttribute)
 	{
-		final I_M_HU_PI_Attribute huPIAttributeRecord = huPIAttributeDAO.getById(HuPackingInstructionsAttributeId.ofRepoId(huAttribute.getM_HU_PI_Attribute_ID()));
-		if (!huPIAttributeRecord.isUnique())
+		if (!huAttribute.isUnique())
 		{
 			// nothing to do
 			return;
 		}
-		// todo is hu status needed?
 
 		final String attributeValue = huAttribute.getValue();
 		if (Check.isBlank(attributeValue))
@@ -97,9 +92,8 @@ public class M_HU_Attribute
 
 		else
 		{
-			huUniqueAttributesService.validateHUForUniqueAttribute(HuId.ofRepoId(huAttribute.getM_HU_ID()));
-			huUniqueAttributesService.validateHUUniqueAttributeValue(huAttribute);
-			huUniqueAttributesService.createHUUniqueAttributes(huAttribute);
+			huUniqueAttributesService.validateHUUniqueAttribute(huAttribute);
+			huUniqueAttributesService.createOrUpdateHUUniqueAttribute(huAttribute);
 		}
 
 	}

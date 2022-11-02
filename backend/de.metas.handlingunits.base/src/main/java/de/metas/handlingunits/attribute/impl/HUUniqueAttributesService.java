@@ -31,6 +31,7 @@ import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_Storage;
+import de.metas.handlingunits.model.I_M_HU_UniqueAttribute;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.i18n.AdMessageKey;
@@ -51,12 +52,12 @@ import java.util.List;
 public class HUUniqueAttributesService
 {
 
-	private static final String ERR_HU_Invalid_For_Unique_Attribute = "ERR_HU_Invalid_For_Unique_Attribute_Placeholder"; // TODO
+	private static final String ERR_HU_Qty_Invalid_For_Unique_Attribute = "M_HU_UniqueAttribute_HUQtyError"; // TODO
+	private static final String ERR_HU_Unique_Attribute_Duplicate = "M_HU_UniqueAttribute_DuplicateValue_Error"; // TODO
 	private final HUUniqueAttributesRepository repo;
 	final IHandlingUnitsDAO huDAO = Services.get(IHandlingUnitsDAO.class);
 	final IHUStorageFactory storageFactory = Services.get(IHandlingUnitsBL.class).getStorageFactory();
 	final IHUStorageDAO huStorageDAO = storageFactory.getHUStorageDAO();
-	final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 
 	final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
@@ -87,40 +88,23 @@ public class HUUniqueAttributesService
 		repo.deleteHUUniqueAttributesForHUAttribute(huId);
 	}
 
-	public void validateHUForUniqueAttribute(@NonNull final HuId huId)
+	public void validateHU(@NonNull final HuId huId)
 	{
-		final I_M_HU huRecord = huDAO.getById(huId);
-
-		if(!huStatusBL.isQtyOnHand(huRecord.getHUStatus()))
-		{
-			// nothing to validate
-			return;
-		}
-
-		final List<I_M_HU_Storage> huStorages = huStorageDAO.retrieveStorages(huRecord);
-
-		for (final I_M_HU_Storage huStorage : huStorages)
-		{
-			if(!isValidHUStorageForUniqueAttribute(huStorage))
-			{
-				throw new AdempiereException(AdMessageKey.of(ERR_HU_Invalid_For_Unique_Attribute), huRecord);
-			}
-		}
-
+		final I_M_HU hu = huDAO.getById(huId);
+		huAttributesDAO.retrieveAttributesOrdered(hu).getHuAttributes()
+				.stream()
+				.filter(I_M_HU_Attribute::isUnique)
+				.forEach(this::validateHUUniqueAttribute);
 	}
 
-	private boolean isValidHUStorageForUniqueAttribute(@NonNull final I_M_HU_Storage huStorage)
+	private void validateHUQty(@NonNull final I_M_HU_Storage huStorage, @NonNull AttributeId attributeId)
 	{
-		if (uomDAO.isUOMEach(UomId.ofRepoId(huStorage.getC_UOM_ID()))
+		if(!uomDAO.isUOMEach(UomId.ofRepoId(huStorage.getC_UOM_ID()))
 				&& BigDecimal.ONE.equals(huStorage.getQty()))
-		{
-			return true;
-		}
-
-		return false;
+			throw new AdempiereException(AdMessageKey.of(ERR_HU_Qty_Invalid_For_Unique_Attribute), attributeId, uomDAO.getEachUOM());
 	}
 
-	public void createHUUniqueAttributes(@NonNull final I_M_HU_Attribute huAttribute)
+	public void validateHUUniqueAttribute(final I_M_HU_Attribute huAttribute)
 	{
 		final I_M_HU huRecord = huDAO.getById(HuId.ofRepoId(huAttribute.getM_HU_ID()));
 
@@ -128,7 +112,41 @@ public class HUUniqueAttributesService
 
 		for (final I_M_HU_Storage huStorage : huStorages)
 		{
-			final HUUniqueAttributeRequest request = HUUniqueAttributeRequest.builder()
+			validateHUQty(huStorage, AttributeId.ofRepoId(huAttribute.getM_Attribute_ID()));
+			final HUUniqueAttributeParameters parameters = HUUniqueAttributeParameters.builder()
+
+					.huIdToIgnore(HuId.ofRepoId(huRecord.getM_HU_ID()))
+					.productId(ProductId.ofRepoId(huStorage.getM_Product_ID()))
+					.attributeId(AttributeId.ofRepoId(huAttribute.getM_Attribute_ID()))
+					.attributeValue(huAttribute.getValue())
+					.build();
+
+			validateHUUniqueAttributeValue(parameters);
+		}
+	}
+	private void validateHUUniqueAttributeValue(@NonNull final HUUniqueAttributeParameters parameters)
+	{
+		final I_M_HU_UniqueAttribute huUniqueAttribute = repo.retrieveHUUniqueAttributeForProductAndAttributeValue(parameters);
+
+		if (huUniqueAttribute != null)
+		{
+			throw new AdempiereException(AdMessageKey.of(ERR_HU_Unique_Attribute_Duplicate), huUniqueAttribute.getM_HU_ID(),
+										 huUniqueAttribute.getM_Attribute_ID(),
+										 huUniqueAttribute.getValue(),
+										 huUniqueAttribute.getM_Product_ID());
+		}
+	}
+
+
+	public void createOrUpdateHUUniqueAttribute(@NonNull final I_M_HU_Attribute huAttribute)
+	{
+		final I_M_HU huRecord = huDAO.getById(HuId.ofRepoId(huAttribute.getM_HU_ID()));
+
+		final List<I_M_HU_Storage> huStorages = huStorageDAO.retrieveStorages(huRecord);
+
+		for (final I_M_HU_Storage huStorage : huStorages)
+		{
+			final HUUniqueAttributeCreateRequest request = HUUniqueAttributeCreateRequest.builder()
 					.huPIAttributeId(HuPackingInstructionsAttributeId.ofRepoId(huAttribute.getM_HU_PI_Attribute_ID()))
 					.huAttributeId(huAttribute.getM_HU_Attribute_ID())
 					.huId(HuId.ofRepoId(huRecord.getM_HU_ID()))
@@ -141,7 +159,7 @@ public class HUUniqueAttributesService
 		}
 	}
 
-	public void createHUUniqueAttributes(@NonNull final HuPackingInstructionsAttributeId huPIAttributeId)
+	public void validateHUUniqueAttribute(@NonNull final HuPackingInstructionsAttributeId huPIAttributeId)
 	{
 		final List<I_M_HU_Attribute> huAttributes = repo.retrieveHUAttributes(huPIAttributeId);
 
@@ -153,21 +171,35 @@ public class HUUniqueAttributesService
 				continue;
 			}
 
-			createHUUniqueAttributes(huAttribute);
+			validateHUUniqueAttribute(huAttribute);
+		}
+	}
+	public void createOrUpdateHUUniqueAttribute(@NonNull final HuPackingInstructionsAttributeId huPIAttributeId)
+	{
+		final List<I_M_HU_Attribute> huAttributes = repo.retrieveHUAttributes(huPIAttributeId);
+
+		for (final I_M_HU_Attribute huAttribute : huAttributes)
+		{
+			if (Check.isBlank(huAttribute.getValue()))
+			{
+				// nothing to do
+				continue;
+			}
+
+			createOrUpdateHUUniqueAttribute(huAttribute);
 		}
 	}
 
-	public void createHUUniqueAttributes(@NonNull final HuId huId)
+
+	public void createOrUpdateHUUniqueAttribute(@NonNull final HuId huId)
 	{
 		final I_M_HU hu = huDAO.getById(huId);
 		huAttributesDAO.retrieveAttributesOrdered(hu).getHuAttributes()
 				.stream()
 				.filter(I_M_HU_Attribute::isUnique)
-				.forEach(this::createHUUniqueAttributes);
+				.forEach(this::createOrUpdateHUUniqueAttribute);
 	}
 
-	public void validateHUUniqueAttributeValue(final I_M_HU_Attribute huAttribute)
-	{
-		//todo
-	}
+
+
 }

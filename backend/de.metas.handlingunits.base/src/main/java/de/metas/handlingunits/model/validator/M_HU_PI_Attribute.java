@@ -51,7 +51,8 @@ public class M_HU_PI_Attribute
 
 		if (isUnique)
 		{
-			service.createHUUniqueAttributes(huPiAttributeId);
+			service.validateHUUniqueAttribute(huPiAttributeId);
+			service.createOrUpdateHUUniqueAttribute(huPiAttributeId);
 		}
 		else
 		{

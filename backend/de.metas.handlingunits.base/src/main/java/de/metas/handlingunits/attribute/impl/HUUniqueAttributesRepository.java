@@ -26,9 +26,12 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsAttributeId;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_UniqueAttribute;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.mm.attributes.AttributeId;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -42,16 +45,16 @@ public class HUUniqueAttributesRepository
 
 	final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public void createOrUpdateHUUniqueAttribute(@NonNull final HUUniqueAttributeRequest huUniqueAttributeRequest)
+	public void createOrUpdateHUUniqueAttribute(@NonNull final HUUniqueAttributeCreateRequest huUniqueAttributeCreateRequest)
 	{
-		final I_M_HU_UniqueAttribute existingHUUniqueAttribute = retrieveHUUniqueAttribute(huUniqueAttributeRequest);
+		final I_M_HU_UniqueAttribute existingHUUniqueAttribute = retrieveHUUniqueAttributeForHU(huUniqueAttributeCreateRequest.getHuId());
 
 		if (existingHUUniqueAttribute != null)
 		{
 			// hu was unique attribute was already recorded. Update the value if needed
-			if (!existingHUUniqueAttribute.getValue().equals(huUniqueAttributeRequest.getAttributeValue()))
+			if (!existingHUUniqueAttribute.getValue().equals(huUniqueAttributeCreateRequest.getAttributeValue()))
 			{
-				existingHUUniqueAttribute.setValue(huUniqueAttributeRequest.getAttributeValue());
+				existingHUUniqueAttribute.setValue(huUniqueAttributeCreateRequest.getAttributeValue());
 				save(existingHUUniqueAttribute);
 			}
 
@@ -60,23 +63,36 @@ public class HUUniqueAttributesRepository
 
 		final I_M_HU_UniqueAttribute huUniqueAttributeRecord = newInstance(I_M_HU_UniqueAttribute.class);
 
-		huUniqueAttributeRecord.setM_HU_PI_Attribute_ID(huUniqueAttributeRequest.getHuPIAttributeId().getRepoId());
-		huUniqueAttributeRecord.setM_HU_Attribute_ID(huUniqueAttributeRequest.getHuAttributeId());
-		huUniqueAttributeRecord.setM_HU_ID(huUniqueAttributeRequest.getHuId().getRepoId());
-		huUniqueAttributeRecord.setM_Product_ID(huUniqueAttributeRequest.getProductId().getRepoId());
-		huUniqueAttributeRecord.setM_Attribute_ID(huUniqueAttributeRequest.getAttributeId().getRepoId());
-		huUniqueAttributeRecord.setValue(huUniqueAttributeRequest.getAttributeValue());
+		huUniqueAttributeRecord.setM_HU_PI_Attribute_ID(huUniqueAttributeCreateRequest.getHuPIAttributeId().getRepoId());
+		huUniqueAttributeRecord.setM_HU_Attribute_ID(huUniqueAttributeCreateRequest.getHuAttributeId());
+		huUniqueAttributeRecord.setM_HU_ID(huUniqueAttributeCreateRequest.getHuId().getRepoId());
+		huUniqueAttributeRecord.setM_Product_ID(huUniqueAttributeCreateRequest.getProductId().getRepoId());
+		huUniqueAttributeRecord.setM_Attribute_ID(huUniqueAttributeCreateRequest.getAttributeId().getRepoId());
+		huUniqueAttributeRecord.setValue(huUniqueAttributeCreateRequest.getAttributeValue());
 
 		save(huUniqueAttributeRecord);
 	}
 
-	private I_M_HU_UniqueAttribute retrieveHUUniqueAttribute(@NonNull final HUUniqueAttributeRequest huUniqueAttributeRequest)
+	private I_M_HU_UniqueAttribute retrieveHUUniqueAttributeForHU(@NonNull final HuId huId)
 	{
 		return queryBL.createQueryBuilder(I_M_HU_UniqueAttribute.class)
-				.addEqualsFilter(I_M_HU_UniqueAttribute.COLUMNNAME_M_HU_ID, huUniqueAttributeRequest.getHuId())
-				.addEqualsFilter(I_M_HU_UniqueAttribute.COLUMNNAME_M_Product_ID, huUniqueAttributeRequest.getProductId())
-				.addEqualsFilter(I_M_HU_UniqueAttribute.COLUMNNAME_M_Attribute_ID, huUniqueAttributeRequest.getAttributeId())
-				.addEqualsFilter(I_M_HU_UniqueAttribute.COLUMNNAME_Value, huUniqueAttributeRequest.getAttributeValue())
+				.addEqualsFilter(I_M_HU_UniqueAttribute.COLUMNNAME_M_HU_ID, huId)
+				.create()
+				.firstOnly(I_M_HU_UniqueAttribute.class);
+	}
+
+	public I_M_HU_UniqueAttribute retrieveHUUniqueAttributeForProductAndAttributeValue(@NonNull HUUniqueAttributeParameters huUniqueAttributeParameters)
+	{
+		final IQueryBuilder<I_M_HU_UniqueAttribute> queryBuilder = queryBL.createQueryBuilder(I_M_HU_UniqueAttribute.class)
+				.addEqualsFilter(I_M_HU_UniqueAttribute.COLUMNNAME_M_Product_ID, huUniqueAttributeParameters.getProductId())
+				.addEqualsFilter(I_M_HU_UniqueAttribute.COLUMNNAME_M_Attribute_ID, huUniqueAttributeParameters.getAttributeId())
+				.addEqualsFilter(I_M_HU_UniqueAttribute.COLUMNNAME_Value, huUniqueAttributeParameters.getAttributeValue());
+
+		if(huUniqueAttributeParameters.getHuIdToIgnore()!= null)
+		{
+			queryBuilder.addNotEqualsFilter(I_M_HU_UniqueAttribute.COLUMNNAME_M_HU_ID, huUniqueAttributeParameters.getHuIdToIgnore());
+		}
+		return queryBuilder
 				.create()
 				.firstOnly(I_M_HU_UniqueAttribute.class);
 	}

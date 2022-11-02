@@ -20,6 +20,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
@@ -27,6 +28,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.mm.attributes.api.IAttributesBL;
@@ -258,6 +260,15 @@ public class HUAttributesBL implements IHUAttributesBL
 		}
 
 		return true;
+	}
+
+	@Override
+	public void validateAttributeValuesUniqueForVirtualPI(@NonNull final AttributeSetInstanceId asiId,
+			@NonNull final ProductId productId,
+			@NonNull Quantity qtyToTransfer,
+			@NonNull HuId huToIgnore)
+	{
+		//todo is this needed?
 	}
 
 }
