@@ -479,4 +479,9 @@ public final class CtxName
 		}
 		return true;
 	}
+
+	public boolean equalsByName(@Nullable final CtxName other)
+	{
+		return other != null && this.name.equals(other.name);
+	}
 }

@@ -359,4 +359,33 @@ public class CtxNamesTests
 			assertThat(ofNameAndDefaultValue.getValueAsDate(evaluatee)).isNull();
 		}
 	}
+
+	@Nested
+	class equalsByName
+	{
+		@Test
+		void sameName_differentDefaultValues()
+		{
+			final CtxName ctxName1 = CtxNames.parse("Var/DefaultValue1");
+			final CtxName ctxName2 = CtxNames.parse("Var/DefaultValue2");
+			assertThat(ctxName1.equalsByName(ctxName2)).isTrue();
+		}
+
+		@Test
+		void sameName_differentModifiers_differentDefaultValues()
+		{
+			final CtxName ctxName1 = CtxNames.parse("Var/quotedIfNotDefault/DefaultValue1");
+			final CtxName ctxName2 = CtxNames.parse("Var/old/DefaultValue2");
+			assertThat(ctxName1.equalsByName(ctxName2)).isTrue();
+		}
+
+		@Test
+		void differentNames()
+		{
+			final CtxName ctxName1 = CtxNames.parse("Var1");
+			final CtxName ctxName2 = CtxNames.parse("Var2");
+			assertThat(ctxName1.equalsByName(ctxName2)).isFalse();
+		}
+
+	}
 }
