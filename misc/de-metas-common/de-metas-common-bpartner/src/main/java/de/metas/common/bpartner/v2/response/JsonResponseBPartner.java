@@ -28,6 +28,8 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.changelog.JsonChangeInfo;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.JSONDeliveryRule;
+import de.metas.common.rest_api.v2.JSONDeliveryViaRule;
 import de.metas.common.rest_api.v2.JSONPaymentRule;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
@@ -62,12 +64,22 @@ public class JsonResponseBPartner
 	public static final String SALES_PARTNER_CODE = "salesPartnerCode";
 	public static final String SALES_PARTNER = "salesPartner";
 	public static final String PAYMENT_RULE = "paymentRule";
+	public static final String PAYMENT_RULE_PO = "paymentRulePO";
 	public static final String INTERNAL_NAME = "internalName";
 	public static final String COMPANY = "company";
 	public static final String VAT_ID = "vatId";
 	public static final String METASFRESH_URL = "metasfreshUrl";
 	public static final String CREDITOR_ID = "creditorId";
 	public static final String DEBTOR_ID = "debtorId";
+	public static final String SECTION_CODE_VALUE = "sectionCodeValue";
+	public static final String DESCRIPTION = "description";
+	public static final String DELIVERY_RULE = "deliveryRule";
+	public static final String DELIVERY_VIA_RULE = "deliveryViaRule";
+	public static final String STORAGE_WAREHOUSE = "storageWarehouse";
+	public static final String INCOTERMS_CUSTOMER_NAME = "incotermsCustomerName";
+	public static final String INCOTERMS_VENDOR_NAME = "incotermsVendorName";
+	public static final String CUSTOMER_PAYMENTTERM_NAME = "customerPaymentTermName";
+	public static final String VENDOR_PAYMENTTERM_NAME = "vendorPaymentTermName";
 
 	private static final String CHANGE_INFO = "changeInfo";
 
@@ -176,6 +188,10 @@ public class JsonResponseBPartner
 	@JsonInclude(Include.NON_NULL)
 	JSONPaymentRule paymentRule;
 
+	@JsonProperty(PAYMENT_RULE_PO)
+	@JsonInclude(Include.NON_NULL)
+	JSONPaymentRule paymentRulePO;
+
 	@JsonProperty(INTERNAL_NAME)
 	@JsonInclude(Include.NON_NULL)
 	String internalName;
@@ -202,6 +218,51 @@ public class JsonResponseBPartner
 	@JsonProperty(DEBTOR_ID)
 	@JsonInclude(Include.NON_NULL)
 	Integer debtorId;
+
+	@ApiModelProperty(required = false, value = "Translates to `M_SectionCode.Value` and it's mapped to `C_BPartner.M_SectionCode_ID`")
+	@JsonProperty(SECTION_CODE_VALUE)
+	@JsonInclude(Include.NON_NULL)
+	String sectionCodeValue;
+
+	@ApiModelProperty(required = false, value = "Translates to `C_BPartner.Description`")
+	@JsonProperty(DESCRIPTION)
+	@JsonInclude(Include.NON_NULL)
+	String description;
+
+	@ApiModelProperty(required = false, value = "Translates to `C_BPartner.DeliveryRule`")
+	@JsonProperty(DELIVERY_RULE)
+	@JsonInclude(Include.NON_NULL)
+	JSONDeliveryRule deliveryRule;
+
+	@ApiModelProperty(required = false, value = "Translates to `C_BPartner.DeliveryViaRule`")
+	@JsonProperty(DELIVERY_VIA_RULE)
+	@JsonInclude(Include.NON_NULL)
+	JSONDeliveryViaRule deliveryViaRule;
+
+	@ApiModelProperty(required = false, value = "Translates to `C_BPartner.IsStorageWarehouse`")
+	@JsonProperty(STORAGE_WAREHOUSE)
+	@JsonInclude(Include.NON_NULL)
+	Boolean storageWarehouse;
+
+	@ApiModelProperty(required = false, value = "Translates to `C_Incoterms.Name` and it's mapped to `C_BPartner.C_Incoterms_Customer_ID`")
+	@JsonProperty(INCOTERMS_CUSTOMER_NAME)
+	@JsonInclude(Include.NON_NULL)
+	String incotermsCustomerName;
+
+	@ApiModelProperty(required = false, value = "Translates to `C_Incoterms.Name` and it's mapped to `C_BPartner.C_Incoterms_Vendor_ID`")
+	@JsonProperty(INCOTERMS_VENDOR_NAME)
+	@JsonInclude(Include.NON_NULL)
+	String incotermsVendorName;
+
+	@ApiModelProperty(required = false, value = "Translates to `C_PaymentTerm.Name` and it's mapped to `C_BPartner.C_PaymentTerm_ID`")
+	@JsonProperty(CUSTOMER_PAYMENTTERM_NAME)
+	@JsonInclude(Include.NON_NULL)
+	String customerPaymentTermName;
+
+	@ApiModelProperty(position = 250, value = "Translates to `C_PaymentTerm.Name` and it's mapped to `C_BPartner.PO_PaymentTerm_ID`")
+	@JsonProperty(VENDOR_PAYMENTTERM_NAME)
+	@JsonInclude(Include.NON_NULL)
+	String vendorPaymentTermName;
 
 	@ApiModelProperty(position = 9999) // shall be last
 	@JsonProperty(CHANGE_INFO)
@@ -231,15 +292,24 @@ public class JsonResponseBPartner
 			@JsonProperty(SALES_PARTNER_CODE) @Nullable final String salesPartnerCode,
 			@JsonProperty(SALES_PARTNER) @Nullable final JsonResponseSalesRep responseSalesRep,
 			@JsonProperty(PAYMENT_RULE) @Nullable final JSONPaymentRule paymentRule,
+			@JsonProperty(PAYMENT_RULE_PO) @Nullable final JSONPaymentRule paymentRulePO,
 			@JsonProperty(INTERNAL_NAME) @Nullable final String internalName,
 			@JsonProperty(COMPANY) @NonNull final Boolean company,
 			@JsonProperty(VAT_ID) @Nullable final String vatId,
 			@JsonProperty(METASFRESH_URL) @Nullable final String metasfreshUrl,
 			@JsonProperty(CREDITOR_ID) @Nullable final Integer creditorId,
 			@JsonProperty(DEBTOR_ID) @Nullable final Integer debtorId,
-
-			//
+			@JsonProperty(SECTION_CODE_VALUE) @Nullable final String sectionCodeValue,
+			@JsonProperty(DESCRIPTION) @Nullable final String description,
+			@JsonProperty(DELIVERY_RULE) @Nullable final JSONDeliveryRule deliveryRule,
+			@JsonProperty(DELIVERY_VIA_RULE) @Nullable final JSONDeliveryViaRule deliveryViaRule,
+			@JsonProperty(STORAGE_WAREHOUSE) @Nullable final Boolean storageWarehouse,
+			@JsonProperty(INCOTERMS_CUSTOMER_NAME) @Nullable final String incotermsCustomerName,
+			@JsonProperty(INCOTERMS_VENDOR_NAME) @Nullable final String incotermsVendorName,
+			@JsonProperty(CUSTOMER_PAYMENTTERM_NAME) @Nullable final String customerPaymentTermName,
+			@JsonProperty(VENDOR_PAYMENTTERM_NAME) @Nullable final String vendorPaymentTermName,
 			@JsonProperty(CHANGE_INFO) @Nullable JsonChangeInfo changeInfo)
+			//
 	{
 		this.metasfreshId = metasfreshId;
 		this.code = code;
@@ -268,6 +338,7 @@ public class JsonResponseBPartner
 		this.salesPartnerCode = salesPartnerCode;
 		this.responseSalesRep = responseSalesRep;
 		this.paymentRule = paymentRule;
+		this.paymentRulePO = paymentRulePO;
 		this.internalName = internalName;
 		this.company = company;
 
@@ -277,6 +348,15 @@ public class JsonResponseBPartner
 
 		this.creditorId = creditorId;
 		this.debtorId = debtorId;
+		this.sectionCodeValue = sectionCodeValue;
+		this.description = description;
+		this.deliveryRule = deliveryRule;
+		this.deliveryViaRule = deliveryViaRule;
+		this.storageWarehouse = storageWarehouse;
+		this.incotermsCustomerName = incotermsCustomerName;
+		this.incotermsVendorName = incotermsVendorName;
+		this.customerPaymentTermName = customerPaymentTermName;
+		this.vendorPaymentTermName = vendorPaymentTermName;
 
 		this.changeInfo = changeInfo;
 	}

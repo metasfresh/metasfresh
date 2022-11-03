@@ -25,7 +25,7 @@ package de.metas.camel.externalsystems.sap.product;
 import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.v2.ProductUpsertCamelRequest;
-import de.metas.camel.externalsystems.sap.mapping.model.product.ProductRow;
+import de.metas.camel.externalsystems.sap.model.product.ProductRow;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.product.v2.request.JsonRequestProduct;
 import de.metas.common.product.v2.request.JsonRequestProductUpsert;

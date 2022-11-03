@@ -197,6 +197,20 @@ public class JsonRequestLocation
 	@ApiModelProperty(hidden = true)
 	private boolean handoverLocationSet;
 
+	@ApiModelProperty(position = 250, //
+			value = "Translates to C_BPartner_Location.IsRemitTo")
+	private Boolean remitTo;
+
+	@ApiModelProperty(hidden = true)
+	private boolean remitToAddressSet;
+
+	@ApiModelProperty(position = 260, //
+			value = "Translates to C_BPartner_Location.IsReplicationLookupDefault")
+	private Boolean replicationLookupDefault;
+
+	@ApiModelProperty(hidden = true)
+	private boolean replicationLookupDefaultSet;
+
 	public void setActive(final Boolean active)
 	{
 		this.active = active;
@@ -333,5 +347,17 @@ public class JsonRequestLocation
 	{
 		this.handoverLocation = handoverLocation;
 		this.handoverLocationSet = true;
+	}
+
+	public void setRemitTo(final Boolean remitTo)
+	{
+		this.remitTo = remitTo;
+		this.remitToAddressSet = true;
+	}
+
+	public void setReplicationLookupDefault(final Boolean replicationLookupDefault)
+	{
+		this.replicationLookupDefault = replicationLookupDefault;
+		this.replicationLookupDefaultSet = true;
 	}
 }

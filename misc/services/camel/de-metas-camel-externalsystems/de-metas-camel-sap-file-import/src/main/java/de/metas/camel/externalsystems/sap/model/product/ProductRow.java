@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.sap.mapping.model.product;
+package de.metas.camel.externalsystems.sap.model.product;
 
 import lombok.Getter;
 import org.apache.camel.dataformat.bindy.annotation.CsvRecord;

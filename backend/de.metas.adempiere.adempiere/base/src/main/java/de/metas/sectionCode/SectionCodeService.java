@@ -43,4 +43,10 @@ public class SectionCodeService
 		return sectionCodeRepository.getSectionCodeIdByValue(orgId, value)
 				.orElseThrow(() -> new AdempiereException("No SectionCode found for SectionCode.value=" + value));
 	}
+
+	@NonNull
+	public SectionCode getById(@NonNull final SectionCodeId sectionCodeId)
+	{
+		return sectionCodeRepository.getById(sectionCodeId);
+	}
 }

@@ -86,6 +86,7 @@ final class ChangeLogUtil
 			.put(I_C_BPartner.COLUMNNAME_C_BPartner_SalesRep_ID, BPartner.C_BPARTNER_SALES_REP_ID)
 			.put(I_C_BPartner.COLUMNNAME_InternalName, BPartner.INTERNAL_NAME)
 			.put(I_C_BPartner.COLUMNNAME_PaymentRule, BPartner.PAYMENT_RULE)
+			.put(I_C_BPartner.COLUMNNAME_PaymentRulePO, BPartner.PAYMENT_RULE_PO)
 			.put(I_C_BPartner.COLUMNNAME_IsCompany, BPartner.COMPANY)
 			.put(I_C_BPartner.COLUMNNAME_VATaxID, BPartner.VAT_ID)
 			.put(I_C_BPartner.COLUMNNAME_C_Greeting_ID, BPartner.GREETING_ID)
@@ -98,6 +99,13 @@ final class ChangeLogUtil
 			.put(I_C_BPartner.COLUMNNAME_MKTG_Campaign_ID, BPartner.CAMPAIGN_ID)
 			.put(I_C_BPartner.COLUMNNAME_DebtorId, BPartner.DEBTOR_ID)
 			.put(I_C_BPartner.COLUMNNAME_CreditorId, BPartner.CREDITOR_ID)
+			.put(I_C_BPartner.COLUMNNAME_M_SectionCode_ID, BPartner.SECTION_CODE_ID)
+			.put(I_C_BPartner.COLUMNNAME_Description, BPartner.DESCRIPTION)
+			.put(I_C_BPartner.COLUMNNAME_DeliveryRule, BPartner.DELIVERY_RULE)
+			.put(I_C_BPartner.COLUMNNAME_DeliveryViaRule, BPartner.DELIVERY_VIA_RULE)
+			.put(I_C_BPartner.COLUMNNAME_IsStorageWarehouse, BPartner.STORAGE_WAREHOUSE)
+			.put(I_C_BPartner.COLUMNNAME_C_Incoterms_Customer_ID, BPartner.INCOTERMS_CUSTOMER_ID)
+			.put(I_C_BPartner.COLUMNNAME_C_Incoterms_Vendor_ID, BPartner.INCOTERMS_VENDOR_ID)
 			.build();
 
 	@VisibleForTesting
@@ -154,6 +162,9 @@ final class ChangeLogUtil
 			.put(I_C_BPartner_Location.COLUMNNAME_EMail, BPartnerLocation.EMAIL)
 			.put(I_C_BPartner_Location.COLUMNNAME_Phone, BPartnerLocation.PHONE)
 			.put(I_C_BPartner_Location.COLUMNNAME_VisitorsAddress, BPartnerLocationType.VISITORS_ADDRESS)
+			.put(I_C_BPartner_Location.COLUMNNAME_IsHandOverLocation, BPartnerLocationType.HANDOVER_LOCATION)
+			.put(I_C_BPartner_Location.COLUMNNAME_IsRemitTo, BPartnerLocationType.REMIT_TO)
+			.put(I_C_BPartner_Location.COLUMNNAME_IsReplicationLookupDefault, BPartnerLocationType.REPLICATION_LOOKUP_DEFAULT)
 
 			// C_Location is immutable and therefore individual C_Location records don't have a change log.
 			// However, when we load the change log records of C_BPartner_Location,

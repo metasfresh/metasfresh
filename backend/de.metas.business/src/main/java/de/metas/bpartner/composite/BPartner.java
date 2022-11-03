@@ -11,6 +11,8 @@ import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.incoterms.IncotermsId;
 import de.metas.marketing.base.model.CampaignId;
+import de.metas.order.DeliveryRule;
+import de.metas.order.DeliveryViaRule;
 import de.metas.order.InvoiceRule;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
@@ -73,6 +75,7 @@ public class BPartner
 	public static final String SALES_PARTNER_CODE = "salesPartnerCode";
 	public static final String C_BPARTNER_SALES_REP_ID = "bPartnerSalesRepId";
 	public static final String PAYMENT_RULE = "paymentRule";
+	public static final String PAYMENT_RULE_PO = "paymentRulePO";
 	public static final String INTERNAL_NAME = "internalName";
 	public static final String VAT_ID = "vatId";
 	public static final String GREETING_ID = "greetingId";
@@ -85,6 +88,13 @@ public class BPartner
 	public static final String CAMPAIGN_ID = "campaignId";
 	public static final String CREDITOR_ID = "creditorId";
 	public static final String DEBTOR_ID = "debtorId";
+	public static final String SECTION_CODE_ID = "sectionCodeId";
+	public static final String DESCRIPTION = "description";
+	public static final String DELIVERY_RULE = "deliveryRule";
+	public static final String DELIVERY_VIA_RULE = "deliveryViaRule";
+	public static final String STORAGE_WAREHOUSE = "storageWarehouse";
+	public static final String INCOTERMS_CUSTOMER_ID = "incotermsCustomerId";
+	public static final String INCOTERMS_VENDOR_ID = "incotermsVendorId";
 
 	/**
 	 * May be null if the bpartner was not yet saved.
@@ -134,6 +144,7 @@ public class BPartner
 	private String salesPartnerCode;
 	private SalesRep salesRep;
 	private PaymentRule paymentRule;
+	private PaymentRule paymentRulePO;
 	private String internalName;
 
 	private InvoiceRule customerInvoiceRule;
@@ -160,10 +171,10 @@ public class BPartner
 	 */
 	private boolean identifiedByExternalReference;
 
-	private final PaymentTermId customerPaymentTermId;
+	private PaymentTermId customerPaymentTermId;
 	private final PricingSystemId customerPricingSystemId;
 
-	private final PaymentTermId vendorPaymentTermId;
+	private PaymentTermId vendorPaymentTermId;
 	private final PricingSystemId vendorPricingSystemId;
 
 	private final boolean excludeFromPromotions;
@@ -180,10 +191,10 @@ public class BPartner
 	private String description;
 
 	@Nullable
-	private String deliveryRule;
+	private DeliveryRule deliveryRule;
 
 	@Nullable
-	private String deliveryViaRule;
+	private DeliveryViaRule deliveryViaRule;
 
 	private boolean storageWarehouse;
 
@@ -223,6 +234,7 @@ public class BPartner
 			@Nullable final String salesPartnerCode,
 			@Nullable final SalesRep salesRep,
 			@Nullable final PaymentRule paymentRule,
+			@Nullable final PaymentRule paymentRulePO,
 			@Nullable final String internalName,
 			@Nullable final String vatId,
 			@Nullable final RecordChangeLog changeLog,
@@ -244,8 +256,8 @@ public class BPartner
 			@Nullable final Integer debtorId,
 			@Nullable final SectionCodeId sectionCodeId,
 			@Nullable final String description,
-			@Nullable final String deliveryRule,
-			@Nullable final String deliveryViaRule,
+			@Nullable final DeliveryRule deliveryRule,
+			@Nullable final DeliveryViaRule deliveryViaRule,
 			@Nullable final Boolean storageWarehouse,
 			@Nullable final IncotermsId incotermsCustomerId,
 			@Nullable final IncotermsId incotermsVendorId)
@@ -275,6 +287,7 @@ public class BPartner
 		this.salesPartnerCode = salesPartnerCode;
 		this.salesRep = salesRep;
 		this.paymentRule = paymentRule;
+		this.paymentRulePO = paymentRulePO;
 		this.internalName = internalName;
 		this.vatId = vatId;
 

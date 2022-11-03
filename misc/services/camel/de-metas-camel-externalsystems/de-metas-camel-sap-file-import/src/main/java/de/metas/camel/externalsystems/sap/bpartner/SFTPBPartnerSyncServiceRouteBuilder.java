@@ -26,23 +26,17 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.ProcessorHelper;
-import de.metas.camel.externalsystems.common.v2.ExternalStatusCreateCamelRequest;
 import de.metas.camel.externalsystems.sap.SAPRouteContext;
+import de.metas.camel.externalsystems.common.IdAwareRouteBuilder;
+import de.metas.camel.externalsystems.sap.common.SFTPSyncServiceBuilderUtil;
 import de.metas.camel.externalsystems.sap.sftp.SFTPConfig;
-import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.IExternalSystemService;
-import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.externalsystem.status.JsonExternalStatus;
-import de.metas.common.externalsystem.status.JsonStatusRequest;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
-import java.time.Duration;
-import java.util.Map;
-
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.sap.SAPConstants.SAP_SYSTEM_NAME;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
@@ -79,7 +73,7 @@ public class SFTPBPartnerSyncServiceRouteBuilder extends RouteBuilder implements
 				.routeId(START_BPARTNERS_SYNC_ROUTE_ID)
 				.log("Route invoked")
 				.process(this::prepareSAPContext)
-				.process(this::setSFTPCredentials)
+				.process(SFTPSyncServiceBuilderUtil::setSFTPCredentials)
 				.process(this::enableSFTPRouteProcessor)
 				.process(exchange -> this.prepareExternalStatusCreateRequest(exchange, JsonExternalStatus.Active))
 				.to("{{" + ExternalSystemCamelConstants.MF_CREATE_EXTERNAL_SYSTEM_STATUS_V2_CAMEL_URI + "}}")
@@ -97,111 +91,57 @@ public class SFTPBPartnerSyncServiceRouteBuilder extends RouteBuilder implements
 
 	private void prepareSAPContext(@NonNull final Exchange exchange)
 	{
-		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
-
-		if (request.getAdPInstanceId() != null)
-		{
-			exchange.getIn().setHeader(HEADER_PINSTANCE_ID, request.getAdPInstanceId().getValue());
-		}
-
-		final SAPRouteContext context = SAPRouteContext.builder()
-				.request(request)
-				.build();
-
-		exchange.setProperty(ROUTE_PROPERTY_SAP_ROUTE_CONTEXT_BPARTNERS, context);
-	}
-
-	private void setSFTPCredentials(@NonNull final Exchange exchange)
-	{
-		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
-
-		final Map<String, String> requestParameters = request.getParameters();
-
-		final SFTPConfig sftpConfig = SFTPConfig.builder()
-				.username(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_USERNAME))
-				.password(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_PASSWORD))
-				.hostName(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_HOST_NAME))
-				.port(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_PORT))
-				.targetDirectoryBPartner(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_BPARTNER_TARGET_DIRECTORY))
-				.processedFilesFolder(requestParameters.get(ExternalSystemConstants.PARAM_PROCESSED_DIRECTORY))
-				.erroredFilesFolder(requestParameters.get(ExternalSystemConstants.PARAM_ERRORED_DIRECTORY))
-				.pollingFrequency(Duration.ofMillis(Long.parseLong(requestParameters.get(ExternalSystemConstants.PARAM_POLLING_FREQUENCY_MS))))
-				.build();
-
-		exchange.getIn().setBody(sftpConfig, SFTPConfig.class);
+		SFTPSyncServiceBuilderUtil.prepareSAPContext(exchange, ROUTE_PROPERTY_SAP_ROUTE_CONTEXT_BPARTNERS);
 	}
 
 	private void enableSFTPRouteProcessor(@NonNull final Exchange exchange) throws Exception
 	{
-		final SFTPConfig sftpConfig = exchange.getIn().getBody(SFTPConfig.class);
+		final SAPRouteContext sapRouteContext = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_SAP_ROUTE_CONTEXT_BPARTNERS, SAPRouteContext.class);;
 
-		final SAPRouteContext sapRouteContext = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_SAP_ROUTE_CONTEXT_BPARTNERS, SAPRouteContext.class);
+		final IdAwareRouteBuilder getBPartnersSFTPRouteBuilder = buildSFTPRoute(exchange, processLogger, sapRouteContext);
 
-		final String sftpBPartnersSyncRouteId = getSFTPBPartnersSyncRouteId(sapRouteContext);
-
-		final GetBPartnersSFTPRouteBuilder getProductsSFTPRouteBuilder = GetBPartnersSFTPRouteBuilder
-				.builder()
-				.sftpConfig(sftpConfig)
-				.camelContext(exchange.getContext())
-				.enabledByExternalSystemRequest(sapRouteContext.getRequest())
-				.processLogger(processLogger)
-				.routeId(sftpBPartnersSyncRouteId)
-				.build();
-
-		final boolean routeWasAlreadyCreated = getContext().getRoute(getProductsSFTPRouteBuilder.getRouteId()) != null;
-
-		if (!routeWasAlreadyCreated)
-		{
-			getContext().addRoutes(getProductsSFTPRouteBuilder);
-			getContext().getRouteController().startRoute(getProductsSFTPRouteBuilder.getRouteId());
-		}
-		else
-		{
-			getContext().getRouteController().resumeRoute(getProductsSFTPRouteBuilder.getRouteId());
-		}
+		SFTPSyncServiceBuilderUtil.enableSFTPRouteProcessor(exchange, getBPartnersSFTPRouteBuilder);
 	}
 
 	private void disableSFTPRouteProcessor(@NonNull final Exchange exchange) throws Exception
 	{
-		final SAPRouteContext sapRouteContext = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_SAP_ROUTE_CONTEXT_BPARTNERS, SAPRouteContext.class);
+		final SAPRouteContext sapRouteContext = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_SAP_ROUTE_CONTEXT_BPARTNERS, SAPRouteContext.class);;
 
-		final String sftpBPartnersSyncRouteId = getSFTPBPartnersSyncRouteId(sapRouteContext);
-
-		if (getContext().getRoute(sftpBPartnersSyncRouteId) == null)
-		{
-			return;
-		}
-
-		getContext().getRouteController().stopRoute(sftpBPartnersSyncRouteId);
-
-		getContext().removeRoute(sftpBPartnersSyncRouteId);
+		SFTPSyncServiceBuilderUtil.disableSFTPRouteProcessor(exchange, getSFTPBPartnersSyncRouteId(sapRouteContext));
 	}
 
 	private void prepareExternalStatusCreateRequest(@NonNull final Exchange exchange, @NonNull final JsonExternalStatus externalStatus)
 	{
-		final SAPRouteContext context = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_SAP_ROUTE_CONTEXT_BPARTNERS, SAPRouteContext.class);
-
-		final JsonExternalSystemRequest request = context.getRequest();
-
-		final JsonStatusRequest jsonStatusRequest = JsonStatusRequest.builder()
-				.status(externalStatus)
-				.pInstanceId(request.getAdPInstanceId())
-				.build();
-
-		final ExternalStatusCreateCamelRequest camelRequest = ExternalStatusCreateCamelRequest.builder()
-				.jsonStatusRequest(jsonStatusRequest)
-				.externalSystemConfigType(getExternalSystemTypeCode())
-				.externalSystemChildConfigValue(request.getExternalSystemChildConfigValue())
-				.serviceValue(getServiceValue())
-				.build();
-
-		exchange.getIn().setBody(camelRequest);
+		SFTPSyncServiceBuilderUtil.prepareExternalStatusCreateRequest(exchange,
+																	  externalStatus,
+																	  ROUTE_PROPERTY_SAP_ROUTE_CONTEXT_BPARTNERS,
+																	  this::getExternalSystemTypeCode,
+																	  this::getServiceValue);
 	}
 
 	@NonNull
 	private static String getSFTPBPartnersSyncRouteId(@NonNull final SAPRouteContext sapRouteContext)
 	{
 		return GetBPartnersSFTPRouteBuilder.buildRouteId(sapRouteContext.getRequest().getExternalSystemChildConfigValue());
+	}
+
+	private static IdAwareRouteBuilder buildSFTPRoute(
+			@NonNull final Exchange exchange,
+			@NonNull final ProcessLogger processLogger,
+			@NonNull final SAPRouteContext sapRouteContext)
+	{
+		final SFTPConfig sftpConfig = exchange.getIn().getBody(SFTPConfig.class);
+
+		final String routeId = getSFTPBPartnersSyncRouteId(sapRouteContext);
+
+		return GetBPartnersSFTPRouteBuilder
+				.builder()
+				.sftpConfig(sftpConfig)
+				.camelContext(exchange.getContext())
+				.enabledByExternalSystemRequest(sapRouteContext.getRequest())
+				.processLogger(processLogger)
+				.routeId(routeId)
+				.build();
 	}
 
 	@Override

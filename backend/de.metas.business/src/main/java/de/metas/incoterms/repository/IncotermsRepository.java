@@ -30,10 +30,18 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_Incoterms;
 import org.springframework.stereotype.Repository;
 
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+
 @Repository
 public class IncotermsRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	@NonNull
+	public Incoterms getById(@NonNull final IncotermsId incotermsId)
+	{
+		return ofRecord(loadOutOfTrx(incotermsId, I_C_Incoterms.class));
+	}
 
 	@NonNull
 	public Incoterms getIncotermsByValue(@NonNull final String value)
@@ -43,11 +51,11 @@ public class IncotermsRepository
 				.create()
 				.firstOnlyNotNull(I_C_Incoterms.class);
 
-		return mapIncotermsRecordToPojo(incotermsRecord);
+		return ofRecord(incotermsRecord);
 	}
 
 	@NonNull
-	private Incoterms mapIncotermsRecordToPojo(@NonNull final I_C_Incoterms incotermsRecord)
+	private static Incoterms ofRecord(@NonNull final I_C_Incoterms incotermsRecord)
 	{
 		return Incoterms.builder()
 				.incotermsId(IncotermsId.ofRepoId(incotermsRecord.getC_Incoterms_ID()))

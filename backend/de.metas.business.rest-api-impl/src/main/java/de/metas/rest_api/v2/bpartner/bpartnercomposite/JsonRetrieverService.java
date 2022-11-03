@@ -63,6 +63,8 @@ import de.metas.common.changelog.JsonChangeLogItem.JsonChangeLogItemBuilder;
 import de.metas.common.product.v2.response.JsonProductBPartner;
 import de.metas.common.product.v2.response.JsonResponseProductBPartner;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.JSONDeliveryRule;
+import de.metas.common.rest_api.v2.JSONDeliveryViaRule;
 import de.metas.common.rest_api.v2.JSONPaymentRule;
 import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.dao.selection.pagination.UnknownPageIdentifierException;
@@ -76,17 +78,26 @@ import de.metas.greeting.Greeting;
 import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.incoterms.Incoterms;
+import de.metas.incoterms.repository.IncotermsRepository;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.job.Job;
 import de.metas.job.JobRepository;
 import de.metas.logging.TableRecordMDC;
+import de.metas.order.DeliveryRule;
+import de.metas.order.DeliveryViaRule;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.IPaymentTermRepository;
+import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.payment.paymentterm.impl.PaymentTermQuery;
 import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKeyList;
+import de.metas.sectionCode.SectionCode;
+import de.metas.sectionCode.SectionCodeService;
 import de.metas.title.Title;
 import de.metas.title.TitleRepository;
 import de.metas.user.UserId;
@@ -104,6 +115,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.TableRecordUtil;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner_Product;
+import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.util.Env;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
@@ -147,9 +159,19 @@ public class JsonRetrieverService
 			.put(BPartner.C_BPARTNER_SALES_REP_ID, JsonResponseSalesRep.SALES_REP_ID)
 			.put(BPartner.INTERNAL_NAME, JsonResponseBPartner.INTERNAL_NAME)
 			.put(BPartner.PAYMENT_RULE, JsonResponseBPartner.PAYMENT_RULE)
+			.put(BPartner.PAYMENT_RULE_PO, JsonResponseBPartner.PAYMENT_RULE_PO)
 			.put(BPartner.VAT_ID, JsonResponseBPartner.VAT_ID)
 			.put(BPartner.CREDITOR_ID, JsonResponseBPartner.CREDITOR_ID)
 			.put(BPartner.DEBTOR_ID, JsonResponseBPartner.DEBTOR_ID)
+			.put(BPartner.SECTION_CODE_ID, JsonResponseBPartner.SECTION_CODE_VALUE)
+			.put(BPartner.DESCRIPTION, JsonResponseBPartner.DESCRIPTION)
+			.put(BPartner.DELIVERY_RULE, JsonResponseBPartner.DELIVERY_RULE)
+			.put(BPartner.DELIVERY_VIA_RULE, JsonResponseBPartner.DELIVERY_VIA_RULE)
+			.put(BPartner.STORAGE_WAREHOUSE, JsonResponseBPartner.STORAGE_WAREHOUSE)
+			.put(BPartner.INCOTERMS_CUSTOMER_ID, JsonResponseBPartner.INCOTERMS_CUSTOMER_NAME)
+			.put(BPartner.INCOTERMS_VENDOR_ID, JsonResponseBPartner.INCOTERMS_VENDOR_NAME)
+			.put(BPartner.CUSTOMER_PAYMENTTERM_ID, JsonResponseBPartner.CUSTOMER_PAYMENTTERM_NAME)
+			.put(BPartner.VENDOR_PAYMENTTERM_ID, JsonResponseBPartner.VENDOR_PAYMENTTERM_NAME)
 			.build();
 
 	/**
@@ -221,6 +243,9 @@ public class JsonRetrieverService
 			.put(BPartnerLocationType.SHIP_TO_DEFAULT, JsonResponseLocation.SHIP_TO_DEFAULT)
 			.put(BPartnerLocation.EPHEMERAL, JsonResponseLocation.EPHEMERAL)
 			.put(BPartnerLocationType.VISITORS_ADDRESS, JsonResponseLocation.VISITORS_ADDRESS)
+			.put(BPartnerLocationType.HANDOVER_LOCATION, JsonResponseLocation.HANDOVER_LOCATION)
+			.put(BPartnerLocationType.REMIT_TO, JsonResponseLocation.REMIT_TO)
+			.put(BPartnerLocationType.REPLICATION_LOOKUP_DEFAULT, JsonResponseLocation.REPLICATION_LOOKUP_DEFAULT)
 			.build();
 
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
@@ -234,6 +259,9 @@ public class JsonRetrieverService
 	private final JobRepository jobRepository;
 	private final transient TitleRepository titleRepository;
 	private final ExternalReferenceRestControllerService externalReferenceService;
+	private final IPaymentTermRepository paymentTermRepository;
+	private final transient SectionCodeService sectionCodeService;
+	private final transient IncotermsRepository incotermsRepository;
 
 	private final transient BPartnerCompositeCacheByLookupKey cache;
 
@@ -248,6 +276,9 @@ public class JsonRetrieverService
 			@NonNull final TitleRepository titleRepository,
 			@NonNull final JobRepository jobRepository,
 			final ExternalReferenceRestControllerService externalReferenceService,
+			@NonNull final IPaymentTermRepository paymentTermRepository,
+			@NonNull final SectionCodeService sectionCodeService,
+			@NonNull final IncotermsRepository incotermsRepository,
 			@NonNull final String identifier)
 	{
 		this.bPartnerQueryService = bPartnerQueryService;
@@ -257,6 +288,9 @@ public class JsonRetrieverService
 		this.titleRepository = titleRepository;
 		this.jobRepository = jobRepository;
 		this.externalReferenceService = externalReferenceService;
+		this.paymentTermRepository = paymentTermRepository;
+		this.sectionCodeService = sectionCodeService;
+		this.incotermsRepository = incotermsRepository;
 		this.identifier = identifier;
 
 		this.cache = new BPartnerCompositeCacheByLookupKey(identifier);
@@ -352,12 +386,46 @@ public class JsonRetrieverService
 									 .map(PaymentRule::getCode)
 									 .map(JSONPaymentRule::ofCode)
 									 .orElse(null))
+				.paymentRulePO(Optional.ofNullable(bpartner.getPaymentRulePO())
+									 .map(PaymentRule::getCode)
+									 .map(JSONPaymentRule::ofCode)
+									 .orElse(null))
 				.internalName(bpartner.getInternalName())
 				.vatId(bpartner.getVatId())
 				.changeInfo(jsonChangeInfo)
 				.metasfreshUrl(TableRecordUtil.getMetasfreshUrl(bPartnerRecordRef))
 				.creditorId(bpartner.getCreditorId())
 				.debtorId(bpartner.getDebtorId())
+				.description(bpartner.getDescription())
+				.storageWarehouse(bpartner.isStorageWarehouse())
+				.deliveryRule(Optional.ofNullable(bpartner.getDeliveryRule())
+									  .map(DeliveryRule::getCode)
+									  .map(JSONDeliveryRule::ofCode)
+									  .orElse(null))
+				.deliveryViaRule(Optional.ofNullable(bpartner.getDeliveryViaRule())
+									  .map(DeliveryViaRule::getCode)
+									  .map(JSONDeliveryViaRule::ofCode)
+									  .orElse(null))
+				.sectionCodeValue(Optional.ofNullable(bpartner.getSectionCodeId())
+										  .map(sectionCodeService::getById)
+										  .map(SectionCode::getValue)
+										  .orElse(null))
+				.incotermsCustomerName(Optional.ofNullable(bpartner.getIncotermsCustomerId())
+											   .map(incotermsRepository::getById)
+											   .map(Incoterms::getName)
+											   .orElse(null))
+				.incotermsVendorName(Optional.ofNullable(bpartner.getIncotermsVendorId())
+											 .map(incotermsRepository::getById)
+											 .map(Incoterms::getName)
+											 .orElse(null))
+				.customerPaymentTermName(Optional.ofNullable(bpartner.getCustomerPaymentTermId())
+												 .map(paymentTermRepository::getById)
+												 .map(I_C_PaymentTerm::getName)
+												 .orElse(null))
+				.vendorPaymentTermName(Optional.ofNullable(bpartner.getVendorPaymentTermId())
+											   .map(paymentTermRepository::getById)
+											   .map(I_C_PaymentTerm::getName)
+											   .orElse(null))
 				.build();
 	}
 
@@ -502,7 +570,8 @@ public class JsonRetrieverService
 			final JsonChangeInfo jsonChangeInfo = createJsonChangeInfo(location.getChangeLog(), LOCATION_FIELD_MAP);
 
 			final BPartnerLocationType locationType = location.getLocationType();
-			return JsonResponseLocation.builder()
+
+			final JsonResponseLocation.JsonResponseLocationBuilder responseLocationBuilder = JsonResponseLocation.builder()
 					.active(location.isActive())
 					.name(location.getName())
 					.bpartnerName(location.getBpartnerName())
@@ -518,11 +587,6 @@ public class JsonRetrieverService
 					.poBox(location.getPoBox())
 					.postal(location.getPostal())
 					.region(location.getRegion())
-					.shipTo(locationType.getIsShipToOr(false))
-					.shipToDefault(locationType.getIsShipToDefaultOr(false))
-					.billTo(locationType.getIsBillToOr(false))
-					.billToDefault(locationType.getIsBillToDefaultOr(false))
-					.setupPlaceNo(location.getSetupPlaceNo())
 					.remitTo(location.isRemitTo())
 					.replicationLookupDefault(location.isReplicationLookupDefault())
 					.handoverLocation(location.isHandOverLocation())
@@ -530,9 +594,21 @@ public class JsonRetrieverService
 					.changeInfo(jsonChangeInfo)
 					.ephemeral(location.isEphemeral())
 					.phone(location.getPhone())
-					.email(location.getEmail())
-					.visitorsAddress(locationType.getIsVisitorsAddressOr(false))
-					.build();
+					.email(location.getEmail());
+
+			if (locationType != null)
+			{
+				responseLocationBuilder.shipTo(locationType.getIsShipToOr(false))
+						.shipToDefault(locationType.getIsShipToDefaultOr(false))
+						.billTo(locationType.getIsBillToOr(false))
+						.billToDefault(locationType.getIsBillToDefaultOr(false))
+						.visitorsAddress(locationType.getIsVisitorsAddressOr(false))
+						.handoverLocation(locationType.getIsHandoverLocationOr(false))
+						.remitTo(locationType.getIsRemitToOr(false))
+						.replicationLookupDefault(locationType.getIsReplicationLookupDefaultOr(false));
+			}
+
+			return responseLocationBuilder.build();
 		}
 		catch (final RuntimeException rte)
 		{
@@ -774,6 +850,36 @@ public class JsonRetrieverService
 		return bpartnerComposite
 				.extractContact(contactId)
 				.map(c -> toJson(c, bpartnerComposite.getBpartner().getLanguage()));
+	}
+
+	@NonNull
+	public PaymentTermId getPaymentTermId(@NonNull final String paymentTermIdentifier, @NonNull final OrgId orgId)
+	{
+		final ExternalIdentifier externalIdentifier = ExternalIdentifier.of(paymentTermIdentifier);
+
+		switch (externalIdentifier.getType())
+		{
+			case METASFRESH_ID:
+				return PaymentTermId.ofRepoId(externalIdentifier.asMetasfreshId().getValue());
+
+			case VALUE:
+				final PaymentTermQuery queryBuilder = PaymentTermQuery.builder()
+						.orgId(orgId)
+						.value(externalIdentifier.asValue())
+						.build();
+				final Optional<PaymentTermId> paymentTermIdOpt = paymentTermRepository.retrievePaymentTermId(queryBuilder);
+
+				if (paymentTermIdOpt.isPresent())
+				{
+					return paymentTermIdOpt.get();
+				}
+				break;
+
+			default:
+				throw new AdempiereException("Unsupported payment term external identifier: " + paymentTermIdentifier);
+		}
+
+		throw new AdempiereException("PaymentTermIdentifier could not be found: " + paymentTermIdentifier);
 	}
 
 	private Optional<BPartnerContactQuery> createContactQuery(@NonNull final ExternalIdentifier identifier)

@@ -90,7 +90,11 @@ import de.metas.incoterms.IncotermsId;
 import de.metas.incoterms.repository.IncotermsRepository;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.order.DeliveryRule;
+import de.metas.order.DeliveryViaRule;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.BPartnerCompositeRestUtils;
@@ -110,7 +114,6 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.trx.api.ITrxManager;
-import org.compiere.model.X_C_BPartner;
 import org.slf4j.Logger;
 import org.springframework.util.CollectionUtils;
 
@@ -346,11 +349,11 @@ public class JsonPersisterService
 			bpartnerComposite.getContacts().add(contact);
 			syncOutcome = SyncOutcome.CREATED;
 		}
-		
+
 		contact.addHandle(contactIdentifier.getRawValue()); // always add the handle; we'll need it later, even if the contact existed and was not updated
-		
+
 		syncJsonToContact(jsonContact, contact);
-		
+
 		bpartnerCompositeRepository.save(bpartnerComposite, true);
 
 		final Optional<BPartnerContact> persistedContact = bpartnerComposite.extractContactByHandle(contactIdentifier.getRawValue());
@@ -627,11 +630,14 @@ public class JsonPersisterService
 	{
 		syncJsonToOrg(jsonRequestComposite, bpartnerComposite, parentSyncAdvise);
 
+		Check.assumeNotNull(bpartnerComposite.getOrgId(), "bpartnerComposite.orgId must be resolved at this point!");
+
 		final BooleanWithReason anythingWasSynced = syncJsonToBPartner(
 				jsonRequestComposite,
 				bpartnerComposite,
 				resultBuilder.isNewBPartner(),
-				parentSyncAdvise);
+				parentSyncAdvise,
+				bpartnerComposite.getOrgId());
 		if (anythingWasSynced.isTrue())
 		{
 			resultBuilder.getJsonResponseBPartnerUpsertItemBuilder().syncOutcome(resultBuilder.isNewBPartner() ? SyncOutcome.CREATED : SyncOutcome.UPDATED);
@@ -745,7 +751,8 @@ public class JsonPersisterService
 			@NonNull final JsonRequestComposite jsonBPartnerComposite,
 			@NonNull final BPartnerComposite bpartnerComposite,
 			final boolean bpartnerCompositeIsNew,
-			@NonNull final SyncAdvise parentSyncAdvise)
+			@NonNull final SyncAdvise parentSyncAdvise,
+			@NonNull final OrgId orgId)
 	{
 		final JsonRequestBPartner jsonBPartner = jsonBPartnerComposite.getBpartner();
 		if (jsonBPartner == null)
@@ -864,7 +871,7 @@ public class JsonPersisterService
 			else
 			{
 				final Optional<BPGroup> optionalBPGroup = bpGroupRepository
-						.getByNameAndOrgId(jsonBPartner.getGroup(), bpartnerComposite.getOrgId());
+						.getByNameAndOrgId(jsonBPartner.getGroup(), orgId);
 
 				final BPGroup bpGroup;
 				if (optionalBPGroup.isPresent())
@@ -874,7 +881,7 @@ public class JsonPersisterService
 				}
 				else
 				{
-					bpGroup = BPGroup.of(bpartnerComposite.getOrgId(), null, jsonBPartner.getGroup().trim());
+					bpGroup = BPGroup.of(orgId, null, jsonBPartner.getGroup().trim());
 				}
 
 				final BPGroupId bpGroupId = bpGroupRepository.save(bpGroup);
@@ -973,10 +980,10 @@ public class JsonPersisterService
 			bpartner.setMemo(jsonBPartner.getMemo());
 		}
 
-		if (jsonBPartner.isSectionCodeSet())
+		if (jsonBPartner.isSectionCodeValueSet())
 		{
-			final SectionCodeId sectionCodeId = Optional.ofNullable(jsonBPartner.getSectionCode())
-					.map(code -> sectionCodeService.getSectionCodeIdByValue(bpartnerComposite.getOrgId(), code))
+			final SectionCodeId sectionCodeId = Optional.ofNullable(jsonBPartner.getSectionCodeValue())
+					.map(code -> sectionCodeService.getSectionCodeIdByValue(orgId, code))
 					.orElse(null);
 
 			bpartner.setSectionCodeId(sectionCodeId);
@@ -1002,9 +1009,9 @@ public class JsonPersisterService
 			bpartner.setStorageWarehouse(jsonBPartner.getStorageWarehouse());
 		}
 
-		if (jsonBPartner.isIncotermsCustomerSet())
+		if (jsonBPartner.isIncotermsCustomerValueSet())
 		{
-			final IncotermsId incotermsCustomerId = Optional.ofNullable(jsonBPartner.getIncotermsCustomer())
+			final IncotermsId incotermsCustomerId = Optional.ofNullable(jsonBPartner.getIncotermsCustomerValue())
 					.map(incotermsRepository::getIncotermsByValue)
 					.map(Incoterms::getIncotermsId)
 					.orElse(null);
@@ -1012,14 +1019,52 @@ public class JsonPersisterService
 			bpartner.setIncotermsCustomerId(incotermsCustomerId);
 		}
 
-		if (jsonBPartner.isIncotermsVendorSet())
+		if (jsonBPartner.isIncotermsVendorValueSet())
 		{
-			final IncotermsId incotermsVendorId = Optional.ofNullable(jsonBPartner.getIncotermsVendor())
+			final IncotermsId incotermsVendorId = Optional.ofNullable(jsonBPartner.getIncotermsVendorValue())
 					.map(incotermsRepository::getIncotermsByValue)
 					.map(Incoterms::getIncotermsId)
 					.orElse(null);
 
 			bpartner.setIncotermsVendorId(incotermsVendorId);
+		}
+
+		if (jsonBPartner.isCustomerPaymentTermIdentifierSet())
+		{
+			final PaymentTermId customerPaymentTermId = Optional.ofNullable(jsonBPartner.getCustomerPaymentTermIdentifier())
+					.map(paymentIdentifier -> jsonRetrieverService.getPaymentTermId(paymentIdentifier, orgId))
+					.orElse(null);
+
+			bpartner.setCustomerPaymentTermId(customerPaymentTermId);
+		}
+
+		if (jsonBPartner.isVendorPaymentTermIdentifierSet())
+		{
+			final PaymentTermId vendorPaymentTermId = Optional.ofNullable(jsonBPartner.getVendorPaymentTermIdentifier())
+					.map(paymentIdentifier -> jsonRetrieverService.getPaymentTermId(paymentIdentifier, orgId))
+					.orElse(null);
+
+			bpartner.setVendorPaymentTermId(vendorPaymentTermId);
+		}
+
+		if (jsonBPartner.isParentIdentifierSet())
+		{
+			final BPartnerId parentBPartnerId = Optional.ofNullable(jsonBPartner.getParentIdentifier())
+					.map(ExternalIdentifier::of)
+					.flatMap(parentIdentifier -> jsonRetrieverService.resolveBPartnerExternalIdentifier(parentIdentifier, orgId))
+					.orElse(null);
+
+			bpartner.setParentId(parentBPartnerId);
+		}
+
+		if (jsonBPartner.isPaymentRuleSet())
+		{
+			bpartner.setPaymentRule(getPaymentRule(jsonBPartner.getPaymentRule()));
+		}
+
+		if (jsonBPartner.isPaymentRulePOSet())
+		{
+			bpartner.setPaymentRulePO(getPaymentRule(jsonBPartner.getPaymentRulePO()));
 		}
 
 		return BooleanWithReason.TRUE;
@@ -1281,7 +1326,6 @@ public class JsonPersisterService
 				contact.setSubjectMatterContact(jsonBPartnerContact.getSubjectMatter());
 			}
 		}
-
 
 		if (jsonBPartnerContact.isBirthdaySet())
 		{
@@ -1752,11 +1796,6 @@ public class JsonPersisterService
 			location.setPhone(jsonBPartnerLocation.getPhone());
 		}
 
-		if (jsonBPartnerLocation.isHandoverLocationSet())
-		{
-			location.setHandOverLocation(jsonBPartnerLocation.getHandoverLocation());
-		}
-
 		final BPartnerLocationType locationType = syncJsonToLocationType(jsonBPartnerLocation);
 		location.setLocationType(locationType);
 	}
@@ -1819,6 +1858,42 @@ public class JsonPersisterService
 			else
 			{
 				locationType.visitorsAddress(jsonBPartnerLocation.getVisitorsAddress());
+			}
+		}
+
+		if (jsonBPartnerLocation.isHandoverLocationSet())
+		{
+			if (jsonBPartnerLocation.getHandoverLocation() == null)
+			{
+				logger.debug("Ignoring boolean property \"handoverLocation\" : null ");
+			}
+			else
+			{
+				locationType.handoverLocation(jsonBPartnerLocation.getHandoverLocation());
+			}
+		}
+
+		if (jsonBPartnerLocation.isRemitToAddressSet())
+		{
+			if (jsonBPartnerLocation.getRemitTo() == null)
+			{
+				logger.debug("Ignoring boolean property \"remitTo\" : null ");
+			}
+			else
+			{
+				locationType.remitTo(jsonBPartnerLocation.getRemitTo());
+			}
+		}
+
+		if (jsonBPartnerLocation.isReplicationLookupDefaultSet())
+		{
+			if (jsonBPartnerLocation.getReplicationLookupDefault() == null)
+			{
+				logger.debug("Ignoring boolean property \"replicationLookupDefault\" : null ");
+			}
+			else
+			{
+				locationType.remitTo(jsonBPartnerLocation.getReplicationLookupDefault());
 			}
 		}
 
@@ -1890,7 +1965,7 @@ public class JsonPersisterService
 		if (!CollectionUtils.isEmpty(bPartnerLocationsResult))
 		{
 
-			final Map<String,String> bpartnerLocationIdentifier2externalVersion = requestItem
+			final Map<String, String> bpartnerLocationIdentifier2externalVersion = requestItem
 					.getBpartnerComposite()
 					.getLocationsNotNull()
 					.getRequestItems()
@@ -1952,11 +2027,11 @@ public class JsonPersisterService
 		if (!requestBPartnerComposite.getContactsNotNull().getRequestItems().isEmpty()
 				&& !Check.isEmpty(result.getResponseContactItems()))
 		{
-			final Map<String,JsonMetasfreshId> contactIdentifierToMetasfreshId = result.getResponseContactItems()
+			final Map<String, JsonMetasfreshId> contactIdentifierToMetasfreshId = result.getResponseContactItems()
 					.stream()
 					.collect(ImmutableMap.toImmutableMap(JsonResponseUpsertItem::getIdentifier, JsonResponseUpsertItem::getMetasfreshId));
 
-			final SyncAdvise effectiveSyncAdvise =  CoalesceUtil.coalesceNotNull(requestBPartnerComposite.getContactsNotNull().getSyncAdvise(), syncAdvise);
+			final SyncAdvise effectiveSyncAdvise = CoalesceUtil.coalesceNotNull(requestBPartnerComposite.getContactsNotNull().getSyncAdvise(), syncAdvise);
 
 			requestItem.getBpartnerComposite().getContactsNotNull().getRequestItems()
 					.stream()
@@ -1981,13 +2056,13 @@ public class JsonPersisterService
 	}
 
 	@NonNull
-	private String getDeliveryRule(final @NonNull JsonRequestBPartner jsonRequestBPartner)
+	private static DeliveryRule getDeliveryRule(final @NonNull JsonRequestBPartner jsonRequestBPartner)
 	{
-		final String deliveryRule;
+		final DeliveryRule deliveryRule;
 		switch (jsonRequestBPartner.getDeliveryRule())
 		{
 			case AVAILABILITY:
-				deliveryRule = X_C_BPartner.DELIVERYRULE_Availability;
+				deliveryRule = DeliveryRule.AVAILABILITY;
 				break;
 			default:
 				throw Check.fail("Unexpected deliveryRule={}; jsonRequestBPartner={}", jsonRequestBPartner.getDeliveryRule(), jsonRequestBPartner);
@@ -1996,17 +2071,32 @@ public class JsonPersisterService
 	}
 
 	@NonNull
-	private String getDeliveryViaRule(final @NonNull JsonRequestBPartner jsonRequestBPartner)
+	private static DeliveryViaRule getDeliveryViaRule(final @NonNull JsonRequestBPartner jsonRequestBPartner)
 	{
-		final String deliveryViaRule;
+		final DeliveryViaRule deliveryViaRule;
 		switch (jsonRequestBPartner.getDeliveryViaRule())
 		{
 			case SHIPPER:
-				deliveryViaRule = X_C_BPartner.DELIVERYVIARULE_Shipper;
+				deliveryViaRule = DeliveryViaRule.Shipper;
 				break;
 			default:
 				throw Check.fail("Unexpected deliveryViaRule={}; jsonRequestBPartner={}", jsonRequestBPartner.getDeliveryViaRule(), jsonRequestBPartner);
 		}
 		return deliveryViaRule;
+	}
+
+	@NonNull
+	private static PaymentRule getPaymentRule(final @NonNull JsonRequestBPartner.PaymentRule jsonRequestBPartnerPaymentRule)
+	{
+		final PaymentRule paymentRule;
+		switch (jsonRequestBPartnerPaymentRule)
+		{
+			case ON_CREDIT:
+				paymentRule = PaymentRule.OnCredit;
+				break;
+			default:
+				throw Check.fail("Unexpected paymentRule={};", jsonRequestBPartnerPaymentRule);
+		}
+		return paymentRule;
 	}
 }

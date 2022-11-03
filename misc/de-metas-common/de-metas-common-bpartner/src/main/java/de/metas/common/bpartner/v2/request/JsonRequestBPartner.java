@@ -32,7 +32,9 @@ import lombok.Getter;
 import lombok.ToString;
 
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.BPARTNER_VALUE_DOC;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.PARENT_BPARTNER_IDENTIFIER_DOC;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.PARENT_SYNC_ADVISE_DOC;
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.PAYMENT_TERM_IDENTIFIER_DOC;
 
 @Getter
 @ToString
@@ -48,6 +50,11 @@ public class JsonRequestBPartner
 	public enum DeliveryViaRule
 	{
 		SHIPPER
+	}
+
+	public enum PaymentRule
+	{
+		ON_CREDIT
 	}
 
 	@ApiModelProperty(position = 20,  //
@@ -187,10 +194,10 @@ public class JsonRequestBPartner
 	private boolean memoIsSet;
 
 	@ApiModelProperty(position = 170, //
-			value = "Translates to `C_BPartner.M_SectionCode_ID`")
-	private String sectionCode;
+			value = "Translates to `M_SectionCode.Value` and it's mapped to `C_BPartner.M_SectionCode_ID`")
+	private String sectionCodeValue;
 
-	private boolean sectionCodeSet;
+	private boolean sectionCodeValueSet;
 
 	@ApiModelProperty(position = 180, //
 			value = "Translates to `C_BPartner.Description`")
@@ -217,18 +224,48 @@ public class JsonRequestBPartner
 	private boolean storageWarehouseSet;
 
 	@ApiModelProperty(position = 220, //
-			value = "Translates to `C_BPartner.C_Incoterms_Customer_ID`")
-	private String incotermsCustomer;
+			value = "Translates to `C_Incoterms.Value` and it's mapped to `C_BPartner.C_Incoterms_Customer_ID`")
+	private String incotermsCustomerValue;
 
-	private boolean incotermsCustomerSet;
+	private boolean incotermsCustomerValueSet;
 
 	@ApiModelProperty(position = 230, //
-			value = "Translates to `C_BPartner.C_Incoterms_Vendor_ID`")
-	private String incotermsVendor;
+			value = "Translates to `C_Incoterms.Value` and it's mapped to `C_BPartner.C_Incoterms_Vendor_ID`")
+	private String incotermsVendorValue;
 
-	private boolean incotermsVendorSet;
+	private boolean incotermsVendorValueSet;
 
-	@ApiModelProperty(position = 220, // shall be last
+	@ApiModelProperty(position = 240, //
+			value = "Mapped to `C_BPartner.C_PaymentTerm_ID`. " + PAYMENT_TERM_IDENTIFIER_DOC)
+	private String customerPaymentTermIdentifier;
+
+	private boolean customerPaymentTermIdentifierSet;
+
+	@ApiModelProperty(position = 250, //
+			value = "Mapped to `C_BPartner.PO_PaymentTerm_ID`. " + PAYMENT_TERM_IDENTIFIER_DOC)
+	private String vendorPaymentTermIdentifier;
+
+	private boolean vendorPaymentTermIdentifierSet;
+
+	@ApiModelProperty(position = 260, //
+			value = "Mapped to `C_BPartner.BPartner_Parent_ID`. " + PARENT_BPARTNER_IDENTIFIER_DOC)
+	private String parentIdentifier;
+
+	private boolean parentIdentifierSet;
+
+	@ApiModelProperty(position = 270, //
+			value = "Translates to `C_BPartner.PaymentRule`")
+	private PaymentRule paymentRule;
+
+	private boolean paymentRuleSet;
+
+	@ApiModelProperty(position = 280, //
+			value = "Translates to `C_BPartner.PaymentRule`")
+	private PaymentRule paymentRulePO;
+
+	private boolean paymentRulePOSet;
+
+	@ApiModelProperty(position = 290, // shall be last
 			value = "Sync advise about this bPartner's individual properties.\n"
 					+ "IfExists is ignored on this level!\n" + PARENT_SYNC_ADVISE_DOC)
 	private SyncAdvise syncAdvise;
@@ -362,10 +399,10 @@ public class JsonRequestBPartner
 		this.memoIsSet = true;
 	}
 
-	public void setSectionCode(final String sectionCode)
+	public void setSectionCodeValue(final String sectionCodeValue)
 	{
-		this.sectionCode = sectionCode;
-		this.sectionCodeSet = true;
+		this.sectionCodeValue = sectionCodeValue;
+		this.sectionCodeValueSet = true;
 	}
 
 	public void setDescription(final String description)
@@ -392,15 +429,45 @@ public class JsonRequestBPartner
 		this.storageWarehouseSet = true;
 	}
 
-	public void setIncotermsCustomer(final String incotermsCustomer)
+	public void setIncotermsCustomerValue(final String incotermsCustomerValue)
 	{
-		this.incotermsCustomer = incotermsCustomer;
-		this.incotermsCustomerSet = true;
+		this.incotermsCustomerValue = incotermsCustomerValue;
+		this.incotermsCustomerValueSet = true;
 	}
 
-	public void setIncotermsVendor(final String incotermsVendor)
+	public void setIncotermsVendorValue(final String incotermsVendorValue)
 	{
-		this.incotermsVendor = incotermsVendor;
-		this.incotermsVendorSet = true;
+		this.incotermsVendorValue = incotermsVendorValue;
+		this.incotermsVendorValueSet = true;
+	}
+
+	public void setCustomerPaymentTermIdentifier(final String customerPaymentTermIdentifier)
+	{
+		this.customerPaymentTermIdentifier = customerPaymentTermIdentifier;
+		this.customerPaymentTermIdentifierSet = true;
+	}
+
+	public void setVendorPaymentTermIdentifier(final String vendorPaymentTermIdentifier)
+	{
+		this.vendorPaymentTermIdentifier = vendorPaymentTermIdentifier;
+		this.vendorPaymentTermIdentifierSet = true;
+	}
+
+	public void setParentIdentifier(final String parentIdentifier)
+	{
+		this.parentIdentifier = parentIdentifier;
+		this.parentIdentifierSet = true;
+	}
+
+	public void setPaymentRule(final PaymentRule paymentRule)
+	{
+		this.paymentRule = paymentRule;
+		this.paymentRuleSet = true;
+	}
+
+	public void setPaymentRulePO(final PaymentRule paymentRulePO)
+	{
+		this.paymentRulePO = paymentRulePO;
+		this.paymentRulePOSet = true;
 	}
 }

@@ -20,16 +20,47 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.sap.mapping.model.bpartner;
+package de.metas.camel.externalsystems.sap.model.bpartner;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import lombok.Getter;
+import lombok.NonNull;
 import org.apache.camel.dataformat.bindy.annotation.CsvRecord;
 import org.apache.camel.dataformat.bindy.annotation.DataField;
+
+import java.util.Arrays;
 
 @CsvRecord(separator = "	", skipField =true)
 @Getter
 public class BPartnerRow
 {
+	public enum PartnerCategory
+	{
+		STORAGE_LOCATION("4");
+
+		@Getter
+		final String code;
+
+		PartnerCategory(final String code)
+		{
+			this.code = code;
+		}
+
+		public static PartnerCategory ofCode(@NonNull final String code) throws Exception
+		{
+			final PartnerCategory type = typesByCode.get(code);
+			if (type == null)
+			{
+				throw new Exception("No " + PartnerCategory.class + " found for code: " + code);
+			}
+			return type;
+		}
+
+		private static final ImmutableMap<String, PartnerCategory> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), PartnerCategory::getCode);
+
+	}
+
 	@DataField(pos = 1)
 	String partnerCode;
 
