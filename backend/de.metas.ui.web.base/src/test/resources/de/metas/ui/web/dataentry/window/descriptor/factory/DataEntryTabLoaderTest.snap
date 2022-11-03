@@ -1055,7 +1055,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
   },
   "defaultTableCalloutsEnabled" : false,
   "dependencies" : {
-    "dependsOnGlobalContextValues" : false,
     "type2name2dependencies" : { }
   },
   "description" : "dataEntryTab_description",
@@ -1084,7 +1083,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
       },
       "defaultTableCalloutsEnabled" : false,
       "dependencies" : {
-        "dependsOnGlobalContextValues" : false,
         "type2name2dependencies" : { }
       },
       "description" : "dataEntrySubTab1_description",
@@ -1111,7 +1109,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           },
           "defaultValueExpression" : null,
           "dependencies" : {
-            "dependsOnGlobalContextValues" : false,
             "type2name2dependencies" : { }
           },
           "description" : "textField11_description",
@@ -1151,7 +1148,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           },
           "defaultValueExpression" : null,
           "dependencies" : {
-            "dependsOnGlobalContextValues" : false,
             "type2name2dependencies" : { }
           },
           "description" : "",
@@ -1191,7 +1187,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           },
           "defaultValueExpression" : null,
           "dependencies" : {
-            "dependsOnGlobalContextValues" : false,
             "type2name2dependencies" : { }
           },
           "description" : "longTextField1_description",
@@ -1231,7 +1226,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           },
           "defaultValueExpression" : null,
           "dependencies" : {
-            "dependsOnGlobalContextValues" : false,
             "type2name2dependencies" : { }
           },
           "description" : "",
@@ -1271,7 +1265,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           },
           "defaultValueExpression" : null,
           "dependencies" : {
-            "dependsOnGlobalContextValues" : false,
             "type2name2dependencies" : { }
           },
           "description" : "numberField11_description",
@@ -1311,7 +1304,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           },
           "defaultValueExpression" : null,
           "dependencies" : {
-            "dependsOnGlobalContextValues" : false,
             "type2name2dependencies" : { }
           },
           "description" : "",
@@ -1351,7 +1343,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           },
           "defaultValueExpression" : null,
           "dependencies" : {
-            "dependsOnGlobalContextValues" : false,
             "type2name2dependencies" : { }
           },
           "description" : "dateField11_description",
@@ -1391,7 +1382,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           },
           "defaultValueExpression" : null,
           "dependencies" : {
-            "dependsOnGlobalContextValues" : false,
             "type2name2dependencies" : { }
           },
           "description" : "",
@@ -1431,7 +1421,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           },
           "defaultValueExpression" : null,
           "dependencies" : {
-            "dependsOnGlobalContextValues" : false,
             "type2name2dependencies" : { }
           },
           "description" : "yesNoField11_description",
@@ -1471,7 +1460,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           },
           "defaultValueExpression" : null,
           "dependencies" : {
-            "dependsOnGlobalContextValues" : false,
             "type2name2dependencies" : { }
           },
           "description" : "",
@@ -1511,7 +1499,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           },
           "defaultValueExpression" : null,
           "dependencies" : {
-            "dependsOnGlobalContextValues" : false,
             "type2name2dependencies" : { }
           },
           "description" : "listField11_description",
@@ -1574,7 +1561,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           },
           "defaultValueExpression" : null,
           "dependencies" : {
-            "dependsOnGlobalContextValues" : false,
             "type2name2dependencies" : { }
           },
           "description" : "",
@@ -1613,7 +1599,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           },
           "defaultValueExpression" : null,
           "dependencies" : {
-            "dependsOnGlobalContextValues" : false,
             "type2name2dependencies" : { }
           },
           "description" : "",
@@ -1652,7 +1637,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           },
           "defaultValueExpression" : null,
           "dependencies" : {
-            "dependsOnGlobalContextValues" : false,
             "type2name2dependencies" : { }
           },
           "description" : "",
@@ -1695,7 +1679,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
         },
         "defaultValueExpression" : null,
         "dependencies" : {
-          "dependsOnGlobalContextValues" : false,
           "type2name2dependencies" : { }
         },
         "description" : "",
@@ -1736,7 +1719,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
         },
         "defaultValueExpression" : null,
         "dependencies" : {
-          "dependsOnGlobalContextValues" : false,
           "type2name2dependencies" : { }
         },
         "description" : "",
@@ -1761,7 +1743,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
         "widgetType" : "Integer"
       },
       "printable" : false,
-      "queryIfNoFilters" : true,
       "readonlyLogic" : "1=0",
       "refreshViewOnChangeEvents" : false,
       "soTrx" : null,
@@ -1782,7 +1763,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
       },
       "defaultTableCalloutsEnabled" : false,
       "dependencies" : {
-        "dependsOnGlobalContextValues" : false,
         "type2name2dependencies" : { }
       },
       "description" : "dataEntrySubTab2_description",
@@ -1809,7 +1789,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           },
           "defaultValueExpression" : null,
           "dependencies" : {
-            "dependsOnGlobalContextValues" : false,
             "type2name2dependencies" : { }
           },
           "description" : "textField21_description",
@@ -1849,7 +1828,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           },
           "defaultValueExpression" : null,
           "dependencies" : {
-            "dependsOnGlobalContextValues" : false,
             "type2name2dependencies" : { }
           },
           "description" : "",
@@ -1889,7 +1867,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           },
           "defaultValueExpression" : null,
           "dependencies" : {
-            "dependsOnGlobalContextValues" : false,
             "type2name2dependencies" : { }
           },
           "description" : "longTextField1_description",
@@ -1929,7 +1906,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           },
           "defaultValueExpression" : null,
           "dependencies" : {
-            "dependsOnGlobalContextValues" : false,
             "type2name2dependencies" : { }
           },
           "description" : "",
@@ -1969,7 +1945,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           },
           "defaultValueExpression" : null,
           "dependencies" : {
-            "dependsOnGlobalContextValues" : false,
             "type2name2dependencies" : { }
           },
           "description" : "numberField21_description",
@@ -2009,7 +1984,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           },
           "defaultValueExpression" : null,
           "dependencies" : {
-            "dependsOnGlobalContextValues" : false,
             "type2name2dependencies" : { }
           },
           "description" : "",
@@ -2049,7 +2023,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           },
           "defaultValueExpression" : null,
           "dependencies" : {
-            "dependsOnGlobalContextValues" : false,
             "type2name2dependencies" : { }
           },
           "description" : "dateField21_description",
@@ -2089,7 +2062,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           },
           "defaultValueExpression" : null,
           "dependencies" : {
-            "dependsOnGlobalContextValues" : false,
             "type2name2dependencies" : { }
           },
           "description" : "",
@@ -2129,7 +2101,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           },
           "defaultValueExpression" : null,
           "dependencies" : {
-            "dependsOnGlobalContextValues" : false,
             "type2name2dependencies" : { }
           },
           "description" : "yesNoField21_description",
@@ -2169,7 +2140,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           },
           "defaultValueExpression" : null,
           "dependencies" : {
-            "dependsOnGlobalContextValues" : false,
             "type2name2dependencies" : { }
           },
           "description" : "",
@@ -2209,7 +2179,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           },
           "defaultValueExpression" : null,
           "dependencies" : {
-            "dependsOnGlobalContextValues" : false,
             "type2name2dependencies" : { }
           },
           "description" : "listField21_description",
@@ -2272,7 +2241,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           },
           "defaultValueExpression" : null,
           "dependencies" : {
-            "dependsOnGlobalContextValues" : false,
             "type2name2dependencies" : { }
           },
           "description" : "",
@@ -2311,7 +2279,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           },
           "defaultValueExpression" : null,
           "dependencies" : {
-            "dependsOnGlobalContextValues" : false,
             "type2name2dependencies" : { }
           },
           "description" : "",
@@ -2350,7 +2317,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           },
           "defaultValueExpression" : null,
           "dependencies" : {
-            "dependsOnGlobalContextValues" : false,
             "type2name2dependencies" : { }
           },
           "description" : "",
@@ -2393,7 +2359,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
         },
         "defaultValueExpression" : null,
         "dependencies" : {
-          "dependsOnGlobalContextValues" : false,
           "type2name2dependencies" : { }
         },
         "description" : "",
@@ -2434,7 +2399,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
         },
         "defaultValueExpression" : null,
         "dependencies" : {
-          "dependsOnGlobalContextValues" : false,
           "type2name2dependencies" : { }
         },
         "description" : "",
@@ -2459,7 +2423,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
         "widgetType" : "Integer"
       },
       "printable" : false,
-      "queryIfNoFilters" : true,
       "readonlyLogic" : "1=0",
       "refreshViewOnChangeEvents" : false,
       "soTrx" : null,
@@ -2468,7 +2431,6 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
   },
   "internalName" : "dataEntryTab_internalName",
   "printable" : false,
-  "queryIfNoFilters" : true,
   "readonlyLogic" : "1=0",
   "refreshViewOnChangeEvents" : false,
   "soTrx" : null,
