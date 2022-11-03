@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import Loader from '../app/Loader';
 import { getTargetIndicatorsDetails } from '../../actions/DashboardActions';
 import moment from 'moment';
+import counterpart from 'counterpart';
 
 const ELAPSED_TIME_REFRESH_INTERVAL_MILLIS = 60000;
 
@@ -120,7 +121,7 @@ class Indicator extends Component {
               className="indicator-details-link"
               onClick={() => this.showDetails(id)}
             >
-              DETAILS
+              {counterpart.translate('dashboard.item.details')}
             </div>
           )}
         </div>

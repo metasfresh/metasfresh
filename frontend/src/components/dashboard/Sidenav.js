@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import counterpart from 'counterpart';
 import { getAvailableKPIsToAdd } from '../../actions/DashboardActions';
 import Indicator from '../charts/Indicator';
 import ChartWidget from './ChartWidget';
@@ -35,9 +36,13 @@ class Sidenav extends Component {
 
     return (
       <div className="board-sidenav overlay-shadow">
-        <div className="board-sidenav-header">Add Target Indicator widget</div>
+        <div className="board-sidenav-header">
+          {counterpart.translate('dashboard.addNew.targetIndicator')}
+        </div>
         <div>{this.renderChartList(indicators)}</div>
-        <div className="board-sidenav-header">Add KPI widget</div>
+        <div className="board-sidenav-header">
+          {counterpart.translate('dashboard.addNew.kpi')}
+        </div>
         <div>{this.renderChartList(cards)}</div>
       </div>
     );

@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import React, { Component } from 'react';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import counterpart from 'counterpart';
 
 import { connectWS, disconnectWS } from '../../utils/websockets';
 import {
@@ -199,7 +200,9 @@ export class DraggableWrapper extends Component {
           >
             <Placeholder
               entity={EntityType.TARGET_INDICATOR}
-              description={'Drop Target Indicator widget here.'}
+              description={counterpart.translate(
+                'dashboard.targetIndicators.dropContainer.caption'
+              )}
             />
           </DndWidget>
         </div>
@@ -281,7 +284,9 @@ export class DraggableWrapper extends Component {
           >
             <Placeholder
               entity={EntityType.KPI}
-              description={'Drop KPI widget here.'}
+              description={counterpart.translate(
+                'dashboard.kpis.dropContainer.caption'
+              )}
             />
           </DndWidget>
         </div>
@@ -345,7 +350,9 @@ export class DraggableWrapper extends Component {
           <div className="chart-options-wrapper">
             <div className="chart-options">
               <div className="form-group">
-                <label>caption</label>
+                <label>
+                  {counterpart.translate('dashboard.item.settings.caption')}
+                </label>
                 <input
                   className="input-options input-secondary"
                   value={captionHandler}
@@ -353,14 +360,25 @@ export class DraggableWrapper extends Component {
                 />
               </div>
               <div className="form-group">
-                <label>interval</label>
+                <label>
+                  {counterpart.translate(
+                    'dashboard.item.settings.interval.caption'
+                  )}
+                </label>
                 <div className="chart-options-list-wrapper">
                   <RawList
                     onSelect={(option) =>
                       this.handleOptionSelect('interval', option)
                     }
                     tabIndex={0}
-                    list={[{ caption: 'week', value: 'week' }]}
+                    list={[
+                      {
+                        caption: counterpart.translate(
+                          'dashboard.item.settings.interval.week'
+                        ),
+                        value: 'week',
+                      },
+                    ]}
                     selected={interval}
                     isFocused={listFocused === 'interval'}
                     isToggled={listToggled === 'interval'}
@@ -372,16 +390,27 @@ export class DraggableWrapper extends Component {
                 </div>
               </div>
               <div className="form-group">
-                <label>when</label>
+                <label>
+                  {counterpart.translate(
+                    'dashboard.item.settings.when.caption'
+                  )}
+                </label>
                 <div className="chart-options-list-wrapper">
                   <RawList
                     onSelect={(option) =>
                       this.handleOptionSelect('when', option)
                     }
                     list={[
-                      { caption: 'now', value: 'now' },
                       {
-                        caption: 'last week',
+                        caption: counterpart.translate(
+                          'dashboard.item.settings.when.now'
+                        ),
+                        value: 'now',
+                      },
+                      {
+                        caption: counterpart.translate(
+                          'dashboard.item.settings.when.lastWeek'
+                        ),
                         value: 'lastWeek',
                       },
                     ]}
@@ -402,7 +431,7 @@ export class DraggableWrapper extends Component {
                 className="btn btn-meta-outline-secondary btn-sm"
                 onClick={() => this.changeChartData('caption', captionHandler)}
               >
-                Save
+                {counterpart.translate('dashboard.item.settings.save')}
               </button>
             </div>
           </div>
