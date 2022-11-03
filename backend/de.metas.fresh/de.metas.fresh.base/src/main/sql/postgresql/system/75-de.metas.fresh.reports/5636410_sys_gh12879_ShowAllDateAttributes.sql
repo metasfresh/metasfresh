@@ -3,8 +3,6 @@
 DROP VIEW IF EXISTS report.RV_Salesgroups;
 drop view if exists report.RV_C_Order_MFGWarehouse_Report_Details;
 drop view if exists report.RV_C_Order_MFGWarehouse_Report_Details_HU;
-drop view if exists de_metas_endcustomer_we106_reports.doc_sales_orderline_details    -- todo fix me: remove it when accurate
-;
 
 DROP VIEW IF EXISTS  Report.fresh_Attributes
 ;
