@@ -22,6 +22,7 @@
 
 package de.metas.camel.externalsystems.sap.sftp;
 
+import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
@@ -37,7 +38,7 @@ public class SFTPConfig
 	@NonNull
 	String username;
 
-	@NonNull
+	@Nullable
 	String password;
 
 	@NonNull
@@ -63,9 +64,9 @@ public class SFTPConfig
 
 	public String getSFTPConnectionStringProduct()
 	{
-		final String endpointTemplate = "sftp://%s@%s:%s/%s?password=%s&move=%s&moveFailed=%s&delay=%s";
+		final String endpointTemplate = "sftp://%s@%s:%s/%s?move=%s&moveFailed=%s&delay=%s";
 
-		return String.format(endpointTemplate,
+		final String resultWithoutPW = String.format(endpointTemplate,
 							 this.getUsername(),
 							 this.getHostName(),
 							 this.getPort(),
@@ -74,20 +75,36 @@ public class SFTPConfig
 							 this.getProcessedFilesFolder(),
 							 this.getErroredFilesFolder(),
 							 this.getPollingFrequency());
+
+		if (Check.isBlank(password))
+		{
+			return resultWithoutPW;
+		}
+		return resultWithoutPW + "&password=" + password;
 	}
 
 	public String getSFTPConnectionStringBPartner()
 	{
-		final String endpointTemplate = "sftp://%s@%s:%s/%s?password=%s&move=%s&moveFailed=%s&delay=%s";
+		final String endpointTemplate = "sftp://%s@%s:%s/%s?move=%s&moveFailed=%s&delay=%s";
 
-		return String.format(endpointTemplate,
+		final String resultWithoutPW = String.format(endpointTemplate,
 							 this.getUsername(),
 							 this.getHostName(),
 							 this.getPort(),
 							 CoalesceUtil.coalesce(this.getTargetDirectoryBPartner(), ""),
-							 this.getPassword(),
-							 this.getProcessedFilesFolder(),
-							 this.getErroredFilesFolder(),
-							 this.getPollingFrequency());
+		final String endpointTemplate = "sftp://%s@%s:%s/%s?move=%s&moveFailed=%s&delay=%s";
+		final String resultWithoutPW = String.format(endpointTemplate,
+									  this.getUsername(),
+									  this.getHostName(),
+									  this.getPort(),
+									  CoalesceUtil.coalesce(this.getTargetDirectory(), ""),
+									  this.getProcessedFilesFolder(),
+									  this.getErroredFilesFolder(),
+									  this.getPollingFrequency());
+		if (Check.isBlank(password))
+		{
+			return resultWithoutPW;
+		}
+		return resultWithoutPW + "&password=" + password;
 	}
 }

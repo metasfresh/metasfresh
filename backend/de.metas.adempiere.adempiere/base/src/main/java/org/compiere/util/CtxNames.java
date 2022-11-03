@@ -119,7 +119,7 @@ public class CtxNames
 			return null;
 		}
 
-		final List<String> modifiers = new ArrayList<>();
+		final ArrayList<String> modifiers = new ArrayList<>();
 		final String name = extractNameAndModifiers(contextWithoutMarkers, modifiers);
 
 		final String defaultValue = extractDefaultValue(modifiers);
@@ -170,7 +170,7 @@ public class CtxNames
 	}
 
 	@Nullable
-	private static String extractDefaultValue(final List<String> modifiers)
+	private static String extractDefaultValue(final ArrayList<String> modifiers)
 	{
 		final String defaultValue;
 		if (!modifiers.isEmpty() && !isModifier(modifiers.get(modifiers.size() - 1)))

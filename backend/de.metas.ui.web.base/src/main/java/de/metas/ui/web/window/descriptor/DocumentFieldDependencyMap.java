@@ -1,22 +1,19 @@
 package de.metas.ui.web.window.descriptor;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
+import com.google.common.collect.Multimap;
+import lombok.NonNull;
+
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSetMultimap;
-import com.google.common.collect.Multimap;
-import lombok.Getter;
-import lombok.NonNull;
-import org.compiere.util.CtxName;
-
-import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -56,18 +53,30 @@ public final class DocumentFieldDependencyMap
 
 	public enum DependencyType
 	{
-		/** Entity readonly */
+		/**
+		 * Entity readonly
+		 */
 		DocumentReadonlyLogic,
 
-		/** Field's Readonly logic */
+		/**
+		 * Field's Readonly logic
+		 */
 		ReadonlyLogic,
-		/** Field's Display logic */
+		/**
+		 * Field's Display logic
+		 */
 		DisplayLogic,
-		/** Field's Mandatory logic */
+		/**
+		 * Field's Mandatory logic
+		 */
 		MandatoryLogic,
-		/** Field's lookup values */
+		/**
+		 * Field's lookup values
+		 */
 		LookupValues,
-		/** Field's value */
+		/**
+		 * Field's value
+		 */
 		FieldValue,
 	}
 
@@ -83,27 +92,22 @@ public final class DocumentFieldDependencyMap
 		void consume(String dependentFieldName, DependencyType dependencyType);
 	}
 
-	/** Map: "dependency type" to "depends on field name" to list of "dependent field name" */
+	/**
+	 * Map: "dependency type" to "depends on field name" to list of "dependent field name"
+	 */
 	private final ImmutableMap<DependencyType, Multimap<String, String>> type2name2dependencies;
 
-	/**
-	 * {@code true} if this map contains "fieldNames" that are actually global context values, such as {@code #AD_Role_Name}.
-	 * Dev-Note: as of 2022-10-28 we are not doing anything with this info, but in future we might threat them differently in the cache.
-	 */
-	@Getter
-	private final boolean dependsOnGlobalContextValues;
-	
 	private DocumentFieldDependencyMap(final Builder builder)
 	{
 		type2name2dependencies = builder.getType2Name2DependenciesMap();
-		dependsOnGlobalContextValues = builder.dependsOnGlobalContextValues;
 	}
 
-	/** Empty constructor */
+	/**
+	 * Empty constructor
+	 */
 	private DocumentFieldDependencyMap()
 	{
 		type2name2dependencies = ImmutableMap.of();
-		dependsOnGlobalContextValues = false;
 	}
 
 	@Override
@@ -164,8 +168,6 @@ public final class DocumentFieldDependencyMap
 	{
 		private final Map<DependencyType, ImmutableSetMultimap.Builder<String, String>> type2name2dependencies = new HashMap<>();
 
-		private boolean dependsOnGlobalContextValues = false;
-		
 		private Builder()
 		{
 			super();
@@ -199,8 +201,8 @@ public final class DocumentFieldDependencyMap
 		}
 
 		public Builder add(
-				@NonNull final String fieldName, 
-				@Nullable final Collection<String> dependsOnFieldNames, 
+				@NonNull final String fieldName,
+				@Nullable final Collection<String> dependsOnFieldNames,
 				@NonNull final DependencyType dependencyType)
 		{
 			if (dependsOnFieldNames == null || dependsOnFieldNames.isEmpty())
@@ -213,10 +215,6 @@ public final class DocumentFieldDependencyMap
 
 			for (final String dependsOnFieldName : dependsOnFieldNames)
 			{
-				if(!dependsOnGlobalContextValues && CtxName.isExplicitGlobal(dependsOnFieldName))
-				{
-					dependsOnGlobalContextValues = true;
-				}
 				fieldName2dependsOnFieldNames.put(dependsOnFieldName, fieldName);
 			}
 
@@ -238,7 +236,6 @@ public final class DocumentFieldDependencyMap
 						= type2name2dependencies.computeIfAbsent(dependencyType, k -> ImmutableSetMultimap.builder());
 
 				name2dependencies.putAll(l1.getValue());
-				this.dependsOnGlobalContextValues = this.dependsOnGlobalContextValues || dependencies.isDependsOnGlobalContextValues();
 			}
 
 			return this;

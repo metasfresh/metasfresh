@@ -50,7 +50,7 @@ import de.metas.util.Services;
  */
 public class MetasfreshIssueAppender extends UnsynchronizedAppenderBase<ILoggingEvent>
 {
-	public static final MetasfreshIssueAppender get()
+	public static MetasfreshIssueAppender get()
 	{
 		final ILoggerFactory loggerFactory = LoggerFactory.getILoggerFactory();
 		if (loggerFactory instanceof LoggerContext)

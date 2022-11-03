@@ -27,9 +27,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 import de.metas.document.references.zoom_into.RecordWindowFinder;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
@@ -62,7 +60,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
-import lombok.Value;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.ILogicExpression;
@@ -80,7 +77,6 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.PO;
-import org.compiere.util.Env;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.slf4j.Logger;
@@ -113,9 +109,8 @@ public class DocumentCollection
 	private final DocumentWebsocketPublisher websocketPublisher;
 	private final CopyRecordService copyRecordService;
 
-	private final Cache<DocumentKeyWithCtxMap, Document> rootDocuments;
-	private final ConcurrentHashMap<DocumentKey, Set<DocumentKeyWithCtxMap>> key2keysWithCtxMaps = new ConcurrentHashMap<>();
-	private final ConcurrentHashMap<String, Set<WindowId>> tableName2windowIds = new ConcurrentHashMap<>(); // no need to evict unused records because the map can't grow beyond the number of tables
+	private final Cache<DocumentKey, Document> rootDocuments;
+	private final ConcurrentHashMap<String, Set<WindowId>> tableName2windowIds = new ConcurrentHashMap<>();
 
 	/* package */ DocumentCollection(
 			@NonNull final DocumentDescriptorFactory documentDescriptorFactory,
@@ -136,10 +131,7 @@ public class DocumentCollection
 		rootDocuments = CacheBuilder
 				.newBuilder()
 				.maximumSize(cacheSize)
-				.removalListener(notification -> { // note: i'm missing an addition-lister. If one is found, if would be great to use it, to maintain the two ConcurrentHashMaps that we have
-					if (notification.getKey() != null)
-						key2keysWithCtxMaps.remove(notification.getKey());
-				}).build();
+				.build();
 	}
 
 	public DocumentDescriptorFactory getDocumentDescriptorFactory()
@@ -222,14 +214,12 @@ public class DocumentCollection
 	{
 		try
 		{
-			final DocumentKeyWithCtxMap cacheKey = DocumentKeyWithCtxMap.of(documentKey);
-			return rootDocuments.get(cacheKey, () -> {
+			return rootDocuments.get(documentKey, () -> {
 
 				final Document rootDocument = retrieveRootDocumentFromRepository(documentKey)
 						.copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance);
 
 				addToTableName2WindowIdsCache(rootDocument.getEntityDescriptor());
-				addToKeysWithCtxMaps(cacheKey);
 				return rootDocument;
 			});
 		}
@@ -332,7 +322,7 @@ public class DocumentCollection
 			// Commit or remove it from cache if deleted
 			if (rootDocument.isDeleted())
 			{
-				rootDocuments.invalidateAll(key2keysWithCtxMaps.get(rootDocumentKey));
+				rootDocuments.invalidate(rootDocumentKey);
 				changesCollector.collectDeleted(rootDocument.getDocumentPath());
 			}
 			else
@@ -418,30 +408,23 @@ public class DocumentCollection
 		else
 		{
 			long countDocumentsWithChanges = 0;
-			final List<DocumentKeyWithCtxMap> cacheKeysToInvalidate = new ArrayList<>();
-			for (final Map.Entry<DocumentKey, Set<DocumentKeyWithCtxMap>> entry : this.key2keysWithCtxMaps.entrySet())
-			{
-				for (final DocumentKeyWithCtxMap cacheKey : entry.getValue())
+			final List<DocumentKey> documentKeysToInvalidate = new ArrayList<>();
+			for (final Map.Entry<DocumentKey, Document> entry : rootDocuments.asMap().entrySet())
 				{
-					final Document document = rootDocuments.getIfPresent(cacheKey);
-					if (document == null)
-					{
-						continue; // if there is some race condition and the document is actually removed, don't bother
-					}
-					else if (document.hasChangesRecursivelly())
+				final Document document = entry.getValue();
+				if (document.hasChangesRecursivelly())
 					{
 						countDocumentsWithChanges++;
 					}
 					else
 					{
-						cacheKeysToInvalidate.add(cacheKey);
-					}
+					documentKeysToInvalidate.add(entry.getKey());
 				}
 			}
 
-			rootDocuments.invalidateAll(cacheKeysToInvalidate);
+			rootDocuments.invalidateAll(documentKeysToInvalidate);
 
-			result = "invalidate " + cacheKeysToInvalidate.size() + " documents with no changes;"
+			result = "invalidate " + documentKeysToInvalidate.size() + " documents with no changes;"
 					+ " skipped " + countDocumentsWithChanges + " documents with changes";
 		}
 
@@ -470,11 +453,7 @@ public class DocumentCollection
 		//
 		// Add the saved and changed document back to index
 		final DocumentKey rootDocumentKey = DocumentKey.of(rootDocument);
-
-		final DocumentKeyWithCtxMap cacheKey = DocumentKeyWithCtxMap.of(rootDocumentKey);
-		addToKeysWithCtxMaps(cacheKey);
-
-		rootDocuments.put(cacheKey, rootDocument.copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance));
+		rootDocuments.put(rootDocumentKey, rootDocument.copy(CopyMode.CheckInReadonly, NullDocumentChangesCollector.instance));
 		addToTableName2WindowIdsCache(rootDocument.getEntityDescriptor());
 
 		//
@@ -492,13 +471,6 @@ public class DocumentCollection
 			}
 		}
 
-	}
-
-	private void addToKeysWithCtxMaps(
-			@NonNull final DocumentKeyWithCtxMap cacheKey)
-	{
-		final Set<DocumentKeyWithCtxMap> documentKeyWithCtxMaps = key2keysWithCtxMaps.computeIfAbsent(cacheKey.getDocumentKey(), k -> Sets.newConcurrentHashSet());
-		documentKeyWithCtxMaps.add(cacheKey);
 	}
 
 	public void delete(final DocumentPath documentPath, final IDocumentChangesCollector changesCollector)
@@ -697,34 +669,33 @@ public class DocumentCollection
 			return;
 		}
 
-		for (final DocumentKey documentKey : documentKeys)
-		{
+		//
 			// Invalidate the root documents
-			rootDocuments.invalidateAll(key2keysWithCtxMaps.get(documentKey));
+		rootDocuments.invalidateAll(documentKeys);
 
+		//
 			// Notify frontend
-			websocketPublisher.staleRootDocument(documentKey.getWindowId(), documentKey.getDocumentId());
-		}
+		documentKeys.forEach(documentKey -> websocketPublisher.staleRootDocument(documentKey.getWindowId(), documentKey.getDocumentId()));
 	}
 
 	public void invalidateDocumentsByWindowId(
 			@NonNull final WindowId windowId)
 
 	{
-		final ImmutableList<DocumentKeyWithCtxMap> cacheKeys = rootDocuments.asMap().keySet()
+		final ImmutableList<DocumentKey> documentKeys = rootDocuments.asMap().keySet()
 				.stream()
-				.filter(cacheKey -> windowId.equals(cacheKey.getDocumentKey().getWindowId()))
+				.filter(documentKey -> windowId.equals(documentKey.getWindowId()))
 				.collect(ImmutableList.toImmutableList());
-		if (cacheKeys.isEmpty())
+		if (documentKeys.isEmpty())
 		{
 			return;
 		}
-		rootDocuments.invalidateAll(cacheKeys);
+		rootDocuments.invalidateAll(documentKeys);
 	}
 
 	public void invalidateAll(final Collection<DocumentToInvalidate> documentToInvalidateList)
 	{
-		for (DocumentToInvalidate documentToInvalidate : documentToInvalidateList)
+		for (final DocumentToInvalidate documentToInvalidate : documentToInvalidateList)
 		{
 			invalidate(documentToInvalidate);
 		}
@@ -747,14 +718,7 @@ public class DocumentCollection
 		{
 			final WindowId windowId = entityDescriptor.getWindowId();
 			final DocumentKey rootDocumentKey = DocumentKey.of(windowId, rootDocumentId);
-			final Set<DocumentKeyWithCtxMap> cacheKeysForDocumentKey = key2keysWithCtxMaps.get(rootDocumentKey);
-			if (cacheKeysForDocumentKey == null)
-			{
-				continue;
-			}
-			for (final DocumentKeyWithCtxMap cacheKey : cacheKeysForDocumentKey)
-			{
-				final Document rootDocument = rootDocuments.getIfPresent(cacheKey);
+			final Document rootDocument = rootDocuments.getIfPresent(rootDocumentKey);
 				if (rootDocument != null)
 				{
 					try (final IAutoCloseable ignored = rootDocument.lockForWriting())
@@ -781,9 +745,9 @@ public class DocumentCollection
 				// Invalidate the root document
 				if (documentToInvalidate.isInvalidateDocument())
 				{
-					rootDocuments.invalidate(cacheKey);
+				rootDocuments.invalidate(rootDocumentKey);
 				}
-			}
+
 			//
 			// Notify frontend, even if the root document does not exist (or it was not cached).
 			sendWebsocketChangeEvents(documentToInvalidate, entityDescriptor);
@@ -825,7 +789,7 @@ public class DocumentCollection
 
 		//
 		// Invalidate the root documents
-		rootDocuments.invalidateAll(key2keysWithCtxMaps.get(documentKey));
+		rootDocuments.invalidate(documentKey);
 
 		//
 		// Notify frontend
@@ -944,16 +908,6 @@ public class DocumentCollection
 
 		public static DocumentKey ofRootDocumentPath(@NonNull final DocumentPath documentPath)
 		{
-			verifyRootDocumentPath(documentPath);
-
-			return new DocumentKey(
-					documentPath.getDocumentType(),
-					documentPath.getDocumentTypeId(),
-					documentPath.getDocumentId());
-		}
-
-		private static void verifyRootDocumentPath(final DocumentPath documentPath)
-		{
 			if (!documentPath.isRootDocument())
 			{
 				throw new InvalidDocumentPathException(documentPath, "shall be a root document path");
@@ -962,6 +916,11 @@ public class DocumentCollection
 			{
 				throw new InvalidDocumentPathException(documentPath, "document path for creating new documents is not allowed");
 			}
+
+			return new DocumentKey(
+					documentPath.getDocumentType(),
+					documentPath.getDocumentTypeId(),
+					documentPath.getDocumentId());
 		}
 
 		public static DocumentKey of(
@@ -1041,26 +1000,4 @@ public class DocumentCollection
 			return DocumentPath.rootDocumentPath(documentType, documentTypeId, documentId);
 		}
 	} // DocumentKey
-
-	@Immutable
-	@Value
-	private static class DocumentKeyWithCtxMap
-	{
-		DocumentKey documentKey;
-
-		// The current global values context is part of the key because the window might have logic expressions that depend on e.g. #AD_Role_Name
-		// This is not optimal, but we do need *some* way of making sure to not have stale Documents when a global env changed
-		ImmutableMap<String, Object> ctxMap;
-
-		static DocumentKeyWithCtxMap of(@NonNull final DocumentKey documentKey)
-		{
-			return new DocumentKeyWithCtxMap(documentKey, Env.createGlobalValuesCtxMap(Env.getCtx()));
-		}
-
-		private DocumentKeyWithCtxMap(@NonNull final DocumentKey documentKey, @NonNull final ImmutableMap<String, Object> ctxMap)
-		{
-			this.documentKey = documentKey;
-			this.ctxMap = ctxMap;
-		}
-	}
 }

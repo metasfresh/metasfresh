@@ -34,7 +34,7 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValuesList;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValuesPage;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.model.DocumentCollection;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.NonNull;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -49,7 +49,7 @@ import java.util.List;
  * API for editing a view row.
  *
  * @author metas-dev <dev@metasfresh.com>
- * Task https://github.com/metasfresh/metasfresh-webui-api/issues/577
+ * Task <a href="https://github.com/metasfresh/metasfresh-webui-api/issues/577">577</a>
  */
 @RestController
 @RequestMapping(ViewRowEditRestController.ENDPOINT)
@@ -61,17 +61,22 @@ public class ViewRowEditRestController
 	private static final String PARAM_FieldName = "fieldName";
 	/* package */ static final String ENDPOINT = ViewRestController.ENDPOINT + "/{" + PARAM_ViewId + "}/{" + PARAM_RowId + "}/edit";
 
-	@Autowired
-	private UserSession userSession;
+	private final UserSession userSession;
+	private final IViewsRepository viewsRepo;
+	private final DocumentCollection documentsCollection;
+	private final CommentsService commentsService;
 
-	@Autowired
-	private IViewsRepository viewsRepo;
-
-	@Autowired
-	private DocumentCollection documentsCollection;
-
-	@Autowired
-	private CommentsService commentsService;
+	public ViewRowEditRestController(
+			@NonNull final UserSession userSession,
+			@NonNull final IViewsRepository viewsRepo,
+			@NonNull final DocumentCollection documentsCollection,
+			@NonNull final CommentsService commentsService)
+	{
+		this.userSession = userSession;
+		this.viewsRepo = viewsRepo;
+		this.documentsCollection = documentsCollection;
+		this.commentsService = commentsService;
+	}
 
 	private JSONOptions newJSONOptions()
 	{
@@ -89,6 +94,7 @@ public class ViewRowEditRestController
 		return RowEditingContext.builder()
 				.rowId(rowId)
 				.documentsCollection(documentsCollection)
+				.userRolePermissions(userSession.getUserRolePermissions())
 				.build();
 	}
 
