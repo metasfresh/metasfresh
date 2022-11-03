@@ -1,14 +1,13 @@
 @from:cucumber
-@dev:runThisOne
 Feature: completeInvoice option when processing invoice candidates
 
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
-    And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    Given set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And set sys config boolean value true for sys config de.metas.report.jasper.IsMockReportService
-    And metasfresh has date and time 2021-12-21T13:30:13+01:00[Europe/Berlin]
 
   @from:cucumber
+  @Id:S0209_100
   Scenario: process IC with completeInvoices=N should result in Invoice docstatus=IP and IC should be invoiceable again after voiding Invoice
     Given metasfresh contains M_Products:
       | Identifier | Name              |
@@ -38,19 +37,19 @@ Feature: completeInvoice option when processing invoice candidates
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_ci_1    | o_ci_1                | p_ci_1                  | 10         |
     And the order identified by o_ci_1 is completed
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | ic_ci_1                           | ol_ci_1                   | 0            |
     And update invoice candidates
-      | C_Invoice_Candidate_ID.Identifier | OPT.InvoiceRule_Override | OPT.QtyToInvoice_Override |
-      | ic_ci_1                           | I                        | 10                        |
-    And after not more than 30s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | OPT.InvoiceRule_Override |
+      | ic_ci_1                           | I                        |
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
-      | ic_ci_1                           | ol_ci_1                   | 10            |
-    When process invoice candidates and wait 30s for C_Invoice_Candidate to be processed
+      | ic_ci_1                           | ol_ci_1                   | 10           |
+    When process invoice candidates and wait 600s for C_Invoice_Candidate to be processed
       | C_Invoice_Candidate_ID.Identifier | OPT.IsCompleteInvoices |
       | ic_ci_1                           | false                  |
-    Then after not more than 30s, C_Invoice are found:
+    Then after not more than 60s, C_Invoice are found:
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | OPT.DocStatus |
       | ic_ci_1                           | invoice_ci_1            | IP            |
     And validate created invoices
@@ -63,7 +62,7 @@ Feature: completeInvoice option when processing invoice candidates
     And process invoice candidates and wait 30s for C_Invoice_Candidate to be processed
       | C_Invoice_Candidate_ID.Identifier | OPT.IsCompleteInvoices |
       | ic_ci_1                           | false                  |
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier | OPT.DocStatus |
       | ic_ci_1                           | invoice_ci_3            | IP            |
     And validate created invoices
@@ -71,6 +70,7 @@ Feature: completeInvoice option when processing invoice candidates
       | invoice_ci_3            | endcustomer_ci_1         | l_ci_1                            | po_ref_mock_ci_1  | 1000002     | false     | IP        |
 
   @from:cucumber
+  @Id:S0209_110
   Scenario: process IC with completeInvoice=Y should result in processed IC
     Given metasfresh contains M_Products:
       | Identifier | Name            |
@@ -100,19 +100,19 @@ Feature: completeInvoice option when processing invoice candidates
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_ci_2    | o_ci_2                | p_ci_2                  | 10         |
     And the order identified by o_ci_2 is completed
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | ic_ci_2                           | ol_ci_2                   | 0            |
     And update invoice candidates
-      | C_Invoice_Candidate_ID.Identifier | OPT.InvoiceRule_Override | OPT.QtyToInvoice_Override |
-      | ic_ci_2                           | I                        | 10                        |
-    And after not more than 30s, C_Invoice_Candidate are found:
+      | C_Invoice_Candidate_ID.Identifier | OPT.InvoiceRule_Override |
+      | ic_ci_2                           | I                        |
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
-      | ic_ci_2                           | ol_ci_2                   | 10            |
-    When process invoice candidates and wait 30s for C_Invoice_Candidate to be processed
+      | ic_ci_2                           | ol_ci_2                   | 10           |
+    When process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
       | C_Invoice_Candidate_ID.Identifier | OPT.IsCompleteInvoices |
       | ic_ci_2                           | true                   |
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | ic_ci_2                           | invoice_ci_2            |
     Then validate created invoices
