@@ -22,6 +22,7 @@
 
 package de.metas.camel.externalsystems.sap.sftp;
 
+import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
@@ -37,7 +38,7 @@ public class SFTPConfig
 	@NonNull
 	String username;
 
-	@NonNull
+	@Nullable
 	String password;
 
 	@NonNull
@@ -60,16 +61,20 @@ public class SFTPConfig
 
 	public String getSFTPConnectionString()
 	{
-		final String endpointTemplate = "sftp://%s@%s:%s/%s?password=%s&move=%s&moveFailed=%s&delay=%s";
+		final String endpointTemplate = "sftp://%s@%s:%s/%s?move=%s&moveFailed=%s&delay=%s";
 
-		return String.format(endpointTemplate,
-							 this.getUsername(),
-							 this.getHostName(),
-							 this.getPort(),
-							 CoalesceUtil.coalesce(this.getTargetDirectory(), ""),
-							 this.getPassword(),
-							 this.getProcessedFilesFolder(),
-							 this.getErroredFilesFolder(),
-							 this.getPollingFrequency());
+		final String resultWithoutPW = String.format(endpointTemplate,
+									  this.getUsername(),
+									  this.getHostName(),
+									  this.getPort(),
+									  CoalesceUtil.coalesce(this.getTargetDirectory(), ""),
+									  this.getProcessedFilesFolder(),
+									  this.getErroredFilesFolder(),
+									  this.getPollingFrequency());
+		if (Check.isBlank(password))
+		{
+			return resultWithoutPW;
+		}
+		return resultWithoutPW + "&password=" + password;
 	}
 }

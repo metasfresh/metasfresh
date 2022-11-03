@@ -225,6 +225,8 @@ public class WindowRestController
 			@RequestParam(name = PARAM_FieldsList, required = false) @ApiParam("comma separated field names") final String fieldsListStr,
 			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced)
 	{
+		userSession.assertLoggedIn();
+
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentIdStr);
 		final JSONDocumentOptions jsonOpts = newJSONDocumentOptions()
@@ -244,6 +246,8 @@ public class WindowRestController
 			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced,
 			@RequestParam(name = "orderBy", required = false) final String orderBysListStr)
 	{
+		userSession.assertLoggedIn();
+
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentId documentId = DocumentId.of(documentIdStr);
 		final DetailId tabId = DetailId.fromJson(tabIdStr);
@@ -310,6 +314,8 @@ public class WindowRestController
 			//
 	)
 	{
+		userSession.assertLoggedIn();
+
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentIdStr, tabIdStr, rowIdStr);
 		final JSONDocumentOptions jsonOpts = newJSONDocumentOptions()

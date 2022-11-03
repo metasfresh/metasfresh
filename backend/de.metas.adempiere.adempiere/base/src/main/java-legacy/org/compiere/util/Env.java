@@ -17,7 +17,6 @@
 package org.compiere.util;
 
 import com.google.common.base.Supplier;
-import com.google.common.collect.ImmutableMap;
 import de.metas.adempiere.form.IClientUI;
 import de.metas.adempiere.model.I_AD_Role;
 import de.metas.cache.CacheMgt;
@@ -412,30 +411,6 @@ public final class Env
 		return sysCtx;
 	}
 
-	/**
-	 * Dev-Note: Not returning Properties because what we currently need is an immutable map.
-	 */
-	public static ImmutableMap<String, Object> createGlobalValuesCtxMap(@NonNull final Properties ctx)
-	{
-		final ImmutableMap.Builder newCtx = ImmutableMap.builder();
-		
-		for (final Enumeration<?> en = ctx.propertyNames(); en.hasMoreElements();)
-		{
-			final String key = (String)en.nextElement();
-			if(!CtxName.isExplicitGlobal(key))
-			{
-				continue;
-			}
-			final Object value = ctx.get(key);
-			if (value == null)
-			{
-				continue; // the given ctx might have null values, so this check is crucial
-			}
-			newCtx.put(key, value);
-		}
-		return newCtx.build();
-	}
-	
 	/**
 	 * Can be used before calling {@link #getCtx()} during startup, to avoid {@link NullPointerException}s.
 	 */
