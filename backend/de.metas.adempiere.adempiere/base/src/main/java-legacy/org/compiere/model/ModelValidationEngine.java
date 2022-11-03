@@ -103,7 +103,8 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	private static final String PERF_MON_SYSCONFIG_NAME = "de.metas.monitoring.modelInterceptor.enable";
 	private static final boolean SYS_CONFIG_DEFAULT_VALUE = false;
-	private final ISysConfigBL SYS_CONFIG_BL = Services.get(ISysConfigBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private static PerformanceMonitoringService _performanceMonitoringService;
 
 	/**
 	 * Get Singleton
@@ -695,18 +696,17 @@ public class ModelValidationEngine implements IModelValidationEngine
 
 	public void fireModelChange(@NonNull final PO po, final ModelChangeType changeType)
 	{
-		final boolean perfMonIsActive = SYS_CONFIG_BL.getBooleanValue(PERF_MON_SYSCONFIG_NAME, SYS_CONFIG_DEFAULT_VALUE);
-		if(!perfMonIsActive)
+
+		if(isPerformanceMonitorActive())
 		{
 			fireModelChange0(po, changeType);
 		}
 		else
 		{
-			final PerformanceMonitoringService performanceMonitoringService = SpringContextHolder.instance.getBeanOr(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
 			final String tableName = po.get_TableName();
 			final String changeTypeStr = changeType.toString();
 
-			performanceMonitoringService.monitor(
+			performanceMonitoringService().monitor(
 					() -> fireModelChange0(po, changeType),
 					Metadata
 							.builder()
@@ -792,6 +792,23 @@ public class ModelValidationEngine implements IModelValidationEngine
 			logger.debug("Executed: ALL {} interceptors for {}", changeType, po);
 		}
 	}	// fireModelChange
+
+	private boolean isPerformanceMonitorActive()
+	{
+		return sysConfigBL.getBooleanValue(PERF_MON_SYSCONFIG_NAME, SYS_CONFIG_DEFAULT_VALUE);
+	}
+
+	private PerformanceMonitoringService performanceMonitoringService()
+	{
+		PerformanceMonitoringService performanceMonitoringService = _performanceMonitoringService;
+		if (performanceMonitoringService == null || performanceMonitoringService instanceof NoopPerformanceMonitoringService)
+		{
+			performanceMonitoringService = _performanceMonitoringService = SpringContextHolder.instance.getBeanOr(
+					PerformanceMonitoringService.class,
+					NoopPerformanceMonitoringService.INSTANCE);
+		}
+		return performanceMonitoringService;
+	}
 
 	private final void executeInTrx(final String trxName, final TimingType changeTypeOrDocTiming, @NonNull final Runnable runnable)
 	{
@@ -1072,20 +1089,17 @@ public class ModelValidationEngine implements IModelValidationEngine
 	{
 		try (final MDCCloseable mdcCloseable = MDC.putCloseable("docTiming", docTiming.toString()))
 		{
-			final boolean perfMonIsActive = SYS_CONFIG_BL.getBooleanValue(PERF_MON_SYSCONFIG_NAME, SYS_CONFIG_DEFAULT_VALUE);
-			if(!perfMonIsActive)
+			if(isPerformanceMonitorActive())
 			{
 				return fireDocValidate0(model, docTiming);
 			}
 			else
 			{
-				final PerformanceMonitoringService perfMonService = SpringContextHolder.instance.getBeanOr(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
-
 				final String tableName = InterfaceWrapperHelper.getModelTableName(model);
 				final int recordId = InterfaceWrapperHelper.getId(model);
 				final String docTimingStr = docTiming.toString();
 
-				return perfMonService.monitor(
+				return performanceMonitoringService().monitor(
 						() -> fireDocValidate0(model, docTiming),
 						Metadata
 								.builder()
