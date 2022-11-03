@@ -32,6 +32,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.springframework.stereotype.Repository;
 
+import java.util.Iterator;
 import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -96,12 +97,12 @@ public class HUUniqueAttributesRepository
 				.firstOnly(I_M_HU_UniqueAttribute.class);
 	}
 
-	public List<I_M_HU_Attribute> retrieveHUAttributes(@NonNull final HuPackingInstructionsAttributeId huPIAttributeId)
+	public Iterator<I_M_HU_Attribute> retrieveHUAttributes(@NonNull final HuPackingInstructionsAttributeId huPIAttributeId)
 	{
 		return queryBL.createQueryBuilder(I_M_HU_Attribute.class)
 				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_M_HU_PI_Attribute_ID, huPIAttributeId)
 				.create()
-				.list(I_M_HU_Attribute.class);
+				.iterate(I_M_HU_Attribute.class);
 	}
 
 	public void deleteHUUniqueAttributesForHUPIAttribute(@NonNull final HuPackingInstructionsAttributeId huPIAttributeId)
@@ -118,12 +119,13 @@ public class HUUniqueAttributesRepository
 				.create().delete();
 	}
 
-	public void updateLinkedHUAttributes(@NonNull final HuPackingInstructionsAttributeId huPiAttributeId, final boolean isUnique)
+	public void updateLinkedHUAttributes(@NonNull final HuPackingInstructionsAttributeId huPIAttributeId, final boolean isUnique)
 	{
-		final List<I_M_HU_Attribute> huAttributes = retrieveHUAttributes(huPiAttributeId);
+		final Iterator<I_M_HU_Attribute> huAttributes = retrieveHUAttributes(huPIAttributeId);
 
-		for (final I_M_HU_Attribute huAttribute : huAttributes)
+		while (huAttributes.hasNext())
 		{
+			final I_M_HU_Attribute huAttribute = huAttributes.next();
 			huAttribute.setIsUnique(isUnique);
 			save(huAttribute);
 		}

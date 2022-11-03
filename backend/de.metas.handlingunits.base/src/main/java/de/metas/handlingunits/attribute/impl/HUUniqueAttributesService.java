@@ -50,6 +50,7 @@ import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Iterator;
 import java.util.List;
 
 @Service
@@ -181,10 +182,11 @@ public class HUUniqueAttributesService
 
 	public void validateHUUniqueAttribute(@NonNull final HuPackingInstructionsAttributeId huPIAttributeId)
 	{
-		final List<I_M_HU_Attribute> huAttributes = repo.retrieveHUAttributes(huPIAttributeId);
+		final Iterator<I_M_HU_Attribute> huAttributes = repo.retrieveHUAttributes(huPIAttributeId);
 
-		for (final I_M_HU_Attribute huAttribute : huAttributes)
+		while (huAttributes.hasNext())
 		{
+			final I_M_HU_Attribute huAttribute = huAttributes.next();
 			if (Check.isBlank(huAttribute.getValue()))
 			{
 				// nothing to do
@@ -200,19 +202,22 @@ public class HUUniqueAttributesService
 
 			validateHUUniqueAttribute(huAttribute);
 		}
+
 	}
 
 	public void createOrUpdateHUUniqueAttribute(@NonNull final HuPackingInstructionsAttributeId huPIAttributeId)
 	{
-		final List<I_M_HU_Attribute> huAttributes = repo.retrieveHUAttributes(huPIAttributeId);
+		final Iterator<I_M_HU_Attribute> huAttributes = repo.retrieveHUAttributes(huPIAttributeId);
 
-		for (final I_M_HU_Attribute huAttribute : huAttributes)
+		while (huAttributes.hasNext())
 		{
+			final I_M_HU_Attribute huAttribute = huAttributes.next();
+
 			final I_M_HU huRecord = huDAO.getById(HuId.ofRepoId(huAttribute.getM_HU_ID()));
 			if (!huStatusBL.isQtyOnHand(huRecord.getHUStatus()))
 			{
 				// nothing to do for non-qtyOnHand statuses
-				return;
+				continue;
 			}
 			createOrUpdateHUUniqueAttribute(huAttribute);
 		}
