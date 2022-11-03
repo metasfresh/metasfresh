@@ -1,10 +1,14 @@
 import React, { Component } from 'react';
-import PropTypes from 'prop-types';
 import { getAvailableKPIsToAdd } from '../../actions/DashboardActions';
 import Indicator from '../charts/Indicator';
 import ChartWidget from './ChartWidget';
 import DndWidget from './DndWidget';
 
+import EntityType from './EntityType';
+
+/**
+ * Panel of Target Indicators and KPIs available to add
+ */
 class Sidenav extends Component {
   constructor(props) {
     super(props);
@@ -41,26 +45,21 @@ class Sidenav extends Component {
 
   renderChartList = (charts) => {
     if (!charts) return;
-
-    return charts.map((item, i) => this.renderChartItem(item, i));
+    return charts.map((item, index) => this.renderChartItem(item, index));
   };
 
   renderChartItem = (item, index) => {
-    const { moveCard } = this.props;
-
+    const isKPI = item.widgetTypes[0] === 'KPI';
     return (
       <DndWidget
-        key={index}
+        key={item.kpiId}
         id={item.kpiId}
-        index={item.kpiId}
-        moveCard={moveCard}
+        index={-1}
+        entity={isKPI ? EntityType.KPI : EntityType.TARGET_INDICATOR}
         isNew={true}
-        entity={item.widgetTypes[0] === 'KPI' ? 'cards' : 'indicators'}
         transparent={false}
       >
-        {item.widgetTypes[0] === 'KPI'
-          ? this.renderKPI(item, index)
-          : this.renderTargetIndicator(item)}
+        {isKPI ? this.renderKPI(item, index) : this.renderTargetIndicator(item)}
       </DndWidget>
     );
   };
@@ -94,9 +93,5 @@ class Sidenav extends Component {
     );
   };
 }
-
-Sidenav.propTypes = {
-  moveCard: PropTypes.func,
-};
 
 export default Sidenav;
