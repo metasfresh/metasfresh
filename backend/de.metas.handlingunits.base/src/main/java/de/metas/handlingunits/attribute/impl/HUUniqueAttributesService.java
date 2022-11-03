@@ -166,7 +166,7 @@ public class HUUniqueAttributesService
 
 		for (final I_M_HU_Storage huStorage : huStorages)
 		{
-			final HUUniqueAttributeCreateRequest request = HUUniqueAttributeCreateRequest.builder()
+			final HUUniqueAttributeUpsertRequest request = HUUniqueAttributeUpsertRequest.builder()
 					.huPIAttributeId(HuPackingInstructionsAttributeId.ofRepoId(huAttribute.getM_HU_PI_Attribute_ID()))
 					.huAttributeId(huAttribute.getM_HU_Attribute_ID())
 					.huId(HuId.ofRepoId(huRecord.getM_HU_ID()))

@@ -32,7 +32,7 @@ import org.adempiere.mm.attributes.AttributeId;
 
 @Value
 @Builder
-public class HUUniqueAttributeCreateRequest
+public class HUUniqueAttributeUpsertRequest
 {
 	@NonNull HuPackingInstructionsAttributeId huPIAttributeId;
 	int huAttributeId;
