@@ -11,6 +11,8 @@ import de.metas.document.references.zoom_into.NullCustomizedWindowInfoMapReposit
 import de.metas.email.MailService;
 import de.metas.email.mailboxes.MailboxRepository;
 import de.metas.email.templates.MailTemplateRepository;
+import de.metas.handlingunits.attribute.impl.HUUniqueAttributesRepository;
+import de.metas.handlingunits.attribute.impl.HUUniqueAttributesService;
 import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
@@ -170,6 +172,9 @@ public abstract class AbstractHUTest
 
 		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
+
+		final HUUniqueAttributesRepository huUniqueAttributeRepo = new HUUniqueAttributesRepository();
+		SpringContextHolder.registerJUnitBean(new HUUniqueAttributesService(huUniqueAttributeRepo));
 
 		initialize();
 	}
