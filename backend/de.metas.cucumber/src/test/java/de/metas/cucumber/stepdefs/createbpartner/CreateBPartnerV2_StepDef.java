@@ -23,6 +23,7 @@
 package de.metas.cucumber.stepdefs.createbpartner;
 
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartner;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import de.metas.common.bpartner.v2.response.JsonResponseContact;
@@ -38,10 +39,16 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_CreditLimit;
+import org.compiere.model.I_C_CreditLimit_Type;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -56,7 +63,10 @@ public class CreateBPartnerV2_StepDef
 	private final C_BPartner_StepDefData bPartnerTable;
 	private final AD_User_StepDefData userTable;
 
-	final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	private final BPartnerCreditLimitRepository bPartnerCreditLimitRepository = SpringContextHolder.instance.getBean(BPartnerCreditLimitRepository.class);
 
 	public CreateBPartnerV2_StepDef(
 			@NonNull final C_BPartner_StepDefData bPartnerTable,
@@ -181,4 +191,39 @@ public class CreateBPartnerV2_StepDef
 			assertThat(persistedContact.getInvoiceEmailEnabled()).isEqualTo(isInvoiceEmailEnabled);
 		}
 	}
+
+	@And("verify that credit limit was created for bpartner")
+	public void verify_credit_limit_is_created_for_bpartner_v2(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> contactsTableList = dataTable.asMaps();
+		for (final Map<String, String> dataTableRow : contactsTableList)
+		{
+			final String externalIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, "ExternalBPartner" + TABLECOLUMN_IDENTIFIER);
+			final Optional<JsonResponseComposite> persistedResult = bpartnerEndpointService.retrieveBPartner(null, ExternalIdentifier.of(externalIdentifier));
+			final JsonResponseBPartner persistedBPartner = persistedResult.get().getBpartner();
+
+			final BigDecimal amount = DataTableUtil.extractBigDecimalForColumnName(dataTableRow, I_C_BPartner_CreditLimit.COLUMNNAME_Amount);
+			final String creditLimitTypeName = DataTableUtil.extractStringForColumnName(dataTableRow, I_C_CreditLimit_Type.Table_Name + "." + I_C_CreditLimit_Type.COLUMNNAME_Name);
+			final Boolean isActive = DataTableUtil.extractBooleanForColumnName(dataTableRow, I_C_BPartner_CreditLimit.COLUMNNAME_IsActive);
+			final Timestamp dateFrom = DataTableUtil.extractDateTimestampForColumnNameOrNull(dataTableRow, "OPT." + I_C_BPartner_CreditLimit.COLUMNNAME_DateFrom);
+
+			// persisted value
+			final IQueryBuilder<I_C_BPartner_CreditLimit> queryBuilder = queryBL.createQueryBuilder(I_C_BPartner_CreditLimit.class)
+					.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_ID, persistedBPartner.getMetasfreshId().getValue())
+					.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_Amount, amount);
+
+			if (dateFrom != null)
+			{
+				queryBuilder.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_DateFrom, dateFrom);
+			}
+
+			final Optional<I_C_BPartner_CreditLimit> creditLimit = queryBuilder.create()
+					.firstOnlyOptional(I_C_BPartner_CreditLimit.class);
+
+			assertThat(creditLimit).isPresent();
+			assertThat(creditLimit.get().getC_CreditLimit_Type_ID()).isEqualTo(bPartnerCreditLimitRepository.getCreditLimitTypeByName(creditLimitTypeName).getC_CreditLimit_Type_ID());
+			assertThat(creditLimit.get().isActive()).isEqualTo(isActive);
+		}
+	}
+
 }

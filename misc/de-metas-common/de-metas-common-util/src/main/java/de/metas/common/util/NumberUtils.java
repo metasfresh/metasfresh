@@ -47,7 +47,7 @@ public class NumberUtils
 	}
 
 	@Nullable
-	private static BigDecimal asBigDecimal(@Nullable final Object value)
+	public static BigDecimal asBigDecimal(@Nullable final Object value)
 	{
 		if (value == null)
 		{

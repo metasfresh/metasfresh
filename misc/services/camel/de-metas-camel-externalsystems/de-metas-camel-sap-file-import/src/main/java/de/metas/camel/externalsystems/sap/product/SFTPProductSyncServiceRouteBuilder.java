@@ -121,7 +121,7 @@ public class SFTPProductSyncServiceRouteBuilder extends RouteBuilder implements 
 				.password(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_PASSWORD))
 				.hostName(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_HOST_NAME))
 				.port(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_PORT))
-				.targetDirectory(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_TARGET_DIRECTORY))
+				.targetDirectory(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_PRODUCT_TARGET_DIRECTORY))
 				.processedFilesFolder(requestParameters.get(ExternalSystemConstants.PARAM_PROCESSED_DIRECTORY))
 				.erroredFilesFolder(requestParameters.get(ExternalSystemConstants.PARAM_ERRORED_DIRECTORY))
 				.pollingFrequency(Duration.ofMillis(Long.parseLong(requestParameters.get(ExternalSystemConstants.PARAM_POLLING_FREQUENCY_MS))))

@@ -23,6 +23,7 @@
 package de.metas.rest_api.v2.shipping;
 
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.business.BusinessTestHelper;
@@ -109,7 +110,7 @@ class ReceiptCandidateAPIServiceTest
 		receiptCandidateAPIService = new ReceiptCandidateAPIService(
 				new ReceiptScheduleAuditRepository(),
 				new ReceiptScheduleRepository(),
-				new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository()),
+				new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository(), new BPartnerCreditLimitRepository()),
 				new ProductRepository(),
 				exportSequenceNumberProvider);
 	}

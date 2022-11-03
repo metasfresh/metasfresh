@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_ExternalSystem_Config_SAP extends org.compiere.model.PO implements I_ExternalSystem_Config_SAP, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 581655576L;
+	private static final long serialVersionUID = -630424092L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config_SAP (final Properties ctx, final int ExternalSystem_Config_SAP_ID, @Nullable final String trxName)
@@ -122,6 +122,18 @@ public class X_ExternalSystem_Config_SAP extends org.compiere.model.PO implement
 	public java.lang.String getProcessedDirectory() 
 	{
 		return get_ValueAsString(COLUMNNAME_ProcessedDirectory);
+	}
+
+	@Override
+	public void setSFTP_CreditLimit_TargetDirectory (final @Nullable java.lang.String SFTP_CreditLimit_TargetDirectory)
+	{
+		set_Value (COLUMNNAME_SFTP_CreditLimit_TargetDirectory, SFTP_CreditLimit_TargetDirectory);
+	}
+
+	@Override
+	public java.lang.String getSFTP_CreditLimit_TargetDirectory() 
+	{
+		return get_ValueAsString(COLUMNNAME_SFTP_CreditLimit_TargetDirectory);
 	}
 
 	@Override

@@ -162,6 +162,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
     "roles" : [ ],
     "subjectMatterContact" : false
   } ],
+  "creditLimits" : [ ],
   "locations" : [ {
     "active" : true,
     "address1" : "l1_address1",
@@ -379,6 +380,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
     "roles" : [ ],
     "subjectMatterContact" : false
   } ],
+  "creditLimits" : [ ],
   "locations" : [ {
     "active" : true,
     "address1" : "locationRecord.address1",
@@ -519,6 +521,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
     "subjectMatterContact" : false,
     "value" : "contactRecord.value"
   } ],
+  "creditLimits" : [ ],
   "locations" : [ {
     "active" : true,
     "address1" : "locationRecord.address1",
@@ -659,6 +662,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
     "subjectMatterContact" : false,
     "value" : "contactRecord.value"
   } ],
+  "creditLimits" : [ ],
   "locations" : [ {
     "active" : true,
     "address1" : "locationRecord.address1",
@@ -799,6 +803,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
     "subjectMatterContact" : false,
     "value" : "contactRecord.value"
   } ],
+  "creditLimits" : [ ],
   "locations" : [ {
     "active" : true,
     "address1" : "locationRecord.address1",

@@ -20,7 +20,6 @@ import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.Date;
 import java.util.Properties;
 
@@ -33,7 +32,6 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
-import de.metas.logging.MetasfreshLastError;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.util.Services;

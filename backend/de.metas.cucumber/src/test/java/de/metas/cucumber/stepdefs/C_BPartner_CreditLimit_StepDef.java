@@ -22,29 +22,37 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_CreditLimit;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.MANAGEMENT_CREDIT_LIMIT_TYPE_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
 
 public class C_BPartner_CreditLimit_StepDef
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	private final C_BPartner_StepDefData bPartnerTable;
 	private final C_BPartner_CreditLimit_StepDefData creditLimitTable;
 
 	public C_BPartner_CreditLimit_StepDef(
 			@NonNull final C_BPartner_StepDefData bPartnerTable,
-			@NonNull final C_BPartner_CreditLimit_StepDefData creditLimitTable)
+			@NonNull final C_BPartner_CreditLimit_StepDefData creditLimitTable,
+			@NonNull final TestContext testContext)
 	{
 		this.bPartnerTable = bPartnerTable;
 		this.creditLimitTable = creditLimitTable;
@@ -70,6 +78,20 @@ public class C_BPartner_CreditLimit_StepDef
 		}
 	}
 
+	@And("^validate no credit limit records found for: (.*)$")
+	public void no_creditLimit_records_for_bpartner(@NonNull final String bpartnerIdentifier)
+	{
+		final I_C_BPartner bPartner = bPartnerTable.get(bpartnerIdentifier);
+		assertThat(bPartner).isNotNull();
+
+		final List<I_C_BPartner_CreditLimit> records = queryBL.createQueryBuilder(I_C_BPartner_CreditLimit.class)
+				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_ID, bPartner.getC_BPartner_ID())
+				.create()
+				.list();
+
+		assertThat(records.size()).isEqualTo(0);
+	}
+
 	private void updateCreditLimit(@NonNull final Map<String, String> tableRow)
 	{
 		final String creditLimitIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_CreditLimit_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
@@ -92,6 +114,8 @@ public class C_BPartner_CreditLimit_StepDef
 		final int approvedById = DataTableUtil.extractIntForColumnName(tableRow, I_C_BPartner_CreditLimit.COLUMNNAME_ApprovedBy_ID);
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(tableRow, I_C_BPartner_CreditLimit.COLUMNNAME_Processed);
 
+		final Timestamp dateFrom = DataTableUtil.extractDateTimestampForColumnNameOrNull(tableRow, "OPT." + I_C_BPartner_CreditLimit.COLUMNNAME_DateFrom);
+
 		final I_C_BPartner_CreditLimit creditLimitRecord = InterfaceWrapperHelper.newInstance(I_C_BPartner_CreditLimit.class);
 
 		creditLimitRecord.setC_BPartner_ID(bpartner.getC_BPartner_ID());
@@ -99,6 +123,11 @@ public class C_BPartner_CreditLimit_StepDef
 		creditLimitRecord.setC_CreditLimit_Type_ID(MANAGEMENT_CREDIT_LIMIT_TYPE_ID);
 		creditLimitRecord.setProcessed(processed);
 		creditLimitRecord.setApprovedBy_ID(approvedById);
+
+		if (dateFrom != null)
+		{
+			creditLimitRecord.setDateFrom(dateFrom);
+		}
 
 		saveRecord(creditLimitRecord);
 

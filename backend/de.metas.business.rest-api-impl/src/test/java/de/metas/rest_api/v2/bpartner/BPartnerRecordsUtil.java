@@ -45,12 +45,17 @@ import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_BPartner_Recent_V;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Postal;
 import org.compiere.util.Env;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.LocalDate;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -81,6 +86,7 @@ public class BPartnerRecordsUtil
 	public static final int AD_USER_ID = 30;
 	public static final int C_BBPARTNER_LOCATION_ID = 40;
 	public static final int C_BP_BANKACCOUNT_ID = 50;
+	public static final int C_BP_CREDIT_LIMIT_ID = 60;
 
 	public static void createBPartnerData(final int idOffSet)
 	{
@@ -191,6 +197,15 @@ public class BPartnerRecordsUtil
 				setCreatedByAndWhen(bpBankAccountRecord, adUserId); // have to do it manually because we are setting the record ID too
 				saveRecord(bpBankAccountRecord);
 			}
+
+			final I_C_BPartner_CreditLimit bpCreditLimitRecord = newInstance(I_C_BPartner_CreditLimit.class);
+			bpCreditLimitRecord.setC_BPartner_CreditLimit_ID(C_BP_CREDIT_LIMIT_ID + idOffSet);
+			bpCreditLimitRecord.setC_CreditLimit_Type_ID(123);
+			bpCreditLimitRecord.setAmount(BigDecimal.valueOf(25.5));
+			bpCreditLimitRecord.setDateFrom(Timestamp.valueOf(LocalDate.of(2022, 11, 2).atStartOfDay()));
+			bpCreditLimitRecord.setC_BPartner_ID(bpartnerRecord.getC_BPartner_ID());
+			setCreatedByAndWhen(bpCreditLimitRecord, adUserId); // have to do it manually because we are setting the record ID too
+			saveRecord(bpCreditLimitRecord);
 
 			{
 				final ExternalReferenceTypes externalReferenceTypes = new ExternalReferenceTypes();

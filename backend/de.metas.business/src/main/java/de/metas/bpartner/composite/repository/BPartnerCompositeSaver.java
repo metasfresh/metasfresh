@@ -13,10 +13,13 @@ import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerContactType;
+import de.metas.bpartner.service.creditlimit.BPartnerCreditLimit;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationAddressPart;
 import de.metas.bpartner.composite.BPartnerLocationType;
+import de.metas.bpartner.creditLimit.BPartnerCreditLimitId;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.document.DocTypeId;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.ITranslatableString;
@@ -49,6 +52,7 @@ import org.compiere.Adempiere;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BP_Group;
+import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Postal;
@@ -57,8 +61,10 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static de.metas.util.Check.isBlank;
@@ -93,15 +99,18 @@ import static org.compiere.model.X_AD_User.ISINVOICEEMAILENABLED_Yes;
 final class BPartnerCompositeSaver
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-	private final IBPartnerBL bpartnerBL;
 	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
 	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 	private final IBPBankAccountDAO bpBankAccountsDAO = Services.get(IBPBankAccountDAO.class);
+	private final IBPartnerBL bpartnerBL;
+	private final BPartnerCreditLimitRepository bPartnerCreditLimitRepository;
 
 	BPartnerCompositeSaver(
-			@NonNull final IBPartnerBL bpartnerBL)
+			@NonNull final IBPartnerBL bpartnerBL,
+			@NonNull final BPartnerCreditLimitRepository bPartnerCreditLimitRepository)
 	{
 		this.bpartnerBL = bpartnerBL;
+		this.bPartnerCreditLimitRepository = bPartnerCreditLimitRepository;
 	}
 
 	/**
@@ -142,6 +151,8 @@ final class BPartnerCompositeSaver
 			saveBPartnerContacts(bpartnerComposite, validatePermissions);
 
 			saveBPartnerBankAccounts(bpartnerComposite, validatePermissions);
+
+			saveBPartnerCreditLimits(bpartnerComposite, validatePermissions);
 		}
 	}
 
@@ -246,7 +257,7 @@ final class BPartnerCompositeSaver
 		{
 			bpartnerRecord.setFirstname(bpartner.getFirstName());
 		}
-	if(bpartner.getLastName() != null)
+		if (bpartner.getLastName() != null)
 		{
 			bpartnerRecord.setLastname(bpartner.getLastName());
 		}
@@ -674,6 +685,70 @@ final class BPartnerCompositeSaver
 		}
 	}
 
+	private void saveBPartnerCreditLimits(@NonNull final BPartnerComposite bpartnerComposite, final boolean validatePermissions)
+	{
+		final ImmutableList.Builder<BPartnerCreditLimitId> savedBPCreditLimitIds = new ImmutableList.Builder<>();
+
+		final List<BPartnerCreditLimit> creditLimits = bpartnerComposite.getCreditLimits();
+		final BPartnerId bpartnerId = bpartnerComposite.getBpartner().getId();
+		final OrgId orgId = bpartnerComposite.getOrgId();
+
+		for (final BPartnerCreditLimit creditLimit : creditLimits)
+		{
+			final BPartnerCreditLimitSaveRequest request = BPartnerCreditLimitSaveRequest.builder()
+					.bpartnerId(bpartnerId)
+					.orgId(orgId)
+					.creditLimit(creditLimit)
+					.validatePermissions(validatePermissions ? this::assertCanCreateOrUpdate : null)
+					.build();
+
+			saveBPartnerCreditLimit(request);
+			savedBPCreditLimitIds.add(creditLimit.getIdNotNull());
+		}
+
+		bPartnerCreditLimitRepository.deactivateCreditLimitsByBPartnerExcept(bpartnerId, savedBPCreditLimitIds.build());
+	}
+
+	private void saveBPartnerCreditLimit(@NonNull final BPartnerCreditLimitSaveRequest request)
+	{
+		final BPartnerCreditLimit creditLimit = request.getCreditLimit();
+		final OrgId orgId = request.getOrgId();
+		final BPartnerId bpartnerId = request.getBpartnerId();
+
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(I_C_BPartner_CreditLimit.Table_Name, creditLimit.getId()))
+		{
+			final I_C_BPartner_CreditLimit record = loadOrNew(creditLimit.getId(), I_C_BPartner_CreditLimit.class);
+
+			if (orgId != null)
+			{
+				record.setAD_Org_ID(orgId.getRepoId());
+			}
+
+			record.setC_BPartner_ID(bpartnerId.getRepoId());
+
+			record.setIsActive(creditLimit.isActive());
+
+			record.setAmount(creditLimit.getAmount());
+
+			if (creditLimit.getDateFrom() != null)
+			{
+				record.setDateFrom(Timestamp.from(creditLimit.getDateFrom()));
+			}
+
+			record.setC_CreditLimit_Type_ID(creditLimit.getCreditLimitTypeId().getRepoId());
+
+			Optional.ofNullable(request.getValidatePermissions())
+					.ifPresent(permissionValidator -> permissionValidator.accept(record));
+
+			saveRecord(record);
+
+			//
+			// Update model from saved record:
+			final BPartnerCreditLimitId id = BPartnerCreditLimitId.ofRepoId(bpartnerId, record.getC_BPartner_CreditLimit_ID());
+			creditLimit.setId(id);
+		}
+	}
+
 	private void assertCanCreateOrUpdate(@NonNull final Object record)
 	{
 		if (Adempiere.isUnitTestMode())
@@ -685,5 +760,4 @@ final class BPartnerCompositeSaver
 				.createPermissionService()
 				.assertCanCreateOrUpdate(record);
 	}
-
 }

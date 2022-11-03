@@ -2,11 +2,11 @@ package de.metas.bpartner.service.impl;
 
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerStats;
 import de.metas.bpartner.service.IBPGroupDAO;
 import de.metas.bpartner.service.IBPartnerStatsBL;
 import de.metas.bpartner.service.IBPartnerStatsDAO;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.common.util.time.SystemTime;
 import de.metas.util.Services;
 import lombok.NonNull;

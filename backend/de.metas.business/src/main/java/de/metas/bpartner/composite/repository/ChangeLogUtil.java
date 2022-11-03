@@ -8,6 +8,7 @@ import de.metas.bpartner.composite.BPartner;
 import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerContactType;
+import de.metas.bpartner.service.creditlimit.BPartnerCreditLimit;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.interfaces.I_C_BPartner;
@@ -26,6 +27,7 @@ import org.adempiere.util.lang.ImmutablePair;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
@@ -189,6 +191,18 @@ final class ChangeLogUtil
 			.put(I_C_BP_BankAccount.COLUMNNAME_IsActive, BPartnerBankAccount.ACTIVE)
 			.build();
 
+	@VisibleForTesting
+	private static final ImmutableMap<String, String> C_BPARTNER_CREDIT_LIMIT_COLUMN_MAP = ImmutableMap
+			.<String, String>builder()
+			.put(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_CreditLimit_ID, BPartnerCreditLimit.ID)
+			.put(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_ID, BPartnerCreditLimit.BPARTNER_ID)
+			.put(I_C_BPartner_CreditLimit.COLUMNNAME_C_CreditLimit_Type_ID, BPartnerCreditLimit.CREDIT_LIMIT_TYPE_ID)
+			.put(I_C_BPartner_CreditLimit.COLUMNNAME_C_Currency_ID, BPartnerCreditLimit.CURRENCY_ID)
+			.put(I_C_BPartner_CreditLimit.COLUMNNAME_Amount, BPartnerCreditLimit.AMOUNT)
+			.put(I_C_BPartner_CreditLimit.COLUMNNAME_DateFrom, BPartnerCreditLimit.DATE_FROM)
+			.put(I_C_BPartner_CreditLimit.COLUMNNAME_IsActive, BPartnerCreditLimit.ACTIVE)
+			.build();
+
 	public static RecordChangeLog createBPartnerChangeLog(
 			@NonNull final I_C_BPartner bpartnerRecord,
 			@NonNull final ImmutableListMultimap<TableRecordReference, RecordChangeLogEntry> changeLogEntries)
@@ -343,6 +357,37 @@ final class ChangeLogUtil
 				.lastChangedTimestamp(lastChanged.getLeft())
 				.recordId(ComposedRecordId.singleKey(I_C_BP_BankAccount.COLUMNNAME_C_BP_BankAccount_ID, bankAccountRecord.getC_BP_BankAccount_ID()))
 				.tableName(I_C_BP_BankAccount.Table_Name)
+				.entries(domainEntries)
+				.build();
+	}
+
+	@NonNull
+	public static RecordChangeLog createCreditLimitChangeLog(
+			@NonNull final I_C_BPartner_CreditLimit creditLimitRecord,
+			@NonNull final CompositeRelatedRecords relatedRecords)
+	{
+		final ImmutableListMultimap<TableRecordReference, RecordChangeLogEntry> recordRef2LogEntries = relatedRecords.getRecordRef2LogEntries();
+		final ImmutableList<RecordChangeLogEntry> userEntries = recordRef2LogEntries.get(TableRecordReference.of(creditLimitRecord));
+
+		IPair<Instant, UserId> lastChanged = ImmutablePair.of(
+				TimeUtil.asInstant(creditLimitRecord.getUpdated()),
+				UserId.ofRepoIdOrNull(creditLimitRecord.getUpdatedBy()/* might be -1 */));
+
+		final List<RecordChangeLogEntry> domainEntries = new ArrayList<>();
+		for (final RecordChangeLogEntry userEntry : userEntries)
+		{
+			final Optional<RecordChangeLogEntry> entry = entryWithDomainFieldName(userEntry, C_BPARTNER_CREDIT_LIMIT_COLUMN_MAP);
+			lastChanged = latestOf(entry, lastChanged);
+			entry.ifPresent(domainEntries::add);
+		}
+
+		return RecordChangeLog.builder()
+				.createdByUserId(UserId.ofRepoIdOrNull(creditLimitRecord.getCreatedBy()/* might be -1 */))
+				.createdTimestamp(TimeUtil.asInstant(creditLimitRecord.getCreated()))
+				.lastChangedByUserId(lastChanged.getRight())
+				.lastChangedTimestamp(lastChanged.getLeft())
+				.recordId(ComposedRecordId.singleKey(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_CreditLimit_ID, creditLimitRecord.getC_BPartner_CreditLimit_ID()))
+				.tableName(I_C_BPartner_CreditLimit.Table_Name)
 				.entries(domainEntries)
 				.build();
 	}

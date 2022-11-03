@@ -33,16 +33,23 @@ import de.metas.common.bpartner.v2.request.JsonRequestLocation;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsert.JsonRequestLocationUpsertBuilder;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsertItem;
+import de.metas.common.bpartner.v2.request.creditLimit.JsonRequestCreditLimitUpsert;
+import de.metas.common.bpartner.v2.request.creditLimit.JsonRequestCreditLimitUpsertItem;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.rest_api.utils.MetasfreshId;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.compiere.model.I_C_CreditLimit_Type;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.UUID;
 
 import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.EXTERNAL_SYSTEM_NAME;
-import static org.assertj.core.api.Assertions.fail;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 @UtilityClass
 public class MockedDataUtil
@@ -100,6 +107,11 @@ public class MockedDataUtil
 
 		result.contacts(contactUpsert.build());
 
+		final JsonRequestCreditLimitUpsert.JsonRequestCreditLimitUpsertBuilder creditLimitUpsertBuilder = JsonRequestCreditLimitUpsert.builder()
+					.requestItem(createMockCreditLimit());
+
+		result.creditLimits(creditLimitUpsertBuilder.build());
+
 		return result.build();
 	}
 
@@ -142,5 +154,29 @@ public class MockedDataUtil
 				.contactIdentifier("ext-" + EXTERNAL_SYSTEM_NAME + "-" + externalId)
 				.contact(jsonRequestContact)
 				.build();
+	}
+
+	@NonNull
+	public JsonRequestCreditLimitUpsertItem createMockCreditLimit()
+	{
+		createCreditLimitType();
+
+		final JsonRequestCreditLimitUpsertItem jsonRequestCreditLimitUpsertItem = new JsonRequestCreditLimitUpsertItem();
+		jsonRequestCreditLimitUpsertItem.setType("Insurance");
+		jsonRequestCreditLimitUpsertItem.setAmount(BigDecimal.valueOf(10));
+		jsonRequestCreditLimitUpsertItem.setActive(true);
+		jsonRequestCreditLimitUpsertItem.setDateFrom(LocalDate.of(2022, 11, 2));
+
+		return jsonRequestCreditLimitUpsertItem;
+	}
+
+	private void createCreditLimitType()
+	{
+		final I_C_CreditLimit_Type creditLimitType = newInstance(I_C_CreditLimit_Type.class);
+		creditLimitType.setName("Insurance");
+		creditLimitType.setIsActive(true);
+
+		saveRecord(creditLimitType);
+
 	}
 }

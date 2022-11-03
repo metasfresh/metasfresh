@@ -11,85 +11,129 @@ Feature: create or update BPartner v2
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
     """
 {
-   "requestItems":[
-      {
-         "bpartnerIdentifier":"ext-ALBERTA-001",
-         "externalReferenceUrl":"www.ExternalReferenceURL.com",
-         "bpartnerComposite":{
-            "bpartner":{
-               "code":"test_code",
-               "name":"test_name",
-               "companyName":"test_company",
-               "parentId":null,
-               "phone":null,
-               "language":"de",
-               "url":null,
-               "group":"test-group",
-               "vatId":null
+  "requestItems": [
+    {
+      "bpartnerIdentifier": "ext-ALBERTA-001",
+      "externalReferenceUrl": "www.ExternalReferenceURL.com",
+      "bpartnerComposite": {
+        "bpartner": {
+          "code": "test_code",
+          "name": "test_name",
+          "companyName": "test_company",
+          "parentId": null,
+          "phone": null,
+          "language": "de",
+          "url": null,
+          "group": "test-group",
+          "vatId": null
+        },
+        "locations": {
+          "requestItems": [
+            {
+              "locationIdentifier": "gln-l11",
+              "location": {
+                "address1": "test_address1",
+                "address2": "test_address2",
+                "poBox": null,
+                "district": null,
+                "region": null,
+                "city": null,
+                "countryCode": "DE",
+                "gln": null,
+                "postal": null
+              }
             },
-            "locations":{
-               "requestItems":[
-                  {
-                     "locationIdentifier":"gln-l11",
-                     "location":{
-                        "address1":"test_address1",
-                        "address2":"test_address2",
-                        "poBox":null,
-                        "district":null,
-                        "region":null,
-                        "city":null,
-                        "countryCode":"DE",
-                        "gln":null,
-                        "postal":null
-                     }
-                  },
-                  {
-                     "locationIdentifier":"gln-l22",
-                     "location":{
-                        "address1":null,
-                        "address2":"test_address2",
-                        "poBox":"test_poBox",
-                        "district":null,
-                        "region":"test_region",
-                        "city":"test_city",
-                        "countryCode":"DE",
-                        "gln":null,
-                        "postal":null
-                     }
-                  }
-               ]
-            },
-            "contacts":{
-               "requestItems":[
-                  {
-                     "contactIdentifier":"ext-ALBERTA-c11",
-                     "contact":{
-                        "code":"c11",
-                        "name":"test_name_c11",
-                        "email":"test_email",
-                        "fax":"fax",
-                        "invoiceEmailEnabled" : false
-                     }
-                  },
-                  {
-                     "contactIdentifier":"ext-ALBERTA-c22",
-                     "contact":{
-                        "code":"c22",
-                        "name":"test_name_c22",
-                        "email":null,
-                        "fax":"test_fax",
-                        "invoiceEmailEnabled" : true
-                     }
-                  }
-               ]
+            {
+              "locationIdentifier": "gln-l22",
+              "location": {
+                "address1": null,
+                "address2": "test_address2",
+                "poBox": "test_poBox",
+                "district": null,
+                "region": "test_region",
+                "city": "test_city",
+                "countryCode": "DE",
+                "gln": null,
+                "postal": null
+              }
             }
-         }
+          ]
+        },
+        "contacts": {
+          "requestItems": [
+            {
+              "contactIdentifier": "ext-ALBERTA-c11",
+              "contact": {
+                "code": "c11",
+                "name": "test_name_c11",
+                "email": "test_email",
+                "fax": "fax",
+                "invoiceEmailEnabled": false
+              }
+            },
+            {
+              "contactIdentifier": "ext-ALBERTA-c22",
+              "contact": {
+                "code": "c22",
+                "name": "test_name_c22",
+                "email": null,
+                "fax": "test_fax",
+                "invoiceEmailEnabled": true
+              }
+            }
+          ]
+        },
+        "creditLimits": {
+          "requestItems": [
+            {
+              "type": "Insurance",
+              "typeSet": true,
+              "orgCode": "001",
+              "orgCodeSet": true,
+              "creditLimitMetasfreshId": null,
+              "creditLimitMetasfreshIdSet": false,
+              "dateFrom": [
+                2022,
+                10,
+                31
+              ],
+              "dateFromSet": true,
+              "currencyCode": "EUR",
+              "currencyCodeSet": true,
+              "active": true,
+              "activeSet": true
+            },
+            {
+              "type": "Insurance",
+              "typeSet": true,
+              "orgCode": "001",
+              "orgCodeSet": true,
+              "creditLimitMetasfreshId": null,
+              "creditLimitMetasfreshIdSet": false,
+              "dateFrom": [
+                2022,
+                10,
+                30
+              ],
+              "dateFromSet": true,
+              "currencyCode": "EUR",
+              "currencyCodeSet": true,
+              "active": false,
+              "activeSet": true
+            }
+          ],
+          "syncAdvise": {
+            "ifNotExists": "CREATE",
+            "ifExists": "UPDATE_MERGE"
+          }
+        }
       }
-   ],
-   "syncAdvise":{
-      "ifNotExists":"CREATE",
-      "ifExists":"UPDATE_MERGE"
-   }
+    }
+  ],
+  "syncAdvise": {
+    "ifNotExists": "CREATE",
+    "ifExists": "UPDATE_MERGE"
+  }
 }
 """
     Then verify that bPartner was created for externalIdentifier
@@ -103,6 +147,10 @@ Feature: create or update BPartner v2
       | bpartnerIdentifier | contactIdentifier | Name          | OPT.Email  | OPT.Fax  | Code | OPT.InvoiceEmailEnabled |
       | ext-ALBERTA-001    | ext-ALBERTA-c11   | test_name_c11 | test_email | fax      | c11  | false                   |
       | ext-ALBERTA-001    | ext-ALBERTA-c22   | test_name_c22 | null       | test_fax | c22  | true                    |
+    And verify that credit limit was created for bpartner
+      | ExternalBPartnerIdentifier | Amount | IsActive | C_CreditLimit_Type.Name | OPT.DateFrom |
+      | ext-ALBERTA-001            | 20     | true     | Insurance               | 2022-10-31   |
+      | ext-ALBERTA-001            | 12.5   | false    | Insurance               | 2022-10-30   |
     And verify that S_ExternalReference was created
       | ExternalSystem | Type     | ExternalReference | ExternalReferenceURL         |
       | ALBERTA        | BPartner | 001               | www.ExternalReferenceURL.com |

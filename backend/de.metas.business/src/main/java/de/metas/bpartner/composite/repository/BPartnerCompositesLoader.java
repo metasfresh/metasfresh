@@ -24,6 +24,8 @@ import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationAddressPart;
 import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.composite.SalesRep;
+import de.metas.bpartner.service.creditlimit.BPartnerCreditLimit;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.user.role.UserRole;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.common.util.StringUtils;
@@ -64,6 +66,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_Location;
@@ -79,7 +82,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import static de.metas.util.StringUtils.trimBlankToNull;
 import static org.compiere.util.TimeUtil.asLocalDate;
@@ -112,6 +114,7 @@ final class BPartnerCompositesLoader
 
 	private final LogEntriesRepository recordChangeLogRepository;
 	private final UserRoleRepository userRoleRepository;
+	private final BPartnerCreditLimitRepository bPartnerCreditLimitRepository;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
@@ -122,10 +125,12 @@ final class BPartnerCompositesLoader
 	@Builder
 	private BPartnerCompositesLoader(
 			@NonNull final LogEntriesRepository recordChangeLogRepository,
-			@NonNull final UserRoleRepository userRoleRepository)
+			@NonNull final UserRoleRepository userRoleRepository,
+			@NonNull final BPartnerCreditLimitRepository bPartnerCreditLimitRepository)
 	{
 		this.recordChangeLogRepository = recordChangeLogRepository;
 		this.userRoleRepository = userRoleRepository;
+		this.bPartnerCreditLimitRepository = bPartnerCreditLimitRepository;
 	}
 
 	public ImmutableMap<BPartnerId, BPartnerComposite> retrieveByIds(@NonNull final Collection<BPartnerId> bpartnerIds)
@@ -171,6 +176,7 @@ final class BPartnerCompositesLoader
 					.contacts(ofContactRecords(id, relatedRecords, timeZone))
 					.locations(ofBPartnerLocationRecords(id, relatedRecords))
 					.bankAccounts(ofBankAccountRecords(id, relatedRecords))
+					.creditLimits(ofCreditLimitsRecords(id, relatedRecords))
 					.build();
 
 			result.put(id, bpartnerComposite);
@@ -200,10 +206,14 @@ final class BPartnerCompositesLoader
 
 		final ImmutableListMultimap<BPartnerId, I_C_BP_BankAccount> bpBankAccounts = bpBankAccountDAO.getAllByBPartnerIds(bPartnerIds);
 
+		final ImmutableListMultimap<BPartnerId, I_C_BPartner_CreditLimit> bpCreditLimits = bPartnerCreditLimitRepository.getAllByBPartnerIds(bPartnerIds);
+		bpCreditLimits.forEach((bpartnerId, bPartnerCreditLimitRecord) -> allTableRecordRefs.add(TableRecordReference.of(bPartnerCreditLimitRecord)));
+
 		final LogEntriesQuery logEntriesQuery = LogEntriesQuery.builder()
 				.tableRecordReferences(allTableRecordRefs)
 				.followLocationIdChanges(true)
 				.build();
+
 		final ImmutableListMultimap<TableRecordReference, RecordChangeLogEntry> //
 				recordRef2LogEntries = recordChangeLogRepository.getLogEntriesForRecordReferences(logEntriesQuery);
 
@@ -213,6 +223,7 @@ final class BPartnerCompositesLoader
 				.locationId2Location(locationRecords)
 				.postalId2Postal(postalRecords)
 				.bpartnerId2BankAccounts(bpBankAccounts)
+				.bpartnerId2CreditLimits(bpCreditLimits)
 				.recordRef2LogEntries(recordRef2LogEntries)
 				.build();
 	}
@@ -568,6 +579,28 @@ final class BPartnerCompositesLoader
 				.changeLog(changeLog)
 				.bankId(bankId)
 				.build();
+	}
+
+	@NonNull
+	private ImmutableList<BPartnerCreditLimit> ofCreditLimitsRecords(
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final CompositeRelatedRecords relatedRecords)
+	{
+		return relatedRecords.getCreditLimitsByBPartnerId(bpartnerId)
+				.stream()
+				.map((record) -> ofCreditLimitRecord(record, relatedRecords))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private BPartnerCreditLimit ofCreditLimitRecord(
+			@NonNull final I_C_BPartner_CreditLimit creditLimitRecord,
+			@NonNull final CompositeRelatedRecords relatedRecords)
+	{
+		final RecordChangeLog changeLog = ChangeLogUtil.createCreditLimitChangeLog(creditLimitRecord, relatedRecords);
+
+		return BPartnerCreditLimitRepository.ofRecord(creditLimitRecord)
+				.withChangeLog(changeLog);
 	}
 
 	@Nullable

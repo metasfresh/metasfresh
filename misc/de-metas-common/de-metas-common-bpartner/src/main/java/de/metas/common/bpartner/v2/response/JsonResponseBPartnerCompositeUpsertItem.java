@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
 import lombok.Singular;
@@ -53,19 +54,25 @@ public class JsonResponseBPartnerCompositeUpsertItem
 	@JsonInclude(Include.NON_EMPTY)
 	List<JsonResponseUpsertItem> responseBankAccountItems;
 
+	@ApiModelProperty(position = 50)
+	@JsonInclude(Include.NON_EMPTY)
+	// List<JsonResponseUpsertItem> responseCreditLimitItems;
+	List<JsonMetasfreshId> responseCreditLimitItems;
+
 	@Builder
 	@JsonCreator
 	public JsonResponseBPartnerCompositeUpsertItem(
 			@JsonProperty("responseBPartnerItem") @Nullable final JsonResponseUpsertItem responseBPartnerItem,
 			@JsonProperty("responseLocationItems") @Singular final List<JsonResponseUpsertItem> responseLocationItems,
 			@JsonProperty("responseContactItems") @Singular final List<JsonResponseUpsertItem> responseContactItems,
-			@JsonProperty("responseBankAccountItems") @Singular final List<JsonResponseUpsertItem> responseBankAccountItems)
+			@JsonProperty("responseBankAccountItems") @Singular final List<JsonResponseUpsertItem> responseBankAccountItems,
+			@JsonProperty("responseCreditLimitItems") @Singular final List<JsonMetasfreshId> responseCreditLimitItems)
 	{
 		this.responseBPartnerItem = responseBPartnerItem;
 		this.responseLocationItems = responseLocationItems;
 		this.responseContactItems = responseContactItems;
 		this.responseBankAccountItems = responseBankAccountItems;
+		this.responseCreditLimitItems = responseCreditLimitItems;
 	}
-
 
 }

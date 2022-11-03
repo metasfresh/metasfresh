@@ -1,0 +1,76 @@
+{
+  "orgCode": "orgCode",
+  "jsonRequestBPartnerUpsert": {
+    "requestItems": [
+      {
+        "bpartnerIdentifier": "ext-SAP-sectionCode_BPartnerTest00",
+        "externalVersion": null,
+        "externalReferenceUrl": null,
+        "bpartnerComposite": {
+          "orgCode": "orgCode",
+          "bpartner": null,
+          "creditLimits": {
+            "requestItems": [
+              {
+                "amount": 8722.00,
+                "amountSet": true,
+                "type": "Insurance",
+                "typeSet": true,
+                "orgCode": "orgCode",
+                "orgCodeSet": true,
+                "creditLimitMetasfreshId": null,
+                "creditLimitMetasfreshIdSet": false,
+                "dateFrom": [
+                  2022,
+                  6,
+                  1
+                ],
+                "dateFromSet": true,
+                "currencyCode": "EUR",
+                "currencyCodeSet": true,
+                "active": true,
+                "activeSet": true
+              },
+              {
+                "amount": 600.00,
+                "amountSet": true,
+                "type": "Insurance",
+                "typeSet": true,
+                "orgCode": "orgCode",
+                "orgCodeSet": true,
+                "creditLimitMetasfreshId": null,
+                "creditLimitMetasfreshIdSet": false,
+                "dateFrom": [
+                  2022,
+                  7,
+                  1
+                ],
+                "dateFromSet": true,
+                "currencyCode": "EUR",
+                "currencyCodeSet": true,
+                "active": false,
+                "activeSet": true
+              }
+            ],
+            "syncAdvise": {
+              "ifNotExists": "CREATE",
+              "ifExists": "UPDATE_MERGE"
+            }
+          },
+          "syncAdvise": {
+            "ifNotExists": "CREATE",
+            "ifExists": "UPDATE_MERGE"
+          }
+        }
+      }
+    ],
+    "syncAdvise": {
+      "ifNotExists": "CREATE",
+      "ifExists": "UPDATE_MERGE"
+    }
+  }
+}
+
+
+
+

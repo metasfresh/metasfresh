@@ -89,6 +89,7 @@ de.metas.rest_api.v1.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
     "subjectMatterContact" : false,
     "value" : "contactRecord.value"
   } ],
+  "creditLimits" : [ ],
   "locations" : [ {
     "active" : true,
     "address1" : "locationRecord.address1",

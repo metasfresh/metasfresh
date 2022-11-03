@@ -32,6 +32,7 @@ import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerContactType;
+import de.metas.bpartner.service.creditlimit.BPartnerCreditLimit;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
@@ -178,12 +179,14 @@ public class OrgChangeCommand
 			final List<BPartnerLocation> newLocations = getOrCreateLocations(bpartnerAndSubscriptions, destinationBPartnerComposite);
 			final List<BPartnerContact> newContacts = getOrCreateContacts(bpartnerAndSubscriptions, destinationBPartnerComposite);
 			final List<BPartnerBankAccount> newBPBankAccounts = getOrCreateBPBankAccounts(bpartnerAndSubscriptions, destinationBPartnerComposite);
+			final List<BPartnerCreditLimit> newBPCreditLimits = getOrCreateBPCreditLimits(bpartnerAndSubscriptions, destinationBPartnerComposite);
 
 			destinationBPartnerComposite = destinationBPartnerComposite.deepCopy()
 					.toBuilder()
 					.locations(newLocations)
 					.contacts(newContacts)
 					.bankAccounts(newBPBankAccounts)
+					.creditLimits(newBPCreditLimits)
 					.build();
 			bpCompositeRepo.save(destinationBPartnerComposite, false);
 		}
@@ -692,6 +695,55 @@ public class OrgChangeCommand
 				.purchaseDefaultContact(purchaseDefaultContact)
 				.foundPurchaseDefaultContact(purchaseDefaultContact != null)
 				.build();
+	}
+
+	@NonNull
+	private List<BPartnerCreditLimit> getOrCreateBPCreditLimits(
+			@NonNull final OrgChangeBPartnerComposite orgChangeBPartnerComposite,
+			@NonNull final BPartnerComposite destinationBPartnerComposite)
+	{
+		final List<BPartnerCreditLimit> sourceCreditLimits = orgChangeBPartnerComposite.getCreditLimits();
+
+		final List<BPartnerCreditLimit> existingCreditLimitsInDestinationPartner =
+				destinationBPartnerComposite
+						.getCreditLimits();
+
+		final List<BPartnerCreditLimit> newCreditLimits = new ArrayList<>();
+
+		for (final BPartnerCreditLimit sourceCreditLimit : sourceCreditLimits)
+		{
+			final OrgMappingId creditLimitOrgMappingId = orgMappingRepo.getCreateOrgMappingId(sourceCreditLimit);
+
+			sourceCreditLimit.setOrgMappingId(creditLimitOrgMappingId);
+
+			final BPartnerCreditLimit matchingCreditLimit = existingCreditLimitsInDestinationPartner.stream()
+					.filter(bpartnerCreditLimit -> OrgMappingId.equals(creditLimitOrgMappingId, bpartnerCreditLimit.getOrgMappingId()))
+					.findFirst()
+					.orElse(null);
+
+			if (matchingCreditLimit != null)
+			{
+				matchingCreditLimit.setActive(true);
+
+				loggable.addLog("Credit Limit {} from the existing partner {} was preserved.",
+								matchingCreditLimit,
+								destinationBPartnerComposite.getBpartner());
+			}
+			else
+			{
+				final BPartnerCreditLimit newCreditLimit = sourceCreditLimit.toBuilder()
+						.id(null)
+						.active(true)
+						.build();
+
+				newCreditLimits.add(newCreditLimit);
+
+				loggable.addLog("Credit Limit {} was created for the destination partner {}.",
+								newCreditLimit,
+								destinationBPartnerComposite.getBpartner());
+			}
+		}
+		return newCreditLimits;
 	}
 
 	private void unmarkDefaultLocationsFromDestination(@NonNull final DefaultLocations sourceDefaultLocations,

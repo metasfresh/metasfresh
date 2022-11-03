@@ -47,7 +47,6 @@ import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.IDocTypeDAO;
 import de.metas.i18n.TranslatableStrings;
-import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
