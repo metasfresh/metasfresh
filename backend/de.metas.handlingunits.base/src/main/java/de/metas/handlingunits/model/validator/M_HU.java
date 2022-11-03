@@ -18,21 +18,24 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Interceptor(I_M_HU.class)
+@Component
 public class M_HU
 {
-	public static final M_HU INSTANCE = new M_HU();
-
 	private final transient Logger logger = LogManager.getLogger(getClass());
 
-	private M_HU()
+	private final HUUniqueAttributesService huUniqueAttributesService;
+
+
+	public M_HU(@NonNull final HUUniqueAttributesService huUniqueAttributesService)
 	{
+		this.huUniqueAttributesService = huUniqueAttributesService;
 	}
 
 	/**
@@ -87,7 +90,6 @@ public class M_HU
 	public void handleHUUniqueAttributes(@NonNull final I_M_HU hu)
 	{
 		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-		final HUUniqueAttributesService huUniqueAttributesService = SpringContextHolder.instance.getBean(HUUniqueAttributesService.class);
 		final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
 		if (huStatusBL.isQtyOnHand(hu.getHUStatus()))
 		{
