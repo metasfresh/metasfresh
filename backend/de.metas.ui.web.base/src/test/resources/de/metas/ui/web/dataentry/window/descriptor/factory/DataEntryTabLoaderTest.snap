@@ -1743,6 +1743,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
         "widgetType" : "Integer"
       },
       "printable" : false,
+      "queryIfNoFilters" : true,
       "readonlyLogic" : "1=0",
       "refreshViewOnChangeEvents" : false,
       "soTrx" : null,
@@ -2423,6 +2424,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
         "widgetType" : "Integer"
       },
       "printable" : false,
+      "queryIfNoFilters" : true,
       "readonlyLogic" : "1=0",
       "refreshViewOnChangeEvents" : false,
       "soTrx" : null,
@@ -2431,6 +2433,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
   },
   "internalName" : "dataEntryTab_internalName",
   "printable" : false,
+  "queryIfNoFilters" : true,
   "readonlyLogic" : "1=0",
   "refreshViewOnChangeEvents" : false,
   "soTrx" : null,
