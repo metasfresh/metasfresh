@@ -44,7 +44,7 @@ public class HUUniqueAttributesRepository
 
 	public void createOrUpdateHUUniqueAttribute(@NonNull final HUUniqueAttributeCreateRequest huUniqueAttributeCreateRequest)
 	{
-		final I_M_HU_UniqueAttribute existingHUUniqueAttribute = retrieveHUUniqueAttributeForHU(huUniqueAttributeCreateRequest.getHuId());
+		final I_M_HU_UniqueAttribute existingHUUniqueAttribute = retrieveHUUniqueAttributeForHU(huUniqueAttributeCreateRequest);
 
 		if (existingHUUniqueAttribute != null)
 		{
@@ -70,10 +70,12 @@ public class HUUniqueAttributesRepository
 		save(huUniqueAttributeRecord);
 	}
 
-	private I_M_HU_UniqueAttribute retrieveHUUniqueAttributeForHU(@NonNull final HuId huId)
+	private I_M_HU_UniqueAttribute retrieveHUUniqueAttributeForHU(@NonNull final HUUniqueAttributeCreateRequest huUniqueAttributeCreateRequest)
 	{
 		return queryBL.createQueryBuilder(I_M_HU_UniqueAttribute.class)
-				.addEqualsFilter(I_M_HU_UniqueAttribute.COLUMNNAME_M_HU_ID, huId)
+				.addEqualsFilter(I_M_HU_UniqueAttribute.COLUMNNAME_M_HU_ID, huUniqueAttributeCreateRequest.getHuId())
+				.addEqualsFilter(I_M_HU_UniqueAttribute.COLUMNNAME_M_Attribute_ID, huUniqueAttributeCreateRequest.getAttributeId())
+				.addEqualsFilter(I_M_HU_UniqueAttribute.COLUMNNAME_M_Product_ID, huUniqueAttributeCreateRequest.getProductId())
 				.create()
 				.firstOnly(I_M_HU_UniqueAttribute.class);
 	}
