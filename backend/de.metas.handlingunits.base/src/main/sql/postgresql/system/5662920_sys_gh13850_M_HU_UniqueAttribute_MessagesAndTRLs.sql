@@ -62,15 +62,15 @@ CREATE UNIQUE INDEX M_HU_UniqueAttribute_Unique_Product_Attribute_And_Value ON M
 ;
 
 -- 2022-11-02T17:15:38.412Z
-UPDATE AD_Index_Table_Trl SET ErrorMsg='Es existiert bereits eine aktive, kommissionierte oder ausgegebene Handling Unit mit demselben Merkmalswert.',Updated=TO_TIMESTAMP('2022-11-02 19:15:38.409','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Index_Table_ID=540711 AND AD_Language='de_CH'
+UPDATE AD_Index_Table_Trl SET ErrorMsg='Es existiert bereits eine aktive, kommissionierte oder zugeteilte Handling Unit mit demselben Merkmalswert.',Updated=TO_TIMESTAMP('2022-11-02 19:15:38.409','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Index_Table_ID=540711 AND AD_Language='de_CH'
 ;
 
 -- 2022-11-02T17:15:41.561Z
-UPDATE AD_Index_Table_Trl SET ErrorMsg='Es existiert bereits eine aktive, kommissionierte oder ausgegebene Handling Unit mit demselben Merkmalswert.',Updated=TO_TIMESTAMP('2022-11-02 19:15:41.559','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Index_Table_ID=540711 AND AD_Language='nl_NL'
+UPDATE AD_Index_Table_Trl SET ErrorMsg='Es existiert bereits eine aktive, kommissionierte oder zugeteilte Handling Unit mit demselben Merkmalswert.',Updated=TO_TIMESTAMP('2022-11-02 19:15:41.559','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Index_Table_ID=540711 AND AD_Language='nl_NL'
 ;
 
 -- 2022-11-02T17:15:45.667Z
-UPDATE AD_Index_Table_Trl SET ErrorMsg='Es existiert bereits eine aktive, kommissionierte oder ausgegebene Handling Unit mit demselben Merkmalswert.',Updated=TO_TIMESTAMP('2022-11-02 19:15:45.665','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Index_Table_ID=540711 AND AD_Language='de_DE'
+UPDATE AD_Index_Table_Trl SET ErrorMsg='Es existiert bereits eine aktive, kommissionierte oder zugeteilte Handling Unit mit demselben Merkmalswert.',Updated=TO_TIMESTAMP('2022-11-02 19:15:45.665','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Index_Table_ID=540711 AND AD_Language='de_DE'
 ;
 
 -- 2022-11-02T17:15:56.912Z
@@ -103,7 +103,7 @@ DELETE FROM AD_Element_Link WHERE AD_Window_ID=540344
 ;
 
 -- 2022-11-02T17:18:41.767Z
-UPDATE AD_Element_Trl SET Description='Bei Aktivierung kann es nur eine aktive, ausgegebene oder kommissionierte Handling Unit für ein Produkt mit demselben Nicht-Null-Wert für dieses Merkmal geben.', Help='Bei Aktivierung kann es nur eine aktive, ausgegebene oder kommissionierte Handling Unit für ein Produkt mit demselben Nicht-Null-Wert für dieses Merkmal geben.',Updated=TO_TIMESTAMP('2022-11-02 19:18:41.764','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=581629 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET Description='Bei Aktivierung kann es nur eine aktive, zugeteilte oder kommissionierte Handling Unit für ein Produkt mit demselben Nicht-Null-Wert für dieses Merkmal geben.', Help='Bei Aktivierung kann es nur eine aktive, zugeteilte oder kommissionierte Handling Unit für ein Produkt mit demselben Nicht-Null-Wert für dieses Merkmal geben.',Updated=TO_TIMESTAMP('2022-11-02 19:18:41.764','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=581629 AND AD_Language='de_CH'
 ;
 
 -- 2022-11-02T17:18:41.773Z
@@ -111,7 +111,7 @@ UPDATE AD_Element_Trl SET Description='Bei Aktivierung kann es nur eine aktive, 
 ;
 
 -- 2022-11-02T17:18:47.254Z
-UPDATE AD_Element_Trl SET Description='Bei Aktivierung kann es nur eine aktive, ausgegebene oder kommissionierte Handling Unit für ein Produkt mit demselben Nicht-Null-Wert für dieses Merkmal geben.', Help='Bei Aktivierung kann es nur eine aktive, ausgegebene oder kommissionierte Handling Unit für ein Produkt mit demselben Nicht-Null-Wert für dieses Merkmal geben.',Updated=TO_TIMESTAMP('2022-11-02 19:18:47.252','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=581629 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET Description='Bei Aktivierung kann es nur eine aktive, zugeteilte oder kommissionierte Handling Unit für ein Produkt mit demselben Nicht-Null-Wert für dieses Merkmal geben.', Help='Bei Aktivierung kann es nur eine aktive, zugeteilte oder kommissionierte Handling Unit für ein Produkt mit demselben Nicht-Null-Wert für dieses Merkmal geben.',Updated=TO_TIMESTAMP('2022-11-02 19:18:47.252','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Element_ID=581629 AND AD_Language='de_DE'
 ;
 
 -- 2022-11-02T17:18:47.256Z
@@ -123,27 +123,27 @@ UPDATE AD_Element_Trl SET Description='Bei Aktivierung kann es nur eine aktive, 
 ;
 
 -- 2022-11-02T17:18:47.263Z
-UPDATE AD_Column SET ColumnName=NULL, Name='Unique', Description='Bei Aktivierung kann es nur eine aktive, ausgegebene oder kommissionierte Handling Unit für ein Produkt mit demselben Nicht-Null-Wert für dieses Merkmal geben.', Help='Bei Aktivierung kann es nur eine aktive, ausgegebene oder kommissionierte Handling Unit für ein Produkt mit demselben Nicht-Null-Wert für dieses Merkmal geben.' WHERE AD_Element_ID=581629
+UPDATE AD_Column SET ColumnName=NULL, Name='Unique', Description='Bei Aktivierung kann es nur eine aktive, zugeteilte oder kommissionierte Handling Unit für ein Produkt mit demselben Nicht-Null-Wert für dieses Merkmal geben.', Help='Bei Aktivierung kann es nur eine aktive, zugeteilte oder kommissionierte Handling Unit für ein Produkt mit demselben Nicht-Null-Wert für dieses Merkmal geben.' WHERE AD_Element_ID=581629
 ;
 
 -- 2022-11-02T17:18:47.264Z
-UPDATE AD_Process_Para SET ColumnName=NULL, Name='Unique', Description='Bei Aktivierung kann es nur eine aktive, ausgegebene oder kommissionierte Handling Unit für ein Produkt mit demselben Nicht-Null-Wert für dieses Merkmal geben.', Help='Bei Aktivierung kann es nur eine aktive, ausgegebene oder kommissionierte Handling Unit für ein Produkt mit demselben Nicht-Null-Wert für dieses Merkmal geben.' WHERE AD_Element_ID=581629 AND IsCentrallyMaintained='Y'
+UPDATE AD_Process_Para SET ColumnName=NULL, Name='Unique', Description='Bei Aktivierung kann es nur eine aktive, zugeteilte oder kommissionierte Handling Unit für ein Produkt mit demselben Nicht-Null-Wert für dieses Merkmal geben.', Help='Bei Aktivierung kann es nur eine aktive, zugeteilte oder kommissionierte Handling Unit für ein Produkt mit demselben Nicht-Null-Wert für dieses Merkmal geben.' WHERE AD_Element_ID=581629 AND IsCentrallyMaintained='Y'
 ;
 
 -- 2022-11-02T17:18:47.265Z
-UPDATE AD_Field SET Name='Unique', Description='Bei Aktivierung kann es nur eine aktive, ausgegebene oder kommissionierte Handling Unit für ein Produkt mit demselben Nicht-Null-Wert für dieses Merkmal geben.', Help='Bei Aktivierung kann es nur eine aktive, ausgegebene oder kommissionierte Handling Unit für ein Produkt mit demselben Nicht-Null-Wert für dieses Merkmal geben.' WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=581629) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 581629)
+UPDATE AD_Field SET Name='Unique', Description='Bei Aktivierung kann es nur eine aktive, zugeteilte oder kommissionierte Handling Unit für ein Produkt mit demselben Nicht-Null-Wert für dieses Merkmal geben.', Help='Bei Aktivierung kann es nur eine aktive, zugeteilte oder kommissionierte Handling Unit für ein Produkt mit demselben Nicht-Null-Wert für dieses Merkmal geben.' WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=581629) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 581629)
 ;
 
 -- 2022-11-02T17:18:47.273Z
-UPDATE AD_Tab SET Name='Unique', Description='Bei Aktivierung kann es nur eine aktive, ausgegebene oder kommissionierte Handling Unit für ein Produkt mit demselben Nicht-Null-Wert für dieses Merkmal geben.', Help='Bei Aktivierung kann es nur eine aktive, ausgegebene oder kommissionierte Handling Unit für ein Produkt mit demselben Nicht-Null-Wert für dieses Merkmal geben.', CommitWarning = NULL WHERE AD_Element_ID = 581629
+UPDATE AD_Tab SET Name='Unique', Description='Bei Aktivierung kann es nur eine aktive, zugeteilte oder kommissionierte Handling Unit für ein Produkt mit demselben Nicht-Null-Wert für dieses Merkmal geben.', Help='Bei Aktivierung kann es nur eine aktive, zugeteilte oder kommissionierte Handling Unit für ein Produkt mit demselben Nicht-Null-Wert für dieses Merkmal geben.', CommitWarning = NULL WHERE AD_Element_ID = 581629
 ;
 
 -- 2022-11-02T17:18:47.275Z
-UPDATE AD_WINDOW SET Name='Unique', Description='Bei Aktivierung kann es nur eine aktive, ausgegebene oder kommissionierte Handling Unit für ein Produkt mit demselben Nicht-Null-Wert für dieses Merkmal geben.', Help='Bei Aktivierung kann es nur eine aktive, ausgegebene oder kommissionierte Handling Unit für ein Produkt mit demselben Nicht-Null-Wert für dieses Merkmal geben.' WHERE AD_Element_ID = 581629
+UPDATE AD_WINDOW SET Name='Unique', Description='Bei Aktivierung kann es nur eine aktive, zugeteilte oder kommissionierte Handling Unit für ein Produkt mit demselben Nicht-Null-Wert für dieses Merkmal geben.', Help='Bei Aktivierung kann es nur eine aktive, zugeteilte oder kommissionierte Handling Unit für ein Produkt mit demselben Nicht-Null-Wert für dieses Merkmal geben.' WHERE AD_Element_ID = 581629
 ;
 
 -- 2022-11-02T17:18:47.276Z
-UPDATE AD_Menu SET   Name = 'Unique', Description = 'Bei Aktivierung kann es nur eine aktive, ausgegebene oder kommissionierte Handling Unit für ein Produkt mit demselben Nicht-Null-Wert für dieses Merkmal geben.', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 581629
+UPDATE AD_Menu SET   Name = 'Unique', Description = 'Bei Aktivierung kann es nur eine aktive, zugeteilte oder kommissionierte Handling Unit für ein Produkt mit demselben Nicht-Null-Wert für dieses Merkmal geben.', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 581629
 ;
 
 -- 2022-11-02T17:18:58.055Z
