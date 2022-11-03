@@ -168,8 +168,14 @@ export function processNewRecord(entity, docType, docId) {
   );
 }
 
-export function openFile(entity, docType, docId, fileType, fileId) {
-  const url = `${config.API_URL}/${entity}/${docType}/${docId}/${fileType}/${fileId}`;
+export function openFile(entity, docType, docId, fileType, fileId, options) {
+  let filenameNorm = fileId.replace(/[/\\?%*:|"<>]/g, '-');
+  filenameNorm = encodeURIComponent(filenameNorm);
+
+  let url = `${config.API_URL}/${entity}/${docType}/${docId}/${fileType}/${filenameNorm}`;
+  if (options) {
+    url += '?' + options;
+  }
 
   window.open(url, '_blank');
 }
