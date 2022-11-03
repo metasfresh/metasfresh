@@ -105,7 +105,7 @@ public class PPOrderAllocatorService
 				.packingMaterialId(ppOrderCandidatePojo.getPpOrderData().getPackingMaterialId())
 				//dev-note: there is a custom logic for completing PPOrder when created from PP_Order_Candidate (due to MD_Candidates interaction)
 				//see: org.eevolution.productioncandidate.service.produce.PPOrderProducerFromCandidate.processPPOrderCandidates
-				.seqNo(candidateRecord.getSeqNo())
+				.seqNo(candidateRecord.getOrderCandidateSeqNo())
 				.completeDocument(false);
 	}
 

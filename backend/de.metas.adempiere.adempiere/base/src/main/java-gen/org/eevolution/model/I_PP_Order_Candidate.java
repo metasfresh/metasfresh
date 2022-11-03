@@ -348,6 +348,29 @@ public interface I_PP_Order_Candidate
 	String COLUMNNAME_M_Warehouse_ID = "M_Warehouse_ID";
 
 	/**
+	 * Set Kandidat Reihenfolge.
+	 * Record with lowest number will be processed first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setOrderCandidateSeqNo (int OrderCandidateSeqNo);
+
+	/**
+	 * Get Kandidat Reihenfolge.
+	 * Record with lowest number will be processed first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getOrderCandidateSeqNo();
+
+	ModelColumn<I_PP_Order_Candidate, Object> COLUMN_OrderCandidateSeqNo = new ModelColumn<>(I_PP_Order_Candidate.class, "OrderCandidateSeqNo", null);
+	String COLUMNNAME_OrderCandidateSeqNo = "OrderCandidateSeqNo";
+
+	/**
 	 * Set Manufacturing candidate.
 	 *
 	 * <br>Type: ID
@@ -505,31 +528,6 @@ public interface I_PP_Order_Candidate
 
 	ModelColumn<I_PP_Order_Candidate, Object> COLUMN_QtyToProcess = new ModelColumn<>(I_PP_Order_Candidate.class, "QtyToProcess", null);
 	String COLUMNNAME_QtyToProcess = "QtyToProcess";
-
-	/**
-	 * Set SeqNo.
-	 * Method of ordering records;
- lowest number comes first
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setSeqNo (int SeqNo);
-
-	/**
-	 * Get SeqNo.
-	 * Method of ordering records;
- lowest number comes first
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getSeqNo();
-
-	ModelColumn<I_PP_Order_Candidate, Object> COLUMN_SeqNo = new ModelColumn<>(I_PP_Order_Candidate.class, "SeqNo", null);
-	String COLUMNNAME_SeqNo = "SeqNo";
 
 	/**
 	 * Set Resource.

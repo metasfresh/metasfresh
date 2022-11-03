@@ -213,6 +213,18 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	}
 
 	@Override
+	public void setOrderCandidateSeqNo (final int OrderCandidateSeqNo)
+	{
+		set_Value (COLUMNNAME_OrderCandidateSeqNo, OrderCandidateSeqNo);
+	}
+
+	@Override
+	public int getOrderCandidateSeqNo() 
+	{
+		return get_ValueAsInt(COLUMNNAME_OrderCandidateSeqNo);
+	}
+
+	@Override
 	public void setPP_Order_Candidate_ID (final int PP_Order_Candidate_ID)
 	{
 		if (PP_Order_Candidate_ID < 1) 
@@ -330,18 +342,6 @@ public class X_PP_Order_Candidate extends org.compiere.model.PO implements I_PP_
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyToProcess);
 		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setSeqNo (final int SeqNo)
-	{
-		set_Value (COLUMNNAME_SeqNo, SeqNo);
-	}
-
-	@Override
-	public int getSeqNo() 
-	{
-		return get_ValueAsInt(COLUMNNAME_SeqNo);
 	}
 
 	@Override

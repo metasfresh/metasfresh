@@ -109,7 +109,7 @@ public class CreateOrderCandidateCommand
 			ppOrderCandidateRecord.setProcessed(true);
 		}
 
-		ppOrderCandidateRecord.setSeqNo(calculatePPOrderCandidateSeqNo(ppOrderCandidateRecord));
+		ppOrderCandidateRecord.setOrderCandidateSeqNo(calculatePPOrderCandidateSeqNo(ppOrderCandidateRecord));
 
 		ppOrderCandidateRecord.setM_HU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(request.getPackingMaterialId()));
 
@@ -128,7 +128,7 @@ public class CreateOrderCandidateCommand
 				.createQueryBuilder(I_PP_Order_Candidate.class, ppOrderCandidateRecord)
 				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_M_Product_ID, ppOrderCandidateRecord.getM_Product_ID())
 				.create()
-				.aggregate(I_PP_Order_Candidate.COLUMNNAME_SeqNo, IQuery.Aggregate.MAX, int.class);
+				.aggregate(I_PP_Order_Candidate.COLUMNNAME_OrderCandidateSeqNo, IQuery.Aggregate.MAX, int.class);
 
 		return (Math.max(lastSeqNo, 0)) / 10 * 10 + 10;
 	}
