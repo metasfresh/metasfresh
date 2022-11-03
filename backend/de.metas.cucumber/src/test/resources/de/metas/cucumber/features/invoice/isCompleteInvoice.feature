@@ -3,7 +3,7 @@ Feature: completeInvoice option when processing invoice candidates
 
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
-    Given set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And set sys config boolean value true for sys config de.metas.report.jasper.IsMockReportService
 
   @from:cucumber
