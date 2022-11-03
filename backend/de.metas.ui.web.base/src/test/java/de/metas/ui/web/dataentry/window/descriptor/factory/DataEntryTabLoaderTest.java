@@ -1,23 +1,6 @@
 package de.metas.ui.web.dataentry.window.descriptor.factory;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
-import static java.lang.Integer.parseInt;
-
-import java.util.List;
-
-import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.table.api.AdTableId;
-import org.adempiere.test.AdempiereTestHelper;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
-
 import de.metas.dataentry.DataEntryFieldId;
 import de.metas.dataentry.DataEntryListValueId;
 import de.metas.dataentry.DataEntrySectionId;
@@ -35,6 +18,7 @@ import de.metas.dataentry.layout.DataEntrySubTab;
 import de.metas.dataentry.layout.DataEntryTab;
 import de.metas.dataentry.layout.DataEntryTab.DocumentLinkColumnName;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.test.SnapshotFunctionFactory;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvidersService;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutOptions;
@@ -42,6 +26,20 @@ import de.metas.ui.web.window.datatypes.json.JSONDocumentLayoutTab;
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutDetailDescriptor;
 import de.metas.user.UserRepository;
+import org.adempiere.ad.element.api.AdWindowId;
+import org.adempiere.ad.table.api.AdTableId;
+import org.adempiere.test.AdempiereTestHelper;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
+import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
+import static java.lang.Integer.parseInt;
 
 /*
  * #%L
@@ -105,7 +103,7 @@ public class DataEntryTabLoaderTest
 	@BeforeAll
 	public static void beforeAll()
 	{
-		start(AdempiereTestHelper.SNAPSHOT_CONFIG);
+		start(AdempiereTestHelper.SNAPSHOT_CONFIG, SnapshotFunctionFactory.newFunction());
 	}
 
 	@AfterAll
@@ -115,7 +113,7 @@ public class DataEntryTabLoaderTest
 	}
 
 	@Test
-	public void createLayoutDescriptors_verify_DocumentLayoutDetailDescriptor() throws JsonProcessingException
+	public void createLayoutDescriptors_verify_DocumentLayoutDetailDescriptor()
 	{
 		final DataEntryTab dataEntryTab = createSimpleDataEntryTab();
 
@@ -131,7 +129,7 @@ public class DataEntryTabLoaderTest
 	}
 
 	@Test
-	public void createLayoutDescriptors_verify_JSONDocumentLayoutTab() throws JsonProcessingException
+	public void createLayoutDescriptors_verify_JSONDocumentLayoutTab()
 	{
 		final DataEntryTab dataEntryTab = createSimpleDataEntryTab();
 
