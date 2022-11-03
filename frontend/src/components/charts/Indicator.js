@@ -10,6 +10,9 @@ const ELAPSED_TIME_REFRESH_INTERVAL_MILLIS = 60000;
  * @returns renders a string like "a minute ago" for a given timestamp
  */
 function computeRenderedLastComputedString(computedTimestamp) {
+  if (!computedTimestamp) {
+    return null;
+  }
   return moment(computedTimestamp).fromNow();
 }
 
@@ -45,9 +48,9 @@ class Indicator extends Component {
 
   updateRenderedLastComputedString = () => {
     const { data } = this.props;
-    const { computedTimestamp } = data;
-    const renderedLastComputedString =
-      computeRenderedLastComputedString(computedTimestamp);
+    const renderedLastComputedString = computeRenderedLastComputedString(
+      data?.computedTimestamp
+    );
     return this.setState({ renderedLastComputedString });
   };
 
