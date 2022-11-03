@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13784](https://github.com/metasfresh/metasfresh/issues/13784) Price difference from offer to order(Add IsKeepProposalPrices)
   * [#13854](https://github.com/metasfresh/metasfresh/pull/13854) Set incoterms from partners only if has a value
   * [#13857](https://github.com/metasfresh/metasfresh/pull/13857) webui: (re)evaluate document field readonly and display logic based on user's role
   * [#13855](https://github.com/metasfresh/metasfresh/pull/13855) Tax window: fix field names
