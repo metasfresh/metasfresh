@@ -12,6 +12,7 @@ import de.metas.security.IRolesTreeNode;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.Role;
+import de.metas.security.RoleGroup;
 import de.metas.security.RoleId;
 import de.metas.security.RoleInclude;
 import de.metas.security.TableAccessLevel;
@@ -78,12 +79,13 @@ public class RoleDAO implements IRoleDAO
 				.collect(GuavaCollectors.toImmutableMapByKey(Role::getId));
 	}
 
-	private static Role toRole(final I_AD_Role record)
+	private static Role toRole(@NonNull final I_AD_Role record)
 	{
 		return Role.builder()
 				.id(RoleId.ofRepoId(record.getAD_Role_ID()))
 				//
 				.name(record.getName())
+				.roleGroup(RoleGroup.ofNullableString(record.getRole_Group()))
 				.description(record.getDescription())
 				//
 				.clientId(ClientId.ofRepoId(record.getAD_Client_ID()))

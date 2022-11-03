@@ -30,6 +30,9 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.rest_api.utils.JsonCreatedUpdatedInfo;
+import de.metas.sectionCode.SectionCode;
+import de.metas.sectionCode.SectionCodeId;
+import de.metas.sectionCode.SectionCodeRepository;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
@@ -63,6 +66,13 @@ public class ProductsServicesFacade
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
+	private final SectionCodeRepository sectionCodeRepository;
+
+	public ProductsServicesFacade(@NonNull final SectionCodeRepository sectionCodeRepository)
+	{
+		this.sectionCodeRepository = sectionCodeRepository;
+	}
+
 	public Stream<I_M_Product> streamAllProducts(@Nullable final Instant since)
 	{
 		return productsRepo.streamAllProducts(since);
@@ -83,6 +93,12 @@ public class ProductsServicesFacade
 	{
 		final I_C_UOM uom = uomsRepo.getById(uomId);
 		return uom.getUOMSymbol();
+	}
+
+	@NonNull
+	public SectionCode getSectionCode(@NonNull final SectionCodeId sectionCodeId)
+	{
+		return sectionCodeRepository.getById(sectionCodeId);
 	}
 
 	public List<I_C_BPartner_Product> getBPartnerProductRecords(final Set<ProductId> productIds)

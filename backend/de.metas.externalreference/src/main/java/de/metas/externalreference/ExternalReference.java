@@ -24,9 +24,7 @@ package de.metas.externalreference;
 
 import de.metas.organization.OrgId;
 import de.metas.util.lang.RepoIdAware;
-import lombok.AccessLevel;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -71,8 +69,9 @@ public class ExternalReference
 	String externalReferenceUrl;
 
 	@Nullable
-	@Getter(AccessLevel.NONE)
 	Integer externalSystemParentConfigId;
+
+	boolean isReadOnlyInMetasfresh;
 
 	int recordId;
 

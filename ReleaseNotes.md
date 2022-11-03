@@ -12,6 +12,24 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13784](https://github.com/metasfresh/metasfresh/issues/13784) Price difference from offer to order(Add IsKeepProposalPrices)
+  * [#13854](https://github.com/metasfresh/metasfresh/pull/13854) Set incoterms from partners only if has a value
+  * [#13857](https://github.com/metasfresh/metasfresh/pull/13857) webui: (re)evaluate document field readonly and display logic based on user's role
+  * [#13855](https://github.com/metasfresh/metasfresh/pull/13855) Tax window: fix field names
+  * [#13789](https://github.com/metasfresh/metasfresh/issues/13789) Investigate github actions failures 
+  * [#13801](https://github.com/metasfresh/metasfresh/issues/13801) Add IsAlwaysUpdatable and ReadOnlyLogic to AD_Field 
+  * [#13822](https://github.com/metasfresh/metasfresh/issues/13822) Add fields for Sales 
+  * [#13840](https://github.com/metasfresh/metasfresh/issues/13840) Add support for Soehenle scales
+  * [#13831](https://github.com/metasfresh/metasfresh/issues/13831) [Cucumber] Import file - identify account by IBAN
+  * [#13833](https://github.com/metasfresh/metasfresh/issues/13833) Add Role_Group to role window and context
+  * [#13805](https://github.com/metasfresh/metasfresh/pull/13805) Fix github actions failures
+  * [#13813](https://github.com/metasfresh/metasfresh/issues/13813) InvoiceCandidate - Allow creating invoices with DocStatus=IP
+  * [#13812](https://github.com/metasfresh/metasfresh/issues/13812) HU Clearance status: Test Pending
+  * [#13778](https://github.com/metasfresh/metasfresh/issues/13778) Externally referenced records: show ReadOnly reason in UI
+  * [#13745](https://github.com/metasfresh/metasfresh/issues/13745) Import material (product) data from SAP
+  * [#13685](https://github.com/metasfresh/metasfresh/issues/13685) Allow externally maintained records to be read-only in metasfresh
+  * [#13758](https://github.com/metasfresh/metasfresh/issues/13758) IEUE045.U01 Incoming payment management
+  * [#13685](https://github.com/metasfresh/metasfresh/issues/13685) Allow externally maintained records to be read-only in metasfresh 
   * [#13755](https://github.com/metasfresh/metasfresh/issues/13755) Look up C_OLcand.M_HU_PI_Item_Product_ID also via StoreGLN
   * [#13772](https://github.com/metasfresh/metasfresh/issues/13772) Set "-" in MAC Address instead of null 
   * [#13717](https://github.com/metasfresh/metasfresh/issues/13717) Sub-Task No 2: Test & Fix Sales order (w/ ship ) - ProductPlanning - Manufacturing 

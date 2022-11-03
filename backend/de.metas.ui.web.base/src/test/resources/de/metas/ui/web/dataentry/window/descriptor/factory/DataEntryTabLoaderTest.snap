@@ -1060,6 +1060,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
   "description" : "dataEntryTab_description",
   "detailId" : "DataEntry_Tab-1",
   "displayLogic" : "1=1",
+  "documentDecorators" : [ ],
   "documentType" : "Window",
   "documentTypeId" : "5",
   "fields" : { },
@@ -1087,6 +1088,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
       "description" : "dataEntrySubTab1_description",
       "detailId" : "DataEntry_SubTab-11",
       "displayLogic" : "1=1",
+      "documentDecorators" : [ ],
       "documentType" : "Window",
       "documentTypeId" : "5",
       "fields" : {
@@ -1767,6 +1769,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
       "description" : "dataEntrySubTab2_description",
       "detailId" : "DataEntry_SubTab-12",
       "displayLogic" : "1=1",
+      "documentDecorators" : [ ],
       "documentType" : "Window",
       "documentTypeId" : "5",
       "fields" : {

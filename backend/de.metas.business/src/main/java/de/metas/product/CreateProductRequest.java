@@ -1,6 +1,7 @@
 package de.metas.product;
 
 import de.metas.organization.OrgId;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -82,4 +83,6 @@ public class CreateProductRequest
 	@Nullable
 	Boolean stocked;
 
+	@Nullable
+	SectionCodeId sectionCodeId;
 }
