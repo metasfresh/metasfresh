@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.allocation;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.invoice.C_Invoice_StepDefData;
@@ -31,6 +32,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_AllocationLine;
 import org.compiere.model.I_C_Invoice;
 
@@ -84,29 +86,28 @@ public class C_AllocationLine_StepDef
 					.create()
 					.firstOnlyNotNull(I_C_AllocationLine.class);
 
-			final BigDecimal amount = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableRow, "OPT." + I_C_AllocationLine.COLUMNNAME_Amount);
-			final BigDecimal overUnderAmt = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableRow, "OPT." + I_C_AllocationLine.COLUMNNAME_OverUnderAmt);
-			final BigDecimal writeOffAmt = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableRow, "OPT." + I_C_AllocationLine.COLUMNNAME_WriteOffAmt);
-			final BigDecimal discountAmt = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableRow, "OPT." + I_C_AllocationLine.COLUMNNAME_DiscountAmt);
+			validateAllocationLine(singleAllocationLine, dataTableRow);
+		}
+	}
 
-			if (amount != null)
-			{
-				assertThat(singleAllocationLine.getAmount()).isEqualTo(amount);
-			}
+	@And("^validate C_AllocationLines for invoice (.*)$")
+	public void validate_C_AllocationLines_for_invoice(
+			@NonNull final String invoiceIdentifier,
+			@NonNull final DataTable dataTable)
+	{
+		final Integer invoiceId = invoiceTable.get(invoiceIdentifier).getC_Invoice_ID();
 
-			if (overUnderAmt != null)
-			{
-				assertThat(singleAllocationLine.getOverUnderAmt()).isEqualTo(overUnderAmt);
-			}
+		final ImmutableList<I_C_AllocationLine> allocationLines = queryBL.createQueryBuilder(I_C_AllocationLine.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_AllocationLine.COLUMNNAME_C_Invoice_ID, invoiceId)
+				.orderBy(I_C_AllocationLine.COLUMN_C_AllocationLine_ID)
+				.create()
+				.listImmutable(I_C_AllocationLine.class);
 
-			if (writeOffAmt != null)
-			{
-				assertThat(singleAllocationLine.getWriteOffAmt()).isEqualTo(writeOffAmt);
-			}
-			if (discountAmt != null)
-			{
-				assertThat(singleAllocationLine.getDiscountAmt()).isEqualTo(discountAmt);
-			}
+		final List<Map<String, String>> rows = dataTable.asMaps();
+		for (int index = 0; index < rows.size(); index++)
+		{
+			validateAllocationLine(allocationLines.get(index), rows.get(index));
 		}
 	}
 
@@ -123,5 +124,38 @@ public class C_AllocationLine_StepDef
 
 			assertThat(allocationLines.isEmpty()).isEqualTo(true);
 		}
+	}
+
+	private void validateAllocationLine(
+			@NonNull final I_C_AllocationLine allocationLine,
+			@NonNull final Map<String, String> dataTableRow)
+	{
+		final BigDecimal amount = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableRow, "OPT." + I_C_AllocationLine.COLUMNNAME_Amount);
+		final BigDecimal overUnderAmt = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableRow, "OPT." + I_C_AllocationLine.COLUMNNAME_OverUnderAmt);
+		final BigDecimal writeOffAmt = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableRow, "OPT." + I_C_AllocationLine.COLUMNNAME_WriteOffAmt);
+		final BigDecimal discountAmt = DataTableUtil.extractBigDecimalOrNullForColumnName(dataTableRow, "OPT." + I_C_AllocationLine.COLUMNNAME_DiscountAmt);
+
+		final SoftAssertions softly = new SoftAssertions();
+
+		if (amount != null)
+		{
+			softly.assertThat(allocationLine.getAmount()).isEqualTo(amount);
+		}
+
+		if (overUnderAmt != null)
+		{
+			softly.assertThat(allocationLine.getOverUnderAmt()).isEqualTo(overUnderAmt);
+		}
+
+		if (writeOffAmt != null)
+		{
+			softly.assertThat(allocationLine.getWriteOffAmt()).isEqualTo(writeOffAmt);
+		}
+		if (discountAmt != null)
+		{
+			softly.assertThat(allocationLine.getDiscountAmt()).isEqualTo(discountAmt);
+		}
+
+		softly.assertAll();
 	}
 }

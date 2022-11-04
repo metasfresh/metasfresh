@@ -41,6 +41,8 @@ import de.metas.invoice.InvoiceId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingServiceCompanyService;
 import de.metas.money.Money;
 import de.metas.money.MoneyService;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.payment.PaymentAmtMultiplier;
 import de.metas.payment.PaymentId;
 import de.metas.util.Services;
@@ -54,6 +56,7 @@ import org.compiere.model.I_C_Payment;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
@@ -74,6 +77,7 @@ public class AllocatePayments_StepDef
 
 	private final IAllocationBL allocationBL = Services.get(IAllocationBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private final C_Payment_StepDefData paymentTable;
 	private final C_Invoice_StepDefData invoiceTable;
@@ -151,6 +155,43 @@ public class AllocatePayments_StepDef
 				.build();
 	}
 
+	@And("^allocate invoices \\(credit memo/purchase\\) to invoices$")
+	public void allocate_credit_memo_to_invoice(@NonNull final DataTable table)
+	{
+		final List<Map<String, String>> rows = table.asMaps();
+
+		final ImmutableList.Builder<PayableDocument> invoicesCollector = ImmutableList.builder();
+
+		for (final Map<String, String> dataTableRow : rows)
+		{
+			final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
+			invoicesCollector.add(buildPayableDocument(invoiceIdentifier));
+			
+			final String creditMemoIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.CreditMemo." + COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (creditMemoIdentifier != null)
+			{
+				invoicesCollector.add(buildPayableDocument(creditMemoIdentifier));
+			}
+
+			final String purchaseInvoiceIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Purchase." + COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (purchaseInvoiceIdentifier != null)
+			{
+				invoicesCollector.add(buildPayableDocument(purchaseInvoiceIdentifier));
+			}
+		}
+
+		final List<PayableDocument> payableDocuments = invoicesCollector.build();
+
+		PaymentAllocationBuilder.newBuilder()
+				.invoiceProcessingServiceCompanyService(invoiceProcessingServiceCompanyService)
+				.defaultDateTrx(LocalDate.now())
+				.payableDocuments(payableDocuments)
+				.allowPartialAllocations(true)
+				.allowPurchaseSalesInvoiceCompensation(true)
+				.payableRemainingOpenAmtPolicy(PaymentAllocationBuilder.PayableRemainingOpenAmtPolicy.DO_NOTHING)
+				.build();
+	}
+
 	@NonNull
 	private PayableDocument buildPayableDocument(@NonNull final String invoiceIdentifier)
 	{
@@ -160,6 +201,8 @@ public class AllocatePayments_StepDef
 
 		final InvoiceToAllocate invoiceToAllocate = getInvoiceToAllocate(invoice);
 		final Money invoiceOpenMoneyAmt = moneyService.toMoney(invoiceToAllocate.getOpenAmountConverted());
+		final Money discountAmt = moneyService.toMoney(invoiceToAllocate.getDiscountAmountConverted());
+		final Money payAmt = discountAmt != null ? invoiceOpenMoneyAmt.subtract(discountAmt) : invoiceOpenMoneyAmt;
 
 		return PayableDocument.builder()
 				.invoiceId(invoiceToAllocate.getInvoiceId())
@@ -172,7 +215,8 @@ public class AllocatePayments_StepDef
 				.clientAndOrgId(invoiceToAllocate.getClientAndOrgId())
 				.currencyConversionTypeId(invoiceToAllocate.getCurrencyConversionTypeId())
 				.amountsToAllocate(AllocationAmounts.builder()
-										   .payAmt(invoiceOpenMoneyAmt)
+										   .payAmt(payAmt)
+										   .discountAmt(discountAmt)
 										   .build()
 										   .convertToRealAmounts(invoiceToAllocate.getMultiplier()))
 				.build();
@@ -181,8 +225,10 @@ public class AllocatePayments_StepDef
 	@NonNull
 	private InvoiceToAllocate getInvoiceToAllocate(@NonNull final I_C_Invoice invoice)
 	{
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(invoice.getAD_Org_ID()));
+
 		final InvoiceToAllocateQuery invoiceToAllocateQuery = InvoiceToAllocateQuery.builder()
-				.evaluationDate(ZonedDateTime.now())
+				.evaluationDate(invoice.getDateInvoiced().toLocalDateTime().atZone(timeZone))
 				.onlyInvoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
 				.build();
 

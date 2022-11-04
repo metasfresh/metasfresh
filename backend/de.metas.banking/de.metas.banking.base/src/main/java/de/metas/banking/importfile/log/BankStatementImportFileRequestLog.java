@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.cucumber
+ * de.metas.banking.base
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,12 +20,38 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.banking.importfile.log;
 
-public enum StepDefDocAction
+import de.metas.banking.importfile.BankStatementImportFileId;
+import de.metas.error.AdIssueId;
+import de.metas.user.UserId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.service.ClientId;
+
+import javax.annotation.Nullable;
+import java.time.Instant;
+
+@Value
+@Builder
+public class BankStatementImportFileRequestLog
 {
-	completed,
-	reactivated,
-	reversed,
-	voided
+	@NonNull
+	BankStatementImportFileId bankStatementImportFileId;
+
+	@NonNull
+	Instant timestamp;
+
+	@NonNull
+	ClientId clientId;
+
+	@NonNull
+	UserId userId;
+
+	@Nullable
+	AdIssueId adIssueId;
+
+	@Nullable
+	String message;
 }
