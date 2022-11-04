@@ -842,7 +842,7 @@ public class PaymentAllocationBuilder
 			@NonNull final AllocationAmounts invoiceAmountsToAllocate,
 			@NonNull final Money payAmtInInvoiceCurrency)
 	{
-		return invoiceAmountsToAllocate.getPayAmt().equals(payAmtInInvoiceCurrency)
+		return invoiceAmountsToAllocate.getPayAmt().isEqualByComparingTo(payAmtInInvoiceCurrency)
 				? invoiceAmountsToAllocate
 				: invoiceAmountsToAllocate.toBuilder()
 				.discountAmt(invoiceAmountsToAllocate.getDiscountAmt().toZero())

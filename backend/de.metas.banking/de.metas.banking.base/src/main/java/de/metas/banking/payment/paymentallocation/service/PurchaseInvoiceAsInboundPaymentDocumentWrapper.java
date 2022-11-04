@@ -137,12 +137,13 @@ final class PurchaseInvoiceAsInboundPaymentDocumentWrapper implements IPaymentDo
 	@Override
 	public Money calculateProjectedOverUnderAmt(final Money amountToAllocate)
 	{
-		final Money openAmtWithDiscount = purchaseInvoicePayableDoc.getOpenAmtInitial()
-				.subtract(purchaseInvoicePayableDoc.getAmountsToAllocateInitial().getDiscountAmt());
+		final Money discountAmt = purchaseInvoicePayableDoc.getAmountsToAllocateInitial().getDiscountAmt(); 
+		final Money openAmtWithDiscount = purchaseInvoicePayableDoc.getOpenAmtInitial().subtract(discountAmt);
 		
 		final Money remainingOpenAmtWithDiscount = openAmtWithDiscount.subtract(purchaseInvoicePayableDoc.getTotalAllocatedAmount());
 
-		return remainingOpenAmtWithDiscount.subtract(amountToAllocate.negate());
+		final Money adjustedAmountToAllocate = amountToAllocate.negate();
+		return remainingOpenAmtWithDiscount.subtract(adjustedAmountToAllocate);
 	}
 
 	@Override

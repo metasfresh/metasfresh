@@ -131,12 +131,14 @@ final class CreditMemoInvoiceAsPaymentDocumentWrapper implements IPaymentDocumen
 	@Override
 	public Money calculateProjectedOverUnderAmt(@NonNull final Money payAmountToAllocate)
 	{
-		final Money openAmtWithDiscount = creditMemoPayableDoc.getOpenAmtInitial()
-				.add(creditMemoPayableDoc.getAmountsToAllocateInitial().getDiscountAmt().negate());
+		final Money discountAmt = creditMemoPayableDoc.getAmountsToAllocateInitial().getDiscountAmt().negate(); 
+		final Money openAmtWithDiscount = creditMemoPayableDoc.getOpenAmtInitial().add(discountAmt);
 		
-		final Money remainingOpenAmtWithDiscount = openAmtWithDiscount.subtract(creditMemoPayableDoc.getTotalAllocatedAmount()); 
+		final Money remainingOpenAmtWithDiscount = openAmtWithDiscount.subtract(creditMemoPayableDoc.getTotalAllocatedAmount());
+		
+		final Money adjustedPayAmountToAllocate = payAmountToAllocate.negate();
 
-		return remainingOpenAmtWithDiscount.subtract(payAmountToAllocate.negate());
+		return remainingOpenAmtWithDiscount.subtract(adjustedPayAmountToAllocate);
 	}
 
 	@Override

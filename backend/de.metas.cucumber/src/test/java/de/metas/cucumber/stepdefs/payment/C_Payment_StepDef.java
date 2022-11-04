@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.payment;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.C_BP_BankAccount_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -305,14 +306,10 @@ public class C_Payment_StepDef
 		payment.setIsAutoAllocateAvailableAmt(false);
 
 		final Timestamp dateTrx = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + COLUMNNAME_DateTrx);
-		payment.setDateTrx(dateTrx != null
-								   ? dateTrx
-								   : TimeUtil.asTimestamp(LocalDate.now()));
+		payment.setDateTrx(CoalesceUtil.coalesceNotNull(dateTrx, TimeUtil.asTimestamp(LocalDate.now())));
 
 		final Timestamp dateAcct = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + COLUMNNAME_DateAcct);
-		payment.setDateAcct(dateAcct != null
-								   ? dateAcct
-								   : TimeUtil.asTimestamp(LocalDate.now()));
+		payment.setDateAcct(CoalesceUtil.coalesceNotNull(dateAcct, TimeUtil.asTimestamp(LocalDate.now())));
 		
 		paymentDAO.save(payment);
 
