@@ -120,6 +120,11 @@ public class HUUniqueAttributesService
 
 	public void validateHUUniqueAttribute(final I_M_HU_Attribute huAttribute)
 	{
+		if (Check.isBlank(huAttribute.getValue()))
+		{
+			// nothing to do
+			return;
+		}
 		final I_M_HU huRecord = huDAO.getById(HuId.ofRepoId(huAttribute.getM_HU_ID()));
 
 		final List<I_M_HU_Storage> huStorages = huStorageDAO.retrieveStorages(huRecord);
