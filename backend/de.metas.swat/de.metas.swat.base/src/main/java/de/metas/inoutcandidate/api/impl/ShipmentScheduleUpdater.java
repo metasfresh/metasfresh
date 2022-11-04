@@ -940,17 +940,4 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			return segments.stream();
 		}
 	}
-
-	@NonNull
-	private static BigDecimal getQtyReserved(@NonNull final I_M_ShipmentSchedule schedRecord, @NonNull final OlAndSched olAndSched)
-	{
-		if (schedRecord.isClosed())
-		{
-			return BigDecimal.ZERO;
-		}
-		else
-		{
-			return BigDecimal.ZERO.max(olAndSched.getQtyOrdered().subtract(schedRecord.getQtyDelivered()));
-		}
-	}
 }

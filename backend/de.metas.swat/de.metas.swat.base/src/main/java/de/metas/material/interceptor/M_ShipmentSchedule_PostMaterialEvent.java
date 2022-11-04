@@ -182,7 +182,7 @@ public class M_ShipmentSchedule_PostMaterialEvent
 		final ShipmentScheduleDetail.ShipmentScheduleDetailBuilder shipmentScheduleDetailBuilder = ShipmentScheduleDetail.builder()
 				.orderedQuantity(shipmentScheduleEffectiveBL.computeQtyOrdered(shipmentSchedule))
 				.reservedQuantity(shipmentSchedule.getQtyReserved());
-		
+
 		if (targetMaterialDescriptorChanged(currentMaterialDescriptor, oldMaterialDescriptor))
 		{
 			shipmentScheduleUpdatedEventBuilder
@@ -237,7 +237,7 @@ public class M_ShipmentSchedule_PostMaterialEvent
 				.materialDescriptor(materialDescriptor)
 				.shipmentScheduleDetail(ShipmentScheduleDetail.builder()
 												.orderedQuantity(shipmentScheduleEffectiveBL.computeQtyOrdered(shipmentSchedule))
-												.reservedQuantity(shipmentSchedule.getQtyReserved())							
+												.reservedQuantity(shipmentSchedule.getQtyReserved())
 												.reservedQuantityDelta(shipmentSchedule.getQtyReserved())
 												.build())
 				.shipmentScheduleId(shipmentSchedule.getM_ShipmentSchedule_ID())

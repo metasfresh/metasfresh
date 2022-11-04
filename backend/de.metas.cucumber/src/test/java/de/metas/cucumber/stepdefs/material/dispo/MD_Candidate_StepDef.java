@@ -55,9 +55,6 @@ import de.metas.material.event.MaterialEventObserver;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.OrderLineDescriptor;
-import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.simulation.DeactivateAllSimulatedCandidatesEvent;
 import de.metas.material.event.stockestimate.AbstractStockEstimateEvent;
 import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
@@ -148,29 +145,6 @@ public class MD_Candidate_StepDef
 		materialEventObserver = SpringContextHolder.instance.getBean(MaterialEventObserver.class);
 		simulatedCandidateService = SpringContextHolder.instance.getBean(SimulatedCandidateService.class);
 		Env.setClientId(Env.getCtx(), ClientId.METASFRESH);
-	}
-
-	@When("metasfresh receives a ShipmentScheduleCreatedEvent")
-	public void shipmentScheduleCreatedEvent(@NonNull final DataTable dataTable)
-	{
-		final Map<String, String> map = dataTable.asMaps().get(0);
-
-		final int shipmentScheduleId = Integer.parseInt(map.get("M_ShipmentSchedule_ID"));
-		final int productId = Integer.parseInt(map.get("M_Product_ID"));
-		final Instant preparationDate = Instant.parse(map.get("PreparationDate"));
-		final BigDecimal qty = new BigDecimal(map.get("Qty"));
-
-		final MaterialDescriptor descriptor = MaterialDispoUtils.createMaterialDescriptor(productId, preparationDate, qty);
-
-		final ShipmentScheduleCreatedEvent shipmentScheduleCreatedEvent = ShipmentScheduleCreatedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(ClientId.METASFRESH.getRepoId(), StepDefConstants.ORG_ID.getRepoId()))
-				.materialDescriptor(descriptor)
-				.shipmentScheduleId(shipmentScheduleId)
-				.reservedQuantity(qty)
-				.documentLineDescriptor(OrderLineDescriptor.builder().orderId(10).orderLineId(20).docTypeId(30).orderBPartnerId(40).build())
-				.build();
-
-		postMaterialEventService.enqueueEventNow(shipmentScheduleCreatedEvent);
 	}
 
 	@When("metasfresh initially has this MD_Candidate data")
@@ -544,8 +518,8 @@ public class MD_Candidate_StepDef
 		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(Env.getClientId(), Env.getOrgId());
 
 		postMaterialEventService.enqueueEventNow(DeactivateAllSimulatedCandidatesEvent.builder()
-													  .eventDescriptor(EventDescriptor.ofClientOrgAndTraceId(clientAndOrgId, traceId))
-													  .build());
+														 .eventDescriptor(EventDescriptor.ofClientOrgAndTraceId(clientAndOrgId, traceId))
+														 .build());
 
 		materialEventObserver.awaitProcessing(traceId);
 	}
