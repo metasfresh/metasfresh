@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import currentDevice from 'current-device';
-import { get, debounce } from 'lodash';
+import { debounce, get } from 'lodash';
 
 import { LOCATION_SEARCH_NAME } from '../constants/Constants';
-import { locationSearchRequest, getViewRowsByIds } from '../api';
+import { getViewRowsByIds, locationSearchRequest } from '../api';
 import { connectWS, disconnectWS } from '../utils/websockets';
 import { deepUnfreeze } from '../utils';
 import history from '../services/History';
@@ -15,35 +14,36 @@ import { getEntityRelatedId } from '../reducers/filters';
 import {
   addViewLocationData,
   createView,
+  deleteView,
   fetchDocument,
+  fetchHeaderProperties,
   fetchLayout,
   fetchLocationConfig,
-  fetchHeaderProperties,
   filterView,
   resetView,
-  deleteView,
-  showIncludedView,
   setIncludedView,
+  showIncludedView,
   unsetIncludedView,
 } from '../actions/ViewActions';
 import {
   deleteTable,
-  updateGridTableData,
   deselectTableRows,
+  updateGridTableData,
 } from '../actions/TableActions';
 import {
   setListId,
   setPagination as setListPagination,
   setSorting as setListSorting,
 } from '../actions/ListActions';
-import { updateRawModal, indicatorState } from '../actions/WindowActions';
+import { indicatorState, updateRawModal } from '../actions/WindowActions';
 import { setBreadcrumb } from '../actions/MenuActions';
 import { deleteFilter } from '../actions/FiltersActions';
-import { fetchQuickActions, deleteQuickActions } from '../actions/Actions';
+import { deleteQuickActions, fetchQuickActions } from '../actions/Actions';
 
 import {
-  DLpropTypes,
+  computePageLengthEffective,
   DLmapStateToProps,
+  DLpropTypes,
   GEO_PANEL_STATES,
   getSortingQuery,
   mergeColumnInfosIntoViewRows,
@@ -65,11 +65,6 @@ class DocumentListContainer extends Component {
   constructor(props) {
     super(props);
 
-    // TODO: Why it's not in the state?
-    this.pageLength =
-      currentDevice.type === 'mobile' || currentDevice.type === 'tablet'
-        ? 9999
-        : 20;
     this.state = {
       pageColumnInfosByFieldName: null,
       panelsState: GEO_PANEL_STATES[0],
@@ -263,6 +258,11 @@ class DocumentListContainer extends Component {
         this.debouncedRefresh();
       }
     });
+  };
+
+  getPageLength = () => {
+    const { layout } = this.props;
+    return computePageLengthEffective(layout?.pageLength);
   };
 
   // FETCHING LAYOUT && DATA -------------------------------------------------
@@ -503,7 +503,7 @@ class DocumentListContainer extends Component {
       windowId,
       viewId: id,
       page,
-      pageLength: this.pageLength,
+      pageLength: this.getPageLength(),
       orderBy: sortingQuery,
       isModal,
       websocketRefresh,
@@ -743,7 +743,7 @@ class DocumentListContainer extends Component {
         triggerSpinner={triggerSpinner}
         hasIncluded={hasIncluded}
         onToggleState={this.toggleState}
-        pageLength={this.pageLength}
+        pageLength={this.getPageLength()}
         onGetSelected={this.getSelected}
         onShowSelectedIncludedView={this.showSelectedIncludedView}
         onSortData={this.sortData}

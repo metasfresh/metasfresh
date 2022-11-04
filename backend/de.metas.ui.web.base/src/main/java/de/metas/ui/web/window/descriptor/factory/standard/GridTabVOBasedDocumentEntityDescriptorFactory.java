@@ -3,11 +3,7 @@ package de.metas.ui.web.window.descriptor.factory.standard;
 import com.google.common.collect.ImmutableMap;
 import de.metas.adempiere.service.IColumnBL;
 import de.metas.elasticsearch.IESSystem;
-import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IModelTranslationMap;
-import de.metas.i18n.IMsgBL;
-import de.metas.i18n.ITranslatableString;
-import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.reflist.ReferenceId;
 import de.metas.ui.web.document.filter.DocumentFilterParamDescriptor;
@@ -28,7 +24,6 @@ import de.metas.ui.web.window.descriptor.IncludedTabNewRecordInputMode;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
-import de.metas.ui.web.window.descriptor.QuickInputSupportDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
@@ -244,6 +239,7 @@ import java.util.Set;
 				.setAD_Tab_ID(gridTabVO.getAD_Tab_ID()) // legacy
 				.setTableName(tableName) // legacy
 				.setIsSOTrx(isSOTrx) // legacy
+				.setViewPageLength(dataBinding.getPOInfo().getWebuiViewPageLength())
 				//
 				.setPrintProcessId(gridTabVO.getPrintProcessId())
 				//
