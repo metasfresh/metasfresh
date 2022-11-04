@@ -146,6 +146,10 @@ Feature: create production order
       | cp_1       | p_1                     | 2021-04-16  | olASI                        | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 0                              | 0                          | 0                             | 0                             |
       | cp_2       | p_2                     | 2021-04-16  | bomLineASI                   | 0                               | 0                       | 0                       | 100                          | 0                             | 100                            | 0                              | 0                          | 0                             | 0                             |
 
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
+    
     # now create the PP_Order from the candidates
     And the following PP_Order_Candidates are enqueued for generating PP_Orders
       | PP_Order_Candidate_ID.Identifier |
@@ -177,12 +181,20 @@ Feature: create production order
       | cp_1       | p_1                     | 2021-04-16  | olASI                        | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 0                              | 0                          | 0                             | 0                             |
       | cp_2       | p_2                     | 2021-04-16  | bomLineASI                   | 0                               | 0                       | 0                       | 100                          | 0                             | 100                            | 0                              | 0                          | 0                             | 0                             |
 
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
+
     And the manufacturing order identified by ppo_1 is completed
 
     And after not more than 60s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PP_Order_AtDate | OPT.QtyDemand_PP_Order_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | olASI                        | 10                              | 10                      | 10                      | 10                           | 0                             | 0                              | 0                              | 0                          | 10                            | 0                             |
       | cp_2       | p_2                     | 2021-04-16  | bomLineASI                   | 0                               | 100                     | 0                       | 100                          | -100                          | 100                            | 0                              | 0                          | 0                             | 100                           |
+
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
 
     And receive HUs for PP_Order with M_HU_LUTU_Configuration:
       | M_HU_LUTU_Configuration_ID.Identifier | PP_Order_ID.Identifier | M_HU_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier |
@@ -211,6 +223,10 @@ Feature: create production order
       | cp_1       | p_1                     | 2021-04-16  | olASI                        | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 0                              | 0                          | 0                             | 0                             |
       | cp_3       | p_1                     | 2021-04-11  | olASI                        | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 10                             | 10                         | 0                             | 0                             |
       | cp_2       | p_2                     | 2021-04-16  | bomLineASI                   | 0                               | 100                     | 0                       | 100                          | -100                          | 100                            | 0                              | 0                          | 0                             | 100                           |
+
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
 
   @Id:S0196_500
   @from:cucumber
@@ -322,6 +338,10 @@ Feature: create production order
       | cp_1       | p_1                     | 2021-04-16  | olASI                        | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 0                              | 0                          | 0                             | 0                             |
       | cp_2       | p_2                     | 2021-04-16  | bomLineASI                   | 0                               | 0                       | 0                       | 100                          | 0                             | 100                            | 0                              | 0                          | 0                             | 0                             |
 
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
+    
     # now create the PP_Order from the candidates
     And the following PP_Order_Candidates are enqueued for generating PP_Orders
       | PP_Order_Candidate_ID.Identifier |
@@ -353,6 +373,10 @@ Feature: create production order
       | cp_1       | p_1                     | 2021-04-16  | olASI                        | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 0                              | 0                          | 0                             | 0                             |
       | cp_2       | p_2                     | 2021-04-16  | bomLineASI                   | 0                               | 0                       | 0                       | 100                          | 0                             | 100                            | 0                              | 0                          | 0                             | 0                             |
 
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
+
     And the manufacturing order identified by ppo_1 is completed
 
     And after not more than 30s, the MD_Candidate table has only the following records
@@ -369,12 +393,20 @@ Feature: create production order
       | cp_1       | p_1                     | 2021-04-16  | olASI                        | 10                              | 10                      | 10                      | 10                           | 0                             | 0                              | 0                              | 0                          | 10                            | 0                             |
       | cp_2       | p_2                     | 2021-04-16  | bomLineASI                   | 0                               | 100                     | 0                       | 100                          | -100                          | 100                            | 0                              | 0                          | 0                             | 100                           |
 
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
+
     And the manufacturing order identified by ppo_1 is reactivated
 
     And after not more than 60s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PP_Order_AtDate | OPT.QtyDemand_PP_Order_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | olASI                        | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 0                              | 0                          | 0                             | 0                             |
       | cp_2       | p_2                     | 2021-04-16  | bomLineASI                   | 0                               | 0                       | 0                       | 100                          | 0                             | 100                            | 0                              | 0                          | 0                             | 0                             |
+
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
 
     And update PP_Order:
       | PP_Order_ID.Identifier | OPT.QtyEntered |
@@ -390,6 +422,10 @@ Feature: create production order
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PP_Order_AtDate | OPT.QtyDemand_PP_Order_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | olASI                        | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 2                              | 2                          | 0                             | 0                             |
       | cp_2       | p_2                     | 2021-04-16  | bomLineASI                   | 0                               | 0                       | 0                       | 120                          | 0                             | 120                            | 0                              | 0                          | 0                             | 0                             |
+
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
 
     And the manufacturing order identified by ppo_1 is completed
 
@@ -408,12 +444,20 @@ Feature: create production order
       | cp_1       | p_1                     | 2021-04-16  | olASI                        | 10                              | 10                      | 12                      | 10                           | 2                             | 0                              | 2                              | 2                          | 12                            | 0                             |
       | cp_2       | p_2                     | 2021-04-16  | bomLineASI                   | 0                               | 120                     | 0                       | 120                          | -120                          | 120                            | 0                              | 0                          | 0                             | 120                           |
 
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
+
     And the manufacturing order identified by ppo_1 is reactivated
 
     And after not more than 60s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PP_Order_AtDate | OPT.QtyDemand_PP_Order_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | olASI                        | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 2                              | 2                          | 0                             | 0                             |
       | cp_2       | p_2                     | 2021-04-16  | bomLineASI                   | 0                               | 0                       | 0                       | 120                          | 0                             | 120                            | 0                              | 0                          | 0                             | 0                             |
+
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
 
     And update PP_Order:
       | PP_Order_ID.Identifier | OPT.QtyEntered |
@@ -429,6 +473,10 @@ Feature: create production order
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PP_Order_AtDate | OPT.QtyDemand_PP_Order_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | olASI                        | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 0                              | 0                          | 0                             | 0                             |
       | cp_2       | p_2                     | 2021-04-16  | bomLineASI                   | 0                               | 0                       | 0                       | 120                          | 0                             | 120                            | 20                             | 20                         | 0                             | 0                             |
+
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
 
     And the manufacturing order identified by ppo_1 is completed
 
@@ -447,6 +495,9 @@ Feature: create production order
       | cp_1       | p_1                     | 2021-04-16  | olASI                        | 10                              | 10                      | 10                      | 10                           | 0                             | 0                              | 0                              | 0                          | 10                            | 0                             |
       | cp_2       | p_2                     | 2021-04-16  | bomLineASI                   | 0                               | 100                     | 0                       | 120                          | -100                          | 120                            | 20                             | 20                         | 0                             | 100                           |
 
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
 
   @Id:S0196_600
   @from:cucumber
@@ -550,6 +601,10 @@ Feature: create production order
       | cp_1       | p_3                     | 2021-06-16  | olASI                        | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 0                              | 0                          | 0                             | 0                             |
       | cp_2       | p_4                     | 2021-06-16  | bomLineASI                   | 0                               | 0                       | 0                       | 100                          | 0                             | 100                            | 0                              | 0                          | 0                             | 0                             |
 
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_2                      | 10             | 10              |
+
     And after not more than 30s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed | OPT.M_AttributeSetInstance_ID.Identifier |
       | oc_2       | false     | p_3                     | bom_2                        | ppln_2                            | 540006        | 10         | 10           | 0            | PCE               | 2021-06-16T21:00:00Z | 2021-06-16T21:00:00Z | false    | bomASI                                   |
@@ -585,6 +640,10 @@ Feature: create production order
       | cp_1       | p_3                     | 2021-06-16  | olASI                        | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 0                              | 0                          | 0                             | 0                             |
       | cp_2       | p_4                     | 2021-06-16  | bomLineASI                   | 0                               | 0                       | 0                       | 100                          | 0                             | 100                            | 0                              | 0                          | 0                             | 0                             |
 
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_2                      | 10             | 10              |
+
     And the following PP_Order_Candidates are re-opened
       | PP_Order_Candidate_ID.Identifier |
       | ocP_2                            |
@@ -607,6 +666,10 @@ Feature: create production order
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PP_Order_AtDate | OPT.QtyDemand_PP_Order_AtDate |
       | cp_1       | p_3                     | 2021-06-16  | olASI                        | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 12                             | 12                         | 0                             | 0                             |
       | cp_2       | p_4                     | 2021-06-16  | bomLineASI                   | 0                               | 0                       | 0                       | 220                          | 0                             | 220                            | 0                              | 0                          | 0                             | 0                             |
+
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_2                      | 10             | 10              |
 
     And the following PP_Order_Candidates are enqueued for generating PP_Orders
       | PP_Order_Candidate_ID.Identifier |
@@ -641,6 +704,10 @@ Feature: create production order
       | cp_1       | p_3                     | 2021-06-16  | olASI                        | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 12                             | 12                         | 0                             | 0                             |
       | cp_2       | p_4                     | 2021-06-16  | bomLineASI                   | 0                               | 0                       | 0                       | 220                          | 0                             | 220                            | 0                              | 0                          | 0                             | 0                             |
 
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_2                      | 10             | 10              |
+
     And the manufacturing order identified by ppo_3 is completed
 
     And after not more than 60s, metasfresh has this MD_Cockpit data
@@ -648,12 +715,20 @@ Feature: create production order
       | cp_1       | p_3                     | 2021-06-16  | olASI                        | 10                              | 10                      | 10                      | 10                           | 0                             | 0                              | 12                             | 12                         | 10                            | 0                             |
       | cp_2       | p_4                     | 2021-06-16  | bomLineASI                   | 0                               | 100                     | 0                       | 220                          | -100                          | 220                            | 0                              | 0                          | 0                             | 100                           |
 
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_2                      | 10             | 10              |
+
     And the manufacturing order identified by ppo_4 is completed
 
     And after not more than 60s, metasfresh has this MD_Cockpit data
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PP_Order_AtDate | OPT.QtyDemand_PP_Order_AtDate |
       | cp_1       | p_3                     | 2021-06-16  | olASI                        | 10                              | 10                      | 22                      | 10                           | 12                            | 0                              | 12                             | 12                         | 22                            | 0                             |
       | cp_2       | p_4                     | 2021-06-16  | bomLineASI                   | 0                               | 220                     | 0                       | 220                          | -220                          | 220                            | 0                              | 0                          | 0                             | 220                           |
+
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_2                      | 10             | 10              |
 
   @from:cucumber
   Scenario:  The manufacturing order is created from a manufacturing order candidate and other md_candidates already exist
@@ -842,6 +917,10 @@ Feature: create production order
       | cp_1       | p_111                   | 2021-04-12  | olASI                        | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 0                              | 0                          | 0                             | 0                             |
       | cp_2       | p_222                   | 2021-04-12  | bomLineASI                   | 0                               | 0                       | 0                       | 100                          | 0                             | 100                            | 0                              | 0                          | 0                             | 0                             |
 
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_111                    | 10             | 10              |
+
     And after not more than 30s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed | OPT.M_AttributeSetInstance_ID.Identifier |
       | oc_111     | false     | p_111                   | bom_111                      | ppln_111                          | 540006        | 10         | 10           | 0            | PCE               | 2021-04-12T21:00:00Z | 2021-04-12T21:00:00Z | false    | bomASI                                   |
@@ -866,6 +945,10 @@ Feature: create production order
       | cp_1       | p_111                   | 2021-04-12  | olASI                        | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 0                              | 0                          | 0                             | 0                             |
       | cp_2       | p_222                   | 2021-04-12  | bomLineASI                   | 0                               | 0                       | 0                       | 100                          | 0                             | 100                            | 100                            | 100                        | 0                             | 0                             |
       | cp_3       | p_222                   | 2021-04-11  | bomLineASI                   | 0                               | 0                       | 0                       | 100                          | 0                             | 100                            | 0                              | 0                          | 0                             | 0                             |
+
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_111                    | 10             | 10              |
 
     And the following PP_Order_Candidates are enqueued for generating PP_Orders
       | PP_Order_Candidate_ID.Identifier |
@@ -898,6 +981,10 @@ Feature: create production order
       | cp_2       | p_222                   | 2021-04-12  | bomLineASI                   | 0                               | 0                       | 0                       | 100                          | 0                             | 100                            | 100                            | 100                        | 0                             | 0                             |
       | cp_3       | p_222                   | 2021-04-11  | bomLineASI                   | 0                               | 0                       | 0                       | 100                          | 0                             | 100                            | 0                              | 0                          | 0                             | 0                             |
 
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_111                    | 10             | 10              |
+
     And the manufacturing order identified by ppo_111 is completed
 
     And after not more than 60s, metasfresh has this MD_Cockpit data
@@ -906,6 +993,10 @@ Feature: create production order
       | cp_4       | p_111                   | 2021-04-11  | olASI                        | 0                               | 0                       | 10                      | 0                            | 10                            | 0                              | 10                             | 10                         | 10                            | 0                             |
       | cp_2       | p_222                   | 2021-04-12  | bomLineASI                   | 0                               | 0                       | 0                       | 100                          | 0                             | 100                            | 100                            | 100                        | 0                             | 0                             |
       | cp_3       | p_222                   | 2021-04-11  | bomLineASI                   | 0                               | 100                     | 0                       | 100                          | -100                          | 100                            | 0                              | 0                          | 0                             | 100                           |
+
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_111                    | 10             | 10              |
 
   @Id:S0196_800
   @from:cucumber
@@ -1011,6 +1102,10 @@ Feature: create production order
       | cp_1       | p_111                   | 2021-04-12  | olASI                        | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 0                              | 0                          | 0                             | 0                             |
       | cp_2       | p_222                   | 2021-04-12  | bomLineASI                   | 0                               | 0                       | 0                       | 100                          | 0                             | 100                            | 0                              | 0                          | 0                             | 0                             |
 
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_111                    | 10             | 10              |
+
     And after not more than 30s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed | OPT.M_AttributeSetInstance_ID.Identifier |
       | oc_111     | false     | p_111                   | bom_111                      | ppln_111                          | 540006        | 10         | 10           | 0            | PCE               | 2021-04-12T21:00:00Z | 2021-04-12T21:00:00Z | false    | bomASI                                   |
@@ -1033,6 +1128,10 @@ Feature: create production order
       | cp_3       | p_111                   | 2021-04-13  | olASI                        | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 0                              | 0                          | 0                             | 0                             |
       | cp_2       | p_222                   | 2021-04-12  | bomLineASI                   | 0                               | 0                       | 0                       | 100                          | 0                             | 100                            | 100                            | 100                        | 0                             | 0                             |
       | cp_4       | p_222                   | 2021-04-13  | bomLineASI                   | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 0                              | 0                          | 0                             | 0                             |
+
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_111                    | 10             | 10              |
 
     And the following PP_Order_Candidates are enqueued for generating PP_Orders
       | PP_Order_Candidate_ID.Identifier |
@@ -1063,6 +1162,10 @@ Feature: create production order
       | cp_2       | p_222                   | 2021-04-12  | bomLineASI                   | 0                               | 0                       | 0                       | 100                          | 0                             | 100                            | 100                            | 100                        | 0                             | 0                             |
       | cp_4       | p_222                   | 2021-04-13  | bomLineASI                   | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 0                              | 0                          | 0                             | 0                             |
 
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_111                    | 10             | 10              |
+
     And the manufacturing order identified by ppo_111 is completed
 
     And after not more than 60s, metasfresh has this MD_Cockpit data
@@ -1071,6 +1174,10 @@ Feature: create production order
       | cp_3       | p_111                   | 2021-04-13  | olASI                        | 0                               | 0                       | 10                      | 0                            | 10                            | 0                              | 0                              | 0                          | 10                            | 0                             |
       | cp_2       | p_222                   | 2021-04-12  | bomLineASI                   | 0                               | 0                       | 0                       | 100                          | 0                             | 100                            | 100                            | 100                        | 0                             | 0                             |
       | cp_4       | p_222                   | 2021-04-13  | bomLineASI                   | 0                               | 100                     | 0                       | 0                            | -100                          | 0                              | 0                              | 0                          | 0                             | 100                           |
+
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_111                    | 10             | 10              |
 
   @from:cucumber
   Scenario:  The manufacturing order is created from a manufacturing order candidate, other md_candidates already exist and the date is changed in the future
@@ -1427,6 +1534,10 @@ Feature: create production order
       | cp_1       | p_1                     | 2021-04-16  | olASI                        | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 0                              | 0                          | 0                             | 0                             |
       | cp_2       | p_2                     | 2021-04-16  | bomLineASI                   | 0                               | 0                       | 0                       | 100                          | 0                             | 100                            | 0                              | 0                          | 0                             | 0                             |
 
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
+
     And after not more than 30s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed | OPT.M_AttributeSetInstance_ID.Identifier |
       | oc_1       | false     | p_1                     | bom_1                        | ppln_1                            | 540006        | 10         | 10           | 0            | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    | bomASI                                   |
@@ -1464,6 +1575,10 @@ Feature: create production order
       | cp_1       | p_1                     | 2021-04-16  | olASI                        | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 0                              | 0                          | 0                             | 0                             |
       | cp_2       | p_2                     | 2021-04-16  | bomLineASI                   | 0                               | 0                       | 0                       | 100                          | 0                             | 100                            | 0                              | 0                          | 0                             | 0                             |
 
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
+
     And the manufacturing order identified by ppo_1 is completed
 
     And after not more than 30s, the MD_Candidate table has only the following records
@@ -1479,6 +1594,10 @@ Feature: create production order
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PP_Order_AtDate | OPT.QtyDemand_PP_Order_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | olASI                        | 10                              | 10                      | 10                      | 10                           | 0                             | 0                              | 0                              | 0                          | 10                            | 0                             |
       | cp_2       | p_2                     | 2021-04-16  | bomLineASI                   | 0                               | 100                     | 0                       | 100                          | -100                          | 100                            | 0                              | 0                          | 0                             | 100                           |
+
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
 
     And the manufacturing order identified by ppo_1 is reactivated
 
@@ -1500,6 +1619,10 @@ Feature: create production order
       | cp_1       | p_1                     | 2021-04-16  | olASI                        | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 0                              | 0                          | 0                             | 0                             |
       | cp_2       | p_2                     | 2021-04-16  | bomLineASI                   | 0                               | 0                       | 0                       | 100                          | 0                             | 100                            | 0                              | 0                          | 0                             | 0                             |
 
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
+
     And the manufacturing order identified by ppo_1 is completed
 
     And after not more than 30s, the MD_Candidate table has only the following records
@@ -1516,6 +1639,10 @@ Feature: create production order
       | cp_1       | p_1                     | 2021-04-16  | olASI                        | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 0                              | 0                          | 0                             | 0                             |
       | cp_3       | p_1                     | 2021-04-18  | olASI                        | 0                               | 0                       | 10                      | 0                            | 10                            | 0                              | 0                              | 0                          | 10                            | 0                             |
       | cp_2       | p_2                     | 2021-04-16  | bomLineASI                   | 0                               | 100                     | 0                       | 100                          | -100                          | 100                            | 0                              | 0                          | 0                             | 100                           |
+
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
 
   @Id:S0196_1000
   @from:cucumber
@@ -1621,6 +1748,10 @@ Feature: create production order
       | cp_1       | p_1                     | 2021-04-16  | olASI                        | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 0                              | 0                          | 0                             | 0                             |
       | cp_2       | p_2                     | 2021-04-16  | bomLineASI                   | 0                               | 0                       | 0                       | 100                          | 0                             | 100                            | 0                              | 0                          | 0                             | 0                             |
 
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
+
     And after not more than 30s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed | OPT.M_AttributeSetInstance_ID.Identifier |
       | oc_1       | false     | p_1                     | bom_1                        | ppln_1                            | 540006        | 10         | 10           | 0            | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    | bomASI                                   |
@@ -1658,6 +1789,10 @@ Feature: create production order
       | cp_1       | p_1                     | 2021-04-16  | olASI                        | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 0                              | 0                          | 0                             | 0                             |
       | cp_2       | p_2                     | 2021-04-16  | bomLineASI                   | 0                               | 0                       | 0                       | 100                          | 0                             | 100                            | 0                              | 0                          | 0                             | 0                             |
 
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
+
     And the manufacturing order identified by ppo_1 is completed
 
     And after not more than 30s, the MD_Candidate table has only the following records
@@ -1673,6 +1808,10 @@ Feature: create production order
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PP_Order_AtDate | OPT.QtyDemand_PP_Order_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | olASI                        | 10                              | 10                      | 10                      | 10                           | 0                             | 0                              | 0                              | 0                          | 10                            | 0                             |
       | cp_2       | p_2                     | 2021-04-16  | bomLineASI                   | 0                               | 100                     | 0                       | 100                          | -100                          | 100                            | 0                              | 0                          | 0                             | 100                           |
+
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
 
     And the manufacturing order identified by ppo_1 is reactivated
 
@@ -1693,6 +1832,10 @@ Feature: create production order
       | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PP_Order_AtDate | OPT.QtyDemand_PP_Order_AtDate |
       | cp_1       | p_1                     | 2021-04-16  | olASI                        | 10                              | 10                      | 0                       | 10                           | -10                           | 10                             | 0                              | 0                          | 0                             | 0                             |
       | cp_2       | p_2                     | 2021-04-16  | bomLineASI                   | 0                               | 0                       | 0                       | 100                          | 0                             | 100                            | 0                              | 0                          | 0                             | 0                             |
+
+    And after not more than 60s, metasfresh has this MD_Cockpit_DocumentDetail data
+      | MD_Cockpit_DocumentDetail_ID.Identifier | MD_Cockpit_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyOrdered | OPT.QtyReserved |
+      | cp_dd_1                                 | cp_1                     | ol_1                      | 10             | 10              |
 
     And the manufacturing order identified by ppo_1 is completed
 

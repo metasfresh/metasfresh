@@ -66,13 +66,16 @@ public class MD_Cockpit_StepDef
 
 	private final M_Product_StepDefData productTable;
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
+	private final MD_Cockpit_StepDefData cockpitTable;
 
 	public MD_Cockpit_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable)
+			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
+			@NonNull final MD_Cockpit_StepDefData cockpitTable)
 	{
 		this.productTable = productTable;
 		this.attributeSetInstanceTable = attributeSetInstanceTable;
+		this.cockpitTable = cockpitTable;
 	}
 
 	@And("^after not more than (.*)s, metasfresh has this MD_Cockpit data$")
@@ -102,7 +105,9 @@ public class MD_Cockpit_StepDef
 			return validateCockpitRecord(identifier, expectedResults, mdCockpitRecord);
 		};
 
-		StepDefUtil.tryAndWaitForItem(timeoutSec, 500, getValidCockpit, () -> logCurrentContext(expectedResults));
+		final I_MD_Cockpit cockpitRecord = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, getValidCockpit, () -> logCurrentContext(expectedResults));
+
+		cockpitTable.putOrReplace(identifier, cockpitRecord);
 	}
 
 	@NonNull

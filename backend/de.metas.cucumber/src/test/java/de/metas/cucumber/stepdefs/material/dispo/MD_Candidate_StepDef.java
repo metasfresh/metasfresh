@@ -50,10 +50,6 @@ import de.metas.material.dispo.model.I_MD_Candidate_Demand_Detail;
 import de.metas.material.dispo.model.I_MD_Candidate_StockChange_Detail;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.AttributesKey;
-import de.metas.material.event.commons.EventDescriptor;
-import de.metas.material.event.commons.MaterialDescriptor;
-import de.metas.material.event.commons.OrderLineDescriptor;
-import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.stockestimate.AbstractStockEstimateEvent;
 import de.metas.material.event.stockestimate.StockEstimateCreatedEvent;
 import de.metas.material.event.stockestimate.StockEstimateDeletedEvent;
@@ -155,29 +151,6 @@ public class MD_Candidate_StepDef
 	public void setupMD_Candidate_StockChange_detail_Data()
 	{
 		DB.executeUpdateEx("TRUNCATE TABLE md_candidate_stockChange_detail cascade", ITrx.TRXNAME_None);
-	}
-
-	@When("metasfresh receives a ShipmentScheduleCreatedEvent")
-	public void shipmentScheduleCreatedEvent(@NonNull final DataTable dataTable)
-	{
-		final Map<String, String> map = dataTable.asMaps().get(0);
-
-		final int shipmentScheduleId = Integer.parseInt(map.get("M_ShipmentSchedule_ID"));
-		final int productId = Integer.parseInt(map.get("M_Product_ID"));
-		final Instant preparationDate = Instant.parse(map.get("PreparationDate"));
-		final BigDecimal qty = new BigDecimal(map.get("Qty"));
-
-		final MaterialDescriptor descriptor = MaterialDispoUtils.createMaterialDescriptor(productId, preparationDate, qty);
-
-		final ShipmentScheduleCreatedEvent shipmentScheduleCreatedEvent = ShipmentScheduleCreatedEvent.builder()
-				.eventDescriptor(EventDescriptor.ofClientAndOrg(ClientId.METASFRESH.getRepoId(), StepDefConstants.ORG_ID.getRepoId()))
-				.materialDescriptor(descriptor)
-				.shipmentScheduleId(shipmentScheduleId)
-				.reservedQuantity(qty)
-				.documentLineDescriptor(OrderLineDescriptor.builder().orderId(10).orderLineId(20).docTypeId(30).orderBPartnerId(40).build())
-				.build();
-
-		postMaterialEventService.postEventNow(shipmentScheduleCreatedEvent, null);
 	}
 
 	@When("metasfresh initially has this MD_Candidate data")
