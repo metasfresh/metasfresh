@@ -22,6 +22,7 @@
 
 package de.metas.banking.camt53.process;
 
+import de.metas.attachments.AttachmentEntry;
 import de.metas.attachments.AttachmentEntryDataResource;
 import de.metas.attachments.AttachmentEntryId;
 import de.metas.attachments.AttachmentEntryService;
@@ -36,29 +37,29 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
-import de.metas.process.Param;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessPreconditionsResolution;
 import lombok.NonNull;
+import org.adempiere.banking.model.I_C_BankStatement_Import_File;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_AttachmentEntry;
 import org.compiere.model.I_C_BankStatement;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 public class C_BankStatement_Camt53_ImportAttachment extends JavaProcess implements IProcessPrecondition
 {
 	private static final AdMessageKey MSG_NO_STATEMENT_IMPORTED = AdMessageKey.of("de.metas.banking.camt53.process.C_BankStatement_Camt53_ImportAttachment.NoStatementImported");
 	private static final AdMessageKey MSG_SELECTED_RECORD_ALREADY_PROCESSED = AdMessageKey.of("de.metas.banking.camt53.process.C_BankStatement_Camt53_ImportAttachment.SelectedRecordIsProcessed");
+	private static final AdMessageKey MSG_NO_ATTACHMENT = AdMessageKey.of("de.metas.banking.camt53.process.C_BankStatement_Camt53_ImportAttachment.NoAttachment");
+	private static final AdMessageKey MSG_MULTIPLE_ATTACHMENTS = AdMessageKey.of("de.metas.banking.camt53.process.C_BankStatement_Camt53_ImportAttachment.MultipleAttachments");
 
 	private final BankStatementCamt53Service bankStatementCamt53Service = SpringContextHolder.instance.getBean(BankStatementCamt53Service.class);
 	private final AttachmentEntryService attachmentEntryService = SpringContextHolder.instance.getBean(AttachmentEntryService.class);
 	private final BankStatementImportFileService bankStatementImportFileService = SpringContextHolder.instance.getBean(BankStatementImportFileService.class);
-
-	@Param(parameterName = I_AD_AttachmentEntry.COLUMNNAME_AD_AttachmentEntry_ID, mandatory = true)
-	private AttachmentEntryId p_AD_AttachmentEntry_ID;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
@@ -73,9 +74,15 @@ public class C_BankStatement_Camt53_ImportAttachment extends JavaProcess impleme
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
-		if (isSelectedRecordProcessed(context.getSingleSelectedRecordId()))
+		final BankStatementImportFileId bankStatementImportFileId = BankStatementImportFileId.ofRepoId(context.getSingleSelectedRecordId());
+		if (isSelectedRecordProcessed(bankStatementImportFileId))
 		{
 			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_SELECTED_RECORD_ALREADY_PROCESSED));
+		}
+
+		if (isMissingAttachmentEntryForRecordId(bankStatementImportFileId))
+		{
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_NO_ATTACHMENT));
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -84,9 +91,10 @@ public class C_BankStatement_Camt53_ImportAttachment extends JavaProcess impleme
 	@Override
 	protected String doIt()
 	{
-		final AttachmentEntryDataResource data = attachmentEntryService.retrieveDataResource(getAttachmentEntryId());
-
 		final BankStatementImportFileId bankStatementImportFileId = BankStatementImportFileId.ofRepoId(getRecord_ID());
+
+		final AttachmentEntryDataResource data = retrieveAttachmentResource(bankStatementImportFileId);
+
 		final BankStatementImportFile selectedRecord = bankStatementImportFileService.getById(bankStatementImportFileId);
 
 		final ImportBankStatementRequest request = ImportBankStatementRequest.builder()
@@ -99,22 +107,19 @@ public class C_BankStatement_Camt53_ImportAttachment extends JavaProcess impleme
 
 		openImportedRecords(importedBankStatementIds);
 
-		markRecordAsProcessed(selectedRecord, data.getFilename());
+		markRecordAsProcessed(selectedRecord);
 
 		return JavaProcess.MSG_OK;
 	}
-	
-	private void markRecordAsProcessed(
-			@NonNull final BankStatementImportFile bankStatementImportFile, 
-			@NonNull final String filename)
+
+	private void markRecordAsProcessed(@NonNull final BankStatementImportFile bankStatementImportFile)
 	{
 		bankStatementImportFileService.save(bankStatementImportFile.toBuilder()
-													.filename(filename)
 													.importedTimestamp(SystemTime.asInstant())
 													.processed(true)
 													.build());
 	}
-	
+
 	private void openImportedRecords(@NonNull final Set<BankStatementId> importedBankStatementIds)
 	{
 		if (importedBankStatementIds.isEmpty())
@@ -137,16 +142,44 @@ public class C_BankStatement_Camt53_ImportAttachment extends JavaProcess impleme
 											.build());
 	}
 
-	private boolean isSelectedRecordProcessed(final int bankStatementImportFileRecordId)
+	private boolean isSelectedRecordProcessed(@NonNull final BankStatementImportFileId bankStatementImportFileId)
 	{
-		final BankStatementImportFileId bankStatementImportFileId = BankStatementImportFileId.ofRepoId(bankStatementImportFileRecordId);
 		return bankStatementImportFileService.getById(bankStatementImportFileId)
 				.isProcessed();
 	}
 
-	@NonNull
-	private AttachmentEntryId getAttachmentEntryId()
+	private boolean isMissingAttachmentEntryForRecordId(@NonNull final BankStatementImportFileId bankStatementImportFileId)
 	{
-		return p_AD_AttachmentEntry_ID;
+		return !getSingleAttachmentEntryId(bankStatementImportFileId).isPresent();
+	}
+
+	@NonNull
+	private Optional<AttachmentEntryId> getSingleAttachmentEntryId(@NonNull final BankStatementImportFileId bankStatementImportFileId)
+	{
+		final List<AttachmentEntry> attachments = attachmentEntryService
+				.getByReferencedRecord(TableRecordReference.of(I_C_BankStatement_Import_File.Table_Name, bankStatementImportFileId));
+
+		if (attachments.isEmpty())
+		{
+			return Optional.empty();
+		}
+
+		if (attachments.size() != 1)
+		{
+			throw new AdempiereException(MSG_MULTIPLE_ATTACHMENTS)
+					.markAsUserValidationError();
+		}
+
+		return Optional.of(attachments.get(0).getId());
+	}
+
+	@NonNull
+	private AttachmentEntryDataResource retrieveAttachmentResource(@NonNull final BankStatementImportFileId bankStatementImportFileId)
+	{
+		final AttachmentEntryId attachmentEntryId = getSingleAttachmentEntryId(bankStatementImportFileId)
+				.orElseThrow(() -> new AdempiereException(MSG_NO_ATTACHMENT)
+						.markAsUserValidationError());
+
+		return attachmentEntryService.retrieveDataResource(attachmentEntryId);
 	}
 }
