@@ -103,6 +103,7 @@ public class PPOrderAllocatorService
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoIdOrNull(ppOrderCandidatePojo.getPpOrderData().getShipmentScheduleIdAsRepoId()))
 				//
 				.packingMaterialId(ppOrderCandidatePojo.getPpOrderData().getPackingMaterialId())
+				.seqNo(candidateRecord.getSeqNo())
 				//dev-note: there is a custom logic for completing PPOrder when created from PP_Order_Candidate (due to MD_Candidates interaction)
 				//see: org.eevolution.productioncandidate.service.produce.PPOrderProducerFromCandidate.processPPOrderCandidates
 				.completeDocument(false);
