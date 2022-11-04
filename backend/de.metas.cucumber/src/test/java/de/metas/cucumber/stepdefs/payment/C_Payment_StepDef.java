@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.payment;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.C_BP_BankAccount_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -73,6 +74,8 @@ import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Payment_ID;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_C_DocType_ID;
+import static org.compiere.model.I_C_Payment.COLUMNNAME_DateAcct;
+import static org.compiere.model.I_C_Payment.COLUMNNAME_DateTrx;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_IsAllocated;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_IsReceipt;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_PayAmt;
@@ -298,11 +301,16 @@ public class C_Payment_StepDef
 		payment.setPayAmt(paymentAmount);
 		payment.setC_Currency_ID(currencyId.getRepoId());
 		payment.setC_DocType_ID(docTypeId.getRepoId());
-		payment.setDateTrx(TimeUtil.asTimestamp(LocalDate.now()));
 		payment.setC_BP_BankAccount_ID(bpBankAccount.getC_BP_BankAccount_ID());
 		payment.setIsReceipt(isReceipt);
 		payment.setIsAutoAllocateAvailableAmt(false);
 
+		final Timestamp dateTrx = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + COLUMNNAME_DateTrx);
+		payment.setDateTrx(CoalesceUtil.coalesceNotNull(dateTrx, TimeUtil.asTimestamp(LocalDate.now())));
+
+		final Timestamp dateAcct = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + COLUMNNAME_DateAcct);
+		payment.setDateAcct(CoalesceUtil.coalesceNotNull(dateAcct, TimeUtil.asTimestamp(LocalDate.now())));
+		
 		paymentDAO.save(payment);
 
 		final String paymentIdentifier = DataTableUtil.extractStringForColumnName(row, TABLECOLUMN_IDENTIFIER);

@@ -20,32 +20,38 @@
  * #L%
  */
 
-package de.metas.banking.importfile;
+package de.metas.banking.importfile.log;
 
+import de.metas.banking.importfile.BankStatementImportFileId;
+import de.metas.error.AdIssueId;
+import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.service.ClientId;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
 
 @Value
-@Builder(toBuilder = true)
-public class BankStatementImportFile
+@Builder
+public class BankStatementImportFileRequestLog
 {
 	@NonNull
 	BankStatementImportFileId bankStatementImportFileId;
 
-	/**
-	 * Can be null if a file was not yet attached
-	 */
-	@Nullable
-	String filename;
+	@NonNull
+	Instant timestamp;
+
+	@NonNull
+	ClientId clientId;
+
+	@NonNull
+	UserId userId;
 
 	@Nullable
-	Instant importedTimestamp;
+	AdIssueId adIssueId;
 
-	boolean isMatchAmounts;
-	
-	boolean processed;
+	@Nullable
+	String message;
 }
