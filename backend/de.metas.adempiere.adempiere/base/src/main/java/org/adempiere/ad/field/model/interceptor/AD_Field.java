@@ -19,6 +19,8 @@ import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.table.api.MinimalColumnInfo;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.ad.window.api.IADWindowDAO;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
@@ -95,8 +97,12 @@ public class AD_Field
 			final MLookupInfo lookupInfo;
 			try
 			{
-				final I_AD_Column column = tableDAO.retrieveColumnById(adColumnId);
-				final String ctxTableName = tableDAO.retrieveTableName(column.getAD_Table_ID());
+				final MinimalColumnInfo column = tableDAO.getMinimalColumnInfo(adColumnId);
+				final String ctxTableName = tableDAO.retrieveTableName(column.getAdTableId());
+				final AdValRuleId adValRuleId = CoalesceUtil.coalesceSuppliers(
+						() -> AdValRuleId.ofRepoIdOrNull(field.getAD_Val_Rule_ID()),
+						column::getAdValRuleId
+				);
 				lookupInfo = MLookupFactory.getLookupInfo(
 						Integer.MAX_VALUE, // WindowNo
 						adReferenceId,
@@ -104,7 +110,7 @@ public class AD_Field
 						column.getColumnName(), // ctxColumnName
 						field.getAD_Reference_Value_ID(),
 						column.isParent(), // IsParent,
-						CoalesceUtil.firstGreaterThanZero(field.getAD_Val_Rule_ID(), column.getAD_Val_Rule_ID(), -1) //AD_Val_Rule_ID
+						adValRuleId != null ? adValRuleId.getRepoId() : -1
 				);
 			}
 			catch (final Exception ex)
