@@ -5,10 +5,10 @@ import PropTypes from 'prop-types';
 
 import { PROCESS_NAME } from '../../constants/Constants';
 import {
+  DLpropTypes,
+  GEO_PANEL_STATES,
   NO_VIEW,
   PANEL_WIDTHS,
-  GEO_PANEL_STATES,
-  DLpropTypes,
   renderHeaderProperties,
 } from '../../utils/documentListHelper';
 import Spinner from './SpinnerOverlay';
@@ -19,6 +19,10 @@ import FiltersStatic from '../filters/FiltersStatic';
 import Table from '../../containers/Table';
 import QuickActions from './QuickActions';
 import GeoMap from '../maps/GeoMap';
+import {
+  PP_ORDER_CANDIDATE_WINDOW_ID,
+  PPOrderCandidateViewHeader,
+} from '../ppOrderCandidate/PPOrderCandidateViewHeader';
 
 /**
  * @file Class based component.
@@ -178,6 +182,15 @@ export default class DocumentList extends Component {
               </div>
             </div>
           </div>
+        )}
+
+        {String(windowId) === PP_ORDER_CANDIDATE_WINDOW_ID && viewId && (
+          <PPOrderCandidateViewHeader
+            windowId={windowId}
+            viewId={viewId}
+            selectedRowIds={selected}
+            pageLength={pageLength}
+          />
         )}
 
         {showModalResizeBtn && (
