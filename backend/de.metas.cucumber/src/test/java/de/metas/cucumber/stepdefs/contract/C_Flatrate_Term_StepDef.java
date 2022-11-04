@@ -160,12 +160,12 @@ public class C_Flatrate_Term_StepDef
 				prodcurementContractRecord.setPMM_Product_ID(pmmProductRecord.getPMM_Product_ID());
 			}
 
-			final Integer nrOfMonthsFromNow = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT.NrOfMonthsFromNow");
+			final Integer nrOfDaysFromNow = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT.NrOfDaysFromNow");
 
-			if (nrOfMonthsFromNow != null)
+			if (nrOfDaysFromNow != null)
 			{
 				contractRecord.setStartDate(Timestamp.from(SystemTime.asInstant().minus(1, ChronoUnit.DAYS)));
-				contractRecord.setEndDate(Timestamp.from(SystemTime.asInstant().plus(nrOfMonthsFromNow, ChronoUnit.MONTHS)));
+				contractRecord.setEndDate(Timestamp.from(SystemTime.asInstant().plus(nrOfDaysFromNow, ChronoUnit.DAYS)));
 			}
 			else
 			{
