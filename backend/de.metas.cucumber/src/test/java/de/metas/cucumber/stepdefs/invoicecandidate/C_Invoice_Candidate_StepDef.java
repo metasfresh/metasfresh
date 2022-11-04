@@ -118,6 +118,7 @@ import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_AD_Table_ID;
+import static de.metas.invoicecandidate.api.IInvoicingParams.PARA_IsCompleteInvoices;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_ApprovalForInvoicing;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_Bill_Location_ID;
@@ -806,6 +807,9 @@ public class C_Invoice_Candidate_StepDef
 			invoicingParams.setIgnoreInvoiceSchedule(false);
 			invoicingParams.setSupplementMissingPaymentTermIds(true);
 			invoicingParams.setUpdateLocationAndContactForInvoice(isUpdateLocationAndContactForInvoice);
+
+			final boolean completeInvoices = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + PARA_IsCompleteInvoices, true);
+			invoicingParams.setCompleteInvoices(completeInvoices);
 
 			StepDefUtil.tryAndWait(timeoutSec, 500, () -> checkNotMarkedAsToRecompute(invoiceCandidate));
 
