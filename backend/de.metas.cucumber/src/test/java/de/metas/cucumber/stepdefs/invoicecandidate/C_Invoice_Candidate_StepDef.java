@@ -1289,6 +1289,16 @@ public class C_Invoice_Candidate_StepDef
 			}
 		}
 
+		final BigDecimal netAmtToInvoice = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + COLUMNNAME_NetAmtToInvoice);
+		if (netAmtToInvoice != null)
+		{
+			if (invoiceCandidateRecord.getNetAmtToInvoice().compareTo(netAmtToInvoice) != 0)
+			{
+				errorCollectors.add(MessageFormat.format("C_Invoice_Candidate_ID={0}; Expecting NetAmtToInvoice={1} but actual is {2}",
+														 invoiceCandidateRecord.getC_Invoice_Candidate_ID(), netAmtToInvoice, invoiceCandidateRecord.getNetAmtToInvoice()));
+			}
+		}
+
 		if (invoiceCandDAO.isToRecompute(invoiceCandidateRecord))
 		{
 			errorCollectors.add("C_Invoice_Candidate_ID=" + invoiceCandidateRecord.getC_Invoice_Candidate_ID() + " is not updated yet");

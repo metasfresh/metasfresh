@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.contract;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.common.util.time.SystemTime;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
@@ -55,6 +56,8 @@ import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_Product;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 
@@ -157,8 +160,18 @@ public class C_Flatrate_Term_StepDef
 				prodcurementContractRecord.setPMM_Product_ID(pmmProductRecord.getPMM_Product_ID());
 			}
 
-			contractRecord.setStartDate(DataTableUtil.extractDateTimestampForColumnName(tableRow, "StartDate"));
-			contractRecord.setEndDate(DataTableUtil.extractDateTimestampForColumnName(tableRow, "EndDate"));
+			final Integer nrOfDaysFromNow = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT.NrOfDaysFromNow");
+
+			if (nrOfDaysFromNow != null)
+			{
+				contractRecord.setStartDate(Timestamp.from(SystemTime.asInstant().minus(1, ChronoUnit.DAYS)));
+				contractRecord.setEndDate(Timestamp.from(SystemTime.asInstant().plus(nrOfDaysFromNow, ChronoUnit.DAYS)));
+			}
+			else
+			{
+				contractRecord.setStartDate(DataTableUtil.extractDateTimestampForColumnName(tableRow, "StartDate"));
+				contractRecord.setEndDate(DataTableUtil.extractDateTimestampForColumnName(tableRow, "EndDate"));
+			}
 
 			InterfaceWrapperHelper.saveRecord(contractRecord);
 

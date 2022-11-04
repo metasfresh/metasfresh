@@ -26,7 +26,7 @@ Feature: import bank statement in camt53 import format
 
     And metasfresh contains C_BPartner_Locations:
       | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsBillToDefault | OPT.IsShipTo |
-      | l_1        | 1111111111111 | bpartner_1               | true                | true         |
+      | l_1        | 0203111111111 | bpartner_1               | true                | true         |
 
     And load C_DataImport:
       | C_DataImport_ID.Identifier | OPT.C_DataImport_ID |
