@@ -27,8 +27,10 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.logging.LogManager;
+import de.metas.material.cockpit.CockpitId;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Cockpit_DocumentDetail;
+import de.metas.order.OrderLineId;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -94,7 +96,10 @@ public class MD_Cockpit_DocumentDetail_StepDef
 			final I_C_OrderLine orderLineRecord = orderLineTable.get(orderLineIdentifier);
 			softly.assertThat(orderLineRecord).isNotNull();
 
-			softly.assertThat(getCockpitDocumentDetailSupplier(cockpitRecord.getMD_Cockpit_ID(), orderLineRecord.getC_OrderLine_ID()).get().isPresent()).isFalse();
+			final CockpitId cockpitId = CockpitId.ofRepoId(cockpitRecord.getMD_Cockpit_ID());
+			final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLineRecord.getC_OrderLine_ID());
+			
+			softly.assertThat(getCockpitDocumentDetailSupplier(cockpitId, orderLineId).get().isPresent()).isFalse();
 
 			softly.assertAll();
 		}
@@ -114,9 +119,14 @@ public class MD_Cockpit_DocumentDetail_StepDef
 		final I_C_OrderLine orderLineRecord = orderLineTable.get(orderLineIdentifier);
 		softly.assertThat(orderLineRecord).isNotNull();
 
+		softly.assertAll();
+		
+		final CockpitId cockpitId = CockpitId.ofRepoId(cockpitRecord.getMD_Cockpit_ID());
+		final OrderLineId orderLineId = OrderLineId.ofRepoId(orderLineRecord.getC_OrderLine_ID());
+		
 		final I_MD_Cockpit_DocumentDetail mdCockpitDocumentDetailRecord = getCockpitDocumentDetailByCockpitIdAndOrderLineId(timeoutSec,
-																															cockpitRecord.getMD_Cockpit_ID(),
-																															orderLineRecord.getC_OrderLine_ID());
+																															cockpitId,
+																															orderLineId);
 
 		final ItemProvider<I_MD_Cockpit_DocumentDetail> getValidCockpitDocumentDetail = () -> {
 			InterfaceWrapperHelper.refresh(mdCockpitDocumentDetailRecord);
@@ -124,9 +134,7 @@ public class MD_Cockpit_DocumentDetail_StepDef
 			return validateCockpitDocumentDetailRecord(tableRow, mdCockpitDocumentDetailRecord);
 		};
 
-		StepDefUtil.tryAndWaitForItem(timeoutSec, 500, getValidCockpitDocumentDetail, () -> logCurrentContext(cockpitRecord.getMD_Cockpit_ID(), orderLineRecord.getC_OrderLine_ID()));
-
-		softly.assertAll();
+		StepDefUtil.tryAndWaitForItem(timeoutSec, 500, getValidCockpitDocumentDetail, () -> logCurrentContext(cockpitId, orderLineId));
 	}
 
 	@NonNull
@@ -139,14 +147,14 @@ public class MD_Cockpit_DocumentDetail_StepDef
 		final String identifier = DataTableUtil.extractStringForColumnName(tableRow, I_MD_Cockpit_DocumentDetail.COLUMNNAME_MD_Cockpit_DocumentDetail_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 		final BigDecimal qtyOrdered = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit_DocumentDetail.COLUMNNAME_QtyOrdered);
-		if (qtyOrdered != null && !qtyOrdered.equals(cockpitDocumentDetailRecord.getQtyOrdered()))
+		if (qtyOrdered != null && qtyOrdered.compareTo(cockpitDocumentDetailRecord.getQtyOrdered()) != 0)
 		{
 			errorCollector.add(MessageFormat.format("MD_Cockpit_DocumentDetail.Identifier={0}; Expecting QtyOrdered={1} but actual is {2}",
 													identifier, qtyOrdered, cockpitDocumentDetailRecord.getQtyOrdered()));
 		}
 
 		final BigDecimal qtyReserved = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_MD_Cockpit_DocumentDetail.COLUMNNAME_QtyReserved);
-		if (qtyReserved != null && !qtyReserved.equals(cockpitDocumentDetailRecord.getQtyReserved()))
+		if (qtyReserved != null && qtyReserved.compareTo(cockpitDocumentDetailRecord.getQtyReserved()) != 0)
 		{
 			errorCollector.add(MessageFormat.format("MD_Cockpit_DocumentDetail.Identifier={0}; Expecting QtyReserved={1} but actual is {2}",
 													identifier, qtyReserved, cockpitDocumentDetailRecord.getQtyReserved()));
@@ -164,16 +172,16 @@ public class MD_Cockpit_DocumentDetail_StepDef
 	@NonNull
 	private I_MD_Cockpit_DocumentDetail getCockpitDocumentDetailByCockpitIdAndOrderLineId(
 			final int timeoutSec,
-			final int cockpitId,
-			final int orderLineId) throws InterruptedException
+			@NonNull final CockpitId cockpitId,
+			@NonNull final OrderLineId orderLineId) throws InterruptedException
 	{
 		return StepDefUtil.tryAndWaitForItem(timeoutSec, 500, getCockpitDocumentDetailSupplier(cockpitId, orderLineId), () -> logCurrentContext(cockpitId, orderLineId));
 	}
 
 	@NonNull
 	private Supplier<Optional<I_MD_Cockpit_DocumentDetail>> getCockpitDocumentDetailSupplier(
-			final int cockpitId,
-			final int orderLineId)
+			@NonNull final CockpitId cockpitId,
+			@NonNull final OrderLineId orderLineId)
 	{
 		return () -> queryBL.createQueryBuilder(I_MD_Cockpit_DocumentDetail.class)
 				.addOnlyActiveRecordsFilter()
@@ -184,14 +192,14 @@ public class MD_Cockpit_DocumentDetail_StepDef
 	}
 
 	private void logCurrentContext(
-			final int cockpitId,
-			final int orderLineId)
+			@NonNull final CockpitId cockpitId,
+			@NonNull final OrderLineId orderLineId)
 	{
 		final StringBuilder message = new StringBuilder();
 
 		message.append("Looking for instance with:").append("\n")
-				.append(I_MD_Cockpit_DocumentDetail.COLUMNNAME_MD_Cockpit_ID).append(" : ").append(cockpitId).append("\n")
-				.append(I_MD_Cockpit_DocumentDetail.COLUMNNAME_C_OrderLine_ID).append(" : ").append(orderLineId).append("\n");
+				.append(I_MD_Cockpit_DocumentDetail.COLUMNNAME_MD_Cockpit_ID).append(" : ").append(cockpitId.getRepoId()).append("\n")
+				.append(I_MD_Cockpit_DocumentDetail.COLUMNNAME_C_OrderLine_ID).append(" : ").append(orderLineId.getRepoId()).append("\n");
 
 		message.append("MD_Cockpit_DocumentDetail records:").append("\n");
 
