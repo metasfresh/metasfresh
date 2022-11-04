@@ -28,11 +28,13 @@ package de.metas.bpartner.service;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.OrgMappingId;
 import de.metas.bpartner.creditLimit.BPartnerCreditLimitId;
 import de.metas.bpartner.creditLimit.CreditLimitTypeId;
 import de.metas.bpartner.service.creditlimit.BPartnerCreditLimit;
+import de.metas.bpartner.service.creditlimit.BPartnerCreditLimitCreateRequest;
 import de.metas.cache.CCache;
-import de.metas.money.CurrencyId;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -46,7 +48,6 @@ import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.I_C_CreditLimit_Type;
 import org.springframework.stereotype.Repository;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Collection;
@@ -54,6 +55,9 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOrNew;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /**
  * @author metas-dev <dev@metasfresh.com>
@@ -115,16 +119,12 @@ public class BPartnerCreditLimitRepository
 						record -> record));
 	}
 
-	@Nullable
+	@NonNull
 	public BPartnerCreditLimit getById(final BPartnerCreditLimitId bPartnerCreditLimitId)
 	{
-		return queryBL.createQueryBuilder(I_C_BPartner_CreditLimit.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_CreditLimit_ID, bPartnerCreditLimitId.getRepoId())
-				.create()
-				.firstOnlyOptional(I_C_BPartner_CreditLimit.class)
-				.map(BPartnerCreditLimitRepository::ofRecord)
-				.orElse(null);
+		final I_C_BPartner_CreditLimit foundRecord = InterfaceWrapperHelper.load(bPartnerCreditLimitId.getRepoId(), I_C_BPartner_CreditLimit.class);
+
+		return ofRecord(foundRecord);
 	}
 
 	@NonNull
@@ -153,14 +153,65 @@ public class BPartnerCreditLimitRepository
 				.update(columnUpdater);
 	}
 
-	public void deleteRecordsForBPartnerAndOrg(@NonNull final BPartnerId bpartnerId, @NonNull final OrgId orgId)
+	@NonNull
+	public ImmutableList<JsonMetasfreshId> deleteRecordsForBPartnerAndOrg(
+			@NonNull final BPartnerId bpartnerId,
+			@NonNull final OrgId orgId,
+			final boolean includingProcessed)
 	{
-		queryBL.createQueryBuilder(I_C_BPartner_CreditLimit.class)
+		final ImmutableList<I_C_BPartner_CreditLimit> recordsToDelete = queryBL.createQueryBuilder(I_C_BPartner_CreditLimit.class)
 				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_ID, bpartnerId)
 				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_AD_Org_ID, orgId)
 				.create()
 				.stream()
-				.forEach(InterfaceWrapperHelper::deleteRecord);
+				.collect(ImmutableList.toImmutableList());
+
+		final ImmutableList<JsonMetasfreshId> deletedIds = recordsToDelete.stream()
+				.map(I_C_BPartner_CreditLimit::getC_BPartner_CreditLimit_ID)
+				.map(JsonMetasfreshId::of)
+				.collect(ImmutableList.toImmutableList());
+
+		recordsToDelete
+				.forEach((record) -> InterfaceWrapperHelper.delete(record, !includingProcessed));
+
+		return deletedIds;
+	}
+
+	@NonNull
+	public BPartnerCreditLimit createOrUpdate(@NonNull final BPartnerCreditLimitCreateRequest bPartnerCreditLimitCreateRequest)
+	{
+		final BPartnerCreditLimit creditLimit = bPartnerCreditLimitCreateRequest.getCreditLimit();
+
+		final I_C_BPartner_CreditLimit creditLimitRecord = loadOrNew(creditLimit.getId(), I_C_BPartner_CreditLimit.class);
+
+		if (bPartnerCreditLimitCreateRequest.getOrgId() != null)
+		{
+			creditLimitRecord.setAD_Org_ID(bPartnerCreditLimitCreateRequest.getOrgId().getRepoId());
+		}
+
+		creditLimitRecord.setC_CreditLimit_Type_ID(creditLimit.getCreditLimitTypeId().getRepoId());
+
+		creditLimitRecord.setC_BPartner_ID(bPartnerCreditLimitCreateRequest.getBpartnerId().getRepoId());
+
+		creditLimitRecord.setAmount(creditLimit.getAmount());
+
+		if (creditLimit.getDateFrom() != null)
+		{
+			creditLimitRecord.setDateFrom(Timestamp.from(creditLimit.getDateFrom()));
+		}
+
+		creditLimitRecord.setIsActive(creditLimit.isActive());
+
+		creditLimitRecord.setProcessed(creditLimit.isProcessed());
+
+		creditLimitRecord.setAD_Org_Mapping_ID(OrgMappingId.toRepoId(creditLimit.getOrgMappingId()));
+
+		Optional.ofNullable(bPartnerCreditLimitCreateRequest.getValidatePermissions())
+				.ifPresent(permissionValidator -> permissionValidator.accept(creditLimitRecord));
+
+		saveRecord(creditLimitRecord);
+
+		return ofRecord(creditLimitRecord);
 	}
 
 	@NonNull
@@ -220,12 +271,13 @@ public class BPartnerCreditLimitRepository
 	public static BPartnerCreditLimit ofRecord(@NonNull final I_C_BPartner_CreditLimit creditLimit)
 	{
 		return BPartnerCreditLimit.builder()
-				.id(BPartnerCreditLimitId.ofRepoId(creditLimit.getC_BPartner_ID(), creditLimit.getC_BPartner_CreditLimit_ID()))
+				.id(BPartnerCreditLimitId.ofRepoId(creditLimit.getC_BPartner_CreditLimit_ID()))
 				.amount(creditLimit.getAmount())
 				.creditLimitTypeId(CreditLimitTypeId.ofRepoId(creditLimit.getC_CreditLimit_Type_ID()))
-				.currencyId(CurrencyId.ofRepoIdOrNull(creditLimit.getC_Currency_ID()))
-				.dateFrom(creditLimit.getDateFrom().toInstant())
+				.dateFrom(creditLimit.getDateFrom() != null ? creditLimit.getDateFrom().toInstant() : null)
+				.orgMappingId(OrgMappingId.ofRepoIdOrNull(creditLimit.getAD_Org_Mapping_ID()))
 				.active(creditLimit.isActive())
+				.processed(creditLimit.isProcessed())
 				.build();
 	}
 }

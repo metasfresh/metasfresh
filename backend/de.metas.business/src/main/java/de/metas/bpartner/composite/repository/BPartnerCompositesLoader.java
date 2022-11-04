@@ -24,8 +24,8 @@ import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationAddressPart;
 import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.composite.SalesRep;
-import de.metas.bpartner.service.creditlimit.BPartnerCreditLimit;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
+import de.metas.bpartner.service.creditlimit.BPartnerCreditLimit;
 import de.metas.bpartner.user.role.UserRole;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.common.util.StringUtils;
@@ -176,7 +176,7 @@ final class BPartnerCompositesLoader
 					.contacts(ofContactRecords(id, relatedRecords, timeZone))
 					.locations(ofBPartnerLocationRecords(id, relatedRecords))
 					.bankAccounts(ofBankAccountRecords(id, relatedRecords))
-					.creditLimits(ofCreditLimitsRecords(id, relatedRecords))
+					.creditLimits(ofCreditLimitsRecords(id, relatedRecords, bpartner.getBPartnerValueNotNull()))
 					.build();
 
 			result.put(id, bpartnerComposite);
@@ -584,23 +584,26 @@ final class BPartnerCompositesLoader
 	@NonNull
 	private ImmutableList<BPartnerCreditLimit> ofCreditLimitsRecords(
 			@NonNull final BPartnerId bpartnerId,
-			@NonNull final CompositeRelatedRecords relatedRecords)
+			@NonNull final CompositeRelatedRecords relatedRecords,
+			@NonNull final String bpartnerValue)
 	{
 		return relatedRecords.getCreditLimitsByBPartnerId(bpartnerId)
 				.stream()
-				.map((record) -> ofCreditLimitRecord(record, relatedRecords))
+				.map((record) -> ofCreditLimitRecord(record, relatedRecords, bpartnerValue))
 				.collect(ImmutableList.toImmutableList());
 	}
 
 	@NonNull
 	private BPartnerCreditLimit ofCreditLimitRecord(
 			@NonNull final I_C_BPartner_CreditLimit creditLimitRecord,
-			@NonNull final CompositeRelatedRecords relatedRecords)
+			@NonNull final CompositeRelatedRecords relatedRecords,
+			@NonNull final String bpartnerValue)
 	{
 		final RecordChangeLog changeLog = ChangeLogUtil.createCreditLimitChangeLog(creditLimitRecord, relatedRecords);
 
 		return BPartnerCreditLimitRepository.ofRecord(creditLimitRecord)
-				.withChangeLog(changeLog);
+				.withChangeLog(changeLog)
+				.withBpartnerValue(bpartnerValue);
 	}
 
 	@Nullable

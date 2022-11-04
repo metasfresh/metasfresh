@@ -13,13 +13,14 @@ import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerContactType;
-import de.metas.bpartner.service.creditlimit.BPartnerCreditLimit;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationAddressPart;
 import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.creditLimit.BPartnerCreditLimitId;
-import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
+import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.creditlimit.BPartnerCreditLimit;
+import de.metas.bpartner.service.creditlimit.BPartnerCreditLimitCreateRequest;
 import de.metas.document.DocTypeId;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.ITranslatableString;
@@ -61,10 +62,8 @@ import org.compiere.util.TimeUtil;
 import org.slf4j.MDC.MDCCloseable;
 
 import javax.annotation.Nullable;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static de.metas.util.Check.isBlank;
@@ -695,7 +694,7 @@ final class BPartnerCompositeSaver
 
 		for (final BPartnerCreditLimit creditLimit : creditLimits)
 		{
-			final BPartnerCreditLimitSaveRequest request = BPartnerCreditLimitSaveRequest.builder()
+			final BPartnerCreditLimitCreateRequest request = BPartnerCreditLimitCreateRequest.builder()
 					.bpartnerId(bpartnerId)
 					.orgId(orgId)
 					.creditLimit(creditLimit)
@@ -709,43 +708,17 @@ final class BPartnerCompositeSaver
 		bPartnerCreditLimitRepository.deactivateCreditLimitsByBPartnerExcept(bpartnerId, savedBPCreditLimitIds.build());
 	}
 
-	private void saveBPartnerCreditLimit(@NonNull final BPartnerCreditLimitSaveRequest request)
+	private void saveBPartnerCreditLimit(@NonNull final BPartnerCreditLimitCreateRequest bpartnerCreditLimitCreateRequest)
 	{
-		final BPartnerCreditLimit creditLimit = request.getCreditLimit();
-		final OrgId orgId = request.getOrgId();
-		final BPartnerId bpartnerId = request.getBpartnerId();
+		final BPartnerCreditLimit creditLimit = bpartnerCreditLimitCreateRequest.getCreditLimit();
 
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(I_C_BPartner_CreditLimit.Table_Name, creditLimit.getId()))
 		{
-			final I_C_BPartner_CreditLimit record = loadOrNew(creditLimit.getId(), I_C_BPartner_CreditLimit.class);
-
-			if (orgId != null)
-			{
-				record.setAD_Org_ID(orgId.getRepoId());
-			}
-
-			record.setC_BPartner_ID(bpartnerId.getRepoId());
-
-			record.setIsActive(creditLimit.isActive());
-
-			record.setAmount(creditLimit.getAmount());
-
-			if (creditLimit.getDateFrom() != null)
-			{
-				record.setDateFrom(Timestamp.from(creditLimit.getDateFrom()));
-			}
-
-			record.setC_CreditLimit_Type_ID(creditLimit.getCreditLimitTypeId().getRepoId());
-
-			Optional.ofNullable(request.getValidatePermissions())
-					.ifPresent(permissionValidator -> permissionValidator.accept(record));
-
-			saveRecord(record);
+			final BPartnerCreditLimit bPartnerCreditLimit = bPartnerCreditLimitRepository.createOrUpdate(bpartnerCreditLimitCreateRequest);
 
 			//
 			// Update model from saved record:
-			final BPartnerCreditLimitId id = BPartnerCreditLimitId.ofRepoId(bpartnerId, record.getC_BPartner_CreditLimit_ID());
-			creditLimit.setId(id);
+			creditLimit.setId(bPartnerCreditLimit.getId());
 		}
 	}
 

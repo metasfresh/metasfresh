@@ -41,6 +41,7 @@ public class ExternalSystemCamelConstants
 	public static final String HEADER_EXTERNAL_SERVICE_VALUE = "serviceValue";
 	public static final String HEADER_EXTERNAL_SYSTEM_REQUEST = "externalSystemRequest";
 	public static final String HEADER_HU_ID = "M_HU_ID";
+	public static final String HEADER_INCLUDING_PROCESSED = "includingProcessed";
 
 	public static final String MF_API_BASE_URL_PROPERTY = "metasfresh.api.baseurl";
 

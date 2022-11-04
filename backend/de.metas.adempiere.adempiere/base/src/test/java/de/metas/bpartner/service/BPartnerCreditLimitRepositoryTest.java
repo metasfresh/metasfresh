@@ -19,7 +19,7 @@ import java.sql.Timestamp;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -171,7 +171,7 @@ public class BPartnerCreditLimitRepositoryTest
 			@NonNull final BigDecimal amount, @NonNull final Timestamp dateFrom)
 	{
 		final I_C_BPartner_CreditLimit bpLimit = newInstance(I_C_BPartner_CreditLimit.class);
-		bpLimit.setC_BPartner(partner);
+		bpLimit.setC_BPartner_ID(partner.getC_BPartner_ID());
 		bpLimit.setC_CreditLimit_Type(type);
 		bpLimit.setAmount(amount);
 		bpLimit.setProcessed(true);

@@ -8,9 +8,9 @@ import de.metas.bpartner.composite.BPartner;
 import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerContactType;
-import de.metas.bpartner.service.creditlimit.BPartnerCreditLimit;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationType;
+import de.metas.bpartner.service.creditlimit.BPartnerCreditLimit;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.location.CountryId;
 import de.metas.location.LocationId;
@@ -197,7 +197,6 @@ final class ChangeLogUtil
 			.put(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_CreditLimit_ID, BPartnerCreditLimit.ID)
 			.put(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_ID, BPartnerCreditLimit.BPARTNER_ID)
 			.put(I_C_BPartner_CreditLimit.COLUMNNAME_C_CreditLimit_Type_ID, BPartnerCreditLimit.CREDIT_LIMIT_TYPE_ID)
-			.put(I_C_BPartner_CreditLimit.COLUMNNAME_C_Currency_ID, BPartnerCreditLimit.CURRENCY_ID)
 			.put(I_C_BPartner_CreditLimit.COLUMNNAME_Amount, BPartnerCreditLimit.AMOUNT)
 			.put(I_C_BPartner_CreditLimit.COLUMNNAME_DateFrom, BPartnerCreditLimit.DATE_FROM)
 			.put(I_C_BPartner_CreditLimit.COLUMNNAME_IsActive, BPartnerCreditLimit.ACTIVE)

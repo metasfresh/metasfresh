@@ -22,12 +22,9 @@
 
 package de.metas.bpartner.creditLimit;
 
-import de.metas.bpartner.BPartnerId;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
-
-import javax.annotation.Nullable;
 
 /**
  * C_BPartner_CreditLimit_ID
@@ -37,27 +34,13 @@ public class BPartnerCreditLimitId implements RepoIdAware
 {
 	int repoId;
 
-	@Nullable
-	BPartnerId bpartnerId;
-
-	public static BPartnerCreditLimitId ofRepoId(@Nullable final BPartnerId bpartnerId, final int bpCreditLimitId)
+	public static BPartnerCreditLimitId ofRepoId(final int bpCreditLimitId)
 	{
-		return new BPartnerCreditLimitId(bpartnerId, bpCreditLimitId);
+		return new BPartnerCreditLimitId(bpCreditLimitId);
 	}
 
-	public static BPartnerCreditLimitId ofRepoId(final int bpartnerId, final int bpCreditLimitId)
-	{
-		return new BPartnerCreditLimitId(BPartnerId.ofRepoIdOrNull(bpartnerId), bpCreditLimitId);
-	}
-
-	private BPartnerCreditLimitId(@Nullable final BPartnerId bpartnerId, final int bpCreditLimitId)
+	private BPartnerCreditLimitId(final int bpCreditLimitId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(bpCreditLimitId, "C_BPartner_CreditLimit_ID");
-		this.bpartnerId = bpartnerId;
-	}
-
-	public static int toRepoId(final BPartnerCreditLimitId id)
-	{
-		return id != null ? id.getRepoId() : -1;
 	}
 }

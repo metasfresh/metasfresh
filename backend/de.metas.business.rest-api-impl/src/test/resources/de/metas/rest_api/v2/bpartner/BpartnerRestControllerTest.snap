@@ -85,6 +85,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
     "parentId" : 1,
     "phone" : "bPartner.phone",
     "url" : "bPartner.url",
+    "value" : "bPartner.code",
     "vatId" : "bPartner.vatId",
     "vendor" : false
   },
@@ -162,6 +163,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
   "creditLimits" : [ {
     "active" : true,
     "amount" : 10,
+    "bpartnerValue" : "bPartner.code",
     "changeLog" : {
       "createdByUserId" : 30,
       "createdTimestamp" : "1970-01-19T01:38:54.560Z",
@@ -181,9 +183,9 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
     },
     "dateFrom" : "2022-11-01T22:00:00Z",
     "id" : {
-      "bpartnerId" : 100018,
       "repoId" : 100025
-    }
+    },
+    "processed" : false
   } ],
   "locations" : [ {
     "active" : true,
@@ -402,6 +404,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
   "creditLimits" : [ {
     "active" : true,
     "amount" : 25.5,
+    "bpartnerValue" : "bpartnerRecord.value",
     "changeLog" : {
       "createdByUserId" : 30,
       "createdTimestamp" : "1970-01-19T01:38:53.544Z",
@@ -421,9 +424,9 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
     },
     "dateFrom" : "2022-11-01T22:00:00Z",
     "id" : {
-      "bpartnerId" : 20,
       "repoId" : 60
-    }
+    },
+    "processed" : false
   } ],
   "locations" : [ {
     "active" : true,
@@ -598,6 +601,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
   "creditLimits" : [ {
     "active" : true,
     "amount" : 25.5,
+    "bpartnerValue" : "bpartnerRecord.value",
     "changeLog" : {
       "createdByUserId" : 30,
       "createdTimestamp" : "1970-01-19T01:38:53.544Z",
@@ -617,9 +621,9 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
     },
     "dateFrom" : "2022-11-01T22:00:00Z",
     "id" : {
-      "bpartnerId" : 20,
       "repoId" : 60
-    }
+    },
+    "processed" : false
   } ],
   "locations" : [ {
     "active" : true,
@@ -762,6 +766,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
   "creditLimits" : [ {
     "active" : true,
     "amount" : 25.5,
+    "bpartnerValue" : "bpartnerRecord.value",
     "changeLog" : {
       "createdByUserId" : 30,
       "createdTimestamp" : "1970-01-19T01:38:53.544Z",
@@ -781,9 +786,9 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
     },
     "dateFrom" : "2022-11-01T22:00:00Z",
     "id" : {
-      "bpartnerId" : 20,
       "repoId" : 60
-    }
+    },
+    "processed" : false
   } ],
   "locations" : [ {
     "active" : true,
@@ -926,6 +931,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
   "creditLimits" : [ {
     "active" : true,
     "amount" : 25.5,
+    "bpartnerValue" : "bpartnerRecord.value",
     "changeLog" : {
       "createdByUserId" : 30,
       "createdTimestamp" : "1970-01-19T01:38:53.544Z",
@@ -945,9 +951,9 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
     },
     "dateFrom" : "2022-11-01T22:00:00Z",
     "id" : {
-      "bpartnerId" : 20,
       "repoId" : 60
-    }
+    },
+    "processed" : false
   } ],
   "locations" : [ {
     "active" : true,

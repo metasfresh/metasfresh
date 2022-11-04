@@ -35,7 +35,6 @@ import de.metas.common.util.Check;
 import de.metas.common.util.NumberUtils;
 import de.metas.common.util.time.SystemTime;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import org.apache.camel.RuntimeCamelException;
@@ -44,7 +43,6 @@ import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static de.metas.camel.externalsystems.sap.common.ExternalIdentifierFormat.formatExternalId;
@@ -134,6 +132,7 @@ public class SyncCreditLimitRequestBuilder
 		jsonRequestCreditLimitUpsertItem.setCurrencyCode(creditLimitRow.getCurrencyCode());
 		jsonRequestCreditLimitUpsertItem.setOrgCode(orgCode);
 		jsonRequestCreditLimitUpsertItem.setDateFrom(LocalDate.parse(creditLimitRow.getEffectiveDateFrom(), DateTimeFormatter.ofPattern(PATTERN)));
+		jsonRequestCreditLimitUpsertItem.setProcessed(true);
 		jsonRequestCreditLimitUpsertItem.setActive(computeIsActiveCreditLimit(creditLimitRow));
 
 		return jsonRequestCreditLimitUpsertItem;

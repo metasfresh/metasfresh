@@ -29,7 +29,9 @@
                 "currencyCode": "EUR",
                 "currencyCodeSet": true,
                 "active": true,
-                "activeSet": true
+                "activeSet": true,
+                "processed": true,
+                "processedSet": true
               },
               {
                 "amount": 600.00,
@@ -49,7 +51,9 @@
                 "currencyCode": "EUR",
                 "currencyCodeSet": true,
                 "active": false,
-                "activeSet": true
+                "activeSet": true,
+                "processed": true,
+                "processedSet": true
               }
             ],
             "syncAdvise": {

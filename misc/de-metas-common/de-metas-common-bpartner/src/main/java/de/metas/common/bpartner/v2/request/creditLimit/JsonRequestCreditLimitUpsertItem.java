@@ -80,6 +80,12 @@ public class JsonRequestCreditLimitUpsertItem
 	@ApiModelProperty(hidden = true)
 	private boolean activeSet;
 
+	@ApiModelProperty(position = 80)
+	private Boolean processed;
+
+	@ApiModelProperty(hidden = true)
+	private boolean processedSet;
+
 	public void setAmount(final BigDecimal amount)
 	{
 		this.amount = amount;
@@ -120,5 +126,11 @@ public class JsonRequestCreditLimitUpsertItem
 	{
 		this.active = active;
 		this.activeSet = true;
+	}
+
+	public void setProcessed(final Boolean processed)
+	{
+		this.processed = processed;
+		this.processedSet = true;
 	}
 }

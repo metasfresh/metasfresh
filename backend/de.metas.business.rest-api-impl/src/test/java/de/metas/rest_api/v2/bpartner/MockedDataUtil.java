@@ -77,6 +77,7 @@ public class MockedDataUtil
 		bPartner.setPhone("bPartner.phone");
 		bPartner.setUrl("bPartner.url");
 		bPartner.setVatId("bPartner.vatId");
+		bPartner.setCode("bPartner.code");
 
 		final ExternalIdentifier bpartnerIdentifier = ExternalIdentifier.of(bpartnerIdentifierStr);
 

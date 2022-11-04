@@ -34,6 +34,7 @@ import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsertI
 import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import de.metas.common.bpartner.v2.response.JsonResponseCompositeList;
 import de.metas.common.bpartner.v2.response.JsonResponseContact;
+import de.metas.common.bpartner.v2.response.JsonResponseCreditLimitDelete;
 import de.metas.common.bpartner.v2.response.JsonResponseLocation;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsert;
 import de.metas.common.product.v2.response.JsonResponseProductBPartner;
@@ -525,17 +526,19 @@ public class BpartnerRestController
 		return createdOrNotFound(response);
 	}
 
-	@DeleteMapping("/credit-limit/{orgCode}/{bpartnerIdentifier}")
-	public ResponseEntity<?> deleteExistingForBPartner(
+	@DeleteMapping("/credit-limit/{orgCode}/{bpartnerIdentifier}/{includingProcessed}")
+	public ResponseEntity<JsonResponseCreditLimitDelete> deleteExistingForBPartner(
 			@PathVariable("orgCode") //
 			@Nullable final String orgCode,
 
 			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
 			@PathVariable("bpartnerIdentifier") //
-			@NonNull final String bpartnerIdentifier)
+			@NonNull final String bpartnerIdentifier,
+
+			@PathVariable("includingProcessed")
+			final boolean includingProcessed)
 	{
-		creditLimitService.deleteExistingRecordsForBPartnerAndOrg(bpartnerIdentifier, orgCode);
-		return ResponseEntity.ok().build();
+		return ResponseEntity.status(HttpStatus.OK).body(creditLimitService.deleteExistingRecordsForBPartnerAndOrg(bpartnerIdentifier, orgCode, includingProcessed));
 	}
 
 	private static <T> ResponseEntity<T> okOrNotFound(@NonNull final Optional<T> optionalResult)

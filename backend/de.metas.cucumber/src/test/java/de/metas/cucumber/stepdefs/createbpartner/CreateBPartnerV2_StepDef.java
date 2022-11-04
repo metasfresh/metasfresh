@@ -22,8 +22,8 @@
 
 package de.metas.cucumber.stepdefs.createbpartner;
 
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
+import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartner;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import de.metas.common.bpartner.v2.response.JsonResponseContact;
@@ -206,6 +206,7 @@ public class CreateBPartnerV2_StepDef
 			final String creditLimitTypeName = DataTableUtil.extractStringForColumnName(dataTableRow, I_C_CreditLimit_Type.Table_Name + "." + I_C_CreditLimit_Type.COLUMNNAME_Name);
 			final Boolean isActive = DataTableUtil.extractBooleanForColumnName(dataTableRow, I_C_BPartner_CreditLimit.COLUMNNAME_IsActive);
 			final Timestamp dateFrom = DataTableUtil.extractDateTimestampForColumnNameOrNull(dataTableRow, "OPT." + I_C_BPartner_CreditLimit.COLUMNNAME_DateFrom);
+			final Boolean processed = DataTableUtil.extractBooleanForColumnName(dataTableRow, I_C_BPartner_CreditLimit.COLUMNNAME_Processed);
 
 			// persisted value
 			final IQueryBuilder<I_C_BPartner_CreditLimit> queryBuilder = queryBL.createQueryBuilder(I_C_BPartner_CreditLimit.class)
@@ -223,6 +224,7 @@ public class CreateBPartnerV2_StepDef
 			assertThat(creditLimit).isPresent();
 			assertThat(creditLimit.get().getC_CreditLimit_Type_ID()).isEqualTo(bPartnerCreditLimitRepository.getCreditLimitTypeByName(creditLimitTypeName).getC_CreditLimit_Type_ID());
 			assertThat(creditLimit.get().isActive()).isEqualTo(isActive);
+			assertThat(creditLimit.get().isProcessed()).isEqualTo(processed);
 		}
 	}
 

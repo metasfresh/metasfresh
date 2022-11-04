@@ -20,27 +20,21 @@
  * #L%
  */
 
-package de.metas.common.bpartner.v2.request.creditLimit;
+package de.metas.common.bpartner.v2.response;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Value;
+
+import java.util.List;
 
 @Value
 @Builder
-@JsonDeserialize(builder = JsonRequestCreditLimitDelete.JsonRequestCreditLimitDeleteBuilder.class)
-public class JsonRequestCreditLimitDelete
+@JsonDeserialize(builder = JsonResponseCreditLimitDelete.JsonResponseCreditLimitDeleteBuilder.class)
+public class JsonResponseCreditLimitDelete
 {
-	@NonNull
-	@JsonProperty("orgCode")
-	String orgCode;
-
-	@NonNull
-	@JsonProperty("partnerIdentifier")
-	String partnerIdentifier;
-
-	@JsonProperty("includingProcessed")
-	boolean includingProcessed;
+	@JsonProperty("metasfreshIds")
+	List<JsonMetasfreshId> metasfreshIds;
 }

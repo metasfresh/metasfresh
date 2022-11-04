@@ -5,7 +5,6 @@ Feature:credit limit delete using metasfresh api
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
   @from:cucumber
-  @runThisOne
   Scenario: delete all credit limits for a given BPartner
     And metasfresh contains M_Products:
       | Identifier | Value        | Name        |
@@ -28,10 +27,10 @@ Feature:credit limit delete using metasfresh api
     And metasfresh contains C_BPartner_CreditLimit:
       | C_BPartner_CreditLimit_ID.Identifier | C_BPartner_ID.Identifier | Amount | ApprovedBy_ID | Processed | OPT.DateFrom |
       | creditLimit_1                        | bpartner                 | 12.5   | 100           | false     | 2022-10-31   |
-      | creditLimit_2                        | bpartner                 | 9      | 100           | false     | 2022-08-15   |
+      | creditLimit_2                        | bpartner                 | 9      | 100           | true      | 2022-08-15   |
       | creditLimit_3                        | bpartner                 | 4      | 100           | false     | 2022-10-01   |
 
-    And store creditLimit endpointPath /api/v2/bpartner/credit-limit/001/:bpartner in context
+    And store creditLimit endpointPath /api/v2/bpartner/credit-limit/001/:bpartner/true in context
 
     When a 'DELETE' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 

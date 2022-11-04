@@ -108,6 +108,7 @@ public class CreditLimitUpsertProcessor implements Processor
 		return JsonRequestCreditLimitDelete.builder()
 				.orgCode(orgCode)
 				.partnerIdentifier(formatExternalId(groupIdentifier))
+				.includingProcessed(true)
 				.build();
 	}
 

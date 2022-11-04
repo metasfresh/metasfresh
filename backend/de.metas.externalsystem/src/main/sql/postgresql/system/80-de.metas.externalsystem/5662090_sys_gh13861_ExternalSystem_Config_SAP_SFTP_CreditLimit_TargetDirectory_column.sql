@@ -45,27 +45,6 @@ INSERT INTO AD_Ref_List (AD_Client_ID,AD_Org_ID,AD_Ref_List_ID,AD_Reference_ID,C
 INSERT INTO AD_Ref_List_Trl (AD_Language,AD_Ref_List_ID, Description,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Ref_List_ID, t.Description,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Ref_List t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Ref_List_ID=543330 AND NOT EXISTS (SELECT 1 FROM AD_Ref_List_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Ref_List_ID=t.AD_Ref_List_ID)
 ;
 
-/*
- * #%L
- * de.metas.externalsystem
- * %%
- * Copyright (C) 2022 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 -- Field: Externes System(541024,de.metas.externalsystem) -> SAP(546647,de.metas.externalsystem) -> SFTP Credit Limit TargetDirectory
 -- Column: ExternalSystem_Config_SAP.SFTP_CreditLimit_TargetDirectory
@@ -110,3 +89,104 @@ UPDATE ExternalSystem_Service SET EnableCommand='startCreditLimitsSync',Updated=
 -- 2022-10-07T10:46:17.838934100Z
 UPDATE ExternalSystem_Service SET DisableCommand='stopCreditLimitsSync',Updated=TO_TIMESTAMP('2022-10-07 13:46:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE ExternalSystem_Service_ID=540003
 ;
+
+-- Element: SFTP_CreditLimit_TargetDirectory
+-- 2022-11-04T09:10:22.829Z
+UPDATE AD_Element_Trl SET Name='SFTP Kreditlimits Zielverzeichnis', PrintName='SFTP Kreditlimits Zielverzeichnis',Updated=TO_TIMESTAMP('2022-11-04 11:10:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581623 AND AD_Language='de_CH'
+;
+
+-- 2022-11-04T09:10:22.833Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581623,'de_CH')
+;
+
+-- Element: SFTP_CreditLimit_TargetDirectory
+-- 2022-11-04T09:10:48.827Z
+UPDATE AD_Element_Trl SET Name='SFTP Kreditlimits Zielverzeichnis', PrintName='SFTP Kreditlimits Zielverzeichnis',Updated=TO_TIMESTAMP('2022-11-04 11:10:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581623 AND AD_Language='de_DE'
+;
+
+-- 2022-11-04T09:10:48.830Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(581623,'de_DE')
+;
+
+-- 2022-11-04T09:10:48.869Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581623,'de_DE')
+;
+
+-- Element: SFTP_CreditLimit_TargetDirectory
+-- 2022-11-04T09:13:52.633Z
+UPDATE AD_Element_Trl SET Description='Das Verzeichnis, das zum Abrufen der Kreditlimits vom SFTP-Server verwendet wird.',Updated=TO_TIMESTAMP('2022-11-04 11:13:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581623 AND AD_Language='de_DE'
+;
+
+-- 2022-11-04T09:13:52.636Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(581623,'de_DE')
+;
+
+-- 2022-11-04T09:13:52.637Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581623,'de_DE')
+;
+
+-- Element: SFTP_CreditLimit_TargetDirectory
+-- 2022-11-04T09:13:54.463Z
+UPDATE AD_Element_Trl SET Description='Das Verzeichnis, das zum Abrufen der Kreditlimits vom SFTP-Server verwendet wird.',Updated=TO_TIMESTAMP('2022-11-04 11:13:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581623 AND AD_Language='de_CH'
+;
+
+-- 2022-11-04T09:13:54.465Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581623,'de_CH')
+;
+
+-- Element: SFTP_CreditLimit_TargetDirectory
+-- 2022-11-04T09:16:13.272Z
+UPDATE AD_Element_Trl SET Description='The directory used to retrieve credit limits from the sftp server. (If no value is specified here, the files are pulled from the root directory of the sftp server).',Updated=TO_TIMESTAMP('2022-11-04 11:16:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581623 AND AD_Language='en_US'
+;
+
+-- 2022-11-04T09:16:13.277Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581623,'en_US')
+;
+
+-- Element: SFTP_CreditLimit_TargetDirectory
+-- 2022-11-04T09:16:21.070Z
+UPDATE AD_Element_Trl SET Description='Das Verzeichnis, das zum Abrufen der Kreditlimits vom sftp-Server verwendet wird. (Wenn hier kein Wert angegeben wird, werden die Dateien aus dem Stammverzeichnis des sftp-Servers abgerufen).',Updated=TO_TIMESTAMP('2022-11-04 11:16:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581623 AND AD_Language='de_CH'
+;
+
+-- 2022-11-04T09:16:21.071Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581623,'de_CH')
+;
+
+-- Element: SFTP_CreditLimit_TargetDirectory
+-- 2022-11-04T09:16:24.075Z
+UPDATE AD_Element_Trl SET Description='Das Verzeichnis, das zum Abrufen der Kreditlimits vom sftp-Server verwendet wird. (Wenn hier kein Wert angegeben wird, werden die Dateien aus dem Stammverzeichnis des sftp-Servers abgerufen).',Updated=TO_TIMESTAMP('2022-11-04 11:16:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581623 AND AD_Language='de_DE'
+;
+
+-- 2022-11-04T09:16:24.076Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(581623,'de_DE')
+;
+
+-- 2022-11-04T09:16:24.078Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581623,'de_DE')
+;
+
+-- Reference Item: External_Request SAP -> startCreditLimitsSync_Start Credit Limits Synchronization
+-- 2022-11-04T09:19:12.487Z
+UPDATE AD_Ref_List_Trl SET Description='Startet die Synchronisation der Kreditlimits mit dem externen SAP-System ', Name='Start der Kreditlimitsynchronisation',Updated=TO_TIMESTAMP('2022-11-04 11:19:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=543329
+;
+
+-- Reference Item: External_Request SAP -> startCreditLimitsSync_Start Credit Limits Synchronization
+-- 2022-11-04T09:19:23.295Z
+UPDATE AD_Ref_List_Trl SET Description='Startet die Synchronisation der Kreditlimits mit dem externen SAP-System ',Updated=TO_TIMESTAMP('2022-11-04 11:19:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=543329
+;
+
+-- Reference Item: External_Request SAP -> startCreditLimitsSync_Start Credit Limits Synchronization
+-- 2022-11-04T09:19:26.796Z
+UPDATE AD_Ref_List_Trl SET Name='Start der Kreditlimitsynchronisation',Updated=TO_TIMESTAMP('2022-11-04 11:19:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=543329
+;
+
+-- Reference Item: External_Request SAP -> stopCreditLimitsSync_Stop Credit Limits Synchronization
+-- 2022-11-04T09:20:48.188Z
+UPDATE AD_Ref_List_Trl SET Description='Stoppt die Synchronisation des Kreditlimits mit dem externen SAP-System', Name='Kreditlimit-Synchronisation stoppen',Updated=TO_TIMESTAMP('2022-11-04 11:20:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=543330
+;
+
+-- Reference Item: External_Request SAP -> stopCreditLimitsSync_Stop Credit Limits Synchronization
+-- 2022-11-04T09:20:57.233Z
+UPDATE AD_Ref_List_Trl SET Description='Stoppt die Synchronisation des Kreditlimits mit dem externen SAP-System', Name='Kreditlimit-Synchronisation stoppen',Updated=TO_TIMESTAMP('2022-11-04 11:20:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=543330
+;
+

@@ -91,6 +91,7 @@ de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
   "creditLimits" : [ {
     "active" : true,
     "amount" : 25.5,
+    "bpartnerValue" : "bpartnerRecord.value",
     "changeLog" : {
       "createdByUserId" : 30,
       "createdTimestamp" : "1970-01-19T01:38:53.544Z",
@@ -110,9 +111,9 @@ de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
     },
     "dateFrom" : "2022-11-01T22:00:00Z",
     "id" : {
-      "bpartnerId" : 20,
       "repoId" : 60
-    }
+    },
+    "processed" : false
   } ],
   "locations" : [ {
     "active" : true,

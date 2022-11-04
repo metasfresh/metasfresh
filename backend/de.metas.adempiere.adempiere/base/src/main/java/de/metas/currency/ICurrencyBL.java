@@ -26,6 +26,7 @@ import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -159,4 +160,6 @@ public interface ICurrencyBL extends ISingletonService
 	@NonNull
 	CurrencyCode getCurrencyCodeById(@NonNull CurrencyId currencyId);
 
+	@NonNull
+	BigDecimal convertToBase(final BigDecimal amt, final CurrencyCode currencyCode, final ClientAndOrgId clientAndOrgId);
 }

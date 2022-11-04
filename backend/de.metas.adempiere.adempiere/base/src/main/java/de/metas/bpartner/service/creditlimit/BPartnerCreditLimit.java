@@ -23,17 +23,14 @@
 package de.metas.bpartner.service.creditlimit;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.OrgMappingId;
 import de.metas.bpartner.creditLimit.BPartnerCreditLimitId;
 import de.metas.bpartner.creditLimit.CreditLimitTypeId;
-import de.metas.money.CurrencyId;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
-import lombok.Value;
 import lombok.With;
-import lombok.experimental.NonFinal;
 import org.adempiere.ad.table.RecordChangeLog;
 import org.adempiere.exceptions.AdempiereException;
 
@@ -41,71 +38,67 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 
-@Value
+@Setter
+@Getter
 @JsonPropertyOrder(alphabetic = true/* we want the serialized json to be less flaky in our snapshot files */)
 public class BPartnerCreditLimit
 {
 	public static final String ID = "id";
 	public static final String BPARTNER_ID = "bpartnerId";
 	public static final String CREDIT_LIMIT_TYPE_ID = "creditLimitTypeId";
-	public static final String CURRENCY_ID = "currencyId";
 	public static final String AMOUNT = "amount";
 	public static final String DATE_FROM = "dateFrom";
 	public static final String ACTIVE = "active";
+	public static final String PROCESSED = "processed";
 
 	@Nullable
-	@NonFinal
-	BPartnerCreditLimitId id;
+	private BPartnerCreditLimitId id;
 
 	@NonNull
-	CreditLimitTypeId creditLimitTypeId;
+	private final CreditLimitTypeId creditLimitTypeId;
 
 	@NonNull
-	BigDecimal amount;
+	private final BigDecimal amount;
 
 	@Nullable
-	CurrencyId currencyId;
-
-	@Nullable
-	Instant dateFrom;
+	private final Instant dateFrom;
 
 	@Nullable
 	@With
-	RecordChangeLog changeLog;
+	private String bpartnerValue;
 
 	@Nullable
-	@NonFinal
-	@Setter
-	OrgMappingId orgMappingId;
+	@With
+	private RecordChangeLog changeLog;
 
-	@NonFinal
-	@Setter
-	boolean active;
+	@Nullable
+	private OrgMappingId orgMappingId;
+
+	private boolean active;
+
+	private boolean processed;
 
 	@Builder(toBuilder = true)
 	private BPartnerCreditLimit(
 			@Nullable final BPartnerCreditLimitId id,
 			@NonNull final CreditLimitTypeId creditLimitTypeId,
 			@NonNull final BigDecimal amount,
-			@Nullable final CurrencyId currencyId,
 			@Nullable final Instant dateFrom,
+			@Nullable final String bpartnerValue,
 			@Nullable final RecordChangeLog changeLog,
 			@Nullable final OrgMappingId orgMappingId,
-			final boolean active)
+			final boolean active,
+			final boolean processed)
 	{
-		setId(id);
+		this.id = id;
 		this.creditLimitTypeId = creditLimitTypeId;
-		this.currencyId = currencyId;
 		this.amount = amount;
 		this.dateFrom = dateFrom;
+		this.bpartnerValue = bpartnerValue;
 		this.changeLog = changeLog;
 		this.orgMappingId = orgMappingId;
 		this.active = active;
-	}
-
-	public void setId(@Nullable final BPartnerCreditLimitId id)
-	{
-		this.id = id;
+		this.processed = processed;
 	}
 
 	@NonNull
@@ -113,8 +106,18 @@ public class BPartnerCreditLimit
 	{
 		if (this.id == null)
 		{
-			throw new AdempiereException("BPartnerCreditLimitId not expected to be null at this stage!");
+			throw new AdempiereException("BPartnerCreditLimitId is missing!");
 		}
 		return this.id;
+	}
+
+	@NonNull
+	public String getBPartnerValueNotNull()
+	{
+		if (this.bpartnerValue == null)
+		{
+			throw new AdempiereException("BPartnerValue is missing!");
+		}
+		return this.bpartnerValue;
 	}
 }

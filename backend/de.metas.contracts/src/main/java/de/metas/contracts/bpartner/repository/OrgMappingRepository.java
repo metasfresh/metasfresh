@@ -26,9 +26,9 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.OrgMappingId;
 import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.composite.BPartnerContact;
-import de.metas.bpartner.service.creditlimit.BPartnerCreditLimit;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.creditlimit.BPartnerCreditLimit;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.model.I_AD_Org_Mapping;
@@ -135,19 +135,19 @@ public class OrgMappingRepository
 		return orgMappingId;
 	}
 
-	public OrgMappingId getCreateOrgMappingId(@NonNull final BPartnerCreditLimit existingCreditLimitInInitialPartner)
+	@NonNull
+	public OrgMappingId getCreateOrgMappingId(@NonNull final BPartnerCreditLimit creditLimit)
 	{
-		final OrgMappingId orgMappingId = existingCreditLimitInInitialPartner.getOrgMappingId();
-		if (orgMappingId != null)
+		if (creditLimit.getOrgMappingId() != null)
 		{
-			return orgMappingId;
+			return creditLimit.getOrgMappingId();
 		}
 
 		final I_AD_Org_Mapping orgMapping = newInstance(I_AD_Org_Mapping.class);
 
 		orgMapping.setAD_Org_ID(0);
 		orgMapping.setAD_Table_ID(getTableId(I_C_BPartner_CreditLimit.class));
-		orgMapping.setValue(String.valueOf(existingCreditLimitInInitialPartner.getId()));
+		orgMapping.setValue(creditLimit.getBPartnerValueNotNull() + "_" + creditLimit.getDateFrom());
 
 		save(orgMapping);
 

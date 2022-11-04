@@ -13,6 +13,7 @@
 	},
 	"bpartner": {
 		"bpartner": {
+			"code" : "BPartnerCode",
 			"externalId": "1-2",
 			"name": "Bill  First",
 			"companyName": "",

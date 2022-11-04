@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.adempiere.adempiere.base
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,10 +20,9 @@
  * #L%
  */
 
-package de.metas.bpartner.composite.repository;
+package de.metas.bpartner.service.creditlimit;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.service.creditlimit.BPartnerCreditLimit;
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -35,7 +34,7 @@ import java.util.function.Consumer;
 
 @Builder
 @Value
-public class BPartnerCreditLimitSaveRequest
+public class BPartnerCreditLimitCreateRequest
 {
 	@NonNull
 	BPartnerId bpartnerId;

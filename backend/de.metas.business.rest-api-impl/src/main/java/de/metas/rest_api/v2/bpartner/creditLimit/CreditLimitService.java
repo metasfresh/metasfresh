@@ -22,9 +22,12 @@
 
 package de.metas.rest_api.v2.bpartner.creditLimit;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.RestUtils;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
+import de.metas.common.bpartner.v2.response.JsonResponseCreditLimitDelete;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
@@ -50,7 +53,11 @@ public class CreditLimitService
 		this.externalReferenceService = externalReferenceService;
 	}
 
-	public void deleteExistingRecordsForBPartnerAndOrg(@NonNull final String bpartnerIdentifier, @Nullable final String orgCode)
+	@NonNull
+	public JsonResponseCreditLimitDelete deleteExistingRecordsForBPartnerAndOrg(
+			@NonNull final String bpartnerIdentifier,
+			@Nullable final String orgCode,
+			final boolean includingProcessed)
 	{
 		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(orgCode);
 
@@ -71,6 +78,10 @@ public class CreditLimitService
 				throw new AdempiereException("Unexpected type=" + externalIdentifier.getType());
 		}
 
-		bPartnerCreditLimitRepository.deleteRecordsForBPartnerAndOrg(bPartnerId, orgId);
+		final ImmutableList<JsonMetasfreshId> deletedIds = bPartnerCreditLimitRepository.deleteRecordsForBPartnerAndOrg(bPartnerId, orgId, includingProcessed);
+
+		return JsonResponseCreditLimitDelete.builder()
+				.metasfreshIds(deletedIds)
+				.build();
 	}
 }

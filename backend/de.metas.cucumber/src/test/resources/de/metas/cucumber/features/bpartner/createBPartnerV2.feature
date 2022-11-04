@@ -87,39 +87,30 @@ Feature: create or update BPartner v2
           "requestItems": [
             {
               "type": "Insurance",
-              "typeSet": true,
               "orgCode": "001",
-              "orgCodeSet": true,
               "creditLimitMetasfreshId": null,
-              "creditLimitMetasfreshIdSet": false,
               "dateFrom": [
                 2022,
                 10,
                 31
               ],
-              "dateFromSet": true,
+              "amount": "20.5",
               "currencyCode": "EUR",
-              "currencyCodeSet": true,
               "active": true,
-              "activeSet": true
+              "processed": false
             },
             {
               "type": "Insurance",
-              "typeSet": true,
               "orgCode": "001",
-              "orgCodeSet": true,
               "creditLimitMetasfreshId": null,
-              "creditLimitMetasfreshIdSet": false,
               "dateFrom": [
                 2022,
                 10,
                 30
               ],
-              "dateFromSet": true,
-              "currencyCode": "EUR",
-              "currencyCodeSet": true,
+              "amount": "10",
               "active": false,
-              "activeSet": true
+              "processed": true
             }
           ],
           "syncAdvise": {
@@ -148,9 +139,9 @@ Feature: create or update BPartner v2
       | ext-ALBERTA-001    | ext-ALBERTA-c11   | test_name_c11 | test_email | fax      | c11  | false                   |
       | ext-ALBERTA-001    | ext-ALBERTA-c22   | test_name_c22 | null       | test_fax | c22  | true                    |
     And verify that credit limit was created for bpartner
-      | ExternalBPartnerIdentifier | Amount | IsActive | C_CreditLimit_Type.Name | OPT.DateFrom |
-      | ext-ALBERTA-001            | 20     | true     | Insurance               | 2022-10-31   |
-      | ext-ALBERTA-001            | 12.5   | false    | Insurance               | 2022-10-30   |
+      | ExternalBPartnerIdentifier | Amount | IsActive | C_CreditLimit_Type.Name | OPT.DateFrom | Processed |
+      | ext-ALBERTA-001            | 23.17  | true     | Insurance               | 2022-10-31   | false     |
+      | ext-ALBERTA-001            | 10     | false    | Insurance               | 2022-10-30   | true      |
     And verify that S_ExternalReference was created
       | ExternalSystem | Type     | ExternalReference | ExternalReferenceURL         |
       | ALBERTA        | BPartner | 001               | www.ExternalReferenceURL.com |
