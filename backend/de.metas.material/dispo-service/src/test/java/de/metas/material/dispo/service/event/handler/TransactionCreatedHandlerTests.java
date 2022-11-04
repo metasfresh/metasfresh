@@ -67,6 +67,8 @@ public class TransactionCreatedHandlerTests
 
 	private static final int SHIPMENT_LINE_ID = 10;
 
+	private static final int SHIPMENT_SCHEDULE_ID = 40;
+
 	private TransactionEventHandler transactionEventHandler;
 
 	private CandidateRepositoryRetrieval candidateRepository;
@@ -330,6 +332,8 @@ public class TransactionCreatedHandlerTests
 	private static void assertDemandDetailQuery(final CandidatesQuery query)
 	{
 		assertThat(query).isNotNull();
+		assertThat(query.getBusinessCase()).isEqualTo(CandidateBusinessCase.SHIPMENT);
+		assertThat(query.getDemandDetailsQuery().getInOutLineId()).isEqualTo(SHIPMENT_LINE_ID);
 
 		assertThat(query.getBusinessCase()).isEqualTo(CandidateBusinessCase.SHIPMENT);
 		assertThat(query.getDemandDetailsQuery().getInOutLineId()).isEqualTo(SHIPMENT_LINE_ID);

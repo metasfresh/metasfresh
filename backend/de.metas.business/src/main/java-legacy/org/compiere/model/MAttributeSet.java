@@ -16,25 +16,20 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import com.google.common.collect.ImmutableList;
+import de.metas.cache.CCache;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeSetId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
+import org.adempiere.util.LegacyAdapters;
+import org.compiere.util.DB;
 
 import java.sql.ResultSet;
 import java.util.List;
 import java.util.Properties;
 
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.mm.attributes.AttributeSetId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.util.LegacyAdapters;
-import org.compiere.util.DB;
-import org.compiere.util.KeyNamePair;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.cache.CCache;
-import de.metas.product.ProductId;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /**
  * Product Attribute Set
@@ -55,8 +50,7 @@ public class MAttributeSet extends X_M_AttributeSet
 	/**
 	 * Get MAttributeSet from Cache
 	 * 
-	 * @param ctx context
-	 * @param M_AttributeSet_ID id
+	 * @param attributeSetId id
 	 * @return MAttributeSet
 	 */
 	public static MAttributeSet get(@NonNull final AttributeSetId attributeSetId)
@@ -81,12 +75,6 @@ public class MAttributeSet extends X_M_AttributeSet
 		if (is_new())
 		{
 			// setName (null);
-			setIsGuaranteeDate(false);
-			setIsGuaranteeDateMandatory(false);
-			setIsLot(false);
-			setIsLotMandatory(false);
-			setIsSerNo(false);
-			setIsSerNoMandatory(false);
 			setIsInstanceAttribute(false);
 			setMandatoryType(MANDATORYTYPE_NotMandatary);
 		}
@@ -107,9 +95,6 @@ public class MAttributeSet extends X_M_AttributeSet
 	/** Entry Exclude */
 	private X_M_AttributeSetExclude[] m_excludes = null;
 	/** Lot create Exclude */
-	private X_M_LotCtlExclude[] m_excludeLots = null;
-	/** Serial No create Exclude */
-	private X_M_SerNoCtlExclude[] m_excludeSerNos = null;
 
 	/**
 	 * @param instanceAttributes true if for instance
@@ -133,10 +118,7 @@ public class MAttributeSet extends X_M_AttributeSet
 	 */
 	public boolean isMandatory()
 	{
-		return !MANDATORYTYPE_NotMandatary.equals(getMandatoryType())
-				|| isLotMandatory()
-				|| isSerNoMandatory()
-				|| isGuaranteeDateMandatory();
+		return !MANDATORYTYPE_NotMandatary.equals(getMandatoryType());
 	}	// isMandatory
 
 	/**
@@ -192,152 +174,6 @@ public class MAttributeSet extends X_M_AttributeSet
 		return false;
 	}	// excludeEntry
 
-	/**
-	 * Exclude Lot creation
-	 * 
-	 * @param AD_Column_ID column
-	 * @param isSOTrx SO
-	 * @return true if excluded
-	 */
-	public boolean isExcludeLot(int AD_Column_ID, boolean isSOTrx)
-	{
-		if (getM_LotCtl_ID() == 0)
-			return true;
-		if (m_excludeLots == null)
-		{
-			String whereClause = X_M_LotCtlExclude.COLUMNNAME_M_LotCtl_ID + "=?";
-			List<X_M_LotCtlExclude> list = new Query(getCtx(), X_M_LotCtlExclude.Table_Name, whereClause, null)
-					.setParameters(new Object[] { getM_LotCtl_ID() })
-					.setOnlyActiveRecords(true)
-					.list(X_M_LotCtlExclude.class);
-			m_excludeLots = new X_M_LotCtlExclude[list.size()];
-			list.toArray(m_excludeLots);
-		}
-		// Find it
-		if (m_excludeLots != null && m_excludeLots.length > 0)
-		{
-			MColumn column = MColumn.get(getCtx(), AD_Column_ID);
-			for (int i = 0; i < m_excludeLots.length; i++)
-			{
-				if (m_excludeLots[i].getAD_Table_ID() == column.getAD_Table_ID()
-						&& m_excludeLots[i].isSOTrx() == isSOTrx)
-					return true;
-			}
-		}
-		return false;
-	}	// isExcludeLot
-
-	/**
-	 * Exclude SerNo creation
-	 * 
-	 * @param AD_Column_ID column
-	 * @param isSOTrx SO
-	 * @return true if excluded
-	 */
-	public boolean isExcludeSerNo(int AD_Column_ID, boolean isSOTrx)
-	{
-		if (getM_SerNoCtl_ID() == 0)
-			return true;
-		if (m_excludeSerNos == null)
-		{
-			String whereClause = X_M_SerNoCtlExclude.COLUMNNAME_M_SerNoCtl_ID + "=?";
-			List<X_M_SerNoCtlExclude> list = new Query(getCtx(), X_M_SerNoCtlExclude.Table_Name, whereClause, null)
-					.setParameters(new Object[] { getM_SerNoCtl_ID() })
-					.setOnlyActiveRecords(true)
-					.list(X_M_SerNoCtlExclude.class);
-			m_excludeSerNos = new X_M_SerNoCtlExclude[list.size()];
-			list.toArray(m_excludeSerNos);
-		}
-		// Find it
-		if (m_excludeSerNos != null && m_excludeSerNos.length > 0)
-		{
-			MColumn column = MColumn.get(getCtx(), AD_Column_ID);
-			for (int i = 0; i < m_excludeSerNos.length; i++)
-			{
-				if (m_excludeSerNos[i].getAD_Table_ID() == column.getAD_Table_ID()
-						&& m_excludeSerNos[i].isSOTrx() == isSOTrx)
-					return true;
-			}
-		}
-		return false;
-	}	// isExcludeSerNo
-
-	/**
-	 * Get Lot Char Start
-	 * 
-	 * @return defined or \u00ab
-	 */
-	public String getLotCharStart()
-	{
-		String s = super.getLotCharSOverwrite();
-		if (s != null && s.length() == 1 && !s.equals(" "))
-			return s;
-		return "\u00ab";
-	}	// getLotCharStart
-
-	/**
-	 * Get Lot Char End
-	 * 
-	 * @return defined or \u00bb
-	 */
-	public String getLotCharEnd()
-	{
-		String s = super.getLotCharEOverwrite();
-		if (s != null && s.length() == 1 && !s.equals(" "))
-			return s;
-		return "\u00bb";
-	}	// getLotCharEnd
-
-	public KeyNamePair createLot(@NonNull final ProductId productId)
-	{
-		int M_LotCtl_ID = getM_LotCtl_ID();
-		if (M_LotCtl_ID <= 0)
-		{
-			return null;
-		}
-
-		final MLotCtl ctl = new MLotCtl(getCtx(), M_LotCtl_ID, ITrx.TRXNAME_None);
-		final MLot lot = ctl.createLot(productId.getRepoId());
-		return new KeyNamePair(lot.getM_Lot_ID(), lot.getName());
-	}	// createLot
-
-	/**
-	 * Get SerNo Char Start
-	 * 
-	 * @return defined or #
-	 */
-	public String getSerNoCharStart()
-	{
-		String s = super.getSerNoCharSOverwrite();
-		if (s != null && s.length() == 1 && !s.equals(" "))
-			return s;
-		return "#";
-	}	// getSerNoCharStart
-
-	/**
-	 * Get SerNo Char End
-	 * 
-	 * @return defined or none
-	 */
-	public String getSerNoCharEnd()
-	{
-		String s = super.getSerNoCharEOverwrite();
-		if (s != null && s.length() == 1 && !s.equals(" "))
-			return s;
-		return "";
-	}	// getSerNoCharEnd
-
-	public String createSerNo()
-	{
-		final int M_SerNoCtl_ID = getM_SerNoCtl_ID();
-		if (M_SerNoCtl_ID <= 0)
-		{
-			return null;
-		}
-
-		final MSerNoCtl ctl = new MSerNoCtl(getCtx(), M_SerNoCtl_ID, get_TrxName());
-		return ctl.createSerNo();
-	}
 
 	/**
 	 * Before Save.
@@ -349,8 +185,7 @@ public class MAttributeSet extends X_M_AttributeSet
 	@Override
 	protected boolean beforeSave(boolean newRecord)
 	{
-		if (!isInstanceAttribute()
-				&& (isSerNo() || isLot() || isGuaranteeDate()))
+		if (!isInstanceAttribute())
 			setIsInstanceAttribute(true);
 		return true;
 	}	// beforeSave
@@ -373,8 +208,7 @@ public class MAttributeSet extends X_M_AttributeSet
 					+ " SET IsInstanceAttribute='Y' "
 					+ "WHERE M_AttributeSet_ID=" + getM_AttributeSet_ID()
 					+ " AND IsInstanceAttribute='N'"
-					+ " AND (IsSerNo='Y' OR IsLot='Y' OR IsGuaranteeDate='Y'"
-					+ " OR EXISTS (SELECT * FROM M_AttributeUse mau"
+					+ " AND (EXISTS (SELECT * FROM M_AttributeUse mau"
 					+ " INNER JOIN M_Attribute ma ON (mau.M_Attribute_ID=ma.M_Attribute_ID) "
 					+ "WHERE mau.M_AttributeSet_ID=mas.M_AttributeSet_ID"
 					+ " AND mau.IsActive='Y' AND ma.IsActive='Y'"
@@ -388,13 +222,12 @@ public class MAttributeSet extends X_M_AttributeSet
 			}
 		}
 		// Reset Instance Attribute
-		if (isInstanceAttribute() && !isSerNo() && !isLot() && !isGuaranteeDate())
+		if (isInstanceAttribute())
 		{
 			String sql = "UPDATE M_AttributeSet mas"
 					+ " SET IsInstanceAttribute='N' "
 					+ "WHERE M_AttributeSet_ID=" + getM_AttributeSet_ID()
 					+ " AND IsInstanceAttribute='Y'"
-					+ "	AND IsSerNo='N' AND IsLot='N' AND IsGuaranteeDate='N'"
 					+ " AND NOT EXISTS (SELECT * FROM M_AttributeUse mau"
 					+ " INNER JOIN M_Attribute ma ON (mau.M_Attribute_ID=ma.M_Attribute_ID) "
 					+ "WHERE mau.M_AttributeSet_ID=mas.M_AttributeSet_ID"

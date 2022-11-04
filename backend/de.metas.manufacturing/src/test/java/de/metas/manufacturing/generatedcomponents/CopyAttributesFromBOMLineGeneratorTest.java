@@ -63,9 +63,9 @@ class CopyAttributesFromBOMLineGeneratorTest
 		final ImmutableAttributeSet result = generator.generate(ComponentGeneratorContext.builder()
 				.existingAttributes(ImmutableAttributeSet.builder().attributeValue(ATTR_Attribute1, "value1").build())
 				.bomLineAttributes(ImmutableAttributeSet.builder().attributeValue(ATTR_Attribute2, "value2").build())
-   				.parameters(ComponentGeneratorParams.builder()
-									.sequenceId(DocSequenceId.ofRepoId(123456))
-									.build())
+				.parameters(ComponentGeneratorParams.builder()
+						.sequenceId(DocSequenceId.ofRepoId(123456))
+						.build())
 				.clientId(ClientId.METASFRESH)
 				.build());
 
