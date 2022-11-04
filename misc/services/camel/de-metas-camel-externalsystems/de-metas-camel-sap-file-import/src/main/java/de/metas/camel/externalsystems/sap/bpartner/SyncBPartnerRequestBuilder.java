@@ -138,7 +138,7 @@ public class SyncBPartnerRequestBuilder
 		this.bPartnerRows.sort(Comparator.comparing(BPartnerRow::getSection));
 
 		final Map<String, List<BPartnerRow>> groupedBPartnerRows = this.bPartnerRows.stream()
-				.collect(Collectors.groupingBy(bPartnerRow -> bPartnerRow.getPartnerCode().substring(0, bPartnerRow.getPartnerCode().length() - 2)));
+				.collect(Collectors.groupingBy(BPartnerRow::getSection));
 
 		final ImmutableList.Builder<JsonRequestBPartnerUpsertItem> mergedItemBuilder = ImmutableList.builder();
 
@@ -167,9 +167,15 @@ public class SyncBPartnerRequestBuilder
 	{
 		final JsonRequestBPartner jsonRequestBPartner = new JsonRequestBPartner();
 
-		jsonRequestBPartner.setCode(bPartner.getPartnerCode());
+		final String partnerCode = bPartner.getSection() +
+				"_" +
+				extractGroupingPartnerCode(bPartner.getPartnerCode()) +
+				"00";
+
+		jsonRequestBPartner.setCode(partnerCode);
 		jsonRequestBPartner.setCompanyName(bPartner.getName1());
-		jsonRequestBPartner.setName(bPartner.getName2());
+		jsonRequestBPartner.setName(Check.isNotBlank(bPartner.getName2()) ? bPartner.getName2() : bPartner.getName1());
+		jsonRequestBPartner.setName2(bPartner.getName2());
 		jsonRequestBPartner.setDescription(bPartner.getSearchTerm());
 
 		jsonRequestBPartner.setSectionCodeValue(bPartner.getSection());
@@ -256,7 +262,8 @@ public class SyncBPartnerRequestBuilder
 
 		jsonRequestBPartner.setCode(bPartnerRow.getPartnerCode());
 		jsonRequestBPartner.setCompanyName(bPartnerRow.getName1());
-		jsonRequestBPartner.setName(bPartnerRow.getName2());
+		jsonRequestBPartner.setName(Check.isNotBlank(bPartnerRow.getName2()) ? bPartnerRow.getName2() : bPartnerRow.getName1());
+		jsonRequestBPartner.setName2(bPartnerRow.getName2());
 		jsonRequestBPartner.setDescription(bPartnerRow.getSearchTerm());
 
 		final JsonRequestComposite.JsonRequestCompositeBuilder jsonRequestCompositeBuilder = JsonRequestComposite.builder()

@@ -983,6 +983,7 @@ public class JsonPersisterService
 		if (jsonBPartner.isSectionCodeValueSet())
 		{
 			final SectionCodeId sectionCodeId = Optional.ofNullable(jsonBPartner.getSectionCodeValue())
+					.filter(Check::isNotBlank)
 					.map(code -> sectionCodeService.getSectionCodeIdByValue(orgId, code))
 					.orElse(null);
 
@@ -1012,6 +1013,7 @@ public class JsonPersisterService
 		if (jsonBPartner.isIncotermsCustomerValueSet())
 		{
 			final IncotermsId incotermsCustomerId = Optional.ofNullable(jsonBPartner.getIncotermsCustomerValue())
+					.filter(Check::isNotBlank)
 					.map(incotermsRepository::getIncotermsByValue)
 					.map(Incoterms::getIncotermsId)
 					.orElse(null);
@@ -1022,6 +1024,7 @@ public class JsonPersisterService
 		if (jsonBPartner.isIncotermsVendorValueSet())
 		{
 			final IncotermsId incotermsVendorId = Optional.ofNullable(jsonBPartner.getIncotermsVendorValue())
+					.filter(Check::isNotBlank)
 					.map(incotermsRepository::getIncotermsByValue)
 					.map(Incoterms::getIncotermsId)
 					.orElse(null);
@@ -1032,6 +1035,7 @@ public class JsonPersisterService
 		if (jsonBPartner.isCustomerPaymentTermIdentifierSet())
 		{
 			final PaymentTermId customerPaymentTermId = Optional.ofNullable(jsonBPartner.getCustomerPaymentTermIdentifier())
+					.filter(Check::isNotBlank)
 					.map(paymentIdentifier -> jsonRetrieverService.getPaymentTermId(paymentIdentifier, orgId))
 					.orElse(null);
 
@@ -1041,6 +1045,7 @@ public class JsonPersisterService
 		if (jsonBPartner.isVendorPaymentTermIdentifierSet())
 		{
 			final PaymentTermId vendorPaymentTermId = Optional.ofNullable(jsonBPartner.getVendorPaymentTermIdentifier())
+					.filter(Check::isNotBlank)
 					.map(paymentIdentifier -> jsonRetrieverService.getPaymentTermId(paymentIdentifier, orgId))
 					.orElse(null);
 
@@ -1050,6 +1055,7 @@ public class JsonPersisterService
 		if (jsonBPartner.isParentIdentifierSet())
 		{
 			final BPartnerId parentBPartnerId = Optional.ofNullable(jsonBPartner.getParentIdentifier())
+					.filter(Check::isNotBlank)
 					.map(ExternalIdentifier::of)
 					.flatMap(parentIdentifier -> jsonRetrieverService.resolveBPartnerExternalIdentifier(parentIdentifier, orgId))
 					.orElse(null);

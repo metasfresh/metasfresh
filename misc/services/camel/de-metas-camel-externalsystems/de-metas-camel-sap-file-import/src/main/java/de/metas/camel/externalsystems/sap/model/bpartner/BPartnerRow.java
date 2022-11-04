@@ -37,6 +37,8 @@ public class BPartnerRow
 {
 	public enum PartnerCategory
 	{
+		MC_JAPAN("1"),
+		GENERAL_PARTNER("2"),
 		STORAGE_LOCATION("4");
 
 		@Getter

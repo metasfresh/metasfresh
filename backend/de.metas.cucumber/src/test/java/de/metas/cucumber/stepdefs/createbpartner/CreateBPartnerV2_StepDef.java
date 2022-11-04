@@ -30,7 +30,10 @@ import de.metas.common.bpartner.v2.response.JsonResponseLocation;
 import de.metas.cucumber.stepdefs.AD_User_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.externalreference.ExternalIdentifier;
+import de.metas.incoterms.IncotermsId;
+import de.metas.incoterms.repository.IncotermsRepository;
 import de.metas.rest_api.v2.bpartner.BPartnerEndpointService;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.sectionCode.SectionCodeRepository;
@@ -43,6 +46,8 @@ import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Incoterms;
 import org.compiere.model.I_M_SectionCode;
 
 import java.util.List;
@@ -53,24 +58,32 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
+import static org.compiere.model.I_C_BPartner.COLUMNNAME_IsStorageWarehouse;
 
 public class CreateBPartnerV2_StepDef
 {
+	private static final String BPARTNER_ENDPOINT_PATH = "api/v2/bpartner";
+
 	private final BPartnerEndpointService bpartnerEndpointService;
 	private final C_BPartner_StepDefData bPartnerTable;
 	private final AD_User_StepDefData userTable;
+	private final TestContext testContext;
 
 	final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final SectionCodeRepository sectionCodeRepository;
+	private final IncotermsRepository incotermsRepository;
 
 	public CreateBPartnerV2_StepDef(
 			@NonNull final C_BPartner_StepDefData bPartnerTable,
-			@NonNull final AD_User_StepDefData userTable)
+			@NonNull final AD_User_StepDefData userTable,
+			@NonNull final TestContext testContext)
 	{
 		this.bPartnerTable = bPartnerTable;
 		this.userTable = userTable;
+		this.testContext = testContext;
 		this.bpartnerEndpointService = SpringContextHolder.instance.getBean(BPartnerEndpointService.class);
 		this.sectionCodeRepository = SpringContextHolder.instance.getBean(SectionCodeRepository.class);
+		this.incotermsRepository = SpringContextHolder.instance.getBean(IncotermsRepository.class);
 	}
 
 	@Then("^verify that bPartner was (updated|created) for externalIdentifier$")
@@ -89,6 +102,7 @@ public class CreateBPartnerV2_StepDef
 			final String url = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Url");
 			final String group = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Group");
 			final String vatId = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.VatId");
+			final boolean storageWarehouse = DataTableUtil.extractBooleanForColumnNameOr(dataTableRow, "OPT." + COLUMNNAME_IsStorageWarehouse, false);
 
 			// persisted value
 			final Optional<JsonResponseComposite> persistedResult = bpartnerEndpointService.retrieveBPartner(null, ExternalIdentifier.of(externalIdentifier));
@@ -101,6 +115,7 @@ public class CreateBPartnerV2_StepDef
 			assertThat(persistedBPartner.getLanguage()).contains(language);
 			assertThat(persistedBPartner.getCode()).isEqualTo(code);
 			assertThat(persistedBPartner.getPhone()).isEqualTo(phone);
+			assertThat(persistedBPartner.getStorageWarehouse()).isEqualTo(storageWarehouse);
 
 			if (Check.isNotBlank(group))
 			{
@@ -138,6 +153,46 @@ public class CreateBPartnerV2_StepDef
 				assertThat(bPartnerRecord.getDescription()).isEqualTo(description);
 			}
 
+			final String deliveryRule = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_DeliveryRule);
+			if (Check.isNotBlank(deliveryRule))
+			{
+				assertThat(bPartnerRecord.getDeliveryRule()).isEqualTo(deliveryRule);
+			}
+
+			final String deliveryViaRule = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_DeliveryViaRule);
+			if (Check.isNotBlank(deliveryViaRule))
+			{
+				assertThat(bPartnerRecord.getDeliveryViaRule()).isEqualTo(deliveryViaRule);
+			}
+
+			final String incotermsCustomerValue = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_C_Incoterms_Customer_ID + "." + I_C_Incoterms.COLUMNNAME_Value);
+			if (Check.isNotBlank(incotermsCustomerValue))
+			{
+				final IncotermsId customerIncotermsId = incotermsRepository.getIncotermsByValue(incotermsCustomerValue).getIncotermsId();
+
+				assertThat(bPartnerRecord.getC_Incoterms_Customer_ID()).isEqualTo(customerIncotermsId.getRepoId());
+			}
+
+			final String incotermsVendorValue = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_C_Incoterms_Vendor_ID + "." + I_C_Incoterms.COLUMNNAME_Value);
+			if (Check.isNotBlank(incotermsVendorValue))
+			{
+				final IncotermsId vendorIncotermsId = incotermsRepository.getIncotermsByValue(incotermsVendorValue).getIncotermsId();
+
+				assertThat(bPartnerRecord.getC_Incoterms_Vendor_ID()).isEqualTo(vendorIncotermsId.getRepoId());
+			}
+
+			final String paymentRule = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_PaymentRule);
+			if (Check.isNotBlank(paymentRule))
+			{
+				assertThat(bPartnerRecord.getPaymentRule()).isEqualTo(paymentRule);
+			}
+
+			final String paymentRulePO = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_PaymentRulePO);
+			if (Check.isNotBlank(paymentRulePO))
+			{
+				assertThat(bPartnerRecord.getPaymentRulePO()).isEqualTo(paymentRulePO);
+			}
+
 			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 			bPartnerTable.putOrReplace(bpartnerIdentifier, bPartnerRecord);
 		}
@@ -160,6 +215,9 @@ public class CreateBPartnerV2_StepDef
 			final String city = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.City");
 			final String countryCode = DataTableUtil.extractStringForColumnName(dataTableRow, "CountryCode");
 			final String gln = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Gln");
+			final boolean handoverLocation = DataTableUtil.extractBooleanForColumnNameOr(dataTableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsHandOverLocation, false);
+			final boolean remitTo = DataTableUtil.extractBooleanForColumnNameOr(dataTableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsRemitTo, false);
+			final boolean replicationLookupDefault = DataTableUtil.extractBooleanForColumnNameOr(dataTableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsReplicationLookupDefault, false);
 
 			// persisted value
 			final Optional<JsonResponseLocation> persistedResult = bpartnerEndpointService.retrieveBPartnerLocation(
@@ -175,6 +233,9 @@ public class CreateBPartnerV2_StepDef
 			assertThat(persistedLocation.getCity()).isEqualTo(city);
 			assertThat(persistedLocation.getDistrict()).isEqualTo(DataTableUtil.extractValueOrNull(district));
 			assertThat(persistedLocation.getGln()).isEqualTo(gln);
+			assertThat(persistedLocation.isHandoverLocation()).isEqualTo(handoverLocation);
+			assertThat(persistedLocation.isRemitTo()).isEqualTo(remitTo);
+			assertThat(persistedLocation.isReplicationLookupDefault()).isEqualTo(replicationLookupDefault);
 		}
 	}
 
@@ -200,6 +261,19 @@ public class CreateBPartnerV2_StepDef
 			assertThat(persistedContact.getName()).isEqualTo(name);
 			assertThat(persistedContact.getFax()).isEqualTo(fax);
 			assertThat(persistedContact.getInvoiceEmailEnabled()).isEqualTo(isInvoiceEmailEnabled);
+		}
+	}
+
+	@And("build BPartner Endpoint Path and store it in context")
+	public void storeEndpointPathInContext(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> locationsTableList = dataTable.asMaps();
+		for (final Map<String, String> row : locationsTableList)
+		{
+			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_C_BPartner bPartner = bPartnerTable.get(bpartnerIdentifier);
+
+			testContext.setEndpointPath(BPARTNER_ENDPOINT_PATH + "/" + bPartner.getC_BPartner_ID());
 		}
 	}
 }

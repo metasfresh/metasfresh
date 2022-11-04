@@ -45,6 +45,7 @@ import java.io.InputStream;
 import java.util.Properties;
 
 import static de.metas.camel.externalsystems.sap.bpartner.GetBPartnersSFTPRouteBuilder.UPSERT_BPARTNER_ENDPOINT_ID;
+import static de.metas.camel.externalsystems.sap.bpartner.GetBPartnersSFTPRouteBuilder.UPSERT_LAST_BPARTNER_ENDPOINT_ID;
 import static de.metas.camel.externalsystems.sap.bpartner.SFTPBPartnerSyncServiceRouteBuilder.START_BPARTNERS_SYNC_ROUTE_ID;
 import static de.metas.camel.externalsystems.sap.bpartner.SFTPBPartnerSyncServiceRouteBuilder.STOP_BPARTNERS_SYNC_ROUTE_ID;
 import static org.assertj.core.api.Assertions.*;
@@ -55,11 +56,13 @@ public class SFTPBPartnerSyncServiceRouteBuilderTest extends CamelTestSupport
 
 	private static final String MOCK_EXTERNAL_SYSTEM_STATUS_ENDPOINT = "mock:externalSystemStatusEndpoint";
 	private static final String MOCK_UPSERT_BPARTNER = "mock:UpsertBPartner";
+	private static final String MOCK_UPSERT_LAST_BPARTNER = "mock:UpsertLastBPartner";
 
 	private static final String JSON_START_EXTERNAL_SYSTEM_REQUEST = "0_JsonStartExternalSystemRequestBPartner.json";
 	private static final String JSON_STOP_EXTERNAL_SYSTEM_REQUEST = "0_JsonStopExternalSystemRequestBPartner.json";
 	private static final String BPARTNER_SAMPLE_DAT_FILE = "10_BPartnerSample.dat";
 	private static final String JSON_UPSERT_BPARTNER_REQUEST = "20_CamelUpsertBPartnerCompositeRequest.json";
+	private static final String JSON_UPSERT_LAST_BPARTNER_REQUEST = "20_CamelUpsertLastBPartnerCompositeRequest.json";
 
 	private static final String BPARTNER_SAMPLE_RESOURCE_PATH = "/de/metas/camel/externalsystems/sap/bpartner/" + BPARTNER_SAMPLE_DAT_FILE;
 
@@ -100,6 +103,7 @@ public class SFTPBPartnerSyncServiceRouteBuilderTest extends CamelTestSupport
 
 		final MockExternalSystemStatusProcessor mockExternalSystemStatusProcessor = new MockExternalSystemStatusProcessor();
 		final MockUpsertBPartnerProcessor mockUpsertBPartnerProcessor = new MockUpsertBPartnerProcessor();
+		final MockUpsertLastBPartnerProcessor mockUpsertLastBPartnerProcessor = new MockUpsertLastBPartnerProcessor();
 
 		prepareEnableRouteForTesting(mockExternalSystemStatusProcessor);
 
@@ -108,11 +112,15 @@ public class SFTPBPartnerSyncServiceRouteBuilderTest extends CamelTestSupport
 		//when
 		template.sendBody("direct:" + START_BPARTNERS_SYNC_ROUTE_ID, externalSystemRequest);
 
-		prepareSyncRouteForTesting(mockUpsertBPartnerProcessor, GetBPartnersSFTPRouteBuilder.buildRouteId(externalSystemRequest.getExternalSystemChildConfigValue()));
+		prepareSyncRouteForTesting(mockUpsertBPartnerProcessor, mockUpsertLastBPartnerProcessor, GetBPartnersSFTPRouteBuilder.buildRouteId(externalSystemRequest.getExternalSystemChildConfigValue()));
 
-		final InputStream expectedUpsertProductRequest = this.getClass().getResourceAsStream(JSON_UPSERT_BPARTNER_REQUEST);
-		final MockEndpoint productSyncMockEndpoint = getMockEndpoint(MOCK_UPSERT_BPARTNER);
-		productSyncMockEndpoint.expectedBodiesReceived(objectMapper.readValue(expectedUpsertProductRequest, BPUpsertCamelRequest.class));
+		final InputStream expectedBPartnerUpsertRequest = this.getClass().getResourceAsStream(JSON_UPSERT_BPARTNER_REQUEST);
+		final MockEndpoint bpartnerSyncMockEndpoint = getMockEndpoint(MOCK_UPSERT_BPARTNER);
+		bpartnerSyncMockEndpoint.expectedBodiesReceived(objectMapper.readValue(expectedBPartnerUpsertRequest, BPUpsertCamelRequest.class));
+
+		final InputStream expectedLastBPartnerUpsertRequest = this.getClass().getResourceAsStream(JSON_UPSERT_LAST_BPARTNER_REQUEST);
+		final MockEndpoint lastBPartnerSyncMockEndpoint = getMockEndpoint(MOCK_UPSERT_LAST_BPARTNER);
+		lastBPartnerSyncMockEndpoint.expectedBodiesReceived(objectMapper.readValue(expectedLastBPartnerUpsertRequest, BPUpsertCamelRequest.class));
 
 		final InputStream materialSampleInputStream = this.getClass().getResourceAsStream(BPARTNER_SAMPLE_RESOURCE_PATH);
 
@@ -122,6 +130,7 @@ public class SFTPBPartnerSyncServiceRouteBuilderTest extends CamelTestSupport
 		//then
 		assertMockEndpointsSatisfied();
 		assertThat(mockUpsertBPartnerProcessor.called).isEqualTo(1);
+		assertThat(mockUpsertLastBPartnerProcessor.called).isEqualTo(1);
 		assertThat(mockExternalSystemStatusProcessor.called).isEqualTo(1);
 	}
 
@@ -178,6 +187,7 @@ public class SFTPBPartnerSyncServiceRouteBuilderTest extends CamelTestSupport
 
 	private void prepareSyncRouteForTesting(
 			@NonNull final SFTPBPartnerSyncServiceRouteBuilderTest.MockUpsertBPartnerProcessor mockUpsertBPartnerProcessor,
+			@NonNull final SFTPBPartnerSyncServiceRouteBuilderTest.MockUpsertLastBPartnerProcessor mockUpsertLastBPartnerProcessor,
 			@NonNull final String bPartnerSyncRouteId) throws Exception
 	{
 		AdviceWith.adviceWith(context, bPartnerSyncRouteId,
@@ -188,6 +198,11 @@ public class SFTPBPartnerSyncServiceRouteBuilderTest extends CamelTestSupport
 										  .replace()
 										  .to(MOCK_UPSERT_BPARTNER)
 										  .process(mockUpsertBPartnerProcessor);
+
+								  advice.weaveById(UPSERT_LAST_BPARTNER_ENDPOINT_ID)
+										  .replace()
+										  .to(MOCK_UPSERT_LAST_BPARTNER)
+										  .process(mockUpsertLastBPartnerProcessor);
 							  });
 	}
 
@@ -203,6 +218,18 @@ public class SFTPBPartnerSyncServiceRouteBuilderTest extends CamelTestSupport
 	}
 
 	private static class MockUpsertBPartnerProcessor implements Processor
+	{
+		@Getter
+		private int called = 0;
+
+		@Override
+		public void process(final Exchange exchange)
+		{
+			called++;
+		}
+	}
+
+	private static class MockUpsertLastBPartnerProcessor implements Processor
 	{
 		@Getter
 		private int called = 0;

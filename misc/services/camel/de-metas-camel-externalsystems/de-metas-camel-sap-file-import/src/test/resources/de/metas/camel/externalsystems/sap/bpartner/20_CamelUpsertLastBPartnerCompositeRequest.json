@@ -3,14 +3,14 @@
   "jsonRequestBPartnerUpsert":{
     "requestItems":[
       {
-        "bpartnerIdentifier":"ext-SAP-DC01003900",
+        "bpartnerIdentifier":"ext-SAP-DC01003800",
         "externalVersion":null,
         "externalReferenceUrl":null,
         "isReadOnlyInMetasfresh":true,
         "bpartnerComposite":{
           "orgCode":"orgCode",
           "bpartner":{
-            "code":"DC01003900",
+            "code":"DC01003800",
             "codeSet":true,
             "active":null,
             "activeSet":false,
@@ -81,24 +81,24 @@
         "externalSystemConfigId":1
       },
       {
-        "bpartnerIdentifier":"ext-SAP-ZAB0_DC01003900",
+        "bpartnerIdentifier":"ext-SAP-ZAT0_DC01003800",
         "externalVersion":null,
         "externalReferenceUrl":null,
         "isReadOnlyInMetasfresh":true,
         "bpartnerComposite":{
           "orgCode":"orgCode",
           "bpartner":{
-            "code":"ZAB0_DC01003900",
+            "code":"ZAT0_DC01003800",
             "codeSet":true,
             "active":null,
             "activeSet":false,
-            "name":"BASF SE4",
+            "name":"BASF SE3",
             "nameSet":true,
             "name2":"",
             "name2Set":true,
             "name3":null,
             "name3Set":false,
-            "companyName":"BASF SE4",
+            "companyName":"BASF SE3",
             "companyNameSet":true,
             "vendor":true,
             "vendorSet":true,
@@ -128,7 +128,7 @@
             "vatIdSet":false,
             "memo":null,
             "memoIsSet":false,
-            "sectionCodeValue":"ZAB0",
+            "sectionCodeValue":"ZAT0",
             "sectionCodeValueSet":true,
             "description":"BASF LUDW. DE VAT",
             "descriptionSet":true,
@@ -146,7 +146,7 @@
             "customerPaymentTermIdentifierSet":true,
             "vendorPaymentTermIdentifier":"val-M000",
             "vendorPaymentTermIdentifierSet":true,
-            "parentIdentifier":"ext-SAP-DC01003900",
+            "parentIdentifier":"ext-SAP-DC01003800",
             "parentIdentifierSet":true,
             "paymentRule":"ON_CREDIT",
             "paymentRuleSet":true,
@@ -158,7 +158,7 @@
           "locations":{
             "requestItems":[
               {
-                "locationIdentifier":"ext-SAP-ZAB0_DC01003901",
+                "locationIdentifier":"ext-SAP-ZAT0_DC01003800",
                 "externalVersion":null,
                 "location":{
                   "active":null,
@@ -214,7 +214,7 @@
                 }
               },
               {
-                "locationIdentifier":"ext-SAP-ZAB0_DC01003902",
+                "locationIdentifier":"ext-SAP-ZAT0_DC01003802",
                 "externalVersion":null,
                 "location":{
                   "active":null,
@@ -276,14 +276,14 @@
         "externalSystemConfigId":1
       },
       {
-        "bpartnerIdentifier":"ext-SAP-ZAB1_DC01003900",
+        "bpartnerIdentifier":"ext-SAP-ZAT1_DC01003800",
         "externalVersion":null,
         "externalReferenceUrl":null,
         "isReadOnlyInMetasfresh":true,
         "bpartnerComposite":{
           "orgCode":"orgCode",
           "bpartner":{
-            "code":"ZAB1_DC01003900",
+            "code":"ZAT1_DC01003800",
             "codeSet":true,
             "active":null,
             "activeSet":false,
@@ -323,7 +323,7 @@
             "vatIdSet":false,
             "memo":null,
             "memoIsSet":false,
-            "sectionCodeValue":"ZAB1",
+            "sectionCodeValue":"ZAT1",
             "sectionCodeValueSet":true,
             "description":"BASF LUDW. DE VAT",
             "descriptionSet":true,
@@ -341,7 +341,7 @@
             "customerPaymentTermIdentifierSet":true,
             "vendorPaymentTermIdentifier":"val-M000",
             "vendorPaymentTermIdentifierSet":true,
-            "parentIdentifier":"ext-SAP-DC01003900",
+            "parentIdentifier":"ext-SAP-DC01003800",
             "parentIdentifierSet":true,
             "paymentRule":"ON_CREDIT",
             "paymentRuleSet":true,
@@ -353,63 +353,7 @@
           "locations":{
             "requestItems":[
               {
-                "locationIdentifier":"ext-SAP-ZAB1_DC01003900",
-                "externalVersion":null,
-                "location":{
-                  "active":null,
-                  "activeSet":false,
-                  "name":null,
-                  "nameSet":false,
-                  "bpartnerName":null,
-                  "bpartnerNameSet":false,
-                  "address1":"67074 LUDWIGSHAFEN",
-                  "address1Set":true,
-                  "address2":"ACCOUNTING",
-                  "address2Set":true,
-                  "address3":"",
-                  "address3Set":true,
-                  "address4":"",
-                  "address4Set":true,
-                  "poBox":null,
-                  "poBoxSet":false,
-                  "postal":"67074",
-                  "postalSet":true,
-                  "city":"LUDWIGSHAFEN",
-                  "citySet":true,
-                  "district":null,
-                  "districtSet":false,
-                  "region":null,
-                  "regionSet":false,
-                  "countryCode":"DE",
-                  "countryCodeSet":true,
-                  "gln":null,
-                  "glnSet":false,
-                  "shipTo":true,
-                  "shipToSet":true,
-                  "shipToDefault":false,
-                  "shipToDefaultSet":true,
-                  "billTo":true,
-                  "billToSet":true,
-                  "billToDefault":false,
-                  "billToDefaultSet":true,
-                  "ephemeral":false,
-                  "ephemeralSet":false,
-                  "email":null,
-                  "emailSet":false,
-                  "phone":null,
-                  "phoneSet":false,
-                  "visitorsAddress":false,
-                  "visitorsAddressSet":true,
-                  "handoverLocation":true,
-                  "handoverLocationSet":true,
-                  "remitTo":false,
-                  "remitToAddressSet":true,
-                  "replicationLookupDefault":false,
-                  "replicationLookupDefaultSet":true
-                }
-              },
-              {
-                "locationIdentifier":"ext-SAP-ZAB1_DC01003901",
+                "locationIdentifier":"ext-SAP-ZAT1_DC01003801",
                 "externalVersion":null,
                 "location":{
                   "active":null,
