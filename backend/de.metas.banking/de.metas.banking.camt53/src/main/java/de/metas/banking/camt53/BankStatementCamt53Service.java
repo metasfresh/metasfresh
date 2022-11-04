@@ -39,6 +39,8 @@ import de.metas.banking.camt53.wrapper.AccountStatement2Wrapper;
 import de.metas.banking.camt53.wrapper.NoBatchBankToCustomerStatementV02Wrapper;
 import de.metas.banking.camt53.wrapper.NoBatchReportEntry2Wrapper;
 import de.metas.banking.importfile.BankStatementImportFileId;
+import de.metas.banking.importfile.log.BankStatementImportFileLogRepository;
+import de.metas.banking.importfile.log.BankStatementImportFileLoggable;
 import de.metas.banking.payment.paymentallocation.service.PaymentAllocationService;
 import de.metas.banking.service.BankStatementCreateRequest;
 import de.metas.banking.service.BankStatementLineCreateRequest;
@@ -48,7 +50,9 @@ import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.document.engine.DocStatus;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
+import de.metas.i18n.IMsgBL;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.UnpaidInvoiceMatchingAmtQuery;
 import de.metas.invoice.UnpaidInvoiceQuery;
@@ -65,6 +69,8 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -88,42 +94,55 @@ import java.util.stream.Collectors;
 @Service
 public class BankStatementCamt53Service
 {
+	private static final AdMessageKey MSG_MISSING_BANK_STATEMENT_LINES = AdMessageKey.of("de.metas.banking.camt53.BankStatementCamt53Service.MissingBankStatementLines");
+	private static final AdMessageKey MSG_SKIPPED_STMT_NO_MATCHING_CURRENCY = AdMessageKey.of("de.metas.banking.camt53.BankStatementCamt53Service.SkippedStmtNoMatchingCurrency");
+	private static final AdMessageKey MSG_MISSING_REPORT_ENTRY_DATE = AdMessageKey.of("de.metas.banking.camt53.BankStatementCamt53Service.MissingReportEntryDate");
+
 	private static final Logger logger = LogManager.getLogger(BankStatementCamt53Service.class);
 
 	private final IBankStatementDAO bankStatementDAO = Services.get(IBankStatementDAO.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 
 	private final BankAccountService bankAccountService;
 	private final CurrencyRepository currencyRepository;
 	private final PaymentAllocationService paymentAllocationService;
 	private final MoneyService moneyService;
+	private final BankStatementImportFileLogRepository bankStatementImportFileLogRepository;
 
 	public BankStatementCamt53Service(
 			@NonNull final BankAccountService bankAccountService,
 			@NonNull final CurrencyRepository currencyRepository)
 			@NonNull final PaymentAllocationService paymentAllocationService,
-			@NonNull final MoneyService moneyService)
+			@NonNull final MoneyService moneyService,
+			@NonNull final BankStatementImportFileLogRepository bankStatementImportFileLogRepository)
 	{
 		this.bankAccountService = bankAccountService;
 		this.currencyRepository = currencyRepository;
 		this.paymentAllocationService = paymentAllocationService;
 		this.moneyService = moneyService;
+		this.bankStatementImportFileLogRepository = bankStatementImportFileLogRepository;
 	}
 
 	@NonNull
 	public ImmutableSet<BankStatementId> importBankToCustomerStatement(@NonNull final ImportBankStatementRequest importBankStatementRequest)
 	{
-		final NoBatchBankToCustomerStatementV02Wrapper noBatchBankToCustomerStatementV02Wrapper = NoBatchBankToCustomerStatementV02Wrapper
-				.of(loadCamt53Document(importBankStatementRequest.getCamt53File()));
+		final BankStatementImportFileLoggable bankStatementImportFileLoggable = createLogger(importBankStatementRequest.getBankStatementImportFileId());
 
-		return noBatchBankToCustomerStatementV02Wrapper
-				.getAccountStatements()
-				.stream()
-				.map(accountStatement2 -> importBankStatement(accountStatement2, importBankStatementRequest))
-				.filter(Optional::isPresent)
-				.map(Optional::get)
-				.collect(ImmutableSet.toImmutableSet());
+		try (final IAutoCloseable ignored = Loggables.temporarySetLoggable(bankStatementImportFileLoggable))
+		{
+			final NoBatchBankToCustomerStatementV02Wrapper noBatchBankToCustomerStatementV02Wrapper = NoBatchBankToCustomerStatementV02Wrapper
+					.of(loadCamt53Document(importBankStatementRequest.getCamt53File()));
+
+			return noBatchBankToCustomerStatementV02Wrapper
+					.getAccountStatements()
+					.stream()
+					.map(accountStatement2 -> importBankStatement(accountStatement2, importBankStatementRequest))
+					.filter(Optional::isPresent)
+					.map(Optional::get)
+					.collect(ImmutableSet.toImmutableSet());
+		}
 	}
 
 	@NonNull
@@ -131,6 +150,14 @@ public class BankStatementCamt53Service
 			@NonNull final AccountStatement2 accountStatement2,
 			@NonNull final ImportBankStatementRequest importBankStatementRequest)
 	{
+		if (accountStatement2.getNtry().isEmpty())
+		{
+			final String msg = msgBL.getMsg(MSG_MISSING_BANK_STATEMENT_LINES, ImmutableList.of(accountStatement2.getId()));
+			Loggables.withLogger(logger, Level.DEBUG).addLog(msg);
+
+			return Optional.empty();
+		}
+
 		final AccountStatement2Wrapper accountStatement2Wrapper = buildAccountStatement2Wrapper(accountStatement2);
 
 		final BankStatementCreateRequest bankStatementCreateRequest = buildBankStatementCreateRequest(
@@ -182,8 +209,9 @@ public class BankStatementCamt53Service
 
 		if (!isStatementCurrencyMatchingBankAccount(bankAccountId, accountStatement2Wrapper))
 		{
-			Loggables.withLogger(logger, Level.WARN).addLog(
-					"Skipping AccountStatement={} because currency of the statement does not match currency of the bank account!", accountStatement2Wrapper.getAccountStatement2());
+			final String msg = msgBL.getMsg(MSG_SKIPPED_STMT_NO_MATCHING_CURRENCY, ImmutableList.of(accountStatement2Wrapper.getAccountStatement2().getId()));
+			Loggables.withLogger(logger, Level.WARN).addLog(msg);
+
 			return Optional.empty();
 		}
 
@@ -221,10 +249,8 @@ public class BankStatementCamt53Service
 
 		if (statementLineDate == null)
 		{
-			Loggables.withLogger(logger, Level.INFO).addLog(
-					"Skipping this ReportEntry={} because StatementLineDate is missing! BankStatementId={}",
-					entryWrapper.getEntry().getNtryRef(),
-					importBankStatementLineRequest.getBankStatementId());
+			final String msg = msgBL.getMsg(MSG_MISSING_REPORT_ENTRY_DATE, ImmutableList.of(entryWrapper.getEntry().getNtryRef(), importBankStatementLineRequest.getBankStatementId()));
+			Loggables.withLogger(logger, Level.INFO).addLog(msg);
 
 			return Optional.empty();
 		}
@@ -298,6 +324,7 @@ public class BankStatementCamt53Service
 				.bankAccountService(bankAccountService)
 				.currencyRepository(currencyRepository)
 				.orgDAO(orgDAO)
+				.msgBL(msgBL)
 				.build();
 	}
 
@@ -397,6 +424,18 @@ public class BankStatementCamt53Service
 		}
 
 		return unpaidInvoiceMatchingAmtQueryBuilder.build();
+	}
+
+	@NonNull
+	private BankStatementImportFileLoggable createLogger(@NonNull final BankStatementImportFileId id)
+	{
+		return BankStatementImportFileLoggable.builder()
+				.bankStatementImportFileLogRepository(bankStatementImportFileLogRepository)
+				.bankStatementImportFileId(id)
+				.clientId(Env.getClientId())
+				.userId(Env.getLoggedUserId())
+				.bufferSize(100)
+				.build();
 	}
 
 	@Value

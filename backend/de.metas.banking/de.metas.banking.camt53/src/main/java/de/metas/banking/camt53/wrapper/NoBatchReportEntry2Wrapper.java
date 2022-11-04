@@ -211,6 +211,7 @@ public class NoBatchReportEntry2Wrapper
 		return entry.getAcctSvcrRef();
 	}
 
+	@NonNull
 	public String getDbtrNames()
 	{
 		return entry.getNtryDtls().stream()
@@ -222,6 +223,7 @@ public class NoBatchReportEntry2Wrapper
 				.collect(Collectors.joining(" "));
 	}
 
+	@NonNull
 	public String getCdtrNames()
 	{
 		return entry.getNtryDtls().stream()

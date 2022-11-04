@@ -22,6 +22,7 @@
 
 package de.metas.banking.camt53.wrapper;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankId;
 import de.metas.banking.api.BankAccountService;
@@ -31,7 +32,9 @@ import de.metas.banking.camt53.jaxb.camt053_001_02.CashBalance3;
 import de.metas.banking.camt53.jaxb.camt053_001_02.GenericAccountIdentification1;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.ExplainedOptional;
+import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -55,6 +58,12 @@ public class AccountStatement2Wrapper
 {
 	private static final Logger logger = LogManager.getLogger(AccountStatement2Wrapper.class);
 
+	private static final AdMessageKey MSG_MISSING_MF_BANK_ACCT_WITH_IBAN = AdMessageKey.of("de.metas.banking.camt53.BankStatementCamt53Service.MissingMetasfreshBankAcctWithIBAN");
+	private static final AdMessageKey MSG_MISSING_BANK_STMT_SWIFT_CODE = AdMessageKey.of("de.metas.banking.camt53.BankStatementCamt53Service.MissingBankStatementSwiftCode");
+	private static final AdMessageKey MSG_MISSING_MF_BANK_ACCT_WITH_SWIFT_CODE = AdMessageKey.of("de.metas.banking.camt53.BankStatementCamt53Service.MissingMetasfreshBankAcctWithSwiftCode");
+	private static final AdMessageKey MSG_MISSING_MF_BANK_ACCT_WITH_ACCOUNT_NO = AdMessageKey.of("de.metas.banking.camt53.BankStatementCamt53Service.MissingMetasfreshBankAcctWithAccountNo");
+	private static final AdMessageKey MSG_MISSING_BANK_STMT_ACCOUNT_NO = AdMessageKey.of("de.metas.banking.camt53.BankStatementCamt53Service.MissingBankStatementAccountNo");
+
 	@NonNull
 	IOrgDAO orgDAO;
 
@@ -67,17 +76,22 @@ public class AccountStatement2Wrapper
 	@NonNull
 	CurrencyRepository currencyRepository;
 
+	@NonNull
+	IMsgBL msgBL;
+
 	@Builder
 	private AccountStatement2Wrapper(
 			@NonNull final IOrgDAO orgDAO,
 			@NonNull final AccountStatement2 accountStatement2,
 			@NonNull final BankAccountService bankAccountService,
-			@NonNull final CurrencyRepository currencyRepository)
+			@NonNull final CurrencyRepository currencyRepository,
+			@NonNull final IMsgBL msgBL)
 	{
 		this.orgDAO = orgDAO;
 		this.accountStatement2 = accountStatement2;
 		this.bankAccountService = bankAccountService;
 		this.currencyRepository = currencyRepository;
+		this.msgBL = msgBL;
 	}
 
 	@NonNull
@@ -86,10 +100,14 @@ public class AccountStatement2Wrapper
 		final Optional<String> accountIBANOpt = getAccountIBAN();
 		if (accountIBANOpt.isPresent())
 		{
-			final Optional<BankAccountId> bankAccountIdByIBAN = bankAccountService.getBankAccountIdByIBAN(accountIBANOpt.get());
+			final String iban = accountIBANOpt.get();
+			final Optional<BankAccountId> bankAccountIdByIBAN = bankAccountService.getBankAccountIdByIBAN(iban);
 			return bankAccountIdByIBAN
 					.map(ExplainedOptional::of)
-					.orElseGet(() -> ExplainedOptional.emptyBecause("Skipping Stmt with Id=" + accountStatement2.getId() + ", because no account with IBAN=" + bankAccountIdByIBAN.get() + " was found"));
+					.orElseGet(() -> {
+						final String msg = getMsg(MSG_MISSING_MF_BANK_ACCT_WITH_IBAN, accountStatement2.getId(), iban);
+						return ExplainedOptional.emptyBecause(msg);
+					});
 		}
 
 		final ExplainedOptional<BankId> bankIdOpt = getBankId();
@@ -99,9 +117,16 @@ public class AccountStatement2Wrapper
 		}
 
 		final Optional<String> accountNoOpt = getAccountNo();
-		return accountNoOpt.map(s -> bankAccountService.getBankAccountId(bankIdOpt.get(), s)
+		return accountNoOpt.map(accountNoCandidate -> bankAccountService.getBankAccountId(bankIdOpt.get(), accountNoCandidate)
 				.map(ExplainedOptional::of)
-				.orElseGet(() -> ExplainedOptional.emptyBecause("Skipping Stmt with Id=" + accountStatement2.getId() + ", because the bank with C_Bank_ID=" + bankIdOpt.get().getRepoId() + " has no account with AccountNo=" + s))).orElseGet(() -> ExplainedOptional.emptyBecause("Skipping Stmt with Id=" + accountStatement2.getId() + ", because it has no account number (.../Acct/Id/Othr)"));
+				.orElseGet(() -> {
+					final String msg = getMsg(MSG_MISSING_MF_BANK_ACCT_WITH_ACCOUNT_NO, accountStatement2.getId(), bankIdOpt.get().getRepoId(), accountNoCandidate);
+					return ExplainedOptional.emptyBecause(msg);
+				}))
+				.orElseGet(() -> {
+					final String msg = getMsg(MSG_MISSING_BANK_STMT_ACCOUNT_NO, accountStatement2.getId());
+					return ExplainedOptional.emptyBecause(msg);
+				});
 	}
 
 	@NonNull
@@ -162,13 +187,17 @@ public class AccountStatement2Wrapper
 	{
 		if (!getSwiftCode().isPresent())
 		{
-			return ExplainedOptional.emptyBecause("Skipping Stmt with Id=" + accountStatement2.getId() + ", because it has no swiftcode");
+			final String msg = getMsg(MSG_MISSING_BANK_STMT_SWIFT_CODE, accountStatement2.getId());
+			return ExplainedOptional.emptyBecause(msg);
 		}
 		final String swiftCode = getSwiftCode().get();
 
 		return bankAccountService.getBankIdBySwiftCode(swiftCode)
 				.map(ExplainedOptional::of)
-				.orElseGet(() -> ExplainedOptional.emptyBecause("Skipping Stmt with Id=" + accountStatement2.getId() + ", because no bank was found for SwiftCode=" + swiftCode));
+				.orElseGet(() -> {
+					final String msg = getMsg(MSG_MISSING_MF_BANK_ACCT_WITH_SWIFT_CODE, accountStatement2.getId(), swiftCode);
+					return ExplainedOptional.emptyBecause(msg);
+				});
 	}
 
 	private static boolean isPRCDCashBalance(@NonNull final CashBalance3 cashBalance)
@@ -210,5 +239,11 @@ public class AccountStatement2Wrapper
 		return Optional.ofNullable(accountStatement2.getAcct().getId().getOthr())
 				.map(GenericAccountIdentification1::getId);
 
+	}
+
+	@NonNull
+	private String getMsg(@NonNull final AdMessageKey adMessageKey, final Object ...params)
+	{
+		return msgBL.getMsg(adMessageKey, ImmutableList.copyOf(params));
 	}
 }
