@@ -22,12 +22,12 @@
 
 package de.metas.banking.payment.paymentallocation.service;
 
-import de.metas.payment.PaymentCurrencyContext;
 import de.metas.banking.payment.paymentallocation.service.PayableDocument.PayableDocumentType;
 import de.metas.bpartner.BPartnerId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentDirection;
 import de.metas.util.Check;
 import lombok.EqualsAndHashCode;
@@ -111,16 +111,34 @@ final class CreditMemoInvoiceAsPaymentDocumentWrapper implements IPaymentDocumen
 		creditMemoPayableDoc.addAllocatedAmounts(AllocationAmounts.ofPayAmt(allocatedPayAmtToAdd.negate()));
 	}
 
+	/**
+	 * Check only the payAmt as that's the only value we are allocating. see {@link  CreditMemoInvoiceAsPaymentDocumentWrapper#addAllocatedAmt(Money)}
+	 */
 	@Override
 	public boolean isFullyAllocated()
 	{
-		return creditMemoPayableDoc.isFullyAllocated();
+		return creditMemoPayableDoc.getAmountsToAllocate().getPayAmt().isZero();
 	}
 
+	/**
+	 * Computes projected over under amt taking into account discount.
+	 *
+	 * @implNote for credit memo as payment, the negated discount needs to be added to the open amount. Negated value is used
+	 * as it actually needs to increase the open amount.
+	 * 
+	 * e.g. Having a credit memo with totalGrandAmount = 10 and paymentTerm.Discount=10% translates to 11 total payment amount available.
+	 */
 	@Override
 	public Money calculateProjectedOverUnderAmt(@NonNull final Money payAmountToAllocate)
 	{
-		return creditMemoPayableDoc.computeProjectedOverUnderAmt(AllocationAmounts.ofPayAmt(payAmountToAllocate.negate()));
+		final Money discountAmt = creditMemoPayableDoc.getAmountsToAllocateInitial().getDiscountAmt().negate(); 
+		final Money openAmtWithDiscount = creditMemoPayableDoc.getOpenAmtInitial().add(discountAmt);
+		
+		final Money remainingOpenAmtWithDiscount = openAmtWithDiscount.subtract(creditMemoPayableDoc.getTotalAllocatedAmount());
+		
+		final Money adjustedPayAmountToAllocate = payAmountToAllocate.negate();
+
+		return remainingOpenAmtWithDiscount.subtract(adjustedPayAmountToAllocate);
 	}
 
 	@Override
@@ -169,5 +187,11 @@ final class CreditMemoInvoiceAsPaymentDocumentWrapper implements IPaymentDocumen
 				.paymentCurrencyId(creditMemoPayableDoc.getCurrencyId())
 				.currencyConversionTypeId(creditMemoPayableDoc.getCurrencyConversionTypeId())
 				.build();
+	}
+
+	@Override
+	public Money getPaymentDiscountAmt()
+	{
+		return creditMemoPayableDoc.getAmountsToAllocate().getDiscountAmt();
 	}
 }
