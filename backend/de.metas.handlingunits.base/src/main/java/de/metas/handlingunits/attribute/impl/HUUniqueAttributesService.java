@@ -118,7 +118,7 @@ public class HUUniqueAttributesService
 		}
 	}
 
-	public void validateHUUniqueAttribute(final I_M_HU_Attribute huAttribute)
+	public void validateHUUniqueAttribute(@NonNull final I_M_HU_Attribute huAttribute)
 	{
 		if (Check.isBlank(huAttribute.getValue()))
 		{
