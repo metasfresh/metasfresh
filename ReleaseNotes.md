@@ -12,6 +12,8 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13844](https://github.com/metasfresh/metasfresh/issues/13844) IEUE045.U01 Incoming payment management - Follow-Up 01 
+  * [#13845](https://github.com/metasfresh/metasfresh/issues/13845) BUG: Grant discount twice during allocate payment process
   * [#13850](https://github.com/metasfresh/metasfresh/issues/13850) Unique Attributes Implementation
   * [#13784](https://github.com/metasfresh/metasfresh/issues/13784) Price difference from offer to order(Add IsKeepProposalPrices)
   * [#13854](https://github.com/metasfresh/metasfresh/pull/13854) Set incoterms from partners only if has a value
