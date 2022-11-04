@@ -147,24 +147,13 @@ export function actionsRequest({
   childViewId,
   childViewSelectedIds,
 }) {
+  //
+  // Dashboard actions
   if (!entity) {
-    // FIXME: identify which is this case. we shall avoid it
-    console.warn(
-      'actionRequest called without entity. Returning a fake empty result.',
-      {
-        entity,
-        type,
-        id,
-        selectedIds,
-        selectedTabId,
-        selectedRowIds,
-        childViewId,
-        childViewSelectedIds,
-      }
-    );
-
+    // no actions
     return Promise.resolve({ data: { actions: [] } });
   }
+  //
   // View Actions:
   else if (entity === 'documentView') {
     return allActionsRequest({
@@ -175,6 +164,7 @@ export function actionsRequest({
       childViewSelectedIds,
     });
   }
+  //
   // Other actions fetching cases:
   else {
     const query = getQueryString({
