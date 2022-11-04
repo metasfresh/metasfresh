@@ -93,3 +93,92 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=150,Updated=TO_TIMESTAMP
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=160,Updated=TO_TIMESTAMP('2022-11-04 10:51:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=594546
 ;
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- 2022-11-04T12:40:48.369Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='', IsTranslated='Y', Name='Anzahl der Maschinen', PrintName='Anzahl der Maschinen',Updated=TO_TIMESTAMP('2022-11-04 14:40:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581637 AND AD_Language='de_CH'
+;
+
+-- 2022-11-04T12:40:48.382Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581637,'de_CH') 
+;
+
+-- 2022-11-04T12:40:53.876Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Description='', IsTranslated='Y', Name='Anzahl der Maschinen', PrintName='Anzahl der Maschinen',Updated=TO_TIMESTAMP('2022-11-04 14:40:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581637 AND AD_Language='de_DE'
+;
+
+-- 2022-11-04T12:40:53.878Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581637,'de_DE') 
+;
+
+-- 2022-11-04T12:40:53.905Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(581637,'de_DE') 
+;
+
+-- 2022-11-04T12:40:53.907Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName='NumberOfResources_ToProcess', Name='Anzahl der Maschinen', Description='', Help=NULL WHERE AD_Element_ID=581637
+;
+
+-- 2022-11-04T12:40:53.908Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='NumberOfResources_ToProcess', Name='Anzahl der Maschinen', Description='', Help=NULL, AD_Element_ID=581637 WHERE UPPER(ColumnName)='NUMBEROFRESOURCES_TOPROCESS' AND IsCentrallyMaintained='Y' AND AD_Element_ID IS NULL
+;
+
+-- 2022-11-04T12:40:53.912Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName='NumberOfResources_ToProcess', Name='Anzahl der Maschinen', Description='', Help=NULL WHERE AD_Element_ID=581637 AND IsCentrallyMaintained='Y'
+;
+
+-- 2022-11-04T12:40:53.912Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Anzahl der Maschinen', Description='', Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=581637) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 581637)
+;
+
+-- 2022-11-04T12:40:53.969Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Anzahl der Maschinen', Name='Anzahl der Maschinen' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=581637)
+;
+
+-- 2022-11-04T12:40:53.970Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Anzahl der Maschinen', Description='', Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 581637
+;
+
+-- 2022-11-04T12:40:53.971Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Anzahl der Maschinen', Description='', Help=NULL WHERE AD_Element_ID = 581637
+;
+
+-- 2022-11-04T12:40:53.971Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Anzahl der Maschinen', Description = '', WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 581637
+;
+
+-- 2022-11-04T12:40:57.564Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2022-11-04 14:40:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581637 AND AD_Language='en_US'
+;
+
+-- 2022-11-04T12:40:57.565Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581637,'en_US') 
+;
+
