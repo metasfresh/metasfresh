@@ -216,11 +216,13 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
         "id" : 100002,
         "parentId" : 100001,
         "value" : "testLeichMehlValue",
-        "ftpHost" : "hostname",
-        "ftpPort" : 1111,
-        "ftpUsername" : "ftpUsername",
-        "ftpPassword" : "ftpPassword",
-        "ftpDirectory" : "directory"
+        "productBaseFolderName" : "productBaseFolderName",
+        "tcpPort" : 8080,
+        "tcpHost" : "tcpHost",
+        "pluFileExportAuditEnabled" : false,
+        "productMappings" : [ ],
+        "pluFileConfigs" : [ ],
+        "productMappingEmpty" : true
       },
       "writeAudit" : true,
       "auditFileFolder" : "auditFileFolder"
@@ -234,11 +236,13 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
     "id" : 100002,
     "parentId" : 100001,
     "value" : "testLeichMehlValue",
-    "ftpHost" : "hostname",
-    "ftpPort" : 1111,
-    "ftpUsername" : "ftpUsername",
-    "ftpPassword" : "ftpPassword",
-    "ftpDirectory" : "directory"
+    "productBaseFolderName" : "productBaseFolderName",
+    "tcpPort" : 8080,
+    "tcpHost" : "tcpHost",
+    "pluFileExportAuditEnabled" : false,
+    "productMappings" : [ ],
+    "pluFileConfigs" : [ ],
+    "productMappingEmpty" : true
   }
 ]
 
@@ -254,11 +258,13 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
       "id" : 100002,
       "parentId" : 100001,
       "value" : "testLeichMehlValue",
-      "ftpHost" : "hostname",
-      "ftpPort" : 1111,
-      "ftpUsername" : "ftpUsername",
-      "ftpPassword" : "ftpPassword",
-      "ftpDirectory" : "directory"
+      "productBaseFolderName" : "productBaseFolderName",
+      "tcpPort" : 8080,
+      "tcpHost" : "tcpHost",
+      "pluFileExportAuditEnabled" : false,
+      "productMappings" : [ ],
+      "pluFileConfigs" : [ ],
+      "productMappingEmpty" : true
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -377,8 +383,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "productLookup" : "ProductNumber",
       "metasfreshIdJSONPath" : "JSONPathMetasfreshID",
       "shopwareIdJSONPath" : "JSONPathShopwareID",
-      "syncStockToShopware6" : false,
-      "percentageToDeductFromAvailableStock" : 0
+      "syncAvailableForSalesToShopware6" : true,
+      "percentageToDeductFromAvailableForSales" : 10
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -412,8 +418,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "isActive" : false,
       "value" : "testShopware6Value",
       "productLookup" : "ProductNumber",
-      "syncStockToShopware6" : false,
-      "percentageToDeductFromAvailableStock" : 0
+      "syncAvailableForSalesToShopware6" : false,
+      "percentageToDeductFromAvailableForSales" : 0
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -456,8 +462,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
     "isActive" : true,
     "value" : "testShopware6Value",
     "productLookup" : "ProductNumber",
-    "syncStockToShopware6" : false,
-    "percentageToDeductFromAvailableStock" : 0
+    "syncAvailableForSalesToShopware6" : false,
+    "percentageToDeductFromAvailableForSales" : 0
   }
 ]
 
@@ -488,8 +494,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "isActive" : true,
       "value" : "testShopware6Value",
       "productLookup" : "ProductNumber",
-      "syncStockToShopware6" : false,
-      "percentageToDeductFromAvailableStock" : 0
+      "syncAvailableForSalesToShopware6" : false,
+      "percentageToDeductFromAvailableForSales" : 0
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -517,8 +523,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "isActive" : true,
       "value" : "new-value",
       "productLookup" : "ProductNumber",
-      "syncStockToShopware6" : false,
-      "percentageToDeductFromAvailableStock" : 0
+      "syncAvailableForSalesToShopware6" : false,
+      "percentageToDeductFromAvailableForSales" : 0
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -603,11 +609,13 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_LeichMehl_Co
       "id" : 100002,
       "parentId" : 100001,
       "value" : "LeichMehl",
-      "ftpHost" : "hostname",
-      "ftpPort" : 1111,
-      "ftpUsername" : "ftpUsername",
-      "ftpPassword" : "ftpPassword",
-      "ftpDirectory" : "directory"
+      "productBaseFolderName" : "productBaseFolderName",
+      "tcpPort" : 8080,
+      "tcpHost" : "tcpHost",
+      "pluFileExportAuditEnabled" : false,
+      "productMappings" : [ ],
+      "pluFileConfigs" : [ ],
+      "productMappingEmpty" : true
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -626,6 +634,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Other_Config
       "id" : {
         "externalSystemParentConfigId" : 100001
       },
+      "value" : {
+        "externalSystemParentConfigId" : 100001
+      },
       "parameters" : [
         {
           "id" : 100002,
@@ -638,6 +649,50 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Other_Config
           "value" : "value2"
         }
       ]
+    },
+    "writeAudit" : true,
+    "auditFileFolder" : "auditFileFolder"
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.givenLeichMehlCofing_withProductMappings_andPluFileConfigs_whenGetById_thenReturnWholeInfo=[
+  {
+    "id" : 100001,
+    "type" : "LeichUndMehl",
+    "name" : "name",
+    "active" : true,
+    "orgId" : 0,
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "value" : "LeichMehl",
+      "productBaseFolderName" : "productBaseFolderName",
+      "tcpPort" : 8080,
+      "tcpHost" : "tcpHost",
+      "pluFileExportAuditEnabled" : false,
+      "productMappings" : [
+        {
+          "id" : 100003,
+          "seqNo" : 10,
+          "pluFile" : "plufile",
+          "productCategoryId" : 2,
+          "productId" : 1,
+          "bPartnerId" : 3
+        }
+      ],
+      "pluFileConfigs" : [
+        {
+          "id" : 100004,
+          "leichMehlConfigId" : 100002,
+          "targetFieldName" : "targetFileName",
+          "targetFieldType" : "Date",
+          "replaceRegExp" : "replacePattern",
+          "replacement" : "replacement",
+          "replacementSource" : "PPOrder"
+        }
+      ],
+      "productMappingEmpty" : false
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"

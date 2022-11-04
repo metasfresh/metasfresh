@@ -595,6 +595,7 @@ class DocumentListContainer extends Component {
       viewId,
       viewData: { mapConfig },
       isModal,
+      addViewLocationData,
     } = this.props;
 
     locationSearchRequest({ windowId, viewId }).then(({ data }) => {
@@ -819,6 +820,7 @@ export default connect(
     setBreadcrumb,
     fetchQuickActions,
     deleteQuickActions,
+    addViewLocationData,
   },
   null,
   { forwardRef: true }

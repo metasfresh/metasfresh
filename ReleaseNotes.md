@@ -12,6 +12,82 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13784](https://github.com/metasfresh/metasfresh/issues/13784) Price difference from offer to order(Add IsKeepProposalPrices)
+  * [#13854](https://github.com/metasfresh/metasfresh/pull/13854) Set incoterms from partners only if has a value
+  * [#13857](https://github.com/metasfresh/metasfresh/pull/13857) webui: (re)evaluate document field readonly and display logic based on user's role
+  * [#13855](https://github.com/metasfresh/metasfresh/pull/13855) Tax window: fix field names
+  * [#13789](https://github.com/metasfresh/metasfresh/issues/13789) Investigate github actions failures 
+  * [#13801](https://github.com/metasfresh/metasfresh/issues/13801) Add IsAlwaysUpdatable and ReadOnlyLogic to AD_Field 
+  * [#13822](https://github.com/metasfresh/metasfresh/issues/13822) Add fields for Sales 
+  * [#13840](https://github.com/metasfresh/metasfresh/issues/13840) Add support for Soehenle scales
+  * [#13831](https://github.com/metasfresh/metasfresh/issues/13831) [Cucumber] Import file - identify account by IBAN
+  * [#13833](https://github.com/metasfresh/metasfresh/issues/13833) Add Role_Group to role window and context
+  * [#13805](https://github.com/metasfresh/metasfresh/pull/13805) Fix github actions failures
+  * [#13813](https://github.com/metasfresh/metasfresh/issues/13813) InvoiceCandidate - Allow creating invoices with DocStatus=IP
+  * [#13812](https://github.com/metasfresh/metasfresh/issues/13812) HU Clearance status: Test Pending
+  * [#13778](https://github.com/metasfresh/metasfresh/issues/13778) Externally referenced records: show ReadOnly reason in UI
+  * [#13745](https://github.com/metasfresh/metasfresh/issues/13745) Import material (product) data from SAP
+  * [#13685](https://github.com/metasfresh/metasfresh/issues/13685) Allow externally maintained records to be read-only in metasfresh
+  * [#13758](https://github.com/metasfresh/metasfresh/issues/13758) IEUE045.U01 Incoming payment management
+  * [#13685](https://github.com/metasfresh/metasfresh/issues/13685) Allow externally maintained records to be read-only in metasfresh 
+  * [#13755](https://github.com/metasfresh/metasfresh/issues/13755) Look up C_OLcand.M_HU_PI_Item_Product_ID also via StoreGLN
+  * [#13772](https://github.com/metasfresh/metasfresh/issues/13772) Set "-" in MAC Address instead of null 
+  * [#13717](https://github.com/metasfresh/metasfresh/issues/13717) Sub-Task No 2: Test & Fix Sales order (w/ ship ) - ProductPlanning - Manufacturing 
+  * [#13751](https://github.com/metasfresh/metasfresh/issues/13751) Renumber C_OLCand.Line when sending from excel to metasfresh
+  * [#13651](https://github.com/metasfresh/metasfresh/issues/13651) Allow invoking "Other" ExternalSystem via API
+  * [#13740](https://github.com/metasfresh/metasfresh/issues/13740) Fix inventory move line
+  * [#13716](https://github.com/metasfresh/metasfresh/issues/13716) Creating PP Order by machine size
+  * [#13733](https://github.com/metasfresh/metasfresh/issues/13733) edit translations for ad_references #13733
+  * [#13707](https://github.com/metasfresh/metasfresh/issues/13707) Fix Mail notifications
+  * [#13648](https://github.com/metasfresh/metasfresh/issues/13648) Propagate Section_ID from OLCand to Payment
+  * [#13646](https://github.com/metasfresh/metasfresh/issues/13646) Cucumber: EffortControl coverage
+  * [#13663](https://github.com/metasfresh/metasfresh/issues/13663) Sub-Task No 1: Test & Fix Sales/Purchase order (w/ ship & receive) - No Product Planning 
+  * [#13643] https://github.com/metasfresh/metasfresh/pull/13643#pullrequestreview-1118261799 Support SEPA for QR
+  * [#13649](https://github.com/metasfresh/metasfresh/issues/13649) Allow product configuration to lock HUs for that product that are received or manufactured
+  * [#13623](https://github.com/metasfresh/metasfresh/issues/13623) New Contracts do not work on with startdate on the end of the month
+  * [#13625](https://github.com/metasfresh/metasfresh/issues/13625) Material-Cockpit Add C_Order QtyReserved column
+  * [#13580](https://github.com/metasfresh/metasfresh/issues/13580) IC Handle the case of respective record going "into limbo"
+  * [#13603](https://github.com/metasfresh/metasfresh/issues/13603) Disallow reactivating/reverting documents that have ICs approved for invoicing
+  * [#13614](https://github.com/metasfresh/metasfresh/issues/13614) Desadv Packs - in depth testing (camel & cucumber)
+  * [#13589](https://github.com/metasfresh/metasfresh/issues/13589) Fix Basepricelist retrieval vor product proposal without save
+  * [#13571](https://github.com/metasfresh/metasfresh/issues/13571) M_AttributeUse.MandatoryForManufacturing
+  * [#13558](https://github.com/metasfresh/metasfresh/issues/13558) Improve "update dunning candidate" process 
+  * [#13578](https://github.com/metasfresh/metasfresh/issues/13578) When creating a counter doc C_Order, take into account the dropship information
+  * [#13541](https://github.com/metasfresh/metasfresh/issues/13541) Unify de.metas.project.workorder && de.metas.project.workorder.data
+  * [#13144](https://github.com/metasfresh/metasfresh/issues/13144) Create Test harness for mobileUI's API
+  * [#13509](https://github.com/metasfresh/metasfresh/issues/13509) Generic importer for invoice candidates
+  * [#13423](https://github.com/metasfresh/metasfresh/issues/13423) Partial payment overview (aka Interim Invoice): the proces
+  * [#13466](https://github.com/metasfresh/metasfresh/issues/13466) Purchase call orders 
+  * [#13458](https://github.com/metasfresh/metasfresh/issues/13458) Load Budget Project JSONs into metasfresh
+  * [#13431](https://github.com/metasfresh/metasfresh/pull/13431) Set-up Github webhooks for syncing issues 
+  * [#13442](https://github.com/metasfresh/metasfresh/issues/13442) Option to set the base language if same as the previous one #13442
+  * [#13443](https://github.com/metasfresh/metasfresh/issues/13443) Workorder-Project - Inherit certain properties from parent
+  * [#13405](https://github.com/metasfresh/metasfresh/issues/13405) Allow custom columns in API upserts (for Budget-Project)
+  * [#13415](https://github.com/metasfresh/metasfresh/issues/13415) Customer returns error
+  * [#13413](https://github.com/metasfresh/metasfresh/issues/13413) Display project fields in various windows(SO, Shipment, Request(all)...)
+  * [#13392](https://github.com/metasfresh/metasfresh/issues/13316) Extend invoice-candidate test-coverage to IC QtyToInoviceOverride
+  * [#13392](https://github.com/metasfresh/metasfresh/issues/13392) Final Product Costprice S2: lines creation process 
+  * [#13384](https://github.com/metasfresh/metasfresh/issues/13384) Tests and Error Message for SEPA Export with QR IBAN
+  * [#13368](https://github.com/metasfresh/metasfresh/issues/13368) Partial Payment Invoicing S4: Invoice candidate 
+  * [#13364](https://github.com/metasfresh/metasfresh/issues/13364) Available for sale - trigger recomputation when shipment schedule is closed/reopened + shopware sync when config changes
+  * [#13323](https://github.com/metasfresh/metasfresh/issues/13323) Partial Payment Invoicing: flatrate conditions
+  * [#13339](https://github.com/metasfresh/metasfresh/issues/13339) Final Product Costprice S1: tables and window
+  * [#13354](https://github.com/metasfresh/metasfresh/issues/13354) Accounting Transactions sidelist Reference for documents missing again 
+  * [#13337](https://github.com/metasfresh/metasfresh/issues/13337) Adjustment Payment/Bank Statement Windows
+  * [#13338](https://github.com/metasfresh/metasfresh/issues/13338) Support QR IBAN in SEPA export 
+  * [#13280](https://github.com/metasfresh/metasfresh/issues/13280) Revolut Export Fixes
+  * [#13308](https://github.com/metasfresh/metasfresh/issues/13308) Partial Payment Invoicing: prepare warehouse and prefinancing settings
+  * [#13302](https://github.com/metasfresh/metasfresh/issues/13302) Change base language via Process
+  * [#13314](https://github.com/metasfresh/metasfresh/issues/13314) Prevent price lookup from base PLV
+  * [#13296](https://github.com/metasfresh/metasfresh/issues/13296) Support additional shopware payment type
+  * [#13283](https://github.com/metasfresh/metasfresh/issues/13283) Create REST Endpoints to read and write WorkOrder- and Budget-C_Projects
+  * [#13282](https://github.com/metasfresh/metasfresh/issues/13282) OLCand => Order Extend test-coverage cover bill-, dropship- and handover-partners
+  * [#13277](https://github.com/metasfresh/metasfresh/issues/13277) Sys config: address and user to update when creating an invoice
+  * [#13223](https://github.com/metasfresh/metasfresh/issues/13223) Leich&Mehl Part II
+  * [#13246](https://github.com/metasfresh/metasfresh/issues/13246) Record sql  "raise warning" output in AD_PInstanceLog
+  * [#13227](https://github.com/metasfresh/metasfresh/issues/13227) Picking QA Step
+  * [#13242](https://github.com/metasfresh/metasfresh/pull/13242) build metasfresh via dockerbuilds
+  * [#13255](https://github.com/metasfresh/metasfresh/issues/13255) Add source infos to account sheet report 
   * [#13162](https://github.com/metasfresh/metasfresh/issues/13162) Available for sales qty from metasfresh to shopware
   * [#13176](https://github.com/metasfresh/metasfresh/pull/13176) assert_period_open: improve error reporting when document was not found
   * [#13175](https://github.com/metasfresh/metasfresh/pull/13175) fact_acct_summary_partial_from_date_functions
@@ -49,10 +125,20 @@ Here come the actual release notes:
   * [#13045](https://github.com/metasfresh/metasfresh/pull/13045) log to loggables why an attribute based price is not applied
 
 ## Fixes
-* metasfresh 
-  * [#13215] https://github.com/metasfresh/metasfresh/issues/13215 Description and documentnote are not copied from doctype into shipment
-  * [#13218] https://github.com/metasfresh/metasfresh/pull/13218 Show Adr attribute details
-  * [#13201] https://github.com/metasfresh/metasfresh/pull/13201 add new accounts in Deckungsbeitragsrechnung 
+* metasfresh
+  * [#13753](https://github.com/metasfresh/metasfresh/issues/13753) Adjust auto-vacuum settings on translation tables
+  * [#13725](https://github.com/metasfresh/metasfresh/issues/13725) C_DocTypeShipment_ID not respected when generating Receipt/Shipment
+  * [#13586](https://github.com/metasfresh/metasfresh/issues/13586) Fix material-dispo bug
+  * [#13533](https://github.com/metasfresh/metasfresh/issues/13533) BUG: I_C_InvoiceCandidate.QtyDelivered wrongly computed for manual invoice candidates 
+  * [#13550](https://github.com/metasfresh/metasfresh/issues/13550) [React] - Calendar gives blank screen when selecting a date from past
+  * [#13487](https://github.com/metasfresh/metasfresh/issues/13487) [React] - Infinite loop for /dropdown call
+  * [#13535](https://github.com/metasfresh/metasfresh/issues/13535) Extend Order's Product-Proposal - Fix Bug
+  * [#13261](https://github.com/metasfresh/metasfresh/issues/13261) AvailableForSales to Shopware - Fix terminology
+  * [#13286](https://github.com/metasfresh/metasfresh/issues/13286) Display document validation message
+  * [#13257](https://github.com/metasfresh/metasfresh/pull/13257) available for sales stock fix
+  * [#13215](https://github.com/metasfresh/metasfresh/issues/13215) Description and documentnote are not copied from doctype into shipment
+  * [#13218](https://github.com/metasfresh/metasfresh/pull/13218) Show Adr attribute details
+  * [#13201](https://github.com/metasfresh/metasfresh/pull/13201) add new accounts in Deckungsbeitragsrechnung 
   * [#13204](https://github.com/metasfresh/metasfresh/pull/13204) fix flaky test: Create sales order with different ASI, on complete no production candidate is found
   * [#13197](https://github.com/metasfresh/metasfresh/pull/13197) cucumber fixes
   * [#13170](https://github.com/metasfresh/metasfresh/pull/13170) hotfix RV_UnPosted: DateTrx was used instead of DateAcct for M_MatchInv and M_MatchPO
@@ -75,8 +161,17 @@ Here come the actual release notes:
 # metasfresh 5.175 (current RC)
 ## Features
 * metasfresh
+  * [#13637](https://github.com/metasfresh/metasfresh/issues/13637) Cucumber: drop MD_Stock_StepDef#truncateMDStockData
+  * [#13376](https://github.com/metasfresh/metasfresh/issues/13376) Cucumber: Products (item) invoice candidates
+  * [#13355](https://github.com/metasfresh/metasfresh/issues/13355) Packing material invoice candidates: shipments
+  * [#13449](https://github.com/metasfresh/metasfresh/issues/13449) Empties Receive and Returns
+  * [#13395](https://github.com/metasfresh/metasfresh/issues/13395) Packing material invoice candidates: receipts
+  * [#13198](https://github.com/metasfresh/metasfresh/issues/13198) Tell camel which auth token to use when connecting to MF
   * [#13041](https://github.com/metasfresh/metasfresh/issues/13041) Create cucumber-harness for invoice and payment allocation
   * [#12760](https://github.com/metasfresh/metasfresh/issues/12760) Create import/export for C_Campaign_price
+  * [#13456](https://github.com/metasfresh/metasfresh/issues/13456) Delivery Rules & Delivery Fifo #13456
+  * [#13464](https://github.com/metasfresh/metasfresh/issues/13464) Tax calculation for orders where C_Bpartner_Location != Dropship Location (and AD_Org’s Bpartner Location country != Dropship Location country)
+  * [#13448](https://github.com/metasfresh/metasfresh/issues/13448) Address on invoice is the latest billto location from bpartner
   * [#7151](https://github.com/metasfresh/metasfresh/issues/7151) On page switching (in parent view) the includedView for the selected parent row needs to be refreshed
   * [#10032](https://github.com/metasfresh/metasfresh/issues/10032) Cleanup table styles
   * [#11732](https://github.com/metasfresh/metasfresh/issues/11732) webui frontend: improve how the 502 error is displayed to user 

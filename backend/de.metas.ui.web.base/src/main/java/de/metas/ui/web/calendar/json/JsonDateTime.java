@@ -30,8 +30,11 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+
+import static de.metas.ui.web.window.datatypes.json.DateTimeConverters.fromObjectToInstant;
 
 /**
  * A helper class to precisely control how {@link java.time.ZonedDateTime}s are serialized/deserialized from/to JSON.
@@ -61,6 +64,13 @@ public class JsonDateTime
 		return new JsonDateTime(string);
 	}
 
+	@NonNull
+	public static JsonDateTime ofInstant(@NonNull final Instant dateTime, @NonNull final ZoneId timeZone)
+	{
+		final String string = DateTimeConverters.toJson(dateTime, timeZone);
+		return new JsonDateTime(string);
+	}
+
 	@JsonValue
 	public String toJson() {return string;}
 
@@ -68,5 +78,5 @@ public class JsonDateTime
 	@Deprecated
 	public String toString() {return toJson();}
 
-	public ZonedDateTime toZonedDateTime() {return DateTimeConverters.fromObjectToZonedDateTime(string);}
+	public Instant toInstant() {return fromObjectToInstant(string);}
 }

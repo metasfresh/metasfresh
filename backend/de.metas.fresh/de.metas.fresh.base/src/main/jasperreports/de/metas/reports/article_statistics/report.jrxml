@@ -6,7 +6,7 @@
 	<property name="ireport.zoom" value="1.9487171000000116"/>
 	<property name="ireport.x" value="474"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="releasetestdev.xml"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="One Empty Record"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<property name="com.jaspersoft.studio.report.description" value=""/>
 	<property name="com.jaspersoft.studio.unit." value="pixel"/>
@@ -401,7 +401,7 @@
 				<textElement>
 					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[($F{startdate} != null ? $F{startdate} : "")  + " - " + ($F{enddate} != null ? $F{enddate} : "")]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{startdate} != null || $F{enddate} != null ? $F{startdate} + " - " + $F{enddate} : ""]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="330" y="50" width="105" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6">
@@ -410,21 +410,21 @@
 				<textElement>
 					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$P{IsSOTrx}.equals("N") ? $R{Purchase} : ($P{IsSOTrx} .equals("Y") ? $R{Sales} : $R{All} )]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$P{IsSOTrx}.equals("N") ? $R{Purchase} : ($P{IsSOTrx} .equals("Y") ? $R{Sales} : "" )]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="330" y="68" width="105" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
 					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{param_bp} != null ? $F{param_bp} : $R{All}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{param_bp} != null ? $F{param_bp} : ""]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="530" y="59" width="81" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
 				<textElement>
 					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{p_name} != null ? $F{p_name} : $R{All}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{p_name} != null ? $F{p_name} : ""]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="450" y="59" width="81" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
@@ -438,7 +438,7 @@
 				<textElement>
 					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{param_attributes} != null ? $F{param_attributes} : $R{All}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{param_attributes} != null ? $F{param_attributes} : ""]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="450" y="68" width="81" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
@@ -452,7 +452,7 @@
 				<textElement>
 					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$F{p_value} != null ? $F{p_value} : $R{All}]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$F{p_value} != null ? $F{p_value} : ""]]></textFieldExpression>
 			</textField>
 			<textField>
 				<reportElement x="450" y="50" width="81" height="10" uuid="9d42f643-2a33-45d7-ba5f-180e0f0b0dd6"/>
@@ -474,7 +474,7 @@
 					<font fontName="Arial" size="8"/>
 					<paragraph lineSpacing="Double"/>
 				</textElement>
-				<textFieldExpression><![CDATA[$R{org}+" "+ ($F{ad_org_name} !=null ? $F{ad_org_name} : $R{All})]]></textFieldExpression>
+				<textFieldExpression><![CDATA[$R{org}+": "+ ($F{ad_org_name} !=null ? $F{ad_org_name}: "")]]></textFieldExpression>
 			</textField>
 		</band>
 	</pageHeader>

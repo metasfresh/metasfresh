@@ -23,7 +23,9 @@
 package de.metas.cucumber.stepdefs.hu;
 
 import de.metas.common.util.CoalesceUtil;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_HU_PackagingCode_StepDefData;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
@@ -38,6 +40,7 @@ import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 
@@ -49,7 +52,9 @@ import java.util.Map;
 import static de.metas.cucumber.stepdefs.StepDefConstants.PCE_UOM_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_GTIN;
+import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_GTIN_LU_PackingMaterial_Fallback;
 import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID;
+import static de.metas.handlingunits.model.I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PackagingCode_LU_Fallback_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.COLUMNNAME_IsActive;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
@@ -62,15 +67,21 @@ public class M_HU_PI_Item_Product_StepDef
 	private final M_Product_StepDefData productTable;
 	private final M_HU_PI_Item_StepDefData huPiItemTable;
 	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
+	private final M_HU_PackagingCode_StepDefData huPackagingCodeTable;
+	private final C_BPartner_StepDefData bpartnerTable;
 
 	public M_HU_PI_Item_Product_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final M_HU_PI_Item_StepDefData huPiItemTable,
-			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable)
+			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable,
+			@NonNull final M_HU_PackagingCode_StepDefData huPackagingCodeTable,
+			@NonNull final C_BPartner_StepDefData bpartnerTable)
 	{
 		this.productTable = productTable;
 		this.huPiItemTable = huPiItemTable;
 		this.huPiItemProductTable = huPiItemProductTable;
+		this.huPackagingCodeTable = huPackagingCodeTable;
+		this.bpartnerTable = bpartnerTable;
 	}
 
 	@Given("metasfresh contains M_HU_PI_Item_Product:")
@@ -162,10 +173,41 @@ public class M_HU_PI_Item_Product_StepDef
 		huPiItemProductRecord.setIsAllowAnyProduct(Boolean.TRUE.equals(isAllowAnyProduct));
 		huPiItemProductRecord.setIsDefaultForProduct(Boolean.TRUE.equals(isDefaultForProduct));
 
+		final String huPackagingCodeLUFallbackIdentifier = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + COLUMNNAME_M_HU_PackagingCode_LU_Fallback_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(huPackagingCodeLUFallbackIdentifier))
+		{
+			final int huPackagingCodeId = DataTableUtil.nullToken2Null(huPackagingCodeLUFallbackIdentifier) == null
+					? -1
+					: huPackagingCodeTable.get(huPackagingCodeLUFallbackIdentifier).getM_HU_PackagingCode_ID();
+
+			huPiItemProductRecord.setM_HU_PackagingCode_LU_Fallback_ID(huPackagingCodeId);
+		}
+
+		final String gtinLuPackagingMaterialFallback = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + COLUMNNAME_GTIN_LU_PackingMaterial_Fallback);
+		if (Check.isNotBlank(gtinLuPackagingMaterialFallback))
+		{
+			huPiItemProductRecord.setGTIN_LU_PackingMaterial_Fallback(DataTableUtil.nullToken2Null(gtinLuPackagingMaterialFallback));
+		}
+
+		final String bpartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_HU_PI_Item_Product.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(bpartnerIdentifier))
+		{
+			final I_C_BPartner bPartner = bpartnerTable.get(bpartnerIdentifier);
+			assertThat(bPartner).isNotNull();
+
+			huPiItemProductRecord.setC_BPartner_ID(bPartner.getC_BPartner_ID());
+		}
+
+		final String upc = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_M_HU_PI_Item_Product.COLUMNNAME_UPC);
+		if (Check.isNotBlank(upc))
+		{
+			huPiItemProductRecord.setUPC(upc);
+		}
+
 		saveRecord(huPiItemProductRecord);
 
-		final String huPiItemProductIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_HU_PI_Item_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-		huPiItemProductTable.put(huPiItemProductIdentifier, huPiItemProductRecord);
+		final String huPiItemProductIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+		huPiItemProductTable.putOrReplace(huPiItemProductIdentifier, huPiItemProductRecord);
 	}
 
 	@And("update M_HU_PI_Item_Product:")

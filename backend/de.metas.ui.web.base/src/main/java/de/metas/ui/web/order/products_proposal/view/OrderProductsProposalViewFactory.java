@@ -14,9 +14,11 @@ import de.metas.ui.web.order.products_proposal.model.ProductsProposalRow;
 import de.metas.ui.web.order.products_proposal.model.ProductsProposalRowsLoader;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_Order_ProductsProposal_Launcher;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_Delete;
+import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_QuotationHistory;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_SaveProductPriceToCurrentPriceListVersion;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_ShowProductsSoldToOtherCustomers;
 import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_ShowProductsToAddFromBasePriceList;
+import de.metas.ui.web.order.products_proposal.process.WEBUI_ProductsProposal_ZoomToQuotations;
 import de.metas.ui.web.order.products_proposal.service.Order;
 import de.metas.ui.web.order.products_proposal.service.OrderLinesFromProductProposalsProducer;
 import de.metas.ui.web.order.products_proposal.service.OrderProductProposalsService;
@@ -24,15 +26,26 @@ import de.metas.ui.web.view.ViewCloseAction;
 import de.metas.ui.web.view.ViewFactory;
 import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
+import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper;
 import de.metas.ui.web.view.descriptor.annotation.ViewColumnHelper.ClassViewColumnOverrides;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
 import org.compiere.util.TimeUtil;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
+
+import static de.metas.ui.web.order.products_proposal.model.ProductsProposalRow.FIELD_LastQuotationDate;
+import static de.metas.ui.web.order.products_proposal.model.ProductsProposalRow.FIELD_LastQuotationPrice;
+import static de.metas.ui.web.order.products_proposal.model.ProductsProposalRow.FIELD_LastQuotationUOM;
+import static de.metas.ui.web.order.products_proposal.model.ProductsProposalRow.FIELD_QuotationOrdered;
+import static de.metas.ui.web.order.products_proposal.model.ProductsProposalRow.FIELD_TermsOfDelivery;
 
 /*
  * #%L
@@ -59,24 +72,32 @@ import java.util.List;
 @ViewFactory(windowId = OrderProductsProposalViewFactory.WINDOW_ID_STRING)
 public class OrderProductsProposalViewFactory extends ProductsProposalViewFactoryTemplate
 {
+	private static final String SYSCONFIG_PREFIX = "de.metas.ui.web.order.products_proposal.model.ProductsProposalRow.field.";
+	private static final String SYSCONFIG_SUFIX = ".IsDisplayed";
+
 	static final String WINDOW_ID_STRING = "orderProductsProposal";
 	public static final WindowId WINDOW_ID = WindowId.fromJson(WINDOW_ID_STRING);
 
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
 	private final OrderProductProposalsService orderProductProposalsService;
 	private final BPartnerProductStatsService bpartnerProductStatsService;
 	private final CampaignPriceService campaignPriceService;
+	private final LookupDataSourceFactory lookupDataSourceFactory;
 
 	public OrderProductsProposalViewFactory(
 			@NonNull final OrderProductProposalsService orderProductProposalsService,
 			@NonNull final BPartnerProductStatsService bpartnerProductStatsService,
-			@NonNull final CampaignPriceService campaignPriceService)
+			@NonNull final CampaignPriceService campaignPriceService,
+			@NonNull final LookupDataSourceFactory lookupDataSourceFactory)
 	{
 		super(WINDOW_ID);
 
 		this.orderProductProposalsService = orderProductProposalsService;
 		this.bpartnerProductStatsService = bpartnerProductStatsService;
 		this.campaignPriceService = campaignPriceService;
+		this.lookupDataSourceFactory = lookupDataSourceFactory;
 	}
 
 	@Override
@@ -95,15 +116,7 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 				.addElementsFromViewRowClassAndFieldNames(
 						ProductsProposalRow.class,
 						key.getViewDataType(),
-						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_Product),
-						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_Qty),
-						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_PackDescription),
-						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_ASI),
-						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_LastShipmentDays),
-						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_Price),
-						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_Currency),
-						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_IsCampaignPrice),
-						ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_Description))
+						getColumnsToBeDisplayed())
 				//
 				.setAllowOpeningRowDetails(false)
 				.build();
@@ -117,6 +130,29 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 		return createRowsLoaderFromOrderId(orderId);
 	}
 
+	@NonNull
+	private ViewColumnHelper.ClassViewColumnOverrides[] getColumnsToBeDisplayed()
+	{
+		final List<ClassViewColumnOverrides> columnsToBeDisplayed =
+				new ArrayList<>(ImmutableList.of(ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_Product),
+												 ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_Qty),
+												 ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_PackDescription),
+												 ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_ASI),
+												 ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_LastShipmentDays),
+												 ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_Price),
+												 ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_Currency)));
+
+		Stream.of(FIELD_LastQuotationDate, FIELD_LastQuotationPrice, FIELD_LastQuotationUOM, FIELD_TermsOfDelivery, FIELD_QuotationOrdered)
+				.filter(this::isDisplayed)
+				.map(ClassViewColumnOverrides::ofFieldName)
+				.forEach(columnsToBeDisplayed::add);
+
+		columnsToBeDisplayed.add(ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_IsCampaignPrice));
+		columnsToBeDisplayed.add(ClassViewColumnOverrides.ofFieldName(ProductsProposalRow.FIELD_Description));
+
+		return columnsToBeDisplayed.toArray(new ClassViewColumnOverrides[0]);
+	}
+
 	private ProductsProposalRowsLoader createRowsLoaderFromOrderId(@NonNull final OrderId orderId)
 	{
 		final Order order = orderProductProposalsService.getOrderById(orderId);
@@ -124,7 +160,9 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 		final CampaignPriceProvider campaignPriceProvider = createCampaignPriceProvider(order);
 
 		return ProductsProposalRowsLoader.builder()
+				.lookupDataSourceFactory(lookupDataSourceFactory)
 				.bpartnerProductStatsService(bpartnerProductStatsService)
+				.orderProductProposalsService(orderProductProposalsService)
 				.campaignPriceProvider(campaignPriceProvider)
 				//
 				.priceListVersionId(order.getPriceListVersionId())
@@ -173,7 +211,9 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 				createProcessDescriptor(WEBUI_ProductsProposal_SaveProductPriceToCurrentPriceListVersion.class),
 				createProcessDescriptor(WEBUI_ProductsProposal_ShowProductsToAddFromBasePriceList.class),
 				createProcessDescriptor(WEBUI_ProductsProposal_ShowProductsSoldToOtherCustomers.class),
-				createProcessDescriptor(WEBUI_ProductsProposal_Delete.class));
+				createProcessDescriptor(WEBUI_ProductsProposal_Delete.class),
+				createProcessDescriptor(WEBUI_ProductsProposal_QuotationHistory.class),
+				createProcessDescriptor(WEBUI_ProductsProposal_ZoomToQuotations.class));
 	}
 
 	@Override
@@ -196,5 +236,10 @@ public class OrderProductsProposalViewFactory extends ProductsProposalViewFactor
 				.rows(view.getAllRows())
 				.build()
 				.produce();
+	}
+
+	private boolean isDisplayed(@NonNull final String fieldName)
+	{
+		return sysConfigBL.getBooleanValue(SYSCONFIG_PREFIX + fieldName + SYSCONFIG_SUFIX, false);
 	}
 }

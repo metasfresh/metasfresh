@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_Product
  *  @author metasfresh (generated) 
@@ -572,6 +571,29 @@ public interface I_M_Product
 	String COLUMNNAME_ExternalId = "ExternalId";
 
 	/**
+	 * Set FLO ID.
+	 * ID granted by FLOCERT for companies to put it on their products.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFLO_Identifier (@Nullable java.lang.String FLO_Identifier);
+
+	/**
+	 * Get FLO ID.
+	 * ID granted by FLOCERT for companies to put it on their products.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getFLO_Identifier();
+
+	ModelColumn<I_M_Product, Object> COLUMN_FLO_Identifier = new ModelColumn<>(I_M_Product.class, "FLO_Identifier", null);
+	String COLUMNNAME_FLO_Identifier = "FLO_Identifier";
+
+	/**
 	 * Set Group1.
 	 *
 	 * <br>Type: String
@@ -786,6 +808,29 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, Object> COLUMN_Help = new ModelColumn<>(I_M_Product.class, "Help", null);
 	String COLUMNNAME_Help = "Help";
+
+	/**
+	 * Set HU Clearance.
+	 * Initial clearance status for newly created or received handling units with this product.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHUClearanceStatus (@Nullable java.lang.String HUClearanceStatus);
+
+	/**
+	 * Get HU Clearance.
+	 * Initial clearance status for newly created or received handling units with this product.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getHUClearanceStatus();
+
+	ModelColumn<I_M_Product, Object> COLUMN_HUClearanceStatus = new ModelColumn<>(I_M_Product.class, "HUClearanceStatus", null);
+	String COLUMNNAME_HUClearanceStatus = "HUClearanceStatus";
 
 	/**
 	 * Set Image URL.
@@ -1495,6 +1540,31 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, Object> COLUMN_M_ProductPlanningSchema_Selector = new ModelColumn<>(I_M_Product.class, "M_ProductPlanningSchema_Selector", null);
 	String COLUMNNAME_M_ProductPlanningSchema_Selector = "M_ProductPlanningSchema_Selector";
+
+	/**
+	 * Set Section Code.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_SectionCode_ID (int M_SectionCode_ID);
+
+	/**
+	 * Get Section Code.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_SectionCode_ID();
+
+	@Nullable org.compiere.model.I_M_SectionCode getM_SectionCode();
+
+	void setM_SectionCode(@Nullable org.compiere.model.I_M_SectionCode M_SectionCode);
+
+	ModelColumn<I_M_Product, org.compiere.model.I_M_SectionCode> COLUMN_M_SectionCode_ID = new ModelColumn<>(I_M_Product.class, "M_SectionCode_ID", org.compiere.model.I_M_SectionCode.class);
+	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
 
 	/**
 	 * Set Manufacturer.

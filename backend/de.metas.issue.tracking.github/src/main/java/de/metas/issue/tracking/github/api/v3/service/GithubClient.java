@@ -22,22 +22,38 @@
 
 package de.metas.issue.tracking.github.api.v3.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import de.metas.JsonObjectMapperHolder;
+import de.metas.issue.tracking.github.api.v3.GitHubApiConstants;
+import de.metas.issue.tracking.github.api.v3.model.CreatWebhookRequest;
+import de.metas.issue.tracking.github.api.v3.model.CreateIssueRequest;
 import de.metas.issue.tracking.github.api.v3.model.FetchIssueByIdRequest;
 import de.metas.issue.tracking.github.api.v3.model.Issue;
 import de.metas.issue.tracking.github.api.v3.model.ResourceState;
 import de.metas.issue.tracking.github.api.v3.model.RetrieveIssuesRequest;
 import de.metas.issue.tracking.github.api.v3.service.rest.RestService;
-import de.metas.issue.tracking.github.api.v3.service.rest.info.GetRequest;
+import de.metas.issue.tracking.github.api.v3.service.rest.info.Request;
+import de.metas.util.Check;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
 
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
+import static de.metas.issue.tracking.github.api.v3.GitHubApiConstants.Endpoint.HOOKS;
 import static de.metas.issue.tracking.github.api.v3.GitHubApiConstants.Endpoint.ISSUES;
 import static de.metas.issue.tracking.github.api.v3.GitHubApiConstants.Endpoint.REPOS;
 import static de.metas.issue.tracking.github.api.v3.GitHubApiConstants.GITHUB_BASE_URI;
@@ -78,7 +94,7 @@ public class GithubClient
 			queryParams.add(SINCE.getValue(), since);
 		}
 
-		final GetRequest getRequest = GetRequest.builder()
+		final Request getRequest = Request.builder()
 				.baseURL(GITHUB_BASE_URI)
 				.pathVariables(pathVariables)
 				.queryParameters(queryParams)
@@ -101,12 +117,117 @@ public class GithubClient
 				ISSUES.getValue(),
 				fetchIssueByIdRequest.getIssueNumber());
 
-		final GetRequest getRequest = GetRequest.builder()
+		final Request getRequest = Request.builder()
 				.baseURL(GITHUB_BASE_URI)
 				.pathVariables(pathVariables)
 				.oAuthToken(fetchIssueByIdRequest.getOAuthToken())
 				.build();
 
 		return restService.performGet(getRequest, Issue.class).getBody();
+	}
+
+	@NonNull
+	public String createWebhook(@NonNull final CreatWebhookRequest request) throws JsonProcessingException
+	{
+		try
+		{
+			final Map<String, String> configs = ImmutableMap.of("content_type", "json",
+																"url", request.getWebhookURL(),
+																"secret", request.getWebhookSecret());
+
+			final Map<String, Object> body = ImmutableMap.of("active", true,
+															 "events", request.mapEvents(GitHubApiConstants.Events::getValue),
+															 "config", configs);
+
+			final String requestBody = JsonObjectMapperHolder.sharedJsonObjectMapper()
+					.writeValueAsString(body);
+
+			final List<String> pathVariables = ImmutableList.of(REPOS.getValue(),
+																request.getRepositoryOwner(),
+																request.getRepositoryName(),
+																HOOKS.getValue());
+
+			final Request postRequest = Request.builder()
+					.baseURL(GITHUB_BASE_URI)
+					.pathVariables(pathVariables)
+					.oAuthToken(request.getOAuthToken())
+					.requestBody(requestBody)
+					.build();
+
+			return restService.performPost(postRequest, String.class).getBody();
+		}
+		catch (final HttpClientErrorException.UnprocessableEntity e)
+		{
+			final String errorMessage = getErrorMessageIfAny(e).orElse(e.getMessage());
+
+			throw new AdempiereException(errorMessage)
+					.markAsUserValidationError();
+		}
+	}
+
+	@NonNull
+	public Issue createIssue(@NonNull final CreateIssueRequest request) throws JsonProcessingException
+	{
+		try
+		{
+			final ImmutableMap.Builder<String, Object> body = ImmutableMap.builder();
+			body.put("title", request.getTitle());
+
+			if (Check.isNotBlank(request.getBody()))
+			{
+				body.put("body", request.getBody());
+			}
+
+			if (request.getLabels() != null || !request.getLabels().isEmpty())
+			{
+				body.put("labels", request.getLabels());
+			}
+
+			final String requestBody = JsonObjectMapperHolder.sharedJsonObjectMapper()
+					.writeValueAsString(body.build());
+
+			final List<String> pathVariables = ImmutableList.of(REPOS.getValue(),
+																request.getRepositoryOwner(),
+																request.getRepositoryName(),
+																ISSUES.getValue());
+
+			final Request postRequest = Request.builder()
+					.baseURL(GITHUB_BASE_URI)
+					.pathVariables(pathVariables)
+					.oAuthToken(request.getOAuthToken())
+					.requestBody(requestBody)
+					.build();
+
+			return restService.performPost(postRequest, Issue.class).getBody();
+		}
+		catch (final HttpClientErrorException.UnprocessableEntity e)
+		{
+			final String errorMessage = getErrorMessageIfAny(e).orElse(e.getMessage());
+
+			throw new AdempiereException(errorMessage)
+					.markAsUserValidationError();
+		}
+	}
+
+	@NonNull
+	private Optional<String> getErrorMessageIfAny(@NonNull final HttpClientErrorException.UnprocessableEntity e) throws JsonProcessingException
+	{
+		final JsonNode jsonNode = JsonObjectMapperHolder.sharedJsonObjectMapper().readTree(e.getResponseBodyAsString());
+
+		final JsonNode errors = jsonNode.at("/errors");
+
+		if (errors == null || !errors.isArray())
+		{
+			return Optional.empty();
+		}
+
+		final String errorMessage = StreamSupport.stream(errors.spliterator(), false)
+				.map(messageNode -> messageNode.at("/message"))
+				.filter(Objects::nonNull)
+				.map(JsonNode::asText)
+				.filter(Check::isNotBlank)
+				.collect(Collectors.joining(";"));
+
+		return Optional.of(errorMessage);
 	}
 }

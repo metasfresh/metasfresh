@@ -20,6 +20,7 @@ SELECT
 	, i.IsInDispute
 	, COALESCE(bp.C_Dunning_ID, bpg.C_Dunning_ID, dunnOrg.C_Dunning_ID) as C_Dunning_ID
 	, i.IsActive
+    , i.M_SectionCode_ID
 FROM C_Invoice_v i 
 	LEFT OUTER JOIN C_InvoicePaySchedule ips ON (i.C_InvoicePaySchedule_ID=ips.C_InvoicePaySchedule_ID) 
 	LEFT OUTER JOIN C_Doctype dt ON (i.C_Doctype_ID = dt.C_Doctype_ID)

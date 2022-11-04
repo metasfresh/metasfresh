@@ -7,17 +7,21 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.google.common.base.MoreObjects;
+import de.metas.i18n.ITranslatableString;
 import de.metas.ui.web.process.IProcessInstanceParameter;
 import de.metas.ui.web.window.WindowConstants;
 import de.metas.ui.web.window.datatypes.Password;
 import de.metas.ui.web.window.descriptor.ViewEditorRenderMode;
 import de.metas.ui.web.window.model.DocumentFieldChange;
+import de.metas.ui.web.window.model.DocumentFieldLogicExpressionResultRevaluator;
 import de.metas.ui.web.window.model.DocumentValidStatus;
 import de.metas.ui.web.window.model.IDocumentChangesCollector.ReasonSupplier;
 import de.metas.ui.web.window.model.IDocumentFieldView;
 import io.swagger.annotations.ApiModel;
 import lombok.Getter;
+import lombok.NonNull;
 import org.adempiere.ad.expression.api.LogicExpressionResult;
+import org.adempiere.ad.expression.api.LogicExpressionResultWithReason;
 
 import javax.annotation.Nullable;
 import java.util.LinkedHashMap;
@@ -46,6 +50,7 @@ import java.util.Map;
  * #L%
  */
 
+@SuppressWarnings("UnusedReturnValue")
 @ApiModel("document-field")
 @JsonPropertyOrder({
 		"field",
@@ -65,11 +70,14 @@ public final class JSONDocumentField
 		final JSONLayoutWidgetType jsonWidgetType = JSONLayoutWidgetType.fromNullable(field.getWidgetType());
 		final Object valueJSON = field.getValueAsJsonObject(jsonOpts);
 
+		final DocumentFieldLogicExpressionResultRevaluator expressionRevaluator = jsonOpts.getLogicExpressionResultRevaluator();
+		final String adLanguage = jsonOpts.getAdLanguage();
+
 		final JSONDocumentField jsonField = new JSONDocumentField(name, jsonWidgetType)
 				.setValue(valueJSON, null)
-				.setReadonly(field.getReadonly())
-				.setMandatory(field.getMandatory())
-				.setDisplayed(field.getDisplayed())
+				.setReadonly(expressionRevaluator.revaluate(field.getReadonly()), adLanguage)
+				.setMandatory(field.getMandatory(), adLanguage) // NOTE: don't re-evaluate because we cannot apply the same logic when we evaluate if the document is valid
+				.setDisplayed(expressionRevaluator.revaluate(field.getDisplayed()), adLanguage)
 				.setValidStatus(field.getValidStatus());
 		if (field.isLookupValuesStale())
 		{
@@ -90,13 +98,16 @@ public final class JSONDocumentField
 		final JSONLayoutWidgetType jsonWidgetType = JSONLayoutWidgetType.fromNullable(parameter.getWidgetType());
 		final Object valueJSON = parameter.getValueAsJsonObject(jsonOpts);
 
+		final DocumentFieldLogicExpressionResultRevaluator expressionRevaluator = jsonOpts.getLogicExpressionResultRevaluator();
+		final String adLanguage = jsonOpts.getAdLanguage();
+
 		final JSONDocumentField jsonField = new JSONDocumentField(name, jsonWidgetType)
 				.setValue(valueJSON, null)
-				.setReadonly(parameter.getReadonly())
-				.setMandatory(parameter.getMandatory())
-				.setDisplayed(parameter.getDisplayed())
+				.setReadonly(expressionRevaluator.revaluate(parameter.getReadonly()), adLanguage)
+				.setMandatory(parameter.getMandatory(), adLanguage) // NOTE: don't re-evaluate because we cannot apply the same logic when we evaluate if the document is valid
+				.setDisplayed(expressionRevaluator.revaluate(parameter.getDisplayed()), adLanguage)
 				.setValidStatus(parameter.getValidStatus())
-				.setDevices(JSONDeviceDescriptor.ofList(parameter.getDevices(), jsonOpts.getAdLanguage()));
+				.setDevices(JSONDeviceDescriptor.ofList(parameter.getDevices(), adLanguage));
 		if (WindowConstants.isProtocolDebugging())
 		{
 			jsonField.putDebugProperty(DocumentFieldChange.DEBUGPROPERTY_FieldInfo, parameter.toString());
@@ -303,10 +314,30 @@ public final class JSONDocumentField
 		setViewEditorRenderMode(readonly ? ViewEditorRenderMode.NEVER : ViewEditorRenderMode.ALWAYS);
 	}
 
-	public JSONDocumentField setReadonly(final LogicExpressionResult readonly)
+	@NonNull
+	public JSONDocumentField setReadonly(@NonNull final LogicExpressionResult readonly, @NonNull final String adLanguage)
 	{
-		setReadonly(readonly.booleanValue(), readonly.getName());
+		setReadonly(readonly.isTrue(), extractReason(readonly, adLanguage));
+
 		return this;
+	}
+
+	private static String extractReason(@NonNull final LogicExpressionResult result, @Nullable final String adLanguage)
+	{
+		if (result instanceof LogicExpressionResultWithReason)
+		{
+			final ITranslatableString reason = ((LogicExpressionResultWithReason)result).getReason();
+			if (reason == null)
+			{
+				return null;
+			}
+
+			return adLanguage != null ? reason.translate(adLanguage) : reason.getDefaultValue();
+		}
+		else
+		{
+			return result.getName();
+		}
 	}
 
 	public JSONDocumentField setReadonly(final boolean readonly)
@@ -321,9 +352,9 @@ public final class JSONDocumentField
 		mandatoryReason = reason;
 	}
 
-	public JSONDocumentField setMandatory(final LogicExpressionResult mandatory)
+	public JSONDocumentField setMandatory(final LogicExpressionResult mandatory, String adLanguage)
 	{
-		setMandatory(mandatory.booleanValue(), mandatory.getName());
+		setMandatory(mandatory.booleanValue(), extractReason(mandatory, adLanguage));
 		return this;
 	}
 
@@ -340,9 +371,9 @@ public final class JSONDocumentField
 		return this;
 	}
 
-	public JSONDocumentField setDisplayed(final LogicExpressionResult displayed)
+	public JSONDocumentField setDisplayed(final LogicExpressionResult displayed, String adLanguage)
 	{
-		setDisplayed(displayed.booleanValue(), displayed.getName());
+		setDisplayed(displayed.booleanValue(), extractReason(displayed, adLanguage));
 		return this;
 	}
 

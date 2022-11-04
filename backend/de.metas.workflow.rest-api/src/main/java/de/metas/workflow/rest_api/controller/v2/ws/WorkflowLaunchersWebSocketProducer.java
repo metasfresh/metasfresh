@@ -19,7 +19,7 @@ import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.List;
 
-class WorkflowLaunchersWebSocketProducer implements WebSocketProducer
+class WorkflowLaunchersWebSocketProducer implements WebSocketProducer, WebSocketProducer.ProduceEventsOnPollSupport
 {
 	private static final String SYSCONFIG_MaxStaleAcceptedInSeconds = "WorkflowLaunchersWebSocketProducer.maxStaleAcceptedInSeconds";
 	private static final Duration DEFAULT_MaxStaleAccepted = Duration.ofSeconds(10);

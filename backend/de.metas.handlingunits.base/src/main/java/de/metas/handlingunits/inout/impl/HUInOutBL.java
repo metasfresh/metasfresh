@@ -25,6 +25,7 @@ package de.metas.handlingunits.inout.impl;
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.DocTypeQuery.DocTypeQueryBuilder;
 import de.metas.document.IDocTypeDAO;
@@ -305,7 +306,7 @@ public class HUInOutBL implements IHUInOutBL
 	public boolean isCustomerReturn(@NonNull final org.compiere.model.I_M_InOut inOut)
 	{
 		final DocTypeQuery docTypeQuery = createDocTypeQueryBuilder(inOut)
-				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
+				.docBaseType(DocBaseType.MaterialReceipt)
 				.docSubTypeAny()
 				.isSOTrx(true)
 				.build();
@@ -317,7 +318,7 @@ public class HUInOutBL implements IHUInOutBL
 	public boolean isVendorReturn(@NonNull final org.compiere.model.I_M_InOut inOut)
 	{
 		final DocTypeQuery docTypeQuery = createDocTypeQueryBuilder(inOut)
-				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialDelivery)
+				.docBaseType(DocBaseType.MaterialDelivery)
 				.isSOTrx(false)
 				.build();
 
@@ -328,7 +329,7 @@ public class HUInOutBL implements IHUInOutBL
 	public boolean isEmptiesReturn(final I_M_InOut inOut)
 	{
 		final DocTypeQuery docTypeQuery = createDocTypeQueryBuilder(inOut)
-				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
+				.docBaseType(DocBaseType.MaterialReceipt)
 				.docSubType(X_C_DocType.DOCSUBTYPE_Leergutanlieferung)
 				.build();
 

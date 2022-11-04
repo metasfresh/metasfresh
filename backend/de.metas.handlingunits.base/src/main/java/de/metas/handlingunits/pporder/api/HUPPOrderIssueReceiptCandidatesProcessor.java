@@ -17,6 +17,7 @@ import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.GenericAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HUListAllocationSourceDestination;
 import de.metas.handlingunits.allocation.impl.HULoader;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.IPPOrderProductAttributeBL;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTransactionCandidate;
@@ -127,6 +128,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 	private final transient IHUPPCostCollectorBL huPPCostCollectorBL = Services.get(IHUPPCostCollectorBL.class);
 	private final transient IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 	private final transient IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
+	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
@@ -211,6 +213,10 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 					.setParameter("candidate", candidate);
 		}
 
+		final ProductId productId = ProductId.ofRepoId(candidate.getM_Product_ID());
+
+		huAttributesBL.validateMandatoryManufacturingAttributes(HuId.ofRepoId(hu.getM_HU_ID()), productId);
+
 		final LocatorId locatorId = warehousesRepo.getLocatorIdByRepoIdOrNull(candidate.getM_Locator_ID());
 
 		//
@@ -221,7 +227,7 @@ public class HUPPOrderIssueReceiptCandidatesProcessor
 				.orderBOMLine(candidate.getPP_Order_BOMLine())
 				.movementDate(TimeUtil.asZonedDateTime(candidate.getMovementDate()))
 				.qtyToReceive(Quantity.of(candidate.getQty(), uom))
-				.productId(ProductId.ofRepoId(candidate.getM_Product_ID()))
+				.productId(productId)
 				.locatorId(locatorId)
 				.pickingCandidateId(candidate.getM_Picking_Candidate_ID())
 				.build();

@@ -1,29 +1,29 @@
 package org.compiere.acct;
 
-import java.math.BigDecimal;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.MAccount;
-import org.compiere.util.Env;
-
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.PostingType;
 import de.metas.bpartner.BPartnerId;
+import de.metas.costing.CostAmount;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.MAccount;
+import org.compiere.util.Env;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -35,12 +35,12 @@ import javax.annotation.Nullable;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -221,6 +221,8 @@ public final class FactLineBuilder
 		}
 
 		//
+		line.setM_SectionCode_ID(SectionCodeId.toRepoId(getSectionCodeId()));
+		//
 		Fact.log.debug("Built: {}", line);
 		return line;
 	}
@@ -301,7 +303,7 @@ public final class FactLineBuilder
 		return this;
 	}
 
-	public FactLineBuilder setQty(final Quantity qty)
+	public FactLineBuilder setQty(@NonNull final Quantity qty)
 	{
 		assertNotBuild();
 		this.qty = qty.toBigDecimal();
@@ -331,6 +333,16 @@ public final class FactLineBuilder
 		assertNotBuild();
 		this.amtSourceDr = amtSourceDr;
 		this.amtSourceCr = amtSourceCr;
+		return this;
+	}
+
+	public FactLineBuilder setAmtSource(@Nullable final CostAmount amtSourceDr, @Nullable final CostAmount amtSourceCr)
+	{
+		assertNotBuild();
+		setCurrencyId(CostAmount.getCommonCurrencyIdOfAll(amtSourceDr, amtSourceCr));
+		setAmtSource(
+				amtSourceDr != null ? amtSourceDr.toBigDecimal() : null,
+				amtSourceCr != null ? amtSourceCr.toBigDecimal() : null);
 		return this;
 	}
 
@@ -485,5 +497,11 @@ public final class FactLineBuilder
 	private ActivityId getActivityId()
 	{
 		return activityId;
+	}
+
+	@Nullable
+	private SectionCodeId getSectionCodeId()
+	{
+		return getDoc().getSectionCodeId();
 	}
 }

@@ -20,6 +20,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Properties;
 
+import de.metas.document.DocBaseType;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.util.DB;
@@ -75,7 +76,7 @@ public class MDocTypeCounter extends X_C_DocTypeCounter
 			return -1;
 		}
 
-		final String cDocBaseType = Services.get(IDocTypeDAO.class).getDocBaseTypeCounter(dt.getDocBaseType()).orElse(null);
+		final DocBaseType cDocBaseType = Services.get(IDocTypeDAO.class).getDocBaseTypeCounter(DocBaseType.ofCode(dt.getDocBaseType())).orElse(null);
 		if (cDocBaseType == null)
 		{
 			return 0;
@@ -315,12 +316,12 @@ public class MDocTypeCounter extends X_C_DocTypeCounter
 			return "No Counter Document Type";
 		}
 		//
-		String dtBT = dt.getDocBaseType();
-		String c_dtBT = c_dt.getDocBaseType();
+		DocBaseType dtBT = DocBaseType.ofCode(dt.getDocBaseType());
+		DocBaseType c_dtBT = DocBaseType.ofCode(c_dt.getDocBaseType());
 		log.debug(dtBT + " -> " + c_dtBT);
 
 		boolean valid = true;
-		final String docBaseTypeCounter = Services.get(IDocTypeDAO.class).getDocBaseTypeCounter(dtBT).orElse(null);
+		final DocBaseType docBaseTypeCounter = Services.get(IDocTypeDAO.class).getDocBaseTypeCounter(dtBT).orElse(null);
 
 		if (c_dtBT == null)
 		{

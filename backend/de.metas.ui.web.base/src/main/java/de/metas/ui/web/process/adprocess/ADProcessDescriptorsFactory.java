@@ -12,6 +12,7 @@ import de.metas.process.ProcessParams;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RelatedProcessDescriptor;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.security.IUserRolePermissions;
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.process.ProcessId;
@@ -32,9 +33,9 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
+import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
 import de.metas.ui.web.window.descriptor.factory.standard.DefaultValueExpressionsFactory;
 import de.metas.ui.web.window.descriptor.factory.standard.DescriptorsFactoryHelper;
-import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptor;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import de.metas.util.Services;
@@ -50,6 +51,7 @@ import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.ILogicExpression;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.api.IRangeAwareParams;
 import org.compiere.model.I_AD_Element;
@@ -94,17 +96,21 @@ import java.util.stream.Stream;
 /* package */ class ADProcessDescriptorsFactory
 {
 	// services
-	private static final transient Logger logger = LogManager.getLogger(ADProcessDescriptorsFactory.class);
+	private static final Logger logger = LogManager.getLogger(ADProcessDescriptorsFactory.class);
 	private final transient IExpressionFactory expressionFactory = Services.get(IExpressionFactory.class);
 	private final transient DefaultValueExpressionsFactory defaultValueExpressions = DefaultValueExpressionsFactory.newInstance();
 	private final transient IADTableDAO adTableDAO = Services.get(IADTableDAO.class);
 	private final transient ADProcessService adProcessService;
+	private final LookupDescriptorProviders lookupDescriptorProviders;
 
 	private final CCache<ProcessId, ProcessDescriptor> processDescriptorsByProcessId = CCache.newLRUCache(I_AD_Process.Table_Name + "#Descriptors#by#AD_Process_ID", 200, 0);
 
-	ADProcessDescriptorsFactory(@NonNull final ADProcessService adProcessService)
+	ADProcessDescriptorsFactory(
+			@NonNull final ADProcessService adProcessService,
+			@NonNull final LookupDescriptorProviders lookupDescriptorProviders)
 	{
 		this.adProcessService = adProcessService;
+		this.lookupDescriptorProviders = lookupDescriptorProviders;
 	}
 
 	public Stream<WebuiRelatedProcessDescriptor> streamDocumentRelatedProcesses(
@@ -212,10 +218,7 @@ import java.util.stream.Stream;
 					.disableDefaultTableCallouts();
 
 			// Get AD_Process_Para(s) and populate the entity descriptor
-			adProcessService.retrieveProcessParameters(processId.toAdProcessId())
-					.stream()
-					.map(adProcessParam -> createProcessParaDescriptor(webuiProcesClassInfo, adProcessParam))
-					.forEach(parametersDescriptorBuilder::addField);
+			addProcessParameters(processId, webuiProcesClassInfo, parametersDescriptorBuilder);
 
 			parametersDescriptor = parametersDescriptorBuilder.build();
 		}
@@ -245,6 +248,26 @@ import java.util.stream.Stream;
 				.setStartProcessDirectly(startProcessDirectly)
 				.setLayout(layout.build())
 				.build();
+	}
+
+	public void addProcessParameters(@NonNull final ProcessId processId, @NonNull final DocumentEntityDescriptor.Builder parametersDescriptorBuilder)
+	{
+		final I_AD_Process adProcess = adProcessService.getById(processId.toAdProcessId());
+		if (adProcess == null)
+		{
+			throw new EntityNotFoundException("@NotFound@ @AD_Process_ID@ (" + processId + ")");
+		}
+
+		final WebuiProcessClassInfo webuiProcesClassInfo = WebuiProcessClassInfo.of(adProcess.getClassname());
+		addProcessParameters(processId, webuiProcesClassInfo, parametersDescriptorBuilder);
+	}
+
+	private void addProcessParameters(@NonNull final ProcessId processId, @NonNull final WebuiProcessClassInfo webuiProcesClassInfo, @NonNull final DocumentEntityDescriptor.Builder parametersDescriptorBuilder)
+	{
+		adProcessService.retrieveProcessParameters(processId.toAdProcessId())
+				.stream()
+				.map(adProcessParam -> createProcessParaDescriptor(webuiProcesClassInfo, adProcessParam))
+				.forEach(parametersDescriptorBuilder::addField);
 	}
 
 	private static boolean computeIsStartProcessDirectly(
@@ -283,14 +306,14 @@ import java.util.stream.Stream;
 		// Fallback: create an SQL lookup descriptor based on adProcessParam
 		if (lookupDescriptorProvider == null)
 		{
-			lookupDescriptorProvider = SqlLookupDescriptor.builder()
+			lookupDescriptorProvider = lookupDescriptorProviders.sql()
 					.setCtxTableName(null)
 					.setCtxColumnName(parameterName)
-					.setDisplayType(adProcessParam.getAD_Reference_ID())
-					.setAD_Reference_Value_ID(adProcessParam.getAD_Reference_Value_ID())
-					.setAD_Val_Rule_ID(adProcessParam.getAD_Val_Rule_ID())
+					.setDisplayType(ReferenceId.ofRepoId(adProcessParam.getAD_Reference_ID()))
+					.setAD_Reference_Value_ID(ReferenceId.ofRepoIdOrNull(adProcessParam.getAD_Reference_Value_ID()))
+					.setAD_Val_Rule_ID(AdValRuleId.ofRepoIdOrNull(adProcessParam.getAD_Val_Rule_ID()))
 					.setReadOnlyAccess()
-					.buildProvider();
+					.build();
 		}
 		//
 		final Optional<LookupDescriptor> lookupDescriptor = lookupDescriptorProvider.provide();
@@ -383,6 +406,7 @@ import java.util.stream.Stream;
 		}
 	}
 
+	@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 	private static DocumentFieldWidgetType extractWidgetType(
 			final String parameterName,
 			final int adReferenceId,
@@ -493,7 +517,7 @@ import java.util.stream.Stream;
 
 	private static final class ProcessParametersDataBindingDescriptorBuilder implements DocumentEntityDataBindingDescriptorBuilder
 	{
-		public static final transient ProcessParametersDataBindingDescriptorBuilder instance = new ProcessParametersDataBindingDescriptorBuilder();
+		public static final ProcessParametersDataBindingDescriptorBuilder instance = new ProcessParametersDataBindingDescriptorBuilder();
 
 		private static final DocumentEntityDataBindingDescriptor dataBinding = () -> ADProcessParametersRepository.instance;
 

@@ -14,6 +14,7 @@ import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.project.ProjectId;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.shipping.ShipperId;
 import de.metas.uom.UomId;
 import de.metas.util.lang.Percent;
@@ -137,6 +138,8 @@ public class OLCandCreateRequest
 	String email;
 	String phone;
 
+	SectionCodeId sectionCodeId;
+
 	@Builder
 	private OLCandCreateRequest(
 			@Nullable final String externalLineId,
@@ -188,7 +191,8 @@ public class OLCandCreateRequest
 			@Nullable final BPartnerId salesRepInternalId,
 			@Nullable final String bpartnerName,
 			@Nullable final String email,
-			@Nullable final String phone)
+			@Nullable final String phone,
+			@Nullable final SectionCodeId sectionCodeId)
 	{
 		// Check.assume(qty.signum() > 0, "qty > 0"); qty might very well also be <= 0
 
@@ -255,5 +259,7 @@ public class OLCandCreateRequest
 		this.bpartnerName = bpartnerName;
 		this.email = email;
 		this.phone = phone;
+
+		this.sectionCodeId = sectionCodeId;
 	}
 }

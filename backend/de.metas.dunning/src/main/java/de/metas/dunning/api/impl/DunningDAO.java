@@ -1,10 +1,8 @@
-package de.metas.dunning.api.impl;
-
 /*
  * #%L
  * de.metas.dunning
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,19 +20,9 @@ package de.metas.dunning.api.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
+package de.metas.dunning.api.impl;
 
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.Query;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.compiere.util.TrxRunnable;
-
+import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.dunning.api.IDunningCandidateQuery;
 import de.metas.dunning.api.IDunningCandidateQuery.ApplyAccessFilter;
 import de.metas.dunning.api.IDunningContext;
@@ -43,11 +31,37 @@ import de.metas.dunning.interfaces.I_C_DunningLevel;
 import de.metas.dunning.model.I_C_DunningDoc;
 import de.metas.dunning.model.I_C_DunningDoc_Line_Source;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
+import de.metas.dunning.model.I_C_Dunning_Candidate_Invoice_v1;
+import de.metas.organization.OrgId;
 import de.metas.security.permissions.Access;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IQuery;
+import org.compiere.model.I_C_InvoicePaySchedule;
+import org.compiere.model.Query;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class DunningDAO extends AbstractDunningDAO
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+
 	@Override
 	public <T> T newInstance(IDunningContext dunningContext, Class<T> interfaceClass)
 	{
@@ -194,13 +208,6 @@ public class DunningDAO extends AbstractDunningDAO
 	}
 
 	@Override
-	public boolean isStaled(I_C_Dunning_Candidate candidate)
-	{
-		// NOTE: staled is a virtual column
-		return candidate.isStaled();
-	}
-
-	@Override
 	public Iterator<I_C_DunningDoc_Line_Source> retrieveDunningDocLineSourcesToWriteOff(final IDunningContext dunningContext)
 	{
 		final List<Object> params = new ArrayList<>();
@@ -233,24 +240,62 @@ public class DunningDAO extends AbstractDunningDAO
 	@Override
 	public int deleteNotProcessedCandidates(final IDunningContext context, final I_C_DunningLevel dunningLevel)
 	{
-		final String deleteSQL = "DELETE FROM " + I_C_Dunning_Candidate.Table_Name +
-				" WHERE "
-				+ I_C_Dunning_Candidate.COLUMNNAME_IsActive + "='Y' AND "
-				+ I_C_Dunning_Candidate.COLUMNNAME_AD_Client_ID + "=? AND "
-				+ I_C_Dunning_Candidate.COLUMNNAME_Processed + "='N' AND "
-				+ I_C_Dunning_Candidate.COLUMNNAME_C_DunningLevel_ID + "=?";
+		final StringBuilder deleteSQL = new StringBuilder("DELETE FROM " + I_C_Dunning_Candidate.Table_Name +
+																  " WHERE "
+																  + I_C_Dunning_Candidate.COLUMNNAME_IsActive + "='Y' AND "
+																  + I_C_Dunning_Candidate.COLUMNNAME_AD_Client_ID + "=? AND "
+																  + I_C_Dunning_Candidate.COLUMNNAME_Processed + "='N' AND "
+																  + I_C_Dunning_Candidate.COLUMNNAME_C_DunningLevel_ID + "=?");
+
+		final List<Object> params = Stream.of(Env.getAD_Client_ID(context.getCtx()), dunningLevel.getC_DunningLevel_ID())
+				.collect(Collectors.toList());
+
+		final RecomputeDunningCandidatesQuery recomputeDunningCandidatesQuery = context.getRecomputeDunningCandidatesQuery();
+		if (recomputeDunningCandidatesQuery != null && recomputeDunningCandidatesQuery.getOrgId() != null)
+		{
+			deleteSQL.append(" AND " + I_C_Dunning_Candidate.COLUMNNAME_AD_Org_ID + "=?");
+			params.add(recomputeDunningCandidatesQuery.getOrgId());
+		}
 
 		final int[] result = { 0 };
 
-		Services.get(ITrxManager.class).run(context.getTrxName(), context.getTrxRunnerConfig(), new TrxRunnable()
-		{
-			@Override
-			public void run(final String localTrxName)
-			{
-				result[0] = DB.executeUpdateEx(deleteSQL, new Object[] { Env.getAD_Client_ID(context.getCtx()), dunningLevel.getC_DunningLevel_ID() }, localTrxName);
-			}
-		});
+		trxManager.run(context.getTrxName(), context.getTrxRunnerConfig(),
+											localTrxName -> result[0] = DB.executeUpdateAndThrowExceptionOnFail(deleteSQL.toString(), params.toArray(), localTrxName));
 		return result[0];
+	}
+
+	/**
+	 * Deletes all active, unprocessed candidates matching the given recomputeDunningCandidatesQuery and dunningLevel
+	 *
+	 * @return the number of deleted candidates
+	 */
+	@Override
+	public int deleteTargetObsoleteCandidates(
+			@NonNull final RecomputeDunningCandidatesQuery recomputeDunningCandidatesQuery,
+			@NonNull final I_C_DunningLevel dunningLevel)
+	{
+		final IQueryBuilder<I_C_Dunning_Candidate> queryBuilder = queryBL.createQueryBuilder(I_C_Dunning_Candidate.class);
+
+		final IQueryFilter<I_C_Dunning_Candidate> onlyTargetRecordsFilter = recomputeDunningCandidatesQuery.getOnlyTargetRecordsFilter();
+		if (onlyTargetRecordsFilter != null)
+		{
+			final ICompositeQueryFilter<I_C_Dunning_Candidate> deletableTargetRecordsFilter = getDeletableTargetRecordsFilter(onlyTargetRecordsFilter);
+
+			queryBuilder.filter(deletableTargetRecordsFilter);
+		}
+
+		final OrgId orgId = recomputeDunningCandidatesQuery.getOrgId();
+		if (orgId != null)
+		{
+			queryBuilder.addEqualsFilter(I_C_Dunning_Candidate.COLUMNNAME_AD_Org_ID, orgId);
+		}
+
+		return queryBuilder
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Dunning_Candidate.COLUMNNAME_Processed, false)
+				.addEqualsFilter(I_C_Dunning_Candidate.COLUMNNAME_C_DunningLevel_ID, dunningLevel.getC_DunningLevel_ID())
+				.create()
+				.deleteDirectly();
 	}
 
 	@Override
@@ -267,5 +312,36 @@ public class DunningDAO extends AbstractDunningDAO
 		return new Query(ctx, I_C_Dunning_Candidate.Table_Name, whereClause.toString(), trxName)
 				.setParameters(tableId, recordId)
 				.list(I_C_Dunning_Candidate.class);
+	}
+
+	@NonNull
+	private ICompositeQueryFilter<I_C_Dunning_Candidate> getDeletableTargetRecordsFilter(@NonNull final IQueryFilter<I_C_Dunning_Candidate> onlyTargetRecordsFilter)
+	{
+		final IQuery<I_C_Dunning_Candidate_Invoice_v1> invoiceBasedDunningCandidatesQuery = queryBL
+				.createQueryBuilder(I_C_Dunning_Candidate_Invoice_v1.class)
+				.addEqualsFilter(I_C_Dunning_Candidate_Invoice_v1.COLUMNNAME_C_InvoicePaySchedule_ID, null)
+				.create();
+		final ICompositeQueryFilter<I_C_Dunning_Candidate> invoiceBasedObsoleteCandidatesFilter = queryBL.createCompositeQueryFilter(I_C_Dunning_Candidate.class)
+				.addEqualsFilter(I_C_Dunning_Candidate.COLUMNNAME_AD_Table_ID, tableDAO.retrieveTableId(I_C_Invoice.Table_Name))
+				.addNotInSubQueryFilter(I_C_Dunning_Candidate.COLUMNNAME_Record_ID, I_C_Dunning_Candidate_Invoice_v1.COLUMNNAME_C_Invoice_ID, invoiceBasedDunningCandidatesQuery);
+
+		final IQuery<I_C_Dunning_Candidate_Invoice_v1> payScheduleBasedCandidatesQuery = queryBL
+				.createQueryBuilder(I_C_Dunning_Candidate_Invoice_v1.class)
+				.addNotNull(I_C_Dunning_Candidate_Invoice_v1.COLUMN_C_InvoicePaySchedule_ID)
+				.create();
+		final ICompositeQueryFilter<I_C_Dunning_Candidate> payScheduleObsoleteCandidatesFilter = queryBL.createCompositeQueryFilter(I_C_Dunning_Candidate.class)
+				.addEqualsFilter(I_C_Dunning_Candidate.COLUMNNAME_AD_Table_ID, tableDAO.retrieveTableId(I_C_InvoicePaySchedule.Table_Name))
+				.addNotInSubQueryFilter(I_C_Dunning_Candidate.COLUMNNAME_Record_ID, I_C_Dunning_Candidate_Invoice_v1.COLUMNNAME_C_InvoicePaySchedule_ID, payScheduleBasedCandidatesQuery);
+
+		final ICompositeQueryFilter<I_C_Dunning_Candidate> deletableRecordsFilter = queryBL.createCompositeQueryFilter(I_C_Dunning_Candidate.class)
+				.setJoinOr()
+				.addFilter(invoiceBasedObsoleteCandidatesFilter)
+				.addFilter(payScheduleObsoleteCandidatesFilter);
+
+		return queryBL
+				.createCompositeQueryFilter(I_C_Dunning_Candidate.class)
+				.setJoinAnd()
+				.addFilter(deletableRecordsFilter)
+				.addFilter(onlyTargetRecordsFilter);
 	}
 }

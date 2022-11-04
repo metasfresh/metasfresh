@@ -26,9 +26,9 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
+import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -61,6 +61,7 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -69,6 +70,7 @@ import java.util.Map;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 public class M_Inventory_StepDef
 {
@@ -82,7 +84,7 @@ public class M_Inventory_StepDef
 	private final M_Product_StepDefData productTable;
 	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 	private final M_HU_StepDefData huTable;
-	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
+	private final M_Warehouse_StepDefData warehouseTable;
 
 	public M_Inventory_StepDef(
 			@NonNull final M_Inventory_StepDefData inventoryTable,
@@ -90,14 +92,14 @@ public class M_Inventory_StepDef
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final M_ShipmentSchedule_StepDefData shipmentScheduleTable,
 			@NonNull final M_HU_StepDefData huTable,
-			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable)
+			@NonNull final M_Warehouse_StepDefData warehouseTable)
 	{
 		this.inventoryTable = inventoryTable;
 		this.inventoryLineTable = inventoryLineTable;
 		this.productTable = productTable;
 		this.huTable = huTable;
 		this.shipmentScheduleTable = shipmentScheduleTable;
-		this.attributeSetInstanceTable = attributeSetInstanceTable;
+		this.warehouseTable = warehouseTable;
 	}
 
 	@Given("metasfresh contains M_Inventories:")
@@ -141,6 +143,8 @@ public class M_Inventory_StepDef
 
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Product.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final I_M_Product productRecord = productTable.get(productIdentifier);
+
+		assertThat(productRecord).isNotNull();
 
 		final I_C_UOM productUOM = uomDAO.getById(productRecord.getC_UOM_ID());
 
@@ -199,7 +203,11 @@ public class M_Inventory_StepDef
 
 	private void addNewInventory(@NonNull final Map<String, String> tableRow)
 	{
-		final int warehouseId = DataTableUtil.extractIntForColumnName(tableRow, I_M_Inventory.COLUMNNAME_M_Warehouse_ID);
+		final String warehouseIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Inventory.COLUMNNAME_M_Warehouse_ID);
+
+		final Integer warehouseId = warehouseTable.getOptional(warehouseIdentifier)
+				.map(I_M_Warehouse::getM_Warehouse_ID)
+				.orElseGet(() -> Integer.parseInt(warehouseIdentifier));
 
 		final I_M_Inventory inventoryRecord = newInstance(I_M_Inventory.class);
 
@@ -219,7 +227,8 @@ public class M_Inventory_StepDef
 
 		saveRecord(inventoryRecord);
 
-		inventoryTable.put(DataTableUtil.extractRecordIdentifier(tableRow, I_M_Inventory.COLUMNNAME_M_Inventory_ID, "M_Inventory"), inventoryRecord);
+ 		final String inventoryIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, I_M_Inventory.COLUMNNAME_M_Inventory_ID, "M_Inventory");
+		inventoryTable.put(inventoryIdentifier, inventoryRecord);
 	}
 
 	private void addNewInventoryLine(@NonNull final Map<String, String> tableRow)
@@ -237,7 +246,7 @@ public class M_Inventory_StepDef
 				.map(I_M_Product::getM_Product_ID)
 				.orElseGet(() -> Integer.parseInt(productIdentifier));
 
-		inventoryLine.setM_Locator_ID(warehouseBL.getDefaultLocatorId(warehouseId).getRepoId());
+		inventoryLine.setM_Locator_ID(warehouseBL.getOrCreateDefaultLocatorId(warehouseId).getRepoId());
 		inventoryLine.setM_Product_ID(productId);
 
 		inventoryLine.setQtyCount(DataTableUtil.extractBigDecimalForColumnName(tableRow, "QtyCount"));

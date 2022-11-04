@@ -27,6 +27,7 @@ import lombok.Builder;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.time.ZonedDateTime;
 
 @Value
@@ -34,6 +35,6 @@ import java.time.ZonedDateTime;
 public class ResourceGroupAssignmentQuery
 {
 	@Nullable ImmutableSet<ResourceGroupId> onlyResourceGroupIds;
-	@Nullable ZonedDateTime startDate;
-	@Nullable ZonedDateTime endDate;
+	@Nullable Instant startDate;
+	@Nullable Instant endDate;
 }

@@ -75,15 +75,17 @@ final class PackageableRowsRepository
 	private final Supplier<LookupDataSource> shipperLookup;
 	private final Supplier<LookupDataSource> userLookup;
 
-	public PackageableRowsRepository(@NonNull final MoneyService moneyService)
+	public PackageableRowsRepository(
+			@NonNull final MoneyService moneyService,
+			@NonNull LookupDataSourceFactory lookupDataSourceFactory)
 	{
 		this.moneyService = moneyService;
 
 		// creating those LookupDataSources requires DB access. So, to allow this component to be initialized early during startup
 		// and also to allow it to be unit-tested (when the lookups are not part of the test), I use those suppliers.
-		bpartnerLookup = Suppliers.memoize(() -> LookupDataSourceFactory.instance.searchInTableLookup(I_C_BPartner.Table_Name));
-		shipperLookup = Suppliers.memoize(() -> LookupDataSourceFactory.instance.searchInTableLookup(I_M_Shipper.Table_Name));
-		userLookup = Suppliers.memoize(() -> LookupDataSourceFactory.instance.searchInTableLookup(I_AD_User.Table_Name));
+		bpartnerLookup = Suppliers.memoize(() -> lookupDataSourceFactory.searchInTableLookup(I_C_BPartner.Table_Name));
+		shipperLookup = Suppliers.memoize(() -> lookupDataSourceFactory.searchInTableLookup(I_M_Shipper.Table_Name));
+		userLookup = Suppliers.memoize(() -> lookupDataSourceFactory.searchInTableLookup(I_AD_User.Table_Name));
 	}
 
 	public PackageableRowsDataBuilder newPackageableRowsData()

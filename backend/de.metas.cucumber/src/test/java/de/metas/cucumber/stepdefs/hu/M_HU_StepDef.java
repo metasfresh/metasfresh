@@ -58,6 +58,7 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.handlingunits.model.I_M_HU_QRCode;
 import de.metas.handlingunits.model.I_M_HU_Storage;
+import de.metas.handlingunits.model.I_M_HU_Trace;
 import de.metas.handlingunits.rest_api.HandlingUnitsService;
 import de.metas.inventory.InventoryLineId;
 import de.metas.quantity.Quantity;
@@ -116,6 +117,7 @@ public class M_HU_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final InventoryService inventoryService = SpringContextHolder.instance.getBean(InventoryService.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	private final M_Product_StepDefData productTable;
 	private final M_HU_StepDefData huTable;
@@ -128,7 +130,6 @@ public class M_HU_StepDef
 	private final M_HU_QRCode_StepDefData qrCodesTable;
 
 	private final HandlingUnitsService handlingUnitsService = SpringContextHolder.instance.getBean(HandlingUnitsService.class);
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	private final TestContext testContext;
 
@@ -159,7 +160,7 @@ public class M_HU_StepDef
 	@And("all the hu data is reset")
 	public void reset_data()
 	{
-		DB.executeUpdateEx("TRUNCATE TABLE m_hu cascade", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("TRUNCATE TABLE m_hu cascade", ITrx.TRXNAME_None);
 	}
 
 	@And("validate M_HUs:")
@@ -196,7 +197,7 @@ public class M_HU_StepDef
 			final I_M_HU_PI_Version piVersion = huPiVersionTable.get(huPiVersionIdentifier);
 			assertThat(piVersion).isNotNull();
 
-			final String locatorIdentifier = DataTableUtil.extractStringForColumnName(row, "OPT." + COLUMNNAME_M_Locator_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String locatorIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_Locator_ID + "." + TABLECOLUMN_IDENTIFIER);
 			if (EmptyUtil.isNotBlank(locatorIdentifier))
 			{
 				final I_M_Locator locator = locatorTable.get(locatorIdentifier);
@@ -237,10 +238,11 @@ public class M_HU_StepDef
 		for (final Map<String, String> tableRow : dataTable.asMaps())
 		{
 			final String inventoryLineIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_InventoryLine.COLUMNNAME_M_InventoryLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final Integer inventoryLineId = inventoryLineTable.get(inventoryLineIdentifier).getM_InventoryLine_ID();
+
 			final String huIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
 
-			final I_M_InventoryLine inventoryLine = inventoryLineTable.get(inventoryLineIdentifier);
-			final InventoryLineId inventoryLineWithHUId = InventoryLineId.ofRepoId(inventoryLine.getM_InventoryLine_ID());
+			final InventoryLineId inventoryLineWithHUId = InventoryLineId.ofRepoId(inventoryLineId);
 
 			final de.metas.handlingunits.model.I_M_InventoryLine inventoryLineWithHU = load(inventoryLineWithHUId, de.metas.handlingunits.model.I_M_InventoryLine.class);
 
@@ -546,6 +548,37 @@ public class M_HU_StepDef
 		handlingUnitsBL.markDestroyed(huContext, availableHUs);
 	}
 
+	@And("load newly created M_HU record based on SourceHU")
+	public void load_newly_created_M_HU(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> rows = dataTable.asMaps();
+		for (final Map<String, String> row : rows)
+		{
+			final String vhuSourceIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU_Trace.COLUMNNAME_VHU_Source_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_M_HU vhuSourceHU = huTable.get(vhuSourceIdentifier);
+			assertThat(vhuSourceHU).isNotNull();
+
+			final BigDecimal qty = DataTableUtil.extractBigDecimalForColumnName(row, I_M_HU_Trace.COLUMNNAME_Qty);
+			final String huTraceType = DataTableUtil.extractStringForColumnName(row, I_M_HU_Trace.COLUMNNAME_HUTraceType);
+
+			final Optional<Integer> huId = queryBL.createQueryBuilder(I_M_HU_Trace.class)
+					.addOnlyActiveRecordsFilter()
+					.addEqualsFilter(I_M_HU_Trace.COLUMNNAME_VHU_Source_ID, vhuSourceHU.getM_HU_ID())
+					.addEqualsFilter(I_M_HU_Trace.COLUMNNAME_Qty, qty)
+					.addEqualsFilter(I_M_HU_Trace.COLUMN_HUTraceType, huTraceType)
+					.orderByDescending(I_M_HU_Trace.COLUMNNAME_Created)
+					.create()
+					.stream()
+					.map(I_M_HU_Trace::getM_HU_ID)
+					.findFirst();
+
+			assertThat(huId).isPresent();
+			final I_M_HU newHU = load(huId.get(), I_M_HU.class);
+
+			final String huIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_HU_ID + "." +TABLECOLUMN_IDENTIFIER);
+			huTable.putOrReplace(huIdentifier, newHU);
+		}
+	}
 
 	private void validateHU(@NonNull final Map<String, String> row)
 	{
@@ -559,6 +592,13 @@ public class M_HU_StepDef
 		assertThat(huRecord).isNotNull();
 		assertThat(huRecord.getHUStatus()).isEqualTo(huStatus);
 		assertThat(huRecord.isActive()).isEqualTo(isActive);
+
+		final String locatorIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_M_Locator_ID + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(locatorIdentifier))
+		{
+			final I_M_Locator locator = locatorTable.get(locatorIdentifier);
+			assertThat(huRecord.getM_Locator_ID()).isEqualTo(locator.getM_Locator_ID());
+		}
 	}
 
 	private void validateHUStorage(@NonNull final Map<String, String> row)

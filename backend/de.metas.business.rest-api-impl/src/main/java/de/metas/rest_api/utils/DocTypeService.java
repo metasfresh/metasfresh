@@ -2,6 +2,7 @@ package de.metas.rest_api.utils;
 
 import de.metas.common.ordercandidates.v1.request.JsonOLCandCreateRequest.OrderDocType;
 import de.metas.common.rest_api.v1.JsonDocTypeInfo;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -62,7 +63,7 @@ public class DocTypeService
 
 		final DocTypeQuery query = DocTypeQuery
 				.builder()
-				.docBaseType(invoiceDocType.getDocBaseType())
+				.docBaseType(DocBaseType.ofCode(invoiceDocType.getDocBaseType()))
 				.docSubType(docSubType)
 				.adClientId(orgRecord.getAD_Client_ID())
 				.adOrgId(orgRecord.getAD_Org_ID())
@@ -78,7 +79,7 @@ public class DocTypeService
 			return null;
 		}
 
-		final String docBaseType = X_C_DocType.DOCBASETYPE_SalesOrder;
+		final DocBaseType docBaseType = DocBaseType.SalesOrder;
 		final String docSubType;
 
 		if (OrderDocType.PrepayOrder.equals(orderDocType))

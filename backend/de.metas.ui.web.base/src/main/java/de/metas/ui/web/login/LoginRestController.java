@@ -106,7 +106,7 @@ public class LoginRestController
 	private final WebuiImageService imageService;
 	private final UserAuthTokenService userAuthTokenService;
 	private final UserDashboardSessionContextHolder userDashboardContextHolder;
-
+	
 	private final static AdMessageKey MSG_UserLoginInternalError = AdMessageKey.of("UserLoginInternalError");
 
 	public LoginRestController(

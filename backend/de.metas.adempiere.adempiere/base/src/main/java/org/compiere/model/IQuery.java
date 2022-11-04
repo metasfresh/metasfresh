@@ -23,6 +23,7 @@
 package org.compiere.model;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ListMultimap;
 import de.metas.dao.selection.pagination.QueryResultPage;
@@ -113,6 +114,11 @@ public interface IQuery<T>
 	 */
 	<ET extends T> List<ET> list(Class<ET> clazz) throws DBException;
 
+	default ImmutableList<T> listImmutable() throws DBException
+	{
+		return ImmutableList.copyOf(list());
+	}
+
 	/**
 	 * Same as {@link #list(Class)} returns an {@link ImmutableList}. Note: you can update or delete the included records.
 	 * If you want read-only records, see {@link #OPTION_ReturnReadOnlyRecords}.
@@ -188,9 +194,20 @@ public interface IQuery<T>
 	@Nullable
 	<ET extends T> ET first(Class<ET> clazz) throws DBException;
 
+	default Optional<T> firstOptional() throws DBException
+	{
+		return Optional.ofNullable(first());
+	}
+
 	default <ET extends T> Optional<ET> firstOptional(final Class<ET> clazz) throws DBException
 	{
 		return Optional.ofNullable(first(clazz));
+	}
+
+	@NonNull
+	default Optional<T> firstOnlyOptional() throws DBException
+	{
+		return Optional.ofNullable(firstOnly());
 	}
 
 	@NonNull
@@ -203,6 +220,11 @@ public interface IQuery<T>
 	 * Same as {@link #first(Class)}, but in case there is no record found an exception will be thrown too.
 	 */
 	@NonNull <ET extends T> ET firstNotNull(Class<ET> clazz) throws DBException;
+
+	/**
+	 * Return first model that match query criteria. If there are more records that match the criteria, then an exception will be thrown.
+	 */
+	T firstOnly() throws DBException;
 
 	/**
 	 * Return first model that match query criteria. If there are more records that match the criteria, then an exception will be thrown.
@@ -494,7 +516,7 @@ public interface IQuery<T>
 	 * @param valueType value type
 	 * @see #listColumns(String...)
 	 */
-	<AT> List<AT> listDistinct(String columnName, Class<AT> valueType);
+	<AT> ImmutableList<AT> listDistinct(String columnName, Class<AT> valueType);
 
 	/**
 	 * @return <code>columnName</code>'s value on first records; if there are no records, null will be returned.
@@ -509,8 +531,9 @@ public interface IQuery<T>
 	 * @return key to model map
 	 * @see #list(Class)
 	 */
-	<K, ET extends T> Map<K, ET> map(Class<ET> modelClass, Function<ET, K> keyFunction);
+	<K, ET extends T> ImmutableMap<K, ET> map(Class<ET> modelClass, Function<ET, K> keyFunction);
 
+	<K> ImmutableMap<K, T> map(Function<T, K> keyFunction);
 	/**
 	 * Retrieves the records as {@link ListMultimap}.
 	 *

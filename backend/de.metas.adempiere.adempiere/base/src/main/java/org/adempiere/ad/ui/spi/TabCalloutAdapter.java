@@ -8,8 +8,9 @@ import com.google.common.base.MoreObjects;
  * Developers are highly advised to extend this one instead of implementing {@link ITabCallout}.
  * 
  * @author tsa
- *
+ * @deprecated You can directly use {@link ITabCallout} and implement only what you need
  */
+@Deprecated
 public abstract class TabCalloutAdapter implements ITabCallout
 {
 	@Override

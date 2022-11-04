@@ -23,13 +23,21 @@
 package de.metas.project.workorder.callout;
 
 import de.metas.project.ProjectId;
-import de.metas.project.workorder.WOProjectStepRepository;
+import de.metas.project.workorder.step.WOProjectStepRepository;
+import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.api.ICalloutRecord;
+import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.ui.spi.ITabCallout;
 import org.adempiere.ad.ui.spi.TabCallout;
 import org.compiere.model.I_C_Project_WO_Step;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.PostConstruct;
+import java.time.Duration;
+import java.time.Instant;
 
 @Callout(I_C_Project_WO_Step.class)
 @TabCallout(I_C_Project_WO_Step.class)
@@ -38,7 +46,15 @@ public class C_Project_WO_Step implements ITabCallout
 {
 	private final WOProjectStepRepository woProjectStepRepository;
 
+	private static final Duration DEFAULT_DURATION = Duration.ofDays(1);
+
 	public C_Project_WO_Step(final WOProjectStepRepository woProjectStepRepository) {this.woProjectStepRepository = woProjectStepRepository;}
+
+	@PostConstruct
+	public void postConstruct()
+	{
+		Services.get(IProgramaticCalloutProvider.class).registerAnnotatedCallout(this);
+	}
 
 	@Override
 	public void onNew(final ICalloutRecord calloutRecord)
@@ -47,5 +63,37 @@ public class C_Project_WO_Step implements ITabCallout
 		final ProjectId projectId = ProjectId.ofRepoId(stepRecord.getC_Project_ID());
 
 		stepRecord.setSeqNo(woProjectStepRepository.getNextSeqNo(projectId));
+	}
+
+	@CalloutMethod(columnNames = I_C_Project_WO_Step.COLUMNNAME_DateStart)
+	public void onDateStart(final I_C_Project_WO_Step record)
+	{
+		final Instant dateStart = TimeUtil.asInstant(record.getDateStart());
+		if (dateStart == null)
+		{
+			return;
+		}
+
+		final Instant dateEnd = TimeUtil.asInstant(record.getDateEnd());
+		if (dateEnd == null || dateStart.compareTo(dateEnd) >= 0)
+		{
+			record.setDateEnd(TimeUtil.asTimestamp(dateStart.plus(DEFAULT_DURATION)));
+		}
+	}
+
+	@CalloutMethod(columnNames = I_C_Project_WO_Step.COLUMNNAME_DateEnd)
+	public void onDateEnd(final I_C_Project_WO_Step record)
+	{
+		final Instant dateEnd = TimeUtil.asInstant(record.getDateEnd());
+		if (dateEnd == null)
+		{
+			return;
+		}
+
+		final Instant dateStart = TimeUtil.asInstant(record.getDateStart());
+		if (dateStart == null || dateStart.compareTo(dateEnd) >= 0)
+		{
+			record.setDateStart(TimeUtil.asTimestamp(dateEnd.minus(DEFAULT_DURATION)));
+		}
 	}
 }

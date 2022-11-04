@@ -19,10 +19,8 @@ import de.metas.currency.CurrencyConversionResult;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.ICurrencyBL;
-import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
-import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantity;
@@ -31,12 +29,10 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.service.ClientId;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
+import java.time.Instant;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 /*
  * #%L
@@ -95,24 +91,6 @@ public class CostingMethodHandlerUtils
 	}
 
 	@NonNull
-	public CostPrice convertToUOM(
-			@NonNull final CostPrice costPrice,
-			@NonNull final UomId targetUomId,
-			@NonNull final ProductId productId
-	)
-	{
-		return costPrice.convertAmounts(targetUomId, costAmount -> {
-			final ProductPrice productPrice = ProductPrice.builder()
-					.productId(productId)
-					.uomId(costPrice.getUomId())
-					.money(costAmount.toMoney())
-					.build();
-			final ProductPrice productPriceConv = convertToUOM(productPrice, targetUomId);
-			return CostAmount.ofProductPrice(productPriceConv);
-		});
-	}
-
-	@NonNull
 	public Quantity convertToUOM(
 			@NonNull final Quantity qty,
 			@NonNull final UomId targetUomId,
@@ -164,6 +142,11 @@ public class CostingMethodHandlerUtils
 	protected final Optional<CostDetail> getExistingCostDetail(final CostDetailCreateRequest request)
 	{
 		return costDetailsService.getExistingCostDetail(request);
+	}
+
+	public CostDetail updateDateAcct(@NonNull final CostDetail costDetail, @NonNull final Instant newDateAcct)
+	{
+		return costDetailsService.updateDateAcct(costDetail, newDateAcct);
 	}
 
 	public final CurrentCost getCurrentCost(final CostDetailCreateRequest request)
@@ -226,28 +209,10 @@ public class CostingMethodHandlerUtils
 
 	private CurrencyConversionContext createCurrencyConversionContext(final CostDetailCreateRequest request)
 	{
-		return createCurrencyConversionContext(
+		return currencyBL.createCurrencyConversionContext(
 				request.getDate(),
 				request.getCurrencyConversionTypeId(),
 				request.getClientId(),
 				request.getOrgId());
-	}
-
-	public CurrencyConversionContext createCurrencyConversionContext(
-			final LocalDate dateAcct,
-			final CurrencyConversionTypeId conversionTypeId,
-			final ClientId clientId,
-			final OrgId orgId)
-	{
-		return currencyBL.createCurrencyConversionContext(
-				dateAcct,
-				conversionTypeId,
-				clientId,
-				orgId);
-	}
-
-	public Stream<CostDetail> streamAllCostDetailsAfter(final CostDetail costDetail)
-	{
-		return costDetailsService.streamAllCostDetailsAfter(costDetail);
 	}
 }

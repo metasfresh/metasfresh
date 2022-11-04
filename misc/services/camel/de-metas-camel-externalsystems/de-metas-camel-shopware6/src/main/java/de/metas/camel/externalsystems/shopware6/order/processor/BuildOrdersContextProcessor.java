@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableMap;
 import de.metas.camel.externalsystems.common.PInstanceLogger;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
+import de.metas.camel.externalsystems.shopware6.api.ShopwareClient.GetOrdersResponse;
 import de.metas.camel.externalsystems.shopware6.currency.CurrencyInfoProvider;
 import de.metas.camel.externalsystems.shopware6.currency.GetCurrenciesRequest;
 import de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteHelper;
@@ -63,6 +64,7 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIG
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_REDUCED_PRODUCT_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_NORMAL_VAT_RATES;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_REDUCED_VAT_RATES;
+
 
 public class BuildOrdersContextProcessor implements Processor
 {
@@ -146,6 +148,8 @@ public class BuildOrdersContextProcessor implements Processor
 				.ordersResponsePageIndex(1)
 				.pageLimit(pageLimit)
 				.priceListBasicInfo(GetProductsRouteHelper.getTargetPriceListInfo(request))
+				.ordersResponsePageIndex(1)
+				.pageLimit(pageLimit)
 				.build();
 	}
 

@@ -60,6 +60,8 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.model.X_M_HU_PI_Version;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
+import de.metas.handlingunits.picking.job.model.PickingJob;
+import de.metas.handlingunits.picking.job.service.PickingJobService;
 import de.metas.handlingunits.reservation.HUReservation;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
 import de.metas.handlingunits.reservation.HUReservationService;
@@ -74,6 +76,7 @@ import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.ShipmentSchedulesMDC;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -81,8 +84,6 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
-import de.metas.storage.IStorageQuery;
-import de.metas.storage.spi.hu.impl.HUStorageQuery;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
@@ -129,11 +130,13 @@ public class ShipmentScheduleWithHUService
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 
+	private final PickingJobService pickingJobService;
 	private final HUReservationService huReservationService;
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
-	public ShipmentScheduleWithHUService(@NonNull final HUReservationService huReservationService)
+	public ShipmentScheduleWithHUService(@NonNull final HUReservationService huReservationService, @NonNull final PickingJobService pickingJobService)
 	{
+		this.pickingJobService = pickingJobService;
 		this.huReservationService = huReservationService;
 	}
 
@@ -268,7 +271,7 @@ public class ShipmentScheduleWithHUService
 
 		final ArrayList<ShipmentScheduleWithHU> result = new ArrayList<>();
 
-		final Quantity qtyToDeliver = CoalesceUtil.coalesceSuppliers(
+		final Quantity qtyToDeliver = CoalesceUtil.coalesceSuppliersNotNull(
 				() -> quantityToDeliverOverride,
 				() -> shipmentScheduleBL.getQtyToDeliver(scheduleRecord));
 
@@ -326,9 +329,9 @@ public class ShipmentScheduleWithHUService
 
 		final boolean pickAvailableHUsOntheFly = Services.get(ISysConfigBL.class)
 				.getBooleanValue(SYSCFG_PICK_AVAILABLE_HUS_ON_THE_FLY,
-								 true,
-								 adClientId,
-								 adOrgId);
+						true,
+						adClientId,
+						adOrgId);
 
 		Loggables.withLogger(logger, Level.DEBUG)
 				.addLog("SysConfig {}={} for AD_Client_ID={} and AD_Org_ID={}",
@@ -360,14 +363,14 @@ public class ShipmentScheduleWithHUService
 		}
 
 		//final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-//		final IStorageQuery storageQuery = shipmentScheduleBL.createStorageQuery(scheduleRecord, true/* considerAttributes */);
-//
-//		final boolean isHuStorageQuery = storageQuery instanceof HUStorageQuery;
-//		if (!isHuStorageQuery)
-//		{
-//			loggableWithLogger.addLog("pickHUsOnTheFly - ShipmentSchedule's storageQuery is not a HUStorageQuery; nothing to do");
-//			return ImmutableList.of();
-//		}
+		//		final IStorageQuery storageQuery = shipmentScheduleBL.createStorageQuery(scheduleRecord, true/* considerAttributes */);
+		//
+		//		final boolean isHuStorageQuery = storageQuery instanceof HUStorageQuery;
+		//		if (!isHuStorageQuery)
+		//		{
+		//			loggableWithLogger.addLog("pickHUsOnTheFly - ShipmentSchedule's storageQuery is not a HUStorageQuery; nothing to do");
+		//			return ImmutableList.of();
+		//		}
 
 		final ImmutableList.Builder<ShipmentScheduleWithHU> result = ImmutableList.builder();
 
@@ -401,11 +404,11 @@ public class ShipmentScheduleWithHUService
 
 			final Quantity quantityToSplit = qtyOfSourceHU.min(remainingQtyToAllocate);
 			loggableWithLogger.addLog("pickHUsOnTheFly - QtyToDeliver={}; split Qty={} from available M_HU_ID={} with Qty={}",
-									  qtyToDeliver, quantityToSplit, sourceHURecord.getM_HU_ID(), qtyOfSourceHU);
+					qtyToDeliver, quantityToSplit, sourceHURecord.getM_HU_ID(), qtyOfSourceHU);
 
 			final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
 			loggable.addLog("pickHUsOnTheFly - QtyToDeliver={}; split Qty={} from available M_HU_ID={} with Qty={}",
-							qtyToDeliver, quantityToSplit, sourceHURecord.getM_HU_ID(), qtyOfSourceHU);
+					qtyToDeliver, quantityToSplit, sourceHURecord.getM_HU_ID(), qtyOfSourceHU);
 
 			final List<I_M_HU> newHURecords = createNewlyPickedHUs(scheduleRecord, sourceHURecord, quantityToSplit, pickAccordingToPackingInstruction);
 
@@ -526,9 +529,9 @@ public class ShipmentScheduleWithHUService
 				for (final I_M_HU newCU : newCURecords)
 				{
 					newHURecords.addAll(huTransformService.cuToNewTUs(newCU,
-																	  null/*consume the complete CU*/,
-																	  huPIItemProduct,
-																	  true /*assume the packing materials that we might use is ours, not the customer's*/));
+							null/*consume the complete CU*/,
+							huPIItemProduct,
+							true /*assume the packing materials that we might use is ours, not the customer's*/));
 				}
 			}
 		}
@@ -635,6 +638,17 @@ public class ShipmentScheduleWithHUService
 	 */
 	private List<I_M_ShipmentSchedule_QtyPicked> retrieveQtyPickedRecords(final I_M_ShipmentSchedule schedule)
 	{
+		final OrderId orderId = OrderId.ofRepoIdOrNull(schedule.getC_Order_ID());
+		if (orderId != null)
+		{
+			final Optional<PickingJob> pickingJobForShipmentSchedule = pickingJobService.getByOrderId(orderId);
+			if (pickingJobForShipmentSchedule.isPresent() && pickingJobInReview(pickingJobForShipmentSchedule.get()))
+			{
+				Loggables.withLogger(logger, Level.INFO).addLog("Skipped shipmentSchedule={}, as there's an associated picking job that's not approved", schedule.getM_ShipmentSchedule_ID());
+				return Collections.emptyList();
+			}
+		}
+
 		final List<I_M_ShipmentSchedule_QtyPicked> unshippedHUs = shipmentScheduleAllocDAO.retrieveNotOnShipmentLineRecords(schedule, I_M_ShipmentSchedule_QtyPicked.class)
 				.stream()
 				.filter(this::isPickedOrShippedOrNoHU)
@@ -652,6 +666,15 @@ public class ShipmentScheduleWithHUService
 		}
 
 		return unshippedHUs;
+	}
+
+	/**
+	 * @param pickingJob the picking job to check
+	 * @return true if the picking job needs to be approved, but no approval is yet given.
+	 */
+	private boolean pickingJobInReview(final PickingJob pickingJob)
+	{
+		return pickingJob.isPickingReviewRequired() && pickingJob.isReadyToReview() && !pickingJob.isApproved();
 	}
 
 	/**
@@ -863,8 +886,8 @@ public class ShipmentScheduleWithHUService
 		if (luProducerDestination.isNoLU())
 		{
 			throw new HUException("No Loading Unit found for TU: " + luProducerDestination.getTUPI()
-										  + "\n@M_ShipmentSchedule_ID@: " + schedule
-										  + "\n@Destination@: " + luProducerDestination);
+					+ "\n@M_ShipmentSchedule_ID@: " + schedule
+					+ "\n@Destination@: " + luProducerDestination);
 		}
 
 		return luProducerDestination;

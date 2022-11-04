@@ -22,6 +22,7 @@
 
 package de.metas.picking.workflow;
 
+import de.metas.ad_reference.ADRefList;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
@@ -33,7 +34,6 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.user.UserId;
 import lombok.NonNull;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -49,11 +49,6 @@ public class PickingJobRestService
 			@NonNull final PickingJobService pickingJobService)
 	{
 		this.pickingJobService = pickingJobService;
-	}
-
-	public List<PickingJob> getDraftJobsByPickerId(@NonNull final UserId pickerId)
-	{
-		return pickingJobService.getDraftJobsByPickerId(pickerId);
 	}
 
 	public PickingJob getPickingJobById(final PickingJobId pickingJobId)
@@ -99,10 +94,35 @@ public class PickingJobRestService
 		return pickingJobService.processStepEvents(pickingJob, events);
 	}
 
-	public PickingJob abort(@NonNull final PickingJob pickingJob) {return pickingJobService.abort(pickingJob);}
+	public void abort(@NonNull final PickingJob pickingJob)
+	{
+		pickingJobService.abort(pickingJob);
+	}
 
-	public PickingJob complete(@NonNull final PickingJob pickingJob) {return pickingJobService.complete(pickingJob);}
+	public void abortAllByUserId(final @NonNull UserId userId)
+	{
+		pickingJobService.abortAllByUserId(userId);
+	}
 
-	public IADReferenceDAO.ADRefList getQtyRejectedReasons() {return pickingJobService.getQtyRejectedReasons();}
+	public void unassignAllByUserId(final @NonNull UserId userId)
+	{
+		pickingJobService.unassignAllByUserId(userId);
+	}
 
+	public PickingJob assignPickingJob(@NonNull final PickingJobId pickingJobId, @NonNull final UserId newResponsibleId)
+	{
+		return pickingJobService.assignPickingJob(pickingJobId, newResponsibleId);
+	}
+
+	public PickingJob complete(@NonNull final PickingJob pickingJob)
+	{
+		return pickingJobService.complete(pickingJob);
+	}
+
+	public PickingJob requestReview(@NonNull final PickingJob pickingJob) {return pickingJobService.requestReview(pickingJob);}
+
+	public ADRefList getQtyRejectedReasons()
+	{
+		return pickingJobService.getQtyRejectedReasons();
+	}
 }

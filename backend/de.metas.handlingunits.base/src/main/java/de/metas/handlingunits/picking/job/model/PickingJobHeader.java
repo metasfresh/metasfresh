@@ -6,10 +6,12 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.time.ZonedDateTime;
 
+/** Non-changable picking job header */
 @Value
-@Builder
+@Builder(toBuilder = true)
 public class PickingJobHeader
 {
 	@NonNull String salesOrderDocumentNo;
@@ -17,5 +19,6 @@ public class PickingJobHeader
 	@NonNull String customerName;
 	@NonNull BPartnerLocationId deliveryBPLocationId;
 	@NonNull String deliveryRenderedAddress;
-	@NonNull UserId lockedBy;
+	@Nullable UserId lockedBy;
+	boolean isPickingReviewRequired;
 }

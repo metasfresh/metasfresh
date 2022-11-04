@@ -28,7 +28,6 @@ import de.metas.camel.externalsystems.shopware6.api.model.JsonQuery;
 import de.metas.camel.externalsystems.shopware6.api.model.MultiQueryRequest;
 import de.metas.camel.externalsystems.shopware6.api.model.OperatorType;
 import de.metas.camel.externalsystems.shopware6.api.model.QueryType;
-import de.metas.camel.externalsystems.shopware6.api.model.Shopware6QueryRequest;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.util.Check;
@@ -60,7 +59,7 @@ public class OrderQueryHelper
 	}
 
 	@NonNull
-	public Shopware6QueryRequest buildShopware6QueryRequest(@NonNull final JsonExternalSystemRequest request, @NonNull final PageAndLimit pageAndLimitValues)
+	public MultiQueryRequest buildShopware6QueryRequest(@NonNull final JsonExternalSystemRequest request, @NonNull final PageAndLimit pageAndLimitValues)
 	{
 		final List<JsonQuery> queries = buildLookUpSpecificOrderQuery(request);
 

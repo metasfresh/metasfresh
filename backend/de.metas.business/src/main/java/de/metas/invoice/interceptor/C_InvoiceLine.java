@@ -11,14 +11,14 @@ import de.metas.lang.SOTrx;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Invoice_Verification_SetLine;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-@Validator(I_C_InvoiceLine.class)
+@Interceptor(I_C_InvoiceLine.class)
 @Component
 public class C_InvoiceLine
 {
@@ -89,4 +89,11 @@ public class C_InvoiceLine
 		final SOTrx soTrx = SOTrx.ofBooleanNotNull(invoice.isSOTrx());
 		partnerProductBL.assertNotExcludedFromTransaction(soTrx, productId, partnerId);
 	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW })
+	public void updateSectionCode(final I_C_InvoiceLine invoiceLine)
+	{
+		invoiceLine.setM_SectionCode_ID(invoiceLine.getC_Invoice().getM_SectionCode_ID());
+	}
+
 }

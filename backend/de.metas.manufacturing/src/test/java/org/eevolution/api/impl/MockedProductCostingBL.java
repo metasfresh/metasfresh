@@ -22,6 +22,7 @@
 
 package org.eevolution.api.impl;
 
+import com.google.common.collect.ImmutableMap;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.costing.CostingLevel;
@@ -31,12 +32,13 @@ import de.metas.product.ProductId;
 import lombok.NonNull;
 import org.compiere.model.I_M_Product;
 
+import java.util.Map;
+import java.util.Set;
+
 public class MockedProductCostingBL implements IProductCostingBL
 {
-	@NonNull
-	final CostingLevel defaultCostingLevel;
-	@NonNull
-	final CostingMethod defaultCostingMethod;
+	@NonNull final CostingLevel defaultCostingLevel;
+	@NonNull final CostingMethod defaultCostingMethod;
 
 	public MockedProductCostingBL(
 			@NonNull final CostingLevel defaultCostingLevel,
@@ -68,6 +70,14 @@ public class MockedProductCostingBL implements IProductCostingBL
 			final AcctSchema acctSchema)
 	{
 		return defaultCostingLevel;
+	}
+
+	@Override
+	public @NonNull Map<ProductId, CostingLevel> getCostingLevels(
+			final Set<ProductId> productIds,
+			final AcctSchema acctSchema)
+	{
+		return productIds.stream().collect(ImmutableMap.toImmutableMap(productId -> productId, productId -> defaultCostingLevel));
 	}
 
 	@Override

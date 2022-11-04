@@ -1,13 +1,6 @@
 package de.metas.process;
 
-import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.base.MoreObjects;
-
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -17,6 +10,10 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -70,12 +67,13 @@ public final class ProcessPreconditionsResolution
 		final boolean accepted = false;
 		final boolean internal = false;
 		final ProcessCaptionMapper captionMapper = null;
+		//noinspection ConstantConditions
 		return new ProcessPreconditionsResolution(accepted, reason, internal, captionMapper);
 	}
 
 	/**
 	 * Like {@link #reject(ITranslatableString)}, but with a constant string.
-	 * 
+	 *
 	 * @param reasonStr this string will be used as-is (not translated)
 	 * @deprecated please use {@link #reject(ITranslatableString)} instead; see issue <a href="https://github.com/metasfresh/metasfresh-webui-api/issues/510">metasfresh-webui-api#510</a>.
 	 */
@@ -95,7 +93,7 @@ public final class ProcessPreconditionsResolution
 	 * Convenience method to flag a process as not available in a particular context.<br>
 	 * The process shall not be shown to the user.<br>
 	 * The given {@code reasonStr} is intended only for logging, debugging etc.
-	 * 
+	 *
 	 * @param reasonStr this string will be used as-is (not translated)
 	 */
 	public static ProcessPreconditionsResolution rejectWithInternalReason(final String reasonStr)
@@ -114,6 +112,7 @@ public final class ProcessPreconditionsResolution
 		final boolean accepted = false;
 		final boolean internal = true;
 		final ProcessCaptionMapper captionMapper = null;
+		//noinspection ConstantConditions
 		return new ProcessPreconditionsResolution(accepted, reason, internal, captionMapper);
 	}
 
@@ -123,6 +122,7 @@ public final class ProcessPreconditionsResolution
 		final ITranslatableString reason = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_NO_ROWS_SELECTED);
 		final boolean internal = false;
 		final ProcessCaptionMapper captionMapper = null;
+		//noinspection ConstantConditions
 		return new ProcessPreconditionsResolution(accepted, reason, internal, captionMapper);
 	}
 
@@ -132,6 +132,7 @@ public final class ProcessPreconditionsResolution
 		final ITranslatableString reason = Services.get(IMsgBL.class).getTranslatableMsgText(MSG_ONLY_ONE_SELECTED_ROW_ALLOWED);
 		final boolean internal = false;
 		final ProcessCaptionMapper captionMapper = null;
+		//noinspection ConstantConditions
 		return new ProcessPreconditionsResolution(accepted, reason, internal, captionMapper);
 	}
 
@@ -224,6 +225,12 @@ public final class ProcessPreconditionsResolution
 
 	public ProcessPreconditionsResolution toInternal()
 	{
+		// makes no sense to change the internal flag if accepted
+		if (accepted)
+		{
+			return this;
+		}
+
 		if (internal)
 		{
 			return this;
@@ -243,7 +250,7 @@ public final class ProcessPreconditionsResolution
 
 	/**
 	 * Derive this resolution, overriding the caption.
-	 * 
+	 *
 	 * @param captionOverride caption override; null value will be considered as no override
 	 */
 	public ProcessPreconditionsResolution deriveWithCaptionOverride(@NonNull final String captionOverride)
@@ -283,7 +290,7 @@ public final class ProcessPreconditionsResolution
 		return toBuilder().captionMapper(captionMapper).build();
 	}
 
-	public ProcessPreconditionsResolution and(Supplier<ProcessPreconditionsResolution> resolutionSupplier)
+	public ProcessPreconditionsResolution and(final Supplier<ProcessPreconditionsResolution> resolutionSupplier)
 	{
 		if (isRejected())
 		{

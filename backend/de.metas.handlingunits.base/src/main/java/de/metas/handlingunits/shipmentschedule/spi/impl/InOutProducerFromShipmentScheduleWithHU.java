@@ -25,8 +25,9 @@ package de.metas.handlingunits.shipmentschedule.spi.impl;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.DocBaseType;
+import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
@@ -52,10 +53,10 @@ import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
-import de.metas.organization.ClientAndOrgId;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
+import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.shipping.model.I_M_ShipperTransportation;
@@ -73,6 +74,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
@@ -118,9 +120,9 @@ public class InOutProducerFromShipmentScheduleWithHU
 	private final transient ITrxItemProcessorExecutorService trxItemProcessorExecutorService = Services.get(ITrxItemProcessorExecutorService.class);
 	private final transient IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 
-	final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepo = SpringContextHolder.instance.getBean(OrderEmailPropagationSysConfigRepository.class);
-
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+
+	final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepo = SpringContextHolder.instance.getBean(OrderEmailPropagationSysConfigRepository.class);
 
 	private final InOutGenerateResult result;
 	private final IAggregationKeyBuilder<I_M_ShipmentSchedule> shipmentScheduleKeyBuilder;
@@ -171,8 +173,8 @@ public class InOutProducerFromShipmentScheduleWithHU
 	{
 		this.result = result;
 
-		this.shipmentScheduleKeyBuilder = shipmentScheduleBL.mkShipmentHeaderAggregationKeyBuilder();
-		this.huShipmentScheduleKeyBuilder = huShipmentScheduleBL.mkHUShipmentScheduleHeaderAggregationKeyBuilder();
+		shipmentScheduleKeyBuilder = shipmentScheduleBL.mkShipmentHeaderAggregationKeyBuilder();
+		huShipmentScheduleKeyBuilder = huShipmentScheduleBL.mkHUShipmentScheduleHeaderAggregationKeyBuilder();
 	}
 
 	@Override
@@ -198,11 +200,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 		catch (final Exception ex)
 		{
 			final String sourceInfo = extractSourceInfo(candidates);
-			shipmentGeneratedNotifications.notifyShipmentError(
-					sourceInfo,
-					CoalesceUtil.coalesceSuppliersNotNull(
-							() -> ex.getLocalizedMessage(),
-							() -> ex.getClass().getName()));
+			shipmentGeneratedNotifications.notifyShipmentError(sourceInfo, ex.getLocalizedMessage());
 
 			// propagate
 			throw AdempiereException.wrapIfNeeded(ex)
@@ -211,7 +209,6 @@ public class InOutProducerFromShipmentScheduleWithHU
 
 	}
 
-	@NonNull
 	private static String extractSourceInfo(final List<ShipmentScheduleWithHU> candidates)
 	{
 		return candidates.stream()
@@ -332,16 +329,11 @@ public class InOutProducerFromShipmentScheduleWithHU
 		final I_M_InOut shipment = InterfaceWrapperHelper.newInstance(I_M_InOut.class, processorCtx);
 		shipment.setAD_Org_ID(shipmentSchedule.getAD_Org_ID());
 
-		//
+		shipment.setM_SectionCode_ID(candidate.getM_ShipmentSchedule().getM_SectionCode_ID());
+
 		// Document Type
 		{
-			final DocTypeQuery query = DocTypeQuery.builder()
-					.docBaseType(X_C_DocType.DOCBASETYPE_MaterialDelivery)
-					.adClientId(shipmentSchedule.getAD_Client_ID())
-					.adOrgId(shipmentSchedule.getAD_Org_ID())
-					.build();
-			final int docTypeId = docTypeDAO.getDocTypeId(query).getRepoId();
-			shipment.setC_DocType_ID(docTypeId);
+			shipment.setC_DocType_ID(getInoutDoctypeID(shipmentSchedule));
 			shipment.setMovementType(X_M_InOut.MOVEMENTTYPE_CustomerShipment);
 			shipment.setIsSOTrx(true);
 
@@ -394,6 +386,7 @@ public class InOutProducerFromShipmentScheduleWithHU
 				{
 					shipment.setEMail(order.getEMail());
 				}
+
 				shipment.setAD_InputDataSource_ID(order.getAD_InputDataSource_ID());
 
 				shipment.setSalesRep_ID(order.getSalesRep_ID());
@@ -424,6 +417,28 @@ public class InOutProducerFromShipmentScheduleWithHU
 		InterfaceWrapperHelper.save(shipment);
 
 		return shipment;
+	}
+
+	private int getInoutDoctypeID(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		// allow specific inout doctype from order first
+		final de.metas.order.model.I_C_Order order = orderDAO.getById(OrderId.ofRepoIdOrNull(shipmentSchedule.getC_Order_ID()), de.metas.order.model.I_C_Order.class);
+		if (order != null && order.getC_Order_ID() > 0)
+		{
+			final I_C_DocType orderDoctype = docTypeDAO.getById(DocTypeId.ofRepoId(order.getC_DocType_ID()));
+			if (orderDoctype.getC_DocTypeShipment_ID() > 0)
+			{
+				return orderDoctype.getC_DocTypeShipment_ID();
+			}
+		}
+
+		final DocTypeQuery query = DocTypeQuery.builder()
+				.docBaseType(DocBaseType.MaterialDelivery)
+				.adClientId(shipmentSchedule.getAD_Client_ID())
+				.adOrgId(shipmentSchedule.getAD_Org_ID())
+				.build();
+
+		return docTypeDAO.getDocTypeId(query).getRepoId();
 	}
 
 	/**

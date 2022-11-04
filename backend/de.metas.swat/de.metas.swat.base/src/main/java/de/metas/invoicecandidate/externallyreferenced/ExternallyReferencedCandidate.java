@@ -24,6 +24,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -133,7 +134,14 @@ public class ExternallyReferencedCandidate
 
 	private ProjectId projectId;
 
+	/**
+	 * Note that an IC can **also** be referenced internally by an {@code I_Invoice_Candidate} import-record
+	 */
+	@Nullable
+	private final TableRecordReference recordReference;
+
 	private List<InvoiceDetailItem> invoiceDetailItems;
+
 
 	@Builder
 	private ExternallyReferencedCandidate(
@@ -163,6 +171,7 @@ public class ExternallyReferencedCandidate
 			@Nullable final DocTypeId invoiceDocTypeId,
 			@Nullable final String lineDescription,
 			@Nullable final ProjectId projectId,
+			@Nullable final TableRecordReference recordReference,
 			@Nullable final List<InvoiceDetailItem> invoiceDetailItems)
 	{
 		this.orgId = orgId;
@@ -191,6 +200,7 @@ public class ExternallyReferencedCandidate
 		this.invoiceDocTypeId = invoiceDocTypeId;
 		this.lineDescription = lineDescription;
 		this.projectId = projectId;
+		this.recordReference = recordReference;
 		this.invoiceDetailItems = invoiceDetailItems != null ? ImmutableList.copyOf(invoiceDetailItems) : ImmutableList.of();
 
 		final CurrencyId currencyId = CollectionUtils

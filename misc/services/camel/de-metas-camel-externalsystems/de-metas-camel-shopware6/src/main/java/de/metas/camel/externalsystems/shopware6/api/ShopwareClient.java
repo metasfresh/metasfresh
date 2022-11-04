@@ -182,7 +182,7 @@ public class ShopwareClient
 		final int rawSize = Optional.of(rootJsonNode).map(JsonNode::size).orElse(0);
 
 		return new GetOrdersResponse(orderCandidates.build(), response.getBody(), rawSize);
-	}
+		}
 
 	@Value
 	public static class GetOrdersResponse

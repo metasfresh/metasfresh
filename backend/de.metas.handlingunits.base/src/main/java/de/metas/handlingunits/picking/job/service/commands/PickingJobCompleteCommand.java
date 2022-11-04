@@ -6,6 +6,9 @@ import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job.service.PickingJobHUReservationService;
 import de.metas.handlingunits.picking.job.service.PickingJobLockService;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -19,8 +22,12 @@ public class PickingJobCompleteCommand
 	@NonNull private final PickingJobLockService pickingJobLockService;
 	@NonNull private final PickingJobSlotService pickingSlotService;
 	@NonNull private final PickingJobHUReservationService pickingJobHUReservationService;
+	@NonNull  private final IMsgBL msgBL = Services.get(IMsgBL.class);
+
+	private static final AdMessageKey MSG_NotApproved = AdMessageKey.of("NotApproved");
 
 	private final PickingJob initialPickingJob;
+	private final boolean approveIfReadyToReview;
 
 	@Builder
 	private PickingJobCompleteCommand(
@@ -29,7 +36,8 @@ public class PickingJobCompleteCommand
 			final @NonNull PickingJobSlotService pickingSlotService,
 			final @NonNull PickingJobHUReservationService pickingJobHUReservationService,
 			//
-			final @NonNull PickingJob pickingJob)
+			final @NonNull PickingJob pickingJob,
+			final boolean approveIfReadyToReview)
 	{
 		this.pickingJobRepository = pickingJobRepository;
 		this.pickingJobLockService = pickingJobLockService;
@@ -37,9 +45,15 @@ public class PickingJobCompleteCommand
 		this.pickingJobHUReservationService = pickingJobHUReservationService;
 
 		this.initialPickingJob = pickingJob;
+		this.approveIfReadyToReview = approveIfReadyToReview;
 	}
 
 	public PickingJob execute()
+	{
+		return trxManager.callInThreadInheritedTrx(this::executeInTrx);
+	}
+
+	private PickingJob executeInTrx()
 	{
 		initialPickingJob.assertNotProcessed();
 		if (!initialPickingJob.getProgress().isDone())
@@ -47,17 +61,21 @@ public class PickingJobCompleteCommand
 			throw new AdempiereException("Picking shall be DONE on all steps in order to complete the job");
 		}
 
-		return trxManager.callInThreadInheritedTrx(this::executeInTrx);
-	}
-
-	private PickingJob executeInTrx()
-	{
-		if (!initialPickingJob.getProgress().isDone())
+		PickingJob pickingJob = initialPickingJob;
+		if (approveIfReadyToReview
+				&& !pickingJob.isApproved()
+				&& pickingJob.isReadyToReview())
 		{
-			throw new AdempiereException("All steps shall be picked");
+			pickingJob = pickingJob.withApproved();
 		}
 
-		final PickingJob pickingJob = initialPickingJob.withDocStatus(PickingJobDocStatus.Completed);
+		if (pickingJob.isPickingReviewRequired() && !pickingJob.isApproved())
+		{
+			final ITranslatableString msg_notapproved = msgBL.getTranslatableMsgText(MSG_NotApproved, pickingJob.getPickingSlot(), pickingJob.getCustomerName());
+			throw new AdempiereException(msg_notapproved);
+		}
+
+		pickingJob = pickingJob.withDocStatus(PickingJobDocStatus.Completed);
 		pickingJobRepository.save(pickingJob);
 
 		initialPickingJob.getPickingSlotId()

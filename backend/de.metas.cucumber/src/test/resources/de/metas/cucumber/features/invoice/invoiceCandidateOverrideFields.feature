@@ -180,20 +180,20 @@ Feature: Checking the effect of override fields on invoice candidate
       | Identifier | Name                       |
       | p_1        | purchaseProduct_21032022_3 |
     And metasfresh contains M_HU_PI:
-      | M_HU_PI_ID.Identifier | Name        |
-      | huPackingLU           | huPackingLU |
-      | huPackingTU           | huPackingTU |
+      | M_HU_PI_ID.Identifier | Name          |
+      | huPackingLU_3         | huPackingLU_3 |
+      | huPackingTU_3         | huPackingTU_3 |
     And metasfresh contains M_HU_PI_Version:
-      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | Name             | HU_UnitType | IsCurrent |
-      | packingVersionLU              | huPackingLU           | packingVersionLU | LU          | Y         |
-      | packingVersionTU              | huPackingTU           | packingVersionTU | TU          | Y         |
+      | M_HU_PI_Version_ID.Identifier | M_HU_PI_ID.Identifier | Name               | HU_UnitType | IsCurrent |
+      | packingVersionLU_3            | huPackingLU_3         | packingVersionLU_3 | LU          | Y         |
+      | packingVersionTU_3            | huPackingTU_3         | packingVersionTU_3 | TU          | Y         |
     And metasfresh contains M_HU_PI_Item:
       | M_HU_PI_Item_ID.Identifier | M_HU_PI_Version_ID.Identifier | Qty | ItemType | OPT.Included_HU_PI_ID.Identifier |
-      | huPiItemLU                 | packingVersionLU              | 10  | HU       | huPackingTU                      |
-      | huPiItemTU                 | packingVersionTU              | 10  | MI       |                                  |
+      | huPiItemLU_3               | packingVersionLU_3            | 10  | HU       | huPackingTU_3                    |
+      | huPiItemTU_3               | packingVersionTU_3            | 10  | MI       |                                  |
     And metasfresh contains M_HU_PI_Item_Product:
       | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
-      | huItemPurchaseProduct              | huPiItemTU                 | p_1                     | 10  | 2021-01-01 |
+      | huItemPurchaseProduct_3            | huPiItemTU_3               | p_1                     | 10  | 2021-01-01 |
     And metasfresh contains M_PricingSystems
       | Identifier | Name                          | Value                          | OPT.Description                      | OPT.IsActive |
       | ps_1       | pricing_system_name21032022_3 | pricing_system_value21032022_3 | pricing_system_description21032022_3 | true         |
@@ -224,7 +224,7 @@ Feature: Checking the effect of override fields on invoice candidate
       | receiptSchedule_21032022_1      | o_1                   | ol_1                      | endvendor_1              | l_1                               | p_1                     | 10         | warehouseStd              |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
       | M_HU_LUTU_Configuration_ID.Identifier | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | IsInfiniteQtyLU | QtyLU | IsInfiniteQtyTU | QtyTU | IsInfiniteQtyCU | QtyCU | M_HU_PI_Item_Product_ID.Identifier | OPT.M_LU_HU_PI_ID.Identifier |
-      | huLuTuConfig                          | processedTopHU     | receiptSchedule_21032022_1      | N               | 1     | N               | 1     | N               | 10    | huItemPurchaseProduct              | huPackingLU                  |
+      | huLuTuConfig                          | processedTopHU     | receiptSchedule_21032022_1      | N               | 1     | N               | 1     | N               | 10    | huItemPurchaseProduct_3            | huPackingLU_3                |
     And create material receipt
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_21032022_1      | inOut_210320222_1     |
@@ -234,6 +234,9 @@ Feature: Checking the effect of override fields on invoice candidate
     And update invoice candidates
       | C_Invoice_Candidate_ID.Identifier | OPT.QualityDiscountPercent_Override |
       | invoice_candidate_1               | 10                                  |
+    And validate invoice candidate
+      | C_Invoice_Candidate_ID.Identifier | OPT.QtyWithIssues_Effective |
+      | invoice_candidate_1               | 1                           |
     And recompute invoice candidates if required
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtToInvoice |
       | invoice_candidate_1               | endvendor_1                 | p_1                     | 100                 |

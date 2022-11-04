@@ -6,6 +6,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Maps;
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.material.planning.pporder.PPAlwaysAvailableToUser;
 import de.metas.material.planning.pporder.PPRoutingActivityId;
 import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
 import de.metas.material.planning.pporder.PPRoutingActivityType;
@@ -247,7 +249,7 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 				.type(PPRoutingActivityType.ofCode(record.getPP_Activity_Type()))
 				.code(PPOrderRoutingActivityCode.ofString(record.getValue()))
 				.name(record.getName())
-				.routingActivityId(PPRoutingActivityId.ofAD_WF_Node_ID(routingId, record.getAD_WF_Node_ID()))
+				.routingActivityId(PPRoutingActivityId.ofRepoId(routingId, record.getAD_WF_Node_ID()))
 				//
 				.subcontracting(record.isSubcontracting())
 				.subcontractingVendorId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
@@ -280,6 +282,7 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 				.qtyRejected(Quantitys.create(record.getQtyReject(), uomId))
 				.dateStart(TimeUtil.asInstant(record.getDateStart()))
 				.dateFinish(TimeUtil.asInstant(record.getDateFinish()))
+				.alwaysAvailableToUser(CoalesceUtil.coalesceNotNull(PPAlwaysAvailableToUser.ofNullableCode(record.getPP_AlwaysAvailableToUser()), PPAlwaysAvailableToUser.DEFAULT))
 				//
 				.build();
 	}

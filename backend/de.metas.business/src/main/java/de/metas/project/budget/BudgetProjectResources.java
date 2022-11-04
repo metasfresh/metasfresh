@@ -23,7 +23,6 @@
 package de.metas.project.budget;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.metas.product.ResourceId;
 import de.metas.project.ProjectId;
 import de.metas.resource.ResourceGroupAndResourceId;
@@ -35,7 +34,7 @@ import org.adempiere.exceptions.AdempiereException;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
+import java.util.stream.Stream;
 
 @Value
 public class BudgetProjectResources
@@ -88,8 +87,25 @@ public class BudgetProjectResources
 		return Optional.ofNullable(matchedByResourceGroup);
 	}
 
-	public Set<ResourceGroupId> getResourceGroupIds()
+	public Stream<BudgetProjectResource> stream()
 	{
-		return budgets.stream().map(BudgetProjectResource::getResourceGroupId).collect(ImmutableSet.toImmutableSet());
+		return budgets.stream();
+	}
+
+	public BudgetProjectResource getBudgetById(@NonNull final BudgetProjectResourceId id)
+	{
+		return stream()
+				.filter(budget -> BudgetProjectResourceId.equals(budget.getId(), id))
+				.findFirst()
+				.orElseThrow(() -> new AdempiereException("No budget found for " + id));
+	}
+
+	@NonNull
+	public Optional<BudgetProjectResource> findBudget(@NonNull final ResourceId resourceId)
+	{
+		return budgets.stream()
+				.filter(budgetProjectResource -> budgetProjectResource.getResourceId() != null)
+				.filter(budgetProjectResource -> budgetProjectResource.getResourceId().equals(resourceId))
+				.findFirst();
 	}
 }

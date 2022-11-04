@@ -9,6 +9,7 @@ import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.DimensionSpecGroup;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
+import de.metas.material.cockpit.model.I_QtyDemand_QtySupply_V;
 import de.metas.product.ProductId;
 import de.metas.resource.ManufacturingResourceType;
 import de.metas.ui.web.material.cockpit.MaterialCockpitRow;
@@ -70,6 +71,10 @@ public class MaterialCockpitRowFactory
 		@Singular
 		List<I_MD_Stock> stockRecords;
 
+		@NonNull
+		@Singular
+		List<I_QtyDemand_QtySupply_V> quantitiesRecords;
+
 		boolean includePerPlantDetailRows;
 	}
 
@@ -86,6 +91,7 @@ public class MaterialCockpitRowFactory
 
 		addCockpitRowsToResult(request, dimensionSpec, result);
 		addStockRowsToResult(request, dimensionSpec, result);
+		addQuantitiesRowsToResult(request, dimensionSpec, result);
 
 		return result.values()
 				.stream()
@@ -169,4 +175,17 @@ public class MaterialCockpitRowFactory
 		}
 	}
 
+	private void addQuantitiesRowsToResult(
+			@NonNull final CreateRowsRequest request,
+			@NonNull final DimensionSpec dimensionSpec,
+			@NonNull final Map<MainRowBucketId, MainRowWithSubRows> result)
+	{
+		for (final I_QtyDemand_QtySupply_V qtyRecord : request.getQuantitiesRecords())
+		{
+			final MainRowBucketId mainRowBucketId = MainRowBucketId.createInstanceForQuantitiesRecord(qtyRecord, request.getDate());
+
+			final MainRowWithSubRows mainRowBucket = result.computeIfAbsent(mainRowBucketId, MainRowWithSubRows::create);
+			mainRowBucket.addQuantitiesRecord(qtyRecord, dimensionSpec, request.isIncludePerPlantDetailRows());
+		}
+	}
 }

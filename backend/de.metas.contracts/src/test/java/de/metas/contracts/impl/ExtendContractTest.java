@@ -1,5 +1,6 @@
 package de.metas.contracts.impl;
 
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.IFlatrateBL.ContractExtendingRequest;
@@ -33,7 +34,8 @@ import java.util.List;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class ExtendContractTest extends AbstractFlatrateTermTest
 {
@@ -42,7 +44,11 @@ public class ExtendContractTest extends AbstractFlatrateTermTest
 	@BeforeEach
 	public void before()
 	{
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Flatrate_Term(new ContractOrderService(),new DummyDocumentLocationBL(new BPartnerBL(new UserRepository()))));
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(
+				new C_Flatrate_Term(
+						new ContractOrderService(),
+						new DummyDocumentLocationBL(new BPartnerBL(new UserRepository())),
+						ADReferenceService.newMocked()));
 		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 	}
 

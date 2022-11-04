@@ -12,6 +12,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Forecast;
 import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
@@ -191,6 +192,38 @@ public class DDOrderLowLevelDAO
 				.iterateAndStream();
 	}
 
+	public void deleteOrders(@NonNull final DeleteOrdersQuery deleteOrdersQuery)
+	{
+		final IQueryBuilder<I_DD_Order> deleteOrdersQueryBuilder = queryBL.createQueryBuilder(I_DD_Order.class);
+
+		if (deleteOrdersQuery.isOnlySimulated())
+		{
+			deleteOrdersQueryBuilder.addEqualsFilter(I_DD_Order.COLUMNNAME_IsSimulated, deleteOrdersQuery.isOnlySimulated());
+		}
+
+		if (deleteOrdersQuery.getSalesOrderLineId() != null)
+		{
+			final IQuery<I_DD_OrderLine> orderLineQuery = queryBL.createQueryBuilder(I_DD_OrderLine.class)
+					.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_C_OrderLineSO_ID, deleteOrdersQuery.getSalesOrderLineId())
+					.create();
+
+			deleteOrdersQueryBuilder.addInSubQueryFilter(I_DD_Order.COLUMNNAME_DD_Order_ID, I_DD_OrderLine.COLUMNNAME_DD_Order_ID, orderLineQuery);
+		}
+
+		if (deleteOrdersQueryBuilder.getCompositeFilter().isEmpty())
+		{
+			throw new AdempiereException("Deleting all DD_Order records is not allowed!");
+		}
+
+		final boolean failIfProcessed = false;
+
+		deleteOrdersQueryBuilder
+				.create()
+				.iterateAndStream()
+				.peek(this::deleteLines)
+				.forEach(simulatedOrder -> InterfaceWrapperHelper.delete(simulatedOrder, failIfProcessed));
+	}
+
 	private IQueryBuilder<I_DD_Order> toSqlQuery(final DDOrderQuery query)
 	{
 		final IQueryBuilder<I_DD_Order> queryBuilder = queryBL.createQueryBuilder(I_DD_Order.class);
@@ -239,6 +272,14 @@ public class DDOrderLowLevelDAO
 		{
 			throw new AdempiereException("Unknown order by: " + orderBy);
 		}
+	}
+
+	private void deleteLines(@NonNull final I_DD_Order order)
+	{
+		queryBL.createQueryBuilder(I_DD_OrderLine.class)
+				.addEqualsFilter(I_DD_OrderLine.COLUMNNAME_DD_Order_ID, order.getDD_Order_ID())
+				.create()
+				.deleteDirectly();
 	}
 
 }

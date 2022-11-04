@@ -1,7 +1,8 @@
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for C_Project_WO_Step
  *  @author metasfresh (generated) 
@@ -122,19 +123,19 @@ public interface I_C_Project_WO_Step
 	 * Set Date End.
 	 *
 	 * <br>Type: DateTime
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDateEnd (@Nullable java.sql.Timestamp DateEnd);
+	void setDateEnd (java.sql.Timestamp DateEnd);
 
 	/**
 	 * Get Date End.
 	 *
 	 * <br>Type: DateTime
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.sql.Timestamp getDateEnd();
+	java.sql.Timestamp getDateEnd();
 
 	ModelColumn<I_C_Project_WO_Step, Object> COLUMN_DateEnd = new ModelColumn<>(I_C_Project_WO_Step.class, "DateEnd", null);
 	String COLUMNNAME_DateEnd = "DateEnd";
@@ -144,20 +145,20 @@ public interface I_C_Project_WO_Step
 	 * Indicate the real date to start
 	 *
 	 * <br>Type: DateTime
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setDateStart (@Nullable java.sql.Timestamp DateStart);
+	void setDateStart (java.sql.Timestamp DateStart);
 
 	/**
 	 * Get Start Date.
 	 * Indicate the real date to start
 	 *
 	 * <br>Type: DateTime
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.sql.Timestamp getDateStart();
+	java.sql.Timestamp getDateStart();
 
 	ModelColumn<I_C_Project_WO_Step, Object> COLUMN_DateStart = new ModelColumn<>(I_C_Project_WO_Step.class, "DateStart", null);
 	String COLUMNNAME_DateStart = "DateStart";
@@ -182,6 +183,27 @@ public interface I_C_Project_WO_Step
 
 	ModelColumn<I_C_Project_WO_Step, Object> COLUMN_Description = new ModelColumn<>(I_C_Project_WO_Step.class, "Description", null);
 	String COLUMNNAME_Description = "Description";
+
+	/**
+	 * Set External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setExternalId (@Nullable java.lang.String ExternalId);
+
+	/**
+	 * Get External ID.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getExternalId();
+
+	ModelColumn<I_C_Project_WO_Step, Object> COLUMN_ExternalId = new ModelColumn<>(I_C_Project_WO_Step.class, "ExternalId", null);
+	String COLUMNNAME_ExternalId = "ExternalId";
 
 	/**
 	 * Set Active.
@@ -276,4 +298,201 @@ public interface I_C_Project_WO_Step
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Delivery date.
+	 * Delivery date to test facility
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setWODeliveryDate (@Nullable java.sql.Timestamp WODeliveryDate);
+
+	/**
+	 * Get Delivery date.
+	 * Delivery date to test facility
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getWODeliveryDate();
+
+	ModelColumn<I_C_Project_WO_Step, Object> COLUMN_WODeliveryDate = new ModelColumn<>(I_C_Project_WO_Step.class, "WODeliveryDate", null);
+	String COLUMNNAME_WODeliveryDate = "WODeliveryDate";
+
+	/**
+	 * Set Findings created.
+	 * Date on which the report was created.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setWOFindingsCreatedDate (@Nullable java.sql.Timestamp WOFindingsCreatedDate);
+
+	/**
+	 * Get Findings created.
+	 * Date on which the report was created.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getWOFindingsCreatedDate();
+
+	ModelColumn<I_C_Project_WO_Step, Object> COLUMN_WOFindingsCreatedDate = new ModelColumn<>(I_C_Project_WO_Step.class, "WOFindingsCreatedDate", null);
+	String COLUMNNAME_WOFindingsCreatedDate = "WOFindingsCreatedDate";
+
+	/**
+	 * Set Findings released.
+	 * Date on which the report was released.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setWOFindingsReleasedDate (@Nullable java.sql.Timestamp WOFindingsReleasedDate);
+
+	/**
+	 * Get Findings released.
+	 * Date on which the report was released.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getWOFindingsReleasedDate();
+
+	ModelColumn<I_C_Project_WO_Step, Object> COLUMN_WOFindingsReleasedDate = new ModelColumn<>(I_C_Project_WO_Step.class, "WOFindingsReleasedDate", null);
+	String COLUMNNAME_WOFindingsReleasedDate = "WOFindingsReleasedDate";
+
+	/**
+	 * Set Partial report date.
+	 * Date of the partial report
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setWOPartialReportDate (@Nullable java.sql.Timestamp WOPartialReportDate);
+
+	/**
+	 * Get Partial report date.
+	 * Date of the partial report
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getWOPartialReportDate();
+
+	ModelColumn<I_C_Project_WO_Step, Object> COLUMN_WOPartialReportDate = new ModelColumn<>(I_C_Project_WO_Step.class, "WOPartialReportDate", null);
+	String COLUMNNAME_WOPartialReportDate = "WOPartialReportDate";
+
+	/**
+	 * Set TARGET person hours.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setWOPlannedPersonDurationHours (int WOPlannedPersonDurationHours);
+
+	/**
+	 * Get TARGET person hours.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getWOPlannedPersonDurationHours();
+
+	ModelColumn<I_C_Project_WO_Step, Object> COLUMN_WOPlannedPersonDurationHours = new ModelColumn<>(I_C_Project_WO_Step.class, "WOPlannedPersonDurationHours", null);
+	String COLUMNNAME_WOPlannedPersonDurationHours = "WOPlannedPersonDurationHours";
+
+	/**
+	 * Set TARGET facility hours.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setWOPlannedResourceDurationHours (int WOPlannedResourceDurationHours);
+
+	/**
+	 * Get TARGET facility hours.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getWOPlannedResourceDurationHours();
+
+	ModelColumn<I_C_Project_WO_Step, Object> COLUMN_WOPlannedResourceDurationHours = new ModelColumn<>(I_C_Project_WO_Step.class, "WOPlannedResourceDurationHours", null);
+	String COLUMNNAME_WOPlannedResourceDurationHours = "WOPlannedResourceDurationHours";
+
+	/**
+	 * Set State.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setWOStepStatus (java.lang.String WOStepStatus);
+
+	/**
+	 * Get State.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getWOStepStatus();
+
+	ModelColumn<I_C_Project_WO_Step, Object> COLUMN_WOStepStatus = new ModelColumn<>(I_C_Project_WO_Step.class, "WOStepStatus", null);
+	String COLUMNNAME_WOStepStatus = "WOStepStatus";
+
+	/**
+	 * Set TARGET end date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setWOTargetEndDate (@Nullable java.sql.Timestamp WOTargetEndDate);
+
+	/**
+	 * Get TARGET end date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getWOTargetEndDate();
+
+	ModelColumn<I_C_Project_WO_Step, Object> COLUMN_WOTargetEndDate = new ModelColumn<>(I_C_Project_WO_Step.class, "WOTargetEndDate", null);
+	String COLUMNNAME_WOTargetEndDate = "WOTargetEndDate";
+
+	/**
+	 * Set TARGET start date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setWOTargetStartDate (@Nullable java.sql.Timestamp WOTargetStartDate);
+
+	/**
+	 * Get TARGET start date.
+	 *
+	 * <br>Type: Date
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.sql.Timestamp getWOTargetStartDate();
+
+	ModelColumn<I_C_Project_WO_Step, Object> COLUMN_WOTargetStartDate = new ModelColumn<>(I_C_Project_WO_Step.class, "WOTargetStartDate", null);
+	String COLUMNNAME_WOTargetStartDate = "WOTargetStartDate";
 }

@@ -42,6 +42,7 @@ import de.metas.common.rest_api.v2.JsonQuantity;
 import de.metas.common.rest_api.v2.JsonVendor;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.APIResponse;
+import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
@@ -84,12 +85,16 @@ public class CreatePurchaseCandidate_StepDef
 	private JsonPurchaseCandidateCreateItem.JsonPurchaseCandidateCreateItemBuilder jsonPurchaseCandidateCreateItem;
 	private final JsonPurchaseCandidateRequest.JsonPurchaseCandidateRequestBuilder jsonPurchaseCandidateRequest = JsonPurchaseCandidateRequest.builder();
 
+	private final C_OrderLine_StepDefData orderLineTable;
+
 	public CreatePurchaseCandidate_StepDef(
 			@NonNull final C_Activity_StepDefData activityTable,
-			@NonNull final TestContext testContext)
+			@NonNull final TestContext testContext,
+			@NonNull final C_OrderLine_StepDefData orderLineTable)
 	{
 		this.activityTable = activityTable;
 		this.testContext = testContext;
+		this.orderLineTable = orderLineTable;
 		this.purchaseCandidateRepo = SpringContextHolder.instance.getBean(PurchaseCandidateRepository.class);
 	}
 

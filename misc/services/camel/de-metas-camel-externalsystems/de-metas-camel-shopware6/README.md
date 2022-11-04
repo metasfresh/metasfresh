@@ -203,6 +203,17 @@ we need to invoke the endpoint `api/v2/orders/sales/candidates/bulk`
 
 #### 1. OrderCandidate - all `metasfresh-column` values refer to `C_OLCand` columns
 
+1.1 `PaymentMethodType` - used to check if order is ready for import, otherwise the order is skipped. 
+Based on `PaymentMethodType`, order transaction must be:
+* `debit_payment` - `SEPA` -> `open` or in `progress` (`debit-payments` are automatically set to "inProgress" in the shop)
+* `pre_payment` - `Vorkasse` -> `open`
+* `invoice_payment` - `Rechnung` -> `open`
+* `pay_pal_payment_handler` - `PayPal` -> `paid`
+* `a_c_d_c_handler` - `Kredit- oder Debitkarte` -> `open` or in `progress`
+* the following types will always result in skipping the order
+  * `pay_pal_pui_payment_handler` - `Rechnungskauf Paypal`
+  * `cash_payment` - `Nachnahme`
+
 Shopware | metasfresh-column        | mandatory in mf | metasfresh-json | note |
 ---- |--------------------------| ---- | ---- | ---- |
 JsonExternalSystemRequest.orgCode | `ad_org_id`              | Y | JsonOLCandCreateRequest.orgCode | |
@@ -382,3 +393,25 @@ AddressDetail.phoneNumber | `C_BPartner_Location.phone` | N | JsonRequestLocatio
 AddressDetail.customEmail | `C_BPartner_Location.email` | N | JsonRequestLocation.email | |
 --- | `C_BPartner_Location.C_BPartner_Location_ID` | Y | JsonRequestLocationUpsertItem.locationIdentifier | `ext-Shopware6-{{locationIdentifier}}-{{suffix}}` where `suffix` can be [`-billTo`, `-shipTo`]; `locationIdentifier = computedId`
 JsonExternalSystemShopware6ConfigMappings.mappings.bPartnerLocationSyncAdvice | ---- | Y | JsonRequestLocationUpsert.syncAdvise | |
+
+## Workflows for pushing data to Shopware6
+
+* `Stock` - pushed via the endpoint `api/product/{id}`
+
+Pushed if the following parameter is set on window `541116 - ExternalSystem_Config_Shopware6`
+
+* `IsSyncAvailableForSalesToShopware6`
+  * If checked, the current planned quantity available for sales is automatically sent to Shopware6.
+
+Client can set the percentage that is subtracted from the actual available for sales before it is transferred to Shopware,
+by setting the following parameter on the same window, by default it is 0:
+
+* `PercentageOfAvailableForSalesToSync`
+
+Shopware | metasfresh-column |
+---- | ---- |
+stock | *availableForSales|
+
+* `availableForSales = (MD_Available_For_Sales.QtyOnHandStock - MD_Available_For_Sales.QtyToBeShipped) * 
+(100 - ExternalSystem_Config_Shopware6.PercentageOfAvailableForSalesToSync) / 100`
+  * `MD_Available_For_Sales` counts for all records found for the exported product within the config's organisation

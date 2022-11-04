@@ -29,11 +29,13 @@ import de.metas.product.ProductType;
 import de.metas.product.ResourceId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.OldAndNewValues;
 import org.compiere.Adempiere;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_S_Resource;
@@ -41,7 +43,9 @@ import org.compiere.model.I_S_ResourceType;
 import org.compiere.model.I_S_Resource_Group;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
@@ -97,6 +101,16 @@ public class ResourceService
 		return resourceRepository.getAllActive();
 	}
 
+	public ImmutableSet<ResourceId> getActiveResourceIdsByGroupIds(@NonNull final Set<ResourceGroupId> groupIds)
+	{
+		return resourceRepository.getActiveResourceIdsByGroupIds(groupIds);
+	}
+
+	public ImmutableSet<ResourceGroupId> getGroupIdsByResourceIds(@NonNull final Set<ResourceId> resourceIds)
+	{
+		return resourceRepository.getGroupIdsByResourceIds(resourceIds);
+	}
+
 	public Stream<ResourceAssignment> queryResourceAssignments(final ResourceAssignmentQuery query)
 	{
 		return resourceAssignmentRepository.query(query);
@@ -107,7 +121,7 @@ public class ResourceService
 		return resourceAssignmentRepository.create(request);
 	}
 
-	public ResourceAssignment changeResourceAssignment(
+	public OldAndNewValues<ResourceAssignment> changeResourceAssignment(
 			@NonNull final ResourceAssignmentId id,
 			@NonNull final UnaryOperator<ResourceAssignment> mapper)
 	{
@@ -144,7 +158,7 @@ public class ResourceService
 		return resourceGroupAssignmentRepository.create(request);
 	}
 
-	public ResourceGroupAssignment changeResourceGroupAssignmentById(
+	public OldAndNewValues<ResourceGroupAssignment> changeResourceGroupAssignmentById(
 			@NonNull final ResourceGroupAssignmentId id,
 			@NonNull final UnaryOperator<ResourceGroupAssignment> mapper)
 	{
@@ -228,6 +242,14 @@ public class ResourceService
 		productDAO.updateProductsByResourceIds(resourceIds, product -> updateProductFromResourceType(product, resourceType));
 	}
 
+	@NonNull
+	public Optional<ResourceGroupId> getResourceGroupId(@Nullable final ResourceId resourceId)
+	{
+		return Optional.ofNullable(resourceId)
+				.map(this::getResourceById)
+				.map(Resource::getResourceGroupId);
+	}
+
 	private static void updateProductFromResourceType(final I_M_Product product, final ResourceType from)
 	{
 		product.setProductType(ProductType.Resource.getCode());
@@ -266,6 +288,11 @@ public class ResourceService
 	public void onResourceGroupBeforeDelete(final ResourceGroupId resourceGroupId)
 	{
 		productDAO.deleteProductByResourceGroupId(resourceGroupId);
+	}
+
+	public ImmutableSet<ResourceId> getResourceIdsByUserId(@NonNull final UserId userId)
+	{
+		return resourceRepository.getResourceIdsByUserId(userId);
 	}
 
 	//

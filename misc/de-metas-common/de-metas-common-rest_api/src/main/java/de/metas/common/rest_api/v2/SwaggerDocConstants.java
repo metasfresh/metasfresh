@@ -80,4 +80,22 @@ public class SwaggerDocConstants
 	public static final String ACTIVITY_IDENTIFIER_DOC = "Identifier of the activity in question. Can be\n"
 			+ "* a plain `<C_Activity_ID>`\n"
 			+ "* or something like `val-<C_Activity.Value>`";
+
+	public static final String PROJECT_IDENTIFIER_DOC = "Identifier of the project in question. Can be\n"
+			+ "* a plain `<C_Project_ID>`\n"
+			+ "* or something like `ext-<C_Project.ExternalId>`\n"
+			+ "* or something like `val-<C_Project.value>`\n";
+
+	public static final String STEP_IDENTIFIER_DOC = "Identifier of the project step in question. Can be\n"
+			+ "* a plain `<C_Project_WO_Step_ID>`\n"
+			+ "* or something like `ext-<C_Project_WO_Step.ExternalId>`\n";
+
+	public static final String OBJECT_UNDER_TEST_IDENTIFIER_DOC = "Identifier of the project object under test in question. Can be\n"
+			+ "* a plain `<C_Project_WO_ObjectUnderTest_ID>`\n"
+			+ "* or something like `ext-<C_Project_WO_ObjectUnderTest.ExternalId>`\n";
+
+	public static final String RESOURCE_IDENTIFIER_DOC = "Identifier of the step resource in question. Can be\n"
+			+ "* a plain `<S_Resource_ID>`\n"
+			+ "* or something like `val-<S_Resource.Value>`\n"
+			+ "* or something like `int-<S_Resource.InternalName>`\n";
 }

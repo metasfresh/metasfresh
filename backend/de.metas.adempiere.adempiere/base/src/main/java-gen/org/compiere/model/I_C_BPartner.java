@@ -1,22 +1,42 @@
 package org.compiere.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-
 /** Generated Interface for C_BPartner
- *  @author metasfresh (generated)
+ *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_C_BPartner
+public interface I_C_BPartner 
 {
 
 	String Table_Name = "C_BPartner";
 
-	//	/** AD_Table_ID=291 */
-	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+//	/** AD_Table_ID=291 */
+//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
+
+	/**
+	 * Set ABC.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setABC (@Nullable java.lang.String ABC);
+
+	/**
+	 * Get ABC.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getABC();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_ABC = new ModelColumn<>(I_C_BPartner.class, "ABC", null);
+	String COLUMNNAME_ABC = "ABC";
 
 	/**
 	 * Set Akquisitionskosten.
@@ -171,6 +191,27 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, org.compiere.model.I_AD_Org_Mapping> COLUMN_AD_Org_Mapping_ID = new ModelColumn<>(I_C_BPartner.class, "AD_Org_Mapping_ID", org.compiere.model.I_AD_Org_Mapping.class);
 	String COLUMNNAME_AD_Org_Mapping_ID = "AD_Org_Mapping_ID";
+
+	/**
+	 * Set Affiliate.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAffiliate (boolean Affiliate);
+
+	/**
+	 * Get Affiliate.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAffiliate();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_Affiliate = new ModelColumn<>(I_C_BPartner.class, "Affiliate", null);
+	String COLUMNNAME_Affiliate = "Affiliate";
 
 	/**
 	 * Set Role.
@@ -1077,6 +1118,27 @@ public interface I_C_BPartner
 	String COLUMNNAME_ExternalId = "ExternalId";
 
 	/**
+	 * Set Facebook.
+	 *
+	 * <br>Type: URL
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setFacebook (@Nullable java.lang.String Facebook);
+
+	/**
+	 * Get Facebook.
+	 *
+	 * <br>Type: URL
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getFacebook();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_Facebook = new ModelColumn<>(I_C_BPartner.class, "Facebook", null);
+	String COLUMNNAME_Facebook = "Facebook";
+
+	/**
 	 * Set Firstname.
 	 * Firstname
 	 *
@@ -1251,6 +1313,27 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_HaddexControlNr = new ModelColumn<>(I_C_BPartner.class, "HaddexControlNr", null);
 	String COLUMNNAME_HaddexControlNr = "HaddexControlNr";
+
+	/**
+	 * Set Industrial Sector.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIndustrial_sector (@Nullable java.lang.String Industrial_sector);
+
+	/**
+	 * Get Industrial Sector.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIndustrial_sector();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_Industrial_sector = new ModelColumn<>(I_C_BPartner.class, "Industrial_sector", null);
+	String COLUMNNAME_Industrial_sector = "Industrial_sector";
 
 	/**
 	 * Set Internal Name.
@@ -1948,6 +2031,48 @@ public interface I_C_BPartner
 	String COLUMNNAME_Lastname = "Lastname";
 
 	/**
+	 * Set Legal Form.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLegal_form (@Nullable java.lang.String Legal_form);
+
+	/**
+	 * Get Legal Form.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getLegal_form();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_Legal_form = new ModelColumn<>(I_C_BPartner.class, "Legal_form", null);
+	String COLUMNNAME_Legal_form = "Legal_form";
+
+	/**
+	 * Set LinkedIn.
+	 *
+	 * <br>Type: URL
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLinkedIn (@Nullable java.lang.String LinkedIn);
+
+	/**
+	 * Get LinkedIn.
+	 *
+	 * <br>Type: URL
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getLinkedIn();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_LinkedIn = new ModelColumn<>(I_C_BPartner.class, "LinkedIn", null);
+	String COLUMNNAME_LinkedIn = "LinkedIn";
+
+	/**
 	 * Set Logo.
 	 *
 	 * <br>Type: Image
@@ -2153,6 +2278,27 @@ public interface I_C_BPartner
 	String COLUMNNAME_M_PricingSystem_ID = "M_PricingSystem_ID";
 
 	/**
+	 * Set MRN/ABN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMRN_ABN (@Nullable java.lang.String MRN_ABN);
+
+	/**
+	 * Get MRN/ABN.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getMRN_ABN();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_MRN_ABN = new ModelColumn<>(I_C_BPartner.class, "MRN_ABN", null);
+	String COLUMNNAME_MRN_ABN = "MRN_ABN";
+
+	/**
 	 * Set Exclude from MRP.
 	 *
 	 * <br>Type: List
@@ -2311,6 +2457,27 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_Name3 = new ModelColumn<>(I_C_BPartner.class, "Name3", null);
 	String COLUMNNAME_Name3 = "Name3";
+
+	/**
+	 * Set Number of Employees.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setNumber_employees (@Nullable java.lang.String Number_employees);
+
+	/**
+	 * Get Number of Employees.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getNumber_employees();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_Number_employees = new ModelColumn<>(I_C_BPartner.class, "Number_employees", null);
+	String COLUMNNAME_Number_employees = "Number_employees";
 
 	/**
 	 * Set Mitarbeiter.
@@ -2716,6 +2883,27 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_PotentialLifeTimeValue = new ModelColumn<>(I_C_BPartner.class, "PotentialLifeTimeValue", null);
 	String COLUMNNAME_PotentialLifeTimeValue = "PotentialLifeTimeValue";
+
+	/**
+	 * Set Preferred Import.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPreferred_import (@Nullable java.lang.String Preferred_import);
+
+	/**
+	 * Get Preferred Import.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPreferred_import();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_Preferred_import = new ModelColumn<>(I_C_BPartner.class, "Preferred_import", null);
+	String COLUMNNAME_Preferred_import = "Preferred_import";
 
 	/**
 	 * Set QMS Certificate.
@@ -3154,6 +3342,27 @@ public interface I_C_BPartner
 	String COLUMNNAME_ShortDescription = "ShortDescription";
 
 	/**
+	 * Set Social Media 5.
+	 *
+	 * <br>Type: URL
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSocial_media_5 (@Nullable java.lang.String Social_media_5);
+
+	/**
+	 * Get Social Media 5.
+	 *
+	 * <br>Type: URL
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSocial_media_5();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_Social_media_5 = new ModelColumn<>(I_C_BPartner.class, "Social_media_5", null);
+	String COLUMNNAME_Social_media_5 = "Social_media_5";
+
+	/**
 	 * Set Beschreibung Auftrag.
 	 * Description to be used on orders
 	 *
@@ -3177,8 +3386,8 @@ public interface I_C_BPartner
 	String COLUMNNAME_SO_Description = "SO_Description";
 
 	/**
-	 * Set Zielbelegart.
-	 * Zielbelegart für die Umwandlung von Dokumenten
+	 * Set Document Type.
+	 * Target document type for conversing documents
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -3187,8 +3396,8 @@ public interface I_C_BPartner
 	void setSO_DocTypeTarget_ID (int SO_DocTypeTarget_ID);
 
 	/**
-	 * Get Zielbelegart.
-	 * Zielbelegart für die Umwandlung von Dokumenten
+	 * Get Document Type.
+	 * Target document type for conversing documents
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -3264,6 +3473,27 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_TitleShort = new ModelColumn<>(I_C_BPartner.class, "TitleShort", null);
 	String COLUMNNAME_TitleShort = "TitleShort";
+
+	/**
+	 * Set Twitter.
+	 *
+	 * <br>Type: URL
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setTwitter (@Nullable java.lang.String Twitter);
+
+	/**
+	 * Get Twitter.
+	 *
+	 * <br>Type: URL
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getTwitter();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_Twitter = new ModelColumn<>(I_C_BPartner.class, "Twitter", null);
+	String COLUMNNAME_Twitter = "Twitter";
 
 	/**
 	 * Get Updated.
@@ -3421,4 +3651,25 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_VendorCategory = new ModelColumn<>(I_C_BPartner.class, "VendorCategory", null);
 	String COLUMNNAME_VendorCategory = "VendorCategory";
+
+	/**
+	 * Set Xing.
+	 *
+	 * <br>Type: URL
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setXing (@Nullable java.lang.String Xing);
+
+	/**
+	 * Get Xing.
+	 *
+	 * <br>Type: URL
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getXing();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_Xing = new ModelColumn<>(I_C_BPartner.class, "Xing", null);
+	String COLUMNNAME_Xing = "Xing";
 }

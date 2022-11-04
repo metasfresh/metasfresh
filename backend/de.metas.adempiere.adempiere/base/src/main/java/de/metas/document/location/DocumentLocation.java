@@ -59,6 +59,10 @@ public class DocumentLocation
 			@Nullable final BPartnerContactId contactId,
 			@Nullable final String bpartnerAddress)
 	{
+		if ((bpartnerLocationId != null || contactId != null) && bpartnerId == null)
+		{
+			throw new AdempiereException("If bpartnerLocationId=" + bpartnerLocationId + " OR contactId=" + contactId + " are not null, then bpartnerId may also not be null");
+		}
 		if (bpartnerLocationId != null && !bpartnerLocationId.getBpartnerId().equals(bpartnerId))
 		{
 			throw new AdempiereException("" + bpartnerId + " and " + bpartnerLocationId + " shall match");

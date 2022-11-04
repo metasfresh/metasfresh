@@ -11,6 +11,9 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_S_Resource;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 /*
  * #%L
@@ -73,5 +76,11 @@ public class ResourceProductService implements IResourceProductService
 	{
 		final IProductDAO productsRepo = Services.get(IProductDAO.class);
 		return productsRepo.getProductIdByResourceId(resourceId);
+	}
+
+	@Override
+	public I_S_Resource getById(@NonNull final ResourceId resourceId)
+	{
+		return loadOutOfTrx(resourceId, I_S_Resource.class);
 	}
 }

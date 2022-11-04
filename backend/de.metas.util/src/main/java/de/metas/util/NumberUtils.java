@@ -204,7 +204,7 @@ public final class NumberUtils
 		return integerValue;
 	}
 
-	public static int asIntOrZero(final Object value)
+	public static int asIntOrZero(@Nullable final Object value)
 	{
 		return asInt(value, 0);
 	}
@@ -249,7 +249,7 @@ public final class NumberUtils
 		{
 			try
 			{
-				final BigDecimal bd = new BigDecimal(value.toString());
+				final BigDecimal bd = new BigDecimal(value.toString().trim());
 				return bd.intValue();
 			}
 			catch (final NumberFormatException e)

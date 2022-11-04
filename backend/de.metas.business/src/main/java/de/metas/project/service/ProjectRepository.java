@@ -22,11 +22,11 @@
 
 package de.metas.project.service;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListVersionId;
@@ -34,45 +34,33 @@ import de.metas.project.Project;
 import de.metas.project.ProjectCategory;
 import de.metas.project.ProjectData;
 import de.metas.project.ProjectId;
-import de.metas.project.ProjectType;
 import de.metas.project.ProjectTypeId;
-import de.metas.project.ProjectTypeRepository;
 import de.metas.project.RStatusId;
+import de.metas.project.RequestStatusCategoryId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
-import de.metas.util.Node;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.X_C_Project;
+import org.compiere.util.DB;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Repository
 public class ProjectRepository
 {
-	private final IDocumentNoBuilderFactory documentNoBuilderFactory;
-	private final ProjectTypeRepository projectTypeRepository;
-
-	public ProjectRepository(
-			@NonNull final IDocumentNoBuilderFactory documentNoBuilderFactory,
-			@NonNull final ProjectTypeRepository projectTypeRepository)
-	{
-		this.documentNoBuilderFactory = documentNoBuilderFactory;
-		this.projectTypeRepository = projectTypeRepository;
-	}
 
 	@NonNull
 	public Optional<Project> getOptionalById(@NonNull final ProjectId id)
@@ -108,59 +96,40 @@ public class ProjectRepository
 		return save(record, projectData);
 	}
 
-	@NonNull
-	public Set<ProjectId> getProjectIdsUpstream(@NonNull final ProjectId projectId)
+	public ImmutableList<ProjectId> getProjectIdsUpStream(@NonNull final ProjectId projectId)
 	{
-		final Node<I_C_Project> root = Node.of(getRecordById(projectId), new ArrayList<>());
-
-		final HashSet<ProjectId> seenIds = new HashSet<>();
-
-		Node<I_C_Project> currentNode = root;
-		seenIds.add(projectId);
-
-		Optional<ProjectId> parentProjectId = Optional.ofNullable(ProjectId.ofRepoIdOrNull(currentNode.getValue().getC_Project_Parent_ID()));
-
-		while (parentProjectId.isPresent() && !seenIds.contains(parentProjectId.get()))
-		{
-			seenIds.add(parentProjectId.get()); //infinite loop protection
-
-			final I_C_Project parentProjectRecord = getRecordById(parentProjectId.get());
-
-			final Node<I_C_Project> parentNode = Node.of(parentProjectRecord, Collections.singletonList(currentNode));
-
-			currentNode.setParent(parentNode);
-
-			currentNode = parentNode;
-			parentProjectId = Optional.ofNullable(ProjectId.ofRepoIdOrNull(currentNode.getValue().getC_Project_Parent_ID()));
-		}
-
-		return root.getUpStream()
-				.stream()
-				.map(Node::getValue)
-				.map(I_C_Project::getC_Project_ID)
-				.map(ProjectId::ofRepoId)
-				.collect(ImmutableSet.toImmutableSet());
+		return DB.retrieveRows(
+				"SELECT C_Project_ID FROM getC_Project_IDs_UpStream(?)",
+				Collections.singletonList(projectId),
+				rs -> ProjectId.ofRepoId(rs.getInt(1)));
 	}
-	public void updateFromProjectType(@NonNull final I_C_Project projectRecord)
+
+	public ImmutableSet<ProjectId> getProjectIdsUpStream(@NonNull final Collection<ProjectId> projectIds)
 	{
-		final ProjectTypeId projectTypeId = ProjectTypeId.ofRepoIdOrNull(projectRecord.getC_ProjectType_ID());
-		if (projectTypeId == null)
+		if (projectIds.isEmpty())
 		{
-			return;
+			return ImmutableSet.of();
 		}
 
-		final String projectValue = computeNextProjectValue(projectRecord);
-		if (projectValue != null)
+		final ArrayList<Object> sqlParams = new ArrayList<>();
+		return DB.retrieveUniqueRows(
+				"SELECT DISTINCT C_Project_ID FROM getC_Project_IDs_UpStream(p_C_Project_IDs:=" + DB.TO_ARRAY(projectIds, sqlParams) + ")",
+				sqlParams,
+				rs -> ProjectId.ofRepoId(rs.getInt(1)));
+	}
+
+	public ImmutableSet<ProjectId> getProjectIdsDownStream(@NonNull final Collection<ProjectId> projectIds)
+	{
+		if (projectIds.isEmpty())
 		{
-			projectRecord.setValue(projectValue);
-		}
-		if (Check.isEmpty(projectRecord.getName()))
-		{
-			projectRecord.setName(projectValue != null ? projectValue : ".");
+			return ImmutableSet.of();
 		}
 
-		final ProjectType projectType = projectTypeRepository.getById(projectTypeId);
-		projectRecord.setProjectCategory(projectType.getProjectCategory().getCode());
+		final ArrayList<Object> sqlParams = new ArrayList<>();
+		return DB.retrieveUniqueRows(
+				"SELECT DISTINCT C_Project_ID FROM getC_Project_IDs_DownStream(p_C_Project_IDs:=" + DB.TO_ARRAY(projectIds, sqlParams) + ")",
+				sqlParams,
+				rs -> ProjectId.ofRepoId(rs.getInt(1)));
 	}
 
 	@NonNull
@@ -174,6 +143,7 @@ public class ProjectRepository
 		{
 			projectRecord.setName(projectData.getName());
 		}
+		projectRecord.setValue(projectData.getValue());
 
 		projectRecord.setAD_Org_ID(OrgId.toRepoId(projectData.getOrgId()));
 		projectRecord.setDescription(projectData.getDescription());
@@ -190,48 +160,13 @@ public class ProjectRepository
 		projectRecord.setDateFinish(TimeUtil.asTimestamp(projectData.getDateFinish()));
 		projectRecord.setIsActive(projectData.isActive());
 		projectRecord.setProjectCategory(projectData.getProjectCategory() != null ? projectData.getProjectCategory().getCode() : null);
+		projectRecord.setR_StatusCategory_ID(RequestStatusCategoryId.toRepoId(projectData.getRequestStatusCategoryId()));
 
 		projectRecord.setC_ProjectType_ID(ProjectTypeId.toRepoId(projectData.getProjectTypeId()));
-
-		updateFromProjectType(projectRecord);
-
-		projectRecord.setValue(getValue(projectData, projectRecord));
 
 		saveRecord(projectRecord);
 
 		return ofProjectRecord(projectRecord);
-	}
-
-	@Nullable
-	public String computeNextProjectValue(final I_C_Project projectRecord)
-	{
-		return documentNoBuilderFactory
-				.createValueBuilderFor(projectRecord)
-				.setFailOnError(false)
-				.build();
-	}
-
-	@NonNull
-	private String getValue(@NonNull final ProjectData projectData, final I_C_Project projectRecord)
-	{
-		if (Check.isNotBlank(projectData.getValue()))
-		{
-			return projectData.getValue();
-		}
-
-		if (Check.isNotBlank(projectRecord.getValue()))
-		{
-			return projectRecord.getValue();
-		}
-
-		final String computedValue = computeNextProjectValue(projectRecord);
-
-		if (computedValue == null)
-		{
-			throw new AdempiereException("No C_Project.Value could be computed for C_Project_ID=" + projectRecord.getC_Project_ID());
-		}
-
-		return computedValue;
 	}
 
 	@NonNull
@@ -262,6 +197,7 @@ public class ProjectRepository
 				.projectParentId(ProjectId.ofRepoIdOrNull(projectRecord.getC_Project_Parent_ID()))
 				.projectTypeId(ProjectTypeId.ofRepoIdOrNull((projectRecord.getC_ProjectType_ID())))
 				.projectCategory(ProjectCategory.ofNullableCode(projectRecord.getProjectCategory()))
+				.requestStatusCategoryId(RequestStatusCategoryId.ofRepoId(projectRecord.getR_StatusCategory_ID()))
 				.projectStatusId(RStatusId.ofRepoIdOrNull(projectRecord.getR_Project_Status_ID()))
 				.bPartnerId(BPartnerId.ofRepoIdOrNull(projectRecord.getC_BPartner_ID()))
 				.salesRepId(UserId.ofIntegerOrNull(projectRecord.getSalesRep_ID()))

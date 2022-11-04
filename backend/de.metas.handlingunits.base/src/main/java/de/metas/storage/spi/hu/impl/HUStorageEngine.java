@@ -62,6 +62,8 @@ public class HUStorageEngine implements IStorageEngine
 	private static final transient String SYSCONFIG_QueriesPerChunk = "de.metas.storage.spi.hu.impl.HUStorageEngine.QueriesPerChunk";
 	private static final transient int DEFAULT_QueriesPerChunk = 500;
 
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	
 	@VisibleForTesting
 	public HUStorageEngine()
 	{
@@ -70,8 +72,7 @@ public class HUStorageEngine implements IStorageEngine
 	@Override
 	public IStorageQuery newStorageQuery()
 	{
-		final HUStorageQuery huStorageQuery = new HUStorageQuery();
-		return huStorageQuery;
+		return new HUStorageQuery();
 	}
 
 	@Override
@@ -87,9 +88,9 @@ public class HUStorageEngine implements IStorageEngine
 	}
 
 	@Override
-	public Set<IStorageRecord> retrieveStorageRecords(
+	public List<IStorageRecord> retrieveStorageRecords(
 			@NonNull final IContextAware context,
-			@NonNull final Set<IStorageQuery> storageQueries)
+			@NonNull final List<IStorageQuery> storageQueries)
 	{
 		Check.assumeNotEmpty(storageQueries, "storageQueries not empty");
 
@@ -100,12 +101,12 @@ public class HUStorageEngine implements IStorageEngine
 
 		IQuery<I_M_HU_Storage> queryAgg = null;
 		int queriesCount = 0;
-		final Set<IStorageRecord> storageRecords = new HashSet<>();
+		final ArrayList<IStorageRecord> storageRecords = new ArrayList<>();
 
 		for (final IStorageQuery storageQuery : storageQueries)
 		{
 			//
-			// Retrieve stoarge records for current query aggregation / chunk
+			// Retrieve storage records for current query aggregation / chunk
 			if (queriesPerChunk > 0 && queriesCount >= queriesPerChunk)
 			{
 				final List<I_M_HU_Storage> huStoragesPerChunk = queryAgg.list();
@@ -142,15 +143,13 @@ public class HUStorageEngine implements IStorageEngine
 			final List<I_M_HU_Storage> huStoragesPerChunk = queryAgg.list();
 			final List<IStorageRecord> storageRecordsPerChunk = createHUStorageRecords(context, huStoragesPerChunk);
 			storageRecords.addAll(storageRecordsPerChunk);
-			queryAgg = null;
-			queriesCount = 0;
 		}
 
 		logger.debug("Returning {} storage records", storageRecords.size());
 		return storageRecords;
 	}
 
-	private final List<IStorageRecord> createHUStorageRecords(final IContextAware context, final Collection<I_M_HU_Storage> huStorages)
+	private List<IStorageRecord> createHUStorageRecords(final IContextAware context, final Collection<I_M_HU_Storage> huStorages)
 	{
 		if (huStorages == null || huStorages.isEmpty())
 		{
@@ -199,10 +198,9 @@ public class HUStorageEngine implements IStorageEngine
 		return huContext.getHUAttributeStorageFactory().getAttributeStorage(asi);
 	}
 
-	private final int getQueriesPerChunk()
+	private int getQueriesPerChunk()
 	{
-		final int queriesPerChunk = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_QueriesPerChunk, DEFAULT_QueriesPerChunk);
-		return queriesPerChunk;
+		return sysConfigBL.getIntValue(SYSCONFIG_QueriesPerChunk, DEFAULT_QueriesPerChunk);
 	}
 
 	@Override

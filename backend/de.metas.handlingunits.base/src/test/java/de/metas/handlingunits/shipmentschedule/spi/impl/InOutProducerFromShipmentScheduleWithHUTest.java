@@ -420,15 +420,22 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 		private void createDocType(final DocBaseAndSubType docBaseAndSubType)
 		{
 			final I_C_DocType docTypeRecord = newInstance(I_C_DocType.class);
-			docTypeRecord.setDocBaseType(docBaseAndSubType.getDocBaseType());
+			docTypeRecord.setDocBaseType(docBaseAndSubType.getDocBaseType().getCode());
 			docTypeRecord.setDocSubType(docBaseAndSubType.getDocSubType());
 			saveRecord(docTypeRecord);
 		}
 
 		private OrderId order()
 		{
+			final I_C_DocType salesOrderDoctype = InterfaceWrapperHelper.create(Env.getCtx(), I_C_DocType.class, ITrx.TRXNAME_None);
+			salesOrderDoctype.setDocBaseType(X_C_DocType.DOCBASETYPE_SalesOrder);
+			salesOrderDoctype.setAD_Org_ID(0);
+			saveRecord(salesOrderDoctype);
+
 			final I_C_Order order = newInstance(I_C_Order.class);
+			order.setC_DocType_ID(salesOrderDoctype.getC_DocType_ID());
 			saveRecord(order);
+
 			return OrderId.ofRepoId(order.getC_Order_ID());
 		}
 

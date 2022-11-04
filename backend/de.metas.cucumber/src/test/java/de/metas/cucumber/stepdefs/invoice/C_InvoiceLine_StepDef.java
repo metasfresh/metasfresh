@@ -71,7 +71,6 @@ public class C_InvoiceLine_StepDef
 	private final M_Product_StepDefData productTable;
 	private final C_Project_StepDefData projectTable;
 	private final C_Tax_StepDefData taxTable;
-
 	private final C_TaxCategory_StepDefData taxCategoryTable;
 
 	public C_InvoiceLine_StepDef(
@@ -106,7 +105,7 @@ public class C_InvoiceLine_StepDef
 		final List<Map<String, String>> dataTable = table.asMaps();
 		for (final Map<String, String> row : dataTable)
 		{
-			final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice.COLUMNNAME_C_Invoice_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final String invoiceIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice.COLUMNNAME_C_Invoice_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 			final I_C_Invoice invoiceRecord = invoiceTable.get(invoiceIdentifier);
 
@@ -147,12 +146,15 @@ public class C_InvoiceLine_StepDef
 		{
 
 			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_Product product = productTable.get(productIdentifier);
+			final Integer productID = productTable.getOptional(productIdentifier)
+					.map(I_M_Product::getM_Product_ID)
+					.orElseGet(() -> Integer.parseInt(productIdentifier));
+			assertThat(productID).isNotNull();
 
 			final BigDecimal qtyinvoiced = DataTableUtil.extractBigDecimalForColumnName(row, "qtyinvoiced");
 
 			final I_C_InvoiceLine currentInvoiceLine = Check.singleElement(invoiceLines.stream()
-																				   .filter(line -> line.getM_Product_ID() == product.getM_Product_ID())
+																				   .filter(line -> line.getM_Product_ID() == productID)
 																				   .filter(line -> line.getQtyInvoiced().equals(qtyinvoiced))
 																				   .collect(ImmutableList.toImmutableList()));
 

@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Project
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_Project extends org.compiere.model.PO implements I_C_Project, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1432280558L;
+	private static final long serialVersionUID = 657721615L;
 
     /** Standard Constructor */
     public X_C_Project (final Properties ctx, final int C_Project_ID, @Nullable final String trxName)
@@ -48,6 +48,30 @@ public class X_C_Project extends org.compiere.model.PO implements I_C_Project, o
 	public int getAD_User_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_User_ID);
+	}
+
+	@Override
+	public void setBPartnerDepartment (final @Nullable java.lang.String BPartnerDepartment)
+	{
+		set_Value (COLUMNNAME_BPartnerDepartment, BPartnerDepartment);
+	}
+
+	@Override
+	public java.lang.String getBPartnerDepartment()
+	{
+		return get_ValueAsString(COLUMNNAME_BPartnerDepartment);
+	}
+
+	@Override
+	public void setBPartnerTargetDate (final @Nullable java.sql.Timestamp BPartnerTargetDate)
+	{
+		set_Value (COLUMNNAME_BPartnerTargetDate, BPartnerTargetDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getBPartnerTargetDate()
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_BPartnerTargetDate);
 	}
 
 	@Override
@@ -138,6 +162,44 @@ public class X_C_Project extends org.compiere.model.PO implements I_C_Project, o
 	}
 
 	@Override
+	public void setCommittedAmt (final BigDecimal CommittedAmt)
+	{
+		set_Value (COLUMNNAME_CommittedAmt, CommittedAmt);
+	}
+
+	@Override
+	public BigDecimal getCommittedAmt() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CommittedAmt);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setCommittedQty (final BigDecimal CommittedQty)
+	{
+		set_Value (COLUMNNAME_CommittedQty, CommittedQty);
+	}
+
+	@Override
+	public BigDecimal getCommittedQty() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CommittedQty);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setCopyFrom (final @Nullable java.lang.String CopyFrom)
+	{
+		set_Value (COLUMNNAME_CopyFrom, CopyFrom);
+	}
+
+	@Override
+	public java.lang.String getCopyFrom() 
+	{
+		return get_ValueAsString(COLUMNNAME_CopyFrom);
+	}
+
+	@Override
 	public void setC_PaymentTerm_ID (final int C_PaymentTerm_ID)
 	{
 		if (C_PaymentTerm_ID < 1) 
@@ -224,14 +286,14 @@ public class X_C_Project extends org.compiere.model.PO implements I_C_Project, o
 	@Override
 	public void setC_Project_Parent_ID (final int C_Project_Parent_ID)
 	{
-		if (C_Project_Parent_ID < 1) 
+		if (C_Project_Parent_ID < 1)
 			set_Value (COLUMNNAME_C_Project_Parent_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_Project_Parent_ID, C_Project_Parent_ID);
 	}
 
 	@Override
-	public int getC_Project_Parent_ID() 
+	public int getC_Project_Parent_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Project_Parent_ID);
 	}
@@ -243,7 +305,7 @@ public class X_C_Project extends org.compiere.model.PO implements I_C_Project, o
 	}
 
 	@Override
-	public java.lang.String getC_Project_Reference_Ext() 
+	public java.lang.String getC_Project_Reference_Ext()
 	{
 		return get_ValueAsString(COLUMNNAME_C_Project_Reference_Ext);
 	}
@@ -276,44 +338,6 @@ public class X_C_Project extends org.compiere.model.PO implements I_C_Project, o
 	}
 
 	@Override
-	public void setCommittedAmt (final BigDecimal CommittedAmt)
-	{
-		set_Value (COLUMNNAME_CommittedAmt, CommittedAmt);
-	}
-
-	@Override
-	public BigDecimal getCommittedAmt() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CommittedAmt);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setCommittedQty (final BigDecimal CommittedQty)
-	{
-		set_Value (COLUMNNAME_CommittedQty, CommittedQty);
-	}
-
-	@Override
-	public BigDecimal getCommittedQty() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CommittedQty);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setCopyFrom (final @Nullable java.lang.String CopyFrom)
-	{
-		set_Value (COLUMNNAME_CopyFrom, CopyFrom);
-	}
-
-	@Override
-	public java.lang.String getCopyFrom() 
-	{
-		return get_ValueAsString(COLUMNNAME_CopyFrom);
-	}
-
-	@Override
 	public void setDateContract (final @Nullable java.sql.Timestamp DateContract)
 	{
 		set_Value (COLUMNNAME_DateContract, DateContract);
@@ -338,6 +362,18 @@ public class X_C_Project extends org.compiere.model.PO implements I_C_Project, o
 	}
 
 	@Override
+	public void setDateOfProvisionByBPartner (final @Nullable java.sql.Timestamp DateOfProvisionByBPartner)
+	{
+		set_Value (COLUMNNAME_DateOfProvisionByBPartner, DateOfProvisionByBPartner);
+	}
+
+	@Override
+	public java.sql.Timestamp getDateOfProvisionByBPartner()
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_DateOfProvisionByBPartner);
+	}
+
+	@Override
 	public void setDescription (final @Nullable java.lang.String Description)
 	{
 		set_Value (COLUMNNAME_Description, Description);
@@ -350,15 +386,15 @@ public class X_C_Project extends org.compiere.model.PO implements I_C_Project, o
 	}
 
 	@Override
-	public void setenddatetime (final @Nullable java.sql.Timestamp enddatetime)
+	public void setExternalId (final @Nullable java.lang.String ExternalId)
 	{
-		set_Value (COLUMNNAME_enddatetime, enddatetime);
+		set_Value (COLUMNNAME_ExternalId, ExternalId);
 	}
 
 	@Override
-	public java.sql.Timestamp getenddatetime() 
+	public java.lang.String getExternalId() 
 	{
-		return get_ValueAsTimestamp(COLUMNNAME_enddatetime);
+		return get_ValueAsString(COLUMNNAME_ExternalId);
 	}
 
 	@Override
@@ -684,6 +720,33 @@ public class X_C_Project extends org.compiere.model.PO implements I_C_Project, o
 	}
 
 	@Override
+	public org.compiere.model.I_R_StatusCategory getR_StatusCategory()
+	{
+		return get_ValueAsPO(COLUMNNAME_R_StatusCategory_ID, org.compiere.model.I_R_StatusCategory.class);
+	}
+
+	@Override
+	public void setR_StatusCategory(final org.compiere.model.I_R_StatusCategory R_StatusCategory)
+	{
+		set_ValueFromPO(COLUMNNAME_R_StatusCategory_ID, org.compiere.model.I_R_StatusCategory.class, R_StatusCategory);
+	}
+
+	@Override
+	public void setR_StatusCategory_ID (final int R_StatusCategory_ID)
+	{
+		if (R_StatusCategory_ID < 1)
+			set_Value (COLUMNNAME_R_StatusCategory_ID, null);
+		else
+			set_Value (COLUMNNAME_R_StatusCategory_ID, R_StatusCategory_ID);
+	}
+
+	@Override
+	public int getR_StatusCategory_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_R_StatusCategory_ID);
+	}
+
+	@Override
 	public void setSalesRep_ID (final int SalesRep_ID)
 	{
 		if (SalesRep_ID < 1) 
@@ -699,15 +762,18 @@ public class X_C_Project extends org.compiere.model.PO implements I_C_Project, o
 	}
 
 	@Override
-	public void setstartdatetime (final @Nullable java.sql.Timestamp startdatetime)
+	public void setSpecialist_Consultant_ID (final int Specialist_Consultant_ID)
 	{
-		set_Value (COLUMNNAME_startdatetime, startdatetime);
+		if (Specialist_Consultant_ID < 1)
+			set_Value (COLUMNNAME_Specialist_Consultant_ID, null);
+		else
+			set_Value (COLUMNNAME_Specialist_Consultant_ID, Specialist_Consultant_ID);
 	}
 
 	@Override
-	public java.sql.Timestamp getstartdatetime() 
+	public int getSpecialist_Consultant_ID()
 	{
-		return get_ValueAsTimestamp(COLUMNNAME_startdatetime);
+		return get_ValueAsInt(COLUMNNAME_Specialist_Consultant_ID);
 	}
 
 	@Override
@@ -720,5 +786,29 @@ public class X_C_Project extends org.compiere.model.PO implements I_C_Project, o
 	public java.lang.String getValue() 
 	{
 		return get_ValueAsString(COLUMNNAME_Value);
+	}
+
+	@Override
+	public void setWOOwner (final @Nullable java.lang.String WOOwner)
+	{
+		set_Value (COLUMNNAME_WOOwner, WOOwner);
+	}
+
+	@Override
+	public java.lang.String getWOOwner()
+	{
+		return get_ValueAsString(COLUMNNAME_WOOwner);
+	}
+
+	@Override
+	public void setWOProjectCreatedDate (final @Nullable java.sql.Timestamp WOProjectCreatedDate)
+	{
+		set_Value (COLUMNNAME_WOProjectCreatedDate, WOProjectCreatedDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getWOProjectCreatedDate() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_WOProjectCreatedDate);
 	}
 }

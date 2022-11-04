@@ -4,6 +4,7 @@ import de.metas.bpartner.composite.BPartner;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidate.ExternallyReferencedCandidateBuilder;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
@@ -18,14 +19,12 @@ import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.ZoneId;
-
-import static de.metas.common.util.CoalesceUtil.coalesce;
+import java.util.Optional;
 
 /*
  * #%L
@@ -124,15 +123,13 @@ public class ManualCandidateService
 
 		final BPartner bpartner = bpartnerComp.getBpartner();
 
-		final InvoiceRule partnerInvoiceRule = newIC.getSoTrx().isSales() ?
-				bpartner.getCustomerInvoiceRule() :
-				bpartner.getVendorInvoiceRule();
+		final InvoiceRule newICInvoiceRule = Optional.ofNullable(newIC.getInvoiceRule())
+				.orElseGet(() -> newIC.getSoTrx().isSales() ?
+						bpartner.getCustomerInvoiceRule() :
+						bpartner.getVendorInvoiceRule());
 
-		final InvoiceRule invoiceRule = coalesce(
-				partnerInvoiceRule,
-				InvoiceRule.Immediate);
-
-		candidate.invoiceRule(invoiceRule);
+		candidate.invoiceRule(CoalesceUtil.coalesceNotNull(newICInvoiceRule, InvoiceRule.Immediate));
+		candidate.recordReference(newIC.getRecordReference());
 
 		return candidate.build();
 

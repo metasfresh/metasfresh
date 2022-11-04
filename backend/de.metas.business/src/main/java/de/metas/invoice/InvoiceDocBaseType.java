@@ -1,15 +1,14 @@
 package de.metas.invoice;
 
-import javax.annotation.Nullable;
-
-import org.compiere.model.X_C_DocType;
-
+import de.metas.document.DocBaseType;
 import de.metas.lang.SOTrx;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import de.metas.util.lang.ReferenceListAwareEnums.ValuesIndex;
 import lombok.Getter;
 import lombok.NonNull;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -21,12 +20,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -35,21 +34,25 @@ import lombok.NonNull;
 
 public enum InvoiceDocBaseType implements ReferenceListAwareEnum
 {
-	VendorInvoice(X_C_DocType.DOCBASETYPE_APInvoice, SOTrx.PURCHASE, false),//
-	VendorCreditMemo(X_C_DocType.DOCBASETYPE_APCreditMemo, SOTrx.PURCHASE, true),//
-	CustomerInvoice(X_C_DocType.DOCBASETYPE_ARInvoice, SOTrx.SALES, false),//
-	CustomerCreditMemo(X_C_DocType.DOCBASETYPE_ARCreditMemo, SOTrx.SALES, true), //
+	VendorInvoice(DocBaseType.APInvoice, SOTrx.PURCHASE, false),//
+	VendorCreditMemo(DocBaseType.APCreditMemo, SOTrx.PURCHASE, true),//
+	CustomerInvoice(DocBaseType.ARInvoice, SOTrx.SALES, false),//
+	CustomerCreditMemo(DocBaseType.ARCreditMemo, SOTrx.SALES, true), //
 	//
-	/** Legacy commission/salary invoice */
+	/**
+	 * Legacy commission/salary invoice
+	 */
 	@Deprecated
-	AEInvoice("AEI", SOTrx.PURCHASE, false),
-	/** Legacy invoice for recurrent payment */
+	AEInvoice(DocBaseType.GehaltsrechnungAngestellter, SOTrx.PURCHASE, false),
+	/**
+	 * Legacy invoice for recurrent payment
+	 */
 	@Deprecated
-	AVInvoice("AVI", SOTrx.PURCHASE, false),
+	AVInvoice(DocBaseType.InterneRechnungLieferant, SOTrx.PURCHASE, false),
 	;
 
 	@Getter
-	private final String docBaseType;
+	private final DocBaseType docBaseType;
 
 	@Getter
 	private final SOTrx soTrx;
@@ -59,7 +62,7 @@ public enum InvoiceDocBaseType implements ReferenceListAwareEnum
 
 	private static final ValuesIndex<InvoiceDocBaseType> index = ReferenceListAwareEnums.index(values());
 
-	InvoiceDocBaseType(@NonNull final String docBaseType, @NonNull final SOTrx soTrx, final boolean creditMemo)
+	InvoiceDocBaseType(@NonNull final DocBaseType docBaseType, @NonNull final SOTrx soTrx, final boolean creditMemo)
 	{
 		this.docBaseType = docBaseType;
 		this.soTrx = soTrx;
@@ -88,10 +91,15 @@ public enum InvoiceDocBaseType implements ReferenceListAwareEnum
 		}
 	}
 
+	public static InvoiceDocBaseType ofDocBaseType(@NonNull final DocBaseType docBaseType)
+	{
+		return ofCode(docBaseType.getCode());
+	}
+
 	@Override
 	public String getCode()
 	{
-		return getDocBaseType();
+		return getDocBaseType().getCode();
 	}
 
 	public boolean isSales()

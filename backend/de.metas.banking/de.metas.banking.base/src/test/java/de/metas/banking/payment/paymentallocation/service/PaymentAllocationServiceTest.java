@@ -24,6 +24,7 @@ package de.metas.banking.payment.paymentallocation.service;
 
 import de.metas.banking.payment.paymentallocation.PaymentAllocationCriteria;
 import de.metas.banking.payment.paymentallocation.PaymentAllocationPayableItem;
+import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
 import de.metas.banking.remittanceadvice.process.C_RemittanceAdvice_CreateAndAllocatePayment;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
@@ -137,7 +138,7 @@ public class PaymentAllocationServiceTest
 
 		final InvoiceProcessingServiceCompanyService invoiceProcessingServiceCompanyService = new InvoiceProcessingServiceCompanyService(new InvoiceProcessingServiceCompanyConfigRepository(), moneyService);
 
-		paymentAllocationService = new PaymentAllocationService(moneyService, invoiceProcessingServiceCompanyService);
+		paymentAllocationService = new PaymentAllocationService(moneyService, invoiceProcessingServiceCompanyService, new PaymentAllocationRepository());
 
 		invoiceDocTypes = new HashMap<>();
 		adOrgId = AdempiereTestHelper.createOrgWithTimeZone();

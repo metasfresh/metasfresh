@@ -61,10 +61,10 @@ public class PickingSlotViewFilters
 				.setFrequentUsed(true)
 				.setParametersLayoutType(PanelLayoutType.SingleOverlayField)
 				.addParameter(DocumentFilterParamDescriptor.builder()
-						.setFieldName(PARAM_Barcode)
-						.setDisplayName(TranslatableStrings.adMessage(MSG_BarcodeFilter))
-						.setMandatory(true)
-						.setWidgetType(DocumentFieldWidgetType.Text)
+						.fieldName(PARAM_Barcode)
+						.displayName(TranslatableStrings.adMessage(MSG_BarcodeFilter))
+						.mandatory(true)
+						.widgetType(DocumentFieldWidgetType.Text)
 						.barcodeScannerType(BarcodeScannerType.QRCode))
 				.build();
 	}

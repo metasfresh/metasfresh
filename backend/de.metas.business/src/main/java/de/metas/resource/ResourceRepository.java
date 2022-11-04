@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
 import de.metas.i18n.IModelTranslationMap;
+import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -42,7 +43,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-// TODO merge IResourceDAO into this repository
 @Repository
 class ResourceRepository
 {
@@ -85,9 +85,34 @@ class ResourceRepository
 		return getResourcesMap().getAllActive();
 	}
 
-	public ImmutableSet<ResourceId> getActiveResourceIdsByResourceTypeId(final ResourceTypeId resourceTypeId)
+	public ImmutableSet<ResourceId> getActiveResourceIdsByResourceTypeId(@NonNull final ResourceTypeId resourceTypeId)
 	{
 		return getResourcesMap().getActiveResourceIdsByResourceTypeId(resourceTypeId);
+	}
+
+	public ImmutableSet<ResourceId> getActiveResourceIdsByGroupIds(@NonNull final Set<ResourceGroupId> groupIds)
+	{
+		if (groupIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return getResourcesMap().getActiveResourceIdsByGroupIds(groupIds);
+	}
+
+	public ImmutableSet<ResourceGroupId> getGroupIdsByResourceIds(@NonNull final Set<ResourceId> resourceIds)
+	{
+		if (resourceIds.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		return getResourcesMap().getGroupIdsByResourceIds(resourceIds);
+	}
+
+	public ImmutableSet<ResourceId> getResourceIdsByUserId(@NonNull final UserId userId)
+	{
+		return getResourcesMap().getResourceIdsByUserId(userId);
 	}
 
 	private ResourcesMap getResourcesMap()
@@ -112,6 +137,7 @@ class ResourceRepository
 		final IModelTranslationMap trl = InterfaceWrapperHelper.getModelTranslationMap(record);
 
 		return Resource.builder()
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.resourceId(ResourceId.ofRepoId(record.getS_Resource_ID()))
 				.isActive(record.isActive())
 				.value(record.getValue())
@@ -120,6 +146,7 @@ class ResourceRepository
 				.resourceGroupId(ResourceGroupId.ofRepoIdOrNull(record.getS_Resource_Group_ID()))
 				.resourceTypeId(ResourceTypeId.ofRepoId(record.getS_ResourceType_ID()))
 				.responsibleId(UserId.ofRepoIdOrNull(record.getAD_User_ID()))
+				.internalName(record.getInternalName())
 				.build();
 	}
 
@@ -163,12 +190,43 @@ class ResourceRepository
 					.collect(ImmutableSet.toImmutableSet());
 		}
 
+		public ImmutableSet<ResourceId> getActiveResourceIdsByGroupIds(final Set<ResourceGroupId> groupIds)
+		{
+			if (groupIds.isEmpty())
+			{
+				return ImmutableSet.of();
+			}
+
+			return allActive.stream()
+					.filter(resource -> groupIds.contains(resource.getResourceGroupId()))
+					.map(Resource::getResourceId)
+					.collect(ImmutableSet.toImmutableSet());
+		}
+
+		public ImmutableSet<ResourceGroupId> getGroupIdsByResourceIds(@NonNull final Set<ResourceId> resourceIds)
+		{
+			return resourceIds.stream()
+					.map(byId::get)
+					.filter(Objects::nonNull)
+					.map(Resource::getResourceGroupId)
+					.filter(Objects::nonNull)
+					.collect(ImmutableSet.toImmutableSet());
+		}
+
 		public List<Resource> getByIds(final Set<ResourceId> ids)
 		{
 			return ids.stream()
 					.map(byId::get)
 					.filter(Objects::nonNull)
 					.collect(ImmutableList.toImmutableList());
+		}
+
+		public ImmutableSet<ResourceId> getResourceIdsByUserId(@NonNull final UserId userId)
+		{
+			return allActive.stream()
+					.filter(resource -> UserId.equals(resource.getResponsibleId(), userId))
+					.map(Resource::getResourceId)
+					.collect(ImmutableSet.toImmutableSet());
 		}
 	}
 }

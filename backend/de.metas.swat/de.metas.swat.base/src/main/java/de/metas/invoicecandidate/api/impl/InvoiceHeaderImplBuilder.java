@@ -1,5 +1,6 @@
 package de.metas.invoicecandidate.api.impl;
 
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
@@ -7,10 +8,12 @@ import de.metas.impex.InputDataSourceId;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
+import de.metas.util.lang.ExternalId;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -73,7 +76,7 @@ public class InvoiceHeaderImplBuilder
 	// 06630
 	private final Set<Integer> M_InOut_IDs = new LinkedHashSet<>();
 
-	private String externalId;
+	private ExternalId externalId = null;
 
 	private Boolean taxIncluded = null;
 
@@ -82,6 +85,8 @@ public class InvoiceHeaderImplBuilder
 	private int C_Incoterms_ID;
 
 	private String incotermLocation;
+
+	private int M_SectionCode_ID;
 
 	/* package */ InvoiceHeaderImplBuilder()
 	{
@@ -140,12 +145,15 @@ public class InvoiceHeaderImplBuilder
 		invoiceHeader.setC_Incoterms_ID(getC_Incoterms_ID());
 		invoiceHeader.setIncotermLocation(getIncotermLocation());
 
+		invoiceHeader.setSectionCodeId(SectionCodeId.ofRepoIdOrNull(getM_SectionCode_ID()));
+
 		return invoiceHeader;
 	}
 
-	private String getExternalId()
+	@VisibleForTesting
+	String getExternalId()
 	{
-		return externalId;
+		return ExternalId.isInvalid(externalId) ? null : ExternalId.toValue(externalId);
 	}
 
 	private int getC_Async_Batch_ID()
@@ -533,10 +541,32 @@ public class InvoiceHeaderImplBuilder
 											 + "\n New value: " + valueNew);
 	}
 
-	public void setExternalId(final String externalId)
+	public void setExternalId(@Nullable final String externalIdStr)
 	{
-		this.externalId = checkOverride("ExternalId", this.externalId, externalId);
+		final ExternalId externalId = ExternalId.ofOrNull(externalIdStr);
+		Check.errorIf(ExternalId.isInvalid(externalId), "Given externalId may not be invalid"); // might happen later, when we modernize the method signature
+
+		if (ExternalId.isInvalid(this.externalId))
+		{
+			return;
+		}
+
+		if (this.externalId != null && !Objects.equals(this.externalId, externalId))
+		{
+			this.externalId = ExternalId.INVALID;
+			return;
+		}
+
+		this.externalId = externalId;
 	}
 
+	private int getM_SectionCode_ID()
+	{
+		return M_SectionCode_ID;
+	}
 
+	public void setM_SectionCode_ID(final int sectionCodeId)
+	{
+		M_SectionCode_ID = checkOverrideID("M_SectionCode_ID", M_SectionCode_ID, sectionCodeId);
+	}
 }

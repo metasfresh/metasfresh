@@ -1,7 +1,9 @@
 package de.metas.inout;
 
+import de.metas.document.engine.DocStatus;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.request.RequestTypeId;
 import de.metas.util.ISingletonService;
@@ -185,7 +187,11 @@ public interface IInOutBL extends ISingletonService
 
 	LocalDate retrieveMovementDate(I_M_InOut inOut);
 
+	void updateDescriptionAndDescriptionBottomFromDocType(@NonNull I_M_InOut inOut);
+
 	String getLocationEmail(InOutId ofRepoId);
 
-	void updateDescriptionAndDescriptionBottomFromDocType(@NonNull I_M_InOut inOut);
+	StockQtyAndUOMQty extractInOutLineQty(I_M_InOutLine inOutLineRecord, InvoicableQtyBasedOn invoicableQtyBasedOn);
+
+	DocStatus getDocStatus(InOutId inOutId);
 }

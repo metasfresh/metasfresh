@@ -5,10 +5,10 @@ import PropTypes from 'prop-types';
 
 import { PROCESS_NAME } from '../../constants/Constants';
 import {
+  DLpropTypes,
+  GEO_PANEL_STATES,
   NO_VIEW,
   PANEL_WIDTHS,
-  GEO_PANEL_STATES,
-  DLpropTypes,
   renderHeaderProperties,
 } from '../../utils/documentListHelper';
 import Spinner from './SpinnerOverlay';
@@ -19,6 +19,10 @@ import FiltersStatic from '../filters/FiltersStatic';
 import Table from '../../containers/Table';
 import QuickActions from './QuickActions';
 import GeoMap from '../maps/GeoMap';
+import {
+  INVOICE_TO_ALLOCATE_WINDOW_ID,
+  InvoiceToAllocateViewHeader,
+} from '../paymentAllocation/InvoiceToAllocateViewHeader';
 
 /**
  * @file Class based component.
@@ -217,6 +221,15 @@ export default class DocumentList extends Component {
                 </button>
               )}
 
+              {windowId === INVOICE_TO_ALLOCATE_WINDOW_ID && (
+                <InvoiceToAllocateViewHeader
+                  windowId={windowId}
+                  viewId={viewId}
+                  selectedRowIds={selected}
+                  pageLength={pageLength}
+                />
+              )}
+
               {layout.filters && (
                 <Filters
                   {...{
@@ -227,7 +240,6 @@ export default class DocumentList extends Component {
                   updateDocList={onFilterChange}
                 />
               )}
-
               {staticFilters && (
                 <FiltersStatic
                   {...{

@@ -24,7 +24,9 @@ package de.metas.project;
 
 import de.metas.cache.CCache;
 import de.metas.document.sequence.DocSequenceId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -32,6 +34,8 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_ProjectType;
 import org.springframework.stereotype.Repository;
+
+import javax.annotation.Nullable;
 
 @Repository
 public class ProjectTypeRepository
@@ -42,26 +46,42 @@ public class ProjectTypeRepository
 			.tableName(I_C_ProjectType.Table_Name)
 			.build();
 
-	public ProjectType getById(@NonNull final ProjectTypeId id)
+	@Nullable
+	public ProjectType getByIdOrNull(@NonNull final ProjectTypeId id)
 	{
 		return projectTypes.getOrLoad(id, this::retrieveById);
 	}
+		@NonNull
+	public ProjectType getById(@NonNull final ProjectTypeId id)
+	{
+		final ProjectType result = projectTypes.getOrLoad(id, this::retrieveById);
+		return Check.assumeNotNull(result, "Missing C_ProjectType for C_ProjectType_ID={}", id.getRepoId());
+	}
 
+	@Nullable
 	private ProjectType retrieveById(@NonNull final ProjectTypeId id)
 	{
 		final I_C_ProjectType record = InterfaceWrapperHelper.loadOutOfTrx(id, I_C_ProjectType.class);
 		return toProjectType(record);
 	}
 
-	private static ProjectType toProjectType(@NonNull final I_C_ProjectType record)
+	@Nullable
+	public static ProjectType toProjectType(@Nullable final I_C_ProjectType record)
 	{
+		if(record == null)
+		{
+			return null;
+		}
 		return ProjectType.builder()
 				.id(ProjectTypeId.ofRepoId(record.getC_ProjectType_ID()))
 				.projectCategory(ProjectCategory.ofCode(record.getProjectCategory()))
+				.requestStatusCategoryId(RequestStatusCategoryId.ofRepoId(record.getR_StatusCategory_ID()))
 				.docSequenceId(DocSequenceId.ofRepoIdOrNull(record.getAD_Sequence_ProjectValue_ID()))
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(record.getAD_Client_ID(), record.getAD_Org_ID()))
 				.build();
 	}
 
+	@NonNull
 	public ProjectTypeId getFirstIdByProjectCategoryAndOrg(
 			@NonNull final ProjectCategory projectCategory,
 			@NonNull final OrgId orgId)

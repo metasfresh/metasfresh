@@ -18,6 +18,7 @@ import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.api.impl.ProductBOMService;
 import org.eevolution.api.impl.ProductBOMVersionsDAO;
 import org.eevolution.model.I_PP_Product_BOM;
+import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.model.I_PP_Product_Planning;
 
 import java.util.Optional;
@@ -99,6 +100,19 @@ public class PP_Product_Planning
 								.markAsUserValidationError();
 					}
 				});
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE,
+			ifColumnsChanged = {I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID})
+	public void updateProductFromBomVersions(final I_PP_Product_Planning planning)
+	{
+		final  ProductBOMVersionsId bomVersionsId = ProductBOMVersionsId.ofRepoIdOrNull(planning.getPP_Product_BOMVersions_ID());
+		if (bomVersionsId == null)
+		{
+			return; // nothing to do
+		}
+		final I_PP_Product_BOMVersions bomVersions = bomVersionsDAO.getBOMVersions(bomVersionsId);
+		planning.setM_Product_ID(bomVersions.getM_Product_ID());
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },

@@ -235,7 +235,7 @@ public class MProduct extends X_M_Product
 					+ "WHERE IsActive='Y'"
 					// + " AND GuaranteeDate > now()"
 					+ "  AND M_Product_ID=" + getM_Product_ID());
-			final int no = DB.executeUpdate(sql, get_TrxName());
+			final int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 			log.debug("Asset Description updated #" + no);
 		}
 

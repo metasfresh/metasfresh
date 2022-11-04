@@ -8,6 +8,7 @@ import de.metas.externalsystem.process.InvokeAlbertaAction;
 import de.metas.externalsystem.process.InvokeEbayAction;
 import de.metas.externalsystem.process.InvokeGRSSignumAction;
 import de.metas.externalsystem.process.InvokeOtherAction;
+import de.metas.externalsystem.process.InvokeSAPAction;
 import de.metas.externalsystem.process.InvokeShopware6Action;
 import de.metas.externalsystem.process.InvokeWooCommerceAction;
 import de.metas.util.lang.ReferenceListAwareEnum;
@@ -49,7 +50,8 @@ public enum ExternalSystemType implements ReferenceListAwareEnum
 	Other(X_ExternalSystem_Config.TYPE_Other, "Other", InvokeOtherAction.class.getName()),
 	WOO(X_ExternalSystem_Config.TYPE_WooCommerce, "WOO", InvokeWooCommerceAction.class.getName()),
 	GRSSignum(X_ExternalSystem_Config.TYPE_GRSSignum, "GRSSignum", InvokeGRSSignumAction.class.getName()),
-	LeichUndMehl(X_ExternalSystem_Config.TYPE_LeichMehl, "LeichUndMehl", null)
+	LeichUndMehl(X_ExternalSystem_Config.TYPE_LeichMehl, "LeichUndMehl", null),
+	SAP(X_ExternalSystem_Config.TYPE_SAP, "SAP", InvokeSAPAction.class.getName())
 	;
 
 	@Getter

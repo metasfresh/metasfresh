@@ -1,7 +1,5 @@
 package de.metas.inout.process;
 
-import org.adempiere.model.InterfaceWrapperHelper;
-
 import de.metas.document.engine.DocStatus;
 import de.metas.inout.api.IInOutInvoiceCandidateBL;
 import de.metas.inout.model.I_M_InOut;
@@ -11,6 +9,7 @@ import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
 
 public class M_InOut_ApproveForInvoicing extends JavaProcess implements IProcessPrecondition
 {
@@ -64,8 +63,8 @@ public class M_InOut_ApproveForInvoicing extends JavaProcess implements IProcess
 		if (I_M_InOut.Table_Name.equals(context.getTableName()))
 		{
 			final I_M_InOut inout = context.getSelectedModel(I_M_InOut.class);
-			final DocStatus inoutDocStatus = DocStatus.ofCode(inout.getDocStatus());
-			return ProcessPreconditionsResolution.acceptIf(inoutDocStatus.isCompletedOrClosed());
+			final DocStatus docStatus = DocStatus.ofCode(inout.getDocStatus());
+			return ProcessPreconditionsResolution.acceptIf(docStatus.isCompletedOrClosed());
 		}
 		else
 		{

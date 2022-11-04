@@ -138,7 +138,8 @@ public class M_ShipmentSchedule
 					I_M_ShipmentSchedule.COLUMNNAME_M_AttributeSetInstance_ID,
 					I_M_ShipmentSchedule.COLUMNNAME_PreparationDate_Override,
 					I_M_ShipmentSchedule.COLUMNNAME_PreparationDate,
-					I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID })
+					I_M_ShipmentSchedule.COLUMNNAME_C_OrderLine_ID,
+					I_M_ShipmentSchedule.COLUMNNAME_IsClosed})
 	public void triggerSyncAvailableForSales(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
 	{
 		final AvailableForSalesConfig config = availableForSalesConfigRepo.getConfig(

@@ -349,6 +349,8 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 				// Update generated invoice candidates
 				updateDefaultsAndSave(result);
 
+				handler.postSave(result);
+
 				// Collect candidates (we will invalidate them all together)
 				invoiceCandidatesAll.addAll(result.getC_Invoice_Candidates());
 			}
@@ -577,5 +579,12 @@ public class InvoiceCandidateHandlerBL implements IInvoiceCandidateHandlerBL
 
 		ic.setQtyPicked(qtysPicked.getStockQty().toBigDecimal());
 		ic.setQtyPickedInUOM(qtysPicked.getUOMQtyNotNull().toBigDecimal());
+	}
+
+	@Override
+	public void setIsInEffect(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		final IInvoiceCandidateHandler handler = createInvoiceCandidateHandler(ic);
+		handler.setIsInEffect(ic);
 	}
 }

@@ -9,6 +9,7 @@ import de.metas.cache.CacheMgt;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.IDocTypeDAO;
+import de.metas.document.engine.DocStatus;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
 import de.metas.inout.IInOutBL;
@@ -26,6 +27,7 @@ import de.metas.organization.OrgId;
 import de.metas.pricing.IEditablePricingContext;
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
@@ -254,6 +256,29 @@ public class InOutBL implements IInOutBL
 		return pricingSystem;
 	}
 
+	@NonNull
+	public StockQtyAndUOMQty extractInOutLineQty(
+			@NonNull final I_M_InOutLine inOutLineRecord,
+			@NonNull final InvoicableQtyBasedOn invoicableQtyBasedOn)
+	{
+		switch (invoicableQtyBasedOn)
+		{
+			case CatchWeight:
+				final StockQtyAndUOMQty stockQtyAndCatchQty = getStockQtyAndCatchQty(inOutLineRecord);
+				if (stockQtyAndCatchQty.getUOMQtyOpt().isPresent())
+				{
+					return stockQtyAndCatchQty;
+				}
+
+				// fallback if the given iol simply doesn't have a catch weight (which is a common case)
+				return getStockQtyAndQtyInUOM(inOutLineRecord);
+			case NominalWeight:
+				return getStockQtyAndQtyInUOM(inOutLineRecord);
+			default:
+				throw new AdempiereException("Unsupported invoicableQtyBasedOn=" + invoicableQtyBasedOn);
+		}
+	}
+
 	/**
 	 * Find the pricing system based on the soTrx. This method will be used in the rare cases when we are not relying upon the SOTrx of the inout, because we need the pricing system for the opposite
 	 * SOTrx nature.
@@ -340,7 +365,7 @@ public class InOutBL implements IInOutBL
 		line.setM_InOut(inout);
 
 		final I_M_Warehouse warehouse = InterfaceWrapperHelper.load(inout.getM_Warehouse_ID(), I_M_Warehouse.class);
-		final I_M_Locator locator = warehouseBL.getDefaultLocator(warehouse);
+		final I_M_Locator locator = warehouseBL.getOrCreateDefaultLocator(warehouse);
 		if (locator != null)
 		{
 			line.setM_Locator_ID(locator.getM_Locator_ID());
@@ -663,6 +688,14 @@ public class InOutBL implements IInOutBL
 
 		inOut.setDescription(description.translate(adLanguage));
 		inOut.setDescriptionBottom(documentNote.translate(adLanguage));
+	}
+
+	@NonNull
+	public DocStatus getDocStatus(@NonNull final InOutId inOutId)
+	{
+		final I_M_InOut inOut = getById(inOutId);
+
+		return DocStatus.ofCode(inOut.getDocStatus());
 	}
 
 	private I_C_BPartner getBPartnerOrNull(@NonNull final I_M_InOut inOut)

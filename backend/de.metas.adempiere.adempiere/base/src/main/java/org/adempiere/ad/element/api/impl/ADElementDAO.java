@@ -1,13 +1,8 @@
 package org.adempiere.ad.element.api.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.util.ArrayList;
-import java.util.List;
-
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.UpperCaseQueryFilterModifier;
@@ -15,7 +10,8 @@ import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.element.api.CreateADElementRequest;
 import org.adempiere.ad.element.api.IADElementDAO;
 import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.util.LegacyAdapters;
+import org.adempiere.ad.table.ddl.TableDDLSyncService;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Column;
 import org.compiere.model.I_AD_Element;
 import org.compiere.model.I_AD_Field;
@@ -23,10 +19,14 @@ import org.compiere.model.I_AD_Menu;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_UI_Element;
 import org.compiere.model.I_AD_Window;
-import org.compiere.model.MColumn;
 
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -157,8 +157,8 @@ public class ADElementDAO implements IADElementDAO
 		elementIdColumn.setIsMandatory(true);
 		save(elementIdColumn);
 
-		final MColumn columnPO = LegacyAdapters.convertToPO(elementIdColumn);
-		columnPO.syncDatabase();
+		final TableDDLSyncService syncService = SpringContextHolder.instance.getBean(TableDDLSyncService.class);
+		syncService.syncToDatabase(AdColumnId.ofRepoId(elementIdColumn.getAD_Column_ID()));
 	}
 
 	@Override

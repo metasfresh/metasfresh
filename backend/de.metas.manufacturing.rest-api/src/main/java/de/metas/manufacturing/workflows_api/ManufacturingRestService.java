@@ -20,6 +20,7 @@ import de.metas.manufacturing.workflows_api.activity_handlers.work_report.WorkRe
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.WFActivity;
+import de.metas.workflow.rest_api.model.WFActivityAlwaysAvailableToUser;
 import de.metas.workflow.rest_api.model.WFActivityId;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.model.WFProcessId;
@@ -27,9 +28,10 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.api.PPOrderId;
+import org.eevolution.api.PPOrderRoutingActivityId;
 import org.springframework.stereotype.Service;
 
-import java.util.Objects;
+import java.time.Instant;
 import java.util.stream.Stream;
 
 @Service
@@ -42,9 +44,12 @@ public class ManufacturingRestService
 		this.manufacturingJobService = manufacturingJobService;
 	}
 
-	public Stream<ManufacturingJobReference> streamJobReferencesForUser(final @NonNull UserId responsibleId, final @NonNull QueryLimit suggestedLimit)
+	public Stream<ManufacturingJobReference> streamJobReferencesForUser(
+			final @NonNull UserId responsibleId,
+			final @NonNull Instant now,
+			final @NonNull QueryLimit suggestedLimit)
 	{
-		return manufacturingJobService.streamJobReferencesForUser(responsibleId, suggestedLimit);
+		return manufacturingJobService.streamJobReferencesForUser(responsibleId, now, suggestedLimit);
 	}
 
 	public ManufacturingJob createJob(final PPOrderId ppOrderId, final UserId responsibleId)
@@ -57,9 +62,19 @@ public class ManufacturingRestService
 		manufacturingJobService.abortJob(ppOrderId, responsibleId);
 	}
 
+	public void abortAllJobs(@NonNull final UserId responsibleId)
+	{
+		manufacturingJobService.abortAllJobs(responsibleId);
+	}
+
 	public ManufacturingJob getJobById(final PPOrderId ppOrderId)
 	{
 		return manufacturingJobService.getJobById(ppOrderId);
+	}
+
+	public ManufacturingJob assignJob(@NonNull final PPOrderId ppOrderId, @NonNull final UserId userId)
+	{
+		return manufacturingJobService.assignJob(ppOrderId, userId);
 	}
 
 	private static WFActivity toWFActivity(final ManufacturingJobActivity jobActivity)
@@ -67,7 +82,8 @@ public class ManufacturingRestService
 		final WFActivity.WFActivityBuilder builder = WFActivity.builder()
 				.id(WFActivityId.ofId(jobActivity.getId()))
 				.caption(TranslatableStrings.anyLanguage(jobActivity.getName()))
-				.status(jobActivity.getStatus());
+				.status(jobActivity.getStatus())
+				.alwaysAvailableToUser(WFActivityAlwaysAvailableToUser.ofBoolean(jobActivity.getAlwaysAvailableToUser().toBooleanObject()));
 
 		switch (jobActivity.getType())
 		{
@@ -94,7 +110,7 @@ public class ManufacturingRestService
 	{
 		return WFProcess.builder()
 				.id(WFProcessId.ofIdPart(ManufacturingMobileApplication.HANDLER_ID, job.getPpOrderId()))
-				.invokerId(Objects.requireNonNull(job.getResponsibleId()))
+				.responsibleId(job.getResponsibleId())
 				.caption(TranslatableStrings.anyLanguage("" + job.getPpOrderId().getRepoId())) // TODO
 				.document(job)
 				.activities(job.getActivities()
@@ -112,8 +128,9 @@ public class ManufacturingRestService
 		{
 			final JsonManufacturingOrderEvent.IssueTo issueTo = event.getIssueTo();
 			return manufacturingJobService.issueRawMaterials(job, PPOrderIssueScheduleProcessRequest.builder()
-					.ppOrderId(job.getPpOrderId())
+					.activityId(PPOrderRoutingActivityId.ofRepoId(job.getPpOrderId(), event.getWfActivityId()))
 					.issueScheduleId(PPOrderIssueScheduleId.ofString(issueTo.getIssueStepId()))
+					.huWeightGrossBeforeIssue(issueTo.getHuWeightGrossBeforeIssue())
 					.qtyIssued(issueTo.getQtyIssued())
 					.qtyRejected(issueTo.getQtyRejected())
 					.qtyRejectedReasonCode(QtyRejectedReasonCode.ofNullableCode(issueTo.getQtyRejectedReasonCode()).orElse(null))

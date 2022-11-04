@@ -24,7 +24,9 @@ package de.metas.externalreference;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import de.metas.audit.data.ExternalSystemParentConfigId;
+import de.metas.cache.CCache;
 import de.metas.externalreference.model.I_S_ExternalReference;
 import de.metas.organization.OrgId;
 import de.metas.security.permissions.Access;
@@ -34,8 +36,10 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.springframework.stereotype.Repository;
 
 import javax.annotation.Nullable;
@@ -44,6 +48,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 
@@ -54,6 +59,7 @@ public class ExternalReferenceRepository
 
 	private final ExternalReferenceTypes externalReferenceTypes;
 	private final ExternalSystems externalSystems;
+	private final CCache<Integer, ImmutableSet<AdTableId>> tableIdsWithReadOnlyReferences;
 
 	public ExternalReferenceRepository(
 			@NonNull final IQueryBL queryBL,
@@ -63,6 +69,11 @@ public class ExternalReferenceRepository
 		this.queryBL = queryBL;
 		this.externalReferenceTypes = externalReferenceTypes;
 		this.externalSystems = externalSystems;
+		this.tableIdsWithReadOnlyReferences = CCache.<Integer, ImmutableSet<AdTableId>>builder()
+				.tableName(I_S_ExternalReference.Table_Name)
+				.cacheMapType(CCache.CacheMapType.LRU)
+				.initialCapacity(1)
+				.build();
 	}
 
 	public int getReferencedRecordIdBy(@NonNull final ExternalReferenceQuery query)
@@ -92,6 +103,7 @@ public class ExternalReferenceRepository
 				.orElse(null);
 	}
 
+	@NonNull
 	public ExternalReferenceId save(@NonNull final ExternalReference externalReference)
 	{
 		final I_S_ExternalReference record = InterfaceWrapperHelper.loadOrNew(externalReference.getExternalReferenceId(), I_S_ExternalReference.class);
@@ -106,6 +118,7 @@ public class ExternalReferenceRepository
 		record.setVersion(externalReference.getVersion());
 		record.setExternalReferenceURL(externalReference.getExternalReferenceUrl());
 		record.setExternalSystem_Config_ID(ExternalSystemParentConfigId.toRepoId(externalSystemConfigId));
+		record.setIsReadOnlyInMetasfresh(externalReference.isReadOnlyInMetasfresh());
 
 		InterfaceWrapperHelper.saveRecord(record);
 
@@ -170,6 +183,20 @@ public class ExternalReferenceRepository
 	}
 
 	@NonNull
+	public Stream<ExternalReference> getExternalReferencesByTypeAndConfigId(
+			@NonNull final IExternalReferenceType type,
+			@NonNull final ExternalSystemParentConfigId configId)
+	{
+		return queryBL.createQueryBuilder(I_S_ExternalReference.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, type.getCode())
+				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem_Config_ID, configId.getRepoId())
+				.create()
+				.iterateAndStream()
+				.map(this::buildExternalReference);
+	}
+
+	@NonNull
 	public Optional<ExternalReference> getExternalReferenceByMFReference(@NonNull final GetExternalReferenceByRecordIdReq request)
 	{
 		return queryBL.createQueryBuilder(I_S_ExternalReference.class)
@@ -185,9 +212,9 @@ public class ExternalReferenceRepository
 	@NonNull
 	public ExternalReference getById(@NonNull final ExternalReferenceId externalReferenceId)
 	{
-		final I_S_ExternalReference externalReference =  load(externalReferenceId, I_S_ExternalReference.class);
+		final I_S_ExternalReference externalReference = load(externalReferenceId, I_S_ExternalReference.class);
 
-		Check.assumeNotNull(externalReference,"There is an S_ExternalReference record for id: {}", externalReference);
+		Check.assumeNotNull(externalReference, "There is an S_ExternalReference record for id: {}", externalReference);
 
 		return buildExternalReference(externalReference);
 	}
@@ -197,9 +224,34 @@ public class ExternalReferenceRepository
 	{
 		final I_S_ExternalReference externalReference = load(externalReferenceId, I_S_ExternalReference.class);
 
-		Check.assumeNotNull(externalReference,"There is an S_ExternalReference record for id: {}", externalReference);
+		Check.assumeNotNull(externalReference, "There is an S_ExternalReference record for id: {}", externalReference);
 
 		return UserId.ofRepoId(externalReference.getCreatedBy());
+	}
+
+	@NonNull
+	public List<ExternalReference> getExternalReferencesByTableRecordReference(@NonNull final TableRecordReference tableRecordReference)
+	{
+		return queryBL.createQueryBuilder(I_S_ExternalReference.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Referenced_AD_Table_ID, tableRecordReference.getAD_Table_ID())
+				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Record_ID, tableRecordReference.getRecord_ID())
+				.create()
+				.stream()
+				.map(this::buildExternalReference)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	public boolean isReadOnlyInMetasfresh(@NonNull final TableRecordReference tableRecordReference)
+	{
+		final boolean noReadOnlyReferencesForTable = !getTablesWithReadOnlyReferencesCache().contains(tableRecordReference.getAdTableId());
+
+		if (noReadOnlyReferencesForTable)
+		{
+			return false;
+		}
+
+		return isReadOnlyInMetasfreshCheckDB(tableRecordReference);
 	}
 
 	private Optional<ExternalReference> getOptionalExternalReferenceBy(@NonNull final ExternalReferenceQuery query)
@@ -271,16 +323,17 @@ public class ExternalReferenceRepository
 				.version(record.getVersion())
 				.externalReferenceUrl(record.getExternalReferenceURL())
 				.externalSystemParentConfigId(record.getExternalSystem_Config_ID() > 0 ? record.getExternalSystem_Config_ID() : null)
+				.isReadOnlyInMetasfresh(record.isReadOnlyInMetasfresh())
 				.build();
 	}
 
 	private IExternalSystem extractSystem(@NonNull final I_S_ExternalReference record)
 	{
 		return externalSystems.ofCode(record.getExternalSystem()).orElseThrow(() ->
-				new AdempiereException("Unknown ExternalSystem=" + record.getExternalSystem())
-						.appendParametersToMessage()
-						.setParameter("system", record.getExternalSystem())
-						.setParameter("S_ExternalReference", record));
+																					  new AdempiereException("Unknown ExternalSystem=" + record.getExternalSystem())
+																							  .appendParametersToMessage()
+																							  .setParameter("system", record.getExternalSystem())
+																							  .setParameter("S_ExternalReference", record));
 	}
 
 	private IExternalReferenceType extractType(@NonNull final I_S_ExternalReference record)
@@ -290,5 +343,35 @@ public class ExternalReferenceRepository
 						.appendParametersToMessage()
 						.setParameter("type", record.getType())
 						.setParameter("S_ExternalReference", record));
+	}
+
+	private boolean isReadOnlyInMetasfreshCheckDB(@NonNull final TableRecordReference tableRecordReference)
+	{
+		return queryBL.createQueryBuilder(I_S_ExternalReference.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_IsReadOnlyInMetasfresh, true)
+				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Referenced_AD_Table_ID, tableRecordReference.getAD_Table_ID())
+				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Record_ID, tableRecordReference.getRecord_ID())
+				.create()
+				.count() > 0;
+	}
+
+	@NonNull
+	private ImmutableSet<AdTableId> getTablesWithReadOnlyReferencesCache()
+	{
+		return tableIdsWithReadOnlyReferences.getOrLoad(0, this::retreiveTableIdsWithReadOnlyReferences);
+	}
+
+	@NonNull
+	private ImmutableSet<AdTableId> retreiveTableIdsWithReadOnlyReferences()
+	{
+		return queryBL.createQueryBuilder(I_S_ExternalReference.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_IsReadOnlyInMetasfresh, true)
+				.create()
+				.listDistinct(I_S_ExternalReference.COLUMNNAME_Referenced_AD_Table_ID, Integer.class)
+				.stream()
+				.map(AdTableId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }

@@ -60,6 +60,7 @@ import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -105,6 +106,7 @@ public class S_ExternalReference_StepDef
 	private final TestContext testContext;
 
 	public S_ExternalReference_StepDef(
+			@NonNull final ExternalSystems externalSystems,
 			@NonNull final AD_User_StepDefData userTable,
 			@NonNull final S_ExternalReference_StepDefData externalRefTable,
 			@NonNull final M_Shipper_StepDefData shipperTable,
@@ -113,6 +115,7 @@ public class S_ExternalReference_StepDef
 			@NonNull final ExternalSystem_Config_StepDefData externalSystemConfigTable,
 			@NonNull final TestContext testContext)
 	{
+		this.externalSystems = externalSystems;
 		this.userTable = userTable;
 		this.externalRefTable = externalRefTable;
 		this.shipperTable = shipperTable;
@@ -121,7 +124,6 @@ public class S_ExternalReference_StepDef
 		this.externalSystemConfigTable = externalSystemConfigTable;
 		this.testContext = testContext;
 		this.externalReferenceTypes = SpringContextHolder.instance.getBean(ExternalReferenceTypes.class);
-		this.externalSystems = SpringContextHolder.instance.getBean(ExternalSystems.class);
 		this.externalReferenceRepository = SpringContextHolder.instance.getBean(ExternalReferenceRepository.class);
 	}
 
@@ -136,11 +138,22 @@ public class S_ExternalReference_StepDef
 			final String externalReference = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "ExternalReference");
 			final String externalReferenceURL = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "ExternalReferenceURL");
 
-			final boolean externalRefExists = queryBL.createQueryBuilder(I_S_ExternalReference.class)
+			final Boolean isReadOnlyInMetasfresh = DataTableUtil.extractBooleanForColumnNameOr(dataTableRow, "OPT." + I_S_ExternalReference.COLUMNNAME_IsReadOnlyInMetasfresh, false);
+
+			final IQueryBuilder<I_S_ExternalReference> externalReferenceQueryBuilder = queryBL.createQueryBuilder(I_S_ExternalReference.class)
 					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem, externalSystem)
 					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, type)
 					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference, externalReference)
 					.addEqualsFilter(I_S_ExternalReference.COLUMN_ExternalReferenceURL, externalReferenceURL)
+					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_IsReadOnlyInMetasfresh, isReadOnlyInMetasfresh);
+
+			final Integer externalSystemParentConfigId = DataTableUtil.extractIntegerOrNullForColumnName(dataTableRow, "OPT." + I_S_ExternalReference.COLUMNNAME_ExternalSystem_Config_ID);
+			if (externalSystemParentConfigId != null)
+			{
+				externalReferenceQueryBuilder.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem_Config_ID, externalSystemParentConfigId);
+			}
+
+			final boolean externalRefExists = externalReferenceQueryBuilder
 					.create()
 					.anyMatch();
 

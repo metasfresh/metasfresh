@@ -29,7 +29,7 @@ import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.stock.JsonStock;
 import de.metas.common.externalsystem.ExternalSystemConstants;
-import de.metas.common.externalsystem.JsonAvailableStock;
+import de.metas.common.externalsystem.JsonAvailableForSales;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
@@ -37,6 +37,8 @@ import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
@@ -87,15 +89,19 @@ public class ExportStockRouteBuilder extends RouteBuilder
 
 		final ShopwareClient shopwareClient = exportStockRouteContext.getShopwareClient();
 
-		shopwareClient.exportStock(jsonStock, exportStockRouteContext.getJsonAvailableStock().getProductIdentifier().getExternalReference());
+		shopwareClient.exportStock(jsonStock, exportStockRouteContext.getJsonAvailableForSales().getProductIdentifier().getExternalReference());
 	}
 
 	private void createJsonStock(@NonNull final Exchange exchange)
 	{
 		final ExportStockRouteContext exportStockRouteContext = exchange.getProperty(ROUTE_PROPERTY_EXPORT_STOCK_CONTEXT, ExportStockRouteContext.class);
 
+		final BigDecimal stockBD = exportStockRouteContext.getJsonAvailableForSales()
+				.getStock()
+				.setScale(0, RoundingMode.CEILING);
+
 		final JsonStock jsonStock = JsonStock.builder()
-				.stock(exportStockRouteContext.getJsonAvailableStock().getStock())
+				.stock(stockBD.intValueExact())
 				.build();
 
 		exchange.getIn().setBody(jsonStock);
@@ -123,22 +129,22 @@ public class ExportStockRouteBuilder extends RouteBuilder
 
 		final ShopwareClient shopwareClient = ShopwareClient.of(clientId, clientSecret, basePath, pInstanceLogger);
 
-		final JsonAvailableStock jsonAvailableStock = getJsonAvailableStock(request);
+		final JsonAvailableForSales jsonAvailableForSales = getJsonAvailableForSales(request);
 
 		final ExportStockRouteContext exportStockRouteContext = ExportStockRouteContext.builder()
 				.shopwareClient(shopwareClient)
-				.jsonAvailableStock(jsonAvailableStock)
+				.jsonAvailableForSales(jsonAvailableForSales)
 				.build();
 
 		exchange.setProperty(ROUTE_PROPERTY_EXPORT_STOCK_CONTEXT, exportStockRouteContext);
 	}
 
 	@NonNull
-	private JsonAvailableStock getJsonAvailableStock(@NonNull final JsonExternalSystemRequest request)
+	private JsonAvailableForSales getJsonAvailableForSales(@NonNull final JsonExternalSystemRequest request)
 	{
 		try
 		{
-			return objectMapper.readValue(request.getParameters().get(ExternalSystemConstants.PARAM_JSON_AVAILABLE_STOCK), JsonAvailableStock.class);
+			return objectMapper.readValue(request.getParameters().get(ExternalSystemConstants.PARAM_JSON_AVAILABLE_FOR_SALES), JsonAvailableForSales.class);
 		}
 		catch (final IOException e)
 		{

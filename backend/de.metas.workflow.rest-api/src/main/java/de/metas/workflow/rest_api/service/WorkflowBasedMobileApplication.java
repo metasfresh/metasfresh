@@ -25,6 +25,8 @@ public interface WorkflowBasedMobileApplication extends MobileApplication
 
 	WFProcess startWorkflow(WorkflowStartRequest request);
 
+	WFProcess continueWorkflow(WFProcessId wfProcessId, UserId callerId);
+
 	void abort(WFProcessId wfProcessId, UserId callerId);
 
 	void abortAll(UserId callerId);

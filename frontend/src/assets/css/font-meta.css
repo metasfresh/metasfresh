@@ -317,3 +317,7 @@
     margin: 0px 6px 0px 2px;
     font-size: 0.7rem;
 }
+
+.meta-icon-latch:before {
+  content: '\1F512';
+}

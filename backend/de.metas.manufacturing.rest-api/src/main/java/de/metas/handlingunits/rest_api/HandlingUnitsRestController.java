@@ -48,7 +48,7 @@ import de.metas.util.StringUtils;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
-import org.adempiere.ad.service.IADReferenceDAO;
+import de.metas.ad_reference.ADRefList;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -215,7 +215,7 @@ public class HandlingUnitsRestController
 		}
 	}
 
-	private static JsonDisposalReasonsList toJsonDisposalReasonsList(final IADReferenceDAO.ADRefList adRefList, final String adLanguage)
+	private static JsonDisposalReasonsList toJsonDisposalReasonsList(final ADRefList adRefList, final String adLanguage)
 	{
 		return JsonDisposalReasonsList.builder()
 				.reasons(adRefList.getItems()

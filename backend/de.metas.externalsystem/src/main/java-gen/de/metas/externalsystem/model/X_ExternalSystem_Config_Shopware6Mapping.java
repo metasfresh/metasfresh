@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.externalsystem.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for ExternalSystem_Config_Shopware6Mapping
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_ExternalSystem_Config_Shopware6Mapping extends org.compiere.model.PO implements I_ExternalSystem_Config_Shopware6Mapping, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -425168857L;
+	private static final long serialVersionUID = -482839612L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config_Shopware6Mapping (final Properties ctx, final int ExternalSystem_Config_Shopware6Mapping_ID, @Nullable final String trxName)
@@ -303,6 +303,8 @@ public class X_ExternalSystem_Config_Shopware6Mapping extends org.compiere.model
 	public static final String SW6_PAYMENT_METHOD_PayPal = "pay_pal_payment_handler";
 	/** Rechnungskauf Paypal = pay_pal_pui_payment_handler */
 	public static final String SW6_PAYMENT_METHOD_RechnungskaufPaypal = "pay_pal_pui_payment_handler";
+	/** Kredit- oder Debitkarte = a_c_d_c_handler */
+	public static final String SW6_PAYMENT_METHOD_Kredit_OderDebitkarte = "a_c_d_c_handler";
 	@Override
 	public void setSW6_Payment_Method (final @Nullable java.lang.String SW6_Payment_Method)
 	{

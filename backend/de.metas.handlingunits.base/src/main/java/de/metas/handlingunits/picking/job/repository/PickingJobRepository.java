@@ -1,6 +1,8 @@
 package de.metas.handlingunits.picking.job.repository;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import de.metas.dao.ValueRestriction;
 import de.metas.handlingunits.model.I_M_Picking_Job;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobDocStatus;
@@ -9,6 +11,7 @@ import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.order.OrderId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -40,7 +43,7 @@ public class PickingJobRepository
 		PickingJobLoaderAndSaver.forSaving().save(pickingJob);
 	}
 
-	public List<PickingJob> getDraftJobsByPickerId(@NonNull final UserId pickerId, @NonNull final PickingJobLoaderSupportingServices loadingSupportServices)
+	public List<PickingJob> getDraftJobsByPickerId(@NonNull final ValueRestriction<UserId> pickerId, @NonNull final PickingJobLoaderSupportingServices loadingSupportServices)
 	{
 		final Set<PickingJobId> pickingJobIds = queryDraftJobsByPickerId(pickerId)
 				.listIds(PickingJobId::ofRepoId);
@@ -54,13 +57,15 @@ public class PickingJobRepository
 				.loadByIds(pickingJobIds);
 	}
 
-	private IQuery<I_M_Picking_Job> queryDraftJobsByPickerId(final @NonNull UserId pickerId)
+	private IQuery<I_M_Picking_Job> queryDraftJobsByPickerId(final @NonNull ValueRestriction<UserId> pickerId)
 	{
-		return queryBL
+		final IQueryBuilder<I_M_Picking_Job> queryBuilder = queryBL
 				.createQueryBuilder(I_M_Picking_Job.class)
-				.addEqualsFilter(I_M_Picking_Job.COLUMNNAME_DocStatus, PickingJobDocStatus.Drafted.getCode())
-				.addEqualsFilter(I_M_Picking_Job.COLUMNNAME_Picking_User_ID, pickerId)
-				.create();
+				.addEqualsFilter(I_M_Picking_Job.COLUMNNAME_DocStatus, PickingJobDocStatus.Drafted.getCode());
+
+		pickerId.appendFilter(queryBuilder, I_M_Picking_Job.COLUMNNAME_Picking_User_ID);
+
+		return queryBuilder.create();
 	}
 
 	public PickingJob getById(
@@ -75,7 +80,7 @@ public class PickingJobRepository
 			@NonNull final UserId pickerId,
 			@NonNull final PickingJobLoaderSupportingServices loadingSupportServices)
 	{
-		return getDraftJobsByPickerId(pickerId, loadingSupportServices)
+		return getDraftJobsByPickerId(ValueRestriction.equalsToOrNull(pickerId), loadingSupportServices)
 				.stream()
 				.map(PickingJobRepository::toPickingJobReference);
 	}
@@ -117,5 +122,42 @@ public class PickingJobRepository
 				.create()
 				.firstIdOnlyOptional(PickingJobId::ofRepoIdOrNull)
 				.map(pickingJobId -> PickingJobLoaderAndSaver.forLoading(loadingSupportServices).loadById(pickingJobId));
+	}
+
+	public boolean hasReadyToReview(@NonNull final ImmutableSet<PickingJobId> pickingJobIds)
+	{
+		if (pickingJobIds.isEmpty())
+		{
+			return false;
+		}
+
+		return queryReadyToReview(pickingJobIds).anyMatch();
+	}
+
+	public List<PickingJob> getByIsReadyToReview(
+			@NonNull final ImmutableSet<PickingJobId> pickingJobIds,
+			@NonNull final PickingJobLoaderSupportingServices loadingSupportServices)
+	{
+		if (pickingJobIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+
+		final ImmutableSet<PickingJobId> pickingJobIdsEffective = queryReadyToReview(pickingJobIds).listIds(PickingJobId::ofRepoId);
+
+		return PickingJobLoaderAndSaver.forLoading(loadingSupportServices).loadByIds(pickingJobIdsEffective);
+	}
+
+	private IQuery<I_M_Picking_Job> queryReadyToReview(final ImmutableSet<PickingJobId> pickingJobIds)
+	{
+		Check.assumeNotEmpty(pickingJobIds, "pickingJobIds is not empty");
+
+		return queryBL.createQueryBuilder(I_M_Picking_Job.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_Picking_Job.COLUMNNAME_DocStatus, PickingJobDocStatus.Drafted.getCode())
+				.addEqualsFilter(I_M_Picking_Job.COLUMNNAME_IsReadyToReview, true)
+				.addEqualsFilter(I_M_Picking_Job.COLUMNNAME_IsApproved, false)
+				.addInArrayFilter(I_M_Picking_Job.COLUMNNAME_M_Picking_Job_ID, pickingJobIds)
+				.create();
 	}
 }

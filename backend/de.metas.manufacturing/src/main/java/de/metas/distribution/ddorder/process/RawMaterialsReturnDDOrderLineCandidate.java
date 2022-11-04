@@ -188,7 +188,7 @@ import java.util.Set;
 			notValidReasons.add("@NotFound@ @M_Warehouse_ID@");
 			return;
 		}
-		rawMaterialsLocator = Services.get(IWarehouseBL.class).getDefaultLocator(rawMaterialsWarehouse);
+		rawMaterialsLocator = Services.get(IWarehouseBL.class).getOrCreateDefaultLocator(rawMaterialsWarehouse);
 		if (rawMaterialsLocator == null)
 		{
 			notValidReasons.add("@NotFound@ @M_Locator_ID@ (@M_Warehouse_ID@:" + rawMaterialsWarehouse.getName() + ")");

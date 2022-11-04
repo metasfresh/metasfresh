@@ -184,7 +184,7 @@ public class DDOrderService
 	{
 		final WarehouseId quarantineWarehouseId = warehouseDAO.retrieveQuarantineWarehouseId();
 
-		final LocatorId quarantineLocatorId = warehouseBL.getDefaultLocatorId(quarantineWarehouseId);
+		final LocatorId quarantineLocatorId = warehouseBL.getOrCreateDefaultLocatorId(quarantineWarehouseId);
 
 		final ImmutableSet<Entry<BPartnerLocationId, Collection<HUToDistribute>>> entries = husToDistribute
 				.stream()
@@ -223,11 +223,11 @@ public class DDOrderService
 		ddOrderLine.setC_UOM_ID(productBL.getStockUOMId(productId).getRepoId());
 
 		final WarehouseId warehouseIdFrom = WarehouseId.ofRepoId(ddOrder.getM_Warehouse_From_ID());
-		final LocatorId locatorFromId = warehouseBL.getDefaultLocatorId(warehouseIdFrom);
+		final LocatorId locatorFromId = warehouseBL.getOrCreateDefaultLocatorId(warehouseIdFrom);
 		ddOrderLine.setM_Locator_ID(locatorFromId.getRepoId());
 
 		final WarehouseId warehouseToId = WarehouseId.ofRepoId(ddOrder.getM_Warehouse_To_ID());
-		final LocatorId locatorToId = warehouseBL.getDefaultLocatorId(warehouseToId);
+		final LocatorId locatorToId = warehouseBL.getOrCreateDefaultLocatorId(warehouseToId);
 		ddOrderLine.setM_LocatorTo_ID(locatorToId.getRepoId());
 
 		if (mHUPIProductID != null)
@@ -301,6 +301,11 @@ public class DDOrderService
 	public void unassignFromResponsible(final DDOrderId ddOrderId)
 	{
 		final I_DD_Order ddOrder = getById(ddOrderId);
+		unassignFromResponsibleAndSave(ddOrder);
+	}
+
+	private void unassignFromResponsibleAndSave(final I_DD_Order ddOrder)
+	{
 		ddOrder.setAD_User_Responsible_ID(-1);
 		save(ddOrder);
 	}

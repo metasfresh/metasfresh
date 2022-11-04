@@ -22,6 +22,12 @@ export function startWorkflowRequest({ wfParameters }) {
     .then((response) => unboxAxiosResponse(response));
 }
 
+export function continueWorkflowRequest(wfProcessId) {
+  return axios
+    .post(`${apiBasePath}/userWorkflows/wfProcess/${wfProcessId}/continue`)
+    .then((response) => unboxAxiosResponse(response));
+}
+
 /**
  * @method startWorkflow
  * @summary Continue a workflow from the launchers list
