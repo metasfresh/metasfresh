@@ -43,8 +43,8 @@ Feature: Mediated commission
       | C_Flatrate_Conditions_ID.Identifier | Name          | Type_Conditions    | OPT.C_MediatedCommissionSettings_ID.Identifier |
       | mediatedConditions_1                | mediated-test | MediatedCommission | mediatedSettings_1                             |
     And metasfresh contains C_Flatrate_Terms:
-      | Identifier         | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier |
-      | mediatedContract_1 | mediatedConditions_1                | mediated_vendor             | 2021-11-01 | 2022-11-01 | commission_product          |
+      | Identifier         | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.NrOfMonthsFromNow |
+      | mediatedContract_1 | mediatedConditions_1                | mediated_vendor             | commission_product          | 12                    |
     When a 'POST' request with the below payload is sent to the metasfresh REST-API '/api/v2/order/purchase/createCandidates' and fulfills with '200' status code
   """
 {
