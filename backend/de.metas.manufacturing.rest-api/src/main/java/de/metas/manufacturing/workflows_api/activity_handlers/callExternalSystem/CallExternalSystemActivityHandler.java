@@ -24,7 +24,7 @@ package de.metas.manufacturing.workflows_api.activity_handlers.callExternalSyste
 
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.config.qrcode.ExternalSystemConfigQRCode;
-import de.metas.externalsystem.export.ExportToExternalSystemService;
+import de.metas.externalsystem.export.pporder.ExportPPOrderToExternalSystem;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
@@ -51,10 +51,10 @@ public class CallExternalSystemActivityHandler implements WFActivityHandler, Set
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("manufacturing.callExternalSystem");
 
 	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
-	private final ExportToExternalSystemService exportToExternalSystemService;
+	private final ExportPPOrderToExternalSystem exportToExternalSystemService;
 
 	public CallExternalSystemActivityHandler(
-			@NonNull final ExportToExternalSystemService exportToExternalSystemService)
+			@NonNull final ExportPPOrderToExternalSystem exportToExternalSystemService)
 	{
 		this.exportToExternalSystemService = exportToExternalSystemService;
 	}
