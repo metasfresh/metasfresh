@@ -1,5 +1,8 @@
 -- 2022-11-04T21:24:21.494Z
-INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,IsLogWarning,IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUpdateExportDate,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,SpreadsheetFormat,Type,Updated,UpdatedBy,Value) VALUES ('3',0,0,585140,'Y','de.metas.externalsystem.process.PrintQRCode','N',TO_TIMESTAMP('2022-11-04 23:24:21','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.externalsystem','Y','N','N','N','Y','N','N','N','N','Y','N','Y',0,'QR Code','json','N','N','xls','Java',TO_TIMESTAMP('2022-11-04 23:24:21','YYYY-MM-DD HH24:MI:SS'),100,'ExternalSystem_Config_PrintQRCode')
+INSERT INTO AD_Process (AccessLevel,AD_Client_ID,AD_Org_ID,AD_Process_ID,AllowProcessReRun,Classname,CopyFromProcess,Created,CreatedBy,EntityType,IsActive,IsApplySecuritySettings,IsBetaFunctionality,IsDirectPrint,IsFormatExcelFile,
+                        IsNotifyUserAfterExecution,IsOneInstanceOnly,IsReport,IsTranslateExcelHeaders,IsUpdateExportDate,IsUseBPartnerLanguage,LockWaitTimeout,Name,PostgrestResponseFormat,RefreshAllAfterExecution,ShowHelp,SpreadsheetFormat,Type,Updated,UpdatedBy,Value)
+VALUES ('3',0,0,585140,'Y','de.metas.externalsystem.process.PrintQRCode','N',TO_TIMESTAMP('2022-11-04 23:24:21','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.externalsystem','Y','N','N','N','Y',
+        'N','N','N','Y','N','Y',0,'QR Code','json','N','N','xls','Java',TO_TIMESTAMP('2022-11-04 23:24:21','YYYY-MM-DD HH24:MI:SS'),100,'ExternalSystem_Config_PrintQRCode')
 ;
 
 -- 2022-11-04T21:24:21.503Z
