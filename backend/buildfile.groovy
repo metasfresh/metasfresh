@@ -7,18 +7,19 @@ Map build(
         final MvnConf mvnConf,
         final Map scmVars,
         final boolean forceBuild = false,
-        final boolean forceSkip = false,
+        final boolean forceSkipBackend = false,
+        final boolean forceSkipCucumber = false,
         final String multithreadParam = "-T 2C") {
+    
     final dockerImages = [:]
     String publishedDBInitDockerImageName
-    final def misc = new de.metas.jenkins.Misc()
 
     stage('Build backend')
             {
                 currentBuild.description = """${currentBuild.description}<p/>
 				<h2>Backend</h2>
 			"""
-                if (forceSkip) {
+                if (forceSkipBackend) {
                     currentBuild.description = """${currentBuild.description}<p/>
             Forced to skip.
             """
@@ -107,11 +108,14 @@ Map build(
 				</ul>
 				"""
 
-                dir('de.metas.cucumber') {
-                    def cucumberBuildFile = load('buildfile.groovy')
-                    cucumberBuildFile.build(mvnConf, scmVars)
+                if(forceSkipCucumber) {
+                    echo "forced to skip cucumber testing";
+                } else {
+                    dir('de.metas.cucumber') {
+                        def cucumberBuildFile = load('buildfile.groovy')
+                        cucumberBuildFile.build(mvnConf, scmVars)
+                    }
                 }
-
 //                final String metasfreshDistSQLOnlyURL = "${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-dist/${misc.urlEncode(env.MF_VERSION)}/metasfresh-dist-dist-${misc.urlEncode(env.MF_VERSION)}-sql-only.tar.gz"
 //                testSQLMigrationScripts(
 //                        params.MF_SQL_SEED_DUMP_URL,
