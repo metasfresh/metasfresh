@@ -48,6 +48,31 @@ Map build(final MvnConf mvnConf) {
                 artifactURLs['metasfresh-webui-frontend'] = "${mvnConf.resolveRepoURL}/de/metas/ui/web/metasfresh-webui-frontend/${urlEncodedMavenProps['metasfresh-webui-frontend.version']}/metasfresh-webui-frontend-${urlEncodedMavenProps['metasfresh-webui-frontend.version']}.tar.gz"
                 echo "DONE populating artifactURLs"
 
+                // create and push kubernetes-helm values.yaml file
+                def valuesFileSrc = 'kubernetes/minikube/metasfresh-helm/values.yaml'
+                def valuesFileDes = 'kubernetes/minikube/values.yaml'
+                def valuesData = readYaml file: valuesFileSrc
+
+                valuesData.webui.image = "nexus.metasfresh.com:6001/metasfresh/metasfresh-webui-dev:${misc.mkDockerTag(env.BRANCH_NAME)}_${misc.mkDockerTag(mavenProps['metasfresh-webui-frontend.version'])}"
+                valuesData.app.image = "nexus.metasfresh.com:6001/metasfresh/metasfresh-app:${misc.mkDockerTag(env.BRANCH_NAME)}_${misc.mkDockerTag(mavenProps['metasfresh.version'])}"
+                valuesData.webapi.image = "nexus.metasfresh.com:6001/metasfresh/metasfresh-webui-api:${misc.mkDockerTag(env.BRANCH_NAME)}_${misc.mkDockerTag(mavenProps['metasfresh.version'])}"
+                valuesData.db.imageInit = "nexus.metasfresh.com:6001/metasfresh/metasfresh-db-init-pg-14-2:${misc.mkDockerTag(env.BRANCH_NAME)}_${misc.mkDockerTag(mavenProps['metasfresh.version'])}"
+                valuesData.db.urlMigrationScript = "${mvnConf.deployRepoURL}/de/metas/dist/metasfresh-dist-dist/${misc.urlEncode(mavenProps['metasfresh.version'])}/metasfresh-dist-dist-${misc.urlEncode(mavenProps['metasfresh.version'])}-sql-only.tar.gz"
+
+                // fix missing quotes after readYaml
+                valuesData.app.debug.suspend = "\"n\""
+                valuesData.app.debug.printBashCmds = "\"n\""
+                valuesData.db.debug.printBashCmds = "\"n\""
+
+                writeYaml file: valuesFileDes, data: valuesData
+
+                String helmValuesGroupId='de.metas.kubernetes'
+                String helmValuesArtifactId='helm'
+                String helmValuesClassifier='values'
+                withMaven(jdk: 'java-17', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', options: [artifactsPublisher(disabled: true)]) {
+                    sh "mvn --settings ${mvnConf.settingsFile} ${mvnConf.resolveParams} -Dfile=kubernetes/minikube/values.yaml -Durl=${mvnConf.deployRepoURL} -DrepositoryId=${mvnConf.MF_MAVEN_REPO_ID} -DgroupId=${helmValuesGroupId} -DartifactId=${helmValuesArtifactId} -Dversion=${env.MF_VERSION} -Dclassifier=${helmValuesClassifier} -Dpackaging=yaml -DgeneratePom=true org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file"
+                }
+
                 final String MF_RELEASE_VERSION = misc.extractReleaseVersion(MF_VERSION)
                 // echo "DONE calling misc.extractReleaseVersion"
 
