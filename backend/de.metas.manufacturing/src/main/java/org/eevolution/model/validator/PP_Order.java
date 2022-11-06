@@ -289,7 +289,7 @@ public class PP_Order
 					.create()
 					.aggregate(I_M_ProductPrice.COLUMNNAME_SeqNo, IQuery.Aggregate.MAX, int.class);
 
-			final int nextSeqNo = (Math.max(lastSeqNo, 0)) + 10;
+			final int nextSeqNo = Math.max(lastSeqNo, 0) + 10;
 			ppOrder.setSeqNo(nextSeqNo);
 		}
 	}

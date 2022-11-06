@@ -137,3 +137,6 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=180,Updated=TO_TIMESTAMP
 -- URL zum Konzept
 UPDATE AD_Column SET DefaultValue='@SQL=SELECT COALESCE(MAX(seqno),0)+10 AS DefaultValue FROM PP_Order',Updated=TO_TIMESTAMP('2022-11-06 06:14:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=584868
 ;
+
+UPDATE PP_Order SET SeqNo=10 WHERE SeqNo IS NULL
+;
