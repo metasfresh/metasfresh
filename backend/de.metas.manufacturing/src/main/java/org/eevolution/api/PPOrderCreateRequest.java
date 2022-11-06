@@ -80,8 +80,6 @@ public class PPOrderCreateRequest
 	@Nullable
 	HUPIItemProductId packingMaterialId;
 
-	int seqNo;
-
 	@Builder(toBuilder = true)
 	PPOrderCreateRequest(
 			@Nullable final PPOrderDocBaseType docBaseType,
@@ -109,8 +107,7 @@ public class PPOrderCreateRequest
 			@Nullable final ProjectId projectId,
 			//
 			@Nullable final Boolean completeDocument,
-			@Nullable final HUPIItemProductId packingMaterialId,
-			final int seqNo)
+			@Nullable final HUPIItemProductId packingMaterialId)
 	{
 		Check.assume(!qtyRequired.isZero(), "qtyRequired shall not be zero");
 
@@ -140,7 +137,6 @@ public class PPOrderCreateRequest
 
 		this.completeDocument = completeDocument;
 		this.packingMaterialId = packingMaterialId;
-		this.seqNo = seqNo;
 	}
 
 	@JsonPOJOBuilder(withPrefix = "")

@@ -19,6 +19,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -31,8 +32,10 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.model.IQuery;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_ProductPrice;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderCostBL;
@@ -273,6 +276,21 @@ public class PP_Order
 					.appendParametersToMessage()
 					.setParameter("PP_Order.M_Product_ID", ppOrder.getM_Product_ID())
 					.setParameter("PP_Order.PP_Product_BOM_ID.M_Product_ID", productIdOfBOM.getRepoId());
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+	public void setSeqNo(final I_PP_Order ppOrder)
+	{
+		if (ppOrder.getSeqNo() <= 0)
+		{
+			final int lastSeqNo = Services.get(IQueryBL.class)
+					.createQueryBuilder(I_PP_Order.class, ppOrder)
+					.create()
+					.aggregate(I_M_ProductPrice.COLUMNNAME_SeqNo, IQuery.Aggregate.MAX, int.class);
+
+			final int nextSeqNo = (Math.max(lastSeqNo, 0)) + 10;
+			ppOrder.setSeqNo(nextSeqNo);
 		}
 	}
 }
