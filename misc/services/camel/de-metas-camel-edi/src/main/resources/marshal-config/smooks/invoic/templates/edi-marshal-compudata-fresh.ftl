@@ -281,7 +281,7 @@ ${cctopInvoice.cctop000V.isTest?right_pad(1)?substring(0, 1)}<#lt><#t>
     ${MessageNoP100?right_pad(14)?substring(0, 14)}<#lt><#t>
     ${cctopInvoice500V.line?right_pad(6)?substring(0, 6)}<#lt><#t>
     ${cctopInvoice500V.upc?right_pad(35)?substring(0, 35)}<#lt><#t>
-    ${(cctopInvoice500V.vendorProductNo!"")?right_pad(35)?substring(0, 35)}<#lt><#t><#-- made it null-able (but not sure) -->
+    ${(cctopInvoice500V.customerProductNo!"")?right_pad(35)?substring(0, 35)}<#lt><#t><#-- made it null-able (but not sure) -->
     ${ArticleNoSupplier?right_pad(35)?substring(0, 35)}<#lt><#t>
     ${(cctopInvoice500V.productDescription!"")?right_pad(70)?substring(0, 70)}<#lt><#t><#-- mandatory field -->
     ${cctopInvoice500V.qtyInvoiced?left_pad(15)?substring(0, 15)}<#lt><#t>
