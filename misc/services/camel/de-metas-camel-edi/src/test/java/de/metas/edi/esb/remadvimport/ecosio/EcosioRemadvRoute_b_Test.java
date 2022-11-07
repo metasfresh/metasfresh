@@ -41,14 +41,14 @@ import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.ECOSIO_
 import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.REMADV_XML_TO_JSON_PROCESSOR;
 import static org.assertj.core.api.Assertions.*;
 
-class EcosioRemadvRoute_a_Test extends CamelTestSupport
+class EcosioRemadvRoute_b_Test extends CamelTestSupport
 {
 	private static final String MOCK_FROM_ENDPOINT = "direct:mockInput";
 	private static final String MOCK_XML_TO_JSON_ENDPOINT = "mock:xmlToJsonResult";
 
-	private static final String CREATE_REMADV_VALID_XML_RESOURCE_PATH = "/de/metas/edi/esb/remadvimport/ecosio/a_10_EcosioRemadvTestFile.xml";
-	private static final String CREATE_REMADV_REQUEST_JSON_RESOURCE_PATH = "/de/metas/edi/esb/remadvimport/ecosio/a_20_JsonCreateREMADVRequest.json";
-	private static final String CREATE_REMADV_RESPONSE_JSON_RESOURCE_PATH = "/de/metas/edi/esb/remadvimport/ecosio/a_30_JsonCreateREMADVResponse.json";
+	private static final String CREATE_REMADV_VALID_XML_RESOURCE_PATH = "/de/metas/edi/esb/remadvimport/ecosio/b_10_EcosioRemadvTestFile_Invoice_and_CreditMemo.xml";
+	private static final String CREATE_REMADV_REQUEST_JSON_RESOURCE_PATH = "/de/metas/edi/esb/remadvimport/ecosio/b_20_JsonCreateREMADVRequest.json";
+	private static final String CREATE_REMADV_RESPONSE_JSON_RESOURCE_PATH = "/de/metas/edi/esb/remadvimport/ecosio/b_30_JsonCreateREMADVResponse.json";
 
 	@Override
 	protected Properties useOverridePropertiesWithPropertiesComponent()
@@ -56,7 +56,7 @@ class EcosioRemadvRoute_a_Test extends CamelTestSupport
 		final var properties = new Properties();
 		try
 		{
-			properties.load(EcosioRemadvRoute_a_Test.class.getClassLoader().getResourceAsStream("application.properties"));
+			properties.load(EcosioRemadvRoute_b_Test.class.getClassLoader().getResourceAsStream("application.properties"));
 			return properties;
 		}
 		catch (final IOException e)
@@ -96,12 +96,11 @@ class EcosioRemadvRoute_a_Test extends CamelTestSupport
 
 		final InputStream createREMADVFile = this.getClass().getResourceAsStream(CREATE_REMADV_VALID_XML_RESOURCE_PATH);
 
-		template.sendBodyAndHeader(MOCK_FROM_ENDPOINT, createREMADVFile, Exchange.FILE_NAME_ONLY, "a_10_EcosioRemadvTestFile.xml");
+		template.sendBodyAndHeader(MOCK_FROM_ENDPOINT, createREMADVFile, Exchange.FILE_NAME_ONLY, "b_10_EcosioRemadvTestFile_Invoice_and_CreditMemo.xml");
 
 		assertThat(createRemadvEndpoint.called).isEqualTo(1);
 		assertMockEndpointsSatisfied();
 	}
-
 
 	private void prepareRouteForTesting(final MockSuccessfullyCreatedRemadvProcessor createdRemadvProcessor) throws Exception
 	{
