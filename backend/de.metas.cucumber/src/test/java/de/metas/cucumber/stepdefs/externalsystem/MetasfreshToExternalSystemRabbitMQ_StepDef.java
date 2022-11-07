@@ -38,6 +38,7 @@ import de.metas.ServerBoot;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupRequest;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonAvailableForSales;
+import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.externalsystem.leichundmehl.JsonExternalSystemLeichMehlConfigProductMapping;
 import de.metas.common.externalsystem.leichundmehl.JsonExternalSystemLeichMehlPluFileConfigs;
@@ -661,14 +662,6 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 		{
 			logger.info("*** Target JsonExternalSystemRequest not found, see list: " + JsonObjectMapperHolder.sharedJsonObjectMapper().writeValueAsString(requests));
 		}
-	}
-
-	private boolean isMatchingESRequestBasedOnESConfig(@NonNull final String externalSystemConfigIdentifier, @NonNull final JsonExternalSystemRequest externalSystemRequest)
-	{
-		final I_ExternalSystem_Config externalSystemConfig = externalSystemConfigTable.get(externalSystemConfigIdentifier);
-		assertThat(externalSystemConfig).isNotNull();
-
-		return externalSystemRequest.getExternalSystemConfigId().getValue() == externalSystemConfig.getExternalSystem_Config_ID();
 	}
 
 	private boolean isMatchingESRequestBasedOnHU(@Nullable final String huIdentifier, @NonNull final JsonExternalSystemRequest externalSystemRequest)

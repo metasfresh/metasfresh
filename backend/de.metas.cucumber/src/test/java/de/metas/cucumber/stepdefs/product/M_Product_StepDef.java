@@ -418,13 +418,9 @@ public class M_Product_StepDef
 
 	private void updateMProduct(@NonNull final Map<String, String> tableRow)
 	{
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-
-		final Integer productId = productTable.getOptional(productIdentifier)
-				.map(I_M_Product::getM_Product_ID)
-				.orElseGet(() -> Integer.parseInt(productIdentifier));
-
-		final I_M_Product productRecord = InterfaceWrapperHelper.load(productId, I_M_Product.class);
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_M_Product productRecord = productTable.get(productIdentifier);
+		assertThat(productRecord).isNotNull();
 
 		final String gtin = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + I_M_Product.COLUMNNAME_GTIN);
 
@@ -435,6 +431,12 @@ public class M_Product_StepDef
 
 		final boolean isStocked = DataTableUtil.extractBooleanForColumnNameOr(tableRow, COLUMNNAME_IsStocked, true);
 		productRecord.setIsStocked(isStocked);
+
+		final Boolean isStocked = DataTableUtil.extractBooleanForColumnNameOrNull(tableRow, COLUMNNAME_IsStocked);
+		if(isStocked != null)
+		{
+			productRecord.setIsStocked(isStocked);
+		}
 
 		saveRecord(productRecord);
 	}

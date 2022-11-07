@@ -130,16 +130,24 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	private static final String PAIN_001_001_03_CH_02 = "pain.001.001.03.ch.02";
 	private static final String PAIN_001_001_03_CH_02_SCHEMALOCATION = "http://www.six-interbank-clearing.com/de/";
 
-	/** Title: "ISR" */
+	/**
+	 * Title: "ISR"
+	 */
 	private static final String PAYMENT_TYPE_1 = "PAYMENT_TYPE_1";
 
-	/** Title: "IS 1-Stage". Currently not implemented. */
+	/**
+	 * Title: "IS 1-Stage". Currently not implemented.
+	 */
 	private static final String PAYMENT_TYPE_2_1 = "PAYMENT_TYPE_2_1";
 
-	/** Title: "IS 2-Stage". Currently not implemented. */
+	/**
+	 * Title: "IS 2-Stage". Currently not implemented.
+	 */
 	private static final String PAYMENT_TYPE_2_2 = "PAYMENT_TYPE_2_2";
 
-	/** Title: "IBAN/postal account and IID/BIC" */
+	/**
+	 * Title: "IBAN/postal account and IID/BIC"
+	 */
 	private static final String PAYMENT_TYPE_3 = "PAYMENT_TYPE_3";
 
 	/**
@@ -397,7 +405,7 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 				pmtInf.setPmtTpInf(pmtTpInf);
 
 				// service level
-				if (Objects.equals(paymentMode, PAYMENT_TYPE_5))
+				if (paymentMode == PAYMENT_TYPE_5)
 				{
 					// ServiceLEvel.Code "SEPA" does not work if we are doing transactions in swizz.
 					// Service level - Hard-coded value of SEPA.
@@ -405,21 +413,21 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 					svcLvl.setCd("SEPA");
 					pmtTpInf.setSvcLvl(svcLvl);
 				}
-				else if (Objects.equals(paymentMode, PAYMENT_TYPE_1))
+				else if (paymentMode == PAYMENT_TYPE_1)
 				{
 					// local instrument
 					final LocalInstrument2Choice lclInstrm = objectFactory.createLocalInstrument2Choice();
 					lclInstrm.setPrtry("CH01"); // Zahlungsart 1
 					pmtTpInf.setLclInstrm(lclInstrm);
 				}
-				else if (Objects.equals(paymentMode, PAYMENT_TYPE_2_1))
+				else if (paymentMode == PAYMENT_TYPE_2_1)
 				{
 					// local instrument
 					final LocalInstrument2Choice lclInstrm = objectFactory.createLocalInstrument2Choice();
 					lclInstrm.setPrtry("CH02"); // Zahlungsart 2.1
 					pmtTpInf.setLclInstrm(lclInstrm);
 				}
-				else if (Objects.equals(paymentMode, PAYMENT_TYPE_2_2))
+				else if (paymentMode == PAYMENT_TYPE_2_2)
 				{
 					// local instrument
 					final LocalInstrument2Choice lclInstrm = objectFactory.createLocalInstrument2Choice();
