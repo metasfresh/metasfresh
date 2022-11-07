@@ -30,6 +30,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerSupplierApprovalService;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.chat.ChatRepository;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
@@ -67,6 +68,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_PriceList;
@@ -99,6 +101,7 @@ public class C_Order
 	private final OrderLineDetailRepository orderLineDetailRepository;
 	private final BPartnerSupplierApprovalService partnerSupplierApprovalService;
 	private final IDocumentLocationBL documentLocationBL;
+	private final ChatRepository chatRepository;
 
 	@VisibleForTesting
 	public static final String AUTO_ASSIGN_TO_SALES_ORDER_BY_EXTERNAL_ORDER_ID_SYSCONFIG = "de.metas.payment.autoAssignToSalesOrderByExternalOrderId.enabled";
@@ -108,12 +111,14 @@ public class C_Order
 			@NonNull final IBPartnerBL bpartnerBL,
 			@NonNull final OrderLineDetailRepository orderLineDetailRepository,
 			@NonNull final IDocumentLocationBL documentLocationBL,
-			@NonNull final BPartnerSupplierApprovalService partnerSupplierApprovalService)
+			@NonNull final BPartnerSupplierApprovalService partnerSupplierApprovalService,
+			@NonNull final ChatRepository chatRepository)
 	{
 		this.bpartnerBL = bpartnerBL;
 		this.orderLineDetailRepository = orderLineDetailRepository;
 		this.partnerSupplierApprovalService = partnerSupplierApprovalService;
 		this.documentLocationBL = documentLocationBL;
+		this.chatRepository = chatRepository;
 
 		final IProgramaticCalloutProvider programmaticCalloutProvider = Services.get(IProgramaticCalloutProvider.class);
 		programmaticCalloutProvider.registerAnnotatedCallout(this);
@@ -228,6 +233,7 @@ public class C_Order
 		unlinkThisProposalFromGeneratedSalesOrders(order);
 		unlinkThisSalesOrderFromProposal(order);
 		orderLineDetailRepository.deleteByOrderId(OrderId.ofRepoId(order.getC_Order_ID()));
+		chatRepository.deleteByTableAndRecord(TableRecordReference.of(order));
 	}
 
 	/**
