@@ -7,6 +7,7 @@ import de.metas.manufacturing.order.exportaudit.APIExportStatus;
 import de.metas.order.OrderLineId;
 import de.metas.product.ResourceId;
 import de.metas.util.Services;
+import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -92,11 +93,11 @@ public class PPOrderDAO implements IPPOrderDAO
 	{
 		final int lastSeqNo = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_PP_Order.class, ppOrder)
-				.addEqualsFilter(I_PP_Order.COLUMN_DateOrdered, ppOrder.getDateOrdered())
+				.addEqualsFilter(I_PP_Order.COLUMN_DateOrdered, ppOrder.getDateOrdered(), DateTruncQueryFilterModifier.DAY)
 				.create()
 				.aggregate(I_M_ProductPrice.COLUMNNAME_SeqNo, IQuery.Aggregate.MAX, int.class);
 
-		return Math.max(lastSeqNo, 0) + 10;
+		return SeqNo.ofInt(lastSeqNo).next().toInt();
 	}
 
 	private IQueryBuilder<I_PP_Order> toSqlQueryBuilder(final ManufacturingOrderQuery query)

@@ -1,10 +1,9 @@
-DROP INDEX IF EXISTS pp_order_seqno
+DROP INDEX IF EXISTS PP_Order_DateOrdered_Day_and_Seq
 ;
 
-CREATE INDEX pp_order_seqno
-    ON pp_order (seqno)
+CREATE INDEX PP_Order_DateOrdered_Day_and_Seq ON PP_Order (TRUNC(DateOrdered, 'DD'), seqno)
 ;
 
-COMMENT ON INDEX pp_order_seqno
+COMMENT ON INDEX PP_Order_DateOrdered_Day_and_Seq
     IS 'Required, otherwise metasfresh will needs to do a full sequential scan other all PP_Orders'
 ;
