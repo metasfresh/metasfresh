@@ -169,18 +169,18 @@ public class TransactionCreatedHandlerTests
 				.type(CandidateType.UNEXPECTED_INCREASE)
 				.id(CandidateId.ofRepoId(11))
 				.materialDescriptor(MaterialDescriptor.builder()
-						.productDescriptor(createProductDescriptor())
-						.warehouseId(WAREHOUSE_ID)
-						.quantity(ONE)
-						.date(date) // both attributes *and* date need to match
-						.build())
+											.productDescriptor(createProductDescriptor())
+											.warehouseId(WAREHOUSE_ID)
+											.quantity(ONE)
+											.date(date) // both attributes *and* date need to match
+											.build())
 				.transactionDetail(TransactionDetail.builder()
-						.quantity(ONE)
-						.storageAttributesKey(AttributesKey.ALL)
-						.transactionId(TRANSACTION_ID + 1)
-						.transactionDate(date)
-						.complete(true)
-						.build())
+										   .quantity(ONE)
+										   .storageAttributesKey(AttributesKey.ALL)
+										   .transactionId(TRANSACTION_ID + 1)
+										   .transactionDate(date)
+										   .complete(true)
+										   .build())
 				.build();
 
 		Mockito.when(candidateRepository.retrieveLatestMatchOrNull(Mockito.any()))
@@ -274,11 +274,11 @@ public class TransactionCreatedHandlerTests
 				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.type(CandidateType.DEMAND)
 				.materialDescriptor(MaterialDescriptor.builder()
-						.productDescriptor(createProductDescriptor())
-						.warehouseId(WAREHOUSE_ID)
-						.quantity(SIXTY_THREE)
-						.date(date)
-						.build())
+											.productDescriptor(createProductDescriptor())
+											.warehouseId(WAREHOUSE_ID)
+											.quantity(SIXTY_THREE)
+											.date(date)
+											.build())
 				.businessCase(CandidateBusinessCase.SHIPMENT)
 				.businessCaseDetail(DemandDetail.forShipmentLineId(
 						SHIPMENT_LINE_ID,
@@ -349,11 +349,11 @@ public class TransactionCreatedHandlerTests
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_AND_ORG_ID))
 				.transactionId(TRANSACTION_ID)
 				.materialDescriptor(MaterialDescriptor.builder()
-						.date(date)
-						.productDescriptor(createProductDescriptor())
-						.quantity(quantity)
-						.warehouseId(WAREHOUSE_ID)
-						.build());
+											.date(date)
+											.productDescriptor(createProductDescriptor())
+											.quantity(quantity)
+											.warehouseId(WAREHOUSE_ID)
+											.build());
 	}
 
 	private void makeCommonAssertions(final Candidate candidate)

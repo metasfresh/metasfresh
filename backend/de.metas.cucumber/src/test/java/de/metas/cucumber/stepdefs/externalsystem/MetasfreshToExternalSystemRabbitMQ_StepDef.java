@@ -38,7 +38,6 @@ import de.metas.ServerBoot;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupRequest;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonAvailableForSales;
-import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.externalsystem.leichundmehl.JsonExternalSystemLeichMehlConfigProductMapping;
 import de.metas.common.externalsystem.leichundmehl.JsonExternalSystemLeichMehlPluFileConfigs;
@@ -664,6 +663,14 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 		}
 	}
 
+	private boolean isMatchingESRequestBasedOnESConfig(@NonNull final String externalSystemConfigIdentifier, @NonNull final JsonExternalSystemRequest externalSystemRequest)
+	{
+		final I_ExternalSystem_Config externalSystemConfig = externalSystemConfigTable.get(externalSystemConfigIdentifier);
+		assertThat(externalSystemConfig).isNotNull();
+
+		return externalSystemRequest.getExternalSystemConfigId().getValue() == externalSystemConfig.getExternalSystem_Config_ID();
+	}
+
 	private boolean isMatchingESRequestBasedOnHU(@Nullable final String huIdentifier, @NonNull final JsonExternalSystemRequest externalSystemRequest)
 	{
 		if (Check.isBlank(huIdentifier))
@@ -810,7 +817,9 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 
 		try
 		{
-			final HashMap<String, String> params = objectMapper.readValue(rawParams, new TypeReference<HashMap<String, String>>() {});
+			final HashMap<String, String> params = objectMapper.readValue(rawParams, new TypeReference<HashMap<String, String>>()
+			{
+			});
 
 			return externalSystemRequestParams.entrySet().containsAll(params.entrySet());
 		}
@@ -825,7 +834,9 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 			@NonNull final I_ExternalSystem_Config externalSystemConfig,
 			@NonNull final List<JsonExternalSystemRequest> requests) throws JsonProcessingException
 	{
-		final HashMap<String, String> expectedParams = objectMapper.readValue(expectedRawParams, new TypeReference<HashMap<String, String>>() {});
+		final HashMap<String, String> expectedParams = objectMapper.readValue(expectedRawParams, new TypeReference<HashMap<String, String>>()
+		{
+		});
 
 		final JsonExternalSystemRequest jsonExternalSystemRequest = requests.stream()
 				.filter(request -> request.getExternalSystemConfigId().getValue() == externalSystemConfig.getExternalSystem_Config_ID())

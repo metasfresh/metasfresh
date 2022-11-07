@@ -69,7 +69,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.PRODUCT_CATEGORY_STAND
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_Product_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_IsStocked;
@@ -429,11 +429,8 @@ public class M_Product_StepDef
 			productRecord.setGTIN(DataTableUtil.nullToken2Null(gtin));
 		}
 
-		final boolean isStocked = DataTableUtil.extractBooleanForColumnNameOr(tableRow, COLUMNNAME_IsStocked, true);
-		productRecord.setIsStocked(isStocked);
-
 		final Boolean isStocked = DataTableUtil.extractBooleanForColumnNameOrNull(tableRow, COLUMNNAME_IsStocked);
-		if(isStocked != null)
+		if (isStocked != null)
 		{
 			productRecord.setIsStocked(isStocked);
 		}
