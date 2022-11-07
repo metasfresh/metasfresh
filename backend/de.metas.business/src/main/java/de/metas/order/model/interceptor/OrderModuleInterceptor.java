@@ -3,7 +3,6 @@ package de.metas.order.model.interceptor;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerSupplierApprovalService;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.chat.ChatRepository;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.event.Topic;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
@@ -26,7 +25,6 @@ public class OrderModuleInterceptor extends AbstractModuleInterceptor
 	private final BPartnerSupplierApprovalService bPartnerSupplierApprovalService = SpringContextHolder.instance.getBean(BPartnerSupplierApprovalService.class);
 	private final IBPartnerBL bpartnerBL = SpringContextHolder.instance.getBean(IBPartnerBL.class);
 	private final IDocumentLocationBL documentLocationBL = SpringContextHolder.instance.getBean(IDocumentLocationBL.class);
-	private final ChatRepository chatRepository = SpringContextHolder.instance.getBean(ChatRepository.class);
 
 	@Override
 	protected List<Topic> getAvailableUserNotificationsTopics()
@@ -37,7 +35,7 @@ public class OrderModuleInterceptor extends AbstractModuleInterceptor
 	@Override
 	protected void registerInterceptors(@NonNull final IModelValidationEngine engine)
 	{
-		engine.addModelValidator(new de.metas.order.model.interceptor.C_Order(bpartnerBL, orderLineDetailRepository, documentLocationBL, bPartnerSupplierApprovalService, chatRepository)); // FRESH-348
+		engine.addModelValidator(new de.metas.order.model.interceptor.C_Order(bpartnerBL, orderLineDetailRepository, documentLocationBL, bPartnerSupplierApprovalService)); // FRESH-348
 		engine.addModelValidator(new de.metas.order.model.interceptor.C_OrderLine(groupChangesHandler, orderLineDetailRepository, bPartnerSupplierApprovalService));
 	}
 }
