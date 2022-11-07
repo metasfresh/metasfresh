@@ -78,8 +78,8 @@ public class PO_Record
 
 	/**	Restrict Table Names			*/
 	private static String[]	s_restrictNames = new String[]{
-		X_R_Request.Table_Name,
-		X_CM_Chat.Table_Name
+		X_R_Request.Table_Name
+		// X_CM_Chat.Table_Name
 	//	X_Fact_Acct.Table_Name
 	};
 
