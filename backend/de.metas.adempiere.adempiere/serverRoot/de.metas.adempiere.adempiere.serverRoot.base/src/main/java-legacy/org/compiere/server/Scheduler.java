@@ -145,7 +145,7 @@ public class Scheduler extends AdempiereServer
 
 	private static final String PERF_MON_SYSCONFIG_NAME = "de.metas.monitoring.scheduler.enable";
 	private static final boolean SYS_CONFIG_DEFAULT_VALUE = false;
-	private final ISysConfigBL SYS_CONFIG_BL = Services.get(ISysConfigBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	/**
 	 * Sets AD_Scheduler.Status and save the record
@@ -201,7 +201,7 @@ public class Scheduler extends AdempiereServer
 	@Override
 	protected void doWork()
 	{
-		final boolean perfMonIsActive = SYS_CONFIG_BL.getBooleanValue(PERF_MON_SYSCONFIG_NAME, SYS_CONFIG_DEFAULT_VALUE);
+		final boolean perfMonIsActive = sysConfigBL.getBooleanValue(PERF_MON_SYSCONFIG_NAME, SYS_CONFIG_DEFAULT_VALUE);
 		if(!perfMonIsActive)
 		{
 			doWork0();

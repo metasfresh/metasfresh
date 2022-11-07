@@ -28,12 +28,36 @@ import lombok.Setter;
 import java.util.ArrayList;
 
 @Getter
-@Setter
 public class PerformanceMonitoringData
 {
+	@Setter
 	private int depth = 0;
 	private String initiator = "";
 	private String initiatorWindow = "";
+	@Setter
 	private ArrayList<String> calledBy = new ArrayList<>();
-	private Boolean isInitiatorLabelActive = false;
+	@Setter
+	private boolean initiatorLabelActive = false;
+
+	public void setRestControllerData(PerformanceMonitoringService.Metadata metadata)
+	{
+		initiatorLabelActive = true;
+		initiator = metadata.getClassName() + " - " + metadata.getFunctionName();
+		calledBy.add(0, "HTTP Request");
+
+		final String windowNameAndId = metadata.getWindowNameAndId();
+		if(windowNameAndId == null)
+		{
+			initiatorWindow = "NONE";
+		}
+		else
+		{
+			initiatorWindow = windowNameAndId;
+		}
+	}
+
+	public boolean isCalledByMonitoredFunction()
+	{
+		return depth != 0;
+	}
 }

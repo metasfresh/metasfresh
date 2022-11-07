@@ -491,8 +491,7 @@ public class DB
 
 	public CPreparedStatement prepareStatement(final String sql, @Nullable final String trxName)
 	{
-		final boolean isPerfMonActive = dbPerformanceMonitoringHelper.isPerfMonActive();
-		if(!isPerfMonActive)
+		if(dbPerformanceMonitoringHelper.isPerfMonActive())
 		{
 			return prepareStatement0(sql, trxName);
 		}

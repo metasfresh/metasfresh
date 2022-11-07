@@ -136,7 +136,8 @@ class WorkpackageProcessorTask implements Runnable
 	// task 09933 just adding this member for now, because it's unclear if in future we want to or have to extend on it or not.
 	private final boolean retryOnDeadLock = true;
 
-	private final ISysConfigBL SYS_CONFIG_BL = Services.get(ISysConfigBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final PerformanceMonitoringService perfMonService;
 	private static final String PERF_MON_SYSCONFIG_NAME = "de.metas.monitoring.asyncWorkpackage.enable";
 	private static final boolean SYS_CONFIG_DEFAULT_VALUE = false;
 
@@ -144,12 +145,15 @@ class WorkpackageProcessorTask implements Runnable
 			final IQueueProcessor queueProcessor,
 			final IWorkpackageProcessor workPackageProcessor,
 			@NonNull final I_C_Queue_WorkPackage workPackage,
-			@NonNull final IWorkpackageLogsRepository logsRepository)
+			@NonNull final IWorkpackageLogsRepository logsRepository,
+			@NonNull final PerformanceMonitoringService perfMonService)
 	{
 		this.logsRepository = logsRepository;
 
 		this.queueProcessor = queueProcessor;
 		this.workPackage = workPackage;
+
+		this.perfMonService = perfMonService;
 
 		workPackageProcessorOriginal = workPackageProcessor;
 		workPackageProcessorWrapped = WorkpackageProcessor2Wrapper.wrapIfNeeded(workPackageProcessor);
@@ -170,17 +174,13 @@ class WorkpackageProcessorTask implements Runnable
 	@Override
 	public void run()
 	{
-		final boolean perfMonIsActive = SYS_CONFIG_BL.getBooleanValue(PERF_MON_SYSCONFIG_NAME, SYS_CONFIG_DEFAULT_VALUE);
+		final boolean perfMonIsActive = sysConfigBL.getBooleanValue(PERF_MON_SYSCONFIG_NAME, SYS_CONFIG_DEFAULT_VALUE);
 		if(!perfMonIsActive){
 			run0();
 		}
 		else
 		{
-			final PerformanceMonitoringService service = SpringContextHolder.instance.getBeanOr(
-					PerformanceMonitoringService.class,
-					NoopPerformanceMonitoringService.INSTANCE);
-
-			service.monitor(
+			perfMonService.monitor(
 					this::run0,
 					Metadata.builder()
 							.type(Type.ASYNC_WORKPACKAGE)

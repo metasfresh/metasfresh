@@ -39,22 +39,21 @@ final class POServicesFacade
 	private ADReferenceService _adReferenceService;
 
 	private static PerformanceMonitoringService _performanceMonitoringService;
-	private static final String PM_METADATA_CLASS_NAME = "PO";
-	private static final String PM_METADATA_SAVE_EX_ACTION = "saveEx";
-	private static final String PM_METADATA_LOAD_ACTION = "load";
+	private static final String PM_SYSCONFIG_NAME = "de.metas.monitoring.po.enable";
+	private static final boolean PM_SYS_CONFIG_DEFAULT_VALUE = false;
 	private static final PerformanceMonitoringService.Metadata PM_METADATA_SAVE_EX =
 			PerformanceMonitoringService.Metadata
 					.builder()
-					.className(PM_METADATA_CLASS_NAME)
+					.className("PO")
 					.type(PerformanceMonitoringService.Type.PO)
-					.functionName(PM_METADATA_SAVE_EX_ACTION)
+					.functionName("saveEx")
 					.build();
 	private static final PerformanceMonitoringService.Metadata PM_METADATA_LOAD =
 			PerformanceMonitoringService.Metadata
 					.builder()
-					.className(PM_METADATA_CLASS_NAME)
+					.className("PO")
 					.type(PerformanceMonitoringService.Type.PO)
-					.functionName(PM_METADATA_LOAD_ACTION)
+					.functionName("load")
 					.build();
 
 	private IDeveloperModeBL developerModeBL()
@@ -155,6 +154,11 @@ final class POServicesFacade
 			adReferenceService = this._adReferenceService = ADReferenceService.get();
 		}
 		return adReferenceService;
+	}
+
+	public boolean isPerfMonActive()
+	{
+		return getSysConfigBooleanValue(PM_SYSCONFIG_NAME, PM_SYS_CONFIG_DEFAULT_VALUE);
 	}
 
 	public void performanceMonitoringServiceSaveEx(@NonNull final Runnable runnable)

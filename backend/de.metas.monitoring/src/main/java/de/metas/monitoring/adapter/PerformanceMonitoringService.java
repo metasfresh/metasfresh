@@ -59,10 +59,10 @@ public interface PerformanceMonitoringService
 	class Metadata
 	{
 		@NonNull
-		String className;
+		Type type;
 
 		@NonNull
-		Type type;
+		String className;
 
 		@NonNull
 		String functionName;
@@ -99,6 +99,11 @@ public interface PerformanceMonitoringService
 		Type(final String code)
 		{
 			this.code = code;
+		}
+
+		public boolean isAnyRestControllerType()
+		{
+			return this == Type.REST_CONTROLLER || this == Type.REST_CONTROLLER_WITH_WINDOW_ID;
 		}
 
 		@Getter

@@ -42,7 +42,7 @@ import java.util.concurrent.Callable;
 public class MicrometerPerformanceMonitoringService implements PerformanceMonitoringService
 {
 	private final MeterRegistry meterRegistry;
-	private static final ThreadLocal<PerformanceMonitoringData> perfMonDataTL = ThreadLocal.withInitial(PerformanceMonitoringData::new);
+	private static ThreadLocal<PerformanceMonitoringData> perfMonDataTL = null;
 
 	public MicrometerPerformanceMonitoringService(
 			@NonNull final MeterRegistry meterRegistry)
@@ -55,49 +55,37 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 			@NonNull final Callable<V> callable,
 			@NonNull final PerformanceMonitoringService.Metadata metadata)
 	{
+		if(perfMonDataTL == null)
+		{
+			perfMonDataTL = ThreadLocal.withInitial(PerformanceMonitoringData::new);
+		}
 
 		final PerformanceMonitoringData perfMonData = perfMonDataTL.get();
 		final ArrayList<Tag> tags = new ArrayList<>();
 
-		mkTagIfNotNull("name", metadata.getClassName()).ifPresent(tags::add);
-		mkTagIfNotNull("action", metadata.getFunctionName()).ifPresent(tags::add);
+		addTagIfNotNull("name", metadata.getClassName(), tags);
+		addTagIfNotNull("action", metadata.getFunctionName(), tags);
 
-		if(perfMonData.getDepth() == 0
-				&& metadata.getType() == Type.REST_CONTROLLER_WITH_WINDOW_ID
-				&& metadata.getFunctionName() != null
-				&& metadata.getWindowNameAndId() != null)
+		if(!perfMonData.isCalledByMonitoredFunction() && metadata.getType().isAnyRestControllerType())
 		{
-			perfMonData.setIsInitiatorLabelActive(true);
-			perfMonData.setInitiator(metadata.getClassName() + " - " + metadata.getFunctionName());
-			perfMonData.setInitiatorWindow(metadata.getWindowNameAndId());
-			perfMonData.getCalledBy().add(0, "HTTP Request");
-
+			perfMonData.setRestControllerData(metadata);
 		}
-		else if(perfMonData.getDepth() == 0
-				&& metadata.getType() == Type.REST_CONTROLLER
-				&& metadata.getFunctionName() != null)
+		else if(!perfMonData.isCalledByMonitoredFunction())
 		{
-			perfMonData.setIsInitiatorLabelActive(true);
-			perfMonData.setInitiator(metadata.getClassName() + " - " + metadata.getFunctionName());
-			perfMonData.setInitiatorWindow("NONE");
-			perfMonData.getCalledBy().add(0, "HTTP Request");
-		}
-		else if(perfMonData.getDepth() == 0)
-		{
-			perfMonData.setIsInitiatorLabelActive(false);
+			perfMonData.setInitiatorLabelActive(false);
 		}
 
-		if(perfMonData.getIsInitiatorLabelActive())
+		if(perfMonData.isInitiatorLabelActive())
 		{
-			mkTagIfNotNull("depth", String.valueOf(perfMonData.getDepth())).ifPresent(tags::add);
-			mkTagIfNotNull("initiator", perfMonData.getInitiator()).ifPresent(tags::add);
-			mkTagIfNotNull("window", perfMonData.getInitiatorWindow()).ifPresent(tags::add);
-			mkTagIfNotNull("callerName", metadata.getClassName() + " - " + metadata.getFunctionName()).ifPresent(tags::add);
-			mkTagIfNotNull("calledBy", perfMonData.getCalledBy().get(perfMonData.getDepth())).ifPresent(tags::add);
+			addTagIfNotNull("depth", String.valueOf(perfMonData.getDepth()), tags);
+			addTagIfNotNull("initiator", perfMonData.getInitiator(), tags);
+			addTagIfNotNull("window", perfMonData.getInitiatorWindow(), tags);
+			addTagIfNotNull("callerName", metadata.getClassName() + " - " + metadata.getFunctionName(), tags);
+			addTagIfNotNull("calledBy", perfMonData.getCalledBy().get(perfMonData.getDepth()), tags);
 			perfMonData.getCalledBy().add(perfMonData.getDepth() + 1 ,metadata.getClassName() + " - " + metadata.getFunctionName());
 
 			final Type type;
-			if(isAnyRestControllerType(metadata))
+			if(metadata.getType().isAnyRestControllerType())
 			{
 				type = metadata.getType();
 			}
@@ -106,23 +94,24 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 				type = Type.REST_API_PROCESSING;
 			}
 
-			perfMonData.setDepth(perfMonData.getDepth() + 1);
+			incrementDepth(perfMonData);
 			try
 			{
 				return recordCallable(callable, tags, "mf." + type.getCode());
 			}
 			finally
 			{
-				perfMonData.setDepth(perfMonData.getDepth() - 1);
+				decrementDepth(perfMonData);
 			}
 		}
-
-		createTagsFromLabels(tags, metadata.getLabels());
-		return recordCallable(callable, tags, "mf." + metadata.getType().getCode());
-
+		else
+		{
+			appendLabelsToTags(tags, metadata.getLabels());
+			return recordCallable(callable, tags, "mf." + metadata.getType().getCode());
+		}
 	}
 
-	private void createTagsFromLabels(final ArrayList<Tag> tags, @NonNull final Map<String, String> labels)
+	private void appendLabelsToTags(@NonNull final ArrayList<Tag> tags, @NonNull final Map<String, String> labels)
 	{
 		for (final Entry<String, String> entry : labels.entrySet())
 		{
@@ -131,22 +120,26 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 				// Avoid OOME: if we included e.g. the recordId, then every recordId would cause a new meter to be created.
 				continue;
 			}
-			mkTagIfNotNull(entry.getKey(), entry.getValue()).ifPresent(tags::add);
+			addTagIfNotNull(entry.getKey(), entry.getValue(), tags);
 		}
 	}
 	
-	private Optional<Tag> mkTagIfNotNull(@Nullable final String name, @Nullable final String value)
+	private void addTagIfNotNull(@Nullable final String name, @Nullable final String value, @NonNull ArrayList<Tag> tags)
 	{
-		if (EmptyUtil.isBlank(name) || EmptyUtil.isBlank(value))
+		if (!EmptyUtil.isBlank(name) && !EmptyUtil.isBlank(value))
 		{
-			return Optional.empty();
+			tags.add(Tag.of(name, value));
 		}
-		return Optional.of(Tag.of(name, value));
 	}
 
-	private boolean isAnyRestControllerType(final Metadata metadata)
+	private void incrementDepth(PerformanceMonitoringData perfMonData)
 	{
-		return metadata.getType() == Type.REST_CONTROLLER || metadata.getType() == Type.REST_CONTROLLER_WITH_WINDOW_ID;
+		perfMonData.setDepth(perfMonData.getDepth() + 1);
+	}
+
+	private void decrementDepth(PerformanceMonitoringData perfMonData)
+	{
+		perfMonData.setDepth(perfMonData.getDepth() - 1);
 	}
 
 	private <V> V recordCallable(final Callable<V> callable, final ArrayList<Tag> tags, final String name)

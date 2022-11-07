@@ -52,7 +52,8 @@ public class MonitorAspect
 	private final MicrometerPerformanceMonitoringService service;
 	private static final String PERF_MON_SYSCONFIG_NAME = "de.metas.monitoring.annotation.enable";
 	private static final boolean SYS_CONFIG_DEFAULT_VALUE = false;
-	private final ISysConfigBL SYS_CONFIG_BL = Services.get(ISysConfigBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IADWindowDAO adWindowDAO = Services.get(IADWindowDAO.class);
 
 
 	public MonitorAspect(@NonNull final MicrometerPerformanceMonitoringService service)
@@ -63,7 +64,7 @@ public class MonitorAspect
 	@Around("execution(* *(..)) && @annotation(de.metas.monitoring.annotation.Monitor)")
 	public Object monitorMethod(ProceedingJoinPoint pjp) throws Throwable
 	{
-		final boolean perfMonIsActive = SYS_CONFIG_BL.getBooleanValue(PERF_MON_SYSCONFIG_NAME, SYS_CONFIG_DEFAULT_VALUE);
+		final boolean perfMonIsActive = sysConfigBL.getBooleanValue(PERF_MON_SYSCONFIG_NAME, SYS_CONFIG_DEFAULT_VALUE);
 		if(!perfMonIsActive)
 		{
 			return pjp.proceed();
@@ -133,11 +134,10 @@ public class MonitorAspect
 		final HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
 		final Map pathVariables = (Map) request.getAttribute(HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE);
 		final String windowId = (String)pathVariables.get("windowId");
-		final IADWindowDAO iadWindowDAO = Services.get(IADWindowDAO.class);
 		String windowName;
 		try
 		{
-			windowName = (iadWindowDAO.retrieveWindowName(AdWindowId.ofRepoId(Integer.parseInt(windowId)))).getDefaultValue();
+			windowName = (adWindowDAO.retrieveWindowName(AdWindowId.ofRepoId(Integer.parseInt(windowId)))).getDefaultValue();
 		}
 		catch (final NumberFormatException nfe)
 		{

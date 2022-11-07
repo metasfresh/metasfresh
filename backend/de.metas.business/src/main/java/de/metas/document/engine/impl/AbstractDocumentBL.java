@@ -59,7 +59,7 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 
 	private final Supplier<Map<String, DocumentHandlerProvider>> docActionHandlerProvidersByTableName = Suppliers.memoize(AbstractDocumentBL::retrieveDocActionHandlerProvidersIndexedByTableName);
 
-	private final ISysConfigBL SYS_CONFIG_BL = Services.get(ISysConfigBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private static final String PERF_MON_SYSCONFIG_NAME = "de.metas.monitoring.docAction.enable";
 	private static final boolean SYS_CONFIG_DEFAULT_VALUE = false;
 
@@ -110,13 +110,17 @@ public abstract class AbstractDocumentBL implements IDocumentBL
 			final boolean throwExIfNotSuccess)
 	{
 		final PerformanceMonitoringService perfMonServicew = SpringContextHolder.instance.getBeanOr(PerformanceMonitoringService.class, NoopPerformanceMonitoringService.INSTANCE);
-		final boolean perfMonIsActive = SYS_CONFIG_BL.getBooleanValue(PERF_MON_SYSCONFIG_NAME, SYS_CONFIG_DEFAULT_VALUE);
+		final boolean perfMonIsActive = sysConfigBL.getBooleanValue(PERF_MON_SYSCONFIG_NAME, SYS_CONFIG_DEFAULT_VALUE);
 		if(perfMonIsActive){
 			return perfMonServicew.monitor(
 					() -> processIt0(document, action, throwExIfNotSuccess),
 					DocactionPerformanceMonitoringHelper.createMetadataFor(document, action));
 		}
-		return processIt0(document, action, throwExIfNotSuccess);
+		else
+		{
+			return processIt0(document, action, throwExIfNotSuccess);
+		}
+
 	}
 
 	private boolean processIt0(@NonNull final IDocument document,
