@@ -12,6 +12,8 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13881](https://github.com/metasfresh/metasfresh/pull/13881) Manufacturing candidate window: compute some totals for selected rows
+  * [#13841](https://github.com/metasfresh/metasfresh/pull/13841) HU Clearance: Status Test Pending (Json) 
   * [#13829](https://github.com/metasfresh/metasfresh/issues/13829) Test&Fix MD_Cockpit_DocumentDetail 
   * [#13844](https://github.com/metasfresh/metasfresh/issues/13844) IEUE045.U01 Incoming payment management - Follow-Up 01 
   * [#13845](https://github.com/metasfresh/metasfresh/issues/13845) BUG: Grant discount twice during allocate payment process
