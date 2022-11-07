@@ -1,5 +1,6 @@
 package de.metas.manufacturing.job.service.commands.create_job;
 
+import com.google.common.collect.ArrayListMultimap;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleCreateRequest;
@@ -12,14 +13,18 @@ import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.service.ManufacturingJobLoaderAndSaver;
 import de.metas.manufacturing.job.service.ManufacturingJobLoaderAndSaverSupportingServices;
 import de.metas.user.UserId;
+import de.metas.util.GuavaCollectors;
+import de.metas.util.lang.SeqNoProvider;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 
 public class ManufacturingJobCreateCommand
 {
@@ -108,19 +113,38 @@ public class ManufacturingJobCreateCommand
 
 	private void createIssueSchedules(@NonNull final PPOrderIssuePlan plan)
 	{
+		final ArrayListMultimap<PPOrderBOMLineId, PPOrderIssueSchedule> allExistingSchedules = ppOrderIssueScheduleService.getByOrderId(plan.getOrderId())
+				.stream()
+				.collect(GuavaCollectors.toArrayListMultimapByKey(PPOrderIssueSchedule::getPpOrderBOMLineId));
+
+
 		final ArrayList<PPOrderIssueSchedule> schedules = new ArrayList<>();
 
-		int nextSeqNo = 10;
+		final SeqNoProvider seqNoProvider = SeqNoProvider.ofInt(10);
 		for (final PPOrderIssuePlanStep planStep : plan.getSteps())
 		{
-			final int seqNo = nextSeqNo;
-			nextSeqNo += 10;
+			final PPOrderBOMLineId orderBOMLineId = planStep.getOrderBOMLineId();
+			final ArrayList<PPOrderIssueSchedule> bomLineExistingSchedules = new ArrayList<>(allExistingSchedules.removeAll(orderBOMLineId));
+			bomLineExistingSchedules.sort(Comparator.comparing(PPOrderIssueSchedule::getSeqNo));
+
+			for(final PPOrderIssueSchedule existingSchedule : bomLineExistingSchedules)
+			{
+				if(existingSchedule.isIssued())
+				{
+					final PPOrderIssueSchedule existingScheduleChanged = ppOrderIssueScheduleService.changeSeqNo(existingSchedule, seqNoProvider.getAndIncrement());
+					schedules.add(existingScheduleChanged);
+				}
+				else
+				{
+					ppOrderIssueScheduleService.delete(existingSchedule);
+				}
+			}
 
 			final PPOrderIssueSchedule schedule = ppOrderIssueScheduleService.createSchedule(
 					PPOrderIssueScheduleCreateRequest.builder()
 							.ppOrderId(ppOrderId)
-							.ppOrderBOMLineId(planStep.getOrderBOMLineId())
-							.seqNo(seqNo)
+							.ppOrderBOMLineId(orderBOMLineId)
+							.seqNo(seqNoProvider.getAndIncrement())
 							.productId(planStep.getProductId())
 							.qtyToIssue(planStep.getQtyToIssue())
 							.issueFromHUId(planStep.getPickFromTopLevelHUId())

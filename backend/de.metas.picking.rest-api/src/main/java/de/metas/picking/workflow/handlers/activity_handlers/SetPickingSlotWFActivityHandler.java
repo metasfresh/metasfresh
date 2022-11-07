@@ -68,7 +68,10 @@ public class SetPickingSlotWFActivityHandler implements WFActivityHandler, SetSc
 				.map(SetPickingSlotWFActivityHandler::toJsonQRCode)
 				.orElse(null);
 
-		return SetScannedBarcodeSupportHelper.createUIComponent(currentPickingSlot);
+		return SetScannedBarcodeSupportHelper.uiComponent()
+				.currentValue(currentPickingSlot)
+				.alwaysAvailableToUser(wfActivity.getAlwaysAvailableToUser())
+				.build();
 	}
 
 	private static JsonQRCode toJsonQRCode(final PickingSlotIdAndCaption pickingSlotIdAndCaption)

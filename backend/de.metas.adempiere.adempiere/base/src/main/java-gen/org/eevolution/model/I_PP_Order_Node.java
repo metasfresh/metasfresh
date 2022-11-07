@@ -553,6 +553,27 @@ public interface I_PP_Order_Node
 	String COLUMNNAME_PP_Activity_Type = "PP_Activity_Type";
 
 	/**
+	 * Set Always available to user.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPP_AlwaysAvailableToUser (@Nullable java.lang.String PP_AlwaysAvailableToUser);
+
+	/**
+	 * Get Always available to user.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPP_AlwaysAvailableToUser();
+
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_PP_AlwaysAvailableToUser = new ModelColumn<>(I_PP_Order_Node.class, "PP_AlwaysAvailableToUser", null);
+	String COLUMNNAME_PP_AlwaysAvailableToUser = "PP_AlwaysAvailableToUser";
+
+	/**
 	 * Set Manufacturing Order.
 	 * Manufacturing Order
 	 *

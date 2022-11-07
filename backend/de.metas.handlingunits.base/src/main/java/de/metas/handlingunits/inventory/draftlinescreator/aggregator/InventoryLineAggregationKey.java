@@ -1,4 +1,4 @@
-package de.metas.handlingunits.inventory.draftlinescreator;
+package de.metas.handlingunits.inventory.draftlinescreator.aggregator;
 
 /*
  * #%L

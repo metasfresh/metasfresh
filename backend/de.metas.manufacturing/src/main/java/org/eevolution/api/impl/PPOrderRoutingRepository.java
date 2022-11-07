@@ -9,6 +9,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.material.planning.IResourceDAO;
 import de.metas.material.planning.ResourceType;
 import de.metas.material.planning.pporder.LiberoException;
+import de.metas.material.planning.pporder.PPAlwaysAvailableToUser;
 import de.metas.material.planning.pporder.PPRoutingActivityId;
 import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
 import de.metas.material.planning.pporder.PPRoutingActivityType;
@@ -270,12 +271,13 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 				.type(PPRoutingActivityType.ofCode(record.getPP_Activity_Type()))
 				.code(PPOrderRoutingActivityCode.ofString(record.getValue()))
 				.name(record.getName())
-				.routingActivityId(PPRoutingActivityId.ofAD_WF_Node_ID(routingId, record.getAD_WF_Node_ID()))
+				.routingActivityId(PPRoutingActivityId.ofRepoId(routingId, record.getAD_WF_Node_ID()))
 				//
 				.subcontracting(record.isSubcontracting())
 				.subcontractingVendorId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
 				//
 				.milestone(record.isMilestone())
+				.alwaysAvailableToUser(PPAlwaysAvailableToUser.ofNullableCode(record.getPP_AlwaysAvailableToUser()))
 				//
 				.resourceId(resourceId)
 				//
@@ -631,6 +633,7 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 		record.setC_BPartner_ID(BPartnerId.toRepoId(from.getSubcontractingVendorId()));
 
 		record.setIsMilestone(from.isMilestone());
+		record.setPP_AlwaysAvailableToUser(from.getAlwaysAvailableToUser().getCode());
 
 		record.setS_Resource_ID(from.getResourceId().getRepoId());
 

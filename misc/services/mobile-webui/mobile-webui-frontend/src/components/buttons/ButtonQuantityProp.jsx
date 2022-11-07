@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 import { trl } from '../../utils/translations';
+import { formatQtyToHumanReadable } from '../../utils/qtys';
 
 const ButtonQuantityProp = ({ qtyTarget, qtyCurrent, uom, applicationId, subtypeId }) => (
   <div className="row is-full is-size-7">
@@ -9,15 +10,11 @@ const ButtonQuantityProp = ({ qtyTarget, qtyCurrent, uom, applicationId, subtype
       <div className="picking-to-pick">
         {trl(`activities.${applicationId}${subtypeId ? `.${subtypeId}` : ''}.target`)}:
       </div>
-      <div className="picking-row-qty">
-        {qtyTarget} {uom}
-      </div>
+      <div className="picking-row-qty">{formatQtyToHumanReadable({ qty: qtyTarget, uom })}</div>
       <div className="picking-row-picking">
         {trl(`activities.${applicationId}${subtypeId ? `.${subtypeId}` : ''}.picked`)}:
       </div>
-      <div className="picking-row-picked">
-        {qtyCurrent} {uom}
-      </div>
+      <div className="picking-row-picked">{formatQtyToHumanReadable({ qty: qtyCurrent, uom })}</div>
     </div>
   </div>
 );
