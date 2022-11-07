@@ -24,6 +24,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.ILanguageDAO;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
@@ -1244,6 +1245,16 @@ public final class Env
 	public static void setOrgId(final Properties ctx, final OrgId orgId)
 	{
 		setContext(ctx, CTXNAME_AD_Org_ID, orgId.getRepoId());
+	}
+
+	public static ClientAndOrgId getClientAndOrgId()
+	{
+		return getClientAndOrgId(Env.getCtx());
+	}
+
+	public static ClientAndOrgId getClientAndOrgId(@NonNull final Properties ctx)
+	{
+		return ClientAndOrgId.ofClientAndOrg(Env.getClientId(ctx), Env.getOrgId(ctx));
 	}
 
 	/**
