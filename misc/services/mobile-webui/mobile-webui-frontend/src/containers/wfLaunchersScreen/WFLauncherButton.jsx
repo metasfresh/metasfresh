@@ -5,7 +5,7 @@ import { useDispatch } from 'react-redux';
 
 import * as CompleteStatus from '../../constants/CompleteStatus';
 import { toastError } from '../../utils/toast';
-import { getWorkflowRequest, startWorkflowRequest } from '../../api/launchers';
+import { continueWorkflowRequest, startWorkflowRequest } from '../../api/launchers';
 import { updateWFProcess } from '../../actions/WorkflowActions';
 import { getWFProcessScreenLocation } from '../../routes/workflow_locations';
 
@@ -16,7 +16,7 @@ const WFLauncherButton = ({ applicationId, startedWFProcessId, wfParameters, cap
   const history = useHistory();
   const handleClick = () => {
     const wfProcessPromise = startedWFProcessId
-      ? getWorkflowRequest(startedWFProcessId)
+      ? continueWorkflowRequest(startedWFProcessId)
       : startWorkflowRequest({ wfParameters });
 
     wfProcessPromise

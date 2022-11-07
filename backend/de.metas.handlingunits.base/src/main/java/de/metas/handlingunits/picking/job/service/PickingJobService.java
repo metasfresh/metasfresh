@@ -2,8 +2,8 @@ package de.metas.handlingunits.picking.job.service;
 
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableSet;
+import de.metas.dao.ValueRestriction;
 import de.metas.handlingunits.picking.PickingCandidateService;
-import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
@@ -29,6 +29,7 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.service.IADReferenceDAO;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
@@ -47,7 +48,6 @@ public class PickingJobService
 	private final PickingCandidateService pickingCandidateService;
 	private final PickingJobHUReservationService pickingJobHUReservationService;
 	private final PickingJobLoaderSupportingServicesFactory pickingJobLoaderSupportingServicesFactory;
-	private final PickingConfigRepositoryV2 pickingConfigRepo;
 
 	public PickingJobService(
 			final PickingJobRepository pickingJobRepository,
@@ -55,16 +55,13 @@ public class PickingJobService
 			final PickingJobSlotService pickingSlotService,
 			final PickingCandidateService pickingCandidateService,
 			final PickingJobHUReservationService pickingJobHUReservationService,
-			final PickingConfigRepositoryV2 pickingConfigRepo,
-			final PickingJobLoaderSupportingServicesFactory pickingJobLoaderSupportingServicesFactory
-	)
+			final PickingJobLoaderSupportingServicesFactory pickingJobLoaderSupportingServicesFactory)
 	{
 		this.pickingSlotService = pickingSlotService;
 		this.pickingJobRepository = pickingJobRepository;
 		this.pickingJobLockService = pickingJobLockService;
 		this.pickingCandidateService = pickingCandidateService;
 		this.pickingJobHUReservationService = pickingJobHUReservationService;
-		this.pickingConfigRepo = pickingConfigRepo;
 		this.pickingJobLoaderSupportingServicesFactory = pickingJobLoaderSupportingServicesFactory;
 	}
 
@@ -77,7 +74,7 @@ public class PickingJobService
 	public List<PickingJob> getDraftJobsByPickerId(@NonNull final UserId pickerId)
 	{
 		final PickingJobLoaderSupportingServices loadingSupportingServices = pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices();
-		return pickingJobRepository.getDraftJobsByPickerId(pickerId, loadingSupportingServices);
+		return pickingJobRepository.getDraftJobsByPickerId(ValueRestriction.equalsTo(pickerId), loadingSupportingServices);
 	}
 
 	public PickingJob createPickingJob(@NonNull final PickingJobCreateRequest request)
@@ -88,7 +85,6 @@ public class PickingJobService
 				.pickingCandidateService(pickingCandidateService)
 				.pickingJobSlotService(pickingSlotService)
 				.pickingJobHUReservationService(pickingJobHUReservationService)
-				.pickingConfigRepo(pickingConfigRepo)
 				.loadingSupportServices(pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices())
 				//
 				.request(request)
@@ -111,16 +107,35 @@ public class PickingJobService
 
 	public PickingJob abort(@NonNull final PickingJob pickingJob)
 	{
+		return abort()
+				.pickingJob(pickingJob)
+				.build()
+				.executeAndGetSingleResult();
+	}
+
+	public void abortAllByUserId(@NonNull final UserId userId)
+	{
+		final List<PickingJob> pickingJobs = getDraftJobsByPickerId(userId);
+		if (pickingJobs.isEmpty())
+		{
+			return;
+		}
+
+		abort()
+				.pickingJobs(pickingJobs)
+				.build()
+				.execute();
+	}
+
+	private PickingJobAbortCommand.PickingJobAbortCommandBuilder abort()
+	{
 		return PickingJobAbortCommand.builder()
 				.pickingJobRepository(pickingJobRepository)
 				.pickingJobLockService(pickingJobLockService)
 				.pickingSlotService(pickingSlotService)
 				.pickingJobHUReservationService(pickingJobHUReservationService)
-				.pickingCandidateService(pickingCandidateService)
-				//
-				.pickingJob(pickingJob)
-				//
-				.build().execute();
+				//.pickingCandidateService(pickingCandidateService)
+				;
 	}
 
 	public void abortForSalesOrderId(@NonNull final OrderId salesOrderId)
@@ -143,17 +158,17 @@ public class PickingJobService
 	{
 		return packagingDAO
 				.stream(PackageableQuery.builder()
-								.onlyFromSalesOrder(true)
-								.lockedBy(userId)
-								.includeNotLocked(true)
-								.excludeShipmentScheduleIds(excludeShipmentScheduleIds)
-								.orderBys(ImmutableSet.of(
-										PackageableQuery.OrderBy.PriorityRule,
-										PackageableQuery.OrderBy.PreparationDate,
-										PackageableQuery.OrderBy.SalesOrderId,
-										PackageableQuery.OrderBy.DeliveryBPLocationId,
-										PackageableQuery.OrderBy.WarehouseTypeId))
-								.build())
+						.onlyFromSalesOrder(true)
+						.lockedBy(userId)
+						.includeNotLocked(true)
+						.excludeShipmentScheduleIds(excludeShipmentScheduleIds)
+						.orderBys(ImmutableSet.of(
+								PackageableQuery.OrderBy.PriorityRule,
+								PackageableQuery.OrderBy.PreparationDate,
+								PackageableQuery.OrderBy.SalesOrderId,
+								PackageableQuery.OrderBy.DeliveryBPLocationId,
+								PackageableQuery.OrderBy.WarehouseTypeId))
+						.build())
 				.map(PickingJobService::extractPickingJobCandidate)
 				.distinct();
 	}
@@ -246,7 +261,6 @@ public class PickingJobService
 			{
 				return PickingJobUnPickCommand.builder()
 						.pickingJobRepository(pickingJobRepository)
-						.pickingJobHUReservationService(pickingJobHUReservationService)
 						.pickingCandidateService(pickingCandidateService)
 						//
 						.pickingJob(pickingJob)
@@ -262,4 +276,32 @@ public class PickingJobService
 		}
 	}
 
+	public void unassignAllByUserId(@NonNull final UserId userId)
+	{
+		final ITrxManager trxManager = Services.get(ITrxManager.class);
+		trxManager.runInThreadInheritedTrx(() -> {
+			for (PickingJob job : getDraftJobsByPickerId(userId))
+			{
+				pickingJobRepository.save(job.withLockedBy(null));
+			}
+		});
+	}
+
+	public PickingJob assignPickingJob(@NonNull final PickingJobId pickingJobId, @NonNull final UserId newResponsibleId)
+	{
+		PickingJob job = getById(pickingJobId);
+		if (job.getLockedBy() == null)
+		{
+			job = job.withLockedBy(newResponsibleId);
+			pickingJobRepository.save(job);
+		}
+		else if (!UserId.equals(job.getLockedBy(), newResponsibleId))
+		{
+			throw new AdempiereException("Job already assigned")
+					.setParameter("newResponsibleId", newResponsibleId)
+					.setParameter("job", job);
+		}
+
+		return job;
+	}
 }

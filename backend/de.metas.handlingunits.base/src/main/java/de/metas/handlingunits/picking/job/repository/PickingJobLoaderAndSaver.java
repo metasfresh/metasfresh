@@ -371,7 +371,7 @@ class PickingJobLoaderAndSaver
 						.customerName(loadingSupportingServices().getBPartnerName(deliveryBPLocationId.getBpartnerId()))
 						.deliveryBPLocationId(deliveryBPLocationId)
 						.deliveryRenderedAddress(record.getDeliveryToAddress())
-						.lockedBy(UserId.ofRepoId(record.getPicking_User_ID()))
+						.lockedBy(UserId.ofRepoIdOrNullIfSystem(record.getPicking_User_ID()))
 						.build())
 				.pickingSlot(pickingSlot)
 				.docStatus(PickingJobDocStatus.ofCode(record.getDocStatus()))
@@ -388,6 +388,7 @@ class PickingJobLoaderAndSaver
 
 	private static void updateRecord(final I_M_Picking_Job record, final PickingJob from)
 	{
+		record.setPicking_User_ID(UserId.toRepoId(from.getLockedBy()));
 		record.setM_PickingSlot_ID(from.getPickingSlotId().map(PickingSlotId::getRepoId).orElse(-1));
 		record.setDocStatus(from.getDocStatus().getCode());
 		record.setProcessed(from.getDocStatus().isProcessed());

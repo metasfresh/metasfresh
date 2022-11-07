@@ -2,7 +2,6 @@ import React, { useEffect } from 'react';
 import { useHistory, useRouteMatch } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { toastError } from '../../../utils/toast';
 import { setScannedBarcode } from '../../../actions/ScanActions';
 import { updateWFProcess } from '../../../actions/WorkflowActions';
 import { pushHeaderEntry } from '../../../actions/HeaderActions';
@@ -22,24 +21,27 @@ const ScanScreen = () => {
   const dispatch = useDispatch();
   useEffect(() => {
     dispatch(pushHeaderEntry({ location: url, caption: activityCaption }));
-  }, [activityCaption]);
+  }, [url, activityCaption]);
 
   const history = useHistory();
   const onBarcodeScanned = ({ scannedBarcode }) => {
+    //console.log('onBarcodeScanned', { scannedBarcode });
+
     dispatch(setScannedBarcode({ wfProcessId, activityId, scannedBarcode }));
 
-    postScannedBarcode({ wfProcessId, activityId, scannedBarcode })
+    return postScannedBarcode({ wfProcessId, activityId, scannedBarcode })
       .then((wfProcess) => {
+        //console.log('postScannedBarcode.then', { wfProcess });
         dispatch(updateWFProcess({ wfProcess }));
         history.goBack();
       })
       .catch((error) => {
         dispatch(setScannedBarcode({ wfProcessId, activityId, scannedBarcode: null }));
 
-        toastError({
+        throw {
           axiosError: error,
           fallbackMessageKey: 'activities.scanBarcode.invalidScannedBarcode',
-        });
+        };
       });
   };
 

@@ -80,6 +80,13 @@ public class WorkflowRestController
 				.build();
 	}
 
+	@PostMapping("/logout")
+	public void logout()
+	{
+		final UserId loggedUserId = Env.getLoggedUserId();
+		workflowRestAPIService.logout(loggedUserId);
+	}
+
 	@GetMapping("/apps")
 	public JsonMobileApplicationsList getMobileApplications()
 	{
@@ -114,6 +121,16 @@ public class WorkflowRestController
 		final UserId loggedUserId = Env.getLoggedUserId();
 		wfProcess.assertHasAccess(loggedUserId);
 
+		return toJson(wfProcess);
+	}
+
+	@PostMapping("/wfProcess/{wfProcessId}/continue")
+	public JsonWFProcess continueWFProcess(@PathVariable("wfProcessId") final @NonNull String wfProcessIdStr)
+	{
+		final WFProcessId wfProcessId = WFProcessId.ofString(wfProcessIdStr);
+		final UserId loggedUserId = Env.getLoggedUserId();
+		final WFProcess wfProcess = workflowRestAPIService.continueWFProcess(wfProcessId, loggedUserId);
+		wfProcess.assertHasAccess(loggedUserId);
 		return toJson(wfProcess);
 	}
 

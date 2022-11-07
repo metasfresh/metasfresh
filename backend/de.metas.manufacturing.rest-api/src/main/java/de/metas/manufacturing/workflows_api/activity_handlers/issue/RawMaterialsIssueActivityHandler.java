@@ -47,8 +47,7 @@ public class RawMaterialsIssueActivityHandler implements WFActivityHandler
 	{
 		final ManufacturingJob job = getManufacturingJob(wfProcess);
 
-		return UIComponent.builder()
-				.type(COMPONENT_TYPE)
+		return UIComponent.builderFrom(COMPONENT_TYPE, wfActivity)
 				.properties(Params.builder()
 						.valueObj("scaleDevice", getCurrentScaleDevice(job, jsonOpts))
 						.valueObj("lines", getLines(job, wfActivity.getId(), jsonOpts))

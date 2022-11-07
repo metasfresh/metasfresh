@@ -64,8 +64,7 @@ public class GenerateHUQRCodesActivityHandler implements WFActivityHandler
 				.distinct()
 				.collect(ImmutableList.toImmutableList());
 
-		return UIComponent.builder()
-				.type(COMPONENT_TYPE)
+		return UIComponent.builderFrom(COMPONENT_TYPE, wfActivity)
 				.properties(Params.builder()
 						.valueObj("options", tuPackingInstructionsList)
 						.build())

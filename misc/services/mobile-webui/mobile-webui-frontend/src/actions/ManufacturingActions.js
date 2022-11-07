@@ -27,6 +27,7 @@ export const updateManufacturingIssue = ({
   activityId,
   lineId,
   stepId,
+  huWeightGrossBeforeIssue,
   qtyIssued,
   qtyRejected,
   qtyRejectedReasonCode,
@@ -48,6 +49,7 @@ export const updateManufacturingIssue = ({
         issueTo: {
           issueStepId: id,
           huQRCode: toQRCodeString(huQRCode),
+          huWeightGrossBeforeIssue,
           qtyIssued,
           qtyRejected,
           qtyRejectedReasonCode,

@@ -35,6 +35,7 @@ import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScann
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.model.UIComponent;
 import de.metas.workflow.rest_api.model.WFActivity;
+import de.metas.workflow.rest_api.model.WFActivityAlwaysAvailableToUser;
 import de.metas.workflow.rest_api.model.WFActivityStatus;
 import de.metas.workflow.rest_api.model.WFActivityType;
 import de.metas.workflow.rest_api.model.WFProcess;
@@ -66,7 +67,7 @@ public class CallExternalSystemActivityHandler implements WFActivityHandler, Set
 	public UIComponent getUIComponent(final @NonNull WFProcess wfProcess, final @NonNull WFActivity wfActivity, final @NonNull JsonOpts jsonOpts)
 	{
 		return SetScannedBarcodeSupportHelper.uiComponent()
-				.isAlwaysAvailableToUser(true)
+				.alwaysAvailableToUser(WFActivityAlwaysAvailableToUser.YES)
 				.build();
 	}
 
