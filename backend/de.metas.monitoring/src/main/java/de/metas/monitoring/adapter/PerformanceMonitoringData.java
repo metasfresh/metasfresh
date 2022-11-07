@@ -30,11 +30,9 @@ import java.util.ArrayList;
 @Getter
 public class PerformanceMonitoringData
 {
-	@Setter
 	private int depth = 0;
 	private String initiator = "";
 	private String initiatorWindow = "";
-	@Setter
 	private ArrayList<String> calledBy = new ArrayList<>();
 	@Setter
 	private boolean initiatorLabelActive = false;
@@ -59,5 +57,13 @@ public class PerformanceMonitoringData
 	public boolean isCalledByMonitoredFunction()
 	{
 		return depth != 0;
+	}
+
+	public void incrementDepth(){
+		depth++;
+	}
+
+	public void decrementDepth(){
+		depth--;
 	}
 }

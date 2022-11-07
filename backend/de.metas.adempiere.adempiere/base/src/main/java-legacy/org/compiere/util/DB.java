@@ -28,7 +28,6 @@ import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.lang.SOTrx;
 import de.metas.logging.LogManager;
 import de.metas.logging.MetasfreshLastError;
-import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.organization.OrgId;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
@@ -491,16 +490,6 @@ public class DB
 
 	public CPreparedStatement prepareStatement(final String sql, @Nullable final String trxName)
 	{
-		if(dbPerformanceMonitoringHelper.isPerfMonActive())
-		{
-			return prepareStatement0(sql, trxName);
-		}
-		return dbPerformanceMonitoringHelper.performanceMonitoringServicePrepareStatement(
-				() -> prepareStatement0(sql, trxName));
-	}
-
-	private CPreparedStatement prepareStatement0(final String sql, @Nullable final String trxName)
-	{
 		int concurrency = ResultSet.CONCUR_READ_ONLY;
 		final String upper = sql.toUpperCase();
 		if (upper.startsWith("UPDATE ") || upper.startsWith("DELETE "))
@@ -539,6 +528,21 @@ public class DB
 											   final int resultSetType,
 											   final int resultSetConcurrency,
 											   final String trxName)
+	{
+		{
+			if (dbPerformanceMonitoringHelper.isPerfMonActive())
+			{
+				return prepareStatement0(sql, resultSetType, resultSetConcurrency, trxName);
+			}
+			return dbPerformanceMonitoringHelper.performanceMonitoringServicePrepareStatement(
+					() -> prepareStatement0(sql, resultSetType, resultSetConcurrency, trxName));
+		}
+	}
+
+	private CPreparedStatement prepareStatement0(final String sql,
+			final int resultSetType,
+			final int resultSetConcurrency,
+			final String trxName)
 	{
 		if (sql == null || sql.length() == 0)
 		{

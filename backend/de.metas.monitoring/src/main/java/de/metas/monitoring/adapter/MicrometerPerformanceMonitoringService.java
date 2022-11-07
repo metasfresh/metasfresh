@@ -42,7 +42,7 @@ import java.util.concurrent.Callable;
 public class MicrometerPerformanceMonitoringService implements PerformanceMonitoringService
 {
 	private final MeterRegistry meterRegistry;
-	private static ThreadLocal<PerformanceMonitoringData> perfMonDataTL = null;
+	private static ThreadLocal<PerformanceMonitoringData> perfMonDataTL = new ThreadLocal<>();
 
 	public MicrometerPerformanceMonitoringService(
 			@NonNull final MeterRegistry meterRegistry)
@@ -55,9 +55,9 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 			@NonNull final Callable<V> callable,
 			@NonNull final PerformanceMonitoringService.Metadata metadata)
 	{
-		if(perfMonDataTL == null)
+		if(perfMonDataTL.get() == null)
 		{
-			perfMonDataTL = ThreadLocal.withInitial(PerformanceMonitoringData::new);
+			perfMonDataTL.set(new PerformanceMonitoringData());
 		}
 
 		final PerformanceMonitoringData perfMonData = perfMonDataTL.get();
@@ -94,14 +94,14 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 				type = Type.REST_API_PROCESSING;
 			}
 
-			incrementDepth(perfMonData);
+			perfMonData.incrementDepth();
 			try
 			{
 				return recordCallable(callable, tags, "mf." + type.getCode());
 			}
 			finally
 			{
-				decrementDepth(perfMonData);
+				perfMonData.decrementDepth();
 			}
 		}
 		else
@@ -111,7 +111,7 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 		}
 	}
 
-	private void appendLabelsToTags(@NonNull final ArrayList<Tag> tags, @NonNull final Map<String, String> labels)
+	private static void appendLabelsToTags(@NonNull final ArrayList<Tag> tags, @NonNull final Map<String, String> labels)
 	{
 		for (final Entry<String, String> entry : labels.entrySet())
 		{
@@ -124,22 +124,12 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 		}
 	}
 	
-	private void addTagIfNotNull(@Nullable final String name, @Nullable final String value, @NonNull ArrayList<Tag> tags)
+	private static void addTagIfNotNull(@Nullable final String name, @Nullable final String value, @NonNull ArrayList<Tag> tags)
 	{
 		if (!EmptyUtil.isBlank(name) && !EmptyUtil.isBlank(value))
 		{
 			tags.add(Tag.of(name, value));
 		}
-	}
-
-	private void incrementDepth(PerformanceMonitoringData perfMonData)
-	{
-		perfMonData.setDepth(perfMonData.getDepth() + 1);
-	}
-
-	private void decrementDepth(PerformanceMonitoringData perfMonData)
-	{
-		perfMonData.setDepth(perfMonData.getDepth() - 1);
 	}
 
 	private <V> V recordCallable(final Callable<V> callable, final ArrayList<Tag> tags, final String name)
