@@ -148,12 +148,6 @@
 			<artifactId>camel-endpointdsl</artifactId>
 		</dependency>
 
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<scope>provided</scope>
-		</dependency>
-
 		<!-- testing -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
