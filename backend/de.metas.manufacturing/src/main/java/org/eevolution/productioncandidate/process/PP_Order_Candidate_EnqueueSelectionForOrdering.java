@@ -55,6 +55,10 @@ public class PP_Order_Candidate_EnqueueSelectionForOrdering extends JavaProcess 
 	@Param(parameterName = PARAM_COMPLETE_DOCUMENT)
 	private boolean isDocComplete;
 
+	private static final String PARAM_AUTO_PROCESS_CANDIDATES_AFTER_PRODUCTION = "AutoProcessCandidatesAfterProduction";
+	@Param(parameterName = PARAM_AUTO_PROCESS_CANDIDATES_AFTER_PRODUCTION)
+	private boolean autoProcessCandidatesAfterProduction;
+
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
@@ -72,7 +76,7 @@ public class PP_Order_Candidate_EnqueueSelectionForOrdering extends JavaProcess 
 		final PInstanceId pinstanceId = getPinstanceId();
 
 		ppOrderCandidateEnqueuer
-				.enqueueSelection(pinstanceId, getCtx(), isDocComplete);
+				.enqueueSelection(pinstanceId, getCtx(), isDocComplete, autoProcessCandidatesAfterProduction);
 
 		return MSG_OK;
 	}

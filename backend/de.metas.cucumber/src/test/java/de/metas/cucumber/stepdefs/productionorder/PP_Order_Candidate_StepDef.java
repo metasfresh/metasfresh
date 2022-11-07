@@ -80,7 +80,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.ZonedDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -167,7 +166,7 @@ public class PP_Order_Candidate_StepDef
 	@And("the following PP_Order_Candidates are enqueued for generating PP_Orders")
 	public void enqueuePP_Order_Candidate(@NonNull final DataTable dataTable)
 	{
-		invokeGeneratePPOrderProcess(false, dataTable);
+		invokeGeneratePPOrderProcess(false, false, dataTable);
 	}
 
 	@And("the following PP_Order_Candidates are re-opened")
@@ -290,8 +289,11 @@ public class PP_Order_Candidate_StepDef
 		ppOrderCandidateTable.putOrReplace(ppOrderCandidateIdentifier, ppOrderCandidate);
 	}
 
-	@And("^generate PP_Order process is invoked for selection, with completeDocument=(.*)$")
-	public void invokeGeneratePPOrderProcess(final boolean isDocComplete, @NonNull final DataTable table)
+	@And("^generate PP_Order process is invoked for selection, with completeDocument=(.*) and autoProcessCandidateAfterProduction=(.*)$")
+	public void invokeGeneratePPOrderProcess(
+			final boolean isDocComplete,
+			final boolean autoProcessCandidate,
+			@NonNull final DataTable table)
 	{
 		final List<PPOrderCandidateId> ppOrderCandidatesId = table.asMaps()
 				.stream()
@@ -307,9 +309,18 @@ public class PP_Order_Candidate_StepDef
 				.createSelection();
 
 		final PPOrderCandidateEnqueuer.Result result = ppOrderCandidateEnqueuer
-				.enqueueSelection(pInstanceId, Env.getCtx(), isDocComplete);
+				.enqueueSelection(pInstanceId, Env.getCtx(), isDocComplete, autoProcessCandidate);
 
 		assertThat(result.getEnqueuedPackagesCount()).isEqualTo(1);
+	}
+
+	@And("validate PP_Order_Candidate:")
+	public void validate_PP_Order_Candidate(@NonNull final DataTable dataTable) throws InterruptedException
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			validatePP_Order_Candidate(0, row);
+		}
 	}
 
 	private void updatePPOrderCandidate(@NonNull final Map<String, String> tableRow)
@@ -319,6 +330,7 @@ public class PP_Order_Candidate_StepDef
 
 		final ZonedDateTime dateStartSchedule = DataTableUtil.extractZonedDateTimeOrNullForColumnName(tableRow, I_PP_Order_Candidate.COLUMNNAME_DateStartSchedule);
 		final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, I_PP_Order_Candidate.COLUMNNAME_QtyEntered);
+		final BigDecimal openQty = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_PP_Order_Candidate.COLUMNNAME_QtyToProcess);
 
 		if (dateStartSchedule != null)
 		{
@@ -328,6 +340,11 @@ public class PP_Order_Candidate_StepDef
 		if (qtyEntered != null)
 		{
 			ppOrderCandidateRecord.setQtyEntered(qtyEntered);
+		}
+
+		if (openQty != null)
+		{
+			ppOrderCandidateRecord.setQtyToProcess(openQty);
 		}
 
 		saveRecord(ppOrderCandidateRecord);

@@ -78,7 +78,10 @@ public class PPOrderProducerFromCandidate
 	}
 
 	@NonNull
-	public OrderGenerateResult createOrders(@NonNull final Stream<I_PP_Order_Candidate> candidates, @Nullable final Boolean isDocComplete)
+	public OrderGenerateResult createOrders(
+			@NonNull final Stream<I_PP_Order_Candidate> candidates,
+			@Nullable final Boolean isDocComplete,
+			@Nullable final Boolean autoProcessCandidatesAfterProduction)
 	{
 		final ImmutableList<PPOrderCandidateToAllocate> sortedCandidates = candidates
 				.filter(orderCandidate -> !orderCandidate.isProcessed())
@@ -91,14 +94,15 @@ public class PPOrderProducerFromCandidate
 			return result;
 		}
 
-		processPPOrderCandidates(sortedCandidates, isDocComplete);
+		processPPOrderCandidates(sortedCandidates, isDocComplete, autoProcessCandidatesAfterProduction);
 
 		return result;
 	}
 
 	private void processPPOrderCandidates(
 			@NonNull final ImmutableList<PPOrderCandidateToAllocate> ppOrderCandToAllocateSorted,
-			@Nullable final Boolean isDocComplete)
+			@Nullable final Boolean isDocComplete,
+			@Nullable final Boolean autoProcessCandidatesAfterProduction)
 	{
 		PPOrderAllocator allocator = null;
 		for (final PPOrderCandidateToAllocate ppOrderCandidateToAllocate : ppOrderCandToAllocateSorted)
@@ -116,7 +120,7 @@ public class PPOrderProducerFromCandidate
 				//note: if nothing could be allocated it's time to create the PPOrder and initiate a new allocator
 				if (allocatedQty.isZero())
 				{
-					createPPOrderInTrx(allocator, isDocComplete);
+					createPPOrderInTrx(allocator, isDocComplete, autoProcessCandidatesAfterProduction);
 
 					allocator = ppOrderAllocatorBuilderService.buildAllocator(ppOrderCandidateToAllocate);
 				}
@@ -136,11 +140,14 @@ public class PPOrderProducerFromCandidate
 
 		if (allocator != null && allocator.getAllocatedQty().signum() > 0)
 		{
-			createPPOrderInTrx(allocator, isDocComplete);
+			createPPOrderInTrx(allocator, isDocComplete, autoProcessCandidatesAfterProduction);
 		}
 	}
 
-	private void createPPOrderInTrx(@NonNull final PPOrderAllocator allocator, @Nullable final Boolean completeDoc)
+	private void createPPOrderInTrx(
+			@NonNull final PPOrderAllocator allocator,
+			@Nullable final Boolean completeDoc,
+			@Nullable final Boolean autoProcessCandidatesAfterProduction)
 	{
 		final Consumer<Runnable> runInTrx = createEachPPOrderInOwnTrx
 				? trxManager::runInNewTrx
@@ -152,7 +159,7 @@ public class PPOrderProducerFromCandidate
 
 							final I_PP_Order ppOrder = ppOrderService.createOrder(request);
 
-							createPPOrderAllocations(ppOrder, allocator.getPpOrderCand2AllocatedQty());
+							createPPOrderAllocations(ppOrder, allocator.getPpOrderCand2AllocatedQty(), autoProcessCandidatesAfterProduction);
 
 							ppOrderService.postPPOrderCreatedEvent(ppOrder);
 
@@ -165,12 +172,15 @@ public class PPOrderProducerFromCandidate
 						});
 	}
 
-	private void createPPOrderAllocations(@NonNull final I_PP_Order ppOrder, @NonNull final Map<PPOrderCandidateId, Quantity> ppOrderCand2QtyToAllocate)
+	private void createPPOrderAllocations(
+			@NonNull final I_PP_Order ppOrder,
+			@NonNull final Map<PPOrderCandidateId, Quantity> ppOrderCand2QtyToAllocate,
+			@Nullable final Boolean autoProcessCandidatesAfterProduction)
 	{
 		ppOrderCand2QtyToAllocate.forEach((candidateId, quantity) -> {
 			ppOrderCandidatesDAO.createProductionOrderAllocation(candidateId, ppOrder, quantity);
 
-			ppOrderCandidatesDAO.markAsProcessed(candidateId);
+			ppOrderCandidatesDAO.markAsProcessed(candidateId, autoProcessCandidatesAfterProduction);
 		});
 	}
 

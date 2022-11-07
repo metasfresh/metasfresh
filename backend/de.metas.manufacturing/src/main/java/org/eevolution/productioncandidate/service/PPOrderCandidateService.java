@@ -108,9 +108,12 @@ public class PPOrderCandidateService
 	}
 
 	@NonNull
-	public OrderGenerateResult processCandidates(@NonNull final Stream<I_PP_Order_Candidate> orderCandidates,@Nullable final Boolean isDocComplete)
+	public OrderGenerateResult processCandidates(
+			@NonNull final Stream<I_PP_Order_Candidate> orderCandidates,
+			@Nullable final Boolean isDocComplete,
+			@Nullable final Boolean autoProcessCandidatesAfterProduction)
 	{
-		return createPPOrderProducerFromCandidate().createOrders(orderCandidates, isDocComplete);
+		return createPPOrderProducerFromCandidate().createOrders(orderCandidates, isDocComplete, autoProcessCandidatesAfterProduction);
 	}
 
 	@NonNull

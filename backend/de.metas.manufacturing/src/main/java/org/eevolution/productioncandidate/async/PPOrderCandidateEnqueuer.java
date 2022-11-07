@@ -50,6 +50,7 @@ public class PPOrderCandidateEnqueuer
 {
 	public static final String WP_PINSTANCE_ID_PARAM = "pInstanceId";
 	public static final String WP_COMPLETE_DOC_PARAM = "completeDoc";
+	public static final String WP_AUTO_PROCESS_CANDIDATES_AFTER_PRODUCTION = "autoProcessCandidatesAfterProduction";
 
 	private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -64,14 +65,15 @@ public class PPOrderCandidateEnqueuer
 				.create()
 				.createSelection();
 
-		return enqueueSelection(pInstanceId, Env.getCtx(), null);
+		return enqueueSelection(pInstanceId, Env.getCtx(), null, null);
 	}
 
 	@NonNull
 	public Result enqueueSelection(
 			@NonNull final PInstanceId adPInstanceId,
 			@NonNull final Properties ctx,
-			@Nullable final Boolean isCompleteDoc)
+			@Nullable final Boolean isCompleteDoc,
+			@Nullable final Boolean autoProcessCandidatesAfterProduction)
 	{
 		final LockOwner lockOwner = LockOwner.newOwner(PPOrderCandidateEnqueuer.class.getSimpleName(), adPInstanceId.getRepoId());
 
@@ -91,6 +93,7 @@ public class PPOrderCandidateEnqueuer
 				.newWorkpackage()
 				.parameter(WP_PINSTANCE_ID_PARAM, adPInstanceId)
 				.parameter(WP_COMPLETE_DOC_PARAM, isCompleteDoc)
+				.parameter(WP_AUTO_PROCESS_CANDIDATES_AFTER_PRODUCTION, autoProcessCandidatesAfterProduction)
 				.setElementsLocker(elementsLocker)
 				.build();
 

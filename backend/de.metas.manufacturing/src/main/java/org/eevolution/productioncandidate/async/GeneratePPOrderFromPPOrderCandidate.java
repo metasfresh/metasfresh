@@ -41,6 +41,7 @@ import java.util.Spliterators;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import static org.eevolution.productioncandidate.async.PPOrderCandidateEnqueuer.WP_AUTO_PROCESS_CANDIDATES_AFTER_PRODUCTION;
 import static org.eevolution.productioncandidate.async.PPOrderCandidateEnqueuer.WP_COMPLETE_DOC_PARAM;
 import static org.eevolution.productioncandidate.async.PPOrderCandidateEnqueuer.WP_PINSTANCE_ID_PARAM;
 
@@ -53,6 +54,7 @@ public class GeneratePPOrderFromPPOrderCandidate extends WorkpackageProcessorAda
 	{
 		final PInstanceId pInstanceId = getParameters().getParameterAsId(WP_PINSTANCE_ID_PARAM, PInstanceId.class);
 		final Boolean isDocComplete = getCompleteDocParamValue(getParameters());
+		final Boolean autoProcessCandidatesAfterProduction = getAutoProcessCandidatesParamValue(getParameters());
 
 		Check.assumeNotNull(pInstanceId, "adPInstanceId is not null");
 
@@ -61,7 +63,7 @@ public class GeneratePPOrderFromPPOrderCandidate extends WorkpackageProcessorAda
 		final Stream<I_PP_Order_Candidate> candidateStream = StreamSupport.stream(
 				Spliterators.spliteratorUnknownSize(orderCandidates, Spliterator.ORDERED), false);
 
-		final OrderGenerateResult result = ppOrderCandidateService.processCandidates(candidateStream, isDocComplete);
+		final OrderGenerateResult result = ppOrderCandidateService.processCandidates(candidateStream, isDocComplete, autoProcessCandidatesAfterProduction);
 
 		Loggables.addLog("Generated: {}", result);
 
@@ -79,5 +81,18 @@ public class GeneratePPOrderFromPPOrderCandidate extends WorkpackageProcessorAda
 		}
 
 		return StringUtils.toBoolean(isDocComplete);
+	}
+
+	@Nullable
+	private static Boolean getAutoProcessCandidatesParamValue(@NonNull final IParams params)
+	{
+		final Object autoProcessCandidatesAfterProduction = params.getParameterAsObject(WP_AUTO_PROCESS_CANDIDATES_AFTER_PRODUCTION);
+
+		if (autoProcessCandidatesAfterProduction == null)
+		{
+			return null;
+		}
+
+		return StringUtils.toBoolean(autoProcessCandidatesAfterProduction);
 	}
 }

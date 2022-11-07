@@ -23,6 +23,7 @@
 package org.eevolution.productioncandidate.model.dao;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.process.PInstanceId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
@@ -39,6 +40,7 @@ import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.util.Iterator;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -125,7 +127,6 @@ public class PPOrderCandidateDAO
 				.listImmutable(I_PP_Order_Candidate.class);
 	}
 
-
 	public void deletePPOrderCandidates(@NonNull final DeletePPOrderCandidatesQuery deletePPOrderCandidatesQuery)
 	{
 		final IQueryBuilder<I_PP_Order_Candidate> deleteQuery = queryBL.createQueryBuilder(I_PP_Order_Candidate.class);
@@ -154,7 +155,9 @@ public class PPOrderCandidateDAO
 				.forEach(simulatedOrder -> InterfaceWrapperHelper.delete(simulatedOrder, failIfProcessed));
 	}
 
-	public void markAsProcessed(@NonNull final PPOrderCandidateId candidateId)
+	public void markAsProcessed(
+			@NonNull final PPOrderCandidateId candidateId,
+			@Nullable final Boolean autoProcessCandidatesAfterProduction)
 	{
 		final I_PP_Order_Candidate candidate = getById(candidateId);
 
@@ -163,7 +166,11 @@ public class PPOrderCandidateDAO
 			return;
 		}
 
-		candidate.setProcessed(true);
+		if (isEligibleForProcessing(candidate, autoProcessCandidatesAfterProduction))
+		{
+			candidate.setProcessed(true);
+		}
+
 		save(candidate);
 	}
 
@@ -173,5 +180,14 @@ public class PPOrderCandidateDAO
 				.addEqualsFilter(I_PP_OrderLine_Candidate.COLUMNNAME_PP_Order_Candidate_ID, ppOrderCandidate.getPP_Order_Candidate_ID())
 				.create()
 				.deleteDirectly();
+	}
+
+	private boolean isEligibleForProcessing(
+			@NonNull final I_PP_Order_Candidate candidate,
+			@Nullable final Boolean autoProcessCandidatesAfterProduction)
+	{
+		final boolean autoProcess = CoalesceUtil.coalesceNotNull(autoProcessCandidatesAfterProduction, false);
+
+		return autoProcess || candidate.getQtyEntered().subtract(candidate.getQtyProcessed()).signum() == 0;
 	}
 }
