@@ -259,6 +259,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				.setAD_Tab_ID(gridTabVO.getAdTabId().getRepoId()) // legacy
 				.setTableName(tableName) // legacy
 				.setIsSOTrx(isSOTrx) // legacy
+				.setViewPageLength(dataBinding.getPOInfo().getWebuiViewPageLength())
 				//
 				.setPrintProcessId(gridTabVO.getPrintProcessId())
 				//
