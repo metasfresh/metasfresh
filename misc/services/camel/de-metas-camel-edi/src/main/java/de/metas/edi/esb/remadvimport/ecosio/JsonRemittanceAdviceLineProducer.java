@@ -34,6 +34,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.rest_api.v1.remittanceadvice.JsonRemittanceAdviceLine;
+import de.metas.common.util.CoalesceUtil;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
@@ -58,6 +59,7 @@ import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.ADJUSTM
 import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.DOCUMENT_ZONE_ID;
 import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.DOC_PREFIX;
 import static de.metas.edi.esb.remadvimport.ecosio.EcosioRemadvConstants.GLN_PREFIX;
+import static de.metas.edi.esb.remadvimport.ecosio.JsonRemittanceAdviceLineProducer.InvoiceType.CREDIT_MEMO;
 
 @Value
 public class JsonRemittanceAdviceLineProducer
@@ -82,7 +84,7 @@ public class JsonRemittanceAdviceLineProducer
 			{
 				throw new RuntimeException("No MonetaryAmounts found for line!");
 			}
-			
+
 			final BigDecimal invoiceGrossAmount = asBigDecimalAbs(monetaryAmounts.getInvoiceGrossAmount()).orElse(null);
 
 			final BigDecimal remittedAmount = asBigDecimalAbs(monetaryAmounts.getRemittedAmount())
@@ -91,11 +93,11 @@ public class JsonRemittanceAdviceLineProducer
 			final BigDecimal paymentDiscountAmount = getPaymentDiscountAmount(monetaryAmounts);
 
 			// the difference might be a few cents, rappen etc. we will add it to the discount
-			final BigDecimal difference = (invoiceGrossAmount != null ? invoiceGrossAmount : BigDecimal.ZERO)
+			final BigDecimal difference = CoalesceUtil.coalesce(invoiceGrossAmount, BigDecimal.ZERO)
 					.subtract(remittedAmount)
 					.subtract(serviceFeeAmount)
 					.subtract(paymentDiscountAmount);
-			
+
 			return JsonRemittanceAdviceLine.builder()
 					.invoiceIdentifier(getInvoiceIdentifier())
 					.bpartnerIdentifier(getBPartnerIdentifier().orElse(null))
@@ -119,8 +121,18 @@ public class JsonRemittanceAdviceLineProducer
 	private BigDecimal getServiceFeeAmount(@NonNull final REMADVListLineItemExtensionType.MonetaryAmounts monetaryAmounts)
 	{
 		// note that the amounts are negative in the XML, we need to negate them
-		final BigDecimal adjustmentServiceFeeAmountTerm1 = getAdjustmentAmount(monetaryAmounts, ADJUSTMENT_CODE_67).map(BigDecimal::negate).orElse(null);
-		final BigDecimal adjustmentServiceFeeAmountTerm2 = getAdjustmentAmount(monetaryAmounts, ADJUSTMENT_CODE_90).map(BigDecimal::negate).orElse(null);
+		Optional<BigDecimal> serviceFeeAmtTerm_67_opt = getAdjustmentAmount(monetaryAmounts, ADJUSTMENT_CODE_67);
+		Optional<BigDecimal> serviceFeeAmtTerm_90_opt = getAdjustmentAmount(monetaryAmounts, ADJUSTMENT_CODE_90);
+		if (!isCreditMemo())
+		{
+			// In a credit memo this amount is *positive*. In a normal invoice it is negative. Either way, we need the invoicable service fee amount to be positive.
+			// Also, I'm afraid of just doing "abs" here, because one day ther might be a yet different case that we might then miss.
+			serviceFeeAmtTerm_67_opt = serviceFeeAmtTerm_67_opt.map(BigDecimal::negate);
+			serviceFeeAmtTerm_90_opt = serviceFeeAmtTerm_90_opt.map(BigDecimal::negate);
+		}
+
+		final BigDecimal adjustmentServiceFeeAmountTerm1 = serviceFeeAmtTerm_67_opt.orElse(null);
+		final BigDecimal adjustmentServiceFeeAmountTerm2 = serviceFeeAmtTerm_90_opt.orElse(null);
 
 		return sumNullableBigDecimals(adjustmentServiceFeeAmountTerm1, adjustmentServiceFeeAmountTerm2);
 	}
@@ -237,6 +249,11 @@ public class JsonRemittanceAdviceLineProducer
 		return invoiceDocBaseType;
 	}
 
+	private boolean isCreditMemo()
+	{
+		return getInvoiceDocType().orElse("").equals(CREDIT_MEMO.metasDocBaseType);
+	}
+
 	@NonNull
 	private Optional<String> getDateInvoiced()
 	{
@@ -311,7 +328,7 @@ public class JsonRemittanceAdviceLineProducer
 	}
 
 	@Getter
-	private enum InvoiceType
+	enum InvoiceType
 	{
 		SALES_INVOICE("RG", "ARI"),
 		CREDIT_MEMO("GS", "ARC");
