@@ -1442,4 +1442,16 @@ public class X_PP_Order extends org.compiere.model.PO implements I_PP_Order, org
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Yield);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
+
+	@Override
+	public void setSeqNo (final int SeqNo)
+	{
+		set_Value (COLUMNNAME_SeqNo, SeqNo);
+	}
+
+	@Override
+	public int getSeqNo()
+	{
+		return get_ValueAsInt(COLUMNNAME_SeqNo);
+	}
 }

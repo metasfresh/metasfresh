@@ -1849,6 +1849,31 @@ public interface I_PP_Order
 	String COLUMNNAME_ScheduleType = "ScheduleType";
 
 	/**
+	 * Set SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSeqNo (int SeqNo);
+
+	/**
+	 * Get SeqNo.
+	 * Method of ordering records;
+ lowest number comes first
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getSeqNo();
+
+	ModelColumn<I_PP_Order, Object> COLUMN_SeqNo = new ModelColumn<>(I_PP_Order.class, "SeqNo", null);
+	String COLUMNNAME_SeqNo = "SeqNo";
+
+	/**
 	 * Set Serien-Nr..
 	 * Product Serial Number
 	 *
