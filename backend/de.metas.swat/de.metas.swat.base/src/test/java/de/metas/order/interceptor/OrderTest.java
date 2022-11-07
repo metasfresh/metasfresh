@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerSupplierApprovalRepository;
 import de.metas.bpartner.BPartnerSupplierApprovalService;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.chat.ChatRepository;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.location.impl.DocumentLocationBL;
@@ -62,7 +63,8 @@ public class OrderTest
 		final DocumentLocationBL documentLocationBL = new DocumentLocationBL(bpartnerBL);
 		final OrderLineDetailRepository orderLineDetailRepository = new OrderLineDetailRepository();
 		final BPartnerSupplierApprovalService partnerSupplierApprovalService = new BPartnerSupplierApprovalService(new BPartnerSupplierApprovalRepository(), new UserGroupRepository());
-		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Order(bpartnerBL, orderLineDetailRepository, documentLocationBL, partnerSupplierApprovalService));
+		final ChatRepository chatRepository = new ChatRepository();
+		Services.get(IModelInterceptorRegistry.class).addModelInterceptor(new C_Order(bpartnerBL, orderLineDetailRepository, documentLocationBL, partnerSupplierApprovalService, chatRepository));
 	}
 
 	@Test
