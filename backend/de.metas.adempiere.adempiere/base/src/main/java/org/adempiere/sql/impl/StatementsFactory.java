@@ -1,5 +1,7 @@
 package org.adempiere.sql.impl;
 
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryStatisticsCollector;
 
 /*
@@ -24,6 +26,8 @@ import org.adempiere.ad.dao.IQueryStatisticsCollector;
  * #L%
  */
 
+import org.adempiere.ad.dao.impl.QueryStatisticsLogger;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.sql.IStatementsFactory;
 import org.compiere.util.CCallableStatement;
 import org.compiere.util.CPreparedStatement;
@@ -40,6 +44,11 @@ public final class StatementsFactory implements IStatementsFactory
 {
 	public static final transient StatementsFactory instance = new StatementsFactory();
 	private boolean sqlQueriesTracingEnabled = false;
+	private ISysConfigBL _sysConfigBL;
+	private static final ThreadLocal<Boolean> isGettingSysconfig = ThreadLocal.withInitial(() -> false);
+	private static boolean lastSysconfigResult;
+	private static final String PERF_MON_SYSCONFIG_NAME = "de.metas.monitoring.db.enable";
+	private static final boolean SYS_CONFIG_DEFAULT_VALUE = false;
 
 	private StatementsFactory()
 	{
@@ -61,7 +70,7 @@ public final class StatementsFactory implements IStatementsFactory
 	public CStatement newCStatement(final int resultSetType, final int resultSetConcurrency, final String trxName)
 	{
 		final CStatementProxy stmt = new CStatementProxy(resultSetType, resultSetConcurrency, trxName);
-		if (sqlQueriesTracingEnabled)
+		if (sqlQueriesTracingEnabled || isPerfMonActive())
 		{
 			return new TracingStatement<>(stmt);
 		}
@@ -72,11 +81,53 @@ public final class StatementsFactory implements IStatementsFactory
 	public CPreparedStatement newCPreparedStatement(final int resultSetType, final int resultSetConcurrency, final String sql, final String trxName)
 	{
 		final CPreparedStatementProxy pstmt = new CPreparedStatementProxy(resultSetType, resultSetConcurrency, sql, trxName);
-		if (sqlQueriesTracingEnabled)
+		if (sqlQueriesTracingEnabled || isPerfMonActive())
 		{
 			return new TracingPreparedStatement<>(pstmt);
 		}
 		return pstmt;
+	}
+
+	private boolean isPerfMonActive()
+	{
+		if(!isGettingSysconfig.get())
+		{
+			isGettingSysconfig.set(true);
+			try
+			{
+				final boolean perfMonActive = sysConfigBL().getBooleanValue(PERF_MON_SYSCONFIG_NAME, SYS_CONFIG_DEFAULT_VALUE);
+				if(perfMonActive && !sqlQueriesTracingEnabled)
+				{
+					this.sqlQueriesTracingEnabled = true;
+				}
+				if(perfMonActive && TracingStatement.SQL_QUERIES_COLLECTOR == null)
+				{
+					TracingStatement.SQL_QUERIES_COLLECTOR = new QueryStatisticsLogger();
+				}
+				return lastSysconfigResult = sysConfigBL().getBooleanValue(PERF_MON_SYSCONFIG_NAME, SYS_CONFIG_DEFAULT_VALUE);
+			}
+			catch(final IllegalStateException ise)
+			{
+				//catch exception caused by read while modifying AD_SysConfig
+				return lastSysconfigResult;
+			}
+			finally
+			{
+				isGettingSysconfig.set(false);
+			}
+		}
+
+		return lastSysconfigResult;
+	}
+
+	private ISysConfigBL sysConfigBL()
+	{
+		ISysConfigBL sysConfigBL = this._sysConfigBL;
+		if (sysConfigBL == null)
+		{
+			sysConfigBL = this._sysConfigBL = Services.get(ISysConfigBL.class);
+		}
+		return sysConfigBL;
 	}
 
 	@Override

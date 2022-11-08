@@ -54,6 +54,8 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 
 	private ISysConfigBL _sysConfigBL;
 	private static PerformanceMonitoringService _performanceMonitoringService;
+	private static final ThreadLocal<Boolean> isGettingSysconfig = ThreadLocal.withInitial(() -> false);
+	private static boolean lastSysconfigResult;
 	private static final String PERF_MON_SYSCONFIG_NAME = "de.metas.monitoring.db.enable";
 	private static final boolean SYS_CONFIG_DEFAULT_VALUE = false;
 	private static final PerformanceMonitoringService.Metadata PM_METADATA_COLLECT =
@@ -154,9 +156,27 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 		return performanceMonitoringService;
 	}
 
-	public boolean isPerfMonActive()
+	private boolean isPerfMonActive()
 	{
-		return sysConfigBL().getBooleanValue(PERF_MON_SYSCONFIG_NAME, SYS_CONFIG_DEFAULT_VALUE);
+		if(!isGettingSysconfig.get())
+		{
+			isGettingSysconfig.set(true);
+			try
+			{
+				return lastSysconfigResult = sysConfigBL().getBooleanValue(PERF_MON_SYSCONFIG_NAME, SYS_CONFIG_DEFAULT_VALUE);
+			}
+			catch(final IllegalStateException ise)
+			{
+				//catch exception caused by read while modifying AD_SysConfig
+				return lastSysconfigResult;
+			}
+			finally
+			{
+				isGettingSysconfig.set(false);
+			}
+		}
+
+		return lastSysconfigResult;
 	}
 
 	private ISysConfigBL sysConfigBL()
@@ -202,6 +222,11 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 				.append("\n*********************************************************************************************")
 				.append("\n\n")
 				.toString());
+	}
+
+	public boolean isEnabled()
+	{
+		return enabled;
 	}
 
 	@Override
