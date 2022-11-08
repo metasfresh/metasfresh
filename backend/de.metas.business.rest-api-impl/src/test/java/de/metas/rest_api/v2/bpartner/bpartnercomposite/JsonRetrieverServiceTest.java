@@ -31,6 +31,7 @@ import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
+import de.metas.incoterms.repository.IncotermsRepository;
 import de.metas.job.JobRepository;
 import de.metas.organization.OrgId;
 import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
@@ -39,6 +40,8 @@ import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKeyList;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
+import de.metas.sectionCode.SectionCodeRepository;
+import de.metas.sectionCode.SectionCodeService;
 import de.metas.test.SnapshotFunctionFactory;
 import de.metas.title.TitleRepository;
 import de.metas.user.UserRepository;
@@ -73,6 +76,10 @@ class JsonRetrieverServiceTest
 	private final OrgId orgId = OrgId.ofRepoId(10);
 	private JsonRetrieverService jsonRetrieverService;
 
+	private SectionCodeRepository sectionCodeRepository;
+
+	private IncotermsRepository incotermsRepository;
+
 	@BeforeAll
 	static void initStatic()
 	{
@@ -93,6 +100,10 @@ class JsonRetrieverServiceTest
 		final BPartnerBL partnerBL = new BPartnerBL(new UserRepository());
 		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository());
 
+		sectionCodeRepository = new SectionCodeRepository();
+
+		incotermsRepository = new IncotermsRepository();
+
 		final de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
 				new JsonRequestConsolidateService(),
 				new BPartnerQueryService(),
@@ -103,6 +114,8 @@ class JsonRetrieverServiceTest
 				new CurrencyRepository(),
 				new JobRepository(),
 				Mockito.mock(ExternalReferenceRestControllerService.class),
+				new SectionCodeService(sectionCodeRepository),
+				incotermsRepository,
 				Mockito.mock(AlbertaBPartnerCompositeService.class));
 
 		jsonRetrieverService = jsonServiceFactory.createRetriever();

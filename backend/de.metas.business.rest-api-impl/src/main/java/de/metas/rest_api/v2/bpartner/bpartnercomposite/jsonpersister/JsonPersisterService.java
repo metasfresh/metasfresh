@@ -85,13 +85,22 @@ import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.incoterms.Incoterms;
+import de.metas.incoterms.IncotermsId;
+import de.metas.incoterms.repository.IncotermsRepository;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.order.DeliveryRule;
+import de.metas.order.DeliveryViaRule;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentRule;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.BPartnerCompositeRestUtils;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
+import de.metas.sectionCode.SectionCodeId;
+import de.metas.sectionCode.SectionCodeService;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -138,6 +147,8 @@ public class JsonPersisterService
 	private final transient BPGroupRepository bpGroupRepository;
 	private final transient CurrencyRepository currencyRepository;
 	private final transient AlbertaBPartnerCompositeService albertaBPartnerCompositeService;
+	private final transient SectionCodeService sectionCodeService;
+	private final transient IncotermsRepository incotermsRepository;
 
 	/**
 	 * A unique indentifier for this instance.
@@ -153,6 +164,8 @@ public class JsonPersisterService
 			@NonNull final CurrencyRepository currencyRepository,
 			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
 			@NonNull final AlbertaBPartnerCompositeService albertaBPartnerCompositeService,
+			@NonNull final SectionCodeService sectionCodeService,
+			@NonNull final IncotermsRepository incotermsRepository,
 			@NonNull final String identifier)
 	{
 		this.jsonRetrieverService = jsonRetrieverService;
@@ -162,6 +175,8 @@ public class JsonPersisterService
 		this.bpGroupRepository = bpGroupRepository;
 		this.currencyRepository = currencyRepository;
 		this.albertaBPartnerCompositeService = albertaBPartnerCompositeService;
+		this.sectionCodeService = sectionCodeService;
+		this.incotermsRepository = incotermsRepository;
 
 		this.identifier = assumeNotEmpty(identifier, "Param Identifier may not be empty");
 	}
@@ -334,11 +349,11 @@ public class JsonPersisterService
 			bpartnerComposite.getContacts().add(contact);
 			syncOutcome = SyncOutcome.CREATED;
 		}
-		
+
 		contact.addHandle(contactIdentifier.getRawValue()); // always add the handle; we'll need it later, even if the contact existed and was not updated
-		
+
 		syncJsonToContact(jsonContact, contact);
-		
+
 		bpartnerCompositeRepository.save(bpartnerComposite, true);
 
 		final Optional<BPartnerContact> persistedContact = bpartnerComposite.extractContactByHandle(contactIdentifier.getRawValue());
@@ -615,11 +630,14 @@ public class JsonPersisterService
 	{
 		syncJsonToOrg(jsonRequestComposite, bpartnerComposite, parentSyncAdvise);
 
+		Check.assumeNotNull(bpartnerComposite.getOrgId(), "bpartnerComposite.orgId must be resolved at this point!");
+
 		final BooleanWithReason anythingWasSynced = syncJsonToBPartner(
 				jsonRequestComposite,
 				bpartnerComposite,
 				resultBuilder.isNewBPartner(),
-				parentSyncAdvise);
+				parentSyncAdvise,
+				bpartnerComposite.getOrgId());
 		if (anythingWasSynced.isTrue())
 		{
 			resultBuilder.getJsonResponseBPartnerUpsertItemBuilder().syncOutcome(resultBuilder.isNewBPartner() ? SyncOutcome.CREATED : SyncOutcome.UPDATED);
@@ -733,7 +751,8 @@ public class JsonPersisterService
 			@NonNull final JsonRequestComposite jsonBPartnerComposite,
 			@NonNull final BPartnerComposite bpartnerComposite,
 			final boolean bpartnerCompositeIsNew,
-			@NonNull final SyncAdvise parentSyncAdvise)
+			@NonNull final SyncAdvise parentSyncAdvise,
+			@NonNull final OrgId orgId)
 	{
 		final JsonRequestBPartner jsonBPartner = jsonBPartnerComposite.getBpartner();
 		if (jsonBPartner == null)
@@ -852,7 +871,7 @@ public class JsonPersisterService
 			else
 			{
 				final Optional<BPGroup> optionalBPGroup = bpGroupRepository
-						.getByNameAndOrgId(jsonBPartner.getGroup(), bpartnerComposite.getOrgId());
+						.getByNameAndOrgId(jsonBPartner.getGroup(), orgId);
 
 				final BPGroup bpGroup;
 				if (optionalBPGroup.isPresent())
@@ -862,7 +881,7 @@ public class JsonPersisterService
 				}
 				else
 				{
-					bpGroup = BPGroup.of(bpartnerComposite.getOrgId(), null, jsonBPartner.getGroup().trim());
+					bpGroup = BPGroup.of(orgId, null, jsonBPartner.getGroup().trim());
 				}
 
 				final BPGroupId bpGroupId = bpGroupRepository.save(bpGroup);
@@ -959,6 +978,99 @@ public class JsonPersisterService
 		if (jsonBPartner.isMemoIsSet())
 		{
 			bpartner.setMemo(jsonBPartner.getMemo());
+		}
+
+		if (jsonBPartner.isSectionCodeValueSet())
+		{
+			final SectionCodeId sectionCodeId = Optional.ofNullable(jsonBPartner.getSectionCodeValue())
+					.filter(Check::isNotBlank)
+					.map(code -> sectionCodeService.getSectionCodeIdByValue(orgId, code))
+					.orElse(null);
+
+			bpartner.setSectionCodeId(sectionCodeId);
+		}
+
+		if (jsonBPartner.isDescriptionSet())
+		{
+			bpartner.setDescription(jsonBPartner.getDescription());
+		}
+
+		if (jsonBPartner.isDeliveryRuleSet())
+		{
+			bpartner.setDeliveryRule(getDeliveryRule(jsonBPartner));
+		}
+
+		if (jsonBPartner.isDeliveryViaRuleSet())
+		{
+			bpartner.setDeliveryViaRule(getDeliveryViaRule(jsonBPartner));
+		}
+
+		if (jsonBPartner.isStorageWarehouseSet())
+		{
+			bpartner.setStorageWarehouse(jsonBPartner.getStorageWarehouse());
+		}
+
+		if (jsonBPartner.isIncotermsCustomerValueSet())
+		{
+			final IncotermsId incotermsCustomerId = Optional.ofNullable(jsonBPartner.getIncotermsCustomerValue())
+					.filter(Check::isNotBlank)
+					.map(incotermsRepository::getIncotermsByValue)
+					.map(Incoterms::getIncotermsId)
+					.orElse(null);
+
+			bpartner.setIncotermsCustomerId(incotermsCustomerId);
+		}
+
+		if (jsonBPartner.isIncotermsVendorValueSet())
+		{
+			final IncotermsId incotermsVendorId = Optional.ofNullable(jsonBPartner.getIncotermsVendorValue())
+					.filter(Check::isNotBlank)
+					.map(incotermsRepository::getIncotermsByValue)
+					.map(Incoterms::getIncotermsId)
+					.orElse(null);
+
+			bpartner.setIncotermsVendorId(incotermsVendorId);
+		}
+
+		if (jsonBPartner.isCustomerPaymentTermIdentifierSet())
+		{
+			final PaymentTermId customerPaymentTermId = Optional.ofNullable(jsonBPartner.getCustomerPaymentTermIdentifier())
+					.filter(Check::isNotBlank)
+					.map(paymentIdentifier -> jsonRetrieverService.getPaymentTermId(paymentIdentifier, orgId))
+					.orElse(null);
+
+			bpartner.setCustomerPaymentTermId(customerPaymentTermId);
+		}
+
+		if (jsonBPartner.isVendorPaymentTermIdentifierSet())
+		{
+			final PaymentTermId vendorPaymentTermId = Optional.ofNullable(jsonBPartner.getVendorPaymentTermIdentifier())
+					.filter(Check::isNotBlank)
+					.map(paymentIdentifier -> jsonRetrieverService.getPaymentTermId(paymentIdentifier, orgId))
+					.orElse(null);
+
+			bpartner.setVendorPaymentTermId(vendorPaymentTermId);
+		}
+
+		if (jsonBPartner.isParentIdentifierSet())
+		{
+			final BPartnerId parentBPartnerId = Optional.ofNullable(jsonBPartner.getParentIdentifier())
+					.filter(Check::isNotBlank)
+					.map(ExternalIdentifier::of)
+					.flatMap(parentIdentifier -> jsonRetrieverService.resolveBPartnerExternalIdentifier(parentIdentifier, orgId))
+					.orElse(null);
+
+			bpartner.setParentId(parentBPartnerId);
+		}
+
+		if (jsonBPartner.isPaymentRuleSet())
+		{
+			bpartner.setPaymentRule(getPaymentRule(jsonBPartner.getPaymentRule()));
+		}
+
+		if (jsonBPartner.isPaymentRulePOSet())
+		{
+			bpartner.setPaymentRulePO(getPaymentRule(jsonBPartner.getPaymentRulePO()));
 		}
 
 		return BooleanWithReason.TRUE;
@@ -1220,7 +1332,6 @@ public class JsonPersisterService
 				contact.setSubjectMatterContact(jsonBPartnerContact.getSubjectMatter());
 			}
 		}
-
 
 		if (jsonBPartnerContact.isBirthdaySet())
 		{
@@ -1756,6 +1867,42 @@ public class JsonPersisterService
 			}
 		}
 
+		if (jsonBPartnerLocation.isHandoverLocationSet())
+		{
+			if (jsonBPartnerLocation.getHandoverLocation() == null)
+			{
+				logger.debug("Ignoring boolean property \"handoverLocation\" : null ");
+			}
+			else
+			{
+				locationType.handoverLocation(jsonBPartnerLocation.getHandoverLocation());
+			}
+		}
+
+		if (jsonBPartnerLocation.isRemitToAddressSet())
+		{
+			if (jsonBPartnerLocation.getRemitTo() == null)
+			{
+				logger.debug("Ignoring boolean property \"remitTo\" : null ");
+			}
+			else
+			{
+				locationType.remitTo(jsonBPartnerLocation.getRemitTo());
+			}
+		}
+
+		if (jsonBPartnerLocation.isReplicationLookupDefaultSet())
+		{
+			if (jsonBPartnerLocation.getReplicationLookupDefault() == null)
+			{
+				logger.debug("Ignoring boolean property \"replicationLookupDefault\" : null ");
+			}
+			else
+			{
+				locationType.remitTo(jsonBPartnerLocation.getReplicationLookupDefault());
+			}
+		}
+
 		return locationType.build();
 	}
 
@@ -1763,7 +1910,9 @@ public class JsonPersisterService
 			@NonNull final JsonResponseUpsertItem responseUpsertItem,
 			@NonNull final IExternalReferenceType externalReferenceType,
 			@Nullable final String externalVersion,
-			@Nullable final String externalReferenceURL)
+			@Nullable final String externalReferenceURL,
+			@Nullable final JsonMetasfreshId externalSystemConfigId,
+			@Nullable final Boolean isReadOnlyInMetasfresh)
 	{
 		if (SyncOutcome.NOTHING_DONE.equals(responseUpsertItem.getSyncOutcome()))
 		{
@@ -1786,6 +1935,8 @@ public class JsonPersisterService
 				.metasfreshId(responseUpsertItem.getMetasfreshId())
 				.version(externalVersion)
 				.externalReferenceUrl(externalReferenceURL)
+				.externalSystemConfigId(externalSystemConfigId)
+				.isReadOnlyMetasfresh(isReadOnlyInMetasfresh)
 				.build();
 
 		final JsonRequestExternalReferenceUpsert jsonRequestExternalReferenceUpsert = JsonRequestExternalReferenceUpsert
@@ -1810,7 +1961,9 @@ public class JsonPersisterService
 				mapToJsonRequestExternalReferenceUpsert(bPartnerResult,
 														BPartnerExternalReferenceType.BPARTNER,
 														requestItem.getExternalVersion(),
-														requestItem.getExternalReferenceUrl());
+														requestItem.getExternalReferenceUrl(),
+														requestItem.getExternalSystemConfigId(),
+														requestItem.getIsReadOnlyInMetasfresh());
 
 		upsertExternalRefRequest.ifPresent(externalReferenceCreateReqs::add);
 
@@ -1818,7 +1971,7 @@ public class JsonPersisterService
 		if (!CollectionUtils.isEmpty(bPartnerLocationsResult))
 		{
 
-			final Map<String,String> bpartnerLocationIdentifier2externalVersion = requestItem
+			final Map<String, String> bpartnerLocationIdentifier2externalVersion = requestItem
 					.getBpartnerComposite()
 					.getLocationsNotNull()
 					.getRequestItems()
@@ -1831,7 +1984,9 @@ public class JsonPersisterService
 													   .map(bPartnerLocation -> mapToJsonRequestExternalReferenceUpsert(bPartnerLocation,
 																														BPLocationExternalReferenceType.BPARTNER_LOCATION,
 																														bpartnerLocationIdentifier2externalVersion.get(bPartnerLocation.getIdentifier()),
-																														null))
+																														null,
+																														requestItem.getExternalSystemConfigId(),
+																														requestItem.getIsReadOnlyInMetasfresh()))
 													   .filter(Optional::isPresent)
 													   .map(Optional::get)
 													   .collect(Collectors.toSet()));
@@ -1845,7 +2000,9 @@ public class JsonPersisterService
 													   .map(bPartnerContact -> mapToJsonRequestExternalReferenceUpsert(bPartnerContact,
 																													   ExternalUserReferenceType.USER_ID,
 																													   null,
-																													   null))
+																													   null,
+																													   requestItem.getExternalSystemConfigId(),
+																													   requestItem.getIsReadOnlyInMetasfresh()))
 													   .filter(Optional::isPresent)
 													   .map(Optional::get)
 													   .collect(Collectors.toSet()));
@@ -1876,11 +2033,11 @@ public class JsonPersisterService
 		if (!requestBPartnerComposite.getContactsNotNull().getRequestItems().isEmpty()
 				&& !Check.isEmpty(result.getResponseContactItems()))
 		{
-			final Map<String,JsonMetasfreshId> contactIdentifierToMetasfreshId = result.getResponseContactItems()
+			final Map<String, JsonMetasfreshId> contactIdentifierToMetasfreshId = result.getResponseContactItems()
 					.stream()
 					.collect(ImmutableMap.toImmutableMap(JsonResponseUpsertItem::getIdentifier, JsonResponseUpsertItem::getMetasfreshId));
 
-			final SyncAdvise effectiveSyncAdvise =  CoalesceUtil.coalesceNotNull(requestBPartnerComposite.getContactsNotNull().getSyncAdvise(), syncAdvise);
+			final SyncAdvise effectiveSyncAdvise = CoalesceUtil.coalesceNotNull(requestBPartnerComposite.getContactsNotNull().getSyncAdvise(), syncAdvise);
 
 			requestItem.getBpartnerComposite().getContactsNotNull().getRequestItems()
 					.stream()
@@ -1902,5 +2059,50 @@ public class JsonPersisterService
 																			 effectiveSyncAdvise);
 					});
 		}
+	}
+
+	@NonNull
+	private static DeliveryRule getDeliveryRule(final @NonNull JsonRequestBPartner jsonRequestBPartner)
+	{
+		final DeliveryRule deliveryRule;
+		switch (jsonRequestBPartner.getDeliveryRule())
+		{
+			case AVAILABILITY:
+				deliveryRule = DeliveryRule.AVAILABILITY;
+				break;
+			default:
+				throw Check.fail("Unexpected deliveryRule={}; jsonRequestBPartner={}", jsonRequestBPartner.getDeliveryRule(), jsonRequestBPartner);
+		}
+		return deliveryRule;
+	}
+
+	@NonNull
+	private static DeliveryViaRule getDeliveryViaRule(final @NonNull JsonRequestBPartner jsonRequestBPartner)
+	{
+		final DeliveryViaRule deliveryViaRule;
+		switch (jsonRequestBPartner.getDeliveryViaRule())
+		{
+			case SHIPPER:
+				deliveryViaRule = DeliveryViaRule.Shipper;
+				break;
+			default:
+				throw Check.fail("Unexpected deliveryViaRule={}; jsonRequestBPartner={}", jsonRequestBPartner.getDeliveryViaRule(), jsonRequestBPartner);
+		}
+		return deliveryViaRule;
+	}
+
+	@NonNull
+	private static PaymentRule getPaymentRule(final @NonNull JsonRequestBPartner.PaymentRule jsonRequestBPartnerPaymentRule)
+	{
+		final PaymentRule paymentRule;
+		switch (jsonRequestBPartnerPaymentRule)
+		{
+			case ON_CREDIT:
+				paymentRule = PaymentRule.OnCredit;
+				break;
+			default:
+				throw Check.fail("Unexpected paymentRule={};", jsonRequestBPartnerPaymentRule);
+		}
+		return paymentRule;
 	}
 }

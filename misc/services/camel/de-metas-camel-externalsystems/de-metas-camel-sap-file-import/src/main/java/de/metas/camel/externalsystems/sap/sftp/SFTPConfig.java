@@ -48,7 +48,10 @@ public class SFTPConfig
 	String hostName;
 
 	@Nullable
-	String targetDirectory;
+	String targetDirectoryProduct;
+
+	@Nullable
+	String targetDirectoryBPartner;
 
 	@NonNull
 	String processedFilesFolder;
@@ -59,18 +62,38 @@ public class SFTPConfig
 	@NonNull
 	Duration pollingFrequency;
 
-	public String getSFTPConnectionString()
+	public String getSFTPConnectionStringProduct()
 	{
 		final String endpointTemplate = "sftp://%s@%s:%s/%s?move=%s&moveFailed=%s&delay=%s";
 
 		final String resultWithoutPW = String.format(endpointTemplate,
-									  this.getUsername(),
-									  this.getHostName(),
-									  this.getPort(),
-									  CoalesceUtil.coalesce(this.getTargetDirectory(), ""),
-									  this.getProcessedFilesFolder(),
-									  this.getErroredFilesFolder(),
-									  this.getPollingFrequency());
+													 this.getUsername(),
+													 this.getHostName(),
+													 this.getPort(),
+													 CoalesceUtil.coalesce(this.getTargetDirectoryProduct(), ""),
+													 this.getProcessedFilesFolder(),
+													 this.getErroredFilesFolder(),
+													 this.getPollingFrequency());
+
+		if (Check.isBlank(password))
+		{
+			return resultWithoutPW;
+		}
+		return resultWithoutPW + "&password=" + password;
+	}
+
+	public String getSFTPConnectionStringBPartner()
+	{
+		final String endpointTemplate = "sftp://%s@%s:%s/%s?move=%s&moveFailed=%s&delay=%s";
+
+		final String resultWithoutPW = String.format(endpointTemplate,
+													 this.getUsername(),
+													 this.getHostName(),
+													 this.getPort(),
+													 CoalesceUtil.coalesce(this.getTargetDirectoryBPartner(), ""),
+													 this.getProcessedFilesFolder(),
+													 this.getErroredFilesFolder(),
+													 this.getPollingFrequency());
 		if (Check.isBlank(password))
 		{
 			return resultWithoutPW;

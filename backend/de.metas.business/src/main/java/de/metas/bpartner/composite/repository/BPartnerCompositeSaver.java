@@ -21,6 +21,7 @@ import de.metas.document.DocTypeId;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
+import de.metas.incoterms.IncotermsId;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
@@ -31,7 +32,10 @@ import de.metas.location.PostalId;
 import de.metas.location.impl.PostalQueryFilter;
 import de.metas.logging.TableRecordMDC;
 import de.metas.marketing.base.model.CampaignId;
+import de.metas.order.DeliveryRule;
+import de.metas.order.DeliveryViaRule;
 import de.metas.organization.OrgId;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.security.permissions2.PermissionServiceFactories;
 import de.metas.title.TitleId;
 import de.metas.util.Check;
@@ -238,6 +242,10 @@ final class BPartnerCompositeSaver
 		{
 			bpartnerRecord.setPaymentRule(bpartner.getPaymentRule().getCode());
 		}
+		if(bpartner.getPaymentRulePO() != null)
+		{
+			bpartnerRecord.setPaymentRulePO(bpartner.getPaymentRulePO().getCode());
+		}
 		if(bpartner.getSoDocTypeTargetId() != null)
 		{
 			bpartnerRecord.setSO_DocTypeTarget_ID(DocTypeId.toRepoId(bpartner.getSoDocTypeTargetId()));
@@ -254,6 +262,15 @@ final class BPartnerCompositeSaver
 		{
 			assertCanCreateOrUpdate(bpartnerRecord);
 		}
+
+		bpartnerRecord.setM_SectionCode_ID(SectionCodeId.toRepoId(bpartner.getSectionCodeId()));
+		bpartnerRecord.setDescription(bpartner.getDescription());
+		bpartnerRecord.setDeliveryRule(DeliveryRule.toCodeOrNull(bpartner.getDeliveryRule()));
+		bpartnerRecord.setDeliveryViaRule(DeliveryViaRule.toCodeOrNull(bpartner.getDeliveryViaRule()));
+		bpartnerRecord.setIsStorageWarehouse(bpartner.isStorageWarehouse());
+		bpartnerRecord.setC_Incoterms_Customer_ID(IncotermsId.toRepoId(bpartner.getIncotermsCustomerId()));
+		bpartnerRecord.setC_Incoterms_Vendor_ID(IncotermsId.toRepoId(bpartner.getIncotermsVendorId()));
+
 		saveRecord(bpartnerRecord);
 
 		//
@@ -341,6 +358,9 @@ final class BPartnerCompositeSaver
 				locationType.getShipTo().ifPresent(bpartnerLocationRecord::setIsShipTo);
 				locationType.getShipToDefault().ifPresent(bpartnerLocationRecord::setIsShipToDefault);
 				locationType.getVisitorsAddress().ifPresent(bpartnerLocationRecord::setVisitorsAddress);
+				locationType.getHandoverLocation().ifPresent(bpartnerLocationRecord::setIsHandOverLocation);
+				locationType.getRemitTo().ifPresent(bpartnerLocationRecord::setIsRemitTo);
+				locationType.getReplicationLookupDefault().ifPresent(bpartnerLocationRecord::setIsReplicationLookupDefault);
 			}
 
 			final BPartnerLocationAddressPart address = saveLocationRecord(partnerLocation);

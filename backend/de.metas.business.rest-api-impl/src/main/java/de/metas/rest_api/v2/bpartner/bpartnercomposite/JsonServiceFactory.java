@@ -27,11 +27,15 @@ import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
+import de.metas.incoterms.repository.IncotermsRepository;
 import de.metas.job.JobRepository;
+import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.jsonpersister.JsonPersisterService;
+import de.metas.sectionCode.SectionCodeService;
 import de.metas.title.TitleRepository;
+import de.metas.util.Services;
 import de.metas.util.lang.UIDStringUtil;
 import de.metas.vertical.healthcare.alberta.bpartner.AlbertaBPartnerCompositeService;
 import lombok.NonNull;
@@ -50,6 +54,9 @@ public class JsonServiceFactory
 	private final JobRepository jobRepository;
 	private final ExternalReferenceRestControllerService externalReferenceService;
 	private final AlbertaBPartnerCompositeService albertaBPartnerCompositeService;
+	private final SectionCodeService sectionCodeService;
+	private final IncotermsRepository incotermsRepository;
+	private final IPaymentTermRepository paymentTermRepository;
 
 	public JsonServiceFactory(
 			@NonNull final JsonRequestConsolidateService jsonRequestConsolidateService,
@@ -60,7 +67,9 @@ public class JsonServiceFactory
 			@NonNull final TitleRepository titleRepository,
 			@NonNull final CurrencyRepository currencyRepository,
 			@NonNull final JobRepository jobRepository,
-			@NonNull final ExternalReferenceRestControllerService externalReferenceService, final AlbertaBPartnerCompositeService albertaBPartnerCompositeService)
+			@NonNull final ExternalReferenceRestControllerService externalReferenceService,
+			@NonNull final SectionCodeService sectionCodeService,
+			@NonNull final IncotermsRepository incotermsRepository, final AlbertaBPartnerCompositeService albertaBPartnerCompositeService)
 	{
 		this.jsonRequestConsolidateService = jsonRequestConsolidateService;
 		this.bpartnerQueryService = bpartnerQueryService;
@@ -71,7 +80,10 @@ public class JsonServiceFactory
 		this.currencyRepository = currencyRepository;
 		this.jobRepository = jobRepository;
 		this.externalReferenceService = externalReferenceService;
+		this.sectionCodeService = sectionCodeService;
 		this.albertaBPartnerCompositeService = albertaBPartnerCompositeService;
+		this.incotermsRepository = incotermsRepository;
+		this.paymentTermRepository = Services.get(IPaymentTermRepository.class);
 	}
 
 	public JsonPersisterService createPersister()
@@ -86,7 +98,9 @@ public class JsonServiceFactory
 				bpGroupRepository,
 				currencyRepository,
 				externalReferenceService,
-				albertaBPartnerCompositeService, identifier);
+				albertaBPartnerCompositeService,
+				sectionCodeService,
+				incotermsRepository, identifier);
 	}
 
 	public JsonRetrieverService createRetriever()
@@ -105,6 +119,9 @@ public class JsonServiceFactory
 				titleRepository,
 				jobRepository,
 				externalReferenceService,
+				paymentTermRepository,
+				sectionCodeService,
+				incotermsRepository,
 				identifier);
 	}
 }

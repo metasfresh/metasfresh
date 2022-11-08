@@ -24,7 +24,5 @@ package de.metas.camel.externalsystems.sap;
 
 public interface SAPConstants
 {
-	String ROUTE_PROPERTY_SAP_ROUTE_CONTEXT = "SAPRouteContext";
-
 	String SAP_SYSTEM_NAME = "SAP";
 }

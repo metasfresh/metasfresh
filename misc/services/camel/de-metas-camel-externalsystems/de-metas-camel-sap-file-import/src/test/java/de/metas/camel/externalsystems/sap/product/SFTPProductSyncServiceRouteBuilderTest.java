@@ -55,8 +55,8 @@ public class SFTPProductSyncServiceRouteBuilderTest extends CamelTestSupport
 	private static final String MOCK_EXTERNAL_SYSTEM_STATUS_ENDPOINT = "mock:externalSystemStatusEndpoint";
 	private static final String MOCK_UPSERT_PRODUCT = "mock:UpsertProduct";
 
-	private static final String JSON_START_EXTERNAL_SYSTEM_REQUEST = "0_JsonStartExternalSystemRequest.json";
-	private static final String JSON_STOP_EXTERNAL_SYSTEM_REQUEST = "0_JsonStopExternalSystemRequest.json";
+	private static final String JSON_START_EXTERNAL_SYSTEM_REQUEST = "0_JsonStartExternalSystemRequestProduct.json";
+	private static final String JSON_STOP_EXTERNAL_SYSTEM_REQUEST = "0_JsonStopExternalSystemRequestProduct.json";
 	private static final String MATERIAL_SAMPLE_DAT_FILE = "10_MaterialSample.dat";
 	private static final String JSON_UPSERT_PRODUCT_REQUEST = "20_CamelUpsertProductRequest.json";
 
@@ -107,7 +107,7 @@ public class SFTPProductSyncServiceRouteBuilderTest extends CamelTestSupport
 		//when
 		template.sendBody("direct:" + START_PRODUCTS_SYNC_ROUTE_ID, externalSystemRequest);
 
-		prepareSyncRouteForTesting(mockUpsertProductProcessor, getSFTPProductsSyncRouteId(externalSystemRequest));
+		prepareSyncRouteForTesting(mockUpsertProductProcessor, GetProductsSFTPRouteBuilder.buildRouteId(externalSystemRequest.getExternalSystemChildConfigValue()));
 
 		final InputStream expectedUpsertProductRequest = this.getClass().getResourceAsStream(JSON_UPSERT_PRODUCT_REQUEST);
 		final MockEndpoint productSyncMockEndpoint = getMockEndpoint(MOCK_UPSERT_PRODUCT);
@@ -152,12 +152,7 @@ public class SFTPProductSyncServiceRouteBuilderTest extends CamelTestSupport
 		assertMockEndpointsSatisfied();
 		assertThat(mockExternalSystemStatusProcessor.called).isEqualTo(2);
 
-		assertThat(context.getRoute(getSFTPProductsSyncRouteId(stopExternalSystemRequest))).isNull();
-	}
-
-	private String getSFTPProductsSyncRouteId(@NonNull final JsonExternalSystemRequest externalSystemRequest)
-	{
-		return "GetProductsSFTPRouteBuilder#" + externalSystemRequest.getExternalSystemChildConfigValue();
+		assertThat(context.getRoute(GetProductsSFTPRouteBuilder.buildRouteId(stopExternalSystemRequest.getExternalSystemChildConfigValue()))).isNull();
 	}
 
 	private void prepareEnableRouteForTesting(

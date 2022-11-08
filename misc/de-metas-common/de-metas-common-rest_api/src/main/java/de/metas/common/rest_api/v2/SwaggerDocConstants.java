@@ -27,7 +27,7 @@ public class SwaggerDocConstants
 	public static final String BPARTNER_IDENTIFIER_DOC = "Identifier of the bPartner in question. Can be\n"
 			+ "* a plain `<C_BPartner_ID>`\n"
 			+ "* or something like `ext-<I_S_ExternalReference.ExternalSystem>-<I_S_ExternalReference.ExternalReference>`\n"
-			+ "* or something like `gln-<C_Bartner_Location.GLN>`\n";
+			+ "* or something like `gln-<C_BPartner_Location.GLN>`\n";
 
 	public static final String BPARTNER_VALUE_DOC = "Code of the bPartner in question. Can be\n"
 			+ "* a plain `C_BPartner.Value`\n"
@@ -76,4 +76,14 @@ public class SwaggerDocConstants
 
 	public static final String HU_IDENTIFIER_DOC = "Identifier of the handling unit in question. Can be\n"
 			+ "* a plain `<M_HU_ID>`";
+
+	public static final String PAYMENT_TERM_IDENTIFIER_DOC = "Identifier of the paymentTerm in question. Can be\n"
+			+ "* a plain `<C_PaymentTerm_ID>`\n"
+			+ "* or something like `val-<C_PaymentTerm.Value>`\n";
+
+	public static final String PARENT_BPARTNER_IDENTIFIER_DOC = "Identifier of the parent bPartner in question. Can be\n"
+			+ "* a plain `<C_BPartner_ID>`\n"
+			+ "* or something like `ext-<I_S_ExternalReference.ExternalSystem>-<I_S_ExternalReference.ExternalReference>`\n"
+			+ "* or something like `gln-<C_BPartner_Location.GLN>`\n"
+			+ "* or something like `val-<C_BPartner.Value>`\n";
 }

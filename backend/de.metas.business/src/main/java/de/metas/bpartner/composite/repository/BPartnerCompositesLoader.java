@@ -31,6 +31,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.Language;
+import de.metas.incoterms.IncotermsId;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.job.JobId;
 import de.metas.location.CountryId;
@@ -41,12 +42,15 @@ import de.metas.location.PostalId;
 import de.metas.logging.LogManager;
 import de.metas.marketing.base.model.CampaignId;
 import de.metas.money.CurrencyId;
+import de.metas.order.DeliveryRule;
+import de.metas.order.DeliveryViaRule;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.title.TitleId;
 import de.metas.user.UserId;
 import de.metas.util.NumberUtils;
@@ -79,7 +83,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import static de.metas.util.StringUtils.trimBlankToNull;
 import static org.compiere.util.TimeUtil.asLocalDate;
@@ -322,6 +325,7 @@ final class BPartnerCompositesLoader
 				.salesPartnerCode(trimBlankToNull(bpartnerRecord.getSalesPartnerCode()))
 				.salesRep(getSalesRep(bpartnerRecord))
 				.paymentRule(PaymentRule.ofNullableCode(bpartnerRecord.getPaymentRule()))
+				.paymentRulePO(PaymentRule.ofNullableCode(bpartnerRecord.getPaymentRulePO()))
 				.internalName(trimBlankToNull(bpartnerRecord.getInternalName()))
 				.vatId(trimBlankToNull(bpartnerRecord.getVATaxID()))
 				.shipmentAllocationBestBeforePolicy(bpartnerRecord.getShipmentAllocation_BestBefore_Policy())
@@ -344,6 +348,13 @@ final class BPartnerCompositesLoader
 				//
 				.creditorId(NumberUtils.graterThanZeroOrNull(bpartnerRecord.getCreditorId()))
 				.debtorId(NumberUtils.graterThanZeroOrNull(bpartnerRecord.getDebtorId()))
+				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(bpartnerRecord.getM_SectionCode_ID()))
+				.description(bpartnerRecord.getDescription())
+				.deliveryRule(DeliveryRule.ofNullableCode(bpartnerRecord.getDeliveryRule()))
+				.deliveryViaRule(DeliveryViaRule.ofNullableCode(bpartnerRecord.getDeliveryViaRule()))
+				.incotermsCustomerId(IncotermsId.ofRepoIdOrNull(bpartnerRecord.getC_Incoterms_Customer_ID()))
+				.incotermsVendorId(IncotermsId.ofRepoIdOrNull(bpartnerRecord.getC_Incoterms_Vendor_ID()))
+				.storageWarehouse(bpartnerRecord.isStorageWarehouse())
 				//
 				.build();
 	}
@@ -396,6 +407,9 @@ final class BPartnerCompositesLoader
 				.shipTo(bpartnerLocationRecord.isShipTo())
 				.shipToDefault(bpartnerLocationRecord.isShipToDefault())
 				.visitorsAddress(bpartnerLocationRecord.isVisitorsAddress())
+				.handoverLocation(bpartnerLocationRecord.isHandOverLocation())
+				.remitTo(bpartnerLocationRecord.isRemitTo())
+				.replicationLookupDefault(bpartnerLocationRecord.isReplicationLookupDefault())
 				.build();
 	}
 

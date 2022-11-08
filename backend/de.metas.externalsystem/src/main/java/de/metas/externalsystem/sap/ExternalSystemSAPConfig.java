@@ -56,7 +56,10 @@ public class ExternalSystemSAPConfig implements IExternalSystemChildConfig
 	String sftpPassword;
 
 	@Nullable
-	String sftpTargetDirectory;
+	String sftpTargetDirectoryProduct;
+
+	@Nullable
+	String sftpTargetDirectoryBPartner;
 
 	@NonNull
 	String processedDirectory;
@@ -76,7 +79,8 @@ public class ExternalSystemSAPConfig implements IExternalSystemChildConfig
 			@NonNull final String sftpPort,
 			@NonNull final String sftpUsername,
 			@NonNull final String sftpPassword,
-			@Nullable final String sftpTargetDirectory,
+			@Nullable final String sftpTargetDirectoryProduct,
+			@Nullable final String sftpTargetDirectoryBPartner,
 			@NonNull final String processedDirectory,
 			@NonNull final String erroredDirectory,
 			@NonNull final Duration pollingFrequency)
@@ -88,7 +92,8 @@ public class ExternalSystemSAPConfig implements IExternalSystemChildConfig
 		this.sftpPort = sftpPort;
 		this.sftpUsername = sftpUsername;
 		this.sftpPassword = sftpPassword;
-		this.sftpTargetDirectory = sftpTargetDirectory;
+		this.sftpTargetDirectoryProduct = sftpTargetDirectoryProduct;
+		this.sftpTargetDirectoryBPartner = sftpTargetDirectoryBPartner;
 		this.processedDirectory = processedDirectory;
 		this.erroredDirectory = erroredDirectory;
 		this.pollingFrequency = pollingFrequency;
