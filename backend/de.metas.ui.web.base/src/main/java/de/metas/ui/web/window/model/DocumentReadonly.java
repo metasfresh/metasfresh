@@ -1,8 +1,13 @@
 package de.metas.ui.web.window.model;
 
+import de.metas.i18n.BooleanWithReason;
 import de.metas.ui.web.window.WindowConstants;
 import lombok.Builder;
 import lombok.Value;
+import lombok.experimental.NonFinal;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -37,7 +42,7 @@ public class DocumentReadonly
 			.processing(false)
 			.build();
 
-	public static DocumentReadonly ofParent(DocumentReadonly parentDocumentReadonly)
+	public static DocumentReadonly ofParent(final DocumentReadonly parentDocumentReadonly)
 	{
 		return builder()
 				.parentActive(parentDocumentReadonly.active)
@@ -52,20 +57,21 @@ public class DocumentReadonly
 	boolean active;
 	boolean processed;
 	boolean processing;
-	Boolean fieldsReadonly;
+	ExtendedMemorizingSupplier<BooleanWithReason> fieldsReadonly;
 
-	public boolean computeFieldReadonly(final String fieldName, final boolean alwaysUpdateable)
+	@NonFinal
+	public BooleanWithReason computeFieldReadonly(final String fieldName, final boolean alwaysUpdateable)
 	{
 		// Case: parent document is not active => fields of this document shall be completely readonly (including the IsActive flag)
 		if (!parentActive)
 		{
-			return true; // readonly
+			return BooleanWithReason.TRUE; // readonly
 		}
 
 		// Case: this or parent document is processed => fields of this document shall be completely readonly if they were not flagged with AlwaysUpdateable
 		if (processed || processing)
 		{
-			return !alwaysUpdateable; // readonly if not always updateable
+			return alwaysUpdateable ? BooleanWithReason.FALSE : BooleanWithReason.TRUE; // readonly if not always updateable
 		}
 
 		// Case: this document is not active => fields of this document shall be completely readonly, BUT NOT the IsActive flag.
@@ -74,16 +80,19 @@ public class DocumentReadonly
 		{
 			if (WindowConstants.FIELDNAME_IsActive.equals(fieldName))
 			{
-				return false; // not readonly
+				return BooleanWithReason.FALSE; // not readonly
 			}
 			else
 			{
-				return true; // readonly
+				return BooleanWithReason.TRUE; // readonly
 			}
 		}
 
 		// If we reached this point, it means the document and parent document are active and not processed
 		// => readonly if fields are readonly.
-		return fieldsReadonly != null ? fieldsReadonly : false;
+		final BooleanWithReason isReadOnly = fieldsReadonly != null ? fieldsReadonly.get() : null;
+		return Optional.ofNullable(isReadOnly)
+				.filter(BooleanWithReason::isTrue)
+				.orElse(BooleanWithReason.FALSE);
 	}
 }

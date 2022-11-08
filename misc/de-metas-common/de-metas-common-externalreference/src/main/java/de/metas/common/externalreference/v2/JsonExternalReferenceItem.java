@@ -36,17 +36,24 @@ import javax.annotation.Nullable;
 @Value
 public class JsonExternalReferenceItem
 {
+	@NonNull
 	public static JsonExternalReferenceItem of(
 			@NonNull final JsonExternalReferenceLookupItem lookupItem,
 			@NonNull final JsonMetasfreshId metasfreshId)
 	{
-		return new JsonExternalReferenceItem(lookupItem, metasfreshId, null, null, null, null, null, null);
+		return JsonExternalReferenceItem.builder()
+				.lookupItem(lookupItem)
+				.metasfreshId(metasfreshId)
+				.build();
 	}
 
+	@NonNull
 	public static JsonExternalReferenceItem of(
 			@NonNull final JsonExternalReferenceLookupItem lookupItem)
 	{
-		return new JsonExternalReferenceItem(lookupItem, null, null, null, null, null, null, null);
+		return JsonExternalReferenceItem.builder()
+				.lookupItem(lookupItem)
+				.build();
 	}
 
 	@NonNull
@@ -79,7 +86,11 @@ public class JsonExternalReferenceItem
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonMetasfreshId externalSystemConfigId;
-	
+
+	@Nullable
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	Boolean isReadOnlyMetasfresh;
+
 	@JsonCreator
 	@Builder
 	private JsonExternalReferenceItem(
@@ -90,7 +101,8 @@ public class JsonExternalReferenceItem
 			@JsonProperty("externalReferenceUrl") @Nullable final String externalReferenceUrl,
 			@JsonProperty("systemName") @Nullable final JsonExternalSystemName systemName,
 			@JsonProperty("externalReferenceId") @Nullable final JsonMetasfreshId externalReferenceId,
-			@JsonProperty("externalSystemConfigId") @Nullable final JsonMetasfreshId externalSystemConfigId)
+			@JsonProperty("externalSystemConfigId") @Nullable final JsonMetasfreshId externalSystemConfigId,
+			@JsonProperty("isReadOnlyMetasfresh") @Nullable final Boolean isReadOnlyMetasfresh)
 	{
 		this.lookupItem = lookupItem;
 		this.metasfreshId = metasfreshId;
@@ -100,5 +112,6 @@ public class JsonExternalReferenceItem
 		this.systemName = systemName;
 		this.externalReferenceId = externalReferenceId;
 		this.externalSystemConfigId = externalSystemConfigId;
+		this.isReadOnlyMetasfresh = isReadOnlyMetasfresh;
 	}
 }

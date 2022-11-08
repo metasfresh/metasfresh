@@ -388,7 +388,10 @@ public class TaxDAO implements ITaxDAO
 
 		final boolean bPartnerHasTaxCertificate = !Check.isBlank(bpartner.getVATaxID());
 		loggable.addLog("BPartner has tax certificate={}", bPartnerHasTaxCertificate);
-		queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_RequiresTaxCertificate, StringUtils.ofBoolean(bPartnerHasTaxCertificate), null);
+		if (!bPartnerHasTaxCertificate)
+		{
+			queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_RequiresTaxCertificate, X_C_Tax.REQUIRESTAXCERTIFICATE_No, null);
+		}
 
 		final boolean bpartnerIsSmallbusiness = retrieveIsTaxExemptSmallBusiness(bpartnerId, dateOfInterest);
 		loggable.addLog("BPartner is a small business={}", bpartnerIsSmallbusiness);

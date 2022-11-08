@@ -26,6 +26,7 @@ import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_SectionCode;
 import org.springframework.stereotype.Repository;
 
@@ -35,6 +36,14 @@ import java.util.Optional;
 public class SectionCodeRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	@NonNull
+	public SectionCode getById(@NonNull final SectionCodeId sectionCodeId)
+	{
+		final I_M_SectionCode record = InterfaceWrapperHelper.load(sectionCodeId, I_M_SectionCode.class);
+
+		return ofRecord(record);
+	}
 
 	@NonNull
 	public Optional<SectionCodeId> getSectionCodeIdByValue(@NonNull final OrgId orgId, @NonNull final String value)
@@ -47,5 +56,15 @@ public class SectionCodeRepository
 				.firstOnlyOptional(I_M_SectionCode.class)
 				.map(I_M_SectionCode::getM_SectionCode_ID)
 				.map(SectionCodeId::ofRepoId);
+	}
+
+	@NonNull
+	private static SectionCode ofRecord(@NonNull final I_M_SectionCode record)
+	{
+		return SectionCode.builder()
+				.sectionCodeId(SectionCodeId.ofRepoId(record.getM_SectionCode_ID()))
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
+				.value(record.getValue())
+				.build();
 	}
 }

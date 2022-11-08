@@ -226,6 +226,7 @@ export default class DocumentList extends Component {
                   windowId={windowId}
                   viewId={viewId}
                   selectedRowIds={selected}
+                  pageLength={pageLength}
                 />
               )}
 

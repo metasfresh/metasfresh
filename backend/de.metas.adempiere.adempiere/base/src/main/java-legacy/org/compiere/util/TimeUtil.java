@@ -38,6 +38,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
+import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
 import static java.util.concurrent.TimeUnit.DAYS;
 import static java.util.concurrent.TimeUnit.HOURS;
 import static java.util.concurrent.TimeUnit.MICROSECONDS;

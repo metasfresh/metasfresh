@@ -73,6 +73,7 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_PriceList;
 import org.compiere.model.ModelValidator;
+import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
@@ -233,22 +234,31 @@ public class C_Order
 			ifColumnsChanged = {
 					I_C_Order.COLUMNNAME_C_BPartner_ID })
 	@CalloutMethod(columnNames = I_C_Order.COLUMNNAME_C_BPartner_ID)
-	public void setIncoterms(final I_C_Order order)
+	public void setIncoterms(@NonNull final I_C_Order order)
 	{
-		final I_C_BPartner bpartner = Services.get(IOrderBL.class).getBPartner(order);
+		if (InterfaceWrapperHelper.isCopying(order))
+		{
+			return; // nothing to do ; the value shall be cloned
+		}
 
-		final int c_Incoterms;
+		final I_C_BPartner bpartner = orderBL.getBPartnerOrNull(order);
+		if (bpartner == null)
+		{
+			return; // nothing to do yet
+		}
+
+		final int incotermsId;
 
 		if (order.isSOTrx())
 		{
-			c_Incoterms = bpartner.getC_Incoterms_Customer_ID();
+			incotermsId = bpartner.getC_Incoterms_Customer_ID();
 		}
 		else
 		{
-			c_Incoterms = bpartner.getC_Incoterms_Vendor_ID();
+			incotermsId = bpartner.getC_Incoterms_Vendor_ID();
 		}
 
-		order.setC_Incoterms_ID(c_Incoterms);
+		order.setC_Incoterms_ID(incotermsId);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE }, ifColumnsChanged = { I_C_Order.COLUMNNAME_C_BPartner_ID })

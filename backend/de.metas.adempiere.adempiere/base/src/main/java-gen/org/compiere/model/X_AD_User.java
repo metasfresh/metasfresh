@@ -123,7 +123,7 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 		return get_ValueAsInt(COLUMNNAME_AD_User_InCharge_ID);
 	}
 
-	/** 
+	/**
 	 * AlbertaTitle AD_Reference_ID=541318
 	 * Reference name: Title_List
 	 */
@@ -521,6 +521,18 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	}
 
 	@Override
+	public void setEmail_private (final @Nullable java.lang.String Email_private)
+	{
+		set_Value (COLUMNNAME_Email_private, Email_private);
+	}
+
+	@Override
+	public java.lang.String getEmail_private()
+	{
+		return get_ValueAsString(COLUMNNAME_Email_private);
+	}
+
+	@Override
 	public void setEMailUser (final @Nullable java.lang.String EMailUser)
 	{
 		set_Value (COLUMNNAME_EMailUser, EMailUser);
@@ -623,6 +635,18 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public java.lang.String getFresh_xmas_Gift()
 	{
 		return get_ValueAsString(COLUMNNAME_Fresh_xmas_Gift);
+	}
+
+	@Override
+	public void setHobbies_interests (final @Nullable java.lang.String Hobbies_interests)
+	{
+		set_Value (COLUMNNAME_Hobbies_interests, Hobbies_interests);
+	}
+
+	@Override
+	public java.lang.String getHobbies_interests()
+	{
+		return get_ValueAsString(COLUMNNAME_Hobbies_interests);
 	}
 
 	@Override
@@ -1089,6 +1113,45 @@ public class X_AD_User extends org.compiere.model.PO implements I_AD_User, org.c
 	public java.lang.String getPhone2()
 	{
 		return get_ValueAsString(COLUMNNAME_Phone2);
+	}
+
+	@Override
+	public org.compiere.model.I_AD_Image getPhoto()
+	{
+		return get_ValueAsPO(COLUMNNAME_Photo_ID, org.compiere.model.I_AD_Image.class);
+	}
+
+	@Override
+	public void setPhoto(final org.compiere.model.I_AD_Image Photo)
+	{
+		set_ValueFromPO(COLUMNNAME_Photo_ID, org.compiere.model.I_AD_Image.class, Photo);
+	}
+
+	@Override
+	public void setPhoto_ID (final int Photo_ID)
+	{
+		if (Photo_ID < 1)
+			set_Value (COLUMNNAME_Photo_ID, null);
+		else
+			set_Value (COLUMNNAME_Photo_ID, Photo_ID);
+	}
+
+	@Override
+	public int getPhoto_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_Photo_ID);
+	}
+
+	@Override
+	public void setPrevious_company (final @Nullable java.lang.String Previous_company)
+	{
+		set_Value (COLUMNNAME_Previous_company, Previous_company);
+	}
+
+	@Override
+	public java.lang.String getPrevious_company()
+	{
+		return get_ValueAsString(COLUMNNAME_Previous_company);
 	}
 
 	@Override

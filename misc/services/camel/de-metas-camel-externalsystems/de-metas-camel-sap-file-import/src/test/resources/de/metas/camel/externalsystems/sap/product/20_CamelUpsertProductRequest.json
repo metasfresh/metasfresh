@@ -1,0 +1,46 @@
+{
+  "orgCode": "orgCode",
+  "jsonRequestProductUpsert": {
+    "requestItems": [
+      {
+        "productIdentifier": "ext-SAP-1000068800",
+        "externalVersion": null,
+        "externalReferenceUrl": null,
+        "isReadOnlyInMetasfresh": true,
+        "externalSystemConfigId": 1,
+        "requestProduct": {
+          "code": "1000068800_Butadiene 1,3 ex OMV",
+          "codeSet": true,
+          "name": "Butadiene 1,3 ex OMV",
+          "nameSet": true,
+          "type": "ITEM",
+          "typeSet": true,
+          "uomCode": "KGM",
+          "uomCodeSet": true,
+          "ean": null,
+          "eanSet": false,
+          "gtin": null,
+          "gtinSet": false,
+          "description": null,
+          "descriptionSet": false,
+          "discontinued": false,
+          "discontinuedSet": true,
+          "active": null,
+          "activeSet": false,
+          "stocked": true,
+          "stockedSet": true,
+          "productCategoryIdentifier": null,
+          "productCategoryIdentifierSet": false,
+          "syncAdvise": null,
+          "bpartnerProductItems": null,
+          "sectionCode": "ZAC0",
+          "sectionCodeSet": true
+        }
+      }
+    ],
+    "syncAdvise": {
+      "ifNotExists": "CREATE",
+      "ifExists": "UPDATE_MERGE"
+    }
+  }
+}

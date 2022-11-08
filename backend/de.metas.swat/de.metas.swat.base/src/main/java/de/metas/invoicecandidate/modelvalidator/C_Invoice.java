@@ -62,7 +62,7 @@ public class C_Invoice
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE, ModelValidator.TIMING_AFTER_VOID, ModelValidator.TIMING_AFTER_CLOSE })
 	public void handleCompleteForInvoice(final I_C_Invoice invoice)
 	{
-		try (final MDCCloseable invoiceRecordMDC = TableRecordMDC.putTableRecordReference(invoice))
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(invoice))
 		{
 			// FIXME 06162: Save invoice before processing (e.g DocStatus needs to be accurate)
 			Services.get(IInvoiceDAO.class).save(invoice);
@@ -74,7 +74,7 @@ public class C_Invoice
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_REVERSECORRECT })
 	public void handleReversalForInvoice(final I_C_Invoice invoice)
 	{
-		try (final MDCCloseable invoiceRecordMDC = TableRecordMDC.putTableRecordReference(invoice))
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(invoice))
 		{
 			Services.get(IInvoiceCandBL.class).handleReversalForInvoice(invoice);
 		}
@@ -83,11 +83,20 @@ public class C_Invoice
 			invoiceWithDetailsService.copyDetailsToReversal(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()), InvoiceId.ofRepoId(invoice.getReversal_ID()));
 		}
 	}
+	
+	@DocValidate(timings = { ModelValidator.TIMING_AFTER_VOID })
+	public void handleVoidingForInvoice(final I_C_Invoice invoice)
+	{
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(invoice))
+		{
+			Services.get(IInvoiceCandBL.class).handleVoidingForInvoice(invoice);
+		}
+	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_AFTER_COMPLETE })
 	public void closePartiallyInvoiced_InvoiceCandidates(final I_C_Invoice invoice)
 	{
-		try (final MDCCloseable invoiceRecordMDC = TableRecordMDC.putTableRecordReference(invoice))
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(invoice))
 		{
 			Services.get(IInvoiceCandBL.class).closePartiallyInvoiced_InvoiceCandidates(invoice);
 		}
@@ -96,7 +105,7 @@ public class C_Invoice
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_REVERSECORRECT, ModelValidator.TIMING_BEFORE_REVERSEACCRUAL })
 	public void candidatesUnProcess(final I_C_Invoice invoice)
 	{
-		try (final MDCCloseable invoiceRecordMDC = TableRecordMDC.putTableRecordReference(invoice))
+		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(invoice))
 		{
 			Services.get(IInvoiceCandBL.class).candidates_unProcess(invoice);
 		}

@@ -200,6 +200,7 @@ import java.util.stream.StreamSupport;
 
 import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 import static de.metas.inoutcandidate.spi.ModelWithoutInvoiceCandidateVetoer.OnMissingCandidate.I_VETO;
+import static de.metas.invoicecandidate.api.impl.InvoiceLineAllocType.InvoiceVoided;
 import static de.metas.util.Check.assume;
 import static de.metas.util.Check.assumeGreaterThanZero;
 import static java.math.BigDecimal.ONE;
@@ -1265,7 +1266,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 	}
 
 	@Override
-	public I_C_Invoice_Line_Alloc createUpdateIla(InvoiceCandidateAllocCreateRequest request)
+	public I_C_Invoice_Line_Alloc createUpdateIla(@NonNull final InvoiceCandidateAllocCreateRequest request)
 	{
 		final I_C_Invoice_Candidate invoiceCand = request.getInvoiceCand();
 		final I_C_InvoiceLine invoiceLine = request.getInvoiceLine();
@@ -1284,9 +1285,15 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			translateAndPrependNote(existingIla, note);
 			existingIla.setC_Invoice_Line_Alloc_Type(invoiceLineAllocType.getCode());
 
+			// 2022-10-27 metas-ts: 
+			// We ignore requests with existing ila with and requested qtysInvoiced:=zero for a long time and IDK why exactly,
+			// though it's very probably related to issue "#5664 Rest endpoint which allows the client to create invoices"
+			// I'm going to leave it like that for now, *unless* we are voiding the invoice in question.
+			final boolean invoiceVoided = InvoiceLineAllocType.InvoiceVoided.equals(request.getInvoiceLineAllocType());
+			
 			//
 			// FIXME in follow-up task! (06162)
-			if (qtysInvoiced.signum() == 0)
+			if (qtysInvoiced.signum() == 0 && !invoiceVoided)
 			{
 				return existingIla;
 			}
@@ -1299,8 +1306,7 @@ public class InvoiceCandBL implements IInvoiceCandBL
 
 		//
 		// Create new invoice line allocation
-		final Object contextProvider = invoiceCand;
-		final I_C_Invoice_Line_Alloc newIla = InterfaceWrapperHelper.newInstance(I_C_Invoice_Line_Alloc.class, contextProvider);
+		final I_C_Invoice_Line_Alloc newIla = InterfaceWrapperHelper.newInstance(I_C_Invoice_Line_Alloc.class, invoiceCand);
 		newIla.setAD_Org_ID(invoiceCand.getAD_Org_ID());
 		newIla.setC_Invoice_Candidate(invoiceCand);
 		newIla.setC_InvoiceLine(invoiceLine);
@@ -1439,11 +1445,11 @@ public class InvoiceCandBL implements IInvoiceCandBL
 			return ic.isTaxIncluded();
 		}
 
-		return taxIncludedOverride.booleanValue();
+		return taxIncludedOverride;
 	}
 
 	@Override
-	public void handleReversalForInvoice(final org.compiere.model.I_C_Invoice invoice)
+	public void handleReversalForInvoice(final @NonNull org.compiere.model.I_C_Invoice invoice)
 	{
 		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 		final boolean isAdjustmentChargeInvoice =invoiceBL.isAdjustmentCharge(invoice);
@@ -1590,6 +1596,36 @@ public class InvoiceCandBL implements IInvoiceCandBL
 						.qtysInvoiced(qtyInvoicedForIla)
 						.note(note)
 						.invoiceLineAllocType(invoiceLineAllocType)
+						.build();
+
+				createUpdateIla(request);
+			}
+		}
+	}
+
+	@Override
+	public void handleVoidingForInvoice(final @NonNull org.compiere.model.I_C_Invoice invoice)
+	{
+		final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
+
+		for (final I_C_InvoiceLine il : invoiceDAO.retrieveLines(invoice))
+		{
+			for (final I_C_Invoice_Line_Alloc ilaToReverse : invoiceCandDAO.retrieveIlaForIl(il))
+			{
+				final I_C_Invoice_Candidate invoiceCandidate = ilaToReverse.getC_Invoice_Candidate();
+				invoiceCandidate.setProcessed_Override(null); // reset processed_override, because now that the invoice was reversed, the users might want to do something new with the IC.
+
+				final ProductId productId = ProductId.ofRepoId(il.getM_Product_ID());
+				final UomId uomId = UomId.ofRepoId(il.getC_UOM_ID());
+
+				final String note = "@C_InvoiceLine@ @QtyInvoiced@ => " + 0;
+
+				final InvoiceCandidateAllocCreateRequest request = InvoiceCandidateAllocCreateRequest.builder()
+						.invoiceCand(invoiceCandidate)
+						.invoiceLine(il)
+						.qtysInvoiced(StockQtyAndUOMQtys.createZero(productId, uomId))
+						.note(note)
+						.invoiceLineAllocType(InvoiceLineAllocType.InvoiceVoided)
 						.build();
 
 				createUpdateIla(request);

@@ -28,6 +28,7 @@ import de.metas.product.ProductCategoryId;
 import de.metas.rest_api.utils.JsonCreatedUpdatedInfo;
 import de.metas.rest_api.v2.product.response.JsonGetProductCategoriesResponse;
 import de.metas.rest_api.v2.product.response.JsonProductCategory;
+import de.metas.sectionCode.SectionCodeRepository;
 import de.metas.user.UserId;
 import io.github.jsonSnapshot.SnapshotMatcher;
 import lombok.Builder;
@@ -78,7 +79,9 @@ public class ProductCategoriesRestControllerTest
 
 		createMasterData();
 
-		final ProductsServicesFacade productsServicesFacade = new ProductsServicesFacade()
+		final SectionCodeRepository sectionCodeRepository = new SectionCodeRepository();
+
+		final ProductsServicesFacade productsServicesFacade = new ProductsServicesFacade(sectionCodeRepository)
 		{
 			@Override
 			public JsonCreatedUpdatedInfo extractCreatedUpdatedInfo(final I_M_Product_Category record)

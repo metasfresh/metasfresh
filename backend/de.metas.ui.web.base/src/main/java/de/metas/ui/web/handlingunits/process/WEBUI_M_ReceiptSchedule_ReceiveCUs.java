@@ -3,6 +3,7 @@ package de.metas.ui.web.handlingunits.process;
 import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
 import de.metas.bpartner.service.IBPartnerOrgBL;
+import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.IHUContextFactory;
@@ -20,6 +21,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.InstantAndOrgId;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.process.RunOutOfTrx;
@@ -253,7 +255,12 @@ public class WEBUI_M_ReceiptSchedule_ReceiveCUs extends ReceiptScheduleBasedProc
 		if (clearanceStatus != null)
 		{
 			final String language = partnerOrgBL.getOrgLanguageOrLoggedInUserLanguage(clientAndOrgId.getOrgId());
-			clearanceStatusInfo = ClearanceStatusInfo.of(clearanceStatus, msgBL.getMsg(language, MESSAGE_ClearanceStatusInfo_Receipt));
+			clearanceStatusInfo = ClearanceStatusInfo.builder()
+					.clearanceStatus(clearanceStatus)
+					.clearanceNote(msgBL.getMsg(language, MESSAGE_ClearanceStatusInfo_Receipt))
+					.clearanceDate(InstantAndOrgId.ofInstant(SystemTime.asInstant(), clientAndOrgId.getOrgId()))
+					.build();
+
 		}
 		else
 		{

@@ -70,7 +70,6 @@ public interface ILogicExpression extends IExpression<Boolean>
 	/**
 	 * Tries to partially evaluate this expression.
 	 * 
-	 * @param ctx
 	 * @return partially evaluated expression.
 	 */
 	default ILogicExpression evaluatePartial(final Evaluatee ctx)
@@ -93,11 +92,7 @@ public interface ILogicExpression extends IExpression<Boolean>
 	 *
 	 * If you are just interested about the boolean result, please use {@link #evaluate(Evaluatee, OnVariableNotFound)}.
 	 *
-	 * @param ctx
-	 * @param onVariableNotFound
-	 * @return
-	 * @throws ExpressionEvaluationException
-	 * @see {@link ILogicExpressionEvaluator#evaluateToResult(Evaluatee, ILogicExpression, OnVariableNotFound)}
+	 * @see ILogicExpressionEvaluator#evaluateToResult(Evaluatee, ILogicExpression, OnVariableNotFound)
 	 */
 	LogicExpressionResult evaluateToResult(Evaluatee ctx, OnVariableNotFound onVariableNotFound) throws ExpressionEvaluationException;
 
@@ -115,7 +110,6 @@ public interface ILogicExpression extends IExpression<Boolean>
 	/**
 	 * Converts this expression to a constant expression
 	 *
-	 * @param constantValue
 	 * @return constant expression
 	 */
 	ILogicExpression toConstantExpression(final boolean constantValue);
