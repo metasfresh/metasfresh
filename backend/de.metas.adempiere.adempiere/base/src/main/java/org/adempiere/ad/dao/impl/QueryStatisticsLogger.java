@@ -10,12 +10,16 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import org.adempiere.ad.dao.IQueryStatisticsCollector;
 import org.adempiere.ad.dao.IQueryStatisticsLogger;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.sql.impl.StatementsFactory;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.CStatementVO;
 import org.compiere.util.Trace;
 import org.slf4j.Logger;
@@ -47,6 +51,18 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 	private static final AtomicInteger traceSqlQueries_Count = new AtomicInteger(0);
 
 	private static final boolean logToSystemError = Boolean.getBoolean(SYSTEM_PROPERTY_LOG_TO_SYSTEM_ERROR);
+
+	private ISysConfigBL _sysConfigBL;
+	private static PerformanceMonitoringService _performanceMonitoringService;
+	private static final String PERF_MON_SYSCONFIG_NAME = "de.metas.monitoring.db.enable";
+	private static final boolean SYS_CONFIG_DEFAULT_VALUE = false;
+	private static final PerformanceMonitoringService.Metadata PM_METADATA_COLLECT =
+			PerformanceMonitoringService.Metadata
+					.builder()
+					.className("QueryStatisticLogger")
+					.type(PerformanceMonitoringService.Type.DB)
+					.functionName("collect")
+					.build();
 
 	public QueryStatisticsLogger()
 	{
@@ -100,6 +116,10 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 
 		// Snapshot the duration as soon as possible
 		final long durationValue = durationStopwatch.elapsed(TIMEUNIT_Internal);
+		if(isPerfMonActive())
+		{
+			performanceMonitoringService().monitor(durationValue, TIMEUNIT_Internal, PM_METADATA_COLLECT);
+		}
 
 		//
 		// Do not log if we're filtering
@@ -115,6 +135,33 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 		{
 			traceSqlQuery(sql, sqlParams, trxName, duration);
 		}
+	}
+
+	private PerformanceMonitoringService performanceMonitoringService()
+	{
+		de.metas.monitoring.adapter.PerformanceMonitoringService performanceMonitoringService = _performanceMonitoringService;
+		if (performanceMonitoringService == null || performanceMonitoringService instanceof NoopPerformanceMonitoringService)
+		{
+			performanceMonitoringService = _performanceMonitoringService = SpringContextHolder.instance.getBeanOr(
+					PerformanceMonitoringService.class,
+					NoopPerformanceMonitoringService.INSTANCE);
+		}
+		return performanceMonitoringService;
+	}
+
+	public boolean isPerfMonActive()
+	{
+		return sysConfigBL().getBooleanValue(PERF_MON_SYSCONFIG_NAME, SYS_CONFIG_DEFAULT_VALUE);
+	}
+
+	private ISysConfigBL sysConfigBL()
+	{
+		ISysConfigBL sysConfigBL = this._sysConfigBL;
+		if (sysConfigBL == null)
+		{
+			sysConfigBL = this._sysConfigBL = Services.get(ISysConfigBL.class);
+		}
+		return sysConfigBL;
 	}
 
 	@Override

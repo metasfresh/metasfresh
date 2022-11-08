@@ -3,6 +3,7 @@ package de.metas.monitoring.adapter;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 import javax.annotation.Nullable;
 import com.google.common.collect.ImmutableSet;
 import lombok.Builder;
@@ -52,6 +53,11 @@ public interface PerformanceMonitoringService
 					return null;
 				},
 				metadata);
+	}
+
+	default void monitor(final long duration, TimeUnit unit, final Metadata metadata)
+	{
+
 	}
 	
 	@Value

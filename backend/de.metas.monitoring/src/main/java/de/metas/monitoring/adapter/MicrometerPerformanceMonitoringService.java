@@ -36,6 +36,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @Primary
@@ -43,6 +44,7 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 {
 	private final MeterRegistry meterRegistry;
 	private static ThreadLocal<PerformanceMonitoringData> perfMonDataTL = new ThreadLocal<>();
+	private static String METER_PREFIX = "mf.";
 
 	public MicrometerPerformanceMonitoringService(
 			@NonNull final MeterRegistry meterRegistry)
@@ -77,27 +79,15 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 
 		if(perfMonData.isInitiatorLabelActive())
 		{
-			addTagIfNotNull("depth", String.valueOf(perfMonData.getDepth()), tags);
-			addTagIfNotNull("initiator", perfMonData.getInitiator(), tags);
-			addTagIfNotNull("window", perfMonData.getInitiatorWindow(), tags);
-			addTagIfNotNull("callerName", metadata.getClassName() + " - " + metadata.getFunctionName(), tags);
-			addTagIfNotNull("calledBy", perfMonData.getCalledBy().get(perfMonData.getDepth()), tags);
+			addInitiatorTags(perfMonData, metadata, tags);
 			perfMonData.getCalledBy().add(perfMonData.getDepth() + 1 ,metadata.getClassName() + " - " + metadata.getFunctionName());
 
-			final Type type;
-			if(metadata.getType().isAnyRestControllerType())
-			{
-				type = metadata.getType();
-			}
-			else
-			{
-				type = Type.REST_API_PROCESSING;
-			}
+			final Type type = getTypeForMeterName(metadata);
 
 			perfMonData.incrementDepth();
 			try
 			{
-				return recordCallable(callable, tags, "mf." + type.getCode());
+				return recordCallable(callable, tags, METER_PREFIX + type.getCode());
 			}
 			finally
 			{
@@ -107,7 +97,36 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 		else
 		{
 			appendLabelsToTags(tags, metadata.getLabels());
-			return recordCallable(callable, tags, "mf." + metadata.getType().getCode());
+			return recordCallable(callable, tags, METER_PREFIX + metadata.getType().getCode());
+		}
+	}
+
+	public void monitor(final long duration, TimeUnit unit, final Metadata metadata)
+	{
+		if(perfMonDataTL.get() == null)
+		{
+			perfMonDataTL.set(new PerformanceMonitoringData());
+		}
+
+		final PerformanceMonitoringData perfMonData = perfMonDataTL.get();
+		final ArrayList<Tag> tags = new ArrayList<>();
+
+		addTagIfNotNull("name", metadata.getClassName(), tags);
+		addTagIfNotNull("action", metadata.getFunctionName(), tags);
+
+		if(perfMonData.isInitiatorLabelActive())
+		{
+			addInitiatorTags(perfMonData, metadata, tags);
+			perfMonData.getCalledBy().add(perfMonData.getDepth() + 1, metadata.getClassName() + " - " + metadata.getFunctionName());
+			final Type type = getTypeForMeterName(metadata);
+			final Timer timer = meterRegistry.timer(METER_PREFIX + type.getCode(), tags);
+			timer.record(duration, unit);
+		}
+		else
+		{
+			appendLabelsToTags(tags, metadata.getLabels());
+			final Timer timer = meterRegistry.timer(METER_PREFIX + metadata.getType().getCode(), tags);
+			timer.record(duration, unit);
 		}
 	}
 
@@ -130,6 +149,32 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 		{
 			tags.add(Tag.of(name, value));
 		}
+	}
+
+	private static void addInitiatorTags(
+			@NonNull PerformanceMonitoringData perfMonData,
+			@NonNull Metadata metadata,
+			@NonNull ArrayList<Tag> tags)
+	{
+		addTagIfNotNull("depth", String.valueOf(perfMonData.getDepth()), tags);
+		addTagIfNotNull("initiator", perfMonData.getInitiator(), tags);
+		addTagIfNotNull("window", perfMonData.getInitiatorWindow(), tags);
+		addTagIfNotNull("callerName", metadata.getClassName() + " - " + metadata.getFunctionName(), tags);
+		addTagIfNotNull("calledBy", perfMonData.getCalledBy().get(perfMonData.getDepth()), tags);
+	}
+
+	private Type getTypeForMeterName(Metadata metadata)
+	{
+		final Type type;
+		if(metadata.getType().isAnyRestControllerType())
+		{
+			type = metadata.getType();
+		}
+		else
+		{
+			type = Type.REST_API_PROCESSING;
+		}
+		return type;
 	}
 
 	private <V> V recordCallable(final Callable<V> callable, final ArrayList<Tag> tags, final String name)
