@@ -41,7 +41,9 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Order_Candidate;
+import org.eevolution.productioncandidate.async.EnqueuePPOrderCandidateRequest;
 import org.eevolution.productioncandidate.async.PPOrderCandidateEnqueuer;
 
 import java.math.BigDecimal;
@@ -54,6 +56,10 @@ public class PP_Order_Candidate_EnqueueSelectionForOrdering extends JavaProcess 
 	private static final String PARAM_COMPLETE_DOCUMENT = "IsDocComplete";
 	@Param(parameterName = PARAM_COMPLETE_DOCUMENT)
 	private boolean isDocComplete;
+
+	private static final String PARAM_AUTO_PROCESS_CANDIDATES_AFTER_PRODUCTION = "AutoProcessCandidatesAfterProduction";
+	@Param(parameterName = PARAM_AUTO_PROCESS_CANDIDATES_AFTER_PRODUCTION)
+	private boolean autoProcessCandidatesAfterProduction;
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
@@ -71,8 +77,14 @@ public class PP_Order_Candidate_EnqueueSelectionForOrdering extends JavaProcess 
 	{
 		final PInstanceId pinstanceId = getPinstanceId();
 
-		ppOrderCandidateEnqueuer
-				.enqueueSelection(pinstanceId, getCtx(), isDocComplete);
+		final EnqueuePPOrderCandidateRequest enqueuePPOrderCandidateRequest = EnqueuePPOrderCandidateRequest.builder()
+				.adPInstanceId(pinstanceId)
+				.ctx(Env.getCtx())
+				.isCompleteDoc(isDocComplete)
+				.autoProcessCandidatesAfterProduction(autoProcessCandidatesAfterProduction)
+				.build();
+
+		ppOrderCandidateEnqueuer.enqueueSelection(enqueuePPOrderCandidateRequest);
 
 		return MSG_OK;
 	}

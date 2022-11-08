@@ -112,7 +112,7 @@ Feature: create multiple production candidates
       | c_l_3                      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | 20  | -20                    |
       | c_l_4                      | SUPPLY            |                               | p_2                     | 2021-04-16T21:00:00Z | 20  | 0                      |
 
-    When generate PP_Order process is invoked for selection, with completeDocument=false
+    When generate PP_Order process is invoked for selection, with completeDocument=false and autoProcessCandidateAfterProduction=false
       | PP_Order_Candidate_ID.Identifier |
       | oc_1                             |
       | oc_2                             |
@@ -121,6 +121,10 @@ Feature: create multiple production candidates
       | Identifier | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyOrdered | C_UOM_ID.X12DE355 | C_BPartner_ID.Identifier | DatePromised         | OPT.DocStatus |
       | ppo_1      | p_1                     | bom_1                        | ppln_1                            | 540006        | 12         | 12         | PCE               | endcustomer_2            | 2021-04-16T21:00:00Z | DR            |
 
+    And validate PP_Order_Candidate:
+      | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
+      | oc_1       | true      | p_1                     | bom_1                        | ppln_1                            | 540006        | 10         | 0            | 10           | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
+      | oc_2       | true      | p_1                     | bom_1                        | ppln_1                            | 540006        | 2          | 0            | 2            | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
     And after not more than 30s, PP_OrderCandidate_PP_Order are found
       | PP_Order_Candidate_ID.Identifier | PP_Order_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 |
       | oc_1                             | ppo_1                  | 10         | PCE               |
@@ -129,6 +133,8 @@ Feature: create multiple production candidates
 
   @from:cucumber
   Scenario:  The manufacturing candidate is created for a sales order line and `Generate PP_Order` process is invoked resulting multiple manufacturing orders
+  and the candidate remains open as it still has unprocessed quantity and `autoProcessCandidates` parameter is not set
+
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  |
       | o_2        | true    | endcustomer_2            | 2022-10-10  | 2022-10-10T21:00:00Z |
@@ -144,8 +150,10 @@ Feature: create multiple production candidates
     Then after not more than 30s, PP_Order_Candidates are found
       | Identifier       | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
       | ppOrderCandidate | false     | p_1                     | bom_1                        | ppln_1                            | 540006        | 12         | 12           | 0            | PCE               | 2022-10-10T21:00:00Z | 2022-10-10T21:00:00Z | false    |
-
-    When generate PP_Order process is invoked for selection, with completeDocument=true
+    And update PP_Order_Candidates
+      | PP_Order_Candidate_ID.Identifier | OPT.QtyToProcess |
+      | ppOrderCandidate                 | 11               |
+    When generate PP_Order process is invoked for selection, with completeDocument=true and autoProcessCandidateAfterProduction=false
       | PP_Order_Candidate_ID.Identifier |
       | ppOrderCandidate                 |
 
@@ -153,15 +161,82 @@ Feature: create multiple production candidates
       | PP_Order_ID.Identifier | QtyEntered |
       | ppOrder_1              | 5          |
       | ppOrder_2              | 5          |
-      | ppOrder_3              | 2          |
+      | ppOrder_3              | 1          |
+
+    And validate PP_Order_Candidate:
+      | Identifier       | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
+      | ppOrderCandidate | false     | p_1                     | bom_1                        | ppln_1                            | 540006        | 12         | 1            | 11           | PCE               | 2022-10-10T21:00:00Z | 2022-10-10T21:00:00Z | false    |
 
     And after not more than 30s, PP_Orders are found
       | Identifier | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyOrdered | C_UOM_ID.X12DE355 | C_BPartner_ID.Identifier | DatePromised         | OPT.DocStatus |
       | ppOrder_1  | p_1                     | bom_1                        | ppln_1                            | 540006        | 5          | 5          | PCE               | endcustomer_2            | 2022-10-10T21:00:00Z | CO            |
       | ppOrder_2  | p_1                     | bom_1                        | ppln_1                            | 540006        | 5          | 5          | PCE               | endcustomer_2            | 2022-10-10T21:00:00Z | CO            |
-      | ppOrder_3  | p_1                     | bom_1                        | ppln_1                            | 540006        | 2          | 2          | PCE               | endcustomer_2            | 2022-10-10T21:00:00Z | CO            |
+      | ppOrder_3  | p_1                     | bom_1                        | ppln_1                            | 540006        | 1          | 1          | PCE               | endcustomer_2            | 2022-10-10T21:00:00Z | CO            |
     And after not more than 30s, PP_OrderCandidate_PP_Order are found
       | PP_Order_Candidate_ID.Identifier | PP_Order_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 |
       | ppOrderCandidate                 | ppOrder_1              | 5          | PCE               |
       | ppOrderCandidate                 | ppOrder_2              | 5          | PCE               |
-      | ppOrderCandidate                 | ppOrder_3              | 2          | PCE               |
+      | ppOrderCandidate                 | ppOrder_3              | 1          | PCE               |
+
+
+  @from:cucumber
+  Scenario:  The manufacturing candidate is created for a sales order line and
+  then the sales order is re-opened and the ordered quantity is increased,
+  resulting in a second manufacturing candidate to supply the additional demand
+  and openQty for the second candidate is decreased
+  then `Generate PP_Order`process is invoked enforcing the candidates to be processed
+  and both candidates are marked as processed
+
+    Given metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  |
+      | o_3        | true    | endcustomer_2            | 2022-11-07  | 2022-11-07T21:00:00Z |
+    And metasfresh contains C_OrderLines:
+      | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | ol_3       | o_3                   | p_1                     | 3          |
+    And update S_Resource:
+      | S_Resource_ID.Identifier | OPT.CapacityPerProductionCycle | OPT.CapacityPerProductionCycleUOMCode |
+      | testResource             | 5                              | PCE                                   |
+
+    When the order identified by o_3 is completed
+
+    Then after not more than 30s, PP_Order_Candidates are found
+      | Identifier           | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
+      | ppOrderCandidate_3_1 | false     | p_1                     | bom_1                        | ppln_1                            | 540006        | 3          | 3            | 0            | PCE               | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    |
+
+    And the order identified by o_3 is reactivated
+    And update C_OrderLine:
+      | C_OrderLine_ID.Identifier | OPT.QtyEntered |
+      | ol_3                      | 12             |
+    And the order identified by o_3 is completed
+    And after not more than 30s, PP_Order_Candidates are found
+      | Identifier           | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
+      | ppOrderCandidate_3_2 | false     | p_1                     | bom_1                        | ppln_1                            | 540006        | 9          | 9            | 0            | PCE               | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    |
+
+    And update PP_Order_Candidates
+      | PP_Order_Candidate_ID.Identifier | OPT.QtyToProcess |
+      | ppOrderCandidate_3_2             | 4                |
+
+    When generate PP_Order process is invoked for selection, with completeDocument=true and autoProcessCandidateAfterProduction=true
+      | PP_Order_Candidate_ID.Identifier |
+      | ppOrderCandidate_3_1             |
+      | ppOrderCandidate_3_2             |
+
+    Then after not more than 30s, load PP_Order by candidate id: ppOrderCandidate_3_2
+      | PP_Order_ID.Identifier | QtyEntered |
+      | ppOrder_3_1            | 2          |
+      | ppOrder_3_2            | 2          |
+
+    And validate PP_Order_Candidate:
+      | Identifier           | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
+      | ppOrderCandidate_3_1 | true      | p_1                     | bom_1                        | ppln_1                            | 540006        | 3          | 0            | 3            | PCE               | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    |
+      | ppOrderCandidate_3_2 | true      | p_1                     | bom_1                        | ppln_1                            | 540006        | 9          | 5            | 4            | PCE               | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    |
+
+    And after not more than 30s, PP_Orders are found
+      | Identifier  | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyOrdered | C_UOM_ID.X12DE355 | C_BPartner_ID.Identifier | DatePromised         | OPT.DocStatus |
+      | ppOrder_3_1 | p_1                     | bom_1                        | ppln_1                            | 540006        | 5          | 5          | PCE               | endcustomer_2            | 2022-11-07T21:00:00Z | CO            |
+      | ppOrder_3_2 | p_1                     | bom_1                        | ppln_1                            | 540006        | 2          | 2          | PCE               | endcustomer_2            | 2022-11-07T21:00:00Z | CO            |
+    And after not more than 30s, PP_OrderCandidate_PP_Order are found
+      | PP_Order_Candidate_ID.Identifier | PP_Order_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 |
+      | ppOrderCandidate_3_1             | ppOrder_3_1            | 3          | PCE               |
+      | ppOrderCandidate_3_2             | ppOrder_3_1            | 2          | PCE               |
+      | ppOrderCandidate_3_2             | ppOrder_3_2            | 2          | PCE               |

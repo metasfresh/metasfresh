@@ -22,7 +22,6 @@
 
 package org.eevolution.productioncandidate.service.produce;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.quantity.Quantity;
@@ -38,13 +37,12 @@ import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.productioncandidate.async.OrderGenerateResult;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
+import org.eevolution.productioncandidate.service.PPOrderCandidateProcessRequest;
 
 import javax.annotation.Nullable;
-import java.util.Comparator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
 
 public class PPOrderProducerFromCandidate
 {
@@ -78,30 +76,22 @@ public class PPOrderProducerFromCandidate
 	}
 
 	@NonNull
-	public OrderGenerateResult createOrders(@NonNull final Stream<I_PP_Order_Candidate> candidates, @Nullable final Boolean isDocComplete)
+	public OrderGenerateResult createOrders(@NonNull final PPOrderCandidateProcessRequest ppOrderCandidateProcessRequest)
 	{
-		final ImmutableList<PPOrderCandidateToAllocate> sortedCandidates = candidates
-				.filter(orderCandidate -> !orderCandidate.isProcessed())
-				.map(PPOrderCandidateToAllocate::of)
-				.sorted(Comparator.comparing(PPOrderCandidateToAllocate::getHeaderAggregationKey))
-				.collect(ImmutableList.toImmutableList());
-
-		if (sortedCandidates.isEmpty())
+		if (ppOrderCandidateProcessRequest.getSortedCandidates().isEmpty())
 		{
 			return result;
 		}
 
-		processPPOrderCandidates(sortedCandidates, isDocComplete);
+		processPPOrderCandidates(ppOrderCandidateProcessRequest);
 
 		return result;
 	}
 
-	private void processPPOrderCandidates(
-			@NonNull final ImmutableList<PPOrderCandidateToAllocate> ppOrderCandToAllocateSorted,
-			@Nullable final Boolean isDocComplete)
+	private void processPPOrderCandidates(@NonNull final PPOrderCandidateProcessRequest ppOrderCandidateProcessRequest)
 	{
 		PPOrderAllocator allocator = null;
-		for (final PPOrderCandidateToAllocate ppOrderCandidateToAllocate : ppOrderCandToAllocateSorted)
+		for (final PPOrderCandidateToAllocate ppOrderCandidateToAllocate : ppOrderCandidateProcessRequest.getSortedCandidates())
 		{
 			if (allocator == null)
 			{
@@ -116,7 +106,7 @@ public class PPOrderProducerFromCandidate
 				//note: if nothing could be allocated it's time to create the PPOrder and initiate a new allocator
 				if (allocatedQty.isZero())
 				{
-					createPPOrderInTrx(allocator, isDocComplete);
+					createPPOrderInTrx(allocator, ppOrderCandidateProcessRequest);
 
 					allocator = ppOrderAllocatorBuilderService.buildAllocator(ppOrderCandidateToAllocate);
 				}
@@ -136,11 +126,13 @@ public class PPOrderProducerFromCandidate
 
 		if (allocator != null && allocator.getAllocatedQty().signum() > 0)
 		{
-			createPPOrderInTrx(allocator, isDocComplete);
+			createPPOrderInTrx(allocator, ppOrderCandidateProcessRequest);
 		}
 	}
 
-	private void createPPOrderInTrx(@NonNull final PPOrderAllocator allocator, @Nullable final Boolean completeDoc)
+	private void createPPOrderInTrx(
+			@NonNull final PPOrderAllocator allocator,
+			@NonNull final PPOrderCandidateProcessRequest ppOrderCandidateProcessRequest)
 	{
 		final Consumer<Runnable> runInTrx = createEachPPOrderInOwnTrx
 				? trxManager::runInNewTrx
@@ -152,11 +144,11 @@ public class PPOrderProducerFromCandidate
 
 							final I_PP_Order ppOrder = ppOrderService.createOrder(request);
 
-							createPPOrderAllocations(ppOrder, allocator.getPpOrderCand2AllocatedQty());
+							createPPOrderAllocations(ppOrder, allocator.getPpOrderCand2AllocatedQty(), ppOrderCandidateProcessRequest.isAutoProcessCandidatesAfterProduction());
 
 							ppOrderService.postPPOrderCreatedEvent(ppOrder);
 
-							if (shouldCompletePPOrder(request.getProductPlanningId(), completeDoc))
+							if (shouldCompletePPOrder(request.getProductPlanningId(), ppOrderCandidateProcessRequest.isDocComplete()))
 							{
 								ppOrderService.completeDocument(ppOrder);
 							}
@@ -165,12 +157,15 @@ public class PPOrderProducerFromCandidate
 						});
 	}
 
-	private void createPPOrderAllocations(@NonNull final I_PP_Order ppOrder, @NonNull final Map<PPOrderCandidateId, Quantity> ppOrderCand2QtyToAllocate)
+	private void createPPOrderAllocations(
+			@NonNull final I_PP_Order ppOrder,
+			@NonNull final Map<PPOrderCandidateId, Quantity> ppOrderCand2QtyToAllocate,
+			final boolean autoProcessCandidatesAfterProduction)
 	{
 		ppOrderCand2QtyToAllocate.forEach((candidateId, quantity) -> {
 			ppOrderCandidatesDAO.createProductionOrderAllocation(candidateId, ppOrder, quantity);
 
-			ppOrderCandidatesDAO.markAsProcessed(candidateId);
+			markAsProcessedIfRequired(candidateId, autoProcessCandidatesAfterProduction);
 		});
 	}
 
@@ -188,5 +183,15 @@ public class PPOrderProducerFromCandidate
 
 		return productPlanningCache.computeIfAbsent(planningId, productPlanningsRepo::getById)
 				.isDocComplete();
+	}
+
+	private void markAsProcessedIfRequired(@NonNull final PPOrderCandidateId candidateId, final boolean autoProcessCandidatesAfterProduction)
+	{
+		final I_PP_Order_Candidate ppOrderCandidate = ppOrderCandidatesDAO.getById(candidateId);
+
+		if (autoProcessCandidatesAfterProduction || ppOrderCandidate.getQtyEntered().compareTo(ppOrderCandidate.getQtyProcessed()) <= 0)
+		{
+			ppOrderCandidatesDAO.markAsProcessed(ppOrderCandidate);
+		}
 	}
 }
