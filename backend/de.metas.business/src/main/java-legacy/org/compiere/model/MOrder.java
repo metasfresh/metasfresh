@@ -1291,8 +1291,15 @@ public class MOrder extends X_C_Order implements IDocument
 	// of stocks before delete.
 	public boolean reserveStock(final I_C_DocType docType, final List<MOrderLine> lines)
 	{
+		int docTypeId = getC_DocType_ID(); // in case of draft, doctype is 0
+		if (docTypeId <= 0 )
+		{
+			// check DocTypeTarget
+			docTypeId= getC_DocTypeTarget_ID();
+		}
+
 		final I_C_DocType dt = docType == null
-				? Services.get(IDocTypeDAO.class).getById(getC_DocType_ID())
+				? Services.get(IDocTypeDAO.class).getById(docTypeId)
 				: docType;
 
 		// Binding
