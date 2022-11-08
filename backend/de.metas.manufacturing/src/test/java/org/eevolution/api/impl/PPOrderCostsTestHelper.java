@@ -41,7 +41,6 @@ import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.material.planning.pporder.PPRoutingActivityType;
-import org.eevolution.api.PPOrderId;
 import de.metas.money.CurrencyId;
 import de.metas.product.ProductId;
 import de.metas.uom.IUOMConversionDAO;
@@ -168,6 +167,8 @@ public class PPOrderCostsTestHelper
 			ppOrderNode.setValue("activity1");
 			ppOrderNode.setS_Resource_ID(BusinessTestHelper.createManufacturingResource("workstation1", uomSeconds).getRepoId());
 			ppOrderNode.setC_UOM_ID(uomSeconds.getC_UOM_ID());
+			ppOrderNode.setPP_Activity_Type(PPRoutingActivityType.WorkReport.getCode());
+			ppOrderNode.setName("Name");
 			ppOrderNode.setDocStatus(PPOrderRoutingActivityStatus.NOT_STARTED.getDocStatus());
 			ppOrderNode.setPP_Activity_Type(PPRoutingActivityType.WorkReport.getCode());
 			ppOrderNode.setName("Name");
