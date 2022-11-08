@@ -22,21 +22,23 @@
 
 package org.eevolution.productioncandidate.service;
 
+import com.google.common.collect.ImmutableList;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.eevolution.productioncandidate.service.produce.PPOrderCandidateToAllocate;
 
-import java.util.List;
+import javax.annotation.Nullable;
 
 @Value
-@Builder(toBuilder = true)
+@Builder
 public class PPOrderCandidateProcessRequest
 {
 	@NonNull
-	List<PPOrderCandidateToAllocate> sortedCandidates;
+	ImmutableList<PPOrderCandidateToAllocate> sortedCandidates;
 
-	boolean isDocComplete;
+	@Nullable
+	Boolean isDocCompleteOverride;
 
 	boolean autoProcessCandidatesAfterProduction;
 }

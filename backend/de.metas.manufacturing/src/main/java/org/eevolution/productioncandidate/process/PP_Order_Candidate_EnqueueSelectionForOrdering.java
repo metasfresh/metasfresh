@@ -55,7 +55,7 @@ public class PP_Order_Candidate_EnqueueSelectionForOrdering extends JavaProcess 
 
 	private static final String PARAM_COMPLETE_DOCUMENT = "IsDocComplete";
 	@Param(parameterName = PARAM_COMPLETE_DOCUMENT)
-	private boolean isDocComplete;
+	private Boolean isDocComplete;
 
 	private static final String PARAM_AUTO_PROCESS_CANDIDATES_AFTER_PRODUCTION = "AutoProcessCandidatesAfterProduction";
 	@Param(parameterName = PARAM_AUTO_PROCESS_CANDIDATES_AFTER_PRODUCTION)
@@ -80,7 +80,7 @@ public class PP_Order_Candidate_EnqueueSelectionForOrdering extends JavaProcess 
 		final EnqueuePPOrderCandidateRequest enqueuePPOrderCandidateRequest = EnqueuePPOrderCandidateRequest.builder()
 				.adPInstanceId(pinstanceId)
 				.ctx(Env.getCtx())
-				.isCompleteDoc(isDocComplete)
+				.isCompleteDocOverride(isDocComplete)
 				.autoProcessCandidatesAfterProduction(autoProcessCandidatesAfterProduction)
 				.build();
 

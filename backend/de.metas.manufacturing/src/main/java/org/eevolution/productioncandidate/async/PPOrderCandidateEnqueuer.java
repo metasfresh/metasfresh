@@ -88,7 +88,7 @@ public class PPOrderCandidateEnqueuer
 		final I_C_Queue_WorkPackage workPackage = blockBuilder
 				.newWorkpackage()
 				.parameter(WP_PINSTANCE_ID_PARAM, adPInstanceId)
-				.parameter(WP_COMPLETE_DOC_PARAM, enqueuePPOrderCandidateRequest.isCompleteDoc())
+				.parameter(WP_COMPLETE_DOC_PARAM, enqueuePPOrderCandidateRequest.getIsCompleteDocOverride())
 				.parameter(WP_AUTO_PROCESS_CANDIDATES_AFTER_PRODUCTION, enqueuePPOrderCandidateRequest.isAutoProcessCandidatesAfterProduction())
 				.setElementsLocker(elementsLocker)
 				.build();

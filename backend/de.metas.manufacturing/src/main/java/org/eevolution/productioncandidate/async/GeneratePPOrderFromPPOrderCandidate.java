@@ -70,7 +70,7 @@ public class GeneratePPOrderFromPPOrderCandidate extends WorkpackageProcessorAda
 		final IParams params = getParameters();
 
 		final PInstanceId pInstanceId = params.getParameterAsId(WP_PINSTANCE_ID_PARAM, PInstanceId.class);
-		final boolean isDocComplete = params.getParameterAsBool(WP_COMPLETE_DOC_PARAM);
+		final Boolean isDocCompleteOverride = params.getParameterAsBoolean(WP_COMPLETE_DOC_PARAM);
 		final boolean autoProcessCandidatesAfterProduction = params.getParameterAsBool(WP_AUTO_PROCESS_CANDIDATES_AFTER_PRODUCTION);
 
 		Check.assumeNotNull(pInstanceId, "adPInstanceId is not null");
@@ -81,7 +81,7 @@ public class GeneratePPOrderFromPPOrderCandidate extends WorkpackageProcessorAda
 				Spliterators.spliteratorUnknownSize(orderCandidates, Spliterator.ORDERED), false);
 
 		return PPOrderCandidateProcessRequest.builder()
-				.isDocComplete(isDocComplete)
+				.isDocCompleteOverride(isDocCompleteOverride)
 				.autoProcessCandidatesAfterProduction(autoProcessCandidatesAfterProduction)
 				.sortedCandidates(getSortedCandidates(candidateStream))
 				.build();

@@ -167,7 +167,7 @@ public class PP_Order_Candidate_StepDef
 	@And("the following PP_Order_Candidates are enqueued for generating PP_Orders")
 	public void enqueuePP_Order_Candidate(@NonNull final DataTable dataTable)
 	{
-		invokeGeneratePPOrderProcess(false, false, dataTable);
+		invokeGeneratePPOrderProcess(null, false, dataTable);
 	}
 
 	@And("the following PP_Order_Candidates are re-opened")
@@ -292,7 +292,7 @@ public class PP_Order_Candidate_StepDef
 
 	@And("^generate PP_Order process is invoked for selection, with completeDocument=(.*) and autoProcessCandidateAfterProduction=(.*)$")
 	public void invokeGeneratePPOrderProcess(
-			final boolean isDocComplete,
+			@Nullable final Boolean isDocComplete,
 			final boolean autoProcessCandidate,
 			@NonNull final DataTable table)
 	{
@@ -312,7 +312,7 @@ public class PP_Order_Candidate_StepDef
 		final EnqueuePPOrderCandidateRequest enqueuePPOrderCandidateRequest = EnqueuePPOrderCandidateRequest.builder()
 				.adPInstanceId(pInstanceId)
 				.ctx(Env.getCtx())
-				.isCompleteDoc(isDocComplete)
+				.isCompleteDocOverride(isDocComplete)
 				.autoProcessCandidatesAfterProduction(autoProcessCandidate)
 				.build();
 
@@ -320,15 +320,6 @@ public class PP_Order_Candidate_StepDef
 				.enqueueSelection(enqueuePPOrderCandidateRequest);
 
 		assertThat(result.getEnqueuedPackagesCount()).isEqualTo(1);
-	}
-
-	@And("validate PP_Order_Candidate:")
-	public void validate_PP_Order_Candidate(@NonNull final DataTable dataTable) throws InterruptedException
-	{
-		for (final Map<String, String> row : dataTable.asMaps())
-		{
-			validatePP_Order_Candidate(0, row);
-		}
 	}
 
 	private void updatePPOrderCandidate(@NonNull final Map<String, String> tableRow)

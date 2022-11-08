@@ -148,7 +148,7 @@ public class PPOrderProducerFromCandidate
 
 							ppOrderService.postPPOrderCreatedEvent(ppOrder);
 
-							if (shouldCompletePPOrder(request.getProductPlanningId(), ppOrderCandidateProcessRequest.isDocComplete()))
+							if (shouldCompletePPOrder(request.getProductPlanningId(), ppOrderCandidateProcessRequest.getIsDocCompleteOverride()))
 							{
 								ppOrderService.completeDocument(ppOrder);
 							}
@@ -189,7 +189,7 @@ public class PPOrderProducerFromCandidate
 	{
 		final I_PP_Order_Candidate ppOrderCandidate = ppOrderCandidatesDAO.getById(candidateId);
 
-		if (autoProcessCandidatesAfterProduction || ppOrderCandidate.getQtyEntered().compareTo(ppOrderCandidate.getQtyProcessed()) <= 0)
+		if (autoProcessCandidatesAfterProduction || ppOrderCandidate.getQtyProcessed().compareTo(ppOrderCandidate.getQtyEntered()) >= 0)
 		{
 			ppOrderCandidatesDAO.markAsProcessed(ppOrderCandidate);
 		}

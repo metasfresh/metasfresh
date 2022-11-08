@@ -27,6 +27,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.util.Properties;
 
 @Value
@@ -39,7 +40,8 @@ public class EnqueuePPOrderCandidateRequest
 	@NonNull
 	Properties ctx;
 
-	boolean isCompleteDoc;
+	@Nullable
+	Boolean isCompleteDocOverride;
 
 	boolean autoProcessCandidatesAfterProduction;
 
