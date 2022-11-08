@@ -52,7 +52,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.SynchronizedMutable;
 import org.adempiere.util.lang.OldAndNewValues;
 import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.POInfo;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
