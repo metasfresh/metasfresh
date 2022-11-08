@@ -100,6 +100,9 @@ public class CreateOrderCandidateCommand
 		ppOrderCandidateRecord.setC_OrderLine_ID(OrderLineId.toRepoId(request.getSalesOrderLineId()));
 		ppOrderCandidateRecord.setM_ShipmentSchedule_ID(ShipmentScheduleId.toRepoId(request.getShipmentScheduleId()));
 
+		final I_PP_Product_Planning productPlanning = productPlanningsRepo.getById(request.getProductPlanningId());
+		ppOrderCandidateRecord.setSeqNo(productPlanning.getSeqNo());
+
 		ppOrderCandidateRecord.setIsSimulated(request.isSimulated());
 
 		if (request.isSimulated())
