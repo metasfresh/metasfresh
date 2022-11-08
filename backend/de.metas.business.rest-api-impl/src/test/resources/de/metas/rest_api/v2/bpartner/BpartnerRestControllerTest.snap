@@ -14,6 +14,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
     "group" : "bpGroupRecord.name",
     "metasfreshId" : 12345,
     "name" : "bpartnerRecord.name_updated",
+    "storageWarehouse" : false,
     "vendor" : false
   },
   "locations" : [ {
@@ -84,6 +85,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
     "name" : "bPartner.name",
     "parentId" : 1,
     "phone" : "bPartner.phone",
+    "storageWarehouse" : false,
     "url" : "bPartner.url",
     "vatId" : "bPartner.vatId",
     "vendor" : false
@@ -191,6 +193,9 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
     "locationType" : {
       "billTo" : false,
       "billToDefault" : false,
+      "handoverLocation" : false,
+      "remitTo" : false,
+      "replicationLookupDefault" : false,
       "shipTo" : false,
       "shipToDefault" : false,
       "visitorsAddress" : false
@@ -233,6 +238,9 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
     "locationType" : {
       "billTo" : false,
       "billToDefault" : false,
+      "handoverLocation" : false,
+      "remitTo" : false,
+      "replicationLookupDefault" : false,
       "shipTo" : false,
       "shipToDefault" : false,
       "visitorsAddress" : false
@@ -295,6 +303,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
     "id" : 20,
     "identifiedByExternalReference" : false,
     "name" : "bpartnerRecord.name",
+    "storageWarehouse" : false,
     "value" : "bpartnerRecord.value",
     "vatId" : "VATaxID",
     "vendor" : true
@@ -406,6 +415,9 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
     "locationType" : {
       "billTo" : false,
       "billToDefault" : false,
+      "handoverLocation" : false,
+      "remitTo" : false,
+      "replicationLookupDefault" : false,
       "shipTo" : false,
       "shipToDefault" : false,
       "visitorsAddress" : false
@@ -468,6 +480,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
     "id" : 20,
     "identifiedByExternalReference" : false,
     "name" : "bpartnerRecord.name",
+    "storageWarehouse" : false,
     "value" : "bpartnerRecord.value",
     "vatId" : "VATaxID",
     "vendor" : true
@@ -576,6 +589,9 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
     "locationType" : {
       "billTo" : false,
       "billToDefault" : false,
+      "handoverLocation" : false,
+      "remitTo" : false,
+      "replicationLookupDefault" : false,
       "shipTo" : false,
       "shipToDefault" : false,
       "visitorsAddress" : false
@@ -638,6 +654,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
     "id" : 20,
     "identifiedByExternalReference" : false,
     "name" : "bpartnerRecord.name",
+    "storageWarehouse" : false,
     "value" : "bpartnerRecord.value",
     "vatId" : "VATaxID",
     "vendor" : true
@@ -714,6 +731,9 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
     "locationType" : {
       "billTo" : false,
       "billToDefault" : false,
+      "handoverLocation" : false,
+      "remitTo" : false,
+      "replicationLookupDefault" : false,
       "shipTo" : false,
       "shipToDefault" : false,
       "visitorsAddress" : false
@@ -776,6 +796,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
     "id" : 20,
     "identifiedByExternalReference" : false,
     "name" : "bpartnerRecord.name",
+    "storageWarehouse" : false,
     "value" : "bpartnerRecord.value",
     "vatId" : "VATaxID",
     "vendor" : true
@@ -852,6 +873,9 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
     "locationType" : {
       "billTo" : false,
       "billToDefault" : false,
+      "handoverLocation" : false,
+      "remitTo" : false,
+      "replicationLookupDefault" : false,
       "shipTo" : false,
       "shipToDefault" : false,
       "visitorsAddress" : false
@@ -894,6 +918,9 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
     "locationType" : {
       "billTo" : false,
       "billToDefault" : false,
+      "handoverLocation" : false,
+      "remitTo" : false,
+      "replicationLookupDefault" : false,
       "shipTo" : false,
       "shipToDefault" : false,
       "visitorsAddress" : false
@@ -1068,6 +1095,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_ext=[ 
     "group" : "bpGroupRecord.name",
     "metasfreshId" : 20,
     "name" : "bpartnerRecord.name",
+    "storageWarehouse" : false,
     "vatId" : "VATaxID",
     "vendor" : true
   },
@@ -1142,6 +1170,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_gln=[ 
     "group" : "bpGroupRecord.name",
     "metasfreshId" : 20,
     "name" : "bpartnerRecord.name",
+    "storageWarehouse" : false,
     "vatId" : "VATaxID",
     "vendor" : true
   },
@@ -1216,6 +1245,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_id=[ {
     "group" : "bpGroupRecord.name",
     "metasfreshId" : 20,
     "name" : "bpartnerRecord.name",
+    "storageWarehouse" : false,
     "vatId" : "VATaxID",
     "vendor" : true
   },
@@ -1305,6 +1335,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
       "group" : "bpGroupRecord.name",
       "metasfreshId" : 20,
       "name" : "bpartnerRecord.name",
+      "storageWarehouse" : false,
       "vatId" : "VATaxID",
       "vendor" : true
     },
@@ -1376,6 +1407,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
       "group" : "bpGroupRecord.name",
       "metasfreshId" : 21,
       "name" : "bpartnerRecord.name_1",
+      "storageWarehouse" : false,
       "vatId" : "VATaxID_1",
       "vendor" : true
     },
@@ -1453,6 +1485,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
       "group" : "bpGroupRecord.name",
       "metasfreshId" : 22,
       "name" : "bpartnerRecord.name_2",
+      "storageWarehouse" : false,
       "vatId" : "VATaxID_2",
       "vendor" : true
     },
@@ -1524,6 +1557,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
       "group" : "bpGroupRecord.name",
       "metasfreshId" : 23,
       "name" : "bpartnerRecord.name_3",
+      "storageWarehouse" : false,
       "vatId" : "VATaxID_3",
       "vendor" : true
     },
@@ -1601,6 +1635,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
       "group" : "bpGroupRecord.name",
       "metasfreshId" : 24,
       "name" : "bpartnerRecord.name_4",
+      "storageWarehouse" : false,
       "vatId" : "VATaxID_4",
       "vendor" : true
     },

@@ -54,8 +54,6 @@ public class BPartnerUpsertProcessor implements Processor
 
 		final GetBPartnerRouteContext getBPartnerRouteContext = exchange.getProperty(ROUTE_PROPERTY_GET_BPARTNERS_ROUTE_CONTEXT, GetBPartnerRouteContext.class);
 
-		//todo mi: verify if getSyncBPartnerRequestBuilder == null; if null initialize; set body null and return;
-
 		if (getBPartnerRouteContext.getSyncBPartnerRequestBuilder() == null)
 		{
 			getBPartnerRouteContext.initSyncBPartnerRequestBuilder(bPartnerRow);

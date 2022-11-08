@@ -27,7 +27,6 @@ import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
-import de.metas.camel.externalsystems.common.v2.ProductUpsertCamelRequest;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.Getter;
 import lombok.NonNull;
@@ -44,8 +43,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import static de.metas.camel.externalsystems.sap.bpartner.GetBPartnersSFTPRouteBuilder.UPSERT_BPARTNER_ENDPOINT_ID;
-import static de.metas.camel.externalsystems.sap.bpartner.GetBPartnersSFTPRouteBuilder.UPSERT_LAST_BPARTNER_ENDPOINT_ID;
+import static de.metas.camel.externalsystems.sap.bpartner.GetBPartnersSFTPRouteBuilder.UPSERT_BPARTNER_GROUP_ENDPOINT_ID;
+import static de.metas.camel.externalsystems.sap.bpartner.GetBPartnersSFTPRouteBuilder.UPSERT_LAST_BPARTNER_GROUP_ENDPOINT_ID;
 import static de.metas.camel.externalsystems.sap.bpartner.SFTPBPartnerSyncServiceRouteBuilder.START_BPARTNERS_SYNC_ROUTE_ID;
 import static de.metas.camel.externalsystems.sap.bpartner.SFTPBPartnerSyncServiceRouteBuilder.STOP_BPARTNERS_SYNC_ROUTE_ID;
 import static org.assertj.core.api.Assertions.*;
@@ -194,12 +193,12 @@ public class SFTPBPartnerSyncServiceRouteBuilderTest extends CamelTestSupport
 										  advice -> {
 								  advice.replaceFromWith("direct:" + BPARTNER_SYNC_DIRECT_ROUTE_ENDPOINT);
 
-								  advice.weaveById(UPSERT_BPARTNER_ENDPOINT_ID)
+								  advice.weaveById(UPSERT_BPARTNER_GROUP_ENDPOINT_ID)
 										  .replace()
 										  .to(MOCK_UPSERT_BPARTNER)
 										  .process(mockUpsertBPartnerProcessor);
 
-								  advice.weaveById(UPSERT_LAST_BPARTNER_ENDPOINT_ID)
+								  advice.weaveById(UPSERT_LAST_BPARTNER_GROUP_ENDPOINT_ID)
 										  .replace()
 										  .to(MOCK_UPSERT_LAST_BPARTNER)
 										  .process(mockUpsertLastBPartnerProcessor);

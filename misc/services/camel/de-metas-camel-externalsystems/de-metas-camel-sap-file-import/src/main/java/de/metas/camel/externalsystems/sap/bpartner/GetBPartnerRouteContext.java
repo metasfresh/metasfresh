@@ -34,10 +34,6 @@ import javax.annotation.Nullable;
 @Data
 public class GetBPartnerRouteContext
 {
-	//todo mi: org si configID
-
-	//todo mi: initSyncBPartnerRequestBuilder(BPartnerRow) -> SyncBPartnerRequestBuilder.of(row,org,configID);
-
 	@NonNull
 	final String orgCode;
 

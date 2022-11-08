@@ -43,9 +43,9 @@ import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants
 public class GetBPartnersSFTPRouteBuilder extends IdAwareRouteBuilder
 {
 	@VisibleForTesting
-	public static final String UPSERT_BPARTNER_ENDPOINT_ID = "SAP-BPartners-upsertBPartnerEndpointId";
+	public static final String UPSERT_BPARTNER_GROUP_ENDPOINT_ID = "SAP-BPartners-upsertBPartnerEndpointId";
 	@VisibleForTesting
-	public static final String UPSERT_LAST_BPARTNER_ENDPOINT_ID = "SAP-BPartners-upsertLastBPartnerEndpointId";
+	public static final String UPSERT_LAST_BPARTNER_GROUP_ENDPOINT_ID = "SAP-BPartners-upsertLastBPartnerEndpointId";
 	private static final String UPSERT_BPARTNER_PROCESSOR_ID = "SAP-BPartners-upsertBPartnerProcessorId";
 
 	public static final String ROUTE_PROPERTY_GET_BPARTNERS_ROUTE_CONTEXT = "GetBpartnersRouteContext";
@@ -95,13 +95,13 @@ public class GetBPartnersSFTPRouteBuilder extends IdAwareRouteBuilder
 							.log(LoggingLevel.INFO, "Nothing to do! No business partner to upsert!")
 					   .otherwise()
 							.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert Business Partners: ${body}")
-							.to("{{" + MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}").id(UPSERT_BPARTNER_ENDPOINT_ID)
+							.to("{{" + MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}").id(UPSERT_BPARTNER_GROUP_ENDPOINT_ID)
 					   .endChoice()
 				    .end()
 				.end()
 				.process(this::processLastBPartnerGroup)
 				.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert Business Partners: ${body}")
-				.to("{{" + MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}").id(UPSERT_LAST_BPARTNER_ENDPOINT_ID)
+				.to("{{" + MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}").id(UPSERT_LAST_BPARTNER_GROUP_ENDPOINT_ID)
 				.end();
 		//@formatter:on
 	}
