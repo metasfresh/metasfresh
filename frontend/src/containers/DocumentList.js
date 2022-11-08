@@ -41,6 +41,7 @@ import { deleteFilter } from '../actions/FiltersActions';
 import { deleteQuickActions, fetchQuickActions } from '../actions/Actions';
 
 import {
+  computePageLengthEffective,
   DLmapStateToProps,
   DLpropTypes,
   GEO_PANEL_STATES,
@@ -65,7 +66,6 @@ class DocumentListContainer extends Component {
   constructor(props) {
     super(props);
 
-    this.pageLength = 20;
     this.state = {
       pageColumnInfosByFieldName: null,
       panelsState: GEO_PANEL_STATES[0],
@@ -293,6 +293,11 @@ class DocumentListContainer extends Component {
     if (fullyChanged === true) {
       this.debouncedRefresh();
     }
+  };
+
+  getPageLength = () => {
+    const { layout } = this.props;
+    return computePageLengthEffective(layout?.pageLength);
   };
 
   // FETCHING LAYOUT && DATA -------------------------------------------------
@@ -533,7 +538,7 @@ class DocumentListContainer extends Component {
       windowId,
       viewId: id,
       page,
-      pageLength: this.pageLength,
+      pageLength: this.getPageLength(),
       orderBy: sortingQuery,
       isModal,
       websocketRefresh,
@@ -775,7 +780,7 @@ class DocumentListContainer extends Component {
         triggerSpinner={triggerSpinner}
         hasIncluded={hasIncluded}
         onToggleState={this.toggleState}
-        pageLength={this.pageLength}
+        pageLength={this.getPageLength()}
         onGetSelected={this.getSelected}
         onShowSelectedIncludedView={this.showSelectedIncludedView}
         onSortData={this.sortData}

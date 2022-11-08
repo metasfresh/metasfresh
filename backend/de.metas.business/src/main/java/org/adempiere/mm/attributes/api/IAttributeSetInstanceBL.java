@@ -30,7 +30,7 @@ public interface IAttributeSetInstanceBL extends ISingletonService
 	/**
 	 * Build ASI Description
 	 * <p>
-	 * e.g. - Product Values - Instance Values - SerNo = #123 - Lot = \u00ab123\u00bb - GuaranteeDate = 10/25/2003
+	 * e.g. - Product Values - Instance Values
 	 *
 	 * @param asi may be {@code null}; in that case, an empty string is returned
 	 */

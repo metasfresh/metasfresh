@@ -342,7 +342,8 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 			// task 09869: don't rely on ol anyways
 			final BigDecimal qtyDelivered = shipmentScheduleAllocDAO.retrieveQtyDelivered(schedRecord);
 			schedRecord.setQtyDelivered(qtyDelivered);
-			schedRecord.setQtyReserved(getQtyReserved(schedRecord, olAndSched));
+			// takes into consideration isClosed flag 
+			schedRecord.setQtyReserved(BigDecimal.ZERO.max(shipmentScheduleEffectiveBL.computeQtyOrdered(olAndSched.getSched()).subtract(schedRecord.getQtyDelivered())));
 
 			updateLineNetAmt(olAndSched);
 
@@ -937,19 +938,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 				}
 			}
 			return segments.stream();
-		}
-	}
-
-	@NonNull
-	private static BigDecimal getQtyReserved(@NonNull final I_M_ShipmentSchedule schedRecord, @NonNull final OlAndSched olAndSched)
-	{
-		if (schedRecord.isClosed())
-		{
-			return BigDecimal.ZERO;
-		}
-		else
-		{
-			return BigDecimal.ZERO.max(olAndSched.getQtyOrdered().subtract(schedRecord.getQtyDelivered()));
 		}
 	}
 }

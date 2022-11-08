@@ -74,6 +74,7 @@ final class InvoiceJsonConverters
 		invoicingParams.setPOReference(request.getPoReference());
 		invoicingParams.setSupplementMissingPaymentTermIds(request.getSupplementMissingPaymentTermIds());
 		invoicingParams.setUpdateLocationAndContactForInvoice(request.getUpdateLocationAndContactForInvoice());
+		invoicingParams.setCompleteInvoices(request.getCompleteInvoices());
 		return invoicingParams;
 	}
 
