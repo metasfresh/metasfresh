@@ -740,7 +740,7 @@ public class C_Order_StepDef
 			assertThat(order.getAD_InputDataSource_ID()).isEqualTo(dataSource.getAD_InputDataSource_ID());
 		}
 
-		final Boolean isDropShip = DataTableUtil.extractBooleanForColumnNameOrNull(row,"OPT." + I_C_Order.COLUMNNAME_IsDropShip);
+		final Boolean isDropShip = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + I_C_Order.COLUMNNAME_IsDropShip);
 		if (isDropShip != null)
 		{
 			assertThat(order.isDropShip()).isEqualTo(isDropShip);
@@ -770,7 +770,7 @@ public class C_Order_StepDef
 			assertThat(order.getDropShip_User_ID()).isEqualTo(expectedDropShipUser.getAD_User_ID());
 		}
 
-		final Boolean isHandover = DataTableUtil.extractBooleanForColumnNameOrNull(row,"OPT." + I_C_Order.COLUMNNAME_IsUseHandOver_Location);
+		final Boolean isHandover = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + I_C_Order.COLUMNNAME_IsUseHandOver_Location);
 		if (isHandover != null)
 		{
 			assertThat(order.isUseHandOver_Location()).isEqualTo(isHandover);
@@ -801,7 +801,7 @@ public class C_Order_StepDef
 		}
 
 		final String sectionCodeIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Order.COLUMNNAME_M_SectionCode_ID + "." + TABLECOLUMN_IDENTIFIER);
-		if(Check.isNotBlank(sectionCodeIdentifier))
+		if (Check.isNotBlank(sectionCodeIdentifier))
 		{
 			final I_M_SectionCode sectionCode = sectionCodeTable.get(sectionCodeIdentifier);
 			assertThat(order.getM_SectionCode_ID()).isEqualTo(sectionCode.getM_SectionCode_ID());
