@@ -257,6 +257,18 @@ public class X_PP_Order_BOMLine extends org.compiere.model.PO implements I_PP_Or
 	}
 
 	@Override
+	public void setIsManualQtyInput (final boolean IsManualQtyInput)
+	{
+		set_Value (COLUMNNAME_IsManualQtyInput, IsManualQtyInput);
+	}
+
+	@Override
+	public boolean isManualQtyInput() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsManualQtyInput);
+	}
+
+	@Override
 	public void setIsQtyPercentage (final boolean IsQtyPercentage)
 	{
 		set_ValueNoCheck (COLUMNNAME_IsQtyPercentage, IsQtyPercentage);

@@ -1,13 +1,8 @@
-package de.metas.handlingunits.inventory.draftlinescreator;
-
-import de.metas.handlingunits.inventory.InventoryLine;
-import de.metas.inventory.AggregationType;
-
 /*
  * #%L
  * de.metas.handlingunits.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -24,6 +19,12 @@ import de.metas.inventory.AggregationType;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.handlingunits.inventory.draftlinescreator.aggregator;
+
+import de.metas.handlingunits.inventory.InventoryLine;
+import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLine;
+import de.metas.inventory.AggregationType;
 
 public interface InventoryLineAggregator
 {

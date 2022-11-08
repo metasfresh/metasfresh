@@ -1,4 +1,4 @@
-package de.metas.ui.web.picking.husToPick.process;
+package de.metas.handlingunits.weighting;
 
 import de.metas.business.BusinessTestHelper;
 import de.metas.document.IDocTypeDAO;
@@ -23,7 +23,6 @@ import de.metas.handlingunits.expectations.HUItemExpectation;
 import de.metas.handlingunits.expectations.HUStorageExpectation;
 import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.inventory.InventoryService;
-import de.metas.handlingunits.inventory.draftlinescreator.InventoryLineAggregatorFactory;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Item;
@@ -90,7 +89,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class WeightHUCommandTest
 {
 	private InventoryService inventoryService;
-	private InventoryLineAggregatorFactory inventoryLineAggregatorFactory;
 	private HUTestHelper helper;
 
 	@BeforeEach
@@ -100,7 +98,6 @@ public class WeightHUCommandTest
 
 		final InventoryRepository inventoryRepo = new InventoryRepository();
 		this.inventoryService = new InventoryService(inventoryRepo, SourceHUsService.get());
-		this.inventoryLineAggregatorFactory = new InventoryLineAggregatorFactory();
 
 		POJOLookupMap.get().addModelValidator(new de.metas.handlingunits.inventory.interceptor.M_Inventory(inventoryService));
 	}
@@ -108,13 +105,10 @@ public class WeightHUCommandTest
 	@Builder
 	private static class Masterdata
 	{
-		@NonNull
-		ProductId productId;
-		@NonNull
-		I_C_UOM uomKg;
+		@NonNull ProductId productId;
+		@NonNull I_C_UOM uomKg;
 
-		@NonNull
-		LocatorId locatorId;
+		@NonNull LocatorId locatorId;
 
 		I_M_HU_PI_Item piLU_Item;
 		I_M_HU_PI piTU;
@@ -151,11 +145,10 @@ public class WeightHUCommandTest
 		//
 		final I_M_HU_PI piTU = helper.createHUDefinition("TU", X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit);
 
-		final I_M_HU_PI_Item piTU_Item;
 		final I_M_HU_PI_Item_Product piTU_Item_Product;
 		if (qtyCUsPerTU != null)
 		{
-			piTU_Item = helper.createHU_PI_Item_Material(piTU);
+			final I_M_HU_PI_Item piTU_Item = helper.createHU_PI_Item_Material(piTU);
 			piTU_Item_Product = helper.assignProduct(
 					piTU_Item,
 					productId,
@@ -164,15 +157,13 @@ public class WeightHUCommandTest
 		}
 		else
 		{
-			piTU_Item = null;
 			piTU_Item_Product = null;
 		}
 
-		final I_M_HU_PI piLU;
 		final I_M_HU_PI_Item piLU_Item;
 		if (qtyTUsPerLU != null)
 		{
-			piLU = helper.createHUDefinition("LU", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
+			final I_M_HU_PI piLU = helper.createHUDefinition("LU", X_M_HU_PI_Version.HU_UNITTYPE_LoadLogistiqueUnit);
 			{
 				final I_C_BPartner bpartner = null; // match any BP
 				piLU_Item = helper.createHU_PI_Item_IncludedHU(piLU, piTU, qtyTUsPerLU.toBigDecimal(), bpartner);
@@ -180,7 +171,6 @@ public class WeightHUCommandTest
 		}
 		else
 		{
-			piLU = null;
 			piLU_Item = null;
 		}
 
@@ -194,6 +184,7 @@ public class WeightHUCommandTest
 				.build();
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private HuId createLU(
 			@NonNull final String totalQtyCU,
 			@NonNull final Masterdata masterdata)
@@ -239,6 +230,7 @@ public class WeightHUCommandTest
 		return assertThat(PlainWeightable.copyOf(huAttributes));
 	}
 
+	@SuppressWarnings("SameParameterValue")
 	private void subtractQty(
 			@NonNull final HuId huId,
 			@NonNull final String qty,
@@ -272,7 +264,6 @@ public class WeightHUCommandTest
 	{
 		WeightHUCommand.builder()
 				.inventoryService(inventoryService)
-				.inventoryLineAggregatorFactory(inventoryLineAggregatorFactory)
 				.huId(huId)
 				.targetWeight(targetWeight)
 				.build()
@@ -311,7 +302,8 @@ public class WeightHUCommandTest
 			luId = createLU("400", masterdata);
 			// dumpHU("initial", luId);
 			assertWeightable(luId)
-					.isEqualToComparingFieldByField(PlainWeightable.builder()
+					.usingRecursiveComparison()
+					.isEqualTo(PlainWeightable.builder()
 							.uom(masterdata.uomKg)
 							.weightGross(new BigDecimal("400.000"))
 							.weightNet(new BigDecimal("400.000"))
@@ -341,7 +333,8 @@ public class WeightHUCommandTest
 					.assertExpected("after weight", luId);
 
 			assertWeightable(luId)
-					.isEqualToComparingFieldByField(PlainWeightable.builder()
+					.usingRecursiveComparison()
+					.isEqualTo(PlainWeightable.builder()
 							.uom(masterdata.uomKg)
 							.weightGross(new BigDecimal("410.000"))
 							.weightNet(new BigDecimal("410.000"))
@@ -371,7 +364,8 @@ public class WeightHUCommandTest
 					.assertExpected("after weight", luId);
 
 			assertWeightable(luId)
-					.isEqualToComparingFieldByField(PlainWeightable.builder()
+					.usingRecursiveComparison()
+					.isEqualTo(PlainWeightable.builder()
 							.uom(masterdata.uomKg)
 							.weightGross(new BigDecimal("390.000"))
 							.weightNet(new BigDecimal("390.000"))
@@ -435,7 +429,8 @@ public class WeightHUCommandTest
 					.assertExpected("after -1", luId);
 
 			assertWeightable(luId)
-					.isEqualToComparingFieldByField(PlainWeightable.builder()
+					.usingRecursiveComparison()
+					.isEqualTo(PlainWeightable.builder()
 							.uom(masterdata.uomKg)
 							.weightGross(new BigDecimal("399.000"))
 							.weightNet(new BigDecimal("399.000"))
