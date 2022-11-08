@@ -27,10 +27,6 @@ properties([
                         name: 'MF_FORCE_SKIP_BACKEND_BUILD'),
 
                 booleanParam(defaultValue: false,
-                        description: 'If true, and the backend is build, then don\'t run the cucumber tests',
-                        name: 'MF_FORCE_SKIP_CUCUMBER_BUILD'),
-                
-                booleanParam(defaultValue: false,
                         description: 'If true, then don\'t build the mobile webui, even if there were changes or <code>MF_FORCE_FULL_BUILD</code> is set to <code>true<code>',
                         name: 'MF_FORCE_SKIP_MOBILE_WEBUI_BUILD'),
 
@@ -137,11 +133,7 @@ private void buildAll(String mfVersion, MvnConf mvnConf, scmVars) {
                             }
                     dir('backend') {
                                 def backendBuildFile = load('buildfile.groovy')
-                                backendBuildFile.build(mvnConf, 
-                                        scmVars, 
-                                        params.MF_FORCE_FULL_BUILD, 
-                                        params.MF_FORCE_SKIP_BACKEND_BUILD,
-                                        params.MF_FORCE_SKIP_CUCUMBER_BUILD)
+                                backendBuildFile.build(mvnConf, scmVars, params.MF_FORCE_FULL_BUILD, params.MF_FORCE_SKIP_BACKEND_BUILD)
                             }
                 }
                 dir('misc/services') { // misc/services has modules with different maven/jdk settings
