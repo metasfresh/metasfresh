@@ -95,7 +95,7 @@ public class PPOrderDAO implements IPPOrderDAO
 				.createQueryBuilder(I_PP_Order.class, ppOrder)
 				.addEqualsFilter(I_PP_Order.COLUMN_DateOrdered, ppOrder.getDateOrdered(), DateTruncQueryFilterModifier.DAY)
 				.create()
-				.aggregate(I_M_ProductPrice.COLUMNNAME_SeqNo, IQuery.Aggregate.MAX, int.class);
+				.aggregate(I_M_ProductPrice.COLUMNNAME_SeqNo, IQuery.Aggregate.MAX, Integer.class);
 
 		return SeqNo.ofInt(lastSeqNo).next().toInt();
 	}
