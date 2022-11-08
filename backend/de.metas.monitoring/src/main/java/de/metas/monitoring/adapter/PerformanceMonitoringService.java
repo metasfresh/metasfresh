@@ -55,7 +55,7 @@ public interface PerformanceMonitoringService
 				metadata);
 	}
 
-	default void monitor(final long duration, TimeUnit unit, final Metadata metadata)
+	default void record(final long duration, TimeUnit unit, final Metadata metadata)
 	{
 
 	}

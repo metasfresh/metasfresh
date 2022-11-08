@@ -34,7 +34,6 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -43,8 +42,8 @@ import java.util.concurrent.TimeUnit;
 public class MicrometerPerformanceMonitoringService implements PerformanceMonitoringService
 {
 	private final MeterRegistry meterRegistry;
-	private static ThreadLocal<PerformanceMonitoringData> perfMonDataTL = new ThreadLocal<>();
-	private static String METER_PREFIX = "mf.";
+	private static final ThreadLocal<PerformanceMonitoringData> perfMonDataTL = new ThreadLocal<>();
+	private static final String METER_PREFIX = "mf.";
 
 	public MicrometerPerformanceMonitoringService(
 			@NonNull final MeterRegistry meterRegistry)
@@ -57,7 +56,7 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 			@NonNull final Callable<V> callable,
 			@NonNull final PerformanceMonitoringService.Metadata metadata)
 	{
-		if(perfMonDataTL.get() == null)
+		if (perfMonDataTL.get() == null)
 		{
 			perfMonDataTL.set(new PerformanceMonitoringData());
 		}
@@ -68,19 +67,19 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 		addTagIfNotNull("name", metadata.getClassName(), tags);
 		addTagIfNotNull("action", metadata.getFunctionName(), tags);
 
-		if(!perfMonData.isCalledByMonitoredFunction() && metadata.getType().isAnyRestControllerType())
+		if (!perfMonData.isCalledByMonitoredFunction() && metadata.getType().isAnyRestControllerType())
 		{
 			perfMonData.setRestControllerData(metadata);
 		}
-		else if(!perfMonData.isCalledByMonitoredFunction())
+		else if (!perfMonData.isCalledByMonitoredFunction())
 		{
 			perfMonData.setInitiatorLabelActive(false);
 		}
 
-		if(perfMonData.isInitiatorLabelActive())
+		if (perfMonData.isInitiatorLabelActive())
 		{
 			addInitiatorTags(perfMonData, metadata, tags);
-			perfMonData.getCalledBy().add(perfMonData.getDepth() + 1 ,metadata.getClassName() + " - " + metadata.getFunctionName());
+			perfMonData.getCalledBy().add(perfMonData.getDepth() + 1, metadata.getClassName() + " - " + metadata.getFunctionName());
 
 			final Type type = getTypeForMeterName(metadata);
 
@@ -101,9 +100,9 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 		}
 	}
 
-	public void monitor(final long duration, TimeUnit unit, final Metadata metadata)
+	public void record(final long duration, TimeUnit unit, final Metadata metadata)
 	{
-		if(perfMonDataTL.get() == null)
+		if (perfMonDataTL.get() == null)
 		{
 			perfMonDataTL.set(new PerformanceMonitoringData());
 		}
@@ -114,7 +113,7 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 		addTagIfNotNull("name", metadata.getClassName(), tags);
 		addTagIfNotNull("action", metadata.getFunctionName(), tags);
 
-		if(perfMonData.isInitiatorLabelActive())
+		if (perfMonData.isInitiatorLabelActive())
 		{
 			addInitiatorTags(perfMonData, metadata, tags);
 			perfMonData.getCalledBy().add(perfMonData.getDepth() + 1, metadata.getClassName() + " - " + metadata.getFunctionName());
@@ -142,7 +141,7 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 			addTagIfNotNull(entry.getKey(), entry.getValue(), tags);
 		}
 	}
-	
+
 	private static void addTagIfNotNull(@Nullable final String name, @Nullable final String value, @NonNull ArrayList<Tag> tags)
 	{
 		if (!EmptyUtil.isBlank(name) && !EmptyUtil.isBlank(value))
@@ -166,7 +165,7 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 	private Type getTypeForMeterName(Metadata metadata)
 	{
 		final Type type;
-		if(metadata.getType().isAnyRestControllerType())
+		if (metadata.getType().isAnyRestControllerType())
 		{
 			type = metadata.getType();
 		}

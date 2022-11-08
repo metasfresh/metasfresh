@@ -44,7 +44,7 @@ public class PerformanceMonitoringData
 		calledBy.add(0, "HTTP Request");
 
 		final String windowNameAndId = metadata.getWindowNameAndId();
-		if(windowNameAndId == null)
+		if (windowNameAndId == null)
 		{
 			initiatorWindow = "NONE";
 		}
@@ -59,11 +59,13 @@ public class PerformanceMonitoringData
 		return depth != 0;
 	}
 
-	public void incrementDepth(){
+	public void incrementDepth()
+	{
 		depth++;
 	}
 
-	public void decrementDepth(){
+	public void decrementDepth()
+	{
 		depth--;
 	}
 }

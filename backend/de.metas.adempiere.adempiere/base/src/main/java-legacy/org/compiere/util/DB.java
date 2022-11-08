@@ -156,12 +156,6 @@ public class DB
 	 */
 	public final String SQLSTATEMENT_SEPARATOR = "; ";
 
-	/**
-	 * Performance Monitoring
-	 */
-
-	private static final DBPerformanceMonitoringHelper dbPerformanceMonitoringHelper = new DBPerformanceMonitoringHelper();
-
 	/**************************************************************************
 	 * Set connection.
 	 *
@@ -529,21 +523,6 @@ public class DB
 											   final int resultSetConcurrency,
 											   final String trxName)
 	{
-		{
-			if (dbPerformanceMonitoringHelper.isPerfMonActive())
-			{
-				return prepareStatement0(sql, resultSetType, resultSetConcurrency, trxName);
-			}
-			return dbPerformanceMonitoringHelper.performanceMonitoringServicePrepareStatement(
-					() -> prepareStatement0(sql, resultSetType, resultSetConcurrency, trxName));
-		}
-	}
-
-	private CPreparedStatement prepareStatement0(final String sql,
-			final int resultSetType,
-			final int resultSetConcurrency,
-			final String trxName)
-	{
 		if (sql == null || sql.length() == 0)
 		{
 			throw new IllegalArgumentException("No SQL");
@@ -819,17 +798,6 @@ public class DB
 	}
 
 	private SQLUpdateResult executeUpdate(@NonNull final ExecuteUpdateRequest request)
-	{
-		final boolean isPerfMonActive = dbPerformanceMonitoringHelper.isPerfMonActive();
-		if(!isPerfMonActive)
-		{
-			return executeUpdate0(request);
-		}
-		return dbPerformanceMonitoringHelper.performanceMonitoringServiceExecuteUpdate(
-				() -> executeUpdate0(request));
-	}
-
-	private SQLUpdateResult executeUpdate0(@NonNull final ExecuteUpdateRequest request)
 	{
 		if (Check.isEmpty(request.getSql(), true))
 		{

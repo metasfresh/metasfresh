@@ -49,4 +49,11 @@ public interface IQueryStatisticsCollector
 	 * @param duration
 	 */
 	void collect(CStatementVO vo, Stopwatch duration);
+
+	/**
+	 * Record given duration with Micrometer
+	 *
+	 * @param duration
+	 */
+	void recordExecutedSQLsWithMicrometer(Stopwatch duration);
 }

@@ -61,7 +61,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 					.builder()
 					.className("QueryStatisticLogger")
 					.type(PerformanceMonitoringService.Type.DB)
-					.functionName("collect")
+					.functionName("recordExecutedSQLsWithMicrometer")
 					.build();
 
 	public QueryStatisticsLogger()
@@ -116,10 +116,6 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 
 		// Snapshot the duration as soon as possible
 		final long durationValue = durationStopwatch.elapsed(TIMEUNIT_Internal);
-		if(isPerfMonActive())
-		{
-			performanceMonitoringService().monitor(durationValue, TIMEUNIT_Internal, PM_METADATA_COLLECT);
-		}
 
 		//
 		// Do not log if we're filtering
@@ -134,6 +130,15 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 		if (traceSqlQueries)
 		{
 			traceSqlQuery(sql, sqlParams, trxName, duration);
+		}
+	}
+
+	public void recordExecutedSQLsWithMicrometer(final Stopwatch durationStopwatch)
+	{
+		final long durationValue = durationStopwatch.elapsed(TIMEUNIT_Internal);
+		if (isPerfMonActive())
+		{
+			performanceMonitoringService().record(durationValue, TIMEUNIT_Internal, PM_METADATA_COLLECT);
 		}
 	}
 
