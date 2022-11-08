@@ -46,7 +46,6 @@
         <license.name>gpl_v2</license.name>
 
         <acceptance.reports.dir>target/acceptance-reports</acceptance.reports.dir>
-        <junit-jupiter.version>5.7.0</junit-jupiter.version>
 
     </properties>
 
