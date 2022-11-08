@@ -28,7 +28,8 @@ echo ""
 echo "==================="
 echo "Restoring pgdump"
 echo "==================="
-pg_restore -Fc --exit-on-error --username metasfresh --dbname metasfresh /metasfresh.pgdump
+# running without "--exit-on-error" because with our current dumps we get "ERROR:  schema "public" already exists"
+pg_restore -Fc --username metasfresh --dbname metasfresh /metasfresh.pgdump
 echo "=========="
 echo " ...done!"
 echo "=========="
