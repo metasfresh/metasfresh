@@ -70,6 +70,7 @@ import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_Planning;
+import org.eevolution.productioncandidate.async.EnqueuePPOrderCandidateRequest;
 import org.eevolution.productioncandidate.async.PPOrderCandidateEnqueuer;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.eevolution.productioncandidate.service.PPOrderCandidateService;
@@ -308,8 +309,15 @@ public class PP_Order_Candidate_StepDef
 				.create()
 				.createSelection();
 
+		final EnqueuePPOrderCandidateRequest enqueuePPOrderCandidateRequest = EnqueuePPOrderCandidateRequest.builder()
+				.adPInstanceId(pInstanceId)
+				.ctx(Env.getCtx())
+				.isCompleteDoc(isDocComplete)
+				.autoProcessCandidatesAfterProduction(autoProcessCandidate)
+				.build();
+
 		final PPOrderCandidateEnqueuer.Result result = ppOrderCandidateEnqueuer
-				.enqueueSelection(pInstanceId, Env.getCtx(), isDocComplete, autoProcessCandidate);
+				.enqueueSelection(enqueuePPOrderCandidateRequest);
 
 		assertThat(result.getEnqueuedPackagesCount()).isEqualTo(1);
 	}

@@ -38,12 +38,10 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.util.Env;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
-import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 
 @Component
 public class PPOrderCandidateEnqueuer
@@ -65,16 +63,14 @@ public class PPOrderCandidateEnqueuer
 				.create()
 				.createSelection();
 
-		return enqueueSelection(pInstanceId, Env.getCtx(), null, null);
+		return enqueueSelection(EnqueuePPOrderCandidateRequest.of(pInstanceId, Env.getCtx()));
 	}
 
 	@NonNull
-	public Result enqueueSelection(
-			@NonNull final PInstanceId adPInstanceId,
-			@NonNull final Properties ctx,
-			@Nullable final Boolean isCompleteDoc,
-			@Nullable final Boolean autoProcessCandidatesAfterProduction)
+	public Result enqueueSelection(@NonNull final EnqueuePPOrderCandidateRequest enqueuePPOrderCandidateRequest)
 	{
+		final PInstanceId adPInstanceId = enqueuePPOrderCandidateRequest.getAdPInstanceId();
+
 		final LockOwner lockOwner = LockOwner.newOwner(PPOrderCandidateEnqueuer.class.getSimpleName(), adPInstanceId.getRepoId());
 
 		final ILockCommand elementsLocker = lockManager
@@ -84,7 +80,7 @@ public class PPOrderCandidateEnqueuer
 				.setFailIfAlreadyLocked(true)
 				.setRecordsBySelection(I_PP_Order_Candidate.class, adPInstanceId);
 
-		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(ctx, GeneratePPOrderFromPPOrderCandidate.class);
+		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(enqueuePPOrderCandidateRequest.getCtx(), GeneratePPOrderFromPPOrderCandidate.class);
 
 		final IWorkPackageBlockBuilder blockBuilder = queue
 				.newBlock();
@@ -92,8 +88,8 @@ public class PPOrderCandidateEnqueuer
 		final I_C_Queue_WorkPackage workPackage = blockBuilder
 				.newWorkpackage()
 				.parameter(WP_PINSTANCE_ID_PARAM, adPInstanceId)
-				.parameter(WP_COMPLETE_DOC_PARAM, isCompleteDoc)
-				.parameter(WP_AUTO_PROCESS_CANDIDATES_AFTER_PRODUCTION, autoProcessCandidatesAfterProduction)
+				.parameter(WP_COMPLETE_DOC_PARAM, enqueuePPOrderCandidateRequest.isCompleteDoc())
+				.parameter(WP_AUTO_PROCESS_CANDIDATES_AFTER_PRODUCTION, enqueuePPOrderCandidateRequest.isAutoProcessCandidatesAfterProduction())
 				.setElementsLocker(elementsLocker)
 				.build();
 

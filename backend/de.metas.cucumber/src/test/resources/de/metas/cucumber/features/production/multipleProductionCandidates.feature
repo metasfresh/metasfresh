@@ -121,6 +121,10 @@ Feature: create multiple production candidates
       | Identifier | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyOrdered | C_UOM_ID.X12DE355 | C_BPartner_ID.Identifier | DatePromised         | OPT.DocStatus |
       | ppo_1      | p_1                     | bom_1                        | ppln_1                            | 540006        | 12         | 12         | PCE               | endcustomer_2            | 2021-04-16T21:00:00Z | DR            |
 
+    And validate PP_Order_Candidate:
+      | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
+      | oc_1       | true      | p_1                     | bom_1                        | ppln_1                            | 540006        | 10         | 0            | 10           | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
+      | oc_2       | true      | p_1                     | bom_1                        | ppln_1                            | 540006        | 2          | 0            | 2            | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
     And after not more than 30s, PP_OrderCandidate_PP_Order are found
       | PP_Order_Candidate_ID.Identifier | PP_Order_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 |
       | oc_1                             | ppo_1                  | 10         | PCE               |
@@ -129,7 +133,7 @@ Feature: create multiple production candidates
 
   @from:cucumber
   Scenario:  The manufacturing candidate is created for a sales order line and `Generate PP_Order` process is invoked resulting multiple manufacturing orders
-    and the candidate remains open as it still has unprocessed quantity and `autoProcessCandidates` parameter is not set
+  and the candidate remains open as it still has unprocessed quantity and `autoProcessCandidates` parameter is not set
 
     Given metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  |

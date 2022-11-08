@@ -22,19 +22,22 @@
 
 package org.eevolution.productioncandidate.async;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
-import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.util.api.IParams;
 import org.compiere.SpringContextHolder;
 import org.eevolution.model.I_PP_Order_Candidate;
+import org.eevolution.productioncandidate.service.PPOrderCandidateProcessRequest;
 import org.eevolution.productioncandidate.service.PPOrderCandidateService;
+import org.eevolution.productioncandidate.service.produce.PPOrderCandidateToAllocate;
 
 import javax.annotation.Nullable;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -52,9 +55,23 @@ public class GeneratePPOrderFromPPOrderCandidate extends WorkpackageProcessorAda
 	@Override
 	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workPackage, @Nullable final String localTrxName)
 	{
-		final PInstanceId pInstanceId = getParameters().getParameterAsId(WP_PINSTANCE_ID_PARAM, PInstanceId.class);
-		final Boolean isDocComplete = getCompleteDocParamValue(getParameters());
-		final Boolean autoProcessCandidatesAfterProduction = getAutoProcessCandidatesParamValue(getParameters());
+		final PPOrderCandidateProcessRequest ppOrderCandidateProcessRequest = getProcessPPOrderCandRequest();
+
+		final OrderGenerateResult result = ppOrderCandidateService.processCandidates(ppOrderCandidateProcessRequest);
+
+		Loggables.addLog("Generated: {}", result);
+
+		return Result.SUCCESS;
+	}
+
+	@NonNull
+	private PPOrderCandidateProcessRequest getProcessPPOrderCandRequest()
+	{
+		final IParams params = getParameters();
+
+		final PInstanceId pInstanceId = params.getParameterAsId(WP_PINSTANCE_ID_PARAM, PInstanceId.class);
+		final boolean isDocComplete = params.getParameterAsBool(WP_COMPLETE_DOC_PARAM);
+		final boolean autoProcessCandidatesAfterProduction = params.getParameterAsBool(WP_AUTO_PROCESS_CANDIDATES_AFTER_PRODUCTION);
 
 		Check.assumeNotNull(pInstanceId, "adPInstanceId is not null");
 
@@ -63,36 +80,19 @@ public class GeneratePPOrderFromPPOrderCandidate extends WorkpackageProcessorAda
 		final Stream<I_PP_Order_Candidate> candidateStream = StreamSupport.stream(
 				Spliterators.spliteratorUnknownSize(orderCandidates, Spliterator.ORDERED), false);
 
-		final OrderGenerateResult result = ppOrderCandidateService.processCandidates(candidateStream, isDocComplete, autoProcessCandidatesAfterProduction);
-
-		Loggables.addLog("Generated: {}", result);
-
-		return Result.SUCCESS;
+		return PPOrderCandidateProcessRequest.builder()
+				.isDocComplete(isDocComplete)
+				.autoProcessCandidatesAfterProduction(autoProcessCandidatesAfterProduction)
+				.sortedCandidates(getSortedCandidates(candidateStream))
+				.build();
 	}
 
-	@Nullable
-	private static Boolean getCompleteDocParamValue(@NonNull final IParams params)
+	@NonNull
+	private ImmutableList<PPOrderCandidateToAllocate> getSortedCandidates(@NonNull final Stream<I_PP_Order_Candidate> candidateStream)
 	{
-		final Object isDocComplete = params.getParameterAsObject(WP_COMPLETE_DOC_PARAM);
-
-		if (isDocComplete == null)
-		{
-			return null;
-		}
-
-		return StringUtils.toBoolean(isDocComplete);
-	}
-
-	@Nullable
-	private static Boolean getAutoProcessCandidatesParamValue(@NonNull final IParams params)
-	{
-		final Object autoProcessCandidatesAfterProduction = params.getParameterAsObject(WP_AUTO_PROCESS_CANDIDATES_AFTER_PRODUCTION);
-
-		if (autoProcessCandidatesAfterProduction == null)
-		{
-			return null;
-		}
-
-		return StringUtils.toBoolean(autoProcessCandidatesAfterProduction);
+		return candidateStream.filter(orderCandidate -> !orderCandidate.isProcessed())
+				.map(PPOrderCandidateToAllocate::of)
+				.sorted(Comparator.comparing(PPOrderCandidateToAllocate::getHeaderAggregationKey))
+				.collect(ImmutableList.toImmutableList());
 	}
 }
