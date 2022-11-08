@@ -69,7 +69,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.PRODUCT_CATEGORY_STAND
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_Product_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_IsStocked;
@@ -418,9 +418,13 @@ public class M_Product_StepDef
 
 	private void updateMProduct(@NonNull final Map<String, String> tableRow)
 	{
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-		final I_M_Product productRecord = productTable.get(productIdentifier);
-		assertThat(productRecord).isNotNull();
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+
+		final Integer productId = productTable.getOptional(productIdentifier)
+				.map(I_M_Product::getM_Product_ID)
+				.orElseGet(() -> Integer.parseInt(productIdentifier));
+
+		final I_M_Product productRecord = InterfaceWrapperHelper.load(productId, I_M_Product.class);
 
 		final String gtin = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + I_M_Product.COLUMNNAME_GTIN);
 
@@ -429,11 +433,8 @@ public class M_Product_StepDef
 			productRecord.setGTIN(DataTableUtil.nullToken2Null(gtin));
 		}
 
-		final Boolean isStocked = DataTableUtil.extractBooleanForColumnNameOrNull(tableRow, COLUMNNAME_IsStocked);
-		if (isStocked != null)
-		{
-			productRecord.setIsStocked(isStocked);
-		}
+		final boolean isStocked = DataTableUtil.extractBooleanForColumnNameOr(tableRow, COLUMNNAME_IsStocked, true);
+		productRecord.setIsStocked(isStocked);
 
 		saveRecord(productRecord);
 	}

@@ -7,12 +7,12 @@
 @Library('misc')
 import de.metas.jenkins.MvnConf
 
-def build(final MvnConf mvnConf, 
-          final Map scmVars, 
+def build(final MvnConf mvnConf,
+          final Map scmVars,
           final boolean forceBuild = false,
           final boolean forceSkipMobileWebui = false,
           final boolean forceSkipProcurementWebui = false) {
-    
+
     stage('Build misc services') {
         currentBuild.description = """${currentBuild.description}<p/>
 			<h2>misc services</h2>"""
@@ -32,10 +32,10 @@ def build(final MvnConf mvnConf,
                 ediBuildFile.build(mvnConf, scmVars, forceBuild)
             }
         }
-        withMaven(jdk: 'java-17', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)]) {
+        withMaven(jdk: 'java-14', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)]) {
             dir('camel/de-metas-camel-externalsystems') {
-                def externalsystemsBuildFile = load('buildfile.groovy')
-                externalsystemsBuildFile.build(mvnConf, scmVars, forceBuild)
+                def ediBuildFile = load('buildfile.groovy')
+                ediBuildFile.build(mvnConf, scmVars, forceBuild)
             }
             dir('admin') {
                 def procurementWebuiBuildFile = load('buildfile.groovy')

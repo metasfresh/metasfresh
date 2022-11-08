@@ -1070,7 +1070,7 @@ public class C_Invoice_Candidate_StepDef
 
 	public void manuallyRecomputeInvoiceCandidate(
 			@NonNull final Throwable throwable,
-			@NonNull final Map<String, String> row,
+			@NonNull final Map<String,String> row,
 			final int timeoutSec) throws Throwable
 	{
 		logger.warn("*** C_Invoice_Candidate was not found within {} seconds, manually invalidate and try again if possible. "

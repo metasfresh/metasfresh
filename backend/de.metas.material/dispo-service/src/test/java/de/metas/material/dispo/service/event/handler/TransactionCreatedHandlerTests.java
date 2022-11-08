@@ -169,18 +169,18 @@ public class TransactionCreatedHandlerTests
 				.type(CandidateType.UNEXPECTED_INCREASE)
 				.id(CandidateId.ofRepoId(11))
 				.materialDescriptor(MaterialDescriptor.builder()
-											.productDescriptor(createProductDescriptor())
-											.warehouseId(WAREHOUSE_ID)
-											.quantity(ONE)
-											.date(date) // both attributes *and* date need to match
-											.build())
+						.productDescriptor(createProductDescriptor())
+						.warehouseId(WAREHOUSE_ID)
+						.quantity(ONE)
+						.date(date) // both attributes *and* date need to match
+						.build())
 				.transactionDetail(TransactionDetail.builder()
-										   .quantity(ONE)
-										   .storageAttributesKey(AttributesKey.ALL)
-										   .transactionId(TRANSACTION_ID + 1)
-										   .transactionDate(date)
-										   .complete(true)
-										   .build())
+						.quantity(ONE)
+						.storageAttributesKey(AttributesKey.ALL)
+						.transactionId(TRANSACTION_ID + 1)
+						.transactionDate(date)
+						.complete(true)
+						.build())
 				.build();
 
 		Mockito.when(candidateRepository.retrieveLatestMatchOrNull(Mockito.any()))
@@ -223,7 +223,7 @@ public class TransactionCreatedHandlerTests
 	}
 
 	@Test
-	public void createCandidate_unrelated_transaction_with_shipmentId()
+	public void createCandidate_unrelated_transaction_with_shipmentLineId()
 	{
 		final TransactionCreatedEvent relatedEvent = createTransactionEventBuilderWithQuantity(TEN.negate(), Instant.now())
 				.shipmentId(InOutAndLineId.ofRepoId(1, SHIPMENT_LINE_ID))
@@ -265,7 +265,7 @@ public class TransactionCreatedHandlerTests
 	}
 
 	@Test
-	public void createCandidate_related_transaction_with_shipmentId()
+	public void createCandidate_related_transaction_with_shipmentLineId()
 	{
 		final Instant date = SystemTime.asInstant();
 
@@ -274,11 +274,11 @@ public class TransactionCreatedHandlerTests
 				.clientAndOrgId(CLIENT_AND_ORG_ID)
 				.type(CandidateType.DEMAND)
 				.materialDescriptor(MaterialDescriptor.builder()
-											.productDescriptor(createProductDescriptor())
-											.warehouseId(WAREHOUSE_ID)
-											.quantity(SIXTY_THREE)
-											.date(date)
-											.build())
+						.productDescriptor(createProductDescriptor())
+						.warehouseId(WAREHOUSE_ID)
+						.quantity(SIXTY_THREE)
+						.date(date)
+						.build())
 				.businessCase(CandidateBusinessCase.SHIPMENT)
 				.businessCaseDetail(DemandDetail.forShipmentLineId(
 						SHIPMENT_LINE_ID,
@@ -316,8 +316,9 @@ public class TransactionCreatedHandlerTests
 		assertThat(candidate.getId().getRepoId()).isEqualTo(11);
 		assertThat(candidate.getType()).isEqualTo(CandidateType.DEMAND);
 		assertThat(candidate.getQuantity())
-				.as("The demand candidate's quantity needs to be updated because there is now a transaction with a real qty that is bigger")
+				.as("The demand candidate's quantity needs to be updated because there is now a transaction with a real qty.")
 				.isEqualByComparingTo(TEN);
+
 		makeCommonAssertions(candidate);
 
 		assertThat(candidate.getBusinessCaseDetail()).isNotNull();
@@ -349,11 +350,11 @@ public class TransactionCreatedHandlerTests
 				.eventDescriptor(EventDescriptor.ofClientAndOrg(CLIENT_AND_ORG_ID))
 				.transactionId(TRANSACTION_ID)
 				.materialDescriptor(MaterialDescriptor.builder()
-											.date(date)
-											.productDescriptor(createProductDescriptor())
-											.quantity(quantity)
-											.warehouseId(WAREHOUSE_ID)
-											.build());
+						.date(date)
+						.productDescriptor(createProductDescriptor())
+						.quantity(quantity)
+						.warehouseId(WAREHOUSE_ID)
+						.build());
 	}
 
 	private void makeCommonAssertions(final Candidate candidate)
