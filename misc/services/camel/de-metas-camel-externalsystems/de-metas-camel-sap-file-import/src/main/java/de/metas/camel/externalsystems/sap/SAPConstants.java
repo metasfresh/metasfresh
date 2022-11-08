@@ -25,6 +25,7 @@ package de.metas.camel.externalsystems.sap;
 public interface SAPConstants
 {
 	String ROUTE_PROPERTY_SAP_ROUTE_CONTEXT = "SAPRouteContext";
+	String ROUTE_PROPERTY_CREDIT_LIMIT_ROUTE_CONTEXT = "CreditLimitRouteContext";
 
 	String SAP_SYSTEM_NAME = "SAP";
 }

@@ -32,6 +32,9 @@ import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerContactType;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationType;
+import de.metas.bpartner.creditLimit.CreditLimitTypeId;
+import de.metas.bpartner.service.creditlimit.BPartnerCreditLimit;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.business.BusinessTestHelper;
@@ -56,6 +59,8 @@ import org.compiere.SpringContextHolder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 
 class BPartnerCompositeRepositoryTest
@@ -75,7 +80,8 @@ class BPartnerCompositeRepositoryTest
 		bpartnerCompositeRepository = new BPartnerCompositeRepository(
 				new BPartnerBL(new UserRepository()),
 				new MockLogEntriesRepository(),
-				new UserRoleRepository());
+				new UserRoleRepository(),
+				new BPartnerCreditLimitRepository());
 
 		BusinessTestHelper.createStandardBPGroup();
 		countryId_DE = BusinessTestHelper.createCountry("DE");
@@ -165,6 +171,12 @@ class BPartnerCompositeRepositoryTest
 						.email2("email2")
 						.email3("email3")
 						.build())
+				.creditLimit(BPartnerCreditLimit.builder()
+									 .amount(BigDecimal.valueOf(54.20))
+									 .active(true)
+									 .creditLimitTypeId(CreditLimitTypeId.ofRepoId(123))
+									 .dateFrom(Instant.now())
+									 .build())
 				.build();
 
 		bpartnerCompositeRepository.save(bpartnerComposite, true);
@@ -181,7 +193,8 @@ class BPartnerCompositeRepositoryTest
 						"bpartner.changeLog",
 						"locations.changeLog",
 						"locations.original",
-						"contacts.changeLog")
+						"contacts.changeLog",
+						"creditLimits.changeLog")
 				.isEqualTo(bpartnerComposite);
 	}
 

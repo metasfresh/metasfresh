@@ -4,9 +4,13 @@ import de.metas.bpartner.BPartnerBankAccountId;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.creditLimit.CreditLimitTypeId;
+import de.metas.bpartner.service.creditlimit.BPartnerCreditLimit;
 import de.metas.money.CurrencyId;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;

@@ -29,6 +29,7 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.EmptyUtil;
+import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.discountschema.M_DiscountSchema_StepDefData;
 import de.metas.cucumber.stepdefs.dunning.C_Dunning_StepDefData;
 import de.metas.cucumber.stepdefs.pricing.M_PricingSystem_StepDefData;
@@ -58,10 +59,12 @@ import org.compiere.util.Env;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_AD_Language;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BP_Group_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
@@ -97,13 +100,16 @@ public class C_BPartner_StepDef
 
 	private final ExternalReferenceRestControllerService externalReferenceRestControllerService = SpringContextHolder.instance.getBean(ExternalReferenceRestControllerService.class);
 
+	private final TestContext testContext;
+
 	public C_BPartner_StepDef(
 			@NonNull final C_BPartner_StepDefData bPartnerTable,
 			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
 			@NonNull final M_PricingSystem_StepDefData pricingSystemTable,
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final M_DiscountSchema_StepDefData discountSchemaTable,
-			@NonNull final C_Dunning_StepDefData dunningTable)
+			@NonNull final C_Dunning_StepDefData dunningTable,
+			@NonNull final TestContext testContext)
 	{
 		this.bPartnerTable = bPartnerTable;
 		this.bPartnerLocationTable = bPartnerLocationTable;
@@ -111,6 +117,7 @@ public class C_BPartner_StepDef
 		this.productTable = productTable;
 		this.discountSchemaTable = discountSchemaTable;
 		this.dunningTable = dunningTable;
+		this.testContext = testContext;
 	}
 
 	@Given("metasfresh contains C_BPartners:")
@@ -203,6 +210,28 @@ public class C_BPartner_StepDef
 		for (final Map<String, String> tableRow : tableRows)
 		{
 			updateBPartner(tableRow);
+		}
+	}
+
+	@And("^store creditLimit endpointPath (.*) in context$")
+	public void store_credit_limit_endpointPath_in_context(@NonNull String endpointPath)
+	{
+		final String regex = ".*(:[a-zA-Z]+)/?.*";
+
+		final Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+		final Matcher matcher = pattern.matcher(endpointPath);
+
+		while (matcher.find())
+		{
+			final String creditLimitIdentifierGroup = matcher.group(1);
+			final String bpartnerIdentifier = creditLimitIdentifierGroup.replace(":", "");
+
+			final I_C_BPartner bPartner = bPartnerTable.get(bpartnerIdentifier);
+			assertThat(bPartner).isNotNull();
+
+			endpointPath = endpointPath.replace(creditLimitIdentifierGroup, String.valueOf(bPartner.getC_BPartner_ID()));
+
+			testContext.setEndpointPath(endpointPath);
 		}
 	}
 

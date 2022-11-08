@@ -35,6 +35,7 @@ import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.BPartnerContactQuery;
 import de.metas.bpartner.service.BPartnerQuery;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartner;
@@ -73,6 +74,7 @@ import de.metas.greeting.GreetingRepository;
 import de.metas.job.JobRepository;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
+import de.metas.rest_api.v2.bpartner.creditLimit.CreditLimitService;
 import de.metas.test.SnapshotFunctionFactory;
 import de.metas.title.TitleRepository;
 import de.metas.user.UserId;
@@ -94,6 +96,7 @@ import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_BPartner_Product;
 import org.compiere.model.I_C_Country;
@@ -176,7 +179,7 @@ class BpartnerRestControllerTest
 		final BPartnerBL partnerBL = new BPartnerBL(new UserRepository());
 		//Services.registerService(IBPartnerBL.class, partnerBL);
 
-		bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository());
+		bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository(), new BPartnerCreditLimitRepository());
 		currencyRepository = new CurrencyRepository();
 
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
@@ -189,12 +192,13 @@ class BpartnerRestControllerTest
 				currencyRepository,
 				new JobRepository(),
 				externalReferenceRestControllerService,
-				Mockito.mock(AlbertaBPartnerCompositeService.class));
+				Mockito.mock(AlbertaBPartnerCompositeService.class),
+				new BPartnerCreditLimitRepository());
 
 		bpartnerRestController = new BpartnerRestController(
 				new BPartnerEndpointService(jsonServiceFactory),
 				jsonServiceFactory,
-				new JsonRequestConsolidateService());
+				new JsonRequestConsolidateService(), new CreditLimitService(new BPartnerCreditLimitRepository(), externalReferenceRestControllerService));
 
 		final I_C_BP_Group bpGroupRecord = newInstance(I_C_BP_Group.class);
 		bpGroupRecord.setC_BP_Group_ID(C_BP_GROUP_ID);
@@ -339,6 +343,7 @@ class BpartnerRestControllerTest
 		final int initialUserRecordCount = POJOLookupMap.get().getRecords(I_AD_User.class).size();
 		final int initialBPartnerLocationRecordCount = POJOLookupMap.get().getRecords(I_C_BPartner_Location.class).size();
 		final int initialLocationRecordCount = POJOLookupMap.get().getRecords(I_C_Location.class).size();
+		final int initialBpartnerCreditLimitRecordCount = POJOLookupMap.get().getRecords(I_C_BPartner_CreditLimit.class).size();
 
 		createCountryRecord("CH");
 		createCountryRecord("DE");
@@ -348,6 +353,7 @@ class BpartnerRestControllerTest
 
 		assertThat(bpartnerComposite.getContactsNotNull().getRequestItems()).hasSize(2); // guard
 		assertThat(bpartnerComposite.getLocationsNotNull().getRequestItems()).hasSize(2);// guard
+		assertThat(bpartnerComposite.getCreditLimitsNotNull().getRequestItems()).hasSize(1);// guard
 
 		final JsonRequestBPartner bpartner = bpartnerComposite.getBpartner();
 		bpartner.setGroup(BP_GROUP_RECORD_NAME);
@@ -379,6 +385,7 @@ class BpartnerRestControllerTest
 		assertThat(POJOLookupMap.get().getRecords(I_AD_User.class)).hasSize(initialUserRecordCount + 2);
 		assertThat(POJOLookupMap.get().getRecords(I_C_BPartner_Location.class)).hasSize(initialBPartnerLocationRecordCount + 2);
 		assertThat(POJOLookupMap.get().getRecords(I_C_Location.class)).hasSize(initialLocationRecordCount + 2);
+		assertThat(POJOLookupMap.get().getRecords(I_C_BPartner_CreditLimit.class)).hasSize(initialBpartnerCreditLimitRecordCount + 1);
 	}
 
 	/**

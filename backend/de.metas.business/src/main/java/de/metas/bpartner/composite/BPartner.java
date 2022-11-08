@@ -17,7 +17,9 @@ import de.metas.pricing.PricingSystemId;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NonNull;
 import org.adempiere.ad.table.RecordChangeLog;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 
@@ -298,5 +300,15 @@ public class BPartner
 			result.add(TranslatableStrings.constant("bpartner.groupId"));
 		}
 		return result.build();
+	}
+
+	@NonNull
+	public String getBPartnerValueNotNull()
+	{
+		if (this.value == null)
+		{
+			throw new AdempiereException("Business partner value is missing!");
+		}
+		return this.value;
 	}
 }

@@ -77,7 +77,7 @@ public interface I_ExternalSystem_Config_SAP
 
 	/**
 	 * Set Errored Directory.
-	 * Defines where files should be moved after attempting to process them with error.
+	 * Defines where files should be moved after attempting to process them with error, relative to the current sftp target location.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -87,7 +87,7 @@ public interface I_ExternalSystem_Config_SAP
 
 	/**
 	 * Get Errored Directory.
-	 * Defines where files should be moved after attempting to process them with error.
+	 * Defines where files should be moved after attempting to process them with error, relative to the current sftp target location.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -213,7 +213,7 @@ public interface I_ExternalSystem_Config_SAP
 
 	/**
 	 * Set Processed Directory.
-	 * Defines where files should be moved after being successfully processed.
+	 * Defines where files should be moved after being successfully processed relative to the current sftp target location.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -223,7 +223,7 @@ public interface I_ExternalSystem_Config_SAP
 
 	/**
 	 * Get Processed Directory.
-	 * Defines where files should be moved after being successfully processed.
+	 * Defines where files should be moved after being successfully processed relative to the current sftp target location.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -235,7 +235,29 @@ public interface I_ExternalSystem_Config_SAP
 	String COLUMNNAME_ProcessedDirectory = "ProcessedDirectory";
 
 	/**
+	 * Set SFTP Credit Limit TargetDirectory.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSFTP_CreditLimit_TargetDirectory (@Nullable java.lang.String SFTP_CreditLimit_TargetDirectory);
+
+	/**
+	 * Get SFTP Credit Limit TargetDirectory.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSFTP_CreditLimit_TargetDirectory();
+
+	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_SFTP_CreditLimit_TargetDirectory = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "SFTP_CreditLimit_TargetDirectory", null);
+	String COLUMNNAME_SFTP_CreditLimit_TargetDirectory = "SFTP_CreditLimit_TargetDirectory";
+
+	/**
 	 * Set SFTP Hostname.
+	 * The host of the sftp server.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -245,6 +267,7 @@ public interface I_ExternalSystem_Config_SAP
 
 	/**
 	 * Get SFTP Hostname.
+	 * The host of the sftp server.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -257,6 +280,7 @@ public interface I_ExternalSystem_Config_SAP
 
 	/**
 	 * Set SFTP Password.
+	 * The password used to authenticate into the sftp server.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -266,6 +290,7 @@ public interface I_ExternalSystem_Config_SAP
 
 	/**
 	 * Get SFTP Password.
+	 * The password used to authenticate into the sftp server.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -278,6 +303,7 @@ public interface I_ExternalSystem_Config_SAP
 
 	/**
 	 * Set SFTP Port.
+	 * The port of the sftp server.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -287,6 +313,7 @@ public interface I_ExternalSystem_Config_SAP
 
 	/**
 	 * Get SFTP Port.
+	 * The port of the sftp server.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -299,6 +326,7 @@ public interface I_ExternalSystem_Config_SAP
 
 	/**
 	 * Set SFTP Target Directory.
+	 * The directory used to pull from the sftp server. (If no value set here, the files will be pulled from the root location of the sftp server.)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -308,6 +336,7 @@ public interface I_ExternalSystem_Config_SAP
 
 	/**
 	 * Get SFTP Target Directory.
+	 * The directory used to pull from the sftp server. (If no value set here, the files will be pulled from the root location of the sftp server.)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -320,6 +349,7 @@ public interface I_ExternalSystem_Config_SAP
 
 	/**
 	 * Set SFTP Username.
+	 * The username used to authenticate into the sftp server.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -329,6 +359,7 @@ public interface I_ExternalSystem_Config_SAP
 
 	/**
 	 * Get SFTP Username.
+	 * The username used to authenticate into the sftp server.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true

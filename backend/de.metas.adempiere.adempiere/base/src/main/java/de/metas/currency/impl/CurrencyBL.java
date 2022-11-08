@@ -38,6 +38,7 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -355,6 +356,20 @@ public class CurrencyBL implements ICurrencyBL
 	public @NonNull CurrencyCode getCurrencyCodeById(@NonNull final CurrencyId currencyId)
 	{
 		return currencyDAO.getCurrencyCodeById(currencyId);
+	}
+
+	@Override
+	@NonNull
+	public BigDecimal convertToBase(
+			@NonNull final BigDecimal amt,
+			@NonNull final CurrencyCode currencyCode,
+			@NonNull final ClientAndOrgId clientAndOrgId)
+	{
+		final Currency currencyFrom = currencyDAO.getByCurrencyCode(currencyCode);
+
+		final CurrencyId currencyToId = getBaseCurrencyId(clientAndOrgId.getClientId(), clientAndOrgId.getOrgId());
+
+		return convert(amt, currencyFrom.getId(), currencyToId, null, null, clientAndOrgId.getClientId(), clientAndOrgId.getOrgId());
 	}
 
 	private static CurrencyConversionResultBuilder prepareCurrencyConversionResult(@NonNull final CurrencyConversionContext conversionCtx)

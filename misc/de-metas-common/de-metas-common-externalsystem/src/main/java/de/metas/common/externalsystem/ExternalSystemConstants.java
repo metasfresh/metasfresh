@@ -73,7 +73,8 @@ public class ExternalSystemConstants
 	public static final String PARAM_SFTP_PORT = "SFTP_Port";
 	public static final String PARAM_SFTP_USERNAME = "SFTP_Username";
 	public static final String PARAM_SFTP_PASSWORD = "SFTP_Password";
-	public static final String PARAM_SFTP_TARGET_DIRECTORY = "SFTP_Target_Directory";
+	public static final String PARAM_SFTP_PRODUCT_TARGET_DIRECTORY = "SFTP_Product_Target_Directory";
+	public static final String PARAM_SFTP_CREDIT_LIMIT_TARGET_DIRECTORY = "SFTP_CreditLimit_Target_Directory";
 	public static final String PARAM_PROCESSED_DIRECTORY = "SFTPProcessedDirectory";
 	public static final String PARAM_ERRORED_DIRECTORY = "SFTPErroredDirectory";
 	public static final String PARAM_POLLING_FREQUENCY_MS = "SFTPPollingFrequencyInMs";

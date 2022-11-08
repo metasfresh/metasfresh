@@ -34,6 +34,7 @@ import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsertI
 import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import de.metas.common.bpartner.v2.response.JsonResponseCompositeList;
 import de.metas.common.bpartner.v2.response.JsonResponseContact;
+import de.metas.common.bpartner.v2.response.JsonResponseCreditLimitDelete;
 import de.metas.common.bpartner.v2.response.JsonResponseLocation;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsert;
 import de.metas.common.product.v2.response.JsonResponseProductBPartner;
@@ -44,6 +45,7 @@ import de.metas.externalreference.ExternalIdentifier;
 import de.metas.rest_api.utils.v2.JsonErrors;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.jsonpersister.JsonPersisterService;
+import de.metas.rest_api.v2.bpartner.creditLimit.CreditLimitService;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -56,6 +58,7 @@ import org.slf4j.MDC.MDCCloseable;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -85,15 +88,18 @@ public class BpartnerRestController
 	private final JsonServiceFactory jsonServiceFactory;
 
 	private final JsonRequestConsolidateService jsonRequestConsolidateService;
+	private final CreditLimitService creditLimitService;
 
 	public BpartnerRestController(
 			@NonNull final BPartnerEndpointService bpartnerEndpointService,
 			@NonNull final JsonServiceFactory jsonServiceFactory,
-			@NonNull final JsonRequestConsolidateService jsonRequestConsolidateService)
+			@NonNull final JsonRequestConsolidateService jsonRequestConsolidateService,
+			@NonNull final CreditLimitService creditLimitService)
 	{
 		this.bpartnerEndpointService = bpartnerEndpointService;
 		this.jsonServiceFactory = jsonServiceFactory;
 		this.jsonRequestConsolidateService = jsonRequestConsolidateService;
+		this.creditLimitService = creditLimitService;
 	}
 
 	//
@@ -518,6 +524,21 @@ public class BpartnerRestController
 				SyncAdvise.CREATE_OR_MERGE);
 
 		return createdOrNotFound(response);
+	}
+
+	@DeleteMapping("/credit-limit/{orgCode}/{bpartnerIdentifier}/{includingProcessed}")
+	public ResponseEntity<JsonResponseCreditLimitDelete> deleteExistingForBPartner(
+			@PathVariable("orgCode") //
+			@Nullable final String orgCode,
+
+			@ApiParam(required = true, value = BPARTNER_IDENTIFIER_DOC) //
+			@PathVariable("bpartnerIdentifier") //
+			@NonNull final String bpartnerIdentifier,
+
+			@PathVariable("includingProcessed")
+			final boolean includingProcessed)
+	{
+		return ResponseEntity.status(HttpStatus.OK).body(creditLimitService.deleteExistingRecordsForBPartnerAndOrg(bpartnerIdentifier, orgCode, includingProcessed));
 	}
 
 	private static <T> ResponseEntity<T> okOrNotFound(@NonNull final Optional<T> optionalResult)

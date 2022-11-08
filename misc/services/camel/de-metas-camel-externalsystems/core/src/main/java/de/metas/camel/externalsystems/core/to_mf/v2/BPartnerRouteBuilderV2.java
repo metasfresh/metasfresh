@@ -28,6 +28,8 @@ import de.metas.camel.externalsystems.common.v2.BPRetrieveCamelRequest;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
+import de.metas.common.bpartner.v2.request.creditLimit.JsonRequestCreditLimitDelete;
+import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
@@ -35,6 +37,7 @@ import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
 import org.springframework.stereotype.Component;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_BPARTNER_IDENTIFIER;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_INCLUDING_PROCESSED;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_ORG_CODE;
 import static de.metas.camel.externalsystems.core.to_mf.v2.UnpackV2ResponseRouteBuilder.UNPACK_V2_API_RESPONSE;
 import static de.metas.common.externalsystem.ExternalSystemConstants.HEADER_EXTERNALSYSTEM_CONFIG_ID;
@@ -82,7 +85,6 @@ public class BPartnerRouteBuilderV2 extends RouteBuilder
 
 				.to(direct(UNPACK_V2_API_RESPONSE));
 
-
 		from("{{" + ExternalSystemCamelConstants.MF_RETRIEVE_BPARTNER_V2_CAMEL_URI + "}}")
 				.routeId(RETRIEVE_BPARTNER_ROUTE_ID)
 				.streamCaching()
@@ -111,5 +113,32 @@ public class BPartnerRouteBuilderV2 extends RouteBuilder
 				.toD("{{metasfresh.retrieve-bpartner-v2.api.uri}}/${header." + HEADER_BPARTNER_IDENTIFIER + "}").id(RETRIEVE_BPARTNER_ENDPOINT_ID)
 
 				.to(direct(UNPACK_V2_API_RESPONSE));
+
+		from("{{" + ExternalSystemCamelConstants.MF_DELETE_BPARTNER_CREDIT_LIMIT_CAMEL_URI + "}}")
+				.routeId(ExternalSystemCamelConstants.MF_DELETE_BPARTNER_CREDIT_LIMIT_CAMEL_URI)
+				.streamCaching()
+				.log("Route invoked!")
+
+				.process(this::processDeleteCreditLimitReq)
+
+				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonRequestCreditLimitDelete.class))
+				.removeHeaders("CamelHttp*")
+				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.DELETE))
+				.toD("{{metasfresh.creditlimit.v2.api.uri}}/${header." + HEADER_ORG_CODE + "}/${header." + HEADER_BPARTNER_IDENTIFIER + "}/${header." + HEADER_INCLUDING_PROCESSED + "}");
+	}
+
+	private void processDeleteCreditLimitReq(@NonNull final Exchange exchange)
+	{
+		final Object request = exchange.getIn().getBody();
+		if (!(request instanceof JsonRequestCreditLimitDelete))
+		{
+			throw new RuntimeCamelException("The route " + ExternalSystemCamelConstants.MF_DELETE_BPARTNER_CREDIT_LIMIT_CAMEL_URI
+													+ " requires the body to be instanceof " + JsonRequestCreditLimitDelete.class.getName()
+													+ " However, it is " + (request == null ? "null" : request.getClass().getName()));
+		}
+
+		exchange.getIn().setHeader(HEADER_ORG_CODE, ((JsonRequestCreditLimitDelete)request).getOrgCode());
+		exchange.getIn().setHeader(HEADER_BPARTNER_IDENTIFIER, ((JsonRequestCreditLimitDelete)request).getPartnerIdentifier());
+		exchange.getIn().setHeader(HEADER_INCLUDING_PROCESSED, ((JsonRequestCreditLimitDelete)request).isIncludingProcessed());
 	}
 }
