@@ -45,9 +45,6 @@ import lombok.NonNull;
 @Component
 public class InvoiceCandidateViewHeaderPropertiesProvider implements ViewHeaderPropertiesProvider
 {
-	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-	private final IMsgBL msgBL = Services.get(IMsgBL.class);
-
 	@Override
 	public String getAppliesOnlyToTableName()
 	{
@@ -79,6 +76,8 @@ public class InvoiceCandidateViewHeaderPropertiesProvider implements ViewHeaderP
 
 		final SqlViewRowsWhereClause sqlWhereClause = view.getSqlWhereClause(DocumentIdsSelection.ALL, SqlOptions.usingTableName(I_C_Invoice_Candidate.Table_Name));
 		final SqlAndParams sqlAndParams = SqlAndParams.of(sqlWhereClause.toSqlString());
+
+		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class); // having this as a field within a spring "@Component" like this class can fail during startup, depending on factors that we don't control.
 		final InvoiceCandidatesAmtSelectionSummary summary = invoiceCandBL.calculateAmtSelectionSummary(sqlAndParams.getSql());
 
 		return toViewHeaderProperties(summary);
@@ -89,6 +88,8 @@ public class InvoiceCandidateViewHeaderPropertiesProvider implements ViewHeaderP
 	 */
 	private List<ViewHeaderPropertiesGroup> toViewHeaderProperties(final InvoiceCandidatesAmtSelectionSummary summary)
 	{
+		final IMsgBL msgBL = Services.get(IMsgBL.class); // having this as a field within a spring "@Component" like this class can fail during startup, depending on factors that we don't control.
+		
 		final ImmutableList.Builder<ViewHeaderPropertiesGroup> result = ImmutableList.<ViewHeaderPropertiesGroup> builder()
 				.add(ViewHeaderPropertiesGroup.builder()
 						.entry(ViewHeaderProperty.builder()
