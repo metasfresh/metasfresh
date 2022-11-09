@@ -150,6 +150,7 @@ public class ManufacturingJobLoaderAndSaver
 			case ActivityConfirmation:
 			case GenerateHUQRCodes:
 			case ScanScaleDevice:
+			case CallExternalSystem:
 			case RawMaterialsIssueAdjustment:
 				return prepareJobActivity(from)
 						.build();
@@ -168,7 +169,9 @@ public class ManufacturingJobLoaderAndSaver
 				.type(from.getType())
 				.orderRoutingActivityId(from.getId())
 				.routingActivityStatus(from.getStatus())
-				.alwaysAvailableToUser(from.getAlwaysAvailableToUser());
+				.alwaysAvailableToUser(from.getAlwaysAvailableToUser())
+				.scannedQRCode(from.getScannedQRCode());
+
 	}
 
 	private RawMaterialsIssue toRawMaterialsIssue(final @NonNull PPOrderRoutingActivity from)

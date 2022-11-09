@@ -681,6 +681,8 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	public static final String PP_ACTIVITY_TYPE_ScanScaleDevice = "ScanScaleDevice";
 	/** RawMaterialsIssueAdjustment = MIA */
 	public static final String PP_ACTIVITY_TYPE_RawMaterialsIssueAdjustment = "MIA";
+	/** CallExternalSystem = CallExternalSystem */
+	public static final String PP_ACTIVITY_TYPE_CallExternalSystem = "CallExternalSystem";
 	@Override
 	public void setPP_Activity_Type (final @Nullable java.lang.String PP_Activity_Type)
 	{
@@ -693,7 +695,7 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 		return get_ValueAsString(COLUMNNAME_PP_Activity_Type);
 	}
 
-	/** 
+	/**
 	 * PP_AlwaysAvailableToUser AD_Reference_ID=319
 	 * Reference name: _YesNo
 	 */
@@ -709,7 +711,7 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	}
 
 	@Override
-	public java.lang.String getPP_AlwaysAvailableToUser() 
+	public java.lang.String getPP_AlwaysAvailableToUser()
 	{
 		return get_ValueAsString(COLUMNNAME_PP_AlwaysAvailableToUser);
 	}
