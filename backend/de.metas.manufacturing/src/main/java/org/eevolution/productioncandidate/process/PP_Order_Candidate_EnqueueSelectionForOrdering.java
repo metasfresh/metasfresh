@@ -119,7 +119,6 @@ public class PP_Order_Candidate_EnqueueSelectionForOrdering extends JavaProcess 
 				.addCompareFilter(I_PP_Order_Candidate.COLUMNNAME_QtyToProcess, CompareQueryFilter.Operator.GREATER, BigDecimal.ZERO)
 				.filter(userSelectionFilter)
 				.addOnlyActiveRecordsFilter()
-				.addOnlyContextClient()
 				.orderBy(I_PP_Order_Candidate.COLUMNNAME_SeqNo)
 				.orderBy(I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_ID);
 	}
