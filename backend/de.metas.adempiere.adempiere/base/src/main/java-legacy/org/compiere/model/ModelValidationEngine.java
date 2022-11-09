@@ -697,7 +697,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 	public void fireModelChange(@NonNull final PO po, final ModelChangeType changeType)
 	{
 
-		if(isPerformanceMonitorActive())
+		if(!isPerformanceMonitorActive())
 		{
 			fireModelChange0(po, changeType);
 		}
@@ -1089,7 +1089,7 @@ public class ModelValidationEngine implements IModelValidationEngine
 	{
 		try (final MDCCloseable mdcCloseable = MDC.putCloseable("docTiming", docTiming.toString()))
 		{
-			if(isPerformanceMonitorActive())
+			if(!isPerformanceMonitorActive())
 			{
 				return fireDocValidate0(model, docTiming);
 			}
