@@ -23,6 +23,7 @@
 package de.metas.externalsystem.config.qrcode;
 
 import de.metas.externalsystem.IExternalSystemChildConfigId;
+import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.global_qrcodes.PrintableQRCode;
 import lombok.Builder;
 import lombok.NonNull;
@@ -46,13 +47,19 @@ public class ExternalSystemConfigQRCode
 
 	public String toGlobalQRCodeJsonString() {return ExternalSystemConfigQRCodeJsonConverter.toGlobalQRCodeJsonString(this);}
 
-	public static ExternalSystemConfigQRCode ofGlobalQRCodeJsonString(final String json) {return ExternalSystemConfigQRCodeJsonConverter.fromGlobalQRCodeJsonString(json);}
+	public static ExternalSystemConfigQRCode ofGlobalQRCode(@NonNull final GlobalQRCode globalQRCode) {return ExternalSystemConfigQRCodeJsonConverter.fromGlobalQRCode(globalQRCode);}
 
 	public PrintableQRCode toPrintableQRCode()
 	{
 		return PrintableQRCode.builder()
 				.qrCode(toGlobalQRCodeJsonString())
-				.bottomText(childConfigId.getType() + "-" + childConfigId.getRepoId())
+				.bottomText(getCaption())
 				.build();
+	}
+
+	@NonNull
+	public String getCaption()
+	{
+		return childConfigId.getType() + "-" + childConfigId.getRepoId();
 	}
 }
