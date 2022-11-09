@@ -158,14 +158,14 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 
 	private boolean isPerfMonActive()
 	{
-		if(!isGettingSysconfig.get())
+		if (!isGettingSysconfig.get())
 		{
 			isGettingSysconfig.set(true);
 			try
 			{
 				return lastSysconfigResult = sysConfigBL().getBooleanValue(PERF_MON_SYSCONFIG_NAME, SYS_CONFIG_DEFAULT_VALUE);
 			}
-			catch(final IllegalStateException ise)
+			catch (final IllegalStateException ise)
 			{
 				//catch exception caused by read while modifying AD_SysConfig
 				return lastSysconfigResult;

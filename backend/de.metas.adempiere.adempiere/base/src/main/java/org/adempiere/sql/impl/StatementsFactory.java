@@ -90,23 +90,23 @@ public final class StatementsFactory implements IStatementsFactory
 
 	private boolean isPerfMonActive()
 	{
-		if(!isGettingSysconfig.get())
+		if (!isGettingSysconfig.get())
 		{
 			isGettingSysconfig.set(true);
 			try
 			{
 				final boolean perfMonActive = sysConfigBL().getBooleanValue(PERF_MON_SYSCONFIG_NAME, SYS_CONFIG_DEFAULT_VALUE);
-				if(perfMonActive && !sqlQueriesTracingEnabled)
+				if (perfMonActive && !sqlQueriesTracingEnabled)
 				{
 					this.sqlQueriesTracingEnabled = true;
 				}
-				if(perfMonActive && TracingStatement.SQL_QUERIES_COLLECTOR == null)
+				if (perfMonActive && TracingStatement.SQL_QUERIES_COLLECTOR == null)
 				{
 					TracingStatement.SQL_QUERIES_COLLECTOR = new QueryStatisticsLogger();
 				}
 				return lastSysconfigResult = sysConfigBL().getBooleanValue(PERF_MON_SYSCONFIG_NAME, SYS_CONFIG_DEFAULT_VALUE);
 			}
-			catch(final IllegalStateException ise)
+			catch (final IllegalStateException ise)
 			{
 				//catch exception caused by read while modifying AD_SysConfig
 				return lastSysconfigResult;
