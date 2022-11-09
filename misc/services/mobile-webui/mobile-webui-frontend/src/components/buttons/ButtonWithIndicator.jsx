@@ -4,7 +4,16 @@ import cx from 'classnames';
 
 import * as CompleteStatus from '../../constants/CompleteStatus';
 
-const ButtonWithIndicator = ({ caption, showWarningSign, isDanger, completeStatus, disabled, onClick, children }) => {
+const ButtonWithIndicator = ({
+  caption,
+  showWarningSign,
+  typeFASIconName,
+  isDanger,
+  completeStatus,
+  disabled,
+  onClick,
+  children,
+}) => {
   const indicatorClassName = getIndicatorClassName(completeStatus);
 
   return (
@@ -18,6 +27,11 @@ const ButtonWithIndicator = ({ caption, showWarningSign, isDanger, completeStatu
           {showWarningSign && (
             <span className="icon">
               <i className="fas fa-exclamation-triangle warning-sign" />
+            </span>
+          )}
+          {typeFASIconName && (
+            <span className="icon">
+              <i className={`fas fa-solid ${typeFASIconName}`} />
             </span>
           )}
         </div>
@@ -53,6 +67,7 @@ const getIndicatorClassName = (completeStatus) => {
 ButtonWithIndicator.propTypes = {
   caption: PropTypes.string.isRequired,
   showWarningSign: PropTypes.bool,
+  typeFASIconName: PropTypes.string,
   isDanger: PropTypes.bool,
   completeStatus: PropTypes.string,
   disabled: PropTypes.bool,
