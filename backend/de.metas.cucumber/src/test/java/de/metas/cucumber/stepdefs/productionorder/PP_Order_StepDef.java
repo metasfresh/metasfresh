@@ -22,6 +22,8 @@
 
 package de.metas.cucumber.stepdefs.productionorder;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Ordering;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
@@ -52,6 +54,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -64,12 +67,15 @@ import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderPlanningStatus;
 import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.I_PP_OrderCandidate_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 import org.eevolution.model.I_PP_Order_Candidate;
 import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_Planning;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -95,6 +101,7 @@ public class PP_Order_StepDef
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 	private final PP_Order_BOMLine_StepDefData ppOrderBOMLineTable;
 	private final M_HU_PI_Item_Product_StepDefData huPiItemProductTable;
+	private final PP_Order_Candidate_StepDefData ppOrderCandidateTable;
 
 	public PP_Order_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
@@ -105,7 +112,8 @@ public class PP_Order_StepDef
 			@NonNull final S_Resource_StepDefData resourceTable,
 			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
 			@NonNull final PP_Order_BOMLine_StepDefData ppOrderBOMLineTable,
-			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable)
+			@NonNull final M_HU_PI_Item_Product_StepDefData huPiItemProductTable,
+			@NonNull final PP_Order_Candidate_StepDefData ppOrderCandidateTable)
 	{
 		this.productTable = productTable;
 		this.productBOMTable = productBOMTable;
@@ -116,6 +124,7 @@ public class PP_Order_StepDef
 		this.attributeSetInstanceTable = attributeSetInstanceTable;
 		this.ppOrderBOMLineTable = ppOrderBOMLineTable;
 		this.huPiItemProductTable = huPiItemProductTable;
+		this.ppOrderCandidateTable = ppOrderCandidateTable;
 	}
 
 	@And("^after not more than (.*)s, PP_Orders are found$")
@@ -215,6 +224,24 @@ public class PP_Order_StepDef
 				StepDefUtil.validateErrorMessage(e, errorMessage);
 			}
 		}
+	}
+
+	@And("^validate that after not more than (.*)s, PP_Orders are created for PP_Order_Candidate in the following order:$")
+	public void validate_PP_Orders_created_in_the_following_order(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	{
+		final Map<String, ArrayList<String>> ppOrderCandidate2PPOrderIdsOrdered = getPPOrderCandIdentifier2PPOrderIdentifiers(dataTable);
+
+		locateAndLoadPPOrders(timeoutSec, ppOrderCandidate2PPOrderIdsOrdered);
+
+		final List<Integer> ppOrderIdsAsListedInFeatureFile = dataTable.asMaps()
+				.stream()
+				.map(row -> {
+					final String ppOrderIdentifier = DataTableUtil.extractStringForColumnName(row, I_PP_Order.COLUMNNAME_PP_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+					return ppOrderTable.get(ppOrderIdentifier).getPP_Order_ID();
+				})
+				.collect(ImmutableList.toImmutableList());
+
+		assertThat(Ordering.<Integer>natural().isOrdered(ppOrderIdsAsListedInFeatureFile)).isTrue();
 	}
 
 	private void validatePP_Order_BomLine(
@@ -372,5 +399,63 @@ public class PP_Order_StepDef
 
 			assertThat(ppOrder.getM_HU_PI_Item_Product_ID()).isEqualTo(huPiItemProductRecordID);
 		}
+	}
+
+	private void locateAndLoadPPOrders(int timeoutSec, @NonNull final Map<String, ArrayList<String>> ppOrderCandidate2PPOrderIdsOrdered) throws InterruptedException
+	{
+		for (final String ppOrderCandIdentifier : ppOrderCandidate2PPOrderIdsOrdered.keySet())
+		{
+			final I_PP_Order_Candidate ppOrderCandidate = ppOrderCandidateTable.get(ppOrderCandIdentifier);
+			assertThat(ppOrderCandidate).isNotNull();
+
+			final Supplier<Boolean> ppOrderAllocationsFound = () -> {
+
+				final ImmutableList<PPOrderId> ppOrderIdsForCandidateSorted = queryBL.createQueryBuilder(I_PP_OrderCandidate_PP_Order.class)
+						.addEqualsFilter(I_PP_OrderCandidate_PP_Order.COLUMNNAME_PP_Order_Candidate_ID, ppOrderCandidate.getPP_Order_Candidate_ID())
+						.create()
+						.stream()
+						.map(I_PP_OrderCandidate_PP_Order::getPP_Order_ID)
+						.sorted()
+						.map(PPOrderId::ofRepoId)
+						.collect(ImmutableList.toImmutableList());
+
+				final List<String> ppOrderIdentifiersSorted = ppOrderCandidate2PPOrderIdsOrdered.get(ppOrderCandIdentifier);
+
+				if (ppOrderIdsForCandidateSorted.size() != ppOrderIdentifiersSorted.size())
+				{
+					return false;
+				}
+
+
+				for (int i = 0; i < ppOrderIdsForCandidateSorted.size(); i++)
+				{
+					ppOrderTable.putOrReplace(ppOrderIdentifiersSorted.get(i), InterfaceWrapperHelper.load(ppOrderIdsForCandidateSorted.get(i), I_PP_Order.class));
+				}
+
+				return true;
+			};
+
+			StepDefUtil.tryAndWait(timeoutSec, 500, ppOrderAllocationsFound);
+		}
+	}
+
+	@NonNull
+	private static Map<String, ArrayList<String>> getPPOrderCandIdentifier2PPOrderIdentifiers(@NonNull final DataTable dataTable)
+	{
+		final Map<String, ArrayList<String>> ppOrderCandidate2PPOrderIdsOrdered = new HashMap<>();
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String ppOrderCandIdentifier = DataTableUtil.extractStringForColumnName(row, I_PP_Order_Candidate.COLUMNNAME_PP_Order_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String ppOrderIdentifier = DataTableUtil.extractStringForColumnName(row, I_PP_Order.COLUMNNAME_PP_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+			final ArrayList<String> ppOrderIdentifiers = new ArrayList<>();
+			ppOrderIdentifiers.add(ppOrderIdentifier);
+			ppOrderCandidate2PPOrderIdsOrdered.merge(ppOrderCandIdentifier, ppOrderIdentifiers, (old, newL) -> {
+				old.addAll(newL);
+				return old;
+			});
+		}
+
+		return ppOrderCandidate2PPOrderIdsOrdered;
 	}
 }

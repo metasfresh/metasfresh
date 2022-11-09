@@ -49,8 +49,8 @@ Feature: create multiple production candidates
       | boml_1     | bom_1                        | p_2                     | 2021-04-01 | 10       |
     And the PP_Product_BOM identified by bom_1 is completed
     And metasfresh contains PP_Product_Plannings
-      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
-      | ppln_1     | p_1                     | bomVersions_1                            | false        |
+      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.MaxManufacturedQtyPerOrderDispo | OPT.MaxManufacturedQtyPerOrderDispoUOMCode | OPT.SeqNo |
+      | ppln_1     | p_1                     | bomVersions_1                            | false        | 5                                   | PCE                                        | 10        |
     And metasfresh contains C_BPartners:
       | Identifier    | Name            | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | endcustomer_2 | EndcustomerPP_2 | N            | Y              | ps_1                          |
@@ -242,3 +242,65 @@ Feature: create multiple production candidates
       | ppOrderCandidate_3_1             | ppOrder_3_1            | 3          | PCE               |
       | ppOrderCandidate_3_2             | ppOrder_3_1            | 2          | PCE               |
       | ppOrderCandidate_3_2             | ppOrder_3_2            | 2          | PCE               |
+
+
+  @from:cucumber
+  Scenario:  The manufacturing candidates are created for two sales order lines with different products, considering max allowed capacity configured on product planning.
+
+    Given metasfresh contains M_Products:
+      | Identifier  | Name                 | OPT.M_Product_Category_ID.Identifier |
+      | product_4   | product_09112022_1   | standard_category                    |
+      | component_4 | component_09112022_1 | standard_category                    |
+
+    And metasfresh contains M_ProductPrices
+      | Identifier       | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
+      | productPrice_4_1 | plv_1                             | product_4               | 5.0      | PCE               | Normal                        |
+      | productPrice_4_2 | plv_1                             | component_4             | 7.0      | PCE               | Normal                        |
+
+    And metasfresh contains PP_Product_BOM
+      | Identifier | M_Product_ID.Identifier | ValidFrom  | PP_Product_BOMVersions_ID.Identifier |
+      | bom_4      | product_4               | 2022-11-01 | bomVersions_4                        |
+    And metasfresh contains PP_Product_BOMLines
+      | Identifier | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | ValidFrom  | QtyBatch |
+      | boml_4     | bom_4                        | component_4             | 2022-11-09 | 10       |
+    And the PP_Product_BOM identified by bom_4 is completed
+    And metasfresh contains PP_Product_Plannings
+      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.SeqNo | OPT.MaxManufacturedQtyPerOrderDispo | OPT.MaxManufacturedQtyPerOrderDispoUOMCode |
+      | ppln_4     | product_4               | bomVersions_4                            | false        | 20        | 5                                   | PCE                                        |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  |
+      | order_4_1  | true    | endcustomer_2            | 2022-11-09  | 2022-11-09T21:00:00Z |
+    And metasfresh contains C_OrderLines:
+      | Identifier    | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | orderLine_4_1 | order_4_1             | product_4               | 5          |
+
+    When the order identified by order_4_1 is completed
+
+    Then after not more than 30s, PP_Order_Candidates are found
+      | Identifier           | Processed | OPT.SeqNo | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
+      | ppOrderCandidate_4_1 | false     | 20        | product_4               | bom_4                        | ppln_4                            | 540006        | 5          | 5            | 0            | PCE               | 2022-11-09T21:00:00Z | 2022-11-09T21:00:00Z | false    |
+
+    And metasfresh contains C_Orders:
+      | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  |
+      | order_4_2  | true    | endcustomer_2            | 2022-11-09  | 2022-11-09T21:00:00Z |
+    And metasfresh contains C_OrderLines:
+      | Identifier    | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
+      | orderLine_4_2 | order_4_2             | p_1                     | 5          |
+
+    When the order identified by order_4_2 is completed
+
+    Then after not more than 30s, PP_Order_Candidates are found
+      | Identifier           | Processed | OPT.SeqNo | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
+      | ppOrderCandidate_4_2 | false     | 10        | p_1                     | bom_1                        | ppln_1                            | 540006        | 5          | 5            | 0            | PCE               | 2022-11-09T21:00:00Z | 2022-11-09T21:00:00Z | false    |
+
+    When generate PP_Order process is invoked for selection, with completeDocument=false and autoProcessCandidateAfterProduction=false
+      | PP_Order_Candidate_ID.Identifier |
+      | ppOrderCandidate_4_1             |
+      | ppOrderCandidate_4_2             |
+
+    And validate that after not more than 30s, PP_Orders are created for PP_Order_Candidate in the following order:
+      | PP_Order_Candidate_ID.Identifier | PP_Order_ID.Identifier |
+      | ppOrderCandidate_4_2             | ppOrder_4_1            |
+      | ppOrderCandidate_4_1             | ppOrder_4_2            |
+

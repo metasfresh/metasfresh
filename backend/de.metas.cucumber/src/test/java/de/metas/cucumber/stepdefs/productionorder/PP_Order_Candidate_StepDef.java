@@ -440,6 +440,12 @@ public class PP_Order_Candidate_StepDef
 
 			assertThat(ppOrderCandidate.getM_HU_PI_Item_Product_ID()).isEqualTo(huPiItemProductRecordID);
 		}
+
+		final Integer seqNo = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + I_PP_Product_Planning.COLUMNNAME_SeqNo);
+		if (seqNo != null)
+		{
+			assertThat(ppOrderCandidate.getSeqNo()).isEqualTo(seqNo);
+		}
 	}
 
 	private void updateQtyEnteredAndExpectForException(@NonNull final Map<String, String> tableRow)

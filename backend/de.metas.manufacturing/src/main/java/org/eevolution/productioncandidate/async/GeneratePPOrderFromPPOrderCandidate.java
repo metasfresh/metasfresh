@@ -28,6 +28,8 @@ import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.util.api.IParams;
 import org.compiere.SpringContextHolder;
@@ -37,8 +39,13 @@ import org.eevolution.productioncandidate.service.PPOrderCandidateService;
 import org.eevolution.productioncandidate.service.produce.PPOrderCandidateToAllocate;
 
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Stream;
@@ -90,9 +97,80 @@ public class GeneratePPOrderFromPPOrderCandidate extends WorkpackageProcessorAda
 	@NonNull
 	private ImmutableList<PPOrderCandidateToAllocate> getSortedCandidates(@NonNull final Stream<I_PP_Order_Candidate> candidateStream)
 	{
-		return candidateStream.filter(orderCandidate -> !orderCandidate.isProcessed())
+		final Map<String, PPOrderCandidatesGroup> headerAgg2PPOrderCandGroup = new HashMap<>();
+
+		candidateStream
+				.filter(orderCandidate -> !orderCandidate.isProcessed())
 				.map(PPOrderCandidateToAllocate::of)
-				.sorted(Comparator.comparing(PPOrderCandidateToAllocate::getHeaderAggregationKey))
-				.collect(ImmutableList.toImmutableList());
+				.forEach(cand -> addPPOrderCandidateToGroup(headerAgg2PPOrderCandGroup, cand));
+
+		final ImmutableList.Builder<PPOrderCandidateToAllocate> sortedCandidates = new ImmutableList.Builder<>();
+
+		headerAgg2PPOrderCandGroup.values()
+				.stream()
+				.filter(Objects::nonNull)
+				.sorted(Comparator.nullsLast(Comparator.comparing(PPOrderCandidatesGroup::getGroupSeqNo)))
+				.map(PPOrderCandidatesGroup::getPpOrderCandidateToAllocateList)
+				.forEach(sortedCandidates::addAll);
+
+		return sortedCandidates.build();
+	}
+
+	private void addPPOrderCandidateToGroup(
+			@NonNull final Map<String, PPOrderCandidatesGroup> headerAgg2PPOrderCandGroup,
+			@NonNull final PPOrderCandidateToAllocate ppOrderCandidateToAllocate)
+	{
+		if (headerAgg2PPOrderCandGroup.get(ppOrderCandidateToAllocate.getHeaderAggregationKey()) == null)
+		{
+			headerAgg2PPOrderCandGroup.put(ppOrderCandidateToAllocate.getHeaderAggregationKey(), PPOrderCandidatesGroup.of(ppOrderCandidateToAllocate));
+		}
+		else
+		{
+			final PPOrderCandidatesGroup currentState = headerAgg2PPOrderCandGroup.get(ppOrderCandidateToAllocate.getHeaderAggregationKey());
+			currentState.addPPOrderCandidateForHeaderAggKey(ppOrderCandidateToAllocate);
+		}
+	}
+
+	@Getter
+	@EqualsAndHashCode
+	private static class PPOrderCandidatesGroup
+	{
+		@Nullable
+		private Integer groupSeqNo;
+
+		@NonNull
+		private final List<PPOrderCandidateToAllocate> ppOrderCandidateToAllocateList;
+
+		private PPOrderCandidatesGroup(@NonNull final PPOrderCandidateToAllocate ppOrderCandidateToAllocate)
+		{
+			this.ppOrderCandidateToAllocateList = new ArrayList<>();
+
+			this.ppOrderCandidateToAllocateList.add(ppOrderCandidateToAllocate);
+			this.groupSeqNo = ppOrderCandidateToAllocate.getPpOrderCandidate().getSeqNo() > 0
+					? ppOrderCandidateToAllocate.getPpOrderCandidate().getSeqNo()
+					: null;
+		}
+
+		@NonNull
+		public static PPOrderCandidatesGroup of(@NonNull final PPOrderCandidateToAllocate ppOrderCandidateToAllocate)
+		{
+			return new PPOrderCandidatesGroup(ppOrderCandidateToAllocate);
+		}
+
+		public void addPPOrderCandidateForHeaderAggKey(@NonNull final PPOrderCandidateToAllocate ppOrderCandidateToAllocate)
+		{
+			ppOrderCandidateToAllocateList.add(ppOrderCandidateToAllocate);
+			updateSeqNo(ppOrderCandidateToAllocate.getPpOrderCandidate().getSeqNo());
+		}
+
+		private void updateSeqNo(final int newSeqNo)
+		{
+			if (newSeqNo <= 0 || (groupSeqNo != null && groupSeqNo <= newSeqNo))
+			{
+				return;
+			}
+
+			this.groupSeqNo = newSeqNo;
+		}
 	}
 }
