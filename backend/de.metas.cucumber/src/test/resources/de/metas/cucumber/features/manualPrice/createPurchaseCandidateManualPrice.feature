@@ -75,14 +75,14 @@ Feature: create Purchase Candidate having manual price set
     And a PurchaseOrder with externalId 'externalHeaderId_17052022_1' is created after not more than 30 seconds and has values
       | ExternalPurchaseOrderURL       | POReference       | OPT.C_Order_ID.Identifier |
       | www.PurchaseNoProductPrice.com | po_ref_17052022_1 | purchaseOrder_1           |
-    And after not more than 30s the order is found
+    And after not more than 60s the order is found
       | C_Order_ID.Identifier | DocStatus |
       | purchaseOrder_1       | CO        |
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
       | ol_1                      | purchaseOrder_1       | p_1                     | 0            | 10         | 0           | 10    | 0        | EUR          | true      | PCE                   | PCE                       |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
       | receiptSchedule_1               | purchaseOrder_1       | ol_1                      | bpartner_1               | bpartnerLocation_1                | p_1                     | 10         | warehouseStd              |
 
@@ -93,19 +93,19 @@ Feature: create Purchase Candidate having manual price set
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_1               | inOut_1               |
 
-    And after not more than 30s locate invoice candidates by order line:
+    And after not more than 60s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And recompute invoice candidates if required
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtToInvoice |
       | invoice_candidate_1               | bpartner_1                  | p_1                     | 100                 |
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
-    Then after not more than 30s, C_Invoice are found:
+    Then after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
@@ -188,14 +188,14 @@ Feature: create Purchase Candidate having manual price set
     And a PurchaseOrder with externalId 'externalHeaderId_18052022_1' is created after not more than 30 seconds and has values
       | ExternalPurchaseOrderURL       | POReference       | OPT.C_Order_ID.Identifier |
       | www.PurchaseNoProductPrice.com | po_ref_18052022_1 | purchaseOrder_1           |
-    And after not more than 30s the order is found
+    And after not more than 60s the order is found
       | C_Order_ID.Identifier | DocStatus |
       | purchaseOrder_1       | CO        |
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
       | ol_1                      | purchaseOrder_1       | p_1                     | 0            | 10         | 0           | 10    | 0        | EUR          | true      | PCE                   | KGM                       |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
       | receiptSchedule_1               | purchaseOrder_1       | ol_1                      | bpartner_1               | bpartnerLocation_1                | p_1                     | 10         | warehouseStd              |
 
@@ -206,19 +206,19 @@ Feature: create Purchase Candidate having manual price set
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_1               | inOut_1               |
 
-    And after not more than 30s locate invoice candidates by order line:
+    And after not more than 60s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And recompute invoice candidates if required
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtToInvoice |
       | invoice_candidate_1               | bpartner_1                  | p_1                     | 100                 |
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
-    Then after not more than 30s, C_Invoice are found:
+    Then after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices
@@ -296,14 +296,14 @@ Feature: create Purchase Candidate having manual price set
     And a PurchaseOrder with externalId 'externalHeaderId_06072022_1' is created after not more than 30 seconds and has values
       | ExternalPurchaseOrderURL       | POReference       | OPT.C_Order_ID.Identifier |
       | www.PurchaseNoProductPrice.com | po_ref_06072022_1 | purchaseOrder_1           |
-    And after not more than 30s the order is found
+    And after not more than 60s the order is found
       | C_Order_ID.Identifier | DocStatus |
       | purchaseOrder_1       | CO        |
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_ID.X12DE355 | OPT.Price_UOM_ID.X12DE355 |
       | ol_1                      | purchaseOrder_1       | p_1                     | 0            | 10         | 0           | 10    | 0        | EUR          | true      | PCE                   | PCE                       |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
       | receiptSchedule_1               | purchaseOrder_1       | ol_1                      | bpartner_1               | bpartnerLocation_1                | p_1                     | 10         | warehouseStd              |
 
@@ -314,19 +314,19 @@ Feature: create Purchase Candidate having manual price set
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_1               | inOut_1               |
 
-    And after not more than 30s locate invoice candidates by order line:
+    And after not more than 60s locate invoice candidates by order line:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier |
       | invoice_candidate_1               | ol_1                      |
     And recompute invoice candidates if required
       | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | M_Product_ID.Identifier | OPT.NetAmtToInvoice |
       | invoice_candidate_1               | bpartner_1                  | p_1                     | 100                 |
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
-    Then after not more than 30s, C_Invoice are found:
+    Then after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
     And validate created invoices

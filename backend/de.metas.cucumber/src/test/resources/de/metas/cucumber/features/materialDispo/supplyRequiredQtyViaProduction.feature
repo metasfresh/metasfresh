@@ -66,7 +66,7 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
     And the inventory identified by i_1 is completed
     And the inventory identified by i_2 is completed
 
-    And after not more than 30s, there are added M_HUs for inventory
+    And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | il_1                          | hu_1               |
       | il_2                          | hu_2               |
@@ -147,7 +147,7 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
       | il_1       | i_1                       | p_1                     | PCE          | 10       | 0       |
     And the inventory identified by i_1 is completed
 
-    And after not more than 30s, there are added M_HUs for inventory
+    And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | il_1                          | hu_1               |
     And M_HU are disposed:
@@ -229,7 +229,7 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
     And the inventory identified by i_1 is completed
     And the inventory identified by i_2 is completed
 
-    And after not more than 30s, there are added M_HUs for inventory
+    And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | il_1                          | hu_1               |
       | il_2                          | hu_2               |
@@ -396,14 +396,14 @@ Feature: Disposal is correctly considered in Material Dispo. Stock shortage solv
     And the following PP_Order_Candidates are enqueued for generating PP_Orders
       | PP_Order_Candidate_ID.Identifier |
       | oc_1                             |
-    And after not more than 30s, PP_Orders are found
+    And after not more than 60s, PP_Orders are found
       | Identifier | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyOrdered | C_UOM_ID.X12DE355 | C_BPartner_ID.Identifier | DatePromised         |
       | ppo_1      | p_1                     | bom_1                        | ppln_1                            | 540006        | 10         | 10         | PCE               | endcustomer_1            | 2021-04-11T06:00:00Z |
-    And after not more than 30s, PP_Order_BomLines are found
+    And after not more than 60s, PP_Order_BomLines are found
       | PP_Order_BOMLine_ID.Identifier | PP_Order_ID.Identifier | M_Product_ID.Identifier | QtyRequiered | IsQtyPercentage | C_UOM_ID.X12DE355 | ComponentType |
       | ppOrderBOMLine_1               | ppo_1                  | p_2                     | 100          | false           | PCE               | CO            |
 
-    And after not more than 30s, PP_OrderCandidate_PP_Order are found
+    And after not more than 60s, PP_OrderCandidate_PP_Order are found
       | PP_Order_Candidate_ID.Identifier | PP_Order_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 |
       | oc_1                             | ppo_1                  | 10         | PCE               |
 

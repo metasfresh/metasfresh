@@ -70,13 +70,13 @@ Feature: Import Invoice Candidates via DataImportRestController
     And update C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.InvoiceRule_Override |
       | invoiceCandidate_1                | I                        |
-    And after not more than 30s C_Invoice_Candidate matches:
+    And after not more than 60s C_Invoice_Candidate matches:
       | C_Invoice_Candidate_ID.Identifier | OPT.QtyToInvoice |
       | invoiceCandidate_1                | 5                |
     When process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoiceCandidate_1                |
-    Then after not more than 30s, C_Invoice are found:
+    Then after not more than 60s, C_Invoice are found:
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | invoiceCandidate_1                | invoice_1               |
 
@@ -229,7 +229,7 @@ Feature: Import Invoice Candidates via DataImportRestController
     And validate invoice candidates by record reference:
       | TableName           | I_Invoice_Candidate_ID.Identifier | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | AD_Org_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | IsSOTrx | OPT.C_DocType_ID.Identifier | OPT.C_UOM_ID.Identifier | InvoiceRule |
       | I_Invoice_Candidate | iInvoiceCandidate_5               | invoiceCandidate_5                | billBpartner_5              | billBPLocation_5            | importFormatOrg      | billBPUser_5                | product_5                   | 4              | 2                | true    | docType                     | UOM_5                   | D           |
-    And after not more than 30s C_Invoice_Candidate matches:
+    And after not more than 60s C_Invoice_Candidate matches:
       | C_Invoice_Candidate_ID.Identifier | OPT.QtyToInvoice |
       | invoiceCandidate_5                | 2                |
 
@@ -237,6 +237,6 @@ Feature: Import Invoice Candidates via DataImportRestController
       | C_Invoice_Candidate_ID.Identifier |
       | invoiceCandidate_5                |
 
-    Then after not more than 30s, C_Invoice are found:
+    Then after not more than 60s, C_Invoice are found:
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | invoiceCandidate_5                | invoice_5               |

@@ -55,10 +55,10 @@ Feature: In effect invoice candidates
 
     When the order identified by order_1 is completed
 
-    Then after not more than 30s, M_ShipmentSchedules are found:
+    Then after not more than 60s, M_ShipmentSchedules are found:
       | Identifier         | C_OrderLine_ID.Identifier | IsToRecompute |
       | shipmentSchedule_1 | orderLine_1               | N             |
-    Then after not more than 30s, C_Invoice_Candidate are found:
+    Then after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.IsInEffect |
       | invoiceCand_1                     | orderLine_1               | 0                | 0            | true           |
 
@@ -68,10 +68,10 @@ Feature: In effect invoice candidates
     When 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | shipmentSchedule_1               | D            | true                | false       |
-    Then after not more than 30s, M_InOut is found:
+    Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | shipmentSchedule_1               | inOut_1               |
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.IsInEffect |
       | invoiceCand_1                     | orderLine_1               | 50               | 50           | true           |
 
@@ -98,7 +98,7 @@ Feature: In effect invoice candidates
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoiceCand_1                     |
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoiceCand_1                     |
 
@@ -115,7 +115,7 @@ Feature: In effect invoice candidates
 
     When the order identified by order_2 is completed
 
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.IsInEffect |
       | invoiceCand_2                     | orderLine_2               | 0                | 0            | true           |
 
@@ -138,7 +138,7 @@ Feature: In effect invoice candidates
 
     When the order identified by order_3 is completed
 
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice | OPT.IsInEffect |
       | invoiceCand_3                     | orderLine_3               | 100          | true           |
 
@@ -159,7 +159,7 @@ Feature: In effect invoice candidates
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoiceCand_3                     |
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_3               | invoiceCand_3                     |
 
@@ -176,7 +176,7 @@ Feature: In effect invoice candidates
 
     When the order identified by order_4 is completed
 
-    And after not more than 30s, C_Invoice_Candidate are found:
+    And after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice | OPT.IsInEffect |
       | invoiceCand_4                     | orderLine_4               | 100          | true           |
 
@@ -198,7 +198,7 @@ Feature: In effect invoice candidates
 
     When the shipment identified by inOut_5 is completed
 
-    Then after not more than 30s, C_Invoice_Candidate are found:
+    Then after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.IsInEffect |
       | invoiceCand_5                     | inOutLine_5                   | 100              | 100          | true           |
 
@@ -222,7 +222,7 @@ Feature: In effect invoice candidates
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoiceCand_5                     |
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_5               | invoiceCand_5                     |
 
@@ -239,7 +239,7 @@ Feature: In effect invoice candidates
 
     When the shipment identified by inOut_6 is completed
 
-    Then after not more than 30s, C_Invoice_Candidate are found:
+    Then after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.IsInEffect |
       | invoiceCand_6                     | inOutLine_6                   | 100              | 100          | true           |
 
@@ -262,7 +262,7 @@ Feature: In effect invoice candidates
 
     When the shipment identified by inOut_7 is completed
 
-    Then after not more than 30s, C_Invoice_Candidate are found:
+    Then after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.IsInEffect |
       | invoiceCand_7                     | inOutLine_7                   | 100              | 100          | true           |
 
@@ -291,7 +291,7 @@ Feature: In effect invoice candidates
 
     When the material receipt identified by inOut_8 is completed
 
-    Then after not more than 30s, C_Invoice_Candidate are found:
+    Then after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.IsInEffect |
       | invoiceCand_8                     | inOutLine_8                   | 100              | 100          | true           |
 
@@ -315,7 +315,7 @@ Feature: In effect invoice candidates
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoiceCand_8                     |
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_8               | invoiceCand_8                     |
 
@@ -332,7 +332,7 @@ Feature: In effect invoice candidates
 
     When the material receipt identified by inOut_9 is completed
 
-    Then after not more than 30s, C_Invoice_Candidate are found:
+    Then after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.IsInEffect |
       | invoiceCand_9                     | inOutLine_9                   | 100              | 100          | true           |
 
@@ -355,7 +355,7 @@ Feature: In effect invoice candidates
 
     When the material receipt identified by inOut_10 is completed
 
-    Then after not more than 30s, C_Invoice_Candidate are found:
+    Then after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice | OPT.IsInEffect |
       | invoiceCand_10                    | inOutLine_10                  | 100              | 100          | true           |
 
