@@ -3,6 +3,8 @@
 
 .ppOrderCandidateViewHeader {
   flex: 1;
+  flex-basis: content;
+  flex-grow: 0;
   display: flex;
   flex-wrap: wrap;
   overflow-y: auto;
