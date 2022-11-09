@@ -29,6 +29,10 @@ properties([
                         description: 'If true, then don\'t build backend, even if there were changes or <code>MF_FORCE_FULL_BUILD</code> is set to <code>true<code>',
                         name: 'MF_FORCE_SKIP_BACKEND_BUILD'),
 
+                booleanParam(defaultValue: true,
+                        description: 'If true, and the backend is build, then don\'t run the cucumber tests.<br/>Note that the cucumber tests are run by the github Actions (docker-based) builds',
+                        name: 'MF_FORCE_SKIP_CUCUMBER_BUILD'),
+                
                 string(defaultValue: MF_SQL_SEED_DUMP_URL_DEFAULT,
                         description: 'metasfresh database seed against which the build shall apply its migrate scripts for QA; leave empty to avoid this QA.',
                         name: 'MF_SQL_SEED_DUMP_URL'),
@@ -128,7 +132,11 @@ private void buildAll(String mfVersion, MvnConf mvnConf, scmVars) {
                     dir('backend')
                             {
                                 def backendBuildFile = load('buildfile.groovy')
-                                backendBuildFile.build(mvnConf, scmVars, params.MF_FORCE_FULL_BUILD, params.MF_FORCE_SKIP_BACKEND_BUILD)
+                                backendBuildFile.build(mvnConf, 
+                                        scmVars, 
+                                        params.MF_FORCE_FULL_BUILD, 
+                                        params.MF_FORCE_SKIP_BACKEND_BUILD,
+                                        params.MF_FORCE_SKIP_CUCUMBER_BUILD)
                             }
                 }
                 dir('misc/services') // misc/services has modules with different maven/jdk settings
