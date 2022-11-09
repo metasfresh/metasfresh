@@ -197,11 +197,6 @@ public final class TranslatableStringBuilder
 		return append(NumberTranslatableString.of(percent.toBigDecimal(), DisplayType.Number)).append("%");
 	}
 
-	public TranslatableStringBuilder appendPercent(@NonNull final Percent percent)
-	{
-		return append(NumberTranslatableString.of(percent.toBigDecimal(), DisplayType.Number)).append("%");
-	}
-
 	public TranslatableStringBuilder append(@NonNull final Amount amount)
 	{
 		return append(NumberTranslatableString.of(amount.getAsBigDecimal(), DisplayType.Amount))
