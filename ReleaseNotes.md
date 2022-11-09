@@ -12,6 +12,9 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13766](https://github.com/metasfresh/metasfresh/issues/13766) Exclude Reversed Invoices from Open Items Report 
+  * [#13881](https://github.com/metasfresh/metasfresh/pull/13881) Manufacturing candidate window: compute some totals for selected rows
+  * [#13841](https://github.com/metasfresh/metasfresh/pull/13841) HU Clearance: Status Test Pending (Json) 
   * [#13829](https://github.com/metasfresh/metasfresh/issues/13829) Test&Fix MD_Cockpit_DocumentDetail 
   * [#13844](https://github.com/metasfresh/metasfresh/issues/13844) IEUE045.U01 Incoming payment management - Follow-Up 01 
   * [#13845](https://github.com/metasfresh/metasfresh/issues/13845) BUG: Grant discount twice during allocate payment process
@@ -130,6 +133,8 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#13884](https://github.com/metasfresh/metasfresh/pull/13884) fix jenkins - also allow skipping cucumber tests
+  * [#13723](https://github.com/metasfresh/metasfresh/pull/13723) Fix Other tag
   * [#13868](https://github.com/metasfresh/metasfresh/issues/13868) [Cucumber] Fix cucumber tests failing due to Daylight saving time
   * [#13753](https://github.com/metasfresh/metasfresh/issues/13753) Adjust auto-vacuum settings on translation tables
   * [#13725](https://github.com/metasfresh/metasfresh/issues/13725) C_DocTypeShipment_ID not respected when generating Receipt/Shipment

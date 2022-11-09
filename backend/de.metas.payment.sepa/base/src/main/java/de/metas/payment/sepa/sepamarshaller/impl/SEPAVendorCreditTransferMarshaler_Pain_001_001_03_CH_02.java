@@ -130,16 +130,24 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	private static final String PAIN_001_001_03_CH_02 = "pain.001.001.03.ch.02";
 	private static final String PAIN_001_001_03_CH_02_SCHEMALOCATION = "http://www.six-interbank-clearing.com/de/";
 
-	/** Title: "ISR" */
+	/**
+	 * Title: "ISR"
+	 */
 	private static final String PAYMENT_TYPE_1 = "PAYMENT_TYPE_1";
 
-	/** Title: "IS 1-Stage". Currently not implemented. */
+	/**
+	 * Title: "IS 1-Stage". Currently not implemented.
+	 */
 	private static final String PAYMENT_TYPE_2_1 = "PAYMENT_TYPE_2_1";
 
-	/** Title: "IS 2-Stage". Currently not implemented. */
+	/**
+	 * Title: "IS 2-Stage". Currently not implemented.
+	 */
 	private static final String PAYMENT_TYPE_2_2 = "PAYMENT_TYPE_2_2";
 
-	/** Title: "IBAN/postal account and IID/BIC" */
+	/**
+	 * Title: "IBAN/postal account and IID/BIC"
+	 */
 	private static final String PAYMENT_TYPE_3 = "PAYMENT_TYPE_3";
 
 	/**
@@ -391,13 +399,13 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		// Payment type information.
 		{
 			if (paymentMode == PAYMENT_TYPE_5 || paymentMode == PAYMENT_TYPE_1
-					|| paymentMode == PAYMENT_TYPE_2_1	|| paymentMode == PAYMENT_TYPE_2_2)
+					|| paymentMode == PAYMENT_TYPE_2_1 || paymentMode == PAYMENT_TYPE_2_2)
 			{
 				final PaymentTypeInformation19CH pmtTpInf = objectFactory.createPaymentTypeInformation19CH();
 				pmtInf.setPmtTpInf(pmtTpInf);
 
 				// service level
-				if (Objects.equals(paymentMode, PAYMENT_TYPE_5))
+				if (paymentMode == PAYMENT_TYPE_5)
 				{
 					// ServiceLEvel.Code "SEPA" does not work if we are doing transactions in swizz.
 					// Service level - Hard-coded value of SEPA.
@@ -405,21 +413,21 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 					svcLvl.setCd("SEPA");
 					pmtTpInf.setSvcLvl(svcLvl);
 				}
-				else if (Objects.equals(paymentMode, PAYMENT_TYPE_1))
+				else if (paymentMode == PAYMENT_TYPE_1)
 				{
 					// local instrument
 					final LocalInstrument2Choice lclInstrm = objectFactory.createLocalInstrument2Choice();
 					lclInstrm.setPrtry("CH01"); // Zahlungsart 1
 					pmtTpInf.setLclInstrm(lclInstrm);
 				}
-				else if (Objects.equals(paymentMode, PAYMENT_TYPE_2_1))
+				else if (paymentMode == PAYMENT_TYPE_2_1)
 				{
 					// local instrument
 					final LocalInstrument2Choice lclInstrm = objectFactory.createLocalInstrument2Choice();
 					lclInstrm.setPrtry("CH02"); // Zahlungsart 2.1
 					pmtTpInf.setLclInstrm(lclInstrm);
 				}
-				else if (Objects.equals(paymentMode, PAYMENT_TYPE_2_2))
+				else if (paymentMode == PAYMENT_TYPE_2_2)
 				{
 					// local instrument
 					final LocalInstrument2Choice lclInstrm = objectFactory.createLocalInstrument2Choice();
@@ -492,8 +500,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			final BigDecimal amount = NumberUtils.stripTrailingDecimalZeros(line.getAmt());
 			Check.errorIf(amount == null || amount.signum() <= 0, "Invalid amount={} of SEPA_Export_Line={}", amount, line);
 			Check.errorIf(amount.scale() > currency.getPrecision().toInt(),
-					"Invalid number of decimal points; amount={} has {} decimal points, but the currency {} only allows {}; SEPA_Export_Line={}",
-					amount, currencyIsoCode, currency.getPrecision(), line);
+						  "Invalid number of decimal points; amount={} has {} decimal points, but the currency {} only allows {}; SEPA_Export_Line={}",
+						  amount, currencyIsoCode, currency.getPrecision(), line);
 			instdAmt.setValue(amount);
 
 			amt.setInstdAmt(instdAmt);
@@ -558,8 +566,8 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 				{
 					final String bankName = getBankNameIfAny(line);
 					Check.errorIf(Check.isBlank(bankName), SepaMarshallerException.class,
-							"Zahlart={}, but line {} has no information about the bank name",
-							paymentType, createInfo(line));
+								  "Zahlart={}, but line {} has no information about the bank name",
+								  paymentType, createInfo(line));
 
 					finInstnId.setNm(bankName);
 					finInstnId.setBIC(null); // if we use Nm, then there should be no BIC element
@@ -705,17 +713,17 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 						rmtInf.setUstrd(validReference);
 					}
 			}
-		else
-		{
-			// task 07789
-			final StructuredRemittanceInformation7 strd = objectFactory.createStructuredRemittanceInformation7();
-			rmtInf.setStrd(strd);
-			final CreditorReferenceInformation2 cdtrRefInf = objectFactory.createCreditorReferenceInformation2();
-			strd.setCdtrRefInf(cdtrRefInf);
-			cdtrRefInf.setRef(line.getStructuredRemittanceInfo());
+			else
+			{
+				// task 07789
+				final StructuredRemittanceInformation7 strd = objectFactory.createStructuredRemittanceInformation7();
+				rmtInf.setStrd(strd);
+				final CreditorReferenceInformation2 cdtrRefInf = objectFactory.createCreditorReferenceInformation2();
+				strd.setCdtrRefInf(cdtrRefInf);
+				cdtrRefInf.setRef(line.getStructuredRemittanceInfo());
+			}
+			cdtTrfTxInf.setRmtInf(rmtInf);
 		}
-		cdtTrfTxInf.setRmtInf(rmtInf);
-	}
 
 		//
 		// Payment ID
@@ -870,9 +878,9 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 		final String ibanToUse = iban.replaceAll(" ", "");
 
 		Check.errorIf(ibanToUse.length() < bcEndIdx,
-				SepaMarshallerException.class,
-				"Given IBAN {} for line {} is to short. Pls verify that it's actually an IBAN at all",
-				iban, createInfo(line));
+					  SepaMarshallerException.class,
+					  "Given IBAN {} for line {} is to short. Pls verify that it's actually an IBAN at all",
+					  iban, createInfo(line));
 		return ibanToUse.substring(bcStartIdx, bcEndIdx);
 	}
 
@@ -962,9 +970,9 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 			{
 				// "domestic" IBAN. it contains the bank code (BC) and we will use it.
 				Check.errorIf(!currencyCode.isEuro() && !currencyCode.isCHF(),
-						SepaMarshallerException.class,
-						"line {} has a swizz IBAN, but the currency is {} instead of 'CHF' or 'EUR'",
-						createInfo(line), currencyCode);
+							  SepaMarshallerException.class,
+							  "line {} has a swizz IBAN, but the currency is {} instead of 'CHF' or 'EUR'",
+							  createInfo(line), currencyCode);
 
 				paymentMode = PAYMENT_TYPE_3; // we can go with zahlart 2.2
 			}
@@ -1021,12 +1029,12 @@ public class SEPAVendorCreditTransferMarshaler_Pain_001_001_03_CH_02 implements 
 	@VisibleForTesting
 	static boolean isInvalidQRReference(@NonNull final String reference)
 	{
-		if(reference.length() != 27)
+		if (reference.length() != 27)
 		{
 			return true;
 		}
 
-		final int[] checkSequence = {0,9,4,6,8,2,7,1,3,5};
+		final int[] checkSequence = { 0, 9, 4, 6, 8, 2, 7, 1, 3, 5 };
 		int carryOver = 0;
 
 		for (int i = 1; i <= reference.length() - 1; i++)
