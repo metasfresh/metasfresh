@@ -25,10 +25,16 @@ package de.metas.manufacturing.workflows_api.activity_handlers.callExternalSyste
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.config.qrcode.ExternalSystemConfigQRCode;
 import de.metas.externalsystem.export.pporder.ExportPPOrderToExternalSystem;
+import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.manufacturing.job.model.ManufacturingJob;
+import de.metas.manufacturing.job.model.ManufacturingJobActivity;
+import de.metas.manufacturing.job.model.ManufacturingJobActivityId;
+import de.metas.manufacturing.job.service.ManufacturingJobService;
+import de.metas.manufacturing.workflows_api.ManufacturingRestService;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.process.PInstanceId;
 import de.metas.util.Services;
+import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.JsonQRCode;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScannedBarcodeRequest;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScannedBarcodeSupport;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScannedBarcodeSupportHelper;
@@ -46,17 +52,22 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
+
 @Component
 public class CallExternalSystemActivityHandler implements WFActivityHandler, SetScannedBarcodeSupport
 {
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("manufacturing.callExternalSystem");
 
 	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
+	private final ManufacturingJobService manufacturingJobService;
 	private final ExportPPOrderToExternalSystem exportToExternalSystemService;
 
 	public CallExternalSystemActivityHandler(
+			@NonNull final ManufacturingJobService manufacturingJobService,
 			@NonNull final ExportPPOrderToExternalSystem exportToExternalSystemService)
 	{
+		this.manufacturingJobService = manufacturingJobService;
 		this.exportToExternalSystemService = exportToExternalSystemService;
 	}
 
@@ -66,26 +77,78 @@ public class CallExternalSystemActivityHandler implements WFActivityHandler, Set
 	@Override
 	public UIComponent getUIComponent(final @NonNull WFProcess wfProcess, final @NonNull WFActivity wfActivity, final @NonNull JsonOpts jsonOpts)
 	{
+		final GlobalQRCode scannedQRCode = getScannedQRCode(wfProcess, wfActivity);
+
 		return SetScannedBarcodeSupportHelper.uiComponent()
+				.currentValue(toJsonQRCode(scannedQRCode))
 				.alwaysAvailableToUser(WFActivityAlwaysAvailableToUser.YES)
+				.build();
+	}
+
+	@Nullable
+	private static GlobalQRCode getScannedQRCode(final @NonNull WFProcess wfProcess, final @NonNull WFActivity wfActivity)
+	{
+		final ManufacturingJob job = getManufacturingJob(wfProcess);
+		final ManufacturingJobActivityId jobActivityId = getManufacturingJobActivityId(wfActivity);
+		final ManufacturingJobActivity jobActivity = job.getActivityById(jobActivityId);
+		return jobActivity.getScannedQRCode();
+	}
+
+	@NonNull
+	private static ManufacturingJob getManufacturingJob(final @NonNull WFProcess wfProcess)
+	{
+		return wfProcess.getDocumentAs(ManufacturingJob.class);
+	}
+
+	private static ManufacturingJobActivityId getManufacturingJobActivityId(final @NonNull WFActivity wfActivity)
+	{
+		return wfActivity.getId().getAsId(ManufacturingJobActivityId.class);
+	}
+
+	@Nullable
+	private static JsonQRCode toJsonQRCode(@Nullable final GlobalQRCode scannedQRCode)
+	{
+		if(scannedQRCode == null)
+		{
+			return null;
+		}
+
+		final ExternalSystemConfigQRCode configQRCode = ExternalSystemConfigQRCode.ofGlobalQRCode(scannedQRCode);
+		return JsonQRCode.builder()
+				.qrCode(configQRCode.toGlobalQRCodeJsonString())
+				.caption(configQRCode.getCaption())
 				.build();
 	}
 
 	@Override
 	public WFActivityStatus computeActivityState(final WFProcess wfProcess, final WFActivity wfActivity)
 	{
-		return WFActivityStatus.COMPLETED;
+		return getScannedQRCode(wfProcess, wfActivity) != null
+				? WFActivityStatus.COMPLETED
+				: WFActivityStatus.NOT_STARTED;
 	}
 
 	@Override
 	public WFProcess setScannedBarcode(final SetScannedBarcodeRequest request)
 	{
-		final ExternalSystemConfigQRCode configQRCode = ExternalSystemConfigQRCode.ofGlobalQRCodeJsonString(request.getScannedBarcode());
+		final GlobalQRCode scannedQRCode = GlobalQRCode.ofString(request.getScannedBarcode());
+		final ExternalSystemConfigQRCode configQRCode = ExternalSystemConfigQRCode.ofGlobalQRCode(scannedQRCode);
 		final IExternalSystemChildConfigId childConfigId = configQRCode.getChildConfigId();
 
-		final WFProcess wfProcess = request.getWfProcess();
-		final ManufacturingJob manufacturingJob = wfProcess.getDocumentAs(ManufacturingJob.class);
-		final PPOrderId ppOrderId = manufacturingJob.getPpOrderId();
+		final WFActivity wfActivity = request.getWfActivity();
+		wfActivity.getWfActivityType().assertExpected(HANDLED_ACTIVITY_TYPE);
+		final ManufacturingJobActivityId jobActivityId = getManufacturingJobActivityId(wfActivity);
+
+		final ManufacturingJob job = getManufacturingJob(request.getWfProcess());
+		callExternalSystem(childConfigId, job);
+
+		final ManufacturingJob changedJob = manufacturingJobService.withScannedQRCode(job, jobActivityId, scannedQRCode);
+		return ManufacturingRestService.toWFProcess(changedJob);
+	}
+
+	private void callExternalSystem(final IExternalSystemChildConfigId childConfigId, final ManufacturingJob job)
+	{
+		final PPOrderId ppOrderId = job.getPpOrderId();
 
 		final PInstanceId pInstanceId = adPInstanceDAO.createSelectionId();
 
@@ -93,8 +156,6 @@ public class CallExternalSystemActivityHandler implements WFActivityHandler, Set
 				childConfigId,
 				TableRecordReference.of(I_PP_Order.Table_Name, ppOrderId),
 				pInstanceId);
-
-		return wfProcess;
 	}
 
 }

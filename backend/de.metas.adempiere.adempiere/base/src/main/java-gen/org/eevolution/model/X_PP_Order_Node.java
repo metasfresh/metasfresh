@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order_Node, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -530725553L;
+	private static final long serialVersionUID = -249241893L;
 
     /** Standard Constructor */
     public X_PP_Order_Node (final Properties ctx, final int PP_Order_Node_ID, @Nullable final String trxName)
@@ -534,6 +534,18 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 	public int getS_Resource_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_S_Resource_ID);
+	}
+
+	@Override
+	public void setScannedQRCode (final @Nullable java.lang.String ScannedQRCode)
+	{
+		set_Value (COLUMNNAME_ScannedQRCode, ScannedQRCode);
+	}
+
+	@Override
+	public java.lang.String getScannedQRCode() 
+	{
+		return get_ValueAsString(COLUMNNAME_ScannedQRCode);
 	}
 
 	@Override
