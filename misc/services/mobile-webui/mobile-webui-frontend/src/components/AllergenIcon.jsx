@@ -51,8 +51,6 @@ const AllergenIcon = ({ allergens, size = 40 }) => {
     background: 'conic-gradient(' + cssConicGradient + ')',
   };
 
-  console.log('AllergenIcon', { allergens, style });
-
   return <span style={style} title={title} />;
 };
 
