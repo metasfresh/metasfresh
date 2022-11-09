@@ -130,7 +130,7 @@ SELECT --
        r.AD_Org_ID,
        p_show_product_price_pi_flag AS show_product_price_pi_flag
 FROM result r
-ORDER BY TRUE,
+order by
          r.bp_value,
          r.productCategory,
          r.value
