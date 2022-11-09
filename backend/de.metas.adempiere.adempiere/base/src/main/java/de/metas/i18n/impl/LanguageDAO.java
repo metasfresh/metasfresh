@@ -3,6 +3,8 @@ package de.metas.i18n.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.metas.common.util.CoalesceUtil;
+import de.metas.user.UserId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
@@ -293,7 +295,7 @@ public class LanguageDAO implements ILanguageDAO
 		//
 		// Insert Statement
 		final String trlAlias = "trl";
-		final int AD_User_ID = Env.getAD_User_ID(Env.getCtx());
+		final int AD_User_ID = CoalesceUtil.firstGreaterThanZero(Env.getAD_User_ID(Env.getCtx()), UserId.METASFRESH.getRepoId());
 		final String keyColumn = poInfo.getKeyColumnName();
 		Check.assumeNotEmpty(keyColumn, "keyColumn not empty for {}", baseTableName); // shall not happen
 		//
