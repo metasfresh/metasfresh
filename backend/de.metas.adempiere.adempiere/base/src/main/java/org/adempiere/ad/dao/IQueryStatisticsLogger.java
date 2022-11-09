@@ -103,4 +103,14 @@ public interface IQueryStatisticsLogger
 	 * @return
 	 */
 	String[] getTopAverageDurationQueriesAsString();
+
+	/**
+	 * Enable record of SQL execution time with micrometer
+	 */
+	void enableRecordWithMicrometer();
+
+	/**
+	 * Disable record of SQL execution time with micrometer
+	 */
+	void disableRecordWithMicrometer();
 }

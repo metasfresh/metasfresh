@@ -17,7 +17,6 @@ import org.adempiere.ad.dao.IQueryStatisticsLogger;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
-import org.adempiere.service.ISysConfigBL;
 import org.adempiere.sql.impl.StatementsFactory;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.CStatementVO;
@@ -52,12 +51,8 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 
 	private static final boolean logToSystemError = Boolean.getBoolean(SYSTEM_PROPERTY_LOG_TO_SYSTEM_ERROR);
 
-	private ISysConfigBL _sysConfigBL;
 	private static PerformanceMonitoringService _performanceMonitoringService;
-	private static final ThreadLocal<Boolean> isGettingSysconfig = ThreadLocal.withInitial(() -> false);
-	private static boolean lastSysconfigResult;
-	private static final String PERF_MON_SYSCONFIG_NAME = "de.metas.monitoring.db.enable";
-	private static final boolean SYS_CONFIG_DEFAULT_VALUE = false;
+	private boolean recordWithMicrometerEnabled = false;
 	private static final PerformanceMonitoringService.Metadata PM_METADATA_COLLECT =
 			PerformanceMonitoringService.Metadata
 					.builder()
@@ -138,7 +133,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 	public void recordExecutedSQLsWithMicrometer(final Stopwatch durationStopwatch)
 	{
 		final long durationValue = durationStopwatch.elapsed(TIMEUNIT_Internal);
-		if (isPerfMonActive())
+		if (recordWithMicrometerEnabled)
 		{
 			performanceMonitoringService().record(durationValue, TIMEUNIT_Internal, PM_METADATA_COLLECT);
 		}
@@ -154,39 +149,6 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 					NoopPerformanceMonitoringService.INSTANCE);
 		}
 		return performanceMonitoringService;
-	}
-
-	private boolean isPerfMonActive()
-	{
-		if (!isGettingSysconfig.get())
-		{
-			isGettingSysconfig.set(true);
-			try
-			{
-				return lastSysconfigResult = sysConfigBL().getBooleanValue(PERF_MON_SYSCONFIG_NAME, SYS_CONFIG_DEFAULT_VALUE);
-			}
-			catch (final IllegalStateException ise)
-			{
-				//catch exception caused by read while modifying AD_SysConfig
-				return lastSysconfigResult;
-			}
-			finally
-			{
-				isGettingSysconfig.set(false);
-			}
-		}
-
-		return lastSysconfigResult;
-	}
-
-	private ISysConfigBL sysConfigBL()
-	{
-		ISysConfigBL sysConfigBL = this._sysConfigBL;
-		if (sysConfigBL == null)
-		{
-			sysConfigBL = this._sysConfigBL = Services.get(ISysConfigBL.class);
-		}
-		return sysConfigBL;
 	}
 
 	@Override
@@ -222,11 +184,6 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 				.append("\n*********************************************************************************************")
 				.append("\n\n")
 				.toString());
-	}
-
-	public boolean isEnabled()
-	{
-		return enabled;
 	}
 
 	@Override
@@ -437,6 +394,21 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 	public String[] getTopAverageDurationQueriesAsString()
 	{
 		return getTopQueriesAsString(Comparator.comparing(QueryStatistics::getAverageDuration));
+	}
+
+	@Override
+	@ManagedOperation(description = "Enable record of SQL execution time with micrometer")
+	public void enableRecordWithMicrometer()
+	{
+		recordWithMicrometerEnabled = true;
+		StatementsFactory.instance.enableSqlQueriesTracing(this);
+	}
+
+	@Override
+	@ManagedOperation(description = "Disable record of SQL execution time with micrometer")
+	public void disableRecordWithMicrometer()
+	{
+		recordWithMicrometerEnabled = false;
 	}
 
 	private String[] getTopQueriesAsString(final Comparator<QueryStatistics> comparing)

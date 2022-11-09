@@ -83,14 +83,3 @@ UPDATE AD_SysConfig SET ConfigurationLevel='S', Description='Switch for Monitori
 UPDATE AD_SysConfig SET ConfigurationLevel='S', EntityType='D',Updated=TO_TIMESTAMP('2022-10-25 10:29:23.668','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_SysConfig_ID=541530
 ;
 
--- 2022-10-25T12:25:02.318Z
-INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLevel,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,0,541535,'S',TO_TIMESTAMP('2022-10-25 14:25:02.302','YYYY-MM-DD HH24:MI:SS.US'),100,'U','Y','de.metas.monitoring.db.enable',TO_TIMESTAMP('2022-10-25 14:25:02.302','YYYY-MM-DD HH24:MI:SS.US'),100,'N')
-;
-
--- 2022-10-25T12:25:23.529Z
-UPDATE AD_SysConfig SET ConfigurationLevel='S', Description='Switch for Monitoring DB functions',Updated=TO_TIMESTAMP('2022-10-25 14:25:23.528','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_SysConfig_ID=541535
-;
-
--- 2022-10-25T12:25:40.125Z
-UPDATE AD_SysConfig SET ConfigurationLevel='S', EntityType='D',Updated=TO_TIMESTAMP('2022-10-25 14:25:40.125','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_SysConfig_ID=541535
-;
