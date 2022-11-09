@@ -12,6 +12,9 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13912](https://github.com/metasfresh/metasfresh/pull/13912) CallExternalSystemActivityHandler: persist last scanned QR Code
+  * [#13883](https://github.com/metasfresh/metasfresh/pull/13883) mobile UI: manufacturing: Call to External System activity 
+  * [#13767](https://github.com/metasfresh/metasfresh/pull/13767) Exclude Reversed Invoices from Open Items Report
   * [#13908](https://github.com/metasfresh/metasfresh/pull/13908) mobile UI: display issue/receipt/coproduct icons
   * [#13766](https://github.com/metasfresh/metasfresh/issues/13766) Exclude Reversed Invoices from Open Items Report 
   * [#13881](https://github.com/metasfresh/metasfresh/pull/13881) Manufacturing candidate window: compute some totals for selected rows
