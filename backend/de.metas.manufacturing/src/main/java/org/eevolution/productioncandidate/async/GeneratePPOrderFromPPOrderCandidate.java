@@ -116,7 +116,7 @@ public class GeneratePPOrderFromPPOrderCandidate extends WorkpackageProcessorAda
 		return sortedCandidates.build();
 	}
 
-	private void addPPOrderCandidateToGroup(
+	private static void addPPOrderCandidateToGroup(
 			@NonNull final Map<String, PPOrderCandidatesGroup> headerAgg2PPOrderCandGroup,
 			@NonNull final PPOrderCandidateToAllocate ppOrderCandidateToAllocate)
 	{
@@ -126,8 +126,8 @@ public class GeneratePPOrderFromPPOrderCandidate extends WorkpackageProcessorAda
 		}
 		else
 		{
-			final PPOrderCandidatesGroup currentState = headerAgg2PPOrderCandGroup.get(ppOrderCandidateToAllocate.getHeaderAggregationKey());
-			currentState.addPPOrderCandidateForHeaderAggKey(ppOrderCandidateToAllocate);
+			final PPOrderCandidatesGroup group = headerAgg2PPOrderCandGroup.get(ppOrderCandidateToAllocate.getHeaderAggregationKey());
+			group.addToGroup(ppOrderCandidateToAllocate);
 		}
 	}
 
@@ -157,7 +157,7 @@ public class GeneratePPOrderFromPPOrderCandidate extends WorkpackageProcessorAda
 			return new PPOrderCandidatesGroup(ppOrderCandidateToAllocate);
 		}
 
-		public void addPPOrderCandidateForHeaderAggKey(@NonNull final PPOrderCandidateToAllocate ppOrderCandidateToAllocate)
+		public void addToGroup(@NonNull final PPOrderCandidateToAllocate ppOrderCandidateToAllocate)
 		{
 			ppOrderCandidateToAllocateList.add(ppOrderCandidateToAllocate);
 			updateSeqNo(ppOrderCandidateToAllocate.getPpOrderCandidate().getSeqNo());

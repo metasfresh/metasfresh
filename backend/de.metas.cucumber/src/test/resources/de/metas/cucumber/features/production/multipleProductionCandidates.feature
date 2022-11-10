@@ -249,7 +249,16 @@ Feature: create multiple production candidates
 
   @from:cucumber
   @Id:S0212.400
-  Scenario:  The manufacturing candidates are created for two sales order lines with different products, considering max allowed capacity configured on product planning.
+  Scenario: Production candidates will be manufactured taking into account the SeqNo.
+  _Given two PP_Product_Plannings for different products (P1&P2)
+  _And PP_Product_Planning for P1 has SeqNo = 20
+  _And PP_Product_Planning for P2 has SeqNo = 10
+  _When PP_Order_Candidates are created as result of stock shortage for P1 and P2
+  _Then PP_Order_Candidate for P1 has SeqNo = 20
+  _And PP_Order_Candidate for P2 has SeqNo = 10
+  _When both PP_Order_Candidates are enqueued for manufacturing (manufacturing order is given by PP_Order_Candidate.SeqNo)
+  _Then PP_Order_Candidate (for P2) with SeqNo = 10 will be manufactured first
+  _And PP_Order_Candidate (for P1) with SeqNo = 20  will be manufactured second
 
     Given metasfresh contains M_Products:
       | Identifier  | Name                 | OPT.M_Product_Category_ID.Identifier |
