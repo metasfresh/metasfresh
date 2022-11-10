@@ -56,6 +56,7 @@ Feature: create multiple production candidates
       | endcustomer_2 | EndcustomerPP_2 | N            | Y              | ps_1                          |
 
   @Id:S0129.1_140
+  @Id:S0212.100
   @from:cucumber
   Scenario:  The manufacturing candidate is created for a sales order line,
   then the sales order is re-opened and the ordered quantity is increased,
@@ -134,6 +135,7 @@ Feature: create multiple production candidates
 
 
   @from:cucumber
+  @Id:S0212.200
   Scenario:  The manufacturing candidate is created for a sales order line and `Generate PP_Order` process is invoked resulting multiple manufacturing orders
   and the candidate remains open as it still has unprocessed quantity and `autoProcessCandidates` parameter is not set.
 
@@ -182,6 +184,7 @@ Feature: create multiple production candidates
 
 
   @from:cucumber
+  @Id:S0212.300
   Scenario:  The manufacturing candidate is created for a sales order line and
   then the sales order is re-opened and the ordered quantity is increased,
   resulting in a second manufacturing candidate to supply the additional demand
@@ -245,6 +248,7 @@ Feature: create multiple production candidates
 
 
   @from:cucumber
+  @Id:S0212.400
   Scenario:  The manufacturing candidates are created for two sales order lines with different products, considering max allowed capacity configured on product planning.
 
     Given metasfresh contains M_Products:
