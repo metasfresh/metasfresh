@@ -136,6 +136,7 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#13906](https://github.com/metasfresh/metasfresh/pull/13906) Delete chat when deleting documents and implement voiding draft orders
   * [#13884](https://github.com/metasfresh/metasfresh/pull/13884) fix jenkins - also allow skipping cucumber tests
   * [#13723](https://github.com/metasfresh/metasfresh/pull/13723) Fix Other tag
   * [#13868](https://github.com/metasfresh/metasfresh/issues/13868) [Cucumber] Fix cucumber tests failing due to Daylight saving time
