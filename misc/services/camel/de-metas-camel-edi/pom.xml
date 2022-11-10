@@ -111,7 +111,7 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-        
+
         <dependency>
             <groupId>com.fasterxml.woodstox</groupId>
             <artifactId>woodstox-core</artifactId>
@@ -368,7 +368,7 @@
                             <schemaDirectory>src/main/xsd/ecosio/ERPEL1p0</schemaDirectory>
                             <!-- don't try to enforce one package like this (unless you know what you are doing ofc):
                             <generatePackage>${jaxb.ecosio.remadv.packageName}</generatePackage>
-                            
+
                             because it will end with "Two declarations cause a collision in the ObjectFactory class."
                             -->
                             <generateDirectory>${project.build.directory}/generated-sources/xjc_ecosio_remadv</generateDirectory>
