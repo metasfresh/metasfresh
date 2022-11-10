@@ -25,7 +25,7 @@ import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
-import org.eevolution.api.ProductBOMId;
+import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_Product_Planning;
 
@@ -194,36 +194,47 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 	}
 
 	@Override
-	public void setProductBOMIdIfAbsent(
+	public void setProductBOMVersionsIdIfAbsent(
 			@NonNull final ProductId productId,
-			@NonNull final ProductBOMId bomId)
+			@NonNull final ProductBOMVersionsId bomVersionsId)
 	{
 		final List<I_PP_Product_Planning> productPlanningRecords = queryBL
 				.createQueryBuilder(I_PP_Product_Planning.class)
 				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_M_Product_ID, productId)
-				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOM_ID, null)
+				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID, null)
 				.create()
 				.list();
 
 		for (final I_PP_Product_Planning productPlanningRecord : productPlanningRecords)
 		{
-			productPlanningRecord.setPP_Product_BOM_ID(bomId.getRepoId());
+			productPlanningRecord.setPP_Product_BOMVersions_ID(bomVersionsId.getRepoId());
 			save(productPlanningRecord);
 		}
 	}
 
 	@Override
-	public Set<ProductBOMId> retrieveAllPickingBOMIds()
+	@NonNull
+	public Set<ProductBOMVersionsId> retrieveAllPickingBOMVersionsIds()
 	{
 		return queryBL.createQueryBuilderOutOfTrx(I_PP_Product_Planning.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_IsManufactured, X_PP_Product_Planning.ISMANUFACTURED_Yes)
 				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_IsPickingOrder, true)
-				.addNotNull(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOM_ID)
+				.addNotNull(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID)
 				.create()
-				.listDistinct(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOM_ID, Integer.class)
+				.listDistinct(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID, Integer.class)
 				.stream()
-				.map(ProductBOMId::ofRepoId)
+				.map(ProductBOMVersionsId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
+	}
+
+	@NonNull
+	public List<I_PP_Product_Planning> retrieveProductPlanningForBomVersions(@NonNull final ProductBOMVersionsId bomVerisonId)
+	{
+		return queryBL.createQueryBuilder(I_PP_Product_Planning.class)
+				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID, bomVerisonId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.listImmutable(I_PP_Product_Planning.class);
 	}
 }

@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.material.cockpit.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for MD_Cockpit_DDOrder_Detail
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_MD_Cockpit_DDOrder_Detail extends org.compiere.model.PO implements I_MD_Cockpit_DDOrder_Detail, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 726977243L;
+	private static final long serialVersionUID = -1646878309L;
 
     /** Standard Constructor */
     public X_MD_Cockpit_DDOrder_Detail (final Properties ctx, final int MD_Cockpit_DDOrder_Detail_ID, @Nullable final String trxName)
@@ -33,6 +33,27 @@ public class X_MD_Cockpit_DDOrder_Detail extends org.compiere.model.PO implement
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	/** 
+	 * DDOrderDetailType AD_Reference_ID=541420
+	 * Reference name: DDOrderDetailType
+	 */
+	public static final int DDORDERDETAILTYPE_AD_Reference_ID=541420;
+	/** gepl. Zugang = SUPPLY */
+	public static final String DDORDERDETAILTYPE_GeplZugang = "SUPPLY";
+	/** gepl. Abgang = DEMAND */
+	public static final String DDORDERDETAILTYPE_GeplAbgang = "DEMAND";
+	@Override
+	public void setDDOrderDetailType (final java.lang.String DDOrderDetailType)
+	{
+		set_Value (COLUMNNAME_DDOrderDetailType, DDOrderDetailType);
+	}
+
+	@Override
+	public java.lang.String getDDOrderDetailType() 
+	{
+		return get_ValueAsString(COLUMNNAME_DDOrderDetailType);
 	}
 
 	@Override
@@ -62,42 +83,6 @@ public class X_MD_Cockpit_DDOrder_Detail extends org.compiere.model.PO implement
 		return get_ValueAsInt(COLUMNNAME_DD_OrderLine_ID);
 	}
 
-	/** 
-	 * DDOrderDetailType AD_Reference_ID=541420
-	 * Reference name: DDOrderDetailType
-	 */
-	public static final int DDORDERDETAILTYPE_AD_Reference_ID=541420;
-	/** gepl. Zugang = SUPPLY */
-	public static final String DDORDERDETAILTYPE_GeplZugang = "SUPPLY";
-	/** gepl. Abgang = DEMAND */
-	public static final String DDORDERDETAILTYPE_GeplAbgang = "DEMAND";
-	@Override
-	public void setDDOrderDetailType (final String DDOrderDetailType)
-	{
-		set_Value (COLUMNNAME_DDOrderDetailType, DDOrderDetailType);
-	}
-
-	@Override
-	public String getDDOrderDetailType()
-	{
-		return get_ValueAsString(COLUMNNAME_DDOrderDetailType);
-	}
-
-	@Override
-	public void setM_Warehouse_ID (final int M_Warehouse_ID)
-	{
-		if (M_Warehouse_ID < 1) 
-			set_Value (COLUMNNAME_M_Warehouse_ID, null);
-		else 
-			set_Value (COLUMNNAME_M_Warehouse_ID, M_Warehouse_ID);
-	}
-
-	@Override
-	public int getM_Warehouse_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
-	}
-
 	@Override
 	public void setMD_Cockpit_DDOrder_Detail_ID (final int MD_Cockpit_DDOrder_Detail_ID)
 	{
@@ -114,15 +99,15 @@ public class X_MD_Cockpit_DDOrder_Detail extends org.compiere.model.PO implement
 	}
 
 	@Override
-	public I_MD_Cockpit getMD_Cockpit()
+	public de.metas.material.cockpit.model.I_MD_Cockpit getMD_Cockpit()
 	{
-		return get_ValueAsPO(COLUMNNAME_MD_Cockpit_ID, I_MD_Cockpit.class);
+		return get_ValueAsPO(COLUMNNAME_MD_Cockpit_ID, de.metas.material.cockpit.model.I_MD_Cockpit.class);
 	}
 
 	@Override
-	public void setMD_Cockpit(final I_MD_Cockpit MD_Cockpit)
+	public void setMD_Cockpit(final de.metas.material.cockpit.model.I_MD_Cockpit MD_Cockpit)
 	{
-		set_ValueFromPO(COLUMNNAME_MD_Cockpit_ID, I_MD_Cockpit.class, MD_Cockpit);
+		set_ValueFromPO(COLUMNNAME_MD_Cockpit_ID, de.metas.material.cockpit.model.I_MD_Cockpit.class, MD_Cockpit);
 	}
 
 	@Override
@@ -138,6 +123,21 @@ public class X_MD_Cockpit_DDOrder_Detail extends org.compiere.model.PO implement
 	public int getMD_Cockpit_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_MD_Cockpit_ID);
+	}
+
+	@Override
+	public void setM_Warehouse_ID (final int M_Warehouse_ID)
+	{
+		if (M_Warehouse_ID < 1) 
+			set_Value (COLUMNNAME_M_Warehouse_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Warehouse_ID, M_Warehouse_ID);
+	}
+
+	@Override
+	public int getM_Warehouse_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Warehouse_ID);
 	}
 
 	@Override

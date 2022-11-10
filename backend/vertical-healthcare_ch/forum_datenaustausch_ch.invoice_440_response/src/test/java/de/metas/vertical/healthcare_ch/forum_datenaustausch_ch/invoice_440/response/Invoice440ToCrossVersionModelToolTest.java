@@ -1,17 +1,10 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.response;
 
-import static io.github.jsonSnapshot.SnapshotMatcher.expect;
-import static io.github.jsonSnapshot.SnapshotMatcher.start;
-import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.InputStream;
-
-import javax.xml.transform.stream.StreamSource;
-
+import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.XmlResponse;
+import lombok.NonNull;
 import org.adempiere.test.AdempiereTestHelper;
-import org.junit.Assert;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,8 +12,13 @@ import org.xmlunit.validation.Languages;
 import org.xmlunit.validation.ValidationResult;
 import org.xmlunit.validation.Validator;
 
-import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.response.model.XmlResponse;
-import lombok.NonNull;
+import javax.xml.transform.stream.StreamSource;
+import java.io.InputStream;
+
+import static io.github.jsonSnapshot.SnapshotMatcher.expect;
+import static io.github.jsonSnapshot.SnapshotMatcher.start;
+import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -101,6 +99,6 @@ class Invoice440ToCrossVersionModelToolTest
 
 		final ValidationResult r = v.validateInstance(new StreamSource(inputStream));
 
-		Assert.assertTrue(r.isValid());
+		Assertions.assertTrue(r.isValid());
 	}
 }

@@ -42,6 +42,7 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Function;
@@ -481,5 +482,24 @@ public class InOutDAO implements IInOutDAO
 	public <T extends I_M_InOutLine> T getLineByIdInTrx(@NonNull final InOutLineId inoutLineId, @NonNull final Class<T> modelClass)
 	{
 		return load(inoutLineId.getRepoId(), modelClass);
+	}
+
+	@Override
+	@NonNull
+	public Optional<I_M_InOutLine> getReversalLineForLineId(@NonNull final InOutLineId inoutLineId)
+	{
+		final I_M_InOutLine inOutLine = load(inoutLineId, I_M_InOutLine.class);
+
+		if (inOutLine == null)
+		{
+			return Optional.empty();
+		}
+
+		if (inOutLine.getReversalLine_ID() <= 0)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.ofNullable(load(inOutLine.getReversalLine_ID(), I_M_InOutLine.class));
 	}
 }

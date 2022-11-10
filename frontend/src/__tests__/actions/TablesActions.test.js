@@ -545,6 +545,7 @@ describe('TableActions tab', () => {
     const tableData = createTableData({
       result: rowDataResponse,
       keyProperty: 'rowId',
+      pending: true,
     });
     tableData.rows = flattenRows(tableData.rows);
 

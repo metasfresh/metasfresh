@@ -29,9 +29,9 @@ let soRecordId;
 let huValue1;
 let huValue2;
 
-const includedQAUrl = new RegExp(/rest\/api\/documentView\/pickingSlot\/.*\/quickActions\?parentViewId=540350/);
-const includedQAUrl2 = new RegExp(/rest\/api\/documentView\/husToPick\/.*\/quickActions\?parentViewId=540350/);
-const parentQAUrl = new RegExp(/rest\/api\/documentView\/.*\/quickActions\?childViewId=pickingSlot/);
+const includedQAUrl = new RegExp(/rest\/api\/documentView\/pickingSlot\/.*\/quickActions/);
+const includedQAUrl2 = new RegExp(/rest\/api\/documentView\/husToPick\/.*\/quickActions/);
+const parentQAUrl = new RegExp(/rest\/api\/documentView\/.*\/quickActions/);
 
 describe('Create test data', function () {
   it('Read fixture and prepare the names', function () {

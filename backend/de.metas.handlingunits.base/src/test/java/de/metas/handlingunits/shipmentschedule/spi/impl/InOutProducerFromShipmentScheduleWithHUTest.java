@@ -30,6 +30,7 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.order.DeliveryRule;
 import de.metas.order.OrderId;
+import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.order.inoutcandidate.OrderLineShipmentScheduleHandler;
 import de.metas.product.ProductId;
 import de.metas.quantity.StockQtyAndUOMQtys;
@@ -43,6 +44,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
@@ -102,6 +104,9 @@ public class InOutProducerFromShipmentScheduleWithHUTest
 		AdempiereTestHelper.get().init();
 
 		SpringContextHolder.registerJUnitBean(new ShipperTransportationRepository());
+
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
 
 		Loggables.temporarySetLoggable(Loggables.console());
 	}

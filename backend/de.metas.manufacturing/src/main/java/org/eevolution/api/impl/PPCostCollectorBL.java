@@ -242,7 +242,7 @@ public class PPCostCollectorBL implements IPPCostCollectorBL
 		final ProductId productId = candidate.getProductId();
 		if (productId == null || productId.getRepoId() != orderBOMLine.getM_Product_ID())
 		{
-			throw new LiberoException("@Invalid@ @M_Product_ID@: " + candidate + "\n Expected: " + orderBOMLine.getM_Product());
+			throw new LiberoException("@Invalid@ @M_Product_ID@: " + candidate + "\n Expected: " + orderBOMLine.getM_Product_ID());
 		}
 
 		return createIssue(ComponentIssueCreateRequest.builder()

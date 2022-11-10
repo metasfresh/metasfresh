@@ -6,7 +6,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyInt;
 
 import java.sql.Timestamp;
@@ -246,7 +245,7 @@ public class FlatrateBLTest extends ContractsTestBase
 		dataEntry.setAD_Org_ID(orgId.getRepoId());
 		dataEntry.setC_Flatrate_Term(currentTerm);
 		dataEntry.setType(X_C_Flatrate_DataEntry.TYPE_Invoicing_PeriodBased);
-		dataEntry.setM_Product_DataEntry(product);
+		dataEntry.setM_Product_DataEntry_ID(product.getM_Product_ID());
 		dataEntry.setC_Period(period);
 		save(dataEntry);
 
@@ -272,7 +271,6 @@ public class FlatrateBLTest extends ContractsTestBase
 		final boolean isSOTrx = true;
 		Mockito
 				.when(taxBL.getTaxNotNull(
-						any(Properties.class),
 						any(I_C_Flatrate_Term.class),
 						any(TaxCategoryId.class),
 						anyInt(),
@@ -481,7 +479,7 @@ public class FlatrateBLTest extends ContractsTestBase
 		// matchings linked to the first conditions
 		final I_C_Flatrate_Matching matching1 = newInstance(I_C_Flatrate_Matching.class);
 		matching1.setSeqNo(10);
-		matching1.setM_Product_Category_Matching(productCategory);
+		matching1.setM_Product_Category_Matching_ID(productCategory.getM_Product_Category_ID());
 		matching1.setC_Flatrate_Transition(transition);
 		matching1.setC_Flatrate_Conditions(conditions1);
 		save(matching1);
@@ -494,8 +492,8 @@ public class FlatrateBLTest extends ContractsTestBase
 		// matchings linked with the second conditions
 		final I_C_Flatrate_Matching matching2 = newInstance(I_C_Flatrate_Matching.class);
 		matching2.setSeqNo(10);
-		matching2.setM_Product_Category_Matching(productCategory);
-		matching2.setM_Product(product);
+		matching2.setM_Product_Category_Matching_ID(productCategory.getM_Product_Category_ID());
+		matching2.setM_Product_ID(product.getM_Product_ID());
 		matching2.setC_Flatrate_Transition(transition);
 		matching2.setC_Flatrate_Conditions(conditions2);
 		save(matching2);
@@ -507,7 +505,7 @@ public class FlatrateBLTest extends ContractsTestBase
 
 		// terms must be for the same flatrate data
 		final I_C_Flatrate_Data flatrateData = newInstance(I_C_Flatrate_Data.class);
-		flatrateData.setC_BPartner(partner);
+		flatrateData.setC_BPartner_ID(partner.getC_BPartner_ID());
 		save(flatrateData);
 
 		// first term: first conditions, March 15 - April 14

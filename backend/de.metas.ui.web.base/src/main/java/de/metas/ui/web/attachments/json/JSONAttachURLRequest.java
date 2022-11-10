@@ -41,11 +41,11 @@ import lombok.Value;
 public class JSONAttachURLRequest
 {
 	@JsonProperty("name")
-	private final String name;
+	String name;
 	@JsonProperty("url")
-	private final String url;
+	String url;
 	@JsonIgnore
-	private final URI uri;
+	URI uri;
 
 	@JsonCreator
 	private JSONAttachURLRequest(
@@ -63,7 +63,7 @@ public class JSONAttachURLRequest
 		{
 			this.uri = new URI(url);
 		}
-		catch (URISyntaxException ex)
+		catch (final URISyntaxException ex)
 		{
 			throw new AdempiereException("Invalid URL: " + url, ex);
 		}

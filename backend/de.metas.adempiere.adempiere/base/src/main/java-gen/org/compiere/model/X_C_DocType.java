@@ -411,12 +411,17 @@ public class X_C_DocType extends org.compiere.model.PO implements I_C_DocType, o
 	public static final String DOCSUBTYPE_RD = "RD";
 	/** Cost Estimate = CE */
 	public static final String DOCSUBTYPE_CostEstimate = "CE";
+	/** Kreditoren Nachbelastung = NBK */
+	public static final String DOCSUBTYPE_KreditorenNachbelastung = "NBK";
+	/** Payment service provider invoice = SI */
+	public static final String DOCSUBTYPE_PaymentServiceProviderInvoice = "SI";
 	/** CallOrder = CAO */
 	public static final String DOCSUBTYPE_CallOrder = "CAO";
 	/** InterimInvoice = II */
 	public static final String DOCSUBTYPE_InterimInvoice = "II";
 	/** Withholding = WH */
 	public static final String DOCSUBTYPE_Withholding = "WH";
+
 	@Override
 	public void setDocSubType (final @Nullable java.lang.String DocSubType)
 	{

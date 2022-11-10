@@ -34,7 +34,7 @@ public interface ItemProvider<T>
 {
 	@Value
 	@AllArgsConstructor(access= AccessLevel.PRIVATE)
-	class ProviderResult<T>
+	public class ProviderResult<T>
 	{
 		public static <T> ProviderResult<T> resultWasFound(final @Nullable T result)
 		{

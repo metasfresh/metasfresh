@@ -8,12 +8,16 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Flatrate_Transition;
 import de.metas.contracts.model.X_C_Flatrate_Transition;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
+import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
 import de.metas.lang.SOTrx;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.quantity.Quantity;
+import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
@@ -57,7 +61,7 @@ public interface ConditionTypeSpecificInvoiceCandidateHandler
 {
 	String getConditionsType();
 
-	Iterator<I_C_Flatrate_Term> retrieveTermsWithMissingCandidates(int limit);
+	Iterator<I_C_Flatrate_Term> retrieveTermsWithMissingCandidates(@NonNull QueryLimit limit);
 
 	default void setSpecificInvoiceCandidateValues(final I_C_Invoice_Candidate ic, final I_C_Flatrate_Term term)
 	{
@@ -157,8 +161,8 @@ public interface ConditionTypeSpecificInvoiceCandidateHandler
 		return defaultImplementation;
 	}
 
-	boolean isMissingInvoiceCandidate(I_C_Flatrate_Term flatrateTerm);
-
+	@NonNull CandidatesAutoCreateMode isMissingInvoiceCandidate(@NonNull I_C_Flatrate_Term flatrateTerm);
+	
 	default List<I_C_Invoice_Candidate> createInvoiceCandidates(@NonNull final I_C_Flatrate_Term term)
 	{
 		return Collections.singletonList(HandlerTools.createIcAndSetCommonFields(term));

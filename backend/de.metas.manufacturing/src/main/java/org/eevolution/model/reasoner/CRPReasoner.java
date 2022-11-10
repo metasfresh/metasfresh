@@ -39,11 +39,10 @@ package org.eevolution.model.reasoner;
  * #L%
  */
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Properties;
-import java.util.stream.Stream;
-
+import de.metas.material.planning.IResourceDAO;
+import de.metas.material.planning.ResourceType;
+import de.metas.product.ResourceId;
+import de.metas.util.Services;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceUnAvailable;
 import org.compiere.model.MResourceUnAvailable;
@@ -52,14 +51,14 @@ import org.compiere.model.POResultSet;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.model.I_PP_Order;
 
-import de.metas.material.planning.IResourceDAO;
-import de.metas.material.planning.ResourceType;
-import de.metas.product.ResourceId;
-import de.metas.util.Services;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.Properties;
+import java.util.stream.Stream;
 
 /**
  * @author Gunther Hoppe, tranSIT GmbH Ilmenau/Germany
@@ -107,10 +106,16 @@ public class CRPReasoner
 		return resourcesRepo.getResourceTypeByResourceId(resourceId);
 	}
 
-	protected final boolean isAvailable(final I_S_Resource resource, final LocalDateTime dateTime)
+	protected final boolean isAvailable(final ResourceId resourceId, final Instant dateTime)
+	{
+		final ResourceType resourceType = getResourceType(resourceId);
+		return resourceType.isDayAvailable(dateTime) && !MResourceUnAvailable.isUnAvailable(resourceId.getRepoId(), dateTime);
+	}
+
+	protected final boolean isAvailable(final I_S_Resource resource, final Instant dateTime)
 	{
 		final ResourceType resourceType = getResourceType(resource);
-		return resourceType.isDayAvailable(TimeUtil.asLocalDate(dateTime)) && !MResourceUnAvailable.isUnAvailable(resource.getS_Resource_ID(), dateTime);
+		return resourceType.isDayAvailable(dateTime) && !MResourceUnAvailable.isUnAvailable(resource.getS_Resource_ID(), dateTime);
 	}
 
 	public final boolean isAvailable(final I_S_Resource resource)
@@ -122,13 +127,13 @@ public class CRPReasoner
 	 * Get Next/Previous Available Date
 	 *
 	 */
-	private LocalDateTime getAvailableDate(final ResourceType resourceType, final LocalDateTime dateTime, final boolean isScheduleBackward)
+	private Instant getAvailableDate(final ResourceType resourceType, final Instant dateTime, final boolean isScheduleBackward)
 	{
 		final int direction = isScheduleBackward ? -1 : +1;
 
-		LocalDateTime date = dateTime;
+		Instant date = dateTime;
 		int daysAdded = 0;
-		if (!resourceType.isDayAvailable(date.toLocalDate()))
+		if (!resourceType.isDayAvailable(date))
 		{
 			date = date.plusDays(direction);
 			daysAdded++;
@@ -146,11 +151,11 @@ public class CRPReasoner
 	 * @param r resource
 	 * @return next available date
 	 */
-	public LocalDateTime getAvailableDate(final I_S_Resource r, final LocalDateTime dateTime, final boolean isScheduleBackward)
+	public Instant getAvailableDate(final I_S_Resource r, final Instant dateTime, final boolean isScheduleBackward)
 	{
 		final ResourceType resourceType = getResourceType(r);
 
-		LocalDateTime date = dateTime;
+		Instant date = dateTime;
 		final ArrayList<Object> params = new ArrayList<>();
 		String whereClause;
 		String orderByClause;

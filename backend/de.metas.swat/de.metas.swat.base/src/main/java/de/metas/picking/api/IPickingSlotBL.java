@@ -2,9 +2,12 @@ package de.metas.picking.api;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
+import de.metas.global_qrcodes.service.QRCodePDFResource;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
+
+import java.util.Set;
 
 public interface IPickingSlotBL extends ISingletonService
 {
@@ -18,4 +21,8 @@ public interface IPickingSlotBL extends ISingletonService
 	boolean isAvailableForBPartnerAndLocation(I_M_PickingSlot pickingSlot, BPartnerId bpartnerId, BPartnerLocationId bpartnerLocationId);
 
 	PickingSlotIdAndCaption getPickingSlotIdAndCaption(@NonNull PickingSlotId pickingSlotId);
+
+	Set<PickingSlotIdAndCaption> getPickingSlotIdAndCaptions(@NonNull PickingSlotQuery query);
+
+	QRCodePDFResource createQRCodesPDF(Set<PickingSlotIdAndCaption> pickingSlotIdAndCaptions);
 }

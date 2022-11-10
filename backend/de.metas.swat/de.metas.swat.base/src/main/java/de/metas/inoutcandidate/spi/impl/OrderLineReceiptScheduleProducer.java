@@ -6,6 +6,11 @@ import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
+import com.google.common.base.MoreObjects;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.document.DocTypeId;
+import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeDAO;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionService;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
@@ -44,6 +49,32 @@ import java.sql.Timestamp;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.sql.Timestamp;
+import java.util.Collections;
+import java.util.List;
+import java.util.Properties;
+
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2015 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
 
 /**
  *
@@ -73,6 +104,8 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 	private I_M_ReceiptSchedule createOrReceiptScheduleFromOrderLine(final I_C_OrderLine line, final boolean createReceiptScheduleIfNotExists)
 	{
 		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
+
+		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 
 		final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
 
@@ -118,12 +151,12 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		{
 
 			final Timestamp dateOrdered = CoalesceUtil.coalesceSuppliers(
-					() -> line.getDateOrdered(),
+					line::getDateOrdered,
 					() -> line.getC_Order().getDateOrdered());
 			receiptSchedule.setDateOrdered(dateOrdered);
 
 			final Timestamp datePromised = CoalesceUtil.coalesceSuppliers(
-					() -> line.getDatePromised(),
+					line::getDatePromised,
 					() -> line.getC_Order().getDatePromised());
 			receiptSchedule.setMovementDate(datePromised);
 		}
@@ -187,7 +220,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 
 			receiptSchedule.setC_UOM_ID(line.getC_UOM_ID());
 
-			Services.get(IAttributeSetInstanceBL.class).cloneASI(receiptSchedule, line);
+			attributeSetInstanceBL.cloneOrCreateASI(receiptSchedule, line);
 
 			// task #653
 			// Set the LotNumberDate as attribute in the new receipt schedule's ASI
@@ -206,6 +239,10 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		}
 		receiptSchedule.setQtyOrdered(line.getQtyOrdered());
 		// receiptSchedule.setQtyToMove(line.getQtyOrdered()); // QtyToMove will be computed in IReceiptScheduleQtysBL
+
+		//
+		// Contract
+		receiptSchedule.setC_Flatrate_Term_ID(line.getC_Flatrate_Term_ID());
 
 		//
 		// Update aggregation key

@@ -31,6 +31,7 @@ import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.compiere.model.IQuery;
+import org.adempiere.ad.dao.QueryLimit;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -42,7 +43,7 @@ public interface IContractsDAO extends ISingletonService
 	/**
 	 * @return the flatrate terms with missing candidates, gathered in a list.
 	 */
-	List<I_C_Flatrate_Term> retrieveSubscriptionTermsWithMissingCandidates(String typconditions, int limit);
+	List<I_C_Flatrate_Term> retrieveSubscriptionTermsWithMissingCandidates(String typconditions, @NonNull QueryLimit limit);
 
 	IQueryBuilder<I_C_Flatrate_Term> createBaseTermWithMissingCandidateQueryBuilder(@NonNull String typeConditions, boolean ignoreDateFilter);
 

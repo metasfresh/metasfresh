@@ -34,14 +34,31 @@ import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.organization.IOrgDAO;
+import de.metas.util.Services;
+import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.Given;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_AD_Org;
+
+import java.util.List;
+import java.util.Map;
+
+import static org.assertj.core.api.Assertions.*;
 
 public class AD_Org_StepDef
 {
 	private final AD_Org_StepDefData orgTable;
 
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public AD_Org_StepDef(final AD_Org_StepDefData orgTable)
+	public AD_Org_StepDef(@NonNull final AD_Org_StepDefData orgTable)
 	{
 		this.orgTable = orgTable;
 	}
@@ -62,6 +79,33 @@ public class AD_Org_StepDef
 			assertThat(orgRecord).isNotNull();
 
 			final String orgIdentifier = DataTableUtil.extractStringForColumnName(row, I_AD_Org.COLUMNNAME_AD_Org_ID + "." + TABLECOLUMN_IDENTIFIER);
+			orgTable.putOrReplace(orgIdentifier, orgRecord);
+		}
+	}
+
+	@Given("metasfresh contains AD_Org:")
+	public void metasfresh_contains_ad_orgs(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
+		for (final Map<String, String> tableRow : tableRows)
+		{
+			final String name = DataTableUtil.extractStringForColumnName(tableRow, I_AD_Org.COLUMNNAME_Name);
+			final String value = DataTableUtil.extractStringForColumnName(tableRow, I_AD_Org.COLUMNNAME_Value);
+
+			final I_AD_Org orgRecord = CoalesceUtil.coalesce(queryBL.createQueryBuilder(I_AD_Org.class)
+																	 .addEqualsFilter(I_AD_Org.COLUMNNAME_Value, value)
+																	 .create()
+																	 .firstOnly(I_AD_Org.class),
+															 InterfaceWrapperHelper.newInstanceOutOfTrx(I_AD_Org.class));
+
+			assertThat(orgRecord).isNotNull();
+
+			orgRecord.setName(name);
+			orgRecord.setValue(value);
+
+			orgDAO.save(orgRecord);
+
+			final String orgIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_AD_Org.COLUMNNAME_AD_Org_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			orgTable.putOrReplace(orgIdentifier, orgRecord);
 		}
 	}

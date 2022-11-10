@@ -30,6 +30,7 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.TimeUtil;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -158,6 +159,18 @@ public class DataTableUtil
 		}
 
 		return dataTableRow.get(columnName);
+	}
+
+	@Nullable
+	public String extractNullableStringForColumnName(@NonNull final Map<String, String> dataTableRow, @NonNull final String columnName)
+	{
+		return dataTableRow.get(columnName);
+	}
+
+	@Nullable
+	public String nullToken2Null(@NonNull final String value)
+	{
+		return NULL_STRING.equals(value) ? null : value;
 	}
 
 	@NonNull

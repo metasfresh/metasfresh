@@ -664,4 +664,15 @@ public class ProductDAO implements IProductDAO
 				.create()
 				.listIds(ProductId::ofRepoId);
 	}
+
+	@Override
+	public ProductCategoryId retrieveProductCategoryForGroupTemplateId(@NonNull final GroupTemplateId groupTemplateId)
+	{
+		return queryBL.createQueryBuilder(I_M_Product_Category.class)
+				.addEqualsFilter(I_M_Product_Category.COLUMNNAME_C_CompensationGroup_Schema_ID, groupTemplateId)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_M_Product_Category.COLUMNNAME_M_Product_Category_ID)
+				.create()
+				.firstId(ProductCategoryId::ofRepoIdOrNull);
+	}
 }

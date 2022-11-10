@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableSet;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
+import de.metas.util.lang.RepoIdAwares;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
@@ -39,10 +40,15 @@ import java.util.Set;
 @Value
 public class HuId implements RepoIdAware
 {
-	@JsonCreator
 	public static HuId ofRepoId(final int repoId)
 	{
 		return new HuId(repoId);
+	}
+
+	@JsonCreator
+	public static HuId ofObject(@NonNull final Object object)
+	{
+		return RepoIdAwares.ofObject(object, HuId.class);
 	}
 
 	@Nullable

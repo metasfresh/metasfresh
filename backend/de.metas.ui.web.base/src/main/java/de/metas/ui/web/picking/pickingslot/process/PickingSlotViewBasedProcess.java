@@ -1,7 +1,7 @@
 package de.metas.ui.web.picking.pickingslot.process;
 
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.process.IProcessPrecondition;

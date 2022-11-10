@@ -106,8 +106,13 @@ public class DocTypeService
 	}
 
 	@NonNull
-	public Optional<JsonOrderDocType> getOrderDocType(@NonNull final DocTypeId docTypeId)
+	public Optional<JsonOrderDocType> getOrderDocType(@Nullable final DocTypeId docTypeId)
 	{
+		if (docTypeId == null)
+		{
+			return Optional.empty();
+		}
+
 		final I_C_DocType docType = docTypeDAO.getById(docTypeId);
 		if (docType == null)
 		{

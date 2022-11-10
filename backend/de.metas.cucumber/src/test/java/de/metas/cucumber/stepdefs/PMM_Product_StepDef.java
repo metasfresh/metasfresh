@@ -41,7 +41,6 @@ public class PMM_Product_StepDef
 {
 	private final M_Product_StepDefData productStepDefData;
 	private final PMM_Product_StepDefData pmmProductStepDefData;
-
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public PMM_Product_StepDef(

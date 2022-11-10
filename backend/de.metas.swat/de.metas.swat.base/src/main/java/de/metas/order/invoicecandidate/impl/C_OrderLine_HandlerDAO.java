@@ -26,6 +26,11 @@ package de.metas.order.invoicecandidate.impl;
 import java.util.Properties;
 
 import de.metas.document.DocBaseType;
+import de.metas.adempiere.model.I_C_Order;
+import de.metas.document.engine.IDocument;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.order.invoicecandidate.IC_OrderLine_HandlerDAO;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
@@ -39,11 +44,7 @@ import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.X_C_DocType;
 
-import de.metas.adempiere.model.I_C_Order;
-import de.metas.document.engine.IDocument;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.order.invoicecandidate.IC_OrderLine_HandlerDAO;
-import de.metas.util.Services;
+import java.util.Properties;
 
 public class C_OrderLine_HandlerDAO implements IC_OrderLine_HandlerDAO
 {
@@ -64,8 +65,8 @@ public class C_OrderLine_HandlerDAO implements IC_OrderLine_HandlerDAO
 
 		// Ordered and invoiced quantities must differ
 		filters.addCompareFilter(I_C_OrderLine.COLUMNNAME_QtyInvoiced,
-				CompareQueryFilter.Operator.NOT_EQUAL,
-				ModelColumnNameValue.forColumnName(I_C_OrderLine.COLUMNNAME_QtyOrdered));
+								 CompareQueryFilter.Operator.NOT_EQUAL,
+								 ModelColumnNameValue.forColumnName(I_C_OrderLine.COLUMNNAME_QtyOrdered));
 
 		//
 		// Line must not already have an invoice candidate.
@@ -99,8 +100,13 @@ public class C_OrderLine_HandlerDAO implements IC_OrderLine_HandlerDAO
 			docTypeFilter.addFilter(docTypeFilterSO);
 
 			final ICompositeQueryFilter<I_C_DocType> docTypeFilterPO = queryBL.createCompositeQueryFilter(I_C_DocType.class);
+			final ICompositeQueryFilter<I_C_DocType> docSubTypeFilterPO = queryBL.createCompositeQueryFilter(I_C_DocType.class)
+					.setJoinOr()
+					.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, null)
+					.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, X_C_DocType.DOCSUBTYPE_CallOrder);
+
 			docTypeFilterPO.addEqualsFilter(I_C_DocType.COLUMNNAME_DocBaseType, X_C_DocType.DOCBASETYPE_PurchaseOrder);
-			docTypeFilterPO.addEqualsFilter(I_C_DocType.COLUMNNAME_DocSubType, null);
+			docTypeFilterPO.addFilter(docSubTypeFilterPO);
 			docTypeFilter.addFilter(docTypeFilterPO);
 
 			// Take only lines from completed orders
@@ -129,6 +135,9 @@ public class C_OrderLine_HandlerDAO implements IC_OrderLine_HandlerDAO
 				.filter(filters)
 				.filterByClientId();
 
+		// order lines that are *not* a IsGroupCompensationLine need to come first,
+		// because later invoice candidates might need the previously created ones that have a C_Order_CompensationGroup_ID set
+		queryBuilder.orderBy(I_C_OrderLine.COLUMNNAME_IsGroupCompensationLine);
 		return queryBuilder;
 	}
 

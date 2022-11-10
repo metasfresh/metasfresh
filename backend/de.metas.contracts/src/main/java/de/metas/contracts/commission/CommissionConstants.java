@@ -38,13 +38,15 @@ public class CommissionConstants
 
 	private static final String COMMISSION_DOC_SUBTYPE_VALUE = "CA";
 	private static final String MEDIATED_COMMISSION_DOC_SUBTYPE_VALUE = "RD";
+	private static final String LICENSE_COMMISSION_DOC_SUBTYPE_VALUE = "LS";
 
 	@AllArgsConstructor
 	@Getter
 	public enum CommissionDocType
 	{
 		PURCHASE_COMMISSION(DocBaseType.APInvoice, COMMISSION_DOC_SUBTYPE_VALUE),
-		SALES_COMMISSION(DocBaseType.ARInvoice, MEDIATED_COMMISSION_DOC_SUBTYPE_VALUE);
+		SALES_COMMISSION(DocBaseType.ARInvoice, MEDIATED_COMMISSION_DOC_SUBTYPE_VALUE),
+		LICENSE_COMMISSION(DocBaseType.ARInvoice, LICENSE_COMMISSION_DOC_SUBTYPE_VALUE);
 
 		private final DocBaseType docBaseType;
 		private final String docSubType;

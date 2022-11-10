@@ -24,6 +24,7 @@ package de.metas.ui.web.payment_allocation.process;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.allocation.api.IAllocationDAO;
+import de.metas.banking.payment.paymentallocation.PaymentAllocationRepository;
 import de.metas.banking.payment.paymentallocation.service.AllocationAmounts;
 import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate;
 import de.metas.banking.payment.paymentallocation.service.AllocationLineCandidate.AllocationLineCandidateType;
@@ -40,6 +41,7 @@ import de.metas.currency.impl.PlainCurrencyDAO;
 import de.metas.document.DocTypeId;
 import de.metas.document.archive.model.I_C_BPartner;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.invoice.InvoiceAmtMultiplier;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
@@ -52,6 +54,7 @@ import de.metas.money.Money;
 import de.metas.money.MoneyService;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentAmtMultiplier;
 import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
 import de.metas.product.ProductId;
@@ -87,11 +90,15 @@ import java.util.Collections;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(AdempiereTestWatcher.class)
 public class PaymentsViewAllocateCommandTest
 {
+	private static final boolean INVOICE_AMT_IsSOTrxAdjusted = false;
+	private static final boolean INVOICE_AMT_IsCreditMemoAdjusted = true;
+
+	private final OrgId orgId = OrgId.ofRepoId(1);
 	private final ZoneId ZONE_ID = ZoneId.of("Europe/Berlin");
 	private final LocalDate dateInvoiced = LocalDate.parse("2020-04-01");
 	private final LocalDate paymentDateTrx = LocalDate.parse("2020-04-25");
@@ -180,9 +187,10 @@ public class PaymentsViewAllocateCommandTest
 				.documentNo("paymentNo_" + paymentId.getRepoId())
 				.dateTrx(paymentDateTrx != null ? LocalDate.parse(paymentDateTrx) : this.paymentDateTrx)
 				.bpartner(IntegerLookupValue.of(bpartnerIdEffective.getRepoId(), "BPartner"))
+				.paymentDirection(direction)
+				.paymentAmtMultiplier(PaymentAmtMultiplier.builder().paymentDirection(direction).isOutboundAdjusted(false).build())
 				.payAmt(payAmt)
 				.openAmt(payAmt)
-				.paymentDirection(direction)
 				.build();
 	}
 
@@ -194,12 +202,17 @@ public class PaymentsViewAllocateCommandTest
 			@Nullable final String serviceFeeAmt,
 			@Nullable final String dateInvoiced)
 	{
+		final InvoiceAmtMultiplier invoiceAmtMultiplier = InvoiceAmtMultiplier.builder()
+				.soTrx(docBaseType.getSoTrx())
+				.isCreditMemo(docBaseType.isCreditMemo())
+				.isSOTrxAdjusted(INVOICE_AMT_IsSOTrxAdjusted)
+				.isCreditMemoAdjusted(INVOICE_AMT_IsCreditMemoAdjusted)
+				.build()
+				.intern();
+
 		final InvoiceId invoiceId;
 		{
-			final Money invoiceGrandTotal = moneyService.toMoney(openAmt)
-					.negateIf(docBaseType.isCreditMemo())
-					// .negateIf(!docBaseType.isSales()) // NOP, it's already adjusted
-					;
+			final Money invoiceGrandTotal = invoiceAmtMultiplier.fromNotAdjustedAmount(moneyService.toMoney(openAmt));
 
 			final I_C_Invoice invoiceRecord = newInstance(I_C_Invoice.class);
 			invoiceRecord.setC_Currency_ID(invoiceGrandTotal.getCurrencyId().getRepoId());
@@ -216,6 +229,7 @@ public class PaymentsViewAllocateCommandTest
 				.dateInvoiced(dateInvoiced != null ? LocalDate.parse(dateInvoiced) : this.dateInvoiced)
 				.bpartner(IntegerLookupValue.of(bpartnerId.getRepoId(), "BPartner"))
 				.docBaseType(docBaseType)
+				.invoiceAmtMultiplier(invoiceAmtMultiplier)
 				.grandTotal(openAmt)
 				.openAmt(openAmt)
 				.discountAmt(discountAmt != null
@@ -225,6 +239,18 @@ public class PaymentsViewAllocateCommandTest
 						? Amount.of(serviceFeeAmt, openAmt.getCurrencyCode())
 						: Amount.zero(openAmt.getCurrencyCode()))
 				.build();
+	}
+
+	@Test
+	public void checkTestsAreUsingSameInvoiceAmtMultiplierAsRealLife()
+	{
+		final InvoiceAmtMultiplier multiplierInRealLife = PaymentAllocationRepository.toInvoiceAmtMultiplier(InvoiceDocBaseType.CustomerInvoice);
+
+		//noinspection AssertThatBooleanCondition
+		assertThat(multiplierInRealLife.isSOTrxAdjusted()).isEqualTo(INVOICE_AMT_IsSOTrxAdjusted);
+
+		//noinspection AssertThatBooleanCondition
+		assertThat(multiplierInRealLife.isCreditMemoAdjusted()).isEqualTo(INVOICE_AMT_IsCreditMemoAdjusted);
 	}
 
 	@Nested
@@ -240,7 +266,7 @@ public class PaymentsViewAllocateCommandTest
 
 			final PayableDocument payableDocument = PaymentsViewAllocateCommand.toPayableDocument(row, Collections.emptyList(), moneyService, invoiceProcessingServiceCompanyService);
 			assertThat(payableDocument.getSoTrx()).isEqualTo(SOTrx.SALES);
-			assertThat(payableDocument.isCreditMemo()).isEqualTo(false);
+			assertThat(payableDocument.isCreditMemo()).isFalse();
 			assertThat(payableDocument.getOpenAmtInitial()).isEqualTo(Money.of(100, euroCurrencyId));
 			assertThat(payableDocument.getAmountsToAllocate())
 					.usingRecursiveComparison()
@@ -257,7 +283,7 @@ public class PaymentsViewAllocateCommandTest
 
 			final PayableDocument payableDocument = PaymentsViewAllocateCommand.toPayableDocument(row, Collections.emptyList(), moneyService, invoiceProcessingServiceCompanyService);
 			assertThat(payableDocument.getSoTrx()).isEqualTo(SOTrx.SALES);
-			assertThat(payableDocument.isCreditMemo()).isEqualTo(true);
+			assertThat(payableDocument.isCreditMemo()).isTrue();
 			assertThat(payableDocument.getOpenAmtInitial()).isEqualTo(Money.of(-100, euroCurrencyId));
 			assertThat(payableDocument.getAmountsToAllocate())
 					.usingRecursiveComparison()
@@ -274,7 +300,7 @@ public class PaymentsViewAllocateCommandTest
 
 			final PayableDocument payableDocument = PaymentsViewAllocateCommand.toPayableDocument(row, Collections.emptyList(), moneyService, invoiceProcessingServiceCompanyService);
 			assertThat(payableDocument.getSoTrx()).isEqualTo(SOTrx.PURCHASE);
-			assertThat(payableDocument.isCreditMemo()).isEqualTo(false);
+			assertThat(payableDocument.isCreditMemo()).isFalse();
 			assertThat(payableDocument.getOpenAmtInitial()).isEqualTo(Money.of(-100, euroCurrencyId));
 			assertThat(payableDocument.getAmountsToAllocate())
 					.usingRecursiveComparison()
@@ -291,7 +317,7 @@ public class PaymentsViewAllocateCommandTest
 
 			final PayableDocument payableDocument = PaymentsViewAllocateCommand.toPayableDocument(row, Collections.emptyList(), moneyService, invoiceProcessingServiceCompanyService);
 			assertThat(payableDocument.getSoTrx()).isEqualTo(SOTrx.PURCHASE);
-			assertThat(payableDocument.isCreditMemo()).isEqualTo(true);
+			assertThat(payableDocument.isCreditMemo()).isTrue();
 			assertThat(payableDocument.getOpenAmtInitial()).isEqualTo(Money.of(100, euroCurrencyId));
 			assertThat(payableDocument.getAmountsToAllocate())
 					.usingRecursiveComparison()

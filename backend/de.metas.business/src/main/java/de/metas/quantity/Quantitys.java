@@ -190,12 +190,22 @@ public class Quantitys
 		return uomConversionBL.convertQuantityTo(qty, conversionCtx, targetUomId);
 	}
 
-	public Quantity create(final int qty, final UomId repoId)
+	public Quantity create(final int qty, @NonNull final UomId repoId)
 	{
 		return create(BigDecimal.valueOf(qty), repoId);
 	}
 
-	public class QuantityDeserializer extends StdDeserializer<Quantity>
+	@Nullable
+	public static BigDecimal toBigDecimalOrNull(@Nullable final Quantity quantity)
+	{
+		if (quantity == null)
+		{
+			return null;
+		}
+		return quantity.toBigDecimal();
+	}
+
+	public static class QuantityDeserializer extends StdDeserializer<Quantity>
 	{
 		private static final long serialVersionUID = -5406622853902102217L;
 

@@ -343,11 +343,9 @@ public class TaxDAO implements ITaxDAO
 			}
 		}
 
-		final BPartnerLocationAndCaptureId bpartnerLocationId = taxQuery.getBPartnerLocationId();
-		
-		final CountryId destCountryId = getCountryId(bpartnerLocationId);
+		final CountryId destCountryId = getCountryId(taxQuery);
 		final TypeOfDestCountry typeOfDestCountry = getTypeOfDestCountry(countryId, destCountryId);
-		
+
 		final boolean euOneStopShop = orgDAO.isEUOneStopShop(orgId);
 		if (euOneStopShop && WITHIN_COUNTRY_AREA.equals(typeOfDestCountry))
 		{
@@ -384,7 +382,8 @@ public class TaxDAO implements ITaxDAO
 			loggable.addLog("SOPOType is either {} or {}", X_C_Tax.SOPOTYPE_Both, X_C_Tax.SOPOTYPE_PurchaseTax);
 		}
 
-		final BPartnerId bpartnerId = bpartnerLocationId.getBpartnerId();
+		final BPartnerId bpartnerId = taxQuery.getBPartnerId();
+
 		final I_C_BPartner bpartner = bPartnerDAO.getById(bpartnerId);
 
 		final boolean bPartnerHasTaxCertificate = !Check.isBlank(bpartner.getVATaxID());
@@ -394,7 +393,7 @@ public class TaxDAO implements ITaxDAO
 		final boolean bpartnerIsSmallbusiness = retrieveIsTaxExemptSmallBusiness(bpartnerId, dateOfInterest);
 		loggable.addLog("BPartner is a small business={}", bpartnerIsSmallbusiness);
 		queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_IsSmallbusiness, StringUtils.ofBoolean(bpartnerIsSmallbusiness), null);
-		
+
 		// if (euOneStopShop && WITHIN_COUNTRY_AREA.equals(typeOfDestCountry) && !bPartnerHasTaxCertificate)
 		// {
 		// 	loggable.addLog("AD_Org_ID={} has IsEUOneStopShop=Y, typeOfDestCountry=WITHIN_COUNTRY_AREA and C_BPartner_ID={} has no tax certificate; -> filter by To_Country_ID={}",
@@ -408,7 +407,7 @@ public class TaxDAO implements ITaxDAO
 		loggable.addLog("Filter by To_Country_ID={} or NULL", destCountryId.getRepoId());
 		queryBuilder.addInArrayFilter(I_C_Tax.COLUMNNAME_To_Country_ID, destCountryId, null);
 		//}
-		
+
 		loggable.addLog("Type of dest country: {} or NULL", typeOfDestCountry);
 		if (typeOfDestCountry != null)
 		{
@@ -448,21 +447,34 @@ public class TaxDAO implements ITaxDAO
 		return typeOfDestCountry;
 	}
 
-	private CountryId getCountryId(@NonNull final BPartnerLocationAndCaptureId bpartnerLocationId)
+	@NonNull
+	private CountryId getCountryId(@NonNull final TaxQuery taxQuery)
 	{
-		if(bpartnerLocationId.getLocationCaptureId() != null)
+		if (taxQuery.getShippingCountryId() != null)
+		{
+			return taxQuery.getShippingCountryId();
+		}
+
+		final BPartnerLocationAndCaptureId bpartnerLocationId = taxQuery.getBPartnerLocationId();
+
+		if (bpartnerLocationId == null)
+		{
+			throw new AdempiereException("Invalid TaxQuery! None of TaxQuery.ShippingCountryId or TaxQuery.BPartnerLocationId set!")
+					.appendParametersToMessage()
+					.setParameter("TaxQuery", taxQuery);
+		}
+
+		if (bpartnerLocationId.getLocationCaptureId() != null)
 		{
 			return locationDAO.getCountryIdByLocationId(bpartnerLocationId.getLocationCaptureId());
 		}
-		else
-		{
-			final I_C_BPartner_Location bpartnerLocation = bPartnerDAO.getBPartnerLocationByIdEvenInactive(bpartnerLocationId.getBpartnerLocationId());
-			if (bpartnerLocation == null)
-			{
-				throw new AdempiereException("No location found for bpartnerLocationId: " + bpartnerLocationId);
-			}
-			return locationDAO.getCountryIdByLocationId(LocationId.ofRepoId(bpartnerLocation.getC_Location_ID()));
-		}
-	}
 
+		final I_C_BPartner_Location bpartnerLocation = bPartnerDAO.getBPartnerLocationByIdEvenInactive(bpartnerLocationId.getBpartnerLocationId());
+		if (bpartnerLocation == null)
+		{
+			throw new AdempiereException("No location found for bpartnerLocationId: " + bpartnerLocationId);
+		}
+
+		return locationDAO.getCountryIdByLocationId(LocationId.ofRepoId(bpartnerLocation.getC_Location_ID()));
+	}
 }

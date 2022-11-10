@@ -23,6 +23,12 @@ import de.metas.organization.OrgId;
 import de.metas.script.IADRuleDAO;
 import de.metas.script.ScriptEngineFactory;
 import de.metas.util.Services;
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.logging.LogManager;
+import de.metas.script.IADRuleDAO;
+import de.metas.script.ScriptEngineFactory;
+import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Rule;
 import org.compiere.model.MBPartner;
@@ -48,6 +54,17 @@ import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.io.File;
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * HR Process Model
@@ -56,6 +73,7 @@ import java.util.Properties;
  *         <li>Original contributor of Payroll Functionality
  * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
  *         <li>FR [ 2520591 ] Support multiples calendar for Org
+ * @implNote  http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
  * @author Cristina Ghita, www.arhipac.ro
  */
 public class MHRProcess extends X_HR_Process implements IDocument
@@ -1059,10 +1077,23 @@ public class MHRProcess extends X_HR_Process implements IDocument
 	}  // getDays
 
 	/**
+	 * Helper Method : Concept for a range from-to in periods.
+	 * Periods with values of 0 -1 1, etc. actual previous one period, next period
+	 * 0 corresponds to actual period.
+	 *
+	 * @param conceptValue concept key(value)
+	 * @param periodFrom the search is done by the period value, it helps to search from previous years
+	 * @param periodTo
+	 */
+	public double getConcept(String conceptValue, int periodFrom, int periodTo)
+	{
+		return getConcept(conceptValue, null, periodFrom, periodTo);
+	} // getConcept
+
+	/**
 	 * Helper Method : Concept by range from-to in periods from a different payroll
 	 * periods with values 0 -1 1, etc. actual previous one period, next period
 	 * 0 corresponds to actual period
-	 * @param payrollValue is the value of the payroll.
 	 */
 	public double getConcept(String conceptValue, String payrollValue, int periodFrom, int periodTo)
 	{

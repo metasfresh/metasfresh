@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.JsonObjectMapperHolder;
@@ -65,8 +66,8 @@ import org.compiere.model.I_API_Request_Audit;
 import org.compiere.model.I_API_Request_Audit_Log;
 import org.compiere.model.I_API_Response_Audit;
 import org.compiere.util.Env;
-import org.slf4j.Logger;
 import org.springframework.http.MediaType;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.io.ByteArrayOutputStream;
@@ -77,6 +78,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import static de.metas.util.web.MetasfreshRestAPIConstants.ENDPOINT_API_V2;
+import static de.metas.util.web.audit.ApiAuditService.API_RESPONSE_HEADER_REQUEST_AUDIT_ID;
 import static org.assertj.core.api.Assertions.*;
 
 @UtilityClass
@@ -168,6 +170,10 @@ public class RESTUtil
 						.content(content);
 
 				logDetails(jsonApiResponse.getRequestId());
+			}
+			catch (final MismatchedInputException mismatchedInputException)
+			{
+				extractRequestAuditIdFromHeader(response, stream, apiResponseBuilder);
 			}
 			catch (final JsonParseException jsonParseException)
 			{
@@ -342,5 +348,26 @@ public class RESTUtil
 				.stream()
 				.forEach(issue -> logger.info("*** API_Request_Audit_ID : {} - AD_Issue_ID -> {} \n IssueSummary -> {}\n StackTrace -> {}",
 											  apiRequestAuditId.getRepoId(), issue.getAD_Issue_ID(), issue.getIssueSummary(), issue.getStackTrace()));
+	}
+
+	private void extractRequestAuditIdFromHeader(
+			@NonNull final HttpResponse response,
+			@NonNull final ByteArrayOutputStream bodyContent,
+			@NonNull final APIResponse.APIResponseBuilder apiResponseBuilder) throws UnsupportedEncodingException
+	{
+		apiResponseBuilder.content(bodyContent.toString(StandardCharsets.UTF_8.name()));
+
+		final Header requestIdParam = response.getFirstHeader(API_RESPONSE_HEADER_REQUEST_AUDIT_ID);
+
+		if (requestIdParam == null)
+		{
+			return;
+		}
+
+		final JsonMetasfreshId requestId = JsonMetasfreshId.of(Integer.parseInt(requestIdParam.getValue()));
+
+		apiResponseBuilder.requestId(requestId);
+
+		logDetails(requestId);
 	}
 }

@@ -80,6 +80,7 @@ import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
@@ -168,18 +169,18 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 		MPeriod.testPeriodOpen(getCtx(), getDateAcct(), getC_DocTypeTarget_ID(), getAD_Org_ID());
 		setC_DocType_ID(getC_DocTypeTarget_ID());
 
-		final CostCollectorType costCollectorType = CostCollectorType.ofCode(getCostCollectorType());
-		final PPOrderBOMLineId orderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(getPP_Order_BOMLine_ID());
-
-		if (costCollectorType.isMaterial(orderBOMLineId))
-		{
-			final ProductId productId = ProductId.ofRepoId(getM_Product_ID());
-			final boolean isSOTrx = costCollectorType.isMaterialReceipt();
-			if (getM_AttributeSetInstance_ID() <= 0 && Services.get(IProductBL.class).isASIMandatory(productId, isSOTrx))
-			{
-				throw new LiberoException("@M_AttributeSet_ID@ @IsMandatory@ @M_Product_ID@=" + Services.get(IProductBL.class).getProductValueAndName(productId));
-			}
-		}
+		// Don't check if ASI is mandatory because we have our attributes on HU level and not here.
+		// final CostCollectorType costCollectorType = CostCollectorType.ofCode(getCostCollectorType());
+		// final PPOrderBOMLineId orderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(getPP_Order_BOMLine_ID());
+		// if (costCollectorType.isMaterial(orderBOMLineId))
+		// {
+		// 	final ProductId productId = ProductId.ofRepoId(getM_Product_ID());
+		// 	final boolean isSOTrx = costCollectorType.isMaterialReceipt();
+		// 	if (getM_AttributeSetInstance_ID() <= 0 && Services.get(IProductBL.class).isASIMandatory(productId, isSOTrx))
+		// 	{
+		// 		throw new LiberoException("@M_AttributeSet_ID@ @IsMandatory@ @M_Product_ID@=" + Services.get(IProductBL.class).getProductValueAndName(productId));
+		// 	}
+		// }
 
 		m_justPrepared = true;
 		setDocAction(DOCACTION_Complete);
@@ -366,7 +367,7 @@ public class MPPCostCollector extends X_PP_Cost_Collector implements IDocument
 
 		orderRouting.reportProgress(PPOrderActivityProcessReport.builder()
 				.activityId(activity.getId())
-				.finishDate(TimeUtil.asLocalDateTime(getMovementDate()))
+				.finishDate(getMovementDate().toInstant())
 				.qtyProcessed(qtys.getMovementQty())
 				.qtyScrapped(qtys.getScrappedQty())
 				.qtyRejected(qtys.getRejectedQty())

@@ -1,25 +1,3 @@
-/*
- * #%L
- * de.metas.externalsystem
- * %%
- * Copyright (C) 2021 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package de.metas.externalsystem.model;
 
 import javax.annotation.Nullable;
@@ -73,6 +51,50 @@ public interface I_ExternalSystem_Config_GRSSignum
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Authentication Token.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAuthToken (@Nullable java.lang.String AuthToken);
+
+	/**
+	 * Get Authentication Token.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getAuthToken();
+
+	ModelColumn<I_ExternalSystem_Config_GRSSignum, Object> COLUMN_AuthToken = new ModelColumn<>(I_ExternalSystem_Config_GRSSignum.class, "AuthToken", null);
+	String COLUMNNAME_AuthToken = "AuthToken";
+
+	/**
+	 * Set Base path.
+	 * Specifies the base path where all business partner folders are created.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBasePathForExportDirectories (@Nullable java.lang.String BasePathForExportDirectories);
+
+	/**
+	 * Get Base path.
+	 * Specifies the base path where all business partner folders are created.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getBasePathForExportDirectories();
+
+	ModelColumn<I_ExternalSystem_Config_GRSSignum, Object> COLUMN_BasePathForExportDirectories = new ModelColumn<>(I_ExternalSystem_Config_GRSSignum.class, "BasePathForExportDirectories", null);
+	String COLUMNNAME_BasePathForExportDirectories = "BasePathForExportDirectories";
+
+	/**
 	 * Set Base-URL.
 	 *
 	 * <br>Type: URL
@@ -92,6 +114,29 @@ public interface I_ExternalSystem_Config_GRSSignum
 
 	ModelColumn<I_ExternalSystem_Config_GRSSignum, Object> COLUMN_BaseURL = new ModelColumn<>(I_ExternalSystem_Config_GRSSignum.class, "BaseURL", null);
 	String COLUMNNAME_BaseURL = "BaseURL";
+
+	/**
+	 * Set Business partner subfolder.
+	 * Comma-separated folder structures to be created within the business partner folder. Example: "Zertifikate, Korrespondenz/Allgemein, Korrespondenz/Entwicklungen".
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBPartnerExportDirectories (@Nullable java.lang.String BPartnerExportDirectories);
+
+	/**
+	 * Get Business partner subfolder.
+	 * Comma-separated folder structures to be created within the business partner folder. Example: "Zertifikate, Korrespondenz/Allgemein, Korrespondenz/Entwicklungen".
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getBPartnerExportDirectories();
+
+	ModelColumn<I_ExternalSystem_Config_GRSSignum, Object> COLUMN_BPartnerExportDirectories = new ModelColumn<>(I_ExternalSystem_Config_GRSSignum.class, "BPartnerExportDirectories", null);
+	String COLUMNNAME_BPartnerExportDirectories = "BPartnerExportDirectories";
 
 	/**
 	 * Set User Authentication Token .
@@ -140,7 +185,7 @@ public interface I_ExternalSystem_Config_GRSSignum
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
-	 * Set ExternalSystem_Config_GRSSignum.
+	 * Set GRSSignum Config.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -149,7 +194,7 @@ public interface I_ExternalSystem_Config_GRSSignum
 	void setExternalSystem_Config_GRSSignum_ID (int ExternalSystem_Config_GRSSignum_ID);
 
 	/**
-	 * Get ExternalSystem_Config_GRSSignum.
+	 * Get GRSSignum Config.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -228,6 +273,157 @@ public interface I_ExternalSystem_Config_GRSSignum
 
 	ModelColumn<I_ExternalSystem_Config_GRSSignum, Object> COLUMN_IsActive = new ModelColumn<>(I_ExternalSystem_Config_GRSSignum.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Auto-send customers.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAutoSendCustomers (boolean IsAutoSendCustomers);
+
+	/**
+	 * Get Auto-send customers.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAutoSendCustomers();
+
+	ModelColumn<I_ExternalSystem_Config_GRSSignum, Object> COLUMN_IsAutoSendCustomers = new ModelColumn<>(I_ExternalSystem_Config_GRSSignum.class, "IsAutoSendCustomers", null);
+	String COLUMNNAME_IsAutoSendCustomers = "IsAutoSendCustomers";
+
+	/**
+	 * Set Auto-send vendors.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsAutoSendVendors (boolean IsAutoSendVendors);
+
+	/**
+	 * Get Auto-send vendors.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isAutoSendVendors();
+
+	ModelColumn<I_ExternalSystem_Config_GRSSignum, Object> COLUMN_IsAutoSendVendors = new ModelColumn<>(I_ExternalSystem_Config_GRSSignum.class, "IsAutoSendVendors", null);
+	String COLUMNNAME_IsAutoSendVendors = "IsAutoSendVendors";
+
+	/**
+	 * Set Create partner folders.
+	 * If ticked, then when exporting a business partner, a folder with subfolders for file attachments for this business partner is created in the file system.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsCreateBPartnerFolders (boolean IsCreateBPartnerFolders);
+
+	/**
+	 * Get Create partner folders.
+	 * If ticked, then when exporting a business partner, a folder with subfolders for file attachments for this business partner is created in the file system.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isCreateBPartnerFolders();
+
+	ModelColumn<I_ExternalSystem_Config_GRSSignum, Object> COLUMN_IsCreateBPartnerFolders = new ModelColumn<>(I_ExternalSystem_Config_GRSSignum.class, "IsCreateBPartnerFolders", null);
+	String COLUMNNAME_IsCreateBPartnerFolders = "IsCreateBPartnerFolders";
+
+	/**
+	 * Set Send business partners.
+	 * If checked, then business selected partners can be initially send to GRS via an action in the business partner window. Once initially send, they will from there onwards be automatically send whenever changed in metasfresh.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIsSyncBPartnersToRestEndpoint (boolean IsSyncBPartnersToRestEndpoint);
+
+	/**
+	 * Get Send business partners.
+	 * If checked, then business selected partners can be initially send to GRS via an action in the business partner window. Once initially send, they will from there onwards be automatically send whenever changed in metasfresh.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	boolean isSyncBPartnersToRestEndpoint();
+
+	ModelColumn<I_ExternalSystem_Config_GRSSignum, Object> COLUMN_IsSyncBPartnersToRestEndpoint = new ModelColumn<>(I_ExternalSystem_Config_GRSSignum.class, "IsSyncBPartnersToRestEndpoint", null);
+	String COLUMNNAME_IsSyncBPartnersToRestEndpoint = "IsSyncBPartnersToRestEndpoint";
+
+	/**
+	 * Set Send HUs on material receipt.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsSyncHUsOnMaterialReceipt (boolean IsSyncHUsOnMaterialReceipt);
+
+	/**
+	 * Get Send HUs on material receipt.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSyncHUsOnMaterialReceipt();
+
+	ModelColumn<I_ExternalSystem_Config_GRSSignum, Object> COLUMN_IsSyncHUsOnMaterialReceipt = new ModelColumn<>(I_ExternalSystem_Config_GRSSignum.class, "IsSyncHUsOnMaterialReceipt", null);
+	String COLUMNNAME_IsSyncHUsOnMaterialReceipt = "IsSyncHUsOnMaterialReceipt";
+
+	/**
+	 * Set Send HUs on production receipt.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsSyncHUsOnProductionReceipt (boolean IsSyncHUsOnProductionReceipt);
+
+	/**
+	 * Get Send HUs on production receipt.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSyncHUsOnProductionReceipt();
+
+	ModelColumn<I_ExternalSystem_Config_GRSSignum, Object> COLUMN_IsSyncHUsOnProductionReceipt = new ModelColumn<>(I_ExternalSystem_Config_GRSSignum.class, "IsSyncHUsOnProductionReceipt", null);
+	String COLUMNNAME_IsSyncHUsOnProductionReceipt = "IsSyncHUsOnProductionReceipt";
+
+	/**
+	 * Set Tenant-ID (MID).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setTenantId (java.lang.String TenantId);
+
+	/**
+	 * Get Tenant-ID (MID).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getTenantId();
+
+	ModelColumn<I_ExternalSystem_Config_GRSSignum, Object> COLUMN_TenantId = new ModelColumn<>(I_ExternalSystem_Config_GRSSignum.class, "TenantId", null);
+	String COLUMNNAME_TenantId = "TenantId";
 
 	/**
 	 * Get Updated.

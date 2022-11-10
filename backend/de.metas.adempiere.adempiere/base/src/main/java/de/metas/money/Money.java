@@ -166,7 +166,7 @@ public class Money
 		return Money.zero(currencyId);
 	}
 
-	public static CurrencyId getCommonCurrencyIdOfAll(@NonNull final Money... moneys)
+	public static CurrencyId getCommonCurrencyIdOfAll(final Money... moneys)
 	{
 		return CurrencyId.getCommonCurrencyIdOfAll(Money::getCurrencyId, "Money", moneys);
 	}
@@ -311,5 +311,24 @@ public class Money
 	private Money withValue(@NonNull final BigDecimal newValue)
 	{
 		return value.compareTo(newValue) != 0 ? of(newValue, currencyId) : this;
+	}
+
+	public static int countNonZero(final Money... array)
+	{
+		if (array == null || array.length == 0)
+		{
+			return 0;
+		}
+
+		int count = 0;
+		for (final Money money : array)
+		{
+			if (money != null && money.signum() != 0)
+			{
+				count++;
+			}
+		}
+
+		return count;
 	}
 }

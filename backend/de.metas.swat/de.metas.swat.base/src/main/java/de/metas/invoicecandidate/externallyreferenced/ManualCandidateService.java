@@ -62,7 +62,9 @@ public class ManualCandidateService
 		this.bPartnerCompositeRepository = bPartnerCompositeRepository;
 	}
 
-	/** Invokes different metasfresh services to complement additional fields such as the price. */
+	/**
+	 * Invokes different metasfresh services to complement additional fields such as the price.
+	 */
 	public ExternallyReferencedCandidate createInvoiceCandidate(@NonNull final NewManualInvoiceCandidate newIC)
 	{
 		final ExternallyReferencedCandidateBuilder candidate = ExternallyReferencedCandidate.createBuilder(newIC);
@@ -111,7 +113,6 @@ public class ManualCandidateService
 		final ZoneId timeZone = orgDAO.getTimeZone(newIC.getOrgId());
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
-				Env.getCtx(),
 				newIC,
 				pricingResult.getTaxCategoryId(),
 				newIC.getProductId().getRepoId(),

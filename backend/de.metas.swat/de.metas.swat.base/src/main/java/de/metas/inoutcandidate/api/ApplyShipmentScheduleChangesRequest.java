@@ -23,7 +23,7 @@
 package de.metas.inoutcandidate.api;
 
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.DeliveryRule;
 import de.metas.shipping.ShipperId;
 import de.metas.util.Check;

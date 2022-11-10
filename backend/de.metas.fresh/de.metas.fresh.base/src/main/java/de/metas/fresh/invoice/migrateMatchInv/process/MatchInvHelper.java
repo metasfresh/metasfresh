@@ -290,7 +290,9 @@ import lombok.NonNull;
 		final I_M_MatchInv matchInv = InterfaceWrapperHelper.create(ctx, I_M_MatchInv.class, ITrx.TRXNAME_ThreadInherited);
 
 		matchInv.setAD_Org_ID(il.getAD_Org_ID());
+		matchInv.setC_Invoice_ID(il.getC_Invoice_ID());
 		matchInv.setC_InvoiceLine(il);
+		matchInv.setM_InOut_ID(iol.getM_InOut_ID());
 		matchInv.setM_InOutLine(iol);
 
 		matchInv.setQty(qtysMatched.getStockQty().toBigDecimal());

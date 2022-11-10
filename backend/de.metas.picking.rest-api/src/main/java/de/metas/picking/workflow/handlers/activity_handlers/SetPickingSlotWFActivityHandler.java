@@ -23,21 +23,21 @@
 package de.metas.picking.workflow.handlers.activity_handlers;
 
 import de.metas.handlingunits.picking.job.model.PickingJob;
-import de.metas.picking.api.PickingSlotBarcode;
 import de.metas.picking.api.PickingSlotIdAndCaption;
+import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.picking.workflow.PickingJobRestService;
+import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.JsonQRCode;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScannedBarcodeRequest;
 import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScannedBarcodeSupport;
+import de.metas.workflow.rest_api.activity_features.set_scanned_barcode.SetScannedBarcodeSupportHelper;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.model.UIComponent;
-import de.metas.workflow.rest_api.model.UIComponentType;
 import de.metas.workflow.rest_api.model.WFActivity;
 import de.metas.workflow.rest_api.model.WFActivityStatus;
 import de.metas.workflow.rest_api.model.WFActivityType;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.service.WFActivityHandler;
 import lombok.NonNull;
-import org.adempiere.util.api.Params;
 import org.springframework.stereotype.Component;
 
 import static de.metas.picking.workflow.handlers.activity_handlers.PickingWFActivityHelper.getPickingJob;
@@ -63,13 +63,19 @@ public class SetPickingSlotWFActivityHandler implements WFActivityHandler, SetSc
 			final @NonNull WFActivity wfActivity,
 			final @NonNull JsonOpts jsonOpts)
 	{
-		final PickingJob pickingJob = getPickingJob(wfProcess);
+		final JsonQRCode currentPickingSlot = getPickingJob(wfProcess)
+				.getPickingSlot()
+				.map(SetPickingSlotWFActivityHandler::toJsonQRCode)
+				.orElse(null);
 
-		return UIComponent.builder()
-				.type(UIComponentType.SCAN_BARCODE)
-				.properties(Params.builder()
-						.value("barcodeCaption", pickingJob.getPickingSlot().map(PickingSlotIdAndCaption::getCaption).orElse(null))
-						.build())
+		return SetScannedBarcodeSupportHelper.createUIComponent(currentPickingSlot);
+	}
+
+	private static JsonQRCode toJsonQRCode(final PickingSlotIdAndCaption pickingSlotIdAndCaption)
+	{
+		return JsonQRCode.builder()
+				.qrCode(PickingSlotQRCode.ofPickingSlotIdAndCaption(pickingSlotIdAndCaption).toGlobalQRCodeJsonString())
+				.caption(pickingSlotIdAndCaption.getCaption())
 				.build();
 	}
 
@@ -77,14 +83,19 @@ public class SetPickingSlotWFActivityHandler implements WFActivityHandler, SetSc
 	public WFActivityStatus computeActivityState(final WFProcess wfProcess, final WFActivity wfActivity)
 	{
 		final PickingJob pickingJob = getPickingJob(wfProcess);
-		return pickingJob.getPickingSlot().isPresent() ? WFActivityStatus.COMPLETED : WFActivityStatus.IN_PROGRESS;
+		return computeActivityState(pickingJob);
+	}
+
+	public static WFActivityStatus computeActivityState(final PickingJob pickingJob)
+	{
+		return pickingJob.getPickingSlot().isPresent() ? WFActivityStatus.COMPLETED : WFActivityStatus.NOT_STARTED;
 	}
 
 	@Override
 	public WFProcess setScannedBarcode(@NonNull final SetScannedBarcodeRequest request)
 	{
-		final PickingSlotBarcode pickingSlotBarcode = PickingSlotBarcode.ofBarcodeString(request.getScannedBarcode());
+		final PickingSlotQRCode pickingSlotQRCode = PickingSlotQRCode.ofGlobalQRCodeJsonString(request.getScannedBarcode());
 		final WFProcess wfProcess = request.getWfProcess();
-		return wfProcess.<PickingJob>mapDocument(pickingJob -> pickingJobRestService.allocateAndSetPickingSlot(pickingJob, pickingSlotBarcode));
+		return wfProcess.<PickingJob>mapDocument(pickingJob -> pickingJobRestService.allocateAndSetPickingSlot(pickingJob, pickingSlotQRCode));
 	}
 }

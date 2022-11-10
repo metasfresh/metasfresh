@@ -15,11 +15,13 @@ import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFac
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_M_InOutLine;
+import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import org.adempiere.ad.wrapper.POJOWrapper;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Condition;
 import org.compiere.SpringContextHolder;
@@ -94,6 +96,9 @@ public class M_InOutLine_HandlerTest
 
 		SpringContextHolder.registerJUnitBean(new DimensionService(dimensionFactories));
 
+		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+		SpringContextHolder.registerJUnitBean(new OrderEmailPropagationSysConfigRepository(sysConfigBL));
+
 		final I_C_BPartner bPartner = newInstance(I_C_BPartner.class);
 		save(bPartner);
 
@@ -137,6 +142,7 @@ public class M_InOutLine_HandlerTest
 
 		Services.registerService(IBPartnerBL.class, new BPartnerBL(new UserRepository()));
 		SpringContextHolder.registerJUnitBean(new InvoiceCandidateRecordService());
+
 	}
 
 	private PaymentTermId createPaymentTerm(final String name)

@@ -22,17 +22,21 @@ package org.adempiere.util.api;
  * #L%
  */
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.ZonedDateTime;
 
+@SuppressWarnings("unused")
 public interface IRangeAwareParams extends IParams
 {
+	@Nullable
 	Object getParameter_ToAsObject(String parameterName);
 
 	/**
 	 * @return string value or <code>null</code> if parameter is missing
 	 */
+	@Nullable
 	String getParameter_ToAsString(String parameterName);
 
 	/**
@@ -48,15 +52,21 @@ public interface IRangeAwareParams extends IParams
 	/**
 	 * @return timestamp value or <code>null</code> if parameter is missing
 	 */
+	@Nullable
 	Timestamp getParameter_ToAsTimestamp(String parameterName);
+
+	@Nullable
+	LocalDate getParameter_ToAsLocalDate(String parameterName);
 
 	/**
 	 * @return {@link ZonedDateTime} or <code>null</code> if parameter is missing
 	 */
+	@Nullable
 	ZonedDateTime getParameter_ToAsZonedDateTime(String parameterName);
 
 	/**
 	 * @return {@link BigDecimal} value or <code>null</code> if parameter is missing or cannot be converted to {@link BigDecimal}
 	 */
+	@Nullable
 	BigDecimal getParameter_ToAsBigDecimal(String parameterName);
 }

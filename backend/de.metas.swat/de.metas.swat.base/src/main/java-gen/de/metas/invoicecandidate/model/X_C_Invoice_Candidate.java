@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.invoicecandidate.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_Invoice_Candidate
  *  @author metasfresh (generated) 
@@ -33,6 +33,21 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setAD_InputDataSource_ID (final int AD_InputDataSource_ID)
+	{
+		if (AD_InputDataSource_ID < 1) 
+			set_Value (COLUMNNAME_AD_InputDataSource_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_InputDataSource_ID, AD_InputDataSource_ID);
+	}
+
+	@Override
+	public int getAD_InputDataSource_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_InputDataSource_ID);
 	}
 
 	@Override
@@ -2140,6 +2155,32 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public BigDecimal getQtyToInvoiceInUOM_Calc() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyToInvoiceInUOM_Calc);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyToInvoice_Override (final @Nullable BigDecimal QtyToInvoice_Override)
+	{
+		set_Value (COLUMNNAME_QtyToInvoice_Override, QtyToInvoice_Override);
+	}
+
+	@Override
+	public BigDecimal getQtyToInvoice_Override() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyToInvoice_Override);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyToInvoice_OverrideFulfilled (final @Nullable BigDecimal QtyToInvoice_OverrideFulfilled)
+	{
+		set_Value (COLUMNNAME_QtyToInvoice_OverrideFulfilled, QtyToInvoice_OverrideFulfilled);
+	}
+
+	@Override
+	public BigDecimal getQtyToInvoice_OverrideFulfilled() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyToInvoice_OverrideFulfilled);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 

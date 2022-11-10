@@ -117,6 +117,8 @@ public interface IProductDAO extends ISingletonService
 
 	ImmutableSet<ProductId> retrieveStockedProductIds(@NonNull final ClientId clientId);
 
+	ProductCategoryId retrieveProductCategoryForGroupTemplateId(@NonNull GroupTemplateId groupTemplateId);
+
 	@Value
 	class ProductQuery
 	{

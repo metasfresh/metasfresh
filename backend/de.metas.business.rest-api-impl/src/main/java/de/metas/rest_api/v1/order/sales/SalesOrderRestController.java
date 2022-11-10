@@ -41,6 +41,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.rest_api.utils.JsonConverters;
 import de.metas.rest_api.v1.order.JsonSalesOrder;
 import de.metas.rest_api.v1.order.JsonSalesOrderAttachment;
 import de.metas.rest_api.v1.order.JsonSalesOrderCreateRequest;
@@ -194,7 +195,7 @@ public class SalesOrderRestController
 		return JsonSalesOrderAttachment.builder()
 				.salesOrderId(String.valueOf(salesOrderId))
 				.id(AttachmentEntryId.getRepoId(entry.getId()))
-				.type(JsonAttachmentType.valueOf(entry.getType().toString()))
+				.type(JsonConverters.toJsonAttachmentType(entry.getType()))
 				.filename(entry.getFilename())
 				.mimeType(entry.getMimeType())
 				.url(entry.getUrl() != null ? entry.getUrl().toString() : null)

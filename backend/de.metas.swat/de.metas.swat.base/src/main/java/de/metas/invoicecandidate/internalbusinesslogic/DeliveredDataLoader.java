@@ -22,7 +22,6 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
-import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import lombok.Value;
@@ -34,6 +33,15 @@ import java.util.List;
 import java.util.Optional;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
+import static org.adempiere.model.InterfaceWrapperHelper.isNull;
+
+import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
+import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 
 /*
@@ -64,6 +72,7 @@ public class DeliveredDataLoader
 	IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 
 	IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+
 	UomId stockUomId;
 
 	UomId icUomId;
@@ -308,7 +317,7 @@ public class DeliveredDataLoader
 			final I_M_InOut inOut = inOutDAO.getById(InOutId.ofRepoId(inoutLine.getM_InOut_ID()));
 
 			final boolean inoutCompletedOrClosed = inOut.isActive() && DocStatus.ofCode(inOut.getDocStatus()).isCompletedOrClosed();
-
+			
 			final DeliveredQtyItemBuilder deliveredQtyItem = DeliveredQtyItem.builder()
 					.inDispute(inoutLine.isInDispute())
 					.completedOrClosed(inoutCompletedOrClosed);
@@ -350,5 +359,24 @@ public class DeliveredDataLoader
 			result.add(deliveredQtyItem.build());
 		}
 		return result.build();
+	}
+
+	@NonNull
+	private StockQtyAndUOMQty getDeliveredQtyWhenNoValidICIOL()
+	{
+		final boolean hasInOutLineAllocations = invoiceCandDAO.countICIOLAssociations(invoiceCandidateId) > 0;
+
+		if (hasInOutLineAllocations)
+		{
+			return StockQtyAndUOMQty.builder()
+					.productId(productId)
+					.uomQty(Quantitys.createZero(icUomId))
+					.stockQty(Quantitys.createZero(productId))
+					.build();
+		}
+		else
+		{
+			return defaultQtyDelivered;
+		}
 	}
 }

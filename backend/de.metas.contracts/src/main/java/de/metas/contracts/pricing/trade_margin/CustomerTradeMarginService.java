@@ -110,18 +110,18 @@ public class CustomerTradeMarginService
 
 		final IBPartnerDAO.BPartnerLocationQuery bPartnerLocationQuery = IBPartnerDAO.BPartnerLocationQuery.builder()
 				.bpartnerId(request.getSalesRepId())
-				.type(IBPartnerDAO.BPartnerLocationQuery.Type.BILL_TO)
+				.type(IBPartnerDAO.BPartnerLocationQuery.Type.SHIP_TO)
 				.build();
 
-		final I_C_BPartner_Location salesRepBillToLocation = bPartnerDAO.retrieveBPartnerLocation(bPartnerLocationQuery);
+		final I_C_BPartner_Location salesRepShipToLocation = bPartnerDAO.retrieveBPartnerLocation(bPartnerLocationQuery);
 
-		if (salesRepBillToLocation == null)
+		if (salesRepShipToLocation == null)
 		{
 			loggable.addLog("createSalesRepPricingResult - No bpartnerSalesRepLocation found for bpartner={}" + request.getSalesRepId());
 			return Optional.empty();
 		}
 
-		final LocationId locationId = LocationId.ofRepoId(salesRepBillToLocation.getC_Location_ID());
+		final LocationId locationId = LocationId.ofRepoId(salesRepShipToLocation.getC_Location_ID());
 		final CountryId countryId = locationDAO.getCountryIdByLocationId(locationId);
 
 		final PriceListId priceListId = priceListDAO.retrievePriceListIdByPricingSyst(pricingSystemId, countryId, request.getSoTrx());
@@ -132,7 +132,7 @@ public class CustomerTradeMarginService
 			return Optional.empty();
 		}
 
-		final OrgId salesRepOrgId = OrgId.ofRepoId(salesRepBillToLocation.getAD_Org_ID());
+		final OrgId salesRepOrgId = OrgId.ofRepoId(salesRepShipToLocation.getAD_Org_ID());
 
 		final IEditablePricingContext salesRepPricingCtx =
 				pricingBL.createInitialContext(salesRepOrgId,
@@ -156,9 +156,9 @@ public class CustomerTradeMarginService
 		updatePricingResultToMatchUOM(salesRepPriceResult, request.getQty().getUomId());
 
 		final Money salesRepNetUnitPriceWithoutTax = deductTaxes(salesRepOrgId,
-				salesRepBillToLocation,
-				request,
-				salesRepPriceResult);
+													   salesRepShipToLocation,
+													   request,
+													   salesRepPriceResult);
 
 		final Money salesRepNetUnitPrice = convertToCustomerCurrency(salesRepOrgId, request, salesRepNetUnitPriceWithoutTax);
 
@@ -183,7 +183,6 @@ public class CustomerTradeMarginService
 				LocationId.ofRepoId(salesRepBillToLocation.getC_Location_ID()));
 
 		final TaxId taxId = taxBL.getTaxNotNull(
-				null,
 				null,
 				salesRepPricingResult.getTaxCategoryId(),
 				salesRepPricingResult.getProductId().getRepoId(),

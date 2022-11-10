@@ -27,6 +27,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.impl.PlainCurrencyBL;
 import de.metas.document.DocBaseType;
+import de.metas.tax.api.TaxId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -53,6 +54,9 @@ import org.compiere.util.Env;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Objects;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class AbstractTestSupport
 {
@@ -284,6 +288,8 @@ public class AbstractTestSupport
 			orderLine = db.newInstance(Env.getCtx(), I_C_OrderLine.class);
 			orderLine.setDescription(orderLineDescription);
 
+			orderLine.setC_Tax_ID(createTax().getRepoId());
+
 			final PlainCurrencyBL currencyConversionBL = (PlainCurrencyBL)Services.get(ICurrencyBL.class);
 			orderLine.setC_Currency_ID(currencyConversionBL.getBaseCurrency(Env.getCtx()).getId().getRepoId());
 			InterfaceWrapperHelper.save(orderLine);
@@ -291,6 +297,15 @@ public class AbstractTestSupport
 
 		return InterfaceWrapperHelper.create(orderLine, clazz);
 	}
+
+	private TaxId createTax()
+	{
+		final I_C_Tax tax = newInstance(I_C_Tax.class);
+		saveRecord(tax);
+
+		return TaxId.ofRepoId(tax.getC_Tax_ID());
+	}
+
 
 	protected I_C_InvoiceSchedule schedule(final String scheduleName, final String scheduleFrequency)
 	{
