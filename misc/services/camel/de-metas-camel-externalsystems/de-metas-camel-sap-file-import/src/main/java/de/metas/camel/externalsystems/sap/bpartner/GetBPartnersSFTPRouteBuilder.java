@@ -23,13 +23,12 @@
 package de.metas.camel.externalsystems.sap.bpartner;
 
 import com.google.common.annotations.VisibleForTesting;
+import de.metas.camel.externalsystems.common.IdAwareRouteBuilder;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
-import de.metas.camel.externalsystems.common.IdAwareRouteBuilder;
 import de.metas.camel.externalsystems.sap.model.bpartner.BPartnerRow;
 import de.metas.camel.externalsystems.sap.sftp.SFTPConfig;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import de.metas.common.util.Check;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -47,7 +46,6 @@ public class GetBPartnersSFTPRouteBuilder extends IdAwareRouteBuilder
 	@VisibleForTesting
 	public static final String UPSERT_LAST_BPARTNER_GROUP_ENDPOINT_ID = "SAP-BPartners-upsertLastBPartnerEndpointId";
 	private static final String UPSERT_BPARTNER_PROCESSOR_ID = "SAP-BPartners-upsertBPartnerProcessorId";
-
 	public static final String ROUTE_PROPERTY_GET_BPARTNERS_ROUTE_CONTEXT = "GetBpartnersRouteContext";
 
 	@NonNull
@@ -84,7 +82,7 @@ public class GetBPartnersSFTPRouteBuilder extends IdAwareRouteBuilder
 		//@formatter:off
 		from(sftpConfig.getSFTPConnectionStringBPartner())
 				.id(routeId)
-				.log("Business Partner Sync Route Started")
+				.log("Business Partner Sync Route Started with Id=" + routeId)
 				.process(this::prepareBPartnerSyncRouteContext)
 				.split(body().tokenize("\n"))
 					.streaming()
@@ -124,11 +122,14 @@ public class GetBPartnersSFTPRouteBuilder extends IdAwareRouteBuilder
 
 	private void processLastBPartnerGroup(@NonNull final Exchange exchange) throws Exception
 	{
-		final GetBPartnerRouteContext getBPartnerRouteContext = exchange.getProperty(ROUTE_PROPERTY_GET_BPARTNERS_ROUTE_CONTEXT, GetBPartnerRouteContext.class);
+		final GetBPartnerRouteContext routeContext = exchange.getProperty(ROUTE_PROPERTY_GET_BPARTNERS_ROUTE_CONTEXT, GetBPartnerRouteContext.class);
 
-		Check.assumeNotNull(getBPartnerRouteContext.getSyncBPartnerRequestBuilder(), "SyncBPartnerRequestBuilder from context should not be null at this point!");
+		if (routeContext.getSyncBPartnerRequestBuilder() == null)
+		{
+			return;
+		}
 
-		final BPUpsertCamelRequest bpUpsertCamelRequest = getBPartnerRouteContext.getSyncBPartnerRequestBuilder().build();
+		final BPUpsertCamelRequest bpUpsertCamelRequest = routeContext.getSyncBPartnerRequestBuilder().build();
 		exchange.getIn().setBody(bpUpsertCamelRequest);
 	}
 }

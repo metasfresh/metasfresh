@@ -27,6 +27,7 @@ import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
+import de.metas.camel.externalsystems.sap.service.OnDemandRoutesController;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.Getter;
 import lombok.NonNull;
@@ -61,7 +62,7 @@ public class SFTPBPartnerSyncServiceRouteBuilderTest extends CamelTestSupport
 	private static final String JSON_STOP_EXTERNAL_SYSTEM_REQUEST = "0_JsonStopExternalSystemRequestBPartner.json";
 	private static final String BPARTNER_SAMPLE_DAT_FILE = "10_BPartnerSample.dat";
 	private static final String JSON_UPSERT_BPARTNER_REQUEST = "20_CamelUpsertBPartnerCompositeRequest.json";
-	private static final String JSON_UPSERT_LAST_BPARTNER_REQUEST = "20_CamelUpsertLastBPartnerCompositeRequest.json";
+	private static final String JSON_UPSERT_LAST_BPARTNER_REQUEST = "30_CamelUpsertLastBPartnerCompositeRequest.json";
 
 	private static final String BPARTNER_SAMPLE_RESOURCE_PATH = "/de/metas/camel/externalsystems/sap/bpartner/" + BPARTNER_SAMPLE_DAT_FILE;
 
@@ -72,9 +73,11 @@ public class SFTPBPartnerSyncServiceRouteBuilderTest extends CamelTestSupport
 	}
 
 	@Override
-	protected RouteBuilder createRouteBuilder()
+	protected RouteBuilder[] createRouteBuilders()
 	{
-		return new SFTPBPartnerSyncServiceRouteBuilder(Mockito.mock(ProcessLogger.class));
+		return new RouteBuilder[] {
+				new SFTPBPartnerSyncServiceRouteBuilder(Mockito.mock(ProcessLogger.class)),
+				new OnDemandRoutesController() };
 	}
 
 	@Override
@@ -149,10 +152,15 @@ public class SFTPBPartnerSyncServiceRouteBuilderTest extends CamelTestSupport
 		final InputStream invokeStopExternalSystemRequestIS = this.getClass().getResourceAsStream(JSON_STOP_EXTERNAL_SYSTEM_REQUEST);
 		final JsonExternalSystemRequest stopExternalSystemRequest = objectMapper.readValue(invokeStopExternalSystemRequestIS, JsonExternalSystemRequest.class);
 
+		final String routeId = GetBPartnersSFTPRouteBuilder.buildRouteId(stopExternalSystemRequest.getExternalSystemChildConfigValue());
+
 		context.start();
 
 		//when
 		template.sendBody("direct:" + START_BPARTNERS_SYNC_ROUTE_ID, startExternalSystemRequest);
+
+		assertThat(context.getRoute(routeId)).isNotNull();
+		assertThat(context.getRouteController().getRouteStatus(routeId).isStarted()).isEqualTo(true);
 
 		//and
 		template.sendBody("direct:" + STOP_BPARTNERS_SYNC_ROUTE_ID, stopExternalSystemRequest);
@@ -161,7 +169,7 @@ public class SFTPBPartnerSyncServiceRouteBuilderTest extends CamelTestSupport
 		assertMockEndpointsSatisfied();
 		assertThat(mockExternalSystemStatusProcessor.called).isEqualTo(2);
 
-		assertThat(context.getRoute(GetBPartnersSFTPRouteBuilder.buildRouteId(stopExternalSystemRequest.getExternalSystemChildConfigValue()))).isNull();
+		assertThat(context.getRoute(routeId)).isNull();
 	}
 
 	private void prepareEnableRouteForTesting(

@@ -46,6 +46,7 @@ de.metas.rest_api.v1.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
     "id" : 20,
     "identifiedByExternalReference" : false,
     "name" : "bpartnerRecord.name",
+    "storageWarehouse" : false,
     "value" : "bpartnerRecord.value",
     "vatId" : "VATaxID",
     "vendor" : true
@@ -124,8 +125,7 @@ de.metas.rest_api.v1.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
       "billTo" : false,
       "billToDefault" : false,
       "shipTo" : false,
-      "shipToDefault" : false,
-      "visitorsAddress" : false
+      "shipToDefault" : false
     },
     "poBox" : "locationRecord.poBox",
     "postal" : "locationRecord.postal",

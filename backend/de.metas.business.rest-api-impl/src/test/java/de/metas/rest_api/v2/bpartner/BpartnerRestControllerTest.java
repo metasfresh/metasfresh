@@ -578,7 +578,7 @@ class BpartnerRestControllerTest
 		bpartnerRecord.setBPartner_Parent_ID(123); // in one test this shall be updated to null
 		saveRecord(bpartnerRecord);
 
-		createExternalReference("1234567", "BPartner", bpartnerRecord.getC_BPartner_ID());
+		createExternalReference("1234567", "BPartner", bpartnerRecord.getC_BPartner_ID(), BPartnerRecordsUtil.SAP_EXTERNAL_SYSTEM_CONFIG_ID, true);
 
 		final RecordCounts initialCounts = new RecordCounts();
 

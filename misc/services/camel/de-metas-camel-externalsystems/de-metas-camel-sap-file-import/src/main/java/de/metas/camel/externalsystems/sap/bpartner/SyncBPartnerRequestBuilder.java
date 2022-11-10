@@ -26,6 +26,11 @@ import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
 import de.metas.camel.externalsystems.sap.common.ExternalIdentifierFormat;
 import de.metas.camel.externalsystems.sap.model.bpartner.BPartnerRow;
+import de.metas.camel.externalsystems.sap.model.bpartner.PartnerCategory;
+import de.metas.camel.externalsystems.sap.model.bpartner.PartnerCode;
+import de.metas.common.bpartner.v2.common.JsonDeliveryRule;
+import de.metas.common.bpartner.v2.common.JsonDeliveryViaRule;
+import de.metas.common.bpartner.v2.common.JsonPaymentRule;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartner;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsertItem;
@@ -41,22 +46,20 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Value
 public class SyncBPartnerRequestBuilder
 {
-	@NonNull
-	String partnerCode;
+	private static final String INTERNAL_NAME_EXTERNAL_IDENTIFIER_PREFIX = "int-";
 
 	@NonNull
-	String parentIdentifier;
+	PartnerCode parentPartnerCode;
 
 	@NonNull
 	String orgCode;
@@ -68,8 +71,8 @@ public class SyncBPartnerRequestBuilder
 	JsonRequestBPartnerUpsertItem sectionGroupBPartnerItem;
 
 	@NonNull
-	@Getter(AccessLevel.PRIVATE)
-	List<BPartnerRow> bPartnerRows;
+	@Getter(AccessLevel.NONE)
+	ArrayList<BPartnerRow> bPartnerRows;
 
 	@NonNull
 	public static SyncBPartnerRequestBuilder of(
@@ -81,7 +84,6 @@ public class SyncBPartnerRequestBuilder
 
 		final SyncBPartnerRequestBuilder syncBPartnerRequestBuilder = new SyncBPartnerRequestBuilder(
 				row.getPartnerCode(),
-				sectionGroupJsonRequestBPartnerUpsertItem.getBpartnerIdentifier(),
 				orgCode,
 				externalSystemConfigId,
 				sectionGroupJsonRequestBPartnerUpsertItem,
@@ -94,12 +96,12 @@ public class SyncBPartnerRequestBuilder
 
 	public boolean add(@NonNull final BPartnerRow row)
 	{
-		if (!isPartnerCodeMatching(row))
+		if (!row.getPartnerCode().matchesGroup(parentPartnerCode))
 		{
 			return false;
 		}
 
-		this.getBPartnerRows().add(row);
+		bPartnerRows.add(row);
 
 		return true;
 	}
@@ -107,74 +109,74 @@ public class SyncBPartnerRequestBuilder
 	@NonNull
 	public BPUpsertCamelRequest build() throws Exception
 	{
-		this.getBPartnerRows().sort(Comparator.comparing(BPartnerRow::getSection));
+		final ImmutableList.Builder<JsonRequestBPartnerUpsertItem> upsertBPartnerItemsCollector = ImmutableList.builder();
+		upsertBPartnerItemsCollector.add(sectionGroupBPartnerItem);
 
-		final Map<String, List<BPartnerRow>> groupedBPartnerRows = this.getBPartnerRows().stream()
+		final Map<String, List<BPartnerRow>> groupedBPartnerRows = bPartnerRows.stream()
 				.collect(Collectors.groupingBy(BPartnerRow::getSection));
 
-		final ImmutableList.Builder<JsonRequestBPartnerUpsertItem> mergedItemBuilder = ImmutableList.builder();
-
-		mergedItemBuilder.add(this.getSectionGroupBPartnerItem());
-
-		for (final Map.Entry<String, List<BPartnerRow>> sectionCodeEntry : groupedBPartnerRows.entrySet())
-		{
-			mergedItemBuilder.add(mergeBPartnerRowsIntoJsonUpsertItem(sectionCodeEntry.getKey(), sectionCodeEntry.getValue()));
-		}
-
-		final List<JsonRequestBPartnerUpsertItem> mergedBPartnerUpsertItems = mergedItemBuilder.build();
+		groupedBPartnerRows.forEach((sectionCode, partnerRows) -> {
+			final JsonRequestBPartnerUpsertItem upsertItem = getJsonRequestBPartnerUpsertItem(sectionCode, partnerRows);
+			upsertBPartnerItemsCollector.add(upsertItem);
+		});
 
 		final JsonRequestBPartnerUpsert jsonRequestBPartnerUpsert = JsonRequestBPartnerUpsert.builder()
-				.requestItems(mergedBPartnerUpsertItems)
+				.requestItems(upsertBPartnerItemsCollector.build())
 				.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
 				.build();
 
 		return BPUpsertCamelRequest.builder()
 				.jsonRequestBPartnerUpsert(jsonRequestBPartnerUpsert)
-				.orgCode(this.getOrgCode())
+				.orgCode(orgCode)
 				.build();
 	}
 
 	@NonNull
-	private JsonRequestBPartner buildJsonRequestBPartner(@NonNull final BPartnerRow bPartner) throws Exception
+	private JsonRequestBPartner buildJsonRequestBPartner(@NonNull final BPartnerRow bPartner)
 	{
 		final JsonRequestBPartner jsonRequestBPartner = new JsonRequestBPartner();
 
-		final String partnerCode = buildExternalIdentifier(bPartner.getPartnerCode(), bPartner.getSection(), "00");
+		Optional.ofNullable(bPartner.getSalesPaymentTerms())
+				.filter(Check::isNotBlank)
+				.map(salesPaymentTerm -> INTERNAL_NAME_EXTERNAL_IDENTIFIER_PREFIX + salesPaymentTerm)
+				.ifPresent(jsonRequestBPartner::setCustomerPaymentTermIdentifier);
 
-		jsonRequestBPartner.setCode(partnerCode);
+		Optional.ofNullable(bPartner.getPurchasePaymentTerms())
+				.filter(Check::isNotBlank)
+				.map(purchasePaymentTerm -> INTERNAL_NAME_EXTERNAL_IDENTIFIER_PREFIX + purchasePaymentTerm)
+				.ifPresent(jsonRequestBPartner::setVendorPaymentTermIdentifier);
+
+		final String bpartnerValue = bPartner.getPartnerCode().getPartnerCode() + "_" + bPartner.getSection();
+
+		jsonRequestBPartner.setCode(bpartnerValue);
 		jsonRequestBPartner.setCompanyName(bPartner.getName1());
-		jsonRequestBPartner.setName(Check.isNotBlank(bPartner.getName2()) ? bPartner.getName2() : bPartner.getName1());
+		jsonRequestBPartner.setName(bPartner.getName1());
 		jsonRequestBPartner.setName2(bPartner.getName2());
 		jsonRequestBPartner.setDescription(bPartner.getSearchTerm());
 
 		jsonRequestBPartner.setSectionCodeValue(bPartner.getSection());
-		jsonRequestBPartner.setDeliveryRule(JsonRequestBPartner.DeliveryRule.AVAILABILITY);
-		jsonRequestBPartner.setDeliveryViaRule(JsonRequestBPartner.DeliveryViaRule.SHIPPER);
-		jsonRequestBPartner.setPaymentRule(JsonRequestBPartner.PaymentRule.ON_CREDIT);
-		jsonRequestBPartner.setPaymentRulePO(JsonRequestBPartner.PaymentRule.ON_CREDIT);
+		jsonRequestBPartner.setDeliveryRule(JsonDeliveryRule.Availability);
+		jsonRequestBPartner.setDeliveryViaRule(JsonDeliveryViaRule.Shipper);
+		jsonRequestBPartner.setPaymentRule(JsonPaymentRule.OnCredit);
+		jsonRequestBPartner.setPaymentRulePO(JsonPaymentRule.OnCredit);
 
 		jsonRequestBPartner.setIncotermsCustomerValue(bPartner.getSalesIncoterms());
 		jsonRequestBPartner.setIncotermsVendorValue(bPartner.getPurchaseIncoterms());
-		jsonRequestBPartner.setCustomerPaymentTermIdentifier(bPartner.getSalesPaymentTerms());
-		jsonRequestBPartner.setVendorPaymentTermIdentifier(bPartner.getPurchasePaymentTerms());
 
-		if (Check.isNotBlank(bPartner.getPartnerCategory()))
+		if (PartnerCategory.STORAGE_LOCATION == PartnerCategory.ofCodeOrNull(bPartner.getPartnerCategory()))
 		{
-			if (BPartnerRow.PartnerCategory.ofCode(bPartner.getPartnerCategory()).equals(BPartnerRow.PartnerCategory.STORAGE_LOCATION))
-			{
-				jsonRequestBPartner.setVendor(true);
-				jsonRequestBPartner.setCustomer(false);
-				jsonRequestBPartner.setStorageWarehouse(true);
-			}
-			else
-			{
-				jsonRequestBPartner.setVendor(true);
-				jsonRequestBPartner.setCustomer(true);
-				jsonRequestBPartner.setStorageWarehouse(false);
-			}
+			jsonRequestBPartner.setVendor(true);
+			jsonRequestBPartner.setCustomer(false);
+			jsonRequestBPartner.setStorageWarehouse(true);
+		}
+		else
+		{
+			jsonRequestBPartner.setVendor(true);
+			jsonRequestBPartner.setCustomer(true);
+			jsonRequestBPartner.setStorageWarehouse(false);
 		}
 
-		jsonRequestBPartner.setParentIdentifier(this.getParentIdentifier());
+		jsonRequestBPartner.setParentIdentifier(ExternalIdentifierFormat.formatExternalId(parentPartnerCode.getPartnerCode()));
 
 		return jsonRequestBPartner;
 	}
@@ -204,11 +206,11 @@ public class SyncBPartnerRequestBuilder
 		jsonRequestLocation.setRemitTo(false);
 		jsonRequestLocation.setReplicationLookupDefault(false);
 
-		final String externalIdentifier = buildExternalIdentifier(bPartner.getPartnerCode(), bPartner.getSection(), null);
-
 		return JsonRequestLocationUpsertItem.builder()
 				.location(jsonRequestLocation)
-				.locationIdentifier(ExternalIdentifierFormat.formatExternalId(externalIdentifier))
+				.locationIdentifier(buildExternalIdentifier(bPartner.getPartnerCode().getRawPartnerCode(), bPartner.getSection()))
+				.externalSystemConfigId(externalSystemConfigId)
+				.isReadOnlyInMetasfresh(true)
 				.build();
 	}
 
@@ -221,9 +223,9 @@ public class SyncBPartnerRequestBuilder
 	{
 		final JsonRequestBPartner jsonRequestBPartner = new JsonRequestBPartner();
 
-		jsonRequestBPartner.setCode(bPartnerRow.getPartnerCode());
+		jsonRequestBPartner.setCode(bPartnerRow.getPartnerCode().getPartnerCode());
 		jsonRequestBPartner.setCompanyName(bPartnerRow.getName1());
-		jsonRequestBPartner.setName(Check.isNotBlank(bPartnerRow.getName2()) ? bPartnerRow.getName2() : bPartnerRow.getName1());
+		jsonRequestBPartner.setName(bPartnerRow.getName1());
 		jsonRequestBPartner.setName2(bPartnerRow.getName2());
 		jsonRequestBPartner.setDescription(bPartnerRow.getSearchTerm());
 
@@ -231,84 +233,48 @@ public class SyncBPartnerRequestBuilder
 				.bpartner(jsonRequestBPartner)
 				.orgCode(orgCode);
 
-		final String groupExternalIdentifier = buildExternalIdentifier(bPartnerRow.getPartnerCode(), null, "00");
-
 		return JsonRequestBPartnerUpsertItem.builder()
 				.bpartnerComposite(jsonRequestCompositeBuilder.build())
-				.bpartnerIdentifier(ExternalIdentifierFormat.formatExternalId(groupExternalIdentifier))
+				.bpartnerIdentifier(ExternalIdentifierFormat.formatExternalId(bPartnerRow.getPartnerCode().getPartnerCode()))
 				.externalSystemConfigId(externalSystemConfigId)
 				.isReadOnlyInMetasfresh(true)
 				.build();
 	}
 
 	@NonNull
-	private JsonRequestBPartnerUpsertItem mergeBPartnerRowsIntoJsonUpsertItem(@NonNull final String sectionCode, @NonNull final List<BPartnerRow> bPartnerRows) throws Exception
+	private JsonRequestBPartnerUpsertItem getJsonRequestBPartnerUpsertItem(@NonNull final String sectionCode, @NonNull final List<BPartnerRow> bPartnerRows)
 	{
-		bPartnerRows.sort(Comparator.comparing(BPartnerRow::getPartnerCode));
+		Check.assumeNotEmpty(bPartnerRows, "At least one partner row must be present for section code {} when calling this method.", sectionCode);
 
-		final ImmutableList.Builder<JsonRequestLocationUpsertItem> locationUpsertItemBuilder = ImmutableList.builder();
-
-		for(final BPartnerRow bPartnerRow : bPartnerRows)
-		{
-			locationUpsertItemBuilder.add(buildJsonRequestLocationUpsertItem(bPartnerRow));
-		}
+		final ImmutableList<JsonRequestLocationUpsertItem> locationUpsertItems = bPartnerRows.stream()
+				.map(this::buildJsonRequestLocationUpsertItem)
+				.collect(ImmutableList.toImmutableList());
 
 		final JsonRequestLocationUpsert jsonRequestLocationUpsert = JsonRequestLocationUpsert.builder()
-				.requestItems(locationUpsertItemBuilder.build())
+				.requestItems(locationUpsertItems)
 				.build();
 
-		final JsonRequestBPartner jsonRequestBPartnerToPersist = buildJsonRequestBPartner(bPartnerRows.get(bPartnerRows.size() - 1));
+		final BPartnerRow lastRowOfTheGroup = bPartnerRows.get(bPartnerRows.size() - 1);
+
+		final JsonRequestBPartner jsonRequestBPartner = buildJsonRequestBPartner(lastRowOfTheGroup);
 
 		final JsonRequestComposite jsonRequestComposite = JsonRequestComposite.builder()
-				.bpartner(jsonRequestBPartnerToPersist)
+				.bpartner(jsonRequestBPartner)
 				.locations(jsonRequestLocationUpsert)
 				.orgCode(orgCode)
 				.build();
 
-		final String externalIdentifier = buildExternalIdentifier(this.getPartnerCode(), sectionCode, "00");
-
 		return JsonRequestBPartnerUpsertItem.builder()
 				.bpartnerComposite(jsonRequestComposite)
-				.bpartnerIdentifier(ExternalIdentifierFormat.formatExternalId(externalIdentifier))
-				.externalSystemConfigId(this.getExternalSystemConfigId())
+				.bpartnerIdentifier(buildExternalIdentifier(parentPartnerCode.getPartnerCode(), sectionCode))
+				.externalSystemConfigId(externalSystemConfigId)
 				.isReadOnlyInMetasfresh(true)
 				.build();
 	}
 
-	private boolean isPartnerCodeMatching(@NonNull final BPartnerRow row)
-	{
-		return extractGroupingPartnerCode(row.getPartnerCode()).equals(extractGroupingPartnerCode(this.getPartnerCode()));
-	}
-
-	/**
-	 * Extracts the chars used when aggregating multiple rows into one BPartner.
-	 */
 	@NonNull
-	private static String extractGroupingPartnerCode(@NonNull final String partnerCode)
+	private static String buildExternalIdentifier(@NonNull final String partnerCode, @NonNull final String sectionCode)
 	{
-		return partnerCode.substring(0, partnerCode.length() - 2);
-	}
-
-	@NonNull
-	private static String buildExternalIdentifier(
-			@NonNull final String partnerCode,
-			@Nullable final String sectionCode,
-			@Nullable final String suffix)
-	{
-		final StringBuilder externalIdentifierBuilder = new StringBuilder();
-		if (Check.isNotBlank(sectionCode))
-		{
-			externalIdentifierBuilder.append(sectionCode).append("_");
-		}
-
-		if (Check.isNotBlank(suffix))
-		{
-			externalIdentifierBuilder.append(extractGroupingPartnerCode(partnerCode)).append(suffix);
-		}
-		else
-		{
-			externalIdentifierBuilder.append(partnerCode);
-		}
-		return externalIdentifierBuilder.toString();
+		return ExternalIdentifierFormat.formatExternalId(partnerCode + "_" + sectionCode);
 	}
 }

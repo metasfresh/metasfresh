@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * de-metas-common-bpartner
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,27 +20,29 @@
  * #L%
  */
 
-package de.metas.incoterms;
+package de.metas.common.bpartner.v2.common;
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
-import javax.annotation.Nullable;
-
-@Value
-@Builder
-public class Incoterms
+public enum JsonPaymentRule
 {
-	@NonNull
-	IncotermsId incotermsId;
+	Paypal,
 
-	@NonNull
-	String name;
+	PaypalExtern,
 
-	@NonNull
-	String value;
+	OnCredit,
 
-	@Nullable
-	String description;
+	Cash,
+
+	CreditCard,
+
+	CreditCardExtern,
+
+	DirectDeposit,
+
+	Check,
+
+	Mixed,
+
+	DirectDebit,
+
+	InstantBankTransfer
 }

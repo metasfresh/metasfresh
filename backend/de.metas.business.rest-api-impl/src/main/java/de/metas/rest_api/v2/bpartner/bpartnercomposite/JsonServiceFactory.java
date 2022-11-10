@@ -120,8 +120,6 @@ public class JsonServiceFactory
 				jobRepository,
 				externalReferenceService,
 				paymentTermRepository,
-				sectionCodeService,
-				incotermsRepository,
 				identifier);
 	}
 }

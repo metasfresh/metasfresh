@@ -7,6 +7,7 @@
         "externalVersion":null,
         "externalReferenceUrl":null,
         "isReadOnlyInMetasfresh":true,
+        "externalSystemConfigId": 1,
         "bpartnerComposite":{
           "orgCode":"orgCode",
           "bpartner":{
@@ -77,18 +78,18 @@
             "syncAdvise":null,
             "syncAdviseSet":false
           }
-        },
-        "externalSystemConfigId":1
+        }
       },
       {
-        "bpartnerIdentifier":"ext-SAP-ZAB0_DC01003900",
+        "bpartnerIdentifier":"ext-SAP-DC01003900_ZAB0",
         "externalVersion":null,
         "externalReferenceUrl":null,
         "isReadOnlyInMetasfresh":true,
+        "externalSystemConfigId": 1,
         "bpartnerComposite":{
           "orgCode":"orgCode",
           "bpartner":{
-            "code":"ZAB0_DC01003900",
+            "code":"DC01003900_ZAB0",
             "codeSet":true,
             "active":null,
             "activeSet":false,
@@ -132,9 +133,9 @@
             "sectionCodeValueSet":true,
             "description":"BASF LUDW. DE VAT",
             "descriptionSet":true,
-            "deliveryRule":"AVAILABILITY",
+            "deliveryRule":"Availability",
             "deliveryRuleSet":true,
-            "deliveryViaRule":"SHIPPER",
+            "deliveryViaRule":"Shipper",
             "deliveryViaRuleSet":true,
             "storageWarehouse":false,
             "storageWarehouseSet":true,
@@ -142,15 +143,15 @@
             "incotermsCustomerValueSet":true,
             "incotermsVendorValue":"",
             "incotermsVendorValueSet":true,
-            "customerPaymentTermIdentifier":"val-M000",
+            "customerPaymentTermIdentifier":"int-M000",
             "customerPaymentTermIdentifierSet":true,
-            "vendorPaymentTermIdentifier":"val-M000",
+            "vendorPaymentTermIdentifier":"int-M000",
             "vendorPaymentTermIdentifierSet":true,
             "parentIdentifier":"ext-SAP-DC01003900",
             "parentIdentifierSet":true,
-            "paymentRule":"ON_CREDIT",
+            "paymentRule":"OnCredit",
             "paymentRuleSet":true,
-            "paymentRulePO":"ON_CREDIT",
+            "paymentRulePO":"OnCredit",
             "paymentRulePOSet":true,
             "syncAdvise":null,
             "syncAdviseSet":false
@@ -158,8 +159,10 @@
           "locations":{
             "requestItems":[
               {
-                "locationIdentifier":"ext-SAP-ZAB0_DC01003901",
+                "locationIdentifier":"ext-SAP-DC01003901_ZAB0",
                 "externalVersion":null,
+                "isReadOnlyInMetasfresh":true,
+                "externalSystemConfigId": 1,
                 "location":{
                   "active":null,
                   "activeSet":false,
@@ -214,8 +217,10 @@
                 }
               },
               {
-                "locationIdentifier":"ext-SAP-ZAB0_DC01003902",
+                "locationIdentifier":"ext-SAP-DC01003902_ZAB0",
                 "externalVersion":null,
+                "isReadOnlyInMetasfresh":true,
+                "externalSystemConfigId": 1,
                 "location":{
                   "active":null,
                   "activeSet":false,
@@ -272,18 +277,18 @@
             ],
             "syncAdvise":null
           }
-        },
-        "externalSystemConfigId":1
+        }
       },
       {
-        "bpartnerIdentifier":"ext-SAP-ZAB1_DC01003900",
+        "bpartnerIdentifier":"ext-SAP-DC01003900_ZAB1",
         "externalVersion":null,
         "externalReferenceUrl":null,
         "isReadOnlyInMetasfresh":true,
+        "externalSystemConfigId": 1,
         "bpartnerComposite":{
           "orgCode":"orgCode",
           "bpartner":{
-            "code":"ZAB1_DC01003900",
+            "code":"DC01003900_ZAB1",
             "codeSet":true,
             "active":null,
             "activeSet":false,
@@ -327,9 +332,9 @@
             "sectionCodeValueSet":true,
             "description":"BASF LUDW. DE VAT",
             "descriptionSet":true,
-            "deliveryRule":"AVAILABILITY",
+            "deliveryRule":"Availability",
             "deliveryRuleSet":true,
-            "deliveryViaRule":"SHIPPER",
+            "deliveryViaRule":"Shipper",
             "deliveryViaRuleSet":true,
             "storageWarehouse":false,
             "storageWarehouseSet":true,
@@ -337,15 +342,15 @@
             "incotermsCustomerValueSet":true,
             "incotermsVendorValue":"",
             "incotermsVendorValueSet":true,
-            "customerPaymentTermIdentifier":"val-M000",
+            "customerPaymentTermIdentifier":"int-M000",
             "customerPaymentTermIdentifierSet":true,
-            "vendorPaymentTermIdentifier":"val-M000",
+            "vendorPaymentTermIdentifier":"int-M000",
             "vendorPaymentTermIdentifierSet":true,
             "parentIdentifier":"ext-SAP-DC01003900",
             "parentIdentifierSet":true,
-            "paymentRule":"ON_CREDIT",
+            "paymentRule":"OnCredit",
             "paymentRuleSet":true,
-            "paymentRulePO":"ON_CREDIT",
+            "paymentRulePO":"OnCredit",
             "paymentRulePOSet":true,
             "syncAdvise":null,
             "syncAdviseSet":false
@@ -353,8 +358,10 @@
           "locations":{
             "requestItems":[
               {
-                "locationIdentifier":"ext-SAP-ZAB1_DC01003900",
+                "locationIdentifier":"ext-SAP-DC01003900_ZAB1",
                 "externalVersion":null,
+                "isReadOnlyInMetasfresh":true,
+                "externalSystemConfigId": 1,
                 "location":{
                   "active":null,
                   "activeSet":false,
@@ -409,8 +416,10 @@
                 }
               },
               {
-                "locationIdentifier":"ext-SAP-ZAB1_DC01003901",
+                "locationIdentifier":"ext-SAP-DC01003901_ZAB1",
                 "externalVersion":null,
+                "isReadOnlyInMetasfresh":true,
+                "externalSystemConfigId": 1,
                 "location":{
                   "active":null,
                   "activeSet":false,
@@ -467,8 +476,7 @@
             ],
             "syncAdvise":null
           }
-        },
-        "externalSystemConfigId":1
+        }
       }
     ],
     "syncAdvise":{

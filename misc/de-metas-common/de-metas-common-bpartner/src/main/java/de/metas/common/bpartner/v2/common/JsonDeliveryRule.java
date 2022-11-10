@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * de-metas-common-bpartner
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,27 +20,15 @@
  * #L%
  */
 
-package de.metas.incoterms;
+package de.metas.common.bpartner.v2.common;
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
-import javax.annotation.Nullable;
-
-@Value
-@Builder
-public class Incoterms
+public enum JsonDeliveryRule
 {
-	@NonNull
-	IncotermsId incotermsId;
-
-	@NonNull
-	String name;
-
-	@NonNull
-	String value;
-
-	@Nullable
-	String description;
+	AfterReceipt,
+	Availability,
+	CompleteLine,
+	CompleteOrder,
+	Force,
+	Manual,
+	WithNextSubscriptionDelivery
 }

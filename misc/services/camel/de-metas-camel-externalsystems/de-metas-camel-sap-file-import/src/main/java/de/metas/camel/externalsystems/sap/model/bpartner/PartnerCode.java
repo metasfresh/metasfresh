@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-sap
+ * de-metas-camel-sap-file-import
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,17 +20,33 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.sap;
+package de.metas.camel.externalsystems.sap.model.bpartner;
 
-import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-@Value
-@Builder
-public class SAPRouteContext
+@Value(staticConstructor = "of")
+public class PartnerCode
 {
+	private final static String GROUP_SUFFIX = "00";
+
 	@NonNull
-	JsonExternalSystemRequest request;
+	String rawPartnerCode;
+
+	public boolean matchesGroup(@NonNull final PartnerCode partnerCode)
+	{
+		return getPartnerGroupCode().equals(partnerCode.getPartnerGroupCode());
+	}
+
+	@NonNull
+	public String getPartnerCode()
+	{
+		return getPartnerGroupCode() + GROUP_SUFFIX;
+	}
+
+	@NonNull
+	private String getPartnerGroupCode()
+	{
+		return rawPartnerCode.substring(0, rawPartnerCode.length() - 2);
+	}
 }

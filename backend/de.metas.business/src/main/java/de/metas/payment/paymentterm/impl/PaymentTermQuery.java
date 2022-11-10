@@ -1,12 +1,12 @@
 package de.metas.payment.paymentterm.impl;
 
-import javax.annotation.Nullable;
-
 import de.metas.organization.OrgId;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -39,14 +39,18 @@ public class PaymentTermQuery
 
 	String value;
 
+	String name;
+
 	@Builder(toBuilder = true)
 	private PaymentTermQuery(
 			@NonNull final OrgId orgId,
 			@Nullable final ExternalId externalId,
-			@Nullable final String value)
+			@Nullable final String value,
+			@Nullable final String name)
 	{
 		this.orgId = orgId;
 		this.externalId = externalId;
 		this.value = value;
+		this.name = name;
 	}
 }

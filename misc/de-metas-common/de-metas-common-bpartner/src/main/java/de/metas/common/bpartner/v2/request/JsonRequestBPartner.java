@@ -22,6 +22,9 @@
 
 package de.metas.common.bpartner.v2.request;
 
+import de.metas.common.bpartner.v2.common.JsonDeliveryRule;
+import de.metas.common.bpartner.v2.common.JsonDeliveryViaRule;
+import de.metas.common.bpartner.v2.common.JsonPaymentRule;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonInvoiceRule;
 import de.metas.common.rest_api.v2.SyncAdvise;
@@ -42,21 +45,6 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.PAYMENT_TERM_IDENT
 @ApiModel(description = "Note that given the respective use-case, either one of both properties might be `null`, but not both at once.")
 public class JsonRequestBPartner
 {
-	public enum DeliveryRule
-	{
-		AVAILABILITY
-	}
-
-	public enum DeliveryViaRule
-	{
-		SHIPPER
-	}
-
-	public enum PaymentRule
-	{
-		ON_CREDIT
-	}
-
 	@ApiModelProperty(position = 20,  //
 			value = BPARTNER_VALUE_DOC)
 	private String code;
@@ -207,13 +195,13 @@ public class JsonRequestBPartner
 
 	@ApiModelProperty(position = 190, //
 			value = "Translates to `C_BPartner.DeliveryRule`")
-	private DeliveryRule deliveryRule;
+	private JsonDeliveryRule deliveryRule;
 
 	private boolean deliveryRuleSet;
 
 	@ApiModelProperty(position = 200, //
 			value = "Translates to `C_BPartner.DeliveryViaRule`")
-	private DeliveryViaRule deliveryViaRule;
+	private JsonDeliveryViaRule deliveryViaRule;
 
 	private boolean deliveryViaRuleSet;
 
@@ -255,13 +243,13 @@ public class JsonRequestBPartner
 
 	@ApiModelProperty(position = 270, //
 			value = "Translates to `C_BPartner.PaymentRule`")
-	private PaymentRule paymentRule;
+	private JsonPaymentRule paymentRule;
 
 	private boolean paymentRuleSet;
 
 	@ApiModelProperty(position = 280, //
-			value = "Translates to `C_BPartner.PaymentRule`")
-	private PaymentRule paymentRulePO;
+			value = "Translates to `C_BPartner.PaymentRulePO`")
+	private JsonPaymentRule paymentRulePO;
 
 	private boolean paymentRulePOSet;
 
@@ -411,13 +399,13 @@ public class JsonRequestBPartner
 		this.descriptionSet = true;
 	}
 
-	public void setDeliveryRule(final DeliveryRule deliveryRule)
+	public void setDeliveryRule(final JsonDeliveryRule deliveryRule)
 	{
 		this.deliveryRule = deliveryRule;
 		this.deliveryRuleSet = true;
 	}
 
-	public void setDeliveryViaRule(final DeliveryViaRule deliveryViaRule)
+	public void setDeliveryViaRule(final JsonDeliveryViaRule deliveryViaRule)
 	{
 		this.deliveryViaRule = deliveryViaRule;
 		this.deliveryViaRuleSet = true;
@@ -459,13 +447,13 @@ public class JsonRequestBPartner
 		this.parentIdentifierSet = true;
 	}
 
-	public void setPaymentRule(final PaymentRule paymentRule)
+	public void setPaymentRule(final JsonPaymentRule paymentRule)
 	{
 		this.paymentRule = paymentRule;
 		this.paymentRuleSet = true;
 	}
 
-	public void setPaymentRulePO(final PaymentRule paymentRulePO)
+	public void setPaymentRulePO(final JsonPaymentRule paymentRulePO)
 	{
 		this.paymentRulePO = paymentRulePO;
 		this.paymentRulePOSet = true;

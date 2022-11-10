@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * de-metas-camel-sap-file-import
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,27 +20,34 @@
  * #L%
  */
 
-package de.metas.incoterms;
+package de.metas.camel.externalsystems.sap.model.bpartner;
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 import javax.annotation.Nullable;
+import java.util.Arrays;
+import java.util.Optional;
 
-@Value
-@Builder
-public class Incoterms
+@AllArgsConstructor
+public enum PartnerCategory
 {
-	@NonNull
-	IncotermsId incotermsId;
+	MC_JAPAN("1"),
+	GENERAL_PARTNER("2"),
+	STORAGE_LOCATION("4");
 
-	@NonNull
-	String name;
-
-	@NonNull
-	String value;
+	@Getter
+	final String code;
 
 	@Nullable
-	String description;
+	public static PartnerCategory ofCodeOrNull(@Nullable final String code)
+	{
+		return Optional.ofNullable(code)
+				.map(typesByCode::get)
+				.orElse(null);
+	}
+
+	private static final ImmutableMap<String, PartnerCategory> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), PartnerCategory::getCode);
 }

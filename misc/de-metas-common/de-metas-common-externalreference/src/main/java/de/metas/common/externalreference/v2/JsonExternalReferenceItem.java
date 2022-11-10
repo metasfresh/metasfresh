@@ -30,6 +30,7 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.With;
 
 import javax.annotation.Nullable;
 
@@ -65,6 +66,7 @@ public class JsonExternalReferenceItem
 
 	@Nullable
 	@JsonInclude(JsonInclude.Include.NON_NULL)
+	@With
 	JsonMetasfreshId metasfreshId;
 
 	@Nullable
@@ -95,8 +97,8 @@ public class JsonExternalReferenceItem
 	@Builder
 	private JsonExternalReferenceItem(
 			@JsonProperty("lookupItem") @NonNull final JsonExternalReferenceLookupItem lookupItem,
-			@JsonProperty("metasfreshId") @Nullable final JsonMetasfreshId metasfreshId,
 			@JsonProperty("externalReference") @Nullable final String externalReference,
+			@JsonProperty("metasfreshId") @Nullable final JsonMetasfreshId metasfreshId,
 			@JsonProperty("version") @Nullable final String version,
 			@JsonProperty("externalReferenceUrl") @Nullable final String externalReferenceUrl,
 			@JsonProperty("systemName") @Nullable final JsonExternalSystemName systemName,

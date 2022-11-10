@@ -342,3 +342,14 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 -- 2022-10-25T11:40:21.372941Z
 UPDATE AD_UI_Element SET Name='SFTP-Produkt-Zielverzeichnis',Updated=TO_TIMESTAMP('2022-10-25 14:40:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613230
 ;
+
+-- Reference Item: External_Request SAP -> startBPartnerSync_import
+-- 2022-11-09T16:20:01.685Z
+UPDATE AD_Ref_List_Trl SET Description='Starts the business partners synchronization with SAP external system',Updated=TO_TIMESTAMP('2022-11-09 18:20:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=543316
+;
+
+-- Reference Item: External_Request SAP -> startBPartnerSync_import
+-- 2022-11-09T16:20:07.857Z
+UPDATE AD_Ref_List_Trl SET Description='Starts the business partners synchronization with SAP external system',Updated=TO_TIMESTAMP('2022-11-09 18:20:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Ref_List_ID=543316
+;
+

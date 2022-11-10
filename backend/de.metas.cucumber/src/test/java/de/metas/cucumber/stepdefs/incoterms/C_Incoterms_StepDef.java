@@ -22,14 +22,11 @@
 
 package de.metas.cucumber.stepdefs.incoterms;
 
-import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Incoterms;
 
@@ -39,8 +36,6 @@ import static org.assertj.core.api.Assertions.*;
 
 public class C_Incoterms_StepDef
 {
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
 	final C_Incoterms_StepDefData incotermsTable;
 
 	public C_Incoterms_StepDef(@NonNull final C_Incoterms_StepDefData incotermsTable)
@@ -48,31 +43,35 @@ public class C_Incoterms_StepDef
 		this.incotermsTable = incotermsTable;
 	}
 
-	@And("metasfresh contains C_Incoterms:")
-	public void upsert_C_Incoterms(@NonNull final DataTable dataTable)
+	@And("load C_Incoterms by id:")
+	public void load_C_Incoterms(@NonNull final DataTable dataTable)
 	{
-		dataTable.asMaps().forEach(this::createC_Incoterm);
+		dataTable.asMaps().forEach(this::loadC_Incoterm_ById);
 	}
 
-	private void createC_Incoterm(@NonNull final Map<String, String> row)
+	private void loadC_Incoterm_ById(@NonNull final Map<String, String> row)
 	{
-		final String value = DataTableUtil.extractStringForColumnName(row, I_C_Incoterms.COLUMNNAME_Value);
+		final int incotermsId = DataTableUtil.extractIntForColumnName(row, I_C_Incoterms.COLUMNNAME_C_Incoterms_ID);
 
-		final I_C_Incoterms record = CoalesceUtil.coalesceSuppliers(
-				() -> queryBL.createQueryBuilder(I_C_Incoterms.class)
-						.addEqualsFilter(I_C_Incoterms.COLUMNNAME_Value, value)
-						.create()
-						.firstOnlyOrNull(I_C_Incoterms.class),
-				() -> InterfaceWrapperHelper.newInstance(I_C_Incoterms.class));
-
-		assertThat(record).isNotNull();
-
-		record.setValue(value);
-		record.setName(value);
-
-		InterfaceWrapperHelper.saveRecord(record);
+		final I_C_Incoterms record = InterfaceWrapperHelper.load(incotermsId, I_C_Incoterms.class);
 
 		final String incotermsIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Incoterms.COLUMNNAME_C_Incoterms_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		incotermsTable.put(incotermsIdentifier, record);
+	}
+
+	@And("validate C_Incoterms:")
+	public void validateC_Incoterms(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String value = DataTableUtil.extractStringForColumnName(row, I_C_Incoterms.COLUMNNAME_Value);
+			final String name = DataTableUtil.extractStringForColumnName(row, I_C_Incoterms.COLUMNNAME_Name);
+
+			final String incotermsIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Incoterms.COLUMNNAME_C_Incoterms_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+			final I_C_Incoterms incoterms = incotermsTable.get(incotermsIdentifier);
+
+			assertThat(incoterms.getValue()).isEqualTo(value);
+			assertThat(incoterms.getName()).isEqualTo(name);
+		}
 	}
 }

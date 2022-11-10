@@ -21,9 +21,12 @@ import de.metas.sectionCode.SectionCodeId;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NonNull;
 import org.adempiere.ad.table.RecordChangeLog;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
+import java.util.function.Function;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
 import static de.metas.util.Check.isEmpty;
@@ -347,5 +350,37 @@ public class BPartner
 			result.add(TranslatableStrings.constant("bpartner.groupId"));
 		}
 		return result.build();
+	}
+
+	@Nullable
+	public <T> T mapPaymentRule(@NonNull final Function<PaymentRule,T> mappingFunction)
+	{
+		return mapValue(mappingFunction, paymentRule);
+	}
+
+	@Nullable
+	public <T> T mapPaymentRulePO(@NonNull final Function<PaymentRule,T> mappingFunction)
+	{
+		return mapValue(mappingFunction, paymentRulePO);
+	}
+
+	@Nullable
+	public <T> T mapDeliveryRule(@NonNull final Function<DeliveryRule,T> mappingFunction)
+	{
+		return mapValue(mappingFunction, deliveryRule);
+	}
+
+	@Nullable
+	public <T> T mapDeliveryViaRule(@NonNull final Function<DeliveryViaRule,T> mappingFunction)
+	{
+		return mapValue(mappingFunction, deliveryViaRule);
+	}
+
+	@Nullable
+	private <In, Out> Out mapValue(@NonNull final Function<In, Out> mappingFunction, @Nullable final In inputValue)
+	{
+		return Optional.ofNullable(inputValue)
+				.map(mappingFunction)
+				.orElse(null);
 	}
 }

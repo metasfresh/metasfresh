@@ -22,107 +22,110 @@
 
 package de.metas.camel.externalsystems.sap.model.bpartner;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import org.apache.camel.dataformat.bindy.annotation.CsvRecord;
 import org.apache.camel.dataformat.bindy.annotation.DataField;
 
-import java.util.Arrays;
+import javax.annotation.Nullable;
 
-@CsvRecord(separator = "	", skipField =true)
+@CsvRecord(separator = "	", skipField = true)
 @Getter
+@AllArgsConstructor
+@NoArgsConstructor
 public class BPartnerRow
 {
-	public enum PartnerCategory
-	{
-		MC_JAPAN("1"),
-		GENERAL_PARTNER("2"),
-		STORAGE_LOCATION("4");
-
-		@Getter
-		final String code;
-
-		PartnerCategory(final String code)
-		{
-			this.code = code;
-		}
-
-		public static PartnerCategory ofCode(@NonNull final String code) throws Exception
-		{
-			final PartnerCategory type = typesByCode.get(code);
-			if (type == null)
-			{
-				throw new Exception("No " + PartnerCategory.class + " found for code: " + code);
-			}
-			return type;
-		}
-
-		private static final ImmutableMap<String, PartnerCategory> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), PartnerCategory::getCode);
-
-	}
-
 	@DataField(pos = 1)
-	String partnerCode;
+	@NonNull
+	@Getter(AccessLevel.NONE)
+	private String partnerCode;
 
 	@DataField(pos = 3)
-	String section;
+	@NonNull
+	private String section;
 
+	@Nullable
 	@DataField(pos = 4)
-	String partnerCategory;
+	private String partnerCategory;
 
+	@Nullable
 	@DataField(pos = 6)
-	String name1;
+	private String name1;
 
+	@Nullable
 	@DataField(pos = 7)
-	String name2;
+	private String name2;
 
+	@Nullable
 	@DataField(pos = 8)
-	String searchTerm;
+	private String searchTerm;
 
+	@Nullable
 	@DataField(pos = 9)
-	String street;
+	private String street;
 
+	@Nullable
 	@DataField(pos = 10)
-	String street2;
+	private String street2;
 
+	@Nullable
 	@DataField(pos = 11)
-	String street3;
+	private String street3;
 
+	@Nullable
 	@DataField(pos = 12)
-	String street4;
+	private String street4;
 
+	@Nullable
 	@DataField(pos = 13)
-	String street5;
+	private String street5;
 
+	@Nullable
 	@DataField(pos = 16)
-	String postalCode;
+	private String postalCode;
 
+	@Nullable
 	@DataField(pos = 17)
-	String city;
+	private String city;
 
+	@Nullable
 	@DataField(pos = 18)
-	String countryKey;
+	private String countryKey;
 
+	@Nullable
 	@DataField(pos = 29)
-	String vatRegNo;
+	private String vatRegNo;
 
+	@Nullable
 	@DataField(pos = 36)
-	String salesIncoterms;
+	private String salesIncoterms;
 
+	@Nullable
 	@DataField(pos = 37)
-	String salesIncoterms2;
+	private String salesIncoterms2;
 
+	@Nullable
 	@DataField(pos = 38)
-	String salesPaymentTerms;
+	private String salesPaymentTerms;
 
+	@Nullable
 	@DataField(pos = 40)
-	String purchaseIncoterms;
+	private String purchaseIncoterms;
 
+	@Nullable
 	@DataField(pos = 41)
-	String purchaseIncoterms2;
+	private String purchaseIncoterms2;
 
+	@Nullable
 	@DataField(pos = 42)
-	String purchasePaymentTerms;
+	private String purchasePaymentTerms;
+
+	@NonNull
+	public PartnerCode getPartnerCode()
+	{
+		return PartnerCode.of(partnerCode);
+	}
 }

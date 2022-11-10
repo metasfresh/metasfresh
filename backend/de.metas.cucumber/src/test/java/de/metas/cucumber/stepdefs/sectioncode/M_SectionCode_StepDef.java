@@ -51,10 +51,16 @@ public class M_SectionCode_StepDef
 	@Given("metasfresh contains M_SectionCode:")
 	public void metasfresh_contains_M_SectionCode(@NonNull final DataTable dataTable)
 	{
+		dataTable.asMaps().forEach(this::upsertM_SectionCode);
+	}
+
+	@Given("create M_SectionCode:")
+	public void create_M_SectionCode(@NonNull final DataTable dataTable)
+	{
 		dataTable.asMaps().forEach(this::createM_SectionCode);
 	}
 
-	private void createM_SectionCode(@NonNull final Map<String, String> row)
+	private void upsertM_SectionCode(@NonNull final Map<String, String> row)
 	{
 		final String value = DataTableUtil.extractStringForColumnName(row, I_M_SectionCode.COLUMNNAME_Value);
 
@@ -66,6 +72,23 @@ public class M_SectionCode_StepDef
 				() -> InterfaceWrapperHelper.newInstance(I_M_SectionCode.class));
 
 		assertThat(record).isNotNull();
+
+		record.setValue(value);
+		record.setName(value);
+
+		InterfaceWrapperHelper.save(record);
+
+		final String sectionCodeIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_SectionCode.COLUMNNAME_M_SectionCode_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		sectionCodeTable.putOrReplace(sectionCodeIdentifier, record);
+	}
+
+	private void createM_SectionCode(@NonNull final Map<String, String> row)
+	{
+		final String value = DataTableUtil.extractStringForColumnName(row, I_M_SectionCode.COLUMNNAME_Value);
+		final int sectionCodeId = DataTableUtil.extractIntForColumnName(row, I_M_SectionCode.COLUMNNAME_M_SectionCode_ID);
+
+		final I_M_SectionCode record = InterfaceWrapperHelper.newInstance(I_M_SectionCode.class);
+		record.setM_SectionCode_ID(sectionCodeId);
 
 		record.setValue(value);
 		record.setName(value);

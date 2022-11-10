@@ -39,10 +39,6 @@ public class BPartnerLocationType
 	public static final String BILL_TO_DEFAULT = "billToDefault";
 	public static final String SHIP_TO = "shipTo";
 	public static final String SHIP_TO_DEFAULT = "shipToDefault";
-	public static final String VISITORS_ADDRESS = "visitorsAddress";
-	public static final String HANDOVER_LOCATION = "handoverLocation";
-	public static final String REMIT_TO = "remitTo";
-	public static final String REPLICATION_LOOKUP_DEFAULT = "replicationLookupDefault";
 
 	@JsonInclude(Include.NON_ABSENT)
 	private final Optional<Boolean> billTo;
@@ -56,28 +52,12 @@ public class BPartnerLocationType
 	@JsonInclude(Include.NON_ABSENT)
 	private Optional<Boolean> shipToDefault;
 
-	@JsonInclude(Include.NON_ABSENT)
-	private Optional<Boolean> visitorsAddress;
-
-	@JsonInclude(Include.NON_ABSENT)
-	private Optional<Boolean> handoverLocation;
-
-	@JsonInclude(Include.NON_ABSENT)
-	private Optional<Boolean> remitTo;
-
-	@JsonInclude(Include.NON_ABSENT)
-	private Optional<Boolean> replicationLookupDefault;
-
 	@Builder
 	public BPartnerLocationType(
 			@Nullable final Boolean billTo,
 			@Nullable final Boolean billToDefault,
 			@Nullable final Boolean shipTo,
-			@Nullable final Boolean shipToDefault,
-			@Nullable final Boolean visitorsAddress,
-			@Nullable final Boolean handoverLocation,
-			@Nullable final Boolean remitTo,
-			@Nullable final Boolean replicationLookupDefault)
+			@Nullable final Boolean shipToDefault)
 	{
 		this.billToDefault = Optional.ofNullable(billToDefault);
 		if (this.billToDefault.orElse(false) && billTo == null)
@@ -98,11 +78,6 @@ public class BPartnerLocationType
 		{
 			this.shipTo = Optional.ofNullable(shipTo);
 		}
-
-		this.visitorsAddress = Optional.ofNullable(visitorsAddress);
-		this.handoverLocation = Optional.ofNullable(handoverLocation);
-		this.replicationLookupDefault = Optional.ofNullable(replicationLookupDefault);
-		this.remitTo = Optional.ofNullable(remitTo);
 	}
 
 	/** copy constructor, see {@link #deepCopy()}. */
@@ -110,25 +85,17 @@ public class BPartnerLocationType
 			@Nullable final Optional<Boolean> billTo,
 			@Nullable final Optional<Boolean> billToDefault,
 			@Nullable final Optional<Boolean> shipTo,
-			@Nullable final Optional<Boolean> shipToDefault,
-			@Nullable final Optional<Boolean> visitorsAddress,
-			@Nullable final Optional<Boolean> handoverLocation,
-			@Nullable final Optional<Boolean> remitTo,
-			@Nullable final Optional<Boolean> replicationLookupDefault)
+			@Nullable final Optional<Boolean> shipToDefault)
 	{
 		this.billTo = billTo;
 		this.billToDefault = billToDefault;
 		this.shipTo = shipTo;
 		this.shipToDefault = shipToDefault;
-		this.visitorsAddress = visitorsAddress;
-		this.handoverLocation = handoverLocation;
-		this.remitTo = remitTo;
-		this.replicationLookupDefault = replicationLookupDefault;
 	}
 
 	public BPartnerLocationType deepCopy()
 	{
-		return new BPartnerLocationType(billTo, billToDefault, shipTo, shipToDefault, visitorsAddress, handoverLocation, remitTo, replicationLookupDefault);
+		return new BPartnerLocationType(billTo, billToDefault, shipTo, shipToDefault);
 	}
 
 	public boolean getIsShipToOr(final boolean defaultValue)
@@ -149,26 +116,6 @@ public class BPartnerLocationType
 	public boolean getIsBillToDefaultOr(final boolean defaultValue)
 	{
 		return billToDefault.orElse(defaultValue);
-	}
-
-	public boolean getIsVisitorsAddressOr(final boolean defaultValue)
-	{
-		return visitorsAddress.orElse(defaultValue);
-	}
-
-	public boolean getIsHandoverLocationOr(final boolean defaultValue)
-	{
-		return handoverLocation.orElse(defaultValue);
-	}
-
-	public boolean getIsRemitToOr(final boolean defaultValue)
-	{
-		return remitTo.orElse(defaultValue);
-	}
-
-	public boolean getIsReplicationLookupDefaultOr(final boolean defaultValue)
-	{
-		return replicationLookupDefault.orElse(defaultValue);
 	}
 
 	public void setBillToDefault(boolean billToDefault)

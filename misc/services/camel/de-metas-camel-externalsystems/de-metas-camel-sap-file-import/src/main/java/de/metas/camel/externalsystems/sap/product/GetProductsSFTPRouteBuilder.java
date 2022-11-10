@@ -23,8 +23,9 @@
 package de.metas.camel.externalsystems.sap.product;
 
 import com.google.common.annotations.VisibleForTesting;
-import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.IdAwareRouteBuilder;
+import de.metas.camel.externalsystems.common.ProcessLogger;
+import de.metas.camel.externalsystems.common.v2.ProductUpsertCamelRequest;
 import de.metas.camel.externalsystems.sap.model.product.ProductRow;
 import de.metas.camel.externalsystems.sap.sftp.SFTPConfig;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
@@ -84,7 +85,7 @@ public class GetProductsSFTPRouteBuilder extends IdAwareRouteBuilder
 					.unmarshal(new BindyCsvDataFormat(ProductRow.class))
 					.process(new ProductUpsertProcessor(enabledByExternalSystemRequest, processLogger)).id(UPSERT_PRODUCT_PROCESSOR_ID)
 					.choice()
-						.when(body().isNull())
+						.when(bodyAs(ProductUpsertCamelRequest.class).isNull())
 							.log(LoggingLevel.INFO, "Nothing to do! No product to upsert!")
 						.otherwise()
 							.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert Product: ${body}")

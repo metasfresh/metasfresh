@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.business
+ * de.metas.cucumber
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,27 +20,15 @@
  * #L%
  */
 
-package de.metas.incoterms;
+package de.metas.cucumber.stepdefs.paymentterm;
 
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import de.metas.cucumber.stepdefs.StepDefData;
+import org.compiere.model.I_C_PaymentTerm;
 
-import javax.annotation.Nullable;
-
-@Value
-@Builder
-public class Incoterms
+public class C_PaymentTerm_StepDefData extends StepDefData<I_C_PaymentTerm>
 {
-	@NonNull
-	IncotermsId incotermsId;
-
-	@NonNull
-	String name;
-
-	@NonNull
-	String value;
-
-	@Nullable
-	String description;
+	public C_PaymentTerm_StepDefData()
+	{
+		super(I_C_PaymentTerm.class);
+	}
 }

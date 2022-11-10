@@ -31,11 +31,12 @@ import de.metas.cucumber.stepdefs.AD_User_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.incoterms.C_Incoterms_StepDefData;
+import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_StepDefData;
+import de.metas.cucumber.stepdefs.sectioncode.M_SectionCode_StepDefData;
 import de.metas.externalreference.ExternalIdentifier;
-import de.metas.incoterms.IncotermsId;
 import de.metas.incoterms.repository.IncotermsRepository;
 import de.metas.rest_api.v2.bpartner.BPartnerEndpointService;
-import de.metas.sectionCode.SectionCodeId;
 import de.metas.sectionCode.SectionCodeRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -48,13 +49,13 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Incoterms;
+import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_M_SectionCode;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static de.metas.cucumber.stepdefs.StepDefConstants.ORG_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
@@ -67,6 +68,9 @@ public class CreateBPartnerV2_StepDef
 	private final BPartnerEndpointService bpartnerEndpointService;
 	private final C_BPartner_StepDefData bPartnerTable;
 	private final AD_User_StepDefData userTable;
+	private final M_SectionCode_StepDefData sectionCodeTable;
+	private final C_Incoterms_StepDefData incotermsTable;
+	private final C_PaymentTerm_StepDefData paymentTermTable;
 	private final TestContext testContext;
 
 	final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
@@ -76,10 +80,16 @@ public class CreateBPartnerV2_StepDef
 	public CreateBPartnerV2_StepDef(
 			@NonNull final C_BPartner_StepDefData bPartnerTable,
 			@NonNull final AD_User_StepDefData userTable,
+			@NonNull final M_SectionCode_StepDefData sectionCodeTable,
+			@NonNull final C_Incoterms_StepDefData incotermsTable,
+			@NonNull final C_PaymentTerm_StepDefData paymentTermTable,
 			@NonNull final TestContext testContext)
 	{
 		this.bPartnerTable = bPartnerTable;
 		this.userTable = userTable;
+		this.sectionCodeTable = sectionCodeTable;
+		this.incotermsTable = incotermsTable;
+		this.paymentTermTable = paymentTermTable;
 		this.testContext = testContext;
 		this.bpartnerEndpointService = SpringContextHolder.instance.getBean(BPartnerEndpointService.class);
 		this.sectionCodeRepository = SpringContextHolder.instance.getBean(SectionCodeRepository.class);
@@ -138,13 +148,12 @@ public class CreateBPartnerV2_StepDef
 				assertThat(bPartnerRecord.getCreatedBy()).isEqualTo(userRecord.getAD_User_ID());
 			}
 
-			final String sectionCodeValue = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_M_SectionCode_ID + "." + I_M_SectionCode.COLUMNNAME_Value);
-			if (Check.isNotBlank(sectionCodeValue))
+			final String sectionCodeIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_M_SectionCode_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(sectionCodeIdentifier))
 			{
-				final SectionCodeId sectionCodeId = sectionCodeRepository.getSectionCodeIdByValue(ORG_ID, sectionCodeValue).orElse(null);
+				final I_M_SectionCode sectionCode = sectionCodeTable.get(sectionCodeIdentifier);
 
-				assertThat(sectionCodeId).isNotNull();
-				assertThat(bPartnerRecord.getM_SectionCode_ID()).isEqualTo(sectionCodeId.getRepoId());
+				assertThat(bPartnerRecord.getM_SectionCode_ID()).isEqualTo(sectionCode.getM_SectionCode_ID());
 			}
 
 			final String description = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_Description);
@@ -165,20 +174,20 @@ public class CreateBPartnerV2_StepDef
 				assertThat(bPartnerRecord.getDeliveryViaRule()).isEqualTo(deliveryViaRule);
 			}
 
-			final String incotermsCustomerValue = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_C_Incoterms_Customer_ID + "." + I_C_Incoterms.COLUMNNAME_Value);
-			if (Check.isNotBlank(incotermsCustomerValue))
+			final String incotermsCustomerIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_C_Incoterms_Customer_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(incotermsCustomerIdentifier))
 			{
-				final IncotermsId customerIncotermsId = incotermsRepository.getIncotermsByValue(incotermsCustomerValue).getIncotermsId();
+				final I_C_Incoterms customerIncoterms = incotermsTable.get(incotermsCustomerIdentifier);
 
-				assertThat(bPartnerRecord.getC_Incoterms_Customer_ID()).isEqualTo(customerIncotermsId.getRepoId());
+				assertThat(bPartnerRecord.getC_Incoterms_Customer_ID()).isEqualTo(customerIncoterms.getC_Incoterms_ID());
 			}
 
-			final String incotermsVendorValue = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_C_Incoterms_Vendor_ID + "." + I_C_Incoterms.COLUMNNAME_Value);
-			if (Check.isNotBlank(incotermsVendorValue))
+			final String incotermsVendorIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_C_Incoterms_Vendor_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(incotermsVendorIdentifier))
 			{
-				final IncotermsId vendorIncotermsId = incotermsRepository.getIncotermsByValue(incotermsVendorValue).getIncotermsId();
+				final I_C_Incoterms vendorIncoterms = incotermsTable.get(incotermsVendorIdentifier);
 
-				assertThat(bPartnerRecord.getC_Incoterms_Vendor_ID()).isEqualTo(vendorIncotermsId.getRepoId());
+				assertThat(bPartnerRecord.getC_Incoterms_Vendor_ID()).isEqualTo(vendorIncoterms.getC_Incoterms_ID());
 			}
 
 			final String paymentRule = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_PaymentRule);
@@ -191,6 +200,22 @@ public class CreateBPartnerV2_StepDef
 			if (Check.isNotBlank(paymentRulePO))
 			{
 				assertThat(bPartnerRecord.getPaymentRulePO()).isEqualTo(paymentRulePO);
+			}
+
+			final String customerPaymentTermIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_C_PaymentTerm_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(customerPaymentTermIdentifier))
+			{
+				final I_C_PaymentTerm customerPaymentTerm = paymentTermTable.get(customerPaymentTermIdentifier);
+
+				assertThat(bPartnerRecord.getC_PaymentTerm_ID()).isEqualTo(customerPaymentTerm.getC_PaymentTerm_ID());
+			}
+
+			final String vendorPaymentTermIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_PO_PaymentTerm_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(vendorPaymentTermIdentifier))
+			{
+				final I_C_PaymentTerm vendorPaymentTerm = paymentTermTable.get(vendorPaymentTermIdentifier);
+
+				assertThat(bPartnerRecord.getPO_PaymentTerm_ID()).isEqualTo(vendorPaymentTerm.getC_PaymentTerm_ID());
 			}
 
 			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);

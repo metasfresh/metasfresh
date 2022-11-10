@@ -27,6 +27,7 @@ import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.v2.ProductUpsertCamelRequest;
+import de.metas.camel.externalsystems.sap.service.OnDemandRoutesController;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.Getter;
 import lombok.NonNull;
@@ -69,9 +70,11 @@ public class SFTPProductSyncServiceRouteBuilderTest extends CamelTestSupport
 	}
 
 	@Override
-	protected RouteBuilder createRouteBuilder()
+	protected RouteBuilder[] createRouteBuilders()
 	{
-		return new SFTPProductSyncServiceRouteBuilder(Mockito.mock(ProcessLogger.class));
+		return new RouteBuilder[] {
+				new SFTPProductSyncServiceRouteBuilder(Mockito.mock(ProcessLogger.class)),
+				new OnDemandRoutesController() };
 	}
 
 	@Override
@@ -140,10 +143,15 @@ public class SFTPProductSyncServiceRouteBuilderTest extends CamelTestSupport
 		final InputStream invokeStopExternalSystemRequestIS = this.getClass().getResourceAsStream(JSON_STOP_EXTERNAL_SYSTEM_REQUEST);
 		final JsonExternalSystemRequest stopExternalSystemRequest = objectMapper.readValue(invokeStopExternalSystemRequestIS, JsonExternalSystemRequest.class);
 
+		final String routeId = GetProductsSFTPRouteBuilder.buildRouteId(stopExternalSystemRequest.getExternalSystemChildConfigValue());
+
 		context.start();
 
 		//when
 		template.sendBody("direct:" + START_PRODUCTS_SYNC_ROUTE_ID, startExternalSystemRequest);
+
+		assertThat(context.getRoute(routeId)).isNotNull();
+		assertThat(context.getRouteController().getRouteStatus(routeId).isStarted()).isEqualTo(true);
 
 		//and
 		template.sendBody("direct:" + STOP_PRODUCTS_SYNC_ROUTE_ID, stopExternalSystemRequest);
@@ -152,7 +160,7 @@ public class SFTPProductSyncServiceRouteBuilderTest extends CamelTestSupport
 		assertMockEndpointsSatisfied();
 		assertThat(mockExternalSystemStatusProcessor.called).isEqualTo(2);
 
-		assertThat(context.getRoute(GetProductsSFTPRouteBuilder.buildRouteId(stopExternalSystemRequest.getExternalSystemChildConfigValue()))).isNull();
+		assertThat(context.getRoute(routeId)).isNull();
 	}
 
 	private void prepareEnableRouteForTesting(

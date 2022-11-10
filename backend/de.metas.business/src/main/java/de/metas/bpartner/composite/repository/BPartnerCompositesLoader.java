@@ -392,6 +392,10 @@ final class BPartnerCompositesLoader
 				.ephemeral(bPartnerLocationRecord.isEphemeral())
 				.phone(trimBlankToNull(bPartnerLocationRecord.getPhone()))
 				.email(trimBlankToNull(bPartnerLocationRecord.getEMail()))
+				.visitorsAddress(bPartnerLocationRecord.isVisitorsAddress())
+				.handOverLocation(bPartnerLocationRecord.isHandOverLocation())
+				.remitTo(bPartnerLocationRecord.isRemitTo())
+				.replicationLookupDefault(bPartnerLocationRecord.isReplicationLookupDefault())
 				.build();
 
 		bpartnerLocation.setFromAddress(address);
@@ -406,10 +410,6 @@ final class BPartnerCompositesLoader
 				.billToDefault(bpartnerLocationRecord.isBillToDefault())
 				.shipTo(bpartnerLocationRecord.isShipTo())
 				.shipToDefault(bpartnerLocationRecord.isShipToDefault())
-				.visitorsAddress(bpartnerLocationRecord.isVisitorsAddress())
-				.handoverLocation(bpartnerLocationRecord.isHandOverLocation())
-				.remitTo(bpartnerLocationRecord.isRemitTo())
-				.replicationLookupDefault(bpartnerLocationRecord.isReplicationLookupDefault())
 				.build();
 	}
 
