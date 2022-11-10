@@ -122,7 +122,7 @@ public class ReadPluFileProcessor implements Processor
 	@NonNull
 	private static Path getPluFilePath(@NonNull final String productBaseFolderName, @NonNull final String pluFilepath)
 	{
-		return Paths.get(FileUtil.normalizeAndValidateFilePath(productBaseFolderName),
+		return Paths.get(productBaseFolderName,
 						 FileUtil.normalizeAndValidateFilePath(pluFilepath));
 	}
 }
