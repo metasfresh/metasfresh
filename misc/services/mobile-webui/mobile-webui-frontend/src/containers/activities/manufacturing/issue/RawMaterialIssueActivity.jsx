@@ -32,6 +32,7 @@ const RawMaterialIssueActivity = (props) => {
             return (
               <ButtonWithIndicator
                 key={lineId}
+                typeFASIconName="fa-arrow-right-to-bracket"
                 caption={lineItem.productName}
                 completeStatus={lineItem.completeStatus || CompleteStatus.NOT_STARTED}
                 disabled={!isUserEditable}

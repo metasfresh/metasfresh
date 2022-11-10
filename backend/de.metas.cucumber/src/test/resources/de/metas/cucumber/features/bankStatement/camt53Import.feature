@@ -218,7 +218,7 @@ Feature: import bank statement in camt53 import format
       | bsl_1                             | 2022-05-11     | 2022-05-11   | EUR                        | -119       | -119        | 2022-05-11            | bpartner_1                   | inv_1                       | false         | false            |
       | bsl_2                             | 2022-09-07     | 2022-09-07   | EUR                        | 41772      | 41772       | 2022-09-07            |                              |                             | false         | false            |
     And the C_BankStatement identified by bs_1 is completed
-    And after not more than 30s, C_Payment is found
+    And after not more than 60s, C_Payment is found
       | C_Payment_ID.Identifier | OPT.C_BankStatement_ID.Identifier | OPT.C_BankStatementLine_ID.Identifier |
       | p_1                     | bs_1                              | bsl_1                                 |
     And validate payments

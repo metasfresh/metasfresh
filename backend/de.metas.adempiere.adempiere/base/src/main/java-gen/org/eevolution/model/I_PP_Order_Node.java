@@ -787,6 +787,27 @@ public interface I_PP_Order_Node
 	String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
 
 	/**
+	 * Set Scanned QR Code.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setScannedQRCode (@Nullable java.lang.String ScannedQRCode);
+
+	/**
+	 * Get Scanned QR Code.
+	 *
+	 * <br>Type: TextLong
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getScannedQRCode();
+
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_ScannedQRCode = new ModelColumn<>(I_PP_Order_Node.class, "ScannedQRCode", null);
+	String COLUMNNAME_ScannedQRCode = "ScannedQRCode";
+
+	/**
 	 * Set Setup Time.
 	 * Setup time before starting Production
 	 *
