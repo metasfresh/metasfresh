@@ -208,13 +208,12 @@ class Breadcrumb extends Component {
         /
       </div>,
       <div key="summary-2" className="hidden-down header-breadcrumb-line">
-
         {readOnly && readOnly.isReadOnly && readOnly.reason && (
           <span title={readOnly.reason}>
             <i className="meta-icon-latch divider" />
           </span>
         )}
-        
+
         <span className="header-breadcrumb-sitename" title={text}>
           {text}
         </span>
@@ -260,8 +259,11 @@ class Breadcrumb extends Component {
           {breadcrumb &&
             breadcrumb.map((item, index) => this.renderBtn(item, index + 1))}
 
-          {docSummaryData && this.renderSummaryBreadcrumb(docSummaryData.value,
-            { isReadOnly: docSummaryData['readonly'], reason: docSummaryData['readonly-reason'] })}
+          {docSummaryData &&
+            this.renderSummaryBreadcrumb(docSummaryData.value, {
+              isReadOnly: docSummaryData['readonly'],
+              reason: docSummaryData['readonly-reason'],
+            })}
 
           {siteName && <div className="divider">/</div>}
 
