@@ -1,17 +1,11 @@
 package org.adempiere.ad.dao.impl;
 
-import java.util.Comparator;
-import java.util.Date;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
-
-import de.metas.common.util.time.SystemTime;
+import com.google.common.base.Stopwatch;
+import de.metas.logging.LogManager;
 import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryStatisticsCollector;
 import org.adempiere.ad.dao.IQueryStatisticsLogger;
 import org.adempiere.ad.trx.api.ITrx;
@@ -22,18 +16,17 @@ import org.compiere.SpringContextHolder;
 import org.compiere.util.CStatementVO;
 import org.compiere.util.Trace;
 import org.slf4j.Logger;
-import org.springframework.jmx.export.annotation.ManagedOperation;
-import org.springframework.jmx.export.annotation.ManagedResource;
 import org.springframework.stereotype.Service;
 
-import com.google.common.base.Stopwatch;
-
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.Comparator;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Service
-@ManagedResource(objectName = "org.adempiere.ad.dao.impl.QueryStatisticsLogger:type=Statistics", description = "SQL query statistics and tracing")
 public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStatisticsCollector
 {
 	private static final Logger logger = LogManager.getLogger(QueryStatisticsLogger.class);
@@ -41,9 +34,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 	private static final TimeUnit TIMEUNIT_Internal = TimeUnit.NANOSECONDS;
 	private static final TimeUnit TIMEUNIT_Display = TimeUnit.MILLISECONDS;
 
-	private boolean enabled = false;
 	private final ConcurrentHashMap<String, QueryStatistics> sql2statistics = new ConcurrentHashMap<>();
-	private Date validFrom = null;
 	private String filterBy = null;
 
 	private boolean traceSqlQueries = false;
@@ -51,7 +42,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 
 	private static final boolean logToSystemError = Boolean.getBoolean(SYSTEM_PROPERTY_LOG_TO_SYSTEM_ERROR);
 
-	private static PerformanceMonitoringService _performanceMonitoringService;
+	private PerformanceMonitoringService _performanceMonitoringService;
 	private boolean recordWithMicrometerEnabled = false;
 	private static final PerformanceMonitoringService.Metadata PM_METADATA_COLLECT =
 			PerformanceMonitoringService.Metadata
@@ -64,6 +55,8 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 	public QueryStatisticsLogger()
 	{
 	}
+
+	private boolean isDisabled() {return !traceSqlQueries && !recordWithMicrometerEnabled;}
 
 	private void logMessage(final String message)
 	{
@@ -80,7 +73,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 	@Override
 	public void collect(final CStatementVO vo, final Stopwatch duration)
 	{
-		if (!enabled)
+		if (isDisabled())
 		{
 			return;
 		}
@@ -94,7 +87,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 	@Override
 	public void collect(final String sql, final Stopwatch duration)
 	{
-		if (!enabled)
+		if (isDisabled())
 		{
 			return;
 		}
@@ -106,7 +99,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 
 	private void collect(final String sql, final Map<Integer, Object> sqlParams, final String trxName, final Stopwatch durationStopwatch)
 	{
-		if (!enabled)
+		if (isDisabled())
 		{
 			return;
 		}
@@ -121,18 +114,13 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 			return;
 		}
 
-		final QueryStatistics queryStatistics = sql2statistics.computeIfAbsent(sql, (sqlKey) -> new QueryStatistics(sqlKey));
-		final CountAndDuration duration = queryStatistics.incrementAndGet(durationValue);
-
 		if (traceSqlQueries)
 		{
+			final QueryStatistics queryStatistics = sql2statistics.computeIfAbsent(sql, QueryStatistics::new);
+			final CountAndDuration duration = queryStatistics.incrementAndGet(durationValue);
 			traceSqlQuery(sql, sqlParams, trxName, duration);
 		}
-	}
 
-	public void recordExecutedSQLsWithMicrometer(final Stopwatch durationStopwatch)
-	{
-		final long durationValue = durationStopwatch.elapsed(TIMEUNIT_Internal);
 		if (recordWithMicrometerEnabled)
 		{
 			performanceMonitoringService().record(durationValue, TIMEUNIT_Internal, PM_METADATA_COLLECT);
@@ -141,71 +129,59 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 
 	private PerformanceMonitoringService performanceMonitoringService()
 	{
-		de.metas.monitoring.adapter.PerformanceMonitoringService performanceMonitoringService = _performanceMonitoringService;
-		if (performanceMonitoringService == null || performanceMonitoringService instanceof NoopPerformanceMonitoringService)
+		PerformanceMonitoringService performanceMonitoringService = this._performanceMonitoringService;
+		if (performanceMonitoringService == null)
 		{
-			performanceMonitoringService = _performanceMonitoringService = SpringContextHolder.instance.getBeanOr(
-					PerformanceMonitoringService.class,
-					NoopPerformanceMonitoringService.INSTANCE);
+			performanceMonitoringService = SpringContextHolder.instance.getBeanOr(PerformanceMonitoringService.class, null);
+			if (performanceMonitoringService != null)
+			{
+				this._performanceMonitoringService = performanceMonitoringService;
+			}
+			else
+			{
+				performanceMonitoringService = NoopPerformanceMonitoringService.INSTANCE;
+				// don't set this._performanceMonitoringService
+			}
 		}
 		return performanceMonitoringService;
 	}
 
 	@Override
-	@ManagedOperation(description = "Enables statistics collector")
-	public void enable()
+	public void enableSqlTracing()
 	{
-		enabled = false;
-
 		reset();
-		enabled = true;
-		StatementsFactory.instance.enableSqlQueriesTracing(this);
-	}
 
-	@Override
-	@ManagedOperation(description = "Enables statistics collector and console tracing of executed SQLs")
-	public void enableWithSqlTracing()
-	{
-		enable();
+		StatementsFactory.instance.enableSqlQueriesTracing(this);
 
 		final boolean traceSqlQueriesOld = traceSqlQueries;
-		traceSqlQueries = enabled;
+		traceSqlQueries = true;
 
 		final int countPrev = traceSqlQueries_Count.get();
 		traceSqlQueries_Count.set(0);
 
-		logMessage(new StringBuilder()
-				.append("\n\n")
-				.append("\n*********************************************************************************************")
-				.append("\n*** Enabled SQL Tracing in " + getClass())
-				.append("\n")
-				.append("\nBefore calling this method it was " + (traceSqlQueriesOld ? "enabled" : "disabled"))
-				.append("\nPrevious SQLs counter was " + countPrev + " and now was reset to ZERO.")
-				.append("\n*********************************************************************************************")
-				.append("\n\n")
-				.toString());
+		logMessage("\n\n"
+				+ "\n*********************************************************************************************"
+				+ "\n*** Enabled SQL Tracing in " + getClass()
+				+ "\n"
+				+ "\nBefore calling this method it was " + (traceSqlQueriesOld ? "enabled" : "disabled")
+				+ "\nPrevious SQLs counter was " + countPrev + " and now was reset to ZERO."
+				+ "\n*********************************************************************************************"
+				+ "\n\n");
 	}
 
 	@Override
-	@ManagedOperation(description = "Disables statistics collector (and tracing)")
-	public void disable()
+	public void disableSqlTracing()
 	{
-		enabled = false;
-
 		traceSqlQueries = false;
 		StatementsFactory.instance.disableSqlQueriesTracing();
 	}
 
-	@Override
-	@ManagedOperation(description = "Resets currently collected statistics and counters")
-	public void reset()
+	private void reset()
 	{
 		sql2statistics.clear();
-		validFrom = SystemTime.asDate();
 	}
 
 	@Override
-	@ManagedOperation(description = "Sets a filter for SQLs which are collected for statistics. NOTE: this is not affecting the SQL tracing.")
 	public void setFilterBy(final String filterBy)
 	{
 		if (Objects.equals(this.filterBy, filterBy))
@@ -221,20 +197,12 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 	}
 
 	@Override
-	@ManagedOperation(description = "Gets the SQL query filter")
-	public String getFilterBy()
-	{
-		return filterBy;
-	}
-
-	@Override
-	@ManagedOperation(description = "Clears the current SQL query filter, if any")
 	public void clearFilterBy()
 	{
 		setFilterBy(null);
 	}
 
-	private final boolean isSqlAccepted(final String sql)
+	private boolean isSqlAccepted(final String sql)
 	{
 		if (sql == null)
 		{
@@ -250,13 +218,6 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 
 		// TODO filter by RegEx?
 		return sql.contains(filterBy);
-	}
-
-	@Override
-	@ManagedOperation(description = "Gets the timestamp from when we started to collect the statistics")
-	public Date getValidFrom()
-	{
-		return validFrom;
 	}
 
 	private void traceSqlQuery(final String sql, final Map<Integer, Object> sqlParams, final String trxName, final CountAndDuration duration)
@@ -363,41 +324,37 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 		}
 	}
 
-	private static final double convert(final double duration, final TimeUnit fromUnit, final TimeUnit unit)
+	private static double convert(final double duration, final TimeUnit fromUnit, final TimeUnit unit)
 	{
 		final double durationConv = duration / fromUnit.convert(1, unit);
 		return durationConv;
 	}
 
-	private static final String format(final double duration, final TimeUnit fromUnit, final TimeUnit toUnit)
+	private static String format(final double duration, final TimeUnit fromUnit, final TimeUnit toUnit)
 	{
 		final double durationConv = convert(duration, fromUnit, toUnit);
 		return String.format("%.4g %s", durationConv, abbreviate(toUnit));
 	}
 
 	@Override
-	@ManagedOperation(description = "Gets top SQL queries ordered by their total summed executon time (descending)")
 	public String[] getTopTotalDurationQueriesAsString()
 	{
 		return getTopQueriesAsString(Comparator.comparing(QueryStatistics::getTotalDuration));
 	}
 
 	@Override
-	@ManagedOperation(description = "Gets top SQL queries ordered by their execution count (descending)")
 	public String[] getTopCountQueriesAsString()
 	{
 		return getTopQueriesAsString(Comparator.comparing(QueryStatistics::getCount));
 	}
 
 	@Override
-	@ManagedOperation(description = "Gets top SQL queries ordered by their average execution time (descending)")
 	public String[] getTopAverageDurationQueriesAsString()
 	{
 		return getTopQueriesAsString(Comparator.comparing(QueryStatistics::getAverageDuration));
 	}
 
 	@Override
-	@ManagedOperation(description = "Enable record of SQL execution time with micrometer")
 	public void enableRecordWithMicrometer()
 	{
 		recordWithMicrometerEnabled = true;
@@ -405,7 +362,6 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 	}
 
 	@Override
-	@ManagedOperation(description = "Disable record of SQL execution time with micrometer")
 	public void disableRecordWithMicrometer()
 	{
 		recordWithMicrometerEnabled = false;
@@ -416,8 +372,8 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 		return sql2statistics.values()
 				.stream()
 				.sorted(comparing.reversed())
-				.map(stat -> stat.toString())
-				.toArray(size -> new String[size]);
+				.map(QueryStatistics::toString)
+				.toArray(String[]::new);
 	}
 
 	private static final class CountAndDuration
@@ -495,7 +451,6 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 
 		public QueryStatistics(final String sql)
 		{
-			super();
 			this.sql = sql;
 			this.countAndDurationRef = new AtomicReference<>(CountAndDuration.ZERO);
 		}

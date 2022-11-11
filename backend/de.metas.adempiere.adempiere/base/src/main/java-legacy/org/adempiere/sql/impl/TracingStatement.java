@@ -80,7 +80,6 @@ class TracingStatement<StatementType extends AbstractCStatementProxy<? extends S
 		final Stopwatch duration = Stopwatch.createStarted();
 		final T retValue = sqlCall.call();
 		collector.collect(sql, duration.stop());
-		collector.recordExecutedSQLsWithMicrometer(duration);
 
 		return retValue;
 	}
@@ -96,7 +95,6 @@ class TracingStatement<StatementType extends AbstractCStatementProxy<? extends S
 		final Stopwatch duration = Stopwatch.createStarted();
 		final T retValue = sqlCall.call();
 		collector.collect(delegate.getVO(), duration.stop());
-		collector.recordExecutedSQLsWithMicrometer(duration);
 
 		return retValue;
 	}
