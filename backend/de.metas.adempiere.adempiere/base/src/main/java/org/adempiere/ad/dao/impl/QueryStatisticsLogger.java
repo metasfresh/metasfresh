@@ -150,8 +150,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 	public void enableSqlTracing()
 	{
 		reset();
-
-		StatementsFactory.instance.enableSqlQueriesTracing(this);
+		enableStatementTracingIfNeeded();
 
 		final boolean traceSqlQueriesOld = traceSqlQueries;
 		traceSqlQueries = true;
@@ -173,7 +172,19 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 	public void disableSqlTracing()
 	{
 		traceSqlQueries = false;
+		disableStatementTracingIfNeeded();
+	}
 
+	private void enableStatementTracingIfNeeded()
+	{
+		if (!isDisabled())
+		{
+			StatementsFactory.instance.enableSqlQueriesTracing(this);
+		}
+	}
+
+	private void disableStatementTracingIfNeeded()
+	{
 		if (isDisabled())
 		{
 			StatementsFactory.instance.disableSqlQueriesTracing();
@@ -362,13 +373,14 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 	public void enableRecordWithMicrometer()
 	{
 		recordWithMicrometerEnabled = true;
-		StatementsFactory.instance.enableSqlQueriesTracing(this);
+		enableStatementTracingIfNeeded();
 	}
 
 	@Override
 	public void disableRecordWithMicrometer()
 	{
 		recordWithMicrometerEnabled = false;
+		disableStatementTracingIfNeeded();
 	}
 
 	private String[] getTopQueriesAsString(final Comparator<QueryStatistics> comparing)
