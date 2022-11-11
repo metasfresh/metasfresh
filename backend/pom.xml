@@ -615,6 +615,15 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <!-- Disable the f..ing stupid false positive giver enforcer plugin (teo, tobi) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
