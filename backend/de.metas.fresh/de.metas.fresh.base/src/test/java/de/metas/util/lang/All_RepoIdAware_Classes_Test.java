@@ -52,6 +52,7 @@ import java.util.stream.Stream;
  * #L%
  */
 
+@SuppressWarnings("NewClassNamingConvention")
 public class All_RepoIdAware_Classes_Test
 {
 	private static final SkipRules skipRules = new SkipRules()
@@ -91,8 +92,7 @@ public class All_RepoIdAware_Classes_Test
 			//
 			.skip(ExternalSystemOtherConfigId.class)
 			//
-			.skip(MediatedCommissionSettingsLineId.class)
-			;
+			.skip(MediatedCommissionSettingsLineId.class);
 
 	private static ObjectMapper jsonMapper;
 
@@ -161,6 +161,11 @@ public class All_RepoIdAware_Classes_Test
 
 		public boolean isSkip(@NonNull final Class<? extends RepoIdAware> repoIdClass)
 		{
+			if (repoIdClass.getAnnotation(RepoIdAwares.SkipTest.class) != null)
+			{
+				return true;
+			}
+
 			final String className = repoIdClass.getName();
 
 			return classNames.contains(className);
