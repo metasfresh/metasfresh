@@ -47,12 +47,13 @@ import org.springframework.stereotype.Component;
 
 import java.util.Collection;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Component
 public class DraftInvoiceDecorator implements IDocumentDecorator
 {
-	private static final AdMessageKey OPEN_INVOICES_FOR_CANDIDATE_MESSAGE_KEY = AdMessageKey.of("OPEN_INVOICES_EXISTS_FOR_CANDIDATE");
+	private static final AdMessageKey DRAFT_INVOICES_FOR_CANDIDATE_MESSAGE_KEY = AdMessageKey.of("DRAFT_INVOICES_EXISTS_FOR_CANDIDATE");
 
 	private final IInvoiceDAO invoiceDAO = Services.get(IInvoiceDAO.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
@@ -71,34 +72,6 @@ public class DraftInvoiceDecorator implements IDocumentDecorator
 			.invalidationKeysMapper(this::resolveAsInvoiceIds)
 			.build();
 
-	private ImmutableSet<InvoiceCandidateId> resolveAsInvoiceCandidateIds(@NonNull final TableRecordReference recordRef)
-	{
-		if (recordRef.getTableName().equals(I_C_Invoice_Line_Alloc.Table_Name))
-		{
-			final InvoiceLineAllocId invoiceLineAllocId = recordRef.getIdAssumingTableName(I_C_Invoice_Line_Alloc.Table_Name, InvoiceLineAllocId::ofRepoId);
-			return invoiceCandDAO.getInvoiceCandidateIdByInvoiceLineAllocId(invoiceLineAllocId)
-					.map(ImmutableSet::of)
-					.orElseGet(ImmutableSet::of);
-		}
-		else
-		{
-			return ImmutableSet.of();
-		}
-	}
-
-	private ImmutableSet<InvoiceId> resolveAsInvoiceIds(@NonNull final TableRecordReference recordRef)
-	{
-		if (recordRef.getTableName().equals(I_C_Invoice.Table_Name))
-		{
-			final InvoiceId invoiceId = recordRef.getIdAssumingTableName(I_C_Invoice.Table_Name, InvoiceId::ofRepoId);
-			return ImmutableSet.of(invoiceId);
-		}
-		else
-		{
-			return ImmutableSet.of();
-		}
-	}
-
 	@Override
 	@NonNull
 	public BooleanWithReason isReadOnly(final @NonNull TableRecordReference recordRef)
@@ -109,19 +82,23 @@ public class DraftInvoiceDecorator implements IDocumentDecorator
 		}
 
 		final InvoiceCandidateId invoiceCandidateId = recordRef.getIdAssumingTableName(I_C_Invoice_Candidate.Table_Name, InvoiceCandidateId::ofRepoId);
-		final ImmutableSet<InvoiceInfo> draftInvoiceIds = getDraftInvoices(invoiceCandidateId);
-		if (!draftInvoiceIds.isEmpty())
-		{
-			final String openInvoiceIdsMessage = draftInvoiceIds.stream().map(InvoiceInfo::getSummary).collect(Collectors.joining(","));
-			final ITranslatableString readOnlyReason = TranslatableStrings.adMessage(OPEN_INVOICES_FOR_CANDIDATE_MESSAGE_KEY, openInvoiceIdsMessage);
-			return BooleanWithReason.trueBecause(readOnlyReason);
-		}
-		else
+
+		final ImmutableSet<InvoiceInfo> draftInvoiceInfoSet = getDraftInvoices(invoiceCandidateId);
+
+		if (draftInvoiceInfoSet.isEmpty())
 		{
 			return BooleanWithReason.FALSE;
 		}
+
+		final String draftedInvoiceSummaryList = draftInvoiceInfoSet.stream()
+				.map(InvoiceInfo::getSummary)
+				.collect(Collectors.joining(","));
+
+		final ITranslatableString readOnlyReason = TranslatableStrings.adMessage(DRAFT_INVOICES_FOR_CANDIDATE_MESSAGE_KEY, draftedInvoiceSummaryList);
+		return BooleanWithReason.trueBecause(readOnlyReason);
 	}
 
+	@NonNull
 	private ImmutableSet<InvoiceInfo> getDraftInvoices(@NonNull final InvoiceCandidateId invoiceCandidateId)
 	{
 		final Set<InvoiceId> invoiceIds = invoiceCandidateId2InvoiceIds.getOrLoad(invoiceCandidateId, this::retrieveInvoiceIdsForCandidateId);
@@ -131,26 +108,19 @@ public class DraftInvoiceDecorator implements IDocumentDecorator
 		}
 
 		final Collection<InvoiceInfo> invoiceInfos = invoiceId2info.getAllOrLoad(invoiceIds, this::retrieveInvoiceInfos);
+
 		return invoiceInfos.stream()
 				.filter(InvoiceInfo::isDraft)
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	@NonNull
 	private ImmutableMap<InvoiceId, InvoiceInfo> retrieveInvoiceInfos(final Set<InvoiceId> invoiceIds)
 	{
 		return invoiceDAO.getByIdsInTrx(invoiceIds)
 				.stream()
-				.map(DraftInvoiceDecorator::toInvoiceInfo)
-				.collect(ImmutableMap.toImmutableMap(InvoiceInfo::getInvoiceId, invoiceInfo -> invoiceInfo));
-	}
-
-	private static InvoiceInfo toInvoiceInfo(final I_C_Invoice invoice)
-	{
-		return InvoiceInfo.builder()
-				.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
-				.documentNo(invoice.getDocumentNo())
-				.isDraft(DocStatus.ofNullableCodeOrUnknown(invoice.getDocStatus()).isDraftedOrInProgress())
-				.build();
+				.map(InvoiceInfo::of)
+				.collect(ImmutableMap.toImmutableMap(InvoiceInfo::getInvoiceId, Function.identity()));
 	}
 
 	@NonNull
@@ -163,9 +133,32 @@ public class DraftInvoiceDecorator implements IDocumentDecorator
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
-	//
-	//
-	//
+	@NonNull
+	private ImmutableSet<InvoiceCandidateId> resolveAsInvoiceCandidateIds(@NonNull final TableRecordReference recordRef)
+	{
+		if (!I_C_Invoice_Line_Alloc.Table_Name.equals(recordRef.getTableName()))
+		{
+			return ImmutableSet.of();
+		}
+
+		final InvoiceLineAllocId invoiceLineAllocId = recordRef.getIdAssumingTableName(I_C_Invoice_Line_Alloc.Table_Name, InvoiceLineAllocId::ofRepoId);
+
+		return invoiceCandDAO.getInvoiceCandidateIdByInvoiceLineAllocId(invoiceLineAllocId)
+				.map(ImmutableSet::of)
+				.orElseGet(ImmutableSet::of);
+	}
+
+	@NonNull
+	private ImmutableSet<InvoiceId> resolveAsInvoiceIds(@NonNull final TableRecordReference recordRef)
+	{
+		if (!I_C_Invoice.Table_Name.equals(recordRef.getTableName()))
+		{
+			return ImmutableSet.of();
+		}
+
+		final InvoiceId invoiceId = recordRef.getIdAssumingTableName(I_C_Invoice.Table_Name, InvoiceId::ofRepoId);
+		return ImmutableSet.of(invoiceId);
+	}
 
 	@Value
 	@Builder
@@ -174,6 +167,16 @@ public class DraftInvoiceDecorator implements IDocumentDecorator
 		@NonNull InvoiceId invoiceId;
 		@NonNull String documentNo;
 		boolean isDraft;
+
+		@NonNull
+		public static InvoiceInfo of(@NonNull final I_C_Invoice invoice)
+		{
+			return InvoiceInfo.builder()
+					.invoiceId(InvoiceId.ofRepoId(invoice.getC_Invoice_ID()))
+					.documentNo(invoice.getDocumentNo())
+					.isDraft(DocStatus.ofNullableCodeOrUnknown(invoice.getDocStatus()).isDraftedOrInProgress())
+					.build();
+		}
 
 		public String getSummary()
 		{

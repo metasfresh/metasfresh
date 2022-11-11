@@ -1803,12 +1803,6 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.listImmutable(I_C_Invoice.class);
 	}
 
-	@Nullable
-	private I_C_Invoice_Line_Alloc getInvoiceLineAlloc(@NonNull final InvoiceLineAllocId invoiceLineAllocId)
-	{
-		return InterfaceWrapperHelper.load(invoiceLineAllocId, I_C_Invoice_Line_Alloc.class);
-	}
-
 	@Override
 	public Optional<InvoiceCandidateId> getInvoiceCandidateIdByInvoiceLineAllocId(final InvoiceLineAllocId invoiceLineAllocId)
 	{
@@ -1940,5 +1934,11 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		}
 
 		return filter;
+	}
+
+	@Nullable
+	private I_C_Invoice_Line_Alloc getInvoiceLineAlloc(@NonNull final InvoiceLineAllocId invoiceLineAllocId)
+	{
+		return InterfaceWrapperHelper.load(invoiceLineAllocId, I_C_Invoice_Line_Alloc.class);
 	}
 }
