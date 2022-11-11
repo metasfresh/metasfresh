@@ -200,33 +200,22 @@ class Breadcrumb extends Component {
    * @method renderSummaryBreadcrumb
    * @summary ToDo: Describe the method.
    * @param {*} text
+   * @param {isReadOnly: boolean, reason: string} readOnly
    */
-  renderSummaryBreadcrumb(text) {
+  renderSummaryBreadcrumb(text, readOnly) {
     return [
       <div key="summary-1" className="divider">
         /
       </div>,
       <div key="summary-2" className="hidden-down header-breadcrumb-line">
+        {readOnly && readOnly.isReadOnly && readOnly.reason && (
+          <span title={readOnly.reason}>
+            <i className="meta-icon-latch divider" />
+          </span>
+        )}
+
         <span className="header-breadcrumb-sitename" title={text}>
           {text}
-        </span>
-      </div>,
-    ];
-  }
-
-  /**
-   * @method renderDocumentReadOnlyIcon
-   * @summary Display readOnly lock icon with reason.
-   * @param {*} text
-   */
-  renderDocumentReadOnlyIcon(readOnlyReason) {
-    return [
-      <div
-        key="summary-readonly"
-        className="hidden-down header-breadcrumb-line"
-      >
-        <span title={readOnlyReason}>
-          <i className="meta-icon-latch" />
         </span>
       </div>,
     ];
@@ -270,10 +259,11 @@ class Breadcrumb extends Component {
           {breadcrumb &&
             breadcrumb.map((item, index) => this.renderBtn(item, index + 1))}
 
-          {docSummaryData && this.renderSummaryBreadcrumb(docSummaryData.value)}
           {docSummaryData &&
-            docSummaryData['readonly-reason'] &&
-            this.renderDocumentReadOnlyIcon(docSummaryData['readonly-reason'])}
+            this.renderSummaryBreadcrumb(docSummaryData.value, {
+              isReadOnly: docSummaryData['readonly'],
+              reason: docSummaryData['readonly-reason'],
+            })}
 
           {siteName && <div className="divider">/</div>}
 
