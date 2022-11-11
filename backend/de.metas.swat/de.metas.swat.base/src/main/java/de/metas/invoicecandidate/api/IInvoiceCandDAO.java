@@ -1,11 +1,13 @@
 package de.metas.invoicecandidate.api;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.aggregation.model.I_C_Aggregation;
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.InvoiceLineAllocId;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.I_C_Invoice_Detail;
@@ -399,4 +401,8 @@ public interface IInvoiceCandDAO extends ISingletonService
 	}
 
 	void invalidateUninvoicedFreightCostCandidate(OrderId orderId);
+
+	ImmutableList<org.compiere.model.I_C_Invoice> getInvoicesForCandidateId(InvoiceCandidateId invoiceCandidateId);
+
+	I_C_Invoice_Line_Alloc getInvoiceLineAlloc(InvoiceLineAllocId invoiceLineAllocId);
 }
