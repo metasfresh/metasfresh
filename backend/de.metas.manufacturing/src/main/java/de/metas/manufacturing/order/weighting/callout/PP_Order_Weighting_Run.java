@@ -67,19 +67,31 @@ public class PP_Order_Weighting_Run
 		final PPOrderBOMLineId ppOrderBOMLineId = PPOrderBOMLineId.ofRepoIdOrNull(weightingRun.getPP_Order_BOMLine_ID());
 		if (ppOrderBOMLineId == null)
 		{
-			return;
-		}
+			final PPOrderId ppOrderId = PPOrderId.ofRepoIdOrNull(weightingRun.getPP_Order_ID());
+			if (ppOrderId == null)
+			{
+				return;
+			}
 
-		final I_PP_Order_BOMLine orderBOMLine = ppOrderBOMDAO.getOrderBOMLineById(ppOrderBOMLineId);
-		final BOMComponentType bomComponentType = BOMComponentType.optionalOfNullableCode(orderBOMLine.getComponentType()).orElse(BOMComponentType.Component);
-		if (!bomComponentType.isByOrCoProduct())
+			final I_PP_Order ppOrder = ppOrderBL.getById(ppOrderId);
+			weightingRun.setM_Product_ID(ppOrder.getM_Product_ID());
+			weightingRun.setC_UOM_ID(ppOrder.getC_UOM_ID());
+			weightingRun.setTargetWeight(ppOrder.getQtyOrdered());
+		}
+		else
 		{
-			throw new AdempiereException("Only CO/BY-Product BOM Lines are eligible");
-		}
 
-		weightingRun.setM_Product_ID(orderBOMLine.getM_Product_ID());
-		weightingRun.setC_UOM_ID(orderBOMLine.getC_UOM_ID());
-		weightingRun.setTargetWeight(orderBOMLine.getQtyRequiered().negate()); // negate because it's a co/by-product
+			final I_PP_Order_BOMLine orderBOMLine = ppOrderBOMDAO.getOrderBOMLineById(ppOrderBOMLineId);
+			final BOMComponentType bomComponentType = BOMComponentType.optionalOfNullableCode(orderBOMLine.getComponentType()).orElse(BOMComponentType.Component);
+			if (!bomComponentType.isByOrCoProduct())
+			{
+				throw new AdempiereException("Only CO/BY-Product BOM Lines are eligible");
+			}
+
+			weightingRun.setM_Product_ID(orderBOMLine.getM_Product_ID());
+			weightingRun.setC_UOM_ID(orderBOMLine.getC_UOM_ID());
+			weightingRun.setTargetWeight(orderBOMLine.getQtyRequiered().negate()); // negate because it's a co/by-product
+		}
 	}
 
 	@CalloutMethod(columnNames = I_PP_Order_Weighting_Run.COLUMNNAME_PP_Weighting_Spec_ID)

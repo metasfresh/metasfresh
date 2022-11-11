@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Order_Weighting_RunCheck extends org.compiere.model.PO implements I_PP_Order_Weighting_RunCheck, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -108218212L;
+	private static final long serialVersionUID = -26059892L;
 
     /** Standard Constructor */
     public X_PP_Order_Weighting_RunCheck (final Properties ctx, final int PP_Order_Weighting_RunCheck_ID, @Nullable final String trxName)
@@ -60,6 +60,18 @@ public class X_PP_Order_Weighting_RunCheck extends org.compiere.model.PO impleme
 	public java.lang.String getDescription() 
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
+	}
+
+	@Override
+	public void setIsToleranceExceeded (final boolean IsToleranceExceeded)
+	{
+		set_Value (COLUMNNAME_IsToleranceExceeded, IsToleranceExceeded);
+	}
+
+	@Override
+	public boolean isToleranceExceeded() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsToleranceExceeded);
 	}
 
 	@Override

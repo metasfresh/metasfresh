@@ -1,9 +1,7 @@
 package de.metas.manufacturing.order.weighting.interceptor;
 
-import de.metas.quantity.Quantity;
-import de.metas.quantity.Quantitys;
-import de.metas.uom.UomId;
-import de.metas.util.lang.Percent;
+import de.metas.manufacturing.order.weighting.PPOrderWeightingRunRepository;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -15,21 +13,36 @@ import org.springframework.stereotype.Component;
 @Component
 public class PP_Order_Weighting_Run
 {
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
-	public void beforeSave(final I_PP_Order_Weighting_Run weightingRun)
+	private final PPOrderWeightingRunRepository ppOrderWeightingRunRepository;
+
+	public PP_Order_Weighting_Run(
+			final @NonNull PPOrderWeightingRunRepository ppOrderWeightingRunRepository)
 	{
-		if (InterfaceWrapperHelper.isValueChanged(weightingRun,
-				I_PP_Order_Weighting_Run.COLUMNNAME_TargetWeight,
-				I_PP_Order_Weighting_Run.COLUMNNAME_Tolerance_Perc,
-				I_PP_Order_Weighting_Run.COLUMNNAME_C_UOM_ID))
+		this.ppOrderWeightingRunRepository = ppOrderWeightingRunRepository;
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
+	public void beforeSave(final I_PP_Order_Weighting_Run record)
+	{
+		if (InterfaceWrapperHelper.isUIAction(record))
 		{
-			final Quantity targetWeight = Quantitys.create(weightingRun.getTargetWeight(), UomId.ofRepoId(weightingRun.getC_UOM_ID()));
-			final Percent tolerancePerc = Percent.of(weightingRun.getTolerance_Perc());
-			final Quantity tolerance = targetWeight.multiply(tolerancePerc);
+			final boolean isUOMChanged = InterfaceWrapperHelper.isValueChanged(record, I_PP_Order_Weighting_Run.COLUMNNAME_C_UOM_ID);
+			if (InterfaceWrapperHelper.isValueChanged(record, I_PP_Order_Weighting_Run.COLUMNNAME_TargetWeight)
+					|| InterfaceWrapperHelper.isValueChanged(record, I_PP_Order_Weighting_Run.COLUMNNAME_Tolerance_Perc)
+					|| isUOMChanged)
+			{
+				ppOrderWeightingRunRepository.updateWhileSaving(
+						record,
+						weightingRun -> {
+							if (isUOMChanged)
+							{
+								weightingRun.updateUOMFromHeaderToChecks();
+							}
 
-			weightingRun.setMinWeight(targetWeight.subtract(tolerance).toBigDecimal());
-			weightingRun.setMaxWeight(targetWeight.add(tolerance).toBigDecimal());
+							weightingRun.updateTargetWeightRange();
+						}
+				);
+			}
 		}
-
 	}
 }

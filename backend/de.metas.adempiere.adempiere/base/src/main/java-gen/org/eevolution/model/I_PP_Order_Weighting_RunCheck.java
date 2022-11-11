@@ -143,6 +143,27 @@ public interface I_PP_Order_Weighting_RunCheck
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Tolerance Excheeded.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsToleranceExceeded (boolean IsToleranceExceeded);
+
+	/**
+	 * Get Tolerance Excheeded.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isToleranceExceeded();
+
+	ModelColumn<I_PP_Order_Weighting_RunCheck, Object> COLUMN_IsToleranceExceeded = new ModelColumn<>(I_PP_Order_Weighting_RunCheck.class, "IsToleranceExceeded", null);
+	String COLUMNNAME_IsToleranceExceeded = "IsToleranceExceeded";
+
+	/**
 	 * Set SeqNo..
 	 *
 	 * <br>Type: Integer

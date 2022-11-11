@@ -1,7 +1,10 @@
 package de.metas.manufacturing.order.weighting;
 
+import de.metas.uom.UomId;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
+
+import java.util.Collection;
 
 @Service
 public class PPOrderWeightingRunService
@@ -21,7 +24,12 @@ public class PPOrderWeightingRunService
 
 	public void process(final PPOrderWeightingRunId id)
 	{
-		throw new UnsupportedOperationException(); // TODO
+		ppOrderWeightingRunRepository.updateById(id, PPOrderWeightingRun::process);
+	}
+
+	public void unprocess(final PPOrderWeightingRunId id)
+	{
+		ppOrderWeightingRunRepository.updateById(id, PPOrderWeightingRun::unprocess);
 	}
 
 	public int getNextLineNo(final PPOrderWeightingRunId weightingRunId)
@@ -29,11 +37,17 @@ public class PPOrderWeightingRunService
 		return ppOrderWeightingRunRepository.getNextLineNo(weightingRunId);
 	}
 
-	public void updateFromChecks(final PPOrderWeightingRunId weightingRunId)
+	public void updateFromChecks(final Collection<PPOrderWeightingRunId> ids)
 	{
-		// TODO
-		// * assert not processed
-		// * retrieve lines
-		// * check them and compute IsToleranceExeeded
+		// NOTE: we usually expect only one element here, so it's OK to iterate
+		for (final PPOrderWeightingRunId id : ids)
+		{
+			ppOrderWeightingRunRepository.updateById(id, PPOrderWeightingRun::updateToleranceExceededFlag);
+		}
+	}
+
+	public UomId getUomId(final PPOrderWeightingRunId id)
+	{
+		return ppOrderWeightingRunRepository.getUomId(id);
 	}
 }

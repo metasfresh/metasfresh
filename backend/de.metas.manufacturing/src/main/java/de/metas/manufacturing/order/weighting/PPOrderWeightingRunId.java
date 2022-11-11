@@ -30,9 +30,9 @@ public class PPOrderWeightingRunId implements RepoIdAware
 		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
-	public static int toRepoId(@Nullable final PPOrderWeightingRunId PPOrderWeightRunId)
+	public static int toRepoId(@Nullable final PPOrderWeightingRunId id)
 	{
-		return PPOrderWeightRunId != null ? PPOrderWeightRunId.getRepoId() : -1;
+		return id != null ? id.getRepoId() : -1;
 	}
 
 	int repoId;
