@@ -30,8 +30,11 @@ import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfig;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfig;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfigId;
+import de.metas.externalsystem.metasfresh.ExternalSystemMetasfreshConfig;
+import de.metas.externalsystem.metasfresh.ExternalSystemMetasfreshConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_Metasfresh;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
@@ -101,6 +104,8 @@ public class ExternalSystemConfigRepo
 				return getById(ExternalSystemWooCommerceConfigId.cast(id));
 			case GRSSignum:
 				return getById(ExternalSystemGRSSignumConfigId.cast(id));
+			case Metasfresh:
+				return getById(ExternalSystemMetasfreshConfigId.cast(id));
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", id.getType());
 		}
@@ -150,6 +155,8 @@ public class ExternalSystemConfigRepo
 				return getWooCommerceConfigByParentId(id);
 			case GRSSignum:
 				return getGRSSignumConfigByParentId(id);
+			case Metasfresh:
+				return getMetasfreshConfigByParentId(id);
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 		}
@@ -207,6 +214,8 @@ public class ExternalSystemConfigRepo
 		{
 			case Shopware6:
 				return getShopware6ConfigByQuery(query);
+			case Metasfresh:
+				return getMetasfreshConfigByQuery(query);
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 		}
@@ -496,6 +505,16 @@ public class ExternalSystemConfigRepo
 	}
 
 	@NonNull
+	private ExternalSystemParentConfig getExternalSystemParentConfig(@NonNull final I_ExternalSystem_Config_Metasfresh config)
+	{
+		final ExternalSystemMetasfreshConfig child = buildExternalSystemMetasfreshConfig(config);
+
+		return getById(child.getParentId())
+				.childConfig(child)
+				.build();
+	}
+	
+	@NonNull
 	private ExternalSystemWooCommerceConfig buildExternalSystemWooCommerceConfig(@NonNull final I_ExternalSystem_Config_WooCommerce config)
 	{
 		return ExternalSystemWooCommerceConfig.builder()
@@ -503,6 +522,19 @@ public class ExternalSystemConfigRepo
 				.parentId(ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID()))
 				.value(config.getExternalSystemValue())
 				.camelHttpResourceAuthKey(config.getCamelHttpResourceAuthKey())
+				.build();
+	}
+
+	@NonNull
+	private ExternalSystemMetasfreshConfig buildExternalSystemMetasfreshConfig(@NonNull final I_ExternalSystem_Config_Metasfresh config)
+	{
+		return ExternalSystemMetasfreshConfig.builder()
+				.id(ExternalSystemMetasfreshConfigId.ofRepoId(config.getExternalSystem_Config_Metasfresh_ID()))
+				.parentId(ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID()))
+				.value(config.getExternalSystemValue())
+				.camelHttpResourceAuthKey(config.getCamelHttpResourceAuthKey())
+				.responseHttpUrl(config.getHttpResponseUrl())
+				.responseAuthKey(config.getHttpResponseAuthKey())
 				.build();
 	}
 
@@ -558,6 +590,26 @@ public class ExternalSystemConfigRepo
 						.childConfig(shopwareConfig).build());
 	}
 
+	@NonNull
+	private Optional<ExternalSystemParentConfig> getMetasfreshConfigByQuery(@NonNull final ExternalSystemConfigQuery query)
+	{
+		final IQueryBuilder<I_ExternalSystem_Config_Metasfresh> queryBuilder = queryBL.createQueryBuilder(I_ExternalSystem_Config_Metasfresh.class);
+
+		queryBuilder.addEqualsFilter(I_ExternalSystem_Config_Metasfresh.COLUMNNAME_ExternalSystem_Config_ID, query.getParentConfigId().getRepoId());
+
+		if (query.getIsActive() != null)
+		{
+			queryBuilder.addEqualsFilter(I_ExternalSystem_Config_Metasfresh.COLUMNNAME_IsActive, query.getIsActive());
+		}
+
+		return queryBuilder
+				.create()
+				.firstOnlyOptional(I_ExternalSystem_Config_Metasfresh.class)
+				.map(this::buildExternalSystemMetasfreshConfig)
+				.map(metasfreshConfig -> getById(query.getParentConfigId())
+						.childConfig(metasfreshConfig).build());
+	}
+	
 	private void storeShopware6Config(@NonNull final ExternalSystemParentConfig config)
 	{
 		final ExternalSystemShopware6Config configToSave = ExternalSystemShopware6Config.cast(config.getChildConfig());
@@ -627,6 +679,16 @@ public class ExternalSystemConfigRepo
 		return record;
 	}
 
+	@NonNull
+	private Optional<IExternalSystemChildConfig> getMetasfreshConfigByParentId(@NonNull final ExternalSystemParentConfigId id)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_Metasfresh.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_Metasfresh.COLUMNNAME_ExternalSystem_Config_ID, id.getRepoId())
+				.create()
+				.firstOnlyOptional(I_ExternalSystem_Config_Metasfresh.class)
+				.map(this::buildExternalSystemMetasfreshConfig);
+	}
 
 	@NonNull
 	private Optional<IExternalSystemChildConfig> getGRSSignumConfigByParentId(@NonNull final ExternalSystemParentConfigId id)
@@ -643,6 +705,14 @@ public class ExternalSystemConfigRepo
 	private ExternalSystemParentConfig getById(@NonNull final ExternalSystemGRSSignumConfigId id)
 	{
 		final I_ExternalSystem_Config_GRSSignum config = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config_GRSSignum.class);
+
+		return getExternalSystemParentConfig(config);
+	}
+
+	@NonNull
+	private ExternalSystemParentConfig getById(@NonNull final ExternalSystemMetasfreshConfigId id)
+	{
+		final I_ExternalSystem_Config_Metasfresh config = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config_Metasfresh.class);
 
 		return getExternalSystemParentConfig(config);
 	}

@@ -72,4 +72,7 @@ public class ExternalSystemConstants
 
 	public static final String HEADER_PINSTANCE_ID = "x-adpinstanceid";
 	public static final String HEADER_EXTERNALSYSTEM_CONFIG_ID = "x-externalsystemconfigid";
+
+	public static final String PARAM_HTTP_RESPONSE_URL = "HttpResponseUrl";
+	public static final String PARAM_HTTP_RESPONSE_AUTH_KEY = "HttpResponseAuthKey";
 }

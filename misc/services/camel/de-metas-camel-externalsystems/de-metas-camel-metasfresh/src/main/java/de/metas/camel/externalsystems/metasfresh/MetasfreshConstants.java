@@ -1,8 +1,8 @@
 /*
  * #%L
- * de-metas-camel-externalsystems-common
+ * de-metas-camel-metasfresh
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,28 +20,18 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.common;
+package de.metas.camel.externalsystems.metasfresh;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NonNull;
-
-@AllArgsConstructor
-@Getter
-public enum RestServiceRoutes
+public interface MetasfreshConstants
 {
-	WOO("/woocommerce", RestServiceAuthority.WOO),
-	GRS("/grs", RestServiceAuthority.GRS),
-	METASFRESH("/metasfresh", RestServiceAuthority.METASFRESH);
+	String PARSER_PROPERTY = "ParserProperty";
+	String IS_CONTINUE_PARSING_PROPERTY = "IsContinueParsing";
+	String RESPONSE_ITEMS_NO_PROPERTY = "responseItemsNo";
+	String MASS_PROCESSING_TARGET_ROUTE = "itemType";
 
-	@NonNull
-	private final String path;
-	@NonNull
-	private final RestServiceAuthority restServiceAuthority;
+	String AUTHORIZATION = "Authorization";
+	String RESPONSE_URL_HEADER = "ResponseURL";
+	String FILE_NAME_HEADER = "CamelFileName";
 
-	@NonNull
-	public String getStringAuthority()
-	{
-		return restServiceAuthority.getValue();
-	}
+	String HEADER_AUTH_TOKEN = "X-Auth-Token";
 }

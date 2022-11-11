@@ -1,8 +1,8 @@
 /*
  * #%L
- * de-metas-camel-externalsystems-common
+ * de-metas-camel-metasfresh
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,28 +20,32 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.common;
+package de.metas.camel.externalsystems.metasfresh.restapi.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
-@AllArgsConstructor
-@Getter
-public enum RestServiceRoutes
+import javax.annotation.Nullable;
+import java.sql.Timestamp;
+
+@Value
+@Builder
+@Jacksonized
+public class JsonMassUpsertFeedbackRequest
 {
-	WOO("/woocommerce", RestServiceAuthority.WOO),
-	GRS("/grs", RestServiceAuthority.GRS),
-	METASFRESH("/metasfresh", RestServiceAuthority.METASFRESH);
+	@NonNull
+	String batchId;
 
 	@NonNull
-	private final String path;
-	@NonNull
-	private final RestServiceAuthority restServiceAuthority;
+	Timestamp finishDate;
 
 	@NonNull
-	public String getStringAuthority()
-	{
-		return restServiceAuthority.getValue();
-	}
+	Integer itemCount;
+
+	boolean success;
+
+	@Nullable
+	String errorInfo;
 }
