@@ -65,9 +65,9 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 
 		try (final IAutoCloseable ignored = perfMonData.addCalledByIfNotNull(dummyHTTPRequestMetadata))
 		{
+			final ArrayList<Tag> tags = createTags(metadata, perfMonData);
 			try (final IAutoCloseable ignored2 = perfMonData.addCalledByIfNotNull(metadata))
 			{
-				final ArrayList<Tag> tags = createTags(metadata, perfMonData);
 				final Timer timer = meterRegistry.timer(METER_PREFIX + metadata.getType().getCode(), tags);
 				try
 				{
@@ -134,7 +134,7 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 		addTagIfNotNull("name", metadata.getClassName(), tags);
 		addTagIfNotNull("action", metadata.getFunctionName(), tags);
 
-		if (perfMonData.isInitiator())
+		if (!perfMonData.isInitiator())
 		{
 			addTagIfNotNull("depth", String.valueOf(perfMonData.getDepth()), tags);
 			addTagIfNotNull("initiator", perfMonData.getInitiatorFunctionNameFQ(), tags);
