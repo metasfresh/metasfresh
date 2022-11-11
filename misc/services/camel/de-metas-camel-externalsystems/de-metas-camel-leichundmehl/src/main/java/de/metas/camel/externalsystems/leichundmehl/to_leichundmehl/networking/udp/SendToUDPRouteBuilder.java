@@ -66,7 +66,7 @@ public class SendToUDPRouteBuilder extends RouteBuilder
 		final DatagramSocket ds = new DatagramSocket();
 
 		final byte[] bytes = request.getPayload().getBytes(StandardCharsets.ISO_8859_1);
-		final DatagramPacket datagramPacket = new DatagramPacket(bytes, bytes.length, InetAddress.getByName(udpConnection.getTcpHost()), 0);
+		final DatagramPacket datagramPacket = new DatagramPacket(bytes, bytes.length, InetAddress.getByName(udpConnection.getTcpHost()), udpConnection.getTcpPort());
 
 		ds.send(datagramPacket);
 	}
