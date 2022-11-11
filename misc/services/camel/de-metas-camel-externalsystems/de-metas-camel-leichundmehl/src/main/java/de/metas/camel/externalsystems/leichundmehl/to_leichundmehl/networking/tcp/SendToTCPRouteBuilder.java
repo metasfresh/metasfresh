@@ -26,6 +26,7 @@ import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.networking.Co
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.networking.DispatchMessageRequest;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
@@ -54,6 +55,7 @@ public class SendToTCPRouteBuilder extends RouteBuilder
 		from(direct(SEND_TO_TCP_ROUTE_ID))
 				.routeId(SEND_TO_TCP_ROUTE_ID)
 				.log("Route invoked!")
+				.log(LoggingLevel.DEBUG, "exchange body: ${body}")
 				.process(this::sendToTcpSocket);
 		//@formatter:on
 	}
