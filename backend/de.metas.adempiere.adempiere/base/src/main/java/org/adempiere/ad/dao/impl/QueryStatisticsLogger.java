@@ -123,7 +123,7 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 
 		if (recordWithMicrometerEnabled)
 		{
-			performanceMonitoringService().record(durationValue, TIMEUNIT_Internal, PM_METADATA_COLLECT);
+			performanceMonitoringService().recordElapsedTime(durationValue, TIMEUNIT_Internal, PM_METADATA_COLLECT);
 		}
 	}
 

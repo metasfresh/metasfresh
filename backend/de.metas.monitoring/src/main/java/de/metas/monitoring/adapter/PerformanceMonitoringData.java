@@ -22,50 +22,63 @@
 
 package de.metas.monitoring.adapter;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
+import org.adempiere.util.lang.IAutoCloseable;
 
+import javax.annotation.Nullable;
 import java.util.ArrayList;
 
-@Getter
+@EqualsAndHashCode
+@ToString
 public class PerformanceMonitoringData
 {
-	private int depth = 0;
-	private String initiator = "";
-	private String initiatorWindow = "";
-	private ArrayList<String> calledBy = new ArrayList<>();
-	@Setter
-	private boolean initiatorLabelActive = false;
+	private final ArrayList<PerformanceMonitoringService.Metadata> calledBy = new ArrayList<>();
 
-	public void setRestControllerData(PerformanceMonitoringService.Metadata metadata)
+	public String getInitiatorFunctionNameFQ()
 	{
-		initiatorLabelActive = true;
-		initiator = metadata.getClassName() + " - " + metadata.getFunctionName();
-		calledBy.add(0, "HTTP Request");
+		return !calledBy.isEmpty() ? calledBy.get(0).getFunctionNameFQ() : "";
+	}
 
-		final String windowNameAndId = metadata.getWindowNameAndId();
-		if (windowNameAndId == null)
+	@Nullable
+	public String getLastCalledFuntionNameFQ()
+	{
+		if (calledBy.isEmpty())
 		{
-			initiatorWindow = "NONE";
+			return null;
 		}
 		else
 		{
-			initiatorWindow = windowNameAndId;
+			return calledBy.get(calledBy.size() - 1).getFunctionNameFQ();
 		}
 	}
 
-	public boolean isCalledByMonitoredFunction()
+	public String getInitiatorWindow()
 	{
-		return depth != 0;
+		final String windowName = !calledBy.isEmpty() ? calledBy.get(0).getWindowNameAndId() : "";
+		return windowName != null ? windowName : "NONE";
 	}
 
-	public void incrementDepth()
-	{
-		depth++;
-	}
+	public boolean isInitiator() {return calledBy.isEmpty();}
 
-	public void decrementDepth()
+	public int getDepth() {return calledBy.size();}
+
+	public IAutoCloseable addCalledByIfNotNull(@Nullable final PerformanceMonitoringService.Metadata metadata)
 	{
-		depth--;
+		if (metadata == null)
+		{
+			return () -> {};
+		}
+
+		final int sizeBeforeAdd = calledBy.size();
+		calledBy.add(metadata);
+
+		return () -> {
+			while (calledBy.size() > sizeBeforeAdd)
+			{
+				calledBy.remove(calledBy.size() - 1);
+			}
+		};
+
 	}
 }

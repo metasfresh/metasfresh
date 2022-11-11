@@ -45,7 +45,7 @@ public class NoopPerformanceMonitoringService implements PerformanceMonitoringSe
 	}
 
 	@Override
-	public void record(final long duration, final TimeUnit unit, final Metadata metadata)
+	public void recordElapsedTime(final long duration, final TimeUnit unit, final Metadata metadata)
 	{
 	}
 }

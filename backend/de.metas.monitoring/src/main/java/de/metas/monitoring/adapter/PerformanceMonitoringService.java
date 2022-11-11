@@ -41,8 +41,10 @@ public interface PerformanceMonitoringService
 	String LABEL_EXTERNAL_LINE_ID = "externalLineId";
 	String LABEL_WORKPACKAGE_ID = "de.metas.async.C_Queue_WorkPackage_ID";
 	ImmutableSet<String> VOLATILE_LABELS = ImmutableSet.of(LABEL_RECORD_ID, LABEL_EXTERNAL_LINE_ID, LABEL_EXTERNAL_HEADER_ID, LABEL_WORKPACKAGE_ID);
-	
-	/** Invoke the given {@code callable} as a span. Capture exception and re-throw it, wrapped as RuntimeException if required. */
+
+	/**
+	 * Invoke the given {@code callable} as a span. Capture exception and re-throw it, wrapped as RuntimeException if required.
+	 */
 	<V> V monitor(Callable<V> callable, Metadata metadata);
 
 	default void monitor(final Runnable runnable, final Metadata metadata)
@@ -55,7 +57,7 @@ public interface PerformanceMonitoringService
 				metadata);
 	}
 
-	void record(final long duration, TimeUnit unit, final Metadata metadata);
+	void recordElapsedTime(final long duration, TimeUnit unit, final Metadata metadata);
 
 	@Value
 	@Builder
@@ -75,6 +77,9 @@ public interface PerformanceMonitoringService
 
 		@Singular
 		Map<String, String> labels;
+
+		public String getFunctionNameFQ() {return className + " - " + functionName;}
+
 	}
 
 	enum Type
