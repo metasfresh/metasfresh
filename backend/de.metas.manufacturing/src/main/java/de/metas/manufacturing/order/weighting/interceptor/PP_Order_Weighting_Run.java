@@ -1,5 +1,6 @@
 package de.metas.manufacturing.order.weighting.interceptor;
 
+import de.metas.manufacturing.order.weighting.PPOrderWeightingRunId;
 import de.metas.manufacturing.order.weighting.PPOrderWeightingRunRepository;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -45,4 +46,12 @@ public class PP_Order_Weighting_Run
 			}
 		}
 	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
+	public void beforeDelete(final I_PP_Order_Weighting_Run record)
+	{
+		final PPOrderWeightingRunId weightingRunId = PPOrderWeightingRunId.ofRepoId(record.getPP_Order_Weighting_Run_ID());
+		ppOrderWeightingRunRepository.deleteChecks(weightingRunId);
+	}
+
 }

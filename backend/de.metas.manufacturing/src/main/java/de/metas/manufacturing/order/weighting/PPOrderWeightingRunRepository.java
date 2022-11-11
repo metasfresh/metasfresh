@@ -61,4 +61,12 @@ public class PPOrderWeightingRunRepository
 		final PPOrderWeightingRunLoaderAndSaver loaderAndSaver = new PPOrderWeightingRunLoaderAndSaver();
 		loaderAndSaver.updateById(runId, consumer);
 	}
+
+	public void deleteChecks(final PPOrderWeightingRunId runId)
+	{
+		queryBL.createQueryBuilder(I_PP_Order_Weighting_RunCheck.class)
+				.addEqualsFilter(I_PP_Order_Weighting_RunCheck.COLUMNNAME_PP_Order_Weighting_Run_ID, runId)
+				.create()
+				.delete();
+	}
 }

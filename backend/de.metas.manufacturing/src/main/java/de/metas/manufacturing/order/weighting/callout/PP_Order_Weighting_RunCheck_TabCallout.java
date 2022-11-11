@@ -2,33 +2,23 @@ package de.metas.manufacturing.order.weighting.callout;
 
 import de.metas.manufacturing.order.weighting.PPOrderWeightingRunId;
 import de.metas.manufacturing.order.weighting.PPOrderWeightingRunService;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.callout.api.ICalloutRecord;
-import org.adempiere.ad.ui.api.ITabCalloutFactory;
-import org.adempiere.ad.ui.spi.TabCalloutAdapter;
+import org.adempiere.ad.ui.spi.ITabCallout;
+import org.adempiere.ad.ui.spi.TabCallout;
 import org.eevolution.model.I_PP_Order_Weighting_RunCheck;
-import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.math.BigDecimal;
 
-@Component
-public class PP_Order_Weighting_RunCheck_TabCallout extends TabCalloutAdapter
+@TabCallout(I_PP_Order_Weighting_RunCheck.class)
+public class PP_Order_Weighting_RunCheck_TabCallout implements ITabCallout
 {
 	private final PPOrderWeightingRunService ppOrderWeightingRunService;
 
-	// FIXME this is not working like this...
 	public PP_Order_Weighting_RunCheck_TabCallout(
 			@NonNull final PPOrderWeightingRunService ppOrderWeightingRunService)
 	{
 		this.ppOrderWeightingRunService = ppOrderWeightingRunService;
-	}
-
-	@PostConstruct
-	public void postConstruct()
-	{
-		Services.get(ITabCalloutFactory.class).registerTabCalloutForTable(I_PP_Order_Weighting_RunCheck.Table_Name, PP_Order_Weighting_RunCheck_TabCallout.class);
 	}
 
 	@Override
