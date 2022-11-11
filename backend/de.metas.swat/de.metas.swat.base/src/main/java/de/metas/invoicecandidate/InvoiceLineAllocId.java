@@ -28,10 +28,12 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Line_Alloc;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
+import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.Objects;
 
+@Value
 public class InvoiceLineAllocId implements RepoIdAware
 {
 	@JsonCreator
