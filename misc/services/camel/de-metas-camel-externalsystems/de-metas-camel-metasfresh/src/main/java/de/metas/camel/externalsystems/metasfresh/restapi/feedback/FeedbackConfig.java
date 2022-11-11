@@ -31,8 +31,8 @@ import lombok.Value;
 public class FeedbackConfig
 {
 	@NonNull
-	String responseUrl;
+	String feedbackResourceURL;
 
 	@NonNull
-	String responseAuthKey;
+	String authToken;
 }

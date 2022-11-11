@@ -33,19 +33,19 @@ public class FeedbackConfigProvider
 {
 	@NonNull
 	private final ConcurrentHashMap<String, FeedbackConfig> externalSystemValue2FeedbackConfig = new ConcurrentHashMap<>();
-	
+
 	public void registerFeedbackConfig(
 			@NonNull final String externalSystemConfigValue,
 			@NonNull final FeedbackConfig feedbackConfig)
 	{
 		externalSystemValue2FeedbackConfig.put(externalSystemConfigValue, feedbackConfig);
 	}
-	
+
 	public void unregisterFeedbackConfig(@NonNull final String externalSystemConfigValue)
 	{
 		externalSystemValue2FeedbackConfig.remove(externalSystemConfigValue);
 	}
-	
+
 	@NonNull
 	public Optional<FeedbackConfig> getFeedbackConfig(@NonNull final String externalSystemConfigValue)
 	{

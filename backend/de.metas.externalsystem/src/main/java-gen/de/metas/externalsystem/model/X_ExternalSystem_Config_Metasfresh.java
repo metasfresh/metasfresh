@@ -1,25 +1,3 @@
-/*
- * #%L
- * de.metas.externalsystem
- * %%
- * Copyright (C) 2022 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 // Generated Model - DO NOT CHANGE
 package de.metas.externalsystem.model;
 
@@ -34,7 +12,7 @@ import java.util.Properties;
 public class X_ExternalSystem_Config_Metasfresh extends org.compiere.model.PO implements I_ExternalSystem_Config_Metasfresh, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 237265603L;
+	private static final long serialVersionUID = -2129271701L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config_Metasfresh (final Properties ctx, final int ExternalSystem_Config_Metasfresh_ID, @Nullable final String trxName)
@@ -123,26 +101,26 @@ public class X_ExternalSystem_Config_Metasfresh extends org.compiere.model.PO im
 	}
 
 	@Override
-	public void setHttpResponseAuthKey (final @Nullable String HttpResponseAuthKey)
+	public void setFeedbackResourceAuthToken (final @Nullable String FeedbackResourceAuthToken)
 	{
-		set_Value (COLUMNNAME_HttpResponseAuthKey, HttpResponseAuthKey);
+		set_Value (COLUMNNAME_FeedbackResourceAuthToken, FeedbackResourceAuthToken);
 	}
 
 	@Override
-	public String getHttpResponseAuthKey() 
+	public String getFeedbackResourceAuthToken() 
 	{
-		return get_ValueAsString(COLUMNNAME_HttpResponseAuthKey);
+		return get_ValueAsString(COLUMNNAME_FeedbackResourceAuthToken);
 	}
 
 	@Override
-	public void setHttpResponseUrl (final @Nullable String HttpResponseUrl)
+	public void setFeedbackResourceURL (final @Nullable String FeedbackResourceURL)
 	{
-		set_Value (COLUMNNAME_HttpResponseUrl, HttpResponseUrl);
+		set_Value (COLUMNNAME_FeedbackResourceURL, FeedbackResourceURL);
 	}
 
 	@Override
-	public String getHttpResponseUrl() 
+	public String getFeedbackResourceURL() 
 	{
-		return get_ValueAsString(COLUMNNAME_HttpResponseUrl);
+		return get_ValueAsString(COLUMNNAME_FeedbackResourceURL);
 	}
 }

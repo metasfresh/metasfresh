@@ -27,7 +27,7 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
-import de.metas.camel.externalsystems.metasfresh.bpartner.UpsertBPartnersRouteContext;
+import de.metas.camel.externalsystems.metasfresh.restapi.FilenameUtil;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsertItem;
 import de.metas.common.rest_api.v2.SyncAdvise;
@@ -37,14 +37,16 @@ import org.apache.camel.Processor;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
+import static de.metas.camel.externalsystems.metasfresh.MetasfreshConstants.FILE_NAME_HEADER;
 import static de.metas.camel.externalsystems.metasfresh.MetasfreshConstants.IS_CONTINUE_PARSING_PROPERTY;
+import static de.metas.camel.externalsystems.metasfresh.MetasfreshConstants.MASS_JSON_REQUEST_MAX_BATCH_SIZE;
 import static de.metas.camel.externalsystems.metasfresh.MetasfreshConstants.PARSER_PROPERTY;
-import static de.metas.camel.externalsystems.metasfresh.bpartner.FileBPartnersRouteBuilder.ROUTE_PROPERTY_UPSERT_BPARTNERS_CONTEXT;
 
 public class ParseBPartnersProcessor implements Processor
 {
-	private static final int MAX_BATCH_SIZE = 10;
+	private static final int DEFAULT_MAX_BATCH_SIZE = 10;
 
 	@Override
 	public void process(final Exchange exchange) throws IOException
@@ -62,7 +64,7 @@ public class ParseBPartnersProcessor implements Processor
 
 		final ImmutableList.Builder<JsonRequestBPartnerUpsertItem> jsonRequestBPartnerUpsertItems = ImmutableList.builder();
 
-		for (int counter = 0; counter < MAX_BATCH_SIZE; counter++)
+		for (int counter = 0; counter < getMaxBatchSize(exchange); counter++)
 		{
 			final JsonRequestBPartnerUpsertItem jsonRequestBPartnerUpsertItem = JsonObjectMapperHolder
 					.sharedJsonObjectMapper()
@@ -78,14 +80,22 @@ public class ParseBPartnersProcessor implements Processor
 			}
 		}
 
-		final UpsertBPartnersRouteContext upsertBPartnersRouteContext = exchange.getProperty(ROUTE_PROPERTY_UPSERT_BPARTNERS_CONTEXT, UpsertBPartnersRouteContext.class);
+		final ImmutableList<JsonRequestBPartnerUpsertItem> upsertItemList = jsonRequestBPartnerUpsertItems.build();
 
-		final BPUpsertCamelRequest camelRequest = getBPUpsertCamelRequest(upsertBPartnersRouteContext.getOrgCode(), jsonRequestBPartnerUpsertItems.build());
+		final String orgCode = FilenameUtil.getOrgCode(exchange.getIn().getHeader(FILE_NAME_HEADER, String.class));
+
+		final BPUpsertCamelRequest camelRequest = getBPUpsertCamelRequest(orgCode, upsertItemList);
 		exchange.getIn().setBody(camelRequest);
-
-		upsertBPartnersRouteContext.increaseReadItemsCount(camelRequest.getJsonRequestBPartnerUpsert().getRequestItems().size());
-
 		exchange.setProperty(IS_CONTINUE_PARSING_PROPERTY, isContinueParsing);
+	}
+
+	private static int getMaxBatchSize(@NonNull final Exchange exchange)
+	{
+		final Optional<String> maxBatchSizeAsString = exchange.getContext().getPropertiesComponent().resolveProperty(MASS_JSON_REQUEST_MAX_BATCH_SIZE);
+
+		return maxBatchSizeAsString
+				.map(Integer::parseInt)
+				.orElse(DEFAULT_MAX_BATCH_SIZE);
 	}
 
 	@NonNull

@@ -43,9 +43,9 @@ public class ExternalSystemMetasfreshConfig implements IExternalSystemChildConfi
 	@Nullable
 	String camelHttpResourceAuthKey;
 	@Nullable
-	String responseHttpUrl;
+	String feedbackResourceURL;
 	@Nullable
-	String responseAuthKey;
+	String feedbackResourceAuthToken;
 
 	@NonNull
 	public static ExternalSystemMetasfreshConfig cast(@NonNull final IExternalSystemChildConfig childConfig)

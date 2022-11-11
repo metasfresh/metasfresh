@@ -66,9 +66,7 @@ public class MetasfreshRestAPIRouteBuilderTest extends CamelTestSupport
 	{
 		final FeedbackConfigProvider feedbackConfigProvider = Mockito.mock(FeedbackConfigProvider.class);
 
-		final OrgCodeProvider orgCodeProvider = Mockito.mock(OrgCodeProvider.class);
-
-		return new MetasfreshRestAPIRouteBuilder(feedbackConfigProvider, orgCodeProvider);
+		return new MetasfreshRestAPIRouteBuilder(feedbackConfigProvider);
 	}
 
 	@Override

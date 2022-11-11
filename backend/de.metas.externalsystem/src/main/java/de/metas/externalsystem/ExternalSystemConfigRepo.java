@@ -34,9 +34,9 @@ import de.metas.externalsystem.metasfresh.ExternalSystemMetasfreshConfig;
 import de.metas.externalsystem.metasfresh.ExternalSystemMetasfreshConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Metasfresh;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
-import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6_UOM;
@@ -131,6 +131,9 @@ public class ExternalSystemConfigRepo
 			case RabbitMQ:
 				return getRabbitMQConfigByValue(value)
 						.map(this::getExternalSystemParentConfig);
+			case Metasfresh:
+				return getMetasfreshConfigByValue(value)
+						.map(this::getExternalSystemParentConfig);
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", type);
 		}
@@ -214,8 +217,6 @@ public class ExternalSystemConfigRepo
 		{
 			case Shopware6:
 				return getShopware6ConfigByQuery(query);
-			case Metasfresh:
-				return getMetasfreshConfigByQuery(query);
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 		}
@@ -513,7 +514,7 @@ public class ExternalSystemConfigRepo
 				.childConfig(child)
 				.build();
 	}
-	
+
 	@NonNull
 	private ExternalSystemWooCommerceConfig buildExternalSystemWooCommerceConfig(@NonNull final I_ExternalSystem_Config_WooCommerce config)
 	{
@@ -533,8 +534,8 @@ public class ExternalSystemConfigRepo
 				.parentId(ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID()))
 				.value(config.getExternalSystemValue())
 				.camelHttpResourceAuthKey(config.getCamelHttpResourceAuthKey())
-				.responseHttpUrl(config.getHttpResponseUrl())
-				.responseAuthKey(config.getHttpResponseAuthKey())
+				.feedbackResourceURL(config.getFeedbackResourceURL())
+				.feedbackResourceAuthToken(config.getFeedbackResourceAuthToken())
 				.build();
 	}
 
@@ -590,26 +591,6 @@ public class ExternalSystemConfigRepo
 						.childConfig(shopwareConfig).build());
 	}
 
-	@NonNull
-	private Optional<ExternalSystemParentConfig> getMetasfreshConfigByQuery(@NonNull final ExternalSystemConfigQuery query)
-	{
-		final IQueryBuilder<I_ExternalSystem_Config_Metasfresh> queryBuilder = queryBL.createQueryBuilder(I_ExternalSystem_Config_Metasfresh.class);
-
-		queryBuilder.addEqualsFilter(I_ExternalSystem_Config_Metasfresh.COLUMNNAME_ExternalSystem_Config_ID, query.getParentConfigId().getRepoId());
-
-		if (query.getIsActive() != null)
-		{
-			queryBuilder.addEqualsFilter(I_ExternalSystem_Config_Metasfresh.COLUMNNAME_IsActive, query.getIsActive());
-		}
-
-		return queryBuilder
-				.create()
-				.firstOnlyOptional(I_ExternalSystem_Config_Metasfresh.class)
-				.map(this::buildExternalSystemMetasfreshConfig)
-				.map(metasfreshConfig -> getById(query.getParentConfigId())
-						.childConfig(metasfreshConfig).build());
-	}
-	
 	private void storeShopware6Config(@NonNull final ExternalSystemParentConfig config)
 	{
 		final ExternalSystemShopware6Config configToSave = ExternalSystemShopware6Config.cast(config.getChildConfig());
@@ -749,6 +730,16 @@ public class ExternalSystemConfigRepo
 				.addEqualsFilter(I_ExternalSystem_Config_GRSSignum.COLUMNNAME_ExternalSystemValue, value)
 				.create()
 				.firstOnlyOptional(I_ExternalSystem_Config_GRSSignum.class);
+	}
+
+	@NonNull
+	private Optional<I_ExternalSystem_Config_Metasfresh> getMetasfreshConfigByValue(@NonNull final String value)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_Metasfresh.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_Metasfresh.COLUMNNAME_ExternalSystemValue, value)
+				.create()
+				.firstOnlyOptional(I_ExternalSystem_Config_Metasfresh.class);
 	}
 
 	@NonNull

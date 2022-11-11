@@ -28,7 +28,7 @@ import de.metas.camel.externalsystems.common.RestServiceRoutes;
 import de.metas.camel.externalsystems.common.auth.JsonAuthenticateRequest;
 import de.metas.camel.externalsystems.common.auth.JsonExpireTokenResponse;
 import de.metas.camel.externalsystems.common.auth.TokenCredentials;
-import de.metas.camel.externalsystems.common.http.EmptyBodyRequestWrapper;
+import de.metas.camel.externalsystems.common.http.WriteRequestBodyToFileProcessor;
 import de.metas.camel.externalsystems.metasfresh.restapi.feedback.FeedbackConfig;
 import de.metas.camel.externalsystems.metasfresh.restapi.feedback.FeedbackConfigProvider;
 import de.metas.common.externalsystem.ExternalSystemConstants;
@@ -39,9 +39,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.spi.RouteController;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapper;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -49,14 +47,13 @@ import java.util.Optional;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.REST_API_AUTHENTICATE_TOKEN;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.REST_API_EXPIRE_TOKEN;
+import static de.metas.camel.externalsystems.metasfresh.MetasfreshConstants.MASS_JSON_REQUEST_PROCESSING_LOCATION;
+import static de.metas.camel.externalsystems.metasfresh.MetasfreshConstants.MASS_JSON_REQUEST_PROCESSING_LOCATION_DEFAULT;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
 public class MetasfreshRestAPIRouteBuilder extends RouteBuilder
 {
-	@Value("${metasfresh.mass.json.request.directory.path}")
-	private String massJsonRequestProcessingLocation;
-
 	private final FeedbackConfigProvider feedbackConfigProvider;
 
 	public MetasfreshRestAPIRouteBuilder(@NonNull final FeedbackConfigProvider feedbackConfigProvider)
@@ -65,18 +62,19 @@ public class MetasfreshRestAPIRouteBuilder extends RouteBuilder
 	}
 
 	public static final String REST_API_WRITE_REQUEST_BODY_TO_FILE_ROUTE_ID = "Metasfresh-WriteRequestBodyToFile";
+	public static final String WRITE_REQUEST_BODY_TO_FILE_PROCESSOR_ID = "Metasfresh-writeRequestBodyToFileProcessorId";
+
 	public static final String ENABLE_RESOURCE_ROUTE_ID = "Metasfresh-enableRestAPI";
 	public static final String DISABLE_RESOURCE_ROUTE_ID = "Metasfresh-disableRestAPI";
 
 	public static final String ENABLE_RESOURCE_ROUTE_PROCESSOR_ID = "Metasfresh-enableRestAPIProcessor";
 	public static final String DISABLE_RESOURCE_ROUTE_PROCESSOR_ID = "Metasfresh-disableRestAPIProcessor";
+
 	public static final String ENABLE_RESOURCE_ATTACH_AUTHENTICATE_REQ_PROCESSOR_ID = "Metasfresh-ER-AttachAuthenticateReqProcessorId";
 	public static final String DISABLE_RESOURCE_ATTACH_AUTHENTICATE_REQ_PROCESSOR_ID = "Metasfresh-DR-AttachAuthenticateReqProcessorId";
+
 	public static final String REGISTER_FEEDBACK_CONFIG_PROCESSOR_ID = "Metasfresh-registerFeedbackConfigProcessorId";
 	public static final String UNREGISTER_FEEDBACK_CONFIG_PROCESSOR_ID = "Metasfresh-unregisterFeedbackConfigProcessorId";
-	public static final String REGISTER_ORG_CODE_PROCESSOR_ID = "Metasfresh-registerOrgCodeProcessorId";
-	public static final String UNREGISTER_ORG_CODE_PROCESSOR_ID = "Metasfresh-unregisterOrgCodeProcessorId";
-	public static final String WRITE_REQUEST_BODY_TO_FILE_PROCESSOR_ID = "Metasfresh-writeRequestBodyToFileProcessorId";
 
 	@Override
 	public void configure()
@@ -90,50 +88,31 @@ public class MetasfreshRestAPIRouteBuilder extends RouteBuilder
 				.routeId(ENABLE_RESOURCE_ROUTE_ID)
 				.streamCaching()
 				.log("Route invoked!")
-					.process(this::enableRestAPIProcessor).id(ENABLE_RESOURCE_ROUTE_PROCESSOR_ID)
-					.process(this::registerFeedbackConfig).id(REGISTER_FEEDBACK_CONFIG_PROCESSOR_ID)
-					.process(this::attachAuthenticateRequest).id(ENABLE_RESOURCE_ATTACH_AUTHENTICATE_REQ_PROCESSOR_ID)
-					.to(direct(REST_API_AUTHENTICATE_TOKEN))
+				.process(this::registerFeedbackConfig).id(REGISTER_FEEDBACK_CONFIG_PROCESSOR_ID)
+				.process(this::attachAuthenticateRequest).id(ENABLE_RESOURCE_ATTACH_AUTHENTICATE_REQ_PROCESSOR_ID)
+				.to(direct(REST_API_AUTHENTICATE_TOKEN))
+				.process(this::enableRestAPIProcessor).id(ENABLE_RESOURCE_ROUTE_PROCESSOR_ID)
 				.end();
 
 		from(direct(DISABLE_RESOURCE_ROUTE_ID))
 				.routeId(DISABLE_RESOURCE_ROUTE_ID)
 				.streamCaching()
 				.log("Route invoked!")
-					.process(this::attachAuthenticateRequest).id(DISABLE_RESOURCE_ATTACH_AUTHENTICATE_REQ_PROCESSOR_ID)
-					.process(this::unregisterFeedbackConfig).id(UNREGISTER_FEEDBACK_CONFIG_PROCESSOR_ID)
-					.to(direct(REST_API_EXPIRE_TOKEN))
-					.process(this::disableRestAPIProcessor).id(DISABLE_RESOURCE_ROUTE_PROCESSOR_ID)
+				.process(this::unregisterFeedbackConfig).id(UNREGISTER_FEEDBACK_CONFIG_PROCESSOR_ID)
+				.process(this::attachAuthenticateRequest).id(DISABLE_RESOURCE_ATTACH_AUTHENTICATE_REQ_PROCESSOR_ID)
+				.to(direct(REST_API_EXPIRE_TOKEN))
+				.process(this::disableRestAPIProcessor).id(DISABLE_RESOURCE_ROUTE_PROCESSOR_ID)
 				.end();
-
+		
 		rest().path(RestServiceRoutes.METASFRESH.getPath())
 				.post()
 				.route()
 				.routeId(REST_API_WRITE_REQUEST_BODY_TO_FILE_ROUTE_ID)
 				.autoStartup(false)
-					.process(this::writeRequestBodyToFileProcessor).id(WRITE_REQUEST_BODY_TO_FILE_PROCESSOR_ID)
+					.process(new WriteRequestBodyToFileProcessor(getWriteFileLocation(), this::computeFilename)).id(WRITE_REQUEST_BODY_TO_FILE_PROCESSOR_ID)
 					.log("Route invoked!")
 				.end();
 		//@formatter:on
-	}
-
-	private void writeRequestBodyToFileProcessor(@NonNull final Exchange exchange)
-	{
-		final TokenCredentials credentials = (TokenCredentials)SecurityContextHolder.getContext().getAuthentication().getCredentials();
-
-		if (credentials.getExternalSystemValue() == null)
-		{
-			throw new RuntimeCamelException("Setup not completed properly! Missing extenralSystemConfigValue!");
-		}
-
-		final SecurityContextHolderAwareRequestWrapper camelHttpServletRequest = ((SecurityContextHolderAwareRequestWrapper)exchange.getIn()
-				.getHeader("CamelHttpServletRequest"));
-		final EmptyBodyRequestWrapper emptyBodyRequestWrapper = ((EmptyBodyRequestWrapper)camelHttpServletRequest.getRequest());
-
-		final String computedFilename = FilenameUtil.computeFileName(credentials.getExternalSystemValue());
-
-		CamelRouteUtil.writeRequestBodyToFile(emptyBodyRequestWrapper.getRealStream(),
-											  massJsonRequestProcessingLocation + computedFilename);
 	}
 
 	private void enableRestAPIProcessor(@NonNull final Exchange exchange) throws Exception
@@ -156,35 +135,30 @@ public class MetasfreshRestAPIRouteBuilder extends RouteBuilder
 		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 
 		final String externalSystemConfigValue = request.getParameters().get(ExternalSystemConstants.PARAM_CHILD_CONFIG_VALUE);
-		final Optional<FeedbackConfig> feedbackConfig = getFeedbackConfig(request);
-		if (feedbackConfig.isPresent())
-		{
-			feedbackConfigProvider.registerFeedbackConfig(externalSystemConfigValue, feedbackConfig.get());
-		}
-		else
-		{
-			feedbackConfigProvider.unregisterFeedbackConfig(externalSystemConfigValue);
-		}
+
+		getFeedbackConfig(request).ifPresentOrElse(
+				config -> feedbackConfigProvider.registerFeedbackConfig(externalSystemConfigValue, config),
+				() -> feedbackConfigProvider.unregisterFeedbackConfig(externalSystemConfigValue));
 	}
 
 	@NonNull
 	private Optional<FeedbackConfig> getFeedbackConfig(@NonNull final JsonExternalSystemRequest request)
 	{
-		final String responseAuthKey = request.getParameters().get(ExternalSystemConstants.PARAM_HTTP_RESPONSE_AUTH_KEY);
-		if (Check.isBlank(responseAuthKey))
+		final String feedbackAuthKey = request.getParameters().get(ExternalSystemConstants.PARAM_FEEDBACK_RESOURCE_AUTH_TOKEN);
+		if (Check.isBlank(feedbackAuthKey))
 		{
 			return Optional.empty();
 		}
 
-		final String responseUrl = request.getParameters().get(ExternalSystemConstants.PARAM_HTTP_RESPONSE_URL);
-		if (Check.isBlank(responseUrl))
+		final String feedbackURL = request.getParameters().get(ExternalSystemConstants.PARAM_FEEDBACK_RESOURCE_URL);
+		if (Check.isBlank(feedbackURL))
 		{
 			return Optional.empty();
 		}
 
 		return Optional.of(FeedbackConfig.builder()
-								   .responseAuthKey(responseAuthKey)
-								   .responseUrl(responseUrl)
+								   .authToken(feedbackAuthKey)
+								   .feedbackResourceURL(feedbackURL)
 								   .build());
 	}
 
@@ -195,11 +169,6 @@ public class MetasfreshRestAPIRouteBuilder extends RouteBuilder
 		final JsonAuthenticateRequest jsonAuthenticateRequest = getJsonAuthenticateRequest(request);
 
 		exchange.getIn().setBody(jsonAuthenticateRequest);
-		final String externalSystemValue = jsonAuthenticateRequest.getExternalSystemValue();
-		if (externalSystemValue == null)
-		{
-			throw new RuntimeCamelException("No ExternalSystemConfigValue specified");
-		}
 	}
 
 	@NonNull
@@ -217,6 +186,11 @@ public class MetasfreshRestAPIRouteBuilder extends RouteBuilder
 		}
 
 		final String externalSystemValue = request.getParameters().get(ExternalSystemConstants.PARAM_CHILD_CONFIG_VALUE);
+		if (externalSystemValue == null)
+		{
+			throw new RuntimeCamelException("Missing externalSystemValue from request!");
+		}
+
 		final String auditTrailEndpoint = request.getWriteAuditEndpoint();
 
 		return JsonAuthenticateRequest.builder()
@@ -231,6 +205,34 @@ public class MetasfreshRestAPIRouteBuilder extends RouteBuilder
 
 	private void disableRestAPIProcessor(@NonNull final Exchange exchange) throws Exception
 	{
-		getContext().getRouteController().suspendRoute(REST_API_WRITE_REQUEST_BODY_TO_FILE_ROUTE_ID);
+		final JsonExpireTokenResponse response = exchange.getIn().getBody(JsonExpireTokenResponse.class);
+
+		if (response != null && response.getNumberOfAuthenticatedTokens() == 0)
+		{
+			getContext().getRouteController().suspendRoute(REST_API_WRITE_REQUEST_BODY_TO_FILE_ROUTE_ID);
+		}
+	}
+
+	@NonNull
+	private String getWriteFileLocation()
+	{
+		CamelRouteUtil.setupProperties(getContext());
+
+		return CamelRouteUtil.resolveProperty(getContext(),
+											  MASS_JSON_REQUEST_PROCESSING_LOCATION,
+											  MASS_JSON_REQUEST_PROCESSING_LOCATION_DEFAULT);
+	}
+
+	@NonNull
+	private String computeFilename()
+	{
+		final TokenCredentials credentials = (TokenCredentials)SecurityContextHolder.getContext().getAuthentication().getCredentials();
+
+		if (credentials == null || credentials.getExternalSystemValue() == null)
+		{
+			throw new RuntimeCamelException("Incomplete setup! ExternalSystemValue is missing!");
+		}
+
+		return FilenameUtil.computeFileName(credentials.getExternalSystemValue(), credentials.getOrgCode());
 	}
 }

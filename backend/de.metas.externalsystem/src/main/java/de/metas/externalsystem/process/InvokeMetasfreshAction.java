@@ -42,8 +42,8 @@ import java.util.Map;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CAMEL_HTTP_RESOURCE_AUTH_KEY;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CHILD_CONFIG_VALUE;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_HTTP_RESPONSE_AUTH_KEY;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_HTTP_RESPONSE_URL;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FEEDBACK_RESOURCE_AUTH_TOKEN;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FEEDBACK_RESOURCE_URL;
 
 public class InvokeMetasfreshAction extends InvokeExternalSystemProcess
 {
@@ -86,8 +86,8 @@ public class InvokeMetasfreshAction extends InvokeExternalSystemProcess
 		final Map<String, String> parameters = new HashMap<>();
 		parameters.put(PARAM_CAMEL_HTTP_RESOURCE_AUTH_KEY, metasfreshConfig.getCamelHttpResourceAuthKey());
 		parameters.put(PARAM_CHILD_CONFIG_VALUE, metasfreshConfig.getValue());
-		parameters.put(PARAM_HTTP_RESPONSE_URL, metasfreshConfig.getResponseHttpUrl());
-		parameters.put(PARAM_HTTP_RESPONSE_AUTH_KEY, metasfreshConfig.getResponseAuthKey());
+		parameters.put(PARAM_FEEDBACK_RESOURCE_URL, metasfreshConfig.getFeedbackResourceURL());
+		parameters.put(PARAM_FEEDBACK_RESOURCE_AUTH_TOKEN, metasfreshConfig.getFeedbackResourceAuthToken());
 
 		return parameters;
 	}

@@ -25,13 +25,13 @@ package de.metas.camel.externalsystems.metasfresh;
 public interface MetasfreshConstants
 {
 	String PARSER_PROPERTY = "ParserProperty";
+	String MASS_UPLOAD_STATISTICS_COLLECTOR_PROPERTY = "MassUpsertStatisticsCollector";
 	String IS_CONTINUE_PARSING_PROPERTY = "IsContinueParsing";
-	String RESPONSE_ITEMS_NO_PROPERTY = "responseItemsNo";
-	String MASS_PROCESSING_TARGET_ROUTE = "itemType";
-
-	String AUTHORIZATION = "Authorization";
-	String RESPONSE_URL_HEADER = "ResponseURL";
+	
+	String FEEDBACK_RESOURCE_URL_HEADER = "FeedbackResourceURL";
 	String FILE_NAME_HEADER = "CamelFileName";
 
-	String HEADER_AUTH_TOKEN = "X-Auth-Token";
+	String MASS_JSON_REQUEST_PROCESSING_LOCATION_DEFAULT = "./src/main/resources/mass-process";
+	String MASS_JSON_REQUEST_PROCESSING_LOCATION = "metasfresh.mass.json.request.directory.path";
+	String MASS_JSON_REQUEST_MAX_BATCH_SIZE = "metasfresh.mass.json.request.max.batch.size";
 }

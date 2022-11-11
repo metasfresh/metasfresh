@@ -24,21 +24,21 @@ package de.metas.camel.externalsystems.metasfresh.bpartner;
 
 import de.metas.camel.externalsystems.common.CamelRouteUtil;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
-import de.metas.camel.externalsystems.metasfresh.bpartner.processor.CollectResultsProcessor;
 import de.metas.camel.externalsystems.metasfresh.bpartner.processor.ParseBPartnersProcessor;
 import de.metas.camel.externalsystems.metasfresh.bpartner.processor.UnwrapJsonUpsertBPartnerRequestItem;
-import de.metas.camel.externalsystems.metasfresh.bpartner.processor.PrepareFeedbackRequest;
-import de.metas.camel.externalsystems.metasfresh.restapi.model.JsonMassUpsertFeedbackRequest;
-import de.metas.camel.externalsystems.metasfresh.restapi.processor.CloseParserProcessor;
+import de.metas.camel.externalsystems.metasfresh.restapi.feedback.MassUpsertStatisticsCollector;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsert;
+import de.metas.common.util.Check;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
+import org.apache.camel.http.base.HttpOperationFailedException;
 import org.springframework.stereotype.Component;
 
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.metasfresh.MetasfreshConstants.IS_CONTINUE_PARSING_PROPERTY;
-import static de.metas.camel.externalsystems.metasfresh.MetasfreshConstants.RESPONSE_URL_HEADER;
+import static de.metas.camel.externalsystems.metasfresh.MetasfreshConstants.MASS_UPLOAD_STATISTICS_COLLECTOR_PROPERTY;
+import static de.metas.camel.externalsystems.metasfresh.restapi.feedback.MassUploadFeedbackRouteBuilder.MASS_UPSERT_FEEDBACK_ROUTE_ID;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
@@ -46,53 +46,62 @@ public class FileBPartnersRouteBuilder extends RouteBuilder
 {
 	public static final String PROCESS_BPARTNERS_FROM_FILE_ROUTE_ID = "Metasfresh-processBPartnerFromFile";
 
-	public static final String ROUTE_PROPERTY_UPSERT_BPARTNERS_CONTEXT = "UpsertBPartnersRouteContext";
-
 	@Override
 	public void configure()
 	{
+		errorHandler(defaultErrorHandler());
+		onException(Exception.class)
+				.to(direct(MF_ERROR_ROUTE_ID));
+		
+		CamelRouteUtil.setupProperties(getContext());
+
 		//@formatter:off
 		from(direct(PROCESS_BPARTNERS_FROM_FILE_ROUTE_ID))
 				.routeId(PROCESS_BPARTNERS_FROM_FILE_ROUTE_ID)
-				.doTry()
-					.process(new UnwrapJsonUpsertBPartnerRequestItem())
-					.process(exchange -> exchange.setProperty(IS_CONTINUE_PARSING_PROPERTY, true))
+				.process(new UnwrapJsonUpsertBPartnerRequestItem())
+				.process(exchange -> exchange.setProperty(IS_CONTINUE_PARSING_PROPERTY, true))
 					
-					.loopDoWhile(exchangeProperty(IS_CONTINUE_PARSING_PROPERTY))
-				        .process(new ParseBPartnersProcessor())
-						.doTry()
-							.to("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
-							.unmarshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), JsonResponseBPartnerCompositeUpsert.class))
-							.process(new CollectResultsProcessor())
-						.endDoTry()
-						.doCatch(Exception.class)
-							.process((exchange) -> {
-								final UpsertBPartnersRouteContext upsertBPartnersRouteContext = exchange.getProperty(ROUTE_PROPERTY_UPSERT_BPARTNERS_CONTEXT, UpsertBPartnersRouteContext.class);
-								final Exception cause = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class);
-								upsertBPartnersRouteContext.collectError(cause.getMessage());
-							})
-						.end()
+				.loopDoWhile(exchangeProperty(IS_CONTINUE_PARSING_PROPERTY))
+					.process(new ParseBPartnersProcessor())
+					.doTry()
+						.to("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
+						.unmarshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), JsonResponseBPartnerCompositeUpsert.class))
+				        .process(this::collectStatistics)
+					.endDoTry()
+					.doCatch(Exception.class)
+						.process(this::collectError)
 					.end()
-					.choice()
-						.when(this::isFeedbackConfigPresent)
-							.process(new PrepareFeedbackRequest())
-							.marshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), JsonMassUpsertFeedbackRequest.class))
-							.removeHeaders("CamelHttp*")
-							.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
-							.toD("${header." + RESPONSE_URL_HEADER + "}")
-						.otherwise()
-							// dev-note: do nothing
-				.endDoTry()
-				.doFinally()
-					.process(new CloseParserProcessor())
-				.end();
+				.end()
+				.to(direct(MASS_UPSERT_FEEDBACK_ROUTE_ID));
 		//@formatter:on
 	}
 
-	private boolean isFeedbackConfigPresent(@NonNull final Exchange exchange)
+	private void collectError(@NonNull final Exchange exchange)
 	{
-		final UpsertBPartnersRouteContext upsertBPartnersRouteContext = exchange.getProperty(ROUTE_PROPERTY_UPSERT_BPARTNERS_CONTEXT, UpsertBPartnersRouteContext.class);
+		final MassUpsertStatisticsCollector massUpsertStatisticsCollector = exchange.getProperty(MASS_UPLOAD_STATISTICS_COLLECTOR_PROPERTY,
+																								 MassUpsertStatisticsCollector.class);
+		final Exception exception = exchange.getProperty(Exchange.EXCEPTION_CAUGHT, Exception.class);
 
-		return upsertBPartnersRouteContext.getFeedbackConfig() != null;
+		if (exception instanceof HttpOperationFailedException)
+		{
+			final String response = ((HttpOperationFailedException)exception).getResponseBody();
+
+			if (Check.isNotBlank(response))
+			{
+				massUpsertStatisticsCollector.collectError(response);
+			}
+			return;
+		}
+
+		massUpsertStatisticsCollector.collectError(exception.getMessage());
+	}
+
+	private void collectStatistics(@NonNull final Exchange exchange)
+	{
+		final JsonResponseBPartnerCompositeUpsert response = exchange.getIn().getBody(JsonResponseBPartnerCompositeUpsert.class);
+
+		final MassUpsertStatisticsCollector massUpsertStatisticsCollector = exchange.getProperty(MASS_UPLOAD_STATISTICS_COLLECTOR_PROPERTY, MassUpsertStatisticsCollector.class);
+
+		massUpsertStatisticsCollector.increaseProcessedItemsCount(response.getResponseItems().size());
 	}
 }

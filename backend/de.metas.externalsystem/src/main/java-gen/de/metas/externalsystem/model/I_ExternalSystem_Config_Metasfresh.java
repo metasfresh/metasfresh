@@ -1,25 +1,3 @@
-/*
- * #%L
- * de.metas.externalsystem
- * %%
- * Copyright (C) 2022 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package de.metas.externalsystem.model;
 
 import org.adempiere.model.ModelColumn;
@@ -145,7 +123,7 @@ public interface I_ExternalSystem_Config_Metasfresh
 	String COLUMNNAME_ExternalSystem_Config_ID = "ExternalSystem_Config_ID";
 
 	/**
-	 * Set ExternalSystem_Config_Metasfresh.
+	 * Set Metasfresh.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -154,7 +132,7 @@ public interface I_ExternalSystem_Config_Metasfresh
 	void setExternalSystem_Config_Metasfresh_ID (int ExternalSystem_Config_Metasfresh_ID);
 
 	/**
-	 * Get ExternalSystem_Config_Metasfresh.
+	 * Get Metasfresh.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -193,7 +171,7 @@ public interface I_ExternalSystem_Config_Metasfresh
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setHttpResponseAuthKey (@Nullable String HttpResponseAuthKey);
+	void setFeedbackResourceAuthToken (@Nullable String FeedbackResourceAuthToken);
 
 	/**
 	 * Get Response Authentication Token.
@@ -202,10 +180,10 @@ public interface I_ExternalSystem_Config_Metasfresh
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getHttpResponseAuthKey();
+	@Nullable String getFeedbackResourceAuthToken();
 
-	ModelColumn<I_ExternalSystem_Config_Metasfresh, Object> COLUMN_HttpResponseAuthKey = new ModelColumn<>(I_ExternalSystem_Config_Metasfresh.class, "HttpResponseAuthKey", null);
-	String COLUMNNAME_HttpResponseAuthKey = "HttpResponseAuthKey";
+	ModelColumn<I_ExternalSystem_Config_Metasfresh, Object> COLUMN_FeedbackResourceAuthToken = new ModelColumn<>(I_ExternalSystem_Config_Metasfresh.class, "FeedbackResourceAuthToken", null);
+	String COLUMNNAME_FeedbackResourceAuthToken = "FeedbackResourceAuthToken";
 
 	/**
 	 * Set Response URL.
@@ -214,7 +192,7 @@ public interface I_ExternalSystem_Config_Metasfresh
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setHttpResponseUrl (@Nullable String HttpResponseUrl);
+	void setFeedbackResourceURL (@Nullable String FeedbackResourceURL);
 
 	/**
 	 * Get Response URL.
@@ -223,10 +201,10 @@ public interface I_ExternalSystem_Config_Metasfresh
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getHttpResponseUrl();
+	@Nullable String getFeedbackResourceURL();
 
-	ModelColumn<I_ExternalSystem_Config_Metasfresh, Object> COLUMN_HttpResponseUrl = new ModelColumn<>(I_ExternalSystem_Config_Metasfresh.class, "HttpResponseUrl", null);
-	String COLUMNNAME_HttpResponseUrl = "HttpResponseUrl";
+	ModelColumn<I_ExternalSystem_Config_Metasfresh, Object> COLUMN_FeedbackResourceURL = new ModelColumn<>(I_ExternalSystem_Config_Metasfresh.class, "FeedbackResourceURL", null);
+	String COLUMNNAME_FeedbackResourceURL = "FeedbackResourceURL";
 
 	/**
 	 * Set Active.

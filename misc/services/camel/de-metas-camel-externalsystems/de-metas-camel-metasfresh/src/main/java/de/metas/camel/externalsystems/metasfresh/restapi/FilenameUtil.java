@@ -32,14 +32,20 @@ import java.util.UUID;
 public class FilenameUtil
 {
 	@NonNull
-	public static String computeFileName(@NonNull final String externalSystemConfigValue)
+	public static String computeFileName(@NonNull final String externalSystemConfigValue, @NonNull final String orgCode)
 	{
-		return externalSystemConfigValue + "_" + Instant.now().toEpochMilli() + "_" + UUID.randomUUID();
+		return externalSystemConfigValue + "_" + orgCode + "_" + Instant.now().toEpochMilli() + "_" + UUID.randomUUID();
 	}
 
 	@NonNull
 	public static String getExternalSystemConfigValue(@NonNull final String filename)
 	{
 		return filename.substring(0, filename.indexOf('_'));
+	}
+
+	@NonNull
+	public static String getOrgCode(@NonNull final String filename)
+	{
+		return filename.split("_")[1];
 	}
 }

@@ -23,7 +23,6 @@
 package de.metas.camel.externalsystems.common;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.io.ByteStreams;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.apache.camel.CamelContext;
@@ -32,9 +31,6 @@ import org.apache.camel.component.jackson.JacksonDataFormat;
 import org.apache.camel.component.properties.PropertiesComponent;
 
 import javax.annotation.Nullable;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
 
 @UtilityClass
 public class CamelRouteUtil
@@ -78,22 +74,6 @@ public class CamelRouteUtil
 		else
 		{
 			return propertyOpt.orElseThrow(() -> new RuntimeCamelException("Missing property " + property));
-		}
-	}
-
-	public void writeRequestBodyToFile(
-			@NonNull final InputStream is,
-			@NonNull final String filePath)
-	{
-		final File targetFile = new File(filePath);
-
-		try (final FileOutputStream outputStream = new FileOutputStream(targetFile))
-		{
-			ByteStreams.copy(is, outputStream);
-		}
-		catch (final Exception exception)
-		{
-			throw new RuntimeCamelException("Could not write to file! " + exception.getMessage());
 		}
 	}
 }

@@ -28,7 +28,7 @@ import lombok.Value;
 import lombok.extern.jackson.Jacksonized;
 
 import javax.annotation.Nullable;
-import java.sql.Timestamp;
+import java.time.Instant;
 
 @Value
 @Builder
@@ -39,7 +39,7 @@ public class JsonMassUpsertFeedbackRequest
 	String batchId;
 
 	@NonNull
-	Timestamp finishDate;
+	Instant finishDate;
 
 	@NonNull
 	Integer itemCount;

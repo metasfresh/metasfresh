@@ -50,7 +50,7 @@ public class ToEmptyRequestBodyFilter implements Filter
 		try
 		{
 			final AntPathMatcher antPathMatcher = new AntPathMatcher();
-			final boolean metasfreshApiEndpoint = antPathMatcher.match("/**" + RestServiceRoutes.METASFRESH.getPath(),
+			final boolean metasfreshApiEndpoint = antPathMatcher.match("**" + RestServiceRoutes.METASFRESH.getPath(),
 																	   currentRequest.getRequestURL().toString());
 
 			if (metasfreshApiEndpoint)
