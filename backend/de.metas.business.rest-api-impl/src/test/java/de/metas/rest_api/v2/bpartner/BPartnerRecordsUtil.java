@@ -87,7 +87,7 @@ public class BPartnerRecordsUtil
 	public static final int AD_USER_ID = 30;
 	public static final int C_BBPARTNER_LOCATION_ID = 40;
 	public static final int C_BP_BANKACCOUNT_ID = 50;
-	public static final int SAP_EXTERNAL_SYSTEM_CONFIG_ID = 540013;
+	public static final int ALBERTA_EXTERNAL_SYSTEM_CONFIG_ID = 540000;
 
 	public static void createBPartnerData(final int idOffSet)
 	{
@@ -145,7 +145,7 @@ public class BPartnerRecordsUtil
 			createExternalReference(C_BPARTNER_EXTERNAL_ID + idOffSetStr,
 									"BPartner",
 									bpartnerRecord.getC_BPartner_ID(),
-									SAP_EXTERNAL_SYSTEM_CONFIG_ID,
+									ALBERTA_EXTERNAL_SYSTEM_CONFIG_ID,
 									false);
 
 			final I_AD_User contactRecord = newInstance(I_AD_User.class);
@@ -165,7 +165,7 @@ public class BPartnerRecordsUtil
 			createExternalReference(C_CONTACT_EXTERNAL_ID + idOffSetStr,
 									"UserID",
 									contactRecord.getAD_User_ID(),
-									SAP_EXTERNAL_SYSTEM_CONFIG_ID,
+									ALBERTA_EXTERNAL_SYSTEM_CONFIG_ID,
 									true);
 
 			final I_C_Country countryRecord = newInstance(I_C_Country.class);
@@ -207,7 +207,7 @@ public class BPartnerRecordsUtil
 			createExternalReference(C_BPARTNER_LOCATION_EXTERNAL_ID + idOffSetStr,
 									"BPartnerLocation",
 									C_BBPARTNER_LOCATION_ID + idOffSet,
-									SAP_EXTERNAL_SYSTEM_CONFIG_ID,
+									ALBERTA_EXTERNAL_SYSTEM_CONFIG_ID,
 									true);
 
 			{
@@ -232,12 +232,14 @@ public class BPartnerRecordsUtil
 						new ExternalReferenceRepository(Services.get(IQueryBL.class), externalSystems, externalReferenceTypes);
 
 				externalReferenceRepository.save(ExternalReference.builder()
-				.externalReference(AD_USER_EXTERNAL_ID)
-				.externalReferenceType(ExternalUserReferenceType.USER_ID)
-				.externalSystem(OtherExternalSystem.OTHER)
-				.orgId(OrgId.ofRepoId(10))
-				.recordId(AD_USER_ID)
-				.build());
+														 .externalReference(AD_USER_EXTERNAL_ID)
+														 .externalReferenceType(ExternalUserReferenceType.USER_ID)
+														 .externalSystem(OtherExternalSystem.OTHER)
+														 .orgId(OrgId.ofRepoId(10))
+														 .recordId(AD_USER_ID)
+														 .externalSystemParentConfigId(ALBERTA_EXTERNAL_SYSTEM_CONFIG_ID)
+														 .isReadOnlyInMetasfresh(true)
+														 .build());
 			}
 		}
 		finally
