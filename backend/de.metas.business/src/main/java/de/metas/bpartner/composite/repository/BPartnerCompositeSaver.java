@@ -254,7 +254,7 @@ final class BPartnerCompositeSaver
 		{
 			bpartnerRecord.setFirstname(bpartner.getFirstName());
 		}
-	if(bpartner.getLastName() != null)
+		if(bpartner.getLastName() != null)
 		{
 			bpartnerRecord.setLastname(bpartner.getLastName());
 		}

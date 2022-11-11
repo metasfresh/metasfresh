@@ -46,7 +46,7 @@ public class GetBPartnersSFTPRouteBuilder extends IdAwareRouteBuilder
 	@VisibleForTesting
 	public static final String UPSERT_LAST_BPARTNER_GROUP_ENDPOINT_ID = "SAP-BPartners-upsertLastBPartnerEndpointId";
 	private static final String UPSERT_BPARTNER_PROCESSOR_ID = "SAP-BPartners-upsertBPartnerProcessorId";
-	public static final String ROUTE_PROPERTY_GET_BPARTNERS_ROUTE_CONTEXT = "GetBpartnersRouteContext";
+	public static final String ROUTE_PROPERTY_UPSERT_BPARTNERS_ROUTE_CONTEXT = "UpsertBPartnersRouteContext";
 
 	@NonNull
 	private final SFTPConfig sftpConfig;
@@ -87,7 +87,7 @@ public class GetBPartnersSFTPRouteBuilder extends IdAwareRouteBuilder
 				.split(body().tokenize("\n"))
 					.streaming()
 				    .unmarshal(new BindyCsvDataFormat(BPartnerRow.class))
-					.process(new BPartnerUpsertProcessor(enabledByExternalSystemRequest, processLogger)).id(UPSERT_BPARTNER_PROCESSOR_ID)
+					.process(new CreateBPartnerUpsertRequestProcessor(enabledByExternalSystemRequest, processLogger)).id(UPSERT_BPARTNER_PROCESSOR_ID)
 					.choice()
 				       .when(bodyAs(BPUpsertCamelRequest.class).isNull())
 							.log(LoggingLevel.INFO, "Nothing to do! No business partner to upsert!")
@@ -112,17 +112,17 @@ public class GetBPartnersSFTPRouteBuilder extends IdAwareRouteBuilder
 
 	private void prepareBPartnerSyncRouteContext(@NonNull final Exchange exchange)
 	{
-		final GetBPartnerRouteContext getBPartnerRouteContext = GetBPartnerRouteContext.builder()
+		final UpsertBPartnerRouteContext getBPartnerRouteContext = UpsertBPartnerRouteContext.builder()
 				.orgCode(enabledByExternalSystemRequest.getOrgCode())
 				.externalSystemConfigId(enabledByExternalSystemRequest.getExternalSystemConfigId())
 				.build();
 
-		exchange.setProperty(ROUTE_PROPERTY_GET_BPARTNERS_ROUTE_CONTEXT, getBPartnerRouteContext);
+		exchange.setProperty(ROUTE_PROPERTY_UPSERT_BPARTNERS_ROUTE_CONTEXT, getBPartnerRouteContext);
 	}
 
 	private void processLastBPartnerGroup(@NonNull final Exchange exchange) throws Exception
 	{
-		final GetBPartnerRouteContext routeContext = exchange.getProperty(ROUTE_PROPERTY_GET_BPARTNERS_ROUTE_CONTEXT, GetBPartnerRouteContext.class);
+		final UpsertBPartnerRouteContext routeContext = exchange.getProperty(ROUTE_PROPERTY_UPSERT_BPARTNERS_ROUTE_CONTEXT, UpsertBPartnerRouteContext.class);
 
 		if (routeContext.getSyncBPartnerRequestBuilder() == null)
 		{

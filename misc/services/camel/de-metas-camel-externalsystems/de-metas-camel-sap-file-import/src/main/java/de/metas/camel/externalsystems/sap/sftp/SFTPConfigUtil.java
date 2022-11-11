@@ -20,9 +20,8 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.sap.common;
+package de.metas.camel.externalsystems.sap.sftp;
 
-import de.metas.camel.externalsystems.sap.sftp.SFTPConfig;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.NonNull;
@@ -32,7 +31,7 @@ import java.time.Duration;
 import java.util.Map;
 
 @UtilityClass
-public class SFTPOnDemandRouteBuilderUtil
+public class SFTPConfigUtil
 {
 	@NonNull
 	public static SFTPConfig extractSFTPConfig(@NonNull final JsonExternalSystemRequest request)

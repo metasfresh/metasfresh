@@ -34,8 +34,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.BPARTNER_IDENTIFIER_DOC;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.BPARTNER_VALUE_DOC;
-import static de.metas.common.rest_api.v2.SwaggerDocConstants.PARENT_BPARTNER_IDENTIFIER_DOC;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.PARENT_SYNC_ADVISE_DOC;
 import static de.metas.common.rest_api.v2.SwaggerDocConstants.PAYMENT_TERM_IDENTIFIER_DOC;
 
@@ -236,7 +236,7 @@ public class JsonRequestBPartner
 	private boolean vendorPaymentTermIdentifierSet;
 
 	@ApiModelProperty(position = 260, //
-			value = "Mapped to `C_BPartner.BPartner_Parent_ID`. " + PARENT_BPARTNER_IDENTIFIER_DOC)
+			value = "Mapped to `C_BPartner.BPartner_Parent_ID`. " + BPARTNER_IDENTIFIER_DOC)
 	private String parentIdentifier;
 
 	private boolean parentIdentifierSet;

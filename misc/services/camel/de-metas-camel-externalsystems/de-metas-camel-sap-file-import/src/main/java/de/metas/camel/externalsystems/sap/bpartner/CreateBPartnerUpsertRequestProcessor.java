@@ -30,16 +30,16 @@ import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
-import static de.metas.camel.externalsystems.sap.bpartner.GetBPartnersSFTPRouteBuilder.ROUTE_PROPERTY_GET_BPARTNERS_ROUTE_CONTEXT;
+import static de.metas.camel.externalsystems.sap.bpartner.GetBPartnersSFTPRouteBuilder.ROUTE_PROPERTY_UPSERT_BPARTNERS_ROUTE_CONTEXT;
 
-public class BPartnerUpsertProcessor implements Processor
+public class CreateBPartnerUpsertRequestProcessor implements Processor
 {
 	@NonNull
 	final JsonExternalSystemRequest externalSystemRequest;
 	@NonNull
 	final ProcessLogger processLogger;
 
-	public BPartnerUpsertProcessor(
+	public CreateBPartnerUpsertRequestProcessor(
 			final @NonNull JsonExternalSystemRequest externalSystemRequest,
 			final @NonNull ProcessLogger processLogger)
 	{
@@ -52,11 +52,11 @@ public class BPartnerUpsertProcessor implements Processor
 	{
 		final BPartnerRow bPartnerRow = exchange.getIn().getBody(BPartnerRow.class);
 
-		final GetBPartnerRouteContext getBPartnerRouteContext = exchange.getProperty(ROUTE_PROPERTY_GET_BPARTNERS_ROUTE_CONTEXT, GetBPartnerRouteContext.class);
+		final UpsertBPartnerRouteContext getBPartnerRouteContext = exchange.getProperty(ROUTE_PROPERTY_UPSERT_BPARTNERS_ROUTE_CONTEXT, UpsertBPartnerRouteContext.class);
 
 		if (getBPartnerRouteContext.getSyncBPartnerRequestBuilder() == null)
 		{
-			getBPartnerRouteContext.initSyncBPartnerRequestBuilder(bPartnerRow);
+			getBPartnerRouteContext.initUpsertBPartnerRequestBuilder(bPartnerRow);
 
 			exchange.getIn().setBody(null);
 			return;
@@ -73,6 +73,6 @@ public class BPartnerUpsertProcessor implements Processor
 		final BPUpsertCamelRequest bpUpsertCamelRequest = getBPartnerRouteContext.getSyncBPartnerRequestBuilder().build();
 		exchange.getIn().setBody(bpUpsertCamelRequest);
 
-		getBPartnerRouteContext.initSyncBPartnerRequestBuilder(bPartnerRow);
+		getBPartnerRouteContext.initUpsertBPartnerRequestBuilder(bPartnerRow);
 	}
 }

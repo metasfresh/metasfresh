@@ -1006,7 +1006,7 @@ public class JsonPersisterService
 
 		if (jsonBPartner.isStorageWarehouseSet())
 		{
-			bpartner.setStorageWarehouse(jsonBPartner.getStorageWarehouse());
+			bpartner.setStorageWarehouse(Boolean.TRUE.equals(jsonBPartner.getStorageWarehouse()));
 		}
 
 		if (jsonBPartner.isIncotermsCustomerValueSet())
@@ -1809,22 +1809,22 @@ public class JsonPersisterService
 
 		if (jsonBPartnerLocation.isVisitorsAddressSet())
 		{
-			location.setVisitorsAddress(jsonBPartnerLocation.getVisitorsAddress());
+			location.setVisitorsAddress(Boolean.TRUE.equals(jsonBPartnerLocation.getVisitorsAddress()));
 		}
 
 		if (jsonBPartnerLocation.isHandoverLocationSet())
 		{
-			location.setHandOverLocation(jsonBPartnerLocation.getHandoverLocation());
+			location.setHandOverLocation(Boolean.TRUE.equals(jsonBPartnerLocation.getHandoverLocation()));
 		}
 
 		if (jsonBPartnerLocation.isRemitToAddressSet())
 		{
-			location.setRemitTo(jsonBPartnerLocation.getRemitTo());
+			location.setRemitTo(Boolean.TRUE.equals(jsonBPartnerLocation.getRemitTo()));
 		}
 
 		if (jsonBPartnerLocation.isReplicationLookupDefaultSet())
 		{
-			location.setReplicationLookupDefault(jsonBPartnerLocation.getReplicationLookupDefault());
+			location.setReplicationLookupDefault(Boolean.TRUE.equals(jsonBPartnerLocation.getReplicationLookupDefault()));
 		}
 
 		final BPartnerLocationType locationType = syncJsonToLocationType(jsonBPartnerLocation);

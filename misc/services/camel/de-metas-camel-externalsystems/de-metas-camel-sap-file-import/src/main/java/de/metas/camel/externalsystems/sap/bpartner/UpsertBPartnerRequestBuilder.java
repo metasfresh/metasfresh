@@ -54,12 +54,15 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Value
-public class SyncBPartnerRequestBuilder
+public class UpsertBPartnerRequestBuilder
 {
 	private static final String INTERNAL_NAME_EXTERNAL_IDENTIFIER_PREFIX = "int-";
 
 	@NonNull
 	PartnerCode parentPartnerCode;
+
+	@NonNull
+	JsonRequestBPartnerUpsertItem sectionGroupBPartnerItem;
 
 	@NonNull
 	String orgCode;
@@ -68,25 +71,22 @@ public class SyncBPartnerRequestBuilder
 	JsonMetasfreshId externalSystemConfigId;
 
 	@NonNull
-	JsonRequestBPartnerUpsertItem sectionGroupBPartnerItem;
-
-	@NonNull
 	@Getter(AccessLevel.NONE)
 	ArrayList<BPartnerRow> bPartnerRows;
 
 	@NonNull
-	public static SyncBPartnerRequestBuilder of(
+	public static UpsertBPartnerRequestBuilder of(
 			@NonNull final BPartnerRow row,
 			@NonNull final String orgCode,
 			@NonNull final JsonMetasfreshId externalSystemConfigId) throws Exception
 	{
 		final JsonRequestBPartnerUpsertItem sectionGroupJsonRequestBPartnerUpsertItem = buildSectionGroupJsonRequestBPartnerUpsertItem(row, orgCode, externalSystemConfigId);
 
-		final SyncBPartnerRequestBuilder syncBPartnerRequestBuilder = new SyncBPartnerRequestBuilder(
+		final UpsertBPartnerRequestBuilder syncBPartnerRequestBuilder = new UpsertBPartnerRequestBuilder(
 				row.getPartnerCode(),
+				sectionGroupJsonRequestBPartnerUpsertItem,
 				orgCode,
 				externalSystemConfigId,
-				sectionGroupJsonRequestBPartnerUpsertItem,
 				new ArrayList<>());
 
 		syncBPartnerRequestBuilder.add(row);
@@ -132,116 +132,6 @@ public class SyncBPartnerRequestBuilder
 	}
 
 	@NonNull
-	private JsonRequestBPartner buildJsonRequestBPartner(@NonNull final BPartnerRow bPartner)
-	{
-		final JsonRequestBPartner jsonRequestBPartner = new JsonRequestBPartner();
-
-		Optional.ofNullable(bPartner.getSalesPaymentTerms())
-				.filter(Check::isNotBlank)
-				.map(salesPaymentTerm -> INTERNAL_NAME_EXTERNAL_IDENTIFIER_PREFIX + salesPaymentTerm)
-				.ifPresent(jsonRequestBPartner::setCustomerPaymentTermIdentifier);
-
-		Optional.ofNullable(bPartner.getPurchasePaymentTerms())
-				.filter(Check::isNotBlank)
-				.map(purchasePaymentTerm -> INTERNAL_NAME_EXTERNAL_IDENTIFIER_PREFIX + purchasePaymentTerm)
-				.ifPresent(jsonRequestBPartner::setVendorPaymentTermIdentifier);
-
-		final String bpartnerValue = bPartner.getPartnerCode().getPartnerCode() + "_" + bPartner.getSection();
-
-		jsonRequestBPartner.setCode(bpartnerValue);
-		jsonRequestBPartner.setCompanyName(bPartner.getName1());
-		jsonRequestBPartner.setName(bPartner.getName1());
-		jsonRequestBPartner.setName2(bPartner.getName2());
-		jsonRequestBPartner.setDescription(bPartner.getSearchTerm());
-
-		jsonRequestBPartner.setSectionCodeValue(bPartner.getSection());
-		jsonRequestBPartner.setDeliveryRule(JsonDeliveryRule.Availability);
-		jsonRequestBPartner.setDeliveryViaRule(JsonDeliveryViaRule.Shipper);
-		jsonRequestBPartner.setPaymentRule(JsonPaymentRule.OnCredit);
-		jsonRequestBPartner.setPaymentRulePO(JsonPaymentRule.OnCredit);
-
-		jsonRequestBPartner.setIncotermsCustomerValue(bPartner.getSalesIncoterms());
-		jsonRequestBPartner.setIncotermsVendorValue(bPartner.getPurchaseIncoterms());
-
-		if (PartnerCategory.STORAGE_LOCATION == PartnerCategory.ofCodeOrNull(bPartner.getPartnerCategory()))
-		{
-			jsonRequestBPartner.setVendor(true);
-			jsonRequestBPartner.setCustomer(false);
-			jsonRequestBPartner.setStorageWarehouse(true);
-		}
-		else
-		{
-			jsonRequestBPartner.setVendor(true);
-			jsonRequestBPartner.setCustomer(true);
-			jsonRequestBPartner.setStorageWarehouse(false);
-		}
-
-		jsonRequestBPartner.setParentIdentifier(ExternalIdentifierFormat.formatExternalId(parentPartnerCode.getPartnerCode()));
-
-		return jsonRequestBPartner;
-	}
-
-	@NonNull
-	private JsonRequestLocationUpsertItem buildJsonRequestLocationUpsertItem(@NonNull final BPartnerRow bPartner)
-	{
-		final JsonRequestLocation jsonRequestLocation = new JsonRequestLocation();
-		jsonRequestLocation.setCountryCode(bPartner.getCountryKey());
-		jsonRequestLocation.setCity(bPartner.getCity());
-		jsonRequestLocation.setAddress1(bPartner.getStreet());
-		jsonRequestLocation.setAddress2(bPartner.getStreet2());
-		jsonRequestLocation.setAddress3(bPartner.getStreet3());
-
-		final String address4 = Stream.of(bPartner.getStreet4(), bPartner.getStreet5())
-				.filter(Check::isNotBlank)
-				.collect(Collectors.joining(","));
-		jsonRequestLocation.setAddress4(address4);
-
-		jsonRequestLocation.setPostal(bPartner.getPostalCode());
-		jsonRequestLocation.setVisitorsAddress(false);
-		jsonRequestLocation.setShipTo(true);
-		jsonRequestLocation.setShipToDefault(false);
-		jsonRequestLocation.setBillTo(true);
-		jsonRequestLocation.setBillToDefault(false);
-		jsonRequestLocation.setHandoverLocation(true);
-		jsonRequestLocation.setRemitTo(false);
-		jsonRequestLocation.setReplicationLookupDefault(false);
-
-		return JsonRequestLocationUpsertItem.builder()
-				.location(jsonRequestLocation)
-				.locationIdentifier(buildExternalIdentifier(bPartner.getPartnerCode().getRawPartnerCode(), bPartner.getSection()))
-				.externalSystemConfigId(externalSystemConfigId)
-				.isReadOnlyInMetasfresh(true)
-				.build();
-	}
-
-	@NonNull
-	private static JsonRequestBPartnerUpsertItem buildSectionGroupJsonRequestBPartnerUpsertItem(
-			@NonNull final BPartnerRow bPartnerRow,
-			@NonNull final String orgCode,
-			@NonNull final JsonMetasfreshId externalSystemConfigId
-	)
-	{
-		final JsonRequestBPartner jsonRequestBPartner = new JsonRequestBPartner();
-
-		jsonRequestBPartner.setCode(bPartnerRow.getPartnerCode().getPartnerCode());
-		jsonRequestBPartner.setCompanyName(bPartnerRow.getName1());
-		jsonRequestBPartner.setName(bPartnerRow.getName1());
-		jsonRequestBPartner.setName2(bPartnerRow.getName2());
-		jsonRequestBPartner.setDescription(bPartnerRow.getSearchTerm());
-
-		final JsonRequestComposite.JsonRequestCompositeBuilder jsonRequestCompositeBuilder = JsonRequestComposite.builder()
-				.bpartner(jsonRequestBPartner)
-				.orgCode(orgCode);
-
-		return JsonRequestBPartnerUpsertItem.builder()
-				.bpartnerComposite(jsonRequestCompositeBuilder.build())
-				.bpartnerIdentifier(ExternalIdentifierFormat.formatExternalId(bPartnerRow.getPartnerCode().getPartnerCode()))
-				.externalSystemConfigId(externalSystemConfigId)
-				.isReadOnlyInMetasfresh(true)
-				.build();
-	}
-
-	@NonNull
 	private JsonRequestBPartnerUpsertItem getJsonRequestBPartnerUpsertItem(@NonNull final String sectionCode, @NonNull final List<BPartnerRow> bPartnerRows)
 	{
 		Check.assumeNotEmpty(bPartnerRows, "At least one partner row must be present for section code {} when calling this method.", sectionCode);
@@ -266,7 +156,135 @@ public class SyncBPartnerRequestBuilder
 
 		return JsonRequestBPartnerUpsertItem.builder()
 				.bpartnerComposite(jsonRequestComposite)
-				.bpartnerIdentifier(buildExternalIdentifier(parentPartnerCode.getPartnerCode(), sectionCode))
+				.bpartnerIdentifier(getBPartnerExternalIdentifier(lastRowOfTheGroup))
+				.externalSystemConfigId(externalSystemConfigId)
+				.isReadOnlyInMetasfresh(true)
+				.build();
+	}
+
+	@NonNull
+	private JsonRequestBPartner buildJsonRequestBPartner(@NonNull final BPartnerRow bPartnerRow)
+	{
+		final JsonRequestBPartner jsonRequestBPartner = new JsonRequestBPartner();
+
+		Optional.ofNullable(bPartnerRow.getSalesPaymentTerms())
+				.filter(Check::isNotBlank)
+				.map(salesPaymentTerm -> INTERNAL_NAME_EXTERNAL_IDENTIFIER_PREFIX + salesPaymentTerm)
+				.ifPresent(jsonRequestBPartner::setCustomerPaymentTermIdentifier);
+
+		Optional.ofNullable(bPartnerRow.getPurchasePaymentTerms())
+				.filter(Check::isNotBlank)
+				.map(purchasePaymentTerm -> INTERNAL_NAME_EXTERNAL_IDENTIFIER_PREFIX + purchasePaymentTerm)
+				.ifPresent(jsonRequestBPartner::setVendorPaymentTermIdentifier);
+
+		final String bpartnerValue = bPartnerRow.getPartnerCode().getPartnerCode() + "_" + bPartnerRow.getSection();
+
+		jsonRequestBPartner.setCode(bpartnerValue);
+		jsonRequestBPartner.setCompanyName(bPartnerRow.getName1());
+		jsonRequestBPartner.setName(bPartnerRow.getName1());
+		jsonRequestBPartner.setName2(bPartnerRow.getName2());
+		jsonRequestBPartner.setDescription(bPartnerRow.getSearchTerm());
+
+		jsonRequestBPartner.setSectionCodeValue(bPartnerRow.getSection());
+		jsonRequestBPartner.setDeliveryRule(JsonDeliveryRule.Availability);
+		jsonRequestBPartner.setDeliveryViaRule(JsonDeliveryViaRule.Shipper);
+		jsonRequestBPartner.setPaymentRule(JsonPaymentRule.OnCredit);
+		jsonRequestBPartner.setPaymentRulePO(JsonPaymentRule.OnCredit);
+
+		jsonRequestBPartner.setIncotermsCustomerValue(bPartnerRow.getSalesIncoterms());
+		jsonRequestBPartner.setIncotermsVendorValue(bPartnerRow.getPurchaseIncoterms());
+
+		if (PartnerCategory.STORAGE_LOCATION == PartnerCategory.ofCodeOrNull(bPartnerRow.getPartnerCategory()))
+		{
+			jsonRequestBPartner.setVendor(true);
+			jsonRequestBPartner.setCustomer(false);
+			jsonRequestBPartner.setStorageWarehouse(true);
+		}
+		else
+		{
+			jsonRequestBPartner.setVendor(true);
+			jsonRequestBPartner.setCustomer(true);
+			jsonRequestBPartner.setStorageWarehouse(false);
+		}
+
+		jsonRequestBPartner.setParentIdentifier(getParentExternalIdentifier());
+
+		return jsonRequestBPartner;
+	}
+
+	@NonNull
+	private JsonRequestLocationUpsertItem buildJsonRequestLocationUpsertItem(@NonNull final BPartnerRow bPartnerRow)
+	{
+		final JsonRequestLocation jsonRequestLocation = new JsonRequestLocation();
+		jsonRequestLocation.setCountryCode(bPartnerRow.getCountryKey());
+		jsonRequestLocation.setCity(bPartnerRow.getCity());
+		jsonRequestLocation.setAddress1(bPartnerRow.getStreet());
+		jsonRequestLocation.setAddress2(bPartnerRow.getStreet2());
+		jsonRequestLocation.setAddress3(bPartnerRow.getStreet3());
+
+		final String address4 = Stream.of(bPartnerRow.getStreet4(), bPartnerRow.getStreet5())
+				.filter(Check::isNotBlank)
+				.collect(Collectors.joining(","));
+		jsonRequestLocation.setAddress4(address4);
+
+		jsonRequestLocation.setPostal(bPartnerRow.getPostalCode());
+		jsonRequestLocation.setVisitorsAddress(false);
+		jsonRequestLocation.setShipTo(true);
+		jsonRequestLocation.setShipToDefault(false);
+		jsonRequestLocation.setBillTo(true);
+		jsonRequestLocation.setBillToDefault(false);
+		jsonRequestLocation.setHandoverLocation(true);
+		jsonRequestLocation.setRemitTo(false);
+		jsonRequestLocation.setReplicationLookupDefault(false);
+
+		return JsonRequestLocationUpsertItem.builder()
+				.location(jsonRequestLocation)
+				.locationIdentifier(getLocationExternalIdentifier(bPartnerRow))
+				.externalSystemConfigId(externalSystemConfigId)
+				.isReadOnlyInMetasfresh(true)
+				.build();
+	}
+
+	@NonNull
+	private String getParentExternalIdentifier()
+	{
+		return ExternalIdentifierFormat.formatExternalId(parentPartnerCode.getPartnerCode());
+	}
+
+	@NonNull
+	private String getBPartnerExternalIdentifier(@NonNull final BPartnerRow bPartnerRow)
+	{
+		return buildExternalIdentifier(bPartnerRow.getPartnerCode().getPartnerCode(), bPartnerRow.getSection());
+	}
+
+	@NonNull
+	private String getLocationExternalIdentifier(@NonNull final BPartnerRow bPartnerRow)
+	{
+		return buildExternalIdentifier(bPartnerRow.getPartnerCode().getRawPartnerCode(), bPartnerRow.getSection());
+	}
+
+	@NonNull
+	private static JsonRequestBPartnerUpsertItem buildSectionGroupJsonRequestBPartnerUpsertItem(
+			@NonNull final BPartnerRow bPartnerRow,
+			@NonNull final String orgCode,
+			@NonNull final JsonMetasfreshId externalSystemConfigId
+	)
+	{
+		final JsonRequestBPartner jsonRequestBPartner = new JsonRequestBPartner();
+
+		jsonRequestBPartner.setCode(bPartnerRow.getPartnerCode().getPartnerCode());
+		jsonRequestBPartner.setCompanyName(bPartnerRow.getName1());
+		jsonRequestBPartner.setName(bPartnerRow.getName1());
+		jsonRequestBPartner.setName2(bPartnerRow.getName2());
+		jsonRequestBPartner.setDescription(bPartnerRow.getSearchTerm());
+
+		final JsonRequestComposite.JsonRequestCompositeBuilder jsonRequestCompositeBuilder = JsonRequestComposite.builder()
+				.bpartner(jsonRequestBPartner)
+				.orgCode(orgCode);
+
+		return JsonRequestBPartnerUpsertItem.builder()
+				.bpartnerComposite(jsonRequestCompositeBuilder.build())
+				.bpartnerIdentifier(ExternalIdentifierFormat.formatExternalId(bPartnerRow.getPartnerCode().getPartnerCode()))
 				.externalSystemConfigId(externalSystemConfigId)
 				.isReadOnlyInMetasfresh(true)
 				.build();

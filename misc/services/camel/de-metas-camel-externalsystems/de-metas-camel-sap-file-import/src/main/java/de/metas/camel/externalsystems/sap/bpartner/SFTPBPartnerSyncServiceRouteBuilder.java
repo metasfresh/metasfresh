@@ -25,8 +25,8 @@ package de.metas.camel.externalsystems.sap.bpartner;
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.camel.externalsystems.common.IdAwareRouteBuilder;
 import de.metas.camel.externalsystems.common.ProcessLogger;
-import de.metas.camel.externalsystems.sap.common.SFTPOnDemandRouteBuilderUtil;
 import de.metas.camel.externalsystems.sap.service.OnDemandRoutesController;
+import de.metas.camel.externalsystems.sap.sftp.SFTPConfigUtil;
 import de.metas.common.externalsystem.IExternalSystemService;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.NonNull;
@@ -113,7 +113,7 @@ public class SFTPBPartnerSyncServiceRouteBuilder extends RouteBuilder implements
 	{
 		return GetBPartnersSFTPRouteBuilder
 				.builder()
-				.sftpConfig(SFTPOnDemandRouteBuilderUtil.extractSFTPConfig(request))
+				.sftpConfig(SFTPConfigUtil.extractSFTPConfig(request))
 				.camelContext(camelContext)
 				.enabledByExternalSystemRequest(request)
 				.processLogger(processLogger)

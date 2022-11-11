@@ -32,7 +32,7 @@ import javax.annotation.Nullable;
 
 @Builder
 @Data
-public class GetBPartnerRouteContext
+public class UpsertBPartnerRouteContext
 {
 	@NonNull
 	final String orgCode;
@@ -41,10 +41,10 @@ public class GetBPartnerRouteContext
 	final JsonMetasfreshId externalSystemConfigId;
 
 	@Nullable
-	SyncBPartnerRequestBuilder syncBPartnerRequestBuilder;
+	UpsertBPartnerRequestBuilder syncBPartnerRequestBuilder;
 
-	public void initSyncBPartnerRequestBuilder(@NonNull final BPartnerRow bPartnerRow) throws Exception
+	public void initUpsertBPartnerRequestBuilder(@NonNull final BPartnerRow bPartnerRow) throws Exception
 	{
-		this.syncBPartnerRequestBuilder = SyncBPartnerRequestBuilder.of(bPartnerRow, orgCode, externalSystemConfigId);
+		this.syncBPartnerRequestBuilder = UpsertBPartnerRequestBuilder.of(bPartnerRow, orgCode, externalSystemConfigId);
 	}
 }
