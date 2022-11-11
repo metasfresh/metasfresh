@@ -173,7 +173,11 @@ public class QueryStatisticsLogger implements IQueryStatisticsLogger, IQueryStat
 	public void disableSqlTracing()
 	{
 		traceSqlQueries = false;
-		StatementsFactory.instance.disableSqlQueriesTracing();
+
+		if (isDisabled())
+		{
+			StatementsFactory.instance.disableSqlQueriesTracing();
+		}
 	}
 
 	private void reset()
