@@ -28,7 +28,7 @@ import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.XML
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.api.model.XMLPluRootElement;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder.ExportPPOrderRouteContext;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder.processor.file.FileUpdater;
-import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.tcp.DispatchMessageRequest;
+import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.networking.DispatchMessageRequest;
 import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.util.XMLUtil;
 import de.metas.common.externalsystem.leichundmehl.JsonExternalSystemLeichMehlConfigProductMapping;
 import de.metas.common.externalsystem.leichundmehl.JsonPluFileAudit;

@@ -23,7 +23,7 @@
 package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.pporder;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.tcp.ConnectionDetails;
+import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.networking.ConnectionDetails;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.externalsystem.leichundmehl.JsonExternalSystemLeichMehlConfigProductMapping;
 import de.metas.common.externalsystem.leichundmehl.JsonExternalSystemLeichMehlPluFileConfig;

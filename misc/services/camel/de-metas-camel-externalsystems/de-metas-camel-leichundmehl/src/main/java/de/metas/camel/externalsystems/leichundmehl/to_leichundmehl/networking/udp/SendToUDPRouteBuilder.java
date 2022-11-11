@@ -20,25 +20,27 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.tcp;
+package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.networking.udp;
 
+import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.networking.ConnectionDetails;
+import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.networking.DispatchMessageRequest;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
-import java.io.ByteArrayInputStream;
-import java.io.DataOutputStream;
-import java.io.InputStream;
-import java.net.Socket;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.nio.charset.StandardCharsets;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
-public class SendToTCPRouteBuilder extends RouteBuilder
+public class SendToUDPRouteBuilder extends RouteBuilder
 {
-	public static final String SEND_TO_TCP_ROUTE_ID = "LeichUndMehl-sendToTCP";
+	public static final String SEND_TO_UDP_ROUTE_ID = "LeichUndMehl-sendToUDP";
 
 	@Override
 	public void configure() throws Exception
@@ -48,41 +50,24 @@ public class SendToTCPRouteBuilder extends RouteBuilder
 		onException(Exception.class)
 				.to(direct(MF_ERROR_ROUTE_ID));
 
-		from(direct(SEND_TO_TCP_ROUTE_ID))
-				.routeId(SEND_TO_TCP_ROUTE_ID)
+		from(direct(SEND_TO_UDP_ROUTE_ID))
+				.routeId(SEND_TO_UDP_ROUTE_ID)
 				.log("Route invoked!")
-				.process(this::sendToTcpSocket);
+				.process(this::sendToUDPSocket);
 		//@formatter:on
 	}
 
-	private void sendToTcpSocket(@NonNull final Exchange exchange) throws Exception
+	private void sendToUDPSocket(@NonNull final Exchange exchange) throws Exception
 	{
 		final DispatchMessageRequest request = exchange.getIn().getBody(DispatchMessageRequest.class);
 
-		final ConnectionDetails tcpConnection = request.getConnectionDetails();
+		final ConnectionDetails udpConnection = request.getConnectionDetails();
 
-		try (final Socket socket = new Socket(tcpConnection.getTcpHost(), tcpConnection.getTcpPort());
-				final DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream()))
-		{
-			sendContent(request.getPayload(), dataOutputStream);
-		}
-	}
+		final DatagramSocket ds = new DatagramSocket();
 
-	private static void sendContent(
-			@NonNull final String payload,
-			@NonNull final DataOutputStream dataOutputStream) throws Exception
-	{
-		try (final InputStream fileInputStream = new ByteArrayInputStream(payload.getBytes()))
-		{
-			// break payload into chunks
-			final byte[] buffer = new byte[4 * 1024];
+		final byte[] bytes = request.getPayload().getBytes(StandardCharsets.ISO_8859_1);
+		final DatagramPacket datagramPacket = new DatagramPacket(bytes, bytes.length, InetAddress.getByName(udpConnection.getTcpHost()), 0);
 
-			int bytes;
-			while ((bytes = fileInputStream.read(buffer)) != -1)
-			{
-				dataOutputStream.write(buffer, 0, bytes);
-				dataOutputStream.flush();
-			}
-		}
+		ds.send(datagramPacket);
 	}
 }
