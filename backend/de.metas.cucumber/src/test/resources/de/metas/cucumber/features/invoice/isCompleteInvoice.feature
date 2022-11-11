@@ -60,7 +60,7 @@ Feature: completeInvoice option when processing invoice candidates
     And validate created invoices
       | C_Invoice_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.POReference  | paymentTerm | processed | docStatus |
       | invoice_ci_1            | endcustomer_ci_1         | l_ci_1                            | po_ref_mock_ci_1 | 1000002     | true      | VO        |
-    And process invoice candidates and wait 30s for C_Invoice_Candidate to be processed
+    And process invoice candidates and wait 60s for C_Invoice_Candidate to be processed
       | C_Invoice_Candidate_ID.Identifier | OPT.IsCompleteInvoices |
       | ic_ci_1                           | false                  |
     And after not more than 60s, C_Invoice are found:

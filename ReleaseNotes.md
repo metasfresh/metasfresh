@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13904](https://github.com/metasfresh/metasfresh/issues/13904) Create translations for base language also for non AD_Element tables
   * [#13912](https://github.com/metasfresh/metasfresh/pull/13912) CallExternalSystemActivityHandler: persist last scanned QR Code
   * [#13883](https://github.com/metasfresh/metasfresh/pull/13883) mobile UI: manufacturing: Call to External System activity 
   * [#13767](https://github.com/metasfresh/metasfresh/pull/13767) Exclude Reversed Invoices from Open Items Report
@@ -136,6 +137,7 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#13906](https://github.com/metasfresh/metasfresh/pull/13906) Delete chat when deleting documents and implement voiding draft orders
   * [#13884](https://github.com/metasfresh/metasfresh/pull/13884) fix jenkins - also allow skipping cucumber tests
   * [#13723](https://github.com/metasfresh/metasfresh/pull/13723) Fix Other tag
   * [#13868](https://github.com/metasfresh/metasfresh/issues/13868) [Cucumber] Fix cucumber tests failing due to Daylight saving time
