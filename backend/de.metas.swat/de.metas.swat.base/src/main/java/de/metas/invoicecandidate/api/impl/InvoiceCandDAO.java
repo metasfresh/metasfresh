@@ -107,6 +107,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
@@ -1803,9 +1804,17 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	}
 
 	@Nullable
-	public I_C_Invoice_Line_Alloc getInvoiceLineAlloc(@NonNull final InvoiceLineAllocId invoiceLineAllocId)
+	private I_C_Invoice_Line_Alloc getInvoiceLineAlloc(@NonNull final InvoiceLineAllocId invoiceLineAllocId)
 	{
 		return InterfaceWrapperHelper.load(invoiceLineAllocId, I_C_Invoice_Line_Alloc.class);
+	}
+
+	@Override
+	public Optional<InvoiceCandidateId> getInvoiceCandidateIdByInvoiceLineAllocId(final InvoiceLineAllocId invoiceLineAllocId)
+	{
+		return Optional.ofNullable(getInvoiceLineAlloc(invoiceLineAllocId))
+				.map(I_C_Invoice_Line_Alloc::getC_Invoice_Candidate_ID)
+				.map(InvoiceCandidateId::ofRepoId);
 	}
 
 	private IQuery<I_C_Invoice_Candidate> convertToIQuery(@NonNull final InvoiceCandidateMultiQuery multiQuery)

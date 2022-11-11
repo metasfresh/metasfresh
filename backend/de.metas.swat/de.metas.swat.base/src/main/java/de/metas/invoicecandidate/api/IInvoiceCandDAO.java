@@ -38,6 +38,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -404,5 +405,5 @@ public interface IInvoiceCandDAO extends ISingletonService
 
 	ImmutableList<org.compiere.model.I_C_Invoice> getInvoicesForCandidateId(InvoiceCandidateId invoiceCandidateId);
 
-	I_C_Invoice_Line_Alloc getInvoiceLineAlloc(InvoiceLineAllocId invoiceLineAllocId);
+	Optional<InvoiceCandidateId> getInvoiceCandidateIdByInvoiceLineAllocId(InvoiceLineAllocId invoiceLineAllocId);
 }
