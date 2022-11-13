@@ -40,17 +40,20 @@ import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 @Component
 public class OrdersRouteBuilder extends RouteBuilder {
 
-    public static final String CTX_ORDER_PROCESSOR_ID = "Adekia-Ctx-orderProcessorId";
-    public static final String CTX_ORDERS_PROCESSOR_ID = "Adekia-Ctx-ordersProcessorId";
-    public static final String GET_ORDERS_ROUTE_ID = "Adekia-Order-getOrders";
-    public static final String GET_ORDERS_PROCESSOR_ID = "Adekia-Order-getOrdersProcessorId";
-    public static final String GET_ORDER_ROUTE_ID = "Adekia-Order-getOrder";
-    public static final String GET_ORDER_PROCESSOR_ID = "Adekia-Order-getOrderProcessorId";
+    // Public routes
+    public static final String GET_ORDERS_ROUTE_ID = "Amazon-getOrders";
+    public static final String GET_ORDER_ROUTE_ID = "Amazon-getOrder";
 
-    public static final String ORDER_ROUTE_ID = "Adekia-Order-processOrder";
-    public static final String ORDER_PROCESSOR_ID = "Adekia-Order-OrderProcessorId";
-    public static final String ORDER_PAYMENT_PROCESSOR_ID = "Adekia-OrderPayment-PaymentProcessorId";
-    public static final String ORDER_BP_PROCESSOR_ID = "Adekia-OrderBP-BPProcessorId";
+
+    public static final String CTX_ORDER_PROCESSOR_ID = "Amazon-Ctx-orderProcessorId";
+    public static final String CTX_ORDERS_PROCESSOR_ID = "Amazon-Ctx-ordersProcessorId";
+    public static final String GET_ORDERS_PROCESSOR_ID = "Amazon-Order-getOrdersProcessorId";
+    public static final String GET_ORDER_PROCESSOR_ID = "Amazon-Order-getOrderProcessorId";
+
+    public static final String ORDER_ROUTE_ID = "Amazon-Order-processOrder";
+    public static final String ORDER_PROCESSOR_ID = "Amazon-Order-OrderProcessorId";
+    public static final String ORDER_PAYMENT_PROCESSOR_ID = "Amazon-OrderPayment-PaymentProcessorId";
+    public static final String ORDER_BP_PROCESSOR_ID = "Amazon-OrderBP-BPProcessorId";
 
     private final CtxProcessor ctxBuilderProcessor;
     private final GetOrderProcessor getOrderProcessor;
@@ -83,8 +86,8 @@ public class OrdersRouteBuilder extends RouteBuilder {
                 .to(direct(MF_ERROR_ROUTE_ID));
 
         //Simple direct route to retrieve collection of Orders and route individually
-        // todo		from(direct(GET_ORDERS_ROUTE_ID))
-        from("timer://foo?repeatCount=1")
+        from(direct(GET_ORDERS_ROUTE_ID))
+        //from("timer://foo?repeatCount=1")
                 .routeId(GET_ORDERS_ROUTE_ID)
                 .process(ctxBuilderProcessor).id(CTX_ORDERS_PROCESSOR_ID)
                 .log(LoggingLevel.INFO, "RUNNING GetOrdersProcessor...")
