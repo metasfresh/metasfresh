@@ -68,7 +68,8 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 			final ArrayList<Tag> tags = createTags(metadata, perfMonData);
 			try (final IAutoCloseable ignored2 = perfMonData.addCalledByIfNotNull(metadata))
 			{
-				final Timer timer = meterRegistry.timer(METER_PREFIX + metadata.getType().getCode(), tags);
+				final Type effectiveType = perfMonData.getEffectiveType(metadata);
+				final Timer timer = meterRegistry.timer(METER_PREFIX + effectiveType.getCode(), tags);
 				try
 				{
 					return timer.recordCallable(callable);
@@ -116,7 +117,8 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 
 		try (final IAutoCloseable ignored = perfMonData.addCalledByIfNotNull(metadata))
 		{
-			final Timer timer = meterRegistry.timer(METER_PREFIX + metadata.getType().getCode(), tags);
+			final Type effectiveType = perfMonData.getEffectiveType(metadata);
+			final Timer timer = meterRegistry.timer(METER_PREFIX + effectiveType.getCode(), tags);
 			timer.record(duration, unit);
 		}
 	}
@@ -143,7 +145,7 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 			addTagIfNotNull("initiator", perfMonData.getInitiatorFunctionNameFQ(), tags);
 			addTagIfNotNull("window", perfMonData.getInitiatorWindow(), tags);
 			addTagIfNotNull("callerName", metadata.getFunctionNameFQ(), tags);
-			addTagIfNotNull("calledBy", perfMonData.getLastCalledFuntionNameFQ(), tags);
+			addTagIfNotNull("calledBy", perfMonData.getLastCalledFunctionNameFQ(), tags);
 		}
 		else
 		{

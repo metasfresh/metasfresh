@@ -41,7 +41,7 @@ public class PerformanceMonitoringData
 	}
 
 	@Nullable
-	public String getLastCalledFuntionNameFQ()
+	public String getLastCalledFunctionNameFQ()
 	{
 		if (calledBy.isEmpty())
 		{
@@ -60,6 +60,11 @@ public class PerformanceMonitoringData
 	}
 
 	public boolean isInitiator() {return calledBy.isEmpty();}
+
+	public PerformanceMonitoringService.Type getEffectiveType(final PerformanceMonitoringService.Metadata metadata)
+	{
+		return !calledBy.isEmpty() ? calledBy.get(0).getType() : metadata.getType();
+	}
 
 	public int getDepth() {return calledBy.size();}
 
