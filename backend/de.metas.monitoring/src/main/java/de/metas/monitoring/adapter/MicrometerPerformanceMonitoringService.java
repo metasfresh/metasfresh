@@ -108,14 +108,17 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 	}
 
 	@Override
-	public void recordElapsedTime(final long duration, TimeUnit unit, final Metadata metadata)
+	public void recordElapsedTime(final long duration, final TimeUnit unit, final Metadata metadata)
 	{
 		final PerformanceMonitoringData perfMonData = getPerformanceMonitoringData();
 
 		final ArrayList<Tag> tags = createTags(metadata, perfMonData);
 
-		final Timer timer = meterRegistry.timer(METER_PREFIX + metadata.getType().getCode(), tags);
-		timer.record(duration, unit);
+		try (final IAutoCloseable ignored = perfMonData.addCalledByIfNotNull(metadata))
+		{
+			final Timer timer = meterRegistry.timer(METER_PREFIX + metadata.getType().getCode(), tags);
+			timer.record(duration, unit);
+		}
 	}
 
 	private static PerformanceMonitoringData getPerformanceMonitoringData()
@@ -157,7 +160,7 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 		return tags;
 	}
 
-	private static void addTagIfNotNull(@Nullable final String name, @Nullable final String value, @NonNull ArrayList<Tag> tags)
+	private static void addTagIfNotNull(@Nullable final String name, @Nullable final String value, @NonNull final ArrayList<Tag> tags)
 	{
 		final String nameNorm = StringUtils.trimBlankToNull(name);
 		if (nameNorm == null)
