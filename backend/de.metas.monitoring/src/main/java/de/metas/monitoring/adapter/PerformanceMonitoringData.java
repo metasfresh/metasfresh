@@ -37,7 +37,14 @@ public class PerformanceMonitoringData
 
 	public String getInitiatorFunctionNameFQ()
 	{
-		return !calledBy.isEmpty() ? calledBy.get(0).getFunctionNameFQ() : "";
+		if (calledBy.isEmpty())
+		{
+			return "";
+		}
+		else
+		{
+			return calledBy.size() > 1 ? calledBy.get(1).getFunctionNameFQ() : calledBy.get(0).getFunctionNameFQ();
+		}
 	}
 
 	@Nullable
