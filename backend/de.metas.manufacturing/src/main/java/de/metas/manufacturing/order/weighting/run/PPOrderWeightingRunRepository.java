@@ -4,6 +4,7 @@ import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
+import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -24,14 +25,14 @@ public class PPOrderWeightingRunRepository
 		return loader.getById(id);
 	}
 
-	public int getNextLineNo(final PPOrderWeightingRunId weightingRunId)
+	public SeqNo getNextLineNo(final PPOrderWeightingRunId weightingRunId)
 	{
 		final int lastLineNo = queryBL.createQueryBuilder(I_PP_Order_Weighting_RunCheck.class)
 				.addEqualsFilter(I_PP_Order_Weighting_RunCheck.COLUMNNAME_PP_Order_Weighting_Run_ID, weightingRunId)
 				.create()
 				.maxInt(I_PP_Order_Weighting_RunCheck.COLUMNNAME_Line);
 
-		return Math.max(lastLineNo, 0) / 10 * 10 + 10;
+		return SeqNo.ofInt(lastLineNo).next();
 	}
 
 	public void save(@NonNull final PPOrderWeightingRun weightingRun)
@@ -75,14 +76,14 @@ public class PPOrderWeightingRunRepository
 
 	public PPOrderWeightingRunCheckId addRunCheck(
 			@NonNull final PPOrderWeightingRunId weightingRunId,
-			int lineNo,
+			@NonNull final SeqNo lineNo,
 			@NonNull final Quantity weight,
-			@NonNull OrgId orgId)
+			@NonNull final OrgId orgId)
 	{
 		final I_PP_Order_Weighting_RunCheck record = InterfaceWrapperHelper.newInstance(I_PP_Order_Weighting_RunCheck.class);
 		record.setAD_Org_ID(orgId.getRepoId());
 		record.setPP_Order_Weighting_Run_ID(weightingRunId.getRepoId());
-		record.setLine(lineNo);
+		record.setLine(lineNo.toInt());
 		record.setWeight(weight.toBigDecimal());
 		record.setC_UOM_ID(weight.getUomId().getRepoId());
 		InterfaceWrapperHelper.save(record);

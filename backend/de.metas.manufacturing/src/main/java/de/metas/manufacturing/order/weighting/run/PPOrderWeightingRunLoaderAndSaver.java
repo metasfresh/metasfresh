@@ -11,6 +11,7 @@ import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
+import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
@@ -102,7 +103,7 @@ class PPOrderWeightingRunLoaderAndSaver
 	{
 		return PPOrderWeightingRunCheck.builder()
 				.id(extractId(record))
-				.lineNo(record.getLine())
+				.lineNo(SeqNo.ofInt(record.getLine()))
 				.weight(Quantitys.create(record.getWeight(), UomId.ofRepoId(record.getC_UOM_ID())))
 				.isToleranceExceeded(record.isToleranceExceeded())
 				.description(record.getDescription())

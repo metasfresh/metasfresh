@@ -3,6 +3,7 @@ package de.metas.manufacturing.order.weighting.run;
 import de.metas.organization.OrgId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
+import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
@@ -35,7 +36,7 @@ public class PPOrderWeightingRunService
 		ppOrderWeightingRunRepository.updateById(id, PPOrderWeightingRun::unprocess);
 	}
 
-	public int getNextLineNo(final PPOrderWeightingRunId weightingRunId)
+	public SeqNo getNextLineNo(final PPOrderWeightingRunId weightingRunId)
 	{
 		return ppOrderWeightingRunRepository.getNextLineNo(weightingRunId);
 	}
@@ -60,7 +61,7 @@ public class PPOrderWeightingRunService
 	{
 		PPOrderWeightingRun weightingRun = getById(weightingRunId);
 		final Quantity weight = Quantity.of(weightBD, weightingRun.getUOM());
-		final int lineNo = weightingRun.getNextLineNo();
+		final SeqNo lineNo = weightingRun.getNextLineNo();
 		final OrgId orgId = weightingRun.getOrgId();
 		final PPOrderWeightingRunCheckId weightingRunCheckId = ppOrderWeightingRunRepository.addRunCheck(weightingRunId, lineNo, weight, orgId);
 

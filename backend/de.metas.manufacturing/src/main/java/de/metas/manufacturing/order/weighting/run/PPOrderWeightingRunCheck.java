@@ -4,6 +4,7 @@ import com.google.common.collect.Range;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
+import de.metas.util.lang.SeqNo;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -18,7 +19,7 @@ import javax.annotation.Nullable;
 public class PPOrderWeightingRunCheck
 {
 	@NonNull private final PPOrderWeightingRunCheckId id;
-	private final int lineNo;
+	private final SeqNo lineNo;
 	@NonNull private Quantity weight;
 	@Nullable private final String description;
 	@Getter private boolean isToleranceExceeded;
@@ -26,7 +27,7 @@ public class PPOrderWeightingRunCheck
 	@Builder
 	private PPOrderWeightingRunCheck(
 			final @NonNull PPOrderWeightingRunCheckId id,
-			final int lineNo,
+			final @NonNull SeqNo lineNo,
 			final @NonNull Quantity weight,
 			final @Nullable String description,
 			final boolean isToleranceExceeded)

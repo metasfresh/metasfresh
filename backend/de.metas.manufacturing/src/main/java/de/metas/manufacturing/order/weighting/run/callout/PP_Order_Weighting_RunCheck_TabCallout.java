@@ -26,7 +26,7 @@ public class PP_Order_Weighting_RunCheck_TabCallout implements ITabCallout
 	{
 		final I_PP_Order_Weighting_RunCheck model = calloutRecord.getModel(I_PP_Order_Weighting_RunCheck.class);
 		final PPOrderWeightingRunId weightingRunId = PPOrderWeightingRunId.ofRepoId(model.getPP_Order_Weighting_Run_ID());
-		model.setLine(ppOrderWeightingRunService.getNextLineNo(weightingRunId));
+		model.setLine(ppOrderWeightingRunService.getNextLineNo(weightingRunId).toInt());
 		model.setWeight(BigDecimal.ZERO);
 		model.setC_UOM_ID(ppOrderWeightingRunService.getUomId(weightingRunId).getRepoId());
 	}

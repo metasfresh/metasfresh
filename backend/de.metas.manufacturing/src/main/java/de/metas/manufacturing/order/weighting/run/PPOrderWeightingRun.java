@@ -8,6 +8,7 @@ import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.lang.Percent;
+import de.metas.util.lang.SeqNo;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -20,6 +21,7 @@ import org.eevolution.api.PPOrderId;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
+import java.util.Comparator;
 
 @Getter
 @EqualsAndHashCode
@@ -164,13 +166,13 @@ public class PPOrderWeightingRun
 		return targetWeight.getUOM();
 	}
 
-	public int getNextLineNo()
+	public SeqNo getNextLineNo()
 	{
-		final int lastLineNo = checks.stream()
-				.mapToInt(PPOrderWeightingRunCheck::getLineNo)
-				.max()
-				.orElse(0);
+		final SeqNo lastLineNo = checks.stream()
+				.map(PPOrderWeightingRunCheck::getLineNo)
+				.max(Comparator.naturalOrder())
+				.orElseGet(() -> SeqNo.ofInt(0));
 
-		return Math.max(lastLineNo, 0) / 10 * 10 + 10;
+		return lastLineNo.next();
 	}
 }
