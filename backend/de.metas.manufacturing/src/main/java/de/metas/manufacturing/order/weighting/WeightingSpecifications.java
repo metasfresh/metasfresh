@@ -1,5 +1,6 @@
 package de.metas.manufacturing.order.weighting;
 
+import de.metas.uom.UomId;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
 import lombok.NonNull;
@@ -13,13 +14,16 @@ public class WeightingSpecifications
 	@NonNull WeightingSpecificationsId id;
 	@NonNull Percent tolerance;
 	int weightChecksRequired;
+	@NonNull UomId uomId;
 
 	@Builder
 	private WeightingSpecifications(
-			@NonNull final WeightingSpecificationsId id,
-			@NonNull final Percent tolerance,
-			final int weightChecksRequired)
+			final @NonNull WeightingSpecificationsId id,
+			final @NonNull Percent tolerance,
+			final int weightChecksRequired,
+			final @NonNull UomId uomId)
 	{
+		this.uomId = uomId;
 		if (weightChecksRequired < 1)
 		{
 			throw new AdempiereException("Required weight checks shall be >= 1");

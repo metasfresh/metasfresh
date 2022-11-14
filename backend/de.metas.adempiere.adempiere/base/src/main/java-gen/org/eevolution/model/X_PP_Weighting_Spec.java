@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Weighting_Spec extends org.compiere.model.PO implements I_PP_Weighting_Spec, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -164240116L;
+	private static final long serialVersionUID = -810691136L;
 
     /** Standard Constructor */
     public X_PP_Weighting_Spec (final Properties ctx, final int PP_Weighting_Spec_ID, @Nullable final String trxName)
@@ -33,6 +33,21 @@ public class X_PP_Weighting_Spec extends org.compiere.model.PO implements I_PP_W
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setC_UOM_ID (final int C_UOM_ID)
+	{
+		if (C_UOM_ID < 1) 
+			set_Value (COLUMNNAME_C_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_UOM_ID, C_UOM_ID);
+	}
+
+	@Override
+	public int getC_UOM_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
 	}
 
 	@Override

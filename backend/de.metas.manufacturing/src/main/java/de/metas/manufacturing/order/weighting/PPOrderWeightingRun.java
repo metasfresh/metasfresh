@@ -142,7 +142,6 @@ public class PPOrderWeightingRun
 		{
 			check.setUomId(targetWeight.getUomId());
 		}
-		// TODO
 	}
 
 	private void assertNotProcessed()

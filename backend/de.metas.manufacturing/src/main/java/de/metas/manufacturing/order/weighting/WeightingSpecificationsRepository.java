@@ -1,6 +1,7 @@
 package de.metas.manufacturing.order.weighting;
 
 import de.metas.cache.CCache;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import org.adempiere.ad.dao.IQueryBL;
@@ -20,7 +21,7 @@ public class WeightingSpecificationsRepository
 
 	public WeightingSpecifications getById(WeightingSpecificationsId id)
 	{
-		final WeightingSpecifications weightingSpecifications = get();
+		final WeightingSpecifications weightingSpecifications = getDefault();
 		if (!WeightingSpecificationsId.equals(weightingSpecifications.getId(), id))
 		{
 			throw new AdempiereException("Invalid ID: " + id);
@@ -28,12 +29,17 @@ public class WeightingSpecificationsRepository
 		return weightingSpecifications;
 	}
 
-	public WeightingSpecifications get()
+	public WeightingSpecificationsId getDefaultId()
 	{
-		return cache.getOrLoad(0, this::retrieve);
+		return getDefault().getId();
 	}
 
-	private WeightingSpecifications retrieve()
+	public WeightingSpecifications getDefault()
+	{
+		return cache.getOrLoad(0, this::retrieveDefault);
+	}
+
+	private WeightingSpecifications retrieveDefault()
 	{
 		return queryBL
 				.createQueryBuilder(I_PP_Weighting_Spec.class)
@@ -51,6 +57,7 @@ public class WeightingSpecificationsRepository
 				.id(WeightingSpecificationsId.ofRepoId(record.getPP_Weighting_Spec_ID()))
 				.weightChecksRequired(record.getWeightChecksRequired())
 				.tolerance(Percent.of(record.getTolerance_Perc()))
+				.uomId(UomId.ofRepoId(record.getC_UOM_ID()))
 				.build();
 	}
 }
