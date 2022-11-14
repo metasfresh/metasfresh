@@ -1,9 +1,12 @@
 package de.metas.manufacturing.order.weighting.run;
 
+import de.metas.organization.OrgId;
+import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 
 @Service
@@ -49,5 +52,22 @@ public class PPOrderWeightingRunService
 	public UomId getUomId(final PPOrderWeightingRunId id)
 	{
 		return ppOrderWeightingRunRepository.getUomId(id);
+	}
+
+	public PPOrderWeightingRunCheckId addRunCheck(
+			@NonNull PPOrderWeightingRunId weightingRunId,
+			@NonNull final BigDecimal weightBD)
+	{
+		PPOrderWeightingRun weightingRun = getById(weightingRunId);
+		final Quantity weight = Quantity.of(weightBD, weightingRun.getUOM());
+		final int lineNo = weightingRun.getNextLineNo();
+		final OrgId orgId = weightingRun.getOrgId();
+		final PPOrderWeightingRunCheckId weightingRunCheckId = ppOrderWeightingRunRepository.addRunCheck(weightingRunId, lineNo, weight, orgId);
+
+		weightingRun = getById(weightingRunId);
+		weightingRun.updateToleranceExceededFlag();
+		ppOrderWeightingRunRepository.save(weightingRun);
+
+		return weightingRunCheckId;
 	}
 }

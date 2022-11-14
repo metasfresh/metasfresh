@@ -14,6 +14,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_C_UOM;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 
@@ -156,5 +157,20 @@ public class PPOrderWeightingRun
 		{
 			throw new AdempiereException("Already processed");
 		}
+	}
+
+	public I_C_UOM getUOM()
+	{
+		return targetWeight.getUOM();
+	}
+
+	public int getNextLineNo()
+	{
+		final int lastLineNo = checks.stream()
+				.mapToInt(PPOrderWeightingRunCheck::getLineNo)
+				.max()
+				.orElse(0);
+
+		return Math.max(lastLineNo, 0) / 10 * 10 + 10;
 	}
 }

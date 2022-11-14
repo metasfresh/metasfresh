@@ -1,9 +1,12 @@
 package de.metas.manufacturing.order.weighting.run;
 
+import de.metas.organization.OrgId;
+import de.metas.quantity.Quantity;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.eevolution.model.I_PP_Order_Weighting_Run;
 import org.eevolution.model.I_PP_Order_Weighting_RunCheck;
 import org.springframework.stereotype.Repository;
@@ -68,5 +71,22 @@ public class PPOrderWeightingRunRepository
 				.addEqualsFilter(I_PP_Order_Weighting_RunCheck.COLUMNNAME_PP_Order_Weighting_Run_ID, runId)
 				.create()
 				.delete();
+	}
+
+	public PPOrderWeightingRunCheckId addRunCheck(
+			@NonNull final PPOrderWeightingRunId weightingRunId,
+			int lineNo,
+			@NonNull final Quantity weight,
+			@NonNull OrgId orgId)
+	{
+		final I_PP_Order_Weighting_RunCheck record = InterfaceWrapperHelper.newInstance(I_PP_Order_Weighting_RunCheck.class);
+		record.setAD_Org_ID(orgId.getRepoId());
+		record.setPP_Order_Weighting_Run_ID(weightingRunId.getRepoId());
+		record.setLine(lineNo);
+		record.setWeight(weight.toBigDecimal());
+		record.setC_UOM_ID(weight.getUomId().getRepoId());
+		InterfaceWrapperHelper.save(record);
+
+		return PPOrderWeightingRunCheckId.ofRepoId(weightingRunId, record.getPP_Order_Weighting_RunCheck_ID());
 	}
 }
