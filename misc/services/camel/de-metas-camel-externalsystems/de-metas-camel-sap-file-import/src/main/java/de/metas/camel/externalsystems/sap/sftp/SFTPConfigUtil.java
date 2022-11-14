@@ -26,16 +26,23 @@ import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
+import org.apache.camel.CamelContext;
 
 import java.time.Duration;
 import java.util.Map;
+
+import static de.metas.camel.externalsystems.sap.SAPConstants.DEFAULT_RENAME_PATTERN;
+import static de.metas.camel.externalsystems.sap.SAPConstants.SEEN_FILE_RENAME_PATTERN_PROPERTY_NAME;
 
 @UtilityClass
 public class SFTPConfigUtil
 {
 	@NonNull
-	public static SFTPConfig extractSFTPConfig(@NonNull final JsonExternalSystemRequest request)
+	public static SFTPConfig extractSFTPConfig(@NonNull final JsonExternalSystemRequest request, @NonNull final CamelContext context)
 	{
+		final String seenFileRenamePattern = context.getPropertiesComponent().resolveProperty(SEEN_FILE_RENAME_PATTERN_PROPERTY_NAME)
+				.orElse(DEFAULT_RENAME_PATTERN);
+
 		final Map<String, String> requestParameters = request.getParameters();
 
 		return SFTPConfig.builder()
@@ -43,8 +50,11 @@ public class SFTPConfigUtil
 				.password(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_PASSWORD))
 				.hostName(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_HOST_NAME))
 				.port(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_PORT))
+				.seenFileRenamePattern(seenFileRenamePattern)
 				.targetDirectoryProduct(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_PRODUCT_TARGET_DIRECTORY))
+				.fileNamePatternProduct(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_PRODUCT_FILE_NAME_PATTERN))
 				.targetDirectoryBPartner(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_BPARTNER_TARGET_DIRECTORY))
+				.fileNamePatternBPartner(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_BPARTNER_FILE_NAME_PATTERN))
 				.processedFilesFolder(requestParameters.get(ExternalSystemConstants.PARAM_PROCESSED_DIRECTORY))
 				.erroredFilesFolder(requestParameters.get(ExternalSystemConstants.PARAM_ERRORED_DIRECTORY))
 				.pollingFrequency(Duration.ofMillis(Long.parseLong(requestParameters.get(ExternalSystemConstants.PARAM_POLLING_FREQUENCY_MS))))

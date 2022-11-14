@@ -148,6 +148,8 @@ public class ExternalSystemTestUtil
 		childRecord.setErroredDirectory("testSAPErroredDirectory");
 		childRecord.setPollingFrequencyInMs(1000);
 		childRecord.setExternalSystem_Config_ID(externalSystemConfigId);
+		childRecord.setSFTP_BPartner_FileName_Pattern("BPartner*");
+		childRecord.setSFTP_Product_FileName_Pattern("Pattern*");
 
 		saveRecord(childRecord);
 

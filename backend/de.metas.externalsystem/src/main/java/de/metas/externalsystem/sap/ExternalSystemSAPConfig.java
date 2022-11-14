@@ -55,12 +55,6 @@ public class ExternalSystemSAPConfig implements IExternalSystemChildConfig
 	@NonNull
 	String sftpPassword;
 
-	@Nullable
-	String sftpTargetDirectoryProduct;
-
-	@Nullable
-	String sftpTargetDirectoryBPartner;
-
 	@NonNull
 	String processedDirectory;
 
@@ -69,6 +63,20 @@ public class ExternalSystemSAPConfig implements IExternalSystemChildConfig
 
 	@NonNull
 	Duration pollingFrequency;
+
+	//product
+	@Nullable
+	String sftpTargetDirectoryProduct;
+
+	@Nullable
+	String sftpFileNamePatternProduct;
+
+	//bpartner
+	@Nullable
+	String sftpTargetDirectoryBPartner;
+
+	@Nullable
+	String sftpFileNamePatternBPartner;
 
 	@Builder
 	public ExternalSystemSAPConfig(
@@ -83,7 +91,9 @@ public class ExternalSystemSAPConfig implements IExternalSystemChildConfig
 			@Nullable final String sftpTargetDirectoryBPartner,
 			@NonNull final String processedDirectory,
 			@NonNull final String erroredDirectory,
-			@NonNull final Duration pollingFrequency)
+			@NonNull final Duration pollingFrequency,
+			@Nullable final String sftpFileNamePatternProduct,
+			@Nullable final String sftpFileNamePatternBPartner)
 	{
 		this.id = id;
 		this.parentId = parentId;
@@ -97,6 +107,8 @@ public class ExternalSystemSAPConfig implements IExternalSystemChildConfig
 		this.processedDirectory = processedDirectory;
 		this.erroredDirectory = erroredDirectory;
 		this.pollingFrequency = pollingFrequency;
+		this.sftpFileNamePatternProduct = sftpFileNamePatternProduct;
+		this.sftpFileNamePatternBPartner = sftpFileNamePatternBPartner;
 	}
 
 	@NonNull

@@ -113,7 +113,7 @@ public class SFTPBPartnerSyncServiceRouteBuilder extends RouteBuilder implements
 	{
 		return GetBPartnersSFTPRouteBuilder
 				.builder()
-				.sftpConfig(SFTPConfigUtil.extractSFTPConfig(request))
+				.sftpConfig(SFTPConfigUtil.extractSFTPConfig(request, camelContext))
 				.camelContext(camelContext)
 				.enabledByExternalSystemRequest(request)
 				.processLogger(processLogger)

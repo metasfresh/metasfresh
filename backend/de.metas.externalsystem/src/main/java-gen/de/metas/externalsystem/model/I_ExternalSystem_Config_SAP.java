@@ -1,7 +1,8 @@
 package de.metas.externalsystem.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for ExternalSystem_Config_SAP
  *  @author metasfresh (generated) 
@@ -235,6 +236,29 @@ public interface I_ExternalSystem_Config_SAP
 	String COLUMNNAME_ProcessedDirectory = "ProcessedDirectory";
 
 	/**
+	 * Set SFTP Business Partner File Name Pattern.
+	 * The pattern used for the business partner file names when fetching multiple types of files from the same location.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSFTP_BPartner_FileName_Pattern (@Nullable java.lang.String SFTP_BPartner_FileName_Pattern);
+
+	/**
+	 * Get SFTP Business Partner File Name Pattern.
+	 * The pattern used for the business partner file names when fetching multiple types of files from the same location.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSFTP_BPartner_FileName_Pattern();
+
+	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_SFTP_BPartner_FileName_Pattern = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "SFTP_BPartner_FileName_Pattern", null);
+	String COLUMNNAME_SFTP_BPartner_FileName_Pattern = "SFTP_BPartner_FileName_Pattern";
+
+	/**
 	 * Set SFTP Business Partner Target Directory.
 	 * The directory used to pull business partners from the sftp server. (If no value set here, the files will be pulled from the root location of the sftp server.)
 	 *
@@ -325,6 +349,29 @@ public interface I_ExternalSystem_Config_SAP
 
 	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_SFTP_Port = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "SFTP_Port", null);
 	String COLUMNNAME_SFTP_Port = "SFTP_Port";
+
+	/**
+	 * Set SFTP Product File Name Pattern.
+	 * The pattern used for the product file names when fetching multiple types of files from the same location.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSFTP_Product_FileName_Pattern (@Nullable java.lang.String SFTP_Product_FileName_Pattern);
+
+	/**
+	 * Get SFTP Product File Name Pattern.
+	 * The pattern used for the product file names when fetching multiple types of files from the same location.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSFTP_Product_FileName_Pattern();
+
+	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_SFTP_Product_FileName_Pattern = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "SFTP_Product_FileName_Pattern", null);
+	String COLUMNNAME_SFTP_Product_FileName_Pattern = "SFTP_Product_FileName_Pattern";
 
 	/**
 	 * Set SFTP Product Target Directory.

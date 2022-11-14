@@ -79,7 +79,7 @@ public class GetProductsSFTPRouteBuilder extends IdAwareRouteBuilder
 		//@formatter:off
 		from(sftpConfig.getSFTPConnectionStringProduct())
 				.id(routeId)
-				.log("Product Sync Route Started")
+				.log("Product Sync Route Started with Id=" + routeId)
 				.split(body().tokenize("\n"))
 					.streaming()
 					.unmarshal(new BindyCsvDataFormat(ProductRow.class))
