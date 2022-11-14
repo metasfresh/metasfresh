@@ -5,8 +5,6 @@ import {
   discardNewRequest,
   getTabRequest,
   getTabLayoutRequest,
-  startProcess,
-  getProcessData,
   formatParentUrl,
   deleteRequest,
   initQuickInput,
@@ -82,7 +80,6 @@ export {
   getLayout,
   getNotificationsRequest,
   getNotificationsEndpointRequest,
-  getProcessData,
   getResetPasswordInfo,
   getRowsData,
   getTabLayoutRequest,
@@ -116,6 +113,5 @@ export {
   resetPasswordGetAvatar,
   resetPasswordRequest,
   setUserLang,
-  startProcess,
   topActionsRequest,
 };
