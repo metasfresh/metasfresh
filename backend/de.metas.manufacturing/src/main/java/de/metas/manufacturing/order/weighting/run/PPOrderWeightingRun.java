@@ -1,8 +1,9 @@
-package de.metas.manufacturing.order.weighting;
+package de.metas.manufacturing.order.weighting.run;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Range;
 import de.metas.i18n.AdMessageKey;
+import de.metas.manufacturing.order.weighting.spec.WeightingSpecificationsId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.lang.Percent;

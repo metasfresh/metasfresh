@@ -1,4 +1,4 @@
-package de.metas.manufacturing.order.weighting;
+package de.metas.manufacturing.order.weighting.spec;
 
 import de.metas.uom.UomId;
 import de.metas.util.lang.Percent;

@@ -1,6 +1,6 @@
-package de.metas.manufacturing.order.weighting.interceptor;
+package de.metas.manufacturing.order.weighting.spec.interceptor;
 
-import de.metas.manufacturing.order.weighting.WeightingSpecificationsRepository;
+import de.metas.manufacturing.order.weighting.spec.WeightingSpecificationsRepository;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;

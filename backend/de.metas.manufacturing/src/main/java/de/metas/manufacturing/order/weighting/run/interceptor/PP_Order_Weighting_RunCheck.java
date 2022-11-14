@@ -1,8 +1,8 @@
-package de.metas.manufacturing.order.weighting.interceptor;
+package de.metas.manufacturing.order.weighting.run.interceptor;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.manufacturing.order.weighting.PPOrderWeightingRunId;
-import de.metas.manufacturing.order.weighting.PPOrderWeightingRunService;
+import de.metas.manufacturing.order.weighting.run.PPOrderWeightingRunId;
+import de.metas.manufacturing.order.weighting.run.PPOrderWeightingRunService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;

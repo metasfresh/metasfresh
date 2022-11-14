@@ -1,8 +1,8 @@
-package de.metas.manufacturing.order.weighting.callout;
+package de.metas.manufacturing.order.weighting.run.callout;
 
-import de.metas.manufacturing.order.weighting.WeightingSpecifications;
-import de.metas.manufacturing.order.weighting.WeightingSpecificationsId;
-import de.metas.manufacturing.order.weighting.WeightingSpecificationsRepository;
+import de.metas.manufacturing.order.weighting.spec.WeightingSpecifications;
+import de.metas.manufacturing.order.weighting.spec.WeightingSpecificationsId;
+import de.metas.manufacturing.order.weighting.spec.WeightingSpecificationsRepository;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.OrderBOMLineQuantities;
 import de.metas.material.planning.pporder.PPOrderQuantities;

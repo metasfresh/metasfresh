@@ -1,4 +1,4 @@
-package de.metas.manufacturing.order.weighting;
+package de.metas.manufacturing.order.weighting.spec;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonCreator;

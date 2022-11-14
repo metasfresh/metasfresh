@@ -1,4 +1,4 @@
-package de.metas.manufacturing.order.weighting;
+package de.metas.manufacturing.order.weighting.run;
 
 import com.google.common.collect.Range;
 import de.metas.quantity.Quantity;

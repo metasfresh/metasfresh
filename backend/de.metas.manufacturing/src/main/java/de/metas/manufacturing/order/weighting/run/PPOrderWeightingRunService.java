@@ -1,4 +1,4 @@
-package de.metas.manufacturing.order.weighting;
+package de.metas.manufacturing.order.weighting.run;
 
 import de.metas.uom.UomId;
 import lombok.NonNull;

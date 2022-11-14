@@ -1,8 +1,8 @@
-package de.metas.manufacturing.order.weighting.process;
+package de.metas.manufacturing.order.weighting.run.process;
 
-import de.metas.manufacturing.order.weighting.PPOrderWeightingRun;
-import de.metas.manufacturing.order.weighting.PPOrderWeightingRunId;
-import de.metas.manufacturing.order.weighting.PPOrderWeightingRunService;
+import de.metas.manufacturing.order.weighting.run.PPOrderWeightingRun;
+import de.metas.manufacturing.order.weighting.run.PPOrderWeightingRunId;
+import de.metas.manufacturing.order.weighting.run.PPOrderWeightingRunService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
@@ -10,7 +10,7 @@ import de.metas.process.ProcessPreconditionsResolution;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 
-public class PP_Order_Weighting_Run_UnProcess extends JavaProcess implements IProcessPrecondition
+public class PP_Order_Weighting_Run_Process extends JavaProcess implements IProcessPrecondition
 {
 	private final PPOrderWeightingRunService ppOrderWeightingRunService = SpringContextHolder.instance.getBean(PPOrderWeightingRunService.class);
 
@@ -24,9 +24,9 @@ public class PP_Order_Weighting_Run_UnProcess extends JavaProcess implements IPr
 
 		final PPOrderWeightingRunId weightingRunId = PPOrderWeightingRunId.ofRepoId(context.getSingleSelectedRecordId());
 		final PPOrderWeightingRun weightingRun = ppOrderWeightingRunService.getById(weightingRunId);
-		if (!weightingRun.isProcessed())
+		if (weightingRun.isProcessed())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason("Already not processed");
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Already processed");
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -36,7 +36,7 @@ public class PP_Order_Weighting_Run_UnProcess extends JavaProcess implements IPr
 	protected String doIt() throws Exception
 	{
 		final PPOrderWeightingRunId weightingRunId = PPOrderWeightingRunId.ofRepoId(getRecord_ID());
-		ppOrderWeightingRunService.unprocess(weightingRunId);
+		ppOrderWeightingRunService.process(weightingRunId);
 		return MSG_OK;
 	}
 }

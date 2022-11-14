@@ -1,7 +1,7 @@
-package de.metas.manufacturing.order.weighting.callout;
+package de.metas.manufacturing.order.weighting.run.callout;
 
-import de.metas.manufacturing.order.weighting.PPOrderWeightingRunId;
-import de.metas.manufacturing.order.weighting.PPOrderWeightingRunService;
+import de.metas.manufacturing.order.weighting.run.PPOrderWeightingRunId;
+import de.metas.manufacturing.order.weighting.run.PPOrderWeightingRunService;
 import lombok.NonNull;
 import org.adempiere.ad.callout.api.ICalloutRecord;
 import org.adempiere.ad.ui.spi.ITabCallout;

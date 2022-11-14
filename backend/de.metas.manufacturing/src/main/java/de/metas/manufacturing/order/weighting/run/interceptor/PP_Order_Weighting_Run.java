@@ -1,7 +1,7 @@
-package de.metas.manufacturing.order.weighting.interceptor;
+package de.metas.manufacturing.order.weighting.run.interceptor;
 
-import de.metas.manufacturing.order.weighting.PPOrderWeightingRunId;
-import de.metas.manufacturing.order.weighting.PPOrderWeightingRunRepository;
+import de.metas.manufacturing.order.weighting.run.PPOrderWeightingRunId;
+import de.metas.manufacturing.order.weighting.run.PPOrderWeightingRunRepository;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;

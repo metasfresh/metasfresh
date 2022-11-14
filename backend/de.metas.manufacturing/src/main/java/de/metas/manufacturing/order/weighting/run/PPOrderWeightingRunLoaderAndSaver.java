@@ -1,9 +1,10 @@
-package de.metas.manufacturing.order.weighting;
+package de.metas.manufacturing.order.weighting.run;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
+import de.metas.manufacturing.order.weighting.spec.WeightingSpecificationsId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
