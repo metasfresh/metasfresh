@@ -23,8 +23,8 @@ import java.time.Instant;
 @ToString
 public class PPOrderWeightingRun
 {
-	private static final AdMessageKey MSG_LessChecksThanRequired = AdMessageKey.of("manufacturing.order.weighting.LessChecksThanRequired"); // TODO
-	private static final AdMessageKey MSG_ToleranceExceeded = AdMessageKey.of("manufacturing.order.weighting.ToleranceExceeded"); // TODO
+	private static final AdMessageKey MSG_LessChecksThanRequired = AdMessageKey.of("manufacturing.order.weighting.LessChecksThanRequired");
+	private static final AdMessageKey MSG_ToleranceExceeded = AdMessageKey.of("manufacturing.order.weighting.ToleranceExceeded");
 
 	@NonNull private final PPOrderWeightingRunId id;
 

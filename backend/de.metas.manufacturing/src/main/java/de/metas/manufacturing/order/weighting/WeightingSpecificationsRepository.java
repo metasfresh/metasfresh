@@ -51,7 +51,7 @@ public class WeightingSpecificationsRepository
 				.orElseThrow(() -> new AdempiereException("No weighting specifications found"));
 	}
 
-	private static WeightingSpecifications fromRecord(I_PP_Weighting_Spec record)
+	public static WeightingSpecifications fromRecord(I_PP_Weighting_Spec record)
 	{
 		return WeightingSpecifications.builder()
 				.id(WeightingSpecificationsId.ofRepoId(record.getPP_Weighting_Spec_ID()))

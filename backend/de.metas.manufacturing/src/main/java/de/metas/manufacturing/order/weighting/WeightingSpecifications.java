@@ -28,6 +28,10 @@ public class WeightingSpecifications
 		{
 			throw new AdempiereException("Required weight checks shall be >= 1");
 		}
+		if (tolerance.signum() < 0)
+		{
+			throw new AdempiereException("Tolerance shall be >= 0");
+		}
 
 		this.id = id;
 		this.tolerance = tolerance;
