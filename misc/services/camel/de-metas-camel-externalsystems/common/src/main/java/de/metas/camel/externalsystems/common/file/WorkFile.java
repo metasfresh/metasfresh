@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-metasfresh
+ * de-metas-camel-externalsystems-common
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,32 +20,40 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.metasfresh.restapi;
+package de.metas.camel.externalsystems.common.file;
 
+import lombok.AccessLevel;
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.experimental.UtilityClass;
+import lombok.Value;
 
-import java.time.Instant;
-import java.util.UUID;
-
-@UtilityClass
-public class FilenameUtil
+@Value
+public class WorkFile
 {
-	@NonNull
-	public static String computeFilename(@NonNull final String externalSystemConfigValue, @NonNull final String orgCode)
+	public static final String IN_PROGRESS_PREFIX = "InProgress_";
+
+	public static WorkFile of(@NonNull final String filename)
 	{
-		return externalSystemConfigValue + "_" + orgCode + "_" + Instant.now().toEpochMilli() + "_" + UUID.randomUUID();
+		return new WorkFile(filename);
+	}
+
+	@Getter(AccessLevel.NONE)
+	String filename;
+
+	private WorkFile(@NonNull final String filename)
+	{
+		this.filename = filename;
 	}
 
 	@NonNull
-	public static String getExternalSystemConfigValue(@NonNull final String filename)
+	public String getDownloadInProgressFilename()
 	{
-		return filename.substring(0, filename.indexOf('_'));
+		return IN_PROGRESS_PREFIX + filename;
 	}
 
 	@NonNull
-	public static String getOrgCode(@NonNull final String filename)
+	public String getReadyFilename()
 	{
-		return filename.split("_")[1];
+		return filename;
 	}
 }

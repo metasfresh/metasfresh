@@ -28,6 +28,7 @@ import de.metas.camel.externalsystems.common.RestServiceRoutes;
 import de.metas.camel.externalsystems.common.auth.JsonAuthenticateRequest;
 import de.metas.camel.externalsystems.common.auth.JsonExpireTokenResponse;
 import de.metas.camel.externalsystems.common.auth.TokenCredentials;
+import de.metas.camel.externalsystems.common.file.WorkFile;
 import de.metas.camel.externalsystems.common.http.WriteRequestBodyToFileProcessor;
 import de.metas.camel.externalsystems.metasfresh.restapi.feedback.FeedbackConfig;
 import de.metas.camel.externalsystems.metasfresh.restapi.feedback.FeedbackConfigProvider;
@@ -109,7 +110,7 @@ public class MetasfreshRestAPIRouteBuilder extends RouteBuilder
 				.route()
 				.routeId(REST_API_WRITE_REQUEST_BODY_TO_FILE_ROUTE_ID)
 				.autoStartup(false)
-					.process(new WriteRequestBodyToFileProcessor(getWriteFileLocation(), this::computeFilename)).id(WRITE_REQUEST_BODY_TO_FILE_PROCESSOR_ID)
+					.process(new WriteRequestBodyToFileProcessor(getWriteFileLocation(), this::computeWorkFile)).id(WRITE_REQUEST_BODY_TO_FILE_PROCESSOR_ID)
 					.log("Route invoked!")
 				.end();
 		//@formatter:on
@@ -224,7 +225,7 @@ public class MetasfreshRestAPIRouteBuilder extends RouteBuilder
 	}
 
 	@NonNull
-	private String computeFilename()
+	private WorkFile computeWorkFile()
 	{
 		final TokenCredentials credentials = (TokenCredentials)SecurityContextHolder.getContext().getAuthentication().getCredentials();
 
@@ -233,6 +234,7 @@ public class MetasfreshRestAPIRouteBuilder extends RouteBuilder
 			throw new RuntimeCamelException("Incomplete setup! ExternalSystemValue is missing!");
 		}
 
-		return FilenameUtil.computeFileName(credentials.getExternalSystemValue(), credentials.getOrgCode());
+		final String filename = FilenameUtil.computeFilename(credentials.getExternalSystemValue(), credentials.getOrgCode()); 
+		return WorkFile.of(filename);
 	}
 }

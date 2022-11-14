@@ -23,6 +23,7 @@
 package de.metas.camel.externalsystems.common.http;
 
 import com.google.common.io.ByteStreams;
+import de.metas.camel.externalsystems.common.file.WorkFile;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -37,14 +38,14 @@ import java.util.function.Supplier;
 public class WriteRequestBodyToFileProcessor implements Processor
 {
 	private final String writeFileToLocation;
-	private final Supplier<String> computeFileName;
+	private final Supplier<WorkFile> workFile; 
 
 	public WriteRequestBodyToFileProcessor(
 			@NonNull final String writeFileToLocation,
-			@NonNull final Supplier<String> computeFileName)
+			@NonNull final Supplier<WorkFile> workFile)
 	{
 		this.writeFileToLocation = writeFileToLocation;
-		this.computeFileName = computeFileName;
+		this.workFile = workFile;
 	}
 
 	@Override
@@ -55,17 +56,32 @@ public class WriteRequestBodyToFileProcessor implements Processor
 
 		final EmptyBodyRequestWrapper emptyBodyRequestWrapper = ((EmptyBodyRequestWrapper)camelHttpServletRequest.getRequest());
 		
-		final Path path = Path.of(writeFileToLocation, computeFileName.get());
+		final Path path = Path.of(writeFileToLocation, workFile.get().getDownloadInProgressFilename());
 
-		final File targetFile = new File(path.toString());
+		final File downloadingTargetFile = new File(path.toString());
 
-		try (final FileOutputStream outputStream = new FileOutputStream(targetFile))
+		try (final FileOutputStream outputStream = new FileOutputStream(downloadingTargetFile))
 		{
 			ByteStreams.copy(emptyBodyRequestWrapper.getRealStream(), outputStream);
 		}
 		catch (final Exception exception)
 		{
 			throw new RuntimeCamelException("Could not write to file! " + exception.getMessage());
+		}
+		
+		markFileAsReady(downloadingTargetFile);
+	}
+
+	private void markFileAsReady(@NonNull final File downloadingTargetFile)
+	{
+		final Path readyFilename = Path.of(writeFileToLocation, workFile.get().getReadyFilename());
+		final File readyTargetFile = new File(readyFilename.toString());
+
+		final boolean success = downloadingTargetFile.renameTo(readyTargetFile);
+
+		if (!success)
+		{
+			throw new RuntimeCamelException("File was not successfully renamed!");
 		}
 	}
 }

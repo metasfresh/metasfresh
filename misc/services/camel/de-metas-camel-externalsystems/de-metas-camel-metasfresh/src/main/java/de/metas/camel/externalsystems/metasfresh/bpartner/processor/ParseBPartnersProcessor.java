@@ -64,7 +64,8 @@ public class ParseBPartnersProcessor implements Processor
 
 		final ImmutableList.Builder<JsonRequestBPartnerUpsertItem> jsonRequestBPartnerUpsertItems = ImmutableList.builder();
 
-		for (int counter = 0; counter < getMaxBatchSize(exchange); counter++)
+		final int maxBatchSize = getMaxBatchSize(exchange);
+		for (int counter = 0; counter < maxBatchSize; counter++)
 		{
 			final JsonRequestBPartnerUpsertItem jsonRequestBPartnerUpsertItem = JsonObjectMapperHolder
 					.sharedJsonObjectMapper()

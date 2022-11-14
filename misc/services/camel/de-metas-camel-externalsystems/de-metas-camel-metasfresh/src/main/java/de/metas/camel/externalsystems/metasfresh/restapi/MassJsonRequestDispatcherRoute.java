@@ -43,6 +43,7 @@ import org.springframework.stereotype.Component;
 import java.io.InputStream;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
+import static de.metas.camel.externalsystems.common.file.WorkFile.IN_PROGRESS_PREFIX;
 import static de.metas.camel.externalsystems.metasfresh.MetasfreshConstants.FILE_NAME_HEADER;
 import static de.metas.camel.externalsystems.metasfresh.MetasfreshConstants.MASS_JSON_REQUEST_PROCESSING_LOCATION;
 import static de.metas.camel.externalsystems.metasfresh.MetasfreshConstants.MASS_JSON_REQUEST_PROCESSING_LOCATION_DEFAULT;
@@ -79,7 +80,7 @@ public class MassJsonRequestDispatcherRoute extends RouteBuilder
 																						MASS_JSON_REQUEST_PROCESSING_LOCATION,
 																						MASS_JSON_REQUEST_PROCESSING_LOCATION_DEFAULT);
 		//@formatter:off
-		from(file(massJsonRequestProcessingLocation + "?moveFailed=.error"))
+		from(file(massJsonRequestProcessingLocation + "?moveFailed=.error&antExclude=" + IN_PROGRESS_PREFIX + "*"))
 				.doTry()
 					.routeId(MASS_JSON_REQUEST_ROUTE_ID).id(PARSE_MASS_JSON_REQUEST_PROCESSOR_ID)
 					.process(this::parseMassJsonRequest)
