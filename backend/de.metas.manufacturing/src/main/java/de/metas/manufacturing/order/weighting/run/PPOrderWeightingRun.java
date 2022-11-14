@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Range;
 import de.metas.i18n.AdMessageKey;
 import de.metas.manufacturing.order.weighting.spec.WeightingSpecificationsId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.lang.Percent;
@@ -48,6 +49,8 @@ public class PPOrderWeightingRun
 
 	@NonNull private final ImmutableList<PPOrderWeightingRunCheck> checks;
 
+	@NonNull private final OrgId orgId;
+
 	@Builder
 	private PPOrderWeightingRun(
 			@NonNull final PPOrderWeightingRunId id,
@@ -63,7 +66,8 @@ public class PPOrderWeightingRun
 			@NonNull final Range<Quantity> targetWeightRange,
 			final boolean isToleranceExceeded,
 			final boolean isProcessed,
-			@NonNull final ImmutableList<PPOrderWeightingRunCheck> checks)
+			@NonNull final ImmutableList<PPOrderWeightingRunCheck> checks,
+			final @NonNull OrgId orgId)
 	{
 		this.id = id;
 		this.ppOrderId = ppOrderId;
@@ -79,6 +83,7 @@ public class PPOrderWeightingRun
 		this.isToleranceExceeded = isToleranceExceeded;
 		this.isProcessed = isProcessed;
 		this.checks = checks;
+		this.orgId = orgId;
 	}
 
 	public void process()

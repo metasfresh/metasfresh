@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
 import de.metas.manufacturing.order.weighting.spec.WeightingSpecificationsId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
@@ -137,6 +138,7 @@ class PPOrderWeightingRunLoaderAndSaver
 				.isToleranceExceeded(record.isToleranceExceeded())
 				.isProcessed(record.isProcessed())
 				.checks(checks)
+				.orgId(OrgId.ofRepoIdOrAny(record.getAD_Org_ID()))
 				.build();
 	}
 
