@@ -44,6 +44,7 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -102,6 +103,8 @@ public class CreateBPartnerV2_StepDef
 		final List<Map<String, String>> bpartnerTableList = dataTable.asMaps();
 		for (final Map<String, String> dataTableRow : bpartnerTableList)
 		{
+			final SoftAssertions softly = new SoftAssertions();
+
 			final String externalIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, "externalIdentifier");
 			final String code = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Code");
 			final String name = DataTableUtil.extractStringForColumnName(dataTableRow, "Name");
@@ -118,23 +121,23 @@ public class CreateBPartnerV2_StepDef
 			final Optional<JsonResponseComposite> persistedResult = bpartnerEndpointService.retrieveBPartner(null, ExternalIdentifier.of(externalIdentifier));
 			final JsonResponseBPartner persistedBPartner = persistedResult.get().getBpartner();
 
-			assertThat(persistedBPartner.getCompanyName()).isEqualTo(companyName);
-			assertThat(persistedBPartner.getName()).isEqualTo(name);
-			assertThat(persistedBPartner.getUrl()).isEqualTo(url);
-			assertThat(persistedBPartner.getVatId()).isEqualTo(vatId);
-			assertThat(persistedBPartner.getLanguage()).contains(language);
-			assertThat(persistedBPartner.getCode()).isEqualTo(code);
-			assertThat(persistedBPartner.getPhone()).isEqualTo(phone);
-			assertThat(persistedBPartner.getStorageWarehouse()).isEqualTo(storageWarehouse);
+			softly.assertThat(persistedBPartner.getCompanyName()).isEqualTo(companyName);
+			softly.assertThat(persistedBPartner.getName()).isEqualTo(name);
+			softly.assertThat(persistedBPartner.getUrl()).isEqualTo(url);
+			softly.assertThat(persistedBPartner.getVatId()).isEqualTo(vatId);
+			softly.assertThat(persistedBPartner.getLanguage()).contains(language);
+			softly.assertThat(persistedBPartner.getCode()).isEqualTo(code);
+			softly.assertThat(persistedBPartner.getPhone()).isEqualTo(phone);
+			softly.assertThat(persistedBPartner.getStorageWarehouse()).isEqualTo(storageWarehouse);
 
 			if (Check.isNotBlank(group))
 			{
-				assertThat(persistedBPartner.getGroup()).isEqualTo(group);
+				softly.assertThat(persistedBPartner.getGroup()).isEqualTo(group);
 			}
 
 			if (Check.isNotBlank(parentId))
 			{
-				assertThat(persistedBPartner.getParentId().getValue()).isEqualTo(Integer.parseInt(parentId));
+				softly.assertThat(persistedBPartner.getParentId().getValue()).isEqualTo(Integer.parseInt(parentId));
 			}
 
 			final I_C_BPartner bPartnerRecord = bpartnerDAO.getById(persistedBPartner.getMetasfreshId().getValue());
@@ -144,8 +147,8 @@ public class CreateBPartnerV2_StepDef
 			{
 				final I_AD_User userRecord = userTable.get(createdByIdentifier);
 
-				assertThat(userRecord).isNotNull();
-				assertThat(bPartnerRecord.getCreatedBy()).isEqualTo(userRecord.getAD_User_ID());
+				softly.assertThat(userRecord).isNotNull();
+				softly.assertThat(bPartnerRecord.getCreatedBy()).isEqualTo(userRecord.getAD_User_ID());
 			}
 
 			final String sectionCodeIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_M_SectionCode_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -153,25 +156,25 @@ public class CreateBPartnerV2_StepDef
 			{
 				final I_M_SectionCode sectionCode = sectionCodeTable.get(sectionCodeIdentifier);
 
-				assertThat(bPartnerRecord.getM_SectionCode_ID()).isEqualTo(sectionCode.getM_SectionCode_ID());
+				softly.assertThat(bPartnerRecord.getM_SectionCode_ID()).isEqualTo(sectionCode.getM_SectionCode_ID());
 			}
 
 			final String description = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_Description);
 			if (Check.isNotBlank(description))
 			{
-				assertThat(bPartnerRecord.getDescription()).isEqualTo(description);
+				softly.assertThat(bPartnerRecord.getDescription()).isEqualTo(description);
 			}
 
 			final String deliveryRule = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_DeliveryRule);
 			if (Check.isNotBlank(deliveryRule))
 			{
-				assertThat(bPartnerRecord.getDeliveryRule()).isEqualTo(deliveryRule);
+				softly.assertThat(bPartnerRecord.getDeliveryRule()).isEqualTo(deliveryRule);
 			}
 
 			final String deliveryViaRule = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_DeliveryViaRule);
 			if (Check.isNotBlank(deliveryViaRule))
 			{
-				assertThat(bPartnerRecord.getDeliveryViaRule()).isEqualTo(deliveryViaRule);
+				softly.assertThat(bPartnerRecord.getDeliveryViaRule()).isEqualTo(deliveryViaRule);
 			}
 
 			final String incotermsCustomerIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_C_Incoterms_Customer_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -179,7 +182,7 @@ public class CreateBPartnerV2_StepDef
 			{
 				final I_C_Incoterms customerIncoterms = incotermsTable.get(incotermsCustomerIdentifier);
 
-				assertThat(bPartnerRecord.getC_Incoterms_Customer_ID()).isEqualTo(customerIncoterms.getC_Incoterms_ID());
+				softly.assertThat(bPartnerRecord.getC_Incoterms_Customer_ID()).isEqualTo(customerIncoterms.getC_Incoterms_ID());
 			}
 
 			final String incotermsVendorIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_C_Incoterms_Vendor_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -187,19 +190,19 @@ public class CreateBPartnerV2_StepDef
 			{
 				final I_C_Incoterms vendorIncoterms = incotermsTable.get(incotermsVendorIdentifier);
 
-				assertThat(bPartnerRecord.getC_Incoterms_Vendor_ID()).isEqualTo(vendorIncoterms.getC_Incoterms_ID());
+				softly.assertThat(bPartnerRecord.getC_Incoterms_Vendor_ID()).isEqualTo(vendorIncoterms.getC_Incoterms_ID());
 			}
 
 			final String paymentRule = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_PaymentRule);
 			if (Check.isNotBlank(paymentRule))
 			{
-				assertThat(bPartnerRecord.getPaymentRule()).isEqualTo(paymentRule);
+				softly.assertThat(bPartnerRecord.getPaymentRule()).isEqualTo(paymentRule);
 			}
 
 			final String paymentRulePO = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_PaymentRulePO);
 			if (Check.isNotBlank(paymentRulePO))
 			{
-				assertThat(bPartnerRecord.getPaymentRulePO()).isEqualTo(paymentRulePO);
+				softly.assertThat(bPartnerRecord.getPaymentRulePO()).isEqualTo(paymentRulePO);
 			}
 
 			final String customerPaymentTermIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_C_PaymentTerm_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -207,7 +210,7 @@ public class CreateBPartnerV2_StepDef
 			{
 				final I_C_PaymentTerm customerPaymentTerm = paymentTermTable.get(customerPaymentTermIdentifier);
 
-				assertThat(bPartnerRecord.getC_PaymentTerm_ID()).isEqualTo(customerPaymentTerm.getC_PaymentTerm_ID());
+				softly.assertThat(bPartnerRecord.getC_PaymentTerm_ID()).isEqualTo(customerPaymentTerm.getC_PaymentTerm_ID());
 			}
 
 			final String vendorPaymentTermIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_PO_PaymentTerm_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -215,8 +218,10 @@ public class CreateBPartnerV2_StepDef
 			{
 				final I_C_PaymentTerm vendorPaymentTerm = paymentTermTable.get(vendorPaymentTermIdentifier);
 
-				assertThat(bPartnerRecord.getPO_PaymentTerm_ID()).isEqualTo(vendorPaymentTerm.getC_PaymentTerm_ID());
+				softly.assertThat(bPartnerRecord.getPO_PaymentTerm_ID()).isEqualTo(vendorPaymentTerm.getC_PaymentTerm_ID());
 			}
+
+			softly.assertAll();
 
 			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 			bPartnerTable.putOrReplace(bpartnerIdentifier, bPartnerRecord);

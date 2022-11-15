@@ -28,11 +28,10 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_Incoterms;
 
 import java.util.Map;
-
-import static org.assertj.core.api.Assertions.*;
 
 public class C_Incoterms_StepDef
 {
@@ -64,14 +63,18 @@ public class C_Incoterms_StepDef
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
+			final SoftAssertions softly = new SoftAssertions();
+
 			final String value = DataTableUtil.extractStringForColumnName(row, I_C_Incoterms.COLUMNNAME_Value);
 			final String name = DataTableUtil.extractStringForColumnName(row, I_C_Incoterms.COLUMNNAME_Name);
 
 			final String incotermsIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Incoterms.COLUMNNAME_C_Incoterms_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			final I_C_Incoterms incoterms = incotermsTable.get(incotermsIdentifier);
 
-			assertThat(incoterms.getValue()).isEqualTo(value);
-			assertThat(incoterms.getName()).isEqualTo(name);
+			softly.assertThat(incoterms.getValue()).isEqualTo(value);
+			softly.assertThat(incoterms.getName()).isEqualTo(name);
+
+			softly.assertAll();
 		}
 	}
 }

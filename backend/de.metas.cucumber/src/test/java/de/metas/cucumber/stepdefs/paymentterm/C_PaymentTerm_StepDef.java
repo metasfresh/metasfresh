@@ -28,11 +28,10 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_PaymentTerm;
 
 import java.util.Map;
-
-import static org.assertj.core.api.Assertions.*;
 
 public class C_PaymentTerm_StepDef
 {
@@ -62,14 +61,18 @@ public class C_PaymentTerm_StepDef
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
+			final SoftAssertions softly = new SoftAssertions();
+
 			final String value = DataTableUtil.extractStringForColumnName(row, I_C_PaymentTerm.COLUMNNAME_Value);
 			final String name = DataTableUtil.extractStringForColumnName(row, I_C_PaymentTerm.COLUMNNAME_Name);
 
 			final String incotermsIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_PaymentTerm.COLUMNNAME_C_PaymentTerm_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			final I_C_PaymentTerm paymentTerm = paymentTermTable.get(incotermsIdentifier);
 
-			assertThat(paymentTerm.getValue()).isEqualTo(value);
-			assertThat(paymentTerm.getName()).isEqualTo(name);
+			softly.assertThat(paymentTerm.getValue()).isEqualTo(value);
+			softly.assertThat(paymentTerm.getName()).isEqualTo(name);
+
+			softly.assertAll();
 		}
 	}
 }
