@@ -1,38 +1,8 @@
-package de.metas.invoicecandidate.externallyreferenced;
-
-import de.metas.bpartner.composite.BPartner;
-import de.metas.bpartner.composite.BPartnerComposite;
-import de.metas.bpartner.composite.BPartnerLocation;
-import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
-import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidate.ExternallyReferencedCandidateBuilder;
-import de.metas.location.CountryId;
-import de.metas.location.ICountryDAO;
-import de.metas.money.Money;
-import de.metas.order.InvoiceRule;
-import de.metas.organization.IOrgDAO;
-import de.metas.pricing.IEditablePricingContext;
-import de.metas.pricing.IPricingResult;
-import de.metas.pricing.service.IPricingBL;
-import de.metas.product.ProductPrice;
-import de.metas.tax.api.ITaxBL;
-import de.metas.tax.api.TaxId;
-import de.metas.util.Services;
-import lombok.NonNull;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
-import java.time.ZoneId;
-import java.util.Optional;
-
-import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
-
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -49,6 +19,33 @@ import static de.metas.common.util.CoalesceUtil.coalesceNotNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.invoicecandidate.externallyreferenced;
+
+import de.metas.bpartner.composite.BPartner;
+import de.metas.bpartner.composite.BPartnerComposite;
+import de.metas.bpartner.composite.BPartnerLocation;
+import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.location.CountryId;
+import de.metas.location.ICountryDAO;
+import de.metas.money.Money;
+import de.metas.order.InvoiceRule;
+import de.metas.organization.IOrgDAO;
+import de.metas.pricing.IEditablePricingContext;
+import de.metas.pricing.IPricingResult;
+import de.metas.pricing.service.IPricingBL;
+import de.metas.product.ProductPrice;
+import de.metas.tax.api.ITaxBL;
+import de.metas.tax.api.TaxId;
+import de.metas.util.Services;
+import lombok.NonNull;
+import org.compiere.util.TimeUtil;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.time.ZoneId;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 @Service
 public class ManualCandidateService
@@ -67,7 +64,7 @@ public class ManualCandidateService
 	 */
 	public ExternallyReferencedCandidate createInvoiceCandidate(@NonNull final NewManualInvoiceCandidate newIC)
 	{
-		final ExternallyReferencedCandidateBuilder candidate = ExternallyReferencedCandidate.createBuilder(newIC);
+		final ExternallyReferencedCandidate.ExternallyReferencedCandidateBuilder candidate = ExternallyReferencedCandidate.createBuilder(newIC);
 
 		final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 
@@ -125,10 +122,14 @@ public class ManualCandidateService
 
 		final BPartner bpartner = bpartnerComp.getBpartner();
 
-		final InvoiceRule newICInvoiceRule = Optional.ofNullable(newIC.getInvoiceRule())
-				.orElseGet(bpartner::getInvoiceRule);
+		final InvoiceRule partnerInvoiceRule = newIC.getSoTrx().isSales() ?
+				bpartner.getCustomerInvoiceRule() :
+				bpartner.getVendorInvoiceRule();
 
-		candidate.invoiceRule(coalesceNotNull(newICInvoiceRule, InvoiceRule.Immediate));
+		final InvoiceRule invoiceRule = coalesce(
+				partnerInvoiceRule,
+				InvoiceRule.Immediate);
+		candidate.invoiceRule(invoiceRule);
 		candidate.recordReference(newIC.getRecordReference());
 
 		return candidate.build();

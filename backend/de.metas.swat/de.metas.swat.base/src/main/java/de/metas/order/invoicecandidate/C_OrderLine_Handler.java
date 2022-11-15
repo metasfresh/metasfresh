@@ -450,7 +450,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final TaxId taxId = TaxId.ofRepoId(orderLine.getC_Tax_ID());
 
 		// ts: we *must* use the order line's data
-		final PriceAndTaxBuilder priceAndTax = PriceAndTax.builder()
+		final PriceAndTax.PriceAndTaxBuilder priceAndTax = PriceAndTax.builder()
 				.invoicableQtyBasedOn(InvoicableQtyBasedOn.fromRecordString(orderLine.getInvoicableQtyBasedOn()))
 				.pricingSystemId(PricingSystemId.ofRepoId(order.getM_PricingSystem_ID()))
 				.priceEntered(orderLine.getPriceEntered())

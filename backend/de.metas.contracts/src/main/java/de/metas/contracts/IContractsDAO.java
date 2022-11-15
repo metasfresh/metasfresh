@@ -30,8 +30,8 @@ import de.metas.order.OrderId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.compiere.model.IQuery;
 import org.adempiere.ad.dao.QueryLimit;
+import org.compiere.model.IQuery;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;

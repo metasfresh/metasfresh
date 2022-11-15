@@ -118,6 +118,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static org.compiere.model.I_API_Audit_Config.COLUMNNAME_IsInvokerWaitsForResult;
+
 /**
  * Persistent Object.
  * Superclass for actual implementations

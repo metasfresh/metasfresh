@@ -135,7 +135,7 @@ public class CRPReasoner
 		int daysAdded = 0;
 		if (!resourceType.isDayAvailable(date))
 		{
-			date = date.plusDays(direction);
+			date = date.plus(direction, ChronoUnit.DAYS);
 			daysAdded++;
 			if (daysAdded >= 7)
 			{
@@ -190,7 +190,7 @@ public class CRPReasoner
 				final MResourceUnAvailable rua = rs.next();
 				if (rua.isUnAvailable(date))
 				{
-					date = date.plusDays(direction);
+					date = date.plus(direction, ChronoUnit.DAYS);
 				}
 				date = getAvailableDate(resourceType, date, isScheduleBackward);
 			}

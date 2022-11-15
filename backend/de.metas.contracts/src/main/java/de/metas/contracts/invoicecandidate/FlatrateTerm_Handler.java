@@ -1,15 +1,5 @@
 package de.metas.contracts.invoicecandidate;
 
-import static de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode.CREATE_CANDIDATES_AND_INVOICES;
-import static de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode.CREATE_CANDIDATES;
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Consumer;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Maps;
@@ -28,6 +18,8 @@ import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.TimeUtil;
 
 import java.util.Collection;
@@ -37,13 +29,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import static de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode.CREATE_CANDIDATES;
+import static de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode.CREATE_CANDIDATES_AND_INVOICES;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
-import org.adempiere.ad.dao.QueryLimit;
-import org.adempiere.service.ISysConfigBL;
-
-import javax.annotation.Nullable;
-
-import javax.annotation.Nullable;
 
 /**
  * Creates {@link I_C_Invoice_Candidate} from {@link I_C_Flatrate_Term}.

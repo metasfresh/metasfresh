@@ -181,7 +181,7 @@ public class InvoiceCandidate
 
 		final StockQtyAndUOMQty toInvoiceExclOverrideCalc = toInvoiceExclOverride.getQtysCalc();
 
-		final ToInvoiceDataBuilder result = ToInvoiceData.builder()
+		final ToInvoiceData.ToInvoiceDataBuilder result = ToInvoiceData.builder()
 				.qtysRaw(toInvoiceExclOverride.getQtysRaw())
 				.qtysCalc(toInvoiceExclOverrideCalc);
 

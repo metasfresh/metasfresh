@@ -8,7 +8,6 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
-import de.metas.organization.InstantAndOrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;

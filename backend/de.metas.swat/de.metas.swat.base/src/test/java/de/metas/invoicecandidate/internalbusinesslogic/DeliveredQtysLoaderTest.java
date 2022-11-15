@@ -88,7 +88,6 @@ class DeliveredQtysLoaderTest
 		final DeliveredData result = DeliveredDataLoader
 				.builder()
 				.soTrx(SOTrx.SALES)
-				.invoiceCandDAO(invoiceCandDAO)
 				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
 				.invoiceCandidateId(InvoiceCandidateIds.ofRecord(icRecord))
 				.icUomId(UomId.ofRepoId(icUomRecord.getC_UOM_ID()))
@@ -130,7 +129,6 @@ class DeliveredQtysLoaderTest
 		final DeliveredDataLoader deliveredQtysLoader = DeliveredDataLoader.builder()
 				.invoiceCandidateId(InvoiceCandidateIds.ofRecord(icRecord))
 				.soTrx(SOTrx.SALES)
-				.invoiceCandDAO(invoiceCandDAO)
 				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
 				.icUomId(UomId.ofRepoId(icUomRecord.getC_UOM_ID()))
 				.stockUomId(UomId.ofRepoId(stockUomRecord.getC_UOM_ID()))
@@ -172,7 +170,6 @@ class DeliveredQtysLoaderTest
 
 		final DeliveredDataLoader deliveredQtysLoader = DeliveredDataLoader.builder()
 				.invoiceCandidateId(InvoiceCandidateIds.ofRecord(icRecord))
-				.invoiceCandDAO(invoiceCandDAO)
 				.soTrx(SOTrx.SALES)
 				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
 				.icUomId(UomId.ofRepoId(icUomRecord.getC_UOM_ID()))
@@ -209,7 +206,6 @@ class DeliveredQtysLoaderTest
 
 		final DeliveredDataLoader deliveredQtysLoader = DeliveredDataLoader.builder()
 				.invoiceCandidateId(InvoiceCandidateIds.ofRecord(icRecord))
-				.invoiceCandDAO(invoiceCandDAO)
 				.soTrx(SOTrx.SALES)
 				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
 				.icUomId(UomId.ofRepoId(icUomRecord.getC_UOM_ID()))
@@ -248,7 +244,6 @@ class DeliveredQtysLoaderTest
 
 		final DeliveredDataLoader deliveredQtysLoader = DeliveredDataLoader.builder()
 				.invoiceCandidateId(InvoiceCandidateIds.ofRecord(icRecord))
-				.invoiceCandDAO(invoiceCandDAO)
 				.soTrx(SOTrx.SALES)
 				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
 				.icUomId(UomId.ofRepoId(icUomRecord.getC_UOM_ID()))

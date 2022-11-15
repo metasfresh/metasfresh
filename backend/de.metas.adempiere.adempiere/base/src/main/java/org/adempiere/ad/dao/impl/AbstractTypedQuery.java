@@ -87,6 +87,20 @@ public abstract class AbstractTypedQuery<T> implements IQuery<T>
 		return model;
 	}
 
+	@NonNull
+	@Override
+	public final <ET extends T> ET firstNotNull(final Class<ET> clazz) throws DBException
+	{
+		final ET model = first(clazz);
+		if (model == null)
+		{
+			throw new DBException("@NotFound@ @" + getTableName() + "@"
+										  + "\n\n@Query@: " + this);
+		}
+
+		return model;
+	}
+	
 	/**
 	 * @param throwExIfMoreThenOneFound if true and there more then one record found it will throw exception, <code>null</code> will be returned otherwise.
 	 * @return model or null

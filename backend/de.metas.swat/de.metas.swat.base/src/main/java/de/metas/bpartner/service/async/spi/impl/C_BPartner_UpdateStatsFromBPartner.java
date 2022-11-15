@@ -22,28 +22,26 @@
 
 package de.metas.bpartner.service.async.spi.impl;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
+import com.google.common.collect.ImmutableMap;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.spi.WorkpackageProcessorAdapter;
+import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
+import de.metas.bpartner.service.BPartnerStats;
+import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
+import de.metas.bpartner.service.IBPartnerStatsBL;
+import de.metas.bpartner.service.IBPartnerStatsDAO;
+import de.metas.util.Services;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.util.Env;
 
-import com.google.common.collect.ImmutableMap;
-
-import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.spi.WorkpackageProcessorAdapter;
-import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
-import de.metas.bpartner.service.BPartnerStats;
-import de.metas.bpartner.service.IBPartnerStatsBL;
-import de.metas.bpartner.service.IBPartnerStatsDAO;
-import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
-import de.metas.util.Services;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Update BPartner's TotalOpenBalance and SO_CreditUsed fields.

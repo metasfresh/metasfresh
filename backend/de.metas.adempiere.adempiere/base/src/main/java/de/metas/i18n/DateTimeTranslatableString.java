@@ -9,20 +9,12 @@ import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.DisplayType;
 
-import com.google.common.collect.ImmutableSet;
-import de.metas.common.util.time.SystemTime;
-import lombok.EqualsAndHashCode;
-import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.DisplayType;
-
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZonedDateTime;
 import java.util.Set;
-
 import java.util.TimeZone;
 
 /*

@@ -1,21 +1,8 @@
-package de.metas.inoutcandidate.api;
-
-import de.metas.inout.ShipmentScheduleId;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.slf4j.MDC;
-import org.slf4j.MDC.MDCCloseable;
-
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.logging.TableRecordMDC;
-import de.metas.process.PInstanceId;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
-
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -32,6 +19,18 @@ import lombok.experimental.UtilityClass;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.inoutcandidate.api;
+
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.logging.TableRecordMDC;
+import de.metas.process.PInstanceId;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+import org.adempiere.util.lang.IAutoCloseable;
+import org.slf4j.MDC;
+import org.slf4j.MDC.MDCCloseable;
 
 @UtilityClass
 public class ShipmentSchedulesMDC

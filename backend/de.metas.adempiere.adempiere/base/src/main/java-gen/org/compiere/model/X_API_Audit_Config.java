@@ -77,6 +77,18 @@ public class X_API_Audit_Config extends org.compiere.model.PO implements I_API_A
 	}
 
 	@Override
+	public void setIsInvokerWaitsForResult (final boolean IsInvokerWaitsForResult)
+	{
+		set_Value (COLUMNNAME_IsInvokerWaitsForResult, IsInvokerWaitsForResult);
+	}
+
+	@Override
+	public boolean isInvokerWaitsForResult()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsInvokerWaitsForResult);
+	}
+
+	@Override
 	public void setIsForceProcessedAsync (final boolean IsForceProcessedAsync)
 	{
 		set_Value (COLUMNNAME_IsForceProcessedAsync, IsForceProcessedAsync);

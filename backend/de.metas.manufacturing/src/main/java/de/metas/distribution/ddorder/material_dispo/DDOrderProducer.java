@@ -27,10 +27,8 @@ import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.util.Env;
-import org.compiere.model.X_C_DocType;
 import org.compiere.util.TimeUtil;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
 import org.eevolution.model.I_DD_Order;
@@ -201,10 +199,10 @@ public class DDOrderProducer
 		ddOrderline.setDD_NetworkDistributionLine_ID(networkDistributionLineRecord.getDD_NetworkDistributionLine_ID());
 
 		// get supply source warehouse and locator
-		final LocatorId locatorFromId = warehouseBL.getOrCreateDefaultLocator(fromToWarehouse.getWarehouseFromId());
+		final LocatorId locatorFromId = warehouseBL.getOrCreateDefaultLocatorId(fromToWarehouse.getWarehouseFromId());
 
 		// get supply target warehouse and locator
-		final LocatorId locatorToId = warehouseBL.getOrCreateDefaultLocator(fromToWarehouse.getWarehouseToId());
+		final LocatorId locatorToId = warehouseBL.getOrCreateDefaultLocatorId(fromToWarehouse.getWarehouseToId());
 
 		//
 		// Locator From/To

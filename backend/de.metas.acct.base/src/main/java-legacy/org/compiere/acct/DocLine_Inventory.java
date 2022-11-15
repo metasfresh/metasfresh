@@ -81,28 +81,28 @@ public class DocLine_Inventory extends DocLine<Doc_Inventory>
 		if (isReversalLine())
 		{
 			return services.createReversalCostDetails(CostDetailReverseRequest.builder()
-					.acctSchemaId(as.getId())
-					.reversalDocumentRef(CostingDocumentRef.ofInventoryLineId(get_ID()))
-					.initialDocumentRef(CostingDocumentRef.ofInventoryLineId(getReversalLine_ID()))
-					.date(getDateAcctAsInstant())
-					.build())
+															  .acctSchemaId(as.getId())
+															  .reversalDocumentRef(CostingDocumentRef.ofInventoryLineId(get_ID()))
+															  .initialDocumentRef(CostingDocumentRef.ofInventoryLineId(getReversalLine_ID()))
+															  .date(getDateAcctAsInstant())
+															  .build())
 					.getTotalAmountToPost(as);
 		}
 		else
 		{
 			return services.createCostDetail(
-					CostDetailCreateRequest.builder()
-							.acctSchemaId(as.getId())
-							.clientId(getClientId())
-							.orgId(getOrgId())
-							.productId(getProductId())
-							.attributeSetInstanceId(getAttributeSetInstanceId())
-							.documentRef(CostingDocumentRef.ofInventoryLineId(get_ID()))
-							.qty(getQty())
-							.amt(CostAmount.zero(as.getCurrencyId()))
-							.explicitCostPrice(explicitCostPriceBD != null ? CostAmount.of(explicitCostPriceBD, as.getCurrencyId()) : null)
-							.date(getDateAcctAsInstant())
-							.build())
+							CostDetailCreateRequest.builder()
+									.acctSchemaId(as.getId())
+									.clientId(getClientId())
+									.orgId(getOrgId())
+									.productId(getProductId())
+									.attributeSetInstanceId(getAttributeSetInstanceId())
+									.documentRef(CostingDocumentRef.ofInventoryLineId(get_ID()))
+									.qty(getQty())
+									.amt(CostAmount.zero(as.getCurrencyId()))
+									.explicitCostPrice(explicitCostPriceBD != null ? CostAmount.of(explicitCostPriceBD, as.getCurrencyId()) : null)
+									.date(getDateAcctAsInstant())
+									.build())
 					.getTotalAmountToPost(as);
 		}
 	}

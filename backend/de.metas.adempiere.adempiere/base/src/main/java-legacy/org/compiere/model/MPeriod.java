@@ -26,7 +26,6 @@ import de.metas.calendar.IPeriodBL;
 import de.metas.calendar.IPeriodDAO;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocBaseType;
-import de.metas.common.util.time.SystemTime;
 import de.metas.logging.LogManager;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;

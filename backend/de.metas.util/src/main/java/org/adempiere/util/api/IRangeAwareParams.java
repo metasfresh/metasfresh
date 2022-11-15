@@ -25,6 +25,7 @@ package org.adempiere.util.api;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 
 @SuppressWarnings("unused")

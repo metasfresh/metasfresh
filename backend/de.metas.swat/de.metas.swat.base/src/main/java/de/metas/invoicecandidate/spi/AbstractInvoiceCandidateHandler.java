@@ -22,6 +22,7 @@ package de.metas.invoicecandidate.spi;
  * #L%
  */
 
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeBL;
@@ -188,8 +189,8 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 				.adOrgId(icRecord.getAD_Org_ID())
 				.isSOTrx(icRecord.isSOTrx())
 				.docBaseType(icRecord.isSOTrx()
-									 ? InvoiceDocBaseType.CustomerInvoice.getCode()
-									 : InvoiceDocBaseType.VendorInvoice.getCode())
+									 ? DocBaseType.ofCode(InvoiceDocBaseType.CustomerInvoice.getCode())
+									 : DocBaseType.ofCode(InvoiceDocBaseType.VendorInvoice.getCode()))
 				.build();
 		final DocTypeId docTypeIdOrNull = docTypeBL.getDocTypeIdOrNull(docTypeQuery);
 		if (docTypeIdOrNull != null)

@@ -64,33 +64,6 @@ import java.util.Properties;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.compiere.model.I_C_AcctSchema;
-import org.compiere.model.I_C_AcctSchema_Default;
-import org.compiere.model.I_C_AcctSchema_GL;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_CostElement;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Product_Category_Acct;
-import org.compiere.util.Env;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
-import java.time.LocalDate;
-import java.util.Properties;
-
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 
 /*
@@ -785,7 +758,7 @@ public class AveragePOCostingMethodHandlerTest
 																				   .acctSchemaId(acctSchemaId)
 																				   .clientId(ClientId.METASFRESH)
 																				   .costElement(costElement)
-																				   .date(LocalDate.parse("2020-08-14"))
+																				   .date(instant("2020-08-14"))
 																				   .productId(productId)
 																				   .attributeSetInstanceId(AttributeSetInstanceId.NONE)
 																				   .qtyToMove(Quantity.of(100, eachUOM))
@@ -819,7 +792,7 @@ public class AveragePOCostingMethodHandlerTest
 																				   .acctSchemaId(acctSchemaId)
 																				   .clientId(ClientId.METASFRESH)
 																				   .costElement(costElement)
-																				   .date(LocalDate.parse("2020-08-14"))
+																				   .date(instant("2020-08-14"))
 																				   .productId(productId)
 																				   .attributeSetInstanceId(AttributeSetInstanceId.NONE)
 																				   .qtyToMove(Quantity.of(100, eachUOM))
@@ -854,7 +827,7 @@ public class AveragePOCostingMethodHandlerTest
 																				   .acctSchemaId(acctSchemaId)
 																				   .clientId(ClientId.METASFRESH)
 																				   .costElement(costElement)
-																				   .date(LocalDate.parse("2020-08-14"))
+																				   .date(instant("2020-08-14"))
 																				   .productId(productId)
 																				   .attributeSetInstanceId(AttributeSetInstanceId.NONE)
 																				   .qtyToMove(Quantity.of(100, eachUOM))

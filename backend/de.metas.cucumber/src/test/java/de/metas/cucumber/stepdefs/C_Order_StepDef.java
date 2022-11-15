@@ -31,6 +31,7 @@ import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -52,8 +53,6 @@ import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.I_AD_Org;
-import org.compiere.model.I_AD_User;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.copy.CopyRecordRequest;
@@ -67,10 +66,6 @@ import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
-import org.compiere.model.I_C_PaymentTerm;
-import org.compiere.model.I_M_PricingSystem;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.util.TimeUtil;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.I_M_Warehouse;
@@ -95,24 +90,16 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocBaseType;
 import static org.compiere.model.I_C_DocType.COLUMNNAME_DocSubType;
-import static org.compiere.model.I_C_Order.COLUMNNAME_Bill_BPartner_ID;
-import static org.compiere.model.I_C_Order.COLUMNNAME_Bill_Location_ID;
-import static org.compiere.model.I_C_Order.COLUMNNAME_Bill_User_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_AD_Org_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Bill_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Bill_Location_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Bill_User_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_Order_ID;
-import static org.compiere.model.I_C_Order.COLUMNNAME_DropShip_BPartner_ID;
-import static org.compiere.model.I_C_Order.COLUMNNAME_DropShip_Location_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_DocStatus;
 import static org.compiere.model.I_C_Order.COLUMNNAME_DropShip_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_DropShip_Location_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_Link_Order_ID;
-import static org.compiere.model.I_C_Order.COLUMNNAME_M_PricingSystem_ID;
-import static org.compiere.model.I_C_Order.COLUMNNAME_M_Warehouse_ID;
-import static org.compiere.model.I_C_Order.COLUMNNAME_PaymentRule;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_PricingSystem_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_Warehouse_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_PaymentRule;
@@ -510,7 +497,7 @@ public class C_Order_StepDef
 			if (Check.isNotBlank(docBaseType) && Check.isNotBlank(docSubType))
 			{
 				final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
-						.docBaseType(docBaseType)
+						.docBaseType(DocBaseType.ofCode(docBaseType))
 						.docSubType(docSubType)
 						.adClientId(order.getAD_Client_ID())
 						.adOrgId(order.getAD_Org_ID())

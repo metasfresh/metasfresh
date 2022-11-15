@@ -73,7 +73,7 @@ public class InvoiceCandidateRecordService
 
 	public InvoiceCandidate ofRecord(@NonNull final I_C_Invoice_Candidate icRecord)
 	{
-		final InvoiceCandidateBuilder result = InvoiceCandidate.builder();
+		final InvoiceCandidate.InvoiceCandidateBuilder result = InvoiceCandidate.builder();
 
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
@@ -128,7 +128,6 @@ public class InvoiceCandidateRecordService
 				.loadOrderedQtys();
 
 		final DeliveredData deliveredData = DeliveredDataLoader.builder()
-				.invoiceCandDAO(invoiceCandDAO)
 				.invoiceCandidateId(invoiceCandidateId)
 				.soTrx(soTrx)
 				.productId(productId)
