@@ -3,11 +3,13 @@ import PropTypes from 'prop-types';
 import cx from 'classnames';
 
 import * as CompleteStatus from '../../constants/CompleteStatus';
+import HazardIcon from '../HazardIcon';
 
 const ButtonWithIndicator = ({
   caption,
   showWarningSign,
   typeFASIconName,
+  hazardSymbols,
   isDanger,
   completeStatus,
   disabled,
@@ -34,6 +36,16 @@ const ButtonWithIndicator = ({
               <i className={`fas fa-solid ${typeFASIconName}`} />
             </span>
           )}
+          {hazardSymbols &&
+            hazardSymbols.map((hazardSymbol, symbolIndex) => (
+              <HazardIcon
+                key={symbolIndex}
+                imageId={hazardSymbol.imageId}
+                caption={hazardSymbol.name}
+                maxWidth={40}
+                maxHeight={40}
+              />
+            ))}
         </div>
         <div className="caption-btn">
           <div className="rows">
@@ -68,6 +80,7 @@ ButtonWithIndicator.propTypes = {
   caption: PropTypes.string.isRequired,
   showWarningSign: PropTypes.bool,
   typeFASIconName: PropTypes.string,
+  hazardSymbols: PropTypes.array,
   isDanger: PropTypes.bool,
   completeStatus: PropTypes.string,
   disabled: PropTypes.bool,

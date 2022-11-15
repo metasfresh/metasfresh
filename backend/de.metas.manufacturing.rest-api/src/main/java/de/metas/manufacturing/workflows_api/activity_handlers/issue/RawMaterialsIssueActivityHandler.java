@@ -4,10 +4,15 @@ import com.google.common.collect.ImmutableList;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.manufacturing.job.model.ManufacturingJob;
+import de.metas.manufacturing.job.model.RawMaterialsIssueLine;
 import de.metas.manufacturing.job.service.ManufacturingJobService;
+import de.metas.manufacturing.workflows_api.activity_handlers.issue.json.JsonHazardSymbol;
 import de.metas.manufacturing.workflows_api.activity_handlers.issue.json.JsonRawMaterialsIssueLine;
 import de.metas.manufacturing.workflows_api.activity_handlers.issue.json.JsonRejectReasonsList;
 import de.metas.manufacturing.workflows_api.activity_handlers.issue.json.JsonScaleDevice;
+import de.metas.product.ProductId;
+import de.metas.product.hazard_symbol.ProductHazardSymbolService;
+import de.metas.util.Services;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.model.UIComponent;
 import de.metas.workflow.rest_api.model.UIComponentType;
@@ -30,14 +35,17 @@ public class RawMaterialsIssueActivityHandler implements WFActivityHandler
 	private static final UIComponentType COMPONENT_TYPE = UIComponentType.ofString("manufacturing/rawMaterialsIssue");
 
 	private final ManufacturingJobService manufacturingJobService;
+	private final ProductHazardSymbolService productHazardSymbolService;
 	private final ADReferenceService adReferenceService;
 
 	public RawMaterialsIssueActivityHandler(
 			@NonNull final ManufacturingJobService manufacturingJobService,
-			@NonNull final ADReferenceService adReferenceService)
+			@NonNull final ADReferenceService adReferenceService,
+			@NonNull final ProductHazardSymbolService productHazardSymbolService)
 	{
 		this.manufacturingJobService = manufacturingJobService;
 		this.adReferenceService = adReferenceService;
+		this.productHazardSymbolService = productHazardSymbolService;
 	}
 
 	@Override
@@ -76,7 +84,25 @@ public class RawMaterialsIssueActivityHandler implements WFActivityHandler
 		return job.getActivityById(wfActivityId)
 				.getRawMaterialsIssueAssumingNotNull()
 				.getLines().stream()
-				.map(line -> JsonRawMaterialsIssueLine.of(line, jsonOpts))
+				.map(line -> toJson(line, jsonOpts))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private JsonRawMaterialsIssueLine toJson(final @NonNull RawMaterialsIssueLine line, final @NonNull JsonOpts jsonOpts)
+	{
+		final ImmutableList<JsonHazardSymbol> jsonHazardSymbols = getJsonHazardSymbols(line.getProductId(), jsonOpts.getAdLanguage());
+
+		return JsonRawMaterialsIssueLine.of(
+				line,
+				jsonHazardSymbols,
+				jsonOpts);
+	}
+
+	private ImmutableList<JsonHazardSymbol> getJsonHazardSymbols(final @NonNull ProductId productId, final String adLanguage)
+	{
+		return productHazardSymbolService.getHazardSymbolsByProductId(productId)
+				.stream()
+				.map(hazardSymbol -> JsonHazardSymbol.of(hazardSymbol, adLanguage))
 				.collect(ImmutableList.toImmutableList());
 	}
 

@@ -28,12 +28,14 @@ const RawMaterialIssueActivity = (props) => {
       {lines && lines.length > 0
         ? lines.map((lineItem, lineIndex) => {
             const lineId = '' + lineIndex;
+            //console.log('line', { lineItem });
 
             return (
               <ButtonWithIndicator
                 key={lineId}
                 typeFASIconName="fa-arrow-right-to-bracket"
                 caption={lineItem.productName}
+                hazardSymbols={lineItem.hazardSymbols}
                 completeStatus={lineItem.completeStatus || CompleteStatus.NOT_STARTED}
                 disabled={!isUserEditable}
                 onClick={() => onButtonClick(lineId)}

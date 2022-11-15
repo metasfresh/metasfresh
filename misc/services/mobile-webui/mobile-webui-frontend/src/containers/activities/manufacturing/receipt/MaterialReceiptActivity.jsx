@@ -35,6 +35,7 @@ const MaterialReceiptActivity = (props) => {
                 key={lineId}
                 typeFASIconName={lineItem.coproduct ? 'fa-retweet' : 'fa-arrow-right-from-bracket'}
                 caption={lineItem.productName}
+                hazardSymbols={lineItem.hazardSymbols}
                 completeStatus={lineItem.completeStatus || CompleteStatus.NOT_STARTED}
                 disabled={!isUserEditable}
                 onClick={() => onButtonClick({ lineId })}
