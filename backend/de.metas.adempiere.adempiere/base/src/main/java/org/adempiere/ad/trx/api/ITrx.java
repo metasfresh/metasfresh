@@ -1,11 +1,14 @@
 package org.adempiere.ad.trx.api;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.util.collections.ListAccumulator;
 import lombok.NonNull;
 import org.adempiere.exceptions.DBException;
 
 import javax.annotation.Nullable;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.Date;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -194,6 +197,19 @@ public interface ITrx
 			runAfterCommit(() -> afterCommitValueProcessor.accept(value));
 			return value;
 		});
+	}
+
+	default <T> void accumulateAndProcessAfterCommit(
+			@NonNull final String propertyName,
+			@NonNull final Collection<T> itemsToAccumulate,
+			@NonNull final Consumer<ImmutableList<T>> afterCommitListProcessor)
+	{
+		getProperty(propertyName, () -> {
+			final ListAccumulator<T> accum = new ListAccumulator<>();
+			runAfterCommit(() -> accum.flush(afterCommitListProcessor));
+			return accum;
+		})
+				.addAll(itemsToAccumulate);
 	}
 
 	/**

@@ -32,6 +32,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
+import java.util.function.UnaryOperator;
 
 @Value
 public class OrderBOMLineQuantities
@@ -62,14 +63,14 @@ public class OrderBOMLineQuantities
 			@Nullable final Quantity qtyReserved)
 	{
 		this.qtyRequired = qtyRequired;
-		this.qtyRequiredBeforeClose = CoalesceUtil.coalesce(qtyRequiredBeforeClose, qtyRequired::toZero);
-		this.qtyIssuedOrReceived = CoalesceUtil.coalesce(qtyIssuedOrReceived, qtyRequired::toZero);
-		this.qtyIssuedOrReceivedActual = CoalesceUtil.coalesce(qtyIssuedOrReceivedActual, qtyRequired::toZero);
-		this.qtyReject = CoalesceUtil.coalesce(qtyReject, qtyRequired::toZero);
-		this.qtyScrap = CoalesceUtil.coalesce(qtyScrap, qtyRequired::toZero);
-		this.qtyUsageVariance = CoalesceUtil.coalesce(qtyUsageVariance, qtyRequired::toZero);
-		this.qtyPost = CoalesceUtil.coalesce(qtyPost, qtyRequired::toZero);
-		this.qtyReserved = CoalesceUtil.coalesce(qtyReserved, qtyRequired::toZero);
+		this.qtyRequiredBeforeClose = CoalesceUtil.coalesceNotNull(qtyRequiredBeforeClose, qtyRequired::toZero);
+		this.qtyIssuedOrReceived = CoalesceUtil.coalesceNotNull(qtyIssuedOrReceived, qtyRequired::toZero);
+		this.qtyIssuedOrReceivedActual = CoalesceUtil.coalesceNotNull(qtyIssuedOrReceivedActual, qtyRequired::toZero);
+		this.qtyReject = CoalesceUtil.coalesceNotNull(qtyReject, qtyRequired::toZero);
+		this.qtyScrap = CoalesceUtil.coalesceNotNull(qtyScrap, qtyRequired::toZero);
+		this.qtyUsageVariance = CoalesceUtil.coalesceNotNull(qtyUsageVariance, qtyRequired::toZero);
+		this.qtyPost = CoalesceUtil.coalesceNotNull(qtyPost, qtyRequired::toZero);
+		this.qtyReserved = CoalesceUtil.coalesceNotNull(qtyReserved, qtyRequired::toZero);
 
 		this.uomId = Quantity.getCommonUomIdOfAll(
 				this.qtyRequired,
@@ -212,6 +213,21 @@ public class OrderBOMLineQuantities
 	public Quantity getQtyIssuedOrReceived_NegateBecauseIsCOProduct()
 	{
 		return adjustCoProductQty(getQtyIssuedOrReceived());
+	}
+
+	public OrderBOMLineQuantities convertQuantities(@NonNull final UnaryOperator<Quantity> converter)
+	{
+		return toBuilder()
+				.qtyRequired(converter.apply(qtyRequired))
+				.qtyRequiredBeforeClose(converter.apply(qtyRequiredBeforeClose))
+				.qtyIssuedOrReceived(converter.apply(qtyIssuedOrReceived))
+				.qtyIssuedOrReceivedActual(converter.apply(qtyIssuedOrReceivedActual))
+				.qtyReject(converter.apply(qtyReject))
+				.qtyScrap(converter.apply(qtyScrap))
+				.qtyUsageVariance(converter.apply(qtyUsageVariance))
+				.qtyPost(converter.apply(qtyPost))
+				.qtyReserved(converter.apply(qtyReserved))
+				.build();
 	}
 
 }
