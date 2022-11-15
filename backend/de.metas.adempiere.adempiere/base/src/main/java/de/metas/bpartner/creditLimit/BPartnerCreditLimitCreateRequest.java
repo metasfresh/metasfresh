@@ -22,30 +22,32 @@
 
 package de.metas.bpartner.creditLimit;
 
-import de.metas.util.Check;
-import de.metas.util.lang.RepoIdAware;
+import de.metas.bpartner.BPartnerId;
+import de.metas.organization.OrgId;
+import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
+import org.compiere.model.I_C_BPartner_CreditLimit;
 
-/**
- * C_BPartner_CreditLimit_ID
- */
+import javax.annotation.Nullable;
+import java.util.function.Consumer;
+
+@Builder
 @Value
-public class BPartnerCreditLimitId implements RepoIdAware
+public class BPartnerCreditLimitCreateRequest
 {
-	int repoId;
+	@NonNull
+	BPartnerId bpartnerId;
 
-	public static BPartnerCreditLimitId ofRepoId(final int bpCreditLimitId)
-	{
-		return new BPartnerCreditLimitId(bpCreditLimitId);
-	}
+	@NonNull
+	BPartnerCreditLimit creditLimit;
 
-	public static int toRepoId(final BPartnerCreditLimitId id)
-	{
-		return id != null ? id.getRepoId() : -1;
-	}
+	@Nullable
+	OrgId orgId;
 
-	private BPartnerCreditLimitId(final int bpCreditLimitId)
-	{
-		this.repoId = Check.assumeGreaterThanZero(bpCreditLimitId, "C_BPartner_CreditLimit_ID");
-	}
+	/**
+	 * Use-Case for {@code null}: when transferring a customer to another org, the user who does the transfer might not have access to the target-org. Still we need to be able to create the creditLimit in that target-org.
+	 */
+	@Nullable
+	Consumer<I_C_BPartner_CreditLimit> validatePermissions;
 }

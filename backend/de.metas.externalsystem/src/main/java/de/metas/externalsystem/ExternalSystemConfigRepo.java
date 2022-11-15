@@ -44,8 +44,8 @@ import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
 import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfig;
 import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfigId;
-import de.metas.externalsystem.sap.ExternalSystemSAPConfigId;
 import de.metas.externalsystem.sap.ExternalSystemSAPConfig;
+import de.metas.externalsystem.sap.ExternalSystemSAPConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigMapping;
@@ -855,6 +855,8 @@ public class ExternalSystemConfigRepo
 				.value(config.getExternalSystemValue())
 				.sftpProductTargetDirectory(config.getSFTP_TargetDirectory())
 				.sftpCreditLimitTargetDirectory(config.getSFTP_CreditLimit_TargetDirectory())
+				.sftpCreditLimitFileNamePattern(config.getSFTP_CreditLimit_FileName_Pattern())
+				.sftpProductFileNamePattern(config.getSFTP_Product_FileName_Pattern())
 				.processedDirectory(config.getProcessedDirectory())
 				.erroredDirectory(config.getErroredDirectory())
 				.pollingFrequency(Duration.ofMillis(config.getPollingFrequencyInMs()))

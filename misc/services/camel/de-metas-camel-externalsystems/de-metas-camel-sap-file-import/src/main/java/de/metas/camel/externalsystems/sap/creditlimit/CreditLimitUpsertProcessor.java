@@ -24,8 +24,8 @@ package de.metas.camel.externalsystems.sap.creditlimit;
 
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.ProcessorHelper;
+import de.metas.camel.externalsystems.common.v2.CreditLimitDeleteRequest;
 import de.metas.camel.externalsystems.sap.api.model.creditlimit.CreditLimitRow;
-import de.metas.common.bpartner.v2.request.creditLimit.JsonRequestCreditLimitDelete;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
@@ -78,8 +78,8 @@ public class CreditLimitUpsertProcessor implements Processor
 			return;
 		}
 
-		final JsonRequestCreditLimitDelete jsonRequestCreditLimitDelete = prepareDeleteRequest(creditLimitRouteContext.getOrgCode(), creditLimitRouteContext.getCreditLimitUpsertGroupBuilder().getBPartnerIdentifierNotNull());
-		exchange.getIn().setBody(jsonRequestCreditLimitDelete, JsonRequestCreditLimitDelete.class);
+		final CreditLimitDeleteRequest creditLimitDeleteRequest = prepareDeleteRequest(creditLimitRouteContext.getOrgCode(), creditLimitRouteContext.getCreditLimitUpsertGroupBuilder().getBPartnerIdentifierNotNull());
+		exchange.getIn().setBody(creditLimitDeleteRequest, CreditLimitDeleteRequest.class);
 
 		creditLimitRouteContext.setBpUpsertCamelRequest(creditLimitRouteContext.getCreditLimitUpsertGroupBuilder().build());
 
@@ -97,17 +97,17 @@ public class CreditLimitUpsertProcessor implements Processor
 
 		creditLimitRouteContext.setBpUpsertCamelRequest(creditLimitRouteContext.getCreditLimitUpsertGroupBuilder().build());
 
-		final JsonRequestCreditLimitDelete jsonRequestCreditLimitDelete = CreditLimitUpsertProcessor.prepareDeleteRequest(creditLimitRouteContext.getOrgCode(), creditLimitRouteContext.getCreditLimitUpsertGroupBuilder().getBPartnerIdentifierNotNull());
+		final CreditLimitDeleteRequest creditLimitDeleteRequest = CreditLimitUpsertProcessor.prepareDeleteRequest(creditLimitRouteContext.getOrgCode(), creditLimitRouteContext.getCreditLimitUpsertGroupBuilder().getBPartnerIdentifierNotNull());
 
-		exchange.getIn().setBody(jsonRequestCreditLimitDelete, JsonRequestCreditLimitDelete.class);
+		exchange.getIn().setBody(creditLimitDeleteRequest, CreditLimitDeleteRequest.class);
 	}
 
 	@NonNull
-	public static JsonRequestCreditLimitDelete prepareDeleteRequest(@NonNull final String orgCode, @NonNull final String groupIdentifier)
+	public static CreditLimitDeleteRequest prepareDeleteRequest(@NonNull final String orgCode, @NonNull final String groupIdentifier)
 	{
-		return JsonRequestCreditLimitDelete.builder()
+		return CreditLimitDeleteRequest.builder()
 				.orgCode(orgCode)
-				.partnerIdentifier(formatExternalId(groupIdentifier))
+				.bpartnerIdentifier(formatExternalId(groupIdentifier))
 				.includingProcessed(true)
 				.build();
 	}

@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de-metas-common-bpartner
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,34 +20,26 @@
  * #L%
  */
 
-package de.metas.bpartner.service.creditlimit;
+package de.metas.common.bpartner.v2.request.creditLimit;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.organization.OrgId;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-import org.compiere.model.I_C_BPartner_CreditLimit;
 
-import javax.annotation.Nullable;
-import java.util.function.Consumer;
+import java.math.BigDecimal;
 
-@Builder
 @Value
-public class BPartnerCreditLimitCreateRequest
+@Builder
+@JsonDeserialize(builder = JsonMoney.JsonMoneyBuilder.class)
+public class JsonMoney
 {
 	@NonNull
-	BPartnerId bpartnerId;
+	@JsonProperty("amount")
+	BigDecimal amount;
 
 	@NonNull
-	BPartnerCreditLimit creditLimit;
-
-	@Nullable
-	OrgId orgId;
-
-	/**
-	 * Use-Case for {@code null}: when transferring a customer to another org, the user who does the transfer might not have access to the target-org. Still we need to be able to create the creditLimit in that target-org.
-	 */
-	@Nullable
-	Consumer<I_C_BPartner_CreditLimit> validatePermissions;
+	@JsonProperty("currencyCode")
+	String currencyCode;
 }

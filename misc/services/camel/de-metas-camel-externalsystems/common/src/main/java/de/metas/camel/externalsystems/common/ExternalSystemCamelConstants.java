@@ -41,7 +41,6 @@ public class ExternalSystemCamelConstants
 	public static final String HEADER_EXTERNAL_SERVICE_VALUE = "serviceValue";
 	public static final String HEADER_EXTERNAL_SYSTEM_REQUEST = "externalSystemRequest";
 	public static final String HEADER_HU_ID = "M_HU_ID";
-	public static final String HEADER_INCLUDING_PROCESSED = "includingProcessed";
 
 	public static final String MF_API_BASE_URL_PROPERTY = "metasfresh.api.baseurl";
 
@@ -126,4 +125,8 @@ public class ExternalSystemCamelConstants
 	public static final String MF_CLEAR_HU_V2_URI = "metasfresh.clear-hu-v2.api.uri";
 
 	public static final String MF_DELETE_BPARTNER_CREDIT_LIMIT_CAMEL_URI = "metasfresh.delete-creditLimit-v2.camel.uri";
+
+	public static final String HEADER_TARGET_URI = "targetUri";
+
+	public static final String MF_UPSERT_BPARTNER_V2_BASE_URL = "metasfresh.upsert-bpartner.api.uri";
 }

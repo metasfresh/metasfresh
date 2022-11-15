@@ -23,9 +23,9 @@
 package de.metas.camel.externalsystems.sap.creditlimit;
 
 import de.metas.camel.externalsystems.common.ProcessLogger;
+import de.metas.camel.externalsystems.common.v2.CreditLimitDeleteRequest;
 import de.metas.camel.externalsystems.sap.api.model.creditlimit.CreditLimitRow;
 import de.metas.camel.externalsystems.sap.sftp.SFTPConfig;
-import de.metas.common.bpartner.v2.request.creditLimit.JsonRequestCreditLimitDelete;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.Builder;
 import lombok.Getter;
@@ -86,7 +86,7 @@ public class GetCreditLimitsSFTPRouteBuilder extends RouteBuilder
 				  .unmarshal(new BindyCsvDataFormat(CreditLimitRow.class))
 				  .process(new CreditLimitUpsertProcessor(enabledByExternalSystemRequest, processLogger)).id(PROCESS_CREDIT_LIMIT_ROW_PROCESSOR_ID)
 				  .choice()
-				    .when(bodyAs(JsonRequestCreditLimitDelete.class).isNull())
+				    .when(bodyAs(CreditLimitDeleteRequest.class).isNull())
 				   	  .log(LoggingLevel.INFO, "Nothing to do! No credit limit to upsert!")
 				    .otherwise()
 					  .to(direct(UPSERT_CREDIT_LIMIT_ROUTE_ID))

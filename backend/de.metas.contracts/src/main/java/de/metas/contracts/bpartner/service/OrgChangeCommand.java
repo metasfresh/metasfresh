@@ -32,10 +32,10 @@ import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerContactType;
-import de.metas.bpartner.service.creditlimit.BPartnerCreditLimit;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.bpartner.creditLimit.BPartnerCreditLimit;
 import de.metas.bpartner.service.CloneBPartnerRequest;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -171,7 +171,7 @@ public class OrgChangeCommand
 
 		final BPartnerId newBPartnerId = getOrCreateCounterpartBPartner(request, orgMappingId);
 
-		// gets the partner with all the active and inactive locations, users and bank accounts
+		// gets the partner with all the active and inactive locations, users, bank accounts & credit limits
 		BPartnerComposite destinationBPartnerComposite = bpCompositeRepo.getById(newBPartnerId);
 		{
 			destinationBPartnerComposite.getBpartner().setActive(true);
@@ -704,11 +704,9 @@ public class OrgChangeCommand
 	{
 		final List<BPartnerCreditLimit> sourceCreditLimits = orgChangeBPartnerComposite.getCreditLimits();
 
-		final List<BPartnerCreditLimit> existingCreditLimitsInDestinationPartner =
-				destinationBPartnerComposite
-						.getCreditLimits();
+		final List<BPartnerCreditLimit> existingCreditLimitsInDestinationPartner = destinationBPartnerComposite.getCreditLimits();
 
-		final List<BPartnerCreditLimit> newCreditLimits = new ArrayList<>();
+		final List<BPartnerCreditLimit> updatedDestinationCreditLimits = new ArrayList<>();
 
 		for (final BPartnerCreditLimit sourceCreditLimit : sourceCreditLimits)
 		{
@@ -716,18 +714,25 @@ public class OrgChangeCommand
 
 			sourceCreditLimit.setOrgMappingId(creditLimitOrgMappingId);
 
-			final BPartnerCreditLimit matchingCreditLimit = existingCreditLimitsInDestinationPartner.stream()
+			final BPartnerCreditLimit matchingCreditLimit_Updated = existingCreditLimitsInDestinationPartner.stream()
 					.filter(bpartnerCreditLimit -> OrgMappingId.equals(creditLimitOrgMappingId, bpartnerCreditLimit.getOrgMappingId()))
 					.findFirst()
+					.map(matchingCreditLimit -> matchingCreditLimit.toBuilder()
+							.money(sourceCreditLimit.getMoney())
+							.creditLimitTypeId(sourceCreditLimit.getCreditLimitTypeId())
+							.dateFrom(sourceCreditLimit.getDateFrom())
+							.processed(sourceCreditLimit.isProcessed())
+							.active(true)
+							.build())
 					.orElse(null);
 
-			if (matchingCreditLimit != null)
+			if (matchingCreditLimit_Updated != null)
 			{
-				matchingCreditLimit.setActive(true);
-
 				loggable.addLog("Credit Limit {} from the existing partner {} was preserved.",
-								matchingCreditLimit,
+								matchingCreditLimit_Updated,
 								destinationBPartnerComposite.getBpartner());
+
+				updatedDestinationCreditLimits.add(matchingCreditLimit_Updated);
 			}
 			else
 			{
@@ -736,14 +741,14 @@ public class OrgChangeCommand
 						.active(true)
 						.build();
 
-				newCreditLimits.add(newCreditLimit);
+				updatedDestinationCreditLimits.add(newCreditLimit);
 
 				loggable.addLog("Credit Limit {} was created for the destination partner {}.",
 								newCreditLimit,
 								destinationBPartnerComposite.getBpartner());
 			}
 		}
-		return newCreditLimits;
+		return updatedDestinationCreditLimits;
 	}
 
 	private void unmarkDefaultLocationsFromDestination(@NonNull final DefaultLocations sourceDefaultLocations,

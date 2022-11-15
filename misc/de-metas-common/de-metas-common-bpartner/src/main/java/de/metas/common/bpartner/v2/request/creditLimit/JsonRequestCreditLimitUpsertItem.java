@@ -29,8 +29,9 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
+
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.CREDIT_LIMIT_IDENTIFIER_DOC;
 
 @Getter
 @ToString
@@ -38,58 +39,50 @@ import java.time.LocalDate;
 @ApiModel(description = "Note that given the respective use-case, either one of both properties might be `null`, but not both at once.")
 public class JsonRequestCreditLimitUpsertItem
 {
-	@ApiModelProperty(position = 10)
-	private JsonMetasfreshId creditLimitMetasfreshId;
+	@ApiModelProperty(position = 10, value = CREDIT_LIMIT_IDENTIFIER_DOC + "\n"
+			+ "If the identifier is an `<C_BPartner_CreditLimit_ID>`, then it is assumed that the resource exists in metasfresh.\n")
+	private JsonMetasfreshId creditLimitId;
 
 	@ApiModelProperty(hidden = true)
 	private boolean creditLimitMetasfreshIdSet;
 
-	@ApiModelProperty(position = 20)
-	private BigDecimal amount;
+	@ApiModelProperty(position = 20, value = "Translated to `C_BPartner_CreditLimit.Amount`")
+	private JsonMoney money;
 
 	@ApiModelProperty(hidden = true)
-	private boolean amountSet;
+	private boolean moneySet;
 
-	@ApiModelProperty(position = 30)
+	@ApiModelProperty(position = 30, value = "Translated to `C_CreditLimit_Type.Name`")
 	private String type;
 
 	@ApiModelProperty(hidden = true)
 	private boolean typeSet;
 
-	@ApiModelProperty(position = 40)
-	private String orgCode;
-
 	@ApiModelProperty(hidden = true)
 	private boolean orgCodeSet;
 
-	@ApiModelProperty(position = 50)
+	@ApiModelProperty(position = 50, value = "Translated to `C_BPartner_CreditLimit.DateFrom`")
 	private LocalDate dateFrom;
 
 	@ApiModelProperty(hidden = true)
 	private boolean dateFromSet;
 
-	@ApiModelProperty(position = 60)
-	private String currencyCode;
-
-	@ApiModelProperty(hidden = true)
-	private boolean currencyCodeSet;
-
-	@ApiModelProperty(position = 70)
+	@ApiModelProperty(position = 60, value = "Translated to `C_BPartner_CreditLimit.IsActive`")
 	private Boolean active;
 
 	@ApiModelProperty(hidden = true)
 	private boolean activeSet;
 
-	@ApiModelProperty(position = 80)
+	@ApiModelProperty(position = 70, value = "Translated to `C_BPartner_CreditLimit.Processed`")
 	private Boolean processed;
 
 	@ApiModelProperty(hidden = true)
 	private boolean processedSet;
 
-	public void setAmount(final BigDecimal amount)
+	public void setMoney(final JsonMoney money)
 	{
-		this.amount = amount;
-		this.amountSet = true;
+		this.money = money;
+		this.moneySet = true;
 	}
 
 	public void setType(final String type)
@@ -104,9 +97,9 @@ public class JsonRequestCreditLimitUpsertItem
 		this.orgCodeSet = true;
 	}
 
-	public void setCreditLimitMetasfreshId(final JsonMetasfreshId creditLimitMetasfreshId)
+	public void setCreditLimitId(final JsonMetasfreshId creditLimitId)
 	{
-		this.creditLimitMetasfreshId = creditLimitMetasfreshId;
+		this.creditLimitId = creditLimitId;
 		this.creditLimitMetasfreshIdSet = true;
 	}
 
@@ -114,12 +107,6 @@ public class JsonRequestCreditLimitUpsertItem
 	{
 		this.dateFrom = dateFrom;
 		this.dateFromSet = true;
-	}
-
-	public void setCurrencyCode(final String currencyCode)
-	{
-		this.currencyCode = currencyCode;
-		this.currencyCodeSet = true;
 	}
 
 	public void setActive(final Boolean active)

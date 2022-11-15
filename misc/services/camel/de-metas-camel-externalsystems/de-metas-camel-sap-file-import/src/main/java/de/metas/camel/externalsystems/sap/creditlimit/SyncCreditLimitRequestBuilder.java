@@ -28,6 +28,7 @@ import de.metas.camel.externalsystems.sap.api.model.creditlimit.CreditLimitRow;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsertItem;
 import de.metas.common.bpartner.v2.request.JsonRequestComposite;
+import de.metas.common.bpartner.v2.request.creditLimit.JsonMoney;
 import de.metas.common.bpartner.v2.request.creditLimit.JsonRequestCreditLimitUpsert;
 import de.metas.common.bpartner.v2.request.creditLimit.JsonRequestCreditLimitUpsertItem;
 import de.metas.common.rest_api.v2.SyncAdvise;
@@ -40,6 +41,7 @@ import lombok.NonNull;
 import org.apache.camel.RuntimeCamelException;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -128,8 +130,7 @@ public class SyncCreditLimitRequestBuilder
 		final JsonRequestCreditLimitUpsertItem jsonRequestCreditLimitUpsertItem = new JsonRequestCreditLimitUpsertItem();
 
 		jsonRequestCreditLimitUpsertItem.setType(SUPPORTED_CREDIT_LIMIT_TYPE);
-		jsonRequestCreditLimitUpsertItem.setAmount(NumberUtils.asBigDecimal(creditLimitRow.getCreditLine()));
-		jsonRequestCreditLimitUpsertItem.setCurrencyCode(creditLimitRow.getCurrencyCode());
+		jsonRequestCreditLimitUpsertItem.setMoney(mapToJsonMoney(creditLimitRow.getCreditLine(), creditLimitRow.getCurrencyCode()));
 		jsonRequestCreditLimitUpsertItem.setOrgCode(orgCode);
 		jsonRequestCreditLimitUpsertItem.setDateFrom(LocalDate.parse(creditLimitRow.getEffectiveDateFrom(), DateTimeFormatter.ofPattern(PATTERN)));
 		jsonRequestCreditLimitUpsertItem.setProcessed(true);
@@ -189,6 +190,27 @@ public class SyncCreditLimitRequestBuilder
 		final LocalDate currentDate = SystemTime.asLocalDate();
 
 		return currentDate.isAfter(dateFrom) && currentDate.isBefore(dateTo);
+	}
+
+	@Nullable
+	private JsonMoney mapToJsonMoney(@Nullable final String amount, @Nullable final String currencyCode)
+	{
+		final BigDecimal amountAsBigD = NumberUtils.asBigDecimal(amount);
+
+		if (amountAsBigD == null)
+		{
+			return null;
+		}
+
+		if (Check.isBlank(currencyCode))
+		{
+			throw new RuntimeCamelException("Currency code cannot be missing if amount is provided!");
+		}
+
+		return JsonMoney.builder()
+						.amount(amountAsBigD)
+						.currencyCode(currencyCode)
+						.build();
 	}
 
 	@NonNull

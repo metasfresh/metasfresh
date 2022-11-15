@@ -94,8 +94,10 @@ Feature: create or update BPartner v2
                 10,
                 31
               ],
-              "amount": "20.5",
-              "currencyCode": "EUR",
+              "money": {
+                "amount": "20.5",
+                "currencyCode": "EUR"
+              },
               "active": true,
               "processed": false
             },
@@ -108,7 +110,10 @@ Feature: create or update BPartner v2
                 10,
                 30
               ],
-              "amount": "10",
+              "money": {
+                "amount": "10",
+                "currencyCode": "CHF"
+              },
               "active": false,
               "processed": true
             }

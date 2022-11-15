@@ -8,7 +8,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
-import de.metas.bpartner.service.creditlimit.BPartnerCreditLimit;
+import de.metas.bpartner.creditLimit.BPartnerCreditLimit;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.organization.OrgId;

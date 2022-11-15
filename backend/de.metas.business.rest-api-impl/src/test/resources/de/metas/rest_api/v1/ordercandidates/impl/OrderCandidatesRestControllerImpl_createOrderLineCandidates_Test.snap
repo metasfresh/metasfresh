@@ -450,7 +450,6 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "bpartner" : {
         "metasfreshId" : 100026,
         "externalId" : "1-2",
-        "code" : "BPartnerCode",
         "active" : true,
         "name" : "Bill  First",
         "group" : "DefaultGroup",
@@ -512,7 +511,6 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "bpartner" : {
         "metasfreshId" : 100026,
         "externalId" : "1-2",
-        "code" : "BPartnerCode",
         "active" : true,
         "name" : "Bill  First",
         "group" : "DefaultGroup",
@@ -574,7 +572,6 @@ de.metas.rest_api.v1.ordercandidates.impl.OrderCandidatesRestControllerImpl_crea
       "bpartner" : {
         "metasfreshId" : 100026,
         "externalId" : "1-2",
-        "code" : "BPartnerCode",
         "active" : true,
         "name" : "Bill  First",
         "group" : "DefaultGroup",

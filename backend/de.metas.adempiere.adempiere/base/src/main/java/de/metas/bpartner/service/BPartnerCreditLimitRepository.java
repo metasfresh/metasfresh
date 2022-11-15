@@ -29,12 +29,15 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.OrgMappingId;
+import de.metas.bpartner.creditLimit.BPartnerCreditLimit;
+import de.metas.bpartner.creditLimit.BPartnerCreditLimitCreateRequest;
 import de.metas.bpartner.creditLimit.BPartnerCreditLimitId;
 import de.metas.bpartner.creditLimit.CreditLimitTypeId;
-import de.metas.bpartner.service.creditlimit.BPartnerCreditLimit;
-import de.metas.bpartner.service.creditlimit.BPartnerCreditLimitCreateRequest;
 import de.metas.cache.CCache;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.currency.ICurrencyBL;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -42,10 +45,12 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.ICompositeQueryUpdater;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.I_C_CreditLimit_Type;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
@@ -67,6 +72,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class BPartnerCreditLimitRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
 	private final CCache<Integer, CreditLimitType> cache_creditLimitById = CCache.newCache(
 			I_C_CreditLimit_Type.Table_Name + "#by#" + I_C_CreditLimit_Type.COLUMNNAME_C_CreditLimit_Type_ID,
@@ -120,7 +126,7 @@ public class BPartnerCreditLimitRepository
 	}
 
 	@NonNull
-	public BPartnerCreditLimit getById(final BPartnerCreditLimitId bPartnerCreditLimitId)
+	public BPartnerCreditLimit getById(@NonNull final BPartnerCreditLimitId bPartnerCreditLimitId)
 	{
 		final I_C_BPartner_CreditLimit foundRecord = InterfaceWrapperHelper.load(bPartnerCreditLimitId.getRepoId(), I_C_BPartner_CreditLimit.class);
 
@@ -159,10 +165,16 @@ public class BPartnerCreditLimitRepository
 			@NonNull final OrgId orgId,
 			final boolean includingProcessed)
 	{
-		final ImmutableList<I_C_BPartner_CreditLimit> recordsToDelete = queryBL.createQueryBuilder(I_C_BPartner_CreditLimit.class)
+		final IQueryBuilder<I_C_BPartner_CreditLimit> queryBuilder = queryBL.createQueryBuilder(I_C_BPartner_CreditLimit.class)
 				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_ID, bpartnerId)
-				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_AD_Org_ID, orgId)
-				.create()
+				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_AD_Org_ID, orgId);
+
+		if (!includingProcessed)
+		{
+			queryBuilder.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_Processed, false);
+		}
+
+		final ImmutableList<I_C_BPartner_CreditLimit> recordsToDelete = queryBuilder.create()
 				.stream()
 				.collect(ImmutableList.toImmutableList());
 
@@ -193,7 +205,7 @@ public class BPartnerCreditLimitRepository
 
 		creditLimitRecord.setC_BPartner_ID(bPartnerCreditLimitCreateRequest.getBpartnerId().getRepoId());
 
-		creditLimitRecord.setAmount(creditLimit.getAmount());
+		creditLimitRecord.setAmount(creditLimit.getMoney().getValue());
 
 		if (creditLimit.getDateFrom() != null)
 		{
@@ -268,16 +280,28 @@ public class BPartnerCreditLimitRepository
 	}
 
 	@NonNull
-	public static BPartnerCreditLimit ofRecord(@NonNull final I_C_BPartner_CreditLimit creditLimit)
+	public BPartnerCreditLimit ofRecord(@NonNull final I_C_BPartner_CreditLimit creditLimit)
 	{
+		final OrgId orgId = OrgId.ofRepoId(creditLimit.getAD_Org_ID());
+		final Money moneyInOrgCurrency = getMoneyInOrgCurrencyId(creditLimit.getAmount(), orgId);
+
 		return BPartnerCreditLimit.builder()
 				.id(BPartnerCreditLimitId.ofRepoId(creditLimit.getC_BPartner_CreditLimit_ID()))
-				.amount(creditLimit.getAmount())
+				.bPartnerId(BPartnerId.ofRepoIdOrNull(creditLimit.getC_BPartner_ID()))
+				.money(moneyInOrgCurrency)
 				.creditLimitTypeId(CreditLimitTypeId.ofRepoId(creditLimit.getC_CreditLimit_Type_ID()))
 				.dateFrom(creditLimit.getDateFrom() != null ? creditLimit.getDateFrom().toInstant() : null)
 				.orgMappingId(OrgMappingId.ofRepoIdOrNull(creditLimit.getAD_Org_Mapping_ID()))
 				.active(creditLimit.isActive())
 				.processed(creditLimit.isProcessed())
 				.build();
+	}
+
+	@NonNull
+	private Money getMoneyInOrgCurrencyId(@NonNull final BigDecimal amount, @NonNull final OrgId orgId)
+	{
+		final CurrencyId orgCurrencyId = currencyBL.getBaseCurrencyId(Env.getClientId(), orgId);
+
+		return Money.of(amount, orgCurrencyId);
 	}
 }

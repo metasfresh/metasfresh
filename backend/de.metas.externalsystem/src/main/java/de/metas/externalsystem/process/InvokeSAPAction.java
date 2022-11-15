@@ -41,10 +41,12 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CHILD
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ERRORED_DIRECTORY;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_POLLING_FREQUENCY_MS;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PROCESSED_DIRECTORY;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_CREDIT_LIMIT_FILENAME_PATTERN;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_CREDIT_LIMIT_TARGET_DIRECTORY;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_HOST_NAME;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_PASSWORD;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_PORT;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_PRODUCT_FILENAME_PATTERN;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_PRODUCT_TARGET_DIRECTORY;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_USERNAME;
 
@@ -87,6 +89,8 @@ public class InvokeSAPAction extends AlterExternalSystemServiceStatusAction
 		parameters.put(PARAM_CHILD_CONFIG_VALUE, sapConfig.getValue());
 		parameters.put(PARAM_SFTP_PRODUCT_TARGET_DIRECTORY, sapConfig.getSftpProductTargetDirectory());
 		parameters.put(PARAM_SFTP_CREDIT_LIMIT_TARGET_DIRECTORY, sapConfig.getSftpCreditLimitTargetDirectory());
+		parameters.put(PARAM_SFTP_CREDIT_LIMIT_FILENAME_PATTERN, sapConfig.getSftpCreditLimitFileNamePattern());
+		parameters.put(PARAM_SFTP_PRODUCT_FILENAME_PATTERN, sapConfig.getSftpProductFileNamePattern());
 		parameters.put(PARAM_PROCESSED_DIRECTORY, sapConfig.getProcessedDirectory());
 		parameters.put(PARAM_ERRORED_DIRECTORY, sapConfig.getErroredDirectory());
 		parameters.put(PARAM_POLLING_FREQUENCY_MS, String.valueOf(sapConfig.getPollingFrequency().toMillis()));

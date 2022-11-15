@@ -32,12 +32,14 @@ import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerContactType;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationType;
+import de.metas.bpartner.creditLimit.BPartnerCreditLimit;
 import de.metas.bpartner.creditLimit.CreditLimitTypeId;
-import de.metas.bpartner.service.creditlimit.BPartnerCreditLimit;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.business.BusinessTestHelper;
+import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyRepository;
 import de.metas.greeting.GreetingId;
 import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.Language;
@@ -46,6 +48,8 @@ import de.metas.location.ILocationDAO;
 import de.metas.location.LocationCreateRequest;
 import de.metas.location.LocationId;
 import de.metas.marketing.base.model.CampaignId;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PricingSystemId;
@@ -66,6 +70,7 @@ import java.time.LocalDate;
 class BPartnerCompositeRepositoryTest
 {
 	private BPartnerCompositeRepository bpartnerCompositeRepository;
+	private CurrencyRepository currencyRepository;
 	private CountryId countryId_DE;
 	private OrgId orgId;
 
@@ -74,7 +79,7 @@ class BPartnerCompositeRepositoryTest
 	{
 		AdempiereTestHelper.get().init();
 		orgId = AdempiereTestHelper.createOrgWithTimeZone("defaultOrg");
-		
+
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 
 		bpartnerCompositeRepository = new BPartnerCompositeRepository(
@@ -83,6 +88,8 @@ class BPartnerCompositeRepositoryTest
 				new UserRoleRepository(),
 				new BPartnerCreditLimitRepository());
 
+		currencyRepository = new CurrencyRepository();
+
 		BusinessTestHelper.createStandardBPGroup();
 		countryId_DE = BusinessTestHelper.createCountry("DE");
 	}
@@ -90,6 +97,8 @@ class BPartnerCompositeRepositoryTest
 	@Test
 	void save_and_load_standardCase()
 	{
+		final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(CurrencyCode.CHF);
+
 		final BPartnerComposite bpartnerComposite = BPartnerComposite.builder()
 				.orgId(orgId)
 				.bpartner(BPartner.builder()
@@ -172,7 +181,7 @@ class BPartnerCompositeRepositoryTest
 						.email3("email3")
 						.build())
 				.creditLimit(BPartnerCreditLimit.builder()
-									 .amount(BigDecimal.valueOf(54.20))
+									 .money(Money.of(BigDecimal.valueOf(54.20), currencyId))
 									 .active(true)
 									 .creditLimitTypeId(CreditLimitTypeId.ofRepoId(123))
 									 .dateFrom(Instant.now())
@@ -194,7 +203,8 @@ class BPartnerCompositeRepositoryTest
 						"locations.changeLog",
 						"locations.original",
 						"contacts.changeLog",
-						"creditLimits.changeLog")
+						"creditLimits.changeLog",
+						"creditLimits.bPartnerId")
 				.isEqualTo(bpartnerComposite);
 	}
 

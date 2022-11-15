@@ -56,7 +56,6 @@ public class JsonResponseBPartnerCompositeUpsertItem
 
 	@ApiModelProperty(position = 50)
 	@JsonInclude(Include.NON_EMPTY)
-	// List<JsonResponseUpsertItem> responseCreditLimitItems;
 	List<JsonMetasfreshId> responseCreditLimitItems;
 
 	@Builder

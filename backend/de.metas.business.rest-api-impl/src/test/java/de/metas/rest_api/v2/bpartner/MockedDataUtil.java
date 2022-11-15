@@ -33,6 +33,7 @@ import de.metas.common.bpartner.v2.request.JsonRequestLocation;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsert.JsonRequestLocationUpsertBuilder;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsertItem;
+import de.metas.common.bpartner.v2.request.creditLimit.JsonMoney;
 import de.metas.common.bpartner.v2.request.creditLimit.JsonRequestCreditLimitUpsert;
 import de.metas.common.bpartner.v2.request.creditLimit.JsonRequestCreditLimitUpsertItem;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
@@ -77,7 +78,6 @@ public class MockedDataUtil
 		bPartner.setPhone("bPartner.phone");
 		bPartner.setUrl("bPartner.url");
 		bPartner.setVatId("bPartner.vatId");
-		bPartner.setCode("bPartner.code");
 
 		final ExternalIdentifier bpartnerIdentifier = ExternalIdentifier.of(bpartnerIdentifierStr);
 
@@ -109,7 +109,7 @@ public class MockedDataUtil
 		result.contacts(contactUpsert.build());
 
 		final JsonRequestCreditLimitUpsert.JsonRequestCreditLimitUpsertBuilder creditLimitUpsertBuilder = JsonRequestCreditLimitUpsert.builder()
-					.requestItem(createMockCreditLimit());
+				.requestItem(createMockCreditLimit());
 
 		result.creditLimits(creditLimitUpsertBuilder.build());
 
@@ -164,7 +164,10 @@ public class MockedDataUtil
 
 		final JsonRequestCreditLimitUpsertItem jsonRequestCreditLimitUpsertItem = new JsonRequestCreditLimitUpsertItem();
 		jsonRequestCreditLimitUpsertItem.setType("Insurance");
-		jsonRequestCreditLimitUpsertItem.setAmount(BigDecimal.valueOf(10));
+		jsonRequestCreditLimitUpsertItem.setMoney(JsonMoney.builder()
+														  .amount(BigDecimal.valueOf(10))
+														  .currencyCode("CHF")
+														  .build());
 		jsonRequestCreditLimitUpsertItem.setActive(true);
 		jsonRequestCreditLimitUpsertItem.setDateFrom(LocalDate.of(2022, 11, 2));
 

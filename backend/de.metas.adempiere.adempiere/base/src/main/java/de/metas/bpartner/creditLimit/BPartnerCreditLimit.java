@@ -20,22 +20,19 @@
  * #L%
  */
 
-package de.metas.bpartner.service.creditlimit;
+package de.metas.bpartner.creditLimit;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.OrgMappingId;
-import de.metas.bpartner.creditLimit.BPartnerCreditLimitId;
-import de.metas.bpartner.creditLimit.CreditLimitTypeId;
+import de.metas.money.Money;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
-import lombok.With;
 import org.adempiere.ad.table.RecordChangeLog;
-import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 import java.time.Instant;
 
 @Setter
@@ -54,21 +51,19 @@ public class BPartnerCreditLimit
 	@Nullable
 	private BPartnerCreditLimitId id;
 
+	@Nullable
+	BPartnerId bPartnerId;
+
 	@NonNull
 	private final CreditLimitTypeId creditLimitTypeId;
 
 	@NonNull
-	private final BigDecimal amount;
+	private final Money money;
 
 	@Nullable
 	private final Instant dateFrom;
 
 	@Nullable
-	@With
-	private String bpartnerValue;
-
-	@Nullable
-	@With
 	private RecordChangeLog changeLog;
 
 	@Nullable
@@ -81,43 +76,23 @@ public class BPartnerCreditLimit
 	@Builder(toBuilder = true)
 	private BPartnerCreditLimit(
 			@Nullable final BPartnerCreditLimitId id,
+			@Nullable final BPartnerId bPartnerId,
 			@NonNull final CreditLimitTypeId creditLimitTypeId,
-			@NonNull final BigDecimal amount,
+			@NonNull final Money money,
 			@Nullable final Instant dateFrom,
-			@Nullable final String bpartnerValue,
 			@Nullable final RecordChangeLog changeLog,
 			@Nullable final OrgMappingId orgMappingId,
 			final boolean active,
 			final boolean processed)
 	{
 		this.id = id;
+		this.bPartnerId = bPartnerId;
 		this.creditLimitTypeId = creditLimitTypeId;
-		this.amount = amount;
+		this.money = money;
 		this.dateFrom = dateFrom;
-		this.bpartnerValue = bpartnerValue;
 		this.changeLog = changeLog;
 		this.orgMappingId = orgMappingId;
 		this.active = active;
 		this.processed = processed;
-	}
-
-	@NonNull
-	public BPartnerCreditLimitId getIdNotNull()
-	{
-		if (this.id == null)
-		{
-			throw new AdempiereException("BPartnerCreditLimitId is missing!");
-		}
-		return this.id;
-	}
-
-	@NonNull
-	public String getBPartnerValueNotNull()
-	{
-		if (this.bpartnerValue == null)
-		{
-			throw new AdempiereException("BPartnerValue is missing!");
-		}
-		return this.bpartnerValue;
 	}
 }

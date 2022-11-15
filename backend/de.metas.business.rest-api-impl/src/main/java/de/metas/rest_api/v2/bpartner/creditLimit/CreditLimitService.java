@@ -29,10 +29,10 @@ import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.common.bpartner.v2.response.JsonResponseCreditLimitDelete;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.externalreference.ExternalIdentifier;
-import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.organization.OrgId;
-import de.metas.rest_api.utils.MetasfreshId;
+import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
+import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
@@ -44,13 +44,16 @@ public class CreditLimitService
 {
 	private final BPartnerCreditLimitRepository bPartnerCreditLimitRepository;
 	private final ExternalReferenceRestControllerService externalReferenceService;
+	private final JsonRetrieverService jsonRetrieverService;
 
 	public CreditLimitService(
 			@NonNull final BPartnerCreditLimitRepository bPartnerCreditLimitRepository,
-			@NonNull final ExternalReferenceRestControllerService externalReferenceService)
+			@NonNull final ExternalReferenceRestControllerService externalReferenceService,
+			@NonNull final JsonServiceFactory jsonServiceFactory)
 	{
 		this.bPartnerCreditLimitRepository = bPartnerCreditLimitRepository;
 		this.externalReferenceService = externalReferenceService;
+		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
 	}
 
 	@NonNull
@@ -62,21 +65,9 @@ public class CreditLimitService
 		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(orgCode);
 
 		final ExternalIdentifier externalIdentifier = ExternalIdentifier.of(bpartnerIdentifier);
-		final BPartnerId bPartnerId;
-		switch (externalIdentifier.getType())
-		{
-			case EXTERNAL_REFERENCE:
-				bPartnerId = externalReferenceService.getJsonMetasfreshIdFromExternalReference(orgId, externalIdentifier, BPartnerExternalReferenceType.BPARTNER)
-						.map(MetasfreshId::of)
-						.map(metasfreshId -> BPartnerId.ofRepoId(metasfreshId.getValue()))
-						.orElseThrow(() -> new AdempiereException("Couldn't resolve external identifier: " + externalIdentifier.getRawValue() + "!"));
-				break;
-			case METASFRESH_ID:
-				bPartnerId = BPartnerId.ofRepoId(externalIdentifier.asMetasfreshId().getValue());
-				break;
-			default:
-				throw new AdempiereException("Unexpected type=" + externalIdentifier.getType());
-		}
+
+		final BPartnerId bPartnerId = jsonRetrieverService.resolveBPartnerExternalIdentifier(externalIdentifier, orgId)
+				.orElseThrow(() -> new AdempiereException("Couldn't resolve external identifier: " + externalIdentifier.getRawValue()));
 
 		final ImmutableList<JsonMetasfreshId> deletedIds = bPartnerCreditLimitRepository.deleteRecordsForBPartnerAndOrg(bPartnerId, orgId, includingProcessed);
 

@@ -83,7 +83,7 @@ public class JsonRequestComposite
 	@JsonProperty("creditLimits")
 	JsonRequestCreditLimitUpsert creditLimits;
 
-	@ApiModelProperty(value = "Ths advise is applied to this composite's bpartner or any of its contacts\n"
+	@ApiModelProperty(value = "Ths advise is applied to this composite's bpartner or any of its additional data in composite\n"
 			+ READ_ONLY_SYNC_ADVISE_DOC, position = 80)
 	@JsonInclude(Include.NON_NULL)
 	SyncAdvise syncAdvise;

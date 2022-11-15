@@ -27,7 +27,7 @@ import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
-import de.metas.common.bpartner.v2.request.creditLimit.JsonRequestCreditLimitDelete;
+import de.metas.camel.externalsystems.common.v2.CreditLimitDeleteRequest;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.Getter;
 import lombok.NonNull;
@@ -120,7 +120,7 @@ public class SFTPCreditLimitSyncServiceRouteBuilderTest extends CamelTestSupport
 
 		final InputStream expectedDeleteCreditLimitRequest = this.getClass().getResourceAsStream(JSON_DELETE_CREDIT_LIMIT_REQUEST);
 		final MockEndpoint creditLimitDeleteMockEndpoint = getMockEndpoint(MOCK_DELETE_CREDIT_LIMIT_ENDPOINT);
-		creditLimitDeleteMockEndpoint.expectedBodiesReceived(objectMapper.readValue(expectedDeleteCreditLimitRequest, JsonRequestCreditLimitDelete.class));
+		creditLimitDeleteMockEndpoint.expectedBodiesReceived(objectMapper.readValue(expectedDeleteCreditLimitRequest, CreditLimitDeleteRequest.class));
 
 		final InputStream expectedUpsertBPRequest = this.getClass().getResourceAsStream(JSON_UPSERT_BPARTNER_REQUEST);
 		final MockEndpoint creditLimitSyncMockEndpoint = getMockEndpoint(MOCK_UPSERT_CREDIT_LIMIT_ENDPOINT);

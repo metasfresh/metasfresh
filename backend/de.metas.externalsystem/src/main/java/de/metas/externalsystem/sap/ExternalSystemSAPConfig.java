@@ -70,6 +70,12 @@ public class ExternalSystemSAPConfig implements IExternalSystemChildConfig
 	@Nullable
 	String sftpCreditLimitTargetDirectory;
 
+	@Nullable
+	String sftpCreditLimitFileNamePattern;
+
+	@Nullable
+	String sftpProductFileNamePattern;
+
 	@Builder
 	public ExternalSystemSAPConfig(
 			@NonNull final ExternalSystemSAPConfigId id,
@@ -81,6 +87,8 @@ public class ExternalSystemSAPConfig implements IExternalSystemChildConfig
 			@NonNull final String sftpPassword,
 			@Nullable final String sftpProductTargetDirectory,
 			@Nullable final String sftpCreditLimitTargetDirectory,
+			@Nullable final String sftpCreditLimitFileNamePattern,
+			@Nullable final String sftpProductFileNamePattern,
 			@NonNull final String processedDirectory,
 			@NonNull final String erroredDirectory,
 			@NonNull final Duration pollingFrequency)
@@ -94,6 +102,8 @@ public class ExternalSystemSAPConfig implements IExternalSystemChildConfig
 		this.sftpPassword = sftpPassword;
 		this.sftpProductTargetDirectory = sftpProductTargetDirectory;
 		this.sftpCreditLimitTargetDirectory = sftpCreditLimitTargetDirectory;
+		this.sftpCreditLimitFileNamePattern = sftpCreditLimitFileNamePattern;
+		this.sftpProductFileNamePattern = sftpProductFileNamePattern;
 		this.processedDirectory = processedDirectory;
 		this.erroredDirectory = erroredDirectory;
 		this.pollingFrequency = pollingFrequency;

@@ -54,7 +54,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
       "recordId" : {
         "keyColumnNames" : [ "C_BPartner_ID" ],
         "keysByColumnName" : {
-          "C_BPartner_ID" : 100018
+          "C_BPartner_ID" : 100019
         }
       },
       "tableName" : "C_BPartner"
@@ -64,7 +64,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
     "customer" : false,
     "excludeFromPromotions" : false,
     "groupId" : 15,
-    "id" : 100018,
+    "id" : 100019,
     "identifiedByExternalReference" : false,
     "language" : {
       "_mediaSize" : {
@@ -85,46 +85,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
     "parentId" : 1,
     "phone" : "bPartner.phone",
     "url" : "bPartner.url",
-    "value" : "bPartner.code",
     "vatId" : "bPartner.vatId",
     "vendor" : false
   },
   "contacts" : [ {
-    "active" : true,
-    "changeLog" : {
-      "createdByUserId" : 30,
-      "createdTimestamp" : "1970-01-19T01:38:54.560Z",
-      "entries" : [ ],
-      "lastChangedByUserId" : 30,
-      "lastChangedTimestamp" : "1970-01-19T01:38:54.560Z",
-      "recordId" : {
-        "keyColumnNames" : [ "AD_User_ID" ],
-        "keysByColumnName" : {
-          "AD_User_ID" : 100023
-        }
-      },
-      "tableName" : "AD_User"
-    },
-    "contactType" : {
-      "billToDefault" : false,
-      "defaultContact" : false,
-      "purchase" : false,
-      "purchaseDefault" : false,
-      "sales" : false,
-      "salesDefault" : false,
-      "shipToDefault" : false
-    },
-    "email" : "c1_email@email.net",
-    "handles" : [ ],
-    "id" : "100018-100023",
-    "invoiceEmailEnabled" : true,
-    "membershipContact" : false,
-    "name" : "c1_name",
-    "newsletter" : false,
-    "phone" : "c1_phone",
-    "roles" : [ ],
-    "subjectMatterContact" : false
-  }, {
     "active" : true,
     "changeLog" : {
       "createdByUserId" : 30,
@@ -149,9 +113,44 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
       "salesDefault" : false,
       "shipToDefault" : false
     },
+    "email" : "c1_email@email.net",
+    "handles" : [ ],
+    "id" : "100019-100024",
+    "invoiceEmailEnabled" : true,
+    "membershipContact" : false,
+    "name" : "c1_name",
+    "newsletter" : false,
+    "phone" : "c1_phone",
+    "roles" : [ ],
+    "subjectMatterContact" : false
+  }, {
+    "active" : true,
+    "changeLog" : {
+      "createdByUserId" : 30,
+      "createdTimestamp" : "1970-01-19T01:38:54.560Z",
+      "entries" : [ ],
+      "lastChangedByUserId" : 30,
+      "lastChangedTimestamp" : "1970-01-19T01:38:54.560Z",
+      "recordId" : {
+        "keyColumnNames" : [ "AD_User_ID" ],
+        "keysByColumnName" : {
+          "AD_User_ID" : 100025
+        }
+      },
+      "tableName" : "AD_User"
+    },
+    "contactType" : {
+      "billToDefault" : false,
+      "defaultContact" : false,
+      "purchase" : false,
+      "purchaseDefault" : false,
+      "sales" : false,
+      "salesDefault" : false,
+      "shipToDefault" : false
+    },
     "email" : "c2_email@email.net",
     "handles" : [ ],
-    "id" : "100018-100024",
+    "id" : "100019-100025",
     "invoiceEmailEnabled" : true,
     "membershipContact" : false,
     "name" : "c2_name",
@@ -162,8 +161,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
   } ],
   "creditLimits" : [ {
     "active" : true,
-    "amount" : 10,
-    "bpartnerValue" : "bPartner.code",
+    "bPartnerId" : 100019,
     "changeLog" : {
       "createdByUserId" : 30,
       "createdTimestamp" : "1970-01-19T01:38:54.560Z",
@@ -173,7 +171,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
       "recordId" : {
         "keyColumnNames" : [ "C_BPartner_CreditLimit_ID" ],
         "keysByColumnName" : {
-          "C_BPartner_CreditLimit_ID" : 100025
+          "C_BPartner_CreditLimit_ID" : 100026
         }
       },
       "tableName" : "C_BPartner_CreditLimit"
@@ -183,7 +181,11 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
     },
     "dateFrom" : "2022-11-01T22:00:00Z",
     "id" : {
-      "repoId" : 100025
+      "repoId" : 100026
+    },
+    "money" : {
+      "currencyId" : 100018,
+      "value" : 10
     },
     "processed" : false
   } ],
@@ -200,7 +202,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
       "recordId" : {
         "keyColumnNames" : [ "C_BPartner_Location_ID" ],
         "keysByColumnName" : {
-          "C_BPartner_Location_ID" : 100020
+          "C_BPartner_Location_ID" : 100021
         }
       },
       "tableName" : "C_BPartner_Location"
@@ -208,13 +210,13 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
     "city" : "l1_city",
     "countryCode" : "CH",
     "ephemeral" : false,
-    "existingLocationId" : 100019,
+    "existingLocationId" : 100020,
     "gln" : "l1_gln",
     "handOverLocation" : false,
     "handles" : [ ],
     "id" : {
-      "bpartnerId" : 100018,
-      "repoId" : 100020
+      "bpartnerId" : 100019,
+      "repoId" : 100021
     },
     "locationType" : {
       "billTo" : false,
@@ -242,7 +244,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
       "recordId" : {
         "keyColumnNames" : [ "C_BPartner_Location_ID" ],
         "keysByColumnName" : {
-          "C_BPartner_Location_ID" : 100022
+          "C_BPartner_Location_ID" : 100023
         }
       },
       "tableName" : "C_BPartner_Location"
@@ -250,13 +252,13 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
     "city" : "l2_city",
     "countryCode" : "DE",
     "ephemeral" : false,
-    "existingLocationId" : 100021,
+    "existingLocationId" : 100022,
     "gln" : "l2_gln",
     "handOverLocation" : false,
     "handles" : [ ],
     "id" : {
-      "bpartnerId" : 100018,
-      "repoId" : 100022
+      "bpartnerId" : 100019,
+      "repoId" : 100023
     },
     "locationType" : {
       "billTo" : false,
@@ -376,7 +378,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
       "recordId" : {
         "keyColumnNames" : [ "AD_User_ID" ],
         "keysByColumnName" : {
-          "AD_User_ID" : 100015
+          "AD_User_ID" : 100016
         }
       },
       "tableName" : "AD_User"
@@ -392,7 +394,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
     },
     "email" : "newContact_email@email.net",
     "handles" : [ ],
-    "id" : "20-100015",
+    "id" : "20-100016",
     "invoiceEmailEnabled" : true,
     "membershipContact" : false,
     "name" : "newContact_name",
@@ -403,8 +405,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
   } ],
   "creditLimits" : [ {
     "active" : true,
-    "amount" : 25.5,
-    "bpartnerValue" : "bpartnerRecord.value",
+    "bPartnerId" : 20,
     "changeLog" : {
       "createdByUserId" : 30,
       "createdTimestamp" : "1970-01-19T01:38:53.544Z",
@@ -425,6 +426,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
     "dateFrom" : "2022-11-01T22:00:00Z",
     "id" : {
       "repoId" : 60
+    },
+    "money" : {
+      "currencyId" : 100015,
+      "value" : 25.5
     },
     "processed" : false
   } ],
@@ -576,7 +581,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
       "recordId" : {
         "keyColumnNames" : [ "AD_User_ID" ],
         "keysByColumnName" : {
-          "AD_User_ID" : 100015
+          "AD_User_ID" : 100016
         }
       },
       "tableName" : "AD_User"
@@ -591,7 +596,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
       "shipToDefault" : false
     },
     "handles" : [ ],
-    "id" : "20-100015",
+    "id" : "20-100016",
     "membershipContact" : false,
     "name" : "jsonContact.name-UPDATED",
     "newsletter" : false,
@@ -600,8 +605,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
   } ],
   "creditLimits" : [ {
     "active" : true,
-    "amount" : 25.5,
-    "bpartnerValue" : "bpartnerRecord.value",
+    "bPartnerId" : 20,
     "changeLog" : {
       "createdByUserId" : 30,
       "createdTimestamp" : "1970-01-19T01:38:53.544Z",
@@ -622,6 +626,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
     "dateFrom" : "2022-11-01T22:00:00Z",
     "id" : {
       "repoId" : 60
+    },
+    "money" : {
+      "currencyId" : 100015,
+      "value" : 25.5
     },
     "processed" : false
   } ],
@@ -765,8 +773,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
   } ],
   "creditLimits" : [ {
     "active" : true,
-    "amount" : 25.5,
-    "bpartnerValue" : "bpartnerRecord.value",
+    "bPartnerId" : 20,
     "changeLog" : {
       "createdByUserId" : 30,
       "createdTimestamp" : "1970-01-19T01:38:53.544Z",
@@ -787,6 +794,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
     "dateFrom" : "2022-11-01T22:00:00Z",
     "id" : {
       "repoId" : 60
+    },
+    "money" : {
+      "currencyId" : 100015,
+      "value" : 25.5
     },
     "processed" : false
   } ],
@@ -930,8 +941,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
   } ],
   "creditLimits" : [ {
     "active" : true,
-    "amount" : 25.5,
-    "bpartnerValue" : "bpartnerRecord.value",
+    "bPartnerId" : 20,
     "changeLog" : {
       "createdByUserId" : 30,
       "createdTimestamp" : "1970-01-19T01:38:53.544Z",
@@ -952,6 +962,10 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
     "dateFrom" : "2022-11-01T22:00:00Z",
     "id" : {
       "repoId" : 60
+    },
+    "money" : {
+      "currencyId" : 100016,
+      "value" : 25.5
     },
     "processed" : false
   } ],
@@ -1011,7 +1025,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
       "recordId" : {
         "keyColumnNames" : [ "C_BPartner_Location_ID" ],
         "keysByColumnName" : {
-          "C_BPartner_Location_ID" : 100017
+          "C_BPartner_Location_ID" : 100018
         }
       },
       "tableName" : "C_BPartner_Location"
@@ -1019,13 +1033,13 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
     "city" : "newLocation_city",
     "countryCode" : "DE",
     "ephemeral" : false,
-    "existingLocationId" : 100016,
+    "existingLocationId" : 100017,
     "gln" : "newLocation_gln",
     "handOverLocation" : false,
     "handles" : [ ],
     "id" : {
       "bpartnerId" : 20,
-      "repoId" : 100017
+      "repoId" : 100018
     },
     "locationType" : {
       "billTo" : false,
@@ -1569,7 +1583,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
       "visitorsAddress" : false
     } ]
   } ],
-  "nextPage" : "e57d6ba2-e91e-4557-8fc7-cb3c0acfe1f1_D",
+  "nextPage" : "e57d6ba2-e91e-4557-8fc7-cb3c0acfe1f1_E",
   "pageSize" : 2,
   "resultTimestamp" : 1561014385,
   "totalSize" : 5
@@ -1717,7 +1731,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
       "visitorsAddress" : false
     } ]
   } ],
-  "nextPage" : "e57d6ba2-e91e-4557-8fc7-cb3c0acfe1f1_E",
+  "nextPage" : "e57d6ba2-e91e-4557-8fc7-cb3c0acfe1f1_F",
   "pageSize" : 2,
   "resultTimestamp" : 1561014385,
   "totalSize" : 5

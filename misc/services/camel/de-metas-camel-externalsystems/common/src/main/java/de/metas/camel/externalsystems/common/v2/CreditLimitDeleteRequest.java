@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-common-bpartner
+ * de-metas-camel-externalsystems-common
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,27 +20,21 @@
  * #L%
  */
 
-package de.metas.common.bpartner.v2.request.creditLimit;
+package de.metas.camel.externalsystems.common.v2;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 @Value
 @Builder
-@JsonDeserialize(builder = JsonRequestCreditLimitDelete.JsonRequestCreditLimitDeleteBuilder.class)
-public class JsonRequestCreditLimitDelete
+public class CreditLimitDeleteRequest
 {
 	@NonNull
-	@JsonProperty("orgCode")
 	String orgCode;
 
 	@NonNull
-	@JsonProperty("partnerIdentifier")
-	String partnerIdentifier;
+	String bpartnerIdentifier;
 
-	@JsonProperty("includingProcessed")
 	boolean includingProcessed;
 }

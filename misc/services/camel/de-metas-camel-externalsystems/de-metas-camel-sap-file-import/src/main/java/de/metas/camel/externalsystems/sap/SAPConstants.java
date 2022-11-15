@@ -28,4 +28,6 @@ public interface SAPConstants
 	String ROUTE_PROPERTY_CREDIT_LIMIT_ROUTE_CONTEXT = "CreditLimitRouteContext";
 
 	String SAP_SYSTEM_NAME = "SAP";
+
+	String DEFAULT_PATTERN = "*";
 }

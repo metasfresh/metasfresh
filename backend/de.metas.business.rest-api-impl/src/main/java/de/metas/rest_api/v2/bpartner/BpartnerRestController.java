@@ -526,7 +526,7 @@ public class BpartnerRestController
 		return createdOrNotFound(response);
 	}
 
-	@DeleteMapping("/credit-limit/{orgCode}/{bpartnerIdentifier}/{includingProcessed}")
+	@DeleteMapping("{orgCode}/{bpartnerIdentifier}/credit-limit")
 	public ResponseEntity<JsonResponseCreditLimitDelete> deleteExistingForBPartner(
 			@PathVariable("orgCode") //
 			@Nullable final String orgCode,
@@ -535,10 +535,13 @@ public class BpartnerRestController
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifier,
 
-			@PathVariable("includingProcessed")
+			@ApiParam(value = "If true, processed records will also be deleted.", defaultValue = "false") //
+			@RequestParam("includingProcessed")
 			final boolean includingProcessed)
 	{
-		return ResponseEntity.status(HttpStatus.OK).body(creditLimitService.deleteExistingRecordsForBPartnerAndOrg(bpartnerIdentifier, orgCode, includingProcessed));
+		final JsonResponseCreditLimitDelete responseCreditLimitDelete = creditLimitService.deleteExistingRecordsForBPartnerAndOrg(bpartnerIdentifier, orgCode, includingProcessed);
+
+		return ResponseEntity.ok(responseCreditLimitDelete);
 	}
 
 	private static <T> ResponseEntity<T> okOrNotFound(@NonNull final Optional<T> optionalResult)

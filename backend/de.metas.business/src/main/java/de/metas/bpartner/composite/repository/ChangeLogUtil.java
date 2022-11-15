@@ -10,7 +10,7 @@ import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerContactType;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationType;
-import de.metas.bpartner.service.creditlimit.BPartnerCreditLimit;
+import de.metas.bpartner.creditLimit.BPartnerCreditLimit;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.location.CountryId;
 import de.metas.location.LocationId;

@@ -38,7 +38,7 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
-import de.metas.organization.ClientAndOrgId;
+import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -360,16 +360,13 @@ public class CurrencyBL implements ICurrencyBL
 
 	@Override
 	@NonNull
-	public BigDecimal convertToBase(
-			@NonNull final BigDecimal amt,
-			@NonNull final CurrencyCode currencyCode,
-			@NonNull final ClientAndOrgId clientAndOrgId)
+	public Money convertToBase(@NonNull final CurrencyConversionContext conversionCtx, @NonNull final Money amt)
 	{
-		final Currency currencyFrom = currencyDAO.getByCurrencyCode(currencyCode);
+		final CurrencyId currencyToId = getBaseCurrencyId(conversionCtx.getClientId(), conversionCtx.getOrgId());
 
-		final CurrencyId currencyToId = getBaseCurrencyId(clientAndOrgId.getClientId(), clientAndOrgId.getOrgId());
+		final CurrencyConversionResult currencyConversionResult = convert(conversionCtx, amt, currencyToId);
 
-		return convert(amt, currencyFrom.getId(), currencyToId, null, null, clientAndOrgId.getClientId(), clientAndOrgId.getOrgId());
+		return Money.of(currencyConversionResult.getAmount(), currencyToId);
 	}
 
 	private static CurrencyConversionResultBuilder prepareCurrencyConversionResult(@NonNull final CurrencyConversionContext conversionCtx)

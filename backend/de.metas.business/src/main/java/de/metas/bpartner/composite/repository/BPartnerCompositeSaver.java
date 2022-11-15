@@ -16,11 +16,11 @@ import de.metas.bpartner.composite.BPartnerContactType;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationAddressPart;
 import de.metas.bpartner.composite.BPartnerLocationType;
+import de.metas.bpartner.creditLimit.BPartnerCreditLimit;
+import de.metas.bpartner.creditLimit.BPartnerCreditLimitCreateRequest;
 import de.metas.bpartner.creditLimit.BPartnerCreditLimitId;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.creditlimit.BPartnerCreditLimit;
-import de.metas.bpartner.service.creditlimit.BPartnerCreditLimitCreateRequest;
 import de.metas.document.DocTypeId;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.ITranslatableString;
@@ -208,7 +208,7 @@ final class BPartnerCompositeSaver
 			bpartnerRecord.setInvoiceRule(bpartner.getCustomerInvoiceRule().getCode());
 		}
 
-		if(bpartner.getVendorInvoiceRule() != null)
+		if (bpartner.getVendorInvoiceRule() != null)
 		{
 			bpartnerRecord.setPO_InvoiceRule(bpartner.getVendorInvoiceRule().getCode());
 		}
@@ -702,7 +702,10 @@ final class BPartnerCompositeSaver
 					.build();
 
 			saveBPartnerCreditLimit(request);
-			savedBPCreditLimitIds.add(creditLimit.getIdNotNull());
+
+			Check.assumeNotNull(creditLimit.getId(), "BPartner_CreditLimit_ID cannot be missing since credit limit was just created!");
+
+			savedBPCreditLimitIds.add(creditLimit.getId());
 		}
 
 		bPartnerCreditLimitRepository.deactivateCreditLimitsByBPartnerExcept(bpartnerId, savedBPCreditLimitIds.build());

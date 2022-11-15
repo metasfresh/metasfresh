@@ -190,3 +190,22 @@ UPDATE AD_Ref_List_Trl SET Description='Stoppt die Synchronisation des Kreditlim
 UPDATE AD_Ref_List_Trl SET Description='Stoppt die Synchronisation des Kreditlimits mit dem externen SAP-System', Name='Kreditlimit-Synchronisation stoppen',Updated=TO_TIMESTAMP('2022-11-04 11:20:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=543330
 ;
 
+-- Reference: External_Request SAP
+-- Value: startCreditLimitsSync
+-- ValueName: Start Credit Limits Synchronization
+-- 2022-11-10T07:22:00.663Z
+UPDATE AD_Ref_List SET Name='Start der Kreditlimitsynchronisation',Updated=TO_TIMESTAMP('2022-11-10 09:22:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=543329
+;
+
+-- Reference: External_Request SAP
+-- Value: stopCreditLimitsSync
+-- ValueName: Stop Credit Limits Synchronization
+-- 2022-11-10T07:22:28.023Z
+UPDATE AD_Ref_List SET Name='Stop Kreditlimit-Synchronisation',Updated=TO_TIMESTAMP('2022-11-10 09:22:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=543330
+;
+
+-- Reference Item: External_Request SAP -> stopCreditLimitsSync_Stop Credit Limits Synchronization
+-- 2022-11-10T07:22:34.170Z
+UPDATE AD_Ref_List_Trl SET Name='Stop Kreditlimit-Synchronisation',Updated=TO_TIMESTAMP('2022-11-10 09:22:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=543330
+;
+
