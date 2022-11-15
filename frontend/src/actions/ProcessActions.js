@@ -3,7 +3,7 @@ import {
   setProcessPending,
   setProcessSaved,
 } from './AppActions';
-import { buildURL, openInNewTab } from '../utils';
+import { buildURL, getQueryString, openInNewTab } from '../utils';
 import history from '../services/History';
 import { setIncludedView, unsetIncludedView } from './ViewActions';
 import { getTableId } from '../reducers/tables';
@@ -162,8 +162,16 @@ export const handleProcessResponse = (
 
             break;
           }
+          case 'newRecord': {
+            const { stopHere } = handleProcessResponse_newRecord(action);
+            if (stopHere) {
+              return;
+            }
+            break;
+          }
           default: {
             console.warn('Unhandled action', action);
+            break;
           }
         }
       }
@@ -179,6 +187,30 @@ export const handleProcessResponse = (
       }
     }
   };
+};
+
+const handleProcessResponse_newRecord = (action) => {
+  //console.log('handleProcessResponse_newRecord', { action });
+
+  const { windowId, fieldValues, targetTab } = action;
+  let urlPath = `/window/${windowId}/NEW`;
+  const urlQueryString = getQueryString(fieldValues ?? {});
+  if (urlQueryString) {
+    urlPath += '?' + urlQueryString;
+  }
+
+  if (targetTab === 'NEW_TAB') {
+    const newBrowserTab = window.open(urlPath, '_blank');
+    newBrowserTab.focus();
+    return { stopHere: false };
+  } else if (targetTab === 'SAME_TAB' || !targetTab) {
+    window.open(urlPath, '_self');
+    return { stopHere: true };
+  } else {
+    console.warn(`Unknown targetTab '${targetTab}'. Opening in same tab.`);
+    window.open(urlPath, '_self');
+    return { stopHere: true };
+  }
 };
 
 export const createProcess = ({

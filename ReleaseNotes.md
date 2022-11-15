@@ -12,6 +12,10 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13846](https://github.com/metasfresh/metasfresh/pull/13846) Start Order and New Partner from Partner Window
+  * [#13797](https://github.com/metasfresh/metasfresh/pull/13797) ProcessExecutionResult.webuiNewRecord support | Create New Sales Order from BPartner window processes java code 
+  * [#13594](https://github.com/metasfresh/metasfresh/issues/13594) Search Wizard enters wrong partner in C_BPartner_SalesRep_ID
+  * [#13922](https://github.com/metasfresh/metasfresh/issues/13922) Make UOM key on product import not case sensitive 
   * [#13904](https://github.com/metasfresh/metasfresh/issues/13904) Create translations for base language also for non AD_Element tables
   * [#13912](https://github.com/metasfresh/metasfresh/pull/13912) CallExternalSystemActivityHandler: persist last scanned QR Code
   * [#13883](https://github.com/metasfresh/metasfresh/pull/13883) mobile UI: manufacturing: Call to External System activity 
