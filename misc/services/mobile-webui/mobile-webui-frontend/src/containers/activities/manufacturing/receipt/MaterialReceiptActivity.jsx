@@ -34,6 +34,7 @@ const MaterialReceiptActivity = (props) => {
               <ButtonWithIndicator
                 key={lineId}
                 caption={lineItem.productName}
+                hazardSymbols={lineItem.hazardSymbols}
                 completeStatus={lineItem.completeStatus || CompleteStatus.NOT_STARTED}
                 disabled={!isUserEditable}
                 onClick={() => onButtonClick({ lineId })}
