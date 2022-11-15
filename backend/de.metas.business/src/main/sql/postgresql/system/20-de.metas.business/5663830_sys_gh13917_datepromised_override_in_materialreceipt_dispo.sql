@@ -73,3 +73,91 @@ UPDATE AD_Column SET ColumnSQL='COALESCE(MovementDate_Override_ID, MovementDate)
 INSERT INTO t_alter_column values('m_receiptschedule','MovementDate_Override','TIMESTAMP WITH TIME ZONE',null,null)
 ;
 
+
+-- 2022-11-15T10:11:07.132Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsAlwaysUpdateable='Y', IsUpdateable='Y',Updated=TO_TIMESTAMP('2022-11-15 11:11:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=584884
+;
+
+-- 2022-11-15T10:11:44.172Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET IsAlwaysUpdateable='N',Updated=TO_TIMESTAMP('2022-11-15 11:11:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=584884
+;
+
+-- 2022-11-15T10:13:56.524Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,Description,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,584884,708058,0,540526,0,TO_TIMESTAMP('2022-11-15 11:13:56','YYYY-MM-DD HH24:MI:SS'),100,'Abweichendes Bewegungsdatum das benutzt wird, wenn die Rechnungszeilen überprüft werden. Wenn leer wird das jeweilige Datum der Rechnung benutzt.',0,'D',0,'Y','N','N','N','N','N','N','N','Abw. Bewegungsdatum',0,210,0,1,1,TO_TIMESTAMP('2022-11-15 11:13:56','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-11-15T10:13:56.526Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=708058 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-11-15T10:13:56.541Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(579242)
+;
+
+-- 2022-11-15T10:13:56.551Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=708058
+;
+
+-- 2022-11-15T10:13:56.553Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ select AD_Element_Link_Create_Missing_Field(708058)
+;
+
+-- 2022-11-15T10:14:27.633Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,584885,708059,0,540526,0,TO_TIMESTAMP('2022-11-15 11:14:27','YYYY-MM-DD HH24:MI:SS'),100,0,'D',0,'Y','N','N','N','N','N','N','N','MovementDate Effektiv',0,220,0,1,1,TO_TIMESTAMP('2022-11-15 11:14:27','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-11-15T10:14:27.635Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=708059 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-11-15T10:14:27.636Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(581656)
+;
+
+-- 2022-11-15T10:14:27.640Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=708059
+;
+
+-- 2022-11-15T10:14:27.640Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ select AD_Element_Link_Create_Missing_Field(708059)
+;
+
+-- 2022-11-15T10:15:23.739Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy,WidgetSize) VALUES (0,708058,0,540526,540133,613467,'F',TO_TIMESTAMP('2022-11-15 11:15:23','YYYY-MM-DD HH24:MI:SS'),100,'Abweichendes Bewegungsdatum das benutzt wird, wenn die Rechnungszeilen überprüft werden. Wenn leer wird das jeweilige Datum der Rechnung benutzt.','Y','N','N','Y','N','N','N',0,'Abw. Bewegungsdatum',50,0,0,TO_TIMESTAMP('2022-11-15 11:15:23','YYYY-MM-DD HH24:MI:SS'),100,'S')
+;
+
+-- 2022-11-15T10:15:42.409Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy,WidgetSize) VALUES (0,708059,0,540526,540133,613468,'F',TO_TIMESTAMP('2022-11-15 11:15:42','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'MovementDate Effektiv',60,0,0,TO_TIMESTAMP('2022-11-15 11:15:42','YYYY-MM-DD HH24:MI:SS'),100,'S')
+;
+
+-- 2022-11-15T10:16:14.911Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET SeqNo=25,Updated=TO_TIMESTAMP('2022-11-15 11:16:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613468
+;
+
+-- 2022-11-15T10:16:24.733Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_UI_Element SET SeqNo=35,Updated=TO_TIMESTAMP('2022-11-15 11:16:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613467
+;
+
+-- 2022-11-15T10:27:43.845Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnSQL='COALESCE(MovementDate_Override, MovementDate)',Updated=TO_TIMESTAMP('2022-11-15 11:27:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=584885
+;
+
+
+
