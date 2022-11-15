@@ -1,8 +1,8 @@
 /*
  * #%L
- * de-metas-camel-externalsystems-common
+ * de-metas-camel-metasfresh
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,28 +20,19 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.common;
+package de.metas.camel.externalsystems.metasfresh.restapi.feedback;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 
-@AllArgsConstructor
-@Getter
-public enum RestServiceRoutes
+@Value
+@Builder
+public class FeedbackConfig
 {
-	WOO("/woocommerce", RestServiceAuthority.WOO),
-	GRS("/grs", RestServiceAuthority.GRS),
-	METASFRESH("/metasfresh", RestServiceAuthority.METASFRESH);
+	@NonNull
+	String feedbackResourceURL;
 
 	@NonNull
-	private final String path;
-	@NonNull
-	private final RestServiceAuthority restServiceAuthority;
-
-	@NonNull
-	public String getStringAuthority()
-	{
-		return restServiceAuthority.getValue();
-	}
+	String authToken;
 }

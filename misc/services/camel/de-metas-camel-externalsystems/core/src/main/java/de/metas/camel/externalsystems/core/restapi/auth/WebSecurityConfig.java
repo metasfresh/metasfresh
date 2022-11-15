@@ -24,6 +24,7 @@ package de.metas.camel.externalsystems.core.restapi.auth;
 
 import com.sun.istack.NotNull;
 import de.metas.camel.externalsystems.common.RestServiceRoutes;
+import de.metas.camel.externalsystems.core.restapi.processing.ToEmptyRequestBodyFilter;
 import org.apache.camel.ProducerTemplate;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -60,12 +61,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter
 				.authorizeRequests()
 				  .antMatchers("/**" + RestServiceRoutes.WOO.getPath()).hasAuthority(RestServiceRoutes.WOO.getStringAuthority())
 				  .antMatchers("/**" + RestServiceRoutes.GRS.getPath()).hasAuthority(RestServiceRoutes.GRS.getStringAuthority())
+				  .antMatchers("/**" + RestServiceRoutes.METASFRESH.getPath()).hasAuthority(RestServiceRoutes.METASFRESH.getStringAuthority())
 				  .anyRequest()
 				  .authenticated();
 		//@formatter:on
 
 		http.addFilterBefore(new AuthenticationFilter(authenticationManager()), BasicAuthenticationFilter.class);
 		http.addFilterAfter(new AuditTrailFilter(producerTemplate), AuthenticationFilter.class);
+		http.addFilterAfter(new ToEmptyRequestBodyFilter(), AuthenticationFilter.class);
 	}
 
 	@Bean

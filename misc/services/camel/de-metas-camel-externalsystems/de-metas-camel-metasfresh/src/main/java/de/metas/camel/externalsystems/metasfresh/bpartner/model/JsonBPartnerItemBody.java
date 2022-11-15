@@ -1,8 +1,8 @@
 /*
  * #%L
- * de-metas-camel-externalsystems-common
+ * de-metas-camel-metasfresh
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,28 +20,25 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.common;
+package de.metas.camel.externalsystems.metasfresh.bpartner.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsertItem;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
-@AllArgsConstructor
-@Getter
-public enum RestServiceRoutes
+import java.util.List;
+
+@Value
+@Builder
+@Jacksonized
+public class JsonBPartnerItemBody
 {
-	WOO("/woocommerce", RestServiceAuthority.WOO),
-	GRS("/grs", RestServiceAuthority.GRS),
-	METASFRESH("/metasfresh", RestServiceAuthority.METASFRESH);
+	public static final String FIELD_NAME_REQUEST_ITEMS = "requestItems";
 
 	@NonNull
-	private final String path;
-	@NonNull
-	private final RestServiceAuthority restServiceAuthority;
-
-	@NonNull
-	public String getStringAuthority()
-	{
-		return restServiceAuthority.getValue();
-	}
+	@JsonProperty(FIELD_NAME_REQUEST_ITEMS)
+	List<JsonRequestBPartnerUpsertItem> requestItems;
 }

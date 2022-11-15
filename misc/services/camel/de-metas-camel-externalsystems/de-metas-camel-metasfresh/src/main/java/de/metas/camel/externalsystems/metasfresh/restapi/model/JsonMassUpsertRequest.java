@@ -1,8 +1,8 @@
 /*
  * #%L
- * de-metas-camel-externalsystems-common
+ * de-metas-camel-metasfresh
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,28 +20,32 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.common;
+package de.metas.camel.externalsystems.metasfresh.restapi.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
-@AllArgsConstructor
-@Getter
-public enum RestServiceRoutes
+@Value
+@Builder
+@Jacksonized
+public class JsonMassUpsertRequest
 {
-	WOO("/woocommerce", RestServiceAuthority.WOO),
-	GRS("/grs", RestServiceAuthority.GRS),
-	METASFRESH("/metasfresh", RestServiceAuthority.METASFRESH);
+	public static final String FIELD_NAME_BATCH_ID = "batchId";
+	public static final String FIELD_NAME_ITEM_TYPE = "itemType";
+	public static final String FIELD_NAME_ITEM_BODY = "itemBody";
 
 	@NonNull
-	private final String path;
-	@NonNull
-	private final RestServiceAuthority restServiceAuthority;
+	@JsonProperty(FIELD_NAME_BATCH_ID)
+	String batchId;
 
 	@NonNull
-	public String getStringAuthority()
-	{
-		return restServiceAuthority.getValue();
-	}
+	@JsonProperty(FIELD_NAME_ITEM_TYPE)
+	String itemType;
+
+	@NonNull
+	@JsonProperty(FIELD_NAME_ITEM_BODY)
+	Object itemBody;
 }

@@ -1,8 +1,8 @@
 /*
  * #%L
- * de-metas-camel-externalsystems-common
+ * de-metas-camel-metasfresh
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,28 +20,32 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.common;
+package de.metas.camel.externalsystems.metasfresh.restapi;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
 import lombok.NonNull;
+import lombok.experimental.UtilityClass;
 
-@AllArgsConstructor
-@Getter
-public enum RestServiceRoutes
+import java.time.Instant;
+import java.util.UUID;
+
+@UtilityClass
+public class FilenameUtil
 {
-	WOO("/woocommerce", RestServiceAuthority.WOO),
-	GRS("/grs", RestServiceAuthority.GRS),
-	METASFRESH("/metasfresh", RestServiceAuthority.METASFRESH);
-
 	@NonNull
-	private final String path;
-	@NonNull
-	private final RestServiceAuthority restServiceAuthority;
-
-	@NonNull
-	public String getStringAuthority()
+	public static String computeFilename(@NonNull final String externalSystemConfigValue, @NonNull final String orgCode)
 	{
-		return restServiceAuthority.getValue();
+		return externalSystemConfigValue + "_" + orgCode + "_" + Instant.now().toEpochMilli() + "_" + UUID.randomUUID();
+	}
+
+	@NonNull
+	public static String getExternalSystemConfigValue(@NonNull final String filename)
+	{
+		return filename.substring(0, filename.indexOf('_'));
+	}
+
+	@NonNull
+	public static String getOrgCode(@NonNull final String filename)
+	{
+		return filename.split("_")[1];
 	}
 }

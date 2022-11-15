@@ -1,8 +1,8 @@
 /*
  * #%L
- * de-metas-camel-externalsystems-common
+ * de-metas-camel-metasfresh
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,28 +20,20 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.common;
+package de.metas.camel.externalsystems.metasfresh.restapi.processor;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NonNull;
+import com.fasterxml.jackson.core.JsonParser;
+import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
 
-@AllArgsConstructor
-@Getter
-public enum RestServiceRoutes
+import static de.metas.camel.externalsystems.metasfresh.MetasfreshConstants.PARSER_PROPERTY;
+
+public class CloseParserProcessor implements Processor
 {
-	WOO("/woocommerce", RestServiceAuthority.WOO),
-	GRS("/grs", RestServiceAuthority.GRS),
-	METASFRESH("/metasfresh", RestServiceAuthority.METASFRESH);
-
-	@NonNull
-	private final String path;
-	@NonNull
-	private final RestServiceAuthority restServiceAuthority;
-
-	@NonNull
-	public String getStringAuthority()
+	@Override
+	public void process(final Exchange exchange) throws Exception
 	{
-		return restServiceAuthority.getValue();
+		final JsonParser parser = exchange.getProperty(PARSER_PROPERTY, JsonParser.class);
+		parser.close();
 	}
 }

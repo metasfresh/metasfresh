@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-externalsystems-common
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,28 +20,40 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.common;
+package de.metas.camel.externalsystems.common.file;
 
-import lombok.AllArgsConstructor;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Value;
 
-@AllArgsConstructor
-@Getter
-public enum RestServiceRoutes
+@Value
+public class WorkFile
 {
-	WOO("/woocommerce", RestServiceAuthority.WOO),
-	GRS("/grs", RestServiceAuthority.GRS),
-	METASFRESH("/metasfresh", RestServiceAuthority.METASFRESH);
+	public static final String IN_PROGRESS_PREFIX = "InProgress_";
 
-	@NonNull
-	private final String path;
-	@NonNull
-	private final RestServiceAuthority restServiceAuthority;
-
-	@NonNull
-	public String getStringAuthority()
+	public static WorkFile of(@NonNull final String filename)
 	{
-		return restServiceAuthority.getValue();
+		return new WorkFile(filename);
+	}
+
+	@Getter(AccessLevel.NONE)
+	String filename;
+
+	private WorkFile(@NonNull final String filename)
+	{
+		this.filename = filename;
+	}
+
+	@NonNull
+	public String getDownloadInProgressFilename()
+	{
+		return IN_PROGRESS_PREFIX + filename;
+	}
+
+	@NonNull
+	public String getReadyFilename()
+	{
+		return filename;
 	}
 }
