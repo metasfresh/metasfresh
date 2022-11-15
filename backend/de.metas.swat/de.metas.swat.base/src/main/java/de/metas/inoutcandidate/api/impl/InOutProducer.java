@@ -20,6 +20,7 @@ import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.inoutcandidate.api.IInOutProducer;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
+import de.metas.inoutcandidate.api.IReceiptScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
@@ -94,6 +95,7 @@ public class InOutProducer implements IInOutProducer
 	// Services
 	// (protected to be accessible for extending classes too)
 	protected final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
+	protected final IReceiptScheduleEffectiveBL iReceiptScheduleEffectiveBL = (Services.get(IReceiptScheduleEffectiveBL.class));
 	protected final IInOutBL inoutBL = Services.get(IInOutBL.class);
 	protected final IAggregationKeyBuilder<I_M_ReceiptSchedule> headerAggregationKeyBuilder = receiptScheduleBL.getHeaderAggregationKeyBuilder();
 
@@ -625,6 +627,13 @@ public class InOutProducer implements IInOutProducer
 	}
 
 	@NonNull
+	private Timestamp getReceiptSchedulePromisedDateEffective(@NonNull final I_M_ReceiptSchedule receiptSchedule, final Properties context)
+	{
+		final Timestamp movementDate = TimeUtil.asTimestamp(iReceiptScheduleEffectiveBL.getMovementDate(receiptSchedule));
+		return movementDate != null ? movementDate : Env.getDate(context);
+	}
+
+	@NonNull
 	private Timestamp getExternalMovementDate(@NonNull final I_M_ReceiptSchedule receiptSchedule, @NonNull final Properties context)
 	{
 		final ReceiptScheduleId receiptScheduleId = ReceiptScheduleId.ofRepoId(receiptSchedule.getM_ReceiptSchedule_ID());
@@ -673,11 +682,13 @@ public class InOutProducer implements IInOutProducer
 	private Timestamp getMovementDate(@NonNull final I_M_ReceiptSchedule receiptSchedule, @NonNull final Properties context)
 	{
 		final Timestamp movementDate;
-
 		switch (this.movementDateRule)
 		{
 			case ORDER_DATE_PROMISED:
 				movementDate = getPromisedDate(receiptSchedule, context);
+				break;
+			case RECEIPT_SCHEDULE_DATE_PROMISED_EFFECTIVE:
+				movementDate = getReceiptSchedulePromisedDateEffective(receiptSchedule, context);
 				break;
 			case EXTERNAL_DATE_IF_AVAIL:
 				movementDate = getExternalMovementDate(receiptSchedule, context);

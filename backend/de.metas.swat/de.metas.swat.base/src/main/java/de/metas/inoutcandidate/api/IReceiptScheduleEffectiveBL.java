@@ -1,8 +1,10 @@
+package de.metas.inoutcandidate.api;
+
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2015 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,12 +22,15 @@
  * #L%
  */
 
-package de.metas.inoutcandidate.api.impl;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.util.ISingletonService;
+import java.time.ZonedDateTime;
 
-public enum ReceiptMovementDateRule
+/**
+ * Returns the "effective" values for a given receipt schedules when it has both an "original" and an "override" column.
+ */
+
+public interface IReceiptScheduleEffectiveBL extends ISingletonService
 {
-	ORDER_DATE_PROMISED,
-	RECEIPT_SCHEDULE_DATE_PROMISED_EFFECTIVE,
-	EXTERNAL_DATE_IF_AVAIL,
-	CURRENT_DATE
+	ZonedDateTime getMovementDate(final I_M_ReceiptSchedule receiptSchedule);
 }

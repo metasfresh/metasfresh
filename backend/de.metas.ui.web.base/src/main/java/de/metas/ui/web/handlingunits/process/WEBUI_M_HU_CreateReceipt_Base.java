@@ -171,7 +171,7 @@ public abstract class WEBUI_M_HU_CreateReceipt_Base
 
 		final CreateReceiptsParametersBuilder parametersBuilder = CreateReceiptsParameters.builder()
 				.commitEachReceiptIndividually(false)
-				.movementDateRule(ReceiptMovementDateRule.CURRENT_DATE)
+				.movementDateRule(ReceiptMovementDateRule.RECEIPT_SCHEDULE_DATE_PROMISED_EFFECTIVE) //use receipt schedules effective promised date that already olds the order DatePromised
 				.ctx(getCtx())
 				.destinationLocatorIdOrNull(null) // use receipt schedules' destination-warehouse settings
 				.printReceiptLabels(true)
