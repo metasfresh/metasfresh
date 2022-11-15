@@ -25,6 +25,7 @@ package de.metas.inoutcandidate.api.impl;
 public enum ReceiptMovementDateRule
 {
 	ORDER_DATE_PROMISED,
+	RECEIPT_SCHEDULE_DATE_PROMISED_EFFECTIVE,
 	EXTERNAL_DATE_IF_AVAIL,
 	CURRENT_DATE
 }

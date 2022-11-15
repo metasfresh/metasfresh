@@ -22,38 +22,15 @@ package de.metas.inoutcandidate.api;
  * #L%
  */
 
-import de.metas.common.util.CoalesceUtil;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.OrgId;
-import de.metas.util.Services;
-import lombok.NonNull;
-import org.compiere.util.TimeUtil;
-import org.springframework.stereotype.Repository;
-
-import java.time.ZoneId;
+import de.metas.util.ISingletonService;
 import java.time.ZonedDateTime;
 
 /**
  * Returns the "effective" values for a given receipt schedules when it has both an "original" and an "override" column.
  */
 
-@Repository
-public class ReceiptScheduleEffectiveRepository
+public interface IReceiptScheduleEffectiveBL extends ISingletonService
 {
-
-	/**
-	 * Get the effective movement date based on MovementDate and MovementDate_Override
-	 */
-	public ZonedDateTime getMovementDate(@NonNull final I_M_ReceiptSchedule receiptSchedule)
-	{
-		final ZoneId timeZone = (Services.get(IOrgDAO.class))
-				.getTimeZone(OrgId.ofRepoIdOrAny(receiptSchedule.getAD_Org_ID()));
-
-		return TimeUtil.asZonedDateTime(
-				CoalesceUtil.coalesceSuppliers(
-						receiptSchedule::getMovementDate_Override,
-						receiptSchedule::getMovementDate), timeZone);
-	}
-
+	ZonedDateTime getMovementDate(final I_M_ReceiptSchedule receiptSchedule);
 }
