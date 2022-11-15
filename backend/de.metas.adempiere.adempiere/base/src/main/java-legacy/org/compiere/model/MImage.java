@@ -16,41 +16,28 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.awt.AlphaComposite;
-import java.awt.Dimension;
-import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.RenderingHints;
-import java.awt.Toolkit;
+import de.metas.cache.CCache;
+import de.metas.image.AdImage;
+import de.metas.organization.OrgId;
+import de.metas.util.Check;
+import org.compiere.util.Env;
+import org.compiere.util.Ini;
+import org.compiere.util.MimeType;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import javax.imageio.ImageIO;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.util.Env;
-import org.compiere.util.Ini;
-import org.compiere.util.MimeType;
-
-import de.metas.cache.CCache;
-import de.metas.util.Check;
-
 /**
- * Image Model
- * (DisplayType = 32)
- *
- * @author Jorg Janke
- * @version $Id: MImage.java,v 1.5 2006/07/30 00:51:02 jjanke Exp $
+ * @deprecated Please use {@link de.metas.image.AdImageRepository}
  */
+@Deprecated
 public class MImage extends X_AD_Image
 {
 	/**
@@ -60,7 +47,7 @@ public class MImage extends X_AD_Image
 
 	public static URL getURLOrNull(final int adImageId)
 	{
-		if(adImageId <= 0)
+		if (adImageId <= 0)
 		{
 			return null;
 		}
@@ -69,13 +56,6 @@ public class MImage extends X_AD_Image
 		return adImage != null ? adImage.getURL() : null;
 	}
 
-	/**
-	 * Get MImage from Cache
-	 *
-	 * @param ctx context
-	 * @param AD_Image_ID id
-	 * @return MImage
-	 */
 	public static MImage get(final Properties ctx, final int AD_Image_ID)
 	{
 		if (AD_Image_ID == 0)
@@ -96,15 +76,17 @@ public class MImage extends X_AD_Image
 		return retValue;
 	} // get
 
-	/** Cache */
-	private static CCache<Integer, MImage> s_cache = new CCache<>("AD_Image", 20);
+	/**
+	 * Cache
+	 */
+	private static final CCache<Integer, MImage> s_cache = new CCache<>("AD_Image", 20);
 
 	/**
 	 * Constructor
 	 *
-	 * @param ctx context
+	 * @param ctx         context
 	 * @param AD_Image_ID image
-	 * @param trxName transaction
+	 * @param trxName     transaction
 	 */
 	public MImage(final Properties ctx, final int AD_Image_ID, final String trxName)
 	{
@@ -117,19 +99,19 @@ public class MImage extends X_AD_Image
 
 	/**
 	 * Load Constructor
-	 *
-	 * @param ctx
-	 * @param rs
-	 * @param trxName transaction
 	 */
 	public MImage(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		super(ctx, rs, trxName);
-	}	// MImage
+	}    // MImage
 
-	/** The Image */
+	/**
+	 * The Image
+	 */
 	private Image m_image = null;
-	/** The Icon */
+	/**
+	 * The Icon
+	 */
 	private ImageIcon m_icon = null;
 
 	/**
@@ -189,7 +171,7 @@ public class MImage extends X_AD_Image
 		return getImageIcon();
 	}   // getIcon
 
-	private final ImageIcon getImageIcon()
+	private ImageIcon getImageIcon()
 	{
 		if (m_icon != null)
 		{
@@ -216,8 +198,6 @@ public class MImage extends X_AD_Image
 
 	/**
 	 * Gets the icon, resized if needed to fit the given maximum size.
-	 *
-	 * @param sizeMax
 	 */
 	public Icon getIcon(final Dimension sizeMax)
 	{
@@ -233,7 +213,7 @@ public class MImage extends X_AD_Image
 		}
 
 		final Dimension sizeOrig = new Dimension(icon.getIconWidth(), icon.getIconHeight());
-		final Dimension sizeNew = getScaledDimension(sizeOrig, sizeMax);
+		final Dimension sizeNew = AdImage.computeScaledDimension(sizeOrig, sizeMax);
 		if (sizeNew.equals(sizeOrig))
 		{
 			return icon;
@@ -255,44 +235,6 @@ public class MImage extends X_AD_Image
 		return new ImageIcon(resizedImage, getName());
 	}
 
-	private static final Dimension getScaledDimension(final Dimension size, final Dimension maxSize)
-	{
-		// credits: http://stackoverflow.com/questions/10245220/java-image-resize-maintain-aspect-ratio
-
-		final int widthOrig = size.width;
-		final int heightOrig = size.height;
-		final int widthMax = maxSize.width;
-		final int heightMax = maxSize.height;
-
-		int widthNew;
-		int heightNew;
-
-		// first check if we need to scale width
-		if (widthMax > 0 && widthOrig > widthMax)
-		{
-			// scale width to fit
-			widthNew = widthMax;
-			// scale height to maintain aspect ratio
-			heightNew = widthNew * heightOrig / widthOrig;
-		}
-		else
-		{
-			widthNew = widthOrig;
-			heightNew = heightOrig;
-		}
-
-		// then check if we need to scale even with the new height
-		if (heightMax > 0 && heightNew > heightMax)
-		{
-			// scale height to fit instead
-			heightNew = heightMax;
-			// scale width to maintain aspect ratio
-			widthNew = heightNew * widthOrig / heightOrig;
-		}
-
-		return new Dimension(widthNew, heightNew);
-	}
-
 	/**
 	 * Get URL
 	 *
@@ -301,7 +243,7 @@ public class MImage extends X_AD_Image
 	private URL getURL()
 	{
 		final String str = getImageURL();
-		if(Check.isEmpty(str, true))
+		if (Check.isEmpty(str, true))
 		{
 			return null;
 		}
@@ -310,7 +252,7 @@ public class MImage extends X_AD_Image
 		try
 		{
 			// Try URL directly
-			if (str.indexOf("://") != -1)
+			if (str.contains("://"))
 			{
 				url = new URL(str);
 			}
@@ -329,7 +271,7 @@ public class MImage extends X_AD_Image
 			log.warn("Not found: {}. Returning nul.", str, ex);
 		}
 		return url;
-	}	// getURL
+	}    // getURL
 
 	/**
 	 * Set Image URL
@@ -342,7 +284,7 @@ public class MImage extends X_AD_Image
 		m_image = null;
 		m_icon = null;
 		super.setImageURL(ImageURL);
-	}	// setImageURL
+	}    // setImageURL
 
 	/**
 	 * Set Binary Data
@@ -355,89 +297,11 @@ public class MImage extends X_AD_Image
 		m_image = null;
 		m_icon = null;
 		super.setBinaryData(BinaryData);
-	}	// setBinaryData
+	}    // setBinaryData
 
 	public String getContentType()
 	{
 		return MimeType.getMimeType(getName());
-	}
-
-	/**
-	 * @return format name to be used in {@link ImageIO#write(java.awt.image.RenderedImage, String, java.io.OutputStream)}.
-	 */
-	private String getImageFormatName()
-	{
-		String contentType = getContentType();
-		final String fileExtension = MimeType.getExtensionByTypeWithoutDot(contentType);
-		if (Check.isEmpty(fileExtension))
-		{
-			return "png";
-		}
-		return fileExtension;
-	}
-
-	public byte[] getScaledImageData(final int maxWidth, final int maxHeight)
-	{
-		final byte[] data = getData();
-		if (data == null || data.length == 0)
-		{
-			return null;
-		}
-		
-		if (maxWidth <= 0 && maxHeight <= 0)
-		{
-			return data;
-		}
-
-		final BufferedImage image;
-		try
-		{
-			image = ImageIO.read(new ByteArrayInputStream(data));
-		}
-		catch (IOException ex)
-		{
-			throw AdempiereException.wrapIfNeeded(ex);
-		}
-		if (image == null)
-		{
-			return null;
-		}
-
-		final Dimension sizeOrig = new Dimension(image.getWidth(), image.getHeight());
-		final Dimension sizeNew = getScaledDimension(sizeOrig, new Dimension(maxWidth, maxHeight));
-		if (sizeNew.equals(sizeOrig))
-		{
-			return data;
-		}
-		else
-		{
-			final BufferedImage resizedImage = new BufferedImage(sizeNew.width, sizeNew.height, BufferedImage.TYPE_INT_RGB);
-			final Graphics2D g = resizedImage.createGraphics();
-
-			g.setComposite(AlphaComposite.Src);
-			g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-			g.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-			g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-			g.drawImage(image, 0, 0, sizeNew.width, sizeNew.height, null);
-			g.dispose();
-
-			return toByteArray(resizedImage, getImageFormatName());
-		}
-	}
-
-	private static byte[] toByteArray(final BufferedImage image, final String formatName)
-	{
-		try
-		{
-			final ByteArrayOutputStream buf = new ByteArrayOutputStream();
-			ImageIO.write(image, formatName, buf);
-			return buf.toByteArray();
-		}
-		catch (IOException e)
-		{
-			throw AdempiereException.wrapIfNeeded(e);
-		}
 	}
 
 	/**
@@ -473,7 +337,7 @@ public class MImage extends X_AD_Image
 			final InputStream is = conn.getInputStream();
 			final byte[] buffer = new byte[1024 * 8];   // 8kB
 			final ByteArrayOutputStream os = new ByteArrayOutputStream();
-			int length = -1;
+			int length;
 			while ((length = is.read(buffer)) != -1)
 			{
 				os.write(buffer, 0, length);
@@ -488,33 +352,22 @@ public class MImage extends X_AD_Image
 			log.info(e.toString());
 		}
 		return data;
-	}	// getData
+	}    // getData
 
-	/**
-	 * String Representation
-	 *
-	 * @return String
-	 */
 	@Override
 	public String toString()
 	{
 		return "MImage[ID=" + get_ID() + ",Name=" + getName() + "]";
 	}   // toString
 
-	/**
-	 * Before Save
-	 *
-	 * @param newRecord new
-	 * @return true
-	 */
 	@Override
 	protected boolean beforeSave(final boolean newRecord)
 	{
-		if (getAD_Org_ID() != 0)
+		if (getAD_Org_ID() != OrgId.ANY.getRepoId())
 		{
-			setAD_Org_ID(0);
+			setAD_Org_ID(OrgId.ANY.getRepoId());
 		}
 		return true;
-	}	// beforeSave
+	}
 
 }   // MImage
