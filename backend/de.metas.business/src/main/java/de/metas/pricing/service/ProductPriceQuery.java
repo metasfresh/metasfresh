@@ -1,5 +1,6 @@
 package de.metas.pricing.service;
 
+import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -17,6 +18,7 @@ import org.adempiere.ad.dao.IQueryBuilderOrderByClause;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_AttributeInstance;
@@ -27,6 +29,7 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,26 +60,35 @@ import java.util.Map;
  * Hint: use {@link ProductPrices} to get an instance.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class ProductPriceQuery
 {
 	public enum AttributePricing
 	{
-		/** Only match product prices with IsAttributeDependent='Y' */
+		/**
+		 * Only match product prices with IsAttributeDependent='Y'
+		 */
 		STRICT,
 
-		/** Prefer product prices with IsAttributeDependent='Y', but also allow product prices with IsAttributeDependent='N' */
+		/**
+		 * Prefer product prices with IsAttributeDependent='Y', but also allow product prices with IsAttributeDependent='N'
+		 */
 		NOT_STRICT,
 
-		/** Only match product prices with IsAttributeDependent='N' */
+		/**
+		 * Only match product prices with IsAttributeDependent='N'
+		 */
 		NONE,
 
-		/** No ASI related matching at all */
+		/**
+		 * No ASI related matching at all
+		 */
 		IGNORE;
 	}
 
 	private static final Logger logger = LogManager.getLogger(ProductPriceQuery.class);
+
+	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
 	private PriceListVersionId _priceListVersionId;
 	private ProductId _productId;
@@ -122,13 +134,17 @@ public class ProductPriceQuery
 		return toQuery().list(type);
 	}
 
-	/** @return first matching product price or null */
+	/**
+	 * @return first matching product price or null
+	 */
 	public I_M_ProductPrice firstMatching()
 	{
 		return firstMatching(I_M_ProductPrice.class);
 	}
 
-	/** @return first matching product price or null */
+	/**
+	 * @return first matching product price or null
+	 */
 	public <T extends I_M_ProductPrice> T firstMatching(final Class<T> type)
 	{
 		final IQueryBuilder<I_M_ProductPrice> queryBuilder = toQueryBuilder();
@@ -144,10 +160,50 @@ public class ProductPriceQuery
 				.addColumn(I_M_ProductPrice.COLUMN_MatchSeqNo, Direction.Ascending, Nulls.Last)
 				.addColumn(I_M_ProductPrice.COLUMN_M_ProductPrice_ID, Direction.Ascending, Nulls.Last); // just to have a predictable order
 
+		if (_attributePricing_asiToMatch != null && (AttributePricing.NOT_STRICT == _attributePricing || AttributePricing.STRICT == _attributePricing))
+		{
+			return filterProductPriceToAsiMatch(queryBuilder.create().list(type));
+		}
+
 		return queryBuilder.create().first(type);
 	}
 
-	/** @return true if there is at least one product price that matches */
+	<T extends I_M_ProductPrice> T filterProductPriceToAsiMatch(final List<T> matchingProductPrices)
+	{
+		if (matchingProductPrices.isEmpty())
+		{
+			return null;
+		}
+
+		if (matchingProductPrices.size() == 1)
+		{
+			return matchingProductPrices.get(0);
+		}
+
+		final Function<T, Integer> orderByNumberOfMatchedAttributes = productPrice -> {
+			final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNull(productPrice.getM_AttributeSetInstance_ID());
+
+			if (asiId == null)
+			{
+				return 1;
+			}
+
+			return -1 * attributeDAO.retrieveAttributeInstances(asiId).size();
+		};
+
+		final Comparator<T> orderByNumberOfMatchingAttributes = Comparator.comparing(orderByNumberOfMatchedAttributes)
+				.thenComparing(I_M_ProductPrice::getMatchSeqNo)
+				.thenComparing(I_M_ProductPrice::getM_ProductPrice_ID);
+
+		return matchingProductPrices
+				.stream()
+				.min(orderByNumberOfMatchingAttributes)
+				.orElse(null);
+	}
+
+	/**
+	 * @return true if there is at least one product price that matches
+	 */
 	boolean matches()
 	{
 		return toQuery().anyMatch();
@@ -166,10 +222,9 @@ public class ProductPriceQuery
 	}
 
 	/**
-	 *
 	 * @param strictDefault if {@code true}, the method throws an exception if there is more than one match.
-	 *            If {@code false, it silently returns the first match which has the lowest sequence number.
-	 * 			@param type
+	 *                      If {@code false, it silently returns the first match which has the lowest sequence number.
+	 * @param type
 	 * @return
 	 */
 	private <T extends I_M_ProductPrice> T retrieveDefault(final boolean strictDefault, @NonNull final Class<T> type)
@@ -307,7 +362,9 @@ public class ProductPriceQuery
 		return _productId;
 	}
 
-	/** Matches product price which is NOT marked as "attributed pricing" */
+	/**
+	 * Matches product price which is NOT marked as "attributed pricing"
+	 */
 	public ProductPriceQuery noAttributePricing()
 	{
 		_attributePricing = AttributePricing.NONE;
@@ -326,7 +383,9 @@ public class ProductPriceQuery
 		return _onlyValidPrices;
 	}
 
-	/** Matches any product price which is marked as "attributed pricing" */
+	/**
+	 * Matches any product price which is marked as "attributed pricing"
+	 */
 	public ProductPriceQuery onlyAttributePricing()
 	{
 		_attributePricing = AttributePricing.STRICT;
@@ -392,7 +451,8 @@ public class ProductPriceQuery
 		return this;
 	}
 
-	/* package */ final ProductPriceQuery addMatchersIfAbsent(final Collection<IProductPriceQueryMatcher> matchers)
+	/* package */
+	final ProductPriceQuery addMatchersIfAbsent(final Collection<IProductPriceQueryMatcher> matchers)
 	{
 		if (matchers == null || matchers.isEmpty())
 		{

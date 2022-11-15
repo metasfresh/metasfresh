@@ -1,13 +1,25 @@
 package de.metas.handlingunits.shipmentschedule.async;
 
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.List;
-
+import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import de.metas.async.api.IQueueDAO;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.spi.ILatchStragegy;
+import de.metas.async.spi.WorkpackageProcessorAdapter;
+import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
+import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
+import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService;
 import de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule;
 import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentScheduleExternalInfo;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.InOutGenerateResult;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.logging.LogManager;
+import de.metas.util.Loggables;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
@@ -19,23 +31,9 @@ import org.adempiere.util.api.IParams;
 import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableList;
-
-import ch.qos.logback.classic.Level;
-import de.metas.async.api.IQueueDAO;
-import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.spi.ILatchStragegy;
-import de.metas.async.spi.WorkpackageProcessorAdapter;
-import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
-import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTypeToUse;
-import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters;
-import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
-import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService;
-import de.metas.inoutcandidate.api.InOutGenerateResult;
-import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
-import de.metas.logging.LogManager;
-import de.metas.util.Loggables;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Generate Shipments from given shipment schedules by processing enqueued work packages.<br>

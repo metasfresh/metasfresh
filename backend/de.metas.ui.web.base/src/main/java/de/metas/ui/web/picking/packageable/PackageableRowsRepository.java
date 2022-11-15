@@ -1,22 +1,12 @@
 package de.metas.ui.web.picking.packageable;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_Product;
-import org.springframework.stereotype.Component;
-
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.api.Packageable;
-import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.order.OrderLineId;
 import de.metas.quantity.Quantity;
 import de.metas.ui.web.view.ViewId;
@@ -24,6 +14,14 @@ import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.I_M_Product;
+import org.springframework.stereotype.Component;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 /*
  * #%L

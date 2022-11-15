@@ -1,6 +1,7 @@
 package de.metas.ordercandidate.spi.impl;
 
 import de.metas.currency.CurrencyPrecision;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
@@ -17,6 +18,7 @@ import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
@@ -195,6 +197,8 @@ public class DefaultOLCandValidator implements IOLCandValidator
 
 	private void validateAndSetPriceInformation(@NonNull final I_C_OLCand olCand)
 	{
+		final HUPIItemProductId olCandPackingInstructionId = olCandEffectiveValuesBL.getEffectivePackingInstructions(olCand);
+
 		if (olCand.isManualPrice())
 		{
 			// still, make sure that we have a currency set
@@ -226,6 +230,11 @@ public class DefaultOLCandValidator implements IOLCandValidator
 
 			// Set the price actual as the price entered; possible discounts will be applied later
 			olCand.setPriceActual(olCand.getPriceEntered());
+
+			if (olCandPackingInstructionId == null)
+			{
+				olCand.setM_HU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(pricingResult.getPackingMaterialId()));
+			}
 
 			if (pricingResult.getTaxCategoryId() == null)
 			{
@@ -279,6 +288,11 @@ public class DefaultOLCandValidator implements IOLCandValidator
 			// this olCand has no TU/Gebinde price-UOM, so we just continue with the olCand's imported UOM
 			final UomId internalUomId = olCandEffectiveValuesBL.getRecordOrStockUOMId(olCand);
 			olCand.setC_UOM_Internal_ID(internalUomId.getRepoId());
+		}
+
+		if (olCandPackingInstructionId == null)
+		{
+			olCand.setM_HU_PI_Item_Product_ID(HUPIItemProductId.toRepoId(pricingResult.getPackingMaterialId()));
 		}
 	}
 

@@ -1,16 +1,14 @@
 package de.metas.handlingunits.picking;
 
-import java.util.Set;
-
 import com.google.common.collect.ImmutableSet;
-
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.api.PickingSlotId;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.Set;
 
 /*
  * #%L

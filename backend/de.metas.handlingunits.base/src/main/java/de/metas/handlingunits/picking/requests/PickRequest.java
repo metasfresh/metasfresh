@@ -1,18 +1,10 @@
 package de.metas.handlingunits.picking.requests;
 
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.picking.PickFrom;
-import de.metas.inoutcandidate.ShipmentScheduleId;
-import org.eevolution.api.PPOrderBOMLineId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -20,6 +12,11 @@ import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.eevolution.api.PPOrderBOMLineId;
+
+import javax.annotation.Nullable;
+import java.util.List;
 
 /*
  * #%L

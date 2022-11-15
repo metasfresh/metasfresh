@@ -78,6 +78,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
@@ -1246,6 +1247,14 @@ public class InterfaceWrapperHelper
 		final boolean useOverrideColumnIfAvailable = false;
 		final T value = getValue(model, columnName, throwExIfColumnNotFound, useOverrideColumnIfAvailable);
 		return Optional.ofNullable(value);
+	}
+
+	@NonNull
+	public static <T extends RepoIdAware> Optional<T> getRepoIdOptional(@NonNull final Object model, @NonNull final String columnName, @NonNull final Function<Integer, T> idMapper)
+	{
+		return getValueOptional(model, columnName)
+				.map(columnValue -> (Integer)columnValue)
+				.map(idMapper);
 	}
 
 	/**
