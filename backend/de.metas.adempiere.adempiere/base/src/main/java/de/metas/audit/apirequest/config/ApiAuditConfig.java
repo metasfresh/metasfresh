@@ -48,6 +48,8 @@ public class ApiAuditConfig
 
 	int seqNo;
 
+	boolean isBypassAudit;
+
 	boolean forceProcessedAsync;
 
 	int keepRequestDays;
