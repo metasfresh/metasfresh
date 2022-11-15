@@ -175,4 +175,170 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=230,Updated=TO_TIMESTAMP
 ;
 
 
+-- setup translations
+-- 2022-11-15T19:31:42.144Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,Description,EntityType,Help,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,581684,0,TO_TIMESTAMP('2022-11-15 20:31:41','YYYY-MM-DD HH24:MI:SS'),100,'','D','','Y','Abw. Zugesagter Termin','Abw. Zugesagter Termin',TO_TIMESTAMP('2022-11-15 20:31:41','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-11-15T19:31:42.147Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=581684 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- 2022-11-15T19:32:02.291Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2022-11-15 20:32:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581684 AND AD_Language='de_DE'
+;
+
+-- 2022-11-15T19:32:02.302Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581684,'de_DE')
+;
+
+-- 2022-11-15T19:32:02.310Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(581684,'de_DE')
+;
+
+-- 2022-11-15T19:32:49.634Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Alt. Date Promised', PrintName='Alt. Date Promised',Updated=TO_TIMESTAMP('2022-11-15 20:32:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581684 AND AD_Language='en_US'
+;
+
+-- 2022-11-15T19:32:49.635Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581684,'en_US')
+;
+
+-- 2022-11-15T19:33:11.829Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET AD_Name_ID=581684, Description='', Help='', Name='Abw. Zugesagter Termin',Updated=TO_TIMESTAMP('2022-11-15 20:33:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=708058
+;
+
+-- 2022-11-15T19:33:11.830Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(581684)
+;
+
+-- 2022-11-15T19:33:11.834Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=708058
+;
+
+-- 2022-11-15T19:33:11.844Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ select AD_Element_Link_Create_Missing_Field(708058)
+;
+
+-- 2022-11-15T19:35:16.083Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,581685,0,TO_TIMESTAMP('2022-11-15 20:35:15','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Effektiv','Effektiv',TO_TIMESTAMP('2022-11-15 20:35:15','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-11-15T19:35:16.084Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=581685 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- 2022-11-15T19:36:21.467Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Effektiv Zugesagter Termin', PrintName='Effektiv Zugesagter Termin',Updated=TO_TIMESTAMP('2022-11-15 20:36:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581685 AND AD_Language='de_DE'
+;
+
+-- 2022-11-15T19:36:21.468Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581685,'de_DE')
+;
+
+-- 2022-11-15T19:36:21.476Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_ad_element_on_ad_element_trl_update(581685,'de_DE')
+;
+
+-- 2022-11-15T19:36:21.476Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Column SET ColumnName=NULL, Name='Effektiv Zugesagter Termin', Description=NULL, Help=NULL WHERE AD_Element_ID=581685
+;
+
+-- 2022-11-15T19:36:21.477Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Process_Para SET ColumnName=NULL, Name='Effektiv Zugesagter Termin', Description=NULL, Help=NULL WHERE AD_Element_ID=581685 AND IsCentrallyMaintained='Y'
+;
+
+-- 2022-11-15T19:36:21.477Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET Name='Effektiv Zugesagter Termin', Description=NULL, Help=NULL WHERE (AD_Column_ID IN (SELECT AD_Column_ID FROM AD_Column WHERE AD_Element_ID=581685) AND AD_Name_ID IS NULL ) OR (AD_Name_ID = 581685)
+;
+
+-- 2022-11-15T19:36:21.483Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_PrintFormatItem pi SET PrintName='Effektiv Zugesagter Termin', Name='Effektiv Zugesagter Termin' WHERE IsCentrallyMaintained='Y' AND EXISTS (SELECT * FROM AD_Column c  WHERE c.AD_Column_ID=pi.AD_Column_ID AND c.AD_Element_ID=581685)
+;
+
+-- 2022-11-15T19:36:21.484Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Tab SET Name='Effektiv Zugesagter Termin', Description=NULL, Help=NULL, CommitWarning = NULL WHERE AD_Element_ID = 581685
+;
+
+-- 2022-11-15T19:36:21.485Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_WINDOW SET Name='Effektiv Zugesagter Termin', Description=NULL, Help=NULL WHERE AD_Element_ID = 581685
+;
+
+-- 2022-11-15T19:36:21.485Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Menu SET   Name = 'Effektiv Zugesagter Termin', Description = NULL, WEBUI_NameBrowse = NULL, WEBUI_NameNew = NULL, WEBUI_NameNewBreadcrumb = NULL WHERE AD_Element_ID = 581685
+;
+
+-- 2022-11-15T19:36:49.338Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET Name='Effective Date Promised', PrintName='Effective Date Promised',Updated=TO_TIMESTAMP('2022-11-15 20:36:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581685 AND AD_Language='en_US'
+;
+
+-- 2022-11-15T19:36:49.339Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581685,'en_US')
+;
+
+
+-- 2022-11-15T19:40:05.201Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Field SET AD_Name_ID=581685, Description=NULL, Help=NULL, Name='Effektiv Zugesagter Termin',Updated=TO_TIMESTAMP('2022-11-15 20:40:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=708059
+;
+
+-- 2022-11-15T19:40:05.212Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(581685)
+;
+
+-- 2022-11-15T19:40:05.217Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=708059
+;
+
+-- 2022-11-15T19:40:05.217Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */ select AD_Element_Link_Create_Missing_Field(708059)
+;
+
+-- 2022-11-15T19:40:21.262Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET PrintName='Effektiv Zugesagter Termin',Updated=TO_TIMESTAMP('2022-11-15 20:40:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581685 AND AD_Language='de_CH'
+;
+
+-- 2022-11-15T19:40:21.264Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581685,'de_CH')
+;
+
+-- 2022-11-15T19:40:26.668Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+UPDATE AD_Element_Trl SET PrintName='Effektiv Zugesagter Termin',Updated=TO_TIMESTAMP('2022-11-15 20:40:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581685 AND AD_Language='nl_NL'
+;
+
+-- 2022-11-15T19:40:26.669Z
+-- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581685,'nl_NL')
+;
 
