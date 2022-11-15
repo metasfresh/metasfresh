@@ -18,14 +18,14 @@ Feature: Shipment schedule export rest-api
       | Identifier    | Name          | OPT.Description   |
       | product_25_02 | product_25_02 | dummy description |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name           | Value          |
-      | ps_1       | pricing_system | pricing_system |
+      | Identifier | Name                      | Value                     |
+      | ps_1       | pricing_system_16112022_4 | pricing_system_16112022_4 |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name          | SOTrx | IsTaxIncluded | PricePrecision |
-      | pl_so      | ps_1                          | DE                        | EUR                 | price_list_so | true  | false         | 2              |
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                     | SOTrx | IsTaxIncluded | PricePrecision |
+      | pl_so      | ps_1                          | DE                        | EUR                 | price_list_so_16112022_4 | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name   | ValidFrom  |
-      | plv_so     | pl_so                     | plv_so | 2022-02-01 |
+      | Identifier | M_PriceList_ID.Identifier | Name              | ValidFrom  |
+      | plv_so     | pl_so                     | plv_so_16112022_4 | 2022-02-01 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_TaxCategory_ID.InternalName | C_UOM_ID.X12DE355 |
       | pp_product | plv_so                            | product_25_02           | 10.0     | Normal                        | PCE               |

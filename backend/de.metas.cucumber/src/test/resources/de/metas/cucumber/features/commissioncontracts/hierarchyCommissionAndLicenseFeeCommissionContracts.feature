@@ -7,20 +7,20 @@ Feature: Hierarchy commission and license fee commission combined
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
     And taxCategory 'Normal' is updated to work with all productTypes
     And metasfresh contains M_Products:
-      | Identifier          | Name                | ProductType | OPT.X12DE355 | Value |
-      | commission_product  | commission_product  | S           | PTS          |       |
-      | transaction_product | transaction_product |             | PCE          |       |
+      | Identifier          | Name                           | ProductType | OPT.X12DE355 | Value |
+      | commission_product  | commission_product_16112022_1  | S           | PTS          |       |
+      | transaction_product | transaction_product_16112022_1 |             | PCE          |       |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name                    | Value                   | OPT.IsActive |
-      | ps_1       | salesRep_pricing_system | salesRep_pricing_system | true         |
+      | Identifier | Name                               | Value                              | OPT.IsActive |
+      | ps_1       | salesRep_pricing_system_16112022_1 | salesRep_pricing_system_16112022_1 | true         |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name          | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_so      | ps_1                          | DE                        | EUR                 | price_list_so | true  | false         | 2              | true         |
-      | pl_po      | ps_1                          | DE                        | EUR                 | price_list_po | false | false         | 2              | true         |
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                     | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_so      | ps_1                          | DE                        | EUR                 | price_list_so_16112022_1 | true  | false         | 2              | true         |
+      | pl_po      | ps_1                          | DE                        | EUR                 | price_list_po_16112022_1 | false | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name                 | ValidFrom  |
-      | plv_so     | pl_so                     | salesOrder-PLV_72    | 2021-04-01 |
-      | plv_po     | pl_po                     | purchaseOrder-PLV_72 | 2021-04-01 |
+      | Identifier | M_PriceList_ID.Identifier | Name                            | ValidFrom  |
+      | plv_so     | pl_so                     | salesOrder-PLV_72_16112022_1    | 2021-04-01 |
+      | plv_po     | pl_po                     | purchaseOrder-PLV_72_16112022_1 | 2021-04-01 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_2       | plv_so                            | commission_product      | 1.0      | PTS               | Normal                        |
