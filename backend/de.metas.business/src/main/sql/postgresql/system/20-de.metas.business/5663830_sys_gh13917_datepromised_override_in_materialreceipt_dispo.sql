@@ -159,5 +159,20 @@ UPDATE AD_UI_Element SET SeqNo=35,Updated=TO_TIMESTAMP('2022-11-15 11:16:24','YY
 UPDATE AD_Column SET ColumnSQL='COALESCE(MovementDate_Override, MovementDate)',Updated=TO_TIMESTAMP('2022-11-15 11:27:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=584885
 ;
 
+-- 2022-11-11T11:14:04.351Z
+-- URL zum Konzept
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,3405,0,293,540927,613441,'F',TO_TIMESTAMP('2022-11-11 12:14:04','YYYY-MM-DD HH24:MI:SS'),100,'Zugesagter Termin für diesen Auftrag','Der "Zugesagte Termin" gibt das Datum an, für den (wenn zutreffend) dieser Auftrag zugesagt wurde.','Y','N','N','Y','N','N','N',0,'Zugesagter Termin',250,0,0,TO_TIMESTAMP('2022-11-11 12:14:04','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-11-11T11:14:11.797Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET WidgetSize='S',Updated=TO_TIMESTAMP('2022-11-11 12:14:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613441
+;
+
+-- 2022-11-11T11:15:18.172Z
+-- URL zum Konzept
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=230,Updated=TO_TIMESTAMP('2022-11-11 12:15:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613441
+;
+
 
 
