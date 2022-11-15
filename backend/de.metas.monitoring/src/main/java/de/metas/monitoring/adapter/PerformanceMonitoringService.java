@@ -75,6 +75,8 @@ public interface PerformanceMonitoringService
 		@Nullable
 		String windowNameAndId;
 
+		boolean isGroupingPlaceholder;
+
 		@Singular
 		Map<String, String> labels;
 
@@ -91,8 +93,6 @@ public interface PerformanceMonitoringService
 		ASYNC_WORKPACKAGE("asyncWorkPackage"),
 
 		SCHEDULER("scheduler"),
-
-		REST_API_PROCESSING("rest-API-processing"),
 
 		EVENTBUS_REMOTE_ENDPOINT("eventbus-remote-endpoint"),
 

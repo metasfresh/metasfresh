@@ -104,6 +104,7 @@ public class MicrometerPerformanceMonitoringService implements PerformanceMonito
 				.className("HTTP")
 				.functionName("Request")
 				.windowNameAndId(windowNameAndId)
+				.isGroupingPlaceholder(true)
 				//.labels() // don't copy the labels
 				.build();
 	}

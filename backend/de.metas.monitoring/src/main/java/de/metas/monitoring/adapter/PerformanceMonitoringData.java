@@ -37,14 +37,14 @@ public class PerformanceMonitoringData
 
 	public String getInitiatorFunctionNameFQ()
 	{
-		if (calledBy.isEmpty())
+		for (final PerformanceMonitoringService.Metadata metadata : calledBy)
 		{
-			return "";
+			if (!metadata.isGroupingPlaceholder())
+			{
+				return metadata.getFunctionNameFQ();
+			}
 		}
-		else
-		{
-			return calledBy.size() > 1 ? calledBy.get(1).getFunctionNameFQ() : calledBy.get(0).getFunctionNameFQ();
-		}
+		return !calledBy.isEmpty() ? calledBy.get(0).getFunctionNameFQ() : "";
 	}
 
 	@Nullable
