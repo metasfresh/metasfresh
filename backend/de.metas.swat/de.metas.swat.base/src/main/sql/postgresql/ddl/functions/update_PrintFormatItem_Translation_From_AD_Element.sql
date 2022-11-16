@@ -27,7 +27,8 @@ BEGIN
                  FROM ad_column c
                           JOIN ad_printformatitem p ON c.ad_column_id = p.ad_column_id
                  WHERE c.ad_element_id = e_trl.ad_element_id
-                   AND p_trl.ad_printformatitem_id = p.ad_printformatitem_id);
+                   AND p_trl.ad_printformatitem_id = p.ad_printformatitem_id)
+      AND issynchronisetrl(e_trl.ad_language) = 'Y';
 
 
     GET DIAGNOSTICS update_count = ROW_COUNT;
@@ -46,7 +47,8 @@ BEGIN
                      FROM AD_Column c
                      WHERE c.ad_element_id = e_trl.ad_element_id
                        AND c.ad_column_id = p.ad_column_id)
-          AND isbasead_language(e_trl.ad_language) = 'Y';
+          AND isbasead_language(e_trl.ad_language) = 'Y'
+          AND issynchronisetrl(e_trl.ad_language) = 'Y';
 
         --
         GET DIAGNOSTICS update_count = ROW_COUNT;

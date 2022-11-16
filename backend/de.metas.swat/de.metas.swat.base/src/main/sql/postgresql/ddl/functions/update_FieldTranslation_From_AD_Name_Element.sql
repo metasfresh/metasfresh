@@ -30,7 +30,8 @@ BEGIN
                           JOIN AD_Field f ON c.ad_column_id = f.ad_column_id
                  WHERE c.ad_element_id = e_trl.ad_element_id
                    AND f_trl.ad_field_id = f.ad_field_id
-                   AND f.ad_name_id IS NULL);
+                   AND f.ad_name_id IS NULL)
+      AND issynchronisetrl(e_trl.ad_language) = 'Y';
     --
     GET DIAGNOSTICS update_count_via_AD_Column = ROW_COUNT;
 
@@ -50,7 +51,8 @@ BEGIN
       AND EXISTS(SELECT 1
                  FROM AD_Field f
                  WHERE f.ad_name_id = e_trl.ad_element_id
-                   AND f.ad_field_id = f_trl.ad_field_id);
+                   AND f.ad_field_id = f_trl.ad_field_id)
+      AND issynchronisetrl(e_trl.ad_language) = 'Y';
 
     --
     GET DIAGNOSTICS update_count_via_AD_Name = ROW_COUNT;
@@ -70,7 +72,8 @@ BEGIN
                      FROM AD_Column c
                      WHERE c.ad_element_id = e_trl.ad_element_id
                        AND c.ad_column_id = f.ad_column_id)
-          AND isbasead_language(e_trl.ad_language) = 'Y';
+          AND isbasead_language(e_trl.ad_language) = 'Y'
+          AND issynchronisetrl(e_trl.ad_language) = 'Y';
 
         GET DIAGNOSTICS update_count_via_AD_Column = ROW_COUNT;
 
@@ -81,7 +84,8 @@ BEGIN
         WHERE (p_AD_Element_ID IS NULL OR e_trl.AD_Element_ID = p_AD_Element_ID)
           AND (p_AD_Language IS NULL OR e_trl.AD_Language = p_AD_Language)
           AND f.ad_Name_id = e_trl.ad_element_id
-          AND isbasead_language(e_trl.ad_language) = 'Y';
+          AND isbasead_language(e_trl.ad_language) = 'Y'
+          AND issynchronisetrl(e_trl.ad_language) = 'Y';
         --
         GET DIAGNOSTICS update_count_via_AD_Name = ROW_COUNT;
 

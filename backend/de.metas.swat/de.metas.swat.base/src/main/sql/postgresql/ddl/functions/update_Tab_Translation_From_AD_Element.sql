@@ -26,7 +26,8 @@ BEGIN
     WHERE (p_AD_Element_ID IS NULL OR e_trl.AD_Element_ID = p_AD_Element_ID)
       AND (p_AD_Language IS NULL OR e_trl.AD_Language = p_AD_Language)
       AND t_trl.ad_language = e_trl.ad_language
-      AND EXISTS(SELECT 1 FROM AD_Tab t WHERE t.ad_element_id = e_trl.ad_element_id AND t.ad_tab_id = t_trl.ad_tab_id);
+      AND EXISTS(SELECT 1 FROM AD_Tab t WHERE t.ad_element_id = e_trl.ad_element_id AND t.ad_tab_id = t_trl.ad_tab_id)
+      AND issynchronisetrl(e_trl.ad_language) = 'Y';
 
     GET DIAGNOSTICS update_count = ROW_COUNT;
     RAISE NOTICE 'Update % AD_Tab_Trl rows using AD_Element_ID=%, AD_Language=%', update_count, p_AD_Element_ID, p_AD_Language;
@@ -42,7 +43,8 @@ BEGIN
         WHERE (p_AD_Element_ID IS NULL OR e_trl.AD_Element_ID = p_AD_Element_ID)
           AND (p_AD_Language IS NULL OR e_trl.AD_Language = p_AD_Language)
           AND t.ad_element_id = e_trl.ad_element_id
-          AND isbasead_language(e_trl.ad_language) = 'Y';
+          AND isbasead_language(e_trl.ad_language) = 'Y'
+          AND issynchronisetrl(e_trl.ad_language) = 'Y';
         --
         GET DIAGNOSTICS update_count = ROW_COUNT;
         RAISE NOTICE 'Update % AD_Tab rows using AD_Element_ID=%, AD_Language=%', update_count, p_AD_Element_ID, p_AD_Language;

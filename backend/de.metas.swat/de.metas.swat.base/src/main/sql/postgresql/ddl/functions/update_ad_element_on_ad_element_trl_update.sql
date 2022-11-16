@@ -34,7 +34,8 @@ BEGIN
     WHERE (p_AD_Element_ID IS NULL OR e_trl.AD_Element_ID = p_AD_Element_ID)
       AND (p_AD_Language IS NULL OR e_trl.AD_Language = p_AD_Language)
       AND e.AD_Element_ID = e_trl.AD_Element_ID
-      AND isbasead_language(e_trl.ad_language) = 'Y';
+      AND isbasead_language(e_trl.ad_language) = 'Y'
+      AND isSynchroniseTrl(e_trl.ad_language) = 'Y';
 
     --
     GET DIAGNOSTICS update_count = ROW_COUNT;
