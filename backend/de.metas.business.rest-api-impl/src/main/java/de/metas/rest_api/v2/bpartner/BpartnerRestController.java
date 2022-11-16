@@ -535,7 +535,7 @@ public class BpartnerRestController
 			@PathVariable("bpartnerIdentifier") //
 			@NonNull final String bpartnerIdentifier,
 
-			@ApiParam(value = "If true, processed records will also be deleted.", defaultValue = "false") //
+			@ApiParam(value = "If true, processed records will also be deleted, otherwise, they will be ignored.", defaultValue = "false") //
 			@RequestParam("includingProcessed")
 			final boolean includingProcessed)
 	{

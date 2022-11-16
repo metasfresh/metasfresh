@@ -97,6 +97,7 @@ class CompositeRelatedRecords
 		return bpartnerId2BankAccounts.get(bpartnerId);
 	}
 
+	@NonNull
 	public ImmutableList<I_C_BPartner_CreditLimit> getCreditLimitsByBPartnerId(@NonNull final BPartnerId bpartnerId)
 	{
 		return bpartnerId2CreditLimits.get(bpartnerId);

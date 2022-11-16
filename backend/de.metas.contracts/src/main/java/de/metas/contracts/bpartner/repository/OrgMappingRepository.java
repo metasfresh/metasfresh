@@ -149,7 +149,7 @@ public class OrgMappingRepository
 		orgMapping.setAD_Org_ID(0);
 		orgMapping.setAD_Table_ID(getTableId(I_C_BPartner_CreditLimit.class));
 
-		Check.assumeNotNull(creditLimit.getId(), "C_BPartner_CreditLimit_ID cannot be missing at this stage!");
+		Check.assumeNotNull(creditLimit.getId(), "We assume creditLimit was loaded from DB so C_BPartner_CreditLimit_ID cannot be missing!");
 		orgMapping.setValue(String.valueOf(creditLimit.getId()));
 
 		save(orgMapping);

@@ -39,6 +39,7 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -48,11 +49,14 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.I_C_CreditLimit_Type;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Collection;
@@ -60,6 +64,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Function;
 
 import static org.adempiere.model.InterfaceWrapperHelper.loadOrNew;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -93,7 +98,7 @@ public class BPartnerCreditLimitRepository
 	}
 
 	@NonNull
-	public Optional<I_C_BPartner_CreditLimit> retrieveCreditLimitByBPartnerId(final int bpartnerId, final int typeId)
+	public Optional<I_C_BPartner_CreditLimit> retrieveCreditLimitByBPartnerId(@NonNull final BPartnerId bpartnerId, @NonNull final CreditLimitTypeId typeId)
 	{
 		return queryBL
 				.createQueryBuilder(I_C_BPartner_CreditLimit.class)
@@ -122,7 +127,7 @@ public class BPartnerCreditLimitRepository
 				.stream()
 				.collect(ImmutableListMultimap.toImmutableListMultimap(
 						record -> BPartnerId.ofRepoId(record.getC_BPartner_ID()),
-						record -> record));
+						Function.identity()));
 	}
 
 	@NonNull
@@ -190,40 +195,55 @@ public class BPartnerCreditLimitRepository
 	}
 
 	@NonNull
-	public BPartnerCreditLimit createOrUpdate(@NonNull final BPartnerCreditLimitCreateRequest bPartnerCreditLimitCreateRequest)
+	public BPartnerCreditLimit createOrUpdate(@NonNull final BPartnerCreditLimitCreateRequest request)
 	{
-		final BPartnerCreditLimit creditLimit = bPartnerCreditLimitCreateRequest.getCreditLimit();
+		final BPartnerCreditLimit creditLimit = request.getCreditLimit();
+
+		Check.assumeEquals(creditLimit.getAmount().getCurrencyId(), getOrgCurrencyId(request.getOrgId()));
 
 		final I_C_BPartner_CreditLimit creditLimitRecord = loadOrNew(creditLimit.getId(), I_C_BPartner_CreditLimit.class);
 
-		if (bPartnerCreditLimitCreateRequest.getOrgId() != null)
+		if (request.getOrgId() != null)
 		{
-			creditLimitRecord.setAD_Org_ID(bPartnerCreditLimitCreateRequest.getOrgId().getRepoId());
+			creditLimitRecord.setAD_Org_ID(request.getOrgId().getRepoId());
 		}
 
 		creditLimitRecord.setC_CreditLimit_Type_ID(creditLimit.getCreditLimitTypeId().getRepoId());
+		creditLimitRecord.setC_BPartner_ID(request.getBpartnerId().getRepoId());
 
-		creditLimitRecord.setC_BPartner_ID(bPartnerCreditLimitCreateRequest.getBpartnerId().getRepoId());
-
-		creditLimitRecord.setAmount(creditLimit.getMoney().getValue());
-
-		if (creditLimit.getDateFrom() != null)
-		{
-			creditLimitRecord.setDateFrom(Timestamp.from(creditLimit.getDateFrom()));
-		}
+		creditLimitRecord.setAmount(creditLimit.getAmount().toBigDecimal());
+		creditLimitRecord.setDateFrom(TimeUtil.asTimestamp(creditLimit.getDateFrom()));
 
 		creditLimitRecord.setIsActive(creditLimit.isActive());
-
 		creditLimitRecord.setProcessed(creditLimit.isProcessed());
 
 		creditLimitRecord.setAD_Org_Mapping_ID(OrgMappingId.toRepoId(creditLimit.getOrgMappingId()));
 
-		Optional.ofNullable(bPartnerCreditLimitCreateRequest.getValidatePermissions())
+		Optional.ofNullable(request.getValidatePermissions())
 				.ifPresent(permissionValidator -> permissionValidator.accept(creditLimitRecord));
 
 		saveRecord(creditLimitRecord);
 
 		return ofRecord(creditLimitRecord);
+	}
+
+	@NonNull
+	public BPartnerCreditLimit ofRecord(@NonNull final I_C_BPartner_CreditLimit creditLimit)
+	{
+		final OrgId orgId = OrgId.ofRepoId(creditLimit.getAD_Org_ID());
+		final CurrencyId orgCurrencyId = currencyBL.getBaseCurrencyId(ClientId.ofRepoId(creditLimit.getAD_Client_ID()), orgId);
+		final Money moneyInOrgCurrency = Money.of(creditLimit.getAmount(), orgCurrencyId);
+
+		return BPartnerCreditLimit.builder()
+				.id(BPartnerCreditLimitId.ofRepoId(creditLimit.getC_BPartner_CreditLimit_ID()))
+				.bPartnerId(BPartnerId.ofRepoIdOrNull(creditLimit.getC_BPartner_ID()))
+				.amount(moneyInOrgCurrency)
+				.creditLimitTypeId(CreditLimitTypeId.ofRepoId(creditLimit.getC_CreditLimit_Type_ID()))
+				.dateFrom(TimeUtil.asInstant(creditLimit.getDateFrom()))
+				.orgMappingId(OrgMappingId.ofRepoIdOrNull(creditLimit.getAD_Org_Mapping_ID()))
+				.active(creditLimit.isActive())
+				.processed(creditLimit.isProcessed())
+				.build();
 	}
 
 	@NonNull
@@ -240,6 +260,7 @@ public class BPartnerCreditLimitRepository
 				.list();
 	}
 
+	@NonNull
 	private Comparator<I_C_BPartner_CreditLimit> createComparator()
 	{
 		final Comparator<I_C_BPartner_CreditLimit> byTypeSeqNoReversed = //
@@ -280,28 +301,10 @@ public class BPartnerCreditLimitRepository
 	}
 
 	@NonNull
-	public BPartnerCreditLimit ofRecord(@NonNull final I_C_BPartner_CreditLimit creditLimit)
+	private CurrencyId getOrgCurrencyId(@Nullable final OrgId orgId)
 	{
-		final OrgId orgId = OrgId.ofRepoId(creditLimit.getAD_Org_ID());
-		final Money moneyInOrgCurrency = getMoneyInOrgCurrencyId(creditLimit.getAmount(), orgId);
+		final OrgId actualOrgId = Optional.ofNullable(orgId).orElseGet(Env::getOrgId);
 
-		return BPartnerCreditLimit.builder()
-				.id(BPartnerCreditLimitId.ofRepoId(creditLimit.getC_BPartner_CreditLimit_ID()))
-				.bPartnerId(BPartnerId.ofRepoIdOrNull(creditLimit.getC_BPartner_ID()))
-				.money(moneyInOrgCurrency)
-				.creditLimitTypeId(CreditLimitTypeId.ofRepoId(creditLimit.getC_CreditLimit_Type_ID()))
-				.dateFrom(creditLimit.getDateFrom() != null ? creditLimit.getDateFrom().toInstant() : null)
-				.orgMappingId(OrgMappingId.ofRepoIdOrNull(creditLimit.getAD_Org_Mapping_ID()))
-				.active(creditLimit.isActive())
-				.processed(creditLimit.isProcessed())
-				.build();
-	}
-
-	@NonNull
-	private Money getMoneyInOrgCurrencyId(@NonNull final BigDecimal amount, @NonNull final OrgId orgId)
-	{
-		final CurrencyId orgCurrencyId = currencyBL.getBaseCurrencyId(Env.getClientId(), orgId);
-
-		return Money.of(amount, orgCurrencyId);
+		return currencyBL.getBaseCurrencyId(Env.getClientId(), actualOrgId);
 	}
 }

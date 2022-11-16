@@ -8,10 +8,10 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerCompositeAndContactId;
 import de.metas.bpartner.service.BPartnerContactQuery;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.user.api.IUserDAO;
@@ -273,6 +273,6 @@ public class BPartnerCompositeRepository
 	public void save(@NonNull final BPartnerComposite bpartnerComposite, final boolean validatePermissions)
 	{
 		final BPartnerCompositeSaver saver = new BPartnerCompositeSaver(bpartnerBL, bPartnerCreditLimitRepository);
-		saver.save(bpartnerComposite, validatePermissions );
+		saver.save(bpartnerComposite, validatePermissions);
 	}
 }

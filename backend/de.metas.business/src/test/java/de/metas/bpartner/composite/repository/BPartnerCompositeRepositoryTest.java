@@ -38,8 +38,7 @@ import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.business.BusinessTestHelper;
-import de.metas.currency.CurrencyCode;
-import de.metas.currency.CurrencyRepository;
+import de.metas.currency.ICurrencyBL;
 import de.metas.greeting.GreetingId;
 import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.Language;
@@ -57,6 +56,7 @@ import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import org.adempiere.ad.table.MockLogEntriesRepository;
+import org.adempiere.service.ClientId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.assertj.core.api.Assertions;
 import org.compiere.SpringContextHolder;
@@ -70,7 +70,7 @@ import java.time.LocalDate;
 class BPartnerCompositeRepositoryTest
 {
 	private BPartnerCompositeRepository bpartnerCompositeRepository;
-	private CurrencyRepository currencyRepository;
+	private ICurrencyBL currencyBL;
 	private CountryId countryId_DE;
 	private OrgId orgId;
 
@@ -88,7 +88,7 @@ class BPartnerCompositeRepositoryTest
 				new UserRoleRepository(),
 				new BPartnerCreditLimitRepository());
 
-		currencyRepository = new CurrencyRepository();
+		currencyBL = Services.get(ICurrencyBL.class);
 
 		BusinessTestHelper.createStandardBPGroup();
 		countryId_DE = BusinessTestHelper.createCountry("DE");
@@ -97,7 +97,8 @@ class BPartnerCompositeRepositoryTest
 	@Test
 	void save_and_load_standardCase()
 	{
-		final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(CurrencyCode.CHF);
+		//dev-note: the ICurrencyBL returned it's a PlainCurrencyBL so the ClientId.METASFRESH, OrgId.MAIN sent as param don't matter
+		final CurrencyId currencyId = currencyBL.getBaseCurrencyId(ClientId.METASFRESH, OrgId.MAIN);
 
 		final BPartnerComposite bpartnerComposite = BPartnerComposite.builder()
 				.orgId(orgId)
@@ -181,7 +182,7 @@ class BPartnerCompositeRepositoryTest
 						.email3("email3")
 						.build())
 				.creditLimit(BPartnerCreditLimit.builder()
-									 .money(Money.of(BigDecimal.valueOf(54.20), currencyId))
+									 .amount(Money.of(BigDecimal.valueOf(54.20), currencyId))
 									 .active(true)
 									 .creditLimitTypeId(CreditLimitTypeId.ofRepoId(123))
 									 .dateFrom(Instant.now())

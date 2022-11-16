@@ -201,7 +201,7 @@ class BpartnerRestControllerTest
 				new BPartnerEndpointService(jsonServiceFactory),
 				jsonServiceFactory,
 				new JsonRequestConsolidateService(),
-				new CreditLimitService(bPartnerCreditLimitRepository, externalReferenceRestControllerService, jsonServiceFactory));
+				new CreditLimitService(bPartnerCreditLimitRepository, jsonServiceFactory));
 
 		final I_C_BP_Group bpGroupRecord = newInstance(I_C_BP_Group.class);
 		bpGroupRecord.setC_BP_Group_ID(C_BP_GROUP_ID);

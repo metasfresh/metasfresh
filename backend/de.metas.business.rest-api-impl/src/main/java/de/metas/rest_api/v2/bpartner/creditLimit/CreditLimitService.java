@@ -29,7 +29,6 @@ import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.common.bpartner.v2.response.JsonResponseCreditLimitDelete;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.externalreference.ExternalIdentifier;
-import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.organization.OrgId;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory;
@@ -43,16 +42,13 @@ import javax.annotation.Nullable;
 public class CreditLimitService
 {
 	private final BPartnerCreditLimitRepository bPartnerCreditLimitRepository;
-	private final ExternalReferenceRestControllerService externalReferenceService;
 	private final JsonRetrieverService jsonRetrieverService;
 
 	public CreditLimitService(
 			@NonNull final BPartnerCreditLimitRepository bPartnerCreditLimitRepository,
-			@NonNull final ExternalReferenceRestControllerService externalReferenceService,
 			@NonNull final JsonServiceFactory jsonServiceFactory)
 	{
 		this.bPartnerCreditLimitRepository = bPartnerCreditLimitRepository;
-		this.externalReferenceService = externalReferenceService;
 		this.jsonRetrieverService = jsonServiceFactory.createRetriever();
 	}
 

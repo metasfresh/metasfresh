@@ -158,7 +158,7 @@ public class MockedDataUtil
 	}
 
 	@NonNull
-	public JsonRequestCreditLimitUpsertItem createMockCreditLimit()
+	private JsonRequestCreditLimitUpsertItem createMockCreditLimit()
 	{
 		createCreditLimitType();
 
@@ -181,6 +181,5 @@ public class MockedDataUtil
 		creditLimitType.setIsActive(true);
 
 		saveRecord(creditLimitType);
-
 	}
 }

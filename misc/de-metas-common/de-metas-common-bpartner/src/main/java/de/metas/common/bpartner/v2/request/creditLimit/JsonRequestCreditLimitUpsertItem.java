@@ -23,7 +23,6 @@
 package de.metas.common.bpartner.v2.request.creditLimit;
 
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -31,16 +30,12 @@ import lombok.ToString;
 
 import java.time.LocalDate;
 
-import static de.metas.common.rest_api.v2.SwaggerDocConstants.CREDIT_LIMIT_IDENTIFIER_DOC;
-
 @Getter
 @ToString
 @EqualsAndHashCode
-@ApiModel(description = "Note that given the respective use-case, either one of both properties might be `null`, but not both at once.")
 public class JsonRequestCreditLimitUpsertItem
 {
-	@ApiModelProperty(position = 10, value = CREDIT_LIMIT_IDENTIFIER_DOC + "\n"
-			+ "If the identifier is an `<C_BPartner_CreditLimit_ID>`, then it is assumed that the resource exists in metasfresh.\n")
+	@ApiModelProperty(position = 10, value = "Translated to `C_BPartner_CreditLimit.C_BPartner_CreditLimit_ID`, if set, it's assumed that the resource exists in metasfresh.")
 	private JsonMetasfreshId creditLimitId;
 
 	@ApiModelProperty(hidden = true)

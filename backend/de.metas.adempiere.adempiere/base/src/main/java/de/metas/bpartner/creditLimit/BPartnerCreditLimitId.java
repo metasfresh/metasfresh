@@ -26,6 +26,8 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 /**
  * C_BPartner_CreditLimit_ID
  */
@@ -39,7 +41,7 @@ public class BPartnerCreditLimitId implements RepoIdAware
 		return new BPartnerCreditLimitId(bpCreditLimitId);
 	}
 
-	public static int toRepoId(final BPartnerCreditLimitId id)
+	public static int toRepoId(@Nullable final BPartnerCreditLimitId id)
 	{
 		return id != null ? id.getRepoId() : -1;
 	}

@@ -600,9 +600,7 @@ final class BPartnerCompositesLoader
 		final RecordChangeLog changeLog = ChangeLogUtil.createCreditLimitChangeLog(creditLimitRecord, relatedRecords);
 
 		final BPartnerCreditLimit bPartnerCreditLimit = bPartnerCreditLimitRepository.ofRecord(creditLimitRecord);
-		bPartnerCreditLimit.setChangeLog(changeLog);
-
-		return bPartnerCreditLimit;
+		return bPartnerCreditLimit.withChangeLog(changeLog);
 	}
 
 	@Nullable

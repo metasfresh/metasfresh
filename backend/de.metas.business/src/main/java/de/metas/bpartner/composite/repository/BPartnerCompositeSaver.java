@@ -686,12 +686,11 @@ final class BPartnerCompositeSaver
 
 	private void saveBPartnerCreditLimits(@NonNull final BPartnerComposite bpartnerComposite, final boolean validatePermissions)
 	{
-		final ImmutableList.Builder<BPartnerCreditLimitId> savedBPCreditLimitIds = new ImmutableList.Builder<>();
-
 		final List<BPartnerCreditLimit> creditLimits = bpartnerComposite.getCreditLimits();
 		final BPartnerId bpartnerId = bpartnerComposite.getBpartner().getId();
 		final OrgId orgId = bpartnerComposite.getOrgId();
 
+		final ImmutableList.Builder<BPartnerCreditLimitId> savedBPCreditLimitIds = new ImmutableList.Builder<>();
 		for (final BPartnerCreditLimit creditLimit : creditLimits)
 		{
 			final BPartnerCreditLimitCreateRequest request = BPartnerCreditLimitCreateRequest.builder()
@@ -701,27 +700,29 @@ final class BPartnerCompositeSaver
 					.validatePermissions(validatePermissions ? this::assertCanCreateOrUpdate : null)
 					.build();
 
-			saveBPartnerCreditLimit(request);
+			final BPartnerCreditLimitId storedCreditLimitId = saveBPartnerCreditLimit(request);
 
-			Check.assumeNotNull(creditLimit.getId(), "BPartner_CreditLimit_ID cannot be missing since credit limit was just created!");
-
-			savedBPCreditLimitIds.add(creditLimit.getId());
+			savedBPCreditLimitIds.add(storedCreditLimitId);
 		}
 
 		bPartnerCreditLimitRepository.deactivateCreditLimitsByBPartnerExcept(bpartnerId, savedBPCreditLimitIds.build());
 	}
 
-	private void saveBPartnerCreditLimit(@NonNull final BPartnerCreditLimitCreateRequest bpartnerCreditLimitCreateRequest)
+	@NonNull
+	private BPartnerCreditLimitId saveBPartnerCreditLimit(@NonNull final BPartnerCreditLimitCreateRequest bpartnerCreditLimitCreateRequest)
 	{
 		final BPartnerCreditLimit creditLimit = bpartnerCreditLimitCreateRequest.getCreditLimit();
 
 		try (final MDCCloseable ignored = TableRecordMDC.putTableRecordReference(I_C_BPartner_CreditLimit.Table_Name, creditLimit.getId()))
 		{
-			final BPartnerCreditLimit bPartnerCreditLimit = bPartnerCreditLimitRepository.createOrUpdate(bpartnerCreditLimitCreateRequest);
+			final BPartnerCreditLimit storedCreditLimit = bPartnerCreditLimitRepository.createOrUpdate(bpartnerCreditLimitCreateRequest);
 
-			//
-			// Update model from saved record:
-			creditLimit.setId(bPartnerCreditLimit.getId());
+			Check.assumeNotNull(storedCreditLimit.getId(), "Id cannot be null as BPartnerCreditLimit was just stored!");
+
+			//dev-note: just to please the BPartnerComposite which excepts to have all the records updated after saving
+			creditLimit.setId(storedCreditLimit.getId());
+
+			return storedCreditLimit.getId();
 		}
 	}
 

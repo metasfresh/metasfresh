@@ -27,16 +27,17 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.OrgMappingId;
 import de.metas.money.Money;
 import lombok.Builder;
-import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.Value;
+import lombok.With;
+import lombok.experimental.NonFinal;
 import org.adempiere.ad.table.RecordChangeLog;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
 
-@Setter
-@Getter
+@Value
 @JsonPropertyOrder(alphabetic = true/* we want the serialized json to be less flaky in our snapshot files */)
 public class BPartnerCreditLimit
 {
@@ -49,36 +50,41 @@ public class BPartnerCreditLimit
 	public static final String PROCESSED = "processed";
 
 	@Nullable
-	private BPartnerCreditLimitId id;
+	@NonFinal
+	@Setter
+	BPartnerCreditLimitId id;
 
 	@Nullable
 	BPartnerId bPartnerId;
 
 	@NonNull
-	private final CreditLimitTypeId creditLimitTypeId;
+	CreditLimitTypeId creditLimitTypeId;
 
 	@NonNull
-	private final Money money;
+	Money amount;
 
 	@Nullable
-	private final Instant dateFrom;
+	Instant dateFrom;
 
 	@Nullable
-	private RecordChangeLog changeLog;
+	@With
+	RecordChangeLog changeLog;
 
 	@Nullable
-	private OrgMappingId orgMappingId;
+	@NonFinal
+	@Setter
+	OrgMappingId orgMappingId;
 
-	private boolean active;
+	boolean active;
 
-	private boolean processed;
+	boolean processed;
 
 	@Builder(toBuilder = true)
 	private BPartnerCreditLimit(
 			@Nullable final BPartnerCreditLimitId id,
 			@Nullable final BPartnerId bPartnerId,
 			@NonNull final CreditLimitTypeId creditLimitTypeId,
-			@NonNull final Money money,
+			@NonNull final Money amount,
 			@Nullable final Instant dateFrom,
 			@Nullable final RecordChangeLog changeLog,
 			@Nullable final OrgMappingId orgMappingId,
@@ -88,7 +94,7 @@ public class BPartnerCreditLimit
 		this.id = id;
 		this.bPartnerId = bPartnerId;
 		this.creditLimitTypeId = creditLimitTypeId;
-		this.money = money;
+		this.amount = amount;
 		this.dateFrom = dateFrom;
 		this.changeLog = changeLog;
 		this.orgMappingId = orgMappingId;

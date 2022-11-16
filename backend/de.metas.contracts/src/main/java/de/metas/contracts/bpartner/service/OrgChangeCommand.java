@@ -718,7 +718,7 @@ public class OrgChangeCommand
 					.filter(bpartnerCreditLimit -> OrgMappingId.equals(creditLimitOrgMappingId, bpartnerCreditLimit.getOrgMappingId()))
 					.findFirst()
 					.map(matchingCreditLimit -> matchingCreditLimit.toBuilder()
-							.money(sourceCreditLimit.getMoney())
+							.amount(sourceCreditLimit.getAmount())
 							.creditLimitTypeId(sourceCreditLimit.getCreditLimitTypeId())
 							.dateFrom(sourceCreditLimit.getDateFrom())
 							.processed(sourceCreditLimit.isProcessed())

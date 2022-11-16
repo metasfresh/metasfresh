@@ -208,7 +208,6 @@ public class CreateBPartnerV2_StepDef
 			final Timestamp dateFrom = DataTableUtil.extractDateTimestampForColumnNameOrNull(dataTableRow, "OPT." + I_C_BPartner_CreditLimit.COLUMNNAME_DateFrom);
 			final Boolean processed = DataTableUtil.extractBooleanForColumnName(dataTableRow, I_C_BPartner_CreditLimit.COLUMNNAME_Processed);
 
-			// persisted value
 			final IQueryBuilder<I_C_BPartner_CreditLimit> queryBuilder = queryBL.createQueryBuilder(I_C_BPartner_CreditLimit.class)
 					.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_ID, bPartner.getC_BPartner_ID())
 					.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_Amount, amount);

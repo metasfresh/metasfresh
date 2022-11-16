@@ -36,6 +36,7 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.MANAGEMENT_CREDIT_LIMIT_TYPE_ID;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -84,12 +85,13 @@ public class C_BPartner_CreditLimit_StepDef
 		final I_C_BPartner bPartner = bPartnerTable.get(bpartnerIdentifier);
 		assertThat(bPartner).isNotNull();
 
-		final List<I_C_BPartner_CreditLimit> records = queryBL.createQueryBuilder(I_C_BPartner_CreditLimit.class)
+		final Optional<I_C_BPartner_CreditLimit> first = queryBL.createQueryBuilder(I_C_BPartner_CreditLimit.class)
 				.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_ID, bPartner.getC_BPartner_ID())
+				.orderBy(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_CreditLimit_ID)
 				.create()
-				.list();
+				.firstOptional(I_C_BPartner_CreditLimit.class);
 
-		assertThat(records.size()).isEqualTo(0);
+		assertThat(first.isPresent()).isFalse();
 	}
 
 	private void updateCreditLimit(@NonNull final Map<String, String> tableRow)

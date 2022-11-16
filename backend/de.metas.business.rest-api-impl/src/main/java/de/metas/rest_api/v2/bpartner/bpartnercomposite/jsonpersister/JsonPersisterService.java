@@ -642,6 +642,8 @@ public class JsonPersisterService
 	{
 		syncJsonToOrg(jsonRequestComposite, bpartnerComposite, parentSyncAdvise);
 
+		Check.assumeNotNull(bpartnerComposite.getOrgId(), "bpartnerComposite.orgId must be resolved at this point!");
+
 		final BooleanWithReason anythingWasSynced = syncJsonToBPartner(
 				jsonRequestComposite,
 				bpartnerComposite,
@@ -662,7 +664,7 @@ public class JsonPersisterService
 
 		resultBuilder.setJsonResponseBankAccountUpsertItems(syncJsonToBankAccounts(jsonRequestComposite, bpartnerComposite, parentSyncAdvise));
 
-		syncJsonToCreditLimits(jsonRequestComposite, bpartnerComposite, parentSyncAdvise);
+		syncJsonToCreditLimits(jsonRequestComposite, bpartnerComposite, parentSyncAdvise, bpartnerComposite.getOrgId());
 
 		bpartnerCompositeRepository.save(bpartnerComposite, true);
 
@@ -709,7 +711,8 @@ public class JsonPersisterService
 		final ImmutableList<JsonMetasfreshId> jsonResponseCreditLimitIds = bpartnerComposite.getCreditLimits()
 				.stream()
 				.map(creditLimit -> BPartnerCreditLimitId.toRepoId(creditLimit.getId()))
-				.map(JsonMetasfreshId::of)
+				.map(JsonMetasfreshId::ofOrNull)
+				.filter(Objects::nonNull)
 				.collect(ImmutableList.toImmutableList());
 
 		resultBuilder.setJsonResponseCreditLimitUpsertItems(jsonResponseCreditLimitIds);
@@ -1943,7 +1946,8 @@ public class JsonPersisterService
 	private void syncJsonToCreditLimits(
 			@NonNull final JsonRequestComposite jsonBPartnerComposite,
 			@NonNull final BPartnerComposite bpartnerComposite,
-			@NonNull final SyncAdvise parentSyncAdvise)
+			@NonNull final SyncAdvise parentSyncAdvise,
+			@NonNull final OrgId orgId)
 	{
 		final JsonRequestCreditLimitUpsert creditLimits = jsonBPartnerComposite.getCreditLimitsNotNull();
 
@@ -1951,14 +1955,15 @@ public class JsonPersisterService
 
 		for (final JsonRequestCreditLimitUpsertItem creditLimitRequestItem : creditLimits.getRequestItems())
 		{
-			syncJsonCreditLimit(bpartnerComposite, creditLimitRequestItem, creditLimitsSyncAdvise);
+			syncJsonCreditLimit(bpartnerComposite, creditLimitRequestItem, creditLimitsSyncAdvise, orgId);
 		}
 	}
 
 	private void syncJsonCreditLimit(
 			@NonNull final BPartnerComposite bpartnerComposite,
 			@NonNull final JsonRequestCreditLimitUpsertItem creditLimitUpsertItem,
-			@NonNull final SyncAdvise parentSyncAdvise)
+			@NonNull final SyncAdvise effectiveSyncAdvise,
+			@NonNull final OrgId orgId)
 	{
 		BPartnerCreditLimit existingCreditLimit = null;
 		if (creditLimitUpsertItem.getCreditLimitId() != null)
@@ -1971,17 +1976,17 @@ public class JsonPersisterService
 		if (existingCreditLimit != null)
 		{
 			creditLimitBuilder = existingCreditLimit.toBuilder();
-			syncOutcome = parentSyncAdvise.getIfExists().isUpdate() ? SyncOutcome.UPDATED : SyncOutcome.NOTHING_DONE;
+			syncOutcome = effectiveSyncAdvise.getIfExists().isUpdate() ? SyncOutcome.UPDATED : SyncOutcome.NOTHING_DONE;
 		}
 		else
 		{
-			if (parentSyncAdvise.isFailIfNotExists())
+			if (effectiveSyncAdvise.isFailIfNotExists())
 			{
 				throw MissingResourceException.builder()
 						.resourceName("creditLimit")
-						.parentResource(creditLimitUpsertItem)
+						.parentResource(bpartnerComposite)
 						.build()
-						.setParameter("effectiveSyncAdvise", parentSyncAdvise);
+						.setParameter("effectiveSyncAdvise", effectiveSyncAdvise);
 			}
 
 			creditLimitBuilder = BPartnerCreditLimit.builder();
@@ -1989,11 +1994,9 @@ public class JsonPersisterService
 			syncOutcome = SyncOutcome.CREATED;
 		}
 
-		Check.assumeNotNull(bpartnerComposite.getOrgId(), "bpartnerComposite.getOrgId() cannot be missing since the composite was just loaded from DB!");
-
 		if (!Objects.equals(SyncOutcome.NOTHING_DONE, syncOutcome))
 		{
-			syncJsonToCreditLimit(creditLimitUpsertItem, creditLimitBuilder, bpartnerComposite.getOrgId());
+			syncJsonToCreditLimit(creditLimitUpsertItem, creditLimitBuilder, orgId);
 		}
 
 		bpartnerComposite
@@ -2031,9 +2034,9 @@ public class JsonPersisterService
 
 			final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(clientId, orgId);
 
-			final Money convertedMoney = convertToOrgCurrency(jsonBPartnerCreditLimit.getMoney(), clientAndOrgId);
+			final Money amountInOrgCurrency = convertToOrgCurrency(jsonBPartnerCreditLimit.getMoney(), clientAndOrgId);
 
-			creditLimitBuilder.money(convertedMoney);
+			creditLimitBuilder.amount(amountInOrgCurrency);
 		}
 
 		// dataFrom

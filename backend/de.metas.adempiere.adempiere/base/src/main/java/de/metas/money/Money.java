@@ -12,7 +12,9 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.lang.Percent;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
@@ -100,6 +102,7 @@ public class Money
 	}
 
 	@JsonProperty("value")
+	@Getter(AccessLevel.NONE)
 	BigDecimal value;
 
 	@JsonProperty("currencyId")
