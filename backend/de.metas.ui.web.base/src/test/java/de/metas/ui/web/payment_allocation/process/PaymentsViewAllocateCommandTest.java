@@ -98,7 +98,6 @@ public class PaymentsViewAllocateCommandTest
 	private static final boolean INVOICE_AMT_IsSOTrxAdjusted = false;
 	private static final boolean INVOICE_AMT_IsCreditMemoAdjusted = true;
 
-	private final OrgId orgId = OrgId.ofRepoId(1);
 	private final ZoneId ZONE_ID = ZoneId.of("Europe/Berlin");
 	private final LocalDate dateInvoiced = LocalDate.parse("2020-04-01");
 	private final LocalDate paymentDateTrx = LocalDate.parse("2020-04-25");
