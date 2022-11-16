@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_Delivery_Planning, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -35387897L;
+	private static final long serialVersionUID = 1760608424L;
 
     /** Standard Constructor */
     public X_M_Delivery_Planning (final Properties ctx, final int M_Delivery_Planning_ID, @Nullable final String trxName)
@@ -463,8 +463,7 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	@Override
 	public void setPOReference (final @Nullable java.lang.String POReference)
 	{
-		set_Value (COLUMNNAME_POReference, POReference);
-	}
+		throw new IllegalArgumentException ("POReference is virtual column");	}
 
 	@Override
 	public java.lang.String getPOReference() 

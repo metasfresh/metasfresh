@@ -700,8 +700,10 @@ public interface I_M_Delivery_Planning
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	void setPOReference (@Nullable java.lang.String POReference);
 
 	/**
@@ -710,8 +712,10 @@ public interface I_M_Delivery_Planning
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	@Nullable java.lang.String getPOReference();
 
 	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_POReference = new ModelColumn<>(I_M_Delivery_Planning.class, "POReference", null);

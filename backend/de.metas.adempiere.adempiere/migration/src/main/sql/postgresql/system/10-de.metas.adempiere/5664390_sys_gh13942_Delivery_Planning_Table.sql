@@ -1022,3 +1022,12 @@ UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2022-11-16 16:02:57','
 ;
 
 
+
+
+-- Column: M_Delivery_Planning.POReference
+-- 2022-11-16T18:31:47.863Z
+UPDATE AD_Column SET ColumnSQL='(SELECT o.POReference from C_Order o where o.C_Order_ID = M_Delivery_Planning.C_Order_ID)', IsLazyLoading='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2022-11-16 20:31:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585010
+;
+
+
+

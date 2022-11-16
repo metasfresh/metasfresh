@@ -22,9 +22,50 @@
 
 package de.metas.deliveryplanning;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.incoterms.IncotermsId;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.ReceiptScheduleId;
+import de.metas.order.OrderId;
+import de.metas.organization.OrgId;
+import de.metas.product.ProductId;
+import de.metas.sectionCode.SectionCodeId;
+import de.metas.shipping.model.ShipperTransportationId;
+import org.adempiere.service.ClientId;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_M_Delivery_Planning;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public class DeliveryPlanningRepository
 {
+
+	private DeliveryPlanning ofRecord(final I_M_Delivery_Planning record)
+	{
+		final OrgId orgId = OrgId.ofRepoId(record.getAD_Org_ID());
+		final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoId(record.getM_Delivery_Planning_ID());
+
+		return DeliveryPlanning.builder()
+				.id(deliveryPlanningId)
+				.orgId(orgId)
+				.clientId(ClientId.ofRepoId(record.getAD_Client_ID()))
+				.shipmentScheduleId(ShipmentScheduleId.ofRepoIdOrNull(record.getM_ShipmentSchedule_ID()))
+				.receiptScheduleId(ReceiptScheduleId.ofRepoIdOrNull(record.getM_ReceiptSchedule_ID()))
+				.orderId(OrderId.ofRepoId(record.getC_Order_ID()))
+				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
+				.partnerId(BPartnerId.ofRepoId(record.getC_BPartner_ID()))
+				.bPartnerLocationId(BPartnerLocationId.ofRepoId(record.getC_BPartner_ID(), record.getC_BPartner_Location_ID()))
+				.shipperTransportationId(ShipperTransportationId.ofRepoIdOrNull(record.getM_ShipperTransportation_ID()))
+				.incotermsId(IncotermsId.ofRepoIdOrNull(record.getC_Incoterms_ID()))
+				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(record.getM_SectionCode_ID()))
+				.warehouseId(WarehouseId.ofRepoId(record.getM_Warehouse_ID()))
+				.deliveryPlanningType(DeliveryPlanningType.ofCode(record.getM_Delivery_Planning_Type()))
+				.orderStatus(OrderStatus.ofNullableCode(record.getOrderStatus()))
+				.meansOfTransportation(MeansOfTransportation.ofNullableCode(record.getMeansOfTransportation()))
+				.isActive(record.isActive())
+				.isB2B(record.isB2B())
+				//.qtyOredered(record.getQtyOrdered()) TODO
+				.build();
+	}
 }
