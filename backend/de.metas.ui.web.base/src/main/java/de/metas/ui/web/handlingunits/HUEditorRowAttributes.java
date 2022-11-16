@@ -21,6 +21,7 @@ import de.metas.ui.web.window.controller.Execution;
 import de.metas.ui.web.window.datatypes.DocumentPath;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
+import de.metas.ui.web.window.datatypes.Values;
 import de.metas.ui.web.window.datatypes.json.DateTimeConverters;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentChangedEvent;
 import de.metas.ui.web.window.datatypes.json.JSONDocumentField;
@@ -42,6 +43,7 @@ import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValueContext;
+import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
@@ -54,6 +56,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
+
+import static de.metas.ui.web.handlingunits.WEBUI_HU_Constants.SYS_CONFIG_CLEARANCE;
 
 /*
  * #%L
@@ -86,6 +90,7 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 
 	private final DocumentPath documentPath;
 	private final IAttributeStorage attributesStorage;
+	private final String clearanceNote;
 
 	private final Supplier<ViewRowAttributesLayout> layoutSupplier;
 
@@ -100,13 +105,16 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 			@NonNull final DocumentPath documentPath,
 			@NonNull final IAttributeStorage attributesStorage,
 			@NonNull final ImmutableSet<ProductId> productIds,
+			@NonNull final I_M_HU hu,
 			final boolean readonly,
 			final boolean isMaterialReceipt)
 	{
 		this.documentPath = documentPath;
 		this.attributesStorage = attributesStorage;
 
-		this.layoutSupplier = ExtendedMemorizingSupplier.of(() -> HUEditorRowAttributesHelper.createLayout(attributesStorage));
+		this.layoutSupplier = ExtendedMemorizingSupplier.of(() -> HUEditorRowAttributesHelper.createLayout(attributesStorage, hu));
+
+		this.clearanceNote = hu.getClearanceNote();
 
 		// Extract readonly attribute names
 		final IAttributeValueContext calloutCtx = new DefaultAttributeValueContext();
@@ -218,6 +226,8 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 				.stream()
 				.map(attributeValue -> toJSONDocumentField(attributeValue, jsonOpts))
 				.collect(Collectors.toList());
+
+		getClearanceNoteField(jsonOpts).ifPresent(jsonFields::add);
 
 		jsonDocument.setFields(jsonFields);
 
@@ -405,6 +415,32 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 	public boolean hasAttribute(@NonNull final AttributeCode attributeCode)
 	{
 		return attributesStorage.hasAttribute(attributeCode);
+	}
+
+	@NonNull
+	private Optional<JSONDocumentField> getClearanceNoteField(@NonNull final JSONOptions jsonOptions)
+	{
+		final boolean isDisplayedClearanceStatus = Services.get(ISysConfigBL.class).getBooleanValue(SYS_CONFIG_CLEARANCE, true);
+
+		if (!isDisplayedClearanceStatus || Check.isBlank(clearanceNote))
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(toJSONDocumentField(clearanceNote, jsonOptions));
+	}
+
+
+	@NonNull
+	private static JSONDocumentField toJSONDocumentField(@NonNull final String clearanceNote,@NonNull final JSONOptions jsonOpts)
+	{
+		final Object jsonValue = Values.valueToJsonObject(clearanceNote, jsonOpts);
+
+		return JSONDocumentField.ofNameAndValue(I_M_HU.COLUMNNAME_ClearanceNote, jsonValue)
+				.setDisplayed(true)
+				.setMandatory(false)
+				.setReadonly(true)
+				.setWidgetType(JSONLayoutWidgetType.Text);
 	}
 
 	/**

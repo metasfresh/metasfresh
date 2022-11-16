@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for API_Audit_Config
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_API_Audit_Config extends org.compiere.model.PO implements I_API_Audit_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 190943298L;
+	private static final long serialVersionUID = -1417591936L;
 
     /** Standard Constructor */
     public X_API_Audit_Config (final Properties ctx, final int API_Audit_Config_ID, @Nullable final String trxName)
@@ -77,15 +77,51 @@ public class X_API_Audit_Config extends org.compiere.model.PO implements I_API_A
 	}
 
 	@Override
-	public void setIsInvokerWaitsForResult (final boolean IsInvokerWaitsForResult)
+	public void setIsForceProcessedAsync (final boolean IsForceProcessedAsync)
 	{
-		set_Value (COLUMNNAME_IsInvokerWaitsForResult, IsInvokerWaitsForResult);
+		set_Value (COLUMNNAME_IsForceProcessedAsync, IsForceProcessedAsync);
 	}
 
 	@Override
-	public boolean isInvokerWaitsForResult() 
+	public boolean isForceProcessedAsync() 
 	{
-		return get_ValueAsBoolean(COLUMNNAME_IsInvokerWaitsForResult);
+		return get_ValueAsBoolean(COLUMNNAME_IsForceProcessedAsync);
+	}
+
+	@Override
+	public void setIsSynchronousAuditLoggingEnabled (final boolean IsSynchronousAuditLoggingEnabled)
+	{
+		set_Value (COLUMNNAME_IsSynchronousAuditLoggingEnabled, IsSynchronousAuditLoggingEnabled);
+	}
+
+	@Override
+	public boolean isSynchronousAuditLoggingEnabled() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSynchronousAuditLoggingEnabled);
+	}
+
+	@Override
+	public void setIsWrapApiResponse (final boolean IsWrapApiResponse)
+	{
+		set_Value (COLUMNNAME_IsWrapApiResponse, IsWrapApiResponse);
+	}
+
+	@Override
+	public boolean isWrapApiResponse() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsWrapApiResponse);
+	}
+
+	@Override
+	public void setKeepErroredRequestDays (final int KeepErroredRequestDays)
+	{
+		set_Value (COLUMNNAME_KeepErroredRequestDays, KeepErroredRequestDays);
+	}
+
+	@Override
+	public int getKeepErroredRequestDays()
+	{
+		return get_ValueAsInt(COLUMNNAME_KeepErroredRequestDays);
 	}
 
 	@Override

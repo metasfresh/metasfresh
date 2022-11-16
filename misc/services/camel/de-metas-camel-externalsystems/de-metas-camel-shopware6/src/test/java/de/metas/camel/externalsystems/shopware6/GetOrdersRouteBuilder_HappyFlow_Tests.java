@@ -34,8 +34,6 @@ import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.country.JsonCountry;
 import de.metas.camel.externalsystems.shopware6.api.model.customer.JsonCustomerGroups;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrder;
-import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddress;
-import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderAddressAndCustomId;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderLines;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderTransactions;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonPaymentMethod;
@@ -46,6 +44,7 @@ import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRequest;
 import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRouteContext;
 import de.metas.camel.externalsystems.shopware6.order.OrderQueryHelper;
 import de.metas.camel.externalsystems.shopware6.order.processor.GetOrdersProcessor;
+import de.metas.camel.externalsystems.shopware6.salutation.SalutationInfoProvider;
 import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
@@ -55,6 +54,7 @@ import de.metas.common.ordercandidates.v2.request.JsonOLCandClearRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.order.JsonOrderPaymentCreateRequest;
+import de.metas.common.util.Check;
 import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.Getter;
@@ -70,6 +70,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.annotation.Nullable;
 import java.io.BufferedReader;
@@ -88,10 +89,16 @@ import java.util.stream.Collectors;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.JSON_NODE_DATA;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.SHOPWARE6_SYSTEM_NAME;
+import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_BILLING_ADDRESS_HTTP_URL;
+import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_BILLING_SALUTATION_DISPLAY_NAME;
+import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_BILLING_SALUTATION_ID;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_BPARTNER_UPSERT;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_CREATE_PAYMENT;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_CURRENCY_ID;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_EUR_CODE;
+import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_JSON_EMAIL_PATH;
+import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_JSON_METASFRESH_ID_PATH;
+import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_JSON_SHOPWARE_ID_PATH;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_NORMAL_VAT_PRODUCT_ID;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_NORMAL_VAT_RATES;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_OL_CAND_CLEAR;
@@ -99,6 +106,8 @@ import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOC
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_ORG_CODE;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_REDUCED_VAT_PRODUCT_ID;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_REDUCED_VAT_RATES;
+import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_SALUTATION_DISPLAY_NAME;
+import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_SALUTATION_ID;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_TRACE_ID;
 import static de.metas.camel.externalsystems.shopware6.ShopwareTestConstants.MOCK_UPSERT_RUNTIME_PARAMETERS;
 import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuilder.CLEAR_ORDERS_ROUTE_ID;
@@ -111,6 +120,9 @@ import static de.metas.camel.externalsystems.shopware6.order.GetOrdersRouteBuild
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CONFIG_MAPPINGS;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_NORMAL_PRODUCT_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FREIGHT_COST_REDUCED_PRODUCT_ID;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_METASFRESH_ID;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_CONSTANT_SHOPWARE_ID;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_JSON_PATH_EMAIL;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_NORMAL_VAT_RATES;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ORDER_ID;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ORDER_NO;
@@ -119,7 +131,6 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_REDUC
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.ArgumentMatchers.nullable;
 
 public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 {
@@ -190,11 +201,11 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 				.build();
 
 		prepareRouteForTesting(createdBPartnerProcessor,
-							   successfullyCreatedOLCandProcessor,
-							   successfullyClearOrdersProcessor,
-							   runtimeParamsProcessor,
-							   createPaymentProcessor,
-							   request);
+				successfullyCreatedOLCandProcessor,
+				successfullyClearOrdersProcessor,
+				runtimeParamsProcessor,
+				createPaymentProcessor,
+				request);
 
 		context.start();
 
@@ -250,45 +261,45 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 			final JsonExternalSystemRequest request) throws Exception
 	{
 		AdviceWith.adviceWith(context, GET_ORDERS_ROUTE_ID,
-							  advice -> advice.weaveById(GET_ORDERS_PROCESSOR_ID)
-									  .replace()
-									  .process(new MockGetOrdersProcessor(request)));
+				advice -> advice.weaveById(GET_ORDERS_PROCESSOR_ID)
+						.replace()
+						.process(new MockGetOrdersProcessor(request)));
 
 		AdviceWith.adviceWith(context, PROCESS_ORDER_ROUTE_ID,
-							  advice -> {
-								  advice.weaveById(CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID)
-										  .after()
-										  .to(MOCK_BPARTNER_UPSERT);
+				advice -> {
+					advice.weaveById(CREATE_BPARTNER_UPSERT_REQ_PROCESSOR_ID)
+							.after()
+							.to(MOCK_BPARTNER_UPSERT);
 
-								  advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
-										  .skipSendToOriginalEndpoint()
-										  .process(upsertBPartnerProcessor);
+					advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
+							.skipSendToOriginalEndpoint()
+							.process(upsertBPartnerProcessor);
 
-								  advice.weaveById(OLCAND_REQ_PROCESSOR_ID)
-										  .after()
-										  .to(MOCK_OL_CAND_CREATE);
+					advice.weaveById(OLCAND_REQ_PROCESSOR_ID)
+							.after()
+							.to(MOCK_OL_CAND_CREATE);
 
-								  advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID)
-										  .skipSendToOriginalEndpoint()
-										  .process(olCandProcessor);
+					advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_PUSH_OL_CANDIDATES_ROUTE_ID)
+							.skipSendToOriginalEndpoint()
+							.process(olCandProcessor);
 
-								  advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_CREATE_ORDER_PAYMENT_ROUTE_ID)
-										  .skipSendToOriginalEndpoint()
-										  .to(MOCK_CREATE_PAYMENT)
-										  .process(createPaymentProcessor);
-							  });
+					advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_CREATE_ORDER_PAYMENT_ROUTE_ID)
+							.skipSendToOriginalEndpoint()
+							.to(MOCK_CREATE_PAYMENT)
+							.process(createPaymentProcessor);
+				});
 
 		AdviceWith.adviceWith(context, CLEAR_ORDERS_ROUTE_ID,
-							  advice -> advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_CLEAR_OL_CANDIDATES_ROUTE_ID)
-									  .skipSendToOriginalEndpoint()
-									  .to(MOCK_OL_CAND_CLEAR)
-									  .process(olCandClearProcessor));
+				advice -> advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_CLEAR_OL_CANDIDATES_ROUTE_ID)
+						.skipSendToOriginalEndpoint()
+						.to(MOCK_OL_CAND_CLEAR)
+						.process(olCandClearProcessor));
 
 		AdviceWith.adviceWith(context, UPSERT_RUNTIME_PARAMS_ROUTE_ID,
-							  advice -> advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_UPSERT_RUNTIME_PARAMETERS_ROUTE_ID)
-									  .skipSendToOriginalEndpoint()
-									  .to(MOCK_UPSERT_RUNTIME_PARAMETERS)
-									  .process(runtimeParamsProcessor));
+				advice -> advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.MF_UPSERT_RUNTIME_PARAMETERS_ROUTE_ID)
+						.skipSendToOriginalEndpoint()
+						.to(MOCK_UPSERT_RUNTIME_PARAMETERS)
+						.process(runtimeParamsProcessor));
 	}
 
 	protected static String loadAsString(@NonNull final String name)
@@ -314,10 +325,22 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 	public static class MockGetOrdersProcessor implements Processor
 	{
 		private final JsonExternalSystemRequest externalSystemRequest;
+		private final String jsonOrderLinesPath;
 
-		public MockGetOrdersProcessor(final JsonExternalSystemRequest externalSystemRequest)
+		public MockGetOrdersProcessor(@NonNull final JsonExternalSystemRequest externalSystemRequest)
+		{
+			this(externalSystemRequest, null);
+		}
+
+		public MockGetOrdersProcessor(
+				@NonNull final JsonExternalSystemRequest externalSystemRequest,
+				@Nullable final String jsonOrderLinesPath)
 		{
 			this.externalSystemRequest = externalSystemRequest;
+
+			this.jsonOrderLinesPath = (Check.isNotBlank(jsonOrderLinesPath))
+					? jsonOrderLinesPath
+					: JSON_ORDER_LINES;
 		}
 
 		@Override
@@ -353,32 +376,15 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 			final CurrencyInfoProvider currencyInfoProvider = CurrencyInfoProvider.builder()
 					.currencyId2IsoCode(ImmutableMap.of(MOCK_CURRENCY_ID, MOCK_EUR_CODE))
 					.build();
-
-			final InputStream shopwareMappingsIS = GetOrdersRouteBuilder_HappyFlow_Tests.class.getResourceAsStream(JSON_SHOPWARE_MAPPINGS);
-			final JsonExternalSystemShopware6ConfigMappings shopware6ConfigMappings = mapper.readValue(shopwareMappingsIS, JsonExternalSystemShopware6ConfigMappings.class);
-
-			final Map<String, String> parameters = new HashMap<>();
-			parameters.put(PARAM_NORMAL_VAT_RATES, MOCK_NORMAL_VAT_RATES);
-			parameters.put(PARAM_FREIGHT_COST_NORMAL_PRODUCT_ID, String.valueOf(MOCK_NORMAL_VAT_PRODUCT_ID));
-			parameters.put(PARAM_REDUCED_VAT_RATES, MOCK_REDUCED_VAT_RATES);
-			parameters.put(PARAM_PRODUCT_LOOKUP, JsonProductLookup.ProductId.name());
-			parameters.put(PARAM_FREIGHT_COST_REDUCED_PRODUCT_ID, String.valueOf(MOCK_REDUCED_VAT_PRODUCT_ID));
-			parameters.put(PARAM_CONFIG_MAPPINGS, mapper.writeValueAsString(shopware6ConfigMappings));
-
-			final JsonExternalSystemRequest externalSystemRequest = JsonExternalSystemRequest
-					.builder()
-					.traceId(MOCK_TRACE_ID)
-					.externalSystemName(JsonExternalSystemName.of(SHOPWARE6_SYSTEM_NAME))
-					.externalSystemChildConfigValue("childValue")
-					.externalSystemConfigId(JsonMetasfreshId.of(1))
-					.orgCode(MOCK_ORG_CODE)
-					.command("command")
-					.parameters(parameters)
-					.build();
 			
+			final SalutationInfoProvider salutationInfoProvider = SalutationInfoProvider.builder()
+					.salutationId2DisplayName(ImmutableMap.of(MOCK_SALUTATION_ID, MOCK_SALUTATION_DISPLAY_NAME,
+							MOCK_BILLING_SALUTATION_ID, MOCK_BILLING_SALUTATION_DISPLAY_NAME))
+					.build();
+
 			final ImportOrdersRequest importOrdersRequest = OrderQueryHelper.buildShopware6QueryRequest(externalSystemRequest);
 
-			final ImportOrdersRouteContext ordersContext = GetOrdersProcessor.buildContext(externalSystemRequest, shopwareClient, currencyInfoProvider, importOrdersRequest.isIgnoreNextImportTimestamp());
+			final ImportOrdersRouteContext ordersContext = GetOrdersProcessor.buildContext(externalSystemRequest, shopwareClient, currencyInfoProvider, salutationInfoProvider, importOrdersRequest.isIgnoreNextImportTimestamp());
 
 			exchange.getIn().setBody(orderCandidates);
 			exchange.setProperty(ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ordersContext);
@@ -402,15 +408,12 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 					.when(shopwareClientSpy)
 					.performWithRetry(any(), eq(HttpMethod.GET), eq(String.class), any());
 
-			//2. mock getOrderAddressDetails
-			final InputStream billingAddressIS = GetOrdersRouteBuilder_HappyFlow_Tests.class.getResourceAsStream(JSON_ORDER_BILLING_ADDRESS_PATH);
-			final JsonOrderAddress billingAddress = mapper.readValue(billingAddressIS, JsonOrderAddress.class);
-
-			Mockito.doReturn(Optional.of(JsonOrderAddressAndCustomId.builder()
-												 .jsonOrderAddress(billingAddress)
-												 .build()))
+			//2. mock get billing order address
+			final String billingAddressString = loadAsString(JSON_ORDER_BILLING_ADDRESS_PATH);
+			final UriComponentsBuilder uriComponentsBuilder = UriComponentsBuilder.fromHttpUrl(MOCK_BILLING_ADDRESS_HTTP_URL);
+			Mockito.doReturn(ResponseEntity.ok(billingAddressString))
 					.when(shopwareClientSpy)
-					.getOrderAddressDetails(nullable(String.class), nullable(String.class));
+					.performWithRetry(eq(uriComponentsBuilder.build().toUri()), eq(HttpMethod.GET), eq(String.class), any());
 
 			//3. mock getCountryDetails
 			final InputStream countryIS = GetOrdersRouteBuilder_HappyFlow_Tests.class.getResourceAsStream(JSON_COUNTRY_INFO_PATH);
@@ -421,7 +424,7 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 					.getCountryDetails(any(String.class));
 
 			//4. mock orderLines
-			final InputStream orderLinesIS = GetOrdersRouteBuilder_HappyFlow_Tests.class.getResourceAsStream(JSON_ORDER_LINES);
+			final InputStream orderLinesIS = GetOrdersRouteBuilder_HappyFlow_Tests.class.getResourceAsStream(jsonOrderLinesPath);
 			final JsonOrderLines orderLines = mapper.readValue(orderLinesIS, JsonOrderLines.class);
 
 			Mockito.doReturn(ResponseEntity.ok(orderLines))
@@ -516,12 +519,17 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 	protected static JsonExternalSystemRequest creatJsonExternalSystemRequest(
 			@Nullable final String orderId,
 			@Nullable final String orderNo,
-			@Nullable final JsonProductLookup productLookup) throws IOException
+			@Nullable final JsonProductLookup productLookup,
+			@Nullable final String customJsonShopwareMappingPath,
+			@Nullable final Map<String, String> overrideParams) throws IOException
 	{
 		final ObjectMapper mapper = new ObjectMapper();
 		mapper.registerModule(new JavaTimeModule());
 
-		final InputStream shopwareMappingsIS = GetOrdersRouteBuilder_HappyFlow_Tests.class.getResourceAsStream(JSON_SHOPWARE_MAPPINGS);
+		final InputStream shopwareMappingsIS = Optional.ofNullable(customJsonShopwareMappingPath)
+				.map(GetOrdersRouteBuilder_HappyFlow_Tests.class::getResourceAsStream)
+				.orElse(GetOrdersRouteBuilder_HappyFlow_Tests.class.getResourceAsStream(JSON_SHOPWARE_MAPPINGS));
+
 		final JsonExternalSystemShopware6ConfigMappings shopware6ConfigMappings = mapper.readValue(shopwareMappingsIS, JsonExternalSystemShopware6ConfigMappings.class);
 
 		final JsonProductLookup lookup = CoalesceUtil.coalesceNotNull(productLookup, JsonProductLookup.ProductNumber);
@@ -535,6 +543,14 @@ public class GetOrdersRouteBuilder_HappyFlow_Tests extends CamelTestSupport
 		parameters.put(PARAM_ORDER_NO, orderNo);
 		parameters.put(PARAM_PRODUCT_LOOKUP, lookup.name());
 		parameters.put(PARAM_CONFIG_MAPPINGS, mapper.writeValueAsString(shopware6ConfigMappings));
+		parameters.put(PARAM_JSON_PATH_EMAIL, MOCK_JSON_EMAIL_PATH);
+		parameters.put(PARAM_JSON_PATH_CONSTANT_METASFRESH_ID, MOCK_JSON_METASFRESH_ID_PATH);
+		parameters.put(PARAM_JSON_PATH_CONSTANT_SHOPWARE_ID, MOCK_JSON_SHOPWARE_ID_PATH);
+
+		if (overrideParams != null)
+		{
+			parameters.putAll(overrideParams);
+		}
 
 		return JsonExternalSystemRequest
 				.builder()

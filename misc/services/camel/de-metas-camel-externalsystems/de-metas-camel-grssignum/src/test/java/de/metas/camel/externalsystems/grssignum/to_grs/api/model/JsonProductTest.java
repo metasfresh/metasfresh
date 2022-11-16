@@ -48,7 +48,10 @@ public class JsonProductTest
 				+ "    \"KRED\": [\n"
 				+ "        {\n"
 				+ "            \"MKREDID\": \"vendorId\",\n"
-				+ "            \"STDKRED\": 1\n"
+				+ "            \"STDKRED\": 1,\n"
+				+ "            \"LIEFERANTENFREIGABE\": 0,\n"
+				+ "            \"INAKTIV\": 0,\n"
+				+ "            \"METASFRESHID\":\"12345\"\n"
 				+ "        }\n"
 				+ "    ]\n"
 				+ "}";
@@ -60,6 +63,9 @@ public class JsonProductTest
 		final JsonBPartnerProduct expectedBPartnerProduct = JsonBPartnerProduct.builder()
 				.bpartnerId("vendorId")
 				.currentVendor(1)
+				.approvedForPurchase(0)
+				.inactive(0)
+				.bPartnerMetasfreshId("12345")
 				.build();
 
 		final JsonProduct expectedProduct = JsonProduct.builder()

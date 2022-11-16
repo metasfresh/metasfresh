@@ -28,7 +28,6 @@ import de.metas.contracts.commission.model.I_C_LicenseFeeSettingsLine;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
@@ -46,13 +45,13 @@ import static org.assertj.core.api.Assertions.*;
 public class C_LicenseFeeSettings_StepDef
 {
 	private final M_Product_StepDefData productTable;
-	private final StepDefData<I_C_LicenseFeeSettings> licenseFeeSettingsTable;
-	private final StepDefData<I_C_LicenseFeeSettingsLine> licenseFeeSettingsLineTable;
+	private final C_LicenseFeeSettings_StepDefData licenseFeeSettingsTable;
+	private final C_LicenseFeeSettingsLine_StepDefData licenseFeeSettingsLineTable;
 
 	public C_LicenseFeeSettings_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final StepDefData<I_C_LicenseFeeSettings> licenseFeeSettingsTable,
-			@NonNull final StepDefData<I_C_LicenseFeeSettingsLine> licenseFeeSettingsLineTable)
+			@NonNull final C_LicenseFeeSettings_StepDefData licenseFeeSettingsTable,
+			@NonNull final C_LicenseFeeSettingsLine_StepDefData licenseFeeSettingsLineTable)
 	{
 		this.productTable = productTable;
 		this.licenseFeeSettingsTable = licenseFeeSettingsTable;

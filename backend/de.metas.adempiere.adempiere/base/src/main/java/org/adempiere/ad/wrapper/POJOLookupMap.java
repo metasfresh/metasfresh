@@ -565,6 +565,11 @@ public final class POJOLookupMap implements IPOJOLookupMap, IModelValidationEngi
 		return new ArrayList<>(recordsMap.values());
 	}
 
+	public <T> T getFirstOnly(Class<T> clazz)
+	{
+		return getFirstOnly(clazz, null);
+	}
+
 	public <T> T getFirstOnly(Class<T> clazz, IQueryFilter<T> filter)
 	{
 		final String tableName = InterfaceWrapperHelper.getTableName(clazz);

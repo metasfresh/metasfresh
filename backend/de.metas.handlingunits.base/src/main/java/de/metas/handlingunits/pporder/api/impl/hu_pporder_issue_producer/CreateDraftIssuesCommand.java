@@ -110,6 +110,8 @@ public class CreateDraftIssuesCommand
 			//
 			@Nullable final IssueCandidateGeneratedBy generatedBy)
 	{
+		validateSourceHUs(issueFromHUs);
+
 		Check.assumeNotEmpty(targetOrderBOMLines, "Parameter targetOrderBOMLines is not empty");
 		if (fixedQtyToIssue != null && fixedQtyToIssue.signum() <= 0)
 		{
@@ -168,9 +170,11 @@ public class CreateDraftIssuesCommand
 			return null;
 		}
 
-		if (!X_M_HU.HUSTATUS_Active.equals(hu.getHUStatus()))
+		final String huStatus = hu.getHUStatus();
+		if (!X_M_HU.HUSTATUS_Active.equals(huStatus) && !X_M_HU.HUSTATUS_Issued.equals(huStatus)
+		)
 		{
-			throw new HUException("Parameter 'hu' needs to have the status \"active\", but has HUStatus=" + hu.getHUStatus())
+			throw new HUException("HU shall be Active or Issued but it was `" + huStatus + "`")
 					.setParameter("hu", hu);
 		}
 
@@ -220,11 +224,7 @@ public class CreateDraftIssuesCommand
 		}
 		else
 		{
-			huTrxBL.setParentHU(huContext //
-					, null // parentHUItem
-					, hu //
-					, true // destroyOldParentIfEmptyStorage
-			);
+			huTrxBL.extractHUFromParentIfNeeded(huContext, hu);
 		}
 	}
 
@@ -343,5 +343,18 @@ public class CreateDraftIssuesCommand
 		}
 
 		return from.getQty();
+	}
+
+	private void validateSourceHUs(@NonNull final Collection<I_M_HU> sourceHUs)
+	{
+		for (final I_M_HU hu : sourceHUs)
+		{
+			if (!handlingUnitsBL.isHUHierarchyCleared(HuId.ofRepoId(hu.getM_HU_ID())))
+			{
+				throw new AdempiereException("Non 'Cleared' HUs cannot be issued!")
+						.appendParametersToMessage()
+						.setParameter("M_HU_ID", hu.getM_HU_ID());
+			}
+		}
 	}
 }

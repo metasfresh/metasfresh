@@ -29,6 +29,8 @@ import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.service.AsyncBatchService;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.handlingunits.reservation.HUReservationRepository;
+import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentServiceTestImpl;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
@@ -58,6 +60,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
@@ -100,7 +103,7 @@ public class ShipmentService implements IShipmentService
 	{
 		if (Adempiere.isUnitTestMode())
 		{
-			return new ShipmentServiceTestImpl(new ShipmentScheduleWithHUService());
+			return new ShipmentServiceTestImpl(new ShipmentScheduleWithHUService(new HUReservationService(new HUReservationRepository())));
 		}
 		else
 		{
@@ -396,7 +399,6 @@ public class ShipmentService implements IShipmentService
 		return retrieveInOutIdsByScheduleIds(shipmentScheduleIdToQtyToDeliver.keySet());
 	}
 
-	@NonNull
 	private ImmutableMap<ShipmentScheduleId, BigDecimal> getShipmentScheduleId2QtyToDeliver(
 			@NonNull final Set<OLCandId> olCandIds,
 			@NonNull final AsyncBatchId asyncBatchId)
@@ -436,10 +438,16 @@ public class ShipmentService implements IShipmentService
 						.setParameter("AsyncBatchId", asyncBatchId);
 			}
 
-			if (NumberUtils.asBigDecimal(olCand.getQtyShipped(), BigDecimal.ZERO).signum() <= 0)
+			if(InterfaceWrapperHelper.isNull(olCand, I_C_OLCand.COLUMNNAME_QtyShipped))
 			{
+				// not specified; -> let metasfresh decide
 				scheduleId2QtyShipped.put(scheduleId,
 										  shipmentScheduleBL.getQtyToDeliver(shipmentSchedule).toBigDecimal());
+				continue;
+			}
+			else if (olCand.getQtyShipped().signum() <= 0)
+			{
+				// the caller wants *no* shipment
 				continue;
 			}
 

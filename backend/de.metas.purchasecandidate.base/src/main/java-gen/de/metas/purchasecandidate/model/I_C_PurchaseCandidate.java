@@ -1,8 +1,9 @@
 package de.metas.purchasecandidate.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_PurchaseCandidate
  *  @author metasfresh (generated) 
@@ -568,6 +569,27 @@ public interface I_C_PurchaseCandidate
 
 	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_IsRequisitionCreated = new ModelColumn<>(I_C_PurchaseCandidate.class, "IsRequisitionCreated", null);
 	String COLUMNNAME_IsRequisitionCreated = "IsRequisitionCreated";
+
+	/**
+	 * Set Simulated.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsSimulated (boolean IsSimulated);
+
+	/**
+	 * Get Simulated.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSimulated();
+
+	ModelColumn<I_C_PurchaseCandidate, Object> COLUMN_IsSimulated = new ModelColumn<>(I_C_PurchaseCandidate.class, "IsSimulated", null);
+	String COLUMNNAME_IsSimulated = "IsSimulated";
 
 	/**
 	 * Set Price incl. Tax.

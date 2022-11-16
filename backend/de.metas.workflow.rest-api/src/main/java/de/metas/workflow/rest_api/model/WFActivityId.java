@@ -66,7 +66,7 @@ public final class WFActivityId
 
 	public <T extends RepoIdAware> T getAsId(@NonNull final Class<T> type)
 	{
-		return RepoIdAwares.ofRepoId(value, type);
+		return RepoIdAwares.ofObject(value, type);
 	}
 
 	public static boolean equals(@Nullable final WFActivityId o1, @Nullable final WFActivityId o2)

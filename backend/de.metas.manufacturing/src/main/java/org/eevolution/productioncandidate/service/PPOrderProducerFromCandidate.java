@@ -23,8 +23,8 @@
 package org.eevolution.productioncandidate.service;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.common.util.time.SystemTime;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.material.event.pporder.PPOrderCandidate;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.order.OrderLineId;
@@ -229,6 +229,8 @@ public class PPOrderProducerFromCandidate implements ITrxItemChunkProcessor<I_PP
 
 			markCandidateAsProcessed(ppOrderCandidateRecord);
 		}
+
+		ppOrderService.postPPOrderCreatedEvent(ppOrder);
 
 		result.addOrder(ppOrder);
 

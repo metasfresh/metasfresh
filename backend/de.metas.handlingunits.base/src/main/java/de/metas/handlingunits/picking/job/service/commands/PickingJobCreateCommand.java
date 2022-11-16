@@ -7,8 +7,11 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.allocation.transfer.HUTransformService;
+import de.metas.handlingunits.allocation.transfer.ReservedHUsPolicy;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
+import de.metas.handlingunits.picking.config.PickingConfigV2;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.repository.PickingJobCreateRepoRequest;
 import de.metas.handlingunits.picking.job.repository.PickingJobLoaderSupportingServices;
@@ -21,6 +24,7 @@ import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHU;
 import de.metas.handlingunits.picking.plan.model.PickingPlan;
 import de.metas.handlingunits.picking.plan.model.PickingPlanLine;
 import de.metas.handlingunits.picking.plan.model.PickingPlanLineType;
+import de.metas.i18n.AdMessageKey;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.order.OrderId;
 import de.metas.organization.InstantAndOrgId;
@@ -44,6 +48,8 @@ import java.util.Objects;
 
 public class PickingJobCreateCommand
 {
+	private static final AdMessageKey MSG_NotAllItemsAreAvailableToBePicked = AdMessageKey.of("PickingJobCreateCommand.notAllItemsAreAvailableToBePicked");
+
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IPackagingDAO packagingDAO = Services.get(IPackagingDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
@@ -51,9 +57,9 @@ public class PickingJobCreateCommand
 	private final PickingJobLockService pickingJobLockService;
 	private final PickingCandidateService pickingCandidateService;
 	private final PickingJobHUReservationService pickingJobHUReservationService;
+	private final PickingConfigRepositoryV2 pickingConfigRepo;
 
 	private final PickingJobCreateRequest request;
-	private static final boolean considerAttributes = false; // TODO make it configurable
 
 	private final PickingJobLoaderSupportingServices loadingSupportServices;
 
@@ -65,6 +71,7 @@ public class PickingJobCreateCommand
 			@NonNull final PickingCandidateService pickingCandidateService,
 			@NonNull final PickingJobHUReservationService pickingJobHUReservationService,
 			@NonNull final PickingJobLoaderSupportingServices loadingSupportServices,
+			@NonNull final PickingConfigRepositoryV2 pickingConfigRepo,
 			//
 			@NonNull PickingJobCreateRequest request)
 	{
@@ -73,11 +80,15 @@ public class PickingJobCreateCommand
 		this.pickingCandidateService = pickingCandidateService;
 		this.pickingJobHUReservationService = pickingJobHUReservationService;
 		this.loadingSupportServices = loadingSupportServices;
+		this.pickingConfigRepo = pickingConfigRepo;
 
 		this.request = request;
 	}
 
-	public PickingJob execute() {return trxManager.callInThreadInheritedTrx(this::executeInTrx);}
+	public PickingJob execute()
+	{
+		return trxManager.callInThreadInheritedTrx(this::executeInTrx);
+	}
 
 	private PickingJob executeInTrx()
 	{
@@ -91,6 +102,7 @@ public class PickingJobCreateCommand
 		{
 			final PickingJobHeaderKey headerKey = items.stream()
 					.map(PickingJobCreateCommand::extractPickingJobHeaderKey)
+					.distinct()
 					.collect(GuavaCollectors.singleElementOrThrow(() -> new AdempiereException("More than one job found")));
 
 			final PickingJob pickingJob = pickingJobRepository.createNewAndGet(
@@ -134,7 +146,9 @@ public class PickingJobCreateCommand
 
 		if (items.isEmpty())
 		{
-			throw new AdempiereException("Absolutely nothing to pick")
+			throw new AdempiereException(MSG_NotAllItemsAreAvailableToBePicked)
+					.markAsUserValidationError()
+					.setParameter("detail", "Absolutely nothing to pick")
 					.setParameter("query", query);
 		}
 
@@ -192,21 +206,28 @@ public class PickingJobCreateCommand
 		ProductId productId;
 	}
 
-	private static PickingJobLineKey extractPickingJobLineKey(@NonNull Packageable item) {return PickingJobLineKey.builder().productId(item.getProductId()).build();}
+	private static PickingJobLineKey extractPickingJobLineKey(@NonNull final Packageable item)
+	{
+		return PickingJobLineKey.builder().productId(item.getProductId()).build();
+	}
 
 	private PickingJobCreateRepoRequest.Line createLineRequest(@NonNull final Collection<Packageable> itemsForProduct)
 	{
 		Check.assumeNotEmpty(itemsForProduct, "itemsForProduct");
 
+		final PickingConfigV2 pickingConfig = pickingConfigRepo.getPickingConfig();
+
 		final PickingPlan plan = pickingCandidateService.createPlan(CreatePickingPlanRequest.builder()
-				.packageables(itemsForProduct)
-				.considerAttributes(considerAttributes)
-				.build());
+																			.packageables(itemsForProduct)
+																			.considerAttributes(pickingConfig.isConsiderAttributes())
+																			.build());
 
 		final ImmutableList<PickingPlanLine> lines = plan.getLines();
 		if (lines.isEmpty())
 		{
-			throw new AdempiereException("Not all materials are available")
+			throw new AdempiereException(MSG_NotAllItemsAreAvailableToBePicked)
+					.markAsUserValidationError()
+					.setParameter("detail", "Not all materials are available")
 					.setParameter("itemsForProduct", itemsForProduct)
 					.setParameter("plan", plan);
 		}
@@ -214,12 +235,12 @@ public class PickingJobCreateCommand
 		return PickingJobCreateRepoRequest.Line.builder()
 				.productId(plan.getSingleProductId())
 				.steps(lines.stream()
-						.map(this::createStepRequest)
-						.collect(ImmutableList.toImmutableList()))
+							   .map(this::createStepRequest)
+							   .collect(ImmutableList.toImmutableList()))
 				.pickFromAlternatives(plan.getAlternatives()
-						.stream()
-						.map(alt -> PickingJobCreateRepoRequest.PickFromAlternative.of(alt.getLocatorId(), alt.getHuId(), alt.getAvailableQty()))
-						.collect(ImmutableSet.toImmutableSet()))
+											  .stream()
+											  .map(alt -> PickingJobCreateRepoRequest.PickFromAlternative.of(alt.getLocatorId(), alt.getHuId(), alt.getAvailableQty()))
+											  .collect(ImmutableSet.toImmutableSet()))
 				.build();
 	}
 
@@ -234,7 +255,8 @@ public class PickingJobCreateCommand
 			}
 			case UNALLOCABLE:
 			{
-				throw new AdempiereException("Not all items are available to be picked")
+				throw new AdempiereException(MSG_NotAllItemsAreAvailableToBePicked)
+						.markAsUserValidationError()
 						.setParameter("planLine", planLine);
 			}
 			default:
@@ -312,12 +334,12 @@ public class PickingJobCreateCommand
 
 		final I_M_HU extractedCU = HUTransformService.newInstance()
 				.huToNewSingleCU(HUTransformService.HUsToNewCUsRequest.builder()
-						.sourceHU(pickFromHU)
-						.productId(productId)
-						.qtyCU(qtyToPick)
-						//.keepNewCUsUnderSameParent(true) // not needed, our HU is top level anyways
-						.onlyFromUnreservedHUs(true)
-						.build());
+										 .sourceHU(pickFromHU)
+										 .productId(productId)
+										 .qtyCU(qtyToPick)
+										 //.keepNewCUsUnderSameParent(true) // not needed, our HU is top level anyways
+										 .reservedVHUsPolicy(ReservedHUsPolicy.CONSIDER_ONLY_NOT_RESERVED)
+										 .build());
 
 		return HuId.ofRepoId(extractedCU.getM_HU_ID());
 	}

@@ -22,6 +22,7 @@
 
 package de.metas.camel.externalsystems.woocommerce.restapi;
 
+import de.metas.camel.externalsystems.common.CamelRoutesGroup;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.LogMessageRequest;
 import de.metas.camel.externalsystems.common.ProcessorHelper;
@@ -114,7 +115,7 @@ public class RestAPIRouteBuilder extends RouteBuilder implements IExternalSystem
 				.post()
 				.route()
 				.routeId(REST_API_ROUTE_ID)
-				.autoStartup(false)
+				.group(CamelRoutesGroup.START_ON_DEMAND.getCode())
 				.process(this::restAPIProcessor)
 				.to(direct(MF_LOG_MESSAGE_ROUTE_ID))
 				.end();

@@ -80,6 +80,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
+import static org.adempiere.model.InterfaceWrapperHelper.isModelInterface;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class PrintingQueueBL implements IPrintingQueueBL
@@ -544,5 +545,12 @@ public class PrintingQueueBL implements IPrintingQueueBL
 	private UserId getPrintToUser(@NonNull final I_C_Printing_Queue printingQueueRecord)
 	{
 		return UserId.ofRepoId(printingQueueRecord.getCreatedBy());
+	}
+
+	@Override
+	public void setProcessedAndSave(@NonNull final I_C_Printing_Queue item)
+	{
+		item.setProcessed(true);
+		InterfaceWrapperHelper.save(item);
 	}
 }

@@ -373,7 +373,7 @@ Metasfresh | Alberta | Note
 | `_id` | `C_OLCand.ExternalHeaderId`, also used for `C_OLCand.POReference` if salesId is empty | Y | |
 | `_id` | Alberta_Order.ExternalId | Y |
 | `salesId` | `C_OLCand.POReference` | Y | |
-| patientId | C_OLCand.C_BPartner_ID | Y | ..via external reference lookup |
+| patientId | C_OLCand.C_BPartner_ID | Y |  we have `ExternalSystemCamelConstants.MF_RETRIEVE_BPARTNER_V2_CAMEL_URI` to retrieve patient data `ext-ALBERTA-patientId` from mf. it sets the metasfresh id for patient `C_BPartner_ID` |
 | rootId | Alberta_Order.RootId | |
 | creationDate | Alberta_Order.CreationDate | |
 | deliveryDate | C_OLCand.DatePromised | |
@@ -396,6 +396,8 @@ Metasfresh | Alberta | Note
 | updated | Alberta_Order.ExternallyUpdatedAt | |
 | deliveryInformation | Alberta_Order.DeliveryInfo | |
 | deliveryNote | Alberta_Order.DeliveryNote | |
+| pharmacyId | C_OLCand.DropShip_Location_ID | N | send pharmacyId on dropship; if present, metasfresh will resolve it's respective location as `pharmacyId -> C_BPartner_Location.IsShipTo = 'Y'`|
+| -- | C_OLCand.Bill_Location_ID | N | we have `ExternalSystemCamelConstants.MF_RETRIEVE_BPARTNER_V2_CAMEL_URI` to retrieve patient data from mf. it sets the metasfresh id for patient billing location `C_BPartner_Location.IsBillTo = 'Y'`|
 
 ### OrderedArticleLines
 

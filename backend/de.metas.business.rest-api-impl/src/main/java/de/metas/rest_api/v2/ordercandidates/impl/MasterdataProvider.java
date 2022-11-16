@@ -18,7 +18,7 @@ import de.metas.common.rest_api.v2.JSONPaymentRule;
 import de.metas.externalreference.ExternalBusinessKey;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
-import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
+import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.externalreference.shipper.ShipperExternalReferenceType;
 import de.metas.impex.InputDataSourceId;
 import de.metas.impex.api.IInputDataSourceDAO;

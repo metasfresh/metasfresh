@@ -37,9 +37,9 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.TimeUtil;
 import org.eevolution.api.IProductBOMDAO;
-import org.eevolution.api.ProductBOMId;
 import org.eevolution.api.ProductBOMVersionsId;
 import org.eevolution.model.I_PP_Order_Candidate;
+import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.productioncandidate.model.dao.PPOrderCandidateDAO;
 
@@ -67,6 +67,7 @@ public class CreateOrderCandidateCommand
 		final I_PP_Order_Candidate ppOrderCandidateRecord = InterfaceWrapperHelper.newInstance(I_PP_Order_Candidate.class);
 
 		PPOrderCandidatePojoConverter.setMaterialDispoGroupId(ppOrderCandidateRecord, request.getMaterialDispoGroupId());
+		PPOrderCandidatePojoConverter.setMaterialDispoTraceId(ppOrderCandidateRecord, request.getTraceId());
 
 		ppOrderCandidateRecord.setPP_Product_Planning_ID(ProductPlanningId.toRepoId(request.getProductPlanningId()));
 		ppOrderCandidateRecord.setAD_Org_ID(request.getClientAndOrgId().getOrgId().getRepoId());
@@ -74,10 +75,18 @@ public class CreateOrderCandidateCommand
 		ppOrderCandidateRecord.setM_Warehouse_ID(request.getWarehouseId().getRepoId());
 
 		ppOrderCandidateRecord.setM_Product_ID(request.getProductId().getRepoId());
-		ppOrderCandidateRecord.setM_AttributeSetInstance_ID(request.getAttributeSetInstanceId().getRepoId());
 
-		final ProductBOMId bomId = getBOMId(request.getProductPlanningId());
-		ppOrderCandidateRecord.setPP_Product_BOM_ID(bomId.getRepoId());
+		final I_PP_Product_BOM bom = getBOM(request.getProductPlanningId());
+		ppOrderCandidateRecord.setPP_Product_BOM_ID(bom.getPP_Product_BOM_ID());
+
+		if (bom.getM_AttributeSetInstance_ID() > 0)
+		{
+			ppOrderCandidateRecord.setM_AttributeSetInstance_ID(bom.getM_AttributeSetInstance_ID());
+		}
+		else
+		{
+			ppOrderCandidateRecord.setM_AttributeSetInstance_ID(request.getAttributeSetInstanceId().getRepoId());
+		}
 
 		ppOrderCandidateRecord.setDatePromised(TimeUtil.asTimestamp(request.getDatePromised()));
 		ppOrderCandidateRecord.setDateStartSchedule(TimeUtil.asTimestamp(request.getDateStartSchedule()));
@@ -90,6 +99,13 @@ public class CreateOrderCandidateCommand
 		ppOrderCandidateRecord.setC_OrderLine_ID(OrderLineId.toRepoId(request.getSalesOrderLineId()));
 		ppOrderCandidateRecord.setM_ShipmentSchedule_ID(ShipmentScheduleId.toRepoId(request.getShipmentScheduleId()));
 
+		ppOrderCandidateRecord.setIsSimulated(request.isSimulated());
+
+		if (request.isSimulated())
+		{
+			ppOrderCandidateRecord.setProcessed(true);
+		}
+
 		ppOrderCandidateDAO.save(ppOrderCandidateRecord);
 
 		Loggables.addLog(
@@ -100,26 +116,26 @@ public class CreateOrderCandidateCommand
 	}
 
 	@NonNull
-	private ProductBOMId getBOMId(@Nullable final ProductPlanningId productPlanningId)
+	private I_PP_Product_BOM getBOM(@Nullable final ProductPlanningId productPlanningId)
 	{
 		if (productPlanningId != null)
 		{
 			final I_PP_Product_Planning productPlanning = productPlanningsRepo.getById(productPlanningId);
 
-			final Optional<ProductBOMId> productBOMIdFromPlanning = Optional.ofNullable(productPlanning)
+			final Optional<I_PP_Product_BOM> productBOMFromPlanning = Optional.ofNullable(productPlanning)
 					.filter(presentProductPlanning -> presentProductPlanning.getPP_Product_BOMVersions_ID() > 0)
 					.map(presentProductPlanning -> ProductBOMVersionsId.ofRepoId(presentProductPlanning.getPP_Product_BOMVersions_ID()))
-					.flatMap(bomRepo::getLatestBOMByVersion);
+					.flatMap(bomRepo::getLatestBOMRecordByVersionId);
 
-			if (productBOMIdFromPlanning.isPresent())
+			if (productBOMFromPlanning.isPresent())
 			{
-				return productBOMIdFromPlanning.get();
+				return productBOMFromPlanning.get();
 			}
 		}
 
 		final ProductId productId = request.getProductId();
 
-		return bomRepo.getDefaultBOMIdByProductId(productId)
+		return bomRepo.getDefaultBOMByProductId(productId)
 				.orElseThrow(() -> new AdempiereException("@NotFound@ @PP_Product_BOM_ID@")
 						.appendParametersToMessage()
 						.setParameter("request", request)

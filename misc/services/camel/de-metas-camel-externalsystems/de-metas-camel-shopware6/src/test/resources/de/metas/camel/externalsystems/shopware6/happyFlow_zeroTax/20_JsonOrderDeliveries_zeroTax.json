@@ -18,7 +18,14 @@
         "versionId": "shippingAddressVersion_notUpToDate",
         "createdAt": "2021-02-25T15:27:34.518+00:00",
         "updatedAt": "2021-02-26T15:27:34.518+00:00",
-        "id": "shippingAddressId"
+        "company": "company",
+        "department": "department",
+        "title": "title",
+        "id": "shippingAddressId",
+        "salutationId": "salutationId",
+        "customFields": {
+          "deliveryNotificationEmailAddress": "shippingOrderAddress@example.com"
+        }
       },
       "shippingCosts": {
         "unitPrice": 7.5,

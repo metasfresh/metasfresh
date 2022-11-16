@@ -1,8 +1,10 @@
 package org.eevolution.model.validator;
 
 import de.metas.i18n.AdMessageKey;
+import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.ad.modelvalidator.annotations.Init;
@@ -14,6 +16,7 @@ import org.adempiere.model.CopyRecordFactory;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.IProductBOMBL;
 import org.eevolution.api.ProductBOMVersionsId;
+import org.eevolution.api.impl.ProductBOMService;
 import org.eevolution.api.impl.ProductBOMVersionsDAO;
 import org.eevolution.callout.PP_Product_BOM_TabCallout;
 import org.eevolution.model.I_PP_Product_BOM;
@@ -46,11 +49,17 @@ import org.eevolution.model.impl.PP_Product_BOM_POCopyRecordSupport;
 public class PP_Product_BOM
 {
 	private final IProductBOMBL bomService = Services.get(IProductBOMBL.class);
-	private final ProductBOMVersionsDAO bomVersionsDAO;
+	private final IProductPlanningDAO productPlanningDAO = Services.get(IProductPlanningDAO.class);
 
-	public PP_Product_BOM(final ProductBOMVersionsDAO bomVersionsDAO)
+	private final ProductBOMVersionsDAO bomVersionsDAO;
+	private final ProductBOMService productBOMService;
+
+	public PP_Product_BOM(
+			@NonNull final ProductBOMVersionsDAO bomVersionsDAO,
+			@NonNull final ProductBOMService productBOMService)
 	{
 		this.bomVersionsDAO = bomVersionsDAO;
+		this.productBOMService = productBOMService;
 	}
 
 	@Init
@@ -89,5 +98,15 @@ public class PP_Product_BOM
 					.setParameter("PP_Product_BOMVersions", bomVersions);
 		}
 
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_PP_Product_BOM.COLUMNNAME_M_AttributeSetInstance_ID })
+	public void validateBOMAttributes(final I_PP_Product_BOM productBom)
+	{
+		final ProductBOMVersionsId productBOMVersionsId = ProductBOMVersionsId.ofRepoId(productBom.getPP_Product_BOMVersions_ID());
+
+		productPlanningDAO.retrieveProductPlanningForBomVersions(productBOMVersionsId)
+				.forEach(productPlanning -> productBOMService.verifyBOMAssignment(productPlanning, productBom));
 	}
 }

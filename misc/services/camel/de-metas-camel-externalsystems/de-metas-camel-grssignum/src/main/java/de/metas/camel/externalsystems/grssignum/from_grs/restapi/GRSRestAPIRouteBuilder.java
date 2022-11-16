@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-grssignum
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -26,6 +26,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import de.metas.camel.externalsystems.common.CamelRoutesGroup;
 import de.metas.camel.externalsystems.common.ErrorBuilderHelper;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.ProcessorHelper;
@@ -34,6 +35,7 @@ import de.metas.camel.externalsystems.common.RestServiceRoutes;
 import de.metas.camel.externalsystems.common.auth.JsonAuthenticateRequest;
 import de.metas.camel.externalsystems.common.auth.JsonExpireTokenResponse;
 import de.metas.camel.externalsystems.common.auth.TokenCredentials;
+import de.metas.camel.externalsystems.common.error.ErrorProcessor;
 import de.metas.camel.externalsystems.common.v2.ExternalStatusCreateCamelRequest;
 import de.metas.camel.externalsystems.grssignum.GRSSignumConstants;
 import de.metas.common.externalsystem.ExternalSystemConstants;
@@ -47,6 +49,7 @@ import org.apache.camel.Exchange;
 import org.apache.camel.ProducerTemplate;
 import org.apache.camel.RuntimeCamelException;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.http.base.HttpOperationFailedException;
 import org.apache.camel.spi.RouteController;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -99,6 +102,7 @@ public class GRSRestAPIRouteBuilder extends RouteBuilder implements IExternalSys
 	@Override
 	public void configure()
 	{
+		//@formatter:off
 		errorHandler(defaultErrorHandler());
 		onException(Exception.class)
 				.to(direct(MF_ERROR_ROUTE_ID));
@@ -129,20 +133,25 @@ public class GRSRestAPIRouteBuilder extends RouteBuilder implements IExternalSys
 				.post()
 				.route()
 				.routeId(REST_API_ROUTE_ID)
-				.autoStartup(false)
+				.group(CamelRoutesGroup.START_ON_DEMAND.getCode())
 				.doTry()
-				.process(this::restAPIProcessor)
-				.process(this::prepareSuccessResponse)
+					.process(this::restAPIProcessor)
+					.process(this::prepareSuccessResponse)
 				.doCatch(JsonProcessingException.class)
-				.to(direct(ERROR_WRITE_TO_ADISSUE))
-				.process(this::prepareErrorResponse)
-				.marshal(setupJacksonDataFormatFor(getContext(), JsonError.class))
+					.to(direct(ERROR_WRITE_TO_ADISSUE))
+					.process(this::prepareErrorResponse)
+					.marshal(setupJacksonDataFormatFor(getContext(), JsonError.class))
+				.doCatch(HttpOperationFailedException.class)
+					.to(direct(MF_ERROR_ROUTE_ID))
+					.process(this::prepareHttpErrorResponse)
+					.marshal(setupJacksonDataFormatFor(getContext(), JsonError.class))
 				.doCatch(Exception.class)
-				.to(direct(MF_ERROR_ROUTE_ID))
-				.process(this::prepareErrorResponse)
-				.marshal(setupJacksonDataFormatFor(getContext(), JsonError.class))
+					.to(direct(MF_ERROR_ROUTE_ID))
+					.process(this::prepareErrorResponse)
+					.marshal(setupJacksonDataFormatFor(getContext(), JsonError.class))
 				.endDoTry()
 				.end();
+		//@formatter:on
 	}
 
 	private void enableRestAPIProcessor(@NonNull final Exchange exchange) throws Exception
@@ -181,6 +190,7 @@ public class GRSRestAPIRouteBuilder extends RouteBuilder implements IExternalSys
 				.authKey(authKey)
 				.pInstance(request.getAdPInstanceId())
 				.orgCode(request.getOrgCode())
+				.externalSystemValue(request.getExternalSystemChildConfigValue())
 				.build();
 	}
 
@@ -276,6 +286,12 @@ public class GRSRestAPIRouteBuilder extends RouteBuilder implements IExternalSys
 				.build();
 
 		exchange.getIn().setBody(camelRequest, JsonExternalSystemRequest.class);
+	}
+
+	private void prepareHttpErrorResponse(@NonNull final Exchange exchange)
+	{
+		final JsonError jsonError = ErrorProcessor.processHttpErrorEncounteredResponse(exchange);
+		exchange.getIn().setBody(jsonError);
 	}
 
 	@Override

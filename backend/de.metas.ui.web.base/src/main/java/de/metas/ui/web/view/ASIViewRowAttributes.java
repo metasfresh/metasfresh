@@ -1,8 +1,5 @@
 package de.metas.ui.web.view;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import de.metas.ui.web.pattribute.ASIDocument;
 import de.metas.ui.web.pattribute.ASILayout;
 import de.metas.ui.web.view.descriptor.ViewRowAttributesLayout;
@@ -17,6 +14,9 @@ import de.metas.ui.web.window.datatypes.json.JSONLayoutWidgetType;
 import de.metas.ui.web.window.datatypes.json.JSONOptions;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.IDocumentFieldView;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /*
  * #%L

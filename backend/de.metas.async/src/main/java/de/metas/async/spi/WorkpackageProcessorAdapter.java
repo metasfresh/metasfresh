@@ -11,7 +11,6 @@ import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.api.IParams;
 
 import java.util.List;
@@ -103,7 +102,7 @@ public abstract class WorkpackageProcessorAdapter implements IWorkpackageProcess
 
 	public final <T> List<T> retrieveItems(final Class<T> modelType)
 	{
-		return Services.get(IQueueDAO.class).retrieveItems(getC_Queue_WorkPackage(), modelType, ITrx.TRXNAME_ThreadInherited);
+		return Services.get(IQueueDAO.class).retrieveAllItemsSkipMissing(getC_Queue_WorkPackage(), modelType);
 	}
 
 	/**
@@ -121,8 +120,6 @@ public abstract class WorkpackageProcessorAdapter implements IWorkpackageProcess
 
 	/**
 	 * retrieves all active PO's IDs, even the ones that are caught in other packages
-	 *
-	 * @return
 	 */
 	public final Set<Integer> retrieveAllItemIds()
 	{

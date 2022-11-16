@@ -22,23 +22,19 @@
 
 package de.metas.invoice.export;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.adempiere.model.I_C_Invoice;
+import de.metas.invoice.InvoiceId;
+import de.metas.process.JavaProcess;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.Adempiere;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.adempiere.model.I_C_Invoice;
-import de.metas.invoice.export.InvoiceExportService;
-import de.metas.invoice_gateway.spi.model.InvoiceId;
-import de.metas.process.JavaProcess;
-import de.metas.util.Services;
-
 public class C_Invoice_CreateExportData extends JavaProcess
 {
-	private final InvoiceExportService invoiceExportService =  Adempiere.getBean(InvoiceExportService.class);
-
+	private final InvoiceExportService invoiceExportService = Adempiere.getBean(InvoiceExportService.class);
 
 	@Override
 	protected String doIt() throws Exception

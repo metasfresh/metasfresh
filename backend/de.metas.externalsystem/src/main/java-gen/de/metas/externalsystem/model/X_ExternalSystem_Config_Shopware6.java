@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.externalsystem.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for ExternalSystem_Config_Shopware6
  *  @author metasfresh (generated) 
@@ -113,7 +113,7 @@ public class X_ExternalSystem_Config_Shopware6 extends org.compiere.model.PO imp
 	}
 
 	@Override
-	public void setExternalSystemValue (final @Nullable java.lang.String ExternalSystemValue)
+	public void setExternalSystemValue (final java.lang.String ExternalSystemValue)
 	{
 		set_Value (COLUMNNAME_ExternalSystemValue, ExternalSystemValue);
 	}
@@ -161,6 +161,30 @@ public class X_ExternalSystem_Config_Shopware6 extends org.compiere.model.PO imp
 	}
 
 	@Override
+	public void setJSONPathEmail (final @Nullable java.lang.String JSONPathEmail)
+	{
+		set_Value (COLUMNNAME_JSONPathEmail, JSONPathEmail);
+	}
+
+	@Override
+	public java.lang.String getJSONPathEmail() 
+	{
+		return get_ValueAsString(COLUMNNAME_JSONPathEmail);
+	}
+
+	@Override
+	public void setJSONPathMetasfreshID (final @Nullable java.lang.String JSONPathMetasfreshID)
+	{
+		set_Value (COLUMNNAME_JSONPathMetasfreshID, JSONPathMetasfreshID);
+	}
+
+	@Override
+	public java.lang.String getJSONPathMetasfreshID() 
+	{
+		return get_ValueAsString(COLUMNNAME_JSONPathMetasfreshID);
+	}
+
+	@Override
 	public void setJSONPathSalesRepID (final @Nullable java.lang.String JSONPathSalesRepID)
 	{
 		set_Value (COLUMNNAME_JSONPathSalesRepID, JSONPathSalesRepID);
@@ -170,6 +194,18 @@ public class X_ExternalSystem_Config_Shopware6 extends org.compiere.model.PO imp
 	public java.lang.String getJSONPathSalesRepID() 
 	{
 		return get_ValueAsString(COLUMNNAME_JSONPathSalesRepID);
+	}
+
+	@Override
+	public void setJSONPathShopwareID (final @Nullable java.lang.String JSONPathShopwareID)
+	{
+		set_Value (COLUMNNAME_JSONPathShopwareID, JSONPathShopwareID);
+	}
+
+	@Override
+	public java.lang.String getJSONPathShopwareID() 
+	{
+		return get_ValueAsString(COLUMNNAME_JSONPathShopwareID);
 	}
 
 	@Override

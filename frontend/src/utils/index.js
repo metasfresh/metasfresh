@@ -10,6 +10,7 @@ import history from '../services/History';
 export function updateUri(pathname, query, updatedQuery) {
   const isDifferentPage =
     query.page && Number(query.page) !== Number(updatedQuery.page);
+  const isDifferentView = query.viewId && query.viewId !== updatedQuery.viewId;
 
   const queryObject = {
     ...query,
@@ -18,7 +19,7 @@ export function updateUri(pathname, query, updatedQuery) {
   const queryUrl = queryString.stringify(queryObject);
   const url = `${pathname}?${queryUrl}`;
 
-  isDifferentPage ? history.push(url) : history.replace(url);
+  isDifferentPage || isDifferentView ? history.push(url) : history.replace(url);
 }
 
 /**
@@ -46,24 +47,16 @@ export function historyDoubleBackOnPopstate(store) {
   store.dispatch(updateLastBackPage(document.location.href));
 }
 
-// TODO: Move to api ?
-export const getQueryString = (query) =>
-  queryString.stringify(
-    Object.keys(query).reduce((parameters, key) => {
-      const value = query[key];
-
-      if (Array.isArray(value) && value.length > 0) {
-        parameters[key] = value.join(',');
-      } else if (value) {
-        parameters[key] = value;
-      }
-
-      return parameters;
-    }, {})
-  );
+/**
+ * @method getQueryString
+ * @summary Stringifies URL with 'query-string', formatting query and escaping unwanted characters
+ */
+export const getQueryString = (query) => {
+  return queryString.stringify(query, { arrayFormat: 'comma', skipNull: true });
+};
 
 // TODO: Move to api ?
-export function createPatchRequestPayload(property, value) {
+export const createPatchRequestPayload = (property, value) => {
   if (Array.isArray(property) && Array.isArray(value)) {
     return property.map((item, index) => ({
       op: 'replace',
@@ -88,7 +81,13 @@ export function createPatchRequestPayload(property, value) {
     // never return undefined; backend does not support it
     return [];
   }
-}
+};
+
+export const toSingleFieldPatchRequest = (fieldName, value) => ({
+  op: 'replace',
+  path: fieldName,
+  value,
+});
 
 export const arePropTypesIdentical = (nextProps, currentProps) => {
   for (const key of Object.keys(nextProps)) {
@@ -177,8 +176,8 @@ export function preFormatPostDATA({ target, postData }) {
 /**
  * Opens the url given as param in a new window and focuses on that window
  * @param {string} urlPath
- * @param {fnct} dispatch
- * @param {fnct} function to dispatch - added this in case we need to perform custom actions when opening new tab ()
+ * @param {function} dispatch
+ * @param {function} actionName to dispatch - added this in case we need to perform custom actions when opening new tab ()
  *               https://github.com/metasfresh/metasfresh/issues/10145 (in this case we send setProcessSaved that will
  *               update the store flag - processStatus)
  */
@@ -281,3 +280,21 @@ export function deepUnfreeze(obj) {
 export function leftTrim(str) {
   return str.replace(/^\s+/, '');
 }
+
+/**
+ * @method formatSortingQuery
+ * @summary format's the ordering parameters prefixing them with asc/desc sign
+ */
+export function formatSortingQuery(orderBy) {
+  if (orderBy && orderBy.map) {
+    return orderBy.map((sortParam) => {
+      return `${sortParam.ascending ? '+' : '-'}${sortParam.fieldName}`;
+    });
+  }
+
+  return orderBy;
+}
+
+export const isBlank = (str) => {
+  return !str || str.length === 0 || str.trim().length === 0;
+};

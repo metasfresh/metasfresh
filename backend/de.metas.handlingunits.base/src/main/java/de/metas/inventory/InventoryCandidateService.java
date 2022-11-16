@@ -14,6 +14,7 @@ import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -21,7 +22,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
-import java.util.List;
 
 @Service
 public class InventoryCandidateService
@@ -36,7 +36,6 @@ public class InventoryCandidateService
 	{
 		return adReferenceDAO.getRefListById(QtyRejectedReasonCode.REFERENCE_ID);
 	}
-
 
 	public void createDisposeCandidates(
 			@NonNull final HuId huId,
@@ -56,7 +55,7 @@ public class InventoryCandidateService
 		}
 
 		final ImmutableMap<ProductId, I_M_Inventory_Candidate> existingRecords = Maps.uniqueIndex(
-				getByHuIdAndNotProcessed(huId),
+				queryByHuIdAndNotProcessed(huId).create().list(),
 				record -> ProductId.ofRepoId(record.getM_Product_ID()));
 
 		handlingUnitsBL.getStorageFactory()
@@ -95,12 +94,19 @@ public class InventoryCandidateService
 		InterfaceWrapperHelper.save(record);
 	}
 
-	private List<I_M_Inventory_Candidate> getByHuIdAndNotProcessed(@NonNull final HuId huId)
+	private IQueryBuilder<I_M_Inventory_Candidate> queryByHuIdAndNotProcessed(final @NonNull HuId huId)
 	{
 		return queryBL.createQueryBuilder(I_M_Inventory_Candidate.class)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_M_Inventory_Candidate.COLUMNNAME_M_HU_ID, huId)
-				.addEqualsFilter(I_M_Inventory_Candidate.COLUMNNAME_Processed, false)
+				.addEqualsFilter(I_M_Inventory_Candidate.COLUMNNAME_Processed, false);
+	}
+
+	public boolean isDisposalPending(final @NonNull HuId huId)
+	{
+		return queryByHuIdAndNotProcessed(huId)
+				.addNotNull(I_M_Inventory_Candidate.COLUMNNAME_DisposeReason)
 				.create()
-				.list();
+				.anyMatch();
 	}
 }

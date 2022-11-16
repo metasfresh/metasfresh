@@ -323,6 +323,60 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
+	public org.compiere.model.I_C_Incoterms getC_Incoterms_Customer()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Incoterms_Customer_ID, org.compiere.model.I_C_Incoterms.class);
+	}
+
+	@Override
+	public void setC_Incoterms_Customer(final org.compiere.model.I_C_Incoterms C_Incoterms_Customer)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Incoterms_Customer_ID, org.compiere.model.I_C_Incoterms.class, C_Incoterms_Customer);
+	}
+
+	@Override
+	public void setC_Incoterms_Customer_ID (final int C_Incoterms_Customer_ID)
+	{
+		if (C_Incoterms_Customer_ID < 1) 
+			set_Value (COLUMNNAME_C_Incoterms_Customer_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Incoterms_Customer_ID, C_Incoterms_Customer_ID);
+	}
+
+	@Override
+	public int getC_Incoterms_Customer_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Incoterms_Customer_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Incoterms getC_Incoterms_Vendor()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Incoterms_Vendor_ID, org.compiere.model.I_C_Incoterms.class);
+	}
+
+	@Override
+	public void setC_Incoterms_Vendor(final org.compiere.model.I_C_Incoterms C_Incoterms_Vendor)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Incoterms_Vendor_ID, org.compiere.model.I_C_Incoterms.class, C_Incoterms_Vendor);
+	}
+
+	@Override
+	public void setC_Incoterms_Vendor_ID (final int C_Incoterms_Vendor_ID)
+	{
+		if (C_Incoterms_Vendor_ID < 1) 
+			set_Value (COLUMNNAME_C_Incoterms_Vendor_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Incoterms_Vendor_ID, C_Incoterms_Vendor_ID);
+	}
+
+	@Override
+	public int getC_Incoterms_Vendor_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Incoterms_Vendor_ID);
+	}
+
+	@Override
 	public org.compiere.model.I_C_InvoiceSchedule getC_InvoiceSchedule()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_InvoiceSchedule_ID, org.compiere.model.I_C_InvoiceSchedule.class);

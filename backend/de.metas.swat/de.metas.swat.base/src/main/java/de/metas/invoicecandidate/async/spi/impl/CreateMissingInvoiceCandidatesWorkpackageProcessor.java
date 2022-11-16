@@ -143,7 +143,7 @@ public class CreateMissingInvoiceCandidatesWorkpackageProcessor extends Workpack
 	{
 		try (final IAutoCloseable ignored = invoiceCandBL.setUpdateProcessInProgress())
 		{
-			final List<Object> models = queueDAO.retrieveItemsSkipMissing(workpackage, Object.class, localTrxName);
+			final List<Object> models = queueDAO.retrieveAllItemsSkipMissing(workpackage, Object.class);
 			for (final Object model : models)
 			{
 				try (final MDCCloseable ignored1 = TableRecordMDC.putTableRecordReference(model))

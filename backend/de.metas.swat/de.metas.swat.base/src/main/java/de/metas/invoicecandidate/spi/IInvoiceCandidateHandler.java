@@ -16,6 +16,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.model.InterfaceWrapperHelper;
 
@@ -142,7 +143,7 @@ public interface IInvoiceCandidateHandler
 	 *
 	 * @param limit advises how many models shall be retrieved. Note that this is an advise which could be respected or not by current implementations.
 	 */
-	Iterator<?> retrieveAllModelsWithMissingCandidates(int limit);
+	Iterator<?> retrieveAllModelsWithMissingCandidates(@NonNull QueryLimit limit);
 	
 	/**
 	 * Called by API to expand an initial invoice candidate generate request.

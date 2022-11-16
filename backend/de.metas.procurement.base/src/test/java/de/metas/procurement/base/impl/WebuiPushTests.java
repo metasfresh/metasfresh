@@ -6,6 +6,7 @@ import de.metas.common.procurement.sync.protocol.request_to_procurementweb.PutBP
 import de.metas.procurement.base.IAgentSyncBL;
 import de.metas.procurement.base.model.I_AD_User;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -137,7 +138,7 @@ public class WebuiPushTests
 	/**
 	 * Invokes {@link WebuiPush#pushBPartnerAndUsers(I_C_BPartner)} and verifies, that only a delete-bpartner-sync without users is submitted.
 	 */
-	private void performTestNoUsersDeletePartner(final I_C_BPartner bpartner)
+	private void performTestNoUsersDeletePartner(@NonNull final I_C_BPartner bpartner)
 	{
 		new WebuiPush().pushBPartnerAndUsers(bpartner);
 

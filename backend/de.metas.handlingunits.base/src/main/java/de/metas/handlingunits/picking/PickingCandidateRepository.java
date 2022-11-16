@@ -14,6 +14,7 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.api.IPickingSlotDAO;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.api.PickingSlotQuery;
+import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
@@ -445,13 +446,20 @@ public class PickingCandidateRepository
 		}
 
 		//
+		// Only Picking Slots
+		if(!pickingCandidatesQuery.getOnlyPickingSlotIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_PickingSlot_ID, pickingCandidatesQuery.getOnlyPickingSlotIds());
+		}
+
+		//
 		// Picking slot Barcode filter
-		final String pickingSlotBarcode = pickingCandidatesQuery.getPickingSlotBarcode();
-		if (!Check.isEmpty(pickingSlotBarcode, true))
+		final PickingSlotQRCode pickingSlotQRCode = pickingCandidatesQuery.getPickingSlotQRCode();
+		if (pickingSlotQRCode != null)
 		{
 			final IPickingSlotDAO pickingSlotDAO = Services.get(IPickingSlotDAO.class);
 			final Set<PickingSlotId> pickingSlotIds = pickingSlotDAO.retrievePickingSlotIds(PickingSlotQuery.builder()
-					.barcode(pickingSlotBarcode)
+					.qrCode(pickingSlotQRCode)
 					.build());
 			if (pickingSlotIds.isEmpty())
 			{

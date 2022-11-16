@@ -36,6 +36,7 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -59,7 +60,7 @@ public class RecreateInvoiceWorkpackageProcessor extends WorkpackageProcessorAda
 	private static final AdMessageKey MSG_SKIPPED_INVOICE_DUE_TO_COMMISSION = AdMessageKey.of("MSG_SKIPPED_INVOICE_DUE_TO_COMMISSION");
 
 	@Override
-	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workpackage, @NonNull final String trxName)
+	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workpackage, @Nullable final String trxName_IGNORED)
 	{
 		final int pinstanceInt = getParameters().getParameterAsInt(I_AD_PInstance.COLUMNNAME_AD_PInstance_ID, workpackage.getAD_PInstance_ID());
 		Check.assume(pinstanceInt > 0, "pinstanceInt>=0 on workpackage={}", workpackage);

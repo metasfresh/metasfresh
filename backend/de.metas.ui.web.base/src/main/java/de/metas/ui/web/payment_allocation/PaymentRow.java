@@ -7,6 +7,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.payment.PaymentAmtMultiplier;
 import de.metas.payment.PaymentCurrencyContext;
 import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
@@ -84,6 +85,8 @@ public class PaymentRow implements IViewRow
 	private final ClientAndOrgId clientAndOrgId;
 	@Getter
 	private final PaymentDirection paymentDirection;
+	@Getter
+	private final PaymentAmtMultiplier paymentAmtMultiplier;
 
 	@Getter
 	private final PaymentCurrencyContext paymentCurrencyContext;
@@ -100,9 +103,10 @@ public class PaymentRow implements IViewRow
 			.documentNo("NO PAYMENTS")
 			.bpartner(LookupValue.StringLookupValue.of("NO PAYMENTS", "NO PAYMENTS"))
 			.dateTrx(LocalDate.of(2020, Month.JUNE, 2))
+			.paymentDirection(PaymentDirection.INBOUND)
+			.paymentAmtMultiplier(PaymentAmtMultiplier.builder().paymentDirection(PaymentDirection.INBOUND).isOutboundAdjusted(false).build())
 			.payAmt(Amount.zero(CurrencyCode.EUR))
 			.openAmt(Amount.zero(CurrencyCode.EUR))
-			.paymentDirection(PaymentDirection.INBOUND)
 			.build();
 
 	@Builder
@@ -112,6 +116,7 @@ public class PaymentRow implements IViewRow
 			@NonNull final String documentNo,
 			@NonNull final LocalDate dateTrx,
 			@NonNull final LookupValue bpartner,
+			@NonNull final PaymentAmtMultiplier paymentAmtMultiplier,
 			@NonNull final Amount payAmt,
 			@NonNull final Amount openAmt,
 			@NonNull final PaymentDirection paymentDirection,
@@ -121,6 +126,7 @@ public class PaymentRow implements IViewRow
 		this.documentNo = documentNo;
 		this.dateTrx = dateTrx;
 		this.bpartner = bpartner;
+		this.paymentAmtMultiplier = paymentAmtMultiplier;
 		this.payAmt = payAmt;
 		this.openAmt = openAmt;
 		this.currencyCode = Amount.getCommonCurrencyCodeOfAll(payAmt, openAmt).toThreeLetterCode();

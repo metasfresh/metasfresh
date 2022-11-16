@@ -1,79 +1,64 @@
-import React, { PureComponent } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
-import counterpart from 'counterpart';
-import { connect } from 'react-redux';
-import { push } from 'connected-react-router';
-import { withRouter } from 'react-router';
 
 import { pickingStepScreenLocation } from '../../../routes/picking';
-import Indicator from '../../../components/Indicator';
+import { computePickFromStatus } from '../../../reducers/wfProcesses/picking';
 import PickAlternatives from './PickAlternatives';
-import { computePickFromStatus } from '../../../reducers/wfProcesses_status/picking';
+import ButtonWithIndicator from '../../../components/buttons/ButtonWithIndicator';
+import ButtonQuantityProp from '../../../components/buttons/ButtonQuantityProp';
+import { useHistory } from 'react-router-dom';
 
-class PickStepButton extends PureComponent {
-  handleClick = () => {
-    const { push, wfProcessId, activityId, lineId, stepId, altStepId } = this.props;
-    const location = pickingStepScreenLocation({ wfProcessId, activityId, lineId, stepId, altStepId });
-
-    push(location);
+const PickStepButton = ({
+  applicationId,
+  wfProcessId,
+  activityId,
+  lineId,
+  stepId,
+  altStepId,
+  pickFromAlternatives,
+  uom,
+  qtyToPick,
+  pickFrom,
+}) => {
+  const history = useHistory();
+  const handleClick = () => {
+    history.push(pickingStepScreenLocation({ applicationId, wfProcessId, activityId, lineId, stepId, altStepId }));
   };
 
-  render() {
-    const { wfProcessId, activityId, lineId, stepId, altStepId, pickFromAlternatives, uom, qtyToPick, pickFrom } =
-      this.props;
-    const isAlternative = altStepId;
-    const completeStatus = computePickFromStatus(pickFrom);
+  const isAlternative = !!altStepId;
+  const completeStatus = computePickFromStatus(pickFrom);
 
-    return (
-      <div className="mt-3">
-        <button key={lineId} className="button is-outlined complete-btn pick-higher-btn" onClick={this.handleClick}>
-          <div className="full-size-btn">
-            <div className="left-btn-side" />
-            <div className="caption-btn">
-              <div className="rows">
-                <div className="row is-full pl-5">
-                  {isAlternative ? 'ALT:' : ''}
-                  {pickFrom.locatorName}
-                </div>
-                <div className="row is-full is-size-7">
-                  <div className="picking-row-info">
-                    <div className="picking-to-pick">{counterpart.translate('activities.picking.target')}:</div>
-                    <div className="picking-row-qty">
-                      {qtyToPick} {uom}
-                    </div>
-                    <div className="picking-row-picking">{counterpart.translate('activities.picking.picked')}:</div>
-                    <div className="picking-row-picked">
-                      {pickFrom.qtyPicked} {uom}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="right-btn-side pt-4">
-              <Indicator completeStatus={completeStatus} />
-            </div>
-          </div>
-        </button>
-        {pickFromAlternatives && !altStepId && (
-          <PickAlternatives
-            wfProcessId={wfProcessId}
-            activityId={activityId}
-            lineId={lineId}
-            stepId={stepId}
-            pickFromAlternatives={pickFromAlternatives}
-            uom={uom}
-          />
-        )}
-      </div>
-    );
-  }
-}
+  return (
+    <>
+      <ButtonWithIndicator
+        caption={(isAlternative ? 'ALT:' : '') + pickFrom.locatorName}
+        completeStatus={completeStatus}
+        onClick={handleClick}
+      >
+        <ButtonQuantityProp
+          qtyCurrent={pickFrom.qtyPicked}
+          qtyTarget={qtyToPick}
+          uom={uom}
+          applicationId={applicationId}
+        />
+      </ButtonWithIndicator>
+      {pickFromAlternatives && (
+        <PickAlternatives
+          applicationId={applicationId}
+          wfProcessId={wfProcessId}
+          activityId={activityId}
+          lineId={lineId}
+          stepId={stepId}
+          pickFromAlternatives={pickFromAlternatives}
+          uom={uom}
+        />
+      )}
+    </>
+  );
+};
 
 PickStepButton.propTypes = {
-  //
-  // Props
-  appId: PropTypes.string.isRequired,
+  applicationId: PropTypes.string.isRequired,
   wfProcessId: PropTypes.string.isRequired,
   activityId: PropTypes.string.isRequired,
   lineId: PropTypes.string.isRequired,
@@ -83,9 +68,6 @@ PickStepButton.propTypes = {
   altStepId: PropTypes.string,
   pickFromAlternatives: PropTypes.object,
   uom: PropTypes.string.isRequired,
-  //
-  // Actions/Functions
-  push: PropTypes.func.isRequired,
 };
 
-export default withRouter(connect(null, { push })(PickStepButton));
+export default PickStepButton;

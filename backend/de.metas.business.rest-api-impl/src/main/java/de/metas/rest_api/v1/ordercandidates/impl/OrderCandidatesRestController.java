@@ -14,7 +14,6 @@ import de.metas.common.ordercandidates.v1.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.ordercandidates.v1.request.JsonOLCandCreateRequest;
 import de.metas.common.ordercandidates.v1.response.JsonAttachment;
 import de.metas.common.ordercandidates.v1.response.JsonOLCandCreateBulkResponse;
-import de.metas.common.rest_api.v1.attachment.JsonAttachmentType;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.i18n.ExplainedOptional;
@@ -423,14 +422,11 @@ public class OrderCandidatesRestController implements OrderCandidatesRestEndpoin
 		final AttachmentEntryId entryId = Check.assumeNotNull(entry.getId(), "Param 'entry' needs to have a non-null id; entry={}", entry);
 		final String attachmentId = Integer.toString(entryId.getRepoId());
 
-		final JsonAttachmentType attachmentType = JsonAttachmentType
-				.valueOf(entry.getType().toString());
-
 		return JsonAttachment.builder()
 				.externalReference(externalReference)
 				.dataSourceName(dataSourceName)
 				.attachmentId(attachmentId)
-				.type(attachmentType)
+				.type(de.metas.rest_api.utils.JsonConverters.toJsonAttachmentType(entry.getType()))
 				.filename(entry.getFilename())
 				.mimeType(entry.getMimeType())
 				.url(entry.getUrl() != null ? entry.getUrl().toString() : null)

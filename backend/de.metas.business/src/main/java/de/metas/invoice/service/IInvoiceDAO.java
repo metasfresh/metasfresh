@@ -29,6 +29,7 @@ import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.allocation.api.IAllocationDAO;
 import de.metas.bpartner.BPartnerId;
 import de.metas.currency.Amount;
+import de.metas.document.DocBaseAndSubType;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoice.InvoiceLineId;
 import de.metas.invoice.InvoiceQuery;
@@ -90,7 +91,7 @@ public interface IInvoiceDAO extends ISingletonService
 
 	I_C_InvoiceLine createInvoiceLine(String trxName);
 
-	ImmutableSet<InvoiceId> retainIfHasCompletedInvoicesReferencing(@NonNull Collection<InvoiceId> invoiceIds);
+	ImmutableSet<InvoiceId> retainReferencingCompletedInvoices(Collection<InvoiceId> invoiceIds,DocBaseAndSubType targetDocType);
 
 	List<I_C_InvoiceLine> retrieveReferringLines(@NonNull InvoiceLineId invoiceLineId);
 
@@ -169,8 +170,6 @@ public interface IInvoiceDAO extends ISingletonService
 	ImmutableMap<InvoiceId, String> getDocumentNosByInvoiceIds(@NonNull Collection<InvoiceId> invoiceIds);
 
 	org.compiere.model.I_C_InvoiceLine getByIdOutOfTrx(InvoiceLineId invoiceLineId);
-
-	boolean hasCompletedInvoicesReferencing(InvoiceId invoiceId);
 
 	List<I_C_Invoice> retrieveBySalesrepPartnerId(BPartnerId salesRepBPartnerId,InstantInterval invoicedDateInterval);
 

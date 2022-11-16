@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.Properties;
 
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.slf4j.Logger;
 
@@ -75,7 +76,7 @@ public class ManualCandidateHandler extends AbstractInvoiceCandidateHandler
 
 	/** @return empty iterator */
 	@Override
-	public Iterator<Object> retrieveAllModelsWithMissingCandidates(final int limit)
+	public Iterator<Object> retrieveAllModelsWithMissingCandidates(final QueryLimit limit_IGNORED)
 	{
 		return Collections.emptyIterator();
 	}

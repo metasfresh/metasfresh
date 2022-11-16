@@ -2,7 +2,7 @@
  * #%L
  * de-metas-camel-grssignum
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,22 +22,59 @@
 
 package de.metas.camel.externalsystems.grssignum.to_grs.bpartner;
 
+import de.metas.common.bpartner.v2.response.JsonResponseComposite;
+import de.metas.common.externalreference.v2.JsonExternalReferenceLookupResponse;
+import de.metas.common.externalsystem.JsonExportDirectorySettings;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.util.Check;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Data;
+import lombok.Getter;
 import lombok.NonNull;
-import lombok.Value;
 
 import javax.annotation.Nullable;
 
-@Value
+@Data
 @Builder
 public class ExportBPartnerRouteContext
 {
 	@NonNull
-	String remoteUrl;
+	private final String remoteUrl;
 
 	@Nullable
-	String authToken;
+	private final String authToken;
 
 	@NonNull
-	String tenantId;
+	private final String tenantId;
+
+	@NonNull
+	private final String orgCode;
+
+	@NonNull
+	private final JsonMetasfreshId externalSystemConfigId;
+
+	@Nullable
+	@Getter(AccessLevel.NONE)
+	private JsonResponseComposite jsonResponseComposite;
+
+	@Nullable
+	private JsonExternalReferenceLookupResponse jsonExternalReferenceLookupResponse;
+
+	@Nullable
+	private final JsonExportDirectorySettings jsonExportDirectorySettings;
+
+	@Nullable
+	private final Integer pinstanceId;
+
+	@Nullable
+	private String bPartnerBasePath;
+
+	@NonNull
+	public JsonResponseComposite getJsonResponseComposite()
+	{
+		Check.assumeNotNull(jsonResponseComposite, "jsonResponseComposite must not be null when this is called!");
+
+		return jsonResponseComposite;
+	}
 }

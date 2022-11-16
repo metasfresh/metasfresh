@@ -102,4 +102,6 @@ public interface IPPOrderBL extends ISingletonService
 	void updateExportStatus(@NonNull APIExportStatus newExportStatus, @NonNull PInstanceId pinstanceId);
 
 	void setC_OrderLine(@NonNull PPOrderId ppOrderId, @NonNull OrderLineId orderLineId);
+
+	void postPPOrderCreatedEvent(@NonNull final I_PP_Order ppOrder);
 }

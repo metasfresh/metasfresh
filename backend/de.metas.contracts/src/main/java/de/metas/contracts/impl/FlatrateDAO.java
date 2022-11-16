@@ -1065,9 +1065,9 @@ public class FlatrateDAO implements IFlatrateDAO
 	@Override
 	public boolean bpartnerHasExistingRunningTerms(@NonNull final I_C_Flatrate_Term flatrateTerm)
 	{
-		if (flatrateTerm.getC_Order_Term_ID() < 0)
+		if (flatrateTerm.getC_Order_Term_ID() <= 0)
 		{
-			throw new IllegalArgumentException("This method only works with flatrateTerms that have C_Order_Term_ID>0. Given flatrateTerm=" + flatrateTerm);
+			return true; // if this term has no C_Order_Term_ID, then it *is* one of those running terms
 		}
 		final Instant instant = TimeUtil.asInstant(flatrateTerm.getC_Order_Term().getDateOrdered());
 

@@ -2,6 +2,7 @@ package de.metas.manufacturing.workflows_api.rest_api;
 
 import de.metas.Profiles;
 import de.metas.manufacturing.workflows_api.ManufacturingMobileApplication;
+import de.metas.manufacturing.workflows_api.rest_api.json.JsonFinishGoodsReceiveQRCodesGenerateRequest;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEventResult;
 import de.metas.util.web.MetasfreshRestAPIConstants;
@@ -28,10 +29,14 @@ public class ManufacturingMobileRestController
 	}
 
 	@PostMapping("/event")
-	public JsonManufacturingOrderEventResult postEvents(
-			@RequestBody @NonNull final JsonManufacturingOrderEvent event)
+	public JsonManufacturingOrderEventResult postEvents(@RequestBody @NonNull final JsonManufacturingOrderEvent event)
 	{
 		return manufacturingMobileApplication.processEvent(event, Env.getLoggedUserId());
+	}
 
+	@PostMapping("/generateHUQRCodes")
+	public void generateHUQRCodes(@RequestBody @NonNull JsonFinishGoodsReceiveQRCodesGenerateRequest request)
+	{
+		manufacturingMobileApplication.generateFinishGoodsReceiveQRCodes(request);
 	}
 }

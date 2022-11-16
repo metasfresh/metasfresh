@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.picking.candidate.commands.AddQtyToHUCommand;
 import de.metas.handlingunits.picking.candidate.commands.ClosePickingCandidateCommand;

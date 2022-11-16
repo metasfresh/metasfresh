@@ -2,7 +2,7 @@
 
 Artikel - Warenwirtschaft (Basis)
 - API version: 1.0.2
-  - Build date: 2021-12-02T17:09:48.943Z[GMT]
+  - Build date: 2022-02-18T14:17:41.660Z[GMT]
 
 Synchronisation der Artikel mit Kumavision
 
@@ -85,10 +85,9 @@ public class DefaultApiExample {
         
         DefaultApi apiInstance = new DefaultApi();
         String albertaApiKey = "albertaApiKey_example"; // String | 
-        String tenant = "tenant_example"; // String | 
         Article body = new Article(); // Article | article to add
         try {
-            ArticleMapping result = apiInstance.addArticle(albertaApiKey, tenant, body);
+            ArticleMapping result = apiInstance.addArticle(albertaApiKey, body);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling DefaultApi#addArticle");
@@ -110,10 +109,9 @@ public class DefaultApiExample {
         
         DefaultApi apiInstance = new DefaultApi();
         String albertaApiKey = "albertaApiKey_example"; // String | 
-        String tenant = "tenant_example"; // String | 
         Article body = new Article(); // Article | insuranceContract to add
         try {
-            ArticleMapping result = apiInstance.addInsuranceContract(albertaApiKey, tenant, body);
+            ArticleMapping result = apiInstance.addInsuranceContract(albertaApiKey, body);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling DefaultApi#addInsuranceContract");
@@ -135,11 +133,10 @@ public class DefaultApiExample {
         
         DefaultApi apiInstance = new DefaultApi();
         String albertaApiKey = "albertaApiKey_example"; // String | 
-        String tenant = "tenant_example"; // String | 
         String customerNumber = "customerNumber_example"; // String | 
         Article body = new Article(); // Article | article to update
         try {
-            ArticleMapping result = apiInstance.updateArticle(albertaApiKey, tenant, customerNumber, body);
+            ArticleMapping result = apiInstance.updateArticle(albertaApiKey, customerNumber, body);
             System.out.println(result);
         } catch (ApiException e) {
             System.err.println("Exception when calling DefaultApi#updateArticle");

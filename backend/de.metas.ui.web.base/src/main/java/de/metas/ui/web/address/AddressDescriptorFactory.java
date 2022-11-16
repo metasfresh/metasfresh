@@ -74,7 +74,7 @@ public class AddressDescriptorFactory
 
 	private static final String SYSCONFIG_PREFIX = "de.metas.ui.web.address.AddressDescriptorFactory.";
 	private static final String SYSCONFIG_SUFIX = ".IsDisplay";
-	
+
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	public AddressDescriptor getAddressDescriptor()
@@ -148,6 +148,7 @@ public class AddressDescriptorFactory
 		addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_Address1)
 										   .setValueClass(String.class)
 										   .setWidgetType(DocumentFieldWidgetType.Text)
+										   .setDisplayLogic(getSysConfigDisplayValue(IAddressModel.COLUMNNAME_Address1))
 										   .setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_Address1, false, I_C_Location::getAddress1, AddressFieldBinding::writeValue_Address1)));
 		//
 		addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_Address2)
@@ -155,21 +156,17 @@ public class AddressDescriptorFactory
 										   .setWidgetType(DocumentFieldWidgetType.Text)
 										   .setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_Address2, false, I_C_Location::getAddress2, AddressFieldBinding::writeValue_Address2)));
 
-		if(isShowAddress3())
-		{
-			addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_Address3)
-					.setValueClass(String.class)
-					.setWidgetType(DocumentFieldWidgetType.Text)
-					.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_Address3, false, I_C_Location::getAddress3, AddressFieldBinding::writeValue_Address3)));
-		}
+		addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_Address3)
+										   .setValueClass(String.class)
+										   .setWidgetType(DocumentFieldWidgetType.Text)
+										   .setDisplayLogic(getSysConfigDisplayValue(IAddressModel.COLUMNNAME_Address3))
+										   .setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_Address3, false, I_C_Location::getAddress3, AddressFieldBinding::writeValue_Address3)));
 
-		if(isShowAddress4())
-		{
-			addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_Address4)
-					.setValueClass(String.class)
-					.setWidgetType(DocumentFieldWidgetType.Text)
-					.setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_Address4, false, I_C_Location::getAddress4, AddressFieldBinding::writeValue_Address4)));
-		}
+		addressDescriptor.addField(buildFieldDescriptor(IAddressModel.COLUMNNAME_Address4)
+										   .setValueClass(String.class)
+										   .setWidgetType(DocumentFieldWidgetType.Text)
+										   .setDisplayLogic(getSysConfigDisplayValue(IAddressModel.COLUMNNAME_Address4))
+										   .setDataBinding(new AddressFieldBinding(IAddressModel.COLUMNNAME_Address4, false, I_C_Location::getAddress4, AddressFieldBinding::writeValue_Address4)));
 
 		final boolean allowPOBoxAddress = isAllowPOBoxAddress();
 		if (allowPOBoxAddress)
@@ -261,9 +258,7 @@ public class AddressDescriptorFactory
 		return addressDescriptor.build();
 	}
 
-
-
-private boolean getSysConfigDisplayValue(final String columnname)
+	private boolean getSysConfigDisplayValue(final String columnname)
 	{
 		final String sysConfigName = SYSCONFIG_PREFIX
 				+ columnname

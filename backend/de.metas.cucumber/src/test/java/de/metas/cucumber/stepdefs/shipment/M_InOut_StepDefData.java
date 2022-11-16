@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -30,4 +30,8 @@ import org.compiere.model.I_M_InOut;
  */
 public class M_InOut_StepDefData extends StepDefData<I_M_InOut>
 {
+	public M_InOut_StepDefData()
+	{
+		super(I_M_InOut.class);
+	}
 }

@@ -378,8 +378,8 @@ public class CalloutOrder extends CalloutEngine
 				+ " p.AD_Org_ID "
 				+ " FROM C_BPartner p"
 				+ " INNER JOIN C_BP_Group g ON (p.C_BP_Group_ID=g.C_BP_Group_ID)"
-				+ " LEFT OUTER JOIN C_BPartner_Location lbill ON (p.C_BPartner_ID=lbill.C_BPartner_ID AND lbill.IsBillTo='Y' AND lbill.IsActive='Y')"
-				+ " LEFT OUTER JOIN C_BPartner_Location lship ON (p.C_BPartner_ID=lship.C_BPartner_ID AND lship.IsShipTo='Y' AND lship.IsActive='Y')"
+				+ " LEFT OUTER JOIN C_BPartner_Location lbill ON (p.C_BPartner_ID=lbill.C_BPartner_ID AND lbill.IsBillTo='Y' AND lbill.IsActive='Y' AND lbill.IsEphemeral='N')"
+				+ " LEFT OUTER JOIN C_BPartner_Location lship ON (p.C_BPartner_ID=lship.C_BPartner_ID AND lship.IsShipTo='Y' AND lship.IsActive='Y' AND lship.IsEphemeral='N')"
 				+ " LEFT OUTER JOIN AD_User c ON (p.C_BPartner_ID=c.C_BPartner_ID) AND c.IsActive = 'Y' "
 				// #928
 				// Only join with Users that have the right SOTrx value (Sales Contact for SO and PurchaseContact for PO) and are set as default for that SOTrxValue
@@ -1639,10 +1639,13 @@ public class CalloutOrder extends CalloutEngine
 				{
 					final I_M_Warehouse warehouse = Services.get(IWarehouseDAO.class).getById(warehouseId);
 
+					final BPartnerId warehouseBPartnerId = BPartnerId.ofRepoIdOrNull(warehouse.getC_BPartner_ID());
+
 					OrderDocumentLocationAdapterFactory
 							.deliveryLocationAdapter(order)
 							.setFrom(DocumentLocation.builder()
-											 .bpartnerLocationId(BPartnerLocationId.ofRepoId(warehouse.getC_BPartner_ID(), warehouse.getC_BPartner_Location_ID()))
+											 .bpartnerId(warehouseBPartnerId)
+											 .bpartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(warehouseBPartnerId, warehouse.getC_BPartner_Location_ID()))
 											 .locationId(LocationId.ofRepoIdOrNull(warehouse.getC_Location_ID()))
 											 .build());
 				}

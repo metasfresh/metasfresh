@@ -22,11 +22,11 @@
 
 package de.metas.picking.workflow.handlers;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.IDocument;
-import de.metas.handlingunits.HUBarcode;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
@@ -34,7 +34,9 @@ import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEventType;
 import de.metas.handlingunits.picking.job.model.PickingJobStepId;
 import de.metas.handlingunits.picking.job.model.PickingJobStepPickFromKey;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.picking.rest_api.json.JsonPickingEventsList;
 import de.metas.picking.rest_api.json.JsonPickingStepEvent;
@@ -69,7 +71,8 @@ import static de.metas.picking.workflow.handlers.activity_handlers.PickingWFActi
 @Component
 public class PickingMobileApplication implements WorkflowBasedMobileApplication
 {
-	static final MobileApplicationId HANDLER_ID = MobileApplicationId.ofString("picking");
+	@VisibleForTesting
+	public static final MobileApplicationId HANDLER_ID = MobileApplicationId.ofString("picking");
 
 	private static final AdMessageKey MSG_Caption = AdMessageKey.of("mobileui.picking.appName");
 	private static final MobileApplicationInfo APPLICATION_INFO = MobileApplicationInfo.builder()
@@ -195,7 +198,11 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 				.activities(ImmutableList.of(
 						WFActivity.builder()
 								.id(WFActivityId.ofString("A1"))
-								.caption(TranslatableStrings.anyLanguage("Scan picking slot"))
+								.caption(ImmutableTranslatableString.builder()
+										.trl("de_DE", "Kommissionierplatz scannen")
+										.trl("de_CH", "Kommissionierplatz scannen")
+										.defaultValue("Scan picking slot")
+										.build())
 								.wfActivityType(SetPickingSlotWFActivityHandler.HANDLED_ACTIVITY_TYPE)
 								.status(SetPickingSlotWFActivityHandler.computeActivityState(pickingJob))
 								.build(),
@@ -272,15 +279,15 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	private static PickingJobStepEvent fromJson(@NonNull final JsonPickingStepEvent json, @NonNull final PickingJob pickingJob)
 	{
 		final PickingJobStepId pickingStepId = PickingJobStepId.ofString(json.getPickingStepId());
-		final HUBarcode huBarcode = HUBarcode.ofBarcodeString(json.getHuBarcode());
-		final PickingJobStepPickFromKey pickFromKey = pickingJob.getStepById(pickingStepId).getPickFromByHUBarcode(huBarcode).getPickFromKey();
+		final HUQRCode qrCode = HUQRCode.fromGlobalQRCodeJsonString(json.getHuQRCode());
+		final PickingJobStepPickFromKey pickFromKey = pickingJob.getStepById(pickingStepId).getPickFromByHUQRCode(qrCode).getPickFromKey();
 
 		return PickingJobStepEvent.builder()
 				.timestamp(SystemTime.asInstant())
 				.pickingStepId(pickingStepId)
 				.pickFromKey(pickFromKey)
 				.eventType(fromJson(json.getType()))
-				.huBarcode(huBarcode)
+				.huQRCode(qrCode)
 				.qtyPicked(json.getQtyPicked())
 				.qtyRejected(json.getQtyRejected())
 				.qtyRejectedReasonCode(QtyRejectedReasonCode.ofNullableCode(json.getQtyRejectedReasonCode()).orElse(null))

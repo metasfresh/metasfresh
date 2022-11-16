@@ -1,8 +1,9 @@
 package org.eevolution.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for PP_Order
  *  @author metasfresh (generated) 
@@ -95,7 +96,7 @@ public interface I_PP_Order
 
 	/**
 	 * Set Workflow.
-	 * Workflow or combination of tasks
+	 * Workflow oder Kombination von Aufgaben
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -105,7 +106,7 @@ public interface I_PP_Order
 
 	/**
 	 * Get Workflow.
-	 * Workflow or combination of tasks
+	 * Workflow oder Kombination von Aufgaben
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: true
@@ -230,7 +231,7 @@ public interface I_PP_Order
 	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
 	/**
-	 * Set Zielbelegart.
+	 * Set Document Type.
 	 * Target document type for conversing documents
 	 *
 	 * <br>Type: Table
@@ -240,7 +241,7 @@ public interface I_PP_Order
 	void setC_DocTypeTarget_ID (int C_DocTypeTarget_ID);
 
 	/**
-	 * Get Zielbelegart.
+	 * Get Document Type.
 	 * Target document type for conversing documents
 	 *
 	 * <br>Type: Table
@@ -492,6 +493,27 @@ public interface I_PP_Order
 
 	ModelColumn<I_PP_Order, Object> COLUMN_Current_Receiving_TU_PI_Item_Product_ID = new ModelColumn<>(I_PP_Order.class, "Current_Receiving_TU_PI_Item_Product_ID", null);
 	String COLUMNNAME_Current_Receiving_TU_PI_Item_Product_ID = "Current_Receiving_TU_PI_Item_Product_ID";
+
+	/**
+	 * Set Current Scale DeviceId.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCurrentScaleDeviceId (@Nullable java.lang.String CurrentScaleDeviceId);
+
+	/**
+	 * Get Current Scale DeviceId.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getCurrentScaleDeviceId();
+
+	ModelColumn<I_PP_Order, Object> COLUMN_CurrentScaleDeviceId = new ModelColumn<>(I_PP_Order.class, "CurrentScaleDeviceId", null);
+	String COLUMNNAME_CurrentScaleDeviceId = "CurrentScaleDeviceId";
 
 	/**
 	 * Set DateConfirm.

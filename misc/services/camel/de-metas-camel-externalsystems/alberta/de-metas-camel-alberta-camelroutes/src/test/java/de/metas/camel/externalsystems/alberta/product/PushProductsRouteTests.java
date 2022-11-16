@@ -31,7 +31,7 @@ import de.metas.camel.externalsystems.alberta.product.processor.AlbertaProductAp
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.GetProductsCamelRequest;
 import de.metas.camel.externalsystems.common.ProcessLogger;
-import de.metas.common.externalreference.JsonRequestExternalReferenceUpsert;
+import de.metas.common.externalreference.v1.JsonRequestExternalReferenceUpsert;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import io.swagger.client.model.Article;
 import io.swagger.client.model.ArticleMapping;

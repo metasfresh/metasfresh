@@ -1,7 +1,7 @@
 import axios from 'axios';
 import counterpart from 'counterpart';
 import React from 'react';
-import { useDispatch, useStore } from 'react-redux';
+import { useDispatch, useSelector, useStore } from 'react-redux';
 
 import '../assets/css/styles.css';
 import {
@@ -44,6 +44,7 @@ const App = () => {
   const auth = useAuth();
   const dispatch = useDispatch();
   const store = useStore();
+  const language = useSelector((state) => state.appHandler.me.language);
 
   useConstructor(() => {
     // this.pluginsRegistry = new PluginsRegistry(this);
@@ -121,7 +122,7 @@ const App = () => {
           }
 
           //if not logged in
-          if (!auth.isLoggedIn && !store.getState().appHandler.loggedIn) {
+          if (!auth.isLoggedIn && !store.getState().appHandler.isLogged) {
             return auth.checkAuthentication().then((authenticated) => {
               if (authenticated) {
                 history.push(location.pathname);
@@ -129,7 +130,7 @@ const App = () => {
             });
           }
         } else if (error.response.status == 502) {
-          return; // silent erorr for 502 bad gateway (otherwise we will get a bunch of notif from the retries)
+          return; // silent error for 502 bad gateway (otherwise we will get a bunch of notif from the retries)
         } else if (error.response.status == 503) {
           dispatch(connectionError({ errorType: NO_CONNECTION_ERROR }));
         } else if (error.response.status != 404) {
@@ -194,7 +195,8 @@ const App = () => {
     getAvailableLang().then((response) => {
       const { defaultValue, values } = response.data;
       const valuesFlatten = values.map((item) => Object.keys(item)[0]);
-      if (!store.getState().appHandler.me.language) {
+
+      if (!language) {
         dispatch(setLanguages(values));
       }
       const lang =

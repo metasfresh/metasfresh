@@ -1,8 +1,9 @@
 package org.eevolution.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for PP_Order_Candidate
  *  @author metasfresh (generated) 
@@ -212,6 +213,27 @@ public interface I_PP_Order_Candidate
 
 	ModelColumn<I_PP_Order_Candidate, Object> COLUMN_IsClosed = new ModelColumn<>(I_PP_Order_Candidate.class, "IsClosed", null);
 	String COLUMNNAME_IsClosed = "IsClosed";
+
+	/**
+	 * Set Simulated.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsSimulated (boolean IsSimulated);
+
+	/**
+	 * Get Simulated.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSimulated();
+
+	ModelColumn<I_PP_Order_Candidate, Object> COLUMN_IsSimulated = new ModelColumn<>(I_PP_Order_Candidate.class, "IsSimulated", null);
+	String COLUMNNAME_IsSimulated = "IsSimulated";
 
 	/**
 	 * Set Attributes.

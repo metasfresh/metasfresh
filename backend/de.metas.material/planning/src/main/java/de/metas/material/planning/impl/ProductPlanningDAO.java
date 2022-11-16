@@ -227,4 +227,14 @@ public class ProductPlanningDAO implements IProductPlanningDAO
 				.map(ProductBOMVersionsId::ofRepoId)
 				.collect(ImmutableSet.toImmutableSet());
 	}
+
+	@NonNull
+	public List<I_PP_Product_Planning> retrieveProductPlanningForBomVersions(@NonNull final ProductBOMVersionsId bomVerisonId)
+	{
+		return queryBL.createQueryBuilder(I_PP_Product_Planning.class)
+				.addEqualsFilter(I_PP_Product_Planning.COLUMNNAME_PP_Product_BOMVersions_ID, bomVerisonId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.listImmutable(I_PP_Product_Planning.class);
+	}
 }

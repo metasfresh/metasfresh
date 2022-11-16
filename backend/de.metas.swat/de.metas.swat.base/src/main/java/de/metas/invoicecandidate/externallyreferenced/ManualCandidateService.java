@@ -112,7 +112,6 @@ public class ManualCandidateService
 		final ZoneId timeZone = orgDAO.getTimeZone(newIC.getOrgId());
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
-				Env.getCtx(),
 				newIC,
 				pricingResult.getTaxCategoryId(),
 				newIC.getProductId().getRepoId(),

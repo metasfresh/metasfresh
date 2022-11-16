@@ -84,9 +84,9 @@ public class ProductsToPickRowsDataFactory
 	public ProductsToPickRowsData create(final PackageableRow packageableRow)
 	{
 		final PickingPlan plan = pickingCandidateService.createPlan(CreatePickingPlanRequest.builder()
-				.packageables(packageableRow.getPackageables())
-				.considerAttributes(considerAttributes)
-				.build());
+																			.packageables(packageableRow.getPackageables())
+																			.considerAttributes(considerAttributes)
+																			.build());
 		final ImmutableList<ProductsToPickRow> rows = plan.getLines()
 				.stream()
 				.map(this::toRow)
@@ -173,10 +173,9 @@ public class ProductsToPickRowsDataFactory
 				.qty(planLine.getQty())
 				//
 				.includedRows(pickFromPickingOrder.getIssueToBOMLines()
-						.stream()
-						.map(this::toRow)
-						.collect(ImmutableList.toImmutableList()))
-				//
+									  .stream()
+									  .map(this::toRow)
+									  .collect(ImmutableList.toImmutableList()))
 				.build()
 				.withUpdatesFromPickingCandidateIfNotNull(sourceDocumentInfo.getExistingPickingCandidate());
 	}

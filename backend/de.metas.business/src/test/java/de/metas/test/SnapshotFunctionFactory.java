@@ -1,5 +1,7 @@
 package de.metas.test;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.MapperFeature;
@@ -42,6 +44,16 @@ public class SnapshotFunctionFactory
 		final ObjectMapper jsonObjectMapper = JsonObjectMapperHolder.newJsonObjectMapper();
 		jsonObjectMapper.enable(MapperFeature.SORT_PROPERTIES_ALPHABETICALLY);
 		jsonObjectMapper.enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);
+
+		jsonObjectMapper.setSerializationInclusion(JsonInclude.Include.NON_NULL);
+		jsonObjectMapper.setVisibility(
+				jsonObjectMapper
+						.getSerializationConfig()
+						.getDefaultVisibilityChecker()
+						.withFieldVisibility(JsonAutoDetect.Visibility.ANY)
+						.withGetterVisibility(JsonAutoDetect.Visibility.NONE)
+						.withSetterVisibility(JsonAutoDetect.Visibility.NONE)
+						.withCreatorVisibility(JsonAutoDetect.Visibility.NONE));
 
 		if (humanReadableQuantity)
 		{

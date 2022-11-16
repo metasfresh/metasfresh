@@ -78,12 +78,10 @@ public class CreateMissingShipmentSchedulesWorkpackageProcessor extends Workpack
 		final Properties ctx = ctxAware.getCtx();
 
 		workPackageQueueFactory.getQueueForEnqueuing(ctx, CreateMissingShipmentSchedulesWorkpackageProcessor.class)
-				.newBlock()
-				.setContext(ctx)
-				.newWorkpackage()
+				.newWorkPackage()
 				.setC_Async_Batch_ID(asyncBatchId)
 				.bindToTrxName(ctxAware.getTrxName())
-				.build();
+				.buildAndEnqueue();
 	}
 
 	// services

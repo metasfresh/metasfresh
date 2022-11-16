@@ -11,11 +11,10 @@ import de.metas.distribution.ddorder.movement.schedule.DDOrderMoveScheduleServic
 import de.metas.distribution.ddorder.movement.schedule.DDOrderPickFromRequest;
 import de.metas.distribution.rest_api.JsonDistributionEvent;
 import de.metas.document.engine.DocStatus;
-import de.metas.handlingunits.picking.QtyRejectedReasonCode;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.product.IProductBL;
-import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -36,18 +35,23 @@ public class DistributionRestService
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final DDOrderService ddOrderService;
 	private final DDOrderMoveScheduleService ddOrderMoveScheduleService;
+	private final DistributionJobHUReservationService distributionJobHUReservationService;
 	private final DistributionJobLoaderSupportingServices loadingSupportServices;
 
 	public DistributionRestService(
-			@NonNull final DDOrderService ddOrderService,
-			@NonNull final DDOrderMoveScheduleService ddOrderMoveScheduleService)
+			final @NonNull DDOrderService ddOrderService,
+			final @NonNull DDOrderMoveScheduleService ddOrderMoveScheduleService,
+			final @NonNull DistributionJobHUReservationService distributionJobHUReservationService,
+			final @NonNull HUQRCodesService huQRCodeService)
 	{
 		this.ddOrderService = ddOrderService;
 		this.ddOrderMoveScheduleService = ddOrderMoveScheduleService;
+		this.distributionJobHUReservationService = distributionJobHUReservationService;
 
 		this.loadingSupportServices = DistributionJobLoaderSupportingServices.builder()
 				.ddOrderService(ddOrderService)
 				.ddOrderMoveScheduleService(ddOrderMoveScheduleService)
+				.huQRCodeService(huQRCodeService)
 				.warehouseBL(Services.get(IWarehouseBL.class))
 				.productBL(Services.get(IProductBL.class))
 				.orgDAO(Services.get(IOrgDAO.class))
@@ -100,6 +104,7 @@ public class DistributionRestService
 				.trxManager(trxManager)
 				.ddOrderService(ddOrderService)
 				.ddOrderMoveScheduleService(ddOrderMoveScheduleService)
+				.distributionJobHUReservationService(distributionJobHUReservationService)
 				.loadingSupportServices(loadingSupportServices)
 				//
 				.ddOrderId(ddOrderId)
@@ -124,11 +129,10 @@ public class DistributionRestService
 
 			final DDOrderMoveSchedule changedSchedule = ddOrderMoveScheduleService.pickFromHU(DDOrderPickFromRequest.builder()
 					.scheduleId(scheduleId)
-					.qtyPicked(Quantity.of(event.getPickFrom().getQtyPicked(), uom))
-					.qtyNotPickedReason(QtyRejectedReasonCode.ofNullableCode(event.getPickFrom().getQtyRejectedReasonCode()).orElse(null))
+					//.huQRCode(StringUtils.trimBlankToOptional(event.getPickFrom().getQrCode()).map(HUQRCode::fromGlobalQRCodeJsonString).orElse(null))
 					.build());
 
-			final DistributionJobStep changedStep = DistributionJobLoader.toDistributionJobStep(changedSchedule);
+			final DistributionJobStep changedStep = DistributionJobLoader.toDistributionJobStep(changedSchedule, loadingSupportServices);
 			return job.withChangedStep(scheduleId, ignored -> changedStep);
 		}
 		else if (event.getDropTo() != null)
@@ -137,7 +141,7 @@ public class DistributionRestService
 					.scheduleId(scheduleId)
 					.build());
 
-			final DistributionJobStep changedStep = DistributionJobLoader.toDistributionJobStep(changedSchedule);
+			final DistributionJobStep changedStep = DistributionJobLoader.toDistributionJobStep(changedSchedule, loadingSupportServices);
 			return job.withChangedStep(scheduleId, ignored -> changedStep);
 		}
 		else
@@ -148,13 +152,18 @@ public class DistributionRestService
 
 	public DistributionJob complete(@NonNull final DistributionJob job)
 	{
+		// just to make sure there is nothing reserved to this job
+		distributionJobHUReservationService.releaseAllReservations(job);
+
 		final DDOrderId ddOrderId = job.getDdOrderId();
 		ddOrderService.close(ddOrderId);
+
 		return getJobById(ddOrderId);
 	}
 
 	public void abort(@NonNull final DistributionJob job)
 	{
+		distributionJobHUReservationService.releaseAllReservations(job);
 		ddOrderService.unassignFromResponsible(job.getDdOrderId());
 	}
 }

@@ -7,6 +7,7 @@ import de.metas.workflow.rest_api.model.WFActivityStatus;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.eevolution.api.PPOrderBOMLineId;
 
 import javax.annotation.Nullable;
@@ -18,11 +19,12 @@ public class FinishedGoodsReceiveLine
 	@NonNull FinishedGoodsReceiveLineId id;
 	@NonNull ProductId productId;
 	@NonNull ITranslatableString productName;
+	@NonNull ImmutableAttributeSet attributes;
 	@NonNull Quantity qtyToReceive;
 	@NonNull Quantity qtyReceived;
 	@Nullable PPOrderBOMLineId coProductBOMLineId;
 
-	@Nullable CurrentReceivingHU currentReceivingHU;
+	@Nullable ReceivingTarget receivingTarget;
 
 	@NonNull WFActivityStatus status;
 
@@ -30,18 +32,20 @@ public class FinishedGoodsReceiveLine
 	private FinishedGoodsReceiveLine(
 			@NonNull final ProductId productId,
 			@NonNull final ITranslatableString productName,
+			@NonNull final ImmutableAttributeSet attributes,
 			@NonNull final Quantity qtyToReceive,
 			@NonNull final Quantity qtyReceived,
 			@Nullable final PPOrderBOMLineId coProductBOMLineId,
-			@Nullable final CurrentReceivingHU currentReceivingHU)
+			@Nullable final ReceivingTarget receivingTarget)
 	{
 		this.productId = productId;
 		this.productName = productName;
+		this.attributes = attributes;
 		this.qtyToReceive = qtyToReceive;
 		this.qtyReceived = qtyReceived;
 		this.coProductBOMLineId = coProductBOMLineId;
 
-		this.currentReceivingHU = currentReceivingHU;
+		this.receivingTarget = receivingTarget;
 
 		this.id = coProductBOMLineId == null
 				? FinishedGoodsReceiveLineId.FINISHED_GOODS
@@ -63,10 +67,10 @@ public class FinishedGoodsReceiveLine
 		return qtyToReceiveRemaining.signum() != 0 ? WFActivityStatus.IN_PROGRESS : WFActivityStatus.COMPLETED;
 	}
 
-	public FinishedGoodsReceiveLine withCurrentReceivingHU(@NonNull final CurrentReceivingHU currentReceivingHU)
+	public FinishedGoodsReceiveLine withReceivingTarget(@Nullable final ReceivingTarget receivingTarget)
 	{
-		return !Objects.equals(this.currentReceivingHU, currentReceivingHU)
-				? toBuilder().currentReceivingHU(currentReceivingHU).build()
+		return !Objects.equals(this.receivingTarget, receivingTarget)
+				? toBuilder().receivingTarget(receivingTarget).build()
 				: this;
 	}
 }
