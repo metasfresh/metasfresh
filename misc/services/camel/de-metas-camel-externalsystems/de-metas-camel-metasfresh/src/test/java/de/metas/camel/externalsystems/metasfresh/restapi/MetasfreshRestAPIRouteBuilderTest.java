@@ -27,6 +27,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.auth.JsonAuthenticateRequest;
 import de.metas.camel.externalsystems.common.auth.JsonExpireTokenResponse;
+import de.metas.camel.externalsystems.common.v2.ExternalStatusCreateCamelRequest;
 import de.metas.camel.externalsystems.metasfresh.restapi.feedback.FeedbackConfigProvider;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.NonNull;
@@ -42,9 +43,12 @@ import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Properties;
 
+import static de.metas.camel.externalsystems.metasfresh.restapi.MetasfreshRestAPIRouteBuilder.DISABLE_PREPARE_EXTERNAL_STATUS_CREATE_REQ_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.metasfresh.restapi.MetasfreshRestAPIRouteBuilder.DISABLE_RESOURCE_ATTACH_AUTHENTICATE_REQ_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.metasfresh.restapi.MetasfreshRestAPIRouteBuilder.DISABLE_RESOURCE_ROUTE_ID;
+import static de.metas.camel.externalsystems.metasfresh.restapi.MetasfreshRestAPIRouteBuilder.ENABLE_PREPARE_EXTERNAL_STATUS_CREATE_REQ_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.metasfresh.restapi.MetasfreshRestAPIRouteBuilder.ENABLE_RESOURCE_ATTACH_AUTHENTICATE_REQ_PROCESSOR_ID;
 import static de.metas.camel.externalsystems.metasfresh.restapi.MetasfreshRestAPIRouteBuilder.ENABLE_RESOURCE_ROUTE_ID;
 import static de.metas.camel.externalsystems.metasfresh.restapi.MetasfreshRestAPIRouteBuilder.REST_API_WRITE_REQUEST_BODY_TO_FILE_ROUTE_ID;
@@ -54,10 +58,12 @@ public class MetasfreshRestAPIRouteBuilderTest extends CamelTestSupport
 {
 	private static final String MOCK_REST_API_AUTHENTICATE_TOKEN_ROUTE_ID = "mock:Core-registerTokenRoute";
 	private static final String MOCK_REST_API_EXPIRE_TOKEN_ROUTE_ID = "mock:Core-expireTokenRoute";
+	private static final String MOCK_STORE_EXTERNAL_STATUS_ROUTE_ID = "mock:Core-storeExternalStatus";
 
 	private static final String EXTERNAL_SYSTEM_REQUEST = "1_ExternalSystemRequest.json";
 	private static final String JSON_AUTHENTICATE_REQUEST = "10_JsonAuthenticateRequest.json";
-	private static final String JSON_EXPIRE_TOKEN_RESPONSE = "20_JsonExpireTokenResponse.json";
+	private static final String EXTERNAL_STATUS_ACTIVE_CAMEL_REQUEST = "20_ExternalStatusCreateCamelRequestActive.json";
+	private static final String EXTERNAL_STATUS_INACTIVE_CAMEL_REQUEST = "20_ExternalStatusCreateCamelRequestInactive.json";
 
 	private static final ObjectMapper objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
 
@@ -75,12 +81,28 @@ public class MetasfreshRestAPIRouteBuilderTest extends CamelTestSupport
 		return true;
 	}
 
+	@Override
+	protected Properties useOverridePropertiesWithPropertiesComponent()
+	{
+		final Properties properties = new Properties();
+		try
+		{
+			properties.load(MetasfreshRestAPIRouteBuilderTest.class.getClassLoader().getResourceAsStream("application.properties"));
+			return properties;
+		}
+		catch (final IOException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
+	
 	@Test
 	void enableRestAPI() throws Exception
 	{
-		final MockAuthenticateTokenEP mockAuthenticateTokenEP = new MockAuthenticateTokenEP();
+		final MockEnableTokenEP mockEnableTokenEP = new MockEnableTokenEP();
+		final MockStoreExternalStatusEP mockStoreExternalStatusEP = new MockStoreExternalStatusEP();
 
-		prepareEnableRouteForTesting(mockAuthenticateTokenEP);
+		prepareEnableRouteForTesting(mockEnableTokenEP, mockStoreExternalStatusEP);
 
 		context.start();
 
@@ -89,6 +111,11 @@ public class MetasfreshRestAPIRouteBuilderTest extends CamelTestSupport
 		final JsonAuthenticateRequest jsonAuthenticateReq = objectMapper.readValue(jsonAuthenticateReqIS, JsonAuthenticateRequest.class);
 		registerRouteMockEP.expectedBodiesReceived(jsonAuthenticateReq);
 
+		final MockEndpoint storeStatusMockEP = getMockEndpoint(MOCK_STORE_EXTERNAL_STATUS_ROUTE_ID);
+		final InputStream jsonExternalStatusReqIS = this.getClass().getResourceAsStream(EXTERNAL_STATUS_ACTIVE_CAMEL_REQUEST);
+		final ExternalStatusCreateCamelRequest jsonExternalStatusReq = objectMapper.readValue(jsonExternalStatusReqIS, ExternalStatusCreateCamelRequest.class);
+		storeStatusMockEP.expectedBodiesReceived(jsonExternalStatusReq);
+		
 		final InputStream invokeExternalSystemRequestIS = this.getClass().getResourceAsStream(EXTERNAL_SYSTEM_REQUEST);
 		final JsonExternalSystemRequest invokeExternalSystemRequest = objectMapper
 				.readValue(invokeExternalSystemRequestIS, JsonExternalSystemRequest.class);
@@ -98,7 +125,8 @@ public class MetasfreshRestAPIRouteBuilderTest extends CamelTestSupport
 
 		// then
 		assertMockEndpointsSatisfied();
-		assertThat(mockAuthenticateTokenEP.called).isEqualTo(1);
+		assertThat(mockEnableTokenEP.called).isEqualTo(1);
+		assertThat(mockStoreExternalStatusEP.called).isEqualTo(1);
 
 		Assertions.assertThat(context.getRouteController().getRouteStatus(REST_API_WRITE_REQUEST_BODY_TO_FILE_ROUTE_ID).isStarted()).isTrue();
 	}
@@ -106,19 +134,27 @@ public class MetasfreshRestAPIRouteBuilderTest extends CamelTestSupport
 	@Test
 	void disableRestAPI() throws Exception
 	{
-
+		// given
 		final MockExpireTokenEP mockExpireTokenEP = new MockExpireTokenEP();
+		final MockStoreExternalStatusEP mockStoreExternalStatusEP = new MockStoreExternalStatusEP();
 
-		prepareDisableRouteForTesting(mockExpireTokenEP);
+		prepareDisableRouteForTesting(mockExpireTokenEP, mockStoreExternalStatusEP);
 
 		context.start();
+		context.getRouteController().resumeRoute(REST_API_WRITE_REQUEST_BODY_TO_FILE_ROUTE_ID);
+
+		Assertions.assertThat(context.getRouteController().getRouteStatus(REST_API_WRITE_REQUEST_BODY_TO_FILE_ROUTE_ID).isStarted()).isTrue();
 
 		final MockEndpoint expireRouteMockEP = getMockEndpoint(MOCK_REST_API_EXPIRE_TOKEN_ROUTE_ID);
-
 		final InputStream jsonAuthenticateReqIS = this.getClass().getResourceAsStream(JSON_AUTHENTICATE_REQUEST);
 		final JsonAuthenticateRequest jsonAuthenticateReq = objectMapper.readValue(jsonAuthenticateReqIS, JsonAuthenticateRequest.class);
 		expireRouteMockEP.expectedBodiesReceived(jsonAuthenticateReq);
 
+		final MockEndpoint storeStatusMockEP = getMockEndpoint(MOCK_STORE_EXTERNAL_STATUS_ROUTE_ID);
+		final InputStream jsonExternalStatusReqIS = this.getClass().getResourceAsStream(EXTERNAL_STATUS_INACTIVE_CAMEL_REQUEST);
+		final ExternalStatusCreateCamelRequest jsonExternalStatusReq = objectMapper.readValue(jsonExternalStatusReqIS, ExternalStatusCreateCamelRequest.class);
+		storeStatusMockEP.expectedBodiesReceived(jsonExternalStatusReq);
+		
 		final InputStream invokeExternalSystemRequestIS = this.getClass().getResourceAsStream(EXTERNAL_SYSTEM_REQUEST);
 		final JsonExternalSystemRequest invokeExternalSystemRequest = objectMapper
 				.readValue(invokeExternalSystemRequestIS, JsonExternalSystemRequest.class);
@@ -129,11 +165,14 @@ public class MetasfreshRestAPIRouteBuilderTest extends CamelTestSupport
 		// then
 		assertMockEndpointsSatisfied();
 		assertThat(mockExpireTokenEP.called).isEqualTo(1);
+		assertThat(mockStoreExternalStatusEP.called).isEqualTo(1);
 
 		assertThat(context.getRouteController().getRouteStatus(REST_API_WRITE_REQUEST_BODY_TO_FILE_ROUTE_ID).isSuspended()).isTrue();
 	}
 
-	private void prepareEnableRouteForTesting(@NonNull final MetasfreshRestAPIRouteBuilderTest.MockAuthenticateTokenEP mockAuthenticateTokenEP) throws Exception
+	private void prepareEnableRouteForTesting(
+			@NonNull final MetasfreshRestAPIRouteBuilderTest.MockEnableTokenEP mockEnableTokenEP,
+			@NonNull final MetasfreshRestAPIRouteBuilderTest.MockStoreExternalStatusEP mockStoreExternalStatusEP) throws Exception
 	{
 		AdviceWith.adviceWith(context, ENABLE_RESOURCE_ROUTE_ID,
 							  advice -> {
@@ -143,11 +182,21 @@ public class MetasfreshRestAPIRouteBuilderTest extends CamelTestSupport
 
 								  advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.REST_API_AUTHENTICATE_TOKEN)
 										  .skipSendToOriginalEndpoint()
-										  .process(mockAuthenticateTokenEP);
+										  .process(mockEnableTokenEP);
+
+								  advice.weaveById(ENABLE_PREPARE_EXTERNAL_STATUS_CREATE_REQ_PROCESSOR_ID)
+										  .after()
+										  .to(MOCK_STORE_EXTERNAL_STATUS_ROUTE_ID);
+
+								  advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_CREATE_EXTERNAL_SYSTEM_STATUS_V2_CAMEL_URI + "}}")
+										  .skipSendToOriginalEndpoint()
+										  .process(mockStoreExternalStatusEP);
 							  });
 	}
 
-	private void prepareDisableRouteForTesting(@NonNull final MetasfreshRestAPIRouteBuilderTest.MockExpireTokenEP mockExpireTokenEP) throws Exception
+	private void prepareDisableRouteForTesting(
+			@NonNull final MetasfreshRestAPIRouteBuilderTest.MockExpireTokenEP mockExpireTokenEP,
+			@NonNull final MetasfreshRestAPIRouteBuilderTest.MockStoreExternalStatusEP mockStoreExternalStatusEP) throws Exception
 	{
 		AdviceWith.adviceWith(context, DISABLE_RESOURCE_ROUTE_ID,
 							  advice -> {
@@ -158,10 +207,18 @@ public class MetasfreshRestAPIRouteBuilderTest extends CamelTestSupport
 								  advice.interceptSendToEndpoint("direct:" + ExternalSystemCamelConstants.REST_API_EXPIRE_TOKEN)
 										  .skipSendToOriginalEndpoint()
 										  .process(mockExpireTokenEP);
+
+								  advice.weaveById(DISABLE_PREPARE_EXTERNAL_STATUS_CREATE_REQ_PROCESSOR_ID)
+										  .after()
+										  .to(MOCK_STORE_EXTERNAL_STATUS_ROUTE_ID);
+
+								  advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_CREATE_EXTERNAL_SYSTEM_STATUS_V2_CAMEL_URI + "}}")
+										  .skipSendToOriginalEndpoint()
+										  .process(mockStoreExternalStatusEP);
 							  });
 	}
 
-	private static class MockAuthenticateTokenEP implements Processor
+	private static class MockEnableTokenEP implements Processor
 	{
 		private int called = 0;
 
@@ -172,6 +229,17 @@ public class MetasfreshRestAPIRouteBuilderTest extends CamelTestSupport
 		}
 	}
 
+	private static class MockStoreExternalStatusEP implements Processor
+	{
+		private int called = 0;
+
+		@Override
+		public void process(final Exchange exchange)
+		{
+			called++;
+		}
+	}
+	
 	private static class MockExpireTokenEP implements Processor
 	{
 		private int called = 0;
@@ -179,12 +247,7 @@ public class MetasfreshRestAPIRouteBuilderTest extends CamelTestSupport
 		@Override
 		public void process(final Exchange exchange) throws IOException
 		{
-			final InputStream jsonExpireTokenRes = this.getClass().getResourceAsStream(JSON_EXPIRE_TOKEN_RESPONSE);
-			final JsonExpireTokenResponse jsonExpireTokenResponse = objectMapper.readValue(jsonExpireTokenRes
-					, JsonExpireTokenResponse.class);
-
-			exchange.getIn().setBody(jsonExpireTokenResponse);
-
+			exchange.getIn().setBody(JsonExpireTokenResponse.builder().numberOfAuthenticatedTokens(0).build());
 			called++;
 		}
 	}

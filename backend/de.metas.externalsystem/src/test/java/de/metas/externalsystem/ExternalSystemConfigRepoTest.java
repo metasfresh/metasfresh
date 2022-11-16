@@ -176,7 +176,7 @@ class ExternalSystemConfigRepoTest
 	void externalSystem_Config_Metasfresh_getById()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = createI_ExternalSystem_ConfigBuilder()
+		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
 				.type(X_ExternalSystem_Config.TYPE_Metasfresh)
 				.build();
 
@@ -268,7 +268,7 @@ class ExternalSystemConfigRepoTest
 	void externalSystem_Config_Metasfresh_getTypeAndValue()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = createI_ExternalSystem_ConfigBuilder()
+		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
 				.type(X_ExternalSystem_Config.TYPE_Metasfresh)
 				.build();
 
@@ -796,6 +796,28 @@ class ExternalSystemConfigRepoTest
 
 		// when
 		final ImmutableList<ExternalSystemParentConfig> result = externalSystemConfigRepo.getActiveByType(ExternalSystemType.RabbitMQ);
+
+		// then
+		assertThat(result).isNotEmpty();
+		assertThat(result.size()).isEqualTo(1);
+		expect(result).toMatchSnapshot();
+	}
+
+	@Test
+	void externalSystem_Config_getActiveByType_Metasfresh()
+	{
+		// given
+		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(ExternalSystemType.Metasfresh.getCode())
+				.build();
+
+		ExternalSystemTestUtil.createMetasfreshConfigBuilder()
+				.value("value")
+				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
+				.build();
+
+		// when
+		final ImmutableList<ExternalSystemParentConfig> result = externalSystemConfigRepo.getActiveByType(ExternalSystemType.Metasfresh);
 
 		// then
 		assertThat(result).isNotEmpty();

@@ -36,18 +36,13 @@ import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Optional;
 
 import static de.metas.camel.externalsystems.metasfresh.MetasfreshConstants.FILE_NAME_HEADER;
 import static de.metas.camel.externalsystems.metasfresh.MetasfreshConstants.IS_CONTINUE_PARSING_PROPERTY;
-import static de.metas.camel.externalsystems.metasfresh.MetasfreshConstants.MASS_JSON_REQUEST_MAX_BATCH_SIZE;
 import static de.metas.camel.externalsystems.metasfresh.MetasfreshConstants.PARSER_PROPERTY;
 
 public class ParseBPartnersProcessor implements Processor
 {
-	private static final int DEFAULT_MAX_BATCH_SIZE = 10;
-
 	@Override
 	public void process(final Exchange exchange) throws IOException
 	{
@@ -62,50 +57,34 @@ public class ParseBPartnersProcessor implements Processor
 			return;
 		}
 
-		final ImmutableList.Builder<JsonRequestBPartnerUpsertItem> jsonRequestBPartnerUpsertItems = ImmutableList.builder();
-
-		final int maxBatchSize = getMaxBatchSize(exchange);
-		for (int counter = 0; counter < maxBatchSize; counter++)
+		final JsonRequestBPartnerUpsertItem jsonRequestBPartnerUpsertItem;
+		try
 		{
-			final JsonRequestBPartnerUpsertItem jsonRequestBPartnerUpsertItem = JsonObjectMapperHolder
+			jsonRequestBPartnerUpsertItem = JsonObjectMapperHolder
 					.sharedJsonObjectMapper()
 					.readValue(parser, JsonRequestBPartnerUpsertItem.class);
-
-			jsonRequestBPartnerUpsertItems.add(jsonRequestBPartnerUpsertItem);
-
-			if (parser.nextToken() == JsonToken.END_ARRAY)
-			{
-				isContinueParsing = false;
-				parser.close();
-				break;
-			}
 		}
-
-		final ImmutableList<JsonRequestBPartnerUpsertItem> upsertItemList = jsonRequestBPartnerUpsertItems.build();
+		catch (final Exception exception)
+		{
+			exchange.setProperty(IS_CONTINUE_PARSING_PROPERTY, false);
+			parser.close();
+			throw exception;
+		}
 
 		final String orgCode = FilenameUtil.getOrgCode(exchange.getIn().getHeader(FILE_NAME_HEADER, String.class));
 
-		final BPUpsertCamelRequest camelRequest = getBPUpsertCamelRequest(orgCode, upsertItemList);
+		final BPUpsertCamelRequest camelRequest = getBPUpsertCamelRequest(orgCode, jsonRequestBPartnerUpsertItem);
 		exchange.getIn().setBody(camelRequest);
 		exchange.setProperty(IS_CONTINUE_PARSING_PROPERTY, isContinueParsing);
-	}
-
-	private static int getMaxBatchSize(@NonNull final Exchange exchange)
-	{
-		final Optional<String> maxBatchSizeAsString = exchange.getContext().getPropertiesComponent().resolveProperty(MASS_JSON_REQUEST_MAX_BATCH_SIZE);
-
-		return maxBatchSizeAsString
-				.map(Integer::parseInt)
-				.orElse(DEFAULT_MAX_BATCH_SIZE);
 	}
 
 	@NonNull
 	private static BPUpsertCamelRequest getBPUpsertCamelRequest(
 			@NonNull final String orgCode,
-			@NonNull final List<JsonRequestBPartnerUpsertItem> upsertItemList)
+			@NonNull final JsonRequestBPartnerUpsertItem jsonRequestBPartnerUpsertItem)
 	{
 		final JsonRequestBPartnerUpsert jsonRequestBPartnerUpsert = JsonRequestBPartnerUpsert.builder()
-				.requestItems(upsertItemList)
+				.requestItems(ImmutableList.of(jsonRequestBPartnerUpsertItem))
 				.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
 				.build();
 

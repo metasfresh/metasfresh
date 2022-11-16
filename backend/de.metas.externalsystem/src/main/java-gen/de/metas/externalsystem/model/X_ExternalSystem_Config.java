@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ExternalSystem_Config extends org.compiere.model.PO implements I_ExternalSystem_Config, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1721511487L;
+	private static final long serialVersionUID = 37626431L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config (final Properties ctx, final int ExternalSystem_Config_ID, @Nullable final String trxName)
@@ -102,8 +102,8 @@ public class X_ExternalSystem_Config extends org.compiere.model.PO implements I_
 	public static final String TYPE_RabbitMQRESTAPI = "RabbitMQ";
 	/** GRSSignum = GRS */
 	public static final String TYPE_GRSSignum = "GRS";
-	/** Metasfresh = Metasfresh */
-	public static final String TYPE_Metasfresh = "Metasfresh";
+	/** Metasfresh = metasfresh */
+	public static final String TYPE_Metasfresh = "metasfresh";
 	@Override
 	public void setType (final String Type)
 	{

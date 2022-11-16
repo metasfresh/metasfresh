@@ -54,8 +54,8 @@ import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.file;
 @Component
 public class MassJsonRequestDispatcherRoute extends RouteBuilder
 {
-	public static final String MASS_JSON_REQUEST_ROUTE_ID = "Metasfresh-readMassJsonRequest";
-	public static final String PARSE_MASS_JSON_REQUEST_PROCESSOR_ID = "Metasfresh-parseMassJsonRequestProcessorId";
+	public static final String MASS_JSON_REQUEST_ROUTE_ID = "metasfresh-readMassJsonRequest";
+	public static final String PARSE_MASS_JSON_REQUEST_PROCESSOR_ID = "metasfresh-parseMassJsonRequestProcessorId";
 
 	private static final String MASS_PROCESSING_TARGET_ROUTE = "TargetRoute";
 
@@ -124,7 +124,7 @@ public class MassJsonRequestDispatcherRoute extends RouteBuilder
 		}
 		catch (final Exception exception)
 		{
-			throw new RuntimeCamelException("Could not create JsonParser!" + exception.getMessage());
+			throw new RuntimeCamelException("Could not create JsonParser!", exception);
 		}
 	}
 	
@@ -141,7 +141,7 @@ public class MassJsonRequestDispatcherRoute extends RouteBuilder
 		}
 		catch (final Exception exception)
 		{
-			throw new RuntimeCamelException("Could not parse the JSON!" + exception.getMessage());
+			throw new RuntimeCamelException("Could not parse the JSON!", exception);
 		}
 	}
 
@@ -165,7 +165,7 @@ public class MassJsonRequestDispatcherRoute extends RouteBuilder
 		}
 		catch (final Exception exception)
 		{
-			throw new RuntimeCamelException("Could not parse the JSON!" + exception.getMessage());
+			throw new RuntimeCamelException("Could not parse the JSON!", exception);
 		}
 	}
 
@@ -188,7 +188,7 @@ public class MassJsonRequestDispatcherRoute extends RouteBuilder
 		}
 		catch (final Exception exception)
 		{
-			throw new RuntimeCamelException("Could not parse the JSON!" + exception.getMessage());
+			throw new RuntimeCamelException("Could not parse the JSON!", exception);
 		}
 	}
 
@@ -219,7 +219,7 @@ public class MassJsonRequestDispatcherRoute extends RouteBuilder
 		}
 		catch (final Exception exception)
 		{
-			throw new RuntimeCamelException("Could not parse the JSON!" + exception.getMessage());
+			throw new RuntimeCamelException("Could not parse the JSON!", exception);
 		}
 	}
 

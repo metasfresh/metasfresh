@@ -29,6 +29,7 @@ import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.ExternalSystemType;
 import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
+import de.metas.externalsystem.externalservice.process.AlterExternalSystemServiceStatusAction;
 import de.metas.externalsystem.metasfresh.ExternalSystemMetasfreshConfig;
 import de.metas.externalsystem.metasfresh.ExternalSystemMetasfreshConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Metasfresh;
@@ -45,7 +46,7 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CHILD
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FEEDBACK_RESOURCE_AUTH_TOKEN;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_FEEDBACK_RESOURCE_URL;
 
-public class InvokeMetasfreshAction extends InvokeExternalSystemProcess
+public class InvokeMetasfreshAction extends AlterExternalSystemServiceStatusAction
 {
 	public final ExternalSystemConfigRepo externalSystemConfigDAO = SpringContextHolder.instance.getBean(ExternalSystemConfigRepo.class);
 
@@ -111,5 +112,13 @@ public class InvokeMetasfreshAction extends InvokeExternalSystemProcess
 				.stream()
 				.filter(recordRef -> I_ExternalSystem_Config_Metasfresh.Table_Name.equals(recordRef.getTableName()))
 				.count();
+	}
+
+	@Override
+	protected String getOrgCode()
+	{
+		final ExternalSystemParentConfig config = externalSystemConfigDAO.getById(getExternalChildConfigId());
+
+		return orgDAO.getById(config.getOrgId()).getValue();
 	}
 }

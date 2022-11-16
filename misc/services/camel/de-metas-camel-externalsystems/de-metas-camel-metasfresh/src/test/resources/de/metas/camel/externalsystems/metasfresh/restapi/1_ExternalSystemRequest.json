@@ -1,6 +1,7 @@
 {
   "orgCode": "orgCode",
-  "externalSystemName": "Metasfresh",
+  "externalSystemName": "metasfresh",
+  "externalSystemChildConfigValue": "metasfresh",
   "command": "required_but_notImportantInOurTest",
   "adPInstanceId": 123,
   "externalSystemConfigId": 100,
@@ -8,6 +9,6 @@
   "parameters": {
     "CamelHttpResourceAuthKey": "authKey",
     "baseURL": "baseURL",
-    "ChildConfigValue": "Metasfresh"
+    "ChildConfigValue": "metasfresh"
   }
 }

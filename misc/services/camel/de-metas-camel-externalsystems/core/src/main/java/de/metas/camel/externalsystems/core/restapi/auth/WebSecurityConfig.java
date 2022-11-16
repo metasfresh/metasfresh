@@ -24,8 +24,8 @@ package de.metas.camel.externalsystems.core.restapi.auth;
 
 import com.sun.istack.NotNull;
 import de.metas.camel.externalsystems.common.RestServiceRoutes;
-import lombok.NonNull;
 import de.metas.camel.externalsystems.core.restapi.processing.ToEmptyRequestBodyFilter;
+import lombok.NonNull;
 import org.apache.camel.ProducerTemplate;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -37,8 +37,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.REST_WOOCOMMERCE_PATH;
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.WOOCOMMERCE_AUTHORITY;
 import static de.metas.camel.externalsystems.core.restapi.auth.preauthenticated.ActuatorIdentity.ACTUATOR_AUTHORITY;
 
 @Configuration

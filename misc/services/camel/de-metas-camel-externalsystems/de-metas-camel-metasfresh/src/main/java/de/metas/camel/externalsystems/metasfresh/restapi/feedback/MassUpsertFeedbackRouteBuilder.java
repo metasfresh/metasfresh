@@ -34,9 +34,9 @@ import static de.metas.camel.externalsystems.metasfresh.MetasfreshConstants.FEED
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
-public class MassUploadFeedbackRouteBuilder extends RouteBuilder
+public class MassUpsertFeedbackRouteBuilder extends RouteBuilder
 {
-	public static final String MASS_UPSERT_FEEDBACK_ROUTE_ID = "Metasfresh-massUpsertFeedbackRouteId";
+	public static final String MASS_UPSERT_FEEDBACK_ROUTE_ID = "metasfresh-massUpsertFeedbackRouteId";
 
 	@Override
 	public void configure()

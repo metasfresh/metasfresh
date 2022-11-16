@@ -48,7 +48,7 @@ public enum ExternalSystemType implements ReferenceListAwareEnum
 	Other(X_ExternalSystem_Config.TYPE_Other, "Other", InvokeOtherAction.class.getName()),
 	WOO(X_ExternalSystem_Config.TYPE_WooCommerce, "WOO", InvokeWooCommerceAction.class.getName()),
 	GRSSignum(X_ExternalSystem_Config.TYPE_GRSSignum, "GRSSignum", InvokeGRSSignumAction.class.getName()),
-	Metasfresh(X_ExternalSystem_Config.TYPE_Metasfresh, "Metasfresh", InvokeMetasfreshAction.class.getName())
+	Metasfresh(X_ExternalSystem_Config.TYPE_Metasfresh, "metasfresh", InvokeMetasfreshAction.class.getName())
 	;
 
 	@Getter

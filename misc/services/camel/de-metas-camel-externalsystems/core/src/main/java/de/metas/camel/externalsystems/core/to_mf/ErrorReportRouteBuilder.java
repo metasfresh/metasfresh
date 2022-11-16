@@ -95,10 +95,15 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 				.routeId(ERROR_WRITE_TO_ADISSUE)
 				.log("Route invoked")
 				.process(this::prepareJsonErrorRequest)
-				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonError.class))
-				.removeHeaders("CamelHttp*")
-				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
-				.toD("{{" + MF_EXTERNAL_SYSTEM_V2_URI + "}}/externalstatus/${header." + HEADER_PINSTANCE_ID + "}/error");
+				.choice()
+					.when(body().isNull())
+						.log("No PInstanceId available!")
+					.otherwise()
+						.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonError.class))
+						.removeHeaders("CamelHttp*")
+						.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
+						.toD("{{" + MF_EXTERNAL_SYSTEM_V2_URI + "}}/externalstatus/${header." + HEADER_PINSTANCE_ID + "}/error")
+				.endChoice();
 
 		from(direct(ERROR_SEND_LOG_MESSAGE))
 				.routeId(ERROR_SEND_LOG_MESSAGE)
@@ -143,7 +148,8 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 
 		if (pInstanceId == null)
 		{
-			throw new RuntimeException("No PInstanceId available!");
+			exchange.getIn().setBody(null);
+			return;
 		}
 
 		final JsonErrorItem errorItem = ErrorProcessor.getErrorItem(exchange);

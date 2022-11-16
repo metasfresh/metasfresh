@@ -38,13 +38,13 @@ import org.springframework.stereotype.Component;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.metasfresh.MetasfreshConstants.IS_CONTINUE_PARSING_PROPERTY;
 import static de.metas.camel.externalsystems.metasfresh.MetasfreshConstants.MASS_UPLOAD_STATISTICS_COLLECTOR_PROPERTY;
-import static de.metas.camel.externalsystems.metasfresh.restapi.feedback.MassUploadFeedbackRouteBuilder.MASS_UPSERT_FEEDBACK_ROUTE_ID;
+import static de.metas.camel.externalsystems.metasfresh.restapi.feedback.MassUpsertFeedbackRouteBuilder.MASS_UPSERT_FEEDBACK_ROUTE_ID;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
 public class FileBPartnersRouteBuilder extends RouteBuilder
 {
-	public static final String PROCESS_BPARTNERS_FROM_FILE_ROUTE_ID = "Metasfresh-processBPartnerFromFile";
+	public static final String PROCESS_BPARTNERS_FROM_FILE_ROUTE_ID = "metasfresh-processBPartnerFromFile";
 
 	@Override
 	public void configure()
@@ -62,8 +62,8 @@ public class FileBPartnersRouteBuilder extends RouteBuilder
 				.process(exchange -> exchange.setProperty(IS_CONTINUE_PARSING_PROPERTY, true))
 					
 				.loopDoWhile(exchangeProperty(IS_CONTINUE_PARSING_PROPERTY))
-					.process(new ParseBPartnersProcessor())
 					.doTry()
+						.process(new ParseBPartnersProcessor())
 						.to("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
 						.unmarshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), JsonResponseBPartnerCompositeUpsert.class))
 				        .process(this::collectStatistics)
