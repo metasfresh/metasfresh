@@ -32,16 +32,8 @@ const ButtonWithIndicator = ({
     >
       <div className="full-size-btn">
         <div className="left-btn-side">
-          {showWarningSign && (
-            <span className="icon">
-              <i className="fas fa-exclamation-triangle warning-sign" />
-            </span>
-          )}
-          {typeFASIconName && (
-            <span className="icon">
-              <i className={`fas fa-solid ${typeFASIconName}`} />
-            </span>
-          )}
+          {showWarningSign && <i className="fas fa-exclamation-triangle warning-sign" />}
+          {typeFASIconName && <i className={`fas fa-solid ${typeFASIconName}`} />}
         </div>
         <div className="caption-btn">
           <div className="rows">
