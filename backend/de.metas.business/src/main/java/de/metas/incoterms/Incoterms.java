@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-sap
+ * de.metas.business
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,17 +20,27 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.sap;
+package de.metas.incoterms;
 
-import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
 @Builder
-public class SAPRouteContext
+public class Incoterms
 {
 	@NonNull
-	JsonExternalSystemRequest request;
+	IncotermsId incotermsId;
+
+	@NonNull
+	String name;
+
+	@NonNull
+	String value;
+
+	@Nullable
+	String description;
 }

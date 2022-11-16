@@ -24,6 +24,7 @@ package de.metas.common.bpartner.v2.request;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -51,7 +52,16 @@ public class JsonRequestLocationUpsertItem
 	@Nullable
 	String externalVersion;
 
-	@ApiModelProperty(position = 30, required = true, //
+	@ApiModelProperty(position = 30, //
+			value = "ID of the external system config.")
+	@Nullable
+	JsonMetasfreshId externalSystemConfigId;
+
+	@ApiModelProperty(position = 40)
+	@Nullable
+	Boolean isReadOnlyInMetasfresh;
+
+	@ApiModelProperty(position = 50, required = true, //
 			value = "The location to upsert")
 	@NonNull
 	JsonRequestLocation location;
@@ -60,10 +70,14 @@ public class JsonRequestLocationUpsertItem
 	public JsonRequestLocationUpsertItem(
 			@NonNull @JsonProperty("locationIdentifier") final String locationIdentifier,
 			@Nullable @JsonProperty("externalVersion") final String externalVersion,
+			@Nullable @JsonProperty("externalSystemId") final JsonMetasfreshId externalSystemConfigId,
+			@Nullable @JsonProperty("isReadOnlyInMetasfresh") final Boolean isReadOnlyInMetasfresh,
 			@NonNull @JsonProperty("location") final JsonRequestLocation location)
 	{
 		this.locationIdentifier = locationIdentifier;
 		this.externalVersion = externalVersion;
+		this.externalSystemConfigId = externalSystemConfigId;
+		this.isReadOnlyInMetasfresh = isReadOnlyInMetasfresh;
 		this.location = location;
 	}
 }
