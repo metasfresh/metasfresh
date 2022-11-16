@@ -78,7 +78,7 @@ public class GetCreditLimitsSFTPRouteBuilder extends RouteBuilder
 	public void configure() throws Exception
 	{
 		//@formatter:off
-		from(sftpConfig.getSFTPConnectionString())
+		from(sftpConfig.getSFTPConnectionStringCreditLimit())
 				.routeId(routeId)
 				.log("CreditLimit Sync Route Started")
 				.process(this::prepareCreditLimitContext)
@@ -102,7 +102,6 @@ public class GetCreditLimitsSFTPRouteBuilder extends RouteBuilder
 	{
 		final CreditLimitContext context = CreditLimitContext.builder()
 				.orgCode(enabledByExternalSystemRequest.getOrgCode())
-				.creditLimitUpsertGroupBuilder(new SyncCreditLimitRequestBuilder())
 				.build();
 
 		exchange.setProperty(ROUTE_PROPERTY_CREDIT_LIMIT_ROUTE_CONTEXT, context);

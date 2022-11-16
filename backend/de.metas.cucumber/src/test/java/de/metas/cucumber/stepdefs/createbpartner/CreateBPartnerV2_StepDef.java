@@ -41,6 +41,7 @@ import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -192,16 +193,15 @@ public class CreateBPartnerV2_StepDef
 		}
 	}
 
-	@And("verify that credit limit was created for bpartner")
-	public void verify_credit_limit_is_created_for_bpartner_v2(@NonNull final DataTable dataTable)
+	@And("^verify that credit limit was created for bpartner: (.*)$")
+	public void verify_credit_limit_is_created_for_bpartner_v2(@NonNull final String bPartnerIdentifier, @NonNull final DataTable dataTable)
 	{
+		final I_C_BPartner bPartner = bPartnerTable.get(bPartnerIdentifier);
+		assertThat(bPartner).isNotNull();
+
 		final List<Map<String, String>> contactsTableList = dataTable.asMaps();
 		for (final Map<String, String> dataTableRow : contactsTableList)
 		{
-			final String externalIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, "ExternalBPartner" + TABLECOLUMN_IDENTIFIER);
-			final Optional<JsonResponseComposite> persistedResult = bpartnerEndpointService.retrieveBPartner(null, ExternalIdentifier.of(externalIdentifier));
-			final JsonResponseBPartner persistedBPartner = persistedResult.get().getBpartner();
-
 			final BigDecimal amount = DataTableUtil.extractBigDecimalForColumnName(dataTableRow, I_C_BPartner_CreditLimit.COLUMNNAME_Amount);
 			final String creditLimitTypeName = DataTableUtil.extractStringForColumnName(dataTableRow, I_C_CreditLimit_Type.Table_Name + "." + I_C_CreditLimit_Type.COLUMNNAME_Name);
 			final Boolean isActive = DataTableUtil.extractBooleanForColumnName(dataTableRow, I_C_BPartner_CreditLimit.COLUMNNAME_IsActive);
@@ -210,7 +210,7 @@ public class CreateBPartnerV2_StepDef
 
 			// persisted value
 			final IQueryBuilder<I_C_BPartner_CreditLimit> queryBuilder = queryBL.createQueryBuilder(I_C_BPartner_CreditLimit.class)
-					.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_ID, persistedBPartner.getMetasfreshId().getValue())
+					.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_ID, bPartner.getC_BPartner_ID())
 					.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_Amount, amount);
 
 			if (dateFrom != null)
@@ -222,9 +222,15 @@ public class CreateBPartnerV2_StepDef
 					.firstOnlyOptional(I_C_BPartner_CreditLimit.class);
 
 			assertThat(creditLimit).isPresent();
-			assertThat(creditLimit.get().getC_CreditLimit_Type_ID()).isEqualTo(bPartnerCreditLimitRepository.getCreditLimitTypeByName(creditLimitTypeName).getC_CreditLimit_Type_ID());
-			assertThat(creditLimit.get().isActive()).isEqualTo(isActive);
-			assertThat(creditLimit.get().isProcessed()).isEqualTo(processed);
+
+			final I_C_CreditLimit_Type creditLimit_type = bPartnerCreditLimitRepository.getCreditLimitTypeByName(creditLimitTypeName);
+
+			final SoftAssertions softly = new SoftAssertions();
+			softly.assertThat(creditLimit.get().getC_CreditLimit_Type_ID()).isEqualTo(creditLimit_type.getC_CreditLimit_Type_ID());
+			softly.assertThat(creditLimit.get().isActive()).isEqualTo(isActive);
+			softly.assertThat(creditLimit.get().isProcessed()).isEqualTo(processed);
+
+			softly.assertAll();
 		}
 	}
 

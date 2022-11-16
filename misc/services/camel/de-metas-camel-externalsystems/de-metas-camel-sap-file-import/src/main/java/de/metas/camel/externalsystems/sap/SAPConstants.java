@@ -30,4 +30,7 @@ public interface SAPConstants
 	String SAP_SYSTEM_NAME = "SAP";
 
 	String DEFAULT_PATTERN = "*";
+
+	String SEEN_FILE_RENAME_PATTERN_PROPERTY_NAME = "sap.sftp.processing.rename-pattern";
+	String DEFAULT_RENAME_PATTERN = "${date:now:yyyy-MM-dd_HH-mm-ss}_${file:name}";
 }

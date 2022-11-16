@@ -70,7 +70,15 @@ public class CreditLimitUpsertProcessor implements Processor
 	{
 		final CreditLimitContext creditLimitRouteContext = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_CREDIT_LIMIT_ROUTE_CONTEXT, CreditLimitContext.class);
 
-		final boolean added = creditLimitRouteContext.getCreditLimitUpsertGroupBuilder().addCreditLimitRow(currentCreditLimitRow, creditLimitRouteContext.getOrgCode());
+		if (creditLimitRouteContext.getCreditLimitUpsertGroupBuilder() == null)
+		{
+			creditLimitRouteContext.initUpsertCreditLimitRequestBuilder(currentCreditLimitRow);
+
+			exchange.getIn().setBody(null);
+			return;
+		}
+
+		final boolean added = creditLimitRouteContext.getCreditLimitUpsertGroupBuilder().addCreditLimitRow(currentCreditLimitRow);
 
 		if (added)
 		{
@@ -83,12 +91,7 @@ public class CreditLimitUpsertProcessor implements Processor
 
 		creditLimitRouteContext.setBpUpsertCamelRequest(creditLimitRouteContext.getCreditLimitUpsertGroupBuilder().build());
 
-		final InitCreditLimitGroup initCreditLimitGroup = InitCreditLimitGroup.builder()
-				.orgCode(creditLimitRouteContext.getOrgCode())
-				.creditLimitRow(currentCreditLimitRow)
-				.build();
-
-		creditLimitRouteContext.setCreditLimitUpsertGroupBuilder(SyncCreditLimitRequestBuilder.of(initCreditLimitGroup));
+		creditLimitRouteContext.initUpsertCreditLimitRequestBuilder(currentCreditLimitRow);
 	}
 
 	public static void processLastCreditLimitGroup(@NonNull final Exchange exchange)

@@ -128,5 +128,5 @@ public class ExternalSystemCamelConstants
 
 	public static final String HEADER_TARGET_URI = "targetUri";
 
-	public static final String MF_UPSERT_BPARTNER_V2_BASE_URL = "metasfresh.upsert-bpartner.api.uri";
+	public static final String MF_UPSERT_BPARTNER_V2_BASE_URL = "metasfresh.upsert-bpartner-v2.api.uri";
 }

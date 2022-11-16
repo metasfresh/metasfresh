@@ -44,7 +44,7 @@ public class JsonRequestCreditLimitUpsertItem
 	private JsonMetasfreshId creditLimitId;
 
 	@ApiModelProperty(hidden = true)
-	private boolean creditLimitMetasfreshIdSet;
+	private boolean creditLimitIdSet;
 
 	@ApiModelProperty(position = 20, value = "Translated to `C_BPartner_CreditLimit.Amount`")
 	private JsonMoney money;
@@ -58,22 +58,19 @@ public class JsonRequestCreditLimitUpsertItem
 	@ApiModelProperty(hidden = true)
 	private boolean typeSet;
 
-	@ApiModelProperty(hidden = true)
-	private boolean orgCodeSet;
-
-	@ApiModelProperty(position = 50, value = "Translated to `C_BPartner_CreditLimit.DateFrom`")
+	@ApiModelProperty(position = 40, value = "Translated to `C_BPartner_CreditLimit.DateFrom`")
 	private LocalDate dateFrom;
 
 	@ApiModelProperty(hidden = true)
 	private boolean dateFromSet;
 
-	@ApiModelProperty(position = 60, value = "Translated to `C_BPartner_CreditLimit.IsActive`")
+	@ApiModelProperty(position = 50, value = "Translated to `C_BPartner_CreditLimit.IsActive`")
 	private Boolean active;
 
 	@ApiModelProperty(hidden = true)
 	private boolean activeSet;
 
-	@ApiModelProperty(position = 70, value = "Translated to `C_BPartner_CreditLimit.Processed`")
+	@ApiModelProperty(position = 60, value = "Translated to `C_BPartner_CreditLimit.Processed`")
 	private Boolean processed;
 
 	@ApiModelProperty(hidden = true)
@@ -91,16 +88,10 @@ public class JsonRequestCreditLimitUpsertItem
 		this.typeSet = true;
 	}
 
-	public void setOrgCode(final String orgCode)
-	{
-		this.orgCode = orgCode;
-		this.orgCodeSet = true;
-	}
-
 	public void setCreditLimitId(final JsonMetasfreshId creditLimitId)
 	{
 		this.creditLimitId = creditLimitId;
-		this.creditLimitMetasfreshIdSet = true;
+		this.creditLimitIdSet = true;
 	}
 
 	public void setDateFrom(final LocalDate dateFrom)

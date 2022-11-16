@@ -61,7 +61,7 @@ public class UpsertCreditLimitRouteBuilder extends RouteBuilder
 
 					exchange.getIn().setBody(creditLimitRouteContext.getBpUpsertCamelRequest(), BPUpsertCamelRequest.class);
 				}).id(UPSERT_CREDIT_LIMIT_PROCESSOR_ID)
-				.to("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
+				.toD("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
 				.end();
 
 		// @formatter:on

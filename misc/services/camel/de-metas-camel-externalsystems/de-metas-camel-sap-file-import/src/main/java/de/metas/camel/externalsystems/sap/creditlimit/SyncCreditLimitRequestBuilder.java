@@ -31,6 +31,7 @@ import de.metas.common.bpartner.v2.request.JsonRequestComposite;
 import de.metas.common.bpartner.v2.request.creditLimit.JsonMoney;
 import de.metas.common.bpartner.v2.request.creditLimit.JsonRequestCreditLimitUpsert;
 import de.metas.common.bpartner.v2.request.creditLimit.JsonRequestCreditLimitUpsertItem;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.util.Check;
 import de.metas.common.util.NumberUtils;
@@ -45,7 +46,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static de.metas.camel.externalsystems.sap.common.ExternalIdentifierFormat.formatExternalId;
 
@@ -56,40 +56,36 @@ public class SyncCreditLimitRequestBuilder
 	private final static String SUPPORTED_CREDIT_LIMIT_TYPE = "Insurance";
 	private final static String PATTERN = "yyyyMMdd";
 
+	@NonNull
+	String orgCode;
+
+	@NonNull
+	JsonMetasfreshId externalSystemConfigId;
+
 	@Nullable
 	private String groupIdentifier;
 
 	@NonNull
 	private final ImmutableList.Builder<JsonRequestCreditLimitUpsertItem> creditLimitUpsertGroupBuilder = new ImmutableList.Builder<>();
 
-	@NonNull
-	private final AtomicBoolean built = new AtomicBoolean(false);
-
-	private SyncCreditLimitRequestBuilder(@NonNull final String groupIdentifier)
-
+	private SyncCreditLimitRequestBuilder(@NonNull final String groupIdentifier, @NonNull final String orgCode)
 	{
 		this.groupIdentifier = groupIdentifier;
+		this.orgCode = orgCode;
 	}
 
 	@NonNull
-	public static SyncCreditLimitRequestBuilder of(@NonNull final InitCreditLimitGroup initCreditLimitGroup)
+	public static SyncCreditLimitRequestBuilder of(@NonNull final CreditLimitRow creditLimitRow, @NonNull final String orgCode)
 	{
-		final CreditLimitRow creditLimitRow = initCreditLimitGroup.getCreditLimitRow();
+		final SyncCreditLimitRequestBuilder builder = new SyncCreditLimitRequestBuilder(buildGroupIdentifier(creditLimitRow), orgCode);
 
-		final SyncCreditLimitRequestBuilder builder = new SyncCreditLimitRequestBuilder(buildGroupIdentifier(creditLimitRow));
-
-		builder.addCreditLimitRow(creditLimitRow, initCreditLimitGroup.getOrgCode());
+		builder.addCreditLimitRow(creditLimitRow);
 
 		return builder;
 	}
 
-	public boolean addCreditLimitRow(@NonNull final CreditLimitRow creditLimitRow, @NonNull final String orgCode)
+	public boolean addCreditLimitRow(@NonNull final CreditLimitRow creditLimitRow)
 	{
-		if (built.get())
-		{
-			throw new RuntimeException("SyncCreditLimitRequestBuilder built!");
-		}
-
 		final String currentGroupIdentifier = buildGroupIdentifier(creditLimitRow);
 		if (Check.isNotBlank(groupIdentifier) && !sameGroup(currentGroupIdentifier, groupIdentifier))
 		{
@@ -98,7 +94,7 @@ public class SyncCreditLimitRequestBuilder
 
 		groupIdentifier = currentGroupIdentifier;
 
-		creditLimitUpsertGroupBuilder.add(mapCreditLimitRowToJsonRequestCreditLimitUpsertItem(creditLimitRow, orgCode));
+		creditLimitUpsertGroupBuilder.add(mapCreditLimitRowToJsonRequestCreditLimitUpsertItem(creditLimitRow));
 
 		return true;
 	}
@@ -107,8 +103,6 @@ public class SyncCreditLimitRequestBuilder
 	public BPUpsertCamelRequest build()
 	{
 		final JsonRequestCreditLimitUpsert creditLimitUpsert = wrapCreditLimitUpsertItems(creditLimitUpsertGroupBuilder.build());
-
-		built.set(true);
 
 		return createBPUpsertCamelRequest(creditLimitUpsert);
 	}
@@ -125,13 +119,12 @@ public class SyncCreditLimitRequestBuilder
 	}
 
 	@NonNull
-	private JsonRequestCreditLimitUpsertItem mapCreditLimitRowToJsonRequestCreditLimitUpsertItem(@NonNull final CreditLimitRow creditLimitRow, @NonNull final String orgCode)
+	private JsonRequestCreditLimitUpsertItem mapCreditLimitRowToJsonRequestCreditLimitUpsertItem(@NonNull final CreditLimitRow creditLimitRow)
 	{
 		final JsonRequestCreditLimitUpsertItem jsonRequestCreditLimitUpsertItem = new JsonRequestCreditLimitUpsertItem();
 
 		jsonRequestCreditLimitUpsertItem.setType(SUPPORTED_CREDIT_LIMIT_TYPE);
 		jsonRequestCreditLimitUpsertItem.setMoney(mapToJsonMoney(creditLimitRow.getCreditLine(), creditLimitRow.getCurrencyCode()));
-		jsonRequestCreditLimitUpsertItem.setOrgCode(orgCode);
 		jsonRequestCreditLimitUpsertItem.setDateFrom(LocalDate.parse(creditLimitRow.getEffectiveDateFrom(), DateTimeFormatter.ofPattern(PATTERN)));
 		jsonRequestCreditLimitUpsertItem.setProcessed(true);
 		jsonRequestCreditLimitUpsertItem.setActive(computeIsActiveCreditLimit(creditLimitRow));
@@ -160,7 +153,7 @@ public class SyncCreditLimitRequestBuilder
 
 		return BPUpsertCamelRequest.builder()
 				.jsonRequestBPartnerUpsert(jsonRequestBPartnerUpsert)
-				.orgCode(jsonRequestCreditLimitUpsert.getRequestItems().get(0).getOrgCode())
+				.orgCode(orgCode)
 				.build();
 	}
 
@@ -170,7 +163,7 @@ public class SyncCreditLimitRequestBuilder
 		return JsonRequestBPartnerUpsertItem.builder()
 				.bpartnerIdentifier(formatExternalId(getBPartnerIdentifierNotNull()))
 				.bpartnerComposite(JsonRequestComposite.builder()
-										   .orgCode(jsonRequestCreditLimitUpsert.getRequestItems().get(0).getOrgCode())
+										   .orgCode(orgCode)
 										   .creditLimits(jsonRequestCreditLimitUpsert)
 										   .syncAdvise(SyncAdvise.CREATE_OR_MERGE)
 										   .build())

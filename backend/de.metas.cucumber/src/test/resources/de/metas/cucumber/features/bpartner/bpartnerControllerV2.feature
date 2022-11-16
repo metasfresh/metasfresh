@@ -15,7 +15,7 @@ Feature:credit limit delete using metasfresh api
       | creditLimit_2                        | bpartner                 | 9      | 100           | true      | 2022-08-15   |
       | creditLimit_3                        | bpartner                 | 4      | 100           | false     | 2022-10-01   |
 
-    And store creditLimit endpointPath /api/v2/bpartner/001/:bpartner/credit-limit?includingProcessed=true in context
+    And store bpartner endpointPath /api/v2/bpartner/001/:bpartner/credit-limit?includingProcessed=true in context
 
     When a 'DELETE' request is sent to metasfresh REST-API with endpointPath from context and fulfills with '200' status code
 
