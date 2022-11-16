@@ -125,7 +125,6 @@ public class PPOrderCandidateDAO
 				.listImmutable(I_PP_Order_Candidate.class);
 	}
 
-
 	public void deletePPOrderCandidates(@NonNull final DeletePPOrderCandidatesQuery deletePPOrderCandidatesQuery)
 	{
 		final IQueryBuilder<I_PP_Order_Candidate> deleteQuery = queryBL.createQueryBuilder(I_PP_Order_Candidate.class);
@@ -154,16 +153,15 @@ public class PPOrderCandidateDAO
 				.forEach(simulatedOrder -> InterfaceWrapperHelper.delete(simulatedOrder, failIfProcessed));
 	}
 
-	public void markAsProcessed(@NonNull final PPOrderCandidateId candidateId)
+	public void markAsProcessed(@NonNull final I_PP_Order_Candidate candidate)
 	{
-		final I_PP_Order_Candidate candidate = getById(candidateId);
-
 		if (candidate.isProcessed())
 		{
 			return;
 		}
 
 		candidate.setProcessed(true);
+
 		save(candidate);
 	}
 

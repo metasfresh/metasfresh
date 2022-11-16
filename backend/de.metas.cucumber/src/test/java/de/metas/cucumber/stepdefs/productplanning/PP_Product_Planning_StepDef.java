@@ -30,13 +30,17 @@ import de.metas.cucumber.stepdefs.billofmaterial.PP_Product_BOMVersions_StepDefD
 import de.metas.cucumber.stepdefs.distribution.DD_NetworkDistribution_StepDefData;
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.material.event.commons.AttributesKey;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.X12DE355;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -45,6 +49,7 @@ import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.model.I_PP_Product_Planning;
 import org.eevolution.model.X_PP_Product_Planning;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -57,6 +62,8 @@ import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeS
 
 public class PP_Product_Planning_StepDef
 {
+	private final IUOMDAO uomDao = Services.get(IUOMDAO.class);
+
 	private final M_Product_StepDefData productTable;
 	private final PP_Product_BOMVersions_StepDefData productBomVersionsTable;
 	private final PP_Product_Planning_StepDefData productPlanningTable;
@@ -156,6 +163,22 @@ public class PP_Product_Planning_StepDef
 			assertThat(warehouse).isNotNull();
 
 			productPlanningRecord.setM_Warehouse_ID(warehouse.getM_Warehouse_ID());
+		}
+
+		final BigDecimal maxManufacturedQtyPerOrderDispo = DataTableUtil.extractBigDecimalOrNullForColumnName(tableRow, "OPT." + I_PP_Product_Planning.COLUMNNAME_MaxManufacturedQtyPerOrderDispo);
+		if (maxManufacturedQtyPerOrderDispo != null)
+		{
+			final String maxManufacturedQtyPerOrderDispoUOMCode = DataTableUtil.extractStringForColumnName(tableRow, "OPT." + I_PP_Product_Planning.COLUMNNAME_MaxManufacturedQtyPerOrderDispo + "UOMCode");
+			final I_C_UOM expectedUOM = uomDao.getByX12DE355(X12DE355.ofCode(maxManufacturedQtyPerOrderDispoUOMCode));
+
+			productPlanningRecord.setMaxManufacturedQtyPerOrderDispo(maxManufacturedQtyPerOrderDispo);
+			productPlanningRecord.setMaxManufacturedQtyPerOrderDispo_UOM_ID(expectedUOM.getC_UOM_ID());
+		}
+
+		final Integer seqNo = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + I_PP_Product_Planning.COLUMNNAME_SeqNo);
+		if (seqNo != null)
+		{
+			productPlanningRecord.setSeqNo(seqNo);
 		}
 
 		InterfaceWrapperHelper.save(productPlanningRecord);
