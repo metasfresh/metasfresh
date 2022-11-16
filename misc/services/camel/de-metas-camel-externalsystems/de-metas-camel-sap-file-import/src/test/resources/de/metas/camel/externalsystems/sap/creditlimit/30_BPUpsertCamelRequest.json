@@ -1,0 +1,82 @@
+{
+  "orgCode": "orgCode",
+  "jsonRequestBPartnerUpsert": {
+    "requestItems": [
+      {
+        "bpartnerIdentifier": "ext-SAP-sectionCode_BPartnerTest00",
+        "externalVersion": null,
+        "externalReferenceUrl": null,
+        "bpartnerComposite": {
+          "orgCode": "orgCode",
+          "bpartner": null,
+          "creditLimits": {
+            "requestItems": [
+              {
+                "money": {
+                  "amount": 8722.00,
+                  "currencyCode": "EUR"
+                },
+                "moneySet": true,
+                "type": "Insurance",
+                "typeSet": true,
+                "orgCode": "orgCode",
+                "orgCodeSet": true,
+                "creditLimitMetasfreshId": null,
+                "creditLimitMetasfreshIdSet": false,
+                "dateFrom": [
+                  2022,
+                  6,
+                  1
+                ],
+                "dateFromSet": true,
+                "active": true,
+                "activeSet": true,
+                "processed": true,
+                "processedSet": true
+              },
+              {
+                "money": {
+                  "amount": 600.00,
+                  "currencyCode": "EUR"
+                },
+                "moneySet": true,
+                "type": "Insurance",
+                "typeSet": true,
+                "orgCode": "orgCode",
+                "orgCodeSet": true,
+                "creditLimitMetasfreshId": null,
+                "creditLimitMetasfreshIdSet": false,
+                "dateFrom": [
+                  2022,
+                  7,
+                  1
+                ],
+                "dateFromSet": true,
+                "active": false,
+                "activeSet": true,
+                "processed": true,
+                "processedSet": true
+              }
+            ],
+            "syncAdvise": {
+              "ifNotExists": "CREATE",
+              "ifExists": "UPDATE_MERGE"
+            }
+          },
+          "syncAdvise": {
+            "ifNotExists": "CREATE",
+            "ifExists": "UPDATE_MERGE"
+          }
+        }
+      }
+    ],
+    "syncAdvise": {
+      "ifNotExists": "CREATE",
+      "ifExists": "UPDATE_MERGE"
+    }
+  }
+}
+
+
+
+

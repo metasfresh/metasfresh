@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.currency.CurrencyRepository;
@@ -91,7 +92,7 @@ class JsonRetrieverServiceTest
 		AdempiereTestHelper.get().init();
 
 		final BPartnerBL partnerBL = new BPartnerBL(new UserRepository());
-		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository());
+		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository(), new BPartnerCreditLimitRepository());
 
 		final de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
 				new JsonRequestConsolidateService(),
@@ -103,7 +104,8 @@ class JsonRetrieverServiceTest
 				new CurrencyRepository(),
 				new JobRepository(),
 				Mockito.mock(ExternalReferenceRestControllerService.class),
-				Mockito.mock(AlbertaBPartnerCompositeService.class));
+				Mockito.mock(AlbertaBPartnerCompositeService.class),
+				new BPartnerCreditLimitRepository());
 
 		jsonRetrieverService = jsonServiceFactory.createRetriever();
 

@@ -24,6 +24,7 @@ package de.metas.rest_api.v2.bpartner.bpartnercomposite;
 
 import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
@@ -50,6 +51,7 @@ public class JsonServiceFactory
 	private final JobRepository jobRepository;
 	private final ExternalReferenceRestControllerService externalReferenceService;
 	private final AlbertaBPartnerCompositeService albertaBPartnerCompositeService;
+	private final BPartnerCreditLimitRepository bPartnerCreditLimitRepository;
 
 	public JsonServiceFactory(
 			@NonNull final JsonRequestConsolidateService jsonRequestConsolidateService,
@@ -60,7 +62,9 @@ public class JsonServiceFactory
 			@NonNull final TitleRepository titleRepository,
 			@NonNull final CurrencyRepository currencyRepository,
 			@NonNull final JobRepository jobRepository,
-			@NonNull final ExternalReferenceRestControllerService externalReferenceService, final AlbertaBPartnerCompositeService albertaBPartnerCompositeService)
+			@NonNull final ExternalReferenceRestControllerService externalReferenceService,
+			@NonNull final AlbertaBPartnerCompositeService albertaBPartnerCompositeService,
+			@NonNull final BPartnerCreditLimitRepository bPartnerCreditLimitRepository)
 	{
 		this.jsonRequestConsolidateService = jsonRequestConsolidateService;
 		this.bpartnerQueryService = bpartnerQueryService;
@@ -72,6 +76,7 @@ public class JsonServiceFactory
 		this.jobRepository = jobRepository;
 		this.externalReferenceService = externalReferenceService;
 		this.albertaBPartnerCompositeService = albertaBPartnerCompositeService;
+		this.bPartnerCreditLimitRepository = bPartnerCreditLimitRepository;
 	}
 
 	public JsonPersisterService createPersister()
@@ -86,7 +91,9 @@ public class JsonServiceFactory
 				bpGroupRepository,
 				currencyRepository,
 				externalReferenceService,
-				albertaBPartnerCompositeService, identifier);
+				albertaBPartnerCompositeService,
+				bPartnerCreditLimitRepository,
+				identifier);
 	}
 
 	public JsonRetrieverService createRetriever()

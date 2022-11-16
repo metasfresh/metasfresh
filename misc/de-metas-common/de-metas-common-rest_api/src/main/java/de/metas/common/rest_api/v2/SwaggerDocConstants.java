@@ -76,4 +76,8 @@ public class SwaggerDocConstants
 
 	public static final String HU_IDENTIFIER_DOC = "Identifier of the handling unit in question. Can be\n"
 			+ "* a plain `<M_HU_ID>`";
+
+	public static final String CREDIT_LIMIT_IDENTIFIER_DOC = "Identifier of the credit limit in question. Can be\n"
+			+ "* a plain `<C_BPartner_CreditLimit_ID>`\n"
+			+ "* or something like `ext-<I_S_ExternalReference.ExternalSystem>-<I_S_ExternalReference.ExternalReference>`\n";
 }

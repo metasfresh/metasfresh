@@ -34,6 +34,7 @@ import de.metas.common.externalsystem.IExternalSystemService;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.externalsystem.status.JsonExternalStatus;
 import de.metas.common.externalsystem.status.JsonStatusRequest;
+import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
@@ -44,8 +45,12 @@ import java.util.Map;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
+import static de.metas.camel.externalsystems.sap.SAPConstants.DEFAULT_PATTERN;
+import static de.metas.camel.externalsystems.sap.SAPConstants.DEFAULT_RENAME_PATTERN;
 import static de.metas.camel.externalsystems.sap.SAPConstants.ROUTE_PROPERTY_SAP_ROUTE_CONTEXT;
 import static de.metas.camel.externalsystems.sap.SAPConstants.SAP_SYSTEM_NAME;
+import static de.metas.camel.externalsystems.sap.SAPConstants.SEEN_FILE_RENAME_PATTERN_PROPERTY_NAME;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_CREDIT_LIMIT_FILENAME_PATTERN;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
@@ -116,15 +121,20 @@ public class SFTPProductSyncServiceRouteBuilder extends RouteBuilder implements 
 
 		final Map<String, String> requestParameters = request.getParameters();
 
+		final String seenFileRenamePattern = exchange.getContext().getPropertiesComponent().resolveProperty(SEEN_FILE_RENAME_PATTERN_PROPERTY_NAME)
+				.orElse(DEFAULT_RENAME_PATTERN);
+
 		final SFTPConfig sftpConfig = SFTPConfig.builder()
 				.username(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_USERNAME))
 				.password(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_PASSWORD))
 				.hostName(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_HOST_NAME))
 				.port(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_PORT))
-				.targetDirectory(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_TARGET_DIRECTORY))
+				.targetDirectoryProduct(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_PRODUCT_TARGET_DIRECTORY))
 				.processedFilesFolder(requestParameters.get(ExternalSystemConstants.PARAM_PROCESSED_DIRECTORY))
 				.erroredFilesFolder(requestParameters.get(ExternalSystemConstants.PARAM_ERRORED_DIRECTORY))
 				.pollingFrequency(Duration.ofMillis(Long.parseLong(requestParameters.get(ExternalSystemConstants.PARAM_POLLING_FREQUENCY_MS))))
+				.fileNamePattern(CoalesceUtil.coalesceNotNull(requestParameters.get(PARAM_SFTP_CREDIT_LIMIT_FILENAME_PATTERN), DEFAULT_PATTERN))
+				.seenFileRenamePattern(seenFileRenamePattern)
 				.build();
 
 		exchange.getIn().setBody(sftpConfig, SFTPConfig.class);

@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.externalsystem.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for ExternalSystem_Config_SAP
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_ExternalSystem_Config_SAP extends org.compiere.model.PO implements I_ExternalSystem_Config_SAP, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 581655576L;
+	private static final long serialVersionUID = -1665391538L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config_SAP (final Properties ctx, final int ExternalSystem_Config_SAP_ID, @Nullable final String trxName)
@@ -125,6 +125,30 @@ public class X_ExternalSystem_Config_SAP extends org.compiere.model.PO implement
 	}
 
 	@Override
+	public void setSFTP_CreditLimit_FileName_Pattern (final @Nullable java.lang.String SFTP_CreditLimit_FileName_Pattern)
+	{
+		set_Value (COLUMNNAME_SFTP_CreditLimit_FileName_Pattern, SFTP_CreditLimit_FileName_Pattern);
+	}
+
+	@Override
+	public java.lang.String getSFTP_CreditLimit_FileName_Pattern() 
+	{
+		return get_ValueAsString(COLUMNNAME_SFTP_CreditLimit_FileName_Pattern);
+	}
+
+	@Override
+	public void setSFTP_CreditLimit_TargetDirectory (final @Nullable java.lang.String SFTP_CreditLimit_TargetDirectory)
+	{
+		set_Value (COLUMNNAME_SFTP_CreditLimit_TargetDirectory, SFTP_CreditLimit_TargetDirectory);
+	}
+
+	@Override
+	public java.lang.String getSFTP_CreditLimit_TargetDirectory() 
+	{
+		return get_ValueAsString(COLUMNNAME_SFTP_CreditLimit_TargetDirectory);
+	}
+
+	@Override
 	public void setSFTP_HostName (final java.lang.String SFTP_HostName)
 	{
 		set_Value (COLUMNNAME_SFTP_HostName, SFTP_HostName);
@@ -158,6 +182,18 @@ public class X_ExternalSystem_Config_SAP extends org.compiere.model.PO implement
 	public java.lang.String getSFTP_Port() 
 	{
 		return get_ValueAsString(COLUMNNAME_SFTP_Port);
+	}
+
+	@Override
+	public void setSFTP_Product_FileName_Pattern (final @Nullable java.lang.String SFTP_Product_FileName_Pattern)
+	{
+		set_Value (COLUMNNAME_SFTP_Product_FileName_Pattern, SFTP_Product_FileName_Pattern);
+	}
+
+	@Override
+	public java.lang.String getSFTP_Product_FileName_Pattern() 
+	{
+		return get_ValueAsString(COLUMNNAME_SFTP_Product_FileName_Pattern);
 	}
 
 	@Override

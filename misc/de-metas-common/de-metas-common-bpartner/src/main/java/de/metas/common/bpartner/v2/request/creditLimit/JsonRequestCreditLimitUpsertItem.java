@@ -1,0 +1,114 @@
+/*
+ * #%L
+ * de-metas-common-bpartner
+ * %%
+ * Copyright (C) 2022 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.common.bpartner.v2.request.creditLimit;
+
+import de.metas.common.rest_api.common.JsonMetasfreshId;
+import io.swagger.annotations.ApiModel;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
+
+import java.time.LocalDate;
+
+import static de.metas.common.rest_api.v2.SwaggerDocConstants.CREDIT_LIMIT_IDENTIFIER_DOC;
+
+@Getter
+@ToString
+@EqualsAndHashCode
+@ApiModel(description = "Note that given the respective use-case, either one of both properties might be `null`, but not both at once.")
+public class JsonRequestCreditLimitUpsertItem
+{
+	@ApiModelProperty(position = 10, value = CREDIT_LIMIT_IDENTIFIER_DOC + "\n"
+			+ "If the identifier is an `<C_BPartner_CreditLimit_ID>`, then it is assumed that the resource exists in metasfresh.\n")
+	private JsonMetasfreshId creditLimitId;
+
+	@ApiModelProperty(hidden = true)
+	private boolean creditLimitIdSet;
+
+	@ApiModelProperty(position = 20, value = "Translated to `C_BPartner_CreditLimit.Amount`")
+	private JsonMoney money;
+
+	@ApiModelProperty(hidden = true)
+	private boolean moneySet;
+
+	@ApiModelProperty(position = 30, value = "Translated to `C_CreditLimit_Type.Name`")
+	private String type;
+
+	@ApiModelProperty(hidden = true)
+	private boolean typeSet;
+
+	@ApiModelProperty(position = 40, value = "Translated to `C_BPartner_CreditLimit.DateFrom`")
+	private LocalDate dateFrom;
+
+	@ApiModelProperty(hidden = true)
+	private boolean dateFromSet;
+
+	@ApiModelProperty(position = 50, value = "Translated to `C_BPartner_CreditLimit.IsActive`")
+	private Boolean active;
+
+	@ApiModelProperty(hidden = true)
+	private boolean activeSet;
+
+	@ApiModelProperty(position = 60, value = "Translated to `C_BPartner_CreditLimit.Processed`")
+	private Boolean processed;
+
+	@ApiModelProperty(hidden = true)
+	private boolean processedSet;
+
+	public void setMoney(final JsonMoney money)
+	{
+		this.money = money;
+		this.moneySet = true;
+	}
+
+	public void setType(final String type)
+	{
+		this.type = type;
+		this.typeSet = true;
+	}
+
+	public void setCreditLimitId(final JsonMetasfreshId creditLimitId)
+	{
+		this.creditLimitId = creditLimitId;
+		this.creditLimitIdSet = true;
+	}
+
+	public void setDateFrom(final LocalDate dateFrom)
+	{
+		this.dateFrom = dateFrom;
+		this.dateFromSet = true;
+	}
+
+	public void setActive(final Boolean active)
+	{
+		this.active = active;
+		this.activeSet = true;
+	}
+
+	public void setProcessed(final Boolean processed)
+	{
+		this.processed = processed;
+		this.processedSet = true;
+	}
+}

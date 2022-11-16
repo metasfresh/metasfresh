@@ -76,7 +76,7 @@ public class GetProductsSFTPRouteBuilder extends RouteBuilder
 	public void configure() throws Exception
 	{
 		//@formatter:off
-		from(sftpConfig.getSFTPConnectionString())
+		from(sftpConfig.getSFTPConnectionStringProduct())
 				.id(routeId)
 				.log("Product Sync Route Started")
 				.unmarshal(new BindyCsvDataFormat(ProductRow.class))

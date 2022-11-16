@@ -43,8 +43,12 @@ import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.composite.BPartnerLocationType.BPartnerLocationTypeBuilder;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.bpartner.creditLimit.BPartnerCreditLimit;
+import de.metas.bpartner.creditLimit.BPartnerCreditLimitId;
+import de.metas.bpartner.creditLimit.CreditLimitTypeId;
 import de.metas.bpartner.service.BPartnerContactQuery;
 import de.metas.bpartner.service.BPartnerContactQuery.BPartnerContactQueryBuilder;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartner;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsertItem;
 import de.metas.common.bpartner.v2.request.JsonRequestBankAccountUpsertItem;
@@ -57,6 +61,9 @@ import de.metas.common.bpartner.v2.request.JsonRequestLocation;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsertItem;
 import de.metas.common.bpartner.v2.request.alberta.JsonCompositeAlbertaBPartner;
+import de.metas.common.bpartner.v2.request.creditLimit.JsonMoney;
+import de.metas.common.bpartner.v2.request.creditLimit.JsonRequestCreditLimitUpsert;
+import de.metas.common.bpartner.v2.request.creditLimit.JsonRequestCreditLimitUpsertItem;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsertItem;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsertItem.JsonResponseBPartnerCompositeUpsertItemBuilder;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsert;
@@ -73,8 +80,11 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.rest_api.v2.SyncAdvise.IfExists;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.currency.ConversionTypeMethod;
 import de.metas.currency.CurrencyCode;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyRepository;
+import de.metas.currency.ICurrencyBL;
 import de.metas.externalreference.ExternalBusinessKey;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.ExternalUserReferenceType;
@@ -87,6 +97,9 @@ import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
@@ -105,10 +118,16 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+import org.compiere.model.I_C_CreditLimit_Type;
 import org.slf4j.Logger;
 import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -130,6 +149,8 @@ public class JsonPersisterService
 {
 	private static final Logger logger = LogManager.getLogger(JsonPersisterService.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
 	private final transient JsonRetrieverService jsonRetrieverService;
 	private final transient JsonRequestConsolidateService jsonRequestConsolidateService;
@@ -138,6 +159,7 @@ public class JsonPersisterService
 	private final transient BPGroupRepository bpGroupRepository;
 	private final transient CurrencyRepository currencyRepository;
 	private final transient AlbertaBPartnerCompositeService albertaBPartnerCompositeService;
+	private final transient BPartnerCreditLimitRepository bPartnerCreditLimitRepository;
 
 	/**
 	 * A unique indentifier for this instance.
@@ -153,6 +175,7 @@ public class JsonPersisterService
 			@NonNull final CurrencyRepository currencyRepository,
 			@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService,
 			@NonNull final AlbertaBPartnerCompositeService albertaBPartnerCompositeService,
+			@NonNull final BPartnerCreditLimitRepository bPartnerCreditLimitRepository,
 			@NonNull final String identifier)
 	{
 		this.jsonRetrieverService = jsonRetrieverService;
@@ -162,6 +185,7 @@ public class JsonPersisterService
 		this.bpGroupRepository = bpGroupRepository;
 		this.currencyRepository = currencyRepository;
 		this.albertaBPartnerCompositeService = albertaBPartnerCompositeService;
+		this.bPartnerCreditLimitRepository = bPartnerCreditLimitRepository;
 
 		this.identifier = assumeNotEmpty(identifier, "Param Identifier may not be empty");
 	}
@@ -248,6 +272,8 @@ public class JsonPersisterService
 
 		private ImmutableMap<String, JsonResponseUpsertItemBuilder> jsonResponseBankAccountUpsertItems;
 
+		private ImmutableList<JsonMetasfreshId> jsonResponseCreditLimitUpsertItems;
+
 		public JsonResponseBPartnerCompositeUpsertItem build()
 		{
 			final JsonResponseBPartnerCompositeUpsertItemBuilder itemBuilder = JsonResponseBPartnerCompositeUpsertItem
@@ -276,6 +302,7 @@ public class JsonPersisterService
 					.responseContactItems(contactUpsertItems)
 					.responseLocationItems(locationUpsertItems)
 					.responseBankAccountItems(bankAccountUpsertItems)
+					.responseCreditLimitItems(jsonResponseCreditLimitUpsertItems)
 					.build();
 		}
 
@@ -334,11 +361,11 @@ public class JsonPersisterService
 			bpartnerComposite.getContacts().add(contact);
 			syncOutcome = SyncOutcome.CREATED;
 		}
-		
+
 		contact.addHandle(contactIdentifier.getRawValue()); // always add the handle; we'll need it later, even if the contact existed and was not updated
-		
+
 		syncJsonToContact(jsonContact, contact);
-		
+
 		bpartnerCompositeRepository.save(bpartnerComposite, true);
 
 		final Optional<BPartnerContact> persistedContact = bpartnerComposite.extractContactByHandle(contactIdentifier.getRawValue());
@@ -635,6 +662,8 @@ public class JsonPersisterService
 
 		resultBuilder.setJsonResponseBankAccountUpsertItems(syncJsonToBankAccounts(jsonRequestComposite, bpartnerComposite, parentSyncAdvise));
 
+		syncJsonToCreditLimits(jsonRequestComposite, bpartnerComposite, parentSyncAdvise);
+
 		bpartnerCompositeRepository.save(bpartnerComposite, true);
 
 		//
@@ -676,6 +705,14 @@ public class JsonPersisterService
 			final Optional<BPartnerBankAccount> bankAccount = bpartnerComposite.getBankAccountByIBAN(requestItem.getIban());
 			builder.metasfreshId(JsonMetasfreshId.of(BPartnerBankAccountId.toRepoId(bankAccount.get().getId())));
 		}
+
+		final ImmutableList<JsonMetasfreshId> jsonResponseCreditLimitIds = bpartnerComposite.getCreditLimits()
+				.stream()
+				.map(creditLimit -> BPartnerCreditLimitId.toRepoId(creditLimit.getId()))
+				.map(JsonMetasfreshId::of)
+				.collect(ImmutableList.toImmutableList());
+
+		resultBuilder.setJsonResponseCreditLimitUpsertItems(jsonResponseCreditLimitIds);
 	}
 
 	private void handleBPartnerValueExternalReference(
@@ -1220,7 +1257,6 @@ public class JsonPersisterService
 				contact.setSubjectMatterContact(jsonBPartnerContact.getSubjectMatter());
 			}
 		}
-
 
 		if (jsonBPartnerContact.isBirthdaySet())
 		{
@@ -1818,7 +1854,7 @@ public class JsonPersisterService
 		if (!CollectionUtils.isEmpty(bPartnerLocationsResult))
 		{
 
-			final Map<String,String> bpartnerLocationIdentifier2externalVersion = requestItem
+			final Map<String, String> bpartnerLocationIdentifier2externalVersion = requestItem
 					.getBpartnerComposite()
 					.getLocationsNotNull()
 					.getRequestItems()
@@ -1876,11 +1912,11 @@ public class JsonPersisterService
 		if (!requestBPartnerComposite.getContactsNotNull().getRequestItems().isEmpty()
 				&& !Check.isEmpty(result.getResponseContactItems()))
 		{
-			final Map<String,JsonMetasfreshId> contactIdentifierToMetasfreshId = result.getResponseContactItems()
+			final Map<String, JsonMetasfreshId> contactIdentifierToMetasfreshId = result.getResponseContactItems()
 					.stream()
 					.collect(ImmutableMap.toImmutableMap(JsonResponseUpsertItem::getIdentifier, JsonResponseUpsertItem::getMetasfreshId));
 
-			final SyncAdvise effectiveSyncAdvise =  CoalesceUtil.coalesceNotNull(requestBPartnerComposite.getContactsNotNull().getSyncAdvise(), syncAdvise);
+			final SyncAdvise effectiveSyncAdvise = CoalesceUtil.coalesceNotNull(requestBPartnerComposite.getContactsNotNull().getSyncAdvise(), syncAdvise);
 
 			requestItem.getBpartnerComposite().getContactsNotNull().getRequestItems()
 					.stream()
@@ -1902,5 +1938,163 @@ public class JsonPersisterService
 																			 effectiveSyncAdvise);
 					});
 		}
+	}
+
+	private void syncJsonToCreditLimits(
+			@NonNull final JsonRequestComposite jsonBPartnerComposite,
+			@NonNull final BPartnerComposite bpartnerComposite,
+			@NonNull final SyncAdvise parentSyncAdvise)
+	{
+		final JsonRequestCreditLimitUpsert creditLimits = jsonBPartnerComposite.getCreditLimitsNotNull();
+
+		final SyncAdvise creditLimitsSyncAdvise = coalesceNotNull(creditLimits.getSyncAdvise(), jsonBPartnerComposite.getSyncAdvise(), parentSyncAdvise);
+
+		for (final JsonRequestCreditLimitUpsertItem creditLimitRequestItem : creditLimits.getRequestItems())
+		{
+			syncJsonCreditLimit(bpartnerComposite, creditLimitRequestItem, creditLimitsSyncAdvise);
+		}
+	}
+
+	private void syncJsonCreditLimit(
+			@NonNull final BPartnerComposite bpartnerComposite,
+			@NonNull final JsonRequestCreditLimitUpsertItem creditLimitUpsertItem,
+			@NonNull final SyncAdvise parentSyncAdvise)
+	{
+		BPartnerCreditLimit existingCreditLimit = null;
+		if (creditLimitUpsertItem.getCreditLimitId() != null)
+		{
+			existingCreditLimit = bPartnerCreditLimitRepository.getById(BPartnerCreditLimitId.ofRepoId(creditLimitUpsertItem.getCreditLimitId().getValue()));
+		}
+
+		final SyncOutcome syncOutcome;
+		final BPartnerCreditLimit.BPartnerCreditLimitBuilder creditLimitBuilder;
+		if (existingCreditLimit != null)
+		{
+			creditLimitBuilder = existingCreditLimit.toBuilder();
+			syncOutcome = parentSyncAdvise.getIfExists().isUpdate() ? SyncOutcome.UPDATED : SyncOutcome.NOTHING_DONE;
+		}
+		else
+		{
+			if (parentSyncAdvise.isFailIfNotExists())
+			{
+				throw MissingResourceException.builder()
+						.resourceName("creditLimit")
+						.parentResource(creditLimitUpsertItem)
+						.build()
+						.setParameter("effectiveSyncAdvise", parentSyncAdvise);
+			}
+
+			creditLimitBuilder = BPartnerCreditLimit.builder();
+
+			syncOutcome = SyncOutcome.CREATED;
+		}
+
+		Check.assumeNotNull(bpartnerComposite.getOrgId(), "bpartnerComposite.getOrgId() cannot be missing since the composite was just loaded from DB!");
+
+		if (!Objects.equals(SyncOutcome.NOTHING_DONE, syncOutcome))
+		{
+			syncJsonToCreditLimit(creditLimitUpsertItem, creditLimitBuilder, bpartnerComposite.getOrgId());
+		}
+
+		bpartnerComposite
+				.getCreditLimits()
+				.add(creditLimitBuilder.build());
+	}
+
+	private void syncJsonToCreditLimit(
+			@NonNull final JsonRequestCreditLimitUpsertItem jsonBPartnerCreditLimit,
+			@NonNull final BPartnerCreditLimit.BPartnerCreditLimitBuilder creditLimitBuilder,
+			@NonNull final OrgId orgId)
+	{
+		// active
+		if (jsonBPartnerCreditLimit.isActiveSet())
+		{
+			if (jsonBPartnerCreditLimit.getActive() == null)
+			{
+				logger.debug("Ignoring boolean property \"active\" : null ");
+			}
+			else
+			{
+				creditLimitBuilder.active(jsonBPartnerCreditLimit.getActive());
+			}
+		}
+
+		// amount & currency
+		if (jsonBPartnerCreditLimit.isMoneySet())
+		{
+			if (jsonBPartnerCreditLimit.getMoney() == null)
+			{
+				throw new AdempiereException("JsonBPartnerCreditLimit.money cannot be null!");
+			}
+
+			final ClientId clientId = orgDAO.getClientIdByOrgId(orgId);
+
+			final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(clientId, orgId);
+
+			final Money convertedMoney = convertToOrgCurrency(jsonBPartnerCreditLimit.getMoney(), clientAndOrgId);
+
+			creditLimitBuilder.money(convertedMoney);
+		}
+
+		// dataFrom
+		if (jsonBPartnerCreditLimit.isDateFromSet())
+		{
+			Instant dateFrom = null;
+			if (jsonBPartnerCreditLimit.getDateFrom() != null)
+			{
+				final ZoneId timeZone = orgDAO.getTimeZone(orgId);
+				dateFrom = jsonBPartnerCreditLimit.getDateFrom().atStartOfDay(timeZone).toInstant();
+			}
+
+			creditLimitBuilder.dateFrom(dateFrom);
+		}
+
+		// creditLimitType
+		if (jsonBPartnerCreditLimit.isTypeSet())
+		{
+			if (jsonBPartnerCreditLimit.getType() == null)
+			{
+				throw new AdempiereException("JsonBPartnerCreditLimit.type cannot be null!");
+			}
+
+			final I_C_CreditLimit_Type creditLimitType = bPartnerCreditLimitRepository.getCreditLimitTypeByName(jsonBPartnerCreditLimit.getType());
+			creditLimitBuilder.creditLimitTypeId(CreditLimitTypeId.ofRepoId(creditLimitType.getC_CreditLimit_Type_ID()));
+		}
+
+		// processed
+		if (jsonBPartnerCreditLimit.isProcessedSet())
+		{
+			if (jsonBPartnerCreditLimit.getProcessed() == null)
+			{
+				logger.debug("Ignoring boolean property \"processed\" : null ");
+			}
+			else
+			{
+				creditLimitBuilder.processed(jsonBPartnerCreditLimit.getProcessed());
+			}
+		}
+	}
+
+	@NonNull
+	private Money convertToOrgCurrency(@NonNull final JsonMoney jsonMoney, @NonNull final ClientAndOrgId clientAndOrgId)
+	{
+		final CurrencyConversionContext currencyConversionContext =
+				currencyBL.createCurrencyConversionContext(LocalDate.now(),
+														   ConversionTypeMethod.Spot,
+														   clientAndOrgId.getClientId(),
+														   clientAndOrgId.getOrgId());
+
+		final Money money = convertJsonToMoney(jsonMoney);
+
+		return currencyBL.convertToBase(currencyConversionContext, money);
+	}
+
+	@NonNull
+	private Money convertJsonToMoney(@NonNull final JsonMoney jsonMoney)
+	{
+		final CurrencyCode currencyCode = CurrencyCode.ofThreeLetterCode(jsonMoney.getCurrencyCode().trim());
+
+		final CurrencyId currencyId = currencyRepository.getCurrencyIdByCurrencyCode(currencyCode);
+		return Money.of(jsonMoney.getAmount(), currencyId);
 	}
 }

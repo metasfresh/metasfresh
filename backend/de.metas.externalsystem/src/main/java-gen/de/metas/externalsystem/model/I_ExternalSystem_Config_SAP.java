@@ -1,7 +1,8 @@
 package de.metas.externalsystem.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for ExternalSystem_Config_SAP
  *  @author metasfresh (generated) 
@@ -77,7 +78,7 @@ public interface I_ExternalSystem_Config_SAP
 
 	/**
 	 * Set Errored Directory.
-	 * Defines where files should be moved after attempting to process them with error.
+	 * Defines where files should be moved after attempting to process them with error, relative to the current sftp target location.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -87,7 +88,7 @@ public interface I_ExternalSystem_Config_SAP
 
 	/**
 	 * Get Errored Directory.
-	 * Defines where files should be moved after attempting to process them with error.
+	 * Defines where files should be moved after attempting to process them with error, relative to the current sftp target location.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -213,7 +214,7 @@ public interface I_ExternalSystem_Config_SAP
 
 	/**
 	 * Set Processed Directory.
-	 * Defines where files should be moved after being successfully processed.
+	 * Defines where files should be moved after being successfully processed relative to the current sftp target location.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -223,7 +224,7 @@ public interface I_ExternalSystem_Config_SAP
 
 	/**
 	 * Get Processed Directory.
-	 * Defines where files should be moved after being successfully processed.
+	 * Defines where files should be moved after being successfully processed relative to the current sftp target location.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -235,7 +236,54 @@ public interface I_ExternalSystem_Config_SAP
 	String COLUMNNAME_ProcessedDirectory = "ProcessedDirectory";
 
 	/**
+	 * Set SFTP Credit Limit File Name Pattern.
+	 * Pattern used to find the file from which credit limits are pulled from the SFTP server - the filename must match the given pattern.(If not provided, there is no constraint on the filename)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSFTP_CreditLimit_FileName_Pattern (@Nullable java.lang.String SFTP_CreditLimit_FileName_Pattern);
+
+	/**
+	 * Get SFTP Credit Limit File Name Pattern.
+	 * Pattern used to find the file from which credit limits are pulled from the SFTP server - the filename must match the given pattern.(If not provided, there is no constraint on the filename)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSFTP_CreditLimit_FileName_Pattern();
+
+	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_SFTP_CreditLimit_FileName_Pattern = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "SFTP_CreditLimit_FileName_Pattern", null);
+	String COLUMNNAME_SFTP_CreditLimit_FileName_Pattern = "SFTP_CreditLimit_FileName_Pattern";
+
+	/**
+	 * Set SFTP Credit Limit TargetDirectory.
+	 * The directory used to retrieve credit limits from the sftp server. (If no value is specified here, the files are pulled from the root directory of the sftp server).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSFTP_CreditLimit_TargetDirectory (@Nullable java.lang.String SFTP_CreditLimit_TargetDirectory);
+
+	/**
+	 * Get SFTP Credit Limit TargetDirectory.
+	 * The directory used to retrieve credit limits from the sftp server. (If no value is specified here, the files are pulled from the root directory of the sftp server).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSFTP_CreditLimit_TargetDirectory();
+
+	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_SFTP_CreditLimit_TargetDirectory = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "SFTP_CreditLimit_TargetDirectory", null);
+	String COLUMNNAME_SFTP_CreditLimit_TargetDirectory = "SFTP_CreditLimit_TargetDirectory";
+
+	/**
 	 * Set SFTP Hostname.
+	 * The host of the sftp server.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -245,6 +293,7 @@ public interface I_ExternalSystem_Config_SAP
 
 	/**
 	 * Get SFTP Hostname.
+	 * The host of the sftp server.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -257,6 +306,7 @@ public interface I_ExternalSystem_Config_SAP
 
 	/**
 	 * Set SFTP Password.
+	 * The password used to authenticate into the sftp server.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -266,6 +316,7 @@ public interface I_ExternalSystem_Config_SAP
 
 	/**
 	 * Get SFTP Password.
+	 * The password used to authenticate into the sftp server.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -278,6 +329,7 @@ public interface I_ExternalSystem_Config_SAP
 
 	/**
 	 * Set SFTP Port.
+	 * The port of the sftp server.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -287,6 +339,7 @@ public interface I_ExternalSystem_Config_SAP
 
 	/**
 	 * Get SFTP Port.
+	 * The port of the sftp server.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -298,7 +351,31 @@ public interface I_ExternalSystem_Config_SAP
 	String COLUMNNAME_SFTP_Port = "SFTP_Port";
 
 	/**
+	 * Set SFTP Product File Name Pattern.
+	 * Pattern used to find the file from which products are pulled from the SFTP server - the filename must match the given pattern. (If not provided, there is no constraint on the filename).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSFTP_Product_FileName_Pattern (@Nullable java.lang.String SFTP_Product_FileName_Pattern);
+
+	/**
+	 * Get SFTP Product File Name Pattern.
+	 * Pattern used to find the file from which products are pulled from the SFTP server - the filename must match the given pattern. (If not provided, there is no constraint on the filename).
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSFTP_Product_FileName_Pattern();
+
+	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_SFTP_Product_FileName_Pattern = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "SFTP_Product_FileName_Pattern", null);
+	String COLUMNNAME_SFTP_Product_FileName_Pattern = "SFTP_Product_FileName_Pattern";
+
+	/**
 	 * Set SFTP Target Directory.
+	 * The directory used to pull from the sftp server. (If no value set here, the files will be pulled from the root location of the sftp server.)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -308,6 +385,7 @@ public interface I_ExternalSystem_Config_SAP
 
 	/**
 	 * Get SFTP Target Directory.
+	 * The directory used to pull from the sftp server. (If no value set here, the files will be pulled from the root location of the sftp server.)
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -320,6 +398,7 @@ public interface I_ExternalSystem_Config_SAP
 
 	/**
 	 * Set SFTP Username.
+	 * The username used to authenticate into the sftp server.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -329,6 +408,7 @@ public interface I_ExternalSystem_Config_SAP
 
 	/**
 	 * Get SFTP Username.
+	 * The username used to authenticate into the sftp server.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
