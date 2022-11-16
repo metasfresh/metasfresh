@@ -6,13 +6,11 @@ const ApplicationButton = ({ caption, iconClassNames, onClick }) => {
     <button className="button is-outlined complete-btn is-fullwidth" onClick={onClick}>
       <div className="full-size-btn">
         <div className="left-btn-side">
-          <span className="icon">
-            <i className={iconClassNames} />
-          </span>
+          <i className={iconClassNames} />
         </div>
-        <div className="caption-btn is-left">
+        <div className="caption-btn">
           <div className="rows">
-            <div className="row is-full pl-5">{caption}</div>
+            <div className="row pl-5">{caption}</div>
           </div>
         </div>
       </div>
