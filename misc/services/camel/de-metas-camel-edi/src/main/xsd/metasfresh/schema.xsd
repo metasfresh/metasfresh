@@ -676,13 +676,6 @@
         <xsd:attribute ref="TrxName"/>
         <xsd:attribute ref="AD_Session_ID"/>
     </xsd:complexType>
-    <xsd:complexType name="EDI_Exp_C_BPartner_LocationType">
-        <xsd:sequence>
-            <xsd:element minOccurs="0" name="GLN" type="xsd:string"/>
-            <xsd:element name="Name" type="xsd:string"/>
-            <xsd:element minOccurs="0" name="Setup_Place_No" type="xsd:string"/>
-        </xsd:sequence>
-    </xsd:complexType>
     <xsd:complexType name="EDI_Exp_C_CurrencyType">
         <xsd:sequence>
             <xsd:element minOccurs="0" name="CurSymbol" type="xsd:string"/>
