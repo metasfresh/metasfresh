@@ -2,16 +2,16 @@ package org.compiere.model;
 
 import org.adempiere.model.ModelColumn;
 
-/** Generated Interface for M_Product_Allergen
+/** Generated Interface for M_Product_Allergen_Trace
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_M_Product_Allergen 
+public interface I_M_Product_Allergen_Trace 
 {
 
-	String Table_Name = "M_Product_Allergen";
+	String Table_Name = "M_Product_Allergen_Trace";
 
-//	/** AD_Table_ID=541006 */
+//	/** AD_Table_ID=541512 */
 //	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
@@ -59,7 +59,7 @@ public interface I_M_Product_Allergen
 	 */
 	java.sql.Timestamp getCreated();
 
-	ModelColumn<I_M_Product_Allergen, Object> COLUMN_Created = new ModelColumn<>(I_M_Product_Allergen.class, "Created", null);
+	ModelColumn<I_M_Product_Allergen_Trace, Object> COLUMN_Created = new ModelColumn<>(I_M_Product_Allergen_Trace.class, "Created", null);
 	String COLUMNNAME_Created = "Created";
 
 	/**
@@ -94,54 +94,54 @@ public interface I_M_Product_Allergen
 	 */
 	boolean isActive();
 
-	ModelColumn<I_M_Product_Allergen, Object> COLUMN_IsActive = new ModelColumn<>(I_M_Product_Allergen.class, "IsActive", null);
+	ModelColumn<I_M_Product_Allergen_Trace, Object> COLUMN_IsActive = new ModelColumn<>(I_M_Product_Allergen_Trace.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Allergen.
+	 * Set Allergen trace.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setM_Allergen_ID (int M_Allergen_ID);
+	void setM_Allergen_Trace_ID (int M_Allergen_Trace_ID);
 
 	/**
-	 * Get Allergen.
+	 * Get Allergen trace.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getM_Allergen_ID();
+	int getM_Allergen_Trace_ID();
 
-	org.compiere.model.I_M_Allergen getM_Allergen();
+	org.compiere.model.I_M_Allergen_Trace getM_Allergen_Trace();
 
-	void setM_Allergen(org.compiere.model.I_M_Allergen M_Allergen);
+	void setM_Allergen_Trace(org.compiere.model.I_M_Allergen_Trace M_Allergen_Trace);
 
-	ModelColumn<I_M_Product_Allergen, org.compiere.model.I_M_Allergen> COLUMN_M_Allergen_ID = new ModelColumn<>(I_M_Product_Allergen.class, "M_Allergen_ID", org.compiere.model.I_M_Allergen.class);
-	String COLUMNNAME_M_Allergen_ID = "M_Allergen_ID";
+	ModelColumn<I_M_Product_Allergen_Trace, org.compiere.model.I_M_Allergen_Trace> COLUMN_M_Allergen_Trace_ID = new ModelColumn<>(I_M_Product_Allergen_Trace.class, "M_Allergen_Trace_ID", org.compiere.model.I_M_Allergen_Trace.class);
+	String COLUMNNAME_M_Allergen_Trace_ID = "M_Allergen_Trace_ID";
 
 	/**
-	 * Set Product Allergen.
+	 * Set May contain.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setM_Product_Allergen_ID (int M_Product_Allergen_ID);
+	void setM_Product_Allergen_Trace_ID (int M_Product_Allergen_Trace_ID);
 
 	/**
-	 * Get Product Allergen.
+	 * Get May contain.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getM_Product_Allergen_ID();
+	int getM_Product_Allergen_Trace_ID();
 
-	ModelColumn<I_M_Product_Allergen, Object> COLUMN_M_Product_Allergen_ID = new ModelColumn<>(I_M_Product_Allergen.class, "M_Product_Allergen_ID", null);
-	String COLUMNNAME_M_Product_Allergen_ID = "M_Product_Allergen_ID";
+	ModelColumn<I_M_Product_Allergen_Trace, Object> COLUMN_M_Product_Allergen_Trace_ID = new ModelColumn<>(I_M_Product_Allergen_Trace.class, "M_Product_Allergen_Trace_ID", null);
+	String COLUMNNAME_M_Product_Allergen_Trace_ID = "M_Product_Allergen_Trace_ID";
 
 	/**
 	 * Set Product.
@@ -175,7 +175,7 @@ public interface I_M_Product_Allergen
 	 */
 	java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_M_Product_Allergen, Object> COLUMN_Updated = new ModelColumn<>(I_M_Product_Allergen.class, "Updated", null);
+	ModelColumn<I_M_Product_Allergen_Trace, Object> COLUMN_Updated = new ModelColumn<>(I_M_Product_Allergen_Trace.class, "Updated", null);
 	String COLUMNNAME_Updated = "Updated";
 
 	/**
