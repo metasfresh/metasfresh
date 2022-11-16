@@ -146,6 +146,9 @@ public class PP_Order_Weighting_Run
 			weightingRun.setC_UOM_ID(weightingSpecifications.getUomId().getRepoId());
 			weightingRun.setTolerance_Perc(weightingSpecifications.getTolerance().toBigDecimal());
 			weightingRun.setWeightChecksRequired(weightingSpecifications.getWeightChecksRequired());
+
+			updateFromPPOrderIfSet(weightingRun, false);
+
 			return Optional.of(weightingSpecifications);
 		}
 	}
