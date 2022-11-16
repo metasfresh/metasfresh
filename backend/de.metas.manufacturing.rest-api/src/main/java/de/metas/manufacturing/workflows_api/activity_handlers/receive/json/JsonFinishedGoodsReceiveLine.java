@@ -18,6 +18,7 @@ public class JsonFinishedGoodsReceiveLine
 {
 	@NonNull String id;
 
+	boolean coproduct;
 	@NonNull String productName;
 	@NonNull String uom;
 	@NonNull List<JsonHazardSymbol> hazardSymbols;

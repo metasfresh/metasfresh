@@ -11,6 +11,7 @@ const SYMBOLS_SIZE_PX = 25;
 const ButtonWithIndicator = ({
   caption,
   showWarningSign,
+  typeFASIconName,
   hazardSymbols = null,
   allergens = null,
   isDanger,
@@ -34,6 +35,11 @@ const ButtonWithIndicator = ({
           {showWarningSign && (
             <span className="icon">
               <i className="fas fa-exclamation-triangle warning-sign" />
+            </span>
+          )}
+          {typeFASIconName && (
+            <span className="icon">
+              <i className={`fas fa-solid ${typeFASIconName}`} />
             </span>
           )}
         </div>
@@ -91,6 +97,7 @@ const getIndicatorClassName = (completeStatus) => {
 ButtonWithIndicator.propTypes = {
   caption: PropTypes.string.isRequired,
   showWarningSign: PropTypes.bool,
+  typeFASIconName: PropTypes.string,
   hazardSymbols: PropTypes.array,
   allergens: PropTypes.array,
   isDanger: PropTypes.bool,
