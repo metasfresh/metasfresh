@@ -56,7 +56,7 @@ import java.util.stream.Stream;
 @Value
 public class UpsertBPartnerRequestBuilder
 {
-	private static final String INTERNAL_NAME_EXTERNAL_IDENTIFIER_PREFIX = "int-";
+	private static final String VAL_EXTERNAL_IDENTIFIER_PREFIX = "val-";
 
 	@NonNull
 	PartnerCode parentPartnerCode;
@@ -169,12 +169,12 @@ public class UpsertBPartnerRequestBuilder
 
 		Optional.ofNullable(bPartnerRow.getSalesPaymentTerms())
 				.filter(Check::isNotBlank)
-				.map(salesPaymentTerm -> INTERNAL_NAME_EXTERNAL_IDENTIFIER_PREFIX + salesPaymentTerm)
+				.map(salesPaymentTerm -> VAL_EXTERNAL_IDENTIFIER_PREFIX + salesPaymentTerm)
 				.ifPresent(jsonRequestBPartner::setCustomerPaymentTermIdentifier);
 
 		Optional.ofNullable(bPartnerRow.getPurchasePaymentTerms())
 				.filter(Check::isNotBlank)
-				.map(purchasePaymentTerm -> INTERNAL_NAME_EXTERNAL_IDENTIFIER_PREFIX + purchasePaymentTerm)
+				.map(purchasePaymentTerm -> VAL_EXTERNAL_IDENTIFIER_PREFIX + purchasePaymentTerm)
 				.ifPresent(jsonRequestBPartner::setVendorPaymentTermIdentifier);
 
 		final String bpartnerValue = bPartnerRow.getPartnerCode().getPartnerCode() + "_" + bPartnerRow.getSection();

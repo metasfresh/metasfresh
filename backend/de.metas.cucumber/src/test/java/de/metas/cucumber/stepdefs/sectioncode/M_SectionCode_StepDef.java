@@ -87,6 +87,19 @@ public class M_SectionCode_StepDef
 		final String value = DataTableUtil.extractStringForColumnName(row, I_M_SectionCode.COLUMNNAME_Value);
 		final int sectionCodeId = DataTableUtil.extractIntForColumnName(row, I_M_SectionCode.COLUMNNAME_M_SectionCode_ID);
 
+		final String sectionCodeIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_SectionCode.COLUMNNAME_M_SectionCode_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+
+		final I_M_SectionCode existingSectionCode = queryBL.createQueryBuilder(I_M_SectionCode.class)
+				.addEqualsFilter(I_M_SectionCode.COLUMNNAME_M_SectionCode_ID, sectionCodeId)
+				.create()
+				.firstOnlyOrNull(I_M_SectionCode.class);
+
+		if (existingSectionCode != null)
+		{
+			sectionCodeTable.putOrReplace(sectionCodeIdentifier, existingSectionCode);
+			return;
+		}
+
 		final I_M_SectionCode record = InterfaceWrapperHelper.newInstance(I_M_SectionCode.class);
 		record.setM_SectionCode_ID(sectionCodeId);
 
@@ -95,7 +108,6 @@ public class M_SectionCode_StepDef
 
 		InterfaceWrapperHelper.save(record);
 
-		final String sectionCodeIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_SectionCode.COLUMNNAME_M_SectionCode_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		sectionCodeTable.putOrReplace(sectionCodeIdentifier, record);
 	}
 }

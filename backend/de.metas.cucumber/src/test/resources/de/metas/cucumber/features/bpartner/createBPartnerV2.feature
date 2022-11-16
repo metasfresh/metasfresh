@@ -24,9 +24,9 @@ Feature: create or update BPartner v2
       | PaymentTerm_101122          | 1000009          |
       | PaymentTerm_PO_101122       | 1000013          |
     And validate C_PaymentTerm:
-      | C_Incoterms_ID.Identifier | Value       | Name        |
-      | PaymentTerm_101122        | 10 Tage 1 % | 10 Tage 1 % |
-      | PaymentTerm_PO_101122     | 10 Tage 4%  | 10 Tage 4%  |
+      | C_PaymentTerm_ID.Identifier | Value       | Name        |
+      | PaymentTerm_101122          | 10 Tage 1 % | 10 Tage 1 % |
+      | PaymentTerm_PO_101122       | 10 Tage 4%  | 10 Tage 4%  |
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
     """
 {
@@ -52,8 +52,8 @@ Feature: create or update BPartner v2
                "deliveryRule":"Availability",
                "deliveryViaRule":"Shipper",
                "storageWarehouse": true,
-               "customerPaymentTermIdentifier": "int-10 Tage 1 %",
-               "vendorPaymentTermIdentifier": "int-10 Tage 4%",
+               "customerPaymentTermIdentifier": "val-10 Tage 1 %",
+               "vendorPaymentTermIdentifier": "val-10 Tage 4%",
                "incotermsCustomerValue":"DAF",
                "incotermsVendorValue":"DDU",
                "paymentRule":"OnCredit",
@@ -173,7 +173,6 @@ Feature: create or update BPartner v2
       "paymentRulePO":"Cash",
       "company":true,
       "vatId":null,
-      "metasfreshUrl":"http://localhost:3000/window/123/2156426",
       "sectionCodeId":1234567,
       "description":"ALBERTA BPartner Description",
       "deliveryRule":"Availability",
@@ -430,5 +429,5 @@ Feature: create or update BPartner v2
       | ext-ALBERTA-001    | ext-ALBERTA-c33   | test_name_c33_created | test_email_created | fax_created | c22  | true                    |
     And verify that S_ExternalReference was created
       | ExternalSystem | Type   | ExternalReference | OPT.IsReadOnlyInMetasfresh |
-      | ALBERTA        | UserID | c11               | true                       |
+      | ALBERTA        | UserID | c11               | false                      |
       | ALBERTA        | UserID | c33               | false                      |

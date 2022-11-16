@@ -114,11 +114,6 @@ public class PaymentTermRepository implements IPaymentTermRepository
 			queryBuilder.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_Value, query.getValue());
 		}
 
-		if (Check.isNotBlank(query.getName()))
-		{
-			queryBuilder.addEqualsFilter(I_C_PaymentTerm.COLUMNNAME_Name, query.getName());
-		}
-
 		try
 		{
 			final PaymentTermId firstId = queryBuilder

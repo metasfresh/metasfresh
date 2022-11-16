@@ -822,13 +822,10 @@ public class JsonRetrieverService
 		{
 			case METASFRESH_ID:
 				return PaymentTermId.ofRepoId(externalIdentifier.asMetasfreshId().getValue());
-
-			case INTERNAL_NAME:
 			case VALUE:
 				final PaymentTermQuery queryBuilder = PaymentTermQuery.builder()
 						.orgId(orgId)
-						.value(externalIdentifier.getType() == ExternalIdentifier.Type.VALUE ? externalIdentifier.asValue() : null)
-						.name(externalIdentifier.getType() == ExternalIdentifier.Type.INTERNAL_NAME ? externalIdentifier.asInternalName() : null)
+						.value(externalIdentifier.asValue())
 						.build();
 
 				final PaymentTermId paymentTermId = paymentTermRepository.retrievePaymentTermId(queryBuilder).orElse(null);

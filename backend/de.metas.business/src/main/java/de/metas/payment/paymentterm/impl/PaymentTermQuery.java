@@ -39,18 +39,14 @@ public class PaymentTermQuery
 
 	String value;
 
-	String name;
-
 	@Builder(toBuilder = true)
 	private PaymentTermQuery(
 			@NonNull final OrgId orgId,
 			@Nullable final ExternalId externalId,
-			@Nullable final String value,
-			@Nullable final String name)
+			@Nullable final String value)
 	{
 		this.orgId = orgId;
 		this.externalId = externalId;
 		this.value = value;
-		this.name = name;
 	}
 }

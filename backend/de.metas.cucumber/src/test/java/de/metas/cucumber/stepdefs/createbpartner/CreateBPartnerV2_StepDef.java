@@ -234,6 +234,8 @@ public class CreateBPartnerV2_StepDef
 		final List<Map<String, String>> locationsTableList = dataTable.asMaps();
 		for (final Map<String, String> dataTableRow : locationsTableList)
 		{
+			final SoftAssertions softly = new SoftAssertions();
+
 			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, "bpartnerIdentifier");
 			final String locationIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, "locationIdentifier");
 			final String address1 = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Address1");
@@ -254,18 +256,20 @@ public class CreateBPartnerV2_StepDef
 					null, ExternalIdentifier.of(bpartnerIdentifier), ExternalIdentifier.of(locationIdentifier));
 			final JsonResponseLocation persistedLocation = persistedResult.get();
 
-			assertThat(persistedLocation.getAddress1()).isEqualTo(address1);
-			assertThat(persistedLocation.getAddress2()).isEqualTo(address2);
-			assertThat(persistedLocation.getPostal()).isEqualTo(postal);
-			assertThat(persistedLocation.getPoBox()).isEqualTo(poBox);
-			assertThat(persistedLocation.getRegion()).isEqualTo(region);
-			assertThat(persistedLocation.getCountryCode()).isEqualTo(countryCode);
-			assertThat(persistedLocation.getCity()).isEqualTo(city);
-			assertThat(persistedLocation.getDistrict()).isEqualTo(DataTableUtil.extractValueOrNull(district));
-			assertThat(persistedLocation.getGln()).isEqualTo(gln);
-			assertThat(persistedLocation.isHandoverLocation()).isEqualTo(handoverLocation);
-			assertThat(persistedLocation.isRemitTo()).isEqualTo(remitTo);
-			assertThat(persistedLocation.isReplicationLookupDefault()).isEqualTo(replicationLookupDefault);
+			softly.assertThat(persistedLocation.getAddress1()).isEqualTo(address1);
+			softly.assertThat(persistedLocation.getAddress2()).isEqualTo(address2);
+			softly.assertThat(persistedLocation.getPostal()).isEqualTo(postal);
+			softly.assertThat(persistedLocation.getPoBox()).isEqualTo(poBox);
+			softly.assertThat(persistedLocation.getRegion()).isEqualTo(region);
+			softly.assertThat(persistedLocation.getCountryCode()).isEqualTo(countryCode);
+			softly.assertThat(persistedLocation.getCity()).isEqualTo(city);
+			softly.assertThat(persistedLocation.getDistrict()).isEqualTo(DataTableUtil.extractValueOrNull(district));
+			softly.assertThat(persistedLocation.getGln()).isEqualTo(gln);
+			softly.assertThat(persistedLocation.isHandoverLocation()).isEqualTo(handoverLocation);
+			softly.assertThat(persistedLocation.isRemitTo()).isEqualTo(remitTo);
+			softly.assertThat(persistedLocation.isReplicationLookupDefault()).isEqualTo(replicationLookupDefault);
+
+			softly.assertAll();
 		}
 	}
 
