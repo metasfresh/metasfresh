@@ -29,8 +29,8 @@ import de.metas.externalsystem.IExternalSystemChildConfig;
 import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.externalservice.process.AlterExternalSystemServiceStatusAction;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP;
-import de.metas.externalsystem.sap.ExternalSystemSAPConfigId;
 import de.metas.externalsystem.sap.ExternalSystemSAPConfig;
+import de.metas.externalsystem.sap.ExternalSystemSAPConfigId;
 import de.metas.process.IProcessPreconditionsContext;
 import org.adempiere.exceptions.AdempiereException;
 
@@ -41,10 +41,13 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CHILD
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ERRORED_DIRECTORY;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_POLLING_FREQUENCY_MS;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PROCESSED_DIRECTORY;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_BPARTNER_FILE_NAME_PATTERN;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_BPARTNER_TARGET_DIRECTORY;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_HOST_NAME;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_PASSWORD;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_PORT;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_TARGET_DIRECTORY;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_PRODUCT_FILE_NAME_PATTERN;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_PRODUCT_TARGET_DIRECTORY;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_USERNAME;
 
 public class InvokeSAPAction extends AlterExternalSystemServiceStatusAction
@@ -84,10 +87,13 @@ public class InvokeSAPAction extends AlterExternalSystemServiceStatusAction
 		parameters.put(PARAM_SFTP_USERNAME, sapConfig.getSftpUsername());
 		parameters.put(PARAM_SFTP_PASSWORD, sapConfig.getSftpPassword());
 		parameters.put(PARAM_CHILD_CONFIG_VALUE, sapConfig.getValue());
-		parameters.put(PARAM_SFTP_TARGET_DIRECTORY, sapConfig.getSftpTargetDirectory());
+		parameters.put(PARAM_SFTP_PRODUCT_TARGET_DIRECTORY, sapConfig.getSftpTargetDirectoryProduct());
+		parameters.put(PARAM_SFTP_BPARTNER_TARGET_DIRECTORY, sapConfig.getSftpTargetDirectoryBPartner());
 		parameters.put(PARAM_PROCESSED_DIRECTORY, sapConfig.getProcessedDirectory());
 		parameters.put(PARAM_ERRORED_DIRECTORY, sapConfig.getErroredDirectory());
 		parameters.put(PARAM_POLLING_FREQUENCY_MS, String.valueOf(sapConfig.getPollingFrequency().toMillis()));
+		parameters.put(PARAM_SFTP_PRODUCT_FILE_NAME_PATTERN, sapConfig.getSftpFileNamePatternProduct());
+		parameters.put(PARAM_SFTP_BPARTNER_FILE_NAME_PATTERN, sapConfig.getSftpFileNamePatternBPartner());
 
 		return parameters;
 	}
@@ -111,5 +117,13 @@ public class InvokeSAPAction extends AlterExternalSystemServiceStatusAction
 				.stream()
 				.filter(recordRef -> I_ExternalSystem_Config_SAP.Table_Name.equals(recordRef.getTableName()))
 				.count();
+	}
+
+	@Override
+	protected String getOrgCode()
+	{
+		final ExternalSystemParentConfig config = externalSystemConfigDAO.getById(getExternalChildConfigId());
+
+		return orgDAO.getById(config.getOrgId()).getValue();
 	}
 }
