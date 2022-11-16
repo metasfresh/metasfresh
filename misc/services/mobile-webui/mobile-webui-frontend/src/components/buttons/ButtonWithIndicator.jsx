@@ -4,11 +4,15 @@ import cx from 'classnames';
 
 import * as CompleteStatus from '../../constants/CompleteStatus';
 import HazardIcon from '../HazardIcon';
+import AllergenIcon from '../AllergenIcon';
+
+const SYMBOLS_SIZE_PX = 25;
 
 const ButtonWithIndicator = ({
   caption,
   showWarningSign,
-  hazardSymbols,
+  hazardSymbols = null,
+  allergens = null,
   isDanger,
   completeStatus,
   disabled,
@@ -16,6 +20,8 @@ const ButtonWithIndicator = ({
   children,
 }) => {
   const indicatorClassName = getIndicatorClassName(completeStatus);
+
+  const showHazardsAndAllergens = hazardSymbols != null || allergens != null;
 
   return (
     <button
@@ -30,25 +36,37 @@ const ButtonWithIndicator = ({
               <i className="fas fa-exclamation-triangle warning-sign" />
             </span>
           )}
-          {hazardSymbols &&
-            hazardSymbols.map((hazardSymbol, symbolIndex) => (
-              <HazardIcon
-                key={symbolIndex}
-                imageId={hazardSymbol.imageId}
-                caption={hazardSymbol.name}
-                maxWidth={40}
-                maxHeight={40}
-              />
-            ))}
         </div>
         <div className="caption-btn">
           <div className="rows">
-            <div className="row is-full pl-5">{caption}</div>
+            <div className="row">
+              <span>{caption}</span>
+            </div>
+            {showHazardsAndAllergens && (
+              <div
+                className="row hazard-icons-btn"
+                style={{
+                  minHeight: SYMBOLS_SIZE_PX + 'px',
+                  maxHeight: SYMBOLS_SIZE_PX + 'px',
+                }}
+              >
+                <AllergenIcon allergens={allergens} size={SYMBOLS_SIZE_PX} />
+                {hazardSymbols &&
+                  hazardSymbols.map((hazardSymbol, symbolIndex) => (
+                    <HazardIcon
+                      key={symbolIndex}
+                      imageId={hazardSymbol.imageId}
+                      caption={hazardSymbol.name}
+                      size={SYMBOLS_SIZE_PX}
+                    />
+                  ))}
+              </div>
+            )}
             {children}
           </div>
         </div>
         {indicatorClassName && (
-          <div className={cx('right-btn-side', { 'pt-4': children })}>
+          <div className="right-btn-side">
             <span className={indicatorClassName} />
           </div>
         )}
@@ -74,6 +92,7 @@ ButtonWithIndicator.propTypes = {
   caption: PropTypes.string.isRequired,
   showWarningSign: PropTypes.bool,
   hazardSymbols: PropTypes.array,
+  allergens: PropTypes.array,
   isDanger: PropTypes.bool,
   completeStatus: PropTypes.string,
   disabled: PropTypes.bool,

@@ -10,9 +10,9 @@ const ApplicationButton = ({ caption, iconClassNames, onClick }) => {
             <i className={iconClassNames} />
           </span>
         </div>
-        <div className="caption-btn is-left">
+        <div className="caption-btn">
           <div className="rows">
-            <div className="row is-full pl-5">{caption}</div>
+            <div className="row pl-5">{caption}</div>
           </div>
         </div>
       </div>
