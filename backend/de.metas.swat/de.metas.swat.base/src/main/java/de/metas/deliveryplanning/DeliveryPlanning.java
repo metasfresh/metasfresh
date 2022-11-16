@@ -22,16 +22,64 @@
 
 package de.metas.deliveryplanning;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.ReceiptScheduleId;
+import de.metas.order.OrderId;
+import de.metas.organization.LocalDateAndOrgId;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
+import org.jpedal.fonts.tt.Loca;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
 
 @Data
 @Builder
 public class DeliveryPlanning
 {
 	@NonNull DeliveryPlanningId id;
+
+	@NonNull OrderId orderId;
+
+	@NonNull ProductId productId;
+
+	@NonNull BPartnerId partnerId;
+
+	@NonNull BPartnerLocationId bPartnerLocationId;
+
+	@Nullable
+	ShipmentScheduleId shipmentScheduleId;
+
+	@Nullable
+	ReceiptScheduleId receiptScheduleId;
+
+	@Nullable
+	LocalDateAndOrgId plannedLoadingDate;
+
+	@Nullable
+	LocalDateAndOrgId actualLoadingDate;
+
+	@Nullable
+	LocalDateAndOrgId plannedDeliveryDate;
+
+	@Nullable
+	LocalDateAndOrgId actualDeliveryDate;
+
+	@Nullable
+	Quantity qtyOredered;
+
+	@Nullable
+	Quantity qtyTotalOpen;
+
+	@Nullable
+	Quantity actualLoadQty;
+
+	@Nullable
+	Quantity actualDeliveredQty;
 
 }
