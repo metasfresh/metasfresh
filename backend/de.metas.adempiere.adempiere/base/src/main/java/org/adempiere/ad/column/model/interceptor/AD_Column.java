@@ -1,8 +1,8 @@
 package org.adempiere.ad.column.model.interceptor;
 
+import de.metas.ad_reference.ReferenceId;
 import de.metas.i18n.po.POTrlRepository;
 import de.metas.logging.LogManager;
-import de.metas.ad_reference.ReferenceId;
 import de.metas.security.impl.ParsedSql;
 import de.metas.translation.api.IElementTranslationBL;
 import de.metas.util.Services;
@@ -239,11 +239,14 @@ public class AD_Column
 	{
 		assertColumnNameValid(adColumn.getColumnName(), adColumn.getAD_Reference_ID());
 	}
+
 	private void assertColumnNameValid(@NonNull final String columnName, final int displayType)
 	{
 		if (DisplayType.isID(displayType) && displayType != DisplayType.Account)
 		{
-			if (!columnName.endsWith("_ID"))
+			if (!columnName.endsWith("_ID")
+					&& !columnName.equals("CreatedBy")
+					&& !columnName.equals("UpdatedBy"))
 			{
 				throw new AdempiereException("Lookup or ID columns shall have the name ending with `_ID`");
 			}
