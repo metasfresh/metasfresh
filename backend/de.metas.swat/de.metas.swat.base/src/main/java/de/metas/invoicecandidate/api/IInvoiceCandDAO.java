@@ -421,4 +421,13 @@ public interface IInvoiceCandDAO extends ISingletonService
 	}
 
 	void invalidateUninvoicedFreightCostCandidate(OrderId orderId);
+
+	ImmutableList<org.compiere.model.I_C_Invoice> getInvoicesForCandidateId(InvoiceCandidateId invoiceCandidateId);
+
+	Optional<InvoiceCandidateId> getInvoiceCandidateIdByInvoiceLineAllocId(InvoiceLineAllocId invoiceLineAllocId);
+
+	ImmutableList<I_C_InvoiceCandidate_InOutLine> retrieveICIOLForInvoiceCandidate(@NonNull I_C_Invoice_Candidate ic);
+
+	@NonNull
+	List<I_C_Invoice_Candidate> retrieveApprovedForInvoiceReferencing(TableRecordReferenceSet singleTableReferences);
 }
