@@ -165,6 +165,7 @@ const normalizeLines = (lines) => {
       productName: line.productName,
       uom: line.uom,
       hazardSymbols: line.hazardSymbols ?? [],
+      allergens: line.allergens ?? [],
       weightable: line.weightable,
       qtyToIssue: line.qtyToIssue,
       qtyToIssueMin: line.qtyToIssueMin,

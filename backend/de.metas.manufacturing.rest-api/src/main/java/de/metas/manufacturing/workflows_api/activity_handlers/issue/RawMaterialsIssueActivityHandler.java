@@ -5,11 +5,13 @@ import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.RawMaterialsIssueLine;
 import de.metas.manufacturing.job.service.ManufacturingJobService;
+import de.metas.manufacturing.workflows_api.activity_handlers.issue.json.JsonAllergen;
 import de.metas.manufacturing.workflows_api.activity_handlers.issue.json.JsonHazardSymbol;
 import de.metas.manufacturing.workflows_api.activity_handlers.issue.json.JsonRawMaterialsIssueLine;
 import de.metas.manufacturing.workflows_api.activity_handlers.issue.json.JsonRejectReasonsList;
 import de.metas.manufacturing.workflows_api.activity_handlers.issue.json.JsonScaleDevice;
 import de.metas.product.ProductId;
+import de.metas.product.allergen.ProductAllergensService;
 import de.metas.product.hazard_symbol.ProductHazardSymbolService;
 import de.metas.util.Services;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
@@ -36,14 +38,17 @@ public class RawMaterialsIssueActivityHandler implements WFActivityHandler
 
 	private final ManufacturingJobService manufacturingJobService;
 	private final ProductHazardSymbolService productHazardSymbolService;
+	private final ProductAllergensService productAllergensService;
 	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
 
 	public RawMaterialsIssueActivityHandler(
 			@NonNull final ManufacturingJobService manufacturingJobService,
-			@NonNull final ProductHazardSymbolService productHazardSymbolService)
+			@NonNull final ProductHazardSymbolService productHazardSymbolService,
+			@NonNull final ProductAllergensService productAllergensService)
 	{
 		this.manufacturingJobService = manufacturingJobService;
 		this.productHazardSymbolService = productHazardSymbolService;
+		this.productAllergensService = productAllergensService;
 	}
 
 	@Override
@@ -88,12 +93,10 @@ public class RawMaterialsIssueActivityHandler implements WFActivityHandler
 
 	private JsonRawMaterialsIssueLine toJson(final @NonNull RawMaterialsIssueLine line, final @NonNull JsonOpts jsonOpts)
 	{
-		final ImmutableList<JsonHazardSymbol> jsonHazardSymbols = getJsonHazardSymbols(line.getProductId(), jsonOpts.getAdLanguage());
-
-		return JsonRawMaterialsIssueLine.of(
-				line,
-				jsonHazardSymbols,
-				jsonOpts);
+		return JsonRawMaterialsIssueLine.builderFrom(line, jsonOpts)
+				.hazardSymbols(getJsonHazardSymbols(line.getProductId(), jsonOpts.getAdLanguage()))
+				.allergens(getJsonAllergens(line.getProductId(), jsonOpts.getAdLanguage()))
+				.build();
 	}
 
 	private ImmutableList<JsonHazardSymbol> getJsonHazardSymbols(final @NonNull ProductId productId, final String adLanguage)
@@ -101,6 +104,14 @@ public class RawMaterialsIssueActivityHandler implements WFActivityHandler
 		return productHazardSymbolService.getHazardSymbolsByProductId(productId)
 				.stream()
 				.map(hazardSymbol -> JsonHazardSymbol.of(hazardSymbol, adLanguage))
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	private ImmutableList<JsonAllergen> getJsonAllergens(final @NonNull ProductId productId, final String adLanguage)
+	{
+		return productAllergensService.getAllergensByProductId(productId)
+				.stream()
+				.map(allergen -> JsonAllergen.of(allergen, adLanguage))
 				.collect(ImmutableList.toImmutableList());
 	}
 

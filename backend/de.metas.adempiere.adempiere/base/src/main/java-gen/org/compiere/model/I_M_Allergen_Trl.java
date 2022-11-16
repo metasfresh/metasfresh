@@ -3,16 +3,16 @@ package org.compiere.model;
 import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
-/** Generated Interface for M_Allergen
+/** Generated Interface for M_Allergen_Trl
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_M_Allergen 
+public interface I_M_Allergen_Trl 
 {
 
-	String Table_Name = "M_Allergen";
+	String Table_Name = "M_Allergen_Trl";
 
-//	/** AD_Table_ID=541005 */
+//	/** AD_Table_ID=541007 */
 //	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
@@ -27,6 +27,29 @@ public interface I_M_Allergen
 	int getAD_Client_ID();
 
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
+
+	/**
+	 * Set Language.
+	 * Language for this entity
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Language (java.lang.String AD_Language);
+
+	/**
+	 * Get Language.
+	 * Language for this entity
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getAD_Language();
+
+	ModelColumn<I_M_Allergen_Trl, Object> COLUMN_AD_Language = new ModelColumn<>(I_M_Allergen_Trl.class, "AD_Language", null);
+	String COLUMNNAME_AD_Language = "AD_Language";
 
 	/**
 	 * Set Organisation.
@@ -51,27 +74,6 @@ public interface I_M_Allergen
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Color.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setColor (@Nullable java.lang.String Color);
-
-	/**
-	 * Get Color.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getColor();
-
-	ModelColumn<I_M_Allergen, Object> COLUMN_Color = new ModelColumn<>(I_M_Allergen.class, "Color", null);
-	String COLUMNNAME_Color = "Color";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -81,7 +83,7 @@ public interface I_M_Allergen
 	 */
 	java.sql.Timestamp getCreated();
 
-	ModelColumn<I_M_Allergen, Object> COLUMN_Created = new ModelColumn<>(I_M_Allergen.class, "Created", null);
+	ModelColumn<I_M_Allergen_Trl, Object> COLUMN_Created = new ModelColumn<>(I_M_Allergen_Trl.class, "Created", null);
 	String COLUMNNAME_Created = "Created";
 
 	/**
@@ -114,7 +116,7 @@ public interface I_M_Allergen
 	 */
 	@Nullable java.lang.String getDescription();
 
-	ModelColumn<I_M_Allergen, Object> COLUMN_Description = new ModelColumn<>(I_M_Allergen.class, "Description", null);
+	ModelColumn<I_M_Allergen_Trl, Object> COLUMN_Description = new ModelColumn<>(I_M_Allergen_Trl.class, "Description", null);
 	String COLUMNNAME_Description = "Description";
 
 	/**
@@ -137,13 +139,36 @@ public interface I_M_Allergen
 	 */
 	boolean isActive();
 
-	ModelColumn<I_M_Allergen, Object> COLUMN_IsActive = new ModelColumn<>(I_M_Allergen.class, "IsActive", null);
+	ModelColumn<I_M_Allergen_Trl, Object> COLUMN_IsActive = new ModelColumn<>(I_M_Allergen_Trl.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Translated.
+	 * This column is translated
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsTranslated (boolean IsTranslated);
+
+	/**
+	 * Get Translated.
+	 * This column is translated
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isTranslated();
+
+	ModelColumn<I_M_Allergen_Trl, Object> COLUMN_IsTranslated = new ModelColumn<>(I_M_Allergen_Trl.class, "IsTranslated", null);
+	String COLUMNNAME_IsTranslated = "IsTranslated";
 
 	/**
 	 * Set Allergen.
 	 *
-	 * <br>Type: ID
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
@@ -152,13 +177,17 @@ public interface I_M_Allergen
 	/**
 	 * Get Allergen.
 	 *
-	 * <br>Type: ID
+	 * <br>Type: TableDir
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getM_Allergen_ID();
 
-	ModelColumn<I_M_Allergen, Object> COLUMN_M_Allergen_ID = new ModelColumn<>(I_M_Allergen.class, "M_Allergen_ID", null);
+	org.compiere.model.I_M_Allergen getM_Allergen();
+
+	void setM_Allergen(org.compiere.model.I_M_Allergen M_Allergen);
+
+	ModelColumn<I_M_Allergen_Trl, org.compiere.model.I_M_Allergen> COLUMN_M_Allergen_ID = new ModelColumn<>(I_M_Allergen_Trl.class, "M_Allergen_ID", org.compiere.model.I_M_Allergen.class);
 	String COLUMNNAME_M_Allergen_ID = "M_Allergen_ID";
 
 	/**
@@ -179,7 +208,7 @@ public interface I_M_Allergen
 	 */
 	java.lang.String getName();
 
-	ModelColumn<I_M_Allergen, Object> COLUMN_Name = new ModelColumn<>(I_M_Allergen.class, "Name", null);
+	ModelColumn<I_M_Allergen_Trl, Object> COLUMN_Name = new ModelColumn<>(I_M_Allergen_Trl.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
 
 	/**
@@ -192,7 +221,7 @@ public interface I_M_Allergen
 	 */
 	java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_M_Allergen, Object> COLUMN_Updated = new ModelColumn<>(I_M_Allergen.class, "Updated", null);
+	ModelColumn<I_M_Allergen_Trl, Object> COLUMN_Updated = new ModelColumn<>(I_M_Allergen_Trl.class, "Updated", null);
 	String COLUMNNAME_Updated = "Updated";
 
 	/**

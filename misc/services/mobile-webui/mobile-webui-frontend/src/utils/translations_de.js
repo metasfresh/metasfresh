@@ -25,6 +25,7 @@ const translations = {
   login: {
     submitButton: 'Login',
   },
+  logout: 'Abmelden',
   mobileui: {
     manufacturing: {
       appName: 'Produktion',

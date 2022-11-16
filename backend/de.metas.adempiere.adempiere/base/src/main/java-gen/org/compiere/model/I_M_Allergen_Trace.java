@@ -3,16 +3,16 @@ package org.compiere.model;
 import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
-/** Generated Interface for M_Allergen
+/** Generated Interface for M_Allergen_Trace
  *  @author metasfresh (generated) 
  */
 @SuppressWarnings("unused")
-public interface I_M_Allergen 
+public interface I_M_Allergen_Trace 
 {
 
-	String Table_Name = "M_Allergen";
+	String Table_Name = "M_Allergen_Trace";
 
-//	/** AD_Table_ID=541005 */
+//	/** AD_Table_ID=541513 */
 //	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
@@ -21,7 +21,7 @@ public interface I_M_Allergen
 	 * Client/Tenant for this installation.
 	 *
 	 * <br>Type: TableDir
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getAD_Client_ID();
@@ -32,8 +32,8 @@ public interface I_M_Allergen
 	 * Set Organisation.
 	 * Organisational entity within client
 	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setAD_Org_ID (int AD_Org_ID);
@@ -42,8 +42,8 @@ public interface I_M_Allergen
 	 * Get Organisation.
 	 * Organisational entity within client
 	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getAD_Org_ID();
@@ -51,37 +51,16 @@ public interface I_M_Allergen
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Color.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setColor (@Nullable java.lang.String Color);
-
-	/**
-	 * Get Color.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getColor();
-
-	ModelColumn<I_M_Allergen, Object> COLUMN_Color = new ModelColumn<>(I_M_Allergen.class, "Color", null);
-	String COLUMNNAME_Color = "Color";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
 	 * <br>Type: DateTime
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getCreated();
+	@Nullable java.sql.Timestamp getCreated();
 
-	ModelColumn<I_M_Allergen, Object> COLUMN_Created = new ModelColumn<>(I_M_Allergen.class, "Created", null);
+	ModelColumn<I_M_Allergen_Trace, Object> COLUMN_Created = new ModelColumn<>(I_M_Allergen_Trace.class, "Created", null);
 	String COLUMNNAME_Created = "Created";
 
 	/**
@@ -89,7 +68,7 @@ public interface I_M_Allergen
 	 * User who created this records
 	 *
 	 * <br>Type: Table
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getCreatedBy();
@@ -114,7 +93,7 @@ public interface I_M_Allergen
 	 */
 	@Nullable java.lang.String getDescription();
 
-	ModelColumn<I_M_Allergen, Object> COLUMN_Description = new ModelColumn<>(I_M_Allergen.class, "Description", null);
+	ModelColumn<I_M_Allergen_Trace, Object> COLUMN_Description = new ModelColumn<>(I_M_Allergen_Trace.class, "Description", null);
 	String COLUMNNAME_Description = "Description";
 
 	/**
@@ -137,49 +116,49 @@ public interface I_M_Allergen
 	 */
 	boolean isActive();
 
-	ModelColumn<I_M_Allergen, Object> COLUMN_IsActive = new ModelColumn<>(I_M_Allergen.class, "IsActive", null);
+	ModelColumn<I_M_Allergen_Trace, Object> COLUMN_IsActive = new ModelColumn<>(I_M_Allergen_Trace.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Allergen.
+	 * Set Allergen trace.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setM_Allergen_ID (int M_Allergen_ID);
+	void setM_Allergen_Trace_ID (int M_Allergen_Trace_ID);
 
 	/**
-	 * Get Allergen.
+	 * Get Allergen trace.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	int getM_Allergen_ID();
+	int getM_Allergen_Trace_ID();
 
-	ModelColumn<I_M_Allergen, Object> COLUMN_M_Allergen_ID = new ModelColumn<>(I_M_Allergen.class, "M_Allergen_ID", null);
-	String COLUMNNAME_M_Allergen_ID = "M_Allergen_ID";
+	ModelColumn<I_M_Allergen_Trace, Object> COLUMN_M_Allergen_Trace_ID = new ModelColumn<>(I_M_Allergen_Trace.class, "M_Allergen_Trace_ID", null);
+	String COLUMNNAME_M_Allergen_Trace_ID = "M_Allergen_Trace_ID";
 
 	/**
 	 * Set Name.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setName (java.lang.String Name);
+	void setName (@Nullable java.lang.String Name);
 
 	/**
 	 * Get Name.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getName();
+	@Nullable java.lang.String getName();
 
-	ModelColumn<I_M_Allergen, Object> COLUMN_Name = new ModelColumn<>(I_M_Allergen.class, "Name", null);
+	ModelColumn<I_M_Allergen_Trace, Object> COLUMN_Name = new ModelColumn<>(I_M_Allergen_Trace.class, "Name", null);
 	String COLUMNNAME_Name = "Name";
 
 	/**
@@ -187,12 +166,12 @@ public interface I_M_Allergen
 	 * Date this record was updated
 	 *
 	 * <br>Type: DateTime
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.sql.Timestamp getUpdated();
+	@Nullable java.sql.Timestamp getUpdated();
 
-	ModelColumn<I_M_Allergen, Object> COLUMN_Updated = new ModelColumn<>(I_M_Allergen.class, "Updated", null);
+	ModelColumn<I_M_Allergen_Trace, Object> COLUMN_Updated = new ModelColumn<>(I_M_Allergen_Trace.class, "Updated", null);
 	String COLUMNNAME_Updated = "Updated";
 
 	/**
@@ -200,7 +179,7 @@ public interface I_M_Allergen
 	 * User who updated this records
 	 *
 	 * <br>Type: Table
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getUpdatedBy();
