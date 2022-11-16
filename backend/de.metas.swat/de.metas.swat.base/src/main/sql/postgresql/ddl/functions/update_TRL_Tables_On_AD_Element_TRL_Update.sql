@@ -14,6 +14,13 @@ $BODY$
 
 BEGIN
 
+    -- Check if IsSynchTranslation feature is disabled first
+    -- And also don't synch for all languages when no p_AD_Language is specified . TODO  confirm behavior
+    IF (p_AD_Language = NULL
+        OR 'N' = (SELECT isSynchTranslation FROM ad_language l WHERE l.ad_language = p_AD_Language)) THEN
+        RETURN;
+    END IF;
+
     PERFORM update_ad_element_on_ad_element_trl_update(p_AD_Element_ID, p_AD_Language);
 
     PERFORM update_Column_Translation_From_AD_Element(p_AD_Element_ID, p_AD_Language);
