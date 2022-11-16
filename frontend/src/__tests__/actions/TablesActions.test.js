@@ -482,12 +482,12 @@ describe('TableActions tab', () => {
         ...tab,
       };
 
-      dispatchedActions.push(store.dispatch(updateTabTable(tableId, dataResponse)));
+      dispatchedActions.push(store.dispatch(updateTabTable({ tableId, tableResponse: dataResponse, pending: true })));
       expectedActions.push({
         type: ACTION_TYPES.UPDATE_TABLE,
         payload: {
           id: tableId,
-          data: createTableData({ ...dataResponse, keyProperty: 'rowId', }),
+          data: createTableData({ ...dataResponse, keyProperty: 'rowId', pending: true }),
         }
       });
     });
@@ -549,7 +549,7 @@ describe('TableActions tab', () => {
     });
     tableData.rows = flattenRows(tableData.rows);
 
-    await store.dispatch(updateTabTable(tableId, { result: rowDataResponse }));
+    await store.dispatch(updateTabTable({ tableId, tableResponse: { result: rowDataResponse }, pending: true }));
     expect(store.getActions()).toContainEqual(
       {
         type: ACTION_TYPES.UPDATE_TABLE,
