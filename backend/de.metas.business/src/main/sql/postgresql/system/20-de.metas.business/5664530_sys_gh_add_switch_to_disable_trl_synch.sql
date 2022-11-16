@@ -8,7 +8,7 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description
 
 -- Column: AD_Language.IsSynchTranslation
 -- 2022-11-16T11:03:45.115Z
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,Description,EntityType,FacetFilterSeqNo,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,585033,581699,0,20,111,'IsSynchTranslation',TO_TIMESTAMP('2022-11-16 11:03:45.053','YYYY-MM-DD HH24:MI:SS.US'),100,'N','N','Synch Translation on Element Translation Update','D',0,1,'Synch Translation on Element Translation Update','Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','Y','N',0,'Synch Translation',0,0,TO_TIMESTAMP('2022-11-16 11:03:45.053','YYYY-MM-DD HH24:MI:SS.US'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,Description,EntityType,FacetFilterSeqNo,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,585033,581699,0,20,111,'IsSynchTranslation',TO_TIMESTAMP('2022-11-16 11:03:45.053','YYYY-MM-DD HH24:MI:SS.US'),100,'N','Y','Synch Translation on Element Translation Update','D',0,1,'Synch Translation on Element Translation Update','Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','Y','N',0,'Synch Translation',0,0,TO_TIMESTAMP('2022-11-16 11:03:45.053','YYYY-MM-DD HH24:MI:SS.US'),100,0)
 ;
 
 -- 2022-11-16T11:03:45.117Z
@@ -20,7 +20,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ;
 
 -- 2022-11-16T11:03:53.491Z
-/* DDL */ SELECT public.db_alter_table('AD_Language','ALTER TABLE public.AD_Language ADD COLUMN IsSynchTranslation CHAR(1) DEFAULT ''N'' CHECK (IsSynchTranslation IN (''Y'',''N'')) NOT NULL')
+/* DDL */ SELECT public.db_alter_table('AD_Language','ALTER TABLE public.AD_Language ADD COLUMN IsSynchTranslation CHAR(1) DEFAULT ''Y'' CHECK (IsSynchTranslation IN (''Y'',''N'')) NOT NULL')
 ;
 
 -- Field: Sprache(106,D) -> Sprache(112,D) -> Synch Translation
@@ -58,18 +58,9 @@ UPDATE AD_Field SET IsSameLine='Y', SeqNo=135,Updated=TO_TIMESTAMP('2022-11-16 1
 UPDATE AD_Field SET DisplayLength=1,Updated=TO_TIMESTAMP('2022-11-16 11:10:57.937','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Field_ID=708062
 ;
 
-
--- Column: AD_Language.IsSynchTranslation
--- 2022-11-16T11:16:58.928Z
-UPDATE AD_Column SET DefaultValue='Y',Updated=TO_TIMESTAMP('2022-11-16 11:16:58.928','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=585033
-;
-
 -- 2022-11-16T11:27:27.680Z
 INSERT INTO t_alter_column values('ad_language','IsSynchTranslation','CHAR(1)',null,'Y')
 ;
 
--- 2022-11-16T11:27:27.827Z
-UPDATE AD_Language SET IsSynchTranslation='Y' WHERE IsSynchTranslation IS NULL
-;
 
 
