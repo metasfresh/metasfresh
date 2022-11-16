@@ -228,4 +228,6 @@ public interface IAttributeDAO extends ISingletonService
 	AttributeSetInstanceId copyASI(AttributeSetInstanceId asiSourceId);
 
 	boolean nullSafeASIEquals(@Nullable AttributeSetInstanceId firstASIId, @Nullable AttributeSetInstanceId secondASIId);
+
+	boolean isHUUniqueAttribute(@NonNull final String trxName, final int m_product_id, @NonNull final I_M_Attribute attribute);
 }

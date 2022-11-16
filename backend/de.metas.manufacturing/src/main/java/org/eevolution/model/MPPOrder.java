@@ -27,6 +27,7 @@ import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.material.event.PostMaterialEventService;
@@ -40,8 +41,13 @@ import de.metas.report.DocumentReportService;
 import de.metas.report.ReportResultData;
 import de.metas.report.StandardDocumentReportType;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_Attribute;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.Query;
@@ -65,7 +71,9 @@ import java.sql.ResultSet;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * PP Order Model.
@@ -76,6 +84,9 @@ import java.util.Properties;
 public class MPPOrder extends X_PP_Order implements IDocument
 {
 	private static final long serialVersionUID = 1L;
+
+	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+	private static final String ERR_HU_Unique_Attribute_Duplicate = "M_HU_UniqueAttribute_DuplicateValue_Error";
 
 	@SuppressWarnings("unused")
 	public MPPOrder(
@@ -173,9 +184,9 @@ public class MPPOrder extends X_PP_Order implements IDocument
 				if (line.getM_Warehouse_ID() != getM_Warehouse_ID())
 				{
 					throw new LiberoException("@CannotChangeDocType@"
-							+ "\n@PP_Order_BOMLine_ID@: " + line
-							+ "\n@PP_Order_BOMLine_ID@ @M_Warehouse_ID@: " + line.getM_Warehouse_ID()
-							+ "\n@PP_Order_ID@ @M_Warehouse_ID@: " + getM_Warehouse_ID());
+													  + "\n@PP_Order_BOMLine_ID@: " + line
+													  + "\n@PP_Order_BOMLine_ID@ @M_Warehouse_ID@: " + line.getM_Warehouse_ID()
+													  + "\n@PP_Order_ID@ @M_Warehouse_ID@: " + getM_Warehouse_ID());
 				}
 			}
 		}
@@ -232,6 +243,12 @@ public class MPPOrder extends X_PP_Order implements IDocument
 	@Override
 	public String completeIt()
 	{
+		if (getM_AttributeSetInstance_ID() > 0)
+		{
+			final AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.ofRepoIdOrNone(getM_AttributeSetInstance_ID());
+			checkHUUniqueAttributes(attributeSetInstanceId);
+		}
+
 		// Just prepare
 		if (IDocument.ACTION_Prepare.equals(getDocAction()))
 		{
@@ -280,6 +297,23 @@ public class MPPOrder extends X_PP_Order implements IDocument
 		// Return new document status: Completed
 		return IDocument.STATUS_Completed;
 	} // completeIt
+
+	private void checkHUUniqueAttributes(@NonNull final AttributeSetInstanceId attributeSetInstanceId)
+	{
+		final Set<AttributeId> asiAttributeIds = attributesRepo.getAttributeIdsByAttributeSetInstanceId(attributeSetInstanceId);
+		final Optional<I_M_Attribute> uniqueAttribute = attributesRepo.getAttributesByIds(asiAttributeIds)
+				.stream()
+				.filter(attribute -> attributesRepo.isHUUniqueAttribute(get_TrxName(),getM_Product_ID(),attribute))
+				.findFirst();
+
+		if (uniqueAttribute.isPresent())
+		{
+			final I_M_Attribute unique = uniqueAttribute.get();
+			throw new AdempiereException(AdMessageKey.of(ERR_HU_Unique_Attribute_Duplicate),
+										 unique.getName(),
+										 unique.getValue());
+		}
+	}
 
 	@Override
 	public boolean voidIt()
@@ -534,12 +568,12 @@ public class MPPOrder extends X_PP_Order implements IDocument
 					&& (activity.isSubcontracting() || orderRouting.isFirstActivity(activity)))
 			{
 				ppCostCollectorBL.createActivityControl(ActivityControlCreateRequest.builder()
-						.order(this)
-						.orderActivity(activity)
-						.qtyMoved(activity.getQtyToDeliver())
-						.durationSetup(Duration.ZERO)
-						.duration(Duration.ZERO)
-						.build());
+																.order(this)
+																.orderActivity(activity)
+																.qtyMoved(activity.getQtyToDeliver())
+																.durationSetup(Duration.ZERO)
+																.duration(Duration.ZERO)
+																.build());
 			}
 		}
 	}

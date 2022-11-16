@@ -48,6 +48,7 @@ import org.compiere.model.I_M_AttributeUse;
 import org.compiere.model.I_M_AttributeValue;
 import org.compiere.model.I_M_AttributeValue_Mapping;
 import org.compiere.model.X_M_Attribute;
+import org.compiere.util.DB;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -901,6 +902,14 @@ public class AttributeDAO implements IAttributeDAO
 		final ImmutableAttributeSet secondAttributeSet = getImmutableAttributeSetById(secondASIId);
 
 		return firstAttributeSet.equals(secondAttributeSet);
+	}
+
+	@Override
+	public boolean isHUUniqueAttribute(@NonNull final String trxName, final int m_product_id, @NonNull final I_M_Attribute attribute)
+	{
+		final String sql = "SELECT 1 FROM M_HU_UniqueAttribute WHERE m_product_id=? AND m_attribute_id=? AND value=?";
+		final int unique = DB.getSQLValueEx(trxName, sql, m_product_id, attribute.getM_Attribute_ID(), attribute.getValue());
+		return unique == 1;
 	}
 
 	private static final class AttributeListValueMap
