@@ -126,7 +126,12 @@ public class ADTableDAO implements IADTableDAO
 	@Override
 	public boolean hasColumnName(final String tableName, final String columnName)
 	{
-		final AdTableId adTableId = AdTableId.ofRepoId(retrieveTableId(tableName));
+		final AdTableId adTableId = AdTableId.ofRepoIdOrNull(retrieveTableId(tableName));
+		if(adTableId == null)
+		{
+			return false;
+		}
+
 		return getMinimalColumnInfoMap().hasColumnName(adTableId, columnName);
 	}
 
