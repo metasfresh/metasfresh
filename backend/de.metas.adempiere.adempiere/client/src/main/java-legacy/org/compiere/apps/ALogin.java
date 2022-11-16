@@ -930,6 +930,7 @@ public final class ALogin extends CDialog
 	{
 		return roles
 				.stream()
+				.filter(role -> role.getId().isSystem()) // to limit annoying mistakes
 				.map(role -> KeyNamePair.of(role.getId(), role.getName()))
 				.distinct()
 				.sorted(Comparator.comparing(KeyNamePair::getName))
