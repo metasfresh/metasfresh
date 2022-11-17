@@ -12,6 +12,8 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13935](https://github.com/metasfresh/metasfresh/pull/13935) mobile UI - mfg: Show Hazard Symbols
+  * [#13913](https://github.com/metasfresh/metasfresh/pull/13913) Fix Manufacturing Candidates layout
   * [#13933](https://github.com/metasfresh/metasfresh/pull/13933) Doc_GLJournal: consider GL_JournalLine.GL_JournalLine_Group when grouping into FactTrxLines
   * [#13936](https://github.com/metasfresh/metasfresh/pull/13936) mobile UI: Barcode text input: debounce
   * [#13846](https://github.com/metasfresh/metasfresh/pull/13846) Start Order and New Partner from Partner Window
