@@ -12,6 +12,8 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13933](https://github.com/metasfresh/metasfresh/pull/13933) Doc_GLJournal: consider GL_JournalLine.GL_JournalLine_Group when grouping into FactTrxLines
+  * [#13936](https://github.com/metasfresh/metasfresh/pull/13936) mobile UI: Barcode text input: debounce
   * [#13846](https://github.com/metasfresh/metasfresh/pull/13846) Start Order and New Partner from Partner Window
   * [#13797](https://github.com/metasfresh/metasfresh/pull/13797) ProcessExecutionResult.webuiNewRecord support | Create New Sales Order from BPartner window processes java code 
   * [#13594](https://github.com/metasfresh/metasfresh/issues/13594) Search Wizard enters wrong partner in C_BPartner_SalesRep_ID
