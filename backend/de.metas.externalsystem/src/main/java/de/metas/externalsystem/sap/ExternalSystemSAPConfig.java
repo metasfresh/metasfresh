@@ -80,7 +80,7 @@ public class ExternalSystemSAPConfig implements IExternalSystemChildConfig
 	@Nullable
 	String sftpCreditLimitTargetDirectory;
 	@Nullable
-	String sftpCreditLimitFileNamePattern
+	String sftpCreditLimitFileNamePattern;
 
 	@Builder
 	public ExternalSystemSAPConfig(
