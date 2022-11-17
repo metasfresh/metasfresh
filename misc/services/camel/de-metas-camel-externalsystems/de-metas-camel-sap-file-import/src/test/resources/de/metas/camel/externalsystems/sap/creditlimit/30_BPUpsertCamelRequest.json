@@ -12,22 +12,16 @@
           "creditLimits": {
             "requestItems": [
               {
-                "money": {
+                "amount": {
                   "amount": 8722.00,
                   "currencyCode": "EUR"
                 },
-                "moneySet": true,
+                "amountSet": true,
                 "type": "Insurance",
                 "typeSet": true,
-                "orgCode": "orgCode",
-                "orgCodeSet": true,
-                "creditLimitMetasfreshId": null,
-                "creditLimitMetasfreshIdSet": false,
-                "dateFrom": [
-                  2022,
-                  6,
-                  1
-                ],
+                "creditLimitId": null,
+                "creditLimitIdSet": false,
+                "dateFrom": "2022-06-01",
                 "dateFromSet": true,
                 "active": true,
                 "activeSet": true,
@@ -35,22 +29,16 @@
                 "processedSet": true
               },
               {
-                "money": {
+                "amount": {
                   "amount": 600.00,
                   "currencyCode": "EUR"
                 },
-                "moneySet": true,
+                "amountSet": true,
                 "type": "Insurance",
                 "typeSet": true,
-                "orgCode": "orgCode",
-                "orgCodeSet": true,
-                "creditLimitMetasfreshId": null,
-                "creditLimitMetasfreshIdSet": false,
-                "dateFrom": [
-                  2022,
-                  7,
-                  1
-                ],
+                "creditLimitId": null,
+                "creditLimitIdSet": false,
+                "dateFrom": "2022-07-01",
                 "dateFromSet": true,
                 "active": false,
                 "activeSet": true,

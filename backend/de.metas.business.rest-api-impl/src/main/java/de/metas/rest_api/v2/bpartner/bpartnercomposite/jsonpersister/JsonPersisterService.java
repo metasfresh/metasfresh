@@ -113,9 +113,11 @@ import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.util.web.exception.MissingPropertyException;
 import de.metas.util.web.exception.MissingResourceException;
 import de.metas.vertical.healthcare.alberta.bpartner.AlbertaBPartnerCompositeService;
+import lombok.AccessLevel;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NonNull;
+import lombok.Setter;
 import lombok.ToString;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
@@ -272,7 +274,10 @@ public class JsonPersisterService
 
 		private ImmutableMap<String, JsonResponseUpsertItemBuilder> jsonResponseBankAccountUpsertItems;
 
-		private ImmutableList<JsonMetasfreshId> jsonResponseCreditLimitUpsertItems;
+		@NonNull
+		@Getter(AccessLevel.NONE)
+		@Setter(AccessLevel.NONE)
+		private final HashMap<String, JsonResponseUpsertItem> jsonResponseCreditLimitUpsertItems = new HashMap<>();
 
 		public JsonResponseBPartnerCompositeUpsertItem build()
 		{
@@ -302,8 +307,37 @@ public class JsonPersisterService
 					.responseContactItems(contactUpsertItems)
 					.responseLocationItems(locationUpsertItems)
 					.responseBankAccountItems(bankAccountUpsertItems)
-					.responseCreditLimitItems(jsonResponseCreditLimitUpsertItems)
+					.responseCreditLimitItems(jsonResponseCreditLimitUpsertItems.values())
 					.build();
+		}
+
+		public void addCreditLimitIdToResult(@NonNull final JsonMetasfreshId creditLimitId)
+		{
+			final String creditLimitIdentifier = String.valueOf(creditLimitId.getValue());
+
+			if (jsonResponseCreditLimitUpsertItems.get(creditLimitIdentifier) != null)
+			{
+				return;
+			}
+
+			jsonResponseCreditLimitUpsertItems.put(creditLimitIdentifier, JsonResponseUpsertItem
+					.builder()
+					.identifier(creditLimitIdentifier)
+					.metasfreshId(creditLimitId)
+					.syncOutcome(SyncOutcome.CREATED)
+					.build());
+		}
+
+		public void addCreditLimitResult(@NonNull final List<JsonResponseUpsertItem> creditLimitUpsertItemList)
+		{
+			creditLimitUpsertItemList.forEach(creditLimitUpsertItem -> {
+				if (jsonResponseCreditLimitUpsertItems.get(creditLimitUpsertItem.getIdentifier()) != null)
+				{
+					return;
+				}
+
+				jsonResponseCreditLimitUpsertItems.put(creditLimitUpsertItem.getIdentifier(), creditLimitUpsertItem);
+			});
 		}
 
 	}
@@ -664,7 +698,7 @@ public class JsonPersisterService
 
 		resultBuilder.setJsonResponseBankAccountUpsertItems(syncJsonToBankAccounts(jsonRequestComposite, bpartnerComposite, parentSyncAdvise));
 
-		syncJsonToCreditLimits(jsonRequestComposite, bpartnerComposite, parentSyncAdvise, bpartnerComposite.getOrgId());
+		resultBuilder.addCreditLimitResult(syncJsonToCreditLimits(jsonRequestComposite, bpartnerComposite, parentSyncAdvise, bpartnerComposite.getOrgId()));
 
 		bpartnerCompositeRepository.save(bpartnerComposite, true);
 
@@ -708,14 +742,13 @@ public class JsonPersisterService
 			builder.metasfreshId(JsonMetasfreshId.of(BPartnerBankAccountId.toRepoId(bankAccount.get().getId())));
 		}
 
-		final ImmutableList<JsonMetasfreshId> jsonResponseCreditLimitIds = bpartnerComposite.getCreditLimits()
+		bpartnerComposite.getCreditLimits()
 				.stream()
-				.map(creditLimit -> BPartnerCreditLimitId.toRepoId(creditLimit.getId()))
-				.map(JsonMetasfreshId::ofOrNull)
-				.filter(Objects::nonNull)
-				.collect(ImmutableList.toImmutableList());
-
-		resultBuilder.setJsonResponseCreditLimitUpsertItems(jsonResponseCreditLimitIds);
+				.peek(creditLimit -> Check.assumeNotNull(creditLimit.getId(), "BPartnerComposite was already stored, so we except all the items to have ids by now"))
+				.map(BPartnerCreditLimit::getId)
+				.map(BPartnerCreditLimitId::getRepoId)
+				.map(JsonMetasfreshId::of)
+				.forEach(resultBuilder::addCreditLimitIdToResult);
 	}
 
 	private void handleBPartnerValueExternalReference(
@@ -1943,7 +1976,8 @@ public class JsonPersisterService
 		}
 	}
 
-	private void syncJsonToCreditLimits(
+	@NonNull
+	private List<JsonResponseUpsertItem> syncJsonToCreditLimits(
 			@NonNull final JsonRequestComposite jsonBPartnerComposite,
 			@NonNull final BPartnerComposite bpartnerComposite,
 			@NonNull final SyncAdvise parentSyncAdvise,
@@ -1953,13 +1987,30 @@ public class JsonPersisterService
 
 		final SyncAdvise creditLimitsSyncAdvise = coalesceNotNull(creditLimits.getSyncAdvise(), jsonBPartnerComposite.getSyncAdvise(), parentSyncAdvise);
 
+		final ImmutableList.Builder<JsonResponseUpsertItem> responseItemsForExistingRecords = ImmutableList.builder();
+
 		for (final JsonRequestCreditLimitUpsertItem creditLimitRequestItem : creditLimits.getRequestItems())
 		{
-			syncJsonCreditLimit(bpartnerComposite, creditLimitRequestItem, creditLimitsSyncAdvise, orgId);
+			final SyncOutcome syncOutcome = syncJsonCreditLimit(bpartnerComposite, creditLimitRequestItem, creditLimitsSyncAdvise, orgId);
+
+			if (syncOutcome != SyncOutcome.CREATED)
+			{
+				Check.assumeNotNull(creditLimitRequestItem.getCreditLimitId(),
+									"Since syncOutcome is not CREATED, the creditLimitId must've been set on creditLimitRequestItem!");
+
+				responseItemsForExistingRecords.add(JsonResponseUpsertItem.builder()
+															.identifier(String.valueOf(creditLimitRequestItem.getCreditLimitId().getValue()))
+															.metasfreshId(creditLimitRequestItem.getCreditLimitId())
+															.syncOutcome(syncOutcome)
+															.build());
+			}
 		}
+
+		return responseItemsForExistingRecords.build();
 	}
 
-	private void syncJsonCreditLimit(
+	@NonNull
+	private SyncOutcome syncJsonCreditLimit(
 			@NonNull final BPartnerComposite bpartnerComposite,
 			@NonNull final JsonRequestCreditLimitUpsertItem creditLimitUpsertItem,
 			@NonNull final SyncAdvise effectiveSyncAdvise,
@@ -2002,6 +2053,8 @@ public class JsonPersisterService
 		bpartnerComposite
 				.getCreditLimits()
 				.add(creditLimitBuilder.build());
+
+		return syncOutcome;
 	}
 
 	private void syncJsonToCreditLimit(
@@ -2023,9 +2076,9 @@ public class JsonPersisterService
 		}
 
 		// amount & currency
-		if (jsonBPartnerCreditLimit.isMoneySet())
+		if (jsonBPartnerCreditLimit.isAmountSet())
 		{
-			if (jsonBPartnerCreditLimit.getMoney() == null)
+			if (jsonBPartnerCreditLimit.getAmount() == null)
 			{
 				throw new AdempiereException("JsonBPartnerCreditLimit.money cannot be null!");
 			}
@@ -2034,7 +2087,7 @@ public class JsonPersisterService
 
 			final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(clientId, orgId);
 
-			final Money amountInOrgCurrency = convertToOrgCurrency(jsonBPartnerCreditLimit.getMoney(), clientAndOrgId);
+			final Money amountInOrgCurrency = convertToOrgCurrency(jsonBPartnerCreditLimit.getAmount(), clientAndOrgId);
 
 			creditLimitBuilder.amount(amountInOrgCurrency);
 		}

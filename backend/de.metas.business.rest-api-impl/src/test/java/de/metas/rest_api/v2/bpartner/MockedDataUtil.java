@@ -164,7 +164,7 @@ public class MockedDataUtil
 
 		final JsonRequestCreditLimitUpsertItem jsonRequestCreditLimitUpsertItem = new JsonRequestCreditLimitUpsertItem();
 		jsonRequestCreditLimitUpsertItem.setType("Insurance");
-		jsonRequestCreditLimitUpsertItem.setMoney(JsonMoney.builder()
+		jsonRequestCreditLimitUpsertItem.setAmount(JsonMoney.builder()
 														  .amount(BigDecimal.valueOf(10))
 														  .currencyCode("CHF")
 														  .build());

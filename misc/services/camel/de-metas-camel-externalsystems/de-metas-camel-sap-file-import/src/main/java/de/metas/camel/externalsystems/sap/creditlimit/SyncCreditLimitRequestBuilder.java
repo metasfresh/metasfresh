@@ -124,7 +124,7 @@ public class SyncCreditLimitRequestBuilder
 		final JsonRequestCreditLimitUpsertItem jsonRequestCreditLimitUpsertItem = new JsonRequestCreditLimitUpsertItem();
 
 		jsonRequestCreditLimitUpsertItem.setType(SUPPORTED_CREDIT_LIMIT_TYPE);
-		jsonRequestCreditLimitUpsertItem.setMoney(mapToJsonMoney(creditLimitRow.getCreditLine(), creditLimitRow.getCurrencyCode()));
+		jsonRequestCreditLimitUpsertItem.setAmount(mapToJsonMoney(creditLimitRow.getCreditLine(), creditLimitRow.getCurrencyCode()));
 		jsonRequestCreditLimitUpsertItem.setDateFrom(LocalDate.parse(creditLimitRow.getEffectiveDateFrom(), DateTimeFormatter.ofPattern(PATTERN)));
 		jsonRequestCreditLimitUpsertItem.setProcessed(true);
 		jsonRequestCreditLimitUpsertItem.setActive(computeIsActiveCreditLimit(creditLimitRow));

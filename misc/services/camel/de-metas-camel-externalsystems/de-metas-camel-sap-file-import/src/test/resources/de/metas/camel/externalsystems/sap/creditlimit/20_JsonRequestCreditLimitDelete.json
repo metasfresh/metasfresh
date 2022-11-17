@@ -1,5 +1,5 @@
 {
   "orgCode": "orgCode",
-  "partnerIdentifier": "ext-SAP-sectionCode_BPartnerTest00",
+  "bpartnerIdentifier": "ext-SAP-sectionCode_BPartnerTest00",
   "includingProcessed" : true
 }

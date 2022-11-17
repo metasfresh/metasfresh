@@ -89,12 +89,8 @@ Feature: create or update BPartner v2
               "type": "Insurance",
               "orgCode": "001",
               "creditLimitMetasfreshId": null,
-              "dateFrom": [
-                2022,
-                10,
-                31
-              ],
-              "money": {
+              "dateFrom": "2022-10-31",
+              "amount": {
                 "amount": "20.5",
                 "currencyCode": "EUR"
               },
@@ -105,12 +101,8 @@ Feature: create or update BPartner v2
               "type": "Insurance",
               "orgCode": "001",
               "creditLimitMetasfreshId": null,
-              "dateFrom": [
-                2022,
-                10,
-                30
-              ],
-              "money": {
+              "dateFrom": "2022-10-30",
+              "amount": {
                 "amount": "10",
                 "currencyCode": "CHF"
               },

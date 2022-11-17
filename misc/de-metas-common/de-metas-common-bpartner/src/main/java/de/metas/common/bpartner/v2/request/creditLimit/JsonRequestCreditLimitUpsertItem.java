@@ -22,6 +22,7 @@
 
 package de.metas.common.bpartner.v2.request.creditLimit;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.EqualsAndHashCode;
@@ -42,10 +43,10 @@ public class JsonRequestCreditLimitUpsertItem
 	private boolean creditLimitIdSet;
 
 	@ApiModelProperty(position = 20, value = "Translated to `C_BPartner_CreditLimit.Amount`")
-	private JsonMoney money;
+	private JsonMoney amount;
 
 	@ApiModelProperty(hidden = true)
-	private boolean moneySet;
+	private boolean amountSet;
 
 	@ApiModelProperty(position = 30, value = "Translated to `C_CreditLimit_Type.Name`")
 	private String type;
@@ -54,6 +55,7 @@ public class JsonRequestCreditLimitUpsertItem
 	private boolean typeSet;
 
 	@ApiModelProperty(position = 40, value = "Translated to `C_BPartner_CreditLimit.DateFrom`")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	private LocalDate dateFrom;
 
 	@ApiModelProperty(hidden = true)
@@ -71,10 +73,10 @@ public class JsonRequestCreditLimitUpsertItem
 	@ApiModelProperty(hidden = true)
 	private boolean processedSet;
 
-	public void setMoney(final JsonMoney money)
+	public void setAmount(final JsonMoney amount)
 	{
-		this.money = money;
-		this.moneySet = true;
+		this.amount = amount;
+		this.amountSet = true;
 	}
 
 	public void setType(final String type)

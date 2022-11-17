@@ -183,7 +183,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
     "id" : {
       "repoId" : 100026
     },
-    "money" : {
+    "amount" : {
       "currencyId" : 100018,
       "value" : 10
     },
@@ -427,7 +427,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
     "id" : {
       "repoId" : 60
     },
-    "money" : {
+    "amount" : {
       "currencyId" : 100015,
       "value" : 25.5
     },
@@ -627,7 +627,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
     "id" : {
       "repoId" : 60
     },
-    "money" : {
+    "amount" : {
       "currencyId" : 100015,
       "value" : 25.5
     },
@@ -795,7 +795,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
     "id" : {
       "repoId" : 60
     },
-    "money" : {
+    "amount" : {
       "currencyId" : 100015,
       "value" : 25.5
     },
@@ -963,7 +963,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
     "id" : {
       "repoId" : 60
     },
-    "money" : {
+    "amount" : {
       "currencyId" : 100016,
       "value" : 25.5
     },
