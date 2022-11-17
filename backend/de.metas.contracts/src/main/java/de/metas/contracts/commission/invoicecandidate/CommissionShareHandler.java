@@ -397,7 +397,7 @@ public class CommissionShareHandler extends AbstractInvoiceCandidateHandler
 
 		return docTypeDAO.getDocTypeId(
 				DocTypeQuery.builder()
-						.docBaseType(DocBaseType.ofCode(commissionDocType.getDocBaseType()))
+						.docBaseType(commissionDocType.getDocBaseType())
 						.docSubType(commissionDocType.getDocSubType())
 						.adClientId(shareRecord.getAD_Client_ID())
 						.adOrgId(shareRecord.getAD_Org_ID())
