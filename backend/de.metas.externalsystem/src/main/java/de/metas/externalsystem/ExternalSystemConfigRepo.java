@@ -856,7 +856,6 @@ public class ExternalSystemConfigRepo
 				.sftpProductTargetDirectory(config.getSFTP_TargetDirectory())
 				.sftpCreditLimitTargetDirectory(config.getSFTP_CreditLimit_TargetDirectory())
 				.sftpCreditLimitFileNamePattern(config.getSFTP_CreditLimit_FileName_Pattern())
-				.sftpProductFileNamePattern(config.getSFTP_Product_FileName_Pattern())
 				.processedDirectory(config.getProcessedDirectory())
 				.erroredDirectory(config.getErroredDirectory())
 				.pollingFrequency(Duration.ofMillis(config.getPollingFrequencyInMs()))
