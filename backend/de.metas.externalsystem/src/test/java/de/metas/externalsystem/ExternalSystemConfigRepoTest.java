@@ -176,7 +176,7 @@ class ExternalSystemConfigRepoTest
 	void externalSystem_Config_Metasfresh_getById()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = createI_ExternalSystem_ConfigBuilder()
+		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
 				.type(X_ExternalSystem_Config.TYPE_Metasfresh)
 				.build();
 
@@ -268,7 +268,7 @@ class ExternalSystemConfigRepoTest
 	void externalSystem_Config_Metasfresh_getTypeAndValue()
 	{
 		// given
-		final I_ExternalSystem_Config parentRecord = createI_ExternalSystem_ConfigBuilder()
+		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
 				.type(X_ExternalSystem_Config.TYPE_Metasfresh)
 				.build();
 
