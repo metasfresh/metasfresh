@@ -42,7 +42,7 @@ UPDATE AD_Field SET Name='Max. Quantity per production order disposition', Descr
 
 -- 2022-10-12T06:35:07.206Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-/* DDL */  select update_Column_Translation_From_AD_Element(581544) 
+/* DDL */  select update_Column_Translation_From_AD_Element(581544)
 ;
 
 -- 2022-10-12T06:35:07.825Z
