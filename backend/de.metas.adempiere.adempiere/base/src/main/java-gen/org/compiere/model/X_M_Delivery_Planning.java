@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_Delivery_Planning, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1760608424L;
+	private static final long serialVersionUID = 1081103174L;
 
     /** Standard Constructor */
     public X_M_Delivery_Planning (final Properties ctx, final int M_Delivery_Planning_ID, @Nullable final String trxName)
@@ -36,7 +36,7 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	}
 
 	@Override
-	public void setActualDeliveredQty (final @Nullable BigDecimal ActualDeliveredQty)
+	public void setActualDeliveredQty (final BigDecimal ActualDeliveredQty)
 	{
 		set_Value (COLUMNNAME_ActualDeliveredQty, ActualDeliveredQty);
 	}
@@ -73,7 +73,7 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	}
 
 	@Override
-	public void setActualLoadQty (final @Nullable BigDecimal ActualLoadQty)
+	public void setActualLoadQty (final BigDecimal ActualLoadQty)
 	{
 		set_Value (COLUMNNAME_ActualLoadQty, ActualLoadQty);
 	}
@@ -494,7 +494,7 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	}
 
 	@Override
-	public void setQtyOrdered (final @Nullable BigDecimal QtyOrdered)
+	public void setQtyOrdered (final BigDecimal QtyOrdered)
 	{
 		set_Value (COLUMNNAME_QtyOrdered, QtyOrdered);
 	}
@@ -507,7 +507,7 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	}
 
 	@Override
-	public void setQtyTotalOpen (final @Nullable BigDecimal QtyTotalOpen)
+	public void setQtyTotalOpen (final BigDecimal QtyTotalOpen)
 	{
 		set_Value (COLUMNNAME_QtyTotalOpen, QtyTotalOpen);
 	}

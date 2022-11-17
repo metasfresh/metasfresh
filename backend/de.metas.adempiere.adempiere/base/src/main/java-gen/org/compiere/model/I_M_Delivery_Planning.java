@@ -21,16 +21,16 @@ public interface I_M_Delivery_Planning
 	 * Set Actual Delivered Qty.
 	 *
 	 * <br>Type: Quantity
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setActualDeliveredQty (@Nullable BigDecimal ActualDeliveredQty);
+	void setActualDeliveredQty (BigDecimal ActualDeliveredQty);
 
 	/**
 	 * Get Actual Delivered Qty.
 	 *
 	 * <br>Type: Quantity
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	BigDecimal getActualDeliveredQty();
@@ -84,16 +84,16 @@ public interface I_M_Delivery_Planning
 	 * Set Actual Load Qty.
 	 *
 	 * <br>Type: Quantity
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setActualLoadQty (@Nullable BigDecimal ActualLoadQty);
+	void setActualLoadQty (BigDecimal ActualLoadQty);
 
 	/**
 	 * Get Actual Load Qty.
 	 *
 	 * <br>Type: Quantity
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	BigDecimal getActualLoadQty();
@@ -782,17 +782,17 @@ public interface I_M_Delivery_Planning
 	 * Qty Ordered
 	 *
 	 * <br>Type: Quantity
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setQtyOrdered (@Nullable BigDecimal QtyOrdered);
+	void setQtyOrdered (BigDecimal QtyOrdered);
 
 	/**
 	 * Get Qty Ordered.
 	 * Qty Ordered
 	 *
 	 * <br>Type: Quantity
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	BigDecimal getQtyOrdered();
@@ -804,16 +804,16 @@ public interface I_M_Delivery_Planning
 	 * Set Qty Total Open.
 	 *
 	 * <br>Type: Quantity
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
-	void setQtyTotalOpen (@Nullable BigDecimal QtyTotalOpen);
+	void setQtyTotalOpen (BigDecimal QtyTotalOpen);
 
 	/**
 	 * Get Qty Total Open.
 	 *
 	 * <br>Type: Quantity
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	BigDecimal getQtyTotalOpen();
