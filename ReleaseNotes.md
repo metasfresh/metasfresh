@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13885](https://github.com/metasfresh/metasfresh/issues/13885) Follow-Up - Produktionsdisposition - Iteration 1 - Creating PP Order by machine size
   * [#13948](https://github.com/metasfresh/metasfresh/pull/13948) Swing Login: show only System role 
   * [#13947](https://github.com/metasfresh/metasfresh/pull/13947) Manufacturing Order - Weighing Run (part 2)
   * [#13920](https://github.com/metasfresh/metasfresh/pull/13920) Manufacturing Order - Weighing Run
