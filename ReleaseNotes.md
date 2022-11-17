@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13946](https://github.com/metasfresh/metasfresh/pull/13946) mobile UI: mfg: Show allergens
   * [#13935](https://github.com/metasfresh/metasfresh/pull/13935) mobile UI - mfg: Show Hazard Symbols
   * [#13913](https://github.com/metasfresh/metasfresh/pull/13913) Fix Manufacturing Candidates layout
   * [#13933](https://github.com/metasfresh/metasfresh/pull/13933) Doc_GLJournal: consider GL_JournalLine.GL_JournalLine_Group when grouping into FactTrxLines
