@@ -64,17 +64,23 @@ public class ExternalSystemSAPConfig implements IExternalSystemChildConfig
 	@NonNull
 	Duration pollingFrequency;
 
+	//product
 	@Nullable
-	String sftpProductTargetDirectory;
+	String sftpTargetDirectoryProduct;
+	@Nullable
+	String sftpFileNamePatternProduct;
 
+	//bpartner
+	@Nullable
+	String sftpTargetDirectoryBPartner;
+	@Nullable
+	String sftpFileNamePatternBPartner;
+
+	//credit limit
 	@Nullable
 	String sftpCreditLimitTargetDirectory;
-
 	@Nullable
-	String sftpCreditLimitFileNamePattern;
-
-	@Nullable
-	String sftpProductFileNamePattern;
+	String sftpCreditLimitFileNamePattern
 
 	@Builder
 	public ExternalSystemSAPConfig(
@@ -85,13 +91,15 @@ public class ExternalSystemSAPConfig implements IExternalSystemChildConfig
 			@NonNull final String sftpPort,
 			@NonNull final String sftpUsername,
 			@NonNull final String sftpPassword,
-			@Nullable final String sftpProductTargetDirectory,
-			@Nullable final String sftpCreditLimitTargetDirectory,
-			@Nullable final String sftpCreditLimitFileNamePattern,
-			@Nullable final String sftpProductFileNamePattern,
+			@Nullable final String sftpTargetDirectoryProduct,
+			@Nullable final String sftpTargetDirectoryBPartner,
 			@NonNull final String processedDirectory,
 			@NonNull final String erroredDirectory,
-			@NonNull final Duration pollingFrequency)
+			@NonNull final Duration pollingFrequency,
+			@Nullable final String sftpFileNamePatternProduct,
+			@Nullable final String sftpFileNamePatternBPartner,
+			@Nullable final String sftpCreditLimitTargetDirectory,
+			@Nullable final String sftpCreditLimitFileNamePattern)
 	{
 		this.id = id;
 		this.parentId = parentId;
@@ -100,13 +108,15 @@ public class ExternalSystemSAPConfig implements IExternalSystemChildConfig
 		this.sftpPort = sftpPort;
 		this.sftpUsername = sftpUsername;
 		this.sftpPassword = sftpPassword;
-		this.sftpProductTargetDirectory = sftpProductTargetDirectory;
-		this.sftpCreditLimitTargetDirectory = sftpCreditLimitTargetDirectory;
-		this.sftpCreditLimitFileNamePattern = sftpCreditLimitFileNamePattern;
-		this.sftpProductFileNamePattern = sftpProductFileNamePattern;
+		this.sftpTargetDirectoryProduct = sftpTargetDirectoryProduct;
+		this.sftpTargetDirectoryBPartner = sftpTargetDirectoryBPartner;
 		this.processedDirectory = processedDirectory;
 		this.erroredDirectory = erroredDirectory;
 		this.pollingFrequency = pollingFrequency;
+		this.sftpFileNamePatternProduct = sftpFileNamePatternProduct;
+		this.sftpFileNamePatternBPartner = sftpFileNamePatternBPartner;
+		this.sftpCreditLimitTargetDirectory = sftpCreditLimitTargetDirectory;
+		this.sftpCreditLimitFileNamePattern = sftpCreditLimitFileNamePattern;
 	}
 
 	@NonNull

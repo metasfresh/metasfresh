@@ -70,6 +70,10 @@ public class BPartnerLocation
 	public static final String EPHEMERAL = "ephemeral";
 	public static final String PHONE = "phone";
 	public static final String EMAIL = "email";
+	public static final String VISITORS_ADDRESS = "visitorsAddress";
+	public static final String HANDOVER_LOCATION = "handoverLocation";
+	public static final String REMIT_TO = "remitTo";
+	public static final String REPLICATION_LOOKUP_DEFAULT = "replicationLookupDefault";
 
 	@Nullable
 	private BPartnerLocationId id;
@@ -142,10 +146,10 @@ public class BPartnerLocation
 	@Nullable
 	final String setupPlaceNo;
 
-	final boolean remitTo;
-	final boolean handOverLocation;
-	final boolean replicationLookupDefault;
-	final boolean visitorsAddress;
+	private boolean remitTo;
+	private boolean handOverLocation;
+	private boolean replicationLookupDefault;
+	private boolean visitorsAddress;
 
 	/**
 	 * Can be set in order to identify this label independently of its "real" properties. Won't be saved by the repo.

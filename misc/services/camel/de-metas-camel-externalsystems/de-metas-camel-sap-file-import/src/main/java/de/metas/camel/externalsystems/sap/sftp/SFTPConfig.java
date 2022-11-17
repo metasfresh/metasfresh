@@ -59,9 +59,6 @@ public class SFTPConfig
 	@NonNull
 	Duration pollingFrequency;
 
-	@Nullable
-	String fileNamePattern;
-
 	//product specific
 	@Nullable
 	String targetDirectoryProduct;
@@ -69,7 +66,14 @@ public class SFTPConfig
 	@Nullable
 	String fileNamePatternProduct;
 
-	//creditLimit specific
+	//bpartner specific
+	@Nullable
+	String targetDirectoryBPartner;
+
+	@Nullable
+	String fileNamePatternBPartner;
+
+	//credit limit specific
 	@Nullable
 	String targetDirectoryCreditLimit;
 
@@ -80,6 +84,12 @@ public class SFTPConfig
 	public String getSFTPConnectionStringProduct()
 	{
 		return getSFTPConnectionString(targetDirectoryProduct, fileNamePatternProduct);
+	}
+
+	@NonNull
+	public String getSFTPConnectionStringBPartner()
+	{
+		return getSFTPConnectionString(targetDirectoryBPartner, fileNamePatternBPartner);
 	}
 
 	@NonNull

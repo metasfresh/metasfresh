@@ -15,7 +15,7 @@ de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
       },
       "tableName" : "C_BP_BankAccount"
     },
-    "currencyId" : 100013,
+    "currencyId" : 100018,
     "iban" : "INITIAL-IBAN-1",
     "id" : {
       "bpartnerId" : 20,
@@ -40,14 +40,24 @@ de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
     },
     "company" : false,
     "customer" : true,
+    "customerPaymentTermId" : 100008,
+    "deliveryRule" : "AVAILABILITY",
+    "deliveryViaRule" : "Shipper",
     "excludeFromPromotions" : false,
     "groupId" : 15,
     "id" : 20,
     "identifiedByExternalReference" : false,
+    "incotermsCustomerId" : 100010,
+    "incotermsVendorId" : 100011,
     "name" : "bpartnerRecord.name",
+    "paymentRule" : "OnCredit",
+    "paymentRulePO" : "Cash",
+    "sectionCodeId" : 100007,
+    "storageWarehouse" : true,
     "value" : "bpartnerRecord.value",
     "vatId" : "VATaxID",
-    "vendor" : true
+    "vendor" : true,
+    "vendorPaymentTermId" : 100009
   },
   "contacts" : [ {
     "active" : true,
@@ -140,9 +150,9 @@ de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
     "countryCode" : "countryRecord.countryCode",
     "district" : "postalRecord.district",
     "ephemeral" : false,
-    "existingLocationId" : 100011,
+    "existingLocationId" : 100016,
     "gln" : "bpartnerLocationRecord.gln",
-    "handOverLocation" : false,
+    "handOverLocation" : true,
     "handles" : [ ],
     "id" : {
       "bpartnerId" : 20,
@@ -152,15 +162,14 @@ de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
       "billTo" : false,
       "billToDefault" : false,
       "shipTo" : false,
-      "shipToDefault" : false,
-      "visitorsAddress" : false
+      "shipToDefault" : false
     },
     "poBox" : "locationRecord.poBox",
     "postal" : "locationRecord.postal",
     "region" : "locationRecord.regionName",
-    "remitTo" : false,
-    "replicationLookupDefault" : false,
-    "visitorsAddress" : false
+    "remitTo" : true,
+    "replicationLookupDefault" : true,
+    "visitorsAddress" : true
   } ],
   "orgId" : 10
 } ]

@@ -22,6 +22,7 @@
 
 package de.metas.rest_api.v2.bpartner;
 
+import de.metas.common.bpartner.v2.common.JsonPaymentRule;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartner;
 import de.metas.common.bpartner.v2.request.JsonRequestComposite;
 import de.metas.common.bpartner.v2.request.JsonRequestComposite.JsonRequestCompositeBuilder;
@@ -48,6 +49,7 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.EXTERNAL_SYSTEM_NAME;
+import static org.assertj.core.api.Assertions.*;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
@@ -78,6 +80,14 @@ public class MockedDataUtil
 		bPartner.setPhone("bPartner.phone");
 		bPartner.setUrl("bPartner.url");
 		bPartner.setVatId("bPartner.vatId");
+		bPartner.setSectionCodeValue(BPartnerRecordsUtil.createSectionCode("bPartner.sectionCode").getValue());
+		bPartner.setCustomerPaymentTermIdentifier(String.valueOf(BPartnerRecordsUtil.createPaymentTerm().getC_PaymentTerm_ID()));
+		bPartner.setVendorPaymentTermIdentifier(String.valueOf(BPartnerRecordsUtil.createPaymentTerm().getC_PaymentTerm_ID()));
+		bPartner.setIncotermsCustomerValue(BPartnerRecordsUtil.createIncoterms("bpartner.customerIncoterms").getValue());
+		bPartner.setIncotermsVendorValue(BPartnerRecordsUtil.createIncoterms("bpartner.vendorIncoterms").getValue());
+		bPartner.setStorageWarehouse(true);
+		bPartner.setPaymentRule(JsonPaymentRule.OnCredit);
+		bPartner.setPaymentRulePO(JsonPaymentRule.Cash);
 
 		final ExternalIdentifier bpartnerIdentifier = ExternalIdentifier.of(bpartnerIdentifierStr);
 
@@ -132,6 +142,10 @@ public class MockedDataUtil
 		location.setCountryCode(countryCode);
 		location.setGln(prefix + "_gln");
 		location.setPostal(prefix + "_postal");
+		location.setHandoverLocation(true);
+		location.setVisitorsAddress(true);
+		location.setRemitTo(true);
+		location.setReplicationLookupDefault(true);
 
 		return JsonRequestLocationUpsertItem.builder()
 				.locationIdentifier("ext-" + EXTERNAL_SYSTEM_NAME + "-" + externalId)

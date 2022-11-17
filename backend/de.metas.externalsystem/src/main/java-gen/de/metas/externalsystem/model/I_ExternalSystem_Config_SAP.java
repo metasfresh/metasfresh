@@ -236,6 +236,52 @@ public interface I_ExternalSystem_Config_SAP
 	String COLUMNNAME_ProcessedDirectory = "ProcessedDirectory";
 
 	/**
+	 * Set SFTP Business Partner File Name Pattern.
+	 * The pattern used for the business partner file names when fetching multiple types of files from the same location.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSFTP_BPartner_FileName_Pattern (@Nullable java.lang.String SFTP_BPartner_FileName_Pattern);
+
+	/**
+	 * Get SFTP Business Partner File Name Pattern.
+	 * The pattern used for the business partner file names when fetching multiple types of files from the same location.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSFTP_BPartner_FileName_Pattern();
+
+	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_SFTP_BPartner_FileName_Pattern = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "SFTP_BPartner_FileName_Pattern", null);
+	String COLUMNNAME_SFTP_BPartner_FileName_Pattern = "SFTP_BPartner_FileName_Pattern";
+
+	/**
+	 * Set SFTP Business Partner Target Directory.
+	 * The directory used to pull business partners from the sftp server. (If no value set here, the files will be pulled from the root location of the sftp server.)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSFTP_BPartner_TargetDirectory (@Nullable java.lang.String SFTP_BPartner_TargetDirectory);
+
+	/**
+	 * Get SFTP Business Partner Target Directory.
+	 * The directory used to pull business partners from the sftp server. (If no value set here, the files will be pulled from the root location of the sftp server.)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSFTP_BPartner_TargetDirectory();
+
+	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_SFTP_BPartner_TargetDirectory = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "SFTP_BPartner_TargetDirectory", null);
+	String COLUMNNAME_SFTP_BPartner_TargetDirectory = "SFTP_BPartner_TargetDirectory";
+
+	/**
 	 * Set SFTP Credit Limit File Name Pattern.
 	 * Pattern used to find the file from which credit limits are pulled from the SFTP server - the filename must match the given pattern.(If not provided, there is no constraint on the filename)
 	 *
@@ -351,27 +397,50 @@ public interface I_ExternalSystem_Config_SAP
 	String COLUMNNAME_SFTP_Port = "SFTP_Port";
 
 	/**
-	 * Set SFTP Target Directory.
-	 * The directory used to pull from the sftp server. (If no value set here, the files will be pulled from the root location of the sftp server.)
+	 * Set SFTP Product File Name Pattern.
+	 * The pattern used for the product file names when fetching multiple types of files from the same location.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setSFTP_TargetDirectory (@Nullable String SFTP_TargetDirectory);
+	void setSFTP_Product_FileName_Pattern (@Nullable java.lang.String SFTP_Product_FileName_Pattern);
 
 	/**
-	 * Get SFTP Target Directory.
-	 * The directory used to pull from the sftp server. (If no value set here, the files will be pulled from the root location of the sftp server.)
+	 * Get SFTP Product File Name Pattern.
+	 * The pattern used for the product file names when fetching multiple types of files from the same location.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable String getSFTP_TargetDirectory();
+	@Nullable java.lang.String getSFTP_Product_FileName_Pattern();
 
-	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_SFTP_TargetDirectory = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "SFTP_TargetDirectory", null);
-	String COLUMNNAME_SFTP_TargetDirectory = "SFTP_TargetDirectory";
+	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_SFTP_Product_FileName_Pattern = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "SFTP_Product_FileName_Pattern", null);
+	String COLUMNNAME_SFTP_Product_FileName_Pattern = "SFTP_Product_FileName_Pattern";
+
+	/**
+	 * Set SFTP Product Target Directory.
+	 * The directory used to pull products from the sftp server. (If no value set here, the files will be pulled from the root location of the sftp server.)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSFTP_Product_TargetDirectory (@Nullable java.lang.String SFTP_Product_TargetDirectory);
+
+	/**
+	 * Get SFTP Product Target Directory.
+	 * The directory used to pull products from the sftp server. (If no value set here, the files will be pulled from the root location of the sftp server.)
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getSFTP_Product_TargetDirectory();
+
+	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_SFTP_Product_TargetDirectory = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "SFTP_Product_TargetDirectory", null);
+	String COLUMNNAME_SFTP_Product_TargetDirectory = "SFTP_Product_TargetDirectory";
 
 	/**
 	 * Set SFTP Username.
