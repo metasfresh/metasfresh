@@ -1,3 +1,5 @@
+-- select migrationscript_ignore('30-de.metas.adempiere.libero/5663780_sys_PP_Order_Node_ScannedQRCode.sql');
+
 -- 2022-11-09T10:45:59.901Z
 INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,581653,0,'ScannedQRCode',TO_TIMESTAMP('2022-11-09 12:45:59','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Scanned QR Code','Scanned QR Code',TO_TIMESTAMP('2022-11-09 12:45:59','YYYY-MM-DD HH24:MI:SS'),100)
 ;
@@ -8,7 +10,10 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description
 
 -- Column: PP_Order_Node.ScannedQRCode
 -- 2022-11-09T10:47:57.174Z
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,584881,581653,0,10,53022,'ScannedQRCode',TO_TIMESTAMP('2022-11-09 12:47:57','YYYY-MM-DD HH24:MI:SS'),100,'N','EE01',0,2000,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Scanned QR Code',0,0,TO_TIMESTAMP('2022-11-09 12:47:57','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,
+                       IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version)
+VALUES (0,584881,581653,0,10,53022,'ScannedQRCode',TO_TIMESTAMP('2022-11-09 12:47:57','YYYY-MM-DD HH24:MI:SS'),100,'N','EE01',0,2000,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N',
+        'N','N','N','N','N','N','Y','N',0,'Scanned QR Code',0,0,TO_TIMESTAMP('2022-11-09 12:47:57','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 2022-11-09T10:47:57.179Z

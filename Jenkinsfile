@@ -30,6 +30,18 @@ properties([
                         description: 'If true, and the backend is build, then don\'t run the cucumber tests.<br/>Note that the cucumber tests are run by the github Actions (docker-based) builds',
                         name: 'MF_FORCE_SKIP_CUCUMBER_BUILD'),
 
+                booleanParam(defaultValue: true,
+                        description: 'If true, then don\'t build the mobile webui, even if there were changes or <code>MF_FORCE_FULL_BUILD</code> is set to <code>true<code>',
+                        name: 'MF_FORCE_SKIP_MOBILE_WEBUI_BUILD'),
+
+                booleanParam(defaultValue: true,
+                        description: 'If true, then don\'t build the procurement webui, even if there were changes or <code>MF_FORCE_FULL_BUILD</code> is set to <code>true<code>',
+                        name: 'MF_FORCE_SKIP_PROCUREMENT_WEBUI_BUILD'),
+
+                booleanParam(defaultValue: true,
+                        description: 'If true, and the backend is build, then don\'t run the cucumber tests.<br/>Note that the cucumber tests are run by the github Actions (docker-based) builds',
+                        name: 'MF_FORCE_SKIP_CUCUMBER_BUILD'),
+
                 booleanParam(defaultValue: false,
                         description: 'If true, then don\'t build the mobile webui, even if there were changes or <code>MF_FORCE_FULL_BUILD</code> is set to <code>true<code>',
                         name: 'MF_FORCE_SKIP_MOBILE_WEBUI_BUILD'),
