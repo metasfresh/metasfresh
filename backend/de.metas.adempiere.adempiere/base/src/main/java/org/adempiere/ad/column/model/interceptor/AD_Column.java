@@ -1,22 +1,19 @@
 package org.adempiere.ad.column.model.interceptor;
 
 import de.metas.i18n.po.POTrlRepository;
-import de.metas.logging.LogManager;
 import de.metas.security.impl.ParsedSql;
 import de.metas.translation.api.IElementTranslationBL;
-import de.metas.util.Check;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.expression.api.impl.LogicExpressionCompiler;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
+import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Column;
-import org.compiere.model.I_AD_Field;
-import org.compiere.model.MLookupFactory;
-import org.compiere.model.MLookupInfo;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -51,75 +48,37 @@ import javax.annotation.Nullable;
 @Component
 public class AD_Column
 {
-	private static final Logger logger = LogManager.getLogger(AD_Column.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = I_AD_Column.COLUMNNAME_ColumnSQL)
 	public void onBeforeSave_lowerCaseWhereClause(final I_AD_Column column)
 	{
-		final String columnSQL = column.getColumnSQL();
-		if (Check.isEmpty(columnSQL, true))
+		final String columnSql = StringUtils.trimBlankToNull(column.getColumnSQL());
+		if (columnSql == null)
 		{
 			// nothing to do
 			return;
 		}
 
-		final String adaptedWhereClause = ParsedSql.rewriteWhereClauseWithLowercaseKeyWords(columnSQL);
-
-		column.setColumnSQL(adaptedWhereClause);
+		final String columnSqlFixed = ParsedSql.rewriteWhereClauseWithLowercaseKeyWords(columnSql);
+		column.setColumnSQL(columnSqlFixed);
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
 			ifColumnsChanged = { I_AD_Column.COLUMNNAME_MandatoryLogic, I_AD_Column.COLUMNNAME_ReadOnlyLogic })
 	public void onBeforeSave_ValidateLogicExpressions(final I_AD_Column column)
 	{
-		if (!Check.isEmpty(column.getReadOnlyLogic(), true))
+		final String readOnlyLogic = StringUtils.trimBlankToNull(column.getReadOnlyLogic());
+		if (readOnlyLogic != null)
 		{
-			LogicExpressionCompiler.instance.compile(column.getReadOnlyLogic());
+			LogicExpressionCompiler.instance.compile(readOnlyLogic);
 		}
 
-		if (!Check.isEmpty(column.getMandatoryLogic(), true))
+		final String mandatoryLogic = StringUtils.trimBlankToNull(column.getMandatoryLogic());
+		if (mandatoryLogic != null)
 		{
-			LogicExpressionCompiler.instance.compile(column.getMandatoryLogic());
-		}
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
-			ifColumnsChanged = {
-					I_AD_Field.COLUMNNAME_AD_Column_ID,
-					I_AD_Field.COLUMNNAME_AD_Reference_ID,
-					I_AD_Field.COLUMNNAME_AD_Reference_Value_ID })
-	public void onBeforeSave_ValidateReference(final I_AD_Column column)
-	{
-		final int adReferenceId = column.getAD_Reference_ID();
-		if (DisplayType.isAnyLookup(adReferenceId))
-		{
-			final MLookupInfo lookupInfo;
-			try
-			{
-				final String ctxTableName = tableDAO.retrieveTableName(column.getAD_Table_ID());
-				lookupInfo = MLookupFactory.getLookupInfo(
-						Integer.MAX_VALUE, // WindowNo
-						adReferenceId,
-						ctxTableName, // ctxTableName
-						column.getColumnName(), // ctxColumnName
-						column.getAD_Reference_Value_ID(),
-						column.isParent(), // IsParent,
-						column.getAD_Val_Rule_ID() //AD_Val_Rule_ID
-				);
-			}
-			catch (final Exception ex)
-			{
-				//noinspection ThrowableNotThrown
-				fireExceptionInvalidLookup(logger, ex);
-				return;
-			}
-
-			if (lookupInfo == null)
-			{
-				fireExceptionInvalidLookup(logger, null);
-			}
+			LogicExpressionCompiler.instance.compile(mandatoryLogic);
 		}
 	}
 
@@ -168,13 +127,12 @@ public class AD_Column
 			throw new AdempiereException("Only text columns are translatable");
 		}
 
-		final IADTableDAO adTablesRepo = Services.get(IADTableDAO.class);
-		if (adTablesRepo.isVirtualColumn(adColumn))
+		if (tableDAO.isVirtualColumn(adColumn))
 		{
 			throw new AdempiereException("Virtual columns are not translatable");
 		}
 
-		final String tableName = adTablesRepo.retrieveTableName(adColumn.getAD_Table_ID());
+		final String tableName = getTableName(adColumn);
 		final String trlTableName = POTrlRepository.toTrlTableName(tableName);
 		final String columnName = adColumn.getColumnName();
 
@@ -184,4 +142,53 @@ public class AD_Column
 					+ "\n If not, please manually create the table and/or column.");
 		}
 	}
+
+	private String getTableName(final I_AD_Column adColumn)
+	{
+		return tableDAO.retrieveTableName(AdTableId.ofRepoId(adColumn.getAD_Table_ID()));
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = { I_AD_Column.COLUMNNAME_ColumnName, I_AD_Column.COLUMNNAME_AD_Reference_ID })
+	public void onBeforeSave_assertColumnNameValid(final I_AD_Column adColumn)
+	{
+		assertColumnNameValid(adColumn.getColumnName(), adColumn.getAD_Reference_ID());
+	}
+
+	private void assertColumnNameValid(@NonNull final String columnName, final int displayType)
+	{
+		if (DisplayType.isID(displayType) && displayType != DisplayType.Account)
+		{
+			if (!columnName.endsWith("_ID")
+					&& !columnName.equals("CreatedBy")
+					&& !columnName.equals("UpdatedBy"))
+			{
+				throw new AdempiereException("Lookup or ID columns shall have the name ending with `_ID`");
+			}
+
+			if (displayType == DisplayType.Locator && !columnName.contains("Locator"))
+			{
+				throw new AdempiereException("A Locator column name must contain the term `Locator`.");
+			}
+		}
+		else if (displayType == DisplayType.Account)
+		{
+			if (!columnName.endsWith("_Acct"))
+			{
+				throw new AdempiereException("Account columns shall have the name ending with `_Acct`");
+			}
+		}
+		else
+		{
+			if (columnName.endsWith("_ID"))
+			{
+				throw new AdempiereException("Ending a non lookup column wiht `_ID` is might be misleading");
+			}
+			if (columnName.endsWith("_Acct"))
+			{
+				throw new AdempiereException("Ending a non Account column wiht `_Acct` is might be misleading");
+			}
+		}
+	}
+
 }
