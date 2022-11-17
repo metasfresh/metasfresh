@@ -49,7 +49,6 @@ import java.time.LocalDate;
 import java.util.UUID;
 
 import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.EXTERNAL_SYSTEM_NAME;
-import static org.assertj.core.api.Assertions.*;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;

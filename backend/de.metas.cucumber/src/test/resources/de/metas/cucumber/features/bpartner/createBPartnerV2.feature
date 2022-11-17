@@ -123,7 +123,7 @@ Feature: create or update BPartner v2
                      }
                   }
                ]
-            }
+            },
             "creditLimits": {
               "requestItems": [
                 {

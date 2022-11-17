@@ -75,19 +75,19 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 ;
 
 -- 2022-10-07T10:45:09.687966200Z
-INSERT INTO ExternalSystem_Service (AD_Client_ID,AD_Org_ID,Created,CreatedBy,ExternalSystem_Service_ID,IsActive,Name,Type,Updated,UpdatedBy,Value) VALUES (1000000,1000000,TO_TIMESTAMP('2022-10-07 13:45:09','YYYY-MM-DD HH24:MI:SS'),100,540003,'Y','SFTP Sync-CreditLimits','SAP',TO_TIMESTAMP('2022-10-07 13:45:09','YYYY-MM-DD HH24:MI:SS'),100,'SFTPSyncCreditLimits')
+INSERT INTO ExternalSystem_Service (AD_Client_ID,AD_Org_ID,Created,CreatedBy,ExternalSystem_Service_ID,IsActive,Name,Type,Updated,UpdatedBy,Value) VALUES (1000000,1000000,TO_TIMESTAMP('2022-10-07 13:45:09','YYYY-MM-DD HH24:MI:SS'),100,540004,'Y','SFTP Sync-CreditLimits','SAP',TO_TIMESTAMP('2022-10-07 13:45:09','YYYY-MM-DD HH24:MI:SS'),100,'SFTPSyncCreditLimits')
 ;
 
 -- 2022-10-07T10:45:12.897805900Z
-UPDATE ExternalSystem_Service SET Description='SFTP Sync-CreditLimits',Updated=TO_TIMESTAMP('2022-10-07 13:45:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE ExternalSystem_Service_ID=540003
+UPDATE ExternalSystem_Service SET Description='SFTP Sync-CreditLimits',Updated=TO_TIMESTAMP('2022-10-07 13:45:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE ExternalSystem_Service_ID=540004
 ;
 
 -- 2022-10-07T10:46:07.923288900Z
-UPDATE ExternalSystem_Service SET EnableCommand='startCreditLimitsSync',Updated=TO_TIMESTAMP('2022-10-07 13:46:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE ExternalSystem_Service_ID=540003
+UPDATE ExternalSystem_Service SET EnableCommand='startCreditLimitsSync',Updated=TO_TIMESTAMP('2022-10-07 13:46:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE ExternalSystem_Service_ID=540004
 ;
 
 -- 2022-10-07T10:46:17.838934100Z
-UPDATE ExternalSystem_Service SET DisableCommand='stopCreditLimitsSync',Updated=TO_TIMESTAMP('2022-10-07 13:46:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE ExternalSystem_Service_ID=540003
+UPDATE ExternalSystem_Service SET DisableCommand='stopCreditLimitsSync',Updated=TO_TIMESTAMP('2022-10-07 13:46:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE ExternalSystem_Service_ID=540004
 ;
 
 -- Element: SFTP_CreditLimit_TargetDirectory

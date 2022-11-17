@@ -41,10 +41,10 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CHILD
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ERRORED_DIRECTORY;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_POLLING_FREQUENCY_MS;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PROCESSED_DIRECTORY;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_CREDIT_LIMIT_FILENAME_PATTERN;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_CREDIT_LIMIT_TARGET_DIRECTORY;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_BPARTNER_FILE_NAME_PATTERN;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_BPARTNER_TARGET_DIRECTORY;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_CREDIT_LIMIT_FILENAME_PATTERN;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_CREDIT_LIMIT_TARGET_DIRECTORY;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_HOST_NAME;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_PASSWORD;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_PORT;

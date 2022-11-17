@@ -73,7 +73,6 @@ public class JsonServiceFactory
 			@NonNull final SectionCodeService sectionCodeService,
 			@NonNull final IncotermsRepository incotermsRepository,
 			@NonNull final AlbertaBPartnerCompositeService albertaBPartnerCompositeService,
-			@NonNull final ExternalReferenceRestControllerService externalReferenceService,
 			@NonNull final BPartnerCreditLimitRepository bPartnerCreditLimitRepository)
 	{
 		this.jsonRequestConsolidateService = jsonRequestConsolidateService;
