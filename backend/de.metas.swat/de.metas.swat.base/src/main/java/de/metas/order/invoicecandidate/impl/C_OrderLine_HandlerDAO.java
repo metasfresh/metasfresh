@@ -22,6 +22,10 @@ package de.metas.order.invoicecandidate.impl;
  * #L%
  */
 
+
+import java.util.Properties;
+
+import de.metas.document.DocBaseType;
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.DocBaseType;
 import de.metas.document.engine.IDocument;

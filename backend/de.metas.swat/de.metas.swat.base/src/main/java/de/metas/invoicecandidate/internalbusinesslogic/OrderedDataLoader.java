@@ -68,7 +68,7 @@ public class OrderedDataLoader
 
 		final boolean hasInvalidOrder = null != order && !DocStatus.ofCode(order.getDocStatus()).isCompletedOrClosed();
 
-		final OrderedDataBuilder result = OrderedData.builder()
+		final OrderedData.OrderedDataBuilder result = OrderedData.builder()
 				.orderFullyDelivered(isOrderFullyDelivered());
 
 		if (hasInvalidOrder)

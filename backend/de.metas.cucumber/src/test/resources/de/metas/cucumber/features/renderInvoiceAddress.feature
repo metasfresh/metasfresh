@@ -12,14 +12,14 @@ Feature: Render invoice address
       | Identifier         | Name               |
       | test_product_26_02 | test_product_26_02 |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name              | Value             |
-      | ps_12      | pricing_system_12 | pricing_system_12 |
+      | Identifier | Name                      | Value                     |
+      | ps_12      | pricing_system_16112022_2 | pricing_system_16112022_2 |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name          | SOTrx | IsTaxIncluded | PricePrecision |
-      | pl_so      | ps_12                         | DE                        | EUR                 | price_list_so | true  | false         | 2              |
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                     | SOTrx | IsTaxIncluded | PricePrecision |
+      | pl_so      | ps_12                         | DE                        | EUR                 | price_list_so_16112022_2 | true  | false         | 2              |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name   | ValidFrom  |
-      | plv_so     | pl_so                     | plv_so | 2022-01-20 |
+      | Identifier | M_PriceList_ID.Identifier | Name              | ValidFrom  |
+      | plv_so     | pl_so                     | plv_so_16112022_2 | 2022-01-20 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_TaxCategory_ID.InternalName | C_UOM_ID.X12DE355 |
       | pp_product | plv_so                            | test_product_26_02      | 10.0     | Normal                        | PCE               |

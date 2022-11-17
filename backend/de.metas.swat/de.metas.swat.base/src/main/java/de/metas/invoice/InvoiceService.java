@@ -96,6 +96,7 @@ public class InvoiceService
 		return generateInvoicesFromInvoiceCandidateIds(invoiceCandidateIds);
 	}
 
+	@NonNull
 	public ImmutableSet<InvoiceId> generateInvoicesFromInvoiceCandidateIds(@NonNull final Set<InvoiceCandidateId> invoiceCandidateIds)
 	{
 		processInvoiceCandidates(invoiceCandidateIds);

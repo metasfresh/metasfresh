@@ -211,7 +211,7 @@ public class PackagingDAO implements IPackagingDAO
 		final BPartnerId bpartnerId = BPartnerId.ofRepoId(record.getC_BPartner_Customer_ID());
 		final I_C_UOM uom = uomsRepo.getById(record.getC_UOM_ID());
 
-		final PackageableBuilder packageable = Packageable.builder();
+		final Packageable.PackageableBuilder packageable = Packageable.builder();
 		final OrgId orgId = OrgId.ofRepoId(record.getAD_Org_ID());
 		packageable.orgId(orgId);
 		packageable.customerId(bpartnerId);

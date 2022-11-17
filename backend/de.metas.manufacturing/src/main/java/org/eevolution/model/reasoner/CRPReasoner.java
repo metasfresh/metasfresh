@@ -106,6 +106,23 @@ public class CRPReasoner
 		return resourceService.getResourceTypeByResourceId(resource.getResourceId()).isAvailable();
 	}
 
+	protected final boolean isAvailable(final ResourceId resourceId, final Instant dateTime)
+	{
+		final ResourceType resourceType = getResourceType(resourceId);
+		return resourceType.isDayAvailable(dateTime) && !MResourceUnAvailable.isUnAvailable(resourceId.getRepoId(), dateTime);
+	}
+
+	protected final boolean isAvailable(final I_S_Resource resource, final Instant dateTime)
+	{
+		final ResourceType resourceType = getResourceType(resource);
+		return resourceType.isDayAvailable(dateTime) && !MResourceUnAvailable.isUnAvailable(resource.getS_Resource_ID(), dateTime);
+	}
+
+	public final boolean isAvailable(final I_S_Resource resource)
+	{
+		return getResourceType(resource).isAvailable();
+	}
+	
 	/**
 	 * Get Next/Previous Available Date
 	 */

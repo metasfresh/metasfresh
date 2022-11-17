@@ -54,11 +54,14 @@ import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Tax_ID;
+import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyInvoiced;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Invoice_ID;
 import static org.compiere.model.I_C_TaxCategory.COLUMNNAME_C_TaxCategory_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
+import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_C_TaxCategory_ID;
+import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_C_Tax_ID;
 
 public class C_InvoiceLine_StepDef
 {

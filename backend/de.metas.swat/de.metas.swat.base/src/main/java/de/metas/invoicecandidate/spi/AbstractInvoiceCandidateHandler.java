@@ -22,6 +22,7 @@ package de.metas.invoicecandidate.spi;
  * #L%
  */
 
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeBL;

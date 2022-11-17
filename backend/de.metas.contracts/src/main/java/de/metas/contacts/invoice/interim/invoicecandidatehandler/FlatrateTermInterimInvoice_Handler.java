@@ -32,6 +32,7 @@ import de.metas.contacts.invoice.interim.service.IInterimInvoiceFlatrateTermDAO;
 import de.metas.contacts.invoice.interim.service.IInterimInvoiceSettingsDAO;
 import de.metas.contracts.FlatrateTermId;
 import de.metas.contracts.IContractsDAO;
+import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.invoicecandidate.ConditionTypeSpecificInvoiceCandidateHandler;
 import de.metas.contracts.invoicecandidate.HandlerTools;
 import de.metas.contracts.model.I_C_Flatrate_Term;
@@ -47,6 +48,8 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderLineId;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -84,7 +87,7 @@ public class FlatrateTermInterimInvoice_Handler implements ConditionTypeSpecific
 	}
 
 	@Override
-	public Iterator<I_C_Flatrate_Term> retrieveTermsWithMissingCandidates(final QueryLimit limit)
+	public Iterator<I_C_Flatrate_Term> retrieveTermsWithMissingCandidates(@NonNull final QueryLimit limit)
 	{
 		return contractsDAO.createInterimInvoiceSearchCriteria(null)
 				.iterate(I_C_Flatrate_Term.class);
@@ -145,6 +148,7 @@ public class FlatrateTermInterimInvoice_Handler implements ConditionTypeSpecific
 	}
 
 	@Override
+	@NonNull
 	public IInvoiceCandidateHandler.CandidatesAutoCreateMode isMissingInvoiceCandidate(final I_C_Flatrate_Term flatrateTerm)
 	{
 		return contractsDAO.createInterimInvoiceSearchCriteria(flatrateTerm).anyMatch()

@@ -184,6 +184,7 @@ public class PaymentBL implements IPaymentBL
 		final ClientId clientId = ClientId.ofRepoId(payment.getAD_Client_ID());
 		final OrgId orgId = OrgId.ofRepoId(payment.getAD_Org_ID());
 
+		// Get Currency Rate
 		if (currencyId != null
 				&& invoiceCurrencyId != null
 				&& !currencyId.equals(invoiceCurrencyId))
