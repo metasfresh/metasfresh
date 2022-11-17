@@ -28,7 +28,12 @@ const AllergenIcon = ({ allergens, size = 40 }) => {
 
       // first
       if (index === 0) {
-        cssConicGradient = color + ' ' + step + 'deg';
+        cssConicGradient = color;
+        if (step < 360) {
+          cssConicGradient += ' ' + step + 'deg';
+        } else {
+          cssConicGradient += ' 0deg 360deg';
+        }
       }
       // last
       else if (index === allergens.length - 1) {
