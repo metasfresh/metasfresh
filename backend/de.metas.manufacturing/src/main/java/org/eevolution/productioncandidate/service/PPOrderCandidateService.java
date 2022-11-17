@@ -61,7 +61,6 @@ import org.eevolution.productioncandidate.service.produce.PPOrderAllocatorServic
 import org.eevolution.productioncandidate.service.produce.PPOrderProducerFromCandidate;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -72,7 +71,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 @Service
 public class PPOrderCandidateService
@@ -108,9 +106,9 @@ public class PPOrderCandidateService
 	}
 
 	@NonNull
-	public OrderGenerateResult processCandidates(@NonNull final Stream<I_PP_Order_Candidate> orderCandidates,@Nullable final Boolean isDocComplete)
+	public OrderGenerateResult processCandidates(@NonNull final PPOrderCandidateProcessRequest ppOrderCandidateProcessRequest)
 	{
-		return createPPOrderProducerFromCandidate().createOrders(orderCandidates, isDocComplete);
+		return createPPOrderProducerFromCandidate().createOrders(ppOrderCandidateProcessRequest);
 	}
 
 	@NonNull
