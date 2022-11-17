@@ -12,6 +12,13 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13948](https://github.com/metasfresh/metasfresh/pull/13948) Swing Login: show only System role 
+  * [#13947](https://github.com/metasfresh/metasfresh/pull/13947) Manufacturing Order - Weighing Run (part 2)
+  * [#13920](https://github.com/metasfresh/metasfresh/pull/13920) Manufacturing Order - Weighing Run
+  * [#13838](https://github.com/metasfresh/metasfresh/pull/13838) The excel export process should consider the latest BOM version and exclude the oldest version with validto date 
+  * [#13825](https://github.com/metasfresh/metasfresh/pull/13825) The excel export process should consider the latest BOM version
+  * [#13824](https://github.com/metasfresh/metasfresh/issues/13824) Fix BOM Recursive Report
+  * [#13811](https://github.com/metasfresh/metasfresh/pull/13811) Fix github actions failures
   * [#13946](https://github.com/metasfresh/metasfresh/pull/13946) mobile UI: mfg: Show allergens
   * [#13935](https://github.com/metasfresh/metasfresh/pull/13935) mobile UI - mfg: Show Hazard Symbols
   * [#13913](https://github.com/metasfresh/metasfresh/pull/13913) Fix Manufacturing Candidates layout
