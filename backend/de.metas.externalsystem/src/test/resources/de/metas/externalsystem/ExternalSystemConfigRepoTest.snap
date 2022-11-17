@@ -124,23 +124,6 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSi
   }
 ]
 
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_RabbitMQ_getByTypeAndParent=[
-  {
-    "id" : 100002,
-    "parentId" : 100001,
-    "value" : "testRabbitMQValue",
-    "routingKey" : "routingKey",
-    "remoteUrl" : "remoteURL",
-    "authToken" : "authToken",
-    "isSyncBPartnerToRabbitMQ" : true,
-    "isAutoSendWhenCreatedByUserGroup" : false,
-    "syncBPartnerToRabbitMQ" : true,
-    "autoSendWhenCreatedByUserGroup" : false,
-    "autoSendBPartnerEnabled" : false,
-    "sendBPartnerAllowed" : true
-  }
-]
-
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Metasfresh_getById=[
   {

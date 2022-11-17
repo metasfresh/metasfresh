@@ -1,6 +1,7 @@
 package de.metas.contracts.commission;
 
 import de.metas.contracts.ConditionsId;
+import de.metas.document.DocBaseType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.experimental.UtilityClass;
@@ -46,11 +47,11 @@ public class CommissionConstants
 	@Getter
 	public enum CommissionDocType
 	{
-		COMMISSION(DOCBASETYPE_APInvoice, COMMISSION_DOC_SUBTYPE_VALUE),
-		MEDIATED_COMMISSION(DOCBASETYPE_ARInvoice, MEDIATED_COMMISSION_DOC_SUBTYPE_VALUE),
-		LICENSE_COMMISSION(DOCBASETYPE_ARInvoice, LICENSE_COMMISSION_DOC_SUBTYPE_VALUE);
+		COMMISSION(DocBaseType.APInvoice, COMMISSION_DOC_SUBTYPE_VALUE),
+		MEDIATED_COMMISSION(DocBaseType.ARInvoice, MEDIATED_COMMISSION_DOC_SUBTYPE_VALUE),
+		LICENSE_COMMISSION(DocBaseType.ARInvoice, LICENSE_COMMISSION_DOC_SUBTYPE_VALUE);
 
-		private final String docBaseType;
+		private final DocBaseType docBaseType;
 		private final String docSubType;
 	}
 }
