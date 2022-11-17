@@ -10,6 +10,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.common.util.time.SystemTime;
+import de.metas.deliveryplanning.DeliveryPlanningCreateRequest;
 import de.metas.document.location.DocumentLocation;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.freighcost.FreightCostRule;
@@ -968,4 +969,5 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		shipmentSchedulePA.save(shipmentSchedule);
 	}
+
 }

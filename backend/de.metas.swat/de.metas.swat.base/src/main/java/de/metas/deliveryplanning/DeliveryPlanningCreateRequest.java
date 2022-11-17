@@ -44,10 +44,8 @@ import javax.annotation.Nullable;
 
 @Data
 @Builder
-public class DeliveryPlanning
+public class DeliveryPlanningCreateRequest
 {
-	@NonNull DeliveryPlanningId id;
-
 	@NonNull OrgId orgId;
 
 	@NonNull ClientId clientId;
@@ -115,13 +113,13 @@ public class DeliveryPlanning
 	Quantity actualDeliveredQty;
 
 	@Nullable
-	String countryOfOrigin;
+	String originCountry;
 
 	@Nullable
 	String batch;
 
 	@Nullable
-	String WayBillNo;
+	String wayBillNo;
 
 	@Nullable
 	String releaseNo;
