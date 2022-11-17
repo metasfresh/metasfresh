@@ -804,6 +804,28 @@ class ExternalSystemConfigRepoTest
 	}
 
 	@Test
+	void externalSystem_Config_getActiveByType_Metasfresh()
+	{
+		// given
+		final I_ExternalSystem_Config parentRecord = ExternalSystemTestUtil.createI_ExternalSystem_ConfigBuilder()
+				.type(ExternalSystemType.Metasfresh.getCode())
+				.build();
+
+		ExternalSystemTestUtil.createMetasfreshConfigBuilder()
+				.value("value")
+				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
+				.build();
+
+		// when
+		final ImmutableList<ExternalSystemParentConfig> result = externalSystemConfigRepo.getActiveByType(ExternalSystemType.Metasfresh);
+
+		// then
+		assertThat(result).isNotEmpty();
+		assertThat(result.size()).isEqualTo(1);
+		expect(result).toMatchSnapshot();
+	}
+
+	@Test
 	void externalSystem_Config_getActiveByType_NoRecord()
 	{
 		// given

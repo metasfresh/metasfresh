@@ -197,6 +197,9 @@ public class ExternalSystemConfigRepo
 			case GRSSignum:
 				result = getAllByTypeGRS();
 				break;
+			case Metasfresh:
+				result = getAllByTypeMetasfresh();
+				break;
 			case Shopware6:
 			case Other:
 				throw new AdempiereException("Method not supported")
@@ -811,6 +814,17 @@ public class ExternalSystemConfigRepo
 	private ImmutableList<ExternalSystemParentConfig> getAllByTypeRabbitMQ()
 	{
 		return queryBL.createQueryBuilder(I_ExternalSystem_Config_RabbitMQ_HTTP.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.map(this::getExternalSystemParentConfig)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private ImmutableList<ExternalSystemParentConfig> getAllByTypeMetasfresh()
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_Metasfresh.class)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.stream()

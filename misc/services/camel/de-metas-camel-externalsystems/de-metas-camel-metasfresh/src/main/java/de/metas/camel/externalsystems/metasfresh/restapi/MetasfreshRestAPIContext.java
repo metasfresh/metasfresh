@@ -20,19 +20,17 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.metasfresh;
+package de.metas.camel.externalsystems.metasfresh.restapi;
 
-public interface MetasfreshConstants
+import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+
+@Value
+@Builder
+public class MetasfreshRestAPIContext
 {
-	String METASFRESH_EXTERNAL_SYSTEM_NAME = "metasfresh";
-	
-	String PARSER_PROPERTY = "ParserProperty";
-	String MASS_UPLOAD_STATISTICS_COLLECTOR_PROPERTY = "MassUpsertStatisticsCollector";
-	String IS_CONTINUE_PARSING_PROPERTY = "IsContinueParsing";
-	
-	String FEEDBACK_RESOURCE_URL_HEADER = "FeedbackResourceURL";
-	String FILE_NAME_HEADER = "CamelFileName";
-
-	String MASS_JSON_REQUEST_PROCESSING_LOCATION_DEFAULT = "./src/main/resources/mass-process";
-	String MASS_JSON_REQUEST_PROCESSING_LOCATION = "metasfresh.mass.json.request.directory.path";
+	@NonNull
+	JsonExternalSystemRequest request;
 }

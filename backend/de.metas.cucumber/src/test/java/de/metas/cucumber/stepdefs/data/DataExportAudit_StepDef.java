@@ -41,8 +41,6 @@ import de.metas.cucumber.stepdefs.externalsystem.ExternalSystem_Config_StepDefDa
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.pinstance.AD_PInstance_StepDefData;
 import de.metas.externalreference.model.I_S_ExternalReference;
-import de.metas.cucumber.stepdefs.externalsystem.ExternalSystem_Config_StepDefData;
-import de.metas.cucumber.stepdefs.pinstance.AD_PInstance_StepDefData;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.util.Services;

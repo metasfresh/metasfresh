@@ -39,7 +39,6 @@ import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.util.Check;
 import de.metas.common.util.EmptyUtil;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
-import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;

@@ -23,6 +23,8 @@
 package de.metas.camel.externalsystems.metasfresh.restapi;
 
 import de.metas.camel.externalsystems.common.CamelRouteUtil;
+import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.common.RestServiceAuthority;
 import de.metas.camel.externalsystems.common.RestServiceRoutes;
 import de.metas.camel.externalsystems.common.auth.JsonAuthenticateRequest;
@@ -30,10 +32,14 @@ import de.metas.camel.externalsystems.common.auth.JsonExpireTokenResponse;
 import de.metas.camel.externalsystems.common.auth.TokenCredentials;
 import de.metas.camel.externalsystems.common.file.WorkFile;
 import de.metas.camel.externalsystems.common.http.WriteRequestBodyToFileProcessor;
+import de.metas.camel.externalsystems.common.v2.ExternalStatusCreateCamelRequest;
 import de.metas.camel.externalsystems.metasfresh.restapi.feedback.FeedbackConfig;
 import de.metas.camel.externalsystems.metasfresh.restapi.feedback.FeedbackConfigProvider;
 import de.metas.common.externalsystem.ExternalSystemConstants;
+import de.metas.common.externalsystem.IExternalSystemService;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.externalsystem.status.JsonExternalStatus;
+import de.metas.common.externalsystem.status.JsonStatusRequest;
 import de.metas.common.util.Check;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
@@ -50,10 +56,11 @@ import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.REST_API_EXPIRE_TOKEN;
 import static de.metas.camel.externalsystems.metasfresh.MetasfreshConstants.MASS_JSON_REQUEST_PROCESSING_LOCATION;
 import static de.metas.camel.externalsystems.metasfresh.MetasfreshConstants.MASS_JSON_REQUEST_PROCESSING_LOCATION_DEFAULT;
+import static de.metas.camel.externalsystems.metasfresh.MetasfreshConstants.METASFRESH_EXTERNAL_SYSTEM_NAME;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
-public class MetasfreshRestAPIRouteBuilder extends RouteBuilder
+public class MetasfreshRestAPIRouteBuilder extends RouteBuilder implements IExternalSystemService
 {
 	private final FeedbackConfigProvider feedbackConfigProvider;
 
@@ -62,20 +69,28 @@ public class MetasfreshRestAPIRouteBuilder extends RouteBuilder
 		this.feedbackConfigProvider = feedbackConfigProvider;
 	}
 
-	public static final String REST_API_WRITE_REQUEST_BODY_TO_FILE_ROUTE_ID = "Metasfresh-WriteRequestBodyToFile";
-	public static final String WRITE_REQUEST_BODY_TO_FILE_PROCESSOR_ID = "Metasfresh-writeRequestBodyToFileProcessorId";
+	public static final String REST_API_WRITE_REQUEST_BODY_TO_FILE_ROUTE_ID = "metasfresh-WriteRequestBodyToFile";
+	public static final String WRITE_REQUEST_BODY_TO_FILE_PROCESSOR_ID = "metasfresh-writeRequestBodyToFileProcessorId";
 
-	public static final String ENABLE_RESOURCE_ROUTE_ID = "Metasfresh-enableRestAPI";
-	public static final String DISABLE_RESOURCE_ROUTE_ID = "Metasfresh-disableRestAPI";
+	private static final String ENABLE_RESOURCE_ROUTE = "enableRestAPI";
+	private static final String DISABLE_RESOURCE_ROUTE = "disableRestAPI";
+	
+	public static final String ENABLE_RESOURCE_ROUTE_ID = METASFRESH_EXTERNAL_SYSTEM_NAME + "-" + ENABLE_RESOURCE_ROUTE;
+	public static final String DISABLE_RESOURCE_ROUTE_ID = METASFRESH_EXTERNAL_SYSTEM_NAME + "-" + DISABLE_RESOURCE_ROUTE;
 
-	public static final String ENABLE_RESOURCE_ROUTE_PROCESSOR_ID = "Metasfresh-enableRestAPIProcessor";
-	public static final String DISABLE_RESOURCE_ROUTE_PROCESSOR_ID = "Metasfresh-disableRestAPIProcessor";
+	public static final String ENABLE_RESOURCE_ROUTE_PROCESSOR_ID = "metasfresh-enableRestAPIProcessor";
+	public static final String DISABLE_RESOURCE_ROUTE_PROCESSOR_ID = "metasfresh-disableRestAPIProcessor";
 
-	public static final String ENABLE_RESOURCE_ATTACH_AUTHENTICATE_REQ_PROCESSOR_ID = "Metasfresh-ER-AttachAuthenticateReqProcessorId";
-	public static final String DISABLE_RESOURCE_ATTACH_AUTHENTICATE_REQ_PROCESSOR_ID = "Metasfresh-DR-AttachAuthenticateReqProcessorId";
+	public static final String ENABLE_RESOURCE_ATTACH_AUTHENTICATE_REQ_PROCESSOR_ID = "metasfresh-ER-AttachAuthenticateReqProcessorId";
+	public static final String DISABLE_RESOURCE_ATTACH_AUTHENTICATE_REQ_PROCESSOR_ID = "metasfresh-DR-AttachAuthenticateReqProcessorId";
 
-	public static final String REGISTER_FEEDBACK_CONFIG_PROCESSOR_ID = "Metasfresh-registerFeedbackConfigProcessorId";
-	public static final String UNREGISTER_FEEDBACK_CONFIG_PROCESSOR_ID = "Metasfresh-unregisterFeedbackConfigProcessorId";
+	public static final String ENABLE_PREPARE_EXTERNAL_STATUS_CREATE_REQ_PROCESSOR_ID = "metasfresh-ER-PrepareStatusReqProcessorId";
+	public static final String DISABLE_PREPARE_EXTERNAL_STATUS_CREATE_REQ_PROCESSOR_ID = "metasfresh-DR-PrepareStatusReqProcessorId";
+
+	public static final String REGISTER_FEEDBACK_CONFIG_PROCESSOR_ID = "metasfresh-registerFeedbackConfigProcessorId";
+	public static final String UNREGISTER_FEEDBACK_CONFIG_PROCESSOR_ID = "metasfresh-unregisterFeedbackConfigProcessorId";
+
+	public static final String ROUTE_PROPERTY_METASFRESH_REST_API_CONTEXT = "MetasfreshRestAPIRouteContext";
 
 	@Override
 	public void configure()
@@ -89,20 +104,30 @@ public class MetasfreshRestAPIRouteBuilder extends RouteBuilder
 				.routeId(ENABLE_RESOURCE_ROUTE_ID)
 				.streamCaching()
 				.log("Route invoked!")
+				.process(this::prepareRestAPIContext)
+				
 				.process(this::registerFeedbackConfig).id(REGISTER_FEEDBACK_CONFIG_PROCESSOR_ID)
 				.process(this::attachAuthenticateRequest).id(ENABLE_RESOURCE_ATTACH_AUTHENTICATE_REQ_PROCESSOR_ID)
 				.to(direct(REST_API_AUTHENTICATE_TOKEN))
 				.process(this::enableRestAPIProcessor).id(ENABLE_RESOURCE_ROUTE_PROCESSOR_ID)
+
+				.process(exchange -> this.prepareExternalStatusCreateRequest(exchange, JsonExternalStatus.Active)).id(ENABLE_PREPARE_EXTERNAL_STATUS_CREATE_REQ_PROCESSOR_ID)
+				.to("{{" + ExternalSystemCamelConstants.MF_CREATE_EXTERNAL_SYSTEM_STATUS_V2_CAMEL_URI + "}}")
 				.end();
 
 		from(direct(DISABLE_RESOURCE_ROUTE_ID))
 				.routeId(DISABLE_RESOURCE_ROUTE_ID)
 				.streamCaching()
 				.log("Route invoked!")
+				.process(this::prepareRestAPIContext)
+
 				.process(this::unregisterFeedbackConfig).id(UNREGISTER_FEEDBACK_CONFIG_PROCESSOR_ID)
 				.process(this::attachAuthenticateRequest).id(DISABLE_RESOURCE_ATTACH_AUTHENTICATE_REQ_PROCESSOR_ID)
 				.to(direct(REST_API_EXPIRE_TOKEN))
 				.process(this::disableRestAPIProcessor).id(DISABLE_RESOURCE_ROUTE_PROCESSOR_ID)
+
+				.process(exchange -> this.prepareExternalStatusCreateRequest(exchange, JsonExternalStatus.Inactive)).id(DISABLE_PREPARE_EXTERNAL_STATUS_CREATE_REQ_PROCESSOR_ID)
+				.to("{{" + ExternalSystemCamelConstants.MF_CREATE_EXTERNAL_SYSTEM_STATUS_V2_CAMEL_URI + "}}")
 				.end();
 		
 		rest().path(RestServiceRoutes.METASFRESH.getPath())
@@ -236,5 +261,61 @@ public class MetasfreshRestAPIRouteBuilder extends RouteBuilder
 
 		final String filename = FilenameUtil.computeFilename(credentials.getExternalSystemValue(), credentials.getOrgCode()); 
 		return WorkFile.of(filename);
+	}
+
+	private void prepareRestAPIContext(@NonNull final Exchange exchange)
+	{
+		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
+
+		final MetasfreshRestAPIContext context = MetasfreshRestAPIContext.builder()
+				.request(request)
+				.build();
+
+		exchange.setProperty(ROUTE_PROPERTY_METASFRESH_REST_API_CONTEXT, context);
+	}
+	
+	private void prepareExternalStatusCreateRequest(@NonNull final Exchange exchange, @NonNull final JsonExternalStatus status)
+	{
+		final MetasfreshRestAPIContext context = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_METASFRESH_REST_API_CONTEXT, MetasfreshRestAPIContext.class);
+
+		final JsonExternalSystemRequest request = context.getRequest();
+
+		final JsonStatusRequest jsonStatusRequest = JsonStatusRequest.builder()
+				.status(status)
+				.pInstanceId(request.getAdPInstanceId())
+				.build();
+
+		final ExternalStatusCreateCamelRequest camelRequest = ExternalStatusCreateCamelRequest.builder()
+				.jsonStatusRequest(jsonStatusRequest)
+				.externalSystemConfigType(getExternalSystemTypeCode())
+				.externalSystemChildConfigValue(request.getExternalSystemChildConfigValue())
+				.serviceValue(getServiceValue())
+				.build();
+
+		exchange.getIn().setBody(camelRequest, JsonExternalSystemRequest.class);
+	}
+
+	@Override
+	public String getServiceValue()
+	{
+		return "defaultRestAPIMetasfresh";
+	}
+
+	@Override
+	public String getExternalSystemTypeCode()
+	{
+		return METASFRESH_EXTERNAL_SYSTEM_NAME;
+	}
+
+	@Override
+	public String getEnableCommand()
+	{
+		return ENABLE_RESOURCE_ROUTE;
+	}
+
+	@Override
+	public String getDisableCommand()
+	{
+		return DISABLE_RESOURCE_ROUTE;
 	}
 }
