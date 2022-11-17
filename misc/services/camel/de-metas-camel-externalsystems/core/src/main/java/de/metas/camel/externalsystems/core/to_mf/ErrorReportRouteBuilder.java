@@ -97,13 +97,14 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 				.process(this::prepareJsonErrorRequest)
 				.choice()
 					.when(body().isNull())
-						.log("No PInstanceId available!")
+						.log("No PInstanceId available! => cannot log error in metasfresh, skipping...")
 					.otherwise()
 						.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonError.class))
 						.removeHeaders("CamelHttp*")
 						.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
 						.toD("{{" + MF_EXTERNAL_SYSTEM_V2_URI + "}}/externalstatus/${header." + HEADER_PINSTANCE_ID + "}/error")
-				.endChoice();
+				.endChoice()
+				.end();
 
 		from(direct(ERROR_SEND_LOG_MESSAGE))
 				.routeId(ERROR_SEND_LOG_MESSAGE)

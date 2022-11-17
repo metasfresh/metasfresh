@@ -73,7 +73,7 @@ public class MassJsonRequestDispatcherRoute extends RouteBuilder
 		errorHandler(defaultErrorHandler());
 		onException(Exception.class)
 				.to(direct(MF_ERROR_ROUTE_ID));
-		
+
 		CamelRouteUtil.setupProperties(getContext());
 
 		final String massJsonRequestProcessingLocation = CamelRouteUtil.resolveProperty(getContext(),
@@ -102,11 +102,11 @@ public class MassJsonRequestDispatcherRoute extends RouteBuilder
 		validateRootIsObject(parser);
 		final String batchId = getBatchId(parser);
 		final String itemType = getItemType(parser);
-		
+
 		exchange.getIn().setHeader(MASS_PROCESSING_TARGET_ROUTE, ProcessingRoutes.ofItemType(itemType).getTargetRoute());
 
 		moveParserCursorInsideItemBody(parser);
-		
+
 		exchange.getIn().setBody(parser, JsonParser.class);
 
 		registerMassUploadStatisticsCollector(exchange, batchId);
@@ -127,7 +127,7 @@ public class MassJsonRequestDispatcherRoute extends RouteBuilder
 			throw new RuntimeCamelException("Could not create JsonParser!", exception);
 		}
 	}
-	
+
 	private void moveParserCursorInsideItemBody(@NonNull final JsonParser parser)
 	{
 		try
@@ -136,7 +136,7 @@ public class MassJsonRequestDispatcherRoute extends RouteBuilder
 			final String fieldName = parser.getCurrentName();
 			if (!fieldName.equals(JsonMassUpsertRequest.FIELD_NAME_ITEM_BODY))
 			{
-				throw new RuntimeCamelException("Error parsing the request: next fieldName shall be " + JsonMassUpsertRequest.FIELD_NAME_ITEM_BODY);
+				throw new RuntimeCamelException("Error parsing the request: next fieldName shall be " + JsonMassUpsertRequest.FIELD_NAME_ITEM_BODY + " but was: " + fieldName);
 			}
 		}
 		catch (final Exception exception)
@@ -160,7 +160,7 @@ public class MassJsonRequestDispatcherRoute extends RouteBuilder
 			}
 			else
 			{
-				throw new RuntimeCamelException("Error parsing the request: next fieldName shall be " + JsonMassUpsertRequest.FIELD_NAME_ITEM_TYPE);
+				throw new RuntimeCamelException("Error parsing the request: next fieldName shall be " + JsonMassUpsertRequest.FIELD_NAME_ITEM_TYPE + " but was: " + fieldName);
 			}
 		}
 		catch (final Exception exception)
@@ -183,7 +183,7 @@ public class MassJsonRequestDispatcherRoute extends RouteBuilder
 			}
 			else
 			{
-				throw new RuntimeCamelException("Error parsing the request: next fieldName shall be " + JsonMassUpsertRequest.FIELD_NAME_BATCH_ID);
+				throw new RuntimeCamelException("Error parsing the request: next fieldName shall be " + JsonMassUpsertRequest.FIELD_NAME_BATCH_ID + " but was: " + fieldName);
 			}
 		}
 		catch (final Exception exception)
@@ -206,7 +206,7 @@ public class MassJsonRequestDispatcherRoute extends RouteBuilder
 
 		exchange.setProperty(MASS_UPLOAD_STATISTICS_COLLECTOR_PROPERTY, massUpsertStatisticsCollector);
 	}
-	
+
 	private static void validateRootIsObject(@NonNull final JsonParser parser)
 	{
 		try
