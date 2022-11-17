@@ -60,8 +60,8 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 import static de.metas.cucumber.stepdefs.StepDefConstants.TEST_PLANT_ID;
 import static de.metas.cucumber.stepdefs.StepDefConstants.WORKFLOW_ID;
 import static org.assertj.core.api.Assertions.*;
-import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_DD_NetworkDistribution_ID;
 import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_AD_Workflow_ID;
+import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_DD_NetworkDistribution_ID;
 import static org.eevolution.model.I_PP_Product_Planning.COLUMNNAME_M_AttributeSetInstance_ID;
 
 public class PP_Product_Planning_StepDef
