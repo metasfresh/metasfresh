@@ -1700,7 +1700,13 @@ public abstract class PO
 		try
 		{
 			m_loading = true;
-			return load0(trxName, false); // gh #986 isRetry=false because this is our first attempt to load the record
+
+			if(!services.isPerfMonActive())
+			{
+				return load0(trxName, false); // gh #986 isRetry=false because this is our first attempt to load the record;
+			}
+			return services.performanceMonitoringServiceLoad(
+					() -> load0(trxName, false)); // gh #986 isRetry=false because this is our first attempt to load the record;
 		}
 		finally
 		{
@@ -2817,6 +2823,18 @@ public abstract class PO
 	 * @see #save()
 	 */
 	public final void saveEx() throws AdempiereException
+	{
+		if(!services.isPerfMonActive())
+		{
+			saveEx0();
+		}
+		else
+		{
+			services.performanceMonitoringServiceSaveEx(() -> saveEx0());
+		}
+	}
+
+	private final void saveEx0() throws AdempiereException
 	{
 		//
 		// Check and prepare the saving

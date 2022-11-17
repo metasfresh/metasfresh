@@ -3,7 +3,7 @@ package de.metas.document.engine.impl;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import org.adempiere.ad.table.api.IADTableDAO;
 import de.metas.document.engine.IDocument;
-import de.metas.monitoring.adapter.PerformanceMonitoringService.SpanMetadata;
+import de.metas.monitoring.adapter.PerformanceMonitoringService.Metadata;
 import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -32,17 +32,18 @@ import lombok.experimental.UtilityClass;
  */
 
 @UtilityClass
-public class DocactionAPMHelper
+public class DocactionPerformanceMonitoringHelper
 {
-	public SpanMetadata createMetadataFor(@NonNull final IDocument document, @NonNull final String docAction)
+	public Metadata createMetadataFor(@NonNull final IDocument document, @NonNull final String docAction)
 	{
 		final String tableName = Services.get(IADTableDAO.class).retrieveTableName(document.get_Table_ID());
 
-		return SpanMetadata
+		return Metadata
 				.builder()
-				.name("DocAction - " + docAction + " " + tableName)
-				.type(Type.DOC_ACTION.getCode())
-				.subType(docAction)
+				.className("AbstractDocumentBL")
+				.type(Type.DOC_ACTION)
+				.functionName("processIt")
+				.label("docAction", docAction)
 				.label("tableName", tableName)
 				.label(PerformanceMonitoringService.LABEL_RECORD_ID, Integer.toString(document.get_ID()))
 				.build();

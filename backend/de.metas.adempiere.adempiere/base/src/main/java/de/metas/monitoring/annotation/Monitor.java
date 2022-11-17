@@ -1,15 +1,8 @@
-package de.metas.rest_api.utils;
-
-import de.metas.monitoring.adapter.PerformanceMonitoringService.SpanMetadata;
-import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
-import lombok.NonNull;
-import lombok.experimental.UtilityClass;
-
 /*
  * #%L
- * de.metas.business.rest-api-impl
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -27,14 +20,15 @@ import lombok.experimental.UtilityClass;
  * #L%
  */
 
-@UtilityClass
-public class ApiAPMHelper
-{
-	public SpanMetadata createMetadataFor(@NonNull final String restEndpointName)
-	{
-		return SpanMetadata.builder()
-				.name("REST-API - " + restEndpointName)
-				.type(Type.REST_API_PROCESSING.getCode())
-				.build();
-	}
+package de.metas.monitoring.annotation;
+
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
+
+import java.lang.annotation.*;
+
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Monitor {
+	PerformanceMonitoringService.Type type();
 }
+

@@ -25,6 +25,8 @@ package de.metas.rest_api.process.impl;
 import ch.qos.logback.classic.Level;
 import de.metas.Profiles;
 import de.metas.logging.LogManager;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.monitoring.annotation.Monitor;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.ProcessBasicInfo;
@@ -91,6 +93,7 @@ public class ProcessRestController
 		this.processService = processService;
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
 	@ApiOperation("Invoke a process from the list returned by the `available` endpoint")
 	@PostMapping("{value}/invoke")
 	public ResponseEntity<?> invokeProcess(
@@ -129,6 +132,7 @@ public class ProcessRestController
 		return getResponse(processExecutionResult);
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER)
 	@GetMapping("/available")
 	public ResponseEntity<GetAvailableProcessesResponse> getAllProcesses()
 	{
