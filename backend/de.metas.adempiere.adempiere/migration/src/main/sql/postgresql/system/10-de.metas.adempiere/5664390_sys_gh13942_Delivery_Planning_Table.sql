@@ -1031,3 +1031,26 @@ UPDATE AD_Column SET ColumnSQL='(SELECT o.POReference from C_Order o where o.C_O
 
 
 
+-- Column: M_Delivery_Planning.ActualDeliveredQty
+-- 2022-11-17T13:17:08.751Z
+UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2022-11-17 15:17:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585029
+;
+
+-- Column: M_Delivery_Planning.ActualLoadQty
+-- 2022-11-17T13:17:18.612Z
+UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2022-11-17 15:17:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585028
+;
+
+-- Column: M_Delivery_Planning.QtyOrdered
+-- 2022-11-17T13:17:25.483Z
+UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2022-11-17 15:17:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585018
+;
+
+-- Column: M_Delivery_Planning.QtyTotalOpen
+-- 2022-11-17T13:17:37.740Z
+UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2022-11-17 15:17:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585019
+;
+
+
+
+
