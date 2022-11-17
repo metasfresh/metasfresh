@@ -22,6 +22,8 @@
 
 package de.metas.handlingunits.pporder.interceptor;
 
+import de.metas.handlingunits.attribute.impl.HUUniqueAttributesRepository;
+import de.metas.handlingunits.attribute.impl.HUUniqueAttributesService;
 import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleRepository;
@@ -30,10 +32,15 @@ import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderPlanningStatus;
 import org.springframework.stereotype.Component;
+
+import java.util.Set;
 
 @Interceptor(I_PP_Order.class)
 @Component
@@ -78,6 +85,20 @@ public class PP_Order
 		if (ppOrderIssueScheduleRepository.matchesByOrderId(ppOrderId))
 		{
 			throw new AdempiereException("Reversing processed issue schedules is not allowed");
+		}
+	}
+
+	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
+	private void checkHUUniqueAttributes(@NonNull final I_PP_Order order)
+	{
+		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+		final HUUniqueAttributesService huUniqueAttributesService = new HUUniqueAttributesService(new HUUniqueAttributesRepository());
+		final AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.ofRepoIdOrNone(order.getM_AttributeSetInstance_ID());
+		if (attributeSetInstanceId.isRegular())
+		{
+			final Set<AttributeId> asiAttributeIds = attributesRepo.getAttributeIdsByAttributeSetInstanceId(attributeSetInstanceId);
+			attributesRepo.getAttributesByIds(asiAttributeIds)
+					.forEach(huUniqueAttributesService::validateAttribute);
 		}
 	}
 }

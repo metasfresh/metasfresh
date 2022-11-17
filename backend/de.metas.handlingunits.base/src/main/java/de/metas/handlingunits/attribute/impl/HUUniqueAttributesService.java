@@ -42,6 +42,7 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -103,6 +104,19 @@ public class HUUniqueAttributesService
 	{
 		final I_M_HU hu = huDAO.getById(huId);
 		huAttributesDAO.retrieveAttributesOrdered(hu).getHuAttributes()
+				.stream()
+				.filter(I_M_HU_Attribute::isUnique)
+				.forEach(this::validateHUUniqueAttribute);
+	}
+
+	public void validateAttribute(@NonNull final I_M_Attribute attribute)
+	{
+		Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Attribute.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_M_Attribute_ID, attribute.getM_Attribute_ID())
+				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_Value, attribute.getValue())
+				.create()
+				.list(I_M_HU_Attribute.class)
 				.stream()
 				.filter(I_M_HU_Attribute::isUnique)
 				.forEach(this::validateHUUniqueAttribute);
