@@ -171,5 +171,15 @@ UPDATE AD_Message_Trl SET MsgText='Die Route "{0}" für ExternalSystem_Config_ID
 UPDATE AD_Message SET MsgText='Die Route "{0}" für ExternalSystem_Config_ID = {1} kann nicht gestartet werden, da das Zielverzeichnis und das Dateinamensmuster des ausgewählten Dienstes dupliziert sind.',Updated=TO_TIMESTAMP('2022-11-18 17:11:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545212
 ;
 
+-- Value: ExternalSystemConfigSAPDuplicateSFTPFileLookupDetails
+-- 2022-11-18T15:16:42.862Z
+UPDATE AD_Message_Trl SET MsgText='Cannot start route "{0}" for ExternalSystem_Config_ID = {1} due to target directory & file name pattern of the selected service being duplicated.',Updated=TO_TIMESTAMP('2022-11-18 17:16:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Message_ID=545212
+;
+
+-- Value: ExternalSystemConfigSAPDuplicateSFTPFileLookupDetails
+-- 2022-11-18T15:16:47.934Z
+UPDATE AD_Message_Trl SET MsgText='Cannot start route "{0}" for ExternalSystem_Config_ID = {1} due to target directory & file name pattern of the selected service being duplicated.',Updated=TO_TIMESTAMP('2022-11-18 17:16:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545212
+;
+
 
 
