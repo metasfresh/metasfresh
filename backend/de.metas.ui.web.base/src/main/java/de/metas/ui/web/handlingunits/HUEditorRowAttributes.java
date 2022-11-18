@@ -40,14 +40,19 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.AttributeSourceDocument;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.spi.IAttributeValueContext;
 import org.adempiere.mm.attributes.spi.impl.DefaultAttributeValueContext;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.ExtendedMemorizingSupplier;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
+import org.eevolution.api.IProductBOMDAO;
+import org.eevolution.api.ProductBOMId;
+import org.eevolution.model.I_PP_Product_BOM;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -137,7 +142,7 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 			final boolean editableEffective = editableInUI &&
 					(editableInHuOverride || editableInHU);
 
-			if (!editableEffective)
+			if (!editableEffective || isProductsBOMHasSerialNo_Sequence(attribute, productIds))
 			{
 				readonlyAttributeNames.add(attributeCode);
 			}
@@ -158,6 +163,31 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		// Bind attribute storage:
 		// each change on attribute storage shall be forwarded to current execution
 		AttributeStorage2ExecutionEventsForwarder.bind(attributesStorage, documentPath);
+	}
+
+	private boolean isProductsBOMHasSerialNo_Sequence(final I_M_Attribute attribute, final ImmutableSet<ProductId> productIds)
+	{
+		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+		final AttributeId attributeId = AttributeId.ofRepoId(attribute.getM_Attribute_ID());
+		final AttributeId serialNoAttributeId = attributesRepo.retrieveAttributeIdByValue(AttributeConstants.ATTR_SerialNo);
+		if (attributeId.equals(serialNoAttributeId) && isProductsBOMHasSerialNo_Sequence(attribute, productIds))
+		{
+			return productIds.stream().anyMatch(this::isBOMHasSerialNo_Sequence);
+		}
+		return false;
+	}
+
+	private boolean isBOMHasSerialNo_Sequence(final ProductId productId)
+	{
+		final IProductBOMDAO productBOMsRepo = Services.get(IProductBOMDAO.class);
+		final ProductBOMId productBOMId = productBOMsRepo.getDefaultBOMIdByProductId(productId).orElse(null);
+
+		if (productBOMId != null)
+		{
+			final I_PP_Product_BOM bomRecord = productBOMsRepo.getById(productBOMId);
+			return (bomRecord.getSerialNo_Sequence() != null);
+		}
+		return false;
 	}
 
 	/*
@@ -431,9 +461,8 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		return Optional.of(toJSONDocumentField(clearanceNote, jsonOptions));
 	}
 
-
 	@NonNull
-	private static JSONDocumentField toJSONDocumentField(@NonNull final String clearanceNote,@NonNull final JSONOptions jsonOpts)
+	private static JSONDocumentField toJSONDocumentField(@NonNull final String clearanceNote, @NonNull final JSONOptions jsonOpts)
 	{
 		final Object jsonValue = Values.valueToJsonObject(clearanceNote, jsonOpts);
 
