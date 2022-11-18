@@ -35,6 +35,7 @@ import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.ui.web.window.model.lookup.TimeZoneLookupDescriptor;
 import de.metas.ui.web.window.model.sql.SqlDocumentsRepository;
 import de.metas.util.Check;
+import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -381,7 +382,8 @@ import java.util.Set;
 					gridFieldVO.isMandatory(),
 					gridFieldVO.isUseDocSequence());
 
-			readonlyLogic = extractReadOnlyLogic(gridFieldVO, keyColumn, isParentLinkColumn);
+			final OptionalBoolean tabAllowsCreateNew = entityDescriptorBuilder.getAllowCreateNewLogic().toOptionalBoolean();
+			readonlyLogic = extractReadOnlyLogic(gridFieldVO, keyColumn, isParentLinkColumn, tabAllowsCreateNew);
 			alwaysUpdateable = extractAlwaysUpdateable(gridFieldVO);
 		}
 
@@ -541,13 +543,13 @@ import java.util.Set;
 		// 		.build();
 	}
 
-	private static ILogicExpression extractReadOnlyLogic(final GridFieldVO gridFieldVO, final boolean keyColumn, final boolean isParentLinkColumn)
+	private static ILogicExpression extractReadOnlyLogic(final GridFieldVO gridFieldVO, final boolean keyColumn, final boolean isParentLinkColumn, final OptionalBoolean tabAllowsCreateNew)
 	{
 		if (keyColumn)
 		{
 			return ConstantLogicExpression.TRUE;
 		}
-		else if(gridFieldVO.isVirtualColumn())
+		else if (gridFieldVO.isVirtualColumn())
 		{
 			return ConstantLogicExpression.TRUE;
 		}
@@ -558,7 +560,8 @@ import java.util.Set;
 		// e.g. BPartner (pharma) window -> Product tab
 		else if (!gridFieldVO.isUpdateable()
 				&& gridFieldVO.isParentLink() && !isParentLinkColumn
-				&& gridFieldVO.isMandatory())
+				&& gridFieldVO.isMandatory()
+				&& tabAllowsCreateNew.isTrue())
 		{
 			return ConstantLogicExpression.FALSE;
 		}
