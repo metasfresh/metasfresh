@@ -614,7 +614,6 @@ public class ADProcessDAO implements IADProcessDAO
 		InterfaceWrapperHelper.save(process);
 	}
 
-
 	@Override
 	public void copyWindowRelatedProcesses(final WindowCopyResult windowCopyResult)
 	{

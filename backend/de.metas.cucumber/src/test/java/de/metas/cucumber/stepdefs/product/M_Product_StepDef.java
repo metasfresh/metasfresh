@@ -1,4 +1,3 @@
-
 /*
  * #%L
  * de.metas.cucumber
@@ -44,7 +43,6 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
-import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
@@ -234,12 +232,12 @@ public class M_Product_StepDef
 	}
 
 	@Given("load M_Product:")
-	public void load_product(@NonNull final DataTable dataTable)
+	public void load_M_Product(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
+		for (final Map<String, String> row : tableRows)
 		{
-			loadProduct(tableRow);
+			loadProduct(row);
 		}
 	}
 
@@ -407,15 +405,18 @@ public class M_Product_StepDef
 		return productType;
 	}
 
-	private void loadProduct(@NonNull final Map<String, String> tableRow)
+	private void loadProduct(@NonNull final Map<String, String> row)
 	{
-		final int productId = DataTableUtil.extractIntForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID);
+		final String identifier = DataTableUtil.extractStringForColumnName(row, I_M_Product.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 
-		final I_M_Product product = productDAO.getById(productId);
-		assertThat(product).isNotNull();
+		final String id = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Product.COLUMNNAME_M_Product_ID);
 
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-		productTable.put(productIdentifier, product);
+		if (de.metas.util.Check.isNotBlank(id))
+		{
+			final I_M_Product productRecord = productDAO.getById(Integer.parseInt(id));
+
+			productTable.putOrReplace(identifier, productRecord);
+		}
 	}
 
 	private void updateMProduct(@NonNull final Map<String, String> tableRow)

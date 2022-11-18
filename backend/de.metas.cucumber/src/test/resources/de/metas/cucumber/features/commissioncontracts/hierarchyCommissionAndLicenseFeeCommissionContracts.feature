@@ -236,9 +236,9 @@ Feature: Hierarchy commission and license fee commission combined
       | customer_salesRep_1 | customer_salesRep_location_1          | customer_salesRep_1 | ps_1                          | Y            | Y              | Y              | 1000009              |                                       | customer_salesRep_1 cmp | 1234567891235 |
 
     And metasfresh contains C_Flatrate_Terms:
-      | Identifier                  | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier |
-      | hierarchyContract_own_rev_1 | hierarchyConditions_own_rev_1       | customer_salesRep_1         | 2021-11-01 | 2022-11-01 | commission_product          |
-      | licenseFeeContract_1        | licenseFeeConditions_1              | customer_salesRep_1         | 2021-11-01 | 2022-11-01 | commission_product          |
+      | Identifier                  | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.NrOfDaysFromNow |
+      | hierarchyContract_own_rev_1 | hierarchyConditions_own_rev_1       | customer_salesRep_1         | commission_product          | 365                 |
+      | licenseFeeContract_1        | licenseFeeConditions_1              | customer_salesRep_1         | commission_product          | 365                 |
 
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
   """

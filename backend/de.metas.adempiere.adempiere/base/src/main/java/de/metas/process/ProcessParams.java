@@ -182,7 +182,7 @@ public class ProcessParams implements IRangeAwareParams
 		}
 		return processInfoParameter.getParameterAsInt(defaultValue);
 	}
-
+		
 	@Override
 	public <T extends RepoIdAware> T getParameterAsId(final String parameterName, final Class<T> type)
 	{
@@ -280,7 +280,7 @@ public class ProcessParams implements IRangeAwareParams
 		final ProcessInfoParameter processInfoParameter = getProcessInfoParameterOrNull(parameterName);
 		return processInfoParameter != null ? processInfoParameter.getParameterAsInstant() : null;
 	}
-
+	
 	@Override
 	public Timestamp getParameter_ToAsTimestamp(final String parameterName)
 	{

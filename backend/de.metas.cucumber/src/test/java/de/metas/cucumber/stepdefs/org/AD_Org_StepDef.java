@@ -22,18 +22,6 @@
 
 package de.metas.cucumber.stepdefs.org;
 
-import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.util.Services;
-import io.cucumber.datatable.DataTable;
-import io.cucumber.java.en.And;
-import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.compiere.model.I_AD_Org;
-
-import java.util.Map;
-
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
@@ -53,7 +41,6 @@ import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.Assertions.*;
 
 public class AD_Org_StepDef
 {

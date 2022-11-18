@@ -27,7 +27,6 @@ import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.common.util.CoalesceUtil;
-import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidate.ExternallyReferencedCandidateBuilder;
 import de.metas.location.CountryId;
 import de.metas.location.ICountryDAO;
 import de.metas.money.Money;
@@ -46,8 +45,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.ZoneId;
-
-import static de.metas.common.util.CoalesceUtil.coalesce;
+import java.util.Optional;
 
 @Service
 public class ManualCandidateService

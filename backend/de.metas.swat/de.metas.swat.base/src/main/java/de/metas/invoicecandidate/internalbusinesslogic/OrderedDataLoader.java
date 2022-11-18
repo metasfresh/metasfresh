@@ -1,15 +1,8 @@
 package de.metas.invoicecandidate.internalbusinesslogic;
 
-import java.math.BigDecimal;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
-
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.document.engine.DocStatus;
 import de.metas.interfaces.I_C_OrderLine;
-import de.metas.invoicecandidate.internalbusinesslogic.OrderedData.OrderedDataBuilder;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
@@ -22,6 +15,11 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
+
+import java.math.BigDecimal;
 
 /*
  * #%L

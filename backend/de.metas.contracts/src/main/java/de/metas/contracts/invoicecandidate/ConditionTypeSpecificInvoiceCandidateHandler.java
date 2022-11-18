@@ -15,8 +15,6 @@ import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.quantity.Quantity;
-import lombok.NonNull;
-import org.adempiere.ad.dao.QueryLimit;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
@@ -25,7 +23,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import java.sql.Timestamp;

@@ -53,15 +53,9 @@ import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_C_Tax_ID;
-import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_M_Product_ID;
 import static de.metas.invoicecandidate.model.I_C_Invoice_Candidate.COLUMNNAME_QtyInvoiced;
 import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Invoice_ID;
-import static org.compiere.model.I_C_TaxCategory.COLUMNNAME_C_TaxCategory_ID;
-import static org.compiere.model.I_M_Product.COLUMNNAME_M_Product_ID;
-import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_C_TaxCategory_ID;
-import static org.compiere.model.I_C_InvoiceLine.COLUMNNAME_C_Tax_ID;
 
 public class C_InvoiceLine_StepDef
 {
@@ -112,7 +106,7 @@ public class C_InvoiceLine_StepDef
 
 			final I_C_Invoice invoiceRecord = invoiceTable.get(invoiceIdentifier);
 
-			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_InvoiceLine.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final int expectedProductId = productTable.getOptional(productIdentifier)
 					.map(I_M_Product::getM_Product_ID)
 					.orElseGet(() -> Integer.parseInt(productIdentifier));
@@ -148,7 +142,7 @@ public class C_InvoiceLine_StepDef
 		for (final Map<String, String> row : dataTable)
 		{
 
-			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_InvoiceLine.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final Integer productID = productTable.getOptional(productIdentifier)
 					.map(I_M_Product::getM_Product_ID)
 					.orElseGet(() -> Integer.parseInt(productIdentifier));
@@ -237,7 +231,7 @@ public class C_InvoiceLine_StepDef
 			assertThat(invoiceLine.getDiscount()).isEqualTo(discount);
 		}
 
-		final String taxIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_Tax_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final String taxIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_C_Tax_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 		if (taxIdentifier != null)
 		{
@@ -245,7 +239,7 @@ public class C_InvoiceLine_StepDef
 			assertThat(invoiceLine.getC_Tax_ID()).isEqualTo(taxRecord.getC_Tax_ID());
 		}
 
-		final String taxCategoryIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + COLUMNNAME_C_TaxCategory_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final String taxCategoryIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_InvoiceLine.COLUMNNAME_C_TaxCategory_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 		if (Check.isNotBlank(taxCategoryIdentifier))
 		{
@@ -273,7 +267,7 @@ public class C_InvoiceLine_StepDef
 
 	private void create_C_InvoiceLine(@NonNull final Map<String, String> row)
 	{
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_InvoiceLine.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final Integer productId = productTable.getOptional(productIdentifier)
 				.map(I_M_Product::getM_Product_ID)
 				.orElseGet(() -> Integer.parseInt(productIdentifier));
