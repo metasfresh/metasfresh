@@ -24,6 +24,7 @@ package de.metas.camel.externalsystems.sap.creditlimit;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.camel.externalsystems.common.IdAwareRouteBuilder;
+import de.metas.camel.externalsystems.common.PInstanceUtil;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.sap.creditlimit.info.UpsertCreditLimitRequest;
 import de.metas.camel.externalsystems.sap.model.creditlimit.CreditLimitRow;
@@ -90,6 +91,7 @@ public class GetCreditLimitsSFTPRouteBuilder extends IdAwareRouteBuilder
 		from(sftpConfig.getSFTPConnectionStringCreditLimit())
 				.routeId(routeId)
 				.log("CreditLimit Sync Route Started")
+				.process(exchange -> PInstanceUtil.setPInstanceHeader(exchange, enabledByExternalSystemRequest))
 				.process(this::prepareCreditLimitContext)
 				.split(body().tokenize("\n")).streaming()
 				  .unmarshal(new BindyCsvDataFormat(CreditLimitRow.class))

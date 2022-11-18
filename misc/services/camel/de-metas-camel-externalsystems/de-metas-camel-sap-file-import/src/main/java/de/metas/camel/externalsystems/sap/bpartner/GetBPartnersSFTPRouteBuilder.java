@@ -24,6 +24,7 @@ package de.metas.camel.externalsystems.sap.bpartner;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.camel.externalsystems.common.IdAwareRouteBuilder;
+import de.metas.camel.externalsystems.common.PInstanceUtil;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
 import de.metas.camel.externalsystems.sap.model.bpartner.BPartnerRow;
@@ -89,6 +90,7 @@ public class GetBPartnersSFTPRouteBuilder extends IdAwareRouteBuilder
 		from(sftpConfig.getSFTPConnectionStringBPartner())
 				.id(routeId)
 				.log("Business Partner Sync Route Started with Id=" + routeId)
+				.process(exchange -> PInstanceUtil.setPInstanceHeader(exchange, enabledByExternalSystemRequest))
 				.process(this::prepareBPartnerSyncRouteContext)
 				.split(body().tokenize("\n"))
 					.streaming()

@@ -31,7 +31,10 @@ import de.metas.externalsystem.externalservice.process.AlterExternalSystemServic
 import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP;
 import de.metas.externalsystem.sap.ExternalSystemSAPConfig;
 import de.metas.externalsystem.sap.ExternalSystemSAPConfigId;
+import de.metas.externalsystem.sap.SAPExternalRequest;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.process.IProcessPreconditionsContext;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import java.util.HashMap;
@@ -54,7 +57,6 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_
 
 public class InvokeSAPAction extends AlterExternalSystemServiceStatusAction
 {
-
 	@Override
 	protected IExternalSystemChildConfigId getExternalChildConfigId()
 	{
@@ -81,6 +83,8 @@ public class InvokeSAPAction extends AlterExternalSystemServiceStatusAction
 	protected Map<String, String> extractExternalSystemParameters(final ExternalSystemParentConfig externalSystemParentConfig)
 	{
 		final ExternalSystemSAPConfig sapConfig = ExternalSystemSAPConfig.cast(externalSystemParentConfig.getChildConfig());
+
+		validateExternalSystemConfig(sapConfig);
 
 		final Map<String, String> parameters = new HashMap<>();
 
@@ -121,5 +125,17 @@ public class InvokeSAPAction extends AlterExternalSystemServiceStatusAction
 				.stream()
 				.filter(recordRef -> I_ExternalSystem_Config_SAP.Table_Name.equals(recordRef.getTableName()))
 				.count();
+	}
+
+	private void validateExternalSystemConfig(@NonNull final ExternalSystemSAPConfig sapConfig)
+	{
+		final SAPExternalRequest sapExternalRequest = SAPExternalRequest.ofCode(externalRequest);
+
+		final BooleanWithReason isStartServicePossible = sapConfig.isStartServicePossible(sapExternalRequest, msgBL);
+
+		if (isStartServicePossible.isFalse())
+		{
+			throw new AdempiereException(isStartServicePossible.getReason()).markAsUserValidationError();
+		}
 	}
 }

@@ -29,6 +29,7 @@ import de.metas.camel.externalsystems.sap.creditlimit.info.UpsertCreditLimitRequ
 import de.metas.camel.externalsystems.sap.model.creditlimit.CreditLimitRow;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.util.Check;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -122,7 +123,7 @@ public class CreditLimitUpsertProcessor implements Processor
 			return false;
 		}
 
-		if (creditLimitRow.getCreditLine() == null)
+		if (Check.isBlank(creditLimitRow.getCreditLine()))
 		{
 			processLogger.logMessage("Skipping row due to missing credit line!! RawBPartnerCode: " + creditLimitRow.getCreditAccount().getRawPartnerCode(),
 									 JsonMetasfreshId.toValue(externalSystemRequest.getAdPInstanceId()));
@@ -130,7 +131,7 @@ public class CreditLimitUpsertProcessor implements Processor
 			return false;
 		}
 
-		if (creditLimitRow.getCurrencyCode() == null)
+		if (Check.isBlank(creditLimitRow.getCurrencyCode()))
 		{
 			processLogger.logMessage("Skipping row due to missing currency code! RawBPartnerCode: " + creditLimitRow.getCreditAccount().getRawPartnerCode(),
 									 JsonMetasfreshId.toValue(externalSystemRequest.getAdPInstanceId()));
