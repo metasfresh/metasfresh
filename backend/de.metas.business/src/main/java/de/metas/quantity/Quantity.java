@@ -428,6 +428,11 @@ public final class Quantity implements Comparable<Quantity>
 		return new Quantity(QTY_INFINITE, uom, QTY_INFINITE, sourceUom);
 	}
 
+	public Quantity abs()
+	{
+		return signum() >= 0 ? this : negate();
+	}
+
 	public Quantity negate()
 	{
 		if (isZero())
