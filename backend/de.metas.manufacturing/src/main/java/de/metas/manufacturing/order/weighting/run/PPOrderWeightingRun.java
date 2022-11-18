@@ -133,7 +133,7 @@ public class PPOrderWeightingRun
 	{
 		assertNotProcessed();
 
-		final Quantity toleranceQty = targetWeight.multiply(tolerance);
+		final Quantity toleranceQty = targetWeight.multiply(tolerance).abs();
 
 		this.targetWeightRange = Range.closed(
 				targetWeight.subtract(toleranceQty),
