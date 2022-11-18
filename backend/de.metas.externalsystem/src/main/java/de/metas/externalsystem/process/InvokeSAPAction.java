@@ -32,25 +32,40 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP;
 import de.metas.externalsystem.sap.ExternalSystemSAPConfig;
 import de.metas.externalsystem.sap.ExternalSystemSAPConfigId;
 import de.metas.externalsystem.sap.SAPExternalRequest;
+import de.metas.externalsystem.sap.source.ISAPContentSource;
+import de.metas.externalsystem.sap.source.SAPContentSourceLocalFile;
+import de.metas.externalsystem.sap.source.SAPContentSourceSFTP;
 import de.metas.i18n.BooleanWithReason;
+import de.metas.i18n.IMsgBL;
 import de.metas.process.IProcessPreconditionsContext;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_CHILD_CONFIG_VALUE;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_ERRORED_DIRECTORY;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_POLLING_FREQUENCY_MS;
-import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PROCESSED_DIRECTORY;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_BPARTNER_FILE_NAME_PATTERN;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_BPARTNER_TARGET_DIRECTORY;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_CREDIT_LIMIT_FILENAME_PATTERN;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_CREDIT_LIMIT_TARGET_DIRECTORY;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_ERRORED_DIRECTORY;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_POLLING_FREQUENCY_MS;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_PROCESSED_DIRECTORY;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_PRODUCT_FILE_NAME_PATTERN;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_PRODUCT_TARGET_DIRECTORY;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_LOCAL_FILE_ROOT_LOCATION;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_BPARTNER_FILE_NAME_PATTERN;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_BPARTNER_TARGET_DIRECTORY;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_CREDIT_LIMIT_FILENAME_PATTERN;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_CREDIT_LIMIT_TARGET_DIRECTORY;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_ERRORED_DIRECTORY;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_HOST_NAME;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_PASSWORD;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_POLLING_FREQUENCY_MS;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_PORT;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_PROCESSED_DIRECTORY;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_PRODUCT_FILE_NAME_PATTERN;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_PRODUCT_TARGET_DIRECTORY;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_USERNAME;
@@ -84,24 +99,10 @@ public class InvokeSAPAction extends AlterExternalSystemServiceStatusAction
 	{
 		final ExternalSystemSAPConfig sapConfig = ExternalSystemSAPConfig.cast(externalSystemParentConfig.getChildConfig());
 
-		validateExternalSystemConfig(sapConfig);
-
 		final Map<String, String> parameters = new HashMap<>();
 
-		parameters.put(PARAM_SFTP_HOST_NAME, sapConfig.getSftpHostName());
-		parameters.put(PARAM_SFTP_PORT, sapConfig.getSftpPort());
-		parameters.put(PARAM_SFTP_USERNAME, sapConfig.getSftpUsername());
-		parameters.put(PARAM_SFTP_PASSWORD, sapConfig.getSftpPassword());
 		parameters.put(PARAM_CHILD_CONFIG_VALUE, sapConfig.getValue());
-		parameters.put(PARAM_SFTP_PRODUCT_TARGET_DIRECTORY, sapConfig.getSftpTargetDirectoryProduct());
-		parameters.put(PARAM_SFTP_BPARTNER_TARGET_DIRECTORY, sapConfig.getSftpTargetDirectoryBPartner());
-		parameters.put(PARAM_PROCESSED_DIRECTORY, sapConfig.getProcessedDirectory());
-		parameters.put(PARAM_ERRORED_DIRECTORY, sapConfig.getErroredDirectory());
-		parameters.put(PARAM_POLLING_FREQUENCY_MS, String.valueOf(sapConfig.getPollingFrequency().toMillis()));
-		parameters.put(PARAM_SFTP_PRODUCT_FILE_NAME_PATTERN, sapConfig.getSftpFileNamePatternProduct());
-		parameters.put(PARAM_SFTP_BPARTNER_FILE_NAME_PATTERN, sapConfig.getSftpFileNamePatternBPartner());
-		parameters.put(PARAM_SFTP_CREDIT_LIMIT_TARGET_DIRECTORY, sapConfig.getSftpCreditLimitTargetDirectory());
-		parameters.put(PARAM_SFTP_CREDIT_LIMIT_FILENAME_PATTERN, sapConfig.getSftpCreditLimitFileNamePattern());
+		parameters.putAll(extractContentSourceParameters(sapConfig));
 
 		return parameters;
 	}
@@ -127,15 +128,100 @@ public class InvokeSAPAction extends AlterExternalSystemServiceStatusAction
 				.count();
 	}
 
-	private void validateExternalSystemConfig(@NonNull final ExternalSystemSAPConfig sapConfig)
+	private Map<String, String> extractContentSourceParameters(@NonNull final ExternalSystemSAPConfig sapConfig)
 	{
 		final SAPExternalRequest sapExternalRequest = SAPExternalRequest.ofCode(externalRequest);
 
-		final BooleanWithReason isStartServicePossible = sapConfig.isStartServicePossible(sapExternalRequest, msgBL);
+		switch (sapExternalRequest)
+		{
+			case START_PRODUCT_SYNC_SFTP:
+			case START_BPARTNER_SYNC_SFTP:
+			case STOP_PRODUCT_SYNC_SFTP:
+			case STOP_BPARTNER_SYNC_SFTP:
+				return Optional.ofNullable(sapConfig.getContentSourceSFTP())
+						.map(sapContentSourceSFTP -> validateExternalSystemConfig(sapContentSourceSFTP,
+																				  sapExternalRequest,
+																				  sapConfig.getParentId(),
+																				  msgBL))
+						.map(InvokeSAPAction::extractSFTPSourceParameters)
+						.orElseThrow(() -> new AdempiereException("No SFTP contentSource found for SAP config")
+								.appendParametersToMessage()
+								.setParameter("configId", sapConfig.getId()));
+			case START_PRODUCT_SYNC_LOCAL_FILE:
+			case START_BPARTNER_SYNC_LOCAL_FILE:
+			case STOP_PRODUCT_SYNC_LOCAL_FILE:
+			case STOP_BPARTNER_SYNC_LOCAL_FILE:
+				return Optional.ofNullable(sapConfig.getContentSourceLocalFile())
+						.map(sapContentSourceLocalFile -> validateExternalSystemConfig(sapContentSourceLocalFile,
+																				  sapExternalRequest,
+																				  sapConfig.getParentId(),
+																				  msgBL))
+						.map(InvokeSAPAction::extractLocalFileSourceParameters)
+						.orElseThrow(() -> new AdempiereException("No LocalFile contentSource found for SAP config")
+								.appendParametersToMessage()
+								.setParameter("configId", sapConfig.getId()));
+			default:
+				throw new AdempiereException("SAP External Request not supported: " + sapExternalRequest);
+		}
+	}
+
+	@NonNull
+	private static Map<String, String> extractSFTPSourceParameters(final @NonNull ISAPContentSource sapContentSource)
+	{
+		final SAPContentSourceSFTP contentSourceSFTP = SAPContentSourceSFTP.cast(sapContentSource);
+
+		final Map<String, String> parameters = new HashMap<>();
+
+		parameters.put(PARAM_SFTP_HOST_NAME, contentSourceSFTP.getHostName());
+		parameters.put(PARAM_SFTP_PORT, contentSourceSFTP.getPort());
+		parameters.put(PARAM_SFTP_USERNAME, contentSourceSFTP.getUsername());
+		parameters.put(PARAM_SFTP_PASSWORD, contentSourceSFTP.getPassword());
+		parameters.put(PARAM_SFTP_PRODUCT_TARGET_DIRECTORY, contentSourceSFTP.getTargetDirectoryProduct());
+		parameters.put(PARAM_SFTP_BPARTNER_TARGET_DIRECTORY, contentSourceSFTP.getTargetDirectoryBPartner());
+		parameters.put(PARAM_SFTP_CREDIT_LIMIT_TARGET_DIRECTORY, contentSourceSFTP.getTargetDirectoryCreditLimit());
+		parameters.put(PARAM_SFTP_PROCESSED_DIRECTORY, contentSourceSFTP.getProcessedDirectory());
+		parameters.put(PARAM_SFTP_ERRORED_DIRECTORY, contentSourceSFTP.getErroredDirectory());
+		parameters.put(PARAM_SFTP_POLLING_FREQUENCY_MS, String.valueOf(contentSourceSFTP.getPollingFrequency().toMillis()));
+		parameters.put(PARAM_SFTP_PRODUCT_FILE_NAME_PATTERN, contentSourceSFTP.getFileNamePatternProduct());
+		parameters.put(PARAM_SFTP_BPARTNER_FILE_NAME_PATTERN, contentSourceSFTP.getFileNamePatternBPartner());
+		parameters.put(PARAM_SFTP_CREDIT_LIMIT_FILENAME_PATTERN, contentSourceSFTP.getFileNamePatternCreditLimit());
+
+		return parameters;
+	}
+
+	@NonNull
+	private static Map<String, String> extractLocalFileSourceParameters(final @NonNull ISAPContentSource sapContentSource)
+	{
+		final SAPContentSourceLocalFile contentSourceLocalFile = SAPContentSourceLocalFile.cast(sapContentSource);
+
+		final Map<String, String> parameters = new HashMap<>();
+
+		parameters.put(PARAM_LOCAL_FILE_PRODUCT_TARGET_DIRECTORY, contentSourceLocalFile.getTargetDirectoryProduct());
+		parameters.put(PARAM_LOCAL_FILE_BPARTNER_TARGET_DIRECTORY, contentSourceLocalFile.getTargetDirectoryBPartner());
+		parameters.put(PARAM_LOCAL_FILE_CREDIT_LIMIT_TARGET_DIRECTORY, contentSourceLocalFile.getTargetDirectoryCreditLimit());
+		parameters.put(PARAM_LOCAL_FILE_PROCESSED_DIRECTORY, contentSourceLocalFile.getProcessedDirectory());
+		parameters.put(PARAM_LOCAL_FILE_ERRORED_DIRECTORY, contentSourceLocalFile.getErroredDirectory());
+		parameters.put(PARAM_LOCAL_FILE_POLLING_FREQUENCY_MS, String.valueOf(contentSourceLocalFile.getPollingFrequency().toMillis()));
+		parameters.put(PARAM_LOCAL_FILE_PRODUCT_FILE_NAME_PATTERN, contentSourceLocalFile.getFileNamePatternProduct());
+		parameters.put(PARAM_LOCAL_FILE_BPARTNER_FILE_NAME_PATTERN, contentSourceLocalFile.getFileNamePatternBPartner());
+		parameters.put(PARAM_LOCAL_FILE_CREDIT_LIMIT_FILENAME_PATTERN, contentSourceLocalFile.getFileNamePatternCreditLimit());
+		parameters.put(PARAM_LOCAL_FILE_ROOT_LOCATION, contentSourceLocalFile.getRootLocation());
+
+		return parameters;
+	}
+
+	public ISAPContentSource validateExternalSystemConfig(
+			@NonNull final ISAPContentSource contentSource,
+			@NonNull final SAPExternalRequest externalRequest,
+			@NonNull final ExternalSystemParentConfigId parentId,
+			@NonNull final IMsgBL msgBL)
+	{
+		final BooleanWithReason isStartServicePossible = contentSource.validateTargetDirectoriesAndFileNamePatterns(externalRequest, parentId, msgBL);
 
 		if (isStartServicePossible.isFalse())
 		{
 			throw new AdempiereException(isStartServicePossible.getReason()).markAsUserValidationError();
 		}
+		return contentSource;
 	}
 }

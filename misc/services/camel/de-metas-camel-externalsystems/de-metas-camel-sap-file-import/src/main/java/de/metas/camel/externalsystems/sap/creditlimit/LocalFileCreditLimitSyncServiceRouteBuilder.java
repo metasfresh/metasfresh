@@ -41,10 +41,10 @@ import static de.metas.camel.externalsystems.sap.service.OnDemandRoutesControlle
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
-public class SFTPCreditLimitSyncServiceRouteBuilder extends RouteBuilder implements IExternalSystemService
+public class LocalFileCreditLimitSyncServiceRouteBuilder extends RouteBuilder implements IExternalSystemService
 {
-	private static final String START_CREDIT_LIMIT_SYNC_ROUTE = "startCreditLimitSyncSFTP";
-	private static final String STOP_CREDIT_LIMIT_SYNC_ROUTE = "stopCreditLimitSyncSFTP";
+	private static final String START_CREDIT_LIMIT_SYNC_ROUTE = "startCreditLimitSyncLocalFile";
+	private static final String STOP_CREDIT_LIMIT_SYNC_ROUTE = "stopCreditLimitSyncLocalFile";
 
 	@VisibleForTesting
 	public static final String START_CREDIT_LIMIT_SYNC_ROUTE_ID = SAP_SYSTEM_NAME + "-" + START_CREDIT_LIMIT_SYNC_ROUTE;
@@ -54,7 +54,7 @@ public class SFTPCreditLimitSyncServiceRouteBuilder extends RouteBuilder impleme
 	@NonNull
 	private final ProcessLogger processLogger;
 
-	public SFTPCreditLimitSyncServiceRouteBuilder(@NonNull final ProcessLogger processLogger)
+	public LocalFileCreditLimitSyncServiceRouteBuilder(@NonNull final ProcessLogger processLogger)
 	{
 		this.processLogger = processLogger;
 	}
@@ -112,7 +112,7 @@ public class SFTPCreditLimitSyncServiceRouteBuilder extends RouteBuilder impleme
 	{
 		return GetCreditLimitsSFTPRouteBuilder
 				.builder()
-				.fileEndpointConfig(SAPConfigUtil.extractSFTPConfig(request, camelContext))
+				.fileEndpointConfig(SAPConfigUtil.extractLocalFileConfig(request, camelContext))
 				.camelContext(camelContext)
 				.enabledByExternalSystemRequest(request)
 				.processLogger(processLogger)
@@ -124,7 +124,7 @@ public class SFTPCreditLimitSyncServiceRouteBuilder extends RouteBuilder impleme
 	@VisibleForTesting
 	public static String getSFTPCreditLimitsSyncRouteId(@NonNull final JsonExternalSystemRequest externalSystemRequest)
 	{
-		return "SFTPCreditLimitSyncRoute#" + externalSystemRequest.getExternalSystemChildConfigValue();
+		return "LocalFileCreditLimitSyncRoute#" + externalSystemRequest.getExternalSystemChildConfigValue();
 	}
 
 

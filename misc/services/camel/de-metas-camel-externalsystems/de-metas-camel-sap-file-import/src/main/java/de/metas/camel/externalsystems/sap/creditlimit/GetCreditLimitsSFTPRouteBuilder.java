@@ -26,9 +26,9 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.camel.externalsystems.common.IdAwareRouteBuilder;
 import de.metas.camel.externalsystems.common.PInstanceUtil;
 import de.metas.camel.externalsystems.common.ProcessLogger;
+import de.metas.camel.externalsystems.sap.config.CreditLimitFileEndpointConfig;
 import de.metas.camel.externalsystems.sap.creditlimit.info.UpsertCreditLimitRequest;
 import de.metas.camel.externalsystems.sap.model.creditlimit.CreditLimitRow;
-import de.metas.camel.externalsystems.sap.sftp.SFTPConfig;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.Builder;
 import lombok.Getter;
@@ -51,7 +51,7 @@ public class GetCreditLimitsSFTPRouteBuilder extends IdAwareRouteBuilder
 	private static final ImmutableSet<String> ACCEPTED_CREDIT_TYPES = ImmutableSet.of("S001");
 
 	@NonNull
-	private final SFTPConfig sftpConfig;
+	private final CreditLimitFileEndpointConfig fileEndpointConfig;
 
 	@Getter
 	@NonNull
@@ -65,30 +65,24 @@ public class GetCreditLimitsSFTPRouteBuilder extends IdAwareRouteBuilder
 
 	@Builder
 	private GetCreditLimitsSFTPRouteBuilder(
-			@NonNull final SFTPConfig sftpConfig,
+			@NonNull final CreditLimitFileEndpointConfig fileEndpointConfig,
 			@NonNull final CamelContext camelContext,
 			@NonNull final String routeId,
 			@NonNull final JsonExternalSystemRequest enabledByExternalSystemRequest,
 			@NonNull final ProcessLogger processLogger)
 	{
 		super(camelContext);
-		this.sftpConfig = sftpConfig;
+		this.fileEndpointConfig = fileEndpointConfig;
 		this.routeId = routeId;
 		this.enabledByExternalSystemRequest = enabledByExternalSystemRequest;
 		this.processLogger = processLogger;
-	}
-
-	@NonNull
-	public static String buildRouteId(@NonNull final String externalSystemConfigValue)
-	{
-		return GetCreditLimitsSFTPRouteBuilder.class.getSimpleName() + "#" + externalSystemConfigValue;
 	}
 
 	@Override
 	public void configure() throws Exception
 	{
 		//@formatter:off
-		from(sftpConfig.getSFTPConnectionStringCreditLimit())
+		from(fileEndpointConfig.getCreditLimitFileEndpoint())
 				.routeId(routeId)
 				.log("CreditLimit Sync Route Started")
 				.process(exchange -> PInstanceUtil.setPInstanceHeader(exchange, enabledByExternalSystemRequest))

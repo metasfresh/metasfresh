@@ -24,8 +24,8 @@ package de.metas.camel.externalsystems.sap.product;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.camel.externalsystems.common.ProcessLogger;
+import de.metas.camel.externalsystems.sap.SAPConfigUtil;
 import de.metas.camel.externalsystems.sap.service.OnDemandRoutesController;
-import de.metas.camel.externalsystems.sap.sftp.SFTPConfigUtil;
 import de.metas.common.externalsystem.IExternalSystemService;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.NonNull;
@@ -43,8 +43,8 @@ import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 @Component
 public class SFTPProductSyncServiceRouteBuilder extends RouteBuilder implements IExternalSystemService
 {
-	private static final String START_PRODUCTS_SYNC_ROUTE = "startProductsSync";
-	private static final String STOP_PRODUCTS_SYNC_ROUTE = "stopProductsSync";
+	private static final String START_PRODUCTS_SYNC_ROUTE = "startProductSyncSFTP";
+	private static final String STOP_PRODUCTS_SYNC_ROUTE = "stopProductSyncSFTP";
 
 	@VisibleForTesting
 	public static final String START_PRODUCTS_SYNC_ROUTE_ID = SAP_SYSTEM_NAME + "-" + START_PRODUCTS_SYNC_ROUTE;
@@ -112,7 +112,7 @@ public class SFTPProductSyncServiceRouteBuilder extends RouteBuilder implements 
 	{
 		return GetProductsSFTPRouteBuilder
 				.builder()
-				.sftpConfig(SFTPConfigUtil.extractSFTPConfig(request, camelContext))
+				.fileEndpointConfig(SAPConfigUtil.extractSFTPConfig(request, camelContext))
 				.camelContext(camelContext)
 				.enabledByExternalSystemRequest(request)
 				.processLogger(processLogger)
@@ -121,9 +121,10 @@ public class SFTPProductSyncServiceRouteBuilder extends RouteBuilder implements 
 	}
 
 	@NonNull
-	private static String getSFTPProductsSyncRouteId(@NonNull final JsonExternalSystemRequest externalSystemRequest)
+	@VisibleForTesting
+	public static String getSFTPProductsSyncRouteId(@NonNull final JsonExternalSystemRequest externalSystemRequest)
 	{
-		return GetProductsSFTPRouteBuilder.buildRouteId(externalSystemRequest.getExternalSystemChildConfigValue());
+		return "SFTPProductSyncRoute#" + externalSystemRequest.getExternalSystemChildConfigValue();
 	}
 
 	@Override

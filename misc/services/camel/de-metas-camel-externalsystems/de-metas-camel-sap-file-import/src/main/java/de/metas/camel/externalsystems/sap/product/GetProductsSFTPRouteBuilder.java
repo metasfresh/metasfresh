@@ -27,8 +27,8 @@ import de.metas.camel.externalsystems.common.IdAwareRouteBuilder;
 import de.metas.camel.externalsystems.common.PInstanceUtil;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.v2.ProductUpsertCamelRequest;
+import de.metas.camel.externalsystems.sap.config.ProductFileEndpointConfig;
 import de.metas.camel.externalsystems.sap.model.product.ProductRow;
-import de.metas.camel.externalsystems.sap.sftp.SFTPConfig;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.Builder;
 import lombok.Getter;
@@ -47,7 +47,7 @@ public class GetProductsSFTPRouteBuilder extends IdAwareRouteBuilder
 	private static final String UPSERT_PRODUCT_PROCESSOR_ID = "SAP-Products-upsertProductProcessorId";
 
 	@NonNull
-	private final SFTPConfig sftpConfig;
+	private final ProductFileEndpointConfig fileEndpointConfig;
 
 	@Getter
 	@NonNull
@@ -61,14 +61,14 @@ public class GetProductsSFTPRouteBuilder extends IdAwareRouteBuilder
 
 	@Builder
 	private GetProductsSFTPRouteBuilder(
-			@NonNull final SFTPConfig sftpConfig,
+			@NonNull final ProductFileEndpointConfig fileEndpointConfig,
 			@NonNull final CamelContext camelContext,
 			@NonNull final String routeId,
 			@NonNull final JsonExternalSystemRequest enabledByExternalSystemRequest,
 			@NonNull final ProcessLogger processLogger)
 	{
 		super(camelContext);
-		this.sftpConfig = sftpConfig;
+		this.fileEndpointConfig = fileEndpointConfig;
 		this.routeId = routeId;
 		this.enabledByExternalSystemRequest = enabledByExternalSystemRequest;
 		this.processLogger = processLogger;
@@ -78,7 +78,7 @@ public class GetProductsSFTPRouteBuilder extends IdAwareRouteBuilder
 	public void configure() throws Exception
 	{
 		//@formatter:off
-		from(sftpConfig.getSFTPConnectionStringProduct())
+		from(fileEndpointConfig.getProductFileEndpoint())
 				.id(routeId)
 				.log("Product Sync Route Started with Id=" + routeId)
 				.process(exchange -> PInstanceUtil.setPInstanceHeader(exchange, enabledByExternalSystemRequest))
@@ -95,11 +95,5 @@ public class GetProductsSFTPRouteBuilder extends IdAwareRouteBuilder
 					.endChoice()
 					.end();
 		//@formatter:on
-	}
-
-	@NonNull
-	public static String buildRouteId(@NonNull final String externalSystemConfigValue)
-	{
-		return GetProductsSFTPRouteBuilder.class.getSimpleName() + "#" + externalSystemConfigValue;
 	}
 }
