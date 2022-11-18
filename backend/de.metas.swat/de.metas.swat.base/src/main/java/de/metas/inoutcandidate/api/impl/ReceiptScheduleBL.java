@@ -25,11 +25,17 @@ package de.metas.inoutcandidate.api.impl;
 import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.deliveryplanning.DeliveryPlanningCreateRequest;
+import de.metas.deliveryplanning.DeliveryPlanningType;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.location.adapter.IDocumentLocationAdapter;
+import de.metas.incoterms.IncotermsId;
 import de.metas.inout.IInOutBL;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOutLine;
+import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.inoutcandidate.api.ApplyReceiptScheduleChangesRequest;
 import de.metas.inoutcandidate.api.IInOutProducer;
 import de.metas.inoutcandidate.api.IReceiptScheduleAllocBuilder;
@@ -45,9 +51,15 @@ import de.metas.inoutcandidate.spi.IReceiptScheduleListener;
 import de.metas.inoutcandidate.spi.impl.CompositeReceiptScheduleListener;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
+import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
+import de.metas.organization.LocalDateAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -61,6 +73,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.impl.AddAttributesRequest;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.agg.key.IAggregationKeyBuilder;
 import org.adempiere.util.lang.IContextAware;
@@ -70,6 +83,8 @@ import org.adempiere.warehouse.api.IWarehouseBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.Env;
@@ -78,6 +93,7 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -731,5 +747,56 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 		{
 			delegate.setBPartnerAddress_Override(address);
 		}
+	}
+
+
+
+	@Override
+	public void generateDeliveryPlanning(@NonNull final I_M_ReceiptSchedule receiptScheduleRecord)
+	{
+		// final OrderId orderId = OrderId.ofRepoIdOrNull(receiptScheduleRecord.getC_Order_ID());
+		// final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(receiptScheduleRecord.getC_OrderLine_ID());
+		//
+		// final I_C_UOM uomOfProduct = UOMreceiptScheduleRecord.getC_UOM_ID();
+		//
+		// final Quantity qtyOrdered = Quantity.of(receiptScheduleRecord.getQtyOrdered(), uomOfProduct);
+		// final OrgId orgId = OrgId.ofRepoId(receiptScheduleRecord.getAD_Org_ID());
+		//
+		// final DeliveryPlanningCreateRequest.DeliveryPlanningCreateRequestBuilder requestBuilder = DeliveryPlanningCreateRequest.builder()
+		// 		.orgId(orgId)
+		// 		.clientId(ClientId.ofRepoId(receiptScheduleRecord.getAD_Client_ID()))
+		// 		.receiptScheduleId(ReceiptScheduleId.ofRepoId(receiptScheduleRecord.getM_ReceiptSchedule_ID()))
+		// 		.deliveryPlanningType(DeliveryPlanningType.Incoming)
+		// 		.orderId(orderId)
+		// 		.warehouseId(WarehouseId.ofRepoId(receiptScheduleRecord.getM_Warehouse_ID()))
+		// 		.productId(ProductId.ofRepoId(receiptScheduleRecord.getM_Product_ID()))
+		// 		.partnerId(BPartnerId.ofRepoId(receiptScheduleRecord.getC_BPartner_ID()))
+		// 		.bPartnerLocationId(BPartnerLocationId.ofRepoId(receiptScheduleRecord.getC_BPartner_ID(), receiptScheduleRecord.getC_BPartner_Location_ID()))
+		// 		.sectionCodeId(SectionCodeId.ofRepoIdOrNull(receiptScheduleRecord.getM_SectionCode_ID()))
+		// 		.isActive(receiptScheduleRecord.isActive())
+		// 		.qtyOredered(qtyOrdered)
+		// 		.qtyTotalOpen(qtyOrdered.subtract(getQtyDelivered(receiptScheduleRecord)))
+		// 		.plannedDeliveryDate(LocalDateAndOrgId.ofTimestamp(receiptScheduleRecord.getDeliveryDate_Effective(), orgId, orgDAO::getTimeZone));
+		//
+		// if (orderId != null)
+		// {
+		// 	final I_C_Order order = orderDAO.getById(orderId);
+		//
+		// 	requestBuilder.isB2B(order.isDropShip())
+		// 			.incotermsId(IncotermsId.ofRepoIdOrNull(order.getC_Incoterms_ID()));
+		// }
+		//
+		// if (orderLineId != null)
+		// {
+		// 	final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderLineId);
+		// 	final Timestamp dateDelivered = orderLine.getDateDelivered();
+		// 	if (dateDelivered != null)
+		// 	{
+		// 		requestBuilder.actualDeliveryDate(LocalDateAndOrgId.ofTimestamp(dateDelivered, orgId, orgDAO::getTimeZone));
+		// 	}
+		//
+		// }
+		//
+		// deliveryPlanningService.generateDeliveryPlanning(requestBuilder.build());
 	}
 }

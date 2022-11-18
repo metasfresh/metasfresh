@@ -23,7 +23,9 @@
 package de.metas.inoutcandidate;
 
 import de.metas.business.BusinessTestHelper;
+import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.inoutcandidate.ShipmentScheduleRepository.ShipmentScheduleQuery;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleBL;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Recompute;
@@ -61,7 +63,9 @@ class ShipmentScheduleRepositoryTest
 	void beforeEach()
 	{
 		AdempiereTestHelper.get().init();
-		shipmentScheduleRepository = new ShipmentScheduleRepository();
+
+		final ShipmentScheduleBL shipmentScheduleBL = new ShipmentScheduleBL(new DeliveryPlanningService());
+		shipmentScheduleRepository = new ShipmentScheduleRepository(shipmentScheduleBL);
 
 		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_Client_ID, ClientId.METASFRESH.getRepoId());
 		bPartner = BusinessTestHelper.createBPartner("bpartner");
