@@ -47,6 +47,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
 
@@ -74,6 +75,10 @@ public class HUUniqueAttributesService
 	final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
 	final IProductDAO productDAO = Services.get(IProductDAO.class);
+
+	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
+
+	private final HUUniqueAttributesService huUniqueAttributesService = new HUUniqueAttributesService(new HUUniqueAttributesRepository());
 
 	public HUUniqueAttributesService(@NonNull final HUUniqueAttributesRepository repo)
 	{
@@ -109,16 +114,15 @@ public class HUUniqueAttributesService
 				.forEach(this::validateHUUniqueAttribute);
 	}
 
-	public void validateAttribute(@NonNull final I_M_Attribute attribute)
+	public void validateAttribute(@NonNull final I_M_AttributeInstance attributeInstance)
 	{
 		Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Attribute.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_M_Attribute_ID, attribute.getM_Attribute_ID())
-				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_Value, attribute.getValue())
+				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_M_Attribute_ID, attributeInstance.getM_Attribute_ID())
+				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_Value, attributeInstance.getValue())
+				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_IsUnique, true)
 				.create()
 				.list(I_M_HU_Attribute.class)
-				.stream()
-				.filter(I_M_HU_Attribute::isUnique)
 				.forEach(this::validateHUUniqueAttribute);
 	}
 
@@ -250,5 +254,6 @@ public class HUUniqueAttributesService
 				.filter(I_M_HU_Attribute::isUnique)
 				.forEach(this::createOrUpdateHUUniqueAttribute);
 	}
+
 
 }
