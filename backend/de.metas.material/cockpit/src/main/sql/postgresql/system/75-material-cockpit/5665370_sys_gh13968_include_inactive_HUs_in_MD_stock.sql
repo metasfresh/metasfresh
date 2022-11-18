@@ -35,7 +35,7 @@ FROM MD_Stock s
                  JOIN M_Locator l ON l.M_Locator_ID = hu.M_Locator_ID
                  LEFT JOIN M_Product p ON p.M_Product_ID = hus.M_Product_ID /*needed for its C_UOM_ID*/
         WHERE -- hu.isactive = 'Y' AND hu may be inactive due to a bug in material return
-           M_HU_Item_Parent_ID IS NULL
+            M_HU_Item_Parent_ID IS NULL
 
             /*please keep in sync with de.metas.handlingunits.IHUStatusBL.isPhysicalHU(I_M_HU)*/
           AND hu.HuStatus NOT IN ('P'/*Planning*/, 'D'/*Destroyed*/, 'E'/*Shipped*/)
