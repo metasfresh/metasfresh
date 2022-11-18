@@ -123,6 +123,38 @@ Feature: create or update BPartner v2
                      }
                   }
                ]
+            },
+            "creditLimits": {
+              "requestItems": [
+                {
+                  "type": "Insurance",
+                  "orgCode": "001",
+                  "creditLimitMetasfreshId": null,
+                  "dateFrom": "2022-10-31",
+                  "amount": {
+                    "amount": "20.5",
+                    "currencyCode": "EUR"
+                  },
+                  "active": true,
+                  "processed": false
+                },
+                {
+                  "type": "Insurance",
+                  "orgCode": "001",
+                  "creditLimitMetasfreshId": null,
+                  "dateFrom": "2022-10-30",
+                  "amount": {
+                    "amount": "10",
+                    "currencyCode": "CHF"
+                  },
+                  "active": false,
+                  "processed": true
+                }
+              ],
+              "syncAdvise": {
+                "ifNotExists": "CREATE",
+                "ifExists": "UPDATE_MERGE"
+              }
             }
          }
       }
@@ -144,6 +176,10 @@ Feature: create or update BPartner v2
       | bpartnerIdentifier | contactIdentifier | Name          | OPT.Email  | OPT.Fax  | Code | OPT.InvoiceEmailEnabled |
       | ext-ALBERTA-001    | ext-ALBERTA-c11   | test_name_c11 | test_email | fax      | c11  | false                   |
       | ext-ALBERTA-001    | ext-ALBERTA-c22   | test_name_c22 | null       | test_fax | c22  | true                    |
+    And verify that credit limit was created for bpartner: created_bpartner
+      | Amount | IsActive | C_CreditLimit_Type.Name | OPT.DateFrom | Processed |
+      | 23.17  | true     | Insurance               | 2022-10-31   | false     |
+      | 10     | false    | Insurance               | 2022-10-30   | true      |
     And verify that S_ExternalReference was created
       | ExternalSystem | Type             | ExternalReference | ExternalReferenceURL         | OPT.ExternalSystem_Config_ID | OPT.IsReadOnlyInMetasfresh |
       | ALBERTA        | BPartner         | 001               | www.ExternalReferenceURL.com | 540000                       | false                      |

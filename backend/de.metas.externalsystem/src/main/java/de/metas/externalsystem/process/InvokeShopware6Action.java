@@ -242,12 +242,4 @@ public class InvokeShopware6Action extends InvokeExternalSystemProcess
 
 		return builder.build();
 	}
-	
-	@Override
-	protected String getOrgCode()
-	{
-		final ExternalSystemParentConfig config = externalSystemConfigDAO.getById(getExternalChildConfigId());
-
-		return orgDAO.getById(config.getOrgId()).getValue();
-	}
 }

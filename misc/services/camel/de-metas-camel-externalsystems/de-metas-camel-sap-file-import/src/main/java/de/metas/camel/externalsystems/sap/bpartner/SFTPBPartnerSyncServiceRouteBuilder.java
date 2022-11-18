@@ -23,7 +23,6 @@
 package de.metas.camel.externalsystems.sap.bpartner;
 
 import com.google.common.annotations.VisibleForTesting;
-import de.metas.camel.externalsystems.common.IdAwareRouteBuilder;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.sap.service.OnDemandRoutesController;
 import de.metas.camel.externalsystems.sap.sftp.SFTPConfigUtil;
@@ -100,7 +99,7 @@ public class SFTPBPartnerSyncServiceRouteBuilder extends RouteBuilder implements
 		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 
 		final OnDemandRoutesController.StopOnDemandRouteRequest stopOnDemandRouteRequest = OnDemandRoutesController.StopOnDemandRouteRequest.builder()
-				.routeId(getSFTPBPartnersSyncRouteId(request))
+				.routeId(GetBPartnersSFTPRouteBuilder.buildRouteId(request.getExternalSystemChildConfigValue()))
 				.externalSystemRequest(request)
 				.externalSystemService(this)
 				.build();
@@ -109,7 +108,7 @@ public class SFTPBPartnerSyncServiceRouteBuilder extends RouteBuilder implements
 	}
 
 	@NonNull
-	private IdAwareRouteBuilder getSFTPRouteBuilder(@NonNull final JsonExternalSystemRequest request, @NonNull final CamelContext camelContext)
+	private GetBPartnersSFTPRouteBuilder getSFTPRouteBuilder(@NonNull final JsonExternalSystemRequest request, @NonNull final CamelContext camelContext)
 	{
 		return GetBPartnersSFTPRouteBuilder
 				.builder()
@@ -117,14 +116,8 @@ public class SFTPBPartnerSyncServiceRouteBuilder extends RouteBuilder implements
 				.camelContext(camelContext)
 				.enabledByExternalSystemRequest(request)
 				.processLogger(processLogger)
-				.routeId(getSFTPBPartnersSyncRouteId(request))
+				.routeId(GetBPartnersSFTPRouteBuilder.buildRouteId(request.getExternalSystemChildConfigValue()))
 				.build();
-	}
-
-	@NonNull
-	private static String getSFTPBPartnersSyncRouteId(@NonNull final JsonExternalSystemRequest externalSystemRequest)
-	{
-		return GetBPartnersSFTPRouteBuilder.buildRouteId(externalSystemRequest.getExternalSystemChildConfigValue());
 	}
 
 	@Override

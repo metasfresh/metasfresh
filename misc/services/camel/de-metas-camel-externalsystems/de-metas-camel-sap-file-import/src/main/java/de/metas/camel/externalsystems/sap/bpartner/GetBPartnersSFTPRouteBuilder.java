@@ -24,6 +24,7 @@ package de.metas.camel.externalsystems.sap.bpartner;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.camel.externalsystems.common.IdAwareRouteBuilder;
+import de.metas.camel.externalsystems.common.PInstanceUtil;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
 import de.metas.camel.externalsystems.sap.model.bpartner.BPartnerRow;
@@ -76,6 +77,12 @@ public class GetBPartnersSFTPRouteBuilder extends IdAwareRouteBuilder
 		this.processLogger = processLogger;
 	}
 
+	@NonNull
+	public static String buildRouteId(@NonNull final String externalSystemConfigValue)
+	{
+		return GetBPartnersSFTPRouteBuilder.class.getSimpleName() + "#" + externalSystemConfigValue;
+	}
+
 	@Override
 	public void configure() throws Exception
 	{
@@ -83,6 +90,7 @@ public class GetBPartnersSFTPRouteBuilder extends IdAwareRouteBuilder
 		from(sftpConfig.getSFTPConnectionStringBPartner())
 				.id(routeId)
 				.log("Business Partner Sync Route Started with Id=" + routeId)
+				.process(exchange -> PInstanceUtil.setPInstanceHeader(exchange, enabledByExternalSystemRequest))
 				.process(this::prepareBPartnerSyncRouteContext)
 				.split(body().tokenize("\n"))
 					.streaming()
@@ -98,16 +106,15 @@ public class GetBPartnersSFTPRouteBuilder extends IdAwareRouteBuilder
 				    .end()
 				.end()
 				.process(this::processLastBPartnerGroup)
-				.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert Business Partners: ${body}")
-				.to("{{" + MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}").id(UPSERT_LAST_BPARTNER_GROUP_ENDPOINT_ID)
+				.choice()
+					.when(bodyAs(BPUpsertCamelRequest.class).isNull())
+						.log(LoggingLevel.DEBUG, "No last group present! Nothing to upsert...")
+				    .otherwise()
+						.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert Business Partners: ${body}")
+						.to("{{" + MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}").id(UPSERT_LAST_BPARTNER_GROUP_ENDPOINT_ID)
+					.endChoice()
 				.end();
 		//@formatter:on
-	}
-
-	@NonNull
-	public static String buildRouteId(@NonNull final String externalSystemConfigValue)
-	{
-		return GetBPartnersSFTPRouteBuilder.class.getSimpleName() + "#" + externalSystemConfigValue;
 	}
 
 	private void prepareBPartnerSyncRouteContext(@NonNull final Exchange exchange)
@@ -126,6 +133,7 @@ public class GetBPartnersSFTPRouteBuilder extends IdAwareRouteBuilder
 
 		if (routeContext.getSyncBPartnerRequestBuilder() == null)
 		{
+			exchange.getIn().setBody(null);
 			return;
 		}
 

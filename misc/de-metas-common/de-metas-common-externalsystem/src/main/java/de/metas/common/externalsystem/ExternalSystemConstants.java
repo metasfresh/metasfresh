@@ -81,6 +81,9 @@ public class ExternalSystemConstants
 	public static final String PARAM_SFTP_PRODUCT_FILE_NAME_PATTERN = "SFTPProductFileNamePattern";
 	public static final String PARAM_SFTP_BPARTNER_FILE_NAME_PATTERN = "SFTPBPartnerFileNamePattern";
 
+	public static final String PARAM_SFTP_CREDIT_LIMIT_TARGET_DIRECTORY = "SFTP_CreditLimit_Target_Directory";
+	public static final String PARAM_SFTP_CREDIT_LIMIT_FILENAME_PATTERN = "SFTPCreditLimitFileNamePattern";
+
 	public static final String QUEUE_NAME_MF_TO_ES = "MF_TO_ExternalSystem";
 
 	public static final String QUEUE_NAME_ES_TO_MF_CUSTOM = "Custom_ExternalSystem_To_Metasfresh";

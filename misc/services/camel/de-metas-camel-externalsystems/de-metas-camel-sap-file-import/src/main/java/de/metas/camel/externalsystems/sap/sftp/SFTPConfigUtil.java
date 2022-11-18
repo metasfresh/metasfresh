@@ -50,14 +50,20 @@ public class SFTPConfigUtil
 				.password(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_PASSWORD))
 				.hostName(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_HOST_NAME))
 				.port(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_PORT))
+				.pollingFrequency(Duration.ofMillis(Long.parseLong(requestParameters.get(ExternalSystemConstants.PARAM_POLLING_FREQUENCY_MS))))
+
 				.seenFileRenamePattern(seenFileRenamePattern)
-				.targetDirectoryProduct(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_PRODUCT_TARGET_DIRECTORY))
-				.fileNamePatternProduct(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_PRODUCT_FILE_NAME_PATTERN))
-				.targetDirectoryBPartner(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_BPARTNER_TARGET_DIRECTORY))
-				.fileNamePatternBPartner(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_BPARTNER_FILE_NAME_PATTERN))
 				.processedFilesFolder(requestParameters.get(ExternalSystemConstants.PARAM_PROCESSED_DIRECTORY))
 				.erroredFilesFolder(requestParameters.get(ExternalSystemConstants.PARAM_ERRORED_DIRECTORY))
-				.pollingFrequency(Duration.ofMillis(Long.parseLong(requestParameters.get(ExternalSystemConstants.PARAM_POLLING_FREQUENCY_MS))))
+
+				.targetDirectoryProduct(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_PRODUCT_TARGET_DIRECTORY))
+				.fileNamePatternProduct(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_PRODUCT_FILE_NAME_PATTERN))
+
+				.targetDirectoryBPartner(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_BPARTNER_TARGET_DIRECTORY))
+				.fileNamePatternBPartner(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_BPARTNER_FILE_NAME_PATTERN))
+
+				.targetDirectoryCreditLimit(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_CREDIT_LIMIT_TARGET_DIRECTORY))
+				.fileNamePatternCreditLimit(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_CREDIT_LIMIT_FILENAME_PATTERN))
 				.build();
 	}
 }

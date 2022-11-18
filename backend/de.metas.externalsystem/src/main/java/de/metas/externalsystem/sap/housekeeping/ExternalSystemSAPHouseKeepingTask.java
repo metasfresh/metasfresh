@@ -111,6 +111,6 @@ public class ExternalSystemSAPHouseKeepingTask implements IStartupHouseKeepingTa
 		return externalSystemServiceInstanceRepository.getByConfigAndServiceId(configId, externalService.getId())
 				.map(ExternalSystemServiceInstance::getExpectedStatus)
 				.map(status -> status == ExternalStatus.ACTIVE)
-				.orElse(true);
+				.orElse(false);
 	}
 }

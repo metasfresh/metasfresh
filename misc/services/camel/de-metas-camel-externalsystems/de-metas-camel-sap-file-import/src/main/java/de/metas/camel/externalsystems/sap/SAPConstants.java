@@ -28,4 +28,6 @@ public interface SAPConstants
 
 	String SEEN_FILE_RENAME_PATTERN_PROPERTY_NAME = "sap.sftp.processing.rename-pattern";
 	String DEFAULT_RENAME_PATTERN = "${date:now:yyyy-MM-dd_HH-mm-ss}_${file:name}";
+
+	String ROUTE_PROPERTY_CREDIT_LIMIT_ROUTE_CONTEXT = "CreditLimitRouteContext";
 }

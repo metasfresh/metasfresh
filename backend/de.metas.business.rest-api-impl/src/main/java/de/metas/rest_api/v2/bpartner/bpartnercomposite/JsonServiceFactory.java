@@ -24,6 +24,7 @@ package de.metas.rest_api.v2.bpartner.bpartnercomposite;
 
 import de.metas.bpartner.BPGroupRepository;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.greeting.GreetingRepository;
@@ -57,6 +58,7 @@ public class JsonServiceFactory
 	private final SectionCodeService sectionCodeService;
 	private final IncotermsRepository incotermsRepository;
 	private final IPaymentTermRepository paymentTermRepository;
+	private final BPartnerCreditLimitRepository bPartnerCreditLimitRepository;
 
 	public JsonServiceFactory(
 			@NonNull final JsonRequestConsolidateService jsonRequestConsolidateService,
@@ -70,7 +72,8 @@ public class JsonServiceFactory
 			@NonNull final ExternalReferenceRestControllerService externalReferenceService,
 			@NonNull final SectionCodeService sectionCodeService,
 			@NonNull final IncotermsRepository incotermsRepository,
-			@NonNull final AlbertaBPartnerCompositeService albertaBPartnerCompositeService)
+			@NonNull final AlbertaBPartnerCompositeService albertaBPartnerCompositeService,
+			@NonNull final BPartnerCreditLimitRepository bPartnerCreditLimitRepository)
 	{
 		this.jsonRequestConsolidateService = jsonRequestConsolidateService;
 		this.bpartnerQueryService = bpartnerQueryService;
@@ -85,6 +88,7 @@ public class JsonServiceFactory
 		this.albertaBPartnerCompositeService = albertaBPartnerCompositeService;
 		this.incotermsRepository = incotermsRepository;
 		this.paymentTermRepository = Services.get(IPaymentTermRepository.class);
+		this.bPartnerCreditLimitRepository = bPartnerCreditLimitRepository;
 	}
 
 	public JsonPersisterService createPersister()
@@ -101,7 +105,9 @@ public class JsonServiceFactory
 				externalReferenceService,
 				albertaBPartnerCompositeService,
 				sectionCodeService,
-				incotermsRepository, identifier);
+				incotermsRepository,
+				bPartnerCreditLimitRepository,
+				identifier);
 	}
 
 	public JsonRetrieverService createRetriever()

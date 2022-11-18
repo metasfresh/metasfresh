@@ -73,6 +73,13 @@ public class ExternalSystem_Config_SAP
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
+			ifColumnsChanged = { I_ExternalSystem_Config_SAP.COLUMNNAME_SFTP_CreditLimit_TargetDirectory })
+	public void sanitizeCreditLimitTargetDirectory(final I_ExternalSystem_Config_SAP sapConfig)
+	{
+		sapConfig.setSFTP_CreditLimit_TargetDirectory(sanitizeDirectoryRelativePath(sapConfig.getSFTP_CreditLimit_TargetDirectory()));
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = { I_ExternalSystem_Config_SAP.COLUMNNAME_ProcessedDirectory })
 	public void sanitizeProcessedDirectory(final I_ExternalSystem_Config_SAP sapConfig)
 	{

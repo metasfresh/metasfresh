@@ -860,6 +860,8 @@ public class ExternalSystemConfigRepo
 				.pollingFrequency(Duration.ofMillis(config.getPollingFrequencyInMs()))
 				.sftpFileNamePatternProduct(config.getSFTP_Product_FileName_Pattern())
 				.sftpFileNamePatternBPartner(config.getSFTP_BPartner_FileName_Pattern())
+				.sftpCreditLimitTargetDirectory(config.getSFTP_CreditLimit_TargetDirectory())
+				.sftpCreditLimitFileNamePattern(config.getSFTP_CreditLimit_FileName_Pattern())
 				.build();
 	}
 }
