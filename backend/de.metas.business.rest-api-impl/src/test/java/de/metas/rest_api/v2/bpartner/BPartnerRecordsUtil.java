@@ -57,10 +57,11 @@ import org.compiere.model.I_C_Postal;
 import org.compiere.model.I_M_SectionCode;
 import org.compiere.model.X_C_BPartner;
 import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.ZoneId;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -234,7 +235,7 @@ public class BPartnerRecordsUtil
 			bpCreditLimitRecord.setC_BPartner_CreditLimit_ID(C_BP_CREDIT_LIMIT_ID + idOffSet);
 			bpCreditLimitRecord.setC_CreditLimit_Type_ID(123);
 			bpCreditLimitRecord.setAmount(BigDecimal.valueOf(25.5));
-			bpCreditLimitRecord.setDateFrom(Timestamp.valueOf(LocalDate.of(2022, 11, 2).atStartOfDay()));
+			bpCreditLimitRecord.setDateFrom(TimeUtil.asTimestamp(LocalDate.of(2022, 10, 1), ZoneId.of("UTC")));
 			bpCreditLimitRecord.setC_BPartner_ID(bpartnerRecord.getC_BPartner_ID());
 			setCreatedByAndWhen(bpCreditLimitRecord, adUserId); // have to do it manually because we are setting the record ID too
 			saveRecord(bpCreditLimitRecord);

@@ -27,6 +27,8 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
 public class CreditLimitTypeId implements RepoIdAware
 {
@@ -36,6 +38,12 @@ public class CreditLimitTypeId implements RepoIdAware
 	public static CreditLimitTypeId ofRepoId(final int repoId)
 	{
 		return new CreditLimitTypeId(repoId);
+	}
+
+	@Nullable
+	public static CreditLimitTypeId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
 	private CreditLimitTypeId(final int repoId)

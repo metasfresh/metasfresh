@@ -444,7 +444,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
     "creditLimitTypeId" : {
       "repoId" : 123
     },
-    "dateFrom" : "2022-11-01T22:00:00Z",
+    "dateFrom" : "2022-10-01T00:00:00Z",
     "id" : {
       "repoId" : 60
     },
@@ -653,7 +653,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
     "creditLimitTypeId" : {
       "repoId" : 123
     },
-    "dateFrom" : "2022-11-01T22:00:00Z",
+    "dateFrom" : "2022-10-01T00:00:00Z",
     "id" : {
       "repoId" : 60
     },
@@ -830,7 +830,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
     "creditLimitTypeId" : {
       "repoId" : 123
     },
-    "dateFrom" : "2022-11-01T22:00:00Z",
+    "dateFrom" : "2022-10-01T00:00:00Z",
     "id" : {
       "repoId" : 60
     },
@@ -1007,7 +1007,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
     "creditLimitTypeId" : {
       "repoId" : 123
     },
-    "dateFrom" : "2022-11-01T22:00:00Z",
+    "dateFrom" : "2022-10-01T00:00:00Z",
     "id" : {
       "repoId" : 60
     },
