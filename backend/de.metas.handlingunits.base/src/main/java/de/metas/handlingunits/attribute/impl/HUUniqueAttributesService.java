@@ -76,10 +76,6 @@ public class HUUniqueAttributesService
 
 	final IProductDAO productDAO = Services.get(IProductDAO.class);
 
-	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
-
-	private final HUUniqueAttributesService huUniqueAttributesService = new HUUniqueAttributesService(new HUUniqueAttributesRepository());
-
 	public HUUniqueAttributesService(@NonNull final HUUniqueAttributesRepository repo)
 	{
 		this.repo = repo;
