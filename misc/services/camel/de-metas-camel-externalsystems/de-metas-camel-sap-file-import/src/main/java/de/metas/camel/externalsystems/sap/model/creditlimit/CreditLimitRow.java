@@ -20,11 +20,18 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.sap.api.model.creditlimit;
+package de.metas.camel.externalsystems.sap.model.creditlimit;
 
+import de.metas.camel.externalsystems.sap.model.bpartner.PartnerCode;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NonNull;
 import org.apache.camel.dataformat.bindy.annotation.CsvRecord;
 import org.apache.camel.dataformat.bindy.annotation.DataField;
+
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 
 @CsvRecord(separator = "	", skipField = true)
 @Getter
@@ -34,6 +41,7 @@ public class CreditLimitRow
 	private String creditControlArea;
 
 	@DataField(pos = 3)
+	@Getter(AccessLevel.NONE)
 	private String creditAccount;
 
 	@DataField(pos = 4)
@@ -53,4 +61,24 @@ public class CreditLimitRow
 
 	@DataField(pos = 11)
 	private String deleteFlag;
+
+	@NonNull
+	public PartnerCode getCreditAccount()
+	{
+		return PartnerCode.of(creditAccount);
+	}
+
+	@NonNull
+	public Optional<LocalDate> getEffectiveDateFrom(@NonNull final String datePattern)
+	{
+		return Optional.ofNullable(effectiveDateFrom)
+				.map(dateFrom -> LocalDate.parse(dateFrom, DateTimeFormatter.ofPattern(datePattern)));
+	}
+
+	@NonNull
+	public Optional<LocalDate> getEffectiveDateTo(@NonNull final String datePattern)
+	{
+		return Optional.ofNullable(effectiveDateTo)
+				.map(dateTo -> LocalDate.parse(dateTo, DateTimeFormatter.ofPattern(datePattern)));
+	}
 }

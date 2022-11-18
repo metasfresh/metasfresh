@@ -20,20 +20,25 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.sap.creditlimit;
+package de.metas.camel.externalsystems.sap.creditlimit.info;
 
-import de.metas.camel.externalsystems.sap.api.model.creditlimit.CreditLimitRow;
+import de.metas.common.bpartner.v2.request.creditLimit.JsonRequestCreditLimitUpsert;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 @Value
 @Builder
-public class InitCreditLimitGroup
+@Jacksonized
+public class UpsertCreditLimitRequest
 {
 	@NonNull
 	String orgCode;
 
 	@NonNull
-	CreditLimitRow creditLimitRow;
+	String bpartnerIdentifier;
+
+	@NonNull
+	JsonRequestCreditLimitUpsert jsonRequestCreditLimitUpsert;
 }

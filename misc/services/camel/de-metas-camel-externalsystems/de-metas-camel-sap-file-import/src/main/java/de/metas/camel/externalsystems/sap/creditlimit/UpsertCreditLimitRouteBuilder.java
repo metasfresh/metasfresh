@@ -23,15 +23,22 @@
 package de.metas.camel.externalsystems.sap.creditlimit;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
-import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
+import de.metas.camel.externalsystems.common.v2.CreditLimitDeleteRequest;
+import de.metas.camel.externalsystems.sap.creditlimit.info.UpsertCreditLimitRequest;
+import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsert;
+import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsertItem;
+import de.metas.common.bpartner.v2.request.JsonRequestComposite;
+import de.metas.common.rest_api.v2.SyncAdvise;
+import lombok.NonNull;
+import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
-import static de.metas.camel.externalsystems.sap.SAPConstants.ROUTE_PROPERTY_CREDIT_LIMIT_ROUTE_CONTEXT;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
@@ -43,6 +50,8 @@ public class UpsertCreditLimitRouteBuilder extends RouteBuilder
 	@VisibleForTesting
 	public static final String UPSERT_CREDIT_LIMIT_PROCESSOR_ID = "SAP-upsertCreditLimitProcessorId";
 
+	private static final String UPSERT_CREDIT_LIMIT_PROPERTY_NAME = "UpsertCreditLimitRequest";
+
 	@Override
 	public void configure() throws Exception
 	{
@@ -53,17 +62,68 @@ public class UpsertCreditLimitRouteBuilder extends RouteBuilder
 
 		from(direct(UPSERT_CREDIT_LIMIT_ROUTE_ID))
 				.routeId(UPSERT_CREDIT_LIMIT_ROUTE_ID)
+
+				.process(UpsertCreditLimitRouteBuilder::saveUpsertRequestAsProperty)
+
+				.process(UpsertCreditLimitRouteBuilder::prepareDeleteRequest)
 				.log(LoggingLevel.DEBUG, "Calling metasfresh-api to delete existing credit limit records for <Org,BPartnerIdentifier> : ${body}")
 				.to("{{" + ExternalSystemCamelConstants.MF_DELETE_BPARTNER_CREDIT_LIMIT_CAMEL_URI + "}}")
-				.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert credit limits via upsertBPartner EP: ${body}")
-				.process(exchange -> {
-					final CreditLimitContext creditLimitRouteContext = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_CREDIT_LIMIT_ROUTE_CONTEXT, CreditLimitContext.class);
 
-					exchange.getIn().setBody(creditLimitRouteContext.getBpUpsertCamelRequest(), BPUpsertCamelRequest.class);
-				}).id(UPSERT_CREDIT_LIMIT_PROCESSOR_ID)
+				.process(UpsertCreditLimitRouteBuilder::prepareBPUpsertCamelRequest).id(UPSERT_CREDIT_LIMIT_PROCESSOR_ID)
+				.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert credit limits via upsertBPartner EP: ${body}")
 				.toD("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
 				.end();
-
 		// @formatter:on
+	}
+
+	private static void prepareBPUpsertCamelRequest(@NonNull final Exchange exchange)
+	{
+		final UpsertCreditLimitRequest upsertCreditLimitRequest = exchange.getProperty(UPSERT_CREDIT_LIMIT_PROPERTY_NAME, UpsertCreditLimitRequest.class);
+
+		final JsonRequestBPartnerUpsertItem requestBPartnerUpsertItem = JsonRequestBPartnerUpsertItem.builder()
+				.bpartnerIdentifier(upsertCreditLimitRequest.getBpartnerIdentifier())
+				.bpartnerComposite(JsonRequestComposite.builder()
+										   .orgCode(upsertCreditLimitRequest.getOrgCode())
+										   .creditLimits(upsertCreditLimitRequest.getJsonRequestCreditLimitUpsert())
+										   .syncAdvise(SyncAdvise.CREATE_OR_MERGE)
+										   .build())
+				.build();
+
+		final JsonRequestBPartnerUpsert jsonRequestBPartnerUpsert = JsonRequestBPartnerUpsert.builder()
+				.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
+				.requestItems(ImmutableList.of(requestBPartnerUpsertItem))
+				.build();
+
+		final BPUpsertCamelRequest bpUpsertCamelRequest = BPUpsertCamelRequest.builder()
+				.jsonRequestBPartnerUpsert(jsonRequestBPartnerUpsert)
+				.orgCode(upsertCreditLimitRequest.getOrgCode())
+				.build();
+
+		exchange.getIn().setBody(bpUpsertCamelRequest);
+	}
+
+	private static void prepareDeleteRequest(@NonNull final Exchange exchange)
+	{
+		final UpsertCreditLimitRequest upsertCreditLimitRequest = exchange.getProperty(UPSERT_CREDIT_LIMIT_PROPERTY_NAME, UpsertCreditLimitRequest.class);
+
+		final CreditLimitDeleteRequest creditLimitDeleteRequest = CreditLimitDeleteRequest.builder()
+				.orgCode(upsertCreditLimitRequest.getOrgCode())
+				.bpartnerIdentifier(upsertCreditLimitRequest.getBpartnerIdentifier())
+				.includingProcessed(true)
+				.build();
+
+		exchange.getIn().setBody(creditLimitDeleteRequest);
+	}
+
+	private static void saveUpsertRequestAsProperty(@NonNull final Exchange exchange)
+	{
+		final UpsertCreditLimitRequest upsertCreditLimitRequest = exchange.getIn().getBody(UpsertCreditLimitRequest.class);
+
+		if (upsertCreditLimitRequest == null)
+		{
+			throw new RuntimeException("upsertCreditLimitRequest missing from exchange! See actual body=" + exchange.getIn().getBody());
+		}
+
+		exchange.setProperty(UPSERT_CREDIT_LIMIT_PROPERTY_NAME, upsertCreditLimitRequest);
 	}
 }

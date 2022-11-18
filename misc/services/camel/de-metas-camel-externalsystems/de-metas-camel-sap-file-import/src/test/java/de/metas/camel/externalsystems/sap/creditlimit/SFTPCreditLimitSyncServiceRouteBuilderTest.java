@@ -28,6 +28,7 @@ import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
 import de.metas.camel.externalsystems.common.v2.CreditLimitDeleteRequest;
+import de.metas.camel.externalsystems.sap.service.OnDemandRoutesController;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.Getter;
 import lombok.NonNull;
@@ -77,7 +78,8 @@ public class SFTPCreditLimitSyncServiceRouteBuilderTest extends CamelTestSupport
 	{
 		return new RouteBuilder[] {
 				new SFTPCreditLimitSyncServiceRouteBuilder(Mockito.mock(ProcessLogger.class)),
-				new UpsertCreditLimitRouteBuilder()
+				new UpsertCreditLimitRouteBuilder(),
+				new OnDemandRoutesController()
 		};
 	}
 
@@ -139,14 +141,11 @@ public class SFTPCreditLimitSyncServiceRouteBuilderTest extends CamelTestSupport
 	}
 
 	@Test
-	public void disable_SyncCreditLimits() throws Exception
+	public void enable_and_disable_SyncCreditLimits() throws Exception
 	{
 		final ObjectMapper objectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
 		final SFTPCreditLimitSyncServiceRouteBuilderTest.MockExternalSystemStatusProcessor mockExternalSystemStatusProcessor = new SFTPCreditLimitSyncServiceRouteBuilderTest.MockExternalSystemStatusProcessor();
-
-		prepareEnableRouteForTesting(mockExternalSystemStatusProcessor);
-		prepareDisableRouteForTesting(mockExternalSystemStatusProcessor);
 
 		final InputStream invokeStartExternalSystemRequestIS = this.getClass().getResourceAsStream(JSON_START_EXTERNAL_SYSTEM_REQUEST);
 		final JsonExternalSystemRequest startExternalSystemRequest = objectMapper.readValue(invokeStartExternalSystemRequestIS, JsonExternalSystemRequest.class);
@@ -156,16 +155,23 @@ public class SFTPCreditLimitSyncServiceRouteBuilderTest extends CamelTestSupport
 
 		context.start();
 
+		prepareEnableRouteForTesting(mockExternalSystemStatusProcessor);
+
 		//when
 		template.sendBody("direct:" + START_CREDIT_LIMIT_SYNC_ROUTE_ID, startExternalSystemRequest);
 
-		//and
+		//then
+		assertThat(mockExternalSystemStatusProcessor.called).isEqualTo(1);
+		assertThat(context.getRoute(getSFTPCreditLimitsSyncRouteId(stopExternalSystemRequest))).isNotNull();
+		assertThat(context.getRouteController().getRouteStatus(getSFTPCreditLimitsSyncRouteId(stopExternalSystemRequest)).isStarted()).isNotNull();
+
+		//when
+		prepareDisableRouteForTesting(mockExternalSystemStatusProcessor);
+
 		template.sendBody("direct:" + STOP_CREDIT_LIMIT_SYNC_ROUTE_ID, stopExternalSystemRequest);
 
 		//then
-		assertMockEndpointsSatisfied();
 		assertThat(mockExternalSystemStatusProcessor.called).isEqualTo(2);
-
 		assertThat(context.getRoute(getSFTPCreditLimitsSyncRouteId(stopExternalSystemRequest))).isNull();
 	}
 
@@ -203,7 +209,7 @@ public class SFTPCreditLimitSyncServiceRouteBuilderTest extends CamelTestSupport
 	private void prepareEnableRouteForTesting(
 			@NonNull final MockExternalSystemStatusProcessor mockExternalSystemStatusProcessor) throws Exception
 	{
-		AdviceWith.adviceWith(context, START_CREDIT_LIMIT_SYNC_ROUTE_ID,
+		AdviceWith.adviceWith(context, OnDemandRoutesController.START_HANDLE_ON_DEMAND_ROUTE_ID,
 							  advice -> advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_CREATE_EXTERNAL_SYSTEM_STATUS_V2_CAMEL_URI + "}}")
 									  .skipSendToOriginalEndpoint()
 									  .to(MOCK_EXTERNAL_SYSTEM_STATUS_ENDPOINT)
@@ -213,7 +219,7 @@ public class SFTPCreditLimitSyncServiceRouteBuilderTest extends CamelTestSupport
 	private void prepareDisableRouteForTesting(
 			@NonNull final MockExternalSystemStatusProcessor mockExternalSystemStatusProcessor) throws Exception
 	{
-		AdviceWith.adviceWith(context, STOP_CREDIT_LIMIT_SYNC_ROUTE_ID,
+		AdviceWith.adviceWith(context, OnDemandRoutesController.STOP_HANDLE_ON_DEMAND_ROUTE_ID,
 							  advice -> advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_CREATE_EXTERNAL_SYSTEM_STATUS_V2_CAMEL_URI + "}}")
 									  .skipSendToOriginalEndpoint()
 									  .to(MOCK_EXTERNAL_SYSTEM_STATUS_ENDPOINT)

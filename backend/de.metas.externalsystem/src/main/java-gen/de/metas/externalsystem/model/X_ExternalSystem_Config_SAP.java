@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ExternalSystem_Config_SAP extends org.compiere.model.PO implements I_ExternalSystem_Config_SAP, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 278699070L;
+	private static final long serialVersionUID = -1886505240L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config_SAP (final Properties ctx, final int ExternalSystem_Config_SAP_ID, @Nullable final String trxName)
@@ -125,25 +125,25 @@ public class X_ExternalSystem_Config_SAP extends org.compiere.model.PO implement
 	}
 
 	@Override
-	public void setSFTP_BPartner_FileName_Pattern (final @Nullable java.lang.String SFTP_BPartner_FileName_Pattern)
+	public void setSFTP_BPartner_FileName_Pattern (final @Nullable String SFTP_BPartner_FileName_Pattern)
 	{
 		set_Value (COLUMNNAME_SFTP_BPartner_FileName_Pattern, SFTP_BPartner_FileName_Pattern);
 	}
 
 	@Override
-	public java.lang.String getSFTP_BPartner_FileName_Pattern()
+	public String getSFTP_BPartner_FileName_Pattern()
 	{
 		return get_ValueAsString(COLUMNNAME_SFTP_BPartner_FileName_Pattern);
 	}
 
 	@Override
-	public void setSFTP_BPartner_TargetDirectory (final @Nullable java.lang.String SFTP_BPartner_TargetDirectory)
+	public void setSFTP_BPartner_TargetDirectory (final @Nullable String SFTP_BPartner_TargetDirectory)
 	{
 		set_Value (COLUMNNAME_SFTP_BPartner_TargetDirectory, SFTP_BPartner_TargetDirectory);
 	}
 
 	@Override
-	public java.lang.String getSFTP_BPartner_TargetDirectory()
+	public String getSFTP_BPartner_TargetDirectory()
 	{
 		return get_ValueAsString(COLUMNNAME_SFTP_BPartner_TargetDirectory);
 	}
@@ -209,25 +209,25 @@ public class X_ExternalSystem_Config_SAP extends org.compiere.model.PO implement
 	}
 
 	@Override
-	public void setSFTP_Product_FileName_Pattern (final @Nullable java.lang.String SFTP_Product_FileName_Pattern)
+	public void setSFTP_Product_FileName_Pattern (final @Nullable String SFTP_Product_FileName_Pattern)
 	{
 		set_Value (COLUMNNAME_SFTP_Product_FileName_Pattern, SFTP_Product_FileName_Pattern);
 	}
 
 	@Override
-	public java.lang.String getSFTP_Product_FileName_Pattern()
+	public String getSFTP_Product_FileName_Pattern()
 	{
 		return get_ValueAsString(COLUMNNAME_SFTP_Product_FileName_Pattern);
 	}
 
 	@Override
-	public void setSFTP_Product_TargetDirectory (final @Nullable java.lang.String SFTP_Product_TargetDirectory)
+	public void setSFTP_Product_TargetDirectory (final @Nullable String SFTP_Product_TargetDirectory)
 	{
 		set_Value (COLUMNNAME_SFTP_Product_TargetDirectory, SFTP_Product_TargetDirectory);
 	}
 
 	@Override
-	public java.lang.String getSFTP_Product_TargetDirectory()
+	public String getSFTP_Product_TargetDirectory()
 	{
 		return get_ValueAsString(COLUMNNAME_SFTP_Product_TargetDirectory);
 	}

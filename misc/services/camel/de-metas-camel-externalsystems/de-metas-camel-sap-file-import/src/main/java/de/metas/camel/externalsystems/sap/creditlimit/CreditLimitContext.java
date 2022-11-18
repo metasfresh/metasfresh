@@ -22,8 +22,7 @@
 
 package de.metas.camel.externalsystems.sap.creditlimit;
 
-import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
-import de.metas.camel.externalsystems.sap.api.model.creditlimit.CreditLimitRow;
+import de.metas.camel.externalsystems.sap.model.creditlimit.CreditLimitRow;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
@@ -35,16 +34,13 @@ import javax.annotation.Nullable;
 public class CreditLimitContext
 {
 	@NonNull
-	private String orgCode;
+	private final String orgCode;
 
 	@Nullable
-	private SyncCreditLimitRequestBuilder creditLimitUpsertGroupBuilder;
+	private UpsertCreditLimitRequestBuilder upsertCreditLimitRequestBuilder;
 
-	@Nullable
-	private BPUpsertCamelRequest bpUpsertCamelRequest;
-
-	public void initUpsertCreditLimitRequestBuilder(@NonNull final CreditLimitRow creditLimitRow)
+	public void initCreditLimitRequestBuilderFor(@NonNull final CreditLimitRow creditLimitRow)
 	{
-		this.creditLimitUpsertGroupBuilder = SyncCreditLimitRequestBuilder.of(creditLimitRow, orgCode);
+		this.upsertCreditLimitRequestBuilder = UpsertCreditLimitRequestBuilder.of(creditLimitRow, orgCode);
 	}
 }

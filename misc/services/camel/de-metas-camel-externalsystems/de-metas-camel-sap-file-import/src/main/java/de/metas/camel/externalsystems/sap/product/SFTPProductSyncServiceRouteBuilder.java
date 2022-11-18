@@ -23,7 +23,6 @@
 package de.metas.camel.externalsystems.sap.product;
 
 import com.google.common.annotations.VisibleForTesting;
-import de.metas.camel.externalsystems.common.IdAwareRouteBuilder;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.sap.service.OnDemandRoutesController;
 import de.metas.camel.externalsystems.sap.sftp.SFTPConfigUtil;
@@ -109,7 +108,7 @@ public class SFTPProductSyncServiceRouteBuilder extends RouteBuilder implements 
 	}
 
 	@NonNull
-	private IdAwareRouteBuilder getSFTPRouteBuilder(@NonNull final JsonExternalSystemRequest request, @NonNull final CamelContext camelContext)
+	private GetProductsSFTPRouteBuilder getSFTPRouteBuilder(@NonNull final JsonExternalSystemRequest request, @NonNull final CamelContext camelContext)
 	{
 		return GetProductsSFTPRouteBuilder
 				.builder()

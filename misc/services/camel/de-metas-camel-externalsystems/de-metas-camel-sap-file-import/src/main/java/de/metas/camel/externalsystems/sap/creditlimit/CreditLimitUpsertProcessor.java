@@ -22,34 +22,38 @@
 
 package de.metas.camel.externalsystems.sap.creditlimit;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.ProcessorHelper;
-import de.metas.camel.externalsystems.common.v2.CreditLimitDeleteRequest;
-import de.metas.camel.externalsystems.sap.api.model.creditlimit.CreditLimitRow;
+import de.metas.camel.externalsystems.sap.creditlimit.info.UpsertCreditLimitRequest;
+import de.metas.camel.externalsystems.sap.model.creditlimit.CreditLimitRow;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
 import static de.metas.camel.externalsystems.sap.SAPConstants.ROUTE_PROPERTY_CREDIT_LIMIT_ROUTE_CONTEXT;
-import static de.metas.camel.externalsystems.sap.common.ExternalIdentifierFormat.formatExternalId;
 
 public class CreditLimitUpsertProcessor implements Processor
 {
-	private final static String CREDIT_TYPE = "S001";
-
 	@NonNull
-	final JsonExternalSystemRequest externalSystemRequest;
+	private final JsonExternalSystemRequest externalSystemRequest;
 
 	@NonNull
 	private final ProcessLogger processLogger;
 
+	@NonNull
+	private final ImmutableSet<String> acceptedCreditTypes;
+
 	public CreditLimitUpsertProcessor(
 			@NonNull final JsonExternalSystemRequest externalSystemRequest,
-			@NonNull final ProcessLogger processLogger)
+			@NonNull final ProcessLogger processLogger,
+			@NonNull final ImmutableSet<String> acceptedCreditTypes)
 	{
 		this.externalSystemRequest = externalSystemRequest;
 		this.processLogger = processLogger;
+		this.acceptedCreditTypes = acceptedCreditTypes;
 	}
 
 	@Override
@@ -70,15 +74,17 @@ public class CreditLimitUpsertProcessor implements Processor
 	{
 		final CreditLimitContext creditLimitRouteContext = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_CREDIT_LIMIT_ROUTE_CONTEXT, CreditLimitContext.class);
 
-		if (creditLimitRouteContext.getCreditLimitUpsertGroupBuilder() == null)
+		final UpsertCreditLimitRequestBuilder upsertCreditLimitRequestBuilder = creditLimitRouteContext.getUpsertCreditLimitRequestBuilder();
+
+		if (upsertCreditLimitRequestBuilder == null)
 		{
-			creditLimitRouteContext.initUpsertCreditLimitRequestBuilder(currentCreditLimitRow);
+			creditLimitRouteContext.initCreditLimitRequestBuilderFor(currentCreditLimitRow);
 
 			exchange.getIn().setBody(null);
 			return;
 		}
 
-		final boolean added = creditLimitRouteContext.getCreditLimitUpsertGroupBuilder().addCreditLimitRow(currentCreditLimitRow);
+		final boolean added = upsertCreditLimitRequestBuilder.addCreditLimitRow(currentCreditLimitRow);
 
 		if (added)
 		{
@@ -86,46 +92,48 @@ public class CreditLimitUpsertProcessor implements Processor
 			return;
 		}
 
-		final CreditLimitDeleteRequest creditLimitDeleteRequest = prepareDeleteRequest(creditLimitRouteContext.getOrgCode(), creditLimitRouteContext.getCreditLimitUpsertGroupBuilder().getBPartnerIdentifierNotNull());
-		exchange.getIn().setBody(creditLimitDeleteRequest, CreditLimitDeleteRequest.class);
+		final UpsertCreditLimitRequest upsertCreditLimitRequest = creditLimitRouteContext.getUpsertCreditLimitRequestBuilder().build();
+		exchange.getIn().setBody(upsertCreditLimitRequest);
 
-		creditLimitRouteContext.setBpUpsertCamelRequest(creditLimitRouteContext.getCreditLimitUpsertGroupBuilder().build());
-
-		creditLimitRouteContext.initUpsertCreditLimitRequestBuilder(currentCreditLimitRow);
+		creditLimitRouteContext.initCreditLimitRequestBuilderFor(currentCreditLimitRow);
 	}
 
 	public static void processLastCreditLimitGroup(@NonNull final Exchange exchange)
 	{
 		final CreditLimitContext creditLimitRouteContext = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_CREDIT_LIMIT_ROUTE_CONTEXT, CreditLimitContext.class);
 
-		creditLimitRouteContext.setBpUpsertCamelRequest(creditLimitRouteContext.getCreditLimitUpsertGroupBuilder().build());
+		if (creditLimitRouteContext.getUpsertCreditLimitRequestBuilder() == null)
+		{
+			exchange.getIn().setBody(null);
+			return;
+		}
 
-		final CreditLimitDeleteRequest creditLimitDeleteRequest = CreditLimitUpsertProcessor.prepareDeleteRequest(creditLimitRouteContext.getOrgCode(), creditLimitRouteContext.getCreditLimitUpsertGroupBuilder().getBPartnerIdentifierNotNull());
-
-		exchange.getIn().setBody(creditLimitDeleteRequest, CreditLimitDeleteRequest.class);
-	}
-
-	@NonNull
-	public static CreditLimitDeleteRequest prepareDeleteRequest(@NonNull final String orgCode, @NonNull final String groupIdentifier)
-	{
-		return CreditLimitDeleteRequest.builder()
-				.orgCode(orgCode)
-				.bpartnerIdentifier(formatExternalId(groupIdentifier))
-				.includingProcessed(true)
-				.build();
+		exchange.getIn().setBody(creditLimitRouteContext.getUpsertCreditLimitRequestBuilder().build());
 	}
 
 	private boolean qualifiesForImport(@NonNull final CreditLimitRow creditLimitRow)
 	{
-		if(!creditLimitRow.getCreditType().equals(CREDIT_TYPE))
+		if (!acceptedCreditTypes.contains(creditLimitRow.getCreditType()))
 		{
-			processLogger.logMessage("Skipped row due to invalid credit type: " + creditLimitRow.getCreditType(), externalSystemRequest.getAdPInstanceId().getValue());
+			processLogger.logMessage("Skipped row due to invalid credit type: " + creditLimitRow.getCreditType() + "!"
+											 + " RawBPartnerCode: " + creditLimitRow.getCreditAccount().getRawPartnerCode(),
+									 JsonMetasfreshId.toValue(externalSystemRequest.getAdPInstanceId()));
 
 			return false;
 		}
+
 		if (creditLimitRow.getCreditLine() == null)
 		{
-			processLogger.logMessage("Skipping row due to missing credit line!", externalSystemRequest.getAdPInstanceId().getValue());
+			processLogger.logMessage("Skipping row due to missing credit line!! RawBPartnerCode: " + creditLimitRow.getCreditAccount().getRawPartnerCode(),
+									 JsonMetasfreshId.toValue(externalSystemRequest.getAdPInstanceId()));
+
+			return false;
+		}
+
+		if (creditLimitRow.getCurrencyCode() == null)
+		{
+			processLogger.logMessage("Skipping row due to missing currency code! RawBPartnerCode: " + creditLimitRow.getCreditAccount().getRawPartnerCode(),
+									 JsonMetasfreshId.toValue(externalSystemRequest.getAdPInstanceId()));
 
 			return false;
 		}

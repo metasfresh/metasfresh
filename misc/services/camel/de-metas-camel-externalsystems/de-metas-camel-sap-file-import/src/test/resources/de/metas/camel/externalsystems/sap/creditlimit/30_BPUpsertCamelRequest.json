@@ -3,7 +3,7 @@
   "jsonRequestBPartnerUpsert": {
     "requestItems": [
       {
-        "bpartnerIdentifier": "ext-SAP-sectionCode_BPartnerTest00",
+        "bpartnerIdentifier": "ext-SAP-BPartnerTest00_sectionCode",
         "externalVersion": null,
         "externalReferenceUrl": null,
         "bpartnerComposite": {
