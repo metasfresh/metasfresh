@@ -190,4 +190,6 @@ public interface IShipmentScheduleBL extends ISingletonService
 	void updateExportStatus(@NonNull final APIExportStatus newExportStatus, @NonNull final PInstanceId pinstanceId);
 
 	void setAsyncBatch(ShipmentScheduleId shipmentScheduleId, AsyncBatchId asyncBatchId);
+
+	void generateDeliveryPlanning(@NonNull I_M_ShipmentSchedule shipmentScheduleRecord);
 }

@@ -28,6 +28,7 @@ import de.metas.incoterms.IncotermsId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -50,7 +51,11 @@ public class DeliveryPlanningCreateRequest
 
 	@NonNull ClientId clientId;
 
-	@NonNull OrderId orderId;
+	@Nullable
+	OrderId orderId;
+
+	@Nullable
+	OrderLineId orderLineId;
 
 	@NonNull ProductId productId;
 

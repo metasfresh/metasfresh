@@ -2,9 +2,9 @@ package de.metas.inoutcandidate.modelvalidator;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.deliveryplanning.OutgoingDeliveryPlanningWorkpackageProcessor;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -55,7 +55,7 @@ public class M_ShipmentSchedule
 	private final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IShipmentScheduleUpdater shipmentScheduleUpdater = Services.get(IShipmentScheduleUpdater.class);
-	
+
 	/**
 	 * Does some sanity checks on the given <code>schedule</code>
 	 */
@@ -88,7 +88,7 @@ public class M_ShipmentSchedule
 	/**
 	 * If a shipment schedule is deleted, then this method makes sure that all {@link I_M_IolCandHandler_Log} records which refer to the same record as the schedule are also deleted.<br>
 	 * Otherwise, that referenced record would never be considered again by {@link de.metas.inoutcandidate.spi.ShipmentScheduleHandler#retrieveModelsWithMissingCandidates(Properties, String)}.
-	 *
+	 * <p>
 	 * Task 08288
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
@@ -313,4 +313,13 @@ public class M_ShipmentSchedule
 	{
 		shipmentScheduleBL.updateCanBeExportedAfter(sched);
 	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
+	public void createDeliveryPlanning(@NonNull final I_M_ShipmentSchedule sched)
+	{
+		// TODO sys config
+		OutgoingDeliveryPlanningWorkpackageProcessor.createWorkpackage(sched);
+
+	}
+
 }

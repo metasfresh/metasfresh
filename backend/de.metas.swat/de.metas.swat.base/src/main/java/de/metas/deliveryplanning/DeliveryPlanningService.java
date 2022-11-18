@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 public class DeliveryPlanningService
 {
 
-
-
+	public void generateDeliveryPlanning(final DeliveryPlanningCreateRequest request)
+	{
+	}
 }
