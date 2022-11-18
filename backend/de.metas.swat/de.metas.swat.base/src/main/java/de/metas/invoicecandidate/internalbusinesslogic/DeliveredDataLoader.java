@@ -346,23 +346,4 @@ public class DeliveredDataLoader
 		}
 		return result.build();
 	}
-
-	@NonNull
-	private StockQtyAndUOMQty getDeliveredQtyWhenNoValidICIOL()
-	{
-		final boolean hasInOutLineAllocations = invoiceCandDAO.countICIOLAssociations(invoiceCandidateId) > 0;
-
-		if (hasInOutLineAllocations)
-		{
-			return StockQtyAndUOMQty.builder()
-					.productId(productId)
-					.uomQty(Quantitys.createZero(icUomId))
-					.stockQty(Quantitys.createZero(productId))
-					.build();
-		}
-		else
-		{
-			return defaultQtyDelivered;
-		}
-	}
 }

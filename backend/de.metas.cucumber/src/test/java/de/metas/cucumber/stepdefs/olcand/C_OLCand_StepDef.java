@@ -85,11 +85,11 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_C_OLCand_ID;
 import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_ErrorMsg;
 import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_ExternalLineId;
 import static de.metas.ordercandidate.model.I_C_OLCand.COLUMNNAME_IsError;
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.Assertions.*;
 
 public class C_OLCand_StepDef
