@@ -142,7 +142,11 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 			final boolean editableEffective = editableInUI &&
 					(editableInHuOverride || editableInHU);
 
-			if (!editableEffective || isProductsBOMHasSerialNo_Sequence(attribute, productIds))
+			if (!editableEffective)
+			{
+				readonlyAttributeNames.add(attributeCode);
+			}
+			if (isProductsBOMHasSerialNo_Sequence(attribute, productIds))
 			{
 				readonlyAttributeNames.add(attributeCode);
 			}
@@ -170,7 +174,7 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 		final AttributeId attributeId = AttributeId.ofRepoId(attribute.getM_Attribute_ID());
 		final AttributeId serialNoAttributeId = attributesRepo.retrieveAttributeIdByValue(AttributeConstants.ATTR_SerialNo);
-		if (attributeId.equals(serialNoAttributeId) && isProductsBOMHasSerialNo_Sequence(attribute, productIds))
+		if (attributeId.equals(serialNoAttributeId))
 		{
 			return productIds.stream().anyMatch(this::isBOMHasSerialNo_Sequence);
 		}

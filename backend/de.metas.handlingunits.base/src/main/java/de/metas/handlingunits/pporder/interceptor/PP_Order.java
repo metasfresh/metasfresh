@@ -32,15 +32,12 @@ import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderPlanningStatus;
 import org.springframework.stereotype.Component;
-
-import java.util.Set;
 
 @Interceptor(I_PP_Order.class)
 @Component
@@ -93,10 +90,10 @@ public class PP_Order
 	private void checkHUUniqueAttributes(@NonNull final I_PP_Order order)
 	{
 		final AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.ofRepoIdOrNone(order.getM_AttributeSetInstance_ID());
-		final Set<AttributeId> asiAttributeIds = attributesRepo.getAttributeIdsByAttributeSetInstanceId(attributeSetInstanceId);
 		if (attributeSetInstanceId.isRegular())
 		{
-			attributesRepo.retrieveAttributeInstances(attributeSetInstanceId).forEach(huUniqueAttributesService::validateAttribute);
+			attributesRepo.retrieveAttributeInstances(attributeSetInstanceId)
+					.forEach(huUniqueAttributesService::validateAttribute);
 		}
 	}
 }
