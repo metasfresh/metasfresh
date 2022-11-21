@@ -2,6 +2,7 @@ package de.metas.manufacturing.job.service;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import de.metas.dao.ValueRestriction;
 import de.metas.device.accessor.DeviceAccessor;
 import de.metas.device.accessor.DeviceAccessorsHubFactory;
@@ -58,6 +59,7 @@ import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
@@ -138,6 +140,7 @@ public class ManufacturingJobService
 
 	public Stream<ManufacturingJobReference> streamJobReferencesForUser(
 			final @NonNull UserId responsibleId,
+			final @Nullable ResourceId plantId,
 			final @NonNull Instant now,
 			final @NonNull QueryLimit suggestedLimit)
 	{
@@ -152,7 +155,7 @@ public class ManufacturingJobService
 		// New possible jobs
 		if (!suggestedLimit.isLimitHitOrExceeded(result))
 		{
-			streamJobCandidatesToCreate(responsibleId, now)
+			streamJobCandidatesToCreate(responsibleId, plantId, now)
 					.limit(suggestedLimit.minusSizeOf(result).toIntOr(Integer.MAX_VALUE))
 					.forEach(result::add);
 		}
@@ -174,11 +177,16 @@ public class ManufacturingJobService
 				.build());
 	}
 
-	private Stream<ManufacturingJobReference> streamJobCandidatesToCreate(@NonNull final UserId userId, @Nullable Instant now)
+	private Stream<ManufacturingJobReference> streamJobCandidatesToCreate(
+			@NonNull final UserId userId,
+			@Nullable final ResourceId plantId,
+			@Nullable Instant now)
 	{
 		final ManufacturingOrderQuery.ManufacturingOrderQueryBuilder queryBuilder = ManufacturingOrderQuery.builder()
 				.onlyCompleted(true)
 				.responsibleId(ValueRestriction.isNull());
+
+		Set<ResourceId> onlyPlantIds = plantId != null ? ImmutableSet.of(plantId) : ImmutableSet.of();
 
 		for (ManufacturingJobDefaultFilter defaultFilter : getDefaultFilters())
 		{
@@ -186,8 +194,18 @@ public class ManufacturingJobService
 			{
 				case UserPlant:
 				{
-					final ImmutableSet<ResourceId> resourceIds = resourceDAO.getResourceIdsByUserId(userId);
-					queryBuilder.onlyPlantIds(resourceIds);
+					final ImmutableSet<ResourceId> userPlantIds = resourceDAO.getResourceIdsByUserId(userId);
+					if (!userPlantIds.isEmpty())
+					{
+						if (onlyPlantIds.isEmpty())
+						{
+							onlyPlantIds = userPlantIds;
+						}
+						else
+						{
+							onlyPlantIds = Sets.intersection(onlyPlantIds, userPlantIds);
+						}
+					}
 					break;
 				}
 				case TodayDatePromised:
@@ -203,7 +221,10 @@ public class ManufacturingJobService
 			}
 		}
 
-		return ppOrderBL.streamManufacturingOrders(queryBuilder.build())
+		return ppOrderBL.streamManufacturingOrders(
+						queryBuilder
+								.onlyPlantIds(onlyPlantIds)
+								.build())
 				.map(ppOrder -> toManufacturingJobReference(ppOrder, false));
 	}
 

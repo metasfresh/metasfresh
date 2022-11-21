@@ -1,5 +1,6 @@
 package de.metas.workflow.rest_api.controller.v2.ws;
 
+import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.security.UserAuthToken;
 import de.metas.user.UserId;
 import de.metas.util.web.MetasfreshRestAPIConstants;
@@ -13,6 +14,8 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Component;
+
+import javax.annotation.Nullable;
 
 @Component
 public class WorkflowLaunchersWebSocketProducerFactory implements WebSocketProducerFactory
@@ -41,7 +44,8 @@ public class WorkflowLaunchersWebSocketProducerFactory implements WebSocketProdu
 		return new WorkflowLaunchersWebSocketProducer(
 				workflowRestAPIService,
 				topicInfo.getApplicationId(),
-				topicInfo.getUserId());
+				topicInfo.getUserId(),
+				topicInfo.getFilterByQRCode());
 	}
 
 	@Value(staticConstructor = "of")
@@ -49,6 +53,7 @@ public class WorkflowLaunchersWebSocketProducerFactory implements WebSocketProdu
 	{
 		@NonNull UserId userId;
 		@NonNull MobileApplicationId applicationId;
+		@Nullable GlobalQRCode filterByQRCode;
 	}
 
 	private TopicInfo extractTopicInfo(@NonNull final WebsocketTopicName topicName)
@@ -56,27 +61,21 @@ public class WorkflowLaunchersWebSocketProducerFactory implements WebSocketProdu
 		final String topicNameString = topicName.getAsString();
 		if (topicNameString.startsWith(TOPIC_PREFIX))
 		{
-			final String[] tokenAndApplicationId = topicNameString.substring(TOPIC_PREFIX.length())
-					.split("/");
-			final String tokenString;
-			final MobileApplicationId applicationId;
-			if (tokenAndApplicationId.length < 2)
+			final String[] parts = topicNameString.substring(TOPIC_PREFIX.length()).split("/");
+			if (parts.length < 2)
 			{
 				throw new AdempiereException("Invalid topic: " + topicName);
 			}
-			else if (tokenAndApplicationId.length == 2)
-			{
-				tokenString = tokenAndApplicationId[0];
-				applicationId = MobileApplicationId.ofString(tokenAndApplicationId[1]);
-			}
-			else
-			{
-				throw new AdempiereException("Invalid topic: " + topicName);
-			}
+
+			final String tokenString = parts[0];
+			final MobileApplicationId applicationId = MobileApplicationId.ofString(parts[1]);
+			final GlobalQRCode filterByQRCode = parts.length >= 3
+					? GlobalQRCode.ofBase64Encoded(parts[2])
+					: null;
 
 			final UserAuthToken token = userAuthTokenService.getByToken(tokenString);
 
-			return TopicInfo.of(token.getUserId(), applicationId);
+			return TopicInfo.of(token.getUserId(), applicationId, filterByQRCode);
 		}
 		else
 		{

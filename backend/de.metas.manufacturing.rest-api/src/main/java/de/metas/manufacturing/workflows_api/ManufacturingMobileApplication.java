@@ -1,6 +1,7 @@
 package de.metas.manufacturing.workflows_api;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateRequest;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
@@ -41,13 +42,9 @@ import java.util.function.UnaryOperator;
 @Component
 public class ManufacturingMobileApplication implements WorkflowBasedMobileApplication
 {
-	static final MobileApplicationId HANDLER_ID = MobileApplicationId.ofString("mfg");
+	static final MobileApplicationId APPLICATION_ID = MobileApplicationId.ofString("mfg");
 
 	private static final AdMessageKey MSG_Caption = AdMessageKey.of("mobileui.manufacturing.appName");
-	private static final MobileApplicationInfo APPLICATION_INFO = MobileApplicationInfo.builder()
-			.id(HANDLER_ID)
-			.caption(TranslatableStrings.adMessage(MSG_Caption))
-			.build();
 
 	private final ManufacturingRestService manufacturingRestService;
 	private final ManufacturingWorkflowLaunchersProvider wfLaunchersProvider;
@@ -63,16 +60,26 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 	}
 
 	@Override
-	@NonNull
-	public MobileApplicationInfo getApplicationInfo() {return APPLICATION_INFO;}
+	public MobileApplicationId getApplicationId() {return APPLICATION_ID;}
+
+	@Override
+	public @NonNull MobileApplicationInfo getApplicationInfo(@NonNull final UserId loggedUserId)
+	{
+		return MobileApplicationInfo.builder()
+				.id(APPLICATION_ID)
+				.caption(TranslatableStrings.adMessage(MSG_Caption))
+				.requiresLaunchersQRCodeFilter(true) // TODO introduce/use user profiles
+				.build();
+	}
 
 	@Override
 	public WorkflowLaunchersList provideLaunchers(
 			@NonNull final UserId userId,
+			@Nullable final GlobalQRCode filterByQRCode,
 			@NonNull final QueryLimit suggestedLimit,
 			@NonNull final Duration maxStaleAccepted)
 	{
-		return wfLaunchersProvider.provideLaunchers(userId, suggestedLimit);
+		return wfLaunchersProvider.provideLaunchers(userId, filterByQRCode, suggestedLimit);
 	}
 
 	@Override

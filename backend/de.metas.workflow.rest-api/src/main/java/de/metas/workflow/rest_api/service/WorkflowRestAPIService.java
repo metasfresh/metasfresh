@@ -23,6 +23,7 @@
 package de.metas.workflow.rest_api.service;
 
 import com.google.common.collect.ImmutableMap;
+import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.logging.LogManager;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -48,6 +49,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
@@ -78,18 +80,20 @@ public class WorkflowRestAPIService
 		this.wfActivityHandlersRegistry = wfActivityHandlersRegistry;
 	}
 
-	public List<MobileApplicationInfo> getMobileApplicationInfos()
+	public Stream<MobileApplicationInfo> streamMobileApplicationInfos(final UserId loggedUserId)
 	{
-		return applications.getApplicationInfos();
+		return applications.stream()
+				.map(application -> application.getApplicationInfo(loggedUserId));
 	}
 
 	public WorkflowLaunchersList getLaunchers(
 			@NonNull final MobileApplicationId applicationId,
 			@NonNull final UserId userId,
+			@Nullable final GlobalQRCode filterByQRCode,
 			@NonNull final Duration maxStaleAccepted)
 	{
 		return getWorkflowBasedMobileApplication(applicationId)
-				.provideLaunchers(userId, getLaunchersLimit(), maxStaleAccepted);
+				.provideLaunchers(userId, filterByQRCode, getLaunchersLimit(), maxStaleAccepted);
 	}
 
 	private WorkflowBasedMobileApplication getWorkflowBasedMobileApplication(@NonNull final MobileApplicationId applicationId)

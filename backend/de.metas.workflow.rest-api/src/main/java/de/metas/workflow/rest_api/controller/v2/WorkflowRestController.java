@@ -22,10 +22,13 @@
 
 package de.metas.workflow.rest_api.controller.v2;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.Profiles;
+import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
+import de.metas.workflow.rest_api.controller.v2.json.JsonMobileApplication;
 import de.metas.workflow.rest_api.controller.v2.json.JsonMobileApplicationsList;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.controller.v2.json.JsonSetScannedBarcodeRequest;
@@ -54,6 +57,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Duration;
+import java.util.Comparator;
 import java.util.Map;
 
 @RequestMapping(MetasfreshRestAPIConstants.ENDPOINT_API_V2 + "/userWorkflows")
@@ -89,18 +93,26 @@ public class WorkflowRestController
 	@GetMapping("/apps")
 	public JsonMobileApplicationsList getMobileApplications()
 	{
-		return JsonMobileApplicationsList.of(
-				workflowRestAPIService.getMobileApplicationInfos(),
-				newJsonOpts());
+		final UserId loggedUserId = Env.getLoggedUserId();
+		final JsonOpts jsonOpts = newJsonOpts();
+		return JsonMobileApplicationsList.builder()
+				.applications(
+						workflowRestAPIService.streamMobileApplicationInfos(loggedUserId)
+								.map(applicationInfo -> JsonMobileApplication.of(applicationInfo, jsonOpts))
+								.sorted(Comparator.comparing(JsonMobileApplication::getCaption))
+								.collect(ImmutableList.toImmutableList()))
+				.build();
 	}
 
 	@GetMapping("/launchers")
 	public JsonWorkflowLaunchersList getLaunchers(
-			@RequestParam("applicationId") final String applicationIdStr)
+			@RequestParam("applicationId") final String applicationIdStr,
+			@RequestParam(value = "filterByQRCode", required = false) final String filterByQRCodeStr)
 	{
 		final UserId loggedUserId = Env.getLoggedUserId();
 		final MobileApplicationId applicationId = MobileApplicationId.ofString(applicationIdStr);
-		final WorkflowLaunchersList launchers = workflowRestAPIService.getLaunchers(applicationId, loggedUserId, Duration.ZERO);
+		final GlobalQRCode filterByQRCode = GlobalQRCode.ofNullableString(filterByQRCodeStr);
+		final WorkflowLaunchersList launchers = workflowRestAPIService.getLaunchers(applicationId, loggedUserId, filterByQRCode, Duration.ZERO);
 		return JsonWorkflowLaunchersList.of(launchers, newJsonOpts());
 	}
 
