@@ -14,6 +14,7 @@ import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleProcessRequest;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
+import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.i18n.AdMessageKey;
@@ -76,6 +77,7 @@ public class ManufacturingJobService
 	private final IPPOrderBOMBL ppOrderBOMBL;
 	private final PPOrderIssueScheduleService ppOrderIssueScheduleService;
 	private final HUReservationService huReservationService;
+	private final PPOrderSourceHUService ppOrderSourceHUService;
 	private final DeviceAccessorsHubFactory deviceAccessorsHubFactory;
 	private final DeviceWebsocketNamingStrategy deviceWebsocketNamingStrategy;
 	private final ManufacturingJobLoaderAndSaverSupportingServices loadingAndSavingSupportServices;
@@ -87,12 +89,14 @@ public class ManufacturingJobService
 	public ManufacturingJobService(
 			final @NonNull PPOrderIssueScheduleService ppOrderIssueScheduleService,
 			final @NonNull HUReservationService huReservationService,
+			final @NonNull PPOrderSourceHUService ppOrderSourceHUService,
 			final @NonNull DeviceAccessorsHubFactory deviceAccessorsHubFactory,
 			final @NonNull DeviceWebsocketNamingStrategy deviceWebsocketNamingStrategy,
 			final @NonNull HUQRCodesService huQRCodeService)
 	{
 		this.ppOrderIssueScheduleService = ppOrderIssueScheduleService;
 		this.huReservationService = huReservationService;
+		this.ppOrderSourceHUService = ppOrderSourceHUService;
 		this.deviceAccessorsHubFactory = deviceAccessorsHubFactory;
 		this.deviceWebsocketNamingStrategy = deviceWebsocketNamingStrategy;
 
@@ -252,6 +256,7 @@ public class ManufacturingJobService
 				.ppOrderBL(ppOrderBL)
 				.huReservationService(huReservationService)
 				.ppOrderIssueScheduleService(ppOrderIssueScheduleService)
+				.ppOrderSourceHUService(ppOrderSourceHUService)
 				.loadingSupportServices(loadingAndSavingSupportServices)
 				//
 				.ppOrderId(ppOrderId)
