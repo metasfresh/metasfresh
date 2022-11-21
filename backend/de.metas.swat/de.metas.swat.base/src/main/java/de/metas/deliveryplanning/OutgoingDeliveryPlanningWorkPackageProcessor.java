@@ -35,7 +35,7 @@ import org.compiere.util.Env;
 
 import java.util.Properties;
 
-public class OutgoingDeliveryPlanningWorkpackageProcessor extends WorkpackageProcessorAdapter
+public class OutgoingDeliveryPlanningWorkPackageProcessor extends WorkpackageProcessorAdapter
 {
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
@@ -45,7 +45,7 @@ public class OutgoingDeliveryPlanningWorkpackageProcessor extends WorkpackagePro
 		SCHEDULER.schedule(shipmentSchedule);
 	}
 
-	private static final WorkpackagesOnCommitSchedulerTemplate<I_M_ShipmentSchedule> SCHEDULER = new WorkpackagesOnCommitSchedulerTemplate<I_M_ShipmentSchedule>(OutgoingDeliveryPlanningWorkpackageProcessor.class)
+	private static final WorkpackagesOnCommitSchedulerTemplate<I_M_ShipmentSchedule> SCHEDULER = new WorkpackagesOnCommitSchedulerTemplate<I_M_ShipmentSchedule>(OutgoingDeliveryPlanningWorkPackageProcessor.class)
 	{
 		@Override
 		protected boolean isEligibleForScheduling(final I_M_ShipmentSchedule model)
