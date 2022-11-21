@@ -23,6 +23,7 @@ package de.metas.tourplanning.model.validator;
  */
 
 
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Init;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 
@@ -30,14 +31,22 @@ import de.metas.tourplanning.api.IDeliveryDayBL;
 import de.metas.tourplanning.api.impl.ShipmentScheduleDeliveryDayHandler;
 import de.metas.tourplanning.model.I_M_ShipmentSchedule;
 import de.metas.util.Services;
+import org.springframework.stereotype.Component;
 
 @Interceptor(I_M_ShipmentSchedule.class)
+@Component
 public class M_ShipmentSchedule
 {
+	private final ShipmentScheduleDeliveryDayHandler shipmentScheduleDeliveryDayHandler;
+
+	public M_ShipmentSchedule (@NonNull final ShipmentScheduleDeliveryDayHandler shipmentScheduleDeliveryDayHandler )
+	{
+		this.shipmentScheduleDeliveryDayHandler = shipmentScheduleDeliveryDayHandler;
+	}
 	@Init
 	public void init()
 	{
-		Services.get(IDeliveryDayBL.class).registerDeliveryDayHandler(ShipmentScheduleDeliveryDayHandler.INSTANCE);
+		Services.get(IDeliveryDayBL.class).registerDeliveryDayHandler(shipmentScheduleDeliveryDayHandler);
 	}
 
 }

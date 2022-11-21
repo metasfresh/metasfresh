@@ -42,9 +42,17 @@ public final class InOutCandidateValidator extends AbstractModelInterceptor
 
 	private final IShipmentScheduleBL shipmentScheduleBL;
 
-	public InOutCandidateValidator(@NonNull final IShipmentScheduleBL shipmentScheduleBL)
+	private final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL;
+
+	private final IShipmentScheduleUpdater shipmentScheduleUpdater;
+
+	public InOutCandidateValidator(@NonNull final IShipmentScheduleBL shipmentScheduleBL,
+			@NonNull final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL,
+			@NonNull final IShipmentScheduleUpdater shipmentScheduleUpdater)
 	{
 		this.shipmentScheduleBL = shipmentScheduleBL;
+		this.shipmentScheduleInvalidateBL = shipmentScheduleInvalidateBL;
+		this.shipmentScheduleUpdater = shipmentScheduleUpdater;
 	}
 
 	@Override
@@ -57,7 +65,7 @@ public final class InOutCandidateValidator extends AbstractModelInterceptor
 		engine.addModelValidator(new C_Order(), client);
 		// engine.addModelValidator(new C_Order_ShipmentSchedule(), client); initialized by spring
 		engine.addModelValidator(new C_OrderLine_ShipmentSchedule(), client);
-		engine.addModelValidator(new M_ShipmentSchedule(shipmentScheduleBL), client);
+		engine.addModelValidator(new M_ShipmentSchedule(shipmentScheduleBL, shipmentScheduleInvalidateBL, shipmentScheduleUpdater), client);
 		engine.addModelValidator(new M_Shipment_Constraint(), client);
 		// engine.addModelValidator(new de.metas.inoutcandidate.modelvalidator.M_AttributeInstance(), client); initialized by spring
 		engine.addModelValidator(new M_InOutLine_Shipment(), client);

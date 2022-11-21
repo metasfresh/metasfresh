@@ -54,13 +54,17 @@ public class M_ShipmentSchedule
 	private static final AdMessageKey MSG_DECREASE_QTY_ORDERED_BELOW_QTY_ALREADY_DELIVERED_IS_NOT_ALLOWED = //
 			AdMessageKey.of("de.metas.inoutcandidate.DecreaseQtyOrderedBelowQtyAlreadyDeliveredIsNotAllowed");
 
-	private final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
+	private final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL;
 	private final IShipmentScheduleBL shipmentScheduleBL;
-	private final IShipmentScheduleUpdater shipmentScheduleUpdater = Services.get(IShipmentScheduleUpdater.class);
+	private final IShipmentScheduleUpdater shipmentScheduleUpdater;
 
-	public M_ShipmentSchedule(@NonNull final IShipmentScheduleBL shipmentScheduleBL)
+	public M_ShipmentSchedule(@NonNull final IShipmentScheduleBL shipmentScheduleBL,
+			@NonNull final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL,
+			@NonNull final IShipmentScheduleUpdater shipmentScheduleUpdater)
 	{
 		this.shipmentScheduleBL = shipmentScheduleBL;
+		this.shipmentScheduleInvalidateBL = shipmentScheduleInvalidateBL;
+		this.shipmentScheduleUpdater = shipmentScheduleUpdater;
 	}
 
 	/**
@@ -179,7 +183,7 @@ public class M_ShipmentSchedule
 				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule))
 				.build();
 
-		invalidSchedulesService.flagForRecomputeStorageSegment(storageSegment);
+		shipmentScheduleInvalidateBL.flagForRecomputeStorageSegment(storageSegment);
 	}
 
 	/**
@@ -210,7 +214,7 @@ public class M_ShipmentSchedule
 			return;
 		}
 
-		invalidSchedulesService.notifySegmentChangedForShipmentScheduleInclSched(shipmentSchedule);
+		shipmentScheduleInvalidateBL.notifySegmentChangedForShipmentScheduleInclSched(shipmentSchedule);
 	}
 
 	@ModelChange( //
@@ -234,7 +238,7 @@ public class M_ShipmentSchedule
 		headerAggregationKeys.add(scheduleOld.getHeaderAggregationKey());
 		headerAggregationKeys.add(schedule.getHeaderAggregationKey());
 
-		invalidSchedulesService.flagHeaderAggregationKeysForRecompute(headerAggregationKeys);
+		shipmentScheduleInvalidateBL.flagHeaderAggregationKeysForRecompute(headerAggregationKeys);
 	}
 
 	/**

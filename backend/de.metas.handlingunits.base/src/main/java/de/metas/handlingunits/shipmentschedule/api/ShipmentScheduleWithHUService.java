@@ -122,7 +122,7 @@ public class ShipmentScheduleWithHUService
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final IHUPIItemProductDAO hupiItemProductDAO = Services.get(IHUPIItemProductDAO.class);
 	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
-	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
+	private final IHUShipmentScheduleBL huShipmentScheduleBL;
 	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL;
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
@@ -131,10 +131,12 @@ public class ShipmentScheduleWithHUService
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	public ShipmentScheduleWithHUService(@NonNull final HUReservationService huReservationService,
-			@NonNull final IShipmentScheduleBL shipmentScheduleBL)
+			@NonNull final IShipmentScheduleBL shipmentScheduleBL,
+			@NonNull final IHUShipmentScheduleBL huShipmentScheduleBL)
 	{
 		this.huReservationService = huReservationService;
 		this.shipmentScheduleBL = shipmentScheduleBL;
+		this.huShipmentScheduleBL = huShipmentScheduleBL;
 	}
 
 	@Value

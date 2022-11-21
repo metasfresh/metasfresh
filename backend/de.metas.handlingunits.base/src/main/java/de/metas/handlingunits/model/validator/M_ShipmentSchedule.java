@@ -44,7 +44,7 @@ import java.math.BigDecimal;
 @Component
 public class M_ShipmentSchedule
 {
-	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
+	private final IHUShipmentScheduleBL huShipmentScheduleBL;
 	private final IShipmentScheduleBL shipmentScheduleBL;
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	
@@ -54,11 +54,13 @@ public class M_ShipmentSchedule
 	public M_ShipmentSchedule(
 			@NonNull final ShipmentScheduleInvalidateBL invalidSchedulesService, 
 			@NonNull final ShipmentScheduleUpdater shipmentScheduleUpdater,
-			@NonNull final IShipmentScheduleBL shipmentScheduleBL)
+			@NonNull final IShipmentScheduleBL shipmentScheduleBL,
+			@NonNull final IHUShipmentScheduleBL huShipmentScheduleBL)
 	{
 		this.invalidSchedulesService = invalidSchedulesService;
 		this.shipmentScheduleUpdater = shipmentScheduleUpdater;
 		this.shipmentScheduleBL = shipmentScheduleBL;
+		this.huShipmentScheduleBL = huShipmentScheduleBL;
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, //

@@ -1,12 +1,5 @@
 package de.metas.tourplanning.api.impl;
 
-import java.time.ZonedDateTime;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.tourplanning.api.IDeliveryDayAllocable;
@@ -15,13 +8,24 @@ import de.metas.tourplanning.api.IShipmentScheduleDeliveryDayBL;
 import de.metas.tourplanning.model.I_M_DeliveryDay_Alloc;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
+
+@Component
 public class ShipmentScheduleDeliveryDayBL implements IShipmentScheduleDeliveryDayBL
 {
 	@Override
 	public IDeliveryDayAllocable asDeliveryDayAllocable(final I_M_ShipmentSchedule sched)
 	{
-		return ShipmentScheduleDeliveryDayHandler.INSTANCE.asDeliveryDayAllocable(sched);
+		// https://github.com/metasfresh/metasfresh/issues/13942
+		// None: Line commented and replaced with the content of the function because this was a circular dependency !!!
+		// return shipmentScheduleDeliveryDayHandler.asDeliveryDayAllocable(sched);
+
+		return new ShipmentScheduleDeliveryDayAllocable(sched);
 	}
 
 	@Override

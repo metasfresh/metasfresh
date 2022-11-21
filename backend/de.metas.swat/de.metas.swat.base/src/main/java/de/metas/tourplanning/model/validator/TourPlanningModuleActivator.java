@@ -47,7 +47,6 @@ public class TourPlanningModuleActivator extends AbstractModuleInterceptor
 		//
 		// Main documents integration
 		engine.addModelValidator(new de.metas.tourplanning.model.validator.C_Order());
-		engine.addModelValidator(new de.metas.tourplanning.model.validator.M_ShipmentSchedule());
 		engine.addModelValidator(new de.metas.tourplanning.model.validator.M_ShipperTransportation());
 	}
 

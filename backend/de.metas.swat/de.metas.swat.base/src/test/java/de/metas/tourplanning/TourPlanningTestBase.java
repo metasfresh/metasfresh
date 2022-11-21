@@ -130,7 +130,7 @@ public abstract class TourPlanningTestBase
 		this.tourDAO = Services.get(ITourDAO.class);
 		this.deliveryDayBL = (DeliveryDayBL)Services.get(IDeliveryDayBL.class);
 		this.deliveryDayDAO = (DeliveryDayDAO)Services.get(IDeliveryDayDAO.class);
-		this.shipmentScheduleDeliveryDayBL = (ShipmentScheduleDeliveryDayBL)Services.get(IShipmentScheduleDeliveryDayBL.class);
+		this.shipmentScheduleDeliveryDayBL = new ShipmentScheduleDeliveryDayBL();
 		this.tourInstanceBL = Services.get(ITourInstanceBL.class);
 		this.tourInstanceDAO = Services.get(ITourInstanceDAO.class);
 

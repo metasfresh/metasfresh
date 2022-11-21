@@ -23,6 +23,7 @@
 package de.metas.inoutcandidate;
 
 import de.metas.business.BusinessTestHelper;
+import de.metas.deliveryplanning.DeliveryPlanningRepository;
 import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.inoutcandidate.ShipmentScheduleRepository.ShipmentScheduleQuery;
 import de.metas.inoutcandidate.api.impl.ShipmentScheduleBL;
@@ -64,7 +65,9 @@ class ShipmentScheduleRepositoryTest
 	{
 		AdempiereTestHelper.get().init();
 
-		final ShipmentScheduleBL shipmentScheduleBL = new ShipmentScheduleBL(new DeliveryPlanningService());
+		final DeliveryPlanningRepository deliveryPlanningRepo = new DeliveryPlanningRepository();
+		final DeliveryPlanningService deliveryPlanningService = new DeliveryPlanningService(deliveryPlanningRepo);
+		final ShipmentScheduleBL shipmentScheduleBL = new ShipmentScheduleBL(deliveryPlanningService);
 		shipmentScheduleRepository = new ShipmentScheduleRepository(shipmentScheduleBL);
 
 		Env.setContext(Env.getCtx(), Env.CTXNAME_AD_Client_ID, ClientId.METASFRESH.getRepoId());

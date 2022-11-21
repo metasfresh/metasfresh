@@ -22,10 +22,15 @@ package de.metas.handlingunits.tourplanning.spi.impl;
  * #L%
  */
 
-
-import java.math.BigDecimal;
-import java.util.Random;
-
+import de.metas.deliveryplanning.DeliveryPlanningRepository;
+import de.metas.deliveryplanning.DeliveryPlanningService;
+import de.metas.handlingunits.model.IHUDeliveryQuantities;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.handlingunits.tourplanning.model.I_M_DeliveryDay;
+import de.metas.handlingunits.tourplanning.model.I_M_DeliveryDay_Alloc;
+import de.metas.handlingunits.tourplanning.model.I_M_Tour_Instance;
+import de.metas.tourplanning.api.IDeliveryDayAllocable;
+import de.metas.tourplanning.api.impl.ShipmentScheduleDeliveryDayHandler;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
@@ -37,18 +42,15 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.metas.handlingunits.model.IHUDeliveryQuantities;
-import de.metas.handlingunits.model.I_M_ShipmentSchedule;
-import de.metas.handlingunits.tourplanning.model.I_M_DeliveryDay;
-import de.metas.handlingunits.tourplanning.model.I_M_DeliveryDay_Alloc;
-import de.metas.handlingunits.tourplanning.model.I_M_Tour_Instance;
-import de.metas.tourplanning.api.IDeliveryDayAllocable;
-import de.metas.tourplanning.api.impl.ShipmentScheduleDeliveryDayHandler;
+import java.math.BigDecimal;
+import java.util.Random;
 
 public class HUShipmentScheduleDeliveryDayHandlerTest
 {
 	/* Class under test */
 	private HUShipmentScheduleDeliveryDayHandler huShipmentScheduleDeliveryDayHandler;
+
+	private ShipmentScheduleDeliveryDayHandler shipmentScheduleDeliveryDayHandler;
 
 	private Random random;
 	private IContextAware contextProvider;
@@ -64,6 +66,8 @@ public class HUShipmentScheduleDeliveryDayHandlerTest
 		AdempiereTestHelper.get().init();
 
 		random = new Random(System.currentTimeMillis());
+		final DeliveryPlanningRepository deliveryPlanningRepo = new DeliveryPlanningRepository();
+		final DeliveryPlanningService deliveryPlanningService = new DeliveryPlanningService(deliveryPlanningRepo);
 
 		huShipmentScheduleDeliveryDayHandler = HUShipmentScheduleDeliveryDayHandler.instance;
 		contextProvider = PlainContextAware.newWithTrxName(Env.getCtx(), ITrx.TRXNAME_None);
@@ -113,22 +117,22 @@ public class HUShipmentScheduleDeliveryDayHandlerTest
 			final IHUDeliveryQuantities actual)
 	{
 		Assert.assertThat("Invalid QtyOrdered_LU",
-				actual.getQtyOrdered_LU(),
-				Matchers.comparesEqualTo(expected.getQtyOrdered_LU())
-				);
+						  actual.getQtyOrdered_LU(),
+						  Matchers.comparesEqualTo(expected.getQtyOrdered_LU())
+		);
 		Assert.assertThat("Invalid QtyOrdered_TU",
-				actual.getQtyOrdered_TU(),
-				Matchers.comparesEqualTo(expected.getQtyOrdered_TU())
-				);
+						  actual.getQtyOrdered_TU(),
+						  Matchers.comparesEqualTo(expected.getQtyOrdered_TU())
+		);
 
 		Assert.assertThat("Invalid QtyDelivered_LU",
-				actual.getQtyDelivered_LU(),
-				Matchers.comparesEqualTo(expected.getQtyDelivered_LU())
-				);
+						  actual.getQtyDelivered_LU(),
+						  Matchers.comparesEqualTo(expected.getQtyDelivered_LU())
+		);
 		Assert.assertThat("Invalid QtyDelivered_TU",
-				actual.getQtyDelivered_TU(),
-				Matchers.comparesEqualTo(expected.getQtyDelivered_TU())
-				);
+						  actual.getQtyDelivered_TU(),
+						  Matchers.comparesEqualTo(expected.getQtyDelivered_TU())
+		);
 	}
 
 	public static void assertEquals(
@@ -136,13 +140,13 @@ public class HUShipmentScheduleDeliveryDayHandlerTest
 			final IHUDeliveryQuantities actual)
 	{
 		Assert.assertThat("Invalid QtyOrdered_LU",
-				actual.getQtyOrdered_LU(),
-				Matchers.comparesEqualTo(expected.getQtyOrdered_LU())
-				);
+						  actual.getQtyOrdered_LU(),
+						  Matchers.comparesEqualTo(expected.getQtyOrdered_LU())
+		);
 		Assert.assertThat("Invalid QtyOrdered_TU",
-				actual.getQtyOrdered_TU(),
-				Matchers.comparesEqualTo(expected.getQtyOrdered_TU())
-				);
+						  actual.getQtyOrdered_TU(),
+						  Matchers.comparesEqualTo(expected.getQtyOrdered_TU())
+		);
 	}
 
 	private void setRandomQtys(final I_M_ShipmentSchedule record)
@@ -162,7 +166,7 @@ public class HUShipmentScheduleDeliveryDayHandlerTest
 
 	private IDeliveryDayAllocable asDeliveryDayAllocable(final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		return ShipmentScheduleDeliveryDayHandler.INSTANCE.asDeliveryDayAllocable(shipmentSchedule);
+		return shipmentScheduleDeliveryDayHandler.asDeliveryDayAllocable(shipmentSchedule);
 	}
 
 	private I_M_DeliveryDay createDeliveryDay(final I_M_Tour_Instance tourInstance)

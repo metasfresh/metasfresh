@@ -22,12 +22,18 @@
 
 package de.metas.deliveryplanning;
 
-import org.compiere.model.I_M_Delivery_Planning;
+import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
 @Service
 public class DeliveryPlanningService
 {
+	private final DeliveryPlanningRepository deliveryPlanningRepo;
+
+	public DeliveryPlanningService(@NonNull final DeliveryPlanningRepository deliveryPlanningRepo)
+	{
+		this.deliveryPlanningRepo = deliveryPlanningRepo;
+	}
 
 	public void generateDeliveryPlanning(final DeliveryPlanningCreateRequest request)
 	{

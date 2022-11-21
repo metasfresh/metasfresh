@@ -1,14 +1,13 @@
 package de.metas.handlingunits.shipmentschedule.api.impl;
 
-import org.slf4j.MDC.MDCCloseable;
-import org.springframework.stereotype.Component;
-
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.logging.TableRecordMDC;
 import de.metas.order.inoutcandidate.OrderLineShipmentScheduleHandlerExtension;
-import de.metas.util.Services;
+import lombok.NonNull;
+import org.slf4j.MDC.MDCCloseable;
+import org.springframework.stereotype.Component;
 
 /*
  * #%L
@@ -35,7 +34,12 @@ import de.metas.util.Services;
 @Component
 public class HUOrderLineShipmentScheduleHandlerExtension implements OrderLineShipmentScheduleHandlerExtension
 {
-	private final IHUShipmentScheduleBL shipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
+	private final IHUShipmentScheduleBL huShipmentScheduleBL;
+
+	public HUOrderLineShipmentScheduleHandlerExtension(@NonNull final IHUShipmentScheduleBL huShipmentScheduleBL)
+	{
+		this.huShipmentScheduleBL = huShipmentScheduleBL;
+	}
 
 	@Override
 	public void updateShipmentScheduleFromOrderLine(final I_M_ShipmentSchedule shipmentSchedule, final I_C_OrderLine orderLine)
@@ -43,7 +47,7 @@ public class HUOrderLineShipmentScheduleHandlerExtension implements OrderLineShi
 		try (final MDCCloseable shipmentScheduleMDC = TableRecordMDC.putTableRecordReference(shipmentSchedule);
 				final MDCCloseable orderLineMDC = TableRecordMDC.putTableRecordReference(orderLine);)
 		{
-			shipmentScheduleBL.updateHURelatedValuesFromOrderLine(shipmentSchedule);
+			huShipmentScheduleBL.updateHURelatedValuesFromOrderLine(shipmentSchedule);
 		}
 	}
 
