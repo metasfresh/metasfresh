@@ -6,6 +6,8 @@ import de.metas.document.references.related_documents.RelatedDocumentsPermission
 import de.metas.document.references.related_documents.RelatedDocumentsPermissionsFactory;
 import de.metas.i18n.IMsgBL;
 import de.metas.logging.LogManager;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.monitoring.annotation.Monitor;
 import de.metas.ui.web.document.references.WebuiDocumentReference;
 import de.metas.ui.web.document.references.WebuiDocumentReferenceCandidate;
 import de.metas.ui.web.document.references.service.WebuiDocumentReferencesService;
@@ -113,6 +115,7 @@ public class DocumentReferencesRestController
 		return JSONOptions.prepareFrom(userSession).build();
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{windowId}/{documentId}/references/sse")
 	public SseEmitter streamRootDocumentReferences(
 			@PathVariable("windowId") final String windowIdStr,
@@ -125,6 +128,7 @@ public class DocumentReferencesRestController
 		return streamRootDocumentReferences(documentPath);
 	}
 
+	@Monitor(type = PerformanceMonitoringService.Type.REST_CONTROLLER_WITH_WINDOW_ID)
 	@GetMapping("/{windowId}/{documentId}/{tabId}/{rowId}/references/sse")
 	public SseEmitter streamIncludedDocumentReferences(
 			@PathVariable("windowId") final String windowIdStr,

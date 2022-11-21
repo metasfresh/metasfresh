@@ -13,7 +13,7 @@ const Button = ({ caption, onClick, disabled = false, isDanger = false }) => {
         <div className="left-btn-side" />
         <div className="caption-btn">
           <div className="rows">
-            <div className="row is-full pl-5">{caption}</div>
+            <div className="row">{caption}</div>
           </div>
         </div>
       </div>

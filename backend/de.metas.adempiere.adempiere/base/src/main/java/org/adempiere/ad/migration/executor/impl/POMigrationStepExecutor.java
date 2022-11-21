@@ -22,17 +22,9 @@ package org.adempiere.ad.migration.executor.impl;
  * #L%
  */
 
-
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.column.AdColumnId;
-import org.slf4j.Logger;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
-
+import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.dao.impl.TypedSqlQuery;
 import org.adempiere.ad.migration.executor.IMigrationExecutorContext;
 import org.adempiere.ad.migration.executor.MigrationExecutorException;
@@ -49,6 +41,12 @@ import org.compiere.model.I_AD_Table;
 import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
+import org.slf4j.Logger;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Properties;
 
 public class POMigrationStepExecutor extends AbstractMigrationStepExecutor
 {

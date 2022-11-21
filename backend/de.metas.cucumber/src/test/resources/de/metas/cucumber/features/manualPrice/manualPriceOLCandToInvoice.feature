@@ -344,11 +344,11 @@ Feature: Process order candidate and automatically generate shipment and invoice
 }
 """
 
-    And after not more than 30s, locate C_Invoice_Candidates by externalHeaderId
+    And after not more than 60s, locate C_Invoice_Candidates by externalHeaderId
       | C_Invoice_Candidate_ID.Identifier | ExternalHeaderId            |
       | invoice_candidate_1               | externalHeaderId_08072022_3 |
 
-    And after not more than 30s, C_Invoice_Candidates are not marked as 'to recompute'
+    And after not more than 60s, C_Invoice_Candidates are not marked as 'to recompute'
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
 
@@ -360,7 +360,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | C_Invoice_Candidate_ID.Identifier |
       | invoice_candidate_1               |
 
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoice_1               | invoice_candidate_1               |
 

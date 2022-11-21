@@ -270,7 +270,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 				jsonConverters,
 				new OLCandRepository(),
 				bpartnerRestController,
-				new NoopPerformanceMonitoringService());
+				NoopPerformanceMonitoringService.INSTANCE);
 
 		final PermissionService permissionService = Mockito.mock(PermissionService.class);
 		Mockito.doReturn(OrgId.ofRepoId(defaultOrgRecord.getAD_Org_ID())).when(permissionService).getDefaultOrgId();

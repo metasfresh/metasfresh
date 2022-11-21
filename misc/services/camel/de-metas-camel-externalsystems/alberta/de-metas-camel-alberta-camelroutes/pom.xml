@@ -25,9 +25,6 @@
         -->
         <assertj.version>3.19.0</assertj.version>
 
-        <!-- https://github.com/codecentric/spring-boot-admin -->
-        <spring-boot-admin.version>2.1.5</spring-boot-admin.version>
-
         <metasfresh-common.version>10.0.0</metasfresh-common.version>
     </properties>
 
@@ -144,13 +141,6 @@
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-endpointdsl</artifactId>
         </dependency>
-
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <scope>provided</scope>
-        </dependency>
-      
         <!-- testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -212,6 +202,13 @@
         <finalName>${project.artifactId}</finalName>
 
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>

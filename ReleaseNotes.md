@@ -12,11 +12,41 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13921](https://github.com/metasfresh/metasfresh/issues/13921) Make Invoice Candidate read only if referenced on open invoices 
+  * [#13746](https://github.com/metasfresh/metasfresh/issues/13746) Micrometer Performance Monitoring
+  * [#13885](https://github.com/metasfresh/metasfresh/issues/13885) Follow-Up - Produktionsdisposition - Iteration 1 - Creating PP Order by machine size
+  * [#13948](https://github.com/metasfresh/metasfresh/pull/13948) Swing Login: show only System role 
+  * [#13947](https://github.com/metasfresh/metasfresh/pull/13947) Manufacturing Order - Weighing Run (part 2)
+  * [#13920](https://github.com/metasfresh/metasfresh/pull/13920) Manufacturing Order - Weighing Run
+  * [#13838](https://github.com/metasfresh/metasfresh/pull/13838) The excel export process should consider the latest BOM version and exclude the oldest version with validto date 
+  * [#13825](https://github.com/metasfresh/metasfresh/pull/13825) The excel export process should consider the latest BOM version
+  * [#13824](https://github.com/metasfresh/metasfresh/issues/13824) Fix BOM Recursive Report
+  * [#13811](https://github.com/metasfresh/metasfresh/pull/13811) Fix github actions failures
+  * [#13946](https://github.com/metasfresh/metasfresh/pull/13946) mobile UI: mfg: Show allergens
+  * [#13935](https://github.com/metasfresh/metasfresh/pull/13935) mobile UI - mfg: Show Hazard Symbols
+  * [#13913](https://github.com/metasfresh/metasfresh/pull/13913) Fix Manufacturing Candidates layout
+  * [#13933](https://github.com/metasfresh/metasfresh/pull/13933) Doc_GLJournal: consider GL_JournalLine.GL_JournalLine_Group when grouping into FactTrxLines
+  * [#13936](https://github.com/metasfresh/metasfresh/pull/13936) mobile UI: Barcode text input: debounce
+  * [#13846](https://github.com/metasfresh/metasfresh/pull/13846) Start Order and New Partner from Partner Window
+  * [#13797](https://github.com/metasfresh/metasfresh/pull/13797) ProcessExecutionResult.webuiNewRecord support | Create New Sales Order from BPartner window processes java code 
+  * [#13594](https://github.com/metasfresh/metasfresh/issues/13594) Search Wizard enters wrong partner in C_BPartner_SalesRep_ID
+  * [#13922](https://github.com/metasfresh/metasfresh/issues/13922) Make UOM key on product import not case sensitive 
+  * [#13904](https://github.com/metasfresh/metasfresh/issues/13904) Create translations for base language also for non AD_Element tables
+  * [#13912](https://github.com/metasfresh/metasfresh/pull/13912) CallExternalSystemActivityHandler: persist last scanned QR Code
+  * [#13883](https://github.com/metasfresh/metasfresh/pull/13883) mobile UI: manufacturing: Call to External System activity 
+  * [#13767](https://github.com/metasfresh/metasfresh/pull/13767) Exclude Reversed Invoices from Open Items Report
+  * [#13908](https://github.com/metasfresh/metasfresh/pull/13908) mobile UI: display issue/receipt/coproduct icons
+  * [#13766](https://github.com/metasfresh/metasfresh/issues/13766) Exclude Reversed Invoices from Open Items Report 
+  * [#13881](https://github.com/metasfresh/metasfresh/pull/13881) Manufacturing candidate window: compute some totals for selected rows
+  * [#13841](https://github.com/metasfresh/metasfresh/pull/13841) HU Clearance: Status Test Pending (Json) 
+  * [#13829](https://github.com/metasfresh/metasfresh/issues/13829) Test&Fix MD_Cockpit_DocumentDetail 
+  * [#13844](https://github.com/metasfresh/metasfresh/issues/13844) IEUE045.U01 Incoming payment management - Follow-Up 01 
+  * [#13845](https://github.com/metasfresh/metasfresh/issues/13845) BUG: Grant discount twice during allocate payment process
+  * [#13850](https://github.com/metasfresh/metasfresh/issues/13850) Unique Attributes Implementation
   * [#13784](https://github.com/metasfresh/metasfresh/issues/13784) Price difference from offer to order(Add IsKeepProposalPrices)
   * [#13854](https://github.com/metasfresh/metasfresh/pull/13854) Set incoterms from partners only if has a value
   * [#13857](https://github.com/metasfresh/metasfresh/pull/13857) webui: (re)evaluate document field readonly and display logic based on user's role
   * [#13855](https://github.com/metasfresh/metasfresh/pull/13855) Tax window: fix field names
-  * [#13789](https://github.com/metasfresh/metasfresh/issues/13789) Investigate github actions failures 
   * [#13801](https://github.com/metasfresh/metasfresh/issues/13801) Add IsAlwaysUpdatable and ReadOnlyLogic to AD_Field 
   * [#13822](https://github.com/metasfresh/metasfresh/issues/13822) Add fields for Sales 
   * [#13840](https://github.com/metasfresh/metasfresh/issues/13840) Add support for Soehenle scales
@@ -126,6 +156,10 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#13906](https://github.com/metasfresh/metasfresh/pull/13906) Delete chat when deleting documents and implement voiding draft orders
+  * [#13884](https://github.com/metasfresh/metasfresh/pull/13884) fix jenkins - also allow skipping cucumber tests
+  * [#13723](https://github.com/metasfresh/metasfresh/pull/13723) Fix Other tag
+  * [#13868](https://github.com/metasfresh/metasfresh/issues/13868) [Cucumber] Fix cucumber tests failing due to Daylight saving time
   * [#13753](https://github.com/metasfresh/metasfresh/issues/13753) Adjust auto-vacuum settings on translation tables
   * [#13725](https://github.com/metasfresh/metasfresh/issues/13725) C_DocTypeShipment_ID not respected when generating Receipt/Shipment
   * [#13586](https://github.com/metasfresh/metasfresh/issues/13586) Fix material-dispo bug
@@ -161,6 +195,7 @@ Here come the actual release notes:
 # metasfresh 5.175 (current RC)
 ## Features
 * metasfresh
+  * [#13789](https://github.com/metasfresh/metasfresh/issues/13789) Investigate github actions failures 
   * [#13637](https://github.com/metasfresh/metasfresh/issues/13637) Cucumber: drop MD_Stock_StepDef#truncateMDStockData
   * [#13376](https://github.com/metasfresh/metasfresh/issues/13376) Cucumber: Products (item) invoice candidates
   * [#13355](https://github.com/metasfresh/metasfresh/issues/13355) Packing material invoice candidates: shipments

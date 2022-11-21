@@ -7,6 +7,7 @@ import de.metas.device.accessor.DeviceAccessor;
 import de.metas.device.accessor.DeviceAccessorsHubFactory;
 import de.metas.device.accessor.DeviceId;
 import de.metas.device.websocket.DeviceWebsocketNamingStrategy;
+import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
@@ -47,6 +48,7 @@ import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.ManufacturingOrderQuery;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRouting;
+import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.api.PPOrderRoutingActivityId;
 import org.eevolution.model.I_PP_Order;
 import org.slf4j.Logger;
@@ -443,5 +445,33 @@ public class ManufacturingJobService
 				.getDeviceAccessors(Weightables.ATTR_WeightGross)
 				.stream(job.getWarehouseId())
 				.map(this::toScaleDevice);
+	}
+
+	public ManufacturingJob withScannedQRCode(
+			@NonNull final ManufacturingJob job,
+			@NonNull final ManufacturingJobActivityId jobActivityId,
+			@Nullable final GlobalQRCode scannedQRCode)
+	{
+		// No change
+		if(GlobalQRCode.equals(job.getActivityById(jobActivityId).getScannedQRCode(), scannedQRCode))
+		{
+			return job;
+		}
+
+		final ManufacturingJobLoaderAndSaver loaderAndSaver = newSaver();
+		final PPOrderId ppOrderId = job.getPpOrderId();
+		final PPOrderRouting orderRouting = loaderAndSaver.getRouting(ppOrderId);
+		final PPOrderRouting orderRoutingBeforeChange = orderRouting.copy();
+
+		final PPOrderRoutingActivity orderRoutingActivity = orderRouting.getActivityById(jobActivityId.toPPOrderRoutingActivityId(ppOrderId));
+		orderRoutingActivity.setScannedQRCode(scannedQRCode);
+		orderRoutingActivity.completeIt();
+
+		if (!PPOrderRouting.equals(orderRouting, orderRoutingBeforeChange))
+		{
+			loaderAndSaver.saveRouting(orderRouting);
+		}
+
+		return loaderAndSaver.load(ppOrderId);
 	}
 }

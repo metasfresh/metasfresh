@@ -36,9 +36,6 @@ import java.math.BigDecimal;
 public class OldShipmentScheduleData
 {
 	@NonNull
-	BigDecimal oldOrderedQuantity;
-
-	@NonNull
 	BigDecimal oldReservedQuantity;
 
 	@NonNull

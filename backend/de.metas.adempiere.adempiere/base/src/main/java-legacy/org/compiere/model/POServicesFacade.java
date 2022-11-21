@@ -8,6 +8,8 @@ import de.metas.cache.model.ModelCacheInvalidationTiming;
 import de.metas.cache.model.POCacheSourceModel;
 import de.metas.document.sequence.IDocumentNoBL;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
+import de.metas.monitoring.adapter.PerformanceMonitoringService;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
@@ -18,8 +20,10 @@ import org.adempiere.ad.session.ISessionDAO;
 import org.adempiere.ad.session.MFSession;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
 
 import java.util.List;
+import java.util.concurrent.Callable;
 
 final class POServicesFacade
 {
@@ -33,6 +37,24 @@ final class POServicesFacade
 	private IDocumentNoBL _documentNoBL;
 	private ITrxManager _trxManager;
 	private ADReferenceService _adReferenceService;
+
+	private static PerformanceMonitoringService _performanceMonitoringService;
+	private static final String PM_SYSCONFIG_NAME = "de.metas.monitoring.po.enable";
+	private static final boolean PM_SYS_CONFIG_DEFAULT_VALUE = false;
+	private static final PerformanceMonitoringService.Metadata PM_METADATA_SAVE_EX =
+			PerformanceMonitoringService.Metadata
+					.builder()
+					.className("PO")
+					.type(PerformanceMonitoringService.Type.PO)
+					.functionName("saveEx")
+					.build();
+	private static final PerformanceMonitoringService.Metadata PM_METADATA_LOAD =
+			PerformanceMonitoringService.Metadata
+					.builder()
+					.className("PO")
+					.type(PerformanceMonitoringService.Type.PO)
+					.functionName("load")
+					.build();
 
 	private IDeveloperModeBL developerModeBL()
 	{
@@ -134,6 +156,37 @@ final class POServicesFacade
 		return adReferenceService;
 	}
 
+	public boolean isPerfMonActive()
+	{
+		return getSysConfigBooleanValue(PM_SYSCONFIG_NAME, PM_SYS_CONFIG_DEFAULT_VALUE);
+	}
+
+	public void performanceMonitoringServiceSaveEx(@NonNull final Runnable runnable)
+	{
+		final PerformanceMonitoringService performanceMonitoringService = performanceMonitoringService();
+
+		performanceMonitoringService.monitor(runnable, PM_METADATA_SAVE_EX);
+	}
+
+	public boolean performanceMonitoringServiceLoad(@NonNull final Callable<Boolean> callable)
+	{
+		final PerformanceMonitoringService performanceMonitoringService = performanceMonitoringService();
+
+		return performanceMonitoringService.monitor(callable, PM_METADATA_LOAD);
+	}
+
+	private PerformanceMonitoringService performanceMonitoringService()
+	{
+		PerformanceMonitoringService performanceMonitoringService = _performanceMonitoringService;
+		if (performanceMonitoringService == null || performanceMonitoringService instanceof NoopPerformanceMonitoringService)
+		{
+			performanceMonitoringService = _performanceMonitoringService = SpringContextHolder.instance.getBeanOr(
+					PerformanceMonitoringService.class,
+					NoopPerformanceMonitoringService.INSTANCE);
+		}
+		return performanceMonitoringService;
+	}
+
 	//
 	//
 	//
@@ -146,6 +199,11 @@ final class POServicesFacade
 	public boolean getSysConfigBooleanValue(final String sysConfigName, final boolean defaultValue, final int ad_client_id, final int ad_org_id)
 	{
 		return sysConfigBL().getBooleanValue(sysConfigName, defaultValue, ad_client_id, ad_org_id);
+	}
+
+	public boolean getSysConfigBooleanValue(final String sysConfigName, final boolean defaultValue)
+	{
+		return sysConfigBL().getBooleanValue(sysConfigName, defaultValue);
 	}
 
 	public boolean isChangeLogEnabled()

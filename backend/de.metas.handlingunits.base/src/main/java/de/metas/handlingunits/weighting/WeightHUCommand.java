@@ -2,10 +2,6 @@ package de.metas.handlingunits.weighting;
 
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocBaseType;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
-import org.compiere.model.X_C_DocType;
-
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -37,7 +33,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
-import org.compiere.model.X_C_DocType;
 
 import javax.annotation.Nullable;
 import java.util.List;
