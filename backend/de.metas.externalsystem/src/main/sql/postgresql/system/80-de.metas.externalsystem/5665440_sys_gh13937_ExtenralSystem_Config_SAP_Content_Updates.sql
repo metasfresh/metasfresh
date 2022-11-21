@@ -1,3 +1,38 @@
+
+
+-- SFTP-Sync Product
+update externalsystem_service
+set enablecommand='startProductSyncSFTP', disablecommand='stopProductSyncSFTP', value='SFTPSyncProducts'
+where externalsystem_service_id=540002
+;
+
+-- SFTP-Sync BPartner
+update externalsystem_service
+set enablecommand='startBPartnerSyncSFTP', disablecommand='stopBPartnerSyncSFTP', value='SFTPSyncBPartners'
+where externalsystem_service_id=540003
+;
+
+-- SFTP-Sync CreditLimit
+update externalsystem_service
+set enablecommand='startCreditLimitSyncSFTP', disablecommand='stopCreditLimitSyncSFTP', value='SFTPSyncCreditLimits'
+where externalsystem_service_id=540004
+;
+
+-- LocalFile-Sync Product
+INSERT INTO public.externalsystem_service (ad_client_id, ad_org_id, created, createdby, externalsystem_service_id, isactive, updated, updatedby, type, value, name, description, enablecommand, disablecommand)
+VALUES (1000000, 1000000, '2022-11-19 08:25:06.000000', 100, 540005, 'Y', '2022-11-19 08:25:06.000000', 100, 'SAP', 'LocalFileSyncProducts', 'Local-File Sync-Products', 'Local-File Sync-Products', 'startProductSyncLocalFile', 'stopProductSyncLocalFile')
+;
+
+-- LocalFile-Sync BPartner
+INSERT INTO public.externalsystem_service (ad_client_id, ad_org_id, created, createdby, externalsystem_service_id, isactive, updated, updatedby, type, value, name, description, enablecommand, disablecommand)
+VALUES (1000000, 1000000, '2022-11-19 08:25:06.000000', 100, 540006, 'Y', '2022-11-19 08:25:06.000000', 100, 'SAP', 'LocalFileSyncBPartners', 'Local-File Sync-BPartners', 'Local-File Sync-BPartners', 'startBPartnerSyncLocalFile', 'stopBPartnerSyncLocalFile')
+;
+
+-- LocalFile-Sync CreditLimit
+INSERT INTO public.externalsystem_service (ad_client_id, ad_org_id, created, createdby, externalsystem_service_id, isactive, updated, updatedby, type, value, name, description, enablecommand, disablecommand)
+VALUES (1000000, 1000000, '2022-11-19 08:25:06.000000', 100, 540007, 'Y', '2022-11-19 08:25:06.000000', 100, 'SAP', 'LocalFileSyncCreditLimits', 'Local-File Sync-CreditLimits', 'Local-File Sync-CreditLimits', 'startCreditLimitSyncLocalFile', 'stopCreditLimitSyncLocalFile')
+;
+
 -- 2022-11-21T11:11:55.927Z
 INSERT INTO t_alter_column values('externalsystem_config_sap_localfile','AD_Client_ID','NUMERIC(10)',null,null)
 ;
@@ -323,40 +358,6 @@ UPDATE AD_Element_Trl SET Description='The directory used to retrieve credit lim
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581623,'nl_NL') 
 ;
 
-
--- SFTP-Sync Product
-update externalsystem_service
-set enablecommand='startProductSyncSFTP', disablecommand='stopProductSyncSFTP', value='SFTPSyncProducts'
-where externalsystem_service_id=540002
-;
-
--- SFTP-Sync BPartner
-update externalsystem_service
-set enablecommand='startBPartnerSyncSFTP', disablecommand='stopBPartnerSyncSFTP', value='SFTPSyncBPartners'
-where externalsystem_service_id=540003
-;
-
--- SFTP-Sync CreditLimit
-update externalsystem_service
-set enablecommand='startCreditLimitSyncSFTP', disablecommand='stopCreditLimitSyncSFTP', value='SFTPSyncCreditLimits'
-where externalsystem_service_id=540004
-;
-
--- LocalFile-Sync Product
-INSERT INTO public.externalsystem_service (ad_client_id, ad_org_id, created, createdby, externalsystem_service_id, isactive, updated, updatedby, type, value, name, description, enablecommand, disablecommand)
-VALUES (1000000, 1000000, '2022-11-19 08:25:06.000000', 100, 540005, 'Y', '2022-11-19 08:25:06.000000', 100, 'SAP', 'LocalFileSyncProducts', 'Local-File Sync-Products', 'Local-File Sync-Products', 'startProductSyncLocalFile', 'stopProductSyncLocalFile')
-;
-
--- LocalFile-Sync BPartner
-INSERT INTO public.externalsystem_service (ad_client_id, ad_org_id, created, createdby, externalsystem_service_id, isactive, updated, updatedby, type, value, name, description, enablecommand, disablecommand)
-VALUES (1000000, 1000000, '2022-11-19 08:25:06.000000', 100, 540006, 'Y', '2022-11-19 08:25:06.000000', 100, 'SAP', 'LocalFileSyncBPartners', 'Local-File Sync-BPartners', 'Local-File Sync-BPartners', 'startBPartnerSyncLocalFile', 'stopBPartnerSyncLocalFile')
-;
-
--- LocalFile-Sync CreditLimit
-INSERT INTO public.externalsystem_service (ad_client_id, ad_org_id, created, createdby, externalsystem_service_id, isactive, updated, updatedby, type, value, name, description, enablecommand, disablecommand)
-VALUES (1000000, 1000000, '2022-11-19 08:25:06.000000', 100, 540007, 'Y', '2022-11-19 08:25:06.000000', 100, 'SAP', 'LocalFileSyncCreditLimits', 'Local-File Sync-CreditLimits', 'Local-File Sync-CreditLimits', 'startCreditLimitSyncLocalFile', 'stopCreditLimitSyncLocalFile')
-;
-
 -- UI Element: External system config SAP(541631,de.metas.externalsystem) -> Lokale Datei(546673,de.metas.externalsystem) -> main -> 10 -> Partner.Geschäftspartner-Zielverzeichnis
 -- Column: ExternalSystem_Config_SAP_LocalFile.LocalFile_BPartner_TargetDirectory
 -- 2022-11-21T11:55:51.164Z
@@ -391,5 +392,63 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=30,Updated=TO_TIMESTAMP(
 -- Column: ExternalSystem_Config_SAP_LocalFile.PollingFrequencyInMs
 -- 2022-11-21T11:55:51.188Z
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=40,Updated=TO_TIMESTAMP('2022-11-21 13:55:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613528
+;
+
+
+-- Reference Item: External_Request SAP -> startCreditLimitSyncLocalFile_Start Credit Limits Synchronization Local File
+-- 2022-11-21T12:38:31.061Z
+UPDATE AD_Ref_List_Trl SET Name='Start Credit Limit Synchronization Local-File',Updated=TO_TIMESTAMP('2022-11-21 14:38:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=543351
+;
+
+-- Reference Item: External_Request SAP -> startCreditLimitSyncLocalFile_Start Credit Limits Synchronization Local File
+-- 2022-11-21T12:38:34.923Z
+UPDATE AD_Ref_List_Trl SET Name='Start Credit Limit Synchronization Local-File',Updated=TO_TIMESTAMP('2022-11-21 14:38:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Ref_List_ID=543351
+;
+
+-- Reference Item: External_Request SAP -> startCreditLimitSyncLocalFile_Start Credit Limits Synchronization Local File
+-- 2022-11-21T12:38:40.355Z
+UPDATE AD_Ref_List_Trl SET Name='Start der Kreditlimitsynchronisation Local File',Updated=TO_TIMESTAMP('2022-11-21 14:38:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Ref_List_ID=543351
+;
+
+-- Reference Item: External_Request SAP -> startCreditLimitSyncLocalFile_Start Credit Limits Synchronization Local File
+-- 2022-11-21T12:38:58.351Z
+UPDATE AD_Ref_List_Trl SET Name='Start der Kreditlimitsynchronisation Lokale Datei',Updated=TO_TIMESTAMP('2022-11-21 14:38:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=543351
+;
+
+-- Reference Item: External_Request SAP -> startCreditLimitSyncLocalFile_Start Credit Limits Synchronization Local File
+-- 2022-11-21T12:39:02.991Z
+UPDATE AD_Ref_List_Trl SET Name='Start der Kreditlimitsynchronisation Lokale Datei',Updated=TO_TIMESTAMP('2022-11-21 14:39:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=543351
+;
+
+-- Reference Item: External_Request SAP -> startCreditLimitSyncLocalFile_Start Credit Limits Synchronization Local File
+-- 2022-11-21T12:39:09.501Z
+UPDATE AD_Ref_List_Trl SET Name='Start der Kreditlimitsynchronisation Lokale Datei',Updated=TO_TIMESTAMP('2022-11-21 14:39:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Ref_List_ID=543351
+;
+
+-- Reference: External_Request SAP
+-- Value: startCreditLimitSyncLocalFile
+-- ValueName: Start Credit Limits Synchronization Local File
+-- 2022-11-21T12:39:43.170Z
+UPDATE AD_Ref_List SET Name='Start der Kreditlimitsynchronisation lokale Datei',Updated=TO_TIMESTAMP('2022-11-21 14:39:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=543351
+;
+
+-- Reference Item: External_Request SAP -> startCreditLimitSyncLocalFile_Start Credit Limits Synchronization Local File
+-- 2022-11-21T12:39:46.258Z
+UPDATE AD_Ref_List_Trl SET Name='Start der Kreditlimitsynchronisation lokale Datei',Updated=TO_TIMESTAMP('2022-11-21 14:39:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Ref_List_ID=543351
+;
+
+-- Reference Item: External_Request SAP -> startCreditLimitSyncLocalFile_Start Credit Limits Synchronization Local File
+-- 2022-11-21T12:39:50.724Z
+UPDATE AD_Ref_List_Trl SET Name='Start der Kreditlimitsynchronisation lokale Datei',Updated=TO_TIMESTAMP('2022-11-21 14:39:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=543351
+;
+
+-- Reference Item: External_Request SAP -> startCreditLimitSyncLocalFile_Start Credit Limits Synchronization Local File
+-- 2022-11-21T12:39:57.194Z
+UPDATE AD_Ref_List_Trl SET Name='Start der Kreditlimitsynchronisation lokale Datei',Updated=TO_TIMESTAMP('2022-11-21 14:39:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=543351
+;
+
+-- Reference Item: External_Request SAP -> startCreditLimitSyncLocalFile_Start Credit Limits Synchronization Local File
+-- 2022-11-21T12:42:56.038Z
+UPDATE AD_Ref_List_Trl SET Name='Start Credit Limit Synchronization Local File',Updated=TO_TIMESTAMP('2022-11-21 14:42:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=543351
 ;
 
