@@ -8,6 +8,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner_product.IBPartnerProductDAO;
+import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentConstraintsBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
@@ -120,11 +121,13 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 		final ShipmentScheduleQtyOnHandStorageFactory shipmentScheduleQtyOnHandStorageFactory = new ShipmentScheduleQtyOnHandStorageFactory(stockRepository);
 		final ShipmentScheduleReferencedLineFactory shipmentScheduleReferencedLineFactory = new ShipmentScheduleReferencedLineFactory(Optional.of(ImmutableList.of(new ShipmentScheduleOrderReferenceProvider())));
 		final PickingBOMService pickingBOMService = new PickingBOMService();
+		final IShipmentScheduleBL shipmentScheduleBL = new ShipmentScheduleBL(new DeliveryPlanningService());
 
 		return new ShipmentScheduleUpdater(
 				shipmentScheduleQtyOnHandStorageFactory,
 				shipmentScheduleReferencedLineFactory,
-				pickingBOMService);
+				pickingBOMService,
+				shipmentScheduleBL);
 	}
 
 	private static final Logger logger = LogManager.getLogger(ShipmentScheduleUpdater.class);
@@ -132,7 +135,6 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	private final IShipmentScheduleHandlerBL shipmentScheduleHandlerBL = Services.get(IShipmentScheduleHandlerBL.class);
 	private final IShipmentScheduleInvalidateRepository invalidSchedulesRepo = Services.get(IShipmentScheduleInvalidateRepository.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
-	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IShipmentScheduleDeliveryDayBL shipmentScheduleDeliveryDayBL = Services.get(IShipmentScheduleDeliveryDayBL.class);
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
@@ -149,6 +151,8 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 
 	private final CompositeCandidateProcessor candidateProcessors = new CompositeCandidateProcessor();
 
+	private final IShipmentScheduleBL shipmentScheduleBL;
+
 	/**
 	 * Flag which is set to true when shipment schedule updater is running.
 	 * <p>
@@ -159,11 +163,13 @@ public class ShipmentScheduleUpdater implements IShipmentScheduleUpdater
 	public ShipmentScheduleUpdater(
 			@NonNull final ShipmentScheduleQtyOnHandStorageFactory shipmentScheduleQtyOnHandStorageFactory,
 			@NonNull final ShipmentScheduleReferencedLineFactory shipmentScheduleReferencedLineFactory,
-			@NonNull final PickingBOMService pickingBOMService)
+			@NonNull final PickingBOMService pickingBOMService,
+			@NonNull final IShipmentScheduleBL shipmentScheduleBL)
 	{
 		this.shipmentScheduleQtyOnHandStorageFactory = shipmentScheduleQtyOnHandStorageFactory;
 		this.shipmentScheduleReferencedLineFactory = shipmentScheduleReferencedLineFactory;
 		this.pickingBOMService = pickingBOMService;
+		this.shipmentScheduleBL = shipmentScheduleBL;
 	}
 
 	private boolean isAllowConsolidateShipment(@NonNull final BPartnerId bpartnerId)

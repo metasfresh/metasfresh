@@ -81,8 +81,6 @@ import de.metas.quantity.Quantity;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
-import de.metas.storage.IStorageQuery;
-import de.metas.storage.spi.hu.impl.HUStorageQuery;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
@@ -126,15 +124,17 @@ public class ShipmentScheduleWithHUService
 	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	private final IShipmentScheduleBL shipmentScheduleBL;
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 
 	private final HUReservationService huReservationService;
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
-	public ShipmentScheduleWithHUService(@NonNull final HUReservationService huReservationService)
+	public ShipmentScheduleWithHUService(@NonNull final HUReservationService huReservationService,
+			@NonNull final IShipmentScheduleBL shipmentScheduleBL)
 	{
 		this.huReservationService = huReservationService;
+		this.shipmentScheduleBL = shipmentScheduleBL;
 	}
 
 	@Value

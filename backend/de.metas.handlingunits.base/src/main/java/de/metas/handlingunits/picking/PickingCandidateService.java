@@ -2,6 +2,7 @@ package de.metas.handlingunits.picking;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.ad_reference.ADRefList;
 import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HuId;
@@ -35,6 +36,7 @@ import de.metas.handlingunits.picking.requests.RemoveQtyFromHURequest;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.api.PickingConfigRepository;
@@ -42,7 +44,6 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.NonNull;
-import de.metas.ad_reference.ADRefList;
 import org.eevolution.api.PPOrderId;
 import org.springframework.stereotype.Service;
 
@@ -82,6 +83,8 @@ public class PickingCandidateService
 	private final HuId2SourceHUsService sourceHUsRepository;
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final IShipmentSchedulePA ShipmentScheduleRepo = Services.get(IShipmentSchedulePA.class);
+
+	private  final IShipmentScheduleBL shipmentScheduleBl;
 	private final HUReservationService huReservationService;
 	private final IBPartnerBL bpartnersService;
 	private final ADReferenceService adReferenceService;
@@ -92,7 +95,8 @@ public class PickingCandidateService
 			@NonNull final HuId2SourceHUsService sourceHUsRepository,
 			@NonNull final HUReservationService huReservationService,
 			@NonNull final IBPartnerBL bpartnersService,
-			@NonNull final ADReferenceService adReferenceService)
+			@NonNull final ADReferenceService adReferenceService,
+			@NonNull final IShipmentScheduleBL shipmentScheduleBL)
 	{
 		this.pickingConfigRepository = pickingConfigRepository;
 		this.pickingCandidateRepository = pickingCandidateRepository;
@@ -100,6 +104,7 @@ public class PickingCandidateService
 		this.huReservationService = huReservationService;
 		this.bpartnersService = bpartnersService;
 		this.adReferenceService = adReferenceService;
+		this.shipmentScheduleBl = shipmentScheduleBL;
 	}
 
 	public List<PickingCandidate> getByIds(final Set<PickingCandidateId> pickingCandidateIds)
@@ -145,6 +150,7 @@ public class PickingCandidateService
 	{
 		return AddQtyToHUCommand.builder()
 				.pickingCandidateRepository(pickingCandidateRepository)
+				.shipmentScheduleBL(shipmentScheduleBl)
 				.request(request)
 				.build()
 				.performAndGetQtyPicked();

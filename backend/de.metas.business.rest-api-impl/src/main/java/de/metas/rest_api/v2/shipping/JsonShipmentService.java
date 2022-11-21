@@ -116,7 +116,7 @@ public class JsonShipmentService
 {
 	private static final Logger logger = LogManager.getLogger(JsonShipmentService.class);
 
-	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	private final IShipmentScheduleBL shipmentScheduleBL;
 	private final IShipmentScheduleEffectiveBL scheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
 	private final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
@@ -140,13 +140,15 @@ public class JsonShipmentService
 			@NonNull final JsonInvoiceService jsonInvoiceService,
 			@NonNull final OLCandRepository olCandRepo,
 			@NonNull final ShipmentService shipmentService,
-			@NonNull final InvoiceService invoiceService)
+			@NonNull final InvoiceService invoiceService,
+			@NonNull final IShipmentScheduleBL shipmentScheduleBL)
 	{
 		this.attributeSetHelper = attributeSetHelper;
 		this.jsonInvoiceService = jsonInvoiceService;
 		this.olCandRepo = olCandRepo;
 		this.shipmentService = shipmentService;
 		this.invoiceService = invoiceService;
+		this.shipmentScheduleBL = shipmentScheduleBL;
 	}
 
 	@NonNull

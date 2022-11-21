@@ -31,6 +31,8 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import lombok.NonNull;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.modelvalidator.IModelInterceptor;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
@@ -104,6 +106,7 @@ import de.metas.request.model.validator.R_Request;
 import de.metas.shipping.model.validator.M_ShipperTransportation;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.springframework.stereotype.Component;
 
 /**
  * Model Validator for SWAT general features
@@ -111,6 +114,7 @@ import de.metas.util.Services;
  * @author tsa
  *
  */
+@Component
 public class SwatValidator implements ModelValidator
 {
 	private static final AdMessageKey MSG_ORG_ADEMPIERE_UTIL_CHECK_EXCEPTION_HEADER_MESSAGE = AdMessageKey.of("org.adempiere.util.Check.ExceptionHeaderMessage");
@@ -134,6 +138,14 @@ public class SwatValidator implements ModelValidator
 	private final Logger log = LogManager.getLogger(getClass());
 
 	private int m_AD_Client_ID = -1;
+
+
+	private final IShipmentScheduleBL shipmentScheduleBL;
+
+	public SwatValidator(@NonNull final IShipmentScheduleBL shipmentScheduleBL)
+	{
+		this.shipmentScheduleBL = shipmentScheduleBL;
+	}
 
 	@Override
 	public int getAD_Client_ID()
@@ -172,7 +184,7 @@ public class SwatValidator implements ModelValidator
 		engine.addModelValidator(new AD_User(), client);
 		engine.addModelValidator(new MViewModelValidator(), client);
 
-		engine.addModelValidator(new InOutCandidateValidator(), client);
+		engine.addModelValidator(new InOutCandidateValidator(shipmentScheduleBL), client);
 		engine.addModelValidator(ReceiptScheduleValidator.instance, client);
 		engine.addModelValidator(new M_Warehouse(), client); // 03084
 		engine.addModelValidator(new C_BPartner_Location(), client); // 02618

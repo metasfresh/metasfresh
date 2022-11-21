@@ -25,10 +25,16 @@ import java.util.Set;
 @Component
 public class C_Order_ShipmentSchedule
 {
+
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	private final IShipmentScheduleBL shipmentScheduleBL;
 	private final IShipmentScheduleInvalidateRepository scheduleInvalidateRepository = Services.get(IShipmentScheduleInvalidateRepository.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+
+	public C_Order_ShipmentSchedule(@NonNull final IShipmentScheduleBL shipmentScheduleBL)
+	{
+		this.shipmentScheduleBL = shipmentScheduleBL;
+	}
 
 	@DocValidate(timings = ModelValidator.TIMING_AFTER_REACTIVATE)
 	public void closeExistingScheds(@NonNull final I_C_Order orderRecord)

@@ -76,7 +76,7 @@ public class AddQtyToHUCommand
 	private final IProductDAO productsRepo = Services.get(IProductDAO.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
-	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	private final IShipmentScheduleBL shipmentScheduleBL;
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	private final PickingCandidateRepository pickingCandidateRepository;
@@ -95,7 +95,8 @@ public class AddQtyToHUCommand
 	@Builder
 	private AddQtyToHUCommand(
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
-			@NonNull final AddQtyToHURequest request)
+			@NonNull final AddQtyToHURequest request,
+			@NonNull final IShipmentScheduleBL shipmentScheduleBL)
 	{
 		validateSourceHUs(request.getSourceHUIds());
 
@@ -109,6 +110,9 @@ public class AddQtyToHUCommand
 		this.shipmentScheduleId = request.getShipmentScheduleId();
 		shipmentSchedule = shipmentSchedulesRepo.getById(shipmentScheduleId, I_M_ShipmentSchedule.class);
 		productId = ProductId.ofRepoId(shipmentSchedule.getM_Product_ID());
+
+
+		this.shipmentScheduleBL = shipmentScheduleBL;
 		qtyToDeliverTarget = shipmentScheduleBL.getQtyToDeliver(shipmentSchedule);
 
 		this.qtyToPack = request.getQtyToPack();
