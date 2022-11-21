@@ -110,6 +110,7 @@ public class HUEditorRowAttributesProvider implements IViewRowAttributesProvider
 				.hu(hu)
 				.readonly(rowAttributesReadonly)
 				.attributeSourceDocument(attributeSourceDocument)
+				.serialNoFromSequence(serialNoFromSequence)
 				.build();
 	}
 
