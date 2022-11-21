@@ -25,11 +25,12 @@ package de.metas.ui.web.window.controller;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import de.metas.ad_reference.ADRefTable;
 import de.metas.ad_reference.ADReferenceService;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.document.NewRecordContext;
 import de.metas.document.references.zoom_into.CustomizedWindowInfoMapRepository;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
-import de.metas.ad_reference.ReferenceId;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
 import de.metas.ui.web.comments.CommentsService;
 import de.metas.ui.web.config.WebConfig;
@@ -85,7 +86,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import lombok.NonNull;
-import de.metas.ad_reference.ADRefTable;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -225,6 +225,8 @@ public class WindowRestController
 			@RequestParam(name = PARAM_FieldsList, required = false) @ApiParam("comma separated field names") final String fieldsListStr,
 			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced)
 	{
+		userSession.assertLoggedIn();
+
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath documentPath = DocumentPath.rootDocumentPath(windowId, documentIdStr);
 		final JSONDocumentOptions jsonOpts = newJSONDocumentOptions()
@@ -244,6 +246,8 @@ public class WindowRestController
 			@RequestParam(name = PARAM_Advanced, required = false, defaultValue = PARAM_Advanced_DefaultValue) final boolean advanced,
 			@RequestParam(name = "orderBy", required = false) final String orderBysListStr)
 	{
+		userSession.assertLoggedIn();
+
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentId documentId = DocumentId.of(documentIdStr);
 		final DetailId tabId = DetailId.fromJson(tabIdStr);
@@ -310,6 +314,8 @@ public class WindowRestController
 			//
 	)
 	{
+		userSession.assertLoggedIn();
+
 		final WindowId windowId = WindowId.fromJson(windowIdStr);
 		final DocumentPath documentPath = DocumentPath.includedDocumentPath(windowId, documentIdStr, tabIdStr, rowIdStr);
 		final JSONDocumentOptions jsonOpts = newJSONDocumentOptions()
@@ -418,7 +424,7 @@ public class WindowRestController
 				documentPath,
 				changesCollector,
 				document -> {
-					document.processValueChanges(events, REASON_Value_DirectSetFromCommitAPI);
+					document.processValueChanges(events, REASON_Value_DirectSetFromCommitAPI, jsonOpts.getDocumentFieldReadonlyChecker());
 					changesCollector.setPrimaryChange(document.getDocumentPath());
 					return null; // void
 				});
@@ -781,9 +787,9 @@ public class WindowRestController
 		else if (field.getDescriptor().getWidgetType() == DocumentFieldWidgetType.Labels)
 		{
 			final LabelsLookup lookup = LabelsLookup.cast(field.getDescriptor()
-																  .getLookupDescriptor()
-																  .orElseThrow(() -> new AdempiereException("Because the widget type is Labels, expect a LookupDescriptor")
-																		  .setParameter("field", field)));
+					.getLookupDescriptor()
+					.orElseThrow(() -> new AdempiereException("Because the widget type is Labels, expect a LookupDescriptor")
+							.setParameter("field", field)));
 			final String labelsValueColumnName = lookup.getLabelsValueColumnName();
 
 			if (labelsValueColumnName.endsWith("_ID"))
@@ -964,7 +970,7 @@ public class WindowRestController
 			return newRecordDescriptorsProvider.getNewRecordDescriptor(document.getEntityDescriptor())
 					.getProcessor()
 					.processNewRecordDocument(document,
-											  newRecordContext);
+							newRecordContext);
 		}));
 	}
 

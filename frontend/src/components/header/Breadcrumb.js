@@ -215,6 +215,24 @@ class Breadcrumb extends Component {
   }
 
   /**
+   * @method renderDocumentReadOnlyIcon
+   * @summary Display readOnly lock icon with reason.
+   * @param {*} text
+   */
+  renderDocumentReadOnlyIcon(readOnlyReason) {
+    return [
+      <div
+        key="summary-readonly"
+        className="hidden-down header-breadcrumb-line"
+      >
+        <span title={readOnlyReason}>
+          <i className="meta-icon-latch" />
+        </span>
+      </div>,
+    ];
+  }
+
+  /**
    * @method render
    * @summary ToDo: Describe the method.
    */
@@ -253,6 +271,9 @@ class Breadcrumb extends Component {
             breadcrumb.map((item, index) => this.renderBtn(item, index + 1))}
 
           {docSummaryData && this.renderSummaryBreadcrumb(docSummaryData.value)}
+          {docSummaryData &&
+            docSummaryData['readonly-reason'] &&
+            this.renderDocumentReadOnlyIcon(docSummaryData['readonly-reason'])}
 
           {siteName && <div className="divider">/</div>}
 

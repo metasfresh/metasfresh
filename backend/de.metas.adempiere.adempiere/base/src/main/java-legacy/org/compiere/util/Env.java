@@ -99,10 +99,8 @@ public final class Env
 	// private static volatile ContextProvider contextProvider = new DefaultContextProvider();
 	private static volatile ContextProvider contextProvider = new ThreadLocalContextProvider();
 
-	public static void setContextProvider(final ContextProvider provider)
+	public static void setContextProvider(@NonNull final ContextProvider provider)
 	{
-		Check.assumeNotNull(provider, "provider not null");
-
 		final ContextProvider providerOld = contextProvider;
 		contextProvider = provider;
 		s_log.info("Changed context provider: {} -> {}", providerOld, contextProvider);
@@ -122,7 +120,7 @@ public final class Env
 	 * Initializes the context provider if necessary. Multiple calls shall be no problem.
 	 * See ThreadLocalContextProvider#init(), because currently that is the only implementation which actually does something
 	 *
-	 * @task 08859
+	 * task 08859
 	 */
 	public static void initContextProvider()
 	{
@@ -251,7 +249,6 @@ public final class Env
 	public static final int CTXVALUE_AD_Role_ID_System = RoleId.SYSTEM.getRepoId();
 	public static final String CTXNAME_AD_Role_Name = "#AD_Role_Name";
 	public static final String CTXNAME_AD_Role_UserLevel = "#User_Level";
-
 	public static final String CTXNAME_AD_PInstance_ID = "#AD_PInstance_ID"; // FRESH-314
 
 	/**
@@ -357,12 +354,10 @@ public final class Env
 	 * <p>
 	 * <b>IMPORTANT:</b> do not use this method if you want to do use the resulting context as parameter for {@link #switchContext(Properties)}, to avoid a {@link StackOverflowError}. Use {@link #copyCtx(Properties)} instead.
 	 *
-	 * @param ctx
 	 * @return new context
 	 */
-	public static Properties deriveCtx(final Properties ctx)
+	public static Properties deriveCtx(@NonNull final Properties ctx)
 	{
-		Check.assumeNotNull(ctx, "ctx not null");
 		return new Properties(ctx);
 	}
 
@@ -370,17 +365,12 @@ public final class Env
 	 * Creates a new empty context and then copies all values from the original, <b>including</b> defaults.
 	 * <p>
 	 * <b>IMPORTANT:</b> use this method instead of {@link #deriveCtx(Properties)} if you plan to call {@link #switchContext(Properties)} with the result.
-	 *
-	 * @param ctx
-	 * @return
 	 */
-	public static Properties copyCtx(final Properties ctx)
+	public static Properties copyCtx(@NonNull final Properties ctx)
 	{
-		Check.assumeNotNull(ctx, "ctx not null");
-
 		final Properties newCtx = new Properties();
 
-		// we can't use this great tool, because it (reasonably) assumes that the given ctx doews not have null values
+		// we can't use this great tool, because it (reasonably) assumes that the given ctx does not have null values
 		// org.springframework.util.CollectionUtils.mergePropertiesIntoMap(ctx, newCtx);
 
 		for (final Enumeration<?> en = ctx.propertyNames(); en.hasMoreElements();)
@@ -408,7 +398,7 @@ public final class Env
 	 * @param ctx the context that will be the base for the system context.
 	 * @return new temporary context
 	 */
-	public static Properties createSysContext(final Properties ctx)
+	public static Properties createSysContext(@NonNull final Properties ctx)
 	{
 		final Properties sysCtx = Env.newTemporaryCtx();
 		Env.setContext(sysCtx, CTXNAME_AD_Client_ID, 0);
@@ -424,8 +414,6 @@ public final class Env
 
 	/**
 	 * Can be used before calling {@link #getCtx()} during startup, to avoid {@link NullPointerException}s.
-	 *
-	 * @return
 	 */
 	public static boolean isCtxAvailable()
 	{
@@ -485,16 +473,12 @@ public final class Env
 	{
 		removeContextMatching(ctx, key -> {
 			final String tag = key.toString();
-			final boolean matched = tag.startsWith(keyPrefix);
-			return matched;
+			return tag.startsWith(keyPrefix);
 		});
 	}
 
 	/**
 	 * Remove context variables of which the key is matched by given <code>keyMatcher</code>.
-	 *
-	 * @param ctx
-	 * @param keyMatcher
 	 */
 	public static void removeContextMatching(final Properties ctx, final Predicate<Object> keyMatcher)
 	{
@@ -711,9 +695,6 @@ public final class Env
 	/**
 	 * Creates fully qualified context name.
 	 *
-	 * @param windowNo
-	 * @param tabNo
-	 * @param name
 	 * @return built context name
 	 */
 	public static String createContextName(final int windowNo, final int tabNo, final String name)
@@ -766,7 +747,7 @@ public final class Env
 	 * @param ctx context
 	 * @param autoNew auto new record
 	 */
-	public static void setAutoNew(Properties ctx, boolean autoNew)
+	public static void setAutoNew(@Nullable final Properties ctx, final boolean autoNew)
 	{
 		if (ctx == null)
 		{
@@ -782,7 +763,7 @@ public final class Env
 	 * @param WindowNo window no
 	 * @param autoNew auto new record
 	 */
-	public static void setAutoNew(Properties ctx, int WindowNo, boolean autoNew)
+	public static void setAutoNew(final Properties ctx, final int WindowNo, final boolean autoNew)
 	{
 		if (ctx == null)
 		{
@@ -797,7 +778,7 @@ public final class Env
 	 * @param ctx context
 	 * @param isSOTrx SO Context
 	 */
-	public static void setSOTrx(Properties ctx, boolean isSOTrx)
+	public static void setSOTrx(final Properties ctx, final boolean isSOTrx)
 	{
 		if (ctx == null)
 		{
@@ -921,7 +902,7 @@ public final class Env
 	 * @param context context key
 	 * @return value or 0
 	 */
-	public static int getContextAsInt(Properties ctx, int WindowNo, String context)
+	public static int getContextAsInt(final Properties ctx, final int WindowNo, final String context)
 	{
 		final String s = getContext(ctx, WindowNo, context, false);
 		if (isPropertyValueNull(s) || s.length() == 0)
@@ -949,7 +930,7 @@ public final class Env
 	 * @param onlyWindow if true, no defaults are used unless explicitly asked for
 	 * @return value or 0
 	 */
-	public static int getContextAsInt(Properties ctx, int WindowNo, String context, boolean onlyWindow)
+	public static int getContextAsInt(final Properties ctx, final int WindowNo, final String context, final boolean onlyWindow)
 	{
 		final String s = getContext(ctx, WindowNo, context, onlyWindow);
 		if (isPropertyValueNull(s) || s.length() == 0)
@@ -977,7 +958,7 @@ public final class Env
 	 * @param context context key
 	 * @return value or 0
 	 */
-	public static int getContextAsInt(Properties ctx, int WindowNo, int TabNo, String context)
+	public static int getContextAsInt(final Properties ctx, final int WindowNo, final int TabNo, final String context)
 	{
 		final String s = getContext(ctx, WindowNo, TabNo, context);
 		if (isPropertyValueNull(s) || s.length() == 0)
@@ -1395,7 +1376,7 @@ public final class Env
 		return Services.get(IUserRolePermissionsDAO.class).getUserRolePermissions(userRolePermissionsKey);
 	}
 
-	public static int getAD_Session_ID(final Properties ctx)
+	public static int getAD_Session_ID(@NonNull final Properties ctx)
 	{
 		return Env.getContextAsInt(ctx, CTXNAME_AD_Session_ID);
 	}
@@ -1640,9 +1621,8 @@ public final class Env
 	 *
 	 * @return the received language if it is supported, the base language otherwise.
 	 */
-	public static Language verifyLanguageFallbackToBase(final Language testLang)
+	public static Language verifyLanguageFallbackToBase(@NonNull final Language testLang)
 	{
-		Check.assumeNotNull(testLang, "Parameter testLang is not null");
 		final String searchAD_Language = testLang.getAD_Language();
 
 		//
@@ -2092,10 +2072,12 @@ public final class Env
 	 * @param scope
 	 * @return value or {@link #CTXVALUE_NullString}
 	 */
-	public static String getContext(final Properties ctx, final int WindowNo, final int TabNo, final String context, final Scope scope)
+	public static String getContext(@NonNull final Properties ctx, 
+			final int WindowNo, 
+			final int TabNo, 
+			final String context, 
+			final Scope scope)
 	{
-		Check.assumeNotNull(ctx, "ctx not null");
-
 		final CtxName name = CtxNames.parse(context);
 		Check.assumeNotNull(name, "name not null");
 
@@ -2615,10 +2597,8 @@ public final class Env
 	 * @param valueInitializer optional value initializer to be used when the value was not found or it's null in <code>ctx</code>
 	 * @return value or <code>null</code> if the value was not present and value initializer was null
 	 */
-	public static <V> V getAndValidate(final Properties ctx, final String propertyName, final Predicate<V> validator, final Supplier<V> valueInitializer)
+	public static <V> V getAndValidate(@NonNull final Properties ctx, final String propertyName, final Predicate<V> validator, final Supplier<V> valueInitializer)
 	{
-		Check.assumeNotNull(ctx, "ctx not null");
-
 		// NOTE: we a synchronizing on "ctx" because the Hashtable methods of "Properties ctx" are declared as "synchronized"
 		// and we want to get the same effect and synchronize with them.
 		synchronized (ctx)
@@ -2662,8 +2642,6 @@ public final class Env
 	 * <p>
 	 * WARNING: this method is NOT checking the key exists in underlying "defaults". Before changing this please check the API which depends on this logic
 	 *
-	 * @param ctx
-	 * @param key
 	 * @return true if given key is contained in context
 	 */
 	public static boolean containsKey(final Properties ctx, final String key)
@@ -2674,10 +2652,9 @@ public final class Env
 	/**
 	 * Returns given <code>ctx</code> or {@link #getCtx()} if null.
 	 *
-	 * @param ctx
 	 * @return ctx or {@link #getCtx()}; never returns null
 	 */
-	public static Properties coalesce(final Properties ctx)
+	public static Properties coalesce(@Nullable final Properties ctx)
 	{
 		return ctx == null ? getCtx() : ctx;
 	}

@@ -122,6 +122,13 @@ public class JsonProduct
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	LocalDate discontinuedFrom;
 
+	@ApiModelProperty( //
+			value = "This translates to `M_Product.M_SectionCode_ID.Value`.")
+	@Nullable
+	@JsonInclude(Include.NON_NULL)
+	@JsonProperty("sectionCode")
+	String sectionCode;
+
 	@NonNull
 	@Singular
 	@JsonProperty("bpartners")

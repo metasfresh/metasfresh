@@ -44,3 +44,16 @@ UPDATE AD_Column SET ColumnSQL='(coalesce((select case when max(Processed) = min
 UPDATE AD_Column SET IsGenericZoomOrigin='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2022-10-20 09:16:12.856','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=584340
 ;
 
+-- Column: S_EffortControl.IsIssueClosed
+-- Source Table: S_Issue
+-- 2022-11-21T10:57:28.526Z
+INSERT INTO AD_SQLColumn_SourceTableColumn (AD_Client_ID,AD_Column_ID,AD_Org_ID,AD_SQLColumn_SourceTableColumn_ID,AD_Table_ID,Created,CreatedBy,FetchTargetRecordsMethod,IsActive,Source_Column_ID,Source_Table_ID,SQL_GetTargetRecordIdBySourceRecordId,Updated,UpdatedBy) VALUES (0,584346,0,540104,542215,TO_TIMESTAMP('2022-11-21 12:57:28.297','YYYY-MM-DD HH24:MI:SS.US'),100,'S','Y',570203,541468,'select eff.s_effortcontrol_id
+from S_Issue iss
+         inner join s_effortcontrol eff
+                    on iss.C_Activity_ID = eff.C_Activity_ID
+                        and iss.C_Project_ID = eff.C_Project_ID
+                        and iss.AD_Org_ID = eff.AD_Org_ID
+                        and S_Issue_ID = @Record_ID / -1@;',TO_TIMESTAMP('2022-11-21 12:57:28.297','YYYY-MM-DD HH24:MI:SS.US'),100)
+;
+
+

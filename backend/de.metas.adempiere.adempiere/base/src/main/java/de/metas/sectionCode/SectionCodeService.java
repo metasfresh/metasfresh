@@ -24,9 +24,8 @@ package de.metas.sectionCode;
 
 import de.metas.organization.OrgId;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 public class SectionCodeService
@@ -39,8 +38,9 @@ public class SectionCodeService
 	}
 
 	@NonNull
-	public Optional<SectionCodeId> getSectionCodeIdByValue(@NonNull final OrgId orgId, @NonNull final String value)
+	public SectionCodeId getSectionCodeIdByValue(@NonNull final OrgId orgId, @NonNull final String value)
 	{
-		return sectionCodeRepository.getSectionCodeIdByValue(orgId, value);
+		return sectionCodeRepository.getSectionCodeIdByValue(orgId, value)
+				.orElseThrow(() -> new AdempiereException("No SectionCode found for SectionCode.value=" + value));
 	}
 }

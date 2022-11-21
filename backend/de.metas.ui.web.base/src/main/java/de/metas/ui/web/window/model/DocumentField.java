@@ -1,7 +1,6 @@
 package de.metas.ui.web.window.model;
 
 import com.google.common.base.MoreObjects;
-import com.google.common.base.Preconditions;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.ui.web.window.datatypes.DataTypes;

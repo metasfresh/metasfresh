@@ -35,13 +35,17 @@ export const InvoiceToAllocateViewHeader = ({
   windowId,
   viewId,
   selectedRowIds,
+  pageLength,
 }) => {
   const tableId = getTableId({ windowId, viewId });
   const table = useSelector((state) => getTable(state, tableId));
+  const pages = computeNumberOfPages(table?.size, pageLength);
+  //console.log('InvoiceToAllocateViewHeader', { table, pageLength, pages });
 
   const { grandTotal, discountAmt, grandTotalMinusDiscountAmt } = computeFields(
     table,
-    selectedRowIds
+    selectedRowIds,
+    pages > 1
   );
 
   return (
@@ -66,10 +70,18 @@ InvoiceToAllocateViewHeader.propTypes = {
   windowId: PropTypes.string.isRequired,
   viewId: PropTypes.string.isRequired,
   selectedRowIds: PropTypes.arrayOf(PropTypes.string),
+  pageLength: PropTypes.number.isRequired,
 };
 
-const computeFields = (table, selectedRowIds) => {
+const computeFields = (table, selectedRowIds, hasMoreThanOnePage) => {
   if (table?.rows?.length && selectedRowIds?.length > 0) {
+    // In case user selected all rows from all pages,
+    // better don't show the sums because the sums are computed only from current page.
+    const isAllRowsSelected = selectedRowIds.includes('all');
+    if (isAllRowsSelected && hasMoreThanOnePage) {
+      return {};
+    }
+
     let grandTotal = 0.0;
     let discountAmt = 0.0;
     let currencyCode = null;
@@ -77,7 +89,7 @@ const computeFields = (table, selectedRowIds) => {
 
     const rows = table.rows;
     rows
-      .filter((row) => selectedRowIds.includes(row.id))
+      .filter((row) => isAllRowsSelected || selectedRowIds.includes(row.id))
       .forEach((row) => {
         if (multipleCurrencies) {
           return;
@@ -115,6 +127,14 @@ const computeFields = (table, selectedRowIds) => {
     };
   } else {
     return {};
+  }
+};
+
+const computeNumberOfPages = (size, pageLength) => {
+  if (pageLength > 0) {
+    return size ? Math.ceil(size / pageLength) : 0;
+  } else {
+    return size ? 1 : 0;
   }
 };
 

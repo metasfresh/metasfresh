@@ -4,6 +4,8 @@ import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.organization.InstantAndOrgId;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -14,15 +16,20 @@ import de.metas.ui.web.payment_allocation.InvoicesView;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.util.Services;
 
+import java.time.Instant;
+
 public class WEBUI_M_HU_Clearance extends HUEditorProcessTemplate implements IProcessPrecondition
 {
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
-	@Param(parameterName = "ClearanceStatus", mandatory = true)
+	@Param(parameterName = I_M_HU.COLUMNNAME_ClearanceStatus, mandatory = true)
 	private String clearanceStatus;
 
-	@Param(parameterName = "ClearanceNote")
+	@Param(parameterName = I_M_HU.COLUMNNAME_ClearanceNote)
 	private String clearanceNote;
+
+	@Param(parameterName = I_M_HU.COLUMNNAME_ClearanceDate)
+	private Instant clearanceDate;
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -44,7 +51,11 @@ public class WEBUI_M_HU_Clearance extends HUEditorProcessTemplate implements IPr
 	@Override
 	protected String doIt() throws Exception
 	{
-		final ClearanceStatusInfo clearanceStatusInfo = ClearanceStatusInfo.of(ClearanceStatus.ofCode(clearanceStatus), clearanceNote);
+		final ClearanceStatusInfo clearanceStatusInfo = ClearanceStatusInfo.builder()
+				.clearanceStatus(ClearanceStatus.ofCode(clearanceStatus))
+				.clearanceNote(clearanceNote)
+				.clearanceDate(InstantAndOrgId.ofInstant(clearanceDate, getOrgId()))
+				.build();
 
 		streamSelectedHUs(HUEditorRowFilter.Select.ALL)
 				.forEach(hu -> handlingUnitsBL.setClearanceStatusRecursively(HuId.ofRepoId(hu.getM_HU_ID()), clearanceStatusInfo));

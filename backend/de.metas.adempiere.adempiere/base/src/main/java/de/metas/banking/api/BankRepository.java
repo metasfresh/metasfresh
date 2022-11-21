@@ -102,11 +102,13 @@ public class BankRepository
 				.build();
 	}
 
+	@NonNull
 	public Optional<BankId> getBankIdBySwiftCode(final String swiftCode)
 	{
 		return bankIdsBySwiftCode.getOrLoad(swiftCode, this::retrieveBankIdBySwiftCode);
 	}
 
+	@NonNull
 	private Optional<BankId> retrieveBankIdBySwiftCode(final String swiftCode)
 	{
 		final int bankRepoId = queryBL.createQueryBuilderOutOfTrx(I_C_Bank.class)

@@ -60,6 +60,10 @@ public class JsonRequestProductUpsertItem
 	JsonMetasfreshId externalSystemConfigId;
 
 	@ApiModelProperty(position = 40)
+	@Nullable
+	Boolean isReadOnlyInMetasfresh;
+
+	@ApiModelProperty(position = 50)
 	@NonNull
 	JsonRequestProduct requestProduct;
 
@@ -69,6 +73,7 @@ public class JsonRequestProductUpsertItem
 			@Nullable @JsonProperty("externalVersion") final String externalVersion,
 			@Nullable @JsonProperty("externalReferenceUrl") final String externalReferenceUrl,
 			@Nullable @JsonProperty("externalSystemId") final JsonMetasfreshId externalSystemConfigId,
+			@Nullable @JsonProperty("isReadOnlyInMetasfresh") final Boolean isReadOnlyInMetasfresh,
 			@NonNull @JsonProperty("requestProduct") final JsonRequestProduct requestProduct)
 	{
 		this.productIdentifier = productIdentifier;
@@ -76,5 +81,6 @@ public class JsonRequestProductUpsertItem
 		this.requestProduct = requestProduct;
 		this.externalReferenceUrl = externalReferenceUrl;
 		this.externalSystemConfigId = externalSystemConfigId;
+		this.isReadOnlyInMetasfresh = isReadOnlyInMetasfresh;
 	}
 }

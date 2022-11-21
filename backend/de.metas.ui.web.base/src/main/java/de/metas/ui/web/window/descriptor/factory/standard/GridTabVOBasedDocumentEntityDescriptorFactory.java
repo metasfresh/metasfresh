@@ -1,5 +1,6 @@
 package de.metas.ui.web.window.descriptor.factory.standard;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.ad_reference.ReferenceId;
 import de.metas.adempiere.service.IColumnBL;
@@ -26,6 +27,7 @@ import de.metas.ui.web.window.descriptor.IncludedTabNewRecordInputMode;
 import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
+import de.metas.ui.web.window.descriptor.decorator.IDocumentDecorator;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentEntityDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlDocumentFieldDataBindingDescriptor;
 import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptorProviderBuilder;
@@ -105,12 +107,14 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	// Services
 	private static final Logger logger = LogManager.getLogger(GridTabVOBasedDocumentEntityDescriptorFactory.class);
 	private final transient IColumnBL adColumnBL = Services.get(IColumnBL.class);
+
 	private final DocumentsRepository documentsRepository = SqlDocumentsRepository.instance;
 	private final LookupDataSourceFactory lookupDataSourceFactory;
 
 	private final ImmutableMap<AdFieldId, String> _adFieldId2columnName;
 	private final DefaultValueExpressionsFactory defaultValueExpressionsFactory;
 	private final SpecialDocumentFieldsCollector _specialFieldsCollector;
+	private final ImmutableList<IDocumentDecorator> documentDecorators;
 
 	//
 	// State
@@ -122,11 +126,13 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 	private GridTabVOBasedDocumentEntityDescriptorFactory(
 			@NonNull final LookupDataSourceFactory lookupDataSourceFactory,
 			@NonNull final GridTabVO gridTabVO,
+			final ImmutableList<IDocumentDecorator> documentDecorators,
 			@Nullable final GridTabVO parentTabVO,
 			final boolean isSOTrx,
 			@NonNull final List<I_AD_UI_Element> labelsUIElements)
 	{
 		this.lookupDataSourceFactory = lookupDataSourceFactory;
+		this.documentDecorators = documentDecorators;
 
 		final boolean rootEntity = parentTabVO == null;
 
@@ -231,6 +237,7 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 		//
 		// Entity descriptor
 		final DocumentEntityDescriptor.Builder entityDescriptorBuilder = DocumentEntityDescriptor.builder()
+				.setDocumentDecorators(documentDecorators)
 				.setDocumentType(gridTabVO.getAdWindowId())
 				.setDetailId(detailId)
 				.setInternalName(gridTabVO.getInternalName())

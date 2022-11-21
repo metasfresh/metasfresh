@@ -125,6 +125,12 @@ public class JsonRequestProduct
 	@ApiModelProperty(position = 150)
 	private List<JsonRequestBPartnerProductUpsert> bpartnerProductItems;
 
+	@ApiModelProperty(position = 160)
+	private String sectionCode;
+
+	@ApiModelProperty(hidden = true)
+	private boolean sectionCodeSet;
+
 	public void setCode(final @NonNull String code)
 	{
 		this.code = code;
@@ -207,4 +213,9 @@ public class JsonRequestProduct
 		this.bpartnerProductItems = bpartnerProductItems;
 	}
 
+	public void setSectionCode(final String sectionCode)
+	{
+		this.sectionCode = sectionCode;
+		this.sectionCodeSet = true;
+	}
 }

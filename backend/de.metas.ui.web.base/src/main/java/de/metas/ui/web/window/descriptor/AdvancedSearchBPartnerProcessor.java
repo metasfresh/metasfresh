@@ -30,6 +30,7 @@ import de.metas.ui.web.view.descriptor.SqlViewKeyColumnNamesMap;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.WindowId;
 import de.metas.ui.web.window.model.Document;
+import de.metas.ui.web.window.model.DocumentFieldLogicExpressionResultRevaluator;
 import de.metas.ui.web.window.model.sql.SqlComposedKey;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -54,6 +55,8 @@ public class AdvancedSearchBPartnerProcessor implements AdvancedSearchDescriptor
 			@NonNull final String bpartnerFieldName,
 			@NonNull final String selectionIdStr)
 	{
+		final DocumentFieldLogicExpressionResultRevaluator readonlyRevaluator = DocumentFieldLogicExpressionResultRevaluator.DEFAULT;
+
 		final SqlViewKeyColumnNamesMap keyColumnNamesMap = sqlViewFactory.getKeyColumnNamesMap(windowId);
 		final SqlComposedKey composedKey = keyColumnNamesMap.extractComposedKey(DocumentId.of(selectionIdStr));
 
@@ -64,7 +67,7 @@ public class AdvancedSearchBPartnerProcessor implements AdvancedSearchDescriptor
 		{
 			throw new AdempiereException("@NoSelection@"); // shall not happen
 		}
-		document.processValueChange(bpartnerFieldName, bpartnerId, null, false);
+		document.processValueChange(bpartnerFieldName, bpartnerId, null, readonlyRevaluator);
 
 		//
 		// Location
@@ -76,7 +79,7 @@ public class AdvancedSearchBPartnerProcessor implements AdvancedSearchDescriptor
 					composedKey.getValueAsInteger(I_C_BPartner_Adv_Search.COLUMNNAME_C_BPartner_Location_ID).orElse(-1));
 			if (bpLocationId != null)
 			{
-				document.processValueChange(locationFieldName, bpLocationId.getRepoId(), null, false);
+				document.processValueChange(locationFieldName, bpLocationId.getRepoId(), null, readonlyRevaluator);
 			}
 		}
 
@@ -90,7 +93,7 @@ public class AdvancedSearchBPartnerProcessor implements AdvancedSearchDescriptor
 					composedKey.getValueAsInteger(I_C_BPartner_Adv_Search.COLUMNNAME_C_BP_Contact_ID).orElse(-1));
 			if (bpContactId != null)
 			{
-				document.processValueChange(bpContactIdFieldName, bpContactId.getRepoId(), null, false);
+				document.processValueChange(bpContactIdFieldName, bpContactId.getRepoId(), null, readonlyRevaluator);
 			}
 		}
 	}

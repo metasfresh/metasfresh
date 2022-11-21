@@ -679,6 +679,27 @@ public interface I_AD_User
 	String COLUMNNAME_EMail3 = "EMail3";
 
 	/**
+	 * Set eMail Private.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setEmail_private (@Nullable java.lang.String Email_private);
+
+	/**
+	 * Get eMail Private.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getEmail_private();
+
+	ModelColumn<I_AD_User, Object> COLUMN_Email_private = new ModelColumn<>(I_AD_User.class, "Email_private", null);
+	String COLUMNNAME_Email_private = "Email_private";
+
+	/**
 	 * Set EMail User ID.
 	 * User Name (ID) in the Mail System
 	 *
@@ -857,6 +878,27 @@ public interface I_AD_User
 
 	ModelColumn<I_AD_User, Object> COLUMN_Fresh_xmas_Gift = new ModelColumn<>(I_AD_User.class, "Fresh_xmas_Gift", null);
 	String COLUMNNAME_Fresh_xmas_Gift = "Fresh_xmas_Gift";
+
+	/**
+	 * Set Hobbies/Interests.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setHobbies_interests (@Nullable java.lang.String Hobbies_interests);
+
+	/**
+	 * Get Hobbies/Interests.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getHobbies_interests();
+
+	ModelColumn<I_AD_User, Object> COLUMN_Hobbies_interests = new ModelColumn<>(I_AD_User.class, "Hobbies_interests", null);
+	String COLUMNNAME_Hobbies_interests = "Hobbies_interests";
 
 	/**
 	 * Set Included Tab.
@@ -1697,6 +1739,52 @@ public interface I_AD_User
 
 	ModelColumn<I_AD_User, Object> COLUMN_Phone2 = new ModelColumn<>(I_AD_User.class, "Phone2", null);
 	String COLUMNNAME_Phone2 = "Phone2";
+
+	/**
+	 * Set Photo.
+	 *
+	 * <br>Type: Image
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPhoto_ID (int Photo_ID);
+
+	/**
+	 * Get Photo.
+	 *
+	 * <br>Type: Image
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getPhoto_ID();
+
+	@Nullable org.compiere.model.I_AD_Image getPhoto();
+
+	void setPhoto(@Nullable org.compiere.model.I_AD_Image Photo);
+
+	ModelColumn<I_AD_User, org.compiere.model.I_AD_Image> COLUMN_Photo_ID = new ModelColumn<>(I_AD_User.class, "Photo_ID", org.compiere.model.I_AD_Image.class);
+	String COLUMNNAME_Photo_ID = "Photo_ID";
+
+	/**
+	 * Set Previous Company.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPrevious_company (@Nullable java.lang.String Previous_company);
+
+	/**
+	 * Get Previous Company.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPrevious_company();
+
+	ModelColumn<I_AD_User, Object> COLUMN_Previous_company = new ModelColumn<>(I_AD_User.class, "Previous_company", null);
+	String COLUMNNAME_Previous_company = "Previous_company";
 
 	/**
 	 * Set Process Now.
