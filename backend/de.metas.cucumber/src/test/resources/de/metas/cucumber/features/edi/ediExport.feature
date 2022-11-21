@@ -6,7 +6,7 @@ Feature: EDI_cctop_invoic_v export format
 
   #   Convenience Salat 250g
     And load M_Product:
-      | M_Product_ID.Identifier | OPT.M_Product_ID |
+      | M_Product_ID.Identifier | M_Product_ID |
       | convenienceSalate       | 2005577          |
 
   Scenario: As a user I want to export C_Invoice using EDI_cctop_invoic_v export format
