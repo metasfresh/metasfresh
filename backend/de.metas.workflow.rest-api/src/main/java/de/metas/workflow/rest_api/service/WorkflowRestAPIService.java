@@ -112,37 +112,6 @@ public class WorkflowRestAPIService
 				.map(app -> (WorkflowBasedMobileApplication)app);
 	}
 
-	@Deprecated
-	public WorkflowLaunchersList getLaunchersFromAllApplications(
-			@NonNull final UserId userId,
-			@NonNull final Duration maxStaleAccepted)
-	{
-		final QueryLimit suggestedLimit = getLaunchersLimit();
-
-		return streamWorkflowBasedMobileApplications()
-				.map(application -> provideLaunchersNoFail(application, userId, suggestedLimit, maxStaleAccepted))
-				.reduce(WorkflowLaunchersList::mergeWith)
-				.orElseGet(WorkflowLaunchersList::emptyNow);
-	}
-
-	private static WorkflowLaunchersList provideLaunchersNoFail(
-			@NonNull final WorkflowBasedMobileApplication application,
-			@NonNull final UserId userId,
-			@NonNull final QueryLimit suggestedLimit,
-			@NonNull final Duration maxStaleAccepted)
-	{
-		try
-		{
-			final WorkflowLaunchersList launchers = application.provideLaunchers(userId, suggestedLimit, maxStaleAccepted);
-			return launchers != null ? launchers : WorkflowLaunchersList.emptyNow();
-		}
-		catch (final Exception ex)
-		{
-			logger.warn("Failed fetching launchers from {} for {}. Skipped", application, userId, ex);
-			return WorkflowLaunchersList.emptyNow();
-		}
-	}
-
 	private QueryLimit getLaunchersLimit()
 	{
 		final int limitInt = sysConfigBL.getIntValue(SYSCONFIG_LaunchersLimit, -100);

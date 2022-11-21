@@ -15,7 +15,6 @@ import lombok.NonNull;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.SynchronizedMutable;
 
-import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.List;
 
@@ -28,14 +27,14 @@ class WorkflowLaunchersWebSocketProducer implements WebSocketProducer
 	private final IUserBL userBL = Services.get(IUserBL.class);
 	private final WorkflowRestAPIService workflowRestAPIService;
 
-	@Nullable private final MobileApplicationId applicationId;
+	@NonNull private final MobileApplicationId applicationId;
 	@NonNull private final UserId userId;
 
 	private final SynchronizedMutable<WorkflowLaunchersList> lastResultHolder = SynchronizedMutable.of(null);
 
 	WorkflowLaunchersWebSocketProducer(
 			final @NonNull WorkflowRestAPIService workflowRestAPIService,
-			final @Nullable MobileApplicationId applicationId,
+			final @NonNull MobileApplicationId applicationId,
 			final @NonNull UserId userId)
 	{
 		this.workflowRestAPIService = workflowRestAPIService;
@@ -79,9 +78,7 @@ class WorkflowLaunchersWebSocketProducer implements WebSocketProducer
 
 	private WorkflowLaunchersList computeNewResult()
 	{
-		return applicationId != null
-				? workflowRestAPIService.getLaunchers(applicationId, userId, getMaxStaleAccepted())
-				: workflowRestAPIService.getLaunchersFromAllApplications(userId, getMaxStaleAccepted());
+		return workflowRestAPIService.getLaunchers(applicationId, userId, getMaxStaleAccepted());
 	}
 
 	private Duration getMaxStaleAccepted()

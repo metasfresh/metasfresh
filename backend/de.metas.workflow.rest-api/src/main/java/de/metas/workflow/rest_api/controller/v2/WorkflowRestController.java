@@ -25,7 +25,6 @@ package de.metas.workflow.rest_api.controller.v2;
 import de.metas.Profiles;
 import de.metas.user.UserId;
 import de.metas.util.Services;
-import de.metas.util.StringUtils;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import de.metas.workflow.rest_api.controller.v2.json.JsonMobileApplicationsList;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
@@ -97,18 +96,11 @@ public class WorkflowRestController
 
 	@GetMapping("/launchers")
 	public JsonWorkflowLaunchersList getLaunchers(
-			@RequestParam(value = "applicationId", required = false) final String applicationIdStr)
+			@RequestParam("applicationId") final String applicationIdStr)
 	{
 		final UserId loggedUserId = Env.getLoggedUserId();
-
-		final MobileApplicationId applicationId = StringUtils.trimBlankToOptional(applicationIdStr)
-				.map(MobileApplicationId::ofString)
-				.orElse(null);
-
-		final WorkflowLaunchersList launchers = applicationId != null
-				? workflowRestAPIService.getLaunchers(applicationId, loggedUserId, Duration.ZERO)
-				: workflowRestAPIService.getLaunchersFromAllApplications(loggedUserId, Duration.ZERO);
-
+		final MobileApplicationId applicationId = MobileApplicationId.ofString(applicationIdStr);
+		final WorkflowLaunchersList launchers = workflowRestAPIService.getLaunchers(applicationId, loggedUserId, Duration.ZERO);
 		return JsonWorkflowLaunchersList.of(launchers, newJsonOpts());
 	}
 

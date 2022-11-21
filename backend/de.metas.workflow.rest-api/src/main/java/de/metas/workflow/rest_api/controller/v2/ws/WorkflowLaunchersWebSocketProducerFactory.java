@@ -14,13 +14,10 @@ import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;
-
 @Component
 public class WorkflowLaunchersWebSocketProducerFactory implements WebSocketProducerFactory
 {
-	public static final String TOPIC_PREFIX = MetasfreshRestAPIConstants.WEBSOCKET_ENDPOINT_V2
-			+ "/userWorkflows/launchers/";
+	public static final String TOPIC_PREFIX = MetasfreshRestAPIConstants.WEBSOCKET_ENDPOINT_V2 + "/userWorkflows/launchers/";
 
 	private final WorkflowRestAPIService workflowRestAPIService;
 	private final UserAuthTokenService userAuthTokenService;
@@ -40,7 +37,7 @@ public class WorkflowLaunchersWebSocketProducerFactory implements WebSocketProdu
 	public WebSocketProducer createProducer(@NonNull final WebsocketTopicName topicName)
 	{
 		final TopicInfo topicInfo = extractTopicInfo(topicName);
-		
+
 		return new WorkflowLaunchersWebSocketProducer(
 				workflowRestAPIService,
 				topicInfo.getApplicationId(),
@@ -51,7 +48,7 @@ public class WorkflowLaunchersWebSocketProducerFactory implements WebSocketProdu
 	private static class TopicInfo
 	{
 		@NonNull UserId userId;
-		@Nullable MobileApplicationId applicationId;
+		@NonNull MobileApplicationId applicationId;
 	}
 
 	private TopicInfo extractTopicInfo(@NonNull final WebsocketTopicName topicName)
@@ -63,10 +60,9 @@ public class WorkflowLaunchersWebSocketProducerFactory implements WebSocketProdu
 					.split("/");
 			final String tokenString;
 			final MobileApplicationId applicationId;
-			if (tokenAndApplicationId.length == 1)
+			if (tokenAndApplicationId.length < 2)
 			{
-				tokenString = tokenAndApplicationId[0];
-				applicationId = null;
+				throw new AdempiereException("Invalid topic: " + topicName);
 			}
 			else if (tokenAndApplicationId.length == 2)
 			{
