@@ -169,7 +169,11 @@ public class UserAuthTokenRepository
 				.userId(UserId.ofRepoId(userAuthTokenPO.getAD_User_ID()))
 				.authToken(userAuthTokenPO.getAuthToken())
 				.description(userAuthTokenPO.getDescription())
-				.clientId(ClientId.ofRepoId(userAuthTokenPO.getAD_Client_ID()))
+
+				// Even if the record's AD_Client_ID is 0 (because we are the metasfresh-user with AD_User_ID=100), we return the metasfresh-client for our API access.
+				//.clientId(ClientId.ofRepoId(userAuthTokenPO.getAD_Client_ID()))
+				.clientId(ClientId.METASFRESH)
+				
 				.orgId(OrgId.ofRepoId(userAuthTokenPO.getAD_Org_ID()))
 				.roleId(RoleId.ofRepoId(userAuthTokenPO.getAD_Role_ID()))
 				.build();

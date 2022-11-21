@@ -31,6 +31,7 @@ import de.metas.camel.externalsystems.core.CustomRouteController;
 import de.metas.camel.externalsystems.core.authorization.provider.MetasfreshAuthProvider;
 import de.metas.common.externalsystem.JsonExternalSystemMessage;
 import de.metas.common.externalsystem.JsonExternalSystemMessagePayload;
+import de.metas.common.util.StringUtils;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
@@ -75,6 +76,7 @@ public class CustomMessageFromMFRouteBuilder extends RouteBuilder
 				.routeId(CUSTOM_MESSAGE_FROM_MF_ROUTE_ID)
 				.group(CamelRoutesGroup.ALWAYS_ON.getCode())
 				.streamCaching()
+				.log("Invoked!")
 				.unmarshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonExternalSystemMessage.class))
 				.process(this::processCustomMessage);
 	}
@@ -101,6 +103,8 @@ public class CustomMessageFromMFRouteBuilder extends RouteBuilder
 				.readValue(authorizationMessage.getPayload(), JsonExternalSystemMessagePayload.class);
 
 		authProvider.setAuthToken(messagePayload.getAuthToken());
+
+		log.info("Received from MF: API AuthToken: {}", StringUtils.maskString(messagePayload.getAuthToken()));
 
 		customRouteController.startAllRoutes();
 	}

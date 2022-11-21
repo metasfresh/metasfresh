@@ -22,6 +22,7 @@
 
 package de.metas.picking.workflow.handlers;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import de.metas.common.util.time.SystemTime;
@@ -70,7 +71,8 @@ import static de.metas.picking.workflow.handlers.activity_handlers.PickingWFActi
 @Component
 public class PickingMobileApplication implements WorkflowBasedMobileApplication
 {
-	static final MobileApplicationId HANDLER_ID = MobileApplicationId.ofString("picking");
+	@VisibleForTesting
+	public static final MobileApplicationId HANDLER_ID = MobileApplicationId.ofString("picking");
 
 	private static final AdMessageKey MSG_Caption = AdMessageKey.of("mobileui.picking.appName");
 	private static final MobileApplicationInfo APPLICATION_INFO = MobileApplicationInfo.builder()
