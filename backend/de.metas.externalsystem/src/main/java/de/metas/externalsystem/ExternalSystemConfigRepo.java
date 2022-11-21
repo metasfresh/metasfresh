@@ -61,8 +61,8 @@ import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
 import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfig;
 import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfigId;
-import de.metas.externalsystem.sap.ExternalSystemSAPConfigId;
 import de.metas.externalsystem.sap.ExternalSystemSAPConfig;
+import de.metas.externalsystem.sap.ExternalSystemSAPConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigMapping;
@@ -1163,10 +1163,15 @@ public class ExternalSystemConfigRepo
 				.sftpUsername(config.getSFTP_Username())
 				.sftpPassword(config.getSFTP_Password())
 				.value(config.getExternalSystemValue())
-				.sftpTargetDirectory(config.getSFTP_TargetDirectory())
+				.sftpTargetDirectoryProduct(config.getSFTP_Product_TargetDirectory())
+				.sftpTargetDirectoryBPartner(config.getSFTP_BPartner_TargetDirectory())
 				.processedDirectory(config.getProcessedDirectory())
 				.erroredDirectory(config.getErroredDirectory())
 				.pollingFrequency(Duration.ofMillis(config.getPollingFrequencyInMs()))
+				.sftpFileNamePatternProduct(config.getSFTP_Product_FileName_Pattern())
+				.sftpFileNamePatternBPartner(config.getSFTP_BPartner_FileName_Pattern())
+				.sftpCreditLimitTargetDirectory(config.getSFTP_CreditLimit_TargetDirectory())
+				.sftpCreditLimitFileNamePattern(config.getSFTP_CreditLimit_FileName_Pattern())
 				.build();
 	}
 }

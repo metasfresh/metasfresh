@@ -27,6 +27,7 @@ import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.v2.ProductUpsertCamelRequest;
+import de.metas.camel.externalsystems.sap.service.OnDemandRoutesController;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.Getter;
 import lombok.NonNull;
@@ -55,8 +56,8 @@ public class SFTPProductSyncServiceRouteBuilderTest extends CamelTestSupport
 	private static final String MOCK_EXTERNAL_SYSTEM_STATUS_ENDPOINT = "mock:externalSystemStatusEndpoint";
 	private static final String MOCK_UPSERT_PRODUCT = "mock:UpsertProduct";
 
-	private static final String JSON_START_EXTERNAL_SYSTEM_REQUEST = "0_JsonStartExternalSystemRequest.json";
-	private static final String JSON_STOP_EXTERNAL_SYSTEM_REQUEST = "0_JsonStopExternalSystemRequest.json";
+	private static final String JSON_START_EXTERNAL_SYSTEM_REQUEST = "0_JsonStartExternalSystemRequestProduct.json";
+	private static final String JSON_STOP_EXTERNAL_SYSTEM_REQUEST = "0_JsonStopExternalSystemRequestProduct.json";
 	private static final String MATERIAL_SAMPLE_DAT_FILE = "10_MaterialSample.dat";
 	private static final String JSON_UPSERT_PRODUCT_REQUEST = "20_CamelUpsertProductRequest.json";
 
@@ -69,9 +70,11 @@ public class SFTPProductSyncServiceRouteBuilderTest extends CamelTestSupport
 	}
 
 	@Override
-	protected RouteBuilder createRouteBuilder()
+	protected RouteBuilder[] createRouteBuilders()
 	{
-		return new SFTPProductSyncServiceRouteBuilder(Mockito.mock(ProcessLogger.class));
+		return new RouteBuilder[] {
+				new SFTPProductSyncServiceRouteBuilder(Mockito.mock(ProcessLogger.class)),
+				new OnDemandRoutesController() };
 	}
 
 	@Override
@@ -107,7 +110,7 @@ public class SFTPProductSyncServiceRouteBuilderTest extends CamelTestSupport
 		//when
 		template.sendBody("direct:" + START_PRODUCTS_SYNC_ROUTE_ID, externalSystemRequest);
 
-		prepareSyncRouteForTesting(mockUpsertProductProcessor, getSFTPProductsSyncRouteId(externalSystemRequest));
+		prepareSyncRouteForTesting(mockUpsertProductProcessor, GetProductsSFTPRouteBuilder.buildRouteId(externalSystemRequest.getExternalSystemChildConfigValue()));
 
 		final InputStream expectedUpsertProductRequest = this.getClass().getResourceAsStream(JSON_UPSERT_PRODUCT_REQUEST);
 		final MockEndpoint productSyncMockEndpoint = getMockEndpoint(MOCK_UPSERT_PRODUCT);
@@ -140,10 +143,15 @@ public class SFTPProductSyncServiceRouteBuilderTest extends CamelTestSupport
 		final InputStream invokeStopExternalSystemRequestIS = this.getClass().getResourceAsStream(JSON_STOP_EXTERNAL_SYSTEM_REQUEST);
 		final JsonExternalSystemRequest stopExternalSystemRequest = objectMapper.readValue(invokeStopExternalSystemRequestIS, JsonExternalSystemRequest.class);
 
+		final String routeId = GetProductsSFTPRouteBuilder.buildRouteId(stopExternalSystemRequest.getExternalSystemChildConfigValue());
+
 		context.start();
 
 		//when
 		template.sendBody("direct:" + START_PRODUCTS_SYNC_ROUTE_ID, startExternalSystemRequest);
+
+		assertThat(context.getRoute(routeId)).isNotNull();
+		assertThat(context.getRouteController().getRouteStatus(routeId).isStarted()).isEqualTo(true);
 
 		//and
 		template.sendBody("direct:" + STOP_PRODUCTS_SYNC_ROUTE_ID, stopExternalSystemRequest);
@@ -152,12 +160,7 @@ public class SFTPProductSyncServiceRouteBuilderTest extends CamelTestSupport
 		assertMockEndpointsSatisfied();
 		assertThat(mockExternalSystemStatusProcessor.called).isEqualTo(2);
 
-		assertThat(context.getRoute(getSFTPProductsSyncRouteId(stopExternalSystemRequest))).isNull();
-	}
-
-	private String getSFTPProductsSyncRouteId(@NonNull final JsonExternalSystemRequest externalSystemRequest)
-	{
-		return "GetProductsSFTPRouteBuilder#" + externalSystemRequest.getExternalSystemChildConfigValue();
+		assertThat(context.getRoute(routeId)).isNull();
 	}
 
 	private void prepareEnableRouteForTesting(

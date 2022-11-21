@@ -1,12 +1,12 @@
 package de.metas.payment.paymentterm.impl;
 
-import javax.annotation.Nullable;
-
 import de.metas.organization.OrgId;
 import de.metas.util.lang.ExternalId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L

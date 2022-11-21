@@ -23,13 +23,13 @@
 package de.metas.camel.externalsystems.sap.sftp;
 
 import de.metas.common.util.Check;
-import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
+import java.util.Optional;
 
 @Value
 @Builder
@@ -47,9 +47,6 @@ public class SFTPConfig
 	@NonNull
 	String hostName;
 
-	@Nullable
-	String targetDirectory;
-
 	@NonNull
 	String processedFilesFolder;
 
@@ -57,24 +54,71 @@ public class SFTPConfig
 	String erroredFilesFolder;
 
 	@NonNull
+	String seenFileRenamePattern;
+
+	@NonNull
 	Duration pollingFrequency;
 
-	public String getSFTPConnectionString()
-	{
-		final String endpointTemplate = "sftp://%s@%s:%s/%s?move=%s&moveFailed=%s&delay=%s";
+	//product specific
+	@Nullable
+	String targetDirectoryProduct;
 
-		final String resultWithoutPW = String.format(endpointTemplate,
-									  this.getUsername(),
-									  this.getHostName(),
-									  this.getPort(),
-									  CoalesceUtil.coalesce(this.getTargetDirectory(), ""),
-									  this.getProcessedFilesFolder(),
-									  this.getErroredFilesFolder(),
-									  this.getPollingFrequency());
-		if (Check.isBlank(password))
-		{
-			return resultWithoutPW;
-		}
-		return resultWithoutPW + "&password=" + password;
+	@Nullable
+	String fileNamePatternProduct;
+
+	//bpartner specific
+	@Nullable
+	String targetDirectoryBPartner;
+
+	@Nullable
+	String fileNamePatternBPartner;
+
+	//credit limit specific
+	@Nullable
+	String targetDirectoryCreditLimit;
+
+	@Nullable
+	String fileNamePatternCreditLimit;
+
+	@NonNull
+	public String getSFTPConnectionStringProduct()
+	{
+		return getSFTPConnectionString(targetDirectoryProduct, fileNamePatternProduct);
+	}
+
+	@NonNull
+	public String getSFTPConnectionStringBPartner()
+	{
+		return getSFTPConnectionString(targetDirectoryBPartner, fileNamePatternBPartner);
+	}
+
+	@NonNull
+	public String getSFTPConnectionStringCreditLimit()
+	{
+		return getSFTPConnectionString(targetDirectoryCreditLimit, fileNamePatternCreditLimit);
+	}
+
+	@NonNull
+	private String getSFTPConnectionString(@Nullable final String targetDir, @Nullable final String includeFilePattern)
+	{
+		final StringBuilder sftpEndpoint = new StringBuilder("sftp://");
+		sftpEndpoint.append(username)
+				.append("@")
+				.append(hostName)
+				.append(":")
+				.append(port)
+				.append("/")
+				.append(Optional.ofNullable(targetDir).filter(Check::isNotBlank).orElse(""))
+				.append("?")
+				.append("delay=").append(pollingFrequency.toMillis())
+				.append("&")
+				.append("move=.").append(processedFilesFolder).append("/").append(seenFileRenamePattern)
+				.append("&")
+				.append("moveFailed=.").append(erroredFilesFolder).append("/").append(seenFileRenamePattern);
+
+		Optional.ofNullable(password).ifPresent(pass -> sftpEndpoint.append("&").append("password=").append(pass));
+		Optional.ofNullable(includeFilePattern).ifPresent(filePattern -> sftpEndpoint.append("&").append("antInclude=").append(filePattern));
+
+		return sftpEndpoint.toString();
 	}
 }
