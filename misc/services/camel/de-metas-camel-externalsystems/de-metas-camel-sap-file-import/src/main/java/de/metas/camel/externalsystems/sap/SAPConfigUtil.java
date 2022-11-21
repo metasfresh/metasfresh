@@ -81,6 +81,7 @@ public class SAPConfigUtil
 				.pollingFrequency(Duration.ofMillis(Long.parseLong(requestParameters.get(ExternalSystemConstants.PARAM_LOCAL_FILE_POLLING_FREQUENCY_MS))))
 
 				.seenFileRenamePattern(seenFileRenamePattern)
+				.rootLocation(requestParameters.get(ExternalSystemConstants.PARAM_LOCAL_FILE_ROOT_LOCATION))
 				.processedFilesFolder(requestParameters.get(ExternalSystemConstants.PARAM_LOCAL_FILE_PROCESSED_DIRECTORY))
 				.erroredFilesFolder(requestParameters.get(ExternalSystemConstants.PARAM_LOCAL_FILE_ERRORED_DIRECTORY))
 
