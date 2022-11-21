@@ -23,7 +23,6 @@
 package de.metas.camel.externalsystems.sap.bpartner;
 
 import com.google.common.annotations.VisibleForTesting;
-import de.metas.camel.externalsystems.common.IdAwareRouteBuilder;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.sap.SAPConfigUtil;
 import de.metas.camel.externalsystems.sap.service.OnDemandRoutesController;
@@ -109,7 +108,7 @@ public class SFTPBPartnerSyncServiceRouteBuilder extends RouteBuilder implements
 	}
 
 	@NonNull
-	private IdAwareRouteBuilder getBPartnerFromFileRouteBuilder(@NonNull final JsonExternalSystemRequest request, @NonNull final CamelContext camelContext)
+	private GetBPartnersFromFileRouteBuilder getBPartnerFromFileRouteBuilder(@NonNull final JsonExternalSystemRequest request, @NonNull final CamelContext camelContext)
 	{
 		return GetBPartnersFromFileRouteBuilder
 				.builder()
@@ -125,7 +124,7 @@ public class SFTPBPartnerSyncServiceRouteBuilder extends RouteBuilder implements
 	@VisibleForTesting
 	public static String getSFTPBPartnersSyncRouteId(@NonNull final JsonExternalSystemRequest externalSystemRequest)
 	{
-		return "SFTPBPartnerSyncRoute#" + externalSystemRequest.getExternalSystemChildConfigValue();
+		return "GetBPartnerFromSFTPServer#" + externalSystemRequest.getExternalSystemChildConfigValue();
 	}
 
 	@Override

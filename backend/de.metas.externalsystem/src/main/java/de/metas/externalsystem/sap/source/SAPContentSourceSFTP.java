@@ -38,7 +38,7 @@ import javax.annotation.Nullable;
 import java.time.Duration;
 
 @Value
-public class SAPContentSourceSFTP implements ISAPContentSource
+public class SAPContentSourceSFTP
 {
 	private static final AdMessageKey MSG_DUPLICATE_FILE_LOOKUP_DETAILS = AdMessageKey.of("ExternalSystemConfigSAPDuplicateFileLookupDetails");
 
@@ -113,7 +113,7 @@ public class SAPContentSourceSFTP implements ISAPContentSource
 	}
 
 	@NonNull
-	public BooleanWithReason validateTargetDirectoriesAndFileNamePatterns(
+	public BooleanWithReason isStartServicePossible(
 			@NonNull final SAPExternalRequest sapExternalRequest,
 			@NonNull final ExternalSystemParentConfigId parentId,
 			@NonNull final IMsgBL msgBL)
@@ -158,11 +158,5 @@ public class SAPContentSourceSFTP implements ISAPContentSource
 		}
 
 		return BooleanWithReason.TRUE;
-	}
-
-	@NonNull
-	public static SAPContentSourceSFTP cast(@NonNull final ISAPContentSource contentSource)
-	{
-		return (SAPContentSourceSFTP)contentSource;
 	}
 }

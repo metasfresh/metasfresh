@@ -42,12 +42,16 @@ public class SAPConfigMapper
 				.port(externalSystemConfigSapSftp.getSFTP_Port())
 				.username(externalSystemConfigSapSftp.getSFTP_Username())
 				.password(externalSystemConfigSapSftp.getSFTP_Password())
+
 				.targetDirectoryProduct(externalSystemConfigSapSftp.getSFTP_Product_TargetDirectory())
 				.fileNamePatternProduct(externalSystemConfigSapSftp.getSFTP_Product_FileName_Pattern())
+
 				.targetDirectoryBPartner(externalSystemConfigSapSftp.getSFTP_BPartner_TargetDirectory())
 				.fileNamePatternBPartner(externalSystemConfigSapSftp.getSFTP_BPartner_FileName_Pattern())
+
 				.targetDirectoryCreditLimit(externalSystemConfigSapSftp.getSFTP_CreditLimit_TargetDirectory())
 				.fileNamePatternCreditLimit(externalSystemConfigSapSftp.getSFTP_CreditLimit_FileName_Pattern())
+
 				.processedDirectory(externalSystemConfigSapSftp.getProcessedDirectory())
 				.erroredDirectory(externalSystemConfigSapSftp.getErroredDirectory())
 				.pollingFrequency(Duration.ofMillis(externalSystemConfigSapSftp.getPollingFrequencyInMs()))
@@ -59,12 +63,16 @@ public class SAPConfigMapper
 	{
 		return SAPContentSourceLocalFile.builder()
 				.rootLocation(externalSystemConfigSapLocalFile.getLocal_Root_Location())
+
 				.targetDirectoryProduct(externalSystemConfigSapLocalFile.getLocalFile_Product_TargetDirectory())
 				.fileNamePatternProduct(externalSystemConfigSapLocalFile.getLocalFile_Product_FileName_Pattern())
+
 				.targetDirectoryBPartner(externalSystemConfigSapLocalFile.getLocalFile_BPartner_TargetDirectory())
 				.fileNamePatternBPartner(externalSystemConfigSapLocalFile.getLocalFile_BPartner_FileName_Pattern())
+
 				.targetDirectoryCreditLimit(externalSystemConfigSapLocalFile.getLocalFile_CreditLimit_TargetDirectory())
 				.fileNamePatternCreditLimit(externalSystemConfigSapLocalFile.getLocalFile_CreditLimit_FileName_Pattern())
+
 				.processedDirectory(externalSystemConfigSapLocalFile.getProcessedDirectory())
 				.erroredDirectory(externalSystemConfigSapLocalFile.getErroredDirectory())
 				.pollingFrequency(Duration.ofMillis(externalSystemConfigSapLocalFile.getPollingFrequencyInMs()))

@@ -20,10 +20,13 @@
  * #L%
  */
 
-package de.metas.externalsystem.sap.util;
+package de.metas.externalsystem.sap.interceptor;
+
+import lombok.experimental.UtilityClass;
 
 import javax.annotation.Nullable;
 
+@UtilityClass
 public class ExternalSystemConfigSAPHelper
 {
 	@Nullable

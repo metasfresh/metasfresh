@@ -28,7 +28,7 @@ import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import static de.metas.externalsystem.sap.util.ExternalSystemConfigSAPHelper.sanitizeDirectoryRelativePath;
+import static de.metas.externalsystem.sap.interceptor.ExternalSystemConfigSAPHelper.sanitizeDirectoryRelativePath;
 
 @Interceptor(I_ExternalSystem_Config_SAP_SFTP.class)
 @Component

@@ -51,7 +51,7 @@ import static de.metas.camel.externalsystems.sap.creditlimit.UpsertCreditLimitRo
 import static de.metas.camel.externalsystems.sap.creditlimit.UpsertCreditLimitRouteBuilder.UPSERT_CREDIT_LIMIT_ROUTE_ID;
 import static org.assertj.core.api.Assertions.*;
 
-public class SFTPCreditLimitSyncServiceRouteBuilderTest extends CamelTestSupport
+public class GetCreditLimitFromFileRouteBuilderTest extends CamelTestSupport
 {
 	private static final String CREDIT_LIMIT_SYNC_DIRECT_ROUTE_ENDPOINT = "SAP-mockCreditLimitSyncRoute";
 
@@ -89,7 +89,7 @@ public class SFTPCreditLimitSyncServiceRouteBuilderTest extends CamelTestSupport
 		final var properties = new Properties();
 		try
 		{
-			properties.load(SFTPCreditLimitSyncServiceRouteBuilderTest.class.getClassLoader().getResourceAsStream("application.properties"));
+			properties.load(GetCreditLimitFromFileRouteBuilderTest.class.getClassLoader().getResourceAsStream("application.properties"));
 			return properties;
 		}
 		catch (final IOException e)
@@ -145,7 +145,7 @@ public class SFTPCreditLimitSyncServiceRouteBuilderTest extends CamelTestSupport
 	{
 		final ObjectMapper objectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
-		final SFTPCreditLimitSyncServiceRouteBuilderTest.MockExternalSystemStatusProcessor mockExternalSystemStatusProcessor = new SFTPCreditLimitSyncServiceRouteBuilderTest.MockExternalSystemStatusProcessor();
+		final GetCreditLimitFromFileRouteBuilderTest.MockExternalSystemStatusProcessor mockExternalSystemStatusProcessor = new GetCreditLimitFromFileRouteBuilderTest.MockExternalSystemStatusProcessor();
 
 		final InputStream invokeStartExternalSystemRequestIS = this.getClass().getResourceAsStream(JSON_START_EXTERNAL_SYSTEM_REQUEST);
 		final JsonExternalSystemRequest startExternalSystemRequest = objectMapper.readValue(invokeStartExternalSystemRequestIS, JsonExternalSystemRequest.class);
@@ -178,7 +178,7 @@ public class SFTPCreditLimitSyncServiceRouteBuilderTest extends CamelTestSupport
 	@NonNull
 	private String getSFTPCreditLimitsSyncRouteId(@NonNull final JsonExternalSystemRequest externalSystemRequest)
 	{
-		return GetCreditLimitsSFTPRouteBuilder.buildRouteId(externalSystemRequest.getExternalSystemChildConfigValue());
+		return GetCreditLimitFromFileRouteBuilder.buildRouteId(externalSystemRequest.getExternalSystemChildConfigValue());
 	}
 
 	private void prepareSyncRouteForTesting(

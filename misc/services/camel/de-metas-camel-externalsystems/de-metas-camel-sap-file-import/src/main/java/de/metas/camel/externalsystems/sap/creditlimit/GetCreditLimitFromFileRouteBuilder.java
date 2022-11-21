@@ -42,7 +42,7 @@ import static de.metas.camel.externalsystems.sap.SAPConstants.ROUTE_PROPERTY_CRE
 import static de.metas.camel.externalsystems.sap.creditlimit.UpsertCreditLimitRouteBuilder.UPSERT_CREDIT_LIMIT_ROUTE_ID;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
-public class GetCreditLimitsSFTPRouteBuilder extends IdAwareRouteBuilder
+public class GetCreditLimitFromFileRouteBuilder extends IdAwareRouteBuilder
 {
 	private static final String PROCESS_CREDIT_LIMIT_ROW_PROCESSOR_ID = "SAP-CreditLimit-processCreditLimitRowProcessorId";
 
@@ -64,7 +64,7 @@ public class GetCreditLimitsSFTPRouteBuilder extends IdAwareRouteBuilder
 	private final ProcessLogger processLogger;
 
 	@Builder
-	private GetCreditLimitsSFTPRouteBuilder(
+	private GetCreditLimitFromFileRouteBuilder(
 			@NonNull final CreditLimitFileEndpointConfig fileEndpointConfig,
 			@NonNull final CamelContext camelContext,
 			@NonNull final String routeId,

@@ -86,7 +86,7 @@ public class SFTPProductSyncServiceRouteBuilder extends RouteBuilder implements 
 		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 
 		final OnDemandRoutesController.StartOnDemandRouteRequest startOnDemandRouteRequest = OnDemandRoutesController.StartOnDemandRouteRequest.builder()
-				.onDemandRouteBuilder(getSFTPRouteBuilder(request, exchange.getContext()))
+				.onDemandRouteBuilder(getProductsFromSFTPServerRouteBuilder(request, exchange.getContext()))
 				.externalSystemRequest(request)
 				.externalSystemService(this)
 				.build();
@@ -99,7 +99,7 @@ public class SFTPProductSyncServiceRouteBuilder extends RouteBuilder implements 
 		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 
 		final OnDemandRoutesController.StopOnDemandRouteRequest stopOnDemandRouteRequest = OnDemandRoutesController.StopOnDemandRouteRequest.builder()
-				.routeId(getSFTPProductsSyncRouteId(request))
+				.routeId(getProductsFromSFTPServerRouteId(request))
 				.externalSystemRequest(request)
 				.externalSystemService(this)
 				.build();
@@ -108,23 +108,23 @@ public class SFTPProductSyncServiceRouteBuilder extends RouteBuilder implements 
 	}
 
 	@NonNull
-	private GetProductsSFTPRouteBuilder getSFTPRouteBuilder(@NonNull final JsonExternalSystemRequest request, @NonNull final CamelContext camelContext)
+	private GetProductsFromFileRouteBuilder getProductsFromSFTPServerRouteBuilder(@NonNull final JsonExternalSystemRequest request, @NonNull final CamelContext camelContext)
 	{
-		return GetProductsSFTPRouteBuilder
+		return GetProductsFromFileRouteBuilder
 				.builder()
 				.fileEndpointConfig(SAPConfigUtil.extractSFTPConfig(request, camelContext))
 				.camelContext(camelContext)
 				.enabledByExternalSystemRequest(request)
 				.processLogger(processLogger)
-				.routeId(getSFTPProductsSyncRouteId(request))
+				.routeId(getProductsFromSFTPServerRouteId(request))
 				.build();
 	}
 
 	@NonNull
 	@VisibleForTesting
-	public static String getSFTPProductsSyncRouteId(@NonNull final JsonExternalSystemRequest externalSystemRequest)
+	public static String getProductsFromSFTPServerRouteId(@NonNull final JsonExternalSystemRequest externalSystemRequest)
 	{
-		return "SFTPProductSyncRoute#" + externalSystemRequest.getExternalSystemChildConfigValue();
+		return "GetProductsFromSFTPServer#" + externalSystemRequest.getExternalSystemChildConfigValue();
 	}
 
 	@Override

@@ -95,8 +95,8 @@ public class LocalFileConfig implements BPartnerFileEndpointConfig, ProductFileE
 	@NonNull
 	private String getLocalFileConnectionString(@Nullable final String targetDir, @Nullable final String includeFilePattern)
 	{
-		final StringBuilder sftpEndpoint = new StringBuilder("file://");
-		sftpEndpoint.append(rootLocation)
+		final StringBuilder fileEndpoint = new StringBuilder("file://");
+		fileEndpoint.append(rootLocation)
 				.append("/")
 				.append(Optional.ofNullable(targetDir).filter(Check::isNotBlank).orElse(""))
 				.append("?")
@@ -106,8 +106,8 @@ public class LocalFileConfig implements BPartnerFileEndpointConfig, ProductFileE
 				.append("&")
 				.append("moveFailed=.").append(erroredFilesFolder).append("/").append(seenFileRenamePattern);
 
-		Optional.ofNullable(includeFilePattern).ifPresent(filePattern -> sftpEndpoint.append("&").append("antInclude=").append(filePattern));
+		Optional.ofNullable(includeFilePattern).ifPresent(filePattern -> fileEndpoint.append("&").append("antInclude=").append(filePattern));
 
-		return sftpEndpoint.toString();
+		return fileEndpoint.toString();
 	}
 }

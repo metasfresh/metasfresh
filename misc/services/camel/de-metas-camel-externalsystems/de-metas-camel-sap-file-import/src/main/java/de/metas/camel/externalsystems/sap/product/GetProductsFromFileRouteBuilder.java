@@ -40,7 +40,7 @@ import org.apache.camel.dataformat.bindy.csv.BindyCsvDataFormat;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_PRODUCT_V2_CAMEL_URI;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
-public class GetProductsSFTPRouteBuilder extends IdAwareRouteBuilder
+public class GetProductsFromFileRouteBuilder extends IdAwareRouteBuilder
 {
 	@VisibleForTesting
 	public static final String UPSERT_PRODUCT_ENDPOINT_ID = "SAP-Products-upsertProductEndpointId";
@@ -60,7 +60,7 @@ public class GetProductsSFTPRouteBuilder extends IdAwareRouteBuilder
 	private final ProcessLogger processLogger;
 
 	@Builder
-	private GetProductsSFTPRouteBuilder(
+	private GetProductsFromFileRouteBuilder(
 			@NonNull final ProductFileEndpointConfig fileEndpointConfig,
 			@NonNull final CamelContext camelContext,
 			@NonNull final String routeId,

@@ -73,7 +73,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Optional;
 
@@ -808,7 +807,7 @@ public class ExternalSystemConfigRepo
 	@NonNull
 	private ExternalSystemParentConfig getExternalSystemParentConfig(@NonNull final I_ExternalSystem_Config_SAP config)
 	{
-		final ExternalSystemSAPConfig child = buildExternalSystemSAPConfigWithContentSources(config);
+		final ExternalSystemSAPConfig child = buildExternalSystemSAPConfig(config);
 
 		return getById(child.getParentId())
 				.childConfig(child)
@@ -833,7 +832,7 @@ public class ExternalSystemConfigRepo
 				.addEqualsFilter(I_ExternalSystem_Config_SAP.COLUMNNAME_ExternalSystem_Config_ID, id.getRepoId())
 				.create()
 				.firstOnlyOptional(I_ExternalSystem_Config_SAP.class)
-				.map(this::buildExternalSystemSAPConfigWithContentSources);
+				.map(this::buildExternalSystemSAPConfig);
 	}
 
 	@NonNull
@@ -848,22 +847,13 @@ public class ExternalSystemConfigRepo
 	}
 
 	@NonNull
-	private ExternalSystemSAPConfig buildExternalSystemSAPConfigWithContentSources(final @NonNull I_ExternalSystem_Config_SAP config)
+	private ExternalSystemSAPConfig buildExternalSystemSAPConfig(final @NonNull I_ExternalSystem_Config_SAP config)
 	{
 		final ExternalSystemSAPConfigId sapConfigId = ExternalSystemSAPConfigId.ofRepoId(config.getExternalSystem_Config_SAP_ID());
 
-		final SAPContentSourceSFTP contentSourceSFTP = getContentSourceSFTPByConfigId(sapConfigId);
-		final SAPContentSourceLocalFile contentSourceLocalFile = getContentSourceLocalFileByConfigId(sapConfigId);
+		final SAPContentSourceSFTP contentSourceSFTP = getContentSourceSFTPByConfigId(sapConfigId).orElse(null);
+		final SAPContentSourceLocalFile contentSourceLocalFile = getContentSourceLocalFileByConfigId(sapConfigId).orElse(null);
 
-		return ExternalSystemConfigRepo.buildExternalSystemSAPConfig(config, contentSourceSFTP, contentSourceLocalFile);
-	}
-
-	@NonNull
-	private static ExternalSystemSAPConfig buildExternalSystemSAPConfig(
-			final @NonNull I_ExternalSystem_Config_SAP config,
-			final @Nullable SAPContentSourceSFTP contentSourceSFTP,
-			final @Nullable SAPContentSourceLocalFile contentSourceLocalFile)
-	{
 		return ExternalSystemSAPConfig.builder()
 				.id(ExternalSystemSAPConfigId.ofRepoId(config.getExternalSystem_Config_SAP_ID()))
 				.parentId(ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID()))
@@ -873,25 +863,25 @@ public class ExternalSystemConfigRepo
 				.build();
 	}
 
-	@Nullable
-	private SAPContentSourceSFTP getContentSourceSFTPByConfigId(@NonNull final ExternalSystemSAPConfigId configId)
+	@NonNull
+	private Optional<SAPContentSourceSFTP> getContentSourceSFTPByConfigId(@NonNull final ExternalSystemSAPConfigId configId)
 	{
 		return queryBL.createQueryBuilder(I_ExternalSystem_Config_SAP_SFTP.class)
+				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_ExternalSystem_Config_SAP_SFTP.COLUMNNAME_ExternalSystem_Config_SAP_ID, configId.getRepoId())
 				.create()
 				.firstOnlyOptional(I_ExternalSystem_Config_SAP_SFTP.class)
-				.map(SAPConfigMapper::buildContentSourceSFTP)
-				.orElse(null);
+				.map(SAPConfigMapper::buildContentSourceSFTP);
 	}
 
-	@Nullable
-	private SAPContentSourceLocalFile getContentSourceLocalFileByConfigId(@NonNull final ExternalSystemSAPConfigId configId)
+	@NonNull
+	private Optional<SAPContentSourceLocalFile> getContentSourceLocalFileByConfigId(@NonNull final ExternalSystemSAPConfigId configId)
 	{
 		return queryBL.createQueryBuilder(I_ExternalSystem_Config_SAP_LocalFile.class)
-				.addEqualsFilter(I_ExternalSystem_Config_SAP_LocalFile.COLUMN_ExternalSystem_Config_SAP_ID, configId.getRepoId())
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_SAP_LocalFile.COLUMNNAME_ExternalSystem_Config_SAP_ID, configId.getRepoId())
 				.create()
 				.firstOnlyOptional(I_ExternalSystem_Config_SAP_LocalFile.class)
-				.map(SAPConfigMapper::buildContentSourceLocalFile)
-				.orElse(null);
+				.map(SAPConfigMapper::buildContentSourceLocalFile);
 	}
 }

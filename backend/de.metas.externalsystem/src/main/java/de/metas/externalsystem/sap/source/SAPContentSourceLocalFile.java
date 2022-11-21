@@ -38,7 +38,7 @@ import javax.annotation.Nullable;
 import java.time.Duration;
 
 @Value
-public class SAPContentSourceLocalFile implements ISAPContentSource
+public class SAPContentSourceLocalFile
 {
 	private static final AdMessageKey MSG_DUPLICATE_FILE_LOOKUP_DETAILS = AdMessageKey.of("ExternalSystemConfigSAPDuplicateFileLookupDetails");
 
@@ -54,18 +54,21 @@ public class SAPContentSourceLocalFile implements ISAPContentSource
 	@NonNull
 	Duration pollingFrequency;
 
+	//product
 	@Nullable
 	String targetDirectoryProduct;
 
 	@Nullable
 	String fileNamePatternProduct;
 
+	//bpartner
 	@Nullable
 	String targetDirectoryBPartner;
 
 	@Nullable
 	String fileNamePatternBPartner;
 
+	//credit limit
 	@Nullable
 	String targetDirectoryCreditLimit;
 
@@ -98,7 +101,7 @@ public class SAPContentSourceLocalFile implements ISAPContentSource
 	}
 
 	@NonNull
-	public BooleanWithReason validateTargetDirectoriesAndFileNamePatterns(
+	public BooleanWithReason isStartServicePossible(
 			@NonNull final SAPExternalRequest sapExternalRequest,
 			@NonNull final ExternalSystemParentConfigId parentId,
 			@NonNull final IMsgBL msgBL)
@@ -120,13 +123,13 @@ public class SAPContentSourceLocalFile implements ISAPContentSource
 		final boolean isFileLookupInfoDuplicated;
 		switch (sapExternalRequest)
 		{
-			case START_BPARTNER_SYNC_SFTP:
+			case START_BPARTNER_SYNC_LOCAL_FILE:
 				isFileLookupInfoDuplicated = bpartnerFileLookupInfo.equals(productFileLookupInfo) || bpartnerFileLookupInfo.equals(creditLimitFileLookupInfo);
 				break;
-			case START_PRODUCT_SYNC_SFTP:
+			case START_PRODUCT_SYNC_LOCAL_FILE:
 				isFileLookupInfoDuplicated = productFileLookupInfo.equals(bpartnerFileLookupInfo) || productFileLookupInfo.equals(creditLimitFileLookupInfo);
 				break;
-			case START_CREDIT_LIMIT_SYNC_SFTP:
+			case START_CREDIT_LIMIT_SYNC_LOCAL_FILE:
 				isFileLookupInfoDuplicated = creditLimitFileLookupInfo.equals(productFileLookupInfo) || creditLimitFileLookupInfo.equals(bpartnerFileLookupInfo);
 				break;
 			default:
@@ -143,11 +146,5 @@ public class SAPContentSourceLocalFile implements ISAPContentSource
 		}
 
 		return BooleanWithReason.TRUE;
-	}
-
-	@NonNull
-	public static SAPContentSourceLocalFile cast(@NonNull final ISAPContentSource contentSource)
-	{
-		return (SAPContentSourceLocalFile)contentSource;
 	}
 }

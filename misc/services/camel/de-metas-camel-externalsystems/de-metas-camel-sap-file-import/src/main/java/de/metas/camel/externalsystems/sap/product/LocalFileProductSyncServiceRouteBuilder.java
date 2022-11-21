@@ -23,7 +23,6 @@
 package de.metas.camel.externalsystems.sap.product;
 
 import com.google.common.annotations.VisibleForTesting;
-import de.metas.camel.externalsystems.common.IdAwareRouteBuilder;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.sap.SAPConfigUtil;
 import de.metas.camel.externalsystems.sap.service.OnDemandRoutesController;
@@ -87,7 +86,7 @@ public class LocalFileProductSyncServiceRouteBuilder extends RouteBuilder implem
 		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 
 		final OnDemandRoutesController.StartOnDemandRouteRequest startOnDemandRouteRequest = OnDemandRoutesController.StartOnDemandRouteRequest.builder()
-				.onDemandRouteBuilder(getSFTPRouteBuilder(request, exchange.getContext()))
+				.onDemandRouteBuilder(getProductsFromLocalFileRouteBuilder(request, exchange.getContext()))
 				.externalSystemRequest(request)
 				.externalSystemService(this)
 				.build();
@@ -100,7 +99,7 @@ public class LocalFileProductSyncServiceRouteBuilder extends RouteBuilder implem
 		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 
 		final OnDemandRoutesController.StopOnDemandRouteRequest stopOnDemandRouteRequest = OnDemandRoutesController.StopOnDemandRouteRequest.builder()
-				.routeId(getSFTPProductsSyncRouteId(request))
+				.routeId(getProductsFromLocalFileRouteId(request))
 				.externalSystemRequest(request)
 				.externalSystemService(this)
 				.build();
@@ -109,29 +108,29 @@ public class LocalFileProductSyncServiceRouteBuilder extends RouteBuilder implem
 	}
 
 	@NonNull
-	private IdAwareRouteBuilder getSFTPRouteBuilder(@NonNull final JsonExternalSystemRequest request, @NonNull final CamelContext camelContext)
+	private GetProductsFromFileRouteBuilder getProductsFromLocalFileRouteBuilder(@NonNull final JsonExternalSystemRequest request, @NonNull final CamelContext camelContext)
 	{
-		return GetProductsSFTPRouteBuilder
+		return GetProductsFromFileRouteBuilder
 				.builder()
 				.fileEndpointConfig(SAPConfigUtil.extractLocalFileConfig(request, camelContext))
 				.camelContext(camelContext)
 				.enabledByExternalSystemRequest(request)
 				.processLogger(processLogger)
-				.routeId(getSFTPProductsSyncRouteId(request))
+				.routeId(getProductsFromLocalFileRouteId(request))
 				.build();
 	}
 
 	@NonNull
 	@VisibleForTesting
-	public static String getSFTPProductsSyncRouteId(@NonNull final JsonExternalSystemRequest externalSystemRequest)
+	public static String getProductsFromLocalFileRouteId(@NonNull final JsonExternalSystemRequest externalSystemRequest)
 	{
-		return "SFTPProductSyncRoute#" + externalSystemRequest.getExternalSystemChildConfigValue();
+		return "GetProductsFromLocalFile#" + externalSystemRequest.getExternalSystemChildConfigValue();
 	}
 
 	@Override
 	public String getServiceValue()
 	{
-		return "SFTPSyncProducts";
+		return "LocalFileSyncProducts";
 	}
 
 	@Override

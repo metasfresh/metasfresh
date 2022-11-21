@@ -86,7 +86,7 @@ public class LocalFileCreditLimitSyncServiceRouteBuilder extends RouteBuilder im
 		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 
 		final OnDemandRoutesController.StartOnDemandRouteRequest startOnDemandRouteRequest = OnDemandRoutesController.StartOnDemandRouteRequest.builder()
-				.onDemandRouteBuilder(getSFTPRouteBuilder(request, exchange.getContext()))
+				.onDemandRouteBuilder(getCreditLimitFromLocalFileRouteBuilder(request, exchange.getContext()))
 				.externalSystemRequest(request)
 				.externalSystemService(this)
 				.build();
@@ -99,7 +99,7 @@ public class LocalFileCreditLimitSyncServiceRouteBuilder extends RouteBuilder im
 		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 
 		final OnDemandRoutesController.StopOnDemandRouteRequest stopOnDemandRouteRequest = OnDemandRoutesController.StopOnDemandRouteRequest.builder()
-				.routeId(getSFTPCreditLimitsSyncRouteId(request))
+				.routeId(getCreditLimitFromLocalFileRouteId(request))
 				.externalSystemRequest(request)
 				.externalSystemService(this)
 				.build();
@@ -108,30 +108,30 @@ public class LocalFileCreditLimitSyncServiceRouteBuilder extends RouteBuilder im
 	}
 
 	@NonNull
-	private GetCreditLimitsSFTPRouteBuilder getSFTPRouteBuilder(@NonNull final JsonExternalSystemRequest request, @NonNull final CamelContext camelContext)
+	private GetCreditLimitFromFileRouteBuilder getCreditLimitFromLocalFileRouteBuilder(@NonNull final JsonExternalSystemRequest request, @NonNull final CamelContext camelContext)
 	{
-		return GetCreditLimitsSFTPRouteBuilder
+		return GetCreditLimitFromFileRouteBuilder
 				.builder()
 				.fileEndpointConfig(SAPConfigUtil.extractLocalFileConfig(request, camelContext))
 				.camelContext(camelContext)
 				.enabledByExternalSystemRequest(request)
 				.processLogger(processLogger)
-				.routeId(getSFTPCreditLimitsSyncRouteId(request))
+				.routeId(getCreditLimitFromLocalFileRouteId(request))
 				.build();
 	}
 
 	@NonNull
 	@VisibleForTesting
-	public static String getSFTPCreditLimitsSyncRouteId(@NonNull final JsonExternalSystemRequest externalSystemRequest)
+	public static String getCreditLimitFromLocalFileRouteId(@NonNull final JsonExternalSystemRequest externalSystemRequest)
 	{
-		return "LocalFileCreditLimitSyncRoute#" + externalSystemRequest.getExternalSystemChildConfigValue();
+		return "GetCreditLimitFromLocalFile#" + externalSystemRequest.getExternalSystemChildConfigValue();
 	}
 
 
 	@Override
 	public String getServiceValue()
 	{
-		return "SFTPSyncCreditLimits";
+		return "LocalFileSyncCreditLimits";
 	}
 
 	@Override

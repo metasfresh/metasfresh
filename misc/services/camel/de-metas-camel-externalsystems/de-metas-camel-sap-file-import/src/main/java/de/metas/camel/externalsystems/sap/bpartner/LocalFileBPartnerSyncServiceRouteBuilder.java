@@ -23,7 +23,6 @@
 package de.metas.camel.externalsystems.sap.bpartner;
 
 import com.google.common.annotations.VisibleForTesting;
-import de.metas.camel.externalsystems.common.IdAwareRouteBuilder;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.sap.SAPConfigUtil;
 import de.metas.camel.externalsystems.sap.service.OnDemandRoutesController;
@@ -44,13 +43,13 @@ import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 @Component
 public class LocalFileBPartnerSyncServiceRouteBuilder extends RouteBuilder implements IExternalSystemService
 {
-	private static final String START_BPARTNERS_SYNC_ROUTE = "startBPartnerSyncLocalFile";
-	private static final String STOP_BPARTNERS_SYNC_ROUTE = "stopBPartnerSyncLocalFile";
+	private static final String START_BPARTNER_SYNC_ROUTE = "startBPartnerSyncLocalFile";
+	private static final String STOP_BPARTNER_SYNC_ROUTE = "stopBPartnerSyncLocalFile";
 
 	@VisibleForTesting
-	public static final String START_BPARTNERS_SYNC_ROUTE_ID = SAP_SYSTEM_NAME + "-" + START_BPARTNERS_SYNC_ROUTE;
+	public static final String START_BPARTNER_SYNC_ROUTE_ID = SAP_SYSTEM_NAME + "-" + START_BPARTNER_SYNC_ROUTE;
 	@VisibleForTesting
-	public static final String STOP_BPARTNERS_SYNC_ROUTE_ID = SAP_SYSTEM_NAME + "-" + STOP_BPARTNERS_SYNC_ROUTE;
+	public static final String STOP_BPARTNER_SYNC_ROUTE_ID = SAP_SYSTEM_NAME + "-" + STOP_BPARTNER_SYNC_ROUTE;
 
 	@NonNull
 	private final ProcessLogger processLogger;
@@ -67,15 +66,15 @@ public class LocalFileBPartnerSyncServiceRouteBuilder extends RouteBuilder imple
 		onException(Exception.class)
 				.to(direct(MF_ERROR_ROUTE_ID));
 
-		from(direct(START_BPARTNERS_SYNC_ROUTE_ID))
-				.routeId(START_BPARTNERS_SYNC_ROUTE_ID)
+		from(direct(START_BPARTNER_SYNC_ROUTE_ID))
+				.routeId(START_BPARTNER_SYNC_ROUTE_ID)
 				.log("Route invoked")
 				.process(this::getStartOnDemandRequest)
 				.to(direct(START_HANDLE_ON_DEMAND_ROUTE_ID))
 				.end();
 
-		from(direct(STOP_BPARTNERS_SYNC_ROUTE_ID))
-				.routeId(STOP_BPARTNERS_SYNC_ROUTE_ID)
+		from(direct(STOP_BPARTNER_SYNC_ROUTE_ID))
+				.routeId(STOP_BPARTNER_SYNC_ROUTE_ID)
 				.log("Route invoked")
 				.process(this::getStopOnDemandRequest)
 				.to(direct(STOP_HANDLE_ON_DEMAND_ROUTE_ID))
@@ -100,7 +99,7 @@ public class LocalFileBPartnerSyncServiceRouteBuilder extends RouteBuilder imple
 		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 
 		final OnDemandRoutesController.StopOnDemandRouteRequest stopOnDemandRouteRequest = OnDemandRoutesController.StopOnDemandRouteRequest.builder()
-				.routeId(getSFTPBPartnersSyncRouteId(request))
+				.routeId(getBPartnersFromLocalFileRouteId(request))
 				.externalSystemRequest(request)
 				.externalSystemService(this)
 				.build();
@@ -109,7 +108,7 @@ public class LocalFileBPartnerSyncServiceRouteBuilder extends RouteBuilder imple
 	}
 
 	@NonNull
-	private IdAwareRouteBuilder getBPartnersFromFileRouteBuilder(@NonNull final JsonExternalSystemRequest request, @NonNull final CamelContext camelContext)
+	private GetBPartnersFromFileRouteBuilder getBPartnersFromFileRouteBuilder(@NonNull final JsonExternalSystemRequest request, @NonNull final CamelContext camelContext)
 	{
 		return GetBPartnersFromFileRouteBuilder
 				.builder()
@@ -117,21 +116,21 @@ public class LocalFileBPartnerSyncServiceRouteBuilder extends RouteBuilder imple
 				.camelContext(camelContext)
 				.enabledByExternalSystemRequest(request)
 				.processLogger(processLogger)
-				.routeId(getSFTPBPartnersSyncRouteId(request))
+				.routeId(getBPartnersFromLocalFileRouteId(request))
 				.build();
 	}
 
 	@NonNull
 	@VisibleForTesting
-	public static String getSFTPBPartnersSyncRouteId(@NonNull final JsonExternalSystemRequest externalSystemRequest)
+	public static String getBPartnersFromLocalFileRouteId(@NonNull final JsonExternalSystemRequest externalSystemRequest)
 	{
-		return "LocalFileBPartnerSyncRoute#" + externalSystemRequest.getExternalSystemChildConfigValue();
+		return "GetBPartnerFromLocalFile#" + externalSystemRequest.getExternalSystemChildConfigValue();
 	}
 
 	@Override
 	public String getServiceValue()
 	{
-		return "SFTPSyncBPartners";
+		return "LocalFileSyncBPartners";
 	}
 
 	@Override
@@ -143,12 +142,12 @@ public class LocalFileBPartnerSyncServiceRouteBuilder extends RouteBuilder imple
 	@Override
 	public String getEnableCommand()
 	{
-		return START_BPARTNERS_SYNC_ROUTE;
+		return START_BPARTNER_SYNC_ROUTE;
 	}
 
 	@Override
 	public String getDisableCommand()
 	{
-		return STOP_BPARTNERS_SYNC_ROUTE;
+		return STOP_BPARTNER_SYNC_ROUTE;
 	}
 }
