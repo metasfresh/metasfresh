@@ -178,7 +178,7 @@ public class GetCreditLimitFromFileRouteBuilderTest extends CamelTestSupport
 	@NonNull
 	private String getSFTPCreditLimitsSyncRouteId(@NonNull final JsonExternalSystemRequest externalSystemRequest)
 	{
-		return GetCreditLimitFromFileRouteBuilder.buildRouteId(externalSystemRequest.getExternalSystemChildConfigValue());
+		return SFTPCreditLimitSyncServiceRouteBuilder.getCreditLimitFromSFTPRouteId(externalSystemRequest);
 	}
 
 	private void prepareSyncRouteForTesting(

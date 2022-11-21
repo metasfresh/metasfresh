@@ -126,7 +126,7 @@ public class SAPContentSourceSFTP
 		final String productFileLookupInfo = Strings.nullToEmpty(targetDirectoryProduct)
 				.concat(Strings.nullToEmpty(fileNamePatternProduct));
 
-		final String bpartnerFileLookupInfo = Strings.nullToEmpty(targetDirectoryProduct)
+		final String bpartnerFileLookupInfo = Strings.nullToEmpty(targetDirectoryBPartner)
 				.concat(Strings.nullToEmpty(fileNamePatternBPartner));
 
 		final String creditLimitFileLookupInfo = Strings.nullToEmpty(targetDirectoryCreditLimit)

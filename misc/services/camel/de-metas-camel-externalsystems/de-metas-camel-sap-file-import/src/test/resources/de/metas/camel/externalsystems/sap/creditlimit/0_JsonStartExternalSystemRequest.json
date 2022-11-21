@@ -3,7 +3,7 @@
   "orgCode": "orgCode",
   "externalSystemName": "SAP",
   "externalSystemChildConfigValue": "sapValue",
-  "command": "startCreditLimitsSync",
+  "command": "startCreditLimitSyncSFTP",
   "externalSystemConfigId": 1,
   "adPInstanceId": 2,
   "writeAuditEndpoint": "fileFolder",
