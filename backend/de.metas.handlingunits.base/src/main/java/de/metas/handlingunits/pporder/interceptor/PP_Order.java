@@ -45,11 +45,13 @@ public class PP_Order
 {
 	private final IHUPPOrderBL ppOrderBL = Services.get(IHUPPOrderBL.class);
 	private final PPOrderIssueScheduleRepository ppOrderIssueScheduleRepository;
-	private final HUUniqueAttributesService huUniqueAttributesService = new HUUniqueAttributesService(new HUUniqueAttributesRepository());
+	private final HUUniqueAttributesService huUniqueAttributesService;
 	public PP_Order(
-			@NonNull final PPOrderIssueScheduleRepository ppOrderIssueScheduleRepository)
+			@NonNull final PPOrderIssueScheduleRepository ppOrderIssueScheduleRepository,
+			@NonNull final HUUniqueAttributesService huUniqueAttributesService)
 	{
 		this.ppOrderIssueScheduleRepository = ppOrderIssueScheduleRepository;
+		this.huUniqueAttributesService = huUniqueAttributesService;
 	}
 
 	@DocValidate(timings = ModelValidator.TIMING_BEFORE_CLOSE)
