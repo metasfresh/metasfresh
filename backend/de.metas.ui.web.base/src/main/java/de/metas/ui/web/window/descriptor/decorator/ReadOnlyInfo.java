@@ -23,25 +23,39 @@
 package de.metas.ui.web.window.descriptor.decorator;
 
 import de.metas.i18n.BooleanWithReason;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
 import lombok.NonNull;
-import org.adempiere.util.lang.impl.TableRecordReference;
+import lombok.Value;
 
-public interface IDocumentDecorator
+@Value
+@Builder
+public class ReadOnlyInfo
 {
 	@NonNull
-	default ReadOnlyInfo isReadOnly(@NonNull final TableRecordReference tableRecordReference)
+	public static ReadOnlyInfo of(@NonNull final BooleanWithReason isReadOnly)
 	{
-		return ReadOnlyInfo.of(BooleanWithReason.FALSE);
-	}
-	@NonNull
-	default BooleanWithReason isDeleteForbidden(@NonNull final TableRecordReference tableRecordReference)
-	{
-		return BooleanWithReason.FALSE;
+		return ReadOnlyInfo.builder()
+				.isReadOnly(isReadOnly)
+				.forceReadOnlySubDocuments(false)
+				.build();
 	}
 
 	@NonNull
-	default BooleanWithReason isDeleteSubDocumentsForbidden(@NonNull final TableRecordReference tableRecordReference)
+	@Getter(AccessLevel.NONE)
+	BooleanWithReason isReadOnly;
+
+	boolean forceReadOnlySubDocuments;
+
+	public boolean isReadOnly()
 	{
-		return BooleanWithReason.FALSE;
+		return isReadOnly.isTrue();
+	}
+
+	@NonNull
+	public BooleanWithReason getIsReadOnlyWithReason()
+	{
+		return isReadOnly;
 	}
 }

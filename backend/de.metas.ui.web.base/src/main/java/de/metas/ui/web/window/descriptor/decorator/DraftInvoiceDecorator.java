@@ -74,7 +74,18 @@ public class DraftInvoiceDecorator implements IDocumentDecorator
 
 	@Override
 	@NonNull
-	public BooleanWithReason isReadOnly(final @NonNull TableRecordReference recordRef)
+	public ReadOnlyInfo isReadOnly(final @NonNull TableRecordReference recordRef)
+	{
+		final BooleanWithReason isReadOnly = isInvoiceCandidateReadOnly(recordRef);
+
+		return ReadOnlyInfo.builder()
+				.isReadOnly(isReadOnly)
+				.forceReadOnlySubDocuments(isReadOnly.isTrue())
+				.build();
+	}
+
+	@NonNull
+	private BooleanWithReason isInvoiceCandidateReadOnly(final @NonNull TableRecordReference recordRef)
 	{
 		if (!recordRef.getTableName().equals(I_C_Invoice_Candidate.Table_Name))
 		{

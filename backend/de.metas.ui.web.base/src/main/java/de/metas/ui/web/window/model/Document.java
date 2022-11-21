@@ -33,6 +33,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap;
 import de.metas.ui.web.window.descriptor.DocumentFieldDependencyMap.DependencyType;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.decorator.ReadOnlyInfo;
 import de.metas.ui.web.window.exceptions.DocumentFieldNotFoundException;
 import de.metas.ui.web.window.exceptions.DocumentFieldReadonlyException;
 import de.metas.ui.web.window.exceptions.DocumentNotFoundException;
@@ -1373,33 +1374,34 @@ public final class Document
 				.parentActive(parentReadonly.isActive()).active(isActive())
 				.processed(parentReadonly.isProcessed() || isProcessed())
 				.processing(parentReadonly.isProcessing() || isProcessing())
+				.parentEnforcingReadOnly(parentReadonly.computeForceReadOnlyChildDocuments())
 				.fieldsReadonly(ExtendedMemorizingSupplier.of(this::computeFieldsReadOnly))
 				.build();
 	}
 
 	@NonNull
-	private BooleanWithReason computeFieldsReadOnly()
+	private ReadOnlyInfo computeFieldsReadOnly()
 	{
 		final boolean isReadOnlyLogicTrue = computeDefaultFieldsReadOnly().booleanValue();
 
 		if (isReadOnlyLogicTrue)
 		{
-			return BooleanWithReason.TRUE;
+			return ReadOnlyInfo.of(BooleanWithReason.TRUE);
 		}
 
 		final TableRecordReference recordReference = this.getTableRecordReference().orElse(null);
 		if (recordReference == null)
 		{
-			return BooleanWithReason.FALSE;
+			return ReadOnlyInfo.of(BooleanWithReason.FALSE);
 		}
 
 		return getEntityDescriptor()
 				.getDocumentDecorators()
 				.stream()
 				.map(documentDecorator -> documentDecorator.isReadOnly(recordReference))
-				.filter(BooleanWithReason::isTrue)
+				.filter(ReadOnlyInfo::isReadOnly)
 				.findFirst()
-				.orElse(BooleanWithReason.FALSE);
+				.orElse(ReadOnlyInfo.of(BooleanWithReason.FALSE));
 	}
 
 	@NonNull
@@ -1663,6 +1665,12 @@ public final class Document
 
 	/* package */ void deleteIncludedDocuments(final DetailId detailId, final DocumentIdsSelection rowIds)
 	{
+		final BooleanWithReason isDeleteSubDocumentsForbidden = isDeleteSubDocumentsForbidden();
+		if (isDeleteSubDocumentsForbidden.isTrue())
+		{
+			throw new AdempiereException(isDeleteSubDocumentsForbidden.getReason()).markAsUserValidationError();
+		}
+
 		final IIncludedDocumentsCollection includedDocuments = getIncludedDocumentsCollection(detailId);
 		includedDocuments.deleteDocuments(rowIds);
 		checkAndGetValidStatus();
@@ -2145,6 +2153,24 @@ public final class Document
 		return entityDescriptor.getDocumentDecorators()
 				.stream()
 				.map(decorator -> decorator.isDeleteForbidden(recordReference))
+				.filter(BooleanWithReason::isTrue)
+				.findFirst()
+				.orElse(BooleanWithReason.FALSE);
+	}
+
+	@NonNull
+	private BooleanWithReason isDeleteSubDocumentsForbidden()
+	{
+		final TableRecordReference recordReference = getTableRecordReference().orElse(null);
+
+		if (recordReference == null)
+		{
+			return BooleanWithReason.FALSE;
+		}
+
+		return entityDescriptor.getDocumentDecorators()
+				.stream()
+				.map(decorator -> decorator.isDeleteSubDocumentsForbidden(recordReference))
 				.filter(BooleanWithReason::isTrue)
 				.findFirst()
 				.orElse(BooleanWithReason.FALSE);
