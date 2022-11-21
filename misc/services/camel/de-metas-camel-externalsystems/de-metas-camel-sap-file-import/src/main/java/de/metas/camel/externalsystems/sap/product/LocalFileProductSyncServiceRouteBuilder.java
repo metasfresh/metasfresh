@@ -43,13 +43,13 @@ import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 @Component
 public class LocalFileProductSyncServiceRouteBuilder extends RouteBuilder implements IExternalSystemService
 {
-	private static final String START_PRODUCTS_SYNC_ROUTE = "startProductSyncLocalFile";
-	private static final String STOP_PRODUCTS_SYNC_ROUTE = "stopProductSyncLocalFile";
+	private static final String START_PRODUCTS_SYNC_LOCAL_FILE_ROUTE = "startProductSyncLocalFile";
+	private static final String STOP_PRODUCTS_SYNC_LOCAL_FILE_ROUTE = "stopProductSyncLocalFile";
 
 	@VisibleForTesting
-	public static final String START_PRODUCTS_SYNC_ROUTE_ID = SAP_SYSTEM_NAME + "-" + START_PRODUCTS_SYNC_ROUTE;
+	public static final String START_PRODUCTS_SYNC_LOCAL_FILE_ROUTE_ID = SAP_SYSTEM_NAME + "-" + START_PRODUCTS_SYNC_LOCAL_FILE_ROUTE;
 	@VisibleForTesting
-	public static final String STOP_PRODUCTS_SYNC_ROUTE_ID = SAP_SYSTEM_NAME + "-" + STOP_PRODUCTS_SYNC_ROUTE;
+	public static final String STOP_PRODUCTS_SYNC_LOCAL_FILE_ROUTE_ID = SAP_SYSTEM_NAME + "-" + STOP_PRODUCTS_SYNC_LOCAL_FILE_ROUTE;
 
 	@NonNull
 	private final ProcessLogger processLogger;
@@ -66,15 +66,15 @@ public class LocalFileProductSyncServiceRouteBuilder extends RouteBuilder implem
 		onException(Exception.class)
 				.to(direct(MF_ERROR_ROUTE_ID));
 
-		from(direct(START_PRODUCTS_SYNC_ROUTE_ID))
-				.routeId(START_PRODUCTS_SYNC_ROUTE_ID)
+		from(direct(START_PRODUCTS_SYNC_LOCAL_FILE_ROUTE_ID))
+				.routeId(START_PRODUCTS_SYNC_LOCAL_FILE_ROUTE_ID)
 				.log("Route invoked")
 				.process(this::getStartOnDemandRequest)
 				.to(direct(START_HANDLE_ON_DEMAND_ROUTE_ID))
 				.end();
 
-		from(direct(STOP_PRODUCTS_SYNC_ROUTE_ID))
-				.routeId(STOP_PRODUCTS_SYNC_ROUTE_ID)
+		from(direct(STOP_PRODUCTS_SYNC_LOCAL_FILE_ROUTE_ID))
+				.routeId(STOP_PRODUCTS_SYNC_LOCAL_FILE_ROUTE_ID)
 				.log("Route invoked")
 				.process(this::getStopOnDemandRequest)
 				.to(direct(STOP_HANDLE_ON_DEMAND_ROUTE_ID))
@@ -142,12 +142,12 @@ public class LocalFileProductSyncServiceRouteBuilder extends RouteBuilder implem
 	@Override
 	public String getEnableCommand()
 	{
-		return START_PRODUCTS_SYNC_ROUTE;
+		return START_PRODUCTS_SYNC_LOCAL_FILE_ROUTE;
 	}
 
 	@Override
 	public String getDisableCommand()
 	{
-		return STOP_PRODUCTS_SYNC_ROUTE;
+		return STOP_PRODUCTS_SYNC_LOCAL_FILE_ROUTE;
 	}
 }

@@ -3,7 +3,7 @@
   "orgCode": "orgCode",
   "externalSystemName": "SAP",
   "externalSystemChildConfigValue": "sapValue",
-  "command": "startCreditLimitSyncSFTP",
+  "command": "stopBPartnerSyncSFTP",
   "externalSystemConfigId": 1,
   "adPInstanceId": 2,
   "writeAuditEndpoint": "fileFolder",
@@ -12,9 +12,10 @@
     "SFTP_Port" : "22",
     "SFTP_Username" : "doesntmatter",
     "SFTP_Password" : "doesntmatter",
-    "SFTP_Target_Directory" : "doesntmatter",
+    "SFTP_BPartner_Target_Directory" : "doesntmatter",
     "SFTPProcessedDirectory": "doesntmatter",
     "SFTPErroredDirectory": "doesntmatter",
-    "SFTPPollingFrequencyInMs": 1000
+    "SFTPPollingFrequencyInMs": "1000",
+    "SFTPBPartnerFileNamePattern": "doesntmatter"
   }
 }

@@ -43,13 +43,13 @@ import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 @Component
 public class LocalFileCreditLimitSyncServiceRouteBuilder extends RouteBuilder implements IExternalSystemService
 {
-	private static final String START_CREDIT_LIMIT_SYNC_ROUTE = "startCreditLimitSyncLocalFile";
-	private static final String STOP_CREDIT_LIMIT_SYNC_ROUTE = "stopCreditLimitSyncLocalFile";
+	private static final String START_CREDIT_LIMIT_SYNC_LOCAL_FILE_ROUTE = "startCreditLimitSyncLocalFile";
+	private static final String STOP_CREDIT_LIMIT_SYNC_LOCAL_FILE_ROUTE = "stopCreditLimitSyncLocalFile";
 
 	@VisibleForTesting
-	public static final String START_CREDIT_LIMIT_SYNC_ROUTE_ID = SAP_SYSTEM_NAME + "-" + START_CREDIT_LIMIT_SYNC_ROUTE;
+	public static final String START_CREDIT_LIMIT_SYNC_LOCAL_FILE_ROUTE_ID = SAP_SYSTEM_NAME + "-" + START_CREDIT_LIMIT_SYNC_LOCAL_FILE_ROUTE;
 	@VisibleForTesting
-	public static final String STOP_CREDIT_LIMIT_SYNC_ROUTE_ID = SAP_SYSTEM_NAME + "-" + STOP_CREDIT_LIMIT_SYNC_ROUTE;
+	public static final String STOP_CREDIT_LIMIT_SYNC_LOCAL_FILE_ROUTE_ID = SAP_SYSTEM_NAME + "-" + STOP_CREDIT_LIMIT_SYNC_LOCAL_FILE_ROUTE;
 
 	@NonNull
 	private final ProcessLogger processLogger;
@@ -66,15 +66,15 @@ public class LocalFileCreditLimitSyncServiceRouteBuilder extends RouteBuilder im
 		onException(Exception.class)
 				.to(direct(MF_ERROR_ROUTE_ID));
 
-		from(direct(START_CREDIT_LIMIT_SYNC_ROUTE_ID))
-				.routeId(START_CREDIT_LIMIT_SYNC_ROUTE_ID)
+		from(direct(START_CREDIT_LIMIT_SYNC_LOCAL_FILE_ROUTE_ID))
+				.routeId(START_CREDIT_LIMIT_SYNC_LOCAL_FILE_ROUTE_ID)
 				.log("Route invoked")
 				.process(this::getStartOnDemandRequest)
 				.to(direct(START_HANDLE_ON_DEMAND_ROUTE_ID))
 				.end();
 
-		from(direct(STOP_CREDIT_LIMIT_SYNC_ROUTE_ID))
-				.routeId(STOP_CREDIT_LIMIT_SYNC_ROUTE_ID)
+		from(direct(STOP_CREDIT_LIMIT_SYNC_LOCAL_FILE_ROUTE_ID))
+				.routeId(STOP_CREDIT_LIMIT_SYNC_LOCAL_FILE_ROUTE_ID)
 				.log("Route invoked")
 				.process(this::getStopOnDemandRequest)
 				.to(direct(STOP_HANDLE_ON_DEMAND_ROUTE_ID))
@@ -143,12 +143,12 @@ public class LocalFileCreditLimitSyncServiceRouteBuilder extends RouteBuilder im
 	@Override
 	public String getEnableCommand()
 	{
-		return START_CREDIT_LIMIT_SYNC_ROUTE;
+		return START_CREDIT_LIMIT_SYNC_LOCAL_FILE_ROUTE;
 	}
 
 	@Override
 	public String getDisableCommand()
 	{
-		return STOP_CREDIT_LIMIT_SYNC_ROUTE;
+		return STOP_CREDIT_LIMIT_SYNC_LOCAL_FILE_ROUTE;
 	}
 }

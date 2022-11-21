@@ -46,8 +46,10 @@ import java.util.Properties;
 
 import static de.metas.camel.externalsystems.sap.bpartner.GetBPartnersFromFileRouteBuilder.UPSERT_BPARTNER_GROUP_ENDPOINT_ID;
 import static de.metas.camel.externalsystems.sap.bpartner.GetBPartnersFromFileRouteBuilder.UPSERT_LAST_BPARTNER_GROUP_ENDPOINT_ID;
-import static de.metas.camel.externalsystems.sap.bpartner.SFTPBPartnerSyncServiceRouteBuilder.START_BPARTNERS_SYNC_ROUTE_ID;
-import static de.metas.camel.externalsystems.sap.bpartner.SFTPBPartnerSyncServiceRouteBuilder.STOP_BPARTNERS_SYNC_ROUTE_ID;
+import static de.metas.camel.externalsystems.sap.bpartner.LocalFileBPartnerSyncServiceRouteBuilder.START_BPARTNER_SYNC_LOCAL_FILE_ROUTE_ID;
+import static de.metas.camel.externalsystems.sap.bpartner.LocalFileBPartnerSyncServiceRouteBuilder.STOP_BPARTNER_SYNC_LOCAL_FILE_ROUTE_ID;
+import static de.metas.camel.externalsystems.sap.bpartner.SFTPBPartnerSyncServiceRouteBuilder.START_BPARTNERS_SYNC_SFTP_ROUTE_ID;
+import static de.metas.camel.externalsystems.sap.bpartner.SFTPBPartnerSyncServiceRouteBuilder.STOP_BPARTNERS_SYNC_SFTP_ROUTE_ID;
 import static org.assertj.core.api.Assertions.*;
 
 public class GetBPartnerFromFileRouteBuilderTest extends CamelTestSupport
@@ -58,8 +60,10 @@ public class GetBPartnerFromFileRouteBuilderTest extends CamelTestSupport
 	private static final String MOCK_UPSERT_BPARTNER = "mock:UpsertBPartner";
 	private static final String MOCK_UPSERT_LAST_BPARTNER = "mock:UpsertLastBPartner";
 
-	private static final String JSON_START_EXTERNAL_SYSTEM_REQUEST = "0_JsonStartExternalSystemRequestBPartner.json";
-	private static final String JSON_STOP_EXTERNAL_SYSTEM_REQUEST = "0_JsonStopExternalSystemRequestBPartner.json";
+	private static final String JSON_START_EXTERNAL_SYSTEM_REQUEST_SFTP = "0_JsonStartExternalSystemRequestBPartner_SFTP.json";
+	private static final String JSON_STOP_EXTERNAL_SYSTEM_REQUEST_SFTP = "0_JsonStopExternalSystemRequestBPartner_SFTP.json";
+	private static final String JSON_START_EXTERNAL_SYSTEM_REQUEST_LOCAL_FILE = "0_JsonStartExternalSystemRequestBPartner_LocalFile.json";
+	private static final String JSON_STOP_EXTERNAL_SYSTEM_REQUEST_LOCAL_FILE = "0_JsonStopExternalSystemRequestBPartner_LocalFile.json";
 	private static final String BPARTNER_SAMPLE_DAT_FILE = "10_BPartnerSample.dat";
 	private static final String JSON_UPSERT_BPARTNER_REQUEST = "20_CamelUpsertBPartnerCompositeRequest.json";
 	private static final String JSON_UPSERT_LAST_BPARTNER_REQUEST = "30_CamelUpsertLastBPartnerCompositeRequest.json";
@@ -77,6 +81,7 @@ public class GetBPartnerFromFileRouteBuilderTest extends CamelTestSupport
 	{
 		return new RouteBuilder[] {
 				new SFTPBPartnerSyncServiceRouteBuilder(Mockito.mock(ProcessLogger.class)),
+				new LocalFileBPartnerSyncServiceRouteBuilder(Mockito.mock(ProcessLogger.class)),
 				new OnDemandRoutesController() };
 	}
 
@@ -96,23 +101,23 @@ public class GetBPartnerFromFileRouteBuilderTest extends CamelTestSupport
 	}
 
 	@Test
-	public void happyFlow_SyncBPartners() throws Exception
+	public void happyFlow_SyncBPartners_SFTP() throws Exception
 	{
 		final ObjectMapper objectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
-		final InputStream invokeExternalSystemRequestIS = this.getClass().getResourceAsStream(JSON_START_EXTERNAL_SYSTEM_REQUEST);
+		final InputStream invokeExternalSystemRequestIS = this.getClass().getResourceAsStream(JSON_START_EXTERNAL_SYSTEM_REQUEST_SFTP);
 		final JsonExternalSystemRequest externalSystemRequest = objectMapper.readValue(invokeExternalSystemRequestIS, JsonExternalSystemRequest.class);
 
 		final MockExternalSystemStatusProcessor mockExternalSystemStatusProcessor = new MockExternalSystemStatusProcessor();
 		final MockUpsertBPartnerProcessor mockUpsertBPartnerProcessor = new MockUpsertBPartnerProcessor();
 		final MockUpsertLastBPartnerProcessor mockUpsertLastBPartnerProcessor = new MockUpsertLastBPartnerProcessor();
 
-		prepareEnableRouteForTesting(mockExternalSystemStatusProcessor);
+		prepareStartStopRouteForTesting(mockExternalSystemStatusProcessor, START_BPARTNERS_SYNC_SFTP_ROUTE_ID);
 
 		context.start();
 
 		//when
-		template.sendBody("direct:" + START_BPARTNERS_SYNC_ROUTE_ID, externalSystemRequest);
+		template.sendBody("direct:" + START_BPARTNERS_SYNC_SFTP_ROUTE_ID, externalSystemRequest);
 
 		prepareSyncRouteForTesting(mockUpsertBPartnerProcessor, mockUpsertLastBPartnerProcessor, SFTPBPartnerSyncServiceRouteBuilder.getSFTPBPartnersSyncRouteId(externalSystemRequest));
 
@@ -137,19 +142,60 @@ public class GetBPartnerFromFileRouteBuilderTest extends CamelTestSupport
 	}
 
 	@Test
-	public void disable_SyncBPartners() throws Exception
+	public void happyFlow_SyncBPartners_LocalFile() throws Exception
+	{
+		final ObjectMapper objectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
+
+		final InputStream invokeExternalSystemRequestIS = this.getClass().getResourceAsStream(JSON_START_EXTERNAL_SYSTEM_REQUEST_LOCAL_FILE);
+		final JsonExternalSystemRequest externalSystemRequest = objectMapper.readValue(invokeExternalSystemRequestIS, JsonExternalSystemRequest.class);
+
+		final MockExternalSystemStatusProcessor mockExternalSystemStatusProcessor = new MockExternalSystemStatusProcessor();
+		final MockUpsertBPartnerProcessor mockUpsertBPartnerProcessor = new MockUpsertBPartnerProcessor();
+		final MockUpsertLastBPartnerProcessor mockUpsertLastBPartnerProcessor = new MockUpsertLastBPartnerProcessor();
+
+		prepareStartStopRouteForTesting(mockExternalSystemStatusProcessor, START_BPARTNER_SYNC_LOCAL_FILE_ROUTE_ID);
+
+		context.start();
+
+		//when
+		template.sendBody("direct:" + START_BPARTNER_SYNC_LOCAL_FILE_ROUTE_ID, externalSystemRequest);
+
+		prepareSyncRouteForTesting(mockUpsertBPartnerProcessor, mockUpsertLastBPartnerProcessor, LocalFileBPartnerSyncServiceRouteBuilder.getBPartnersFromLocalFileRouteId(externalSystemRequest));
+
+		final InputStream expectedBPartnerUpsertRequest = this.getClass().getResourceAsStream(JSON_UPSERT_BPARTNER_REQUEST);
+		final MockEndpoint bpartnerSyncMockEndpoint = getMockEndpoint(MOCK_UPSERT_BPARTNER);
+		bpartnerSyncMockEndpoint.expectedBodiesReceived(objectMapper.readValue(expectedBPartnerUpsertRequest, BPUpsertCamelRequest.class));
+
+		final InputStream expectedLastBPartnerUpsertRequest = this.getClass().getResourceAsStream(JSON_UPSERT_LAST_BPARTNER_REQUEST);
+		final MockEndpoint lastBPartnerSyncMockEndpoint = getMockEndpoint(MOCK_UPSERT_LAST_BPARTNER);
+		lastBPartnerSyncMockEndpoint.expectedBodiesReceived(objectMapper.readValue(expectedLastBPartnerUpsertRequest, BPUpsertCamelRequest.class));
+
+		final InputStream materialSampleInputStream = this.getClass().getResourceAsStream(BPARTNER_SAMPLE_RESOURCE_PATH);
+
+		//and
+		template.sendBodyAndHeader("direct:" + BPARTNER_SYNC_DIRECT_ROUTE_ENDPOINT, materialSampleInputStream, Exchange.FILE_NAME_ONLY, BPARTNER_SAMPLE_DAT_FILE);
+
+		//then
+		assertMockEndpointsSatisfied();
+		assertThat(mockUpsertBPartnerProcessor.called).isEqualTo(1);
+		assertThat(mockUpsertLastBPartnerProcessor.called).isEqualTo(1);
+		assertThat(mockExternalSystemStatusProcessor.called).isEqualTo(1);
+	}
+
+	@Test
+	public void disable_SyncBPartners_SFTP() throws Exception
 	{
 		final ObjectMapper objectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
 		final MockExternalSystemStatusProcessor mockExternalSystemStatusProcessor = new MockExternalSystemStatusProcessor();
 
-		prepareEnableRouteForTesting(mockExternalSystemStatusProcessor);
-		prepareDisableRouteForTesting(mockExternalSystemStatusProcessor);
+		prepareStartStopRouteForTesting(mockExternalSystemStatusProcessor, START_BPARTNERS_SYNC_SFTP_ROUTE_ID);
+		prepareStartStopRouteForTesting(mockExternalSystemStatusProcessor, STOP_BPARTNERS_SYNC_SFTP_ROUTE_ID);
 
-		final InputStream invokeStartExternalSystemRequestIS = this.getClass().getResourceAsStream(JSON_START_EXTERNAL_SYSTEM_REQUEST);
+		final InputStream invokeStartExternalSystemRequestIS = this.getClass().getResourceAsStream(JSON_START_EXTERNAL_SYSTEM_REQUEST_SFTP);
 		final JsonExternalSystemRequest startExternalSystemRequest = objectMapper.readValue(invokeStartExternalSystemRequestIS, JsonExternalSystemRequest.class);
 
-		final InputStream invokeStopExternalSystemRequestIS = this.getClass().getResourceAsStream(JSON_STOP_EXTERNAL_SYSTEM_REQUEST);
+		final InputStream invokeStopExternalSystemRequestIS = this.getClass().getResourceAsStream(JSON_STOP_EXTERNAL_SYSTEM_REQUEST_SFTP);
 		final JsonExternalSystemRequest stopExternalSystemRequest = objectMapper.readValue(invokeStopExternalSystemRequestIS, JsonExternalSystemRequest.class);
 
 		final String routeId = SFTPBPartnerSyncServiceRouteBuilder.getSFTPBPartnersSyncRouteId(stopExternalSystemRequest);
@@ -157,13 +203,13 @@ public class GetBPartnerFromFileRouteBuilderTest extends CamelTestSupport
 		context.start();
 
 		//when
-		template.sendBody("direct:" + START_BPARTNERS_SYNC_ROUTE_ID, startExternalSystemRequest);
+		template.sendBody("direct:" + START_BPARTNERS_SYNC_SFTP_ROUTE_ID, startExternalSystemRequest);
 
 		assertThat(context.getRoute(routeId)).isNotNull();
 		assertThat(context.getRouteController().getRouteStatus(routeId).isStarted()).isEqualTo(true);
 
 		//and
-		template.sendBody("direct:" + STOP_BPARTNERS_SYNC_ROUTE_ID, stopExternalSystemRequest);
+		template.sendBody("direct:" + STOP_BPARTNERS_SYNC_SFTP_ROUTE_ID, stopExternalSystemRequest);
 
 		//then
 		assertMockEndpointsSatisfied();
@@ -172,20 +218,47 @@ public class GetBPartnerFromFileRouteBuilderTest extends CamelTestSupport
 		assertThat(context.getRoute(routeId)).isNull();
 	}
 
-	private void prepareEnableRouteForTesting(
-			@NonNull final MockExternalSystemStatusProcessor mockExternalSystemStatusProcessor) throws Exception
+	@Test
+	public void disable_SyncBPartners_LocalFile() throws Exception
 	{
-		AdviceWith.adviceWith(context, START_BPARTNERS_SYNC_ROUTE_ID,
-							  advice -> advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_CREATE_EXTERNAL_SYSTEM_STATUS_V2_CAMEL_URI + "}}")
-									  .skipSendToOriginalEndpoint()
-									  .to(MOCK_EXTERNAL_SYSTEM_STATUS_ENDPOINT)
-									  .process(mockExternalSystemStatusProcessor));
+		final ObjectMapper objectMapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
+
+		final MockExternalSystemStatusProcessor mockExternalSystemStatusProcessor = new MockExternalSystemStatusProcessor();
+
+		prepareStartStopRouteForTesting(mockExternalSystemStatusProcessor, START_BPARTNER_SYNC_LOCAL_FILE_ROUTE_ID);
+		prepareStartStopRouteForTesting(mockExternalSystemStatusProcessor, STOP_BPARTNER_SYNC_LOCAL_FILE_ROUTE_ID);
+
+		final InputStream invokeStartExternalSystemRequestIS = this.getClass().getResourceAsStream(JSON_START_EXTERNAL_SYSTEM_REQUEST_LOCAL_FILE);
+		final JsonExternalSystemRequest startExternalSystemRequest = objectMapper.readValue(invokeStartExternalSystemRequestIS, JsonExternalSystemRequest.class);
+
+		final InputStream invokeStopExternalSystemRequestIS = this.getClass().getResourceAsStream(JSON_STOP_EXTERNAL_SYSTEM_REQUEST_LOCAL_FILE);
+		final JsonExternalSystemRequest stopExternalSystemRequest = objectMapper.readValue(invokeStopExternalSystemRequestIS, JsonExternalSystemRequest.class);
+
+		final String routeId = LocalFileBPartnerSyncServiceRouteBuilder.getBPartnersFromLocalFileRouteId(stopExternalSystemRequest);
+
+		context.start();
+
+		//when
+		template.sendBody("direct:" + START_BPARTNER_SYNC_LOCAL_FILE_ROUTE_ID, startExternalSystemRequest);
+
+		assertThat(context.getRoute(routeId)).isNotNull();
+		assertThat(context.getRouteController().getRouteStatus(routeId).isStarted()).isEqualTo(true);
+
+		//and
+		template.sendBody("direct:" + STOP_BPARTNER_SYNC_LOCAL_FILE_ROUTE_ID, stopExternalSystemRequest);
+
+		//then
+		assertMockEndpointsSatisfied();
+		assertThat(mockExternalSystemStatusProcessor.called).isEqualTo(2);
+
+		assertThat(context.getRoute(routeId)).isNull();
 	}
 
-	private void prepareDisableRouteForTesting(
-			@NonNull final MockExternalSystemStatusProcessor mockExternalSystemStatusProcessor) throws Exception
+	private void prepareStartStopRouteForTesting(
+			@NonNull final MockExternalSystemStatusProcessor mockExternalSystemStatusProcessor,
+			@NonNull final String routeId) throws Exception
 	{
-		AdviceWith.adviceWith(context, STOP_BPARTNERS_SYNC_ROUTE_ID,
+		AdviceWith.adviceWith(context, routeId,
 							  advice -> advice.interceptSendToEndpoint("{{" + ExternalSystemCamelConstants.MF_CREATE_EXTERNAL_SYSTEM_STATUS_V2_CAMEL_URI + "}}")
 									  .skipSendToOriginalEndpoint()
 									  .to(MOCK_EXTERNAL_SYSTEM_STATUS_ENDPOINT)

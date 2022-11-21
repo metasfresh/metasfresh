@@ -43,13 +43,13 @@ import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 @Component
 public class LocalFileBPartnerSyncServiceRouteBuilder extends RouteBuilder implements IExternalSystemService
 {
-	private static final String START_BPARTNER_SYNC_ROUTE = "startBPartnerSyncLocalFile";
-	private static final String STOP_BPARTNER_SYNC_ROUTE = "stopBPartnerSyncLocalFile";
+	private static final String START_BPARTNER_SYNC_LOCAL_FILE_ROUTE = "startBPartnerSyncLocalFile";
+	private static final String STOP_BPARTNER_SYNC_LOCAL_FILE_ROUTE = "stopBPartnerSyncLocalFile";
 
 	@VisibleForTesting
-	public static final String START_BPARTNER_SYNC_ROUTE_ID = SAP_SYSTEM_NAME + "-" + START_BPARTNER_SYNC_ROUTE;
+	public static final String START_BPARTNER_SYNC_LOCAL_FILE_ROUTE_ID = SAP_SYSTEM_NAME + "-" + START_BPARTNER_SYNC_LOCAL_FILE_ROUTE;
 	@VisibleForTesting
-	public static final String STOP_BPARTNER_SYNC_ROUTE_ID = SAP_SYSTEM_NAME + "-" + STOP_BPARTNER_SYNC_ROUTE;
+	public static final String STOP_BPARTNER_SYNC_LOCAL_FILE_ROUTE_ID = SAP_SYSTEM_NAME + "-" + STOP_BPARTNER_SYNC_LOCAL_FILE_ROUTE;
 
 	@NonNull
 	private final ProcessLogger processLogger;
@@ -66,15 +66,15 @@ public class LocalFileBPartnerSyncServiceRouteBuilder extends RouteBuilder imple
 		onException(Exception.class)
 				.to(direct(MF_ERROR_ROUTE_ID));
 
-		from(direct(START_BPARTNER_SYNC_ROUTE_ID))
-				.routeId(START_BPARTNER_SYNC_ROUTE_ID)
+		from(direct(START_BPARTNER_SYNC_LOCAL_FILE_ROUTE_ID))
+				.routeId(START_BPARTNER_SYNC_LOCAL_FILE_ROUTE_ID)
 				.log("Route invoked")
 				.process(this::getStartOnDemandRequest)
 				.to(direct(START_HANDLE_ON_DEMAND_ROUTE_ID))
 				.end();
 
-		from(direct(STOP_BPARTNER_SYNC_ROUTE_ID))
-				.routeId(STOP_BPARTNER_SYNC_ROUTE_ID)
+		from(direct(STOP_BPARTNER_SYNC_LOCAL_FILE_ROUTE_ID))
+				.routeId(STOP_BPARTNER_SYNC_LOCAL_FILE_ROUTE_ID)
 				.log("Route invoked")
 				.process(this::getStopOnDemandRequest)
 				.to(direct(STOP_HANDLE_ON_DEMAND_ROUTE_ID))
@@ -142,12 +142,12 @@ public class LocalFileBPartnerSyncServiceRouteBuilder extends RouteBuilder imple
 	@Override
 	public String getEnableCommand()
 	{
-		return START_BPARTNER_SYNC_ROUTE;
+		return START_BPARTNER_SYNC_LOCAL_FILE_ROUTE;
 	}
 
 	@Override
 	public String getDisableCommand()
 	{
-		return STOP_BPARTNER_SYNC_ROUTE;
+		return STOP_BPARTNER_SYNC_LOCAL_FILE_ROUTE;
 	}
 }
