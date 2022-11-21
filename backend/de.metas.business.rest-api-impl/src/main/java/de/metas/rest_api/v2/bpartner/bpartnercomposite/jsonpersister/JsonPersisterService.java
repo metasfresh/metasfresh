@@ -74,7 +74,6 @@ import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem.SyncOutcome;
 import de.metas.common.externalreference.v2.JsonExternalReferenceItem;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupItem;
 import de.metas.common.externalreference.v2.JsonRequestExternalReferenceUpsert;
-import de.metas.common.externalreference.v2.JsonSingleExternalReferenceCreateReq;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
@@ -88,7 +87,6 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.externalreference.ExternalBusinessKey;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.ExternalUserReferenceType;
-import de.metas.externalreference.IExternalReferenceType;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
 import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
@@ -104,10 +102,10 @@ import de.metas.money.Money;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
+import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
-import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
 import de.metas.rest_api.v2.bpartner.bpartnercomposite.BPartnerCompositeRestUtils;
@@ -138,7 +136,6 @@ import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1965,18 +1962,6 @@ public class JsonPersisterService
 			}
 		}
 
-		if (jsonBPartnerLocation.isVisitorsAddressSet())
-		{
-			if (jsonBPartnerLocation.getVisitorsAddress() == null)
-			{
-				logger.debug("Ignoring boolean property \"visitorsAddress\" : null ");
-			}
-			else
-			{
-				locationType.visitorsAddress(jsonBPartnerLocation.getVisitorsAddress());
-			}
-		}
-
 		return locationType.build();
 	}
 
@@ -2294,7 +2279,7 @@ public class JsonPersisterService
 	private Money convertToOrgCurrency(@NonNull final JsonMoney jsonMoney, @NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		final CurrencyConversionContext currencyConversionContext =
-				currencyBL.createCurrencyConversionContext(LocalDate.now(),
+				currencyBL.createCurrencyConversionContext(Instant.now(),
 														   ConversionTypeMethod.Spot,
 														   clientAndOrgId.getClientId(),
 														   clientAndOrgId.getOrgId());

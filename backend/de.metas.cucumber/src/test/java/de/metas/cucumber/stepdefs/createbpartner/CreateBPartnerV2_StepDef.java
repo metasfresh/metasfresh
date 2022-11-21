@@ -36,9 +36,7 @@ import de.metas.cucumber.stepdefs.incoterms.C_Incoterms_StepDefData;
 import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_StepDefData;
 import de.metas.cucumber.stepdefs.sectioncode.M_SectionCode_StepDefData;
 import de.metas.externalreference.ExternalIdentifier;
-import de.metas.incoterms.repository.IncotermsRepository;
 import de.metas.rest_api.v2.bpartner.BPartnerEndpointService;
-import de.metas.sectionCode.SectionCodeRepository;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -84,8 +82,6 @@ public class CreateBPartnerV2_StepDef
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final SectionCodeRepository sectionCodeRepository;
-	private final IncotermsRepository incotermsRepository;
 	private final BPartnerCreditLimitRepository bPartnerCreditLimitRepository;
 
 	public CreateBPartnerV2_StepDef(
@@ -103,8 +99,6 @@ public class CreateBPartnerV2_StepDef
 		this.paymentTermTable = paymentTermTable;
 		this.testContext = testContext;
 		this.bpartnerEndpointService = SpringContextHolder.instance.getBean(BPartnerEndpointService.class);
-		this.sectionCodeRepository = SpringContextHolder.instance.getBean(SectionCodeRepository.class);
-		this.incotermsRepository = SpringContextHolder.instance.getBean(IncotermsRepository.class);
 		this.bPartnerCreditLimitRepository = SpringContextHolder.instance.getBean(BPartnerCreditLimitRepository.class);
 	}
 
@@ -127,7 +121,7 @@ public class CreateBPartnerV2_StepDef
 			final String group = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Group");
 			final String vatId = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.VatId");
 			final String pricingSystemId = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_M_PricingSystem_ID);
-			final boolean storageWarehouse = DataTableUtil.extractBooleanForColumnNameOr(dataTableRow, "OPT." + COLUMNNAME_IsStorageWarehouse, false);
+			final Boolean storageWarehouse = DataTableUtil.extractBooleanForColumnNameOr(dataTableRow, "OPT." + COLUMNNAME_IsStorageWarehouse, false);
 
 			// persisted value
 			final Optional<JsonResponseComposite> persistedResult = bpartnerEndpointService.retrieveBPartner(null, ExternalIdentifier.of(externalIdentifier));
@@ -265,9 +259,9 @@ public class CreateBPartnerV2_StepDef
 			final String city = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.City");
 			final String countryCode = DataTableUtil.extractStringForColumnName(dataTableRow, "CountryCode");
 			final String gln = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Gln");
-			final boolean handoverLocation = DataTableUtil.extractBooleanForColumnNameOr(dataTableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsHandOverLocation, false);
-			final boolean remitTo = DataTableUtil.extractBooleanForColumnNameOr(dataTableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsRemitTo, false);
-			final boolean replicationLookupDefault = DataTableUtil.extractBooleanForColumnNameOr(dataTableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsReplicationLookupDefault, false);
+			final Boolean handoverLocation = DataTableUtil.extractBooleanForColumnNameOr(dataTableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsHandOverLocation, false);
+			final Boolean remitTo = DataTableUtil.extractBooleanForColumnNameOr(dataTableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsRemitTo, false);
+			final Boolean replicationLookupDefault = DataTableUtil.extractBooleanForColumnNameOr(dataTableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsReplicationLookupDefault, false);
 
 			// persisted value
 			final Optional<JsonResponseLocation> persistedResult = bpartnerEndpointService.retrieveBPartnerLocation(

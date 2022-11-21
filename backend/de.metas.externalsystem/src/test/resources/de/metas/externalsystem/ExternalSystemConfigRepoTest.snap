@@ -680,7 +680,7 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getAc
         "isSyncBPartnerToRabbitMQ" : false,
         "isAutoSendWhenCreatedByUserGroup" : false,
         "isSyncExternalReferencesToRabbitMQ" : false,
-        "syncBPartnerToRabbitMQ" : false
+        "syncBPartnerToRabbitMQ" : false,
         "syncExternalReferencesToRabbitMQ" : false,
         "autoSendSubjectWhenCreatedByUserGroup" : false
       },

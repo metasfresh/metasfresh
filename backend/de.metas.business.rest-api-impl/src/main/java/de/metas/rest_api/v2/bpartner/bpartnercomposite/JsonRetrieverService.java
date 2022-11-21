@@ -63,7 +63,6 @@ import de.metas.common.changelog.JsonChangeLogItem.JsonChangeLogItemBuilder;
 import de.metas.common.product.v2.response.JsonProductBPartner;
 import de.metas.common.product.v2.response.JsonResponseProductBPartner;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.common.rest_api.v2.JSONPaymentRule;
 import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.dao.selection.pagination.UnknownPageIdentifierException;
 import de.metas.externalreference.ExternalIdentifier;
@@ -82,11 +81,10 @@ import de.metas.job.Job;
 import de.metas.job.JobRepository;
 import de.metas.logging.TableRecordMDC;
 import de.metas.organization.OrgId;
-import de.metas.payment.PaymentRule;
-import de.metas.pricing.PricingSystemId;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.payment.paymentterm.impl.PaymentTermQuery;
+import de.metas.pricing.PricingSystemId;
 import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.MetasfreshId;
@@ -576,7 +574,6 @@ public class JsonRetrieverService
 					.ephemeral(location.isEphemeral())
 					.phone(location.getPhone())
 					.email(location.getEmail())
-					.visitorsAddress(locationType.getIsVisitorsAddressOr(false))
 					.build();
 		}
 		catch (final RuntimeException rte)

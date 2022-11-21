@@ -174,10 +174,10 @@ public class BPartner
 	 */
 	private boolean identifiedByExternalReference;
 
-	private final PaymentTermId customerPaymentTermId;
+	private PaymentTermId customerPaymentTermId;
 	private PricingSystemId customerPricingSystemId;
 
-	private final PaymentTermId vendorPaymentTermId;
+	private PaymentTermId vendorPaymentTermId;
 	private final PricingSystemId vendorPricingSystemId;
 
 	private final boolean excludeFromPromotions;
