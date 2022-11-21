@@ -45,7 +45,7 @@ public class IncomingDeliveryPlanningWorkingProcessor extends WorkpackageProcess
 		SCHEDULER.schedule(receiptSchedule);
 	}
 
-	private static final WorkpackagesOnCommitSchedulerTemplate<I_M_ReceiptSchedule> SCHEDULER = new WorkpackagesOnCommitSchedulerTemplate<I_M_ReceiptSchedule>(OutgoingDeliveryPlanningWorkpackageProcessor.class)
+	private static final WorkpackagesOnCommitSchedulerTemplate<I_M_ReceiptSchedule> SCHEDULER = new WorkpackagesOnCommitSchedulerTemplate<I_M_ReceiptSchedule>(IncomingDeliveryPlanningWorkingProcessor.class)
 	{
 		@Override
 		protected boolean isEligibleForScheduling(final I_M_ReceiptSchedule model)

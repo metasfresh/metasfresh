@@ -2,7 +2,7 @@ package de.metas.inoutcandidate.modelvalidator;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
-import de.metas.deliveryplanning.OutgoingDeliveryPlanningWorkpackageProcessor;
+import de.metas.deliveryplanning.OutgoingDeliveryPlanningWorkPackageProcessor;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
@@ -318,7 +318,7 @@ public class M_ShipmentSchedule
 	public void createDeliveryPlanning(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		// TODO sys config
-		OutgoingDeliveryPlanningWorkpackageProcessor.createWorkpackage(sched);
+		OutgoingDeliveryPlanningWorkPackageProcessor.createWorkpackage(sched);
 
 	}
 
