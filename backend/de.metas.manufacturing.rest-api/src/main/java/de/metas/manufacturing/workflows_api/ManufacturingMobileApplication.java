@@ -7,6 +7,8 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateRequest;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.manufacturing.config.MobileUIManufacturingUserProfile;
+import de.metas.manufacturing.config.MobileUIManufacturingUserProfileRepository;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLine;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonHUQRCodeTarget;
@@ -46,14 +48,17 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 
 	private static final AdMessageKey MSG_Caption = AdMessageKey.of("mobileui.manufacturing.appName");
 
+	private final MobileUIManufacturingUserProfileRepository userProfileRepository;
 	private final ManufacturingRestService manufacturingRestService;
 	private final ManufacturingWorkflowLaunchersProvider wfLaunchersProvider;
 	private final HUQRCodesService huQRCodesService;
 
 	public ManufacturingMobileApplication(
+			@NonNull final MobileUIManufacturingUserProfileRepository userProfileRepository,
 			@NonNull final ManufacturingRestService manufacturingRestService,
 			@NonNull final HUQRCodesService huQRCodesService)
 	{
+		this.userProfileRepository = userProfileRepository;
 		this.manufacturingRestService = manufacturingRestService;
 		this.wfLaunchersProvider = new ManufacturingWorkflowLaunchersProvider(manufacturingRestService);
 		this.huQRCodesService = huQRCodesService;
@@ -65,10 +70,11 @@ public class ManufacturingMobileApplication implements WorkflowBasedMobileApplic
 	@Override
 	public @NonNull MobileApplicationInfo getApplicationInfo(@NonNull final UserId loggedUserId)
 	{
+		final MobileUIManufacturingUserProfile userProfile = userProfileRepository.getByUserId(loggedUserId);
 		return MobileApplicationInfo.builder()
 				.id(APPLICATION_ID)
 				.caption(TranslatableStrings.adMessage(MSG_Caption))
-				.requiresLaunchersQRCodeFilter(true) // TODO introduce/use user profiles
+				.requiresLaunchersQRCodeFilter(userProfile.isScanResourceRequired())
 				.build();
 	}
 

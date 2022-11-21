@@ -24,12 +24,12 @@ const WFLaunchersScreen = () => {
   const { requiresLaunchersQRCodeFilter } = useSelector((state) => getApplicationInfoById({ state, applicationId }));
 
   const {
-    isLoading,
-    filterByQRCode,
+    filterByQRCode: currentFilterByQRCode,
     requestTimestamp,
     list: launchers,
   } = useSelector((state) => getApplicationLaunchers(state, applicationId));
 
+  const filterByQRCode = requiresLaunchersQRCodeFilter ? currentFilterByQRCode : null;
   const isFilterValid = !requiresLaunchersQRCodeFilter || !!filterByQRCode;
 
   const onNewLaunchers = ({ applicationId, applicationLaunchers }) => {
@@ -54,7 +54,7 @@ const WFLaunchersScreen = () => {
   // Connect to WebSocket topic
   const userToken = useSelector((state) => getTokenFromState(state));
   useLaunchersWebsocket({
-    enabled: isFilterValid && !isLoading,
+    enabled: isFilterValid,
     userToken,
     applicationId,
     filterByQRCode,
