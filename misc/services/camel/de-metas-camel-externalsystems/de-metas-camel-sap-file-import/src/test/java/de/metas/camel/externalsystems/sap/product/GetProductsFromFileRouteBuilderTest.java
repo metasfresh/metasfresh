@@ -44,12 +44,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import static de.metas.camel.externalsystems.sap.product.GetProductsSFTPRouteBuilder.UPSERT_PRODUCT_ENDPOINT_ID;
+import static de.metas.camel.externalsystems.sap.product.GetProductsFromFileRouteBuilder.UPSERT_PRODUCT_ENDPOINT_ID;
 import static de.metas.camel.externalsystems.sap.product.SFTPProductSyncServiceRouteBuilder.START_PRODUCTS_SYNC_ROUTE_ID;
 import static de.metas.camel.externalsystems.sap.product.SFTPProductSyncServiceRouteBuilder.STOP_PRODUCTS_SYNC_ROUTE_ID;
 import static org.assertj.core.api.Assertions.*;
 
-public class SFTPProductSyncServiceRouteBuilderTest extends CamelTestSupport
+public class GetProductsFromFileRouteBuilderTest extends CamelTestSupport
 {
 	private static final String PRODUCT_SYNC_DIRECT_ROUTE_ENDPOINT = "SAP-mockProductSyncRoute";
 
@@ -83,7 +83,7 @@ public class SFTPProductSyncServiceRouteBuilderTest extends CamelTestSupport
 		final var properties = new Properties();
 		try
 		{
-			properties.load(SFTPProductSyncServiceRouteBuilderTest.class.getClassLoader().getResourceAsStream("application.properties"));
+			properties.load(GetProductsFromFileRouteBuilderTest.class.getClassLoader().getResourceAsStream("application.properties"));
 			return properties;
 		}
 		catch (final IOException e)
@@ -110,7 +110,7 @@ public class SFTPProductSyncServiceRouteBuilderTest extends CamelTestSupport
 		//when
 		template.sendBody("direct:" + START_PRODUCTS_SYNC_ROUTE_ID, externalSystemRequest);
 
-		prepareSyncRouteForTesting(mockUpsertProductProcessor, GetProductsSFTPRouteBuilder.buildRouteId(externalSystemRequest.getExternalSystemChildConfigValue()));
+		prepareSyncRouteForTesting(mockUpsertProductProcessor, SFTPProductSyncServiceRouteBuilder.getProductsFromSFTPServerRouteId(externalSystemRequest));
 
 		final InputStream expectedUpsertProductRequest = this.getClass().getResourceAsStream(JSON_UPSERT_PRODUCT_REQUEST);
 		final MockEndpoint productSyncMockEndpoint = getMockEndpoint(MOCK_UPSERT_PRODUCT);
@@ -143,7 +143,7 @@ public class SFTPProductSyncServiceRouteBuilderTest extends CamelTestSupport
 		final InputStream invokeStopExternalSystemRequestIS = this.getClass().getResourceAsStream(JSON_STOP_EXTERNAL_SYSTEM_REQUEST);
 		final JsonExternalSystemRequest stopExternalSystemRequest = objectMapper.readValue(invokeStopExternalSystemRequestIS, JsonExternalSystemRequest.class);
 
-		final String routeId = GetProductsSFTPRouteBuilder.buildRouteId(stopExternalSystemRequest.getExternalSystemChildConfigValue());
+		final String routeId = SFTPProductSyncServiceRouteBuilder.getProductsFromSFTPServerRouteId(stopExternalSystemRequest);
 
 		context.start();
 

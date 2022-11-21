@@ -24,8 +24,8 @@ package de.metas.camel.externalsystems.sap.bpartner;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.camel.externalsystems.common.ProcessLogger;
+import de.metas.camel.externalsystems.sap.SAPConfigUtil;
 import de.metas.camel.externalsystems.sap.service.OnDemandRoutesController;
-import de.metas.camel.externalsystems.sap.sftp.SFTPConfigUtil;
 import de.metas.common.externalsystem.IExternalSystemService;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.NonNull;
@@ -43,8 +43,8 @@ import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 @Component
 public class SFTPBPartnerSyncServiceRouteBuilder extends RouteBuilder implements IExternalSystemService
 {
-	private static final String START_BPARTNERS_SYNC_ROUTE = "startBPartnerSync";
-	private static final String STOP_BPARTNERS_SYNC_ROUTE = "stopBPartnerSync";
+	private static final String START_BPARTNERS_SYNC_ROUTE = "startBPartnerSyncSFTP";
+	private static final String STOP_BPARTNERS_SYNC_ROUTE = "stopBPartnerSyncSFTP";
 
 	@VisibleForTesting
 	public static final String START_BPARTNERS_SYNC_ROUTE_ID = SAP_SYSTEM_NAME + "-" + START_BPARTNERS_SYNC_ROUTE;
@@ -86,7 +86,7 @@ public class SFTPBPartnerSyncServiceRouteBuilder extends RouteBuilder implements
 		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 
 		final OnDemandRoutesController.StartOnDemandRouteRequest startOnDemandRouteRequest = OnDemandRoutesController.StartOnDemandRouteRequest.builder()
-				.onDemandRouteBuilder(getSFTPRouteBuilder(request, exchange.getContext()))
+				.onDemandRouteBuilder(getBPartnerFromFileRouteBuilder(request, exchange.getContext()))
 				.externalSystemRequest(request)
 				.externalSystemService(this)
 				.build();
@@ -99,7 +99,7 @@ public class SFTPBPartnerSyncServiceRouteBuilder extends RouteBuilder implements
 		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 
 		final OnDemandRoutesController.StopOnDemandRouteRequest stopOnDemandRouteRequest = OnDemandRoutesController.StopOnDemandRouteRequest.builder()
-				.routeId(GetBPartnersSFTPRouteBuilder.buildRouteId(request.getExternalSystemChildConfigValue()))
+				.routeId(getSFTPBPartnersSyncRouteId(request))
 				.externalSystemRequest(request)
 				.externalSystemService(this)
 				.build();
@@ -108,16 +108,23 @@ public class SFTPBPartnerSyncServiceRouteBuilder extends RouteBuilder implements
 	}
 
 	@NonNull
-	private GetBPartnersSFTPRouteBuilder getSFTPRouteBuilder(@NonNull final JsonExternalSystemRequest request, @NonNull final CamelContext camelContext)
+	private GetBPartnersFromFileRouteBuilder getBPartnerFromFileRouteBuilder(@NonNull final JsonExternalSystemRequest request, @NonNull final CamelContext camelContext)
 	{
-		return GetBPartnersSFTPRouteBuilder
+		return GetBPartnersFromFileRouteBuilder
 				.builder()
-				.sftpConfig(SFTPConfigUtil.extractSFTPConfig(request, camelContext))
+				.fileEndpointConfig(SAPConfigUtil.extractSFTPConfig(request, camelContext))
 				.camelContext(camelContext)
 				.enabledByExternalSystemRequest(request)
 				.processLogger(processLogger)
-				.routeId(GetBPartnersSFTPRouteBuilder.buildRouteId(request.getExternalSystemChildConfigValue()))
+				.routeId(getSFTPBPartnersSyncRouteId(request))
 				.build();
+	}
+
+	@NonNull
+	@VisibleForTesting
+	public static String getSFTPBPartnersSyncRouteId(@NonNull final JsonExternalSystemRequest externalSystemRequest)
+	{
+		return "GetBPartnerFromSFTPServer#" + externalSystemRequest.getExternalSystemChildConfigValue();
 	}
 
 	@Override

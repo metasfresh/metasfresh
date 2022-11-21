@@ -3,7 +3,7 @@
   "orgCode": "orgCode",
   "externalSystemName": "SAP",
   "externalSystemChildConfigValue": "sapValue",
-  "command": "startProductsSync",
+  "command": "startProductSyncSFTP",
   "externalSystemConfigId": 1,
   "adPInstanceId": 2,
   "writeAuditEndpoint": "fileFolder",

@@ -44,13 +44,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import static de.metas.camel.externalsystems.sap.bpartner.GetBPartnersSFTPRouteBuilder.UPSERT_BPARTNER_GROUP_ENDPOINT_ID;
-import static de.metas.camel.externalsystems.sap.bpartner.GetBPartnersSFTPRouteBuilder.UPSERT_LAST_BPARTNER_GROUP_ENDPOINT_ID;
+import static de.metas.camel.externalsystems.sap.bpartner.GetBPartnersFromFileRouteBuilder.UPSERT_BPARTNER_GROUP_ENDPOINT_ID;
+import static de.metas.camel.externalsystems.sap.bpartner.GetBPartnersFromFileRouteBuilder.UPSERT_LAST_BPARTNER_GROUP_ENDPOINT_ID;
 import static de.metas.camel.externalsystems.sap.bpartner.SFTPBPartnerSyncServiceRouteBuilder.START_BPARTNERS_SYNC_ROUTE_ID;
 import static de.metas.camel.externalsystems.sap.bpartner.SFTPBPartnerSyncServiceRouteBuilder.STOP_BPARTNERS_SYNC_ROUTE_ID;
 import static org.assertj.core.api.Assertions.*;
 
-public class SFTPBPartnerSyncServiceRouteBuilderTest extends CamelTestSupport
+public class GetBPartnerFromFileRouteBuilderTest extends CamelTestSupport
 {
 	private static final String BPARTNER_SYNC_DIRECT_ROUTE_ENDPOINT = "SAP-mockBPartnerSyncRoute";
 
@@ -86,7 +86,7 @@ public class SFTPBPartnerSyncServiceRouteBuilderTest extends CamelTestSupport
 		final var properties = new Properties();
 		try
 		{
-			properties.load(SFTPBPartnerSyncServiceRouteBuilderTest.class.getClassLoader().getResourceAsStream("application.properties"));
+			properties.load(GetBPartnerFromFileRouteBuilderTest.class.getClassLoader().getResourceAsStream("application.properties"));
 			return properties;
 		}
 		catch (final IOException e)
@@ -114,7 +114,7 @@ public class SFTPBPartnerSyncServiceRouteBuilderTest extends CamelTestSupport
 		//when
 		template.sendBody("direct:" + START_BPARTNERS_SYNC_ROUTE_ID, externalSystemRequest);
 
-		prepareSyncRouteForTesting(mockUpsertBPartnerProcessor, mockUpsertLastBPartnerProcessor, GetBPartnersSFTPRouteBuilder.buildRouteId(externalSystemRequest.getExternalSystemChildConfigValue()));
+		prepareSyncRouteForTesting(mockUpsertBPartnerProcessor, mockUpsertLastBPartnerProcessor, SFTPBPartnerSyncServiceRouteBuilder.getSFTPBPartnersSyncRouteId(externalSystemRequest));
 
 		final InputStream expectedBPartnerUpsertRequest = this.getClass().getResourceAsStream(JSON_UPSERT_BPARTNER_REQUEST);
 		final MockEndpoint bpartnerSyncMockEndpoint = getMockEndpoint(MOCK_UPSERT_BPARTNER);
@@ -152,7 +152,7 @@ public class SFTPBPartnerSyncServiceRouteBuilderTest extends CamelTestSupport
 		final InputStream invokeStopExternalSystemRequestIS = this.getClass().getResourceAsStream(JSON_STOP_EXTERNAL_SYSTEM_REQUEST);
 		final JsonExternalSystemRequest stopExternalSystemRequest = objectMapper.readValue(invokeStopExternalSystemRequestIS, JsonExternalSystemRequest.class);
 
-		final String routeId = GetBPartnersSFTPRouteBuilder.buildRouteId(stopExternalSystemRequest.getExternalSystemChildConfigValue());
+		final String routeId = SFTPBPartnerSyncServiceRouteBuilder.getSFTPBPartnersSyncRouteId(stopExternalSystemRequest);
 
 		context.start();
 
@@ -193,8 +193,8 @@ public class SFTPBPartnerSyncServiceRouteBuilderTest extends CamelTestSupport
 	}
 
 	private void prepareSyncRouteForTesting(
-			@NonNull final SFTPBPartnerSyncServiceRouteBuilderTest.MockUpsertBPartnerProcessor mockUpsertBPartnerProcessor,
-			@NonNull final SFTPBPartnerSyncServiceRouteBuilderTest.MockUpsertLastBPartnerProcessor mockUpsertLastBPartnerProcessor,
+			@NonNull final GetBPartnerFromFileRouteBuilderTest.MockUpsertBPartnerProcessor mockUpsertBPartnerProcessor,
+			@NonNull final GetBPartnerFromFileRouteBuilderTest.MockUpsertLastBPartnerProcessor mockUpsertLastBPartnerProcessor,
 			@NonNull final String bPartnerSyncRouteId) throws Exception
 	{
 		AdviceWith.adviceWith(context, bPartnerSyncRouteId,
