@@ -24,6 +24,7 @@ package de.metas.camel.externalsystems.sap.product;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.camel.externalsystems.common.IdAwareRouteBuilder;
+import de.metas.camel.externalsystems.common.PInstanceUtil;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.v2.ProductUpsertCamelRequest;
 import de.metas.camel.externalsystems.sap.model.product.ProductRow;
@@ -80,6 +81,7 @@ public class GetProductsSFTPRouteBuilder extends IdAwareRouteBuilder
 		from(sftpConfig.getSFTPConnectionStringProduct())
 				.id(routeId)
 				.log("Product Sync Route Started with Id=" + routeId)
+				.process(exchange -> PInstanceUtil.setPInstanceHeader(exchange, enabledByExternalSystemRequest))
 				.split(body().tokenize("\n"))
 					.streaming()
 					.unmarshal(new BindyCsvDataFormat(ProductRow.class))

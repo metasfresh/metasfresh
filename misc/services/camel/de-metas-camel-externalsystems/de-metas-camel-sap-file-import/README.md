@@ -4,8 +4,9 @@
 
 ## Values pulled from SAP
 
-* `Product` - pulled via an SFTP route
-* `BPartner` - pulled via an SFTP route
+* `Product`
+* `BPartner`
+* `CreditLimit`
 
 ## Values computed in metasfresh
 
@@ -27,16 +28,21 @@ First, the SFTP consumer must be configured using `Externalsystem_Config_SAP` an
 
 Configs available in `Externalsystem_Config_SAP`:
 
-| Column name                       | Accepted values | Description                                                                  |
-|-----------------------------------|-----------------|------------------------------------------------------------------------------|
-| Hostname                          | string          | sftp server hostname                                                         |
-| Port                              | number          | sftp server port                                                             |
-| Username                          | string          | sftp server authentication username                                          |
-| Password                          | string          | sftp server authentication password                                          | 
-| Product Target Directory          | string          | the location used to pull products from the sftp server                      |
-| Processed Directory               | string          | the location where the processed files will be moved                         | 
-| Errored Directory                 | string          | the location where the files will be moved in case of error while processing |
-| Polling Frequency In Milliseconds | number          | the frequency used to poll files from the sftp server (in milliseconds)      |
+| Column name                       | Accepted values | Description                                                                                                                 |
+|-----------------------------------|-----------------|-----------------------------------------------------------------------------------------------------------------------------|
+| Hostname                          | string          | sftp server hostname                                                                                                        |
+| Port                              | number          | sftp server port                                                                                                            |
+| Username                          | string          | sftp server authentication username                                                                                         |
+| Password                          | string          | sftp server authentication password                                                                                         | 
+| Product Target Directory          | string          | the location used to pull products from the sftp server                                                                     |
+| Product Filename Pattern          | string          | regex used to identify product-containing files (useful if multiple type of files are placed in the same source folder)     |
+| BPartner Target Directory         | string          | the location used to pull partner files from the sftp server                                                                |
+| BPartner Filename Pattern         | string          | regex used to identify partner-containing files (useful if multiple type of files are placed in the same source folder)     |
+| Credit-Limit Target Directory     | string          | the location used to pull cedit-limit files from the sftp server                                                            |
+| Credit-Limit Filename Pattern     | string          | regex used to identify CreditLimit-containing files (useful if multiple type of files are placed in the same source folder) |
+| Processed Directory               | string          | the location where the processed files will be moved                                                                        | 
+| Errored Directory                 | string          | the location where the files will be moved in case of error while processing                                                |
+| Polling Frequency In Milliseconds | number          | the frequency used to poll files from the sftp server (in milliseconds)                                                     |
 
 1. Product - all `metasfresh-column` values refer to `M_Product` columns
 
@@ -142,3 +148,25 @@ BPartnerRow.vatRegNo | ?                                                | ?     
 BPartnerRow.partnerCode + "_" + BPartnerRow.section  | `S_ExternalReference.externalreference`          | Y               | JsonRequestLocationUpsertItem.locationIdentifier | "ext-SAP-" + BPartnerRow.PartnerCode + "_" + BPartnerRow.SectionCode (the PartnerCode is not truncated)                                                     |
 --- | `S_ExternalReference.isreadonlyinmetasfresh`     | Y               | JsonRequestBPartnerUpsertItem.isReadOnlyInMetasfresh                                                  | always set to `true`                                                                                                                                        |
 --- | `S_ExternalReference.externalsystem_config_id`   | N               | JsonRequestBPartnerUpsertItem.externalSystemConfigId                                                  | always set to the ID of the SAP External System Config                                                                                                      |
+
+## **SAP => metasfresh bpartner_creditlimit**
+
+* `CreditLimit` - pulled via an SFTP camel route
+
+First, the SFTP consumer must be configured using `Externalsystem_Config_SAP` and started by invoking the `SAP-startCreditLimitsSync` dedicated route.
+
+### CreditLimit - all `metasfresh-column` values refer to `C_BPartner_CreditLimit` columns
+
+| SAP                              | metasfresh-column                       | mandatory in mf   | metasfresh-json                                        | note                                                                                                                                                                                                              |
+| ----                             | ------------------------                | ----------------- | --------------------------------------------------     | --------------------------------------------------------------------                                                                                                                                              |
+| CreditLimitRow.CreditAccount     | `C_BPartner_ID`                         | Y                 | JsonRequestBPartnerUpsertItem.bpartnerIdentifier       | -> in format: `ext-SAP-[partnerIdentifier_sectionCode]`                                                                                                                                                           |
+| CreditLimitRow.CreditControlArea | `M_SectionCode_ID`                      | N                 | JsonRequestCreditLimitUpsertItem.sectionCode           |                                                                                                                                                                                                                   |
+| CreditLimitRow.EffectiveDateFrom | `DateFrom`                              | N                 | JsonRequestCreditLimitUpsertItem.dateFrom              |                                                                                                                                                                                                                   |
+| CreditLimitRow.EffectiveDateTo   | `IsActive`                              | Y                 | JsonRequestCreditLimitUpsertItem.isActive              | if `CreditLimitRow.DeleteFlag` is not set, check if `currentDate` is before `CreditLimitRow.EffectiveDateTo` => `isActive` = `true`, else `isActive` = `false`                                                    |
+| CreditLimitRow.CurrencyCode      | `C_Currency_ID`                         | N                 | JsonRequestCreditLimitUpsertItem.currencyCode          | used to convert the amount to ORG currency                                                                                                                                                                        |
+| CreditLimitRow.CreditLine        | `Amount`                                | Y                 | JsonRequestCreditLimitUpsertItem.amount                |                                                                                                                                                                                                                   |
+| ----                             | `C_CreditLimit_Type_ID`                 | Y                 | JsonRequestCreditLimitUpsertItem.type                  | always set to `Insurance`                                                                                                                                                                                         |
+| ----                             | `AD_Org_ID`                             | Y                 | JsonRequestCreditLimitUpsertItem.orgCode               | always set to `ExternalSystem_Config.AD_Org_ID` from `JsonExternalSystemRequest`                                                                                                                                  |
+| ----                             | ----                                    | N                 | JsonRequestCreditLimitUpsert.syncAdvise                | default value `CREATE_OR_MERGE`                                                                                                                                                                                   |
+| CreditLimitRow.DeleteFlag        | `IsActive`                              | Y                 | ----                                                   | if `CreditLimitRow.DeleteFlag` = `Y` => `isActive` = `N` ELSE check `CreditLimitRow.EffectiveDateFrom` and `CreditLimitRow.EffectiveDateTo`                                                                       |
+| CreditLimitRow.CreditType        | ----                                    | N                 | ----                                                   | ----                                                                                                                                                                                                              |

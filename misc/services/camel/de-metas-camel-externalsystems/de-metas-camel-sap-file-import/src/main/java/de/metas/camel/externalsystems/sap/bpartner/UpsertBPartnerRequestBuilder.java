@@ -94,6 +94,12 @@ public class UpsertBPartnerRequestBuilder
 		return syncBPartnerRequestBuilder;
 	}
 
+	@NonNull
+	public static String buildExternalIdentifier(@NonNull final String partnerCode, @NonNull final String sectionCode)
+	{
+		return ExternalIdentifierFormat.formatExternalId(partnerCode + "_" + sectionCode);
+	}
+
 	public boolean add(@NonNull final BPartnerRow row)
 	{
 		if (!row.getPartnerCode().matchesGroup(parentPartnerCode))
@@ -288,11 +294,5 @@ public class UpsertBPartnerRequestBuilder
 				.externalSystemConfigId(externalSystemConfigId)
 				.isReadOnlyInMetasfresh(true)
 				.build();
-	}
-
-	@NonNull
-	private static String buildExternalIdentifier(@NonNull final String partnerCode, @NonNull final String sectionCode)
-	{
-		return ExternalIdentifierFormat.formatExternalId(partnerCode + "_" + sectionCode);
 	}
 }

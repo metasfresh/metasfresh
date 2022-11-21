@@ -73,6 +73,13 @@ public class SFTPConfig
 	@Nullable
 	String fileNamePatternBPartner;
 
+	//credit limit specific
+	@Nullable
+	String targetDirectoryCreditLimit;
+
+	@Nullable
+	String fileNamePatternCreditLimit;
+
 	@NonNull
 	public String getSFTPConnectionStringProduct()
 	{
@@ -83,6 +90,12 @@ public class SFTPConfig
 	public String getSFTPConnectionStringBPartner()
 	{
 		return getSFTPConnectionString(targetDirectoryBPartner, fileNamePatternBPartner);
+	}
+
+	@NonNull
+	public String getSFTPConnectionStringCreditLimit()
+	{
+		return getSFTPConnectionString(targetDirectoryCreditLimit, fileNamePatternCreditLimit);
 	}
 
 	@NonNull

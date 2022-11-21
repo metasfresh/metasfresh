@@ -50,18 +50,26 @@ public class ExternallyReferencedDocumentDecorator implements IDocumentDecorator
 
 	@Override
 	@NonNull
-	public BooleanWithReason isReadOnly(@NonNull final TableRecordReference recordReference)
+	public ReadOnlyInfo isReadOnly(@NonNull final TableRecordReference recordReference)
 	{
-		return externalReferenceRepository.isReadOnlyInMetasfresh(recordReference) ?
-				BooleanWithReason.trueBecause(msgBL.getTranslatableMsgText(EXTERNAL_REFERENCE_READ_ONLY_IN_METASFRESH_REASON)) :
-				BooleanWithReason.FALSE;
+		final boolean isReadOnly = externalReferenceRepository.isReadOnlyInMetasfresh(recordReference);
+
+		if (!isReadOnly)
+		{
+			return ReadOnlyInfo.of(BooleanWithReason.FALSE);
+		}
+
+		return ReadOnlyInfo.builder()
+				.isReadOnly(BooleanWithReason.trueBecause(msgBL.getTranslatableMsgText(EXTERNAL_REFERENCE_READ_ONLY_IN_METASFRESH_REASON)))
+				.forceReadOnlySubDocuments(true)
+				.build();
 	}
 
 	@Override
 	@NonNull
 	public BooleanWithReason isDeleteForbidden(@NonNull final TableRecordReference recordReference)
 	{
-		if (isReadOnly(recordReference).isFalse())
+		if (!isReadOnly(recordReference).isReadOnly())
 		{
 			return BooleanWithReason.FALSE;
 		}
@@ -69,5 +77,12 @@ public class ExternallyReferencedDocumentDecorator implements IDocumentDecorator
 		final ITranslatableString errorMessage = msgBL.getTranslatableMsgText(EXTERNAL_REFERENCE_READ_ONLY_IN_METASFRESH_ERROR, recordReference.getTableName() + "_" + recordReference.getRecord_ID());
 
 		return BooleanWithReason.trueBecause(errorMessage);
+	}
+
+	@Override
+	@NonNull
+	public BooleanWithReason isDeleteSubDocumentsForbidden(final @NonNull TableRecordReference tableRecordReference)
+	{
+		return isDeleteForbidden(tableRecordReference);
 	}
 }

@@ -31,7 +31,10 @@ import de.metas.externalsystem.externalservice.process.AlterExternalSystemServic
 import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP;
 import de.metas.externalsystem.sap.ExternalSystemSAPConfig;
 import de.metas.externalsystem.sap.ExternalSystemSAPConfigId;
+import de.metas.externalsystem.sap.SAPExternalRequest;
+import de.metas.i18n.BooleanWithReason;
 import de.metas.process.IProcessPreconditionsContext;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
 import java.util.HashMap;
@@ -43,6 +46,8 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_POLLI
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_PROCESSED_DIRECTORY;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_BPARTNER_FILE_NAME_PATTERN;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_BPARTNER_TARGET_DIRECTORY;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_CREDIT_LIMIT_FILENAME_PATTERN;
+import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_CREDIT_LIMIT_TARGET_DIRECTORY;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_HOST_NAME;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_PASSWORD;
 import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_PORT;
@@ -52,7 +57,6 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_
 
 public class InvokeSAPAction extends AlterExternalSystemServiceStatusAction
 {
-
 	@Override
 	protected IExternalSystemChildConfigId getExternalChildConfigId()
 	{
@@ -80,6 +84,8 @@ public class InvokeSAPAction extends AlterExternalSystemServiceStatusAction
 	{
 		final ExternalSystemSAPConfig sapConfig = ExternalSystemSAPConfig.cast(externalSystemParentConfig.getChildConfig());
 
+		validateExternalSystemConfig(sapConfig);
+
 		final Map<String, String> parameters = new HashMap<>();
 
 		parameters.put(PARAM_SFTP_HOST_NAME, sapConfig.getSftpHostName());
@@ -94,6 +100,8 @@ public class InvokeSAPAction extends AlterExternalSystemServiceStatusAction
 		parameters.put(PARAM_POLLING_FREQUENCY_MS, String.valueOf(sapConfig.getPollingFrequency().toMillis()));
 		parameters.put(PARAM_SFTP_PRODUCT_FILE_NAME_PATTERN, sapConfig.getSftpFileNamePatternProduct());
 		parameters.put(PARAM_SFTP_BPARTNER_FILE_NAME_PATTERN, sapConfig.getSftpFileNamePatternBPartner());
+		parameters.put(PARAM_SFTP_CREDIT_LIMIT_TARGET_DIRECTORY, sapConfig.getSftpCreditLimitTargetDirectory());
+		parameters.put(PARAM_SFTP_CREDIT_LIMIT_FILENAME_PATTERN, sapConfig.getSftpCreditLimitFileNamePattern());
 
 		return parameters;
 	}
@@ -119,11 +127,15 @@ public class InvokeSAPAction extends AlterExternalSystemServiceStatusAction
 				.count();
 	}
 
-	@Override
-	protected String getOrgCode()
+	private void validateExternalSystemConfig(@NonNull final ExternalSystemSAPConfig sapConfig)
 	{
-		final ExternalSystemParentConfig config = externalSystemConfigDAO.getById(getExternalChildConfigId());
+		final SAPExternalRequest sapExternalRequest = SAPExternalRequest.ofCode(externalRequest);
 
-		return orgDAO.getById(config.getOrgId()).getValue();
+		final BooleanWithReason isStartServicePossible = sapConfig.isStartServicePossible(sapExternalRequest, msgBL);
+
+		if (isStartServicePossible.isFalse())
+		{
+			throw new AdempiereException(isStartServicePossible.getReason()).markAsUserValidationError();
+		}
 	}
 }

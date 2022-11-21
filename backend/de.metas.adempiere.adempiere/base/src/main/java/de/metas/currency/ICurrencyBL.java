@@ -159,4 +159,6 @@ public interface ICurrencyBL extends ISingletonService
 	@NonNull
 	CurrencyCode getCurrencyCodeById(@NonNull CurrencyId currencyId);
 
+	@NonNull
+	Money convertToBase(@NonNull CurrencyConversionContext conversionCtx, @NonNull Money amt);
 }
