@@ -45,7 +45,6 @@ public class PP_Order
 {
 	private final IHUPPOrderBL ppOrderBL = Services.get(IHUPPOrderBL.class);
 	private final PPOrderIssueScheduleRepository ppOrderIssueScheduleRepository;
-	private final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
 	private final HUUniqueAttributesService huUniqueAttributesService = new HUUniqueAttributesService(new HUUniqueAttributesRepository());
 	public PP_Order(
 			@NonNull final PPOrderIssueScheduleRepository ppOrderIssueScheduleRepository)
@@ -89,11 +88,6 @@ public class PP_Order
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
 	private void checkHUUniqueAttributes(@NonNull final I_PP_Order order)
 	{
-		final AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.ofRepoIdOrNone(order.getM_AttributeSetInstance_ID());
-		if (attributeSetInstanceId.isRegular())
-		{
-			attributesRepo.retrieveAttributeInstances(attributeSetInstanceId)
-					.forEach(huUniqueAttributesService::validateAttribute);
-		}
+		huUniqueAttributesService.validatePPOrderASI(order);
 	}
 }

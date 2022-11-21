@@ -32,6 +32,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_HU_UniqueAttribute;
+import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.i18n.AdMessageKey;
@@ -42,9 +43,9 @@ import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.I_M_AttributeInstance;
@@ -107,18 +108,6 @@ public class HUUniqueAttributesService
 		huAttributesDAO.retrieveAttributesOrdered(hu).getHuAttributes()
 				.stream()
 				.filter(I_M_HU_Attribute::isUnique)
-				.forEach(this::validateHUUniqueAttribute);
-	}
-
-	public void validateAttribute(@NonNull final I_M_AttributeInstance attributeInstance)
-	{
-		Services.get(IQueryBL.class).createQueryBuilder(I_M_HU_Attribute.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_M_Attribute_ID, attributeInstance.getM_Attribute_ID())
-				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_Value, attributeInstance.getValue())
-				.addEqualsFilter(I_M_HU_Attribute.COLUMNNAME_IsUnique, true)
-				.create()
-				.list(I_M_HU_Attribute.class)
 				.forEach(this::validateHUUniqueAttribute);
 	}
 
@@ -251,5 +240,36 @@ public class HUUniqueAttributesService
 				.forEach(this::createOrUpdateHUUniqueAttribute);
 	}
 
+	public void validatePPOrderASI(@NonNull final I_PP_Order ppOrder)
+	{
+		final AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.ofRepoIdOrNone(ppOrder.getM_AttributeSetInstance_ID());
+		if (!attributeSetInstanceId.isRegular())
+		{
+			//nothing to do
+			return;
+		}
 
+		validateASI(attributeSetInstanceId, ProductId.ofRepoId(ppOrder.getM_Product_ID()));
+	}
+
+	private void validateASI(@NonNull final AttributeSetInstanceId attributeSetInstanceId, @NonNull final ProductId productId)
+	{
+		final List<I_M_AttributeInstance> attributeInstances = attributeDAO.retrieveAttributeInstances(attributeSetInstanceId);
+
+		for (final I_M_AttributeInstance attributeInstance : attributeInstances)
+		{
+			if (Check.isBlank(attributeInstance.getValue()))
+			{
+				continue;
+			}
+
+			final HUUniqueAttributeParameters parameters = HUUniqueAttributeParameters.builder()
+					.productId(productId)
+					.attributeId(AttributeId.ofRepoId(attributeInstance.getM_Attribute_ID()))
+					.attributeValue(attributeInstance.getValue())
+					.build();
+
+			validateHUUniqueAttributeValue(parameters);
+		}
+	}
 }
