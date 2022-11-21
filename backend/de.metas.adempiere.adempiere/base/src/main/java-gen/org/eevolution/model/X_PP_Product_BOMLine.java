@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_Product_BOMLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1268706383L;
+	private static final long serialVersionUID = -898288195L;
 
     /** Standard Constructor */
     public X_PP_Product_BOMLine (final Properties ctx, final int PP_Product_BOMLine_ID, @Nullable final String trxName)
@@ -210,6 +210,18 @@ public class X_PP_Product_BOMLine extends org.compiere.model.PO implements I_PP_
 	public boolean isEnforceTolerance() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsEnforceTolerance);
+	}
+
+	@Override
+	public void setIsManualQtyInput (final boolean IsManualQtyInput)
+	{
+		set_Value (COLUMNNAME_IsManualQtyInput, IsManualQtyInput);
+	}
+
+	@Override
+	public boolean isManualQtyInput() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsManualQtyInput);
 	}
 
 	@Override

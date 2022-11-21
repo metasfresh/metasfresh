@@ -108,15 +108,15 @@ public class S_ExternalReference_StepDef
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final TestContext testContext)
 	{
+		this.externalSystems = externalSystems;
 		this.userTable = userTable;
 		this.externalRefTable = externalRefTable;
 		this.shipperTable = shipperTable;
 		this.productTable = productTable;
+		this.bpartnerTable = bpartnerTable;
 		this.testContext = testContext;
 		this.externalReferenceTypes = SpringContextHolder.instance.getBean(ExternalReferenceTypes.class);
-		this.externalSystems = SpringContextHolder.instance.getBean(ExternalSystems.class);
 		this.externalReferenceRepository = SpringContextHolder.instance.getBean(ExternalReferenceRepository.class);
-		this.bpartnerTable = bpartnerTable;
 	}
 
 	@Then("verify that S_ExternalReference was created")

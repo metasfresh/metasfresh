@@ -5,9 +5,13 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.util.Check;
+import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
 
 @Value
 @Builder
@@ -42,6 +46,12 @@ public class GlobalQRCode
 				.version(version)
 				.payloadAsJson(payloadAsJson)
 				.build();
+	}
+
+	@Nullable
+	public static GlobalQRCode ofNullableString(@Nullable final String string)
+	{
+		return StringUtils.trimBlankToNullAndMap(string, GlobalQRCode::ofString);
 	}
 
 	@JsonCreator
@@ -115,5 +125,10 @@ public class GlobalQRCode
 	public String getAsString()
 	{
 		return type.toJson() + SEPARATOR + version + SEPARATOR + payloadAsJson;
+	}
+
+	public static boolean equals(@Nullable GlobalQRCode o1, @Nullable GlobalQRCode o2)
+	{
+		return Objects.equals(o1, o2);
 	}
 }

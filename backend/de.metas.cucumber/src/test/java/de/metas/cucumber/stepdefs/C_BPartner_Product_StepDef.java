@@ -153,7 +153,7 @@ public class C_BPartner_Product_StepDef
 
 		final String bPartnerIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_BPartner_Product.COLUMNNAME_C_BPartner_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 
-		final Integer bPartnerId = bPartnerTable.getOptional(productIdentifier)
+		final Integer bPartnerId = bPartnerTable.getOptional(bPartnerIdentifier)
 				.map(I_C_BPartner::getC_BPartner_ID)
 				.orElseGet(() -> Integer.parseInt(bPartnerIdentifier));
 

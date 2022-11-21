@@ -11,6 +11,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.impl.DateTruncQueryFilterModifier;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.util.TimeUtil;
@@ -89,9 +90,9 @@ public class PPOrderDAO implements IPPOrderDAO
 				.addOnlyActiveRecordsFilter();
 
 		// Plant
-		if (query.getPlantId() != null)
+		if (!query.getOnlyPlantIds().isEmpty())
 		{
-			queryBuilder.addEqualsFilter(I_PP_Order.COLUMN_S_Resource_ID, query.getPlantId());
+			queryBuilder.addInArrayFilter(I_PP_Order.COLUMN_S_Resource_ID, query.getOnlyPlantIds());
 		}
 
 		// Warehouse
@@ -117,7 +118,14 @@ public class PPOrderDAO implements IPPOrderDAO
 		}
 		if (query.getCanBeExportedFrom() != null)
 		{
-			queryBuilder.addCompareFilter(I_PP_Order.COLUMN_CanBeExportedFrom, LESS_OR_EQUAL, asTimestamp(query.getCanBeExportedFrom()));
+			queryBuilder.addCompareFilter(I_PP_Order.COLUMNNAME_CanBeExportedFrom, LESS_OR_EQUAL, asTimestamp(query.getCanBeExportedFrom()));
+		}
+
+		//
+		// DatePromised
+		if (query.getDatePromisedDay() != null)
+		{
+			queryBuilder.addEqualsFilter(I_PP_Order.COLUMNNAME_DatePromised, query.getDatePromisedDay(), DateTruncQueryFilterModifier.DAY);
 		}
 
 		//

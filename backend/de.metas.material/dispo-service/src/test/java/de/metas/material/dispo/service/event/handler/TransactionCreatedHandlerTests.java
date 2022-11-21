@@ -67,8 +67,6 @@ public class TransactionCreatedHandlerTests
 
 	private static final int SHIPMENT_LINE_ID = 10;
 
-	private static final int SHIPMENT_LINE_ID = 10;
-
 	private TransactionEventHandler transactionEventHandler;
 
 	private CandidateRepositoryRetrieval candidateRepository;

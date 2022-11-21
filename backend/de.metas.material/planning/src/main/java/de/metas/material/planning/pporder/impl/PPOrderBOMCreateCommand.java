@@ -161,7 +161,7 @@ final class PPOrderBOMCreateCommand
 		PPOrderUtil.updateBOMLineWarehouseAndLocatorFromOrder(orderBOMLine, ppOrder);
 
 		final Quantity qtyRequired = computeQtyRequired(orderBOMLine);
-		PPOrderBOMBL.setQuantities(orderBOMLine, OrderBOMLineQuantities.ofQtyRequired(qtyRequired));
+		PPOrderBOMBL.updateRecord(orderBOMLine, OrderBOMLineQuantities.ofQtyRequired(qtyRequired));
 
 		//
 		// Save & return

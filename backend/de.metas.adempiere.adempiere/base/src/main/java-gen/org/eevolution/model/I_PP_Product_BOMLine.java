@@ -368,6 +368,27 @@ public interface I_PP_Product_BOMLine
 	String COLUMNNAME_IsEnforceTolerance = "IsEnforceTolerance";
 
 	/**
+	 * Set Manual quantity input only.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsManualQtyInput (boolean IsManualQtyInput);
+
+	/**
+	 * Get Manual quantity input only.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isManualQtyInput();
+
+	ModelColumn<I_PP_Product_BOMLine, Object> COLUMN_IsManualQtyInput = new ModelColumn<>(I_PP_Product_BOMLine.class, "IsManualQtyInput", null);
+	String COLUMNNAME_IsManualQtyInput = "IsManualQtyInput";
+
+	/**
 	 * Set Is Qty Percentage.
 	 * Indicate that this component is based in % Quantity
 	 *

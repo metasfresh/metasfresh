@@ -440,6 +440,13 @@ public final class ImmutableAttributeSet implements IAttributeSet
 		return valueObj != null ? valueObj.toString() : null;
 	}
 
+	@Override
+	@Nullable
+	public String getValueAsStringOrNull(@NonNull final AttributeCode attributeCode)
+	{
+		return getValueAsString(attributeCode);
+	}
+
 	public Optional<String> getValueAsStringIfExists(final AttributeCode attributeCode)
 	{
 		if (hasAttribute(attributeCode))

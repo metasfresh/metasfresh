@@ -8,7 +8,7 @@ Feature: material-dispo updates on shipment-schedule events
   Background: Initial Data
     And metasfresh has date and time 2022-09-19T08:00:00+01:00[Europe/Berlin]
     And metasfresh contains M_PricingSystems
-      | Identifier | Name                | Value              | OPT.Description            | OPT.IsActive |
+      | Identifier | Name                       | Value                       | OPT.Description            | OPT.IsActive |
       | ps_1       | pricing_system_name | value_md_ss_290922 | pricing_system_description | true         |
     And metasfresh contains M_PriceLists
       | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                     | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
@@ -17,7 +17,7 @@ Feature: material-dispo updates on shipment-schedule events
       | Identifier | M_PriceList_ID.Identifier | Name           | ValidFrom  |
       | plv_1      | pl_1                      | salesOrder-PLV | 2020-04-01 |
     And metasfresh contains C_BPartners:
-      | Identifier    | Name         | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | Identifier    | Name               | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | endcustomer_1 | md_ss_290922 | N            | Y              | ps_1                          |
 
   @from:cucumber

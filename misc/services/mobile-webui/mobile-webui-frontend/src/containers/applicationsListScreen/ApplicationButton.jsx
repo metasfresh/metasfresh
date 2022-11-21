@@ -1,25 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { useHistory } from 'react-router-dom';
-import { connect, useDispatch } from 'react-redux';
 
-import { appLaunchersLocation } from '../../routes/launchers';
-import { getApplicationStartFunction } from '../../apps';
-
-const ApplicationButton = ({ applicationId, caption, iconClassNames }) => {
-  const dispatch = useDispatch();
-  const history = useHistory();
-  const handleAppClick = () => {
-    const startApplicationFunc = getApplicationStartFunction(applicationId);
-    if (startApplicationFunc) {
-      dispatch(startApplicationFunc());
-    } else {
-      history.push(appLaunchersLocation({ applicationId }));
-    }
-  };
-
+const ApplicationButton = ({ caption, iconClassNames, onClick }) => {
   return (
-    <button className="button is-outlined complete-btn is-fullwidth" onClick={handleAppClick}>
+    <button className="button is-outlined complete-btn is-fullwidth" onClick={onClick}>
       <div className="full-size-btn">
         <div className="left-btn-side">
           <span className="icon">
@@ -37,9 +21,9 @@ const ApplicationButton = ({ applicationId, caption, iconClassNames }) => {
 };
 
 ApplicationButton.propTypes = {
-  applicationId: PropTypes.string.isRequired,
   caption: PropTypes.string.isRequired,
   iconClassNames: PropTypes.string,
+  onClick: PropTypes.func.isRequired,
 };
 
-export default connect(null, null)(ApplicationButton);
+export default ApplicationButton;

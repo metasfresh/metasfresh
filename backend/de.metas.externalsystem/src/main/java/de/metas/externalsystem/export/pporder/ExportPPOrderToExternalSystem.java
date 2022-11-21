@@ -55,7 +55,7 @@ public abstract class ExportPPOrderToExternalSystem extends ExportToExternalSyst
 {
 	private static final Logger logger = LogManager.getLogger(ExportPPOrderToExternalSystem.class);
 
-	private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
+	protected final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
 
 	private final ExternalSystemConfigService externalSystemConfigService;
 
@@ -87,6 +87,13 @@ public abstract class ExportPPOrderToExternalSystem extends ExportToExternalSyst
 			return Optional.empty();
 		}
 
+		final Map<String, String> parameters = buildParameters(config.getChildConfig(), ppOrderId);
+		if (parameters.isEmpty())
+		{
+			Loggables.withLogger(logger, Level.DEBUG).addLog("No parameters computed for ExternalSystemParentConfig: {}! No action is performed!", config.getId());
+			return Optional.empty();
+		}
+
 		final I_PP_Order ppOrder = ppOrderDAO.getById(ppOrderId);
 
 		final String orgCode = orgDAO.getById(ppOrder.getAD_Org_ID()).getValue();
@@ -97,7 +104,7 @@ public abstract class ExportPPOrderToExternalSystem extends ExportToExternalSyst
 								   .orgCode(orgCode)
 								   .adPInstanceId(JsonMetasfreshId.of(pInstanceId.getRepoId()))
 								   .command(getExternalCommand())
-								   .parameters(buildParameters(config.getChildConfig(), ppOrderId))
+								   .parameters(parameters)
 								   .traceId(externalSystemConfigService.getTraceId())
 								   .externalSystemChildConfigValue(config.getChildConfig().getValue())
 								   .writeAuditEndpoint(config.getAuditEndpointIfEnabled())
