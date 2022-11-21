@@ -113,6 +113,7 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 			@NonNull final ImmutableSet<ProductId> productIds,
 			@NonNull final I_M_HU hu,
 			final boolean readonly,
+			final boolean serialNoFromSequence,
 			final AttributeSourceDocument attributeSourceDocument)
 	{
 		this.documentPath = documentPath;
@@ -146,7 +147,7 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 			{
 				readonlyAttributeNames.add(attributeCode);
 			}
-			if (isProductsBOMHasSerialNo_Sequence(attribute, productIds))
+			if (serialNoFromSequence && AttributeConstants.ATTR_SerialNo.equals(attributeCode))
 			{
 				readonlyAttributeNames.add(attributeCode);
 			}
@@ -169,30 +170,7 @@ public class HUEditorRowAttributes implements IViewRowAttributes
 		AttributeStorage2ExecutionEventsForwarder.bind(attributesStorage, documentPath);
 	}
 
-	private boolean isProductsBOMHasSerialNo_Sequence(final I_M_Attribute attribute, final ImmutableSet<ProductId> productIds)
-	{
-		final IAttributeDAO attributesRepo = Services.get(IAttributeDAO.class);
-		final AttributeId attributeId = AttributeId.ofRepoId(attribute.getM_Attribute_ID());
-		final AttributeId serialNoAttributeId = attributesRepo.retrieveAttributeIdByValue(AttributeConstants.ATTR_SerialNo);
-		if (attributeId.equals(serialNoAttributeId))
-		{
-			return productIds.stream().anyMatch(this::isBOMHasSerialNo_Sequence);
-		}
-		return false;
-	}
 
-	private boolean isBOMHasSerialNo_Sequence(final ProductId productId)
-	{
-		final IProductBOMDAO productBOMsRepo = Services.get(IProductBOMDAO.class);
-		final ProductBOMId productBOMId = productBOMsRepo.getDefaultBOMIdByProductId(productId).orElse(null);
-
-		if (productBOMId != null)
-		{
-			final I_PP_Product_BOM bomRecord = productBOMsRepo.getById(productBOMId);
-			return (bomRecord.getSerialNo_Sequence() != null);
-		}
-		return false;
-	}
 
 	/*
 	Introduced in #gh11244

@@ -358,6 +358,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 					.rowProcessedPredicate(getRowProcessedPredicate(referencingTableName))
 					.attributesProvider(HUEditorRowAttributesProvider.builder()
 												.readonly(attributesAlwaysReadonly)
+												.serialNoFromSequence(false)
 												.attributeSourceDocument(getAttributeSourceDocument())
 												.build())
 					.sqlViewBinding(sqlViewBinding)
