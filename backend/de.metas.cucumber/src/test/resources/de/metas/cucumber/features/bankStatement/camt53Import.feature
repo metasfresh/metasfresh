@@ -3,6 +3,7 @@ Feature: import bank statement in camt53 import format
 
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+	And metasfresh has date and time 2020-02-28T13:30:13+01:00[Europe/Berlin]
 
   @from:cucumber
   Scenario: Import bank statement in camt53 import format, link it to a payment for an invoice

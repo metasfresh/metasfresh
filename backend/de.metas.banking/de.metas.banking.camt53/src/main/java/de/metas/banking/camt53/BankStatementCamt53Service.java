@@ -243,7 +243,7 @@ public class BankStatementCamt53Service
 		final NoBatchReportEntry2Wrapper entryWrapper = importBankStatementLineRequest.getEntryWrapper();
 		final OrgId orgId = importBankStatementLineRequest.getOrgId();
 
-		final ZonedDateTime statementLineDate = entryWrapper.getStatementLineDate()
+		final ZonedDateTime statementLineDate = entryWrapper.getStatementLineDate(orgDAO.getTimeZone(orgId))
 				.map(instant -> instant.atZone(orgDAO.getTimeZone(orgId)))
 				.orElse(null);
 

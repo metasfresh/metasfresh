@@ -38,6 +38,8 @@ import de.metas.document.DocTypeId;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.money.CurrencyId;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Check;
@@ -63,6 +65,7 @@ import org.compiere.util.TimeUtil;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 
@@ -80,6 +83,7 @@ public class C_Payment_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_Payment_StepDefData paymentTable;
@@ -181,10 +185,12 @@ public class C_Payment_StepDef
 				softly.assertThat(payment.getC_Invoice_ID()).isEqualTo(invoiceRecord.getC_Invoice_ID());
 			}
 
-			final Timestamp dateTrx = DataTableUtil.extractDateTimestampForColumnNameOrNull(dataTableRow, "OPT." + I_C_Payment.COLUMNNAME_DateTrx);
+			final LocalDate dateTrx = DataTableUtil.extractLocalDateOrNullForColumnName(dataTableRow, "OPT." + I_C_Payment.COLUMNNAME_DateTrx);
 			if (dateTrx != null)
 			{
-				softly.assertThat(payment.getDateTrx()).isEqualTo(dateTrx);
+				final OrgId orgId = OrgId.ofRepoId(payment.getAD_Org_ID());
+				final ZoneId zoneId = orgDAO.getTimeZone(orgId);
+				softly.assertThat(TimeUtil.asLocalDate(payment.getDateTrx(), zoneId)).isEqualTo(dateTrx);
 			}
 
 			final String bPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_Payment.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);

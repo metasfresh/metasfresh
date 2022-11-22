@@ -26,6 +26,8 @@ import de.metas.cucumber.stepdefs.C_BP_BankAccount_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -35,9 +37,11 @@ import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.model.I_C_BankStatement;
+import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 
@@ -46,6 +50,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER
 public class C_BankStatement_StepDef
 {
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private final C_BankStatement_StepDefData bankStatementTable;
 	private final C_BP_BankAccount_StepDefData bankAccountTable;
@@ -81,11 +86,11 @@ public class C_BankStatement_StepDef
 		final String identifier = DataTableUtil.extractStringForColumnName(row, I_C_BankStatement.COLUMNNAME_C_BankStatement_ID + "." + TABLECOLUMN_IDENTIFIER);
 
 		final SoftAssertions softly = new SoftAssertions();
-		
+
 		final I_C_BankStatement bankStatementRecord = bankStatementTable.get(identifier);
 		softly.assertThat(bankStatementRecord).isNotNull();
 		InterfaceWrapperHelper.refresh(bankStatementRecord);
-		
+
 		final BigDecimal beginningBalance = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_C_BankStatement.COLUMNNAME_BeginningBalance);
 		if (beginningBalance != null)
 		{
@@ -114,10 +119,12 @@ public class C_BankStatement_StepDef
 			softly.assertThat(bankStatementRecord.getC_BP_BankAccount_ID()).isEqualTo(bankAccountId);
 		}
 
-		final Timestamp statementDate = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + I_C_BankStatement.COLUMNNAME_StatementDate);
+		final LocalDate statementDate = DataTableUtil.extractLocalDateOrNullForColumnName(row, "OPT." + I_C_BankStatement.COLUMNNAME_StatementDate);
 		if (statementDate != null)
 		{
-			softly.assertThat(bankStatementRecord.getStatementDate()).isEqualTo(statementDate);
+			final OrgId orgId = OrgId.ofRepoId(bankStatementRecord.getAD_Org_ID());
+			final ZoneId zoneId = orgDAO.getTimeZone(orgId);
+			softly.assertThat(TimeUtil.asLocalDate(bankStatementRecord.getStatementDate(), zoneId)).isEqualTo(statementDate);
 		}
 
 		final boolean isReconciled = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_C_BankStatement.COLUMNNAME_IsReconciled, false);
