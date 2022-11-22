@@ -32,7 +32,6 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_HU_Attribute;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_HU_UniqueAttribute;
-import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.storage.IHUStorageDAO;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.i18n.AdMessageKey;
@@ -202,7 +201,7 @@ public class HUUniqueAttributesService
 			}
 
 			final I_M_HU huRecord = huDAO.getById(HuId.ofRepoId(huAttribute.getM_HU_ID()));
-			if(!huStatusBL.isQtyOnHand(huRecord.getHUStatus()))
+			if (!huStatusBL.isQtyOnHand(huRecord.getHUStatus()))
 			{
 				// don't validate HU Statuses that are not qtyOnHand here
 				continue;
@@ -240,20 +239,14 @@ public class HUUniqueAttributesService
 				.forEach(this::createOrUpdateHUUniqueAttribute);
 	}
 
-	public void validatePPOrderASI(@NonNull final I_PP_Order ppOrder)
+	public void validateASI(@NonNull final AttributeSetInstanceId attributeSetInstanceId, @NonNull final ProductId productId)
 	{
-		final AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.ofRepoIdOrNone(ppOrder.getM_AttributeSetInstance_ID());
 		if (!attributeSetInstanceId.isRegular())
 		{
 			//nothing to do
 			return;
 		}
 
-		validateASI(attributeSetInstanceId, ProductId.ofRepoId(ppOrder.getM_Product_ID()));
-	}
-
-	private void validateASI(@NonNull final AttributeSetInstanceId attributeSetInstanceId, @NonNull final ProductId productId)
-	{
 		final List<I_M_AttributeInstance> attributeInstances = attributeDAO.retrieveAttributeInstances(attributeSetInstanceId);
 
 		for (final I_M_AttributeInstance attributeInstance : attributeInstances)

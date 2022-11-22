@@ -26,11 +26,13 @@ import de.metas.handlingunits.attribute.impl.HUUniqueAttributesService;
 import de.metas.handlingunits.model.I_PP_Order;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleRepository;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.compiere.model.ModelValidator;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderPlanningStatus;
@@ -85,8 +87,11 @@ public class PP_Order
 	}
 
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
-	private void checkHUUniqueAttributes(@NonNull final I_PP_Order order)
+	private void checkHUUniqueAttributes(@NonNull final I_PP_Order ppOrder)
 	{
-		huUniqueAttributesService.validatePPOrderASI(order);
+		final AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.ofRepoIdOrNone(ppOrder.getM_AttributeSetInstance_ID());
+		final ProductId productId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
+
+		huUniqueAttributesService.validateASI(attributeSetInstanceId, productId);
 	}
 }
