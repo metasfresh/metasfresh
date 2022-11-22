@@ -36,7 +36,7 @@ import static org.assertj.core.api.Assertions.*;
 
 public class InfrastructureSupport
 {
-	private final static transient Logger logger = LogManager.getLogger(InfrastructureSupport.class);
+	private final static Logger logger = LogManager.getLogger(InfrastructureSupport.class);
 
 	/**
 	 * Can be changed to {@code false} when running/developing cucumber-tests locally.
@@ -44,10 +44,10 @@ public class InfrastructureSupport
 	 * The benefits are:
 	 * - cucumber startup time is reduced drastically
 	 * - it's easier to inspect the local DB. In fact you can start the webapi (not ServerRoot aka app-server) and the frontend, and inspect everything in the UI.
-	 * 
+	 * <p>
 	 * The drawback is that your DB is probably polluted which might be an additional reason for possible test failures.
 	 * To always run your cucumber-tests on an "unpolluted" DB, you can use templates as follows - <b>see de.metas-cucumber/dev-support!</b>
-	 *
+	 * <p>
 	 * Reset your local infrastructure-DB
 	 * Apply the local migration scripts
 	 * Make sure there is no open connection to the DB (otherwise there will be an error)
@@ -125,7 +125,7 @@ public class InfrastructureSupport
 		if (runAgainstDockerizedDatabase)
 		{
 			// choose the docker tag such that no later scripts from other branches are already in this image
-			final String fullImageName = "metasfresh/metasfresh-db:5.176.1_23146_master";
+			final String fullImageName = "metasfresh/metasfresh-db:5.176.1_23743_master";
 			logger.info("Start dockerized metasfresh-db {}", fullImageName);
 
 			// the DB needs to be populated
