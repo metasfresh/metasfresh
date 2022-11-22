@@ -111,11 +111,16 @@ class PPOrderLinesViewDataLoader
 			final WindowId viewWindowId,
 			final ASIViewRowAttributesProvider asiAttributesProvider,
 			@NonNull final SqlViewBinding huSQLViewBinding,
-			@NonNull final HUReservationService huReservationService)
+			@NonNull final HUReservationService huReservationService,
+			final boolean serialNoFromSequence)
 	{
 		huEditorRepo = SqlHUEditorViewRepository.builder()
 				.windowId(viewWindowId)
-				.attributesProvider(HUEditorRowAttributesProvider.builder().readonly(false).attributeSourceDocument(AttributeSourceDocument.ManufacturingOrder).build())
+				.attributesProvider(HUEditorRowAttributesProvider.builder()
+											.readonly(false)
+											.serialNoFromSequence(serialNoFromSequence)
+											.attributeSourceDocument(AttributeSourceDocument.ManufacturingOrder)
+											.build())
 				.sqlViewBinding(huSQLViewBinding)
 				.huReservationService(huReservationService)
 				.build();

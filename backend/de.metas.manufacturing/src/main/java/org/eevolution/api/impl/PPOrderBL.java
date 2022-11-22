@@ -620,4 +620,11 @@ public class PPOrderBL implements IPPOrderBL
 
 		materialEventService.postEventAfterNextCommit(ppOrderCreatedEvent);
 	}
+
+	@Override
+	public boolean hasSerialNumberSequence(@NonNull final PPOrderId ppOrderId)
+	{
+		return orderBOMService.getSerialNoSequenceId(ppOrderId).isPresent();
+	}
+
 }

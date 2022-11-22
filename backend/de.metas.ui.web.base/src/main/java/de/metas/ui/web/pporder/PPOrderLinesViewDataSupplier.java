@@ -44,13 +44,15 @@ public class PPOrderLinesViewDataSupplier
 			@NonNull final PPOrderId ppOrderId,
 			@Nullable final ASIViewRowAttributesProvider asiAttributesProvider,
 			@NonNull final SqlViewBinding huSQLViewBinding,
-			@NonNull final HUReservationService huReservationService)
+			@NonNull final HUReservationService huReservationService,
+			final boolean serialNoFromSequence)
 	{
 		this.asiAttributesProvider = asiAttributesProvider;
 		dataSupplier = ExtendedMemorizingSupplier
 				.of(() -> PPOrderLinesViewDataLoader
 						.builder(viewWindowId)
 						.asiAttributesProvider(asiAttributesProvider)
+						.serialNoFromSequence(serialNoFromSequence)
 						.huSQLViewBinding(huSQLViewBinding)
 						.huReservationService(huReservationService)
 						.build()
