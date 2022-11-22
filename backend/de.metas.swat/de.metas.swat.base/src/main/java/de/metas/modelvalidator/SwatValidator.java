@@ -23,6 +23,7 @@ import de.metas.i18n.IMsgBL;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inout.model.validator.M_InOut;
 import de.metas.inout.model.validator.M_QualityNote;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.invoice.callout.C_InvoiceLine_TabCallout;
@@ -38,6 +39,7 @@ import de.metas.request.model.validator.R_Request;
 import de.metas.shipping.model.validator.M_ShipperTransportation;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.modelvalidator.IModelInterceptor;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
@@ -73,6 +75,7 @@ import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
 
 import javax.sql.DataSource;
 import java.time.Duration;
@@ -83,8 +86,15 @@ import java.util.Properties;
  *
  * @author tsa
  */
+@Component
 public class SwatValidator implements ModelValidator
 {
+	private final IShipmentScheduleBL shipmentScheduleBL;
+
+	public  SwatValidator(@NonNull final IShipmentScheduleBL shipmentScheduleBL)
+	{
+		this.shipmentScheduleBL=shipmentScheduleBL;
+	}
 	private static final AdMessageKey MSG_ORG_ADEMPIERE_UTIL_CHECK_EXCEPTION_HEADER_MESSAGE = AdMessageKey.of("org.adempiere.util.Check.ExceptionHeaderMessage");
 
 	private static final String SYSCONFIG_ORG_ADEMPIERE_UTIL_CHECK_THROW_EXCEPTION = "org.adempiere.util.Check.ThrowException";
@@ -203,7 +213,7 @@ public class SwatValidator implements ModelValidator
 		}
 
 		//
-		engine.addModelValidator(new de.metas.tourplanning.model.validator.TourPlanningModuleActivator(), client);
+		engine.addModelValidator(new de.metas.tourplanning.model.validator.TourPlanningModuleActivator(shipmentScheduleBL), client);
 
 		final IInvoiceCandidateListeners invoiceCandidateListeners = Services.get(IInvoiceCandidateListeners.class);
 		invoiceCandidateListeners.addListener(OrderAndInOutInvoiceCandidateListener.instance);

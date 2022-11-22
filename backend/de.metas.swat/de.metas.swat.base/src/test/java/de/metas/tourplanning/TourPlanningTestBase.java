@@ -20,7 +20,6 @@ import de.metas.tourplanning.api.ITourInstanceDAO;
 import de.metas.tourplanning.api.impl.DeliveryDayBL;
 import de.metas.tourplanning.api.impl.DeliveryDayDAO;
 import de.metas.tourplanning.api.impl.ShipmentScheduleDeliveryDayBL;
-import de.metas.tourplanning.api.impl.ShipmentScheduleDeliveryDayHandler;
 import de.metas.tourplanning.model.I_M_DeliveryDay;
 import de.metas.tourplanning.model.I_M_DeliveryDay_Alloc;
 import de.metas.tourplanning.model.I_M_ShipmentSchedule;
@@ -35,7 +34,6 @@ import org.adempiere.model.PlainContextAware;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.util.lang.IContextAware;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_OrgInfo;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -96,19 +94,17 @@ public abstract class TourPlanningTestBase
 	{
 		AdempiereTestHelper.get().init();
 
-
-		SpringContextHolder.registerJUnitBean(new ShipmentScheduleBL(new DeliveryPlanningService(new DeliveryPlanningRepository())));
-
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final String trxName = trxManager.createTrxName("Dummy_ThreadInherited", true);
 		trxManager.setThreadInheritedTrxName(trxName);
 
 		this.contextProvider = PlainContextAware.newWithThreadInheritedTrx();
 
+		final IShipmentScheduleBL shipmentScheduleBL = new ShipmentScheduleBL(new DeliveryPlanningService(new DeliveryPlanningRepository()));
 		//
 		// Model Interceptors
 		Services.get(IModelInterceptorRegistry.class)
-				.addModelInterceptor(new de.metas.tourplanning.model.validator.TourPlanningModuleActivator());
+				.addModelInterceptor(new de.metas.tourplanning.model.validator.TourPlanningModuleActivator(shipmentScheduleBL));
 
 		//
 		// Services
@@ -119,7 +115,7 @@ public abstract class TourPlanningTestBase
 		this.tourInstanceBL = Services.get(ITourInstanceBL.class);
 		this.tourInstanceDAO = Services.get(ITourInstanceDAO.class);
 
-		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
+		final I_AD_OrgInfo orgInfo =newInstance(I_AD_OrgInfo.class);
 		orgInfo.setAD_Org_ID(OrgId.ANY.getRepoId());
 		orgInfo.setStoreCreditCardData(StoreCreditCardNumberMode.DONT_STORE.getCode());
 		orgInfo.setTimeZone(timeZone.getId());
@@ -263,7 +259,7 @@ public abstract class TourPlanningTestBase
 
 	protected I_M_DeliveryDay createDeliveryDay(final String deliveryDateTimeStr, final int bufferHours, final int bPartnerId, final int bpLocationId)
 	{
-		final I_M_DeliveryDay deliveryDay = newInstance(I_M_DeliveryDay.class, contextProvider);
+		final I_M_DeliveryDay deliveryDay =newInstance(I_M_DeliveryDay.class, contextProvider);
 		deliveryDay.setIsActive(true);
 		deliveryDay.setC_BPartner_ID(bPartnerId);
 		deliveryDay.setC_BPartner_Location_ID(bpLocationId);

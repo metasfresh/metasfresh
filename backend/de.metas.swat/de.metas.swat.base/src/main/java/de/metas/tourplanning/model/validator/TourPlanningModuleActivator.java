@@ -22,10 +22,13 @@ package de.metas.tourplanning.model.validator;
  * #L%
  */
 
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.tourplanning.api.impl.ShipmentScheduleDeliveryDayHandler;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 
 import lombok.NonNull;
+import org.springframework.stereotype.Component;
 
 /**
  * (MAIN) Tour Planning Module Activator
@@ -33,8 +36,15 @@ import lombok.NonNull;
  * @author tsa
  *
  */
+@Component
 public class TourPlanningModuleActivator extends AbstractModuleInterceptor
 {
+	final IShipmentScheduleBL shipmentScheduleBL;
+
+	public TourPlanningModuleActivator (@NonNull final IShipmentScheduleBL shipmentScheduleBL)
+	{
+		this.shipmentScheduleBL = shipmentScheduleBL;
+	}
 	@Override
 	protected void registerInterceptors(@NonNull IModelValidationEngine engine)
 	{
@@ -47,6 +57,7 @@ public class TourPlanningModuleActivator extends AbstractModuleInterceptor
 		//
 		// Main documents integration
 		engine.addModelValidator(new de.metas.tourplanning.model.validator.C_Order());
+		engine.addModelValidator(new de.metas.tourplanning.model.validator.M_ShipmentSchedule(shipmentScheduleBL));
 		engine.addModelValidator(new de.metas.tourplanning.model.validator.M_ShipperTransportation());
 	}
 

@@ -41,13 +41,16 @@ import de.metas.tourplanning.spi.IDeliveryDayCreateHandler;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
+import org.springframework.stereotype.Component;
 
+@Component
 public final class ShipmentScheduleDeliveryDayHandler extends DeliveryDayHandlerAdapter implements IDeliveryDayCreateHandler
 {
-	public static final transient ShipmentScheduleDeliveryDayHandler INSTANCE = new ShipmentScheduleDeliveryDayHandler();
+	final IShipmentScheduleBL shipmentScheduleBL;
 
-	private ShipmentScheduleDeliveryDayHandler()
+	public ShipmentScheduleDeliveryDayHandler(@NonNull final IShipmentScheduleBL shipmentScheduleBL)
 	{
+		this.shipmentScheduleBL = shipmentScheduleBL;
 	}
 
 	@Override
@@ -70,7 +73,6 @@ public final class ShipmentScheduleDeliveryDayHandler extends DeliveryDayHandler
 	{
 		// Services
 		final IShipmentScheduleDeliveryDayBL shipmentScheduleDeliveryDayBL = Services.get(IShipmentScheduleDeliveryDayBL.class);
-		final IShipmentScheduleBL shipmentScheduleBL = SpringContextHolder.instance.getBean(IShipmentScheduleBL.class); // TODO how to handle this
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
 		//

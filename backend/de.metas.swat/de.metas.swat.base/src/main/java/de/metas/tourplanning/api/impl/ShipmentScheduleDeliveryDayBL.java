@@ -21,7 +21,7 @@ public class ShipmentScheduleDeliveryDayBL implements IShipmentScheduleDeliveryD
 	@Override
 	public IDeliveryDayAllocable asDeliveryDayAllocable(final I_M_ShipmentSchedule sched)
 	{
-		return ShipmentScheduleDeliveryDayHandler.INSTANCE.asDeliveryDayAllocable(sched);
+		return new ShipmentScheduleDeliveryDayAllocable(sched);
 	}
 
 	@Override
