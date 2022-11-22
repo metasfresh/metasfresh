@@ -274,7 +274,7 @@ public class C_Flatrate_Term
 				if (lastPeriodEndDate.compareTo(endDate) < 0)
 				{
 					errors.add(msgBL.getMsg(ctx, MSG_TERM_ERROR_PERIOD_END_DATE_BEFORE_TERM_END_DATE_2P,
-							new Object[] { lastPeriodEndDate.toLocalDate(), invoicingCal.getName() }));
+							new Object[] { lastPeriodEndDate.toTimestamp(orgDAO::getTimeZone), invoicingCal.getName() }));
 				}
 			}
 		}
