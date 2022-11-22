@@ -28,7 +28,9 @@ import de.metas.incoterms.IncotermsId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.order.OrderId;
+import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
+import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
@@ -42,7 +44,10 @@ import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Delivery_Planning;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 
 @Repository
 public class DeliveryPlanningRepository
@@ -90,6 +95,31 @@ public class DeliveryPlanningRepository
 				.batch(record.getBatch())
 				.originCountry(record.getOriginCountry())
 				.build();
+	}
+
+
+	public void generateDeliveryPlanning(final DeliveryPlanningCreateRequest request)
+	{
+		final I_M_Delivery_Planning deliveryPlanningRecord = newInstance(I_M_Delivery_Planning.class);
+
+		final LocalDateAndOrgId plannedDeliveryDate = request.getPlannedDeliveryDate();
+
+		deliveryPlanningRecord.setAD_Org_ID(request.getOrgId().getRepoId());
+		deliveryPlanningRecord.setM_ReceiptSchedule_ID(ReceiptScheduleId.toRepoId(request.getReceiptScheduleId()));
+		deliveryPlanningRecord.setM_ShipmentSchedule_ID(ShipmentScheduleId.toRepoId(request.getShipmentScheduleId()));
+		deliveryPlanningRecord.setC_Order_ID(OrderId.toRepoId(request.getOrderId()));
+		deliveryPlanningRecord.setC_OrderLine_ID(OrderLineId.toRepoId(request.getOrderLineId()));
+		deliveryPlanningRecord.setM_Product_ID(ProductId.toRepoId(request.getProductId()));
+		deliveryPlanningRecord.setM_Warehouse_ID(WarehouseId.toRepoId(request.getWarehouseId()));
+		deliveryPlanningRecord.setM_ShipperTransportation_ID(ShipperTransportationId.toRepoId(request.getShipperTransportationId()));
+		deliveryPlanningRecord.setC_BPartner_ID(BPartnerId.toRepoId(request.getPartnerId()));
+		deliveryPlanningRecord.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(request.getBPartnerLocationId()));
+		deliveryPlanningRecord.setC_Incoterms_ID(IncotermsId.toRepoId(request.getIncotermsId()));
+		deliveryPlanningRecord.setM_SectionCode_ID(SectionCodeId.toRepoId(request.getSectionCodeId()));
+
+		deliveryPlanningRecord.setPlannedDeliveryDate(plannedDeliveryDate == null? null : plannedDeliveryDate.toTimestamp(orgDAO::getTimeZone));
+		// TODO
+
 	}
 
 

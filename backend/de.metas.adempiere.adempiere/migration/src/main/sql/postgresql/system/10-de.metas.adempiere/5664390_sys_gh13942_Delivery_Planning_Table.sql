@@ -1054,3 +1054,22 @@ UPDATE AD_Column SET IsMandatory='Y',Updated=TO_TIMESTAMP('2022-11-17 15:17:37',
 
 
 
+-- Column: M_Delivery_Planning.C_OrderLine_ID
+-- 2022-11-22T18:25:01.037Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,585123,561,0,30,542259,'C_OrderLine_ID',TO_TIMESTAMP('2022-11-22 20:25:00','YYYY-MM-DD HH24:MI:SS'),100,'N','','D',0,10,'','Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Orderline',0,0,TO_TIMESTAMP('2022-11-22 20:25:00','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- 2022-11-22T18:25:01.069Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=585123 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2022-11-22T18:25:01.231Z
+/* DDL */  select update_Column_Translation_From_AD_Element(561) 
+;
+
+
+-- Column: M_Delivery_Planning.C_OrderLine_ID
+-- 2022-11-22T18:25:41.926Z
+UPDATE AD_Column SET AD_Val_Rule_ID=540077,Updated=TO_TIMESTAMP('2022-11-22 20:25:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585123
+;
+

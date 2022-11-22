@@ -61,3 +61,13 @@ CREATE TABLE public.M_Delivery_Planning
 )
 ;
 
+
+
+
+-- 2022-11-22T18:25:09.349Z
+/* DDL */ SELECT public.db_alter_table('M_Delivery_Planning','ALTER TABLE public.M_Delivery_Planning ADD COLUMN C_OrderLine_ID NUMERIC(10)')
+;
+
+-- 2022-11-22T18:25:09.393Z
+ALTER TABLE M_Delivery_Planning ADD CONSTRAINT COrderLine_MDeliveryPlanning FOREIGN KEY (C_OrderLine_ID) REFERENCES public.C_OrderLine DEFERRABLE INITIALLY DEFERRED
+;

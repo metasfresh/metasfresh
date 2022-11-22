@@ -93,17 +93,10 @@ import static org.compiere.util.TimeUtil.asTimestamp;
 public class ShipmentScheduleRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IModelCacheInvalidationService cacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
-
-	private final IShipmentScheduleBL shipmentScheduleBL;
-
-
-	public ShipmentScheduleRepository(@NonNull final IShipmentScheduleBL shipmentScheduleBL)
-	{
-		this.shipmentScheduleBL = shipmentScheduleBL;
-	}
 
 	public List<ShipmentSchedule> getBy(@NonNull final ShipmentScheduleQuery query)
 	{

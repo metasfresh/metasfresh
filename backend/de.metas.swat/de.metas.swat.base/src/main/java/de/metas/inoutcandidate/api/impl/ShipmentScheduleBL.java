@@ -11,7 +11,6 @@ import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.common.util.time.SystemTime;
 import de.metas.deliveryplanning.DeliveryPlanningCreateRequest;
-import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.deliveryplanning.DeliveryPlanningType;
 import de.metas.document.location.DocumentLocation;
 import de.metas.document.location.IDocumentLocationBL;
@@ -93,7 +92,6 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
-import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -166,7 +164,6 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * @see IShipmentSchedulePA
  * @see OlAndSched
  */
-@Service
 public class ShipmentScheduleBL implements IShipmentScheduleBL
 {
 	private static final AdMessageKey MSG_SHIPMENT_SCHEDULE_ALREADY_PROCESSED = AdMessageKey.of("ShipmentScheduleAlreadyProcessed");
@@ -186,9 +183,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-	private final DeliveryPlanningService deliveryPlanningService;
-
 	final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 
 	final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
@@ -199,11 +193,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	public boolean allMissingSchedsWillBeCreatedLater()
 	{
 		return postponeMissingSchedsCreationUntilClose.get();
-	}
-
-	public ShipmentScheduleBL(@NonNull final DeliveryPlanningService deliveryPlanningService)
-	{
-		this.deliveryPlanningService = deliveryPlanningService;
 	}
 
 	@Override
@@ -988,7 +977,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	}
 
 	@Override
-	public void generateDeliveryPlanning(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
+	public DeliveryPlanningCreateRequest createDeliveryPlanningRequest(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
 	{
 		final OrderId orderId = OrderId.ofRepoIdOrNull(shipmentScheduleRecord.getC_Order_ID());
 		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(shipmentScheduleRecord.getC_OrderLine_ID());
@@ -1033,7 +1022,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		}
 
-		deliveryPlanningService.generateDeliveryPlanning(requestBuilder.build());
-
+		return requestBuilder.build();
 	}
 }

@@ -33,7 +33,6 @@ import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.location.adapter.IDocumentLocationAdapter;
 import de.metas.incoterms.IncotermsId;
 import de.metas.inout.IInOutBL;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.inoutcandidate.api.ApplyReceiptScheduleChangesRequest;
@@ -51,8 +50,10 @@ import de.metas.inoutcandidate.spi.IReceiptScheduleListener;
 import de.metas.inoutcandidate.spi.impl.CompositeReceiptScheduleListener;
 import de.metas.interfaces.I_C_BPartner;
 import de.metas.logging.LogManager;
+import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
@@ -60,6 +61,7 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.sectionCode.SectionCodeId;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
@@ -116,6 +118,13 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private IReceiptScheduleQtysBL receiptScheduleQtysBL = Services.get(IReceiptScheduleQtysBL.class);
 
 	@Override
 	public void addReceiptScheduleListener(IReceiptScheduleListener listener)
@@ -179,7 +188,8 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	@Override
 	public BigDecimal getQtyOrdered(final I_M_ReceiptSchedule rs)
 	{
-		return Services.get(IReceiptScheduleQtysBL.class).getQtyOrdered(rs);
+
+		return receiptScheduleQtysBL.getQtyOrdered(rs);
 	}
 
 	@Override
@@ -749,54 +759,54 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 		}
 	}
 
-
-
 	@Override
-	public void generateDeliveryPlanning(@NonNull final I_M_ReceiptSchedule receiptScheduleRecord)
+	public DeliveryPlanningCreateRequest createDeliveryPlanningRequest(@NonNull final I_M_ReceiptSchedule receiptScheduleRecord)
 	{
-		// final OrderId orderId = OrderId.ofRepoIdOrNull(receiptScheduleRecord.getC_Order_ID());
-		// final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(receiptScheduleRecord.getC_OrderLine_ID());
-		//
-		// final I_C_UOM uomOfProduct = UOMreceiptScheduleRecord.getC_UOM_ID();
-		//
-		// final Quantity qtyOrdered = Quantity.of(receiptScheduleRecord.getQtyOrdered(), uomOfProduct);
-		// final OrgId orgId = OrgId.ofRepoId(receiptScheduleRecord.getAD_Org_ID());
-		//
-		// final DeliveryPlanningCreateRequest.DeliveryPlanningCreateRequestBuilder requestBuilder = DeliveryPlanningCreateRequest.builder()
-		// 		.orgId(orgId)
-		// 		.clientId(ClientId.ofRepoId(receiptScheduleRecord.getAD_Client_ID()))
-		// 		.receiptScheduleId(ReceiptScheduleId.ofRepoId(receiptScheduleRecord.getM_ReceiptSchedule_ID()))
-		// 		.deliveryPlanningType(DeliveryPlanningType.Incoming)
-		// 		.orderId(orderId)
-		// 		.warehouseId(WarehouseId.ofRepoId(receiptScheduleRecord.getM_Warehouse_ID()))
-		// 		.productId(ProductId.ofRepoId(receiptScheduleRecord.getM_Product_ID()))
-		// 		.partnerId(BPartnerId.ofRepoId(receiptScheduleRecord.getC_BPartner_ID()))
-		// 		.bPartnerLocationId(BPartnerLocationId.ofRepoId(receiptScheduleRecord.getC_BPartner_ID(), receiptScheduleRecord.getC_BPartner_Location_ID()))
-		// 		.sectionCodeId(SectionCodeId.ofRepoIdOrNull(receiptScheduleRecord.getM_SectionCode_ID()))
-		// 		.isActive(receiptScheduleRecord.isActive())
-		// 		.qtyOredered(qtyOrdered)
-		// 		.qtyTotalOpen(qtyOrdered.subtract(getQtyDelivered(receiptScheduleRecord)))
-		// 		.plannedDeliveryDate(LocalDateAndOrgId.ofTimestamp(receiptScheduleRecord.getDeliveryDate_Effective(), orgId, orgDAO::getTimeZone));
-		//
-		// if (orderId != null)
-		// {
-		// 	final I_C_Order order = orderDAO.getById(orderId);
-		//
-		// 	requestBuilder.isB2B(order.isDropShip())
-		// 			.incotermsId(IncotermsId.ofRepoIdOrNull(order.getC_Incoterms_ID()));
-		// }
-		//
-		// if (orderLineId != null)
-		// {
-		// 	final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderLineId);
-		// 	final Timestamp dateDelivered = orderLine.getDateDelivered();
-		// 	if (dateDelivered != null)
-		// 	{
-		// 		requestBuilder.actualDeliveryDate(LocalDateAndOrgId.ofTimestamp(dateDelivered, orgId, orgDAO::getTimeZone));
-		// 	}
-		//
-		// }
-		//
-		// deliveryPlanningService.generateDeliveryPlanning(requestBuilder.build());
+		final OrderId orderId = OrderId.ofRepoIdOrNull(receiptScheduleRecord.getC_Order_ID());
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(receiptScheduleRecord.getC_OrderLine_ID());
+
+		final I_C_UOM uom = uomDAO.getById(receiptScheduleRecord.getC_UOM_ID());
+
+		final Quantity qtyOrdered = Quantity.of(receiptScheduleQtysBL.getQtyOrdered(receiptScheduleRecord), uom);
+
+		final Quantity qtyMoved = Quantity.of(receiptScheduleQtysBL.getQtyMoved(receiptScheduleRecord), uom);
+		final OrgId orgId = OrgId.ofRepoId(receiptScheduleRecord.getAD_Org_ID());
+
+		final DeliveryPlanningCreateRequest.DeliveryPlanningCreateRequestBuilder requestBuilder = DeliveryPlanningCreateRequest.builder()
+				.orgId(orgId)
+				.clientId(ClientId.ofRepoId(receiptScheduleRecord.getAD_Client_ID()))
+				.receiptScheduleId(ReceiptScheduleId.ofRepoId(receiptScheduleRecord.getM_ReceiptSchedule_ID()))
+				.deliveryPlanningType(DeliveryPlanningType.Incoming)
+				.orderId(orderId)
+				.warehouseId(WarehouseId.ofRepoId(receiptScheduleRecord.getM_Warehouse_ID()))
+				.productId(ProductId.ofRepoId(receiptScheduleRecord.getM_Product_ID()))
+				.partnerId(BPartnerId.ofRepoId(receiptScheduleRecord.getC_BPartner_ID()))
+				.bPartnerLocationId(BPartnerLocationId.ofRepoId(receiptScheduleRecord.getC_BPartner_ID(), receiptScheduleRecord.getC_BPartner_Location_ID()))
+				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(receiptScheduleRecord.getM_SectionCode_ID()))
+				.isActive(receiptScheduleRecord.isActive())
+				.qtyOredered(qtyOrdered)
+				.qtyTotalOpen(qtyOrdered.subtract(qtyMoved))
+				.plannedDeliveryDate(LocalDateAndOrgId.ofTimestamp(receiptScheduleRecord.getMovementDate(), orgId, orgDAO::getTimeZone));
+
+		if (orderId != null)
+		{
+			final I_C_Order order = orderDAO.getById(orderId);
+
+			requestBuilder.isB2B(order.isDropShip())
+					.incotermsId(IncotermsId.ofRepoIdOrNull(order.getC_Incoterms_ID()));
+		}
+
+		if (orderLineId != null)
+		{
+			final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderLineId);
+			final Timestamp dateDelivered = orderLine.getDateDelivered();
+			if (dateDelivered != null)
+			{
+				requestBuilder.actualDeliveryDate(LocalDateAndOrgId.ofTimestamp(dateDelivered, orgId, orgDAO::getTimeZone));
+			}
+
+		}
+
+		return requestBuilder.build();
 	}
 }

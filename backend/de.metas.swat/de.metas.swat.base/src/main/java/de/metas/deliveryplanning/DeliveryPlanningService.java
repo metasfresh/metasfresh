@@ -22,6 +22,12 @@
 
 package de.metas.deliveryplanning;
 
+import de.metas.inoutcandidate.api.IReceiptScheduleBL;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.compiere.model.I_M_Delivery_Planning;
 import org.springframework.stereotype.Service;
 
@@ -29,7 +35,27 @@ import org.springframework.stereotype.Service;
 public class DeliveryPlanningService
 {
 
-	public void generateDeliveryPlanning(final DeliveryPlanningCreateRequest request)
+	private DeliveryPlanningRepository deliveryPlanningRepository;
+
+	public DeliveryPlanningService(@NonNull final DeliveryPlanningRepository deliveryPlanningRepository)
 	{
+		this.deliveryPlanningRepository = deliveryPlanningRepository;
+	}
+
+	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+
+	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
+
+
+	public void generateIncomingDeliveryPlanning(final I_M_ReceiptSchedule receiptScheduleRecord)
+	{
+		final DeliveryPlanningCreateRequest deliveryPlanningRequest = receiptScheduleBL.createDeliveryPlanningRequest(receiptScheduleRecord);
+		deliveryPlanningRepository.generateDeliveryPlanning(deliveryPlanningRequest);
+	}
+
+	public void generateOutgoingDeliveryPlanning(final I_M_ShipmentSchedule shipmentScheduleRecord)
+	{
+		final DeliveryPlanningCreateRequest deliveryPlanningRequest = shipmentScheduleBL.createDeliveryPlanningRequest(shipmentScheduleRecord);
+		deliveryPlanningRepository.generateDeliveryPlanning(deliveryPlanningRequest);
 	}
 }

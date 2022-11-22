@@ -2146,3 +2146,40 @@ UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=28, Updated=now(), UpdatedBy=1
 UPDATE AD_TreeNodeMM SET Parent_ID=1000016, SeqNo=29, Updated=now(), UpdatedBy=100 WHERE  Node_ID=541905 AND AD_Tree_ID=10
 ;
 
+
+
+-- Table: M_Delivery_Planning
+-- 2022-11-22T18:27:39.566Z
+UPDATE AD_Table SET AD_Window_ID=541632,Updated=TO_TIMESTAMP('2022-11-22 20:27:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=542259
+;
+
+-- Field: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> Orderline
+-- Column: M_Delivery_Planning.C_OrderLine_ID
+-- 2022-11-22T18:28:17.429Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,585123,708152,0,546674,TO_TIMESTAMP('2022-11-22 20:28:16','YYYY-MM-DD HH24:MI:SS'),100,'',10,'D','','Y','Y','N','N','N','N','N','Orderline',TO_TIMESTAMP('2022-11-22 20:28:16','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-11-22T18:28:17.462Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=708152 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-11-22T18:28:17.496Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(561) 
+;
+
+-- 2022-11-22T18:28:17.561Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=708152
+;
+
+-- 2022-11-22T18:28:17.594Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(708152)
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 10 -> links.Orderline
+-- Column: M_Delivery_Planning.C_OrderLine_ID
+-- 2022-11-22T18:29:11.786Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,708152,0,546674,550033,613545,'F',TO_TIMESTAMP('2022-11-22 20:29:11','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Orderline',80,0,0,TO_TIMESTAMP('2022-11-22 20:29:11','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+
+

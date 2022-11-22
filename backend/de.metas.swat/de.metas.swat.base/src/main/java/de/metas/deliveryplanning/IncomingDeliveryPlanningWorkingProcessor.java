@@ -31,6 +31,7 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.util.Services;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 
 import java.util.Properties;
@@ -38,7 +39,7 @@ import java.util.Properties;
 public class IncomingDeliveryPlanningWorkingProcessor extends WorkpackageProcessorAdapter
 {
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
-	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
+	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(de.metas.deliveryplanning.DeliveryPlanningService.class);
 
 	public static void createWorkpackage(final I_M_ReceiptSchedule receiptSchedule)
 	{
@@ -77,7 +78,7 @@ public class IncomingDeliveryPlanningWorkingProcessor extends WorkpackageProcess
 	{
 		// retrieve the order and generate requests
 		queueDAO.retrieveAllItems(workPackage, I_M_ReceiptSchedule.class)
-				.forEach(receiptScheduleBL::generateDeliveryPlanning);
+				.forEach(deliveryPlanningService::generateIncomingDeliveryPlanning);
 
 		return Result.SUCCESS;
 	}
