@@ -129,4 +129,10 @@ public class DeliveryPlanningCreateRequest
 	@Nullable
 	String releaseNo;
 
+	@Nullable
+	String forwarder;
+
+	@Nullable
+	String transportDetails;
+
 }

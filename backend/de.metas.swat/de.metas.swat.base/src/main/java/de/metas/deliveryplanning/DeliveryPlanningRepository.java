@@ -97,12 +97,14 @@ public class DeliveryPlanningRepository
 				.build();
 	}
 
-
 	public void generateDeliveryPlanning(final DeliveryPlanningCreateRequest request)
 	{
 		final I_M_Delivery_Planning deliveryPlanningRecord = newInstance(I_M_Delivery_Planning.class);
 
 		final LocalDateAndOrgId plannedDeliveryDate = request.getPlannedDeliveryDate();
+		final LocalDateAndOrgId actualDeliveryDate = request.getActualDeliveryDate();
+		final LocalDateAndOrgId plannedLoadingDate = request.getPlannedLoadingDate();
+		final LocalDateAndOrgId actualLoadingDate = request.getActualLoadingDate();
 
 		deliveryPlanningRecord.setAD_Org_ID(request.getOrgId().getRepoId());
 		deliveryPlanningRecord.setM_ReceiptSchedule_ID(ReceiptScheduleId.toRepoId(request.getReceiptScheduleId()));
@@ -117,10 +119,30 @@ public class DeliveryPlanningRepository
 		deliveryPlanningRecord.setC_Incoterms_ID(IncotermsId.toRepoId(request.getIncotermsId()));
 		deliveryPlanningRecord.setM_SectionCode_ID(SectionCodeId.toRepoId(request.getSectionCodeId()));
 
-		deliveryPlanningRecord.setPlannedDeliveryDate(plannedDeliveryDate == null? null : plannedDeliveryDate.toTimestamp(orgDAO::getTimeZone));
-		// TODO
+		deliveryPlanningRecord.setPlannedDeliveryDate(plannedDeliveryDate == null ? null : plannedDeliveryDate.toTimestamp(orgDAO::getTimeZone));
+		deliveryPlanningRecord.setActualDeliveryDate(actualDeliveryDate == null? null : actualDeliveryDate.toTimestamp(orgDAO::getTimeZone));
+		deliveryPlanningRecord.setPlannedLoadingDate(plannedLoadingDate == null? null : plannedLoadingDate.toTimestamp(orgDAO::getTimeZone));
+		deliveryPlanningRecord.setActualLoadingDate(actualLoadingDate == null? null : actualLoadingDate.toTimestamp(orgDAO::getTimeZone));
+
+		deliveryPlanningRecord.setQtyOrdered(request.getQtyOredered().toBigDecimal());
+		deliveryPlanningRecord.setQtyTotalOpen(request.getQtyTotalOpen().toBigDecimal());
+		deliveryPlanningRecord.setActualDeliveredQty(request.getActualDeliveredQty().toBigDecimal());
+		deliveryPlanningRecord.setActualLoadQty(request.getActualLoadQty().toBigDecimal());
+
+		deliveryPlanningRecord.setForwarder(request.getForwarder());
+		deliveryPlanningRecord.setWayBillNo(request.getWayBillNo());
+		deliveryPlanningRecord.setReleaseNo(request.getReleaseNo());
+		deliveryPlanningRecord.setTransportDetails(request.getTransportDetails());
+
+		deliveryPlanningRecord.setIsActive(request.isActive);
+		deliveryPlanningRecord.setIsB2B(request.isB2B);
+
+		deliveryPlanningRecord.setMeansOfTransportation(MeansOfTransportation.toCodeOrNull(request.getMeansOfTransportation()));
+		deliveryPlanningRecord.setOrderStatus(OrderStatus.toCodeOrNull(request.getOrderStatus()));
+		deliveryPlanningRecord.setM_Delivery_Planning_Type(DeliveryPlanningType.toCodeOrNull(request.getDeliveryPlanningType()));
+		// TODO attributes
+
 
 	}
-
 
 }
