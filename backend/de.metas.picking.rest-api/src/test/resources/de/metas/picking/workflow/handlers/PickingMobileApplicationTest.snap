@@ -7,8 +7,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
         "caption" : "Kommissionierplatz scannen",
         "componentProps" : { },
         "componentType" : "common/scanBarcode",
-        "status" : "NOT_STARTED",
-        "userInstructions" : null
+        "status" : "NOT_STARTED"
       }, {
         "activityId" : "A20",
         "caption" : "Pick",
@@ -74,8 +73,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
           }
         },
         "componentType" : "picking/pickProducts",
-        "status" : "NOT_STARTED",
-        "userInstructions" : null
+        "status" : "NOT_STARTED"
       }, {
         "activityId" : "A90",
         "caption" : "CO",
@@ -84,8 +82,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
           "question" : "Are you sure?"
         },
         "componentType" : "common/confirmButton",
-        "status" : "NOT_STARTED",
-        "userInstructions" : null
+        "status" : "NOT_STARTED"
       } ],
       "headerProperties" : {
         "entries" : [ {
@@ -303,8 +300,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
         "caption" : "Kommissionierplatz scannen",
         "componentProps" : { },
         "componentType" : "common/scanBarcode",
-        "status" : "NOT_STARTED",
-        "userInstructions" : null
+        "status" : "NOT_STARTED"
       }, {
         "activityId" : "A20",
         "caption" : "Pick",
@@ -370,8 +366,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
           }
         },
         "componentType" : "picking/pickProducts",
-        "status" : "NOT_STARTED",
-        "userInstructions" : null
+        "status" : "NOT_STARTED"
       }, {
         "activityId" : "A90",
         "caption" : "CO",
@@ -380,8 +375,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
           "question" : "Are you sure?"
         },
         "componentType" : "common/confirmButton",
-        "status" : "NOT_STARTED",
-        "userInstructions" : null
+        "status" : "NOT_STARTED"
       } ],
       "headerProperties" : {
         "entries" : [ {
@@ -605,8 +599,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
         "caption" : "Kommissionierplatz scannen",
         "componentProps" : { },
         "componentType" : "common/scanBarcode",
-        "status" : "NOT_STARTED",
-        "userInstructions" : null
+        "status" : "NOT_STARTED"
       }, {
         "activityId" : "A20",
         "caption" : "Pick",
@@ -672,8 +665,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
           }
         },
         "componentType" : "picking/pickProducts",
-        "status" : "NOT_STARTED",
-        "userInstructions" : null
+        "status" : "NOT_STARTED"
       }, {
         "activityId" : "A90",
         "caption" : "CO",
@@ -682,8 +674,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
           "question" : "Are you sure?"
         },
         "componentType" : "common/confirmButton",
-        "status" : "NOT_STARTED",
-        "userInstructions" : null
+        "status" : "NOT_STARTED"
       } ],
       "headerProperties" : {
         "entries" : [ {
@@ -907,8 +898,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "caption" : "Kommissionierplatz scannen",
         "componentProps" : { },
         "componentType" : "common/scanBarcode",
-        "status" : "NOT_STARTED",
-        "userInstructions" : null
+        "status" : "NOT_STARTED"
       }, {
         "activityId" : "A20",
         "caption" : "Pick",
@@ -974,8 +964,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           }
         },
         "componentType" : "picking/pickProducts",
-        "status" : "NOT_STARTED",
-        "userInstructions" : null
+        "status" : "NOT_STARTED"
       }, {
         "activityId" : "A90",
         "caption" : "CO",
@@ -984,8 +973,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "question" : "Are you sure?"
         },
         "componentType" : "common/confirmButton",
-        "status" : "NOT_STARTED",
-        "userInstructions" : null
+        "status" : "NOT_STARTED"
       } ],
       "headerProperties" : {
         "entries" : [ {
@@ -1203,8 +1191,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "caption" : "Kommissionierplatz scannen",
         "componentProps" : { },
         "componentType" : "common/scanBarcode",
-        "status" : "NOT_STARTED",
-        "userInstructions" : null
+        "status" : "NOT_STARTED"
       }, {
         "activityId" : "A20",
         "caption" : "Pick",
@@ -1274,8 +1261,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           }
         },
         "componentType" : "picking/pickProducts",
-        "status" : "COMPLETED",
-        "userInstructions" : null
+        "status" : "COMPLETED"
       }, {
         "activityId" : "A90",
         "caption" : "CO",
@@ -1284,8 +1270,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "question" : "Are you sure?"
         },
         "componentType" : "common/confirmButton",
-        "status" : "NOT_STARTED",
-        "userInstructions" : null
+        "status" : "NOT_STARTED"
       } ],
       "headerProperties" : {
         "entries" : [ {
@@ -1542,8 +1527,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "caption" : "Kommissionierplatz scannen",
         "componentProps" : { },
         "componentType" : "common/scanBarcode",
-        "status" : "NOT_STARTED",
-        "userInstructions" : null
+        "status" : "NOT_STARTED"
       }, {
         "activityId" : "A20",
         "caption" : "Pick",
@@ -1613,8 +1597,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           }
         },
         "componentType" : "picking/pickProducts",
-        "status" : "COMPLETED",
-        "userInstructions" : null
+        "status" : "COMPLETED"
       }, {
         "activityId" : "A90",
         "caption" : "CO",
@@ -1623,8 +1606,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "question" : "Are you sure?"
         },
         "componentType" : "common/confirmButton",
-        "status" : "COMPLETED",
-        "userInstructions" : null
+        "status" : "COMPLETED"
       } ],
       "headerProperties" : {
         "entries" : [ {
@@ -1887,8 +1869,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "caption" : "Kommissionierplatz scannen",
         "componentProps" : { },
         "componentType" : "common/scanBarcode",
-        "status" : "NOT_STARTED",
-        "userInstructions" : null
+        "status" : "NOT_STARTED"
       }, {
         "activityId" : "A20",
         "caption" : "Pick",
@@ -1954,8 +1935,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           }
         },
         "componentType" : "picking/pickProducts",
-        "status" : "NOT_STARTED",
-        "userInstructions" : null
+        "status" : "NOT_STARTED"
       }, {
         "activityId" : "A90",
         "caption" : "CO",
@@ -1964,8 +1944,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "question" : "Are you sure?"
         },
         "componentType" : "common/confirmButton",
-        "status" : "NOT_STARTED",
-        "userInstructions" : null
+        "status" : "NOT_STARTED"
       } ],
       "headerProperties" : {
         "entries" : [ {
@@ -1995,8 +1974,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           }
         },
         "componentType" : "common/scanBarcode",
-        "status" : "COMPLETED",
-        "userInstructions" : null
+        "status" : "COMPLETED"
       }, {
         "activityId" : "A20",
         "caption" : "Pick",
@@ -2062,8 +2040,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           }
         },
         "componentType" : "picking/pickProducts",
-        "status" : "COMPLETED",
-        "userInstructions" : null
+        "status" : "COMPLETED"
       }, {
         "activityId" : "A90",
         "caption" : "CO",
@@ -2072,8 +2049,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "question" : "Are you sure?"
         },
         "componentType" : "common/confirmButton",
-        "status" : "NOT_STARTED",
-        "userInstructions" : null
+        "status" : "NOT_STARTED"
       } ],
       "headerProperties" : {
         "entries" : [ {
@@ -2324,8 +2300,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           }
         },
         "componentType" : "common/scanBarcode",
-        "status" : "COMPLETED",
-        "userInstructions" : null
+        "status" : "COMPLETED"
       }, {
         "activityId" : "A20",
         "caption" : "Pick",
@@ -2391,8 +2366,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           }
         },
         "componentType" : "picking/pickProducts",
-        "status" : "COMPLETED",
-        "userInstructions" : null
+        "status" : "COMPLETED"
       }, {
         "activityId" : "A90",
         "caption" : "CO",
@@ -2401,8 +2375,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "question" : "Are you sure?"
         },
         "componentType" : "common/confirmButton",
-        "status" : "COMPLETED",
-        "userInstructions" : null
+        "status" : "COMPLETED"
       } ],
       "headerProperties" : {
         "entries" : [ {
@@ -2846,8 +2819,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           }
         },
         "componentType" : "common/scanBarcode",
-        "status" : "COMPLETED",
-        "userInstructions" : null
+        "status" : "COMPLETED"
       }, {
         "activityId" : "A20",
         "caption" : "Pick",
@@ -2913,8 +2885,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           }
         },
         "componentType" : "picking/pickProducts",
-        "status" : "NOT_STARTED",
-        "userInstructions" : null
+        "status" : "NOT_STARTED"
       }, {
         "activityId" : "A90",
         "caption" : "CO",
@@ -2923,8 +2894,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "question" : "Are you sure?"
         },
         "componentType" : "common/confirmButton",
-        "status" : "NOT_STARTED",
-        "userInstructions" : null
+        "status" : "NOT_STARTED"
       } ],
       "headerProperties" : {
         "entries" : [ {
@@ -3150,8 +3120,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           }
         },
         "componentType" : "common/scanBarcode",
-        "status" : "COMPLETED",
-        "userInstructions" : null
+        "status" : "COMPLETED"
       }, {
         "activityId" : "A20",
         "caption" : "Pick",
@@ -3217,8 +3186,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           }
         },
         "componentType" : "picking/pickProducts",
-        "status" : "IN_PROGRESS",
-        "userInstructions" : null
+        "status" : "IN_PROGRESS"
       }, {
         "activityId" : "A90",
         "caption" : "CO",
@@ -3227,8 +3195,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "question" : "Are you sure?"
         },
         "componentType" : "common/confirmButton",
-        "status" : "NOT_STARTED",
-        "userInstructions" : null
+        "status" : "NOT_STARTED"
       } ],
       "headerProperties" : {
         "entries" : [ {
@@ -3471,8 +3438,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "caption" : "Kommissionierplatz scannen",
         "componentProps" : { },
         "componentType" : "common/scanBarcode",
-        "status" : "NOT_STARTED",
-        "userInstructions" : null
+        "status" : "NOT_STARTED"
       }, {
         "activityId" : "A20",
         "caption" : "Pick",
@@ -3538,8 +3504,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           }
         },
         "componentType" : "picking/pickProducts",
-        "status" : "NOT_STARTED",
-        "userInstructions" : null
+        "status" : "NOT_STARTED"
       }, {
         "activityId" : "A90",
         "caption" : "CO",
@@ -3548,8 +3513,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "question" : "Are you sure?"
         },
         "componentType" : "common/confirmButton",
-        "status" : "NOT_STARTED",
-        "userInstructions" : null
+        "status" : "NOT_STARTED"
       } ],
       "headerProperties" : {
         "entries" : [ {
@@ -3579,8 +3543,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           }
         },
         "componentType" : "common/scanBarcode",
-        "status" : "COMPLETED",
-        "userInstructions" : null
+        "status" : "COMPLETED"
       }, {
         "activityId" : "A20",
         "caption" : "Pick",
@@ -3646,8 +3609,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           }
         },
         "componentType" : "picking/pickProducts",
-        "status" : "NOT_STARTED",
-        "userInstructions" : null
+        "status" : "NOT_STARTED"
       }, {
         "activityId" : "A90",
         "caption" : "CO",
@@ -3656,8 +3618,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "question" : "Are you sure?"
         },
         "componentType" : "common/confirmButton",
-        "status" : "NOT_STARTED",
-        "userInstructions" : null
+        "status" : "NOT_STARTED"
       } ],
       "headerProperties" : {
         "entries" : [ {
@@ -3875,8 +3836,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "caption" : "Kommissionierplatz scannen",
         "componentProps" : { },
         "componentType" : "common/scanBarcode",
-        "status" : "NOT_STARTED",
-        "userInstructions" : null
+        "status" : "NOT_STARTED"
       }, {
         "activityId" : "A20",
         "caption" : "Pick",
@@ -3942,8 +3902,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           }
         },
         "componentType" : "picking/pickProducts",
-        "status" : "NOT_STARTED",
-        "userInstructions" : null
+        "status" : "NOT_STARTED"
       }, {
         "activityId" : "A90",
         "caption" : "CO",
@@ -3952,8 +3911,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "question" : "Are you sure?"
         },
         "componentType" : "common/confirmButton",
-        "status" : "NOT_STARTED",
-        "userInstructions" : null
+        "status" : "NOT_STARTED"
       } ],
       "headerProperties" : {
         "entries" : [ {
@@ -4366,8 +4324,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           }
         },
         "componentType" : "common/scanBarcode",
-        "status" : "COMPLETED",
-        "userInstructions" : null
+        "status" : "COMPLETED"
       }, {
         "activityId" : "A20",
         "caption" : "Pick",
@@ -4433,8 +4390,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           }
         },
         "componentType" : "picking/pickProducts",
-        "status" : "NOT_STARTED",
-        "userInstructions" : null
+        "status" : "NOT_STARTED"
       }, {
         "activityId" : "A90",
         "caption" : "CO",
@@ -4443,8 +4399,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "question" : "Are you sure?"
         },
         "componentType" : "common/confirmButton",
-        "status" : "NOT_STARTED",
-        "userInstructions" : null
+        "status" : "NOT_STARTED"
       } ],
       "headerProperties" : {
         "entries" : [ {
@@ -4670,8 +4625,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           }
         },
         "componentType" : "common/scanBarcode",
-        "status" : "COMPLETED",
-        "userInstructions" : null
+        "status" : "COMPLETED"
       }, {
         "activityId" : "A20",
         "caption" : "Pick",
@@ -4737,8 +4691,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           }
         },
         "componentType" : "picking/pickProducts",
-        "status" : "IN_PROGRESS",
-        "userInstructions" : null
+        "status" : "IN_PROGRESS"
       }, {
         "activityId" : "A90",
         "caption" : "CO",
@@ -4747,8 +4700,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "question" : "Are you sure?"
         },
         "componentType" : "common/confirmButton",
-        "status" : "NOT_STARTED",
-        "userInstructions" : null
+        "status" : "NOT_STARTED"
       } ],
       "headerProperties" : {
         "entries" : [ {

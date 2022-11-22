@@ -18,7 +18,6 @@ import org.adempiere.warehouse.LocatorId;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 
 public class HUsLoadingCache
 {
@@ -51,7 +50,7 @@ public class HUsLoadingCache
 		return husById.computeIfAbsent(huId, handlingUnitsBL::getById);
 	}
 
-	public Collection<I_M_HU> getHUsByIds(final Set<HuId> huIds)
+	public Collection<I_M_HU> getHUsByIds(final Collection<HuId> huIds)
 	{
 		return CollectionUtils.getAllOrLoad(husById, huIds, handlingUnitsBL::getByIdsReturningMap);
 	}
@@ -64,6 +63,11 @@ public class HUsLoadingCache
 	private void addToCache(final I_M_HU hu)
 	{
 		husById.put(extractHUId(hu), hu);
+	}
+
+	public void warmUpCacheForHuIds(final Collection<HuId> huIds)
+	{
+		getHUsByIds(huIds);
 	}
 
 	public HuId getTopLevelHUId(final HuId huId)
