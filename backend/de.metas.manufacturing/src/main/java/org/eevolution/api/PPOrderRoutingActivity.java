@@ -7,6 +7,7 @@ import de.metas.material.planning.pporder.PPAlwaysAvailableToUser;
 import de.metas.material.planning.pporder.PPRoutingActivityId;
 import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
 import de.metas.material.planning.pporder.PPRoutingActivityType;
+import de.metas.material.planning.pporder.UserInstructions;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -68,6 +69,7 @@ public final class PPOrderRoutingActivity
 
 	private final boolean milestone;
 	@NonNull private final PPAlwaysAvailableToUser alwaysAvailableToUser;
+	@Nullable private final UserInstructions userInstructions;
 
 	@Nullable private PPRoutingActivityTemplateId activityTemplateId;
 

@@ -47,6 +47,7 @@ public class JsonWFActivity
 	@NonNull WFActivityStatus status;
 
 	@Nullable Boolean isAlwaysAvailableToUser;
+	@Nullable String userInstructions;
 
 	@Builder.Default
 	@NonNull Map<String, Object> componentProps = ImmutableMap.of();
@@ -64,6 +65,7 @@ public class JsonWFActivity
 				.componentType(uiComponent.getType().getAsString())
 				.status(activity.getStatus())
 				.isAlwaysAvailableToUser(uiComponent.getAlwaysAvailableToUser().toBooleanObject())
+				.userInstructions(activity.getUserInstructions())
 				.componentProps(uiComponent.getProperties().toJson(jsonOpts::convertValueToJson))
 				.build();
 	}

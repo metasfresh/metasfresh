@@ -10,7 +10,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
         },
         "componentType" : "common/scanBarcode",
         "isAlwaysAvailableToUser" : null,
-        "status" : "NOT_STARTED"
+        "status" : "NOT_STARTED",
+        "userInstructions" : null
       }, {
         "activityId" : "A2",
         "caption" : "Pick",
@@ -83,7 +84,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
         },
         "componentType" : "picking/pickProducts",
         "isAlwaysAvailableToUser" : null,
-        "status" : "NOT_STARTED"
+        "status" : "NOT_STARTED",
+        "userInstructions" : null
       }, {
         "activityId" : "A3",
         "caption" : "CO",
@@ -93,7 +95,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
         },
         "componentType" : "common/confirmButton",
         "isAlwaysAvailableToUser" : null,
-        "status" : "NOT_STARTED"
+        "status" : "NOT_STARTED",
+        "userInstructions" : null
       } ],
       "headerProperties" : {
         "entries" : [ {
@@ -316,7 +319,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
         },
         "componentType" : "common/scanBarcode",
         "isAlwaysAvailableToUser" : null,
-        "status" : "NOT_STARTED"
+        "status" : "NOT_STARTED",
+        "userInstructions" : null
       }, {
         "activityId" : "A2",
         "caption" : "Pick",
@@ -389,7 +393,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
         },
         "componentType" : "picking/pickProducts",
         "isAlwaysAvailableToUser" : null,
-        "status" : "NOT_STARTED"
+        "status" : "NOT_STARTED",
+        "userInstructions" : null
       }, {
         "activityId" : "A3",
         "caption" : "CO",
@@ -399,7 +404,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
         },
         "componentType" : "common/confirmButton",
         "isAlwaysAvailableToUser" : null,
-        "status" : "NOT_STARTED"
+        "status" : "NOT_STARTED",
+        "userInstructions" : null
       } ],
       "headerProperties" : {
         "entries" : [ {
@@ -628,7 +634,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
         },
         "componentType" : "common/scanBarcode",
         "isAlwaysAvailableToUser" : null,
-        "status" : "NOT_STARTED"
+        "status" : "NOT_STARTED",
+        "userInstructions" : null
       }, {
         "activityId" : "A2",
         "caption" : "Pick",
@@ -701,7 +708,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
         },
         "componentType" : "picking/pickProducts",
         "isAlwaysAvailableToUser" : null,
-        "status" : "NOT_STARTED"
+        "status" : "NOT_STARTED",
+        "userInstructions" : null
       }, {
         "activityId" : "A3",
         "caption" : "CO",
@@ -711,7 +719,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
         },
         "componentType" : "common/confirmButton",
         "isAlwaysAvailableToUser" : null,
-        "status" : "NOT_STARTED"
+        "status" : "NOT_STARTED",
+        "userInstructions" : null
       } ],
       "headerProperties" : {
         "entries" : [ {
@@ -940,7 +949,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "componentType" : "common/scanBarcode",
         "isAlwaysAvailableToUser" : null,
-        "status" : "NOT_STARTED"
+        "status" : "NOT_STARTED",
+        "userInstructions" : null
       }, {
         "activityId" : "A2",
         "caption" : "Pick",
@@ -1013,7 +1023,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "componentType" : "picking/pickProducts",
         "isAlwaysAvailableToUser" : null,
-        "status" : "NOT_STARTED"
+        "status" : "NOT_STARTED",
+        "userInstructions" : null
       }, {
         "activityId" : "A3",
         "caption" : "CO",
@@ -1023,7 +1034,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "componentType" : "common/confirmButton",
         "isAlwaysAvailableToUser" : null,
-        "status" : "NOT_STARTED"
+        "status" : "NOT_STARTED",
+        "userInstructions" : null
       } ],
       "headerProperties" : {
         "entries" : [ {
@@ -1246,7 +1258,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "componentType" : "common/scanBarcode",
         "isAlwaysAvailableToUser" : null,
-        "status" : "NOT_STARTED"
+        "status" : "NOT_STARTED",
+        "userInstructions" : null
       }, {
         "activityId" : "A2",
         "caption" : "Pick",
@@ -1319,7 +1332,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "componentType" : "picking/pickProducts",
         "isAlwaysAvailableToUser" : null,
-        "status" : "COMPLETED"
+        "status" : "COMPLETED",
+        "userInstructions" : null
       }, {
         "activityId" : "A3",
         "caption" : "CO",
@@ -1329,7 +1343,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "componentType" : "common/confirmButton",
         "isAlwaysAvailableToUser" : null,
-        "status" : "NOT_STARTED"
+        "status" : "NOT_STARTED",
+        "userInstructions" : null
       } ],
       "headerProperties" : {
         "entries" : [ {
@@ -1587,7 +1602,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "componentType" : "common/scanBarcode",
         "isAlwaysAvailableToUser" : null,
-        "status" : "NOT_STARTED"
+        "status" : "NOT_STARTED",
+        "userInstructions" : null
       }, {
         "activityId" : "A2",
         "caption" : "Pick",
@@ -1660,7 +1676,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "componentType" : "picking/pickProducts",
         "isAlwaysAvailableToUser" : null,
-        "status" : "COMPLETED"
+        "status" : "COMPLETED",
+        "userInstructions" : null
       }, {
         "activityId" : "A3",
         "caption" : "CO",
@@ -1670,7 +1687,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "componentType" : "common/confirmButton",
         "isAlwaysAvailableToUser" : null,
-        "status" : "COMPLETED"
+        "status" : "COMPLETED",
+        "userInstructions" : null
       } ],
       "headerProperties" : {
         "entries" : [ {
@@ -1934,7 +1952,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "componentType" : "common/scanBarcode",
         "isAlwaysAvailableToUser" : null,
-        "status" : "NOT_STARTED"
+        "status" : "NOT_STARTED",
+        "userInstructions" : null
       }, {
         "activityId" : "A2",
         "caption" : "Pick",
@@ -2007,7 +2026,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "componentType" : "picking/pickProducts",
         "isAlwaysAvailableToUser" : null,
-        "status" : "NOT_STARTED"
+        "status" : "NOT_STARTED",
+        "userInstructions" : null
       }, {
         "activityId" : "A3",
         "caption" : "CO",
@@ -2017,7 +2037,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "componentType" : "common/confirmButton",
         "isAlwaysAvailableToUser" : null,
-        "status" : "NOT_STARTED"
+        "status" : "NOT_STARTED",
+        "userInstructions" : null
       } ],
       "headerProperties" : {
         "entries" : [ {
@@ -2049,7 +2070,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "componentType" : "common/scanBarcode",
         "isAlwaysAvailableToUser" : null,
-        "status" : "COMPLETED"
+        "status" : "COMPLETED",
+        "userInstructions" : null
       }, {
         "activityId" : "A2",
         "caption" : "Pick",
@@ -2122,7 +2144,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "componentType" : "picking/pickProducts",
         "isAlwaysAvailableToUser" : null,
-        "status" : "COMPLETED"
+        "status" : "COMPLETED",
+        "userInstructions" : null
       }, {
         "activityId" : "A3",
         "caption" : "CO",
@@ -2132,7 +2155,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "componentType" : "common/confirmButton",
         "isAlwaysAvailableToUser" : null,
-        "status" : "NOT_STARTED"
+        "status" : "NOT_STARTED",
+        "userInstructions" : null
       } ],
       "headerProperties" : {
         "entries" : [ {
@@ -2386,7 +2410,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "componentType" : "common/scanBarcode",
         "isAlwaysAvailableToUser" : null,
-        "status" : "COMPLETED"
+        "status" : "COMPLETED",
+        "userInstructions" : null
       }, {
         "activityId" : "A2",
         "caption" : "Pick",
@@ -2459,7 +2484,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "componentType" : "picking/pickProducts",
         "isAlwaysAvailableToUser" : null,
-        "status" : "COMPLETED"
+        "status" : "COMPLETED",
+        "userInstructions" : null
       }, {
         "activityId" : "A3",
         "caption" : "CO",
@@ -2469,7 +2495,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "componentType" : "common/confirmButton",
         "isAlwaysAvailableToUser" : null,
-        "status" : "COMPLETED"
+        "status" : "COMPLETED",
+        "userInstructions" : null
       } ],
       "headerProperties" : {
         "entries" : [ {
@@ -2917,7 +2944,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "componentType" : "common/scanBarcode",
         "isAlwaysAvailableToUser" : null,
-        "status" : "COMPLETED"
+        "status" : "COMPLETED",
+        "userInstructions" : null
       }, {
         "activityId" : "A2",
         "caption" : "Pick",
@@ -2990,7 +3018,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "componentType" : "picking/pickProducts",
         "isAlwaysAvailableToUser" : null,
-        "status" : "NOT_STARTED"
+        "status" : "NOT_STARTED",
+        "userInstructions" : null
       }, {
         "activityId" : "A3",
         "caption" : "CO",
@@ -3000,7 +3029,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "componentType" : "common/confirmButton",
         "isAlwaysAvailableToUser" : null,
-        "status" : "NOT_STARTED"
+        "status" : "NOT_STARTED",
+        "userInstructions" : null
       } ],
       "headerProperties" : {
         "entries" : [ {
@@ -3229,7 +3259,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "componentType" : "common/scanBarcode",
         "isAlwaysAvailableToUser" : null,
-        "status" : "COMPLETED"
+        "status" : "COMPLETED",
+        "userInstructions" : null
       }, {
         "activityId" : "A2",
         "caption" : "Pick",
@@ -3302,7 +3333,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "componentType" : "picking/pickProducts",
         "isAlwaysAvailableToUser" : null,
-        "status" : "IN_PROGRESS"
+        "status" : "IN_PROGRESS",
+        "userInstructions" : null
       }, {
         "activityId" : "A3",
         "caption" : "CO",
@@ -3312,7 +3344,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "componentType" : "common/confirmButton",
         "isAlwaysAvailableToUser" : null,
-        "status" : "NOT_STARTED"
+        "status" : "NOT_STARTED",
+        "userInstructions" : null
       } ],
       "headerProperties" : {
         "entries" : [ {
@@ -3560,7 +3593,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "componentType" : "common/scanBarcode",
         "isAlwaysAvailableToUser" : null,
-        "status" : "NOT_STARTED"
+        "status" : "NOT_STARTED",
+        "userInstructions" : null
       }, {
         "activityId" : "A2",
         "caption" : "Pick",
@@ -3633,7 +3667,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "componentType" : "picking/pickProducts",
         "isAlwaysAvailableToUser" : null,
-        "status" : "NOT_STARTED"
+        "status" : "NOT_STARTED",
+        "userInstructions" : null
       }, {
         "activityId" : "A3",
         "caption" : "CO",
@@ -3643,7 +3678,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "componentType" : "common/confirmButton",
         "isAlwaysAvailableToUser" : null,
-        "status" : "NOT_STARTED"
+        "status" : "NOT_STARTED",
+        "userInstructions" : null
       } ],
       "headerProperties" : {
         "entries" : [ {
@@ -3675,7 +3711,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "componentType" : "common/scanBarcode",
         "isAlwaysAvailableToUser" : null,
-        "status" : "COMPLETED"
+        "status" : "COMPLETED",
+        "userInstructions" : null
       }, {
         "activityId" : "A2",
         "caption" : "Pick",
@@ -3748,7 +3785,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "componentType" : "picking/pickProducts",
         "isAlwaysAvailableToUser" : null,
-        "status" : "NOT_STARTED"
+        "status" : "NOT_STARTED",
+        "userInstructions" : null
       }, {
         "activityId" : "A3",
         "caption" : "CO",
@@ -3758,7 +3796,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "componentType" : "common/confirmButton",
         "isAlwaysAvailableToUser" : null,
-        "status" : "NOT_STARTED"
+        "status" : "NOT_STARTED",
+        "userInstructions" : null
       } ],
       "headerProperties" : {
         "entries" : [ {
@@ -3981,7 +4020,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "componentType" : "common/scanBarcode",
         "isAlwaysAvailableToUser" : null,
-        "status" : "NOT_STARTED"
+        "status" : "NOT_STARTED",
+        "userInstructions" : null
       }, {
         "activityId" : "A2",
         "caption" : "Pick",
@@ -4054,7 +4094,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "componentType" : "picking/pickProducts",
         "isAlwaysAvailableToUser" : null,
-        "status" : "NOT_STARTED"
+        "status" : "NOT_STARTED",
+        "userInstructions" : null
       }, {
         "activityId" : "A3",
         "caption" : "CO",
@@ -4064,7 +4105,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "componentType" : "common/confirmButton",
         "isAlwaysAvailableToUser" : null,
-        "status" : "NOT_STARTED"
+        "status" : "NOT_STARTED",
+        "userInstructions" : null
       } ],
       "headerProperties" : {
         "entries" : [ {
@@ -4481,7 +4523,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "componentType" : "common/scanBarcode",
         "isAlwaysAvailableToUser" : null,
-        "status" : "COMPLETED"
+        "status" : "COMPLETED",
+        "userInstructions" : null
       }, {
         "activityId" : "A2",
         "caption" : "Pick",
@@ -4554,7 +4597,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "componentType" : "picking/pickProducts",
         "isAlwaysAvailableToUser" : null,
-        "status" : "NOT_STARTED"
+        "status" : "NOT_STARTED",
+        "userInstructions" : null
       }, {
         "activityId" : "A3",
         "caption" : "CO",
@@ -4564,7 +4608,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "componentType" : "common/confirmButton",
         "isAlwaysAvailableToUser" : null,
-        "status" : "NOT_STARTED"
+        "status" : "NOT_STARTED",
+        "userInstructions" : null
       } ],
       "headerProperties" : {
         "entries" : [ {
@@ -4793,7 +4838,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "componentType" : "common/scanBarcode",
         "isAlwaysAvailableToUser" : null,
-        "status" : "COMPLETED"
+        "status" : "COMPLETED",
+        "userInstructions" : null
       }, {
         "activityId" : "A2",
         "caption" : "Pick",
@@ -4866,7 +4912,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "componentType" : "picking/pickProducts",
         "isAlwaysAvailableToUser" : null,
-        "status" : "IN_PROGRESS"
+        "status" : "IN_PROGRESS",
+        "userInstructions" : null
       }, {
         "activityId" : "A3",
         "caption" : "CO",
@@ -4876,7 +4923,8 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         },
         "componentType" : "common/confirmButton",
         "isAlwaysAvailableToUser" : null,
-        "status" : "NOT_STARTED"
+        "status" : "NOT_STARTED",
+        "userInstructions" : null
       } ],
       "headerProperties" : {
         "entries" : [ {

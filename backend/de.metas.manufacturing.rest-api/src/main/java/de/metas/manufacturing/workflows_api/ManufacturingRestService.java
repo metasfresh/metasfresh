@@ -86,7 +86,8 @@ public class ManufacturingRestService
 				.id(WFActivityId.ofId(jobActivity.getId()))
 				.caption(TranslatableStrings.anyLanguage(jobActivity.getName()))
 				.status(jobActivity.getStatus())
-				.alwaysAvailableToUser(WFActivityAlwaysAvailableToUser.ofBoolean(jobActivity.getAlwaysAvailableToUser().toBooleanObject()));
+				.alwaysAvailableToUser(WFActivityAlwaysAvailableToUser.ofBoolean(jobActivity.getAlwaysAvailableToUser().toBooleanObject()))
+				.userInstructions(jobActivity.getUserInstructions() != null ? jobActivity.getUserInstructions().getAsString() : null);
 
 		switch (jobActivity.getType())
 		{

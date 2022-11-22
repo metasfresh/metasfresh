@@ -198,6 +198,7 @@ final class CreateOrderRoutingCommand
 				//
 				.milestone(activity.isMilestone())
 				.alwaysAvailableToUser(activity.getAlwaysAvailableToUser())
+				.userInstructions(activity.getUserInstructions())
 				//
 				.resourceId(activity.getResourceId())
 				//
