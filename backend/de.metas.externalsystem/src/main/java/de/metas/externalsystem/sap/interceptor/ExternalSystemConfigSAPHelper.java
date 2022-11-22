@@ -41,6 +41,10 @@ public class ExternalSystemConfigSAPHelper
 		{
 			return directoryPath.replaceFirst("/", "");
 		}
+		else if (directoryPath.startsWith("\\"))
+		{
+			return directoryPath.replaceFirst("\\\\", "");
+		}
 		else if (directoryPath.startsWith("./"))
 		{
 			return directoryPath.replaceFirst("\\./", "");

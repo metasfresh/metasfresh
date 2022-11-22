@@ -74,7 +74,7 @@ public class ExternalSystem_Config_SAP_LocalFile
 	public void sanitizeRootLocation(final I_ExternalSystem_Config_SAP_LocalFile sapConfigLocalFile)
 	{
 		final String rootLocation = sapConfigLocalFile.getLocal_Root_Location();
-		if (rootLocation.endsWith("/"))
+		if (rootLocation.endsWith("/") || rootLocation.endsWith("\\"))
 		{
 			sapConfigLocalFile.setLocal_Root_Location(rootLocation.substring(0, rootLocation.length() - 1));
 		}

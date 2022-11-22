@@ -452,3 +452,30 @@ UPDATE AD_Ref_List_Trl SET Name='Start der Kreditlimitsynchronisation lokale Dat
 UPDATE AD_Ref_List_Trl SET Name='Start Credit Limit Synchronization Local File',Updated=TO_TIMESTAMP('2022-11-21 14:42:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=543351
 ;
 
+-- Reference: External_Request SAP
+-- Value: startCreditLimitSyncLocalFile
+-- ValueName: Start Credit Limits Synchronization Local File
+-- 2022-11-21T18:57:55.100Z
+UPDATE AD_Ref_List SET Name='Start der Kreditlimitsynchronisation lokale Datei',Updated=TO_TIMESTAMP('2022-11-21 20:57:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Ref_List_ID=543351
+;
+
+-- Reference Item: External_Request SAP -> startCreditLimitSyncLocalFile_Start Credit Limits Synchronization Local File
+-- 2022-11-21T18:58:03.475Z
+UPDATE AD_Ref_List_Trl SET Name='Start der Kreditlimitsynchronisation lokale Datei',Updated=TO_TIMESTAMP('2022-11-21 20:58:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Ref_List_ID=543351
+;
+
+-- Reference Item: External_Request SAP -> startCreditLimitSyncLocalFile_Start Credit Limits Synchronization Local File
+-- 2022-11-21T18:58:06.877Z
+UPDATE AD_Ref_List_Trl SET Name='Start der Kreditlimitsynchronisation lokale Datei',Updated=TO_TIMESTAMP('2022-11-21 20:58:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Ref_List_ID=543351
+;
+
+-- Reference Item: External_Request SAP -> startCreditLimitSyncLocalFile_Start Credit Limits Synchronization Local File
+-- 2022-11-21T18:58:12.493Z
+UPDATE AD_Ref_List_Trl SET Name='Start Credit Limit Synchronization Local File',Updated=TO_TIMESTAMP('2022-11-21 20:58:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Ref_List_ID=543351
+;
+
+-- Reference Item: External_Request SAP -> startCreditLimitSyncLocalFile_Start Credit Limits Synchronization Local File
+-- 2022-11-21T18:58:18.982Z
+UPDATE AD_Ref_List_Trl SET Name='Start Credit Limit Synchronization Local File',Updated=TO_TIMESTAMP('2022-11-21 20:58:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='nl_NL' AND AD_Ref_List_ID=543351
+;
+
