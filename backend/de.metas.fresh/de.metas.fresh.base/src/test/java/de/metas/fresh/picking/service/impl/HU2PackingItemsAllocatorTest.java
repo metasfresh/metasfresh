@@ -23,6 +23,8 @@ package de.metas.fresh.picking.service.impl;
  */
 
 import com.google.common.collect.ImmutableList;
+import de.metas.deliveryplanning.DeliveryPlanningRepository;
+import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHUBuilder;
@@ -38,10 +40,13 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.picking.OnOverDelivery;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
+import de.metas.handlingunits.shipmentschedule.api.impl.HUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.util.ShipmentScheduleHelper;
 import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.impl.ReceiptScheduleProducerFactory;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleBL;
 import de.metas.inoutcandidate.filter.GenerateReceiptScheduleForModelAggregateFilter;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.service.IPackingItem;
@@ -96,6 +101,9 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 	// Context
 	private I_M_ShipmentSchedule shipmentSchedule;
 	private IPackingItem itemToPack;
+
+	private IShipmentScheduleBL shipmentScheduleBL;
+	private IHUShipmentScheduleBL huShipmentScheduleBL;
 	// private PackingContext packingContext;
 
 	@Override
@@ -112,6 +120,12 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		huTrxBL = Services.get(IHUTrxBL.class);
 		queryBL = Services.get(IQueryBL.class);
+
+		shipmentScheduleBL = new ShipmentScheduleBL(new DeliveryPlanningService(new DeliveryPlanningRepository()));
+		huShipmentScheduleBL = new HUShipmentScheduleBL(shipmentScheduleBL);
+
+		Services.registerService(IShipmentScheduleBL.class, shipmentScheduleBL);
+		Services.registerService(IHUShipmentScheduleBL.class, huShipmentScheduleBL);
 
 		//
 		// Handling Units Definition
@@ -151,7 +165,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 	private ShipmentSchedulesSupplier newShipmentScheduleSupplier()
 	{
 		return ShipmentSchedulesSupplier.builder()
-				.shipmentScheduleBL(Services.get(IShipmentScheduleBL.class))
+				.shipmentScheduleBL(shipmentScheduleBL)
 				.build();
 	}
 
@@ -356,7 +370,7 @@ public class HU2PackingItemsAllocatorTest extends AbstractHUTest
 		final Quantity qtyToDeliver = Quantity.of(qtyToDeliverInt, uomEach);
 		final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(pTomato, uomEach, qtyToDeliver.toBigDecimal(), BigDecimal.ZERO);
 
-		parts.updatePart(PackingItems.newPackingItemPart(schedule)
+		parts.updatePart(PackingItems.newPackingItemPart(schedule, huShipmentScheduleBL)
 								 .qty(qtyToDeliver)
 								 .build());
 

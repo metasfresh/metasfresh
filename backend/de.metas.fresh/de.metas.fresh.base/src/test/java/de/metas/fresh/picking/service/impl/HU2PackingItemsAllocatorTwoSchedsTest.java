@@ -1,6 +1,8 @@
 package de.metas.fresh.picking.service.impl;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.deliveryplanning.DeliveryPlanningRepository;
+import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.handlingunits.AbstractHUTest;
 import de.metas.handlingunits.HUTestHelper;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -11,9 +13,12 @@ import de.metas.handlingunits.model.I_M_HU_PI_Item;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.picking.OnOverDelivery;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
+import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
+import de.metas.handlingunits.shipmentschedule.api.impl.HUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.util.ShipmentScheduleHelper;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.picking.service.IPackingItem;
 import de.metas.picking.service.PackingItemParts;
@@ -71,7 +76,6 @@ import static org.junit.Assert.assertThat;
  * Note: if these tests fail, it makes sense to first verify that all tests in {@link HU2PackingItemsAllocatorTest} works.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 {
@@ -79,6 +83,10 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 	private ShipmentScheduleHelper shipmentScheduleHelper;
 	private IHandlingUnitsDAO handlingUnitsDAO;
 	private IHandlingUnitsBL handlingUnitsBL;
+
+	private IShipmentScheduleBL shipmentScheduleBL;
+
+	private IHUShipmentScheduleBL huShipmentScheduleBL;
 
 	private I_M_HU_PI_Item huDefPalet;
 	private I_M_HU_PI_Item_Product huDefIFCOWithTen;
@@ -93,6 +101,12 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 		shipmentScheduleHelper = new ShipmentScheduleHelper(helper);
 		handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+
+		shipmentScheduleBL = new ShipmentScheduleBL(new DeliveryPlanningService(new DeliveryPlanningRepository()));
+		huShipmentScheduleBL = new HUShipmentScheduleBL(shipmentScheduleBL);
+
+		Services.registerService(IShipmentScheduleBL.class, shipmentScheduleBL);
+		Services.registerService(IHUShipmentScheduleBL.class, huShipmentScheduleBL);
 
 		//
 		// Handling Units Definition
@@ -127,9 +141,9 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 			final Quantity qtyToDeliver = Quantity.of(qtyToDeliverInt, uomEach);
 			final I_M_ShipmentSchedule schedule = shipmentScheduleHelper.createShipmentSchedule(pTomato, uomEach, qtyToDeliver.toBigDecimal(), BigDecimal.ZERO);
 
-			parts.updatePart(PackingItems.newPackingItemPart(schedule)
-					.qty(qtyToDeliver)
-					.build());
+			parts.updatePart(PackingItems.newPackingItemPart(schedule, huShipmentScheduleBL)
+									 .qty(qtyToDeliver)
+									 .build());
 
 			qtyToDeliverSum += qtyToDeliverInt;
 		}
@@ -156,7 +170,7 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 		final Set<ShipmentScheduleId> shipmentScheduleIds = packingItem.getShipmentScheduleIds();
 
 		final FixedOrderByKeyComparator<I_M_ShipmentSchedule, ShipmentScheduleId> //
-		shipmentScheduleIdsOrder = FixedOrderByKeyComparator.notMatchedAtTheEnd(
+				shipmentScheduleIdsOrder = FixedOrderByKeyComparator.notMatchedAtTheEnd(
 				ImmutableList.copyOf(shipmentScheduleIds),
 				record -> ShipmentScheduleId.ofRepoId(record.getM_ShipmentSchedule_ID()));
 
@@ -176,7 +190,7 @@ public class HU2PackingItemsAllocatorTwoSchedsTest extends AbstractHUTest
 	 * <li>allocate them</li>
 	 * <li>Result: the TU with quantity 11 is partially allocated to the both schedules; The TU with quantity 10 is fully allocate to the schedule with quantity 11</li>
 	 * </ul>
-	 *
+	 * <p>
 	 * Note that this reflects the current behavior..not necessarily the desired behavior..
 	 *
 	 * @task https://github.com/metasfresh/metasfresh/issues/1712

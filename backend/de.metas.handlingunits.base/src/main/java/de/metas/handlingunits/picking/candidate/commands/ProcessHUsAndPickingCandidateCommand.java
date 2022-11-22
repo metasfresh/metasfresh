@@ -16,6 +16,7 @@ import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
 import de.metas.handlingunits.pporder.api.UpdateDraftReceiptCandidateRequest;
 import de.metas.handlingunits.pporder.api.impl.hu_pporder_issue_producer.CreatePickedReceiptCommand;
+import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.handlingunits.storage.IHUStorageFactory;
@@ -95,6 +96,8 @@ public class ProcessHUsAndPickingCandidateCommand
 	private final HuId2SourceHUsService sourceHUsRepository;
 	private final PickingCandidateRepository pickingCandidateRepository;
 
+	private final IHUShipmentScheduleBL huShipmentScheduleBL;
+
 	private final ImmutableListMultimap<HuId, PickingCandidate> pickingCandidatesByPickFromHUId;
 	private final ImmutableSet<HuId> pickFromHuIds;
 	private final OnOverDelivery onOverDelivery;
@@ -112,6 +115,7 @@ public class ProcessHUsAndPickingCandidateCommand
 	private ProcessHUsAndPickingCandidateCommand(
 			@NonNull final HuId2SourceHUsService sourceHUsRepository,
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
+			@NonNull final IHUShipmentScheduleBL huShipmentScheduleBL,
 			//
 			@NonNull final List<PickingCandidate> pickingCandidates,
 			@NonNull @Singular final Set<HuId> additionalPickFromHuIds,
@@ -131,6 +135,7 @@ public class ProcessHUsAndPickingCandidateCommand
 		validateClearedHUs(pickingCandidates, additionalPickFromHuIds);
 		this.sourceHUsRepository = sourceHUsRepository;
 		this.pickingCandidateRepository = pickingCandidateRepository;
+		this.huShipmentScheduleBL = huShipmentScheduleBL;
 
 		this.pickingCandidatesByPickFromHUId = Multimaps.index(
 				pickingCandidates,
@@ -257,7 +262,7 @@ public class ProcessHUsAndPickingCandidateCommand
 		final ShipmentScheduleId shipmentScheduleId = pc.getShipmentScheduleId();
 		final I_M_ShipmentSchedule sched = shipmentSchedulesRepo.getById(shipmentScheduleId);
 
-		return PackingItems.newPackingItemPart(sched)
+		return PackingItems.newPackingItemPart(sched, huShipmentScheduleBL)
 				.id(PackingItemPartId.of(shipmentScheduleId)) // TODO: include some picking candidate ID in partId
 				.qty(pc.getQtyPicked())
 				.build();

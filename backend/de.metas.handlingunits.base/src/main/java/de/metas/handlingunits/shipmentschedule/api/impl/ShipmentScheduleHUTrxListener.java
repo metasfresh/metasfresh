@@ -193,6 +193,6 @@ public final class ShipmentScheduleHUTrxListener implements IHUTrxListener
 
 		@SuppressWarnings("UnnecessaryLocalVariable")
 		final I_M_HU tuHU = hu;
-		Services.get(IHUShipmentScheduleBL.class).updateAllocationLUForTU(tuHU);
+		huShipmentScheduleBL.updateAllocationLUForTU(tuHU);
 	}
 }

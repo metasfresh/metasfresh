@@ -2,6 +2,8 @@ package de.metas.picking.service.impl;
 
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
+import de.metas.deliveryplanning.DeliveryPlanningRepository;
+import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
@@ -23,10 +25,13 @@ import de.metas.handlingunits.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.handlingunits.picking.OnOverDelivery;
 import de.metas.handlingunits.picking.PickingCandidateRepository;
 import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleBL;
+import de.metas.handlingunits.shipmentschedule.api.impl.HUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentScheduleQtyPickedProductStorage;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.handlingunits.util.CatchWeightHelper;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.DeliveryRule;
 import de.metas.picking.api.PickingConfigRepository;
@@ -84,7 +89,10 @@ public class HU2PackingItemsAllocator
 	private final transient IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final transient IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final transient IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
-	private final transient IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
+
+	private final IShipmentScheduleBL shipmentScheduleBL = new ShipmentScheduleBL(new DeliveryPlanningService(new DeliveryPlanningRepository()));
+	private final transient IHUShipmentScheduleBL huShipmentScheduleBL = new HUShipmentScheduleBL(shipmentScheduleBL);
+
 	private final PickingCandidateRepository pickingCandidateRepository = SpringContextHolder.instance.getBean(PickingCandidateRepository.class);
 	private final ShipmentSchedulesSupplier shipmentSchedulesSupplier;
 	/**
