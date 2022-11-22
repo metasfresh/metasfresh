@@ -231,7 +231,7 @@ Configs available in `Externalsystem_Config_SAP_LocalFile`:
 | Polling Frequency In Milliseconds | number          | the frequency used to poll files from the local machine (in milliseconds)                                                   |
 
 
-### CreditLimit - all `metasfresh-column` values refer to `C_BPartner_CreditLimit` columns
+1. CreditLimit - all `metasfresh-column` values refer to `C_BPartner_CreditLimit` columns
 
 | SAP                              | metasfresh-column                       | mandatory in mf   | metasfresh-json                                        | note                                                                                                                                                                                                              |
 | ----                             | ------------------------                | ----------------- | --------------------------------------------------     | --------------------------------------------------------------------                                                                                                                                              |
