@@ -250,16 +250,19 @@ public class C_Flatrate_Term
 			}
 			else
 			{
-				if (periodsOfTerm.get(0).getStartDate().after(term.getStartDate()))
+				final LocalDateAndOrgId firstPeriodStartDate = LocalDateAndOrgId.ofTimestamp(periodsOfTerm.get(0).getStartDate(), orgId, orgDAO::getTimeZone);
+				if (firstPeriodStartDate.compareTo(startDate) >= 0)
 				{
 					errors.add(msgBL.getMsg(ctx, MSG_TERM_ERROR_PERIOD_START_DATE_AFTER_TERM_START_DATE_2P,
 							new Object[] { term.getStartDate(), invoicingCal.getName() }));
 				}
-				final I_C_Period lastPeriodOfTerm = periodsOfTerm.get(periodsOfTerm.size() - 1);
-				if (lastPeriodOfTerm.getEndDate().before(term.getEndDate()))
+
+				final LocalDateAndOrgId lastPeriodEndDate = LocalDateAndOrgId.ofTimestamp(periodsOfTerm.get(periodsOfTerm.size() - 1).getEndDate(), orgId, orgDAO::getTimeZone);
+				
+				if (lastPeriodEndDate.compareTo(endDate) <= 0)
 				{
 					errors.add(msgBL.getMsg(ctx, MSG_TERM_ERROR_PERIOD_END_DATE_BEFORE_TERM_END_DATE_2P,
-							new Object[] { lastPeriodOfTerm.getEndDate(), invoicingCal.getName() }));
+							new Object[] { lastPeriodEndDate.toLocalDate(), invoicingCal.getName() }));
 				}
 			}
 		}
