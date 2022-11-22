@@ -4,7 +4,7 @@ Feature: Import Invoice Candidates via DataImportRestController
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
-    And metasfresh has date and time 2022-09-01T13:30:13+02:00[Europe/Berlin]
+    And metasfresh has current date and time
     And  metasfresh initially has no I_Invoice_Candidate data
     And metasfresh contains M_PricingSystems
       | Identifier | Name              | Value     | OPT.IsActive |
@@ -65,7 +65,7 @@ Feature: Import Invoice Candidates via DataImportRestController
       | Product_Value_25_08_2022_1 | iInvoiceCandidate_1               | billBpartner_1              | billBPLocation_1            | billBPUser_1            | product_1               | 2022-08-25      | 5          | importOrg            | 3                | UOM                     | Y       | docType                     | 2022-08-26             | DescriptionTest | PORef           | D               | Y            |
     And validate invoice candidates by record reference:
       | TableName           | I_Invoice_Candidate_ID.Identifier | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | AD_Org_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.DateOrdered | OPT.QtyOrdered | OPT.QtyDelivered | OPT.C_UOM_ID.Identifier | IsSOTrx | OPT.C_DocType_ID.Identifier | OPT.PresetDateInvoiced | OPT.Description | OPT.POReference | InvoiceRule |
-      | I_Invoice_Candidate | iInvoiceCandidate_1               | invoiceCandidate_1                | billBpartner_1              | billBPLocation_1            | importOrg            | billBPUser_1                | product_1                   | 2022-08-25      | 5              | 3                | UOM                     | true    | docType                     | 2022-08-26             | DescriptionTest | PORef           | I           |
+      | I_Invoice_Candidate | iInvoiceCandidate_1               | invoiceCandidate_1                | billBpartner_1              | billBPLocation_1            | importOrg            | billBPUser_1                | product_1                   | 2022-08-25      | 5              | 3                | UOM                     | true    | docType                     | 2022-08-26             | DescriptionTest | PORef           | D           |
     # note: updating to invoicing rule immediate in order to verify the invoice creation step
     And update C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.InvoiceRule_Override |

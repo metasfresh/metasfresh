@@ -5,6 +5,7 @@ Feature: Hierarchy commission and license fee commission combined
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
+    And metasfresh has date and time 2021-12-10T08:00:00+01:00[Europe/Berlin]
     And taxCategory 'Normal' is updated to work with all productTypes
     And metasfresh contains M_Products:
       | Identifier          | Name                           | ProductType | OPT.X12DE355 | Value |
@@ -57,9 +58,9 @@ Feature: Hierarchy commission and license fee commission combined
 
     And metasfresh contains C_Flatrate_Terms:
       | Identifier           | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier |
-      | hierarchyContract_1  | hierarchyConditions_1               | salesRep_1                  | 2021-11-01 | 2022-11-01 | commission_product          |
-      | hierarchyContract_2  | hierarchyConditions_1               | super_salesRep              | 2021-11-01 | 2022-11-01 | commission_product          |
-      | licenseFeeContract_1 | licenseFeeConditions_1              | salesRep_1                  | 2021-11-01 | 2022-11-01 | commission_product          |
+      | hierarchyContract_1  | hierarchyConditions_1               | salesRep_1                  | 2021-10-31 | 2022-10-30 | commission_product          |
+      | hierarchyContract_2  | hierarchyConditions_1               | super_salesRep              | 2021-10-31 | 2022-10-30 | commission_product          |
+      | licenseFeeContract_1 | licenseFeeConditions_1              | salesRep_1                  | 2021-10-31 | 2022-10-30 | commission_product          |
 
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
   """
@@ -76,7 +77,7 @@ Feature: Hierarchy commission and license fee commission combined
     "dateOrdered": "2021-11-20",
     "orderDocType": "SalesOrder",
     "paymentTerm": "val-1000002",
-    "productIdentifier": "val-transaction_product",
+    "productIdentifier": "val-transaction_product_16112022_1",
     "qty": 1,
     "currencyCode": "EUR",
     "discount": 0,
@@ -236,9 +237,9 @@ Feature: Hierarchy commission and license fee commission combined
       | customer_salesRep_1 | customer_salesRep_location_1          | customer_salesRep_1 | ps_1                          | Y            | Y              | Y              | 1000009              |                                       | customer_salesRep_1 cmp | 1234567891235 |
 
     And metasfresh contains C_Flatrate_Terms:
-      | Identifier                  | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.NrOfDaysFromNow |
-      | hierarchyContract_own_rev_1 | hierarchyConditions_own_rev_1       | customer_salesRep_1         | commission_product          | 365                 |
-      | licenseFeeContract_1        | licenseFeeConditions_1              | customer_salesRep_1         | commission_product          | 365                 |
+      | Identifier                  | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier |
+      | hierarchyContract_own_rev_1 | hierarchyConditions_own_rev_1       | customer_salesRep_1         | 2021-10-31 | 2022-10-30 | commission_product          |
+      | licenseFeeContract_1        | licenseFeeConditions_1              | customer_salesRep_1         | 2021-10-31 | 2022-10-30 | commission_product          |
 
     When a 'POST' request with the below payload is sent to the metasfresh REST-API 'api/v2/orders/sales/candidates' and fulfills with '201' status code
   """
@@ -255,7 +256,7 @@ Feature: Hierarchy commission and license fee commission combined
     "dateOrdered": "2021-11-20",
     "orderDocType": "SalesOrder",
     "paymentTerm": "val-1000002",
-    "productIdentifier": "val-transaction_product",
+    "productIdentifier": "val-transaction_product_16112022_1",
     "qty": 1,
     "currencyCode": "EUR",
     "discount": 0,

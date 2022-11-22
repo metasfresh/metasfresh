@@ -47,7 +47,9 @@ import org.slf4j.Logger;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.ZoneId;
 import java.util.Optional;
+import java.util.TimeZone;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -112,11 +114,13 @@ public class NoBatchReportEntry2Wrapper
 	}
 
 	@NonNull
-	public Optional<Instant> getStatementLineDate()
+	public Optional<Instant> getStatementLineDate(@NonNull final ZoneId zoneId)
 	{
+		final TimeZone timeZone = TimeZone.getTimeZone(zoneId);
+		
 		return Optional.ofNullable(entry.getValDt())
 				.map(DateAndDateTimeChoice::getDt)
-				.map(xmlGregorianCalendar -> xmlGregorianCalendar.toGregorianCalendar().toInstant());
+				.map(xmlGregorianCalendar -> xmlGregorianCalendar.toGregorianCalendar(timeZone, null, null).toInstant());
 	}
 
 	@NonNull
