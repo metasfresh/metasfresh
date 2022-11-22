@@ -192,10 +192,8 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
     "creditLimitTypeId" : {
       "repoId" : 100027
     },
-    "dateFrom" : "2022-11-01T22:00:00Z",
-    "id" : {
-      "repoId" : 100036
-    },
+    "dateFrom" : "2022-11-02T00:00:00Z",
+    "id" : 100036,
     "processed" : false
   } ],
   "locations" : [ {
@@ -445,9 +443,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
       "repoId" : 123
     },
     "dateFrom" : "2022-10-01T00:00:00Z",
-    "id" : {
-      "repoId" : 60
-    },
+    "id" : 60,
     "processed" : false
   } ],
   "locations" : [ {
@@ -654,9 +650,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
       "repoId" : 123
     },
     "dateFrom" : "2022-10-01T00:00:00Z",
-    "id" : {
-      "repoId" : 60
-    },
+    "id" : 60,
     "processed" : false
   } ],
   "locations" : [ {
@@ -831,9 +825,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
       "repoId" : 123
     },
     "dateFrom" : "2022-10-01T00:00:00Z",
-    "id" : {
-      "repoId" : 60
-    },
+    "id" : 60,
     "processed" : false
   } ],
   "locations" : [ {
@@ -1008,9 +1000,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
       "repoId" : 123
     },
     "dateFrom" : "2022-10-01T00:00:00Z",
-    "id" : {
-      "repoId" : 60
-    },
+    "id" : 60,
     "processed" : false
   } ],
   "locations" : [ {
