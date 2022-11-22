@@ -22,6 +22,11 @@ package de.metas.tourplanning.api.impl;
  * #L%
  */
 
+
+import java.math.BigDecimal;
+
+import org.adempiere.model.InterfaceWrapperHelper;
+
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -35,25 +40,14 @@ import de.metas.tourplanning.spi.DeliveryDayHandlerAdapter;
 import de.metas.tourplanning.spi.IDeliveryDayCreateHandler;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.springframework.stereotype.Component;
+import org.compiere.SpringContextHolder;
 
-import java.math.BigDecimal;
-
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-
-@Component
 public final class ShipmentScheduleDeliveryDayHandler extends DeliveryDayHandlerAdapter implements IDeliveryDayCreateHandler
 {
-	// Services
-	final IShipmentScheduleDeliveryDayBL shipmentScheduleDeliveryDayBL;
-	final IShipmentScheduleBL shipmentScheduleBL;
-	final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+	public static final transient ShipmentScheduleDeliveryDayHandler INSTANCE = new ShipmentScheduleDeliveryDayHandler();
 
-	public ShipmentScheduleDeliveryDayHandler(@NonNull final IShipmentScheduleBL shipmentScheduleBL,
-			@NonNull final IShipmentScheduleDeliveryDayBL shipmentScheduleDeliveryDayBL)
+	private ShipmentScheduleDeliveryDayHandler()
 	{
-		this.shipmentScheduleBL = shipmentScheduleBL;
-		this.shipmentScheduleDeliveryDayBL = shipmentScheduleDeliveryDayBL;
 	}
 
 	@Override
@@ -65,7 +59,7 @@ public final class ShipmentScheduleDeliveryDayHandler extends DeliveryDayHandler
 	@Override
 	public IDeliveryDayAllocable asDeliveryDayAllocable(@NonNull final Object model)
 	{
-		final I_M_ShipmentSchedule sched = create(model, I_M_ShipmentSchedule.class);
+		final I_M_ShipmentSchedule sched = InterfaceWrapperHelper.create(model, I_M_ShipmentSchedule.class);
 		return new ShipmentScheduleDeliveryDayAllocable(sched);
 	}
 
@@ -74,6 +68,10 @@ public final class ShipmentScheduleDeliveryDayHandler extends DeliveryDayHandler
 			@NonNull final I_M_DeliveryDay_Alloc deliveryDayAlloc,
 			@NonNull final IDeliveryDayAllocable deliveryDayAllocable)
 	{
+		// Services
+		final IShipmentScheduleDeliveryDayBL shipmentScheduleDeliveryDayBL = Services.get(IShipmentScheduleDeliveryDayBL.class);
+		final IShipmentScheduleBL shipmentScheduleBL = SpringContextHolder.instance.getBean(IShipmentScheduleBL.class); // TODO how to handle this
+		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 
 		//
 		// Get shipment schedule

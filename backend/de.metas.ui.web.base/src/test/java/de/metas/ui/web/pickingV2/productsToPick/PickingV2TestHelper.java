@@ -4,6 +4,8 @@ import de.metas.ad_reference.ADReferenceService;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.deliveryplanning.DeliveryPlanningRepository;
+import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuPackingInstructionsId;
 import de.metas.handlingunits.HuPackingInstructionsVersionId;
@@ -24,6 +26,7 @@ import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.handlingunits.test.misc.builders.HUPIAttributeBuilder;
 import de.metas.handlingunits.trace.HUTraceRepository;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleBL;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -193,13 +196,17 @@ final class PickingV2TestHelper
 		final HUTraceRepository huTraceRepository = new HUTraceRepository();
 		final HuId2SourceHUsService sourceHUsRepository = new HuId2SourceHUsService(huTraceRepository);
 
+
+		final ShipmentScheduleBL shipmentScheduleBL = new ShipmentScheduleBL(new DeliveryPlanningService(new DeliveryPlanningRepository()));
+
 		final PickingCandidateService pickingCandidateService = new PickingCandidateService(
 				new PickingConfigRepository(),
 				pickingCandidateRepository,
 				sourceHUsRepository,
 				huReservationService,
 				bpartnersService,
-				ADReferenceService.newMocked());
+				ADReferenceService.newMocked(),
+				shipmentScheduleBL);
 
 		return ProductsToPickRowsDataFactory.builder()
 				.pickingCandidateService(pickingCandidateService)

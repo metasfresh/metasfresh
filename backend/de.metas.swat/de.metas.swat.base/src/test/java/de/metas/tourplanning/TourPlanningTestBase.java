@@ -1,62 +1,12 @@
 package de.metas.tourplanning;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.ZoneId;
-import java.time.ZonedDateTime;
-import java.util.Date;
-import java.util.List;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.adempiere.util.lang.IContextAware;
-import org.compiere.model.I_AD_OrgInfo;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_UOM;
-import org.compiere.util.TimeUtil;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
-
 import de.metas.adempiere.model.I_C_Order;
 import de.metas.adempiere.model.I_M_Product;
+import de.metas.common.util.time.SystemTime;
+import de.metas.deliveryplanning.DeliveryPlanningRepository;
+import de.metas.deliveryplanning.DeliveryPlanningService;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleBL;
 import de.metas.organization.OrgId;
 import de.metas.organization.StoreCreditCardNumberMode;
 import de.metas.product.ProductId;
@@ -70,6 +20,7 @@ import de.metas.tourplanning.api.ITourInstanceDAO;
 import de.metas.tourplanning.api.impl.DeliveryDayBL;
 import de.metas.tourplanning.api.impl.DeliveryDayDAO;
 import de.metas.tourplanning.api.impl.ShipmentScheduleDeliveryDayBL;
+import de.metas.tourplanning.api.impl.ShipmentScheduleDeliveryDayHandler;
 import de.metas.tourplanning.model.I_M_DeliveryDay;
 import de.metas.tourplanning.model.I_M_DeliveryDay_Alloc;
 import de.metas.tourplanning.model.I_M_ShipmentSchedule;
@@ -78,6 +29,37 @@ import de.metas.tourplanning.model.I_M_TourVersion;
 import de.metas.tourplanning.model.I_M_Tour_Instance;
 import de.metas.tourplanning.model.validator.DeliveryDayAllocableInterceptor;
 import de.metas.util.Services;
+import org.adempiere.ad.modelvalidator.IModelInterceptorRegistry;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_OrgInfo;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_UOM;
+import org.compiere.util.TimeUtil;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.util.Date;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 /**
  * Base class (to be extended) for all Tour Planning tests.
@@ -114,6 +96,9 @@ public abstract class TourPlanningTestBase
 	{
 		AdempiereTestHelper.get().init();
 
+
+		SpringContextHolder.registerJUnitBean(new ShipmentScheduleBL(new DeliveryPlanningService(new DeliveryPlanningRepository())));
+
 		final ITrxManager trxManager = Services.get(ITrxManager.class);
 		final String trxName = trxManager.createTrxName("Dummy_ThreadInherited", true);
 		trxManager.setThreadInheritedTrxName(trxName);
@@ -130,11 +115,11 @@ public abstract class TourPlanningTestBase
 		this.tourDAO = Services.get(ITourDAO.class);
 		this.deliveryDayBL = (DeliveryDayBL)Services.get(IDeliveryDayBL.class);
 		this.deliveryDayDAO = (DeliveryDayDAO)Services.get(IDeliveryDayDAO.class);
-		this.shipmentScheduleDeliveryDayBL = new ShipmentScheduleDeliveryDayBL();
+		this.shipmentScheduleDeliveryDayBL = (ShipmentScheduleDeliveryDayBL)Services.get(IShipmentScheduleDeliveryDayBL.class);
 		this.tourInstanceBL = Services.get(ITourInstanceBL.class);
 		this.tourInstanceDAO = Services.get(ITourInstanceDAO.class);
 
-		final I_AD_OrgInfo orgInfo =newInstance(I_AD_OrgInfo.class);
+		final I_AD_OrgInfo orgInfo = newInstance(I_AD_OrgInfo.class);
 		orgInfo.setAD_Org_ID(OrgId.ANY.getRepoId());
 		orgInfo.setStoreCreditCardData(StoreCreditCardNumberMode.DONT_STORE.getCode());
 		orgInfo.setTimeZone(timeZone.getId());
@@ -161,7 +146,7 @@ public abstract class TourPlanningTestBase
 
 	protected I_C_BPartner createBPartner(final String name)
 	{
-		final I_C_BPartner bpartner =newInstance(I_C_BPartner.class, contextProvider);
+		final I_C_BPartner bpartner = newInstance(I_C_BPartner.class, contextProvider);
 		bpartner.setValue(name);
 		bpartner.setName(name);
 		save(bpartner);
@@ -170,7 +155,7 @@ public abstract class TourPlanningTestBase
 
 	protected I_C_BPartner_Location createBPLocation(final I_C_BPartner bpartner)
 	{
-		final I_C_BPartner_Location bpLocation =newInstance(I_C_BPartner_Location.class, contextProvider);
+		final I_C_BPartner_Location bpLocation = newInstance(I_C_BPartner_Location.class, contextProvider);
 		bpLocation.setC_BPartner_ID(bpartner.getC_BPartner_ID());
 		save(bpLocation);
 
@@ -179,7 +164,7 @@ public abstract class TourPlanningTestBase
 
 	protected final I_M_Tour createTour(final String name)
 	{
-		final I_M_Tour tour =newInstance(I_M_Tour.class, contextProvider);
+		final I_M_Tour tour = newInstance(I_M_Tour.class, contextProvider);
 		tour.setName(name);
 		save(tour);
 
@@ -188,7 +173,7 @@ public abstract class TourPlanningTestBase
 
 	protected final I_M_TourVersion createTourVersion(final I_M_Tour tour, final LocalDate validFrom)
 	{
-		final I_M_TourVersion tourVersion =newInstance(I_M_TourVersion.class, tour);
+		final I_M_TourVersion tourVersion = newInstance(I_M_TourVersion.class, tour);
 		tourVersion.setName(tour.getName() + "-" + validFrom);
 		tourVersion.setM_Tour(tour);
 		tourVersion.setValidFrom(TimeUtil.asTimestamp(validFrom));
@@ -278,7 +263,7 @@ public abstract class TourPlanningTestBase
 
 	protected I_M_DeliveryDay createDeliveryDay(final String deliveryDateTimeStr, final int bufferHours, final int bPartnerId, final int bpLocationId)
 	{
-		final I_M_DeliveryDay deliveryDay =newInstance(I_M_DeliveryDay.class, contextProvider);
+		final I_M_DeliveryDay deliveryDay = newInstance(I_M_DeliveryDay.class, contextProvider);
 		deliveryDay.setIsActive(true);
 		deliveryDay.setC_BPartner_ID(bPartnerId);
 		deliveryDay.setC_BPartner_Location_ID(bpLocationId);

@@ -8,6 +8,8 @@ import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.business.BusinessTestHelper;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.deliveryplanning.DeliveryPlanningRepository;
+import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HUTestHelper;
@@ -51,6 +53,7 @@ import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.sourcehu.HuId2SourceHUsService;
 import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.handlingunits.util.HUTracerInstance;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.order.OrderAndLineId;
@@ -140,6 +143,8 @@ public class PickingJobTestHelper
 		final PickingJobRepository pickingJobRepository = new PickingJobRepository();
 		final PickingJobSlotService pickingJobSlotService = new PickingJobSlotService(pickingJobRepository);
 
+		final ShipmentScheduleBL shipmentScheduleBL = new ShipmentScheduleBL(new DeliveryPlanningService(new DeliveryPlanningRepository()));
+
 		pickingJobService = new PickingJobService(
 				pickingJobRepository,
 				new PickingJobLockService(new InMemoryShipmentScheduleLockRepository()),
@@ -150,7 +155,8 @@ public class PickingJobTestHelper
 						new HuId2SourceHUsService(new HUTraceRepository()),
 						huReservationService,
 						bpartnerBL,
-						ADReferenceService.newMocked()),
+						ADReferenceService.newMocked(),
+						shipmentScheduleBL),
 				new PickingJobHUReservationService(huReservationService),
 				pickingConfigRepo,
 				new DefaultPickingJobLoaderSupportingServicesFactory(
