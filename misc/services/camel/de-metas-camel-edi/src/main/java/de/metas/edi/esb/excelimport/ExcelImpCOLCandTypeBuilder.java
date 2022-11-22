@@ -40,6 +40,11 @@ import java.math.BigInteger;
 
 import static de.metas.edi.esb.commons.Util.resolveGenericLookup;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
+import static de.metas.edi.esb.commons.Util.resolveGenericLookup;
+
 /**
  * Builds {@link XLSImpCOLCandType}s.
  *
@@ -123,7 +128,7 @@ public class ExcelImpCOLCandTypeBuilder
 		olcand.setHandOverLocationID(toBigIntegerID(row.getHandOver_Location_ID()));
 		olcand.setDropShipBPartnerID(toBigIntegerID(row.getDropShip_BPartner_ID()));
 		olcand.setDropShipLocationID(toBigIntegerID(row.getDropShip_Location_ID()));
-
+		
 		//
 		// Product
 		olcand.setMProductID(toBigIntegerID(row.getM_Product_ID()));
