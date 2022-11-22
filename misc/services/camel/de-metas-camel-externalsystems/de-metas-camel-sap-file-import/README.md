@@ -45,6 +45,8 @@
 
 First, the SFTP consumer must be configured using `Externalsystem_Config_SAP_SFTP` and started by invoking the `SAP-startProductsSyncSFTP` dedicated route. In order to stop the consumer, the `SAP-stopProductSyncSFTP` route must be invoked.
 
+In order to update the consumer configuration, you have to firstly stop the consumer, then reconfigure it and then restart the consumer.
+
 Configs available in `Externalsystem_Config_SAP_SFTP`:
 
 | Column name                       | Accepted values | Description                                                                                                                 |
@@ -62,6 +64,8 @@ Configs available in `Externalsystem_Config_SAP_SFTP`:
 * `Product` - pulled via a local file camel route
 
 First, the local file consumer must be configured using `Externalsystem_Config_SAP_LocalFile` and started by invoking the `SAP-startProductsSyncLocalFile` dedicated route. In order to stop the consumer, the `SAP-stopProductSyncLocalFile` route must be invoked.
+
+In order to update the consumer configuration, you have to firstly stop the consumer, then reconfigure it and then restart the consumer.
 
 Configs available in `Externalsystem_Config_SAP_LocalFile`:
 
@@ -97,6 +101,8 @@ ProductRow.materialCode | `S_ExternalReference.externalReference` | Y           
 
 First, the SFTP consumer must be configured using `Externalsystem_Config_SAP_SFTP` and started by invoking the `SAP-startBPartnerSyncSFTP` dedicated route. In order to stop the consumer, the `SAP-stopBPartnerSyncSFTP` route must be invoked.
 
+In order to update the consumer configuration, you have to firstly stop the consumer, then reconfigure it and then restart the consumer.
+
 Configs available in `Externalsystem_Config_SAP_SFTP`:
 
 | Column name                       | Accepted values | Description                                                                                                             |
@@ -114,6 +120,8 @@ Configs available in `Externalsystem_Config_SAP_SFTP`:
 * `BPartner` - pulled via a local file camel route
 
 First, the local file consumer must be configured using `Externalsystem_Config_SAP_LocalFile` and started by invoking the `SAP-startBPartnerSyncLocalFile` dedicated route. In order to stop the consumer, the `SAP-stopBPartnerSyncLocalFile` route must be invoked.
+
+In order to update the consumer configuration, you have to firstly stop the consumer, then reconfigure it and then restart the consumer.
 
 Configs available in `Externalsystem_Config_SAP_LocalFile`:
 
@@ -201,6 +209,8 @@ BPartnerRow.partnerCode + "_" + BPartnerRow.section  | `S_ExternalReference.exte
 
 First, the SFTP consumer must be configured using `Externalsystem_Config_SAP_SFTP` and started by invoking the `SAP-startCreditLimitsSyncSFTP` dedicated route. In order to stop the consumer, the `SAP-stopCreditLimitsSyncSFTP` route must be invoked.
 
+In order to update the consumer configuration, you have to firstly stop the consumer, then reconfigure it and then restart the consumer.
+
 Configs available in `Externalsystem_Config_SAP_SFTP`:
 
 | Column name                       | Accepted values | Description                                                                                                                 |
@@ -218,6 +228,8 @@ Configs available in `Externalsystem_Config_SAP_SFTP`:
 * `CreditLimit` - pulled via a local file camel route
 
 First, the local file consumer must be configured using `Externalsystem_Config_SAP_LocalFile` and started by invoking the `SAP-startCreditLimitsSyncLocalFile` dedicated route. In order to stop the consumer, the `SAP-stopCreditLimitsSyncLocalFile` route must be invoked.
+
+In order to update the consumer configuration, you have to firstly stop the consumer, then reconfigure it and then restart the consumer.
 
 Configs available in `Externalsystem_Config_SAP_LocalFile`:
 
