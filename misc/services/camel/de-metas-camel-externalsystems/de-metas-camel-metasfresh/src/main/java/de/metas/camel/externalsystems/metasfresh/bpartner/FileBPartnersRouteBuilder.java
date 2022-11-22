@@ -24,6 +24,7 @@ package de.metas.camel.externalsystems.metasfresh.bpartner;
 
 import de.metas.camel.externalsystems.common.CamelRouteUtil;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
 import de.metas.camel.externalsystems.metasfresh.bpartner.processor.ParseBPartnersProcessor;
 import de.metas.camel.externalsystems.metasfresh.bpartner.processor.UnwrapJsonUpsertBPartnerRequestItem;
 import de.metas.camel.externalsystems.metasfresh.restapi.feedback.MassUpsertStatisticsCollector;
@@ -31,6 +32,7 @@ import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsert;
 import de.metas.common.util.Check;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.http.base.HttpOperationFailedException;
 import org.springframework.stereotype.Component;
@@ -64,9 +66,15 @@ public class FileBPartnersRouteBuilder extends RouteBuilder
 				.loopDoWhile(exchangeProperty(IS_CONTINUE_PARSING_PROPERTY))
 					.doTry()
 						.process(new ParseBPartnersProcessor())
-						.to("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
-						.unmarshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), JsonResponseBPartnerCompositeUpsert.class))
-				        .process(this::collectStatistics)
+						.choice()
+							.when(bodyAs(BPUpsertCamelRequest.class).isNull())
+								.log(LoggingLevel.INFO, "Nothing to do! No BPartners pulled from file!")
+							.otherwise()
+								.to("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}")
+								.unmarshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), JsonResponseBPartnerCompositeUpsert.class))
+				        		.process(this::collectStatistics)
+						.endChoice()
+						.end()
 					.endDoTry()
 					.doCatch(Exception.class)
 						.process(this::collectError)
