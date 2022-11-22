@@ -98,7 +98,7 @@ public class EffortControlRepository
 	}
 
 	@NonNull
-	static EffortControl fromRecord(@NonNull final I_S_EffortControl record)
+	public static EffortControl fromRecord(@NonNull final I_S_EffortControl record)
 	{
 		return EffortControl.builder()
 				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))

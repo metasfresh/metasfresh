@@ -68,7 +68,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -397,6 +396,12 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 		//
 		// Save it
 		invoiceCandDAO.save(icRecord);
+
+		// in unit tests there might be no handler; don't bother in those cases
+		if (icRecord.getC_ILCandHandler_ID() > 0)
+		{
+			invoiceCandidateHandlerBL.postUpdate(icRecord);
+		}
 	}
 
 	/**

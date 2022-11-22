@@ -28,8 +28,11 @@ import de.metas.JsonObjectMapperHolder;
 import de.metas.common.rest_api.v2.project.JsonResponseProjectUpsert;
 import de.metas.common.rest_api.v2.project.JsonResponseProjectUpsertItem;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.cucumber.stepdefs.AD_User_StepDefData;
+import de.metas.cucumber.stepdefs.C_BPartner_Location_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.R_Status_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.context.TestContext;
@@ -51,14 +54,18 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_ProjectType;
+import org.compiere.model.I_M_Product;
 import org.compiere.model.I_R_Status;
 
 import java.util.List;
 import java.util.Map;
 
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
@@ -77,19 +84,28 @@ public class C_Project_StepDef
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_ProjectType_StepDefData projectTypeTable;
 	private final R_Status_StepDefData rStatusTable;
+	private final C_BPartner_Location_StepDefData bpartnerLocationTable;
+	private final AD_User_StepDefData userTable;
+	private final M_Product_StepDefData productTable;
 
 	public C_Project_StepDef(
 			@NonNull final TestContext testContext,
 			@NonNull final C_Project_StepDefData projectTable,
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final C_ProjectType_StepDefData projectTypeTable,
-			@NonNull final R_Status_StepDefData rStatusTable)
+			@NonNull final R_Status_StepDefData rStatusTable,
+			@NonNull final C_BPartner_Location_StepDefData bpartnerLocationTable,
+			@NonNull final AD_User_StepDefData userTable,
+			@NonNull final M_Product_StepDefData productTable)
 	{
 		this.testContext = testContext;
 		this.projectTable = projectTable;
 		this.bpartnerTable = bpartnerTable;
 		this.projectTypeTable = projectTypeTable;
 		this.rStatusTable = rStatusTable;
+		this.bpartnerLocationTable = bpartnerLocationTable;
+		this.userTable = userTable;
+		this.productTable = productTable;
 	}
 
 	@Given("metasfresh contains C_Project")
@@ -126,6 +142,34 @@ public class C_Project_StepDef
 			project.setR_StatusCategory_ID(OPPORTUNITY_STATUS_CATEGORY_ID.getRepoId());
 			project.setAD_Org_ID(OrgId.MAIN.getRepoId());
 			project.setC_Currency_ID(currency.getId().getRepoId());
+
+			final String bPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Project.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(bPartnerIdentifier))
+			{
+				final I_C_BPartner bPartner = bpartnerTable.get(bPartnerIdentifier);
+				project.setC_BPartner_ID(bPartner.getC_BPartner_ID());
+			}
+
+			final String bPartnerLocationIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Project.COLUMNNAME_C_BPartner_Location_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(bPartnerLocationIdentifier))
+			{
+				final I_C_BPartner_Location bPartnerLocation = bpartnerLocationTable.get(bPartnerLocationIdentifier);
+				project.setC_BPartner_Location_ID(bPartnerLocation.getC_BPartner_Location_ID());
+			}
+
+			final String userIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Project.COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(userIdentifier))
+			{
+				final I_AD_User user = userTable.get(userIdentifier);
+				project.setAD_User_ID(user.getAD_User_ID());
+			}
+
+			final String productIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_Project.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(productIdentifier))
+			{
+				final I_M_Product product = productTable.get(productIdentifier);
+				project.setM_Product_ID(product.getM_Product_ID());
+			}
 
 			InterfaceWrapperHelper.saveRecord(project);
 

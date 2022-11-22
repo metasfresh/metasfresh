@@ -43,7 +43,10 @@ import de.metas.user.UserId;
 import de.metas.util.Node;
 import de.metas.util.NumberUtils;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -55,6 +58,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -204,17 +208,40 @@ public class IssueRepository
 	@NonNull
 	public Stream<IssueEntity> streamIssuesWithOpenEffort()
 	{
-		final IQuery<I_S_EffortControl> effortControlQuery = queryBL
-				.createQueryBuilder(I_S_EffortControl.class)
+		final IQuery<I_S_Issue> notProcessedIssues = queryBL.createQueryBuilder(I_S_Issue.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_S_EffortControl.COLUMNNAME_IsProcessed, false)
+				.addNotNull(I_S_Issue.COLUMNNAME_EffortAggregationKey)
+				.addEqualsFilter(I_S_Issue.COLUMNNAME_Processed, false)
 				.create();
+
+		final IQueryFilter<I_S_EffortControl> notProcessedEffortControlFilter = queryBL.createCompositeQueryFilter(I_S_EffortControl.class)
+				.addOnlyActiveRecordsFilter()
+				.addInSubQueryFilter(I_S_EffortControl.COLUMNNAME_EffortAggregationKey, I_S_Issue.COLUMNNAME_EffortAggregationKey, notProcessedIssues);
+
+		final IQuery<I_S_EffortControl> notProcessedEffortControlQuery = queryBL.createQueryBuilder(I_S_EffortControl.class)
+				.addFilter(notProcessedEffortControlFilter)
+				.create();
+
+		final IQuery<I_S_EffortControl> allEffortControlQuery = queryBL.createQueryBuilder(I_S_EffortControl.class)
+				.addOnlyActiveRecordsFilter()
+				.create();
+
+		final IQueryFilter<I_S_Issue> issueWithOpenEffortControlFilter = queryBL.createCompositeQueryFilter(I_S_Issue.class)
+				.addInSubQueryFilter(I_S_Issue.COLUMNNAME_EffortAggregationKey, I_S_EffortControl.COLUMNNAME_EffortAggregationKey, notProcessedEffortControlQuery);
+
+		final IQueryFilter<I_S_Issue> issueWithNoControlFilter = queryBL.createCompositeQueryFilter(I_S_Issue.class)
+				.addNotInSubQueryFilter(I_S_Issue.COLUMNNAME_EffortAggregationKey, I_S_EffortControl.COLUMNNAME_EffortAggregationKey, allEffortControlQuery);
+
+		final ICompositeQueryFilter<I_S_Issue> issueWithOpenEffortControlOrNoControlFilter = queryBL.createCompositeQueryFilter(I_S_Issue.class)
+				.setJoinOr()
+				.addFilter(issueWithOpenEffortControlFilter)
+				.addFilter(issueWithNoControlFilter);
 
 		return queryBL.createQueryBuilder(I_S_Issue.class)
 				.addOnlyActiveRecordsFilter()
 				.addNotNull(I_S_Issue.COLUMNNAME_C_Project_ID)
 				.addNotNull(I_S_Issue.COLUMNNAME_C_Activity_ID)
-				.addNotInSubQueryFilter(I_S_Issue.COLUMNNAME_EffortAggregationKey, I_S_EffortControl.COLUMNNAME_EffortAggregationKey, effortControlQuery)
+				.addFilter(issueWithOpenEffortControlOrNoControlFilter)
 				.create()
 				.iterateAndStream()
 				.map(IssueRepository::ofRecord);
@@ -241,15 +268,19 @@ public class IssueRepository
 	@NonNull
 	public List<IssueEntity> geyByQuery(@NonNull final IssueQuery query)
 	{
-		return queryBL.createQueryBuilder(I_S_Issue.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_S_Issue.COLUMNNAME_AD_Org_ID, query.getOrgId())
-				.addEqualsFilter(I_S_Issue.COLUMNNAME_C_Activity_ID, query.getCostCenterId())
-				.addEqualsFilter(I_S_Issue.COLUMNNAME_C_Project_ID, query.getProjectId())
+		return buildQuery(query)
 				.create()
 				.iterateAndStream()
 				.map(IssueRepository::ofRecord)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	public Iterator<I_S_Issue> iterateRecordsByQuery(@NonNull final IssueQuery query)
+	{
+		return buildQuery(query)
+				.create()
+				.iterate(I_S_Issue.class);
 	}
 
 	@NonNull
@@ -296,6 +327,8 @@ public class IssueRepository
 				.costCenterActivityId(ActivityId.ofRepoIdOrNull(record.getC_Activity_ID()))
 				.externallyUpdatedAt(TimeUtil.asInstant(record.getExternallyUpdatedAt()))
 				.invoiceableHours(record.getInvoiceableEffort())
+				.invoicingErrorMsg(record.getInvoicingErrorMsg())
+				.isInvoicingError(record.isInvoicingError())
 				.build();
 	}
 
@@ -308,6 +341,28 @@ public class IssueRepository
 				.addEqualsFilter(I_S_Issue.COLUMNNAME_S_Issue_ID, issueId.getRepoId())
 				.create()
 				.firstOnly(I_S_Issue.class);
+	}
+
+	@NonNull
+	private IQueryBuilder<I_S_Issue> buildQuery(@NonNull final IssueQuery query)
+	{
+		final IQueryBuilder<I_S_Issue> queryBuilder = queryBL.createQueryBuilder(I_S_Issue.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_S_Issue.COLUMNNAME_AD_Org_ID, query.getOrgId())
+				.addEqualsFilter(I_S_Issue.COLUMNNAME_C_Activity_ID, query.getCostCenterId())
+				.addEqualsFilter(I_S_Issue.COLUMNNAME_C_Project_ID, query.getProjectId());
+
+		if (query.getEffortIssue() != null)
+		{
+			queryBuilder.addEqualsFilter(I_S_Issue.COLUMNNAME_IsEffortIssue, query.getEffortIssue());
+		}
+
+		if (query.getProcessed() != null)
+		{
+			queryBuilder.addEqualsFilter(I_S_Issue.COLUMNNAME_Processed, query.getProcessed());
+		}
+
+		return queryBuilder;
 	}
 
 	@NonNull
@@ -361,6 +416,9 @@ public class IssueRepository
 		record.setExternallyUpdatedAt(TimeUtil.asTimestamp(issueEntity.getExternallyUpdatedAt()));
 
 		record.setInvoiceableEffort(issueEntity.getInvoiceableHours());
+
+		record.setInvoicingErrorMsg(issueEntity.getInvoicingErrorMsg());
+		record.setIsInvoicingError(issueEntity.isInvoicingError());
 
 		return record;
 	}

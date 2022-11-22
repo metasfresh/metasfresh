@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_S_EffortControl extends org.compiere.model.PO implements I_S_EffortControl, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1410097545L;
+	private static final long serialVersionUID = -1790612697L;
 
     /** Standard Constructor */
     public X_S_EffortControl (final Properties ctx, final int S_EffortControl_ID, @Nullable final String trxName)
@@ -149,18 +149,6 @@ public class X_S_EffortControl extends org.compiere.model.PO implements I_S_Effo
 	public boolean isOverBudget() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsOverBudget);
-	}
-
-	@Override
-	public void setIsProcessed (final boolean IsProcessed)
-	{
-		set_Value (COLUMNNAME_IsProcessed, IsProcessed);
-	}
-
-	@Override
-	public boolean isProcessed() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_IsProcessed);
 	}
 
 	@Override

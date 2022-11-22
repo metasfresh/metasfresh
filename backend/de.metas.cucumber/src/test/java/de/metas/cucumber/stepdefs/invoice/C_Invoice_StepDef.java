@@ -36,7 +36,9 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
 import de.metas.cucumber.stepdefs.invoicecandidate.C_Invoice_Candidate_StepDefData;
+import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.cucumber.stepdefs.sectioncode.M_SectionCode_StepDefData;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
@@ -77,6 +79,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
+import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_ConversionType;
@@ -86,6 +89,7 @@ import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Project;
 import org.compiere.model.I_M_SectionCode;
 import org.compiere.model.X_C_Invoice;
 import org.compiere.util.Env;
@@ -149,6 +153,8 @@ public class C_Invoice_StepDef
 	private final C_BPartner_Location_StepDefData bPartnerLocationTable;
 	private final AD_User_StepDefData userTable;
 	private final M_SectionCode_StepDefData sectionCodeTable;
+	private final C_Project_StepDefData projectTable;
+	private final C_Activity_StepDefData activityTable;
 
 	public C_Invoice_StepDef(
 			@NonNull final C_Invoice_StepDefData invoiceTable,
@@ -159,7 +165,9 @@ public class C_Invoice_StepDef
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable,
 			@NonNull final AD_User_StepDefData userTable,
-			@NonNull final M_SectionCode_StepDefData sectionCodeTable)
+			@NonNull final M_SectionCode_StepDefData sectionCodeTable,
+			@NonNull final C_Project_StepDefData projectTable,
+			@NonNull final C_Activity_StepDefData activityTable)
 	{
 		this.invoiceTable = invoiceTable;
 		this.invoiceCandTable = invoiceCandTable;
@@ -170,6 +178,8 @@ public class C_Invoice_StepDef
 		this.orderLineTable = orderLineTable;
 		this.userTable = userTable;
 		this.sectionCodeTable = sectionCodeTable;
+		this.projectTable = projectTable;
+		this.activityTable = activityTable;
 	}
 
 	@And("validate created invoices")
@@ -363,22 +373,25 @@ public class C_Invoice_StepDef
 			softly.assertThat(invoice.getPOReference()).as("POReference").isEqualTo(poReference);
 		}
 
-		final String paymentTerm = DataTableUtil.extractStringForColumnName(row, "paymentTerm");
+		final String paymentTerm = DataTableUtil.extractStringOrNullForColumnName(row, "paymentTerm");
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
 		final String docStatus = DataTableUtil.extractStringForColumnName(row, "docStatus");
 
 		softly.assertThat(invoice.isProcessed()).as("Processed").isEqualTo(processed);
 		softly.assertThat(invoice.getDocStatus()).as("DocStatus").isEqualTo(docStatus);
 
-		final PaymentTermQuery query = PaymentTermQuery.builder()
-				.orgId(StepDefConstants.ORG_ID)
-				.value(paymentTerm)
-				.build();
-		final PaymentTermId paymentTermId = paymentTermRepo.retrievePaymentTermId(query)
-				.orElse(null);
+		if (Check.isNotBlank(paymentTerm))
+		{
+			final PaymentTermQuery query = PaymentTermQuery.builder()
+					.orgId(StepDefConstants.ORG_ID)
+					.value(paymentTerm)
+					.build();
+			final PaymentTermId paymentTermId = paymentTermRepo.retrievePaymentTermId(query)
+					.orElse(null);
 
-		softly.assertThat(paymentTermId).as("C_PaymentTerm_ID").isNotNull();
-		softly.assertThat(invoice.getC_PaymentTerm_ID()).as("C_PaymentTerm_ID").isEqualTo(paymentTermId.getRepoId());
+			softly.assertThat(paymentTermId).as("C_PaymentTerm_ID").isNotNull();
+			softly.assertThat(invoice.getC_PaymentTerm_ID()).as("C_PaymentTerm_ID").isEqualTo(paymentTermId.getRepoId());
+		}
 
 		final String docSubType = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_DocType.COLUMNNAME_DocSubType);
 		if (Check.isNotBlank(docSubType))
@@ -412,9 +425,6 @@ public class C_Invoice_StepDef
 		{
 			softly.assertThat(invoice.getPaymentRule()).as("PaymentRule").isEqualTo(paymentRule);
 		}
-
-		softly.assertThat(paymentTermId).as("C_PaymentTerm_ID").isNotNull();
-		softly.assertThat(invoice.getC_PaymentTerm_ID()).as("C_PaymentTerm_ID").isEqualTo(paymentTermId.getRepoId());
 
 		final String internalName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_AD_InputDataSource_ID + "." + I_AD_InputDataSource.COLUMNNAME_InternalName);
 		if (Check.isNotBlank(internalName))
@@ -456,6 +466,20 @@ public class C_Invoice_StepDef
 		{
 			final I_M_SectionCode sectionCode = sectionCodeTable.get(sectionCodeIdentifier);
 			softly.assertThat(invoice.getM_SectionCode_ID()).as("M_SectionCode_ID").isEqualTo(sectionCode.getM_SectionCode_ID());
+		}
+
+		final String projectIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_C_Project_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(projectIdentifier))
+		{
+			final I_C_Project project = projectTable.get(projectIdentifier);
+			softly.assertThat(invoice.getC_Project_ID()).as("C_Project_ID").isEqualTo(project.getC_Project_ID());
+		}
+
+		final String costCenterIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice.COLUMNNAME_C_Activity_ID + "." + TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(costCenterIdentifier))
+		{
+			final I_C_Activity activity = activityTable.get(costCenterIdentifier);
+			softly.assertThat(invoice.getC_Activity_ID()).as("C_Activity_ID").isEqualTo(activity.getC_Activity_ID());
 		}
 		softly.assertAll();
 	}

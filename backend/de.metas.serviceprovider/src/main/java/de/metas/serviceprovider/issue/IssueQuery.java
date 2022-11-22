@@ -29,6 +29,8 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
 @Builder
 public class IssueQuery
@@ -41,4 +43,10 @@ public class IssueQuery
 
 	@NonNull
 	ProjectId projectId;
+
+	@Nullable
+	Boolean effortIssue;
+
+	@Nullable
+	Boolean processed;
 }
