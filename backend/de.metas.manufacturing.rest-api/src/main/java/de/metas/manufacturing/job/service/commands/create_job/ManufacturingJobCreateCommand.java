@@ -5,6 +5,7 @@ import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleCreateRequest;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
+import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.manufacturing.issue.plan.PPOrderIssuePlan;
 import de.metas.manufacturing.issue.plan.PPOrderIssuePlanCreateCommand;
@@ -31,6 +32,7 @@ public class ManufacturingJobCreateCommand
 	private final ITrxManager trxManager;
 	private final IHUPPOrderBL ppOrderBL;
 	private final HUReservationService huReservationService;
+	private final PPOrderSourceHUService ppOrderSourceHUService;
 	private final PPOrderIssueScheduleService ppOrderIssueScheduleService;
 	private final ManufacturingJobLoaderAndSaverSupportingServices loadingSupportServices;
 
@@ -47,6 +49,7 @@ public class ManufacturingJobCreateCommand
 			@NonNull final ITrxManager trxManager,
 			@NonNull final IHUPPOrderBL ppOrderBL,
 			@NonNull final HUReservationService huReservationService,
+			@NonNull final PPOrderSourceHUService ppOrderSourceHUService,
 			@NonNull final PPOrderIssueScheduleService ppOrderIssueScheduleService,
 			@NonNull final ManufacturingJobLoaderAndSaverSupportingServices loadingSupportServices,
 			//
@@ -56,6 +59,7 @@ public class ManufacturingJobCreateCommand
 		this.trxManager = trxManager;
 		this.ppOrderBL = ppOrderBL;
 		this.huReservationService = huReservationService;
+		this.ppOrderSourceHUService = ppOrderSourceHUService;
 		this.ppOrderIssueScheduleService = ppOrderIssueScheduleService;
 		this.loadingSupportServices = loadingSupportServices;
 
@@ -106,6 +110,7 @@ public class ManufacturingJobCreateCommand
 	{
 		return PPOrderIssuePlanCreateCommand.builder()
 				.huReservationService(huReservationService)
+				.ppOrderSourceHUService(ppOrderSourceHUService)
 				.ppOrderId(ppOrderId)
 				.build()
 				.execute();

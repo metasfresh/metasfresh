@@ -26,6 +26,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.engine.IDocument;
+import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
@@ -62,6 +63,7 @@ import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.function.UnaryOperator;
@@ -71,11 +73,11 @@ import static de.metas.picking.workflow.handlers.activity_handlers.PickingWFActi
 @Component
 public class PickingMobileApplication implements WorkflowBasedMobileApplication
 {
-	public static final MobileApplicationId HANDLER_ID = MobileApplicationId.ofString("picking");
+	public static final MobileApplicationId APPLICATION_ID = MobileApplicationId.ofString("picking");
 
 	private static final AdMessageKey MSG_Caption = AdMessageKey.of("mobileui.picking.appName");
 	private static final MobileApplicationInfo APPLICATION_INFO = MobileApplicationInfo.builder()
-			.id(HANDLER_ID)
+			.id(APPLICATION_ID)
 			.caption(TranslatableStrings.adMessage(MSG_Caption))
 			.build();
 
@@ -91,8 +93,10 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	}
 
 	@Override
-	@NonNull
-	public MobileApplicationInfo getApplicationInfo()
+	public MobileApplicationId getApplicationId() {return APPLICATION_ID;}
+
+	@Override
+	public @NonNull MobileApplicationInfo getApplicationInfo(@NonNull UserId loggedUserId)
 	{
 		return APPLICATION_INFO;
 	}
@@ -100,9 +104,15 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 	@Override
 	public WorkflowLaunchersList provideLaunchers(
 			@NonNull final UserId userId,
+			@Nullable final GlobalQRCode filterByQRCode,
 			@NonNull final QueryLimit suggestedLimit,
 			@NonNull final Duration maxStaleAccepted)
 	{
+		if (filterByQRCode != null)
+		{
+			throw new AdempiereException("Invalid QR Code: " + filterByQRCode);
+		}
+
 		return wfLaunchersProvider.provideLaunchers(userId, suggestedLimit, maxStaleAccepted);
 	}
 
@@ -239,7 +249,7 @@ public class PickingMobileApplication implements WorkflowBasedMobileApplication
 		}
 
 		return WFProcess.builder()
-				.id(WFProcessId.ofIdPart(HANDLER_ID, pickingJob.getId()))
+				.id(WFProcessId.ofIdPart(APPLICATION_ID, pickingJob.getId()))
 				.responsibleId(responsibleId)
 				.caption(PickingWFProcessUtils.workflowCaption()
 						.salesOrderDocumentNo(pickingJob.getSalesOrderDocumentNo())

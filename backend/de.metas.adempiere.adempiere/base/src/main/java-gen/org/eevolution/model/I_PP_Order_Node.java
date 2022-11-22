@@ -52,8 +52,8 @@ public interface I_PP_Order_Node
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Start Node.
-	 * Workflow Node, step or process
+	 * Set Knoten.
+	 * Workflow Node (activity), step or process
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -62,8 +62,8 @@ public interface I_PP_Order_Node
 	void setAD_WF_Node_ID (int AD_WF_Node_ID);
 
 	/**
-	 * Get Start Node.
-	 * Workflow Node, step or process
+	 * Get Knoten.
+	 * Workflow Node (activity), step or process
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -94,7 +94,7 @@ public interface I_PP_Order_Node
 	String COLUMNNAME_AD_WF_Node_Template_ID = "AD_WF_Node_Template_ID";
 
 	/**
-	 * Set Workflow Responsible.
+	 * Set Workflow - Verantwortlicher.
 	 * Responsible for Workflow Execution
 	 *
 	 * <br>Type: TableDir
@@ -104,7 +104,7 @@ public interface I_PP_Order_Node
 	void setAD_WF_Responsible_ID (int AD_WF_Responsible_ID);
 
 	/**
-	 * Get Workflow Responsible.
+	 * Get Workflow - Verantwortlicher.
 	 * Responsible for Workflow Execution
 	 *
 	 * <br>Type: TableDir
@@ -158,28 +158,6 @@ public interface I_PP_Order_Node
 	String COLUMNNAME_C_BPartner_ID = "C_BPartner_ID";
 
 	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: Search
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -205,6 +183,28 @@ public interface I_PP_Order_Node
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
 	 * Set Date planned finished.
 	 * Finish or (planned) completion date
 	 *
@@ -228,8 +228,7 @@ public interface I_PP_Order_Node
 	String COLUMNNAME_DateFinish = "DateFinish";
 
 	/**
-	 * Set Date Finish Schedule.
-	 * Scheduled Finish date for this Order
+	 * Set DateFinishSchedule.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -238,8 +237,7 @@ public interface I_PP_Order_Node
 	void setDateFinishSchedule (@Nullable java.sql.Timestamp DateFinishSchedule);
 
 	/**
-	 * Get Date Finish Schedule.
-	 * Scheduled Finish date for this Order
+	 * Get DateFinishSchedule.
 	 *
 	 * <br>Type: DateTime
 	 * <br>Mandatory: false
@@ -383,7 +381,7 @@ public interface I_PP_Order_Node
 	String COLUMNNAME_DurationReal = "DurationReal";
 
 	/**
-	 * Set Duration Required.
+	 * Set Duration Requiered.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -392,7 +390,7 @@ public interface I_PP_Order_Node
 	void setDurationRequiered (int DurationRequiered);
 
 	/**
-	 * Get Duration Required.
+	 * Get Duration Requiered.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -651,6 +649,27 @@ public interface I_PP_Order_Node
 	String COLUMNNAME_PP_Order_Workflow_ID = "PP_Order_Workflow_ID";
 
 	/**
+	 * Set User Instructions.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPP_UserInstructions (@Nullable java.lang.String PP_UserInstructions);
+
+	/**
+	 * Get User Instructions.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPP_UserInstructions();
+
+	ModelColumn<I_PP_Order_Node, Object> COLUMN_PP_UserInstructions = new ModelColumn<>(I_PP_Order_Node.class, "PP_UserInstructions", null);
+	String COLUMNNAME_PP_UserInstructions = "PP_UserInstructions";
+
+	/**
 	 * Set Shipped Qty.
 	 *
 	 * <br>Type: Quantity
@@ -714,8 +733,8 @@ public interface I_PP_Order_Node
 	String COLUMNNAME_QtyRequiered = "QtyRequiered";
 
 	/**
-	 * Set Quantity Scrap %.
-	 * Scrap % Quantity for this componet
+	 * Set QtyScrap.
+	 * Scrap Quantity for this componet
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -724,8 +743,8 @@ public interface I_PP_Order_Node
 	void setQtyScrap (@Nullable BigDecimal QtyScrap);
 
 	/**
-	 * Get Quantity Scrap %.
-	 * Scrap % Quantity for this componet
+	 * Get QtyScrap.
+	 * Scrap Quantity for this componet
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -738,7 +757,6 @@ public interface I_PP_Order_Node
 
 	/**
 	 * Set Queuing Time.
-	 * Queue time is the time a job waits at a work center before begin handled.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -748,7 +766,6 @@ public interface I_PP_Order_Node
 
 	/**
 	 * Get Queuing Time.
-	 * Queue time is the time a job waits at a work center before begin handled.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -758,54 +775,6 @@ public interface I_PP_Order_Node
 
 	ModelColumn<I_PP_Order_Node, Object> COLUMN_QueuingTime = new ModelColumn<>(I_PP_Order_Node.class, "QueuingTime", null);
 	String COLUMNNAME_QueuingTime = "QueuingTime";
-
-	/**
-	 * Set Resource.
-	 * Resource
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setS_Resource_ID (int S_Resource_ID);
-
-	/**
-	 * Get Resource.
-	 * Resource
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getS_Resource_ID();
-
-	@Nullable org.compiere.model.I_S_Resource getS_Resource();
-
-	void setS_Resource(@Nullable org.compiere.model.I_S_Resource S_Resource);
-
-	ModelColumn<I_PP_Order_Node, org.compiere.model.I_S_Resource> COLUMN_S_Resource_ID = new ModelColumn<>(I_PP_Order_Node.class, "S_Resource_ID", org.compiere.model.I_S_Resource.class);
-	String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
-
-	/**
-	 * Set Scanned QR Code.
-	 *
-	 * <br>Type: TextLong
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setScannedQRCode (@Nullable java.lang.String ScannedQRCode);
-
-	/**
-	 * Get Scanned QR Code.
-	 *
-	 * <br>Type: TextLong
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getScannedQRCode();
-
-	ModelColumn<I_PP_Order_Node, Object> COLUMN_ScannedQRCode = new ModelColumn<>(I_PP_Order_Node.class, "ScannedQRCode", null);
-	String COLUMNNAME_ScannedQRCode = "ScannedQRCode";
 
 	/**
 	 * Set Setup Time.
@@ -852,7 +821,7 @@ public interface I_PP_Order_Node
 	String COLUMNNAME_SetupTimeReal = "SetupTimeReal";
 
 	/**
-	 * Set Setup Time Required.
+	 * Set Setup Time Requiered.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -861,7 +830,7 @@ public interface I_PP_Order_Node
 	void setSetupTimeRequiered (int SetupTimeRequiered);
 
 	/**
-	 * Get Setup Time Required.
+	 * Get Setup Time Requiered.
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -871,6 +840,33 @@ public interface I_PP_Order_Node
 
 	ModelColumn<I_PP_Order_Node, Object> COLUMN_SetupTimeRequiered = new ModelColumn<>(I_PP_Order_Node.class, "SetupTimeRequiered", null);
 	String COLUMNNAME_SetupTimeRequiered = "SetupTimeRequiered";
+
+	/**
+	 * Set Resource.
+	 * Resource
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setS_Resource_ID (int S_Resource_ID);
+
+	/**
+	 * Get Resource.
+	 * Resource
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getS_Resource_ID();
+
+	@Nullable org.compiere.model.I_S_Resource getS_Resource();
+
+	void setS_Resource(@Nullable org.compiere.model.I_S_Resource S_Resource);
+
+	ModelColumn<I_PP_Order_Node, org.compiere.model.I_S_Resource> COLUMN_S_Resource_ID = new ModelColumn<>(I_PP_Order_Node.class, "S_Resource_ID", org.compiere.model.I_S_Resource.class);
+	String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
 
 	/**
 	 * Get Updated.

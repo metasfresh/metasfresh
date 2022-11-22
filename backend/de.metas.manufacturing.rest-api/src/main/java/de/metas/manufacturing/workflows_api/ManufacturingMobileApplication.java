@@ -1,11 +1,14 @@
 package de.metas.manufacturing.workflows_api;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateRequest;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
+import de.metas.manufacturing.config.MobileUIManufacturingUserProfile;
+import de.metas.manufacturing.config.MobileUIManufacturingUserProfileRepository;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLine;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonHUQRCodeTarget;
@@ -41,38 +44,48 @@ import java.util.function.UnaryOperator;
 @Component
 public class ManufacturingMobileApplication implements WorkflowBasedMobileApplication
 {
-	public static final MobileApplicationId HANDLER_ID = MobileApplicationId.ofString("mfg");
+	public static final MobileApplicationId APPLICATION_ID = MobileApplicationId.ofString("mfg");
 
 	private static final AdMessageKey MSG_Caption = AdMessageKey.of("mobileui.manufacturing.appName");
-	private static final MobileApplicationInfo APPLICATION_INFO = MobileApplicationInfo.builder()
-			.id(HANDLER_ID)
-			.caption(TranslatableStrings.adMessage(MSG_Caption))
-			.build();
 
+	private final MobileUIManufacturingUserProfileRepository userProfileRepository;
 	private final ManufacturingRestService manufacturingRestService;
 	private final ManufacturingWorkflowLaunchersProvider wfLaunchersProvider;
 	private final HUQRCodesService huQRCodesService;
 
 	public ManufacturingMobileApplication(
+			@NonNull final MobileUIManufacturingUserProfileRepository userProfileRepository,
 			@NonNull final ManufacturingRestService manufacturingRestService,
 			@NonNull final HUQRCodesService huQRCodesService)
 	{
+		this.userProfileRepository = userProfileRepository;
 		this.manufacturingRestService = manufacturingRestService;
 		this.wfLaunchersProvider = new ManufacturingWorkflowLaunchersProvider(manufacturingRestService);
 		this.huQRCodesService = huQRCodesService;
 	}
 
 	@Override
-	@NonNull
-	public MobileApplicationInfo getApplicationInfo() {return APPLICATION_INFO;}
+	public MobileApplicationId getApplicationId() {return APPLICATION_ID;}
+
+	@Override
+	public @NonNull MobileApplicationInfo getApplicationInfo(@NonNull final UserId loggedUserId)
+	{
+		final MobileUIManufacturingUserProfile userProfile = userProfileRepository.getByUserId(loggedUserId);
+		return MobileApplicationInfo.builder()
+				.id(APPLICATION_ID)
+				.caption(TranslatableStrings.adMessage(MSG_Caption))
+				.requiresLaunchersQRCodeFilter(userProfile.isScanResourceRequired())
+				.build();
+	}
 
 	@Override
 	public WorkflowLaunchersList provideLaunchers(
 			@NonNull final UserId userId,
+			@Nullable final GlobalQRCode filterByQRCode,
 			@NonNull final QueryLimit suggestedLimit,
 			@NonNull final Duration maxStaleAccepted)
 	{
-		return wfLaunchersProvider.provideLaunchers(userId, suggestedLimit);
+		return wfLaunchersProvider.provideLaunchers(userId, filterByQRCode, suggestedLimit);
 	}
 
 	@Override

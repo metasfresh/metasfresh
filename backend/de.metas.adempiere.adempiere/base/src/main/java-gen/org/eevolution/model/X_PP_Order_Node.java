@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order_Node, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -95155028L;
+	private static final long serialVersionUID = -1712971244L;
 
     /** Standard Constructor */
     public X_PP_Order_Node (final Properties ctx, final int PP_Order_Node_ID, @Nullable final String trxName)
@@ -341,8 +341,6 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 	public static final String PP_ACTIVITY_TYPE_ScanScaleDevice = "ScanScaleDevice";
 	/** RawMaterialsIssueAdjustment = MIA */
 	public static final String PP_ACTIVITY_TYPE_RawMaterialsIssueAdjustment = "MIA";
-	/** CallExternalSystem = CallExternalSystem */
-	public static final String PP_ACTIVITY_TYPE_CallExternalSystem = "CallExternalSystem";
 	@Override
 	public void setPP_Activity_Type (final java.lang.String PP_Activity_Type)
 	{
@@ -355,7 +353,7 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 		return get_ValueAsString(COLUMNNAME_PP_Activity_Type);
 	}
 
-	/**
+	/** 
 	 * PP_AlwaysAvailableToUser AD_Reference_ID=319
 	 * Reference name: _YesNo
 	 */
@@ -371,7 +369,7 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 	}
 
 	@Override
-	public java.lang.String getPP_AlwaysAvailableToUser()
+	public java.lang.String getPP_AlwaysAvailableToUser() 
 	{
 		return get_ValueAsString(COLUMNNAME_PP_AlwaysAvailableToUser);
 	}
@@ -446,6 +444,18 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 	}
 
 	@Override
+	public void setPP_UserInstructions (final @Nullable java.lang.String PP_UserInstructions)
+	{
+		set_Value (COLUMNNAME_PP_UserInstructions, PP_UserInstructions);
+	}
+
+	@Override
+	public java.lang.String getPP_UserInstructions() 
+	{
+		return get_ValueAsString(COLUMNNAME_PP_UserInstructions);
+	}
+
+	@Override
 	public void setQtyDelivered (final @Nullable BigDecimal QtyDelivered)
 	{
 		set_Value (COLUMNNAME_QtyDelivered, QtyDelivered);
@@ -510,45 +520,6 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 	}
 
 	@Override
-	public org.compiere.model.I_S_Resource getS_Resource()
-	{
-		return get_ValueAsPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class);
-	}
-
-	@Override
-	public void setS_Resource(final org.compiere.model.I_S_Resource S_Resource)
-	{
-		set_ValueFromPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class, S_Resource);
-	}
-
-	@Override
-	public void setS_Resource_ID (final int S_Resource_ID)
-	{
-		if (S_Resource_ID < 1) 
-			set_Value (COLUMNNAME_S_Resource_ID, null);
-		else 
-			set_Value (COLUMNNAME_S_Resource_ID, S_Resource_ID);
-	}
-
-	@Override
-	public int getS_Resource_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_S_Resource_ID);
-	}
-
-	@Override
-	public void setScannedQRCode (final @Nullable java.lang.String ScannedQRCode)
-	{
-		set_Value (COLUMNNAME_ScannedQRCode, ScannedQRCode);
-	}
-
-	@Override
-	public java.lang.String getScannedQRCode()
-	{
-		return get_ValueAsString(COLUMNNAME_ScannedQRCode);
-	}
-
-	@Override
 	public void setSetupTime (final int SetupTime)
 	{
 		set_Value (COLUMNNAME_SetupTime, SetupTime);
@@ -582,6 +553,33 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 	public int getSetupTimeRequiered() 
 	{
 		return get_ValueAsInt(COLUMNNAME_SetupTimeRequiered);
+	}
+
+	@Override
+	public org.compiere.model.I_S_Resource getS_Resource()
+	{
+		return get_ValueAsPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class);
+	}
+
+	@Override
+	public void setS_Resource(final org.compiere.model.I_S_Resource S_Resource)
+	{
+		set_ValueFromPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class, S_Resource);
+	}
+
+	@Override
+	public void setS_Resource_ID (final int S_Resource_ID)
+	{
+		if (S_Resource_ID < 1) 
+			set_Value (COLUMNNAME_S_Resource_ID, null);
+		else 
+			set_Value (COLUMNNAME_S_Resource_ID, S_Resource_ID);
+	}
+
+	@Override
+	public int getS_Resource_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_S_Resource_ID);
 	}
 
 	@Override
