@@ -35,6 +35,8 @@ public interface Shopware6Constants
 
 	String PARAMETERS_DATE_GTE = "gte";
 
+	String FIELD_PRODUCT_ID = "id";
+
 	String SALUTATION_KEY_NOT_SPECIFIED = "not_specified";
 	
 	//camel route properties
