@@ -18,6 +18,7 @@ import de.metas.manufacturing.workflows_api.activity_handlers.receive.MaterialRe
 import de.metas.manufacturing.workflows_api.activity_handlers.scanScaleDevice.ScanScaleDeviceActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.work_report.WorkReportActivityHandler;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
+import de.metas.product.ResourceId;
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.WFActivity;
 import de.metas.workflow.rest_api.model.WFActivityAlwaysAvailableToUser;
@@ -31,6 +32,7 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRoutingActivityId;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.stream.Stream;
 
@@ -46,10 +48,11 @@ public class ManufacturingRestService
 
 	public Stream<ManufacturingJobReference> streamJobReferencesForUser(
 			final @NonNull UserId responsibleId,
+			final @Nullable ResourceId plantId,
 			final @NonNull Instant now,
 			final @NonNull QueryLimit suggestedLimit)
 	{
-		return manufacturingJobService.streamJobReferencesForUser(responsibleId, now, suggestedLimit);
+		return manufacturingJobService.streamJobReferencesForUser(responsibleId, plantId, now, suggestedLimit);
 	}
 
 	public ManufacturingJob createJob(final PPOrderId ppOrderId, final UserId responsibleId)
@@ -109,7 +112,7 @@ public class ManufacturingRestService
 	public static WFProcess toWFProcess(final ManufacturingJob job)
 	{
 		return WFProcess.builder()
-				.id(WFProcessId.ofIdPart(ManufacturingMobileApplication.HANDLER_ID, job.getPpOrderId()))
+				.id(WFProcessId.ofIdPart(ManufacturingMobileApplication.APPLICATION_ID, job.getPpOrderId()))
 				.responsibleId(job.getResponsibleId())
 				.caption(TranslatableStrings.anyLanguage("" + job.getPpOrderId().getRepoId())) // TODO
 				.document(job)
