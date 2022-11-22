@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13251](https://github.com/metasfresh/metasfresh/pull/13251) Resolve importing of product variants from Shopware
   * [#13970](https://github.com/metasfresh/metasfresh/issues/13970) Externally referenced records: further improvements 
   * [#13968](https://github.com/metasfresh/metasfresh/issues/13968) Include in MD_Stock inactive HUs
   * [#13962](https://github.com/metasfresh/metasfresh/pull/13962) Extend BPartner API with Credit Limit
