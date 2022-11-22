@@ -66,7 +66,7 @@ public class PickHUCommand
 	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
-	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	private final IShipmentScheduleBL shipmentScheduleBL;
 	private final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final PickingCandidateRepository pickingCandidateRepository;
@@ -86,9 +86,11 @@ public class PickHUCommand
 	@Builder
 	private PickHUCommand(
 			@NonNull final PickingCandidateRepository pickingCandidateRepository,
-			@NonNull final PickRequest request)
+			@NonNull final PickRequest request,
+			@NonNull final IShipmentScheduleBL shipmentScheduleBL)
 	{
 		this.pickingCandidateRepository = pickingCandidateRepository;
+		this.shipmentScheduleBL = shipmentScheduleBL;
 
 		this.existingPickingCandidateId = request.getExistingPickingCandidateId();
 		this.shipmentScheduleId = request.getShipmentScheduleId();

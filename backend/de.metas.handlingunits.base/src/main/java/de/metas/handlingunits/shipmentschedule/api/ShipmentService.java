@@ -28,9 +28,12 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.service.AsyncBatchService;
+import de.metas.deliveryplanning.DeliveryPlanningRepository;
+import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
+import de.metas.handlingunits.shipmentschedule.api.impl.HUShipmentScheduleBL;
 import de.metas.handlingunits.shipmentschedule.api.impl.ShipmentServiceTestImpl;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
@@ -39,6 +42,7 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.order.DeliveryRule;
 import de.metas.order.OrderLineId;
@@ -51,7 +55,6 @@ import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Check;
-import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
@@ -89,7 +92,7 @@ public class ShipmentService implements IShipmentService
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IShipmentScheduleAllocDAO shipmentScheduleAllocDAO = Services.get(IShipmentScheduleAllocDAO.class);
 	private final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	private final IShipmentScheduleBL shipmentScheduleBL;
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IOLCandEffectiveValuesBL olCandEffectiveValuesBL = Services.get(IOLCandEffectiveValuesBL.class);
@@ -103,7 +106,13 @@ public class ShipmentService implements IShipmentService
 	{
 		if (Adempiere.isUnitTestMode())
 		{
-			return new ShipmentServiceTestImpl(new ShipmentScheduleWithHUService(new HUReservationService(new HUReservationRepository())));
+			final DeliveryPlanningRepository deliveryPlanningRepo = new DeliveryPlanningRepository();
+			final DeliveryPlanningService deliveryPlanningService = new DeliveryPlanningService(deliveryPlanningRepo);
+			final ShipmentScheduleBL shipmentScheduleBL = new ShipmentScheduleBL(deliveryPlanningService);
+
+			return new ShipmentServiceTestImpl(new ShipmentScheduleWithHUService(new HUReservationService(new HUReservationRepository()),
+																				 shipmentScheduleBL,
+																				 new HUShipmentScheduleBL(shipmentScheduleBL)));
 		}
 		else
 		{
@@ -111,9 +120,11 @@ public class ShipmentService implements IShipmentService
 		}
 	}
 
-	public ShipmentService(@NonNull final AsyncBatchService asyncBatchService)
+	public ShipmentService(@NonNull final AsyncBatchService asyncBatchService,
+			@NonNull final IShipmentScheduleBL shipmentScheduleBL)
 	{
 		this.asyncBatchService = asyncBatchService;
+		this.shipmentScheduleBL = shipmentScheduleBL;
 	}
 
 	@NonNull
@@ -156,9 +167,9 @@ public class ShipmentService implements IShipmentService
 					final GenerateShipmentsRequest generateShipmentsRequest = toGenerateShipmentsRequest(
 							asyncBatchId,
 							shipmentScheduleIds,
-							request.getQuantityTypeToUse(), 
-							request.isOnTheFlyPickToPackingInstructions(), 
-							request.getIsCompleteShipment(), 
+							request.getQuantityTypeToUse(),
+							request.isOnTheFlyPickToPackingInstructions(),
+							request.getIsCompleteShipment(),
 							request.getIsShipDateToday());
 
 					generateShipments(generateShipmentsRequest);
@@ -438,7 +449,7 @@ public class ShipmentService implements IShipmentService
 						.setParameter("AsyncBatchId", asyncBatchId);
 			}
 
-			if(InterfaceWrapperHelper.isNull(olCand, I_C_OLCand.COLUMNNAME_QtyShipped))
+			if (InterfaceWrapperHelper.isNull(olCand, I_C_OLCand.COLUMNNAME_QtyShipped))
 			{
 				// not specified; -> let metasfresh decide
 				scheduleId2QtyShipped.put(scheduleId,

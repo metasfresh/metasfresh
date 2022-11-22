@@ -87,7 +87,7 @@ public class WarehouseService
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IUOMConversionBL conversionBL = Services.get(IUOMConversionBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	private final IShipmentScheduleBL shipmentScheduleBL;
 	private final IWarehouseDAO warehouseDAO = Services.get(IWarehouseDAO.class);
 
 	@NonNull
@@ -106,13 +106,15 @@ public class WarehouseService
 			@NonNull final HuForInventoryLineFactory huForInventoryLineFactory,
 			@NonNull final InventoryService inventoryService,
 			@NonNull final ShipmentScheduleRepository shipmentScheduleRepository,
-			@NonNull final JsonAttributeService jsonAttributeService)
+			@NonNull final JsonAttributeService jsonAttributeService,
+			@NonNull final IShipmentScheduleBL shipmentScheduleBL)
 	{
 		this.productRestService = productRestService;
 		this.huForInventoryLineFactory = huForInventoryLineFactory;
 		this.inventoryService = inventoryService;
 		this.shipmentScheduleRepository = shipmentScheduleRepository;
 		this.jsonAttributeService = jsonAttributeService;
+		this.shipmentScheduleBL = shipmentScheduleBL;
 	}
 
 	@NonNull
@@ -236,12 +238,12 @@ public class WarehouseService
 				.attributeSetInstanceId(targetAsiId)
 				.build();
 
+
 		final List<ShipmentScheduleId> closedShipmentScheduleIds = shipmentScheduleRepository.streamFromSegment(shipmentScheduleSegment)
 				.filter(shipmentSchedule -> !shipmentSchedule.isProcessed())
 				.map(ShipmentSchedule::getId)
 				.peek(shipmentScheduleBL::closeShipmentSchedule)
 				.collect(ImmutableList.toImmutableList());
-
 		Loggables.addLog("WarehouseService.closeShipmentSchedules: Just closed from warehouse: {} the following shipmentSchedules: {}",
 						 warehouseId, closedShipmentScheduleIds);
 

@@ -65,54 +65,55 @@ public final class PackingItems
 		return new TransactionalPackingItem(PackingItemParts.of(part));
 	}
 
-	public static ImmutableList<IPackingItem> createPackingItems(final Set<ShipmentScheduleId> shipmentScheduleIds)
-	{
-		if (shipmentScheduleIds.isEmpty())
-		{
-			return ImmutableList.of();
-		}
+	// TODO: Can I delete this since it it not used?
+	// public static ImmutableList<IPackingItem> createPackingItems(final Set<ShipmentScheduleId> shipmentScheduleIds)
+	// {
+	// 	if (shipmentScheduleIds.isEmpty())
+	// 	{
+	// 		return ImmutableList.of();
+	// 	}
+	//
+	// 	final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
+	// 	final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	//
+	// 	final Map<ShipmentScheduleId, I_M_ShipmentSchedule> shipmentSchedules = shipmentSchedulesRepo.getByIdsOutOfTrx(shipmentScheduleIds, I_M_ShipmentSchedule.class);
+	//
+	// 	final Map<PackingItemGroupingKey, IPackingItem> packingItems = new LinkedHashMap<>();
+	//
+	// 	for (final I_M_ShipmentSchedule sched : shipmentSchedules.values())
+	// 	{
+	// 		final Quantity qtyToDeliverTarget = shipmentScheduleBL.getQtyToDeliver(sched);
+	// 		if (qtyToDeliverTarget.signum() <= 0)
+	// 		{
+	// 			continue;
+	// 		}
+	// 		// task 08153: these code-lines are obsolete now, because the sched's qtyToDeliver(_Override) has the qtyPicked already factored in
+	// 		// final BigDecimal qtyPicked = shipmentScheduleAllocBL.getQtyPicked(sched);
+	// 		// final BigDecimal qtyToDeliver = qtyToDeliverTarget.subtract(qtyPicked == null ? BigDecimal.ZERO : qtyPicked);
+	//
+	// 		final PackingItemPart part = newPackingItemPart(sched)
+	// 				.qty(qtyToDeliverTarget)
+	// 				.build();
+	//
+	// 		final IPackingItem newItem = newPackingItem(part);
+	// 		final IPackingItem existingItem = packingItems.get(newItem.getGroupingKey());
+	// 		if (existingItem != null)
+	// 		{
+	// 			existingItem.addParts(newItem);
+	// 		}
+	// 		else
+	// 		{
+	// 			packingItems.put(newItem.getGroupingKey(), newItem);
+	// 		}
+	// 	}
+	//
+	// 	return ImmutableList.copyOf(packingItems.values());
+	// }
 
-		final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
-		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-
-		final Map<ShipmentScheduleId, I_M_ShipmentSchedule> shipmentSchedules = shipmentSchedulesRepo.getByIdsOutOfTrx(shipmentScheduleIds, I_M_ShipmentSchedule.class);
-
-		final Map<PackingItemGroupingKey, IPackingItem> packingItems = new LinkedHashMap<>();
-
-		for (final I_M_ShipmentSchedule sched : shipmentSchedules.values())
-		{
-			final Quantity qtyToDeliverTarget = shipmentScheduleBL.getQtyToDeliver(sched);
-			if (qtyToDeliverTarget.signum() <= 0)
-			{
-				continue;
-			}
-			// task 08153: these code-lines are obsolete now, because the sched's qtyToDeliver(_Override) has the qtyPicked already factored in
-			// final BigDecimal qtyPicked = shipmentScheduleAllocBL.getQtyPicked(sched);
-			// final BigDecimal qtyToDeliver = qtyToDeliverTarget.subtract(qtyPicked == null ? BigDecimal.ZERO : qtyPicked);
-
-			final PackingItemPart part = newPackingItemPart(sched)
-					.qty(qtyToDeliverTarget)
-					.build();
-
-			final IPackingItem newItem = newPackingItem(part);
-			final IPackingItem existingItem = packingItems.get(newItem.getGroupingKey());
-			if (existingItem != null)
-			{
-				existingItem.addParts(newItem);
-			}
-			else
-			{
-				packingItems.put(newItem.getGroupingKey(), newItem);
-			}
-		}
-
-		return ImmutableList.copyOf(packingItems.values());
-	}
-
-	public static PackingItemPartBuilder newPackingItemPart(final de.metas.inoutcandidate.model.I_M_ShipmentSchedule sched)
+	public static PackingItemPartBuilder newPackingItemPart(final de.metas.inoutcandidate.model.I_M_ShipmentSchedule sched,
+			@NonNull final IHUShipmentScheduleBL huShipmentScheduleBL)
 	{
 		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
-		final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 
 		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(sched.getM_ShipmentSchedule_ID());
 

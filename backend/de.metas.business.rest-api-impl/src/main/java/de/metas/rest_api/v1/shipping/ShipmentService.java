@@ -93,7 +93,7 @@ public class ShipmentService
 {
 	private static final Logger logger = LogManager.getLogger(ShipmentService.class);
 
-	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	private final IShipmentScheduleBL shipmentScheduleBL;
 	private final IShipmentScheduleEffectiveBL scheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IHUShipmentScheduleBL huShipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final IBPartnerDAO bPartnerDAO = Services.get(IBPartnerDAO.class);
@@ -108,11 +108,13 @@ public class ShipmentService
 	private final ShipmentScheduleWithHUService shipmentScheduleWithHUService;
 	private final AttributeSetHelper attributeSetHelper;
 
-	public ShipmentService(final ShipmentScheduleWithHUService shipmentScheduleWithHUService,
-			final AttributeSetHelper attributeSetHelper)
+	public ShipmentService(@NonNull final ShipmentScheduleWithHUService shipmentScheduleWithHUService,
+			@NonNull final AttributeSetHelper attributeSetHelper,
+			@NonNull final IShipmentScheduleBL shipmentScheduleBL)
 	{
 		this.shipmentScheduleWithHUService = shipmentScheduleWithHUService;
 		this.attributeSetHelper = attributeSetHelper;
+		this.shipmentScheduleBL = shipmentScheduleBL;
 	}
 
 	public InOutGenerateResult updateShipmentSchedulesAndGenerateShipments(@NonNull final JsonCreateShipmentRequest request)
@@ -367,8 +369,8 @@ public class ShipmentService
 		else
 		{
 			return bPartnerDAO.retrieveBPartnerIdBy(BPartnerQuery.builder()
-					.bpartnerValue(bPartnerValue)
-					.build());
+															.bpartnerValue(bPartnerValue)
+															.build());
 		}
 	}
 
@@ -409,11 +411,11 @@ public class ShipmentService
 
 		return shipmentInfo.getPackages().stream()
 				.map(jsonPackage ->
-						PackageInfo.builder()
-								.trackingNumber(jsonPackage.getTrackingCode())
-								.weight(jsonPackage.getWeight())
-								.trackingUrl(trackingURL)
-								.build()
+							 PackageInfo.builder()
+									 .trackingNumber(jsonPackage.getTrackingCode())
+									 .weight(jsonPackage.getWeight())
+									 .trackingUrl(trackingURL)
+									 .build()
 				)
 				.collect(ImmutableList.toImmutableList());
 	}

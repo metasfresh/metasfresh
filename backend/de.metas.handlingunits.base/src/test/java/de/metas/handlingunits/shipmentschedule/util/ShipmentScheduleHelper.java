@@ -32,6 +32,9 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.metas.deliveryplanning.DeliveryPlanningRepository;
+import de.metas.deliveryplanning.DeliveryPlanningService;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
@@ -71,7 +74,7 @@ import de.metas.util.Services;
 public class ShipmentScheduleHelper
 {
 	private final HUTestHelper helper;
-	public final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	public final IShipmentScheduleBL shipmentScheduleBL;
 	public final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
 	public final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
 
@@ -82,6 +85,8 @@ public class ShipmentScheduleHelper
 	public ShipmentScheduleHelper(final HUTestHelper helper)
 	{
 		this.helper = helper;
+
+		this.shipmentScheduleBL = new ShipmentScheduleBL(new DeliveryPlanningService(new DeliveryPlanningRepository()));
 
 		final I_M_Warehouse warehouse = newInstanceOutOfTrx(I_M_Warehouse.class);
 		saveRecord(warehouse);

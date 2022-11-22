@@ -68,6 +68,7 @@ import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.X_C_DocType;
 import org.compiere.model.X_M_InOut;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -106,6 +107,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * #L%
  */
 
+@Service
 public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 {
 	private final Logger logger = LogManager.getLogger(getClass());
@@ -116,7 +118,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IHUShipperTransportationBL huShipperTransportationBL = Services.get(IHUShipperTransportationBL.class);
-	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	private final IShipmentScheduleBL shipmentScheduleBL;
 	private final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 	private final IHUShipmentScheduleDAO huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
 	private final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
@@ -132,6 +134,12 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	private static final String DEFAULT_ShipmentConsolidationPeriod = null;
 
 	public static final AdMessageKey MSG_WEBUI_PICKING_ALREADY_SHIPPED_2P = AdMessageKey.of("WEBUI_Picking_Already_Shipped");
+
+
+	public HUShipmentScheduleBL(@NonNull final IShipmentScheduleBL shipmentScheduleBL)
+	{
+		this.shipmentScheduleBL = shipmentScheduleBL;
+	}
 
 	@Override
 	public I_M_ShipmentSchedule getById(@NonNull final ShipmentScheduleId id)

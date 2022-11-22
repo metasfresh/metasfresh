@@ -79,7 +79,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 {
 	private final static IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	private final IShipmentScheduleBL shipmentScheduleBL;
 	private final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL;
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);;
@@ -90,9 +90,11 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 
 	public OrderLineShipmentScheduleHandler(
 			@NonNull final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL,
+			@NonNull final IShipmentScheduleBL shipmentScheduleBL,
 			@NonNull final Optional<List<OrderLineShipmentScheduleHandlerExtension>> extensions)
 	{
 		this.shipmentScheduleInvalidateBL = shipmentScheduleInvalidateBL;
+		this.shipmentScheduleBL = shipmentScheduleBL;
 		this.extensions = CompositeOrderLineShipmentScheduleHandlerExtension.of(extensions);
 	}
 
@@ -100,6 +102,7 @@ public class OrderLineShipmentScheduleHandler extends ShipmentScheduleHandler
 	{
 		return new OrderLineShipmentScheduleHandler(
 				Services.get(IShipmentScheduleInvalidateBL.class),
+				Services.get(IShipmentScheduleBL.class),
 				Optional.empty());
 	}
 

@@ -35,7 +35,10 @@ import de.metas.common.shipping.v2.JsonRequestCandidateResults.JsonRequestCandid
 import de.metas.common.shipping.v2.Outcome;
 import de.metas.common.shipping.v2.shipmentcandidate.JsonResponseShipmentCandidates;
 import de.metas.common.util.time.SystemTime;
+import de.metas.deliveryplanning.DeliveryPlanningRepository;
+import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.inoutcandidate.ShipmentScheduleRepository;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleBL;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.exportaudit.ShipmentScheduleAuditRepository;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
@@ -130,9 +133,13 @@ class ShipmentCandidateAPIServiceTest
 
 		final BPartnerBL partnerBL = new BPartnerBL(new UserRepository());
 
+		final DeliveryPlanningRepository deliveryPlanningRepo = new DeliveryPlanningRepository();
+		final DeliveryPlanningService deliveryPlanningService = new DeliveryPlanningService(deliveryPlanningRepo);
+		final ShipmentScheduleBL shipmentScheduleBL = new ShipmentScheduleBL(deliveryPlanningService);
+
 		shipmentCandidateAPIService = new ShipmentCandidateAPIService(
 				new ShipmentScheduleAuditRepository(),
-				new ShipmentScheduleRepository(),
+				new ShipmentScheduleRepository(shipmentScheduleBL),
 				new BPartnerCompositeRepository(partnerBL, new MockLogEntriesRepository(), new UserRoleRepository(), new BPartnerCreditLimitRepository()),
 				new ProductRepository(),
 				exportSequenceNumberProvider,

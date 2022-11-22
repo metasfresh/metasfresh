@@ -9,6 +9,8 @@ import java.math.BigDecimal;
 import java.util.Properties;
 import java.util.Set;
 
+import de.metas.deliveryplanning.DeliveryPlanningRepository;
+import de.metas.deliveryplanning.DeliveryPlanningService;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_OrderLine;
 import org.junit.jupiter.api.BeforeEach;
@@ -31,7 +33,10 @@ public class ShipmentScheduleBLTest
 	public void init()
 	{
 		AdempiereTestHelper.get().init();
-		shipmentScheduleBL = (ShipmentScheduleBL)Services.get(IShipmentScheduleBL.class);
+		final DeliveryPlanningRepository deliveryPlanningRepo = new DeliveryPlanningRepository();
+		final DeliveryPlanningService deliveryPlanningService = new DeliveryPlanningService(deliveryPlanningRepo);
+		shipmentScheduleBL = new ShipmentScheduleBL(deliveryPlanningService);
+
 	}
 
 	@Test

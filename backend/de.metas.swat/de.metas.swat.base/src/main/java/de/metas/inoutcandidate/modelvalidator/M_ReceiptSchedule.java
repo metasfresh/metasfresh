@@ -22,6 +22,7 @@ package de.metas.inoutcandidate.modelvalidator;
  * #L%
  */
 
+import de.metas.deliveryplanning.IncomingDeliveryPlanningWorkingProcessor;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleQtysBL;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
@@ -174,5 +175,13 @@ public class M_ReceiptSchedule
 	public void updateCanBeExportedAfter(@NonNull final I_M_ReceiptSchedule sched)
 	{
 		receiptScheduleBL.updateCanBeExportedFrom(sched);
+	}
+
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
+	public void createDeliveryPlanning(@NonNull final I_M_ReceiptSchedule sched)
+	{
+		// TODO sys config
+		IncomingDeliveryPlanningWorkingProcessor.createWorkpackage(sched);
 	}
 }

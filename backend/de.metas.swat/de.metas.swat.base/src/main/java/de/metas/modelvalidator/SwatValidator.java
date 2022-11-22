@@ -3,34 +3,43 @@
  */
 package de.metas.modelvalidator;
 
-import java.time.Duration;
-
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.util.Properties;
-
-import javax.sql.DataSource;
-
+import com.mchange.v2.c3p0.ComboPooledDataSource;
+import de.metas.adempiere.callout.C_OrderFastInputTabCallout;
+import de.metas.adempiere.engine.MViewModelValidator;
+import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.adempiere.modelvalidator.AD_User;
+import de.metas.adempiere.modelvalidator.Order;
+import de.metas.adempiere.modelvalidator.OrderLine;
+import de.metas.adempiere.modelvalidator.Payment;
+import de.metas.bpartner.interceptor.C_BPartner_Location;
+import de.metas.cache.CCache.CacheMapType;
+import de.metas.cache.model.IModelCacheService;
+import de.metas.cache.model.ITableCacheConfig;
+import de.metas.cache.model.ITableCacheConfig.TrxLevel;
+import de.metas.document.ICounterDocBL;
+import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.IADMessageDAO;
+import de.metas.i18n.IMsgBL;
+import de.metas.inout.model.I_M_InOutLine;
+import de.metas.inout.model.validator.M_InOut;
+import de.metas.inout.model.validator.M_QualityNote;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
+import de.metas.interfaces.I_C_OrderLine;
+import de.metas.invoice.callout.C_InvoiceLine_TabCallout;
+import de.metas.invoice.service.IInvoiceBL;
+import de.metas.invoice.service.impl.AbstractInvoiceBL;
+import de.metas.invoicecandidate.api.IInvoiceCandidateListeners;
+import de.metas.invoicecandidate.spi.impl.AttachmentInvoiceCandidateListener;
+import de.metas.invoicecandidate.spi.impl.OrderAndInOutInvoiceCandidateListener;
+import de.metas.logging.LogManager;
+import de.metas.order.document.counterDoc.C_Order_CounterDocHandler;
+import de.metas.report.client.ReportsClient;
+import de.metas.request.model.validator.R_Request;
+import de.metas.shipping.model.validator.M_ShipperTransportation;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.migration.logger.IMigrationLogger;
 import org.adempiere.ad.modelvalidator.IModelInterceptor;
 import org.adempiere.ad.ui.api.ITabCalloutFactory;
@@ -66,53 +75,26 @@ import org.compiere.model.PO;
 import org.compiere.util.Env;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
+import org.springframework.stereotype.Component;
 
-import com.mchange.v2.c3p0.ComboPooledDataSource;
-
-import de.metas.adempiere.callout.C_OrderFastInputTabCallout;
-import de.metas.adempiere.engine.MViewModelValidator;
-import de.metas.adempiere.model.I_C_InvoiceLine;
-import de.metas.adempiere.modelvalidator.AD_User;
-import de.metas.adempiere.modelvalidator.Order;
-import de.metas.adempiere.modelvalidator.OrderLine;
-import de.metas.adempiere.modelvalidator.Payment;
-import de.metas.bpartner.interceptor.C_BPartner_Location;
-import de.metas.cache.CCache.CacheMapType;
-import de.metas.cache.model.IModelCacheService;
-import de.metas.cache.model.ITableCacheConfig;
-import de.metas.cache.model.ITableCacheConfig.TrxLevel;
-import de.metas.document.ICounterDocBL;
-import de.metas.i18n.AdMessageKey;
-import de.metas.i18n.IADMessageDAO;
-import de.metas.i18n.IMsgBL;
-import de.metas.inout.model.I_M_InOutLine;
-import de.metas.inout.model.validator.M_InOut;
-import de.metas.inout.model.validator.M_QualityNote;
-import de.metas.inoutcandidate.modelvalidator.InOutCandidateValidator;
-import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
-import de.metas.interfaces.I_C_OrderLine;
-import de.metas.invoice.callout.C_InvoiceLine_TabCallout;
-import de.metas.invoice.service.IInvoiceBL;
-import de.metas.invoice.service.impl.AbstractInvoiceBL;
-import de.metas.invoicecandidate.api.IInvoiceCandidateListeners;
-import de.metas.invoicecandidate.spi.impl.AttachmentInvoiceCandidateListener;
-import de.metas.invoicecandidate.spi.impl.OrderAndInOutInvoiceCandidateListener;
-import de.metas.logging.LogManager;
-import de.metas.order.document.counterDoc.C_Order_CounterDocHandler;
-import de.metas.report.client.ReportsClient;
-import de.metas.request.model.validator.R_Request;
-import de.metas.shipping.model.validator.M_ShipperTransportation;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import javax.sql.DataSource;
+import java.time.Duration;
+import java.util.Properties;
 
 /**
  * Model Validator for SWAT general features
  *
  * @author tsa
- *
  */
+@Component
 public class SwatValidator implements ModelValidator
 {
+	private final IShipmentScheduleBL shipmentScheduleBL;
+
+	public  SwatValidator(@NonNull final IShipmentScheduleBL shipmentScheduleBL)
+	{
+		this.shipmentScheduleBL=shipmentScheduleBL;
+	}
 	private static final AdMessageKey MSG_ORG_ADEMPIERE_UTIL_CHECK_EXCEPTION_HEADER_MESSAGE = AdMessageKey.of("org.adempiere.util.Check.ExceptionHeaderMessage");
 
 	private static final String SYSCONFIG_ORG_ADEMPIERE_UTIL_CHECK_THROW_EXCEPTION = "org.adempiere.util.Check.ThrowException";
@@ -126,7 +108,7 @@ public class SwatValidator implements ModelValidator
 
 	/**
 	 * Default SalesRep_ID
-	 *
+	 * <p>
 	 * See http://dewiki908/mediawiki/index.php/US315:_Im_Mahntext_die_neuen_Textbausteine_verwenden_k%C3%B6nnen_%282010070510000495%29#SalesRep_issue_.28Teo_09:24.2C_26._Okt._2011_.28CEST.29.29
 	 */
 	private static final String SYSCONFIG_DEFAULT_SalesRep_ID = "DEFAULT_SalesRep_ID";
@@ -172,7 +154,6 @@ public class SwatValidator implements ModelValidator
 		engine.addModelValidator(new AD_User(), client);
 		engine.addModelValidator(new MViewModelValidator(), client);
 
-		engine.addModelValidator(new InOutCandidateValidator(), client);
 		engine.addModelValidator(ReceiptScheduleValidator.instance, client);
 		engine.addModelValidator(new M_Warehouse(), client); // 03084
 		engine.addModelValidator(new C_BPartner_Location(), client); // 02618
@@ -232,7 +213,7 @@ public class SwatValidator implements ModelValidator
 		}
 
 		//
-		engine.addModelValidator(new de.metas.tourplanning.model.validator.TourPlanningModuleActivator(), client);
+		engine.addModelValidator(new de.metas.tourplanning.model.validator.TourPlanningModuleActivator(shipmentScheduleBL), client);
 
 		final IInvoiceCandidateListeners invoiceCandidateListeners = Services.get(IInvoiceCandidateListeners.class);
 		invoiceCandidateListeners.addListener(OrderAndInOutInvoiceCandidateListener.instance);
@@ -296,7 +277,7 @@ public class SwatValidator implements ModelValidator
 				.setInitialCapacity(50)
 				.setMaxCapacity(50)
 				.register();
-		
+
 		cachingService.addTableCacheConfigIfAbsent(I_C_BP_Group.class);
 	}
 

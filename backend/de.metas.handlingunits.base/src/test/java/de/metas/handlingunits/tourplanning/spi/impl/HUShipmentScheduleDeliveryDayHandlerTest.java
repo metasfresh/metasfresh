@@ -26,6 +26,10 @@ package de.metas.handlingunits.tourplanning.spi.impl;
 import java.math.BigDecimal;
 import java.util.Random;
 
+import de.metas.deliveryplanning.DeliveryPlanningRepository;
+import de.metas.deliveryplanning.DeliveryPlanningService;
+import de.metas.inoutcandidate.api.IShipmentScheduleBL;
+import de.metas.inoutcandidate.api.impl.ShipmentScheduleBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
@@ -58,6 +62,8 @@ public class HUShipmentScheduleDeliveryDayHandlerTest
 	private I_M_DeliveryDay deliveryDay;
 	private I_M_Tour_Instance tourInstance;
 
+	private IShipmentScheduleBL shipmentScheduleBL;
+
 	@Before
 	public void init()
 	{
@@ -72,6 +78,8 @@ public class HUShipmentScheduleDeliveryDayHandlerTest
 		tourInstance = createTourInstance();
 		deliveryDay = createDeliveryDay(tourInstance);
 		deliveryDayAlloc = createDeliveryDayAlloc(deliveryDay, shipmentSchedule);
+
+		shipmentScheduleBL = new ShipmentScheduleBL(new DeliveryPlanningService(new DeliveryPlanningRepository()));
 	}
 
 	@Test
@@ -162,7 +170,7 @@ public class HUShipmentScheduleDeliveryDayHandlerTest
 
 	private IDeliveryDayAllocable asDeliveryDayAllocable(final I_M_ShipmentSchedule shipmentSchedule)
 	{
-		return ShipmentScheduleDeliveryDayHandler.INSTANCE.asDeliveryDayAllocable(shipmentSchedule);
+		return new ShipmentScheduleDeliveryDayHandler(shipmentScheduleBL).asDeliveryDayAllocable(shipmentSchedule);
 	}
 
 	private I_M_DeliveryDay createDeliveryDay(final I_M_Tour_Instance tourInstance)

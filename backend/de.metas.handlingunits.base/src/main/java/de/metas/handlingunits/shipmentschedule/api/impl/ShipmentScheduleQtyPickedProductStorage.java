@@ -22,11 +22,6 @@ package de.metas.handlingunits.shipmentschedule.api.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_UOM;
-
 import de.metas.handlingunits.storage.impl.AbstractProductStorage;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -37,6 +32,12 @@ import de.metas.quantity.Capacity;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_UOM;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
 
 /**
  * Product storage oriented on {@link I_M_ShipmentSchedule}'s QtyPicked.
@@ -44,6 +45,7 @@ import lombok.NonNull;
  * @author tsa
  *
  */
+
 public class ShipmentScheduleQtyPickedProductStorage extends AbstractProductStorage
 {
 	public static ShipmentScheduleQtyPickedProductStorage of(final I_M_ShipmentSchedule shipmentSchedule)
@@ -51,7 +53,7 @@ public class ShipmentScheduleQtyPickedProductStorage extends AbstractProductStor
 		return new ShipmentScheduleQtyPickedProductStorage(shipmentSchedule);
 	}
 	
-	private final transient IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	private final transient IShipmentScheduleBL shipmentScheduleBL = SpringContextHolder.instance.getBean(IShipmentScheduleBL.class); // TODO not sure how to handle this
 
 	private final I_M_ShipmentSchedule shipmentSchedule;
 	private boolean staled = false;
@@ -62,6 +64,7 @@ public class ShipmentScheduleQtyPickedProductStorage extends AbstractProductStor
 
 		Check.assumeNotNull(shipmentSchedule, "shipmentSchedule not null");
 		this.shipmentSchedule = shipmentSchedule;
+
 	}
 
 	@Override

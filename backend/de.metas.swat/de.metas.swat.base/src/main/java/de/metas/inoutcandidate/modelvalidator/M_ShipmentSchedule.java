@@ -2,9 +2,9 @@ package de.metas.inoutcandidate.modelvalidator;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.deliveryplanning.OutgoingDeliveryPlanningWorkingProcessor;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -31,6 +31,7 @@ import org.compiere.model.MDocType;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
@@ -47,15 +48,25 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
  * @author tsa
  */
 @Validator(I_M_ShipmentSchedule.class)
+@Component
 public class M_ShipmentSchedule
 {
 	private static final AdMessageKey MSG_DECREASE_QTY_ORDERED_BELOW_QTY_ALREADY_DELIVERED_IS_NOT_ALLOWED = //
 			AdMessageKey.of("de.metas.inoutcandidate.DecreaseQtyOrderedBelowQtyAlreadyDeliveredIsNotAllowed");
 
-	private final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
-	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-	private final IShipmentScheduleUpdater shipmentScheduleUpdater = Services.get(IShipmentScheduleUpdater.class);
-	
+	private final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL;
+	private final IShipmentScheduleBL shipmentScheduleBL;
+	private final IShipmentScheduleUpdater shipmentScheduleUpdater;
+
+	public M_ShipmentSchedule(@NonNull final IShipmentScheduleBL shipmentScheduleBL,
+			@NonNull final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL,
+			@NonNull final IShipmentScheduleUpdater shipmentScheduleUpdater)
+	{
+		this.shipmentScheduleBL = shipmentScheduleBL;
+		this.shipmentScheduleInvalidateBL = shipmentScheduleInvalidateBL;
+		this.shipmentScheduleUpdater = shipmentScheduleUpdater;
+	}
+
 	/**
 	 * Does some sanity checks on the given <code>schedule</code>
 	 */
@@ -88,7 +99,7 @@ public class M_ShipmentSchedule
 	/**
 	 * If a shipment schedule is deleted, then this method makes sure that all {@link I_M_IolCandHandler_Log} records which refer to the same record as the schedule are also deleted.<br>
 	 * Otherwise, that referenced record would never be considered again by {@link de.metas.inoutcandidate.spi.ShipmentScheduleHandler#retrieveModelsWithMissingCandidates(Properties, String)}.
-	 *
+	 * <p>
 	 * Task 08288
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
@@ -172,8 +183,7 @@ public class M_ShipmentSchedule
 				.warehouseId(shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule))
 				.build();
 
-		final IShipmentScheduleInvalidateBL invalidSchedulesInvalidator = Services.get(IShipmentScheduleInvalidateBL.class);
-		invalidSchedulesInvalidator.flagForRecomputeStorageSegment(storageSegment);
+		shipmentScheduleInvalidateBL.flagForRecomputeStorageSegment(storageSegment);
 	}
 
 	/**
@@ -204,7 +214,7 @@ public class M_ShipmentSchedule
 			return;
 		}
 
-		invalidSchedulesService.notifySegmentChangedForShipmentScheduleInclSched(shipmentSchedule);
+		shipmentScheduleInvalidateBL.notifySegmentChangedForShipmentScheduleInclSched(shipmentSchedule);
 	}
 
 	@ModelChange( //
@@ -228,8 +238,7 @@ public class M_ShipmentSchedule
 		headerAggregationKeys.add(scheduleOld.getHeaderAggregationKey());
 		headerAggregationKeys.add(schedule.getHeaderAggregationKey());
 
-		final IShipmentScheduleInvalidateBL invalidSchedulesInvalidator = Services.get(IShipmentScheduleInvalidateBL.class);
-		invalidSchedulesInvalidator.flagHeaderAggregationKeysForRecompute(headerAggregationKeys);
+		shipmentScheduleInvalidateBL.flagHeaderAggregationKeysForRecompute(headerAggregationKeys);
 	}
 
 	/**
@@ -313,4 +322,12 @@ public class M_ShipmentSchedule
 	{
 		shipmentScheduleBL.updateCanBeExportedAfter(sched);
 	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
+	public void createDeliveryPlanning(@NonNull final I_M_ShipmentSchedule sched)
+	{
+		// TODO sys config
+		OutgoingDeliveryPlanningWorkingProcessor.createWorkpackage(sched);
+	}
+
 }
