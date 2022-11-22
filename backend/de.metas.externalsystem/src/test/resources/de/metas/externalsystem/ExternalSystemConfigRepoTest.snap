@@ -142,9 +142,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "isSyncBPartnerToRabbitMQ" : true,
       "isAutoSendWhenCreatedByUserGroup" : false,
       "isSyncExternalReferencesToRabbitMQ" : false,
+      "syncExternalReferencesToRabbitMQ" : false,
       "syncBPartnerToRabbitMQ" : true,
-      "autoSendSubjectWhenCreatedByUserGroup" : false,
-      "syncExternalReferencesToRabbitMQ" : false
+      "autoSendSubjectWhenCreatedByUserGroup" : false
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -163,9 +163,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
     "isSyncBPartnerToRabbitMQ" : true,
     "isAutoSendWhenCreatedByUserGroup" : false,
     "isSyncExternalReferencesToRabbitMQ" : false,
+    "syncExternalReferencesToRabbitMQ" : false,
     "syncBPartnerToRabbitMQ" : true,
-    "autoSendSubjectWhenCreatedByUserGroup" : false,
-    "syncExternalReferencesToRabbitMQ" : false
+    "autoSendSubjectWhenCreatedByUserGroup" : false
   }
 ]
 
@@ -188,9 +188,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "isAutoSendWhenCreatedByUserGroup" : true,
       "userGroupId" : 1,
       "isSyncExternalReferencesToRabbitMQ" : false,
+      "syncExternalReferencesToRabbitMQ" : false,
       "syncBPartnerToRabbitMQ" : true,
-      "autoSendSubjectWhenCreatedByUserGroup" : true,
-      "syncExternalReferencesToRabbitMQ" : false
+      "autoSendSubjectWhenCreatedByUserGroup" : true
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -224,8 +224,10 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_g
         },
         "targetDirectoryProduct" : "testSAPSFTPProductDirectory",
         "fileNamePatternProduct" : "ProductSFTP*",
-        "targetDirectoryBPartner" : "BPartnerSFTP*",
-        "targetDirectoryCreditLimit" : "CreditLimitSFTP*"
+        "targetDirectoryBPartner" : "testSAPSFTPBPartnerDirectory",
+        "fileNamePatternBPartner" : "BPartnerSFTP*",
+        "targetDirectoryCreditLimit" : "testSAPSFTPCreditLimitDirectory",
+        "fileNamePatternCreditLimit" : "CreditLimitSFTP*"
       },
       "contentSourceLocalFile" : {
         "rootLocation" : "testLocalFileRootLocation",
@@ -271,8 +273,10 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_g
       },
       "targetDirectoryProduct" : "testSAPSFTPProductDirectory",
       "fileNamePatternProduct" : "ProductSFTP*",
-      "targetDirectoryBPartner" : "BPartnerSFTP*",
-      "targetDirectoryCreditLimit" : "CreditLimitSFTP*"
+      "targetDirectoryBPartner" : "testSAPSFTPBPartnerDirectory",
+      "fileNamePatternBPartner" : "BPartnerSFTP*",
+      "targetDirectoryCreditLimit" : "testSAPSFTPCreditLimitDirectory",
+      "fileNamePatternCreditLimit" : "CreditLimitSFTP*"
     },
     "contentSourceLocalFile" : {
       "rootLocation" : "testLocalFileRootLocation",
@@ -321,8 +325,10 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_g
         },
         "targetDirectoryProduct" : "testSAPSFTPProductDirectory",
         "fileNamePatternProduct" : "ProductSFTP*",
-        "targetDirectoryBPartner" : "BPartnerSFTP*",
-        "targetDirectoryCreditLimit" : "CreditLimitSFTP*"
+        "targetDirectoryBPartner" : "testSAPSFTPBPartnerDirectory",
+        "fileNamePatternBPartner" : "BPartnerSFTP*",
+        "targetDirectoryCreditLimit" : "testSAPSFTPCreditLimitDirectory",
+        "fileNamePatternCreditLimit" : "CreditLimitSFTP*"
       },
       "contentSourceLocalFile" : {
         "rootLocation" : "testLocalFileRootLocation",
@@ -568,9 +574,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getAc
         "isSyncBPartnerToRabbitMQ" : false,
         "isAutoSendWhenCreatedByUserGroup" : false,
         "isSyncExternalReferencesToRabbitMQ" : false,
+        "syncExternalReferencesToRabbitMQ" : false,
         "syncBPartnerToRabbitMQ" : false,
-        "autoSendSubjectWhenCreatedByUserGroup" : false,
-        "syncExternalReferencesToRabbitMQ" : false
+        "autoSendSubjectWhenCreatedByUserGroup" : false
       },
       "writeAudit" : true,
       "auditFileFolder" : "auditFileFolder"
@@ -606,8 +612,10 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getAc
           },
           "targetDirectoryProduct" : "testSAPSFTPProductDirectory",
           "fileNamePatternProduct" : "ProductSFTP*",
-          "targetDirectoryBPartner" : "BPartnerSFTP*",
-          "targetDirectoryCreditLimit" : "CreditLimitSFTP*"
+          "targetDirectoryBPartner" : "testSAPSFTPBPartnerDirectory",
+          "fileNamePatternBPartner" : "BPartnerSFTP*",
+          "targetDirectoryCreditLimit" : "testSAPSFTPCreditLimitDirectory",
+          "fileNamePatternCreditLimit" : "CreditLimitSFTP*"
         },
         "contentSourceLocalFile" : {
           "rootLocation" : "testLocalFileRootLocation",
