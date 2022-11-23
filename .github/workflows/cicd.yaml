@@ -355,6 +355,8 @@ jobs:
         with:
           domain: metasfresh
       - name: run-junit-tests-j8
+        env:
+          SKIP_MIGRATION_SCRIPTS_TEST: true # don't have RunMigrationScriptsTest.java apply the SQLs as that's already done further up
         run: |
           docker buildx build \
           --file docker-builds/Dockerfile.junit \
