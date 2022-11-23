@@ -35,6 +35,8 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP_LocalFile;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP_SFTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6_UOM;
@@ -46,6 +48,9 @@ import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfig;
 import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfigId;
 import de.metas.externalsystem.sap.ExternalSystemSAPConfig;
 import de.metas.externalsystem.sap.ExternalSystemSAPConfigId;
+import de.metas.externalsystem.sap.SAPConfigMapper;
+import de.metas.externalsystem.sap.source.SAPContentSourceLocalFile;
+import de.metas.externalsystem.sap.source.SAPContentSourceSFTP;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigMapping;
@@ -68,7 +73,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.springframework.stereotype.Repository;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 
@@ -828,7 +832,7 @@ public class ExternalSystemConfigRepo
 				.addEqualsFilter(I_ExternalSystem_Config_SAP.COLUMNNAME_ExternalSystem_Config_ID, id.getRepoId())
 				.create()
 				.firstOnlyOptional(I_ExternalSystem_Config_SAP.class)
-				.map(ExternalSystemConfigRepo::buildExternalSystemSAPConfig);
+				.map(this::buildExternalSystemSAPConfig);
 	}
 
 	@NonNull
@@ -843,25 +847,41 @@ public class ExternalSystemConfigRepo
 	}
 
 	@NonNull
-	private static ExternalSystemSAPConfig buildExternalSystemSAPConfig(final @NonNull I_ExternalSystem_Config_SAP config)
+	private ExternalSystemSAPConfig buildExternalSystemSAPConfig(final @NonNull I_ExternalSystem_Config_SAP config)
 	{
+		final ExternalSystemSAPConfigId sapConfigId = ExternalSystemSAPConfigId.ofRepoId(config.getExternalSystem_Config_SAP_ID());
+
+		final SAPContentSourceSFTP contentSourceSFTP = getContentSourceSFTPByConfigId(sapConfigId).orElse(null);
+		final SAPContentSourceLocalFile contentSourceLocalFile = getContentSourceLocalFileByConfigId(sapConfigId).orElse(null);
+
 		return ExternalSystemSAPConfig.builder()
 				.id(ExternalSystemSAPConfigId.ofRepoId(config.getExternalSystem_Config_SAP_ID()))
 				.parentId(ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID()))
-				.sftpHostName(config.getSFTP_HostName())
-				.sftpPort(config.getSFTP_Port())
-				.sftpUsername(config.getSFTP_Username())
-				.sftpPassword(config.getSFTP_Password())
 				.value(config.getExternalSystemValue())
-				.sftpTargetDirectoryProduct(config.getSFTP_Product_TargetDirectory())
-				.sftpTargetDirectoryBPartner(config.getSFTP_BPartner_TargetDirectory())
-				.processedDirectory(config.getProcessedDirectory())
-				.erroredDirectory(config.getErroredDirectory())
-				.pollingFrequency(Duration.ofMillis(config.getPollingFrequencyInMs()))
-				.sftpFileNamePatternProduct(config.getSFTP_Product_FileName_Pattern())
-				.sftpFileNamePatternBPartner(config.getSFTP_BPartner_FileName_Pattern())
-				.sftpCreditLimitTargetDirectory(config.getSFTP_CreditLimit_TargetDirectory())
-				.sftpCreditLimitFileNamePattern(config.getSFTP_CreditLimit_FileName_Pattern())
+				.contentSourceSFTP(contentSourceSFTP)
+				.contentSourceLocalFile(contentSourceLocalFile)
 				.build();
+	}
+
+	@NonNull
+	private Optional<SAPContentSourceSFTP> getContentSourceSFTPByConfigId(@NonNull final ExternalSystemSAPConfigId configId)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_SAP_SFTP.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_SAP_SFTP.COLUMNNAME_ExternalSystem_Config_SAP_ID, configId.getRepoId())
+				.create()
+				.firstOnlyOptional(I_ExternalSystem_Config_SAP_SFTP.class)
+				.map(SAPConfigMapper::buildContentSourceSFTP);
+	}
+
+	@NonNull
+	private Optional<SAPContentSourceLocalFile> getContentSourceLocalFileByConfigId(@NonNull final ExternalSystemSAPConfigId configId)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_SAP_LocalFile.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_SAP_LocalFile.COLUMNNAME_ExternalSystem_Config_SAP_ID, configId.getRepoId())
+				.create()
+				.firstOnlyOptional(I_ExternalSystem_Config_SAP_LocalFile.class)
+				.map(SAPConfigMapper::buildContentSourceLocalFile);
 	}
 }
