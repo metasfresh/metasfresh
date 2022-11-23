@@ -1001,7 +1001,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				.isActive(shipmentScheduleRecord.isActive())
 				.qtyOredered(qtyOrdered)
 				.qtyTotalOpen(qtyOrdered.subtract(getQtyDelivered(shipmentScheduleRecord)))
-				.plannedDeliveryDate(LocalDateAndOrgId.ofTimestamp(shipmentScheduleRecord.getDeliveryDate_Effective(), orgId, orgDAO::getTimeZone));
+				.plannedDeliveryDate(LocalDateAndOrgId.ofTimestamp(shipmentScheduleRecord.getDeliveryDate_Effective(), orgId, orgDAO::getTimeZone))
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNull(shipmentScheduleRecord.getM_AttributeSetInstance_ID()));
 
 		if (orderId != null)
 		{
@@ -1019,7 +1020,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			{
 				requestBuilder.actualDeliveryDate(LocalDateAndOrgId.ofTimestamp(dateDelivered, orgId, orgDAO::getTimeZone));
 			}
-
 		}
 
 		return requestBuilder.build();

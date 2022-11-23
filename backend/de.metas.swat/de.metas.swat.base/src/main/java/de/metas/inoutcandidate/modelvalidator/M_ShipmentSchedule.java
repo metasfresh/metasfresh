@@ -2,7 +2,8 @@ package de.metas.inoutcandidate.modelvalidator;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
-import de.metas.deliveryplanning.OutgoingDeliveryPlanningWorkPackageProcessor;
+import de.metas.deliveryplanning.DeliveryPlanningService;
+import de.metas.deliveryplanning.M_ShipmentSchedule_Create_M_Delivery_Planning;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
@@ -15,6 +16,7 @@ import de.metas.inoutcandidate.invalidation.segments.ShipmentScheduleSegments;
 import de.metas.inoutcandidate.model.I_M_IolCandHandler_Log;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -31,6 +33,7 @@ import org.compiere.model.MDocType;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
@@ -47,14 +50,22 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
  * @author tsa
  */
 @Validator(I_M_ShipmentSchedule.class)
+@Component
 public class M_ShipmentSchedule
 {
+	private final DeliveryPlanningService deliveryPlanningService;
+
 	private static final AdMessageKey MSG_DECREASE_QTY_ORDERED_BELOW_QTY_ALREADY_DELIVERED_IS_NOT_ALLOWED = //
 			AdMessageKey.of("de.metas.inoutcandidate.DecreaseQtyOrderedBelowQtyAlreadyDeliveredIsNotAllowed");
 
 	private final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	private final IShipmentScheduleUpdater shipmentScheduleUpdater = Services.get(IShipmentScheduleUpdater.class);
+
+	public M_ShipmentSchedule(final DeliveryPlanningService deliveryPlanningService)
+	{
+		this.deliveryPlanningService = deliveryPlanningService;
+	}
 
 	/**
 	 * Does some sanity checks on the given <code>schedule</code>
@@ -317,8 +328,14 @@ public class M_ShipmentSchedule
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
 	public void createDeliveryPlanning(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		// TODO sys config
-		OutgoingDeliveryPlanningWorkPackageProcessor.createWorkpackage(sched);
+		final boolean autoCreateEnabled = deliveryPlanningService.autoCreateEnabled(ClientAndOrgId.ofClientAndOrg(sched.getAD_Client_ID(), sched.getAD_Org_ID()));
+
+		if (!autoCreateEnabled)
+		{
+			//nothing to do
+			return;
+		}
+		M_ShipmentSchedule_Create_M_Delivery_Planning.scheduleOnTrxCommit(sched);
 
 	}
 

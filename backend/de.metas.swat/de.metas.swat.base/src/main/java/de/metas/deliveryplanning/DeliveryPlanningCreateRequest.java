@@ -38,6 +38,7 @@ import de.metas.shipping.model.ShipperTransportationId;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 
@@ -134,5 +135,8 @@ public class DeliveryPlanningCreateRequest
 
 	@Nullable
 	String transportDetails;
+
+	@Nullable
+	AttributeSetInstanceId attributeSetInstanceId;
 
 }

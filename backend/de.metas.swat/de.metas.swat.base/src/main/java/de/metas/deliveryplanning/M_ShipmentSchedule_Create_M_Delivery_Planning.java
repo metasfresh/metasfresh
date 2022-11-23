@@ -26,52 +26,25 @@ import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
 import de.metas.async.spi.WorkpackagesOnCommitSchedulerTemplate;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.util.Services;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.util.lang.impl.TableRecordReference;
+import lombok.NonNull;
 import org.compiere.SpringContextHolder;
-import org.compiere.util.Env;
 
-import java.util.Properties;
-
-public class OutgoingDeliveryPlanningWorkPackageProcessor extends WorkpackageProcessorAdapter
+public class M_ShipmentSchedule_Create_M_Delivery_Planning extends WorkpackageProcessorAdapter
 {
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
-	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
+	private DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
 
-	public static void createWorkpackage(final I_M_ShipmentSchedule shipmentSchedule)
+	private static final WorkpackagesOnCommitSchedulerTemplate<I_M_ShipmentSchedule> //
+			SCHEDULER = WorkpackagesOnCommitSchedulerTemplate
+			.newModelScheduler(M_ShipmentSchedule_Create_M_Delivery_Planning.class, I_M_ShipmentSchedule.class)
+			.setCreateOneWorkpackagePerModel(true);
+
+	public static void scheduleOnTrxCommit(@NonNull final I_M_ShipmentSchedule shipmentScheduleRecord)
 	{
-		SCHEDULER.schedule(shipmentSchedule);
+		SCHEDULER.schedule(shipmentScheduleRecord);
 	}
-
-	private static final WorkpackagesOnCommitSchedulerTemplate<I_M_ShipmentSchedule> SCHEDULER = new WorkpackagesOnCommitSchedulerTemplate<I_M_ShipmentSchedule>(OutgoingDeliveryPlanningWorkPackageProcessor.class)
-	{
-		@Override
-		protected boolean isEligibleForScheduling(final I_M_ShipmentSchedule model)
-		{
-			return model != null && model.getM_ShipmentSchedule_ID() > 0;
-		}
-
-		@Override
-		protected Properties extractCtxFromItem(final I_M_ShipmentSchedule item)
-		{
-			return Env.getCtx();
-		}
-
-		@Override
-		protected String extractTrxNameFromItem(final I_M_ShipmentSchedule item)
-		{
-			return ITrx.TRXNAME_ThreadInherited;
-		}
-
-		@Override
-		protected Object extractModelToEnqueueFromItem(final Collector collector, final I_M_ShipmentSchedule item)
-		{
-			return TableRecordReference.of(I_M_ShipmentSchedule.Table_Name, item.getM_ShipmentSchedule_ID());
-		}
-	};
 
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage, final String localTrxName)

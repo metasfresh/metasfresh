@@ -31,9 +31,7 @@ import org.springframework.stereotype.Component;
 @Interceptor(I_M_Delivery_Planning.class)
 @Component
 public class M_Delivery_Planning
-{
-
-	public void onDelete(@NonNull final I_M_Delivery_Planning deliveryPlanning)
+{	public void onDelete(@NonNull final I_M_Delivery_Planning deliveryPlanning)
 	{
 		//TODO
 	}

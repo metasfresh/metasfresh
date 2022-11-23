@@ -30,7 +30,6 @@ import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
-import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
@@ -40,20 +39,24 @@ import de.metas.sectionCode.SectionCodeId;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Delivery_Planning;
-import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 @Repository
 public class DeliveryPlanningRepository
 {
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+
+	final IAttributeSetInstanceBL asiBL = Services.get(IAttributeSetInstanceBL.class);
 
 	private DeliveryPlanningCreateRequest ofRecord(@NonNull final I_M_Delivery_Planning record)
 	{
@@ -97,14 +100,9 @@ public class DeliveryPlanningRepository
 				.build();
 	}
 
-	public void generateDeliveryPlanning(final DeliveryPlanningCreateRequest request)
+	public void generateDeliveryPlanning(@NonNull final DeliveryPlanningCreateRequest request)
 	{
 		final I_M_Delivery_Planning deliveryPlanningRecord = newInstance(I_M_Delivery_Planning.class);
-
-		final LocalDateAndOrgId plannedDeliveryDate = request.getPlannedDeliveryDate();
-		final LocalDateAndOrgId actualDeliveryDate = request.getActualDeliveryDate();
-		final LocalDateAndOrgId plannedLoadingDate = request.getPlannedLoadingDate();
-		final LocalDateAndOrgId actualLoadingDate = request.getActualLoadingDate();
 
 		deliveryPlanningRecord.setAD_Org_ID(request.getOrgId().getRepoId());
 		deliveryPlanningRecord.setM_ReceiptSchedule_ID(ReceiptScheduleId.toRepoId(request.getReceiptScheduleId()));
@@ -119,15 +117,25 @@ public class DeliveryPlanningRepository
 		deliveryPlanningRecord.setC_Incoterms_ID(IncotermsId.toRepoId(request.getIncotermsId()));
 		deliveryPlanningRecord.setM_SectionCode_ID(SectionCodeId.toRepoId(request.getSectionCodeId()));
 
-		deliveryPlanningRecord.setPlannedDeliveryDate(plannedDeliveryDate == null ? null : plannedDeliveryDate.toTimestamp(orgDAO::getTimeZone));
-		deliveryPlanningRecord.setActualDeliveryDate(actualDeliveryDate == null? null : actualDeliveryDate.toTimestamp(orgDAO::getTimeZone));
-		deliveryPlanningRecord.setPlannedLoadingDate(plannedLoadingDate == null? null : plannedLoadingDate.toTimestamp(orgDAO::getTimeZone));
-		deliveryPlanningRecord.setActualLoadingDate(actualLoadingDate == null? null : actualLoadingDate.toTimestamp(orgDAO::getTimeZone));
+		final LocalDateAndOrgId plannedDeliveryDate = request.getPlannedDeliveryDate();
+		final LocalDateAndOrgId actualDeliveryDate = request.getActualDeliveryDate();
+		final LocalDateAndOrgId plannedLoadingDate = request.getPlannedLoadingDate();
+		final LocalDateAndOrgId actualLoadingDate = request.getActualLoadingDate();
 
-		deliveryPlanningRecord.setQtyOrdered(request.getQtyOredered().toBigDecimal());
-		deliveryPlanningRecord.setQtyTotalOpen(request.getQtyTotalOpen().toBigDecimal());
-		deliveryPlanningRecord.setActualDeliveredQty(request.getActualDeliveredQty().toBigDecimal());
-		deliveryPlanningRecord.setActualLoadQty(request.getActualLoadQty().toBigDecimal());
+		deliveryPlanningRecord.setPlannedDeliveryDate(plannedDeliveryDate == null ? null : plannedDeliveryDate.toTimestamp(orgDAO::getTimeZone));
+		deliveryPlanningRecord.setActualDeliveryDate(actualDeliveryDate == null ? null : actualDeliveryDate.toTimestamp(orgDAO::getTimeZone));
+		deliveryPlanningRecord.setPlannedLoadingDate(plannedLoadingDate == null ? null : plannedLoadingDate.toTimestamp(orgDAO::getTimeZone));
+		deliveryPlanningRecord.setActualLoadingDate(actualLoadingDate == null ? null : actualLoadingDate.toTimestamp(orgDAO::getTimeZone));
+
+		final Quantity qtyOredered = request.getQtyOredered();
+		final Quantity qtyTotalOpen = request.getQtyTotalOpen();
+		final Quantity actualDeliveredQty = request.getActualDeliveredQty();
+		final Quantity actualLoadQty = request.getActualLoadQty();
+
+		deliveryPlanningRecord.setQtyOrdered(qtyOredered == null ? null : qtyOredered.toBigDecimal());
+		deliveryPlanningRecord.setQtyTotalOpen(qtyTotalOpen == null ? null : qtyTotalOpen.toBigDecimal());
+		deliveryPlanningRecord.setActualDeliveredQty(actualDeliveredQty == null ? null : actualDeliveredQty.toBigDecimal());
+		deliveryPlanningRecord.setActualLoadQty(actualLoadQty == null ? null : actualLoadQty.toBigDecimal());
 
 		deliveryPlanningRecord.setForwarder(request.getForwarder());
 		deliveryPlanningRecord.setWayBillNo(request.getWayBillNo());
@@ -140,9 +148,14 @@ public class DeliveryPlanningRepository
 		deliveryPlanningRecord.setMeansOfTransportation(MeansOfTransportation.toCodeOrNull(request.getMeansOfTransportation()));
 		deliveryPlanningRecord.setOrderStatus(OrderStatus.toCodeOrNull(request.getOrderStatus()));
 		deliveryPlanningRecord.setM_Delivery_Planning_Type(DeliveryPlanningType.toCodeOrNull(request.getDeliveryPlanningType()));
-		// TODO attributes
 
+		final String originCountry = asiBL.getAttributeValueOrNull(AttributeConstants.CountryOfOrigin, request.getAttributeSetInstanceId());
+		final String huBatchNo = asiBL.getAttributeValueOrNull(AttributeConstants.HU_BatchNo, request.getAttributeSetInstanceId());
 
+		deliveryPlanningRecord.setBatch(huBatchNo);
+		deliveryPlanningRecord.setOriginCountry(originCountry);
+
+		save(deliveryPlanningRecord);
 	}
 
 }

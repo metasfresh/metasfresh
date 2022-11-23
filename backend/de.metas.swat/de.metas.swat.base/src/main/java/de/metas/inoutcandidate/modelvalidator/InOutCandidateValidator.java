@@ -1,5 +1,7 @@
 package de.metas.inoutcandidate.modelvalidator;
 
+import de.metas.deliveryplanning.DeliveryPlanningRepository;
+import de.metas.deliveryplanning.DeliveryPlanningService;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.AbstractModelInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
@@ -49,7 +51,7 @@ public final class InOutCandidateValidator extends AbstractModelInterceptor
 		engine.addModelValidator(new C_Order(), client);
 		// engine.addModelValidator(new C_Order_ShipmentSchedule(), client); initialized by spring
 		engine.addModelValidator(new C_OrderLine_ShipmentSchedule(), client);
-		engine.addModelValidator(new M_ShipmentSchedule(), client);
+		engine.addModelValidator(new M_ShipmentSchedule(new DeliveryPlanningService(new DeliveryPlanningRepository())), client);
 		engine.addModelValidator(new M_Shipment_Constraint(), client);
 		// engine.addModelValidator(new de.metas.inoutcandidate.modelvalidator.M_AttributeInstance(), client); initialized by spring
 		engine.addModelValidator(new M_InOutLine_Shipment(), client);

@@ -786,7 +786,8 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 				.isActive(receiptScheduleRecord.isActive())
 				.qtyOredered(qtyOrdered)
 				.qtyTotalOpen(qtyOrdered.subtract(qtyMoved))
-				.plannedDeliveryDate(LocalDateAndOrgId.ofTimestamp(receiptScheduleRecord.getMovementDate(), orgId, orgDAO::getTimeZone));
+				.plannedDeliveryDate(LocalDateAndOrgId.ofTimestamp(receiptScheduleRecord.getMovementDate(), orgId, orgDAO::getTimeZone))
+				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNull(receiptScheduleRecord.getM_AttributeSetInstance_ID()));
 
 		if (orderId != null)
 		{
@@ -804,7 +805,6 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 			{
 				requestBuilder.actualDeliveryDate(LocalDateAndOrgId.ofTimestamp(dateDelivered, orgId, orgDAO::getTimeZone));
 			}
-
 		}
 
 		return requestBuilder.build();
