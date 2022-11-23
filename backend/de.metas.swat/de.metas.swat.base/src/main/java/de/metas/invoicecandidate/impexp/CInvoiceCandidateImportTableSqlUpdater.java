@@ -43,7 +43,6 @@ import org.slf4j.Logger;
 import static de.metas.impexp.format.ImportTableDescriptor.COLUMNNAME_I_IsImported;
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_AD_Client_ID;
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_AD_Org_ID;
-import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_AD_User_InCharge_ID;
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_Bill_BPartner_ID;
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_Bill_BPartner_Value;
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_Bill_Location_ID;
@@ -62,7 +61,6 @@ import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_M
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_OrgCode;
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_QtyDelivered;
 import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_QtyOrdered;
-import static de.metas.invoicecandidate.model.I_I_Invoice_Candidate.COLUMNNAME_User_InCharge;
 import static org.compiere.model.I_AD_User_NotificationGroup.COLUMNNAME_AD_User_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_BPartner.COLUMNNAME_Value;
