@@ -119,9 +119,7 @@ de.metas.rest_api.v2.bpartner.bpartnercomposite.JsonRetrieverServiceTest.retriev
       },
       "tableName" : "C_BPartner_CreditLimit"
     },
-    "creditLimitTypeId" : {
-      "repoId" : 123
-    },
+    "creditLimitTypeId" : 123,
     "dateFrom" : "2022-10-01T00:00:00Z",
     "id" : 60,
     "processed" : false
