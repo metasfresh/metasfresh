@@ -64,10 +64,15 @@ export const useLaunchersWebsocket = ({ enabled, userToken, applicationId, filte
   useEffect(() => {
     let client;
     if (enabled) {
-      console.log('WS connecting', { applicationId, filterByQRCode });
+      let topic = `/v2/userWorkflows/launchers/${userToken}/${applicationId}`;
+      if (filterByQRCodeString) {
+        topic += `/${base64Encode(filterByQRCodeString)}`;
+      }
+
+      console.debug(`WS connecting to ${topic}`, { applicationId, filterByQRCode });
       client = ws.connectAndSubscribe({
-        topic: `/v2/userWorkflows/launchers/${userToken}/${applicationId}/${base64Encode(filterByQRCodeString)}`,
-        debug: false,
+        topic,
+        debug: !!window?.debug_ws,
         onWebsocketMessage: (message) => {
           const applicationLaunchers = JSON.parse(message.body);
           onWebsocketMessage({ applicationId, applicationLaunchers });
@@ -79,7 +84,7 @@ export const useLaunchersWebsocket = ({ enabled, userToken, applicationId, filte
       if (client) {
         ws.disconnectClient(client);
         client = null;
-        console.log('WS disconnected', { applicationId, filterByQRCode });
+        console.debug('WS disconnected', { applicationId, filterByQRCode });
       }
     };
   }, [enabled, userToken, applicationId, filterByQRCodeString]);
