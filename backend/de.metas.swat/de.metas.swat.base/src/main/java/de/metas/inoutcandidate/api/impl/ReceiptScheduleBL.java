@@ -72,6 +72,7 @@ import org.adempiere.ad.trx.processor.api.ITrxItemProcessorExecutorService;
 import org.adempiere.ad.trx.processor.api.LoggableTrxItemExceptionHandler;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
 import org.adempiere.mm.attributes.api.impl.AddAttributesRequest;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -772,6 +773,11 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 		final Quantity qtyMoved = Quantity.of(receiptScheduleQtysBL.getQtyMoved(receiptScheduleRecord), uom);
 		final OrgId orgId = OrgId.ofRepoId(receiptScheduleRecord.getAD_Org_ID());
 
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNull(receiptScheduleRecord.getM_AttributeSetInstance_ID());
+
+		final String originCountry = attributeSetInstanceBL.getAttributeValueOrNull(AttributeConstants.CountryOfOrigin, asiId);
+		final String huBatchNo = attributeSetInstanceBL.getAttributeValueOrNull(AttributeConstants.HU_BatchNo, asiId);
+
 		final DeliveryPlanningCreateRequest.DeliveryPlanningCreateRequestBuilder requestBuilder = DeliveryPlanningCreateRequest.builder()
 				.orgId(orgId)
 				.clientId(ClientId.ofRepoId(receiptScheduleRecord.getAD_Client_ID()))
@@ -787,7 +793,8 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 				.qtyOredered(qtyOrdered)
 				.qtyTotalOpen(qtyOrdered.subtract(qtyMoved))
 				.plannedDeliveryDate(LocalDateAndOrgId.ofTimestamp(receiptScheduleRecord.getMovementDate(), orgId, orgDAO::getTimeZone))
-				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNull(receiptScheduleRecord.getM_AttributeSetInstance_ID()));
+				.batch(huBatchNo)
+				.originCountry(originCountry);
 
 		if (orderId != null)
 		{

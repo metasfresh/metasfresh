@@ -22,15 +22,16 @@
 
 package de.metas.deliveryplanning;
 
+import de.metas.i18n.AdMessageKey;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.order.OrderLineId;
 import de.metas.organization.ClientAndOrgId;
-import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.service.ClientId;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_M_Delivery_Planning;
 import org.springframework.stereotype.Service;
@@ -39,16 +40,18 @@ import org.springframework.stereotype.Service;
 public class DeliveryPlanningService
 {
 	private static final String SYSCONFIG_M_Delivery_Planning_CreateAutomatically = "de.metas.deliveryplanning.DeliveryPlanningService.M_Delivery_Planning_CreateAutomatically";
+	private static final AdMessageKey MSG_M_Delivery_Planning_AtLeastOnePerOrderLine = AdMessageKey.of("M_Delivery_Planning_AtLeastOnePerOrderLine");
 
-	private DeliveryPlanningRepository deliveryPlanningRepository;
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+	private final DeliveryPlanningRepository deliveryPlanningRepository;
 
 	public DeliveryPlanningService(@NonNull final DeliveryPlanningRepository deliveryPlanningRepository)
 	{
 		this.deliveryPlanningRepository = deliveryPlanningRepository;
 	}
 
-	public boolean autoCreateEnabled(@NonNull ClientAndOrgId clientAndOrgId)
+	public boolean autoCreateEnabled(@NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		return sysConfigBL.getBooleanValue(SYSCONFIG_M_Delivery_Planning_CreateAutomatically, false, clientAndOrgId);
 	}
@@ -67,5 +70,22 @@ public class DeliveryPlanningService
 	{
 		final DeliveryPlanningCreateRequest deliveryPlanningRequest = shipmentScheduleBL.createDeliveryPlanningRequest(shipmentScheduleRecord);
 		deliveryPlanningRepository.generateDeliveryPlanning(deliveryPlanningRequest);
+	}
+
+	public void validateDeletion(final I_M_Delivery_Planning deliveryPlanning)
+	{
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(deliveryPlanning.getC_OrderLine_ID());
+		if (orderLineId == null)
+		{
+			// nothing to do: delivery planning is not based on any order line
+			return;
+		}
+
+		final boolean otherDeliveryPlanningsExistForOrderLine = deliveryPlanningRepository.otherDeliveryPlanningsExistForOrderLine(orderLineId, DeliveryPlanningId.ofRepoIdOrNull(deliveryPlanning.getM_Delivery_Planning_ID()));
+
+		if (!otherDeliveryPlanningsExistForOrderLine)
+		{
+			throw new AdempiereException(MSG_M_Delivery_Planning_AtLeastOnePerOrderLine);
+		}
 	}
 }

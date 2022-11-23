@@ -22,17 +22,28 @@
 
 package de.metas.deliveryplanning.interceptor;
 
-import groovy.transform.Internal;
+import de.metas.deliveryplanning.DeliveryPlanningService;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
+import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.compiere.model.I_M_Delivery_Planning;
+import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 @Interceptor(I_M_Delivery_Planning.class)
 @Component
 public class M_Delivery_Planning
-{	public void onDelete(@NonNull final I_M_Delivery_Planning deliveryPlanning)
+{
+	private final DeliveryPlanningService deliveryPlanningService;
+
+	public M_Delivery_Planning(@NonNull final DeliveryPlanningService deliveryPlanningService)
 	{
-		//TODO
+		this.deliveryPlanningService = deliveryPlanningService;
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
+	public void onDelete(@NonNull final I_M_Delivery_Planning deliveryPlanning)
+	{
+		deliveryPlanningService.validateDeletion(deliveryPlanning);
 	}
 }

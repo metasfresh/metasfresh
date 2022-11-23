@@ -136,7 +136,4 @@ public class DeliveryPlanningCreateRequest
 	@Nullable
 	String transportDetails;
 
-	@Nullable
-	AttributeSetInstanceId attributeSetInstanceId;
-
 }

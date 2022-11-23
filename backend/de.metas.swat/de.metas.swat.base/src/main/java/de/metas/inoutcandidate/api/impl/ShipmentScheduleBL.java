@@ -987,6 +987,12 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final Quantity qtyOrdered = Quantity.of(shipmentScheduleRecord.getQtyOrdered(), uomOfProduct);
 		final OrgId orgId = OrgId.ofRepoId(shipmentScheduleRecord.getAD_Org_ID());
 
+
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNull(shipmentScheduleRecord.getM_AttributeSetInstance_ID());
+
+		final String originCountry = attributeSetInstanceBL.getAttributeValueOrNull(AttributeConstants.CountryOfOrigin, asiId);
+		final String huBatchNo = attributeSetInstanceBL.getAttributeValueOrNull(AttributeConstants.HU_BatchNo, asiId);
+
 		final DeliveryPlanningCreateRequest.DeliveryPlanningCreateRequestBuilder requestBuilder = DeliveryPlanningCreateRequest.builder()
 				.orgId(orgId)
 				.clientId(ClientId.ofRepoId(shipmentScheduleRecord.getAD_Client_ID()))
@@ -1002,7 +1008,8 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				.qtyOredered(qtyOrdered)
 				.qtyTotalOpen(qtyOrdered.subtract(getQtyDelivered(shipmentScheduleRecord)))
 				.plannedDeliveryDate(LocalDateAndOrgId.ofTimestamp(shipmentScheduleRecord.getDeliveryDate_Effective(), orgId, orgDAO::getTimeZone))
-				.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNull(shipmentScheduleRecord.getM_AttributeSetInstance_ID()));
+				.batch(huBatchNo)
+				.originCountry(originCountry);
 
 		if (orderId != null)
 		{
