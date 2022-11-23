@@ -45,7 +45,7 @@ properties([
                         name: 'MF_FORCE_SKIP_CYPRESS_BUILD'),
 
                 string(defaultValue: MF_SQL_SEED_DUMP_IMAGE_DEFAULT,
-                        description: 'metasfresh database seed against which the build shall apply its migrate scripts for QA. It''s passed as ENV variable MF_TEST_APPLY_MIGRATIONSCRIPTS_DB_IMAGE_NAME to the backend maven build.',
+                        description: 'metasfresh database seed against which the build shall apply its migrate scripts for QA. It is passed as ENV variable MF_TEST_APPLY_MIGRATIONSCRIPTS_DB_IMAGE_NAME to the backend maven build.',
                         name: 'MF_SQL_SEED_DUMP_IMAGE'),
         ]),
         pipelineTriggers([]),
