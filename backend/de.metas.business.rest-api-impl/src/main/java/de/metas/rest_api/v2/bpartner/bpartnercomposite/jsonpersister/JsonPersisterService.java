@@ -1045,7 +1045,7 @@ public class JsonPersisterService
 
 		if (jsonBPartner.isSectionCodeValueSet())
 		{
-			final SectionCodeId sectionCodeId = Optional.ofNullable(jsonBPartner.getSectionCodeValue())
+			final SectionCodeId sectionCodeId = Optional.ofNullable(StringUtils.trim(jsonBPartner.getSectionCodeValue()))
 					.filter(Check::isNotBlank)
 					.map(code -> sectionCodeService.getSectionCodeIdByValue(orgId, code))
 					.orElse(null);
@@ -1055,7 +1055,7 @@ public class JsonPersisterService
 
 		if (jsonBPartner.isDescriptionSet())
 		{
-			bpartner.setDescription(jsonBPartner.getDescription());
+			bpartner.setDescription(StringUtils.trim(jsonBPartner.getDescription()));
 		}
 
 		if (jsonBPartner.isDeliveryRuleSet())
@@ -1079,7 +1079,7 @@ public class JsonPersisterService
 
 		if (jsonBPartner.isIncotermsCustomerValueSet())
 		{
-			final IncotermsId incotermsCustomerId = Optional.ofNullable(jsonBPartner.getIncotermsCustomerValue())
+			final IncotermsId incotermsCustomerId = Optional.ofNullable(StringUtils.trim(jsonBPartner.getIncotermsCustomerValue()))
 					.filter(Check::isNotBlank)
 					.map(incotermsRepository::getIncotermsByValue)
 					.map(Incoterms::getIncotermsId)
@@ -1090,7 +1090,7 @@ public class JsonPersisterService
 
 		if (jsonBPartner.isIncotermsVendorValueSet())
 		{
-			final IncotermsId incotermsVendorId = Optional.ofNullable(jsonBPartner.getIncotermsVendorValue())
+			final IncotermsId incotermsVendorId = Optional.ofNullable(StringUtils.trim(jsonBPartner.getIncotermsVendorValue()))
 					.filter(Check::isNotBlank)
 					.map(incotermsRepository::getIncotermsByValue)
 					.map(Incoterms::getIncotermsId)
@@ -1101,7 +1101,7 @@ public class JsonPersisterService
 
 		if (jsonBPartner.isCustomerPaymentTermIdentifierSet())
 		{
-			final PaymentTermId customerPaymentTermId = Optional.ofNullable(jsonBPartner.getCustomerPaymentTermIdentifier())
+			final PaymentTermId customerPaymentTermId = Optional.ofNullable(StringUtils.trim(jsonBPartner.getCustomerPaymentTermIdentifier()))
 					.filter(Check::isNotBlank)
 					.map(ExternalIdentifier::of)
 					.map(paymentIdentifier -> jsonRetrieverService.getPaymentTermId(paymentIdentifier, orgId))
@@ -1112,7 +1112,7 @@ public class JsonPersisterService
 
 		if (jsonBPartner.isVendorPaymentTermIdentifierSet())
 		{
-			final PaymentTermId vendorPaymentTermId = Optional.ofNullable(jsonBPartner.getVendorPaymentTermIdentifier())
+			final PaymentTermId vendorPaymentTermId = Optional.ofNullable(StringUtils.trim(jsonBPartner.getVendorPaymentTermIdentifier()))
 					.filter(Check::isNotBlank)
 					.map(ExternalIdentifier::of)
 					.map(paymentIdentifier -> jsonRetrieverService.getPaymentTermId(paymentIdentifier, orgId))
@@ -1123,7 +1123,7 @@ public class JsonPersisterService
 
 		if (jsonBPartner.isParentIdentifierSet())
 		{
-			final BPartnerId parentBPartnerId = Optional.ofNullable(jsonBPartner.getParentIdentifier())
+			final BPartnerId parentBPartnerId = Optional.ofNullable(StringUtils.trim(jsonBPartner.getParentIdentifier()))
 					.filter(Check::isNotBlank)
 					.map(ExternalIdentifier::of)
 					.flatMap(parentIdentifier -> jsonRetrieverService.resolveBPartnerExternalIdentifier(parentIdentifier, orgId))
@@ -1893,6 +1893,12 @@ public class JsonPersisterService
 		if (jsonBPartnerLocation.isReplicationLookupDefaultSet())
 		{
 			location.setReplicationLookupDefault(Boolean.TRUE.equals(jsonBPartnerLocation.getReplicationLookupDefault()));
+		}
+
+		// VAT ID
+		if (jsonBPartnerLocation.isVatIdSet())
+		{
+			location.setVatId(StringUtils.trim(jsonBPartnerLocation.getVatId()));
 		}
 
 		final BPartnerLocationType locationType = syncJsonToLocationType(jsonBPartnerLocation);

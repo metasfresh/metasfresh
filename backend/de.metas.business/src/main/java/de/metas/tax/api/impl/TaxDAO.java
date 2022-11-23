@@ -386,7 +386,9 @@ public class TaxDAO implements ITaxDAO
 
 		final I_C_BPartner bpartner = bPartnerDAO.getById(bpartnerId);
 
-		final boolean bPartnerHasTaxCertificate = !Check.isBlank(bpartner.getVATaxID());
+		final String bpVATaxID = bPartnerDAO.getVATTaxId(taxQuery.getBPartnerLocationId()).orElse(bpartner.getVATaxID());
+
+		final boolean bPartnerHasTaxCertificate = !Check.isBlank(bpVATaxID);
 		loggable.addLog("BPartner has tax certificate={}", bPartnerHasTaxCertificate);
 		if (!bPartnerHasTaxCertificate)
 		{

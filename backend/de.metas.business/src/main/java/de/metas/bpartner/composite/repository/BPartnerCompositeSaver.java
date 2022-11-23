@@ -383,6 +383,8 @@ final class BPartnerCompositeSaver
 
 			bpartnerLocationRecord.setIsEphemeral(partnerLocation.isEphemeral());
 
+			bpartnerLocationRecord.setVATaxID(partnerLocation.getVatId());
+
 			saveRecord(bpartnerLocationRecord);
 
 			//

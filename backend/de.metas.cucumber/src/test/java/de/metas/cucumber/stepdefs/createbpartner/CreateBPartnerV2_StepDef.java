@@ -261,6 +261,7 @@ public class CreateBPartnerV2_StepDef
 			final boolean handoverLocation = DataTableUtil.extractBooleanForColumnNameOr(dataTableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsHandOverLocation, false);
 			final boolean remitTo = DataTableUtil.extractBooleanForColumnNameOr(dataTableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsRemitTo, false);
 			final boolean replicationLookupDefault = DataTableUtil.extractBooleanForColumnNameOr(dataTableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsReplicationLookupDefault, false);
+			final String vatId = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.VatId");
 
 			// persisted value
 			final Optional<JsonResponseLocation> persistedResult = bpartnerEndpointService.retrieveBPartnerLocation(
@@ -279,6 +280,7 @@ public class CreateBPartnerV2_StepDef
 			softly.assertThat(persistedLocation.isHandoverLocation()).isEqualTo(handoverLocation);
 			softly.assertThat(persistedLocation.isRemitTo()).isEqualTo(remitTo);
 			softly.assertThat(persistedLocation.isReplicationLookupDefault()).isEqualTo(replicationLookupDefault);
+			softly.assertThat(persistedLocation.getVatId()).isEqualTo(vatId);
 
 			softly.assertAll();
 		}

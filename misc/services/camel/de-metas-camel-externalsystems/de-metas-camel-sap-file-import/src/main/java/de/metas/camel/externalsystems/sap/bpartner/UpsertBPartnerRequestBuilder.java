@@ -243,6 +243,8 @@ public class UpsertBPartnerRequestBuilder
 		jsonRequestLocation.setRemitTo(false);
 		jsonRequestLocation.setReplicationLookupDefault(false);
 
+		jsonRequestLocation.setVatId(bPartnerRow.getVatRegNo());
+
 		return JsonRequestLocationUpsertItem.builder()
 				.location(jsonRequestLocation)
 				.locationIdentifier(getLocationExternalIdentifier(bPartnerRow))

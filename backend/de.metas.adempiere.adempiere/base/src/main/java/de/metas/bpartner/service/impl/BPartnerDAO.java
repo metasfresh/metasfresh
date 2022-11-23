@@ -96,7 +96,6 @@ import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
-import org.compiere.model.X_C_BP_Relation;
 import org.compiere.model.X_C_Location;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -1944,5 +1943,29 @@ public class BPartnerDAO implements IBPartnerDAO
 				.orderBy(I_C_BPartner.COLUMNNAME_C_BPartner_ID)
 				.create()
 				.listImmutable(I_C_BPartner.class);
+	}
+
+	@NonNull
+	@Override
+	public Optional<String> getVATTaxId(@Nullable final BPartnerLocationAndCaptureId shipBPLocationId)
+	{
+		if (shipBPLocationId == null)
+		{
+			return Optional.empty();
+		}
+
+		final I_C_BPartner_Location shipBPLocation = getBPartnerLocationById(shipBPLocationId.getBpartnerLocationId());
+		if (shipBPLocation != null && Check.isNotBlank(shipBPLocation.getVATaxID()))
+		{
+			return Optional.of(shipBPLocation.getVATaxID());
+		}
+
+		final I_C_BPartner bPartner = getById(shipBPLocationId.getBpartnerId());
+		if (bPartner != null && Check.isNotBlank(bPartner.getVATaxID()))
+		{
+			return Optional.of(bPartner.getVATaxID());
+		}
+
+		return Optional.empty();
 	}
 }
