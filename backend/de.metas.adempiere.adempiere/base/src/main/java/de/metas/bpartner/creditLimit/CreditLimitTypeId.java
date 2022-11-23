@@ -23,6 +23,7 @@
 package de.metas.bpartner.creditLimit;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
@@ -32,6 +33,7 @@ import javax.annotation.Nullable;
 @Value
 public class CreditLimitTypeId implements RepoIdAware
 {
+	@JsonValue
 	int repoId;
 
 	@JsonCreator
