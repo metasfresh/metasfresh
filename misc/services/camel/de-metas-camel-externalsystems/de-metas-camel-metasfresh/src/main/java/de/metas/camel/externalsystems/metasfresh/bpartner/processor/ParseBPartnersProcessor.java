@@ -48,11 +48,12 @@ public class ParseBPartnersProcessor implements Processor
 	{
 		final JsonParser parser = exchange.getProperty(PARSER_PROPERTY, JsonParser.class);
 
-		boolean isContinueParsing = parser.nextToken() != JsonToken.END_ARRAY;
+		final boolean isContinueParsing = parser.nextToken() != JsonToken.END_ARRAY;
 
 		if (!isContinueParsing)
 		{
 			exchange.setProperty(IS_CONTINUE_PARSING_PROPERTY, false);
+			exchange.getIn().setBody(null);
 			parser.close();
 			return;
 		}
@@ -67,6 +68,7 @@ public class ParseBPartnersProcessor implements Processor
 		catch (final Exception exception)
 		{
 			exchange.setProperty(IS_CONTINUE_PARSING_PROPERTY, false);
+			exchange.getIn().setBody(null);
 			parser.close();
 			throw exception;
 		}
@@ -75,7 +77,7 @@ public class ParseBPartnersProcessor implements Processor
 
 		final BPUpsertCamelRequest camelRequest = getBPUpsertCamelRequest(orgCode, jsonRequestBPartnerUpsertItem);
 		exchange.getIn().setBody(camelRequest);
-		exchange.setProperty(IS_CONTINUE_PARSING_PROPERTY, isContinueParsing);
+		exchange.setProperty(IS_CONTINUE_PARSING_PROPERTY, true);
 	}
 
 	@NonNull

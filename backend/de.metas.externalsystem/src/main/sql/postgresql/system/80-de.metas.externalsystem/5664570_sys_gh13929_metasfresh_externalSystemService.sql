@@ -1,17 +1,17 @@
 -- 2022-11-16T13:15:15.950Z
-INSERT INTO ExternalSystem_Service (AD_Client_ID,AD_Org_ID,Created,CreatedBy,ExternalSystem_Service_ID,IsActive,Name,Type,Updated,UpdatedBy,Value) VALUES (1000000,1000000,TO_TIMESTAMP('2022-11-16 15:15:15','YYYY-MM-DD HH24:MI:SS'),100,540004,'Y','REST API','metasfresh',TO_TIMESTAMP('2022-11-16 15:15:15','YYYY-MM-DD HH24:MI:SS'),100,'defaultRestAPIMetasfresh')
+INSERT INTO ExternalSystem_Service (AD_Client_ID,AD_Org_ID,Created,CreatedBy,ExternalSystem_Service_ID,IsActive,Name,Type,Updated,UpdatedBy,Value) VALUES (1000000,1000000,TO_TIMESTAMP('2022-11-16 15:15:15','YYYY-MM-DD HH24:MI:SS'),100,540010,'Y','REST API','metasfresh',TO_TIMESTAMP('2022-11-16 15:15:15','YYYY-MM-DD HH24:MI:SS'),100,'defaultRestAPIMetasfresh')
 ;
 
 -- 2022-11-16T13:15:23.780Z
-UPDATE ExternalSystem_Service SET Description='/metasfresh',Updated=TO_TIMESTAMP('2022-11-16 15:15:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE ExternalSystem_Service_ID=540004
+UPDATE ExternalSystem_Service SET Description='/metasfresh',Updated=TO_TIMESTAMP('2022-11-16 15:15:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE ExternalSystem_Service_ID=540010
 ;
 
 -- 2022-11-16T13:15:31.482Z
-UPDATE ExternalSystem_Service SET EnableCommand='enableRestAPI',Updated=TO_TIMESTAMP('2022-11-16 15:15:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE ExternalSystem_Service_ID=540004
+UPDATE ExternalSystem_Service SET EnableCommand='enableRestAPI',Updated=TO_TIMESTAMP('2022-11-16 15:15:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE ExternalSystem_Service_ID=540010
 ;
 
 -- 2022-11-16T13:15:40.474Z
-UPDATE ExternalSystem_Service SET DisableCommand='disableRestAPI',Updated=TO_TIMESTAMP('2022-11-16 15:15:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE ExternalSystem_Service_ID=540004
+UPDATE ExternalSystem_Service SET DisableCommand='disableRestAPI',Updated=TO_TIMESTAMP('2022-11-16 15:15:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE ExternalSystem_Service_ID=540010
 ;
 
 -- Process: Call_External_System_Metasfresh(de.metas.externalsystem.process.InvokeMetasfreshAction)
