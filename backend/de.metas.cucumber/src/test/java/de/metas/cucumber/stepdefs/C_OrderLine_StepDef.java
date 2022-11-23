@@ -347,7 +347,28 @@ public class C_OrderLine_StepDef
 		}
 	}
 
+	@And("load C_Order from C_OrderLine")
+	public void loadC_Order(@NonNull final DataTable dataTable)
+	{
+		final List<Map<String, String>> table = dataTable.asMaps();
+		for (final Map<String, String> row : table)
+		{
+			loadC_Order(row);
+		}
+	}
 
+	private void loadC_Order(@NonNull final Map<String, String> row)
+	{
+		final String olIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OrderLine.COLUMNNAME_C_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_C_OrderLine orderLine = orderLineTable.get(olIdentifier);
+		assertThat(orderLine).isNotNull();
+
+		final I_C_Order orderRecord = InterfaceWrapperHelper.load(orderLine.getC_Order_ID(), I_C_Order.class);
+		assertThat(orderRecord).isNotNull();
+
+		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_OrderLine.COLUMNNAME_C_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+		orderTable.putOrReplace(orderIdentifier, orderRecord);
+	}
 
 	private void validateOrderLine(@NonNull final I_C_OrderLine orderLine, @NonNull final Map<String, String> row)
 	{
