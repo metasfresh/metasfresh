@@ -49,7 +49,13 @@ public class RunMigrationScriptsTest
 	public static final String ENV_SKIP_MIGRATION_SCRIPTS_TEST = "SKIP_MIGRATION_SCRIPTS_TEST";
 
 	public static final String ENV_WORKSPACE_DIR = "WORKSPACE_DIR";
-	public static final String ENV_DB_IMAGE_NAME = "DB_IMAGE_NAME";
+	
+	/** 
+	 * Note, the variable starts with MF_ due to a convention in the Jenkinsfile. 
+	 * There we prepend "MF_" to "our" env-vars to make sure not to accidentally overwrite anything. 
+	 */
+	public static final String ENV_DB_IMAGE_NAME = "MF_TEST_APPLY_MIGRATIONSCRIPTS_DB_IMAGE_NAME";
+
 	private static final PropertyValue<DockerImageName> DB_IMAGE_NAME_DEFAULT = PropertyValue.of(
 			DockerImageName.parse("metasfresh/metasfresh-db:5.175.2_559_release"),
 			"default");
@@ -138,11 +144,11 @@ public class RunMigrationScriptsTest
 					.dbImageName(getDbImageName())
 					.build();
 		}
-		catch (AdempiereException ex)
+		catch (final AdempiereException ex)
 		{
 			throw ex;
 		}
-		catch (Exception ex)
+		catch (final Exception ex)
 		{
 			throw new AdempiereException("Failed retrieving config", ex);
 		}

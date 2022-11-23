@@ -9,7 +9,9 @@ chuckNorris()
 // keep the last 20 builds for master and stable, but onkly the last 10 for the rest, to preserve disk space on jenkins
 final String numberOfBuildsToKeepStr = (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'stable') ? '20' : '10'
 
-final String MF_SQL_SEED_DUMP_URL_DEFAULT = 'https://nexus.metasfresh.com/repository/mvn-release-releases/de/metas/dist/metasfresh-dist-dist/5.173/metasfresh-dist-dist-5.173-customfmt.pgdump'
+// should always be the latest baseline branch's build build from github actions. 
+// Otherwise we spend time reapplying many not-so-new scripts that were already applied in the base line branch.
+final String MF_SQL_SEED_DUMP_IMAGE_DEFAULT = 'metasfresh/metas-db:5.176-master-preloaded'
 
 // thx to http://stackoverflow.com/a/36949007/1012103 with respect to the parameters
 properties([
@@ -42,9 +44,9 @@ properties([
                         description: 'If true, then don\'t build cypress (e2e), even if there were changes or <code>MF_FORCE_FULL_BUILD</code> is set to <code>true<code>',
                         name: 'MF_FORCE_SKIP_CYPRESS_BUILD'),
 
-                string(defaultValue: MF_SQL_SEED_DUMP_URL_DEFAULT,
-                        description: 'metasfresh database seed against which the build shall apply its migrate scripts for QA; leave empty to avoid this QA.',
-                        name: 'MF_SQL_SEED_DUMP_URL'),
+                string(defaultValue: MF_SQL_SEED_DUMP_IMAGE_DEFAULT,
+                        description: 'metasfresh database seed against which the build shall apply its migrate scripts for QA. It''s passed as ENV variable MF_TEST_APPLY_MIGRATIONSCRIPTS_DB_IMAGE_NAME to the backend maven build.',
+                        name: 'MF_SQL_SEED_DUMP_IMAGE'),
         ]),
         pipelineTriggers([]),
         buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '', daysToKeepStr: '', numToKeepStr: numberOfBuildsToKeepStr)) // keep the last $numberOfBuildsToKeepStr builds
@@ -114,7 +116,7 @@ try {
 
 private void buildAll(String mfVersion, MvnConf mvnConf, scmVars) {
 
-    withEnv(["MF_VERSION=${mfVersion}"]) {
+    withEnv(["MF_VERSION=${mfVersion}, MF_TEST_APPLY_MIGRATIONSCRIPTS_DB_IMAGE_NAME=${params.MF_SQL_SEED_DUMP_IMAGE}"]) {
                 // disable automatic fingerprinting and archiving by artifactsPublisher, because in particular the archiving takes up too much space on the jenkins server.
                 withMaven(jdk: 'java-8-AdoptOpenJDK', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)]) {
 
