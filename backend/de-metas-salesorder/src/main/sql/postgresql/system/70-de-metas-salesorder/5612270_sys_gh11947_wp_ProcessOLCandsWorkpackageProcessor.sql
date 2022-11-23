@@ -1,24 +1,9 @@
-/*
- * #%L
- * de-metas-salesorder
- * %%
- * Copyright (C) 2022 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
+
+DO
+$$
+    BEGIN
+        IF NOT EXISTS(SELECT 1 FROM ad_migrationscript WHERE name ILIKE '%5612270_sys_gh11947_wp_ProcessOLCandsWorkpackageProcessor.sql')
+        THEN
 
 -- 2021-11-05T12:52:20.300Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
@@ -60,3 +45,7 @@ UPDATE C_Queue_Processor SET KeepAliveTimeMillis=1000,Updated=TO_TIMESTAMP('2021
 INSERT INTO C_Queue_Processor_Assign (AD_Client_ID,AD_Org_ID,C_Queue_PackageProcessor_ID,C_Queue_Processor_Assign_ID,C_Queue_Processor_ID,Created,CreatedBy,IsActive,Updated,UpdatedBy) VALUES (0,0,540089,540095,540060,TO_TIMESTAMP('2021-11-05 14:53:53','YYYY-MM-DD HH24:MI:SS'),100,'Y',TO_TIMESTAMP('2021-11-05 14:53:53','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+        END IF;
+    END;
+$$
+;
