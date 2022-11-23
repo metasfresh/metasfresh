@@ -33,7 +33,6 @@ import javax.annotation.Nullable;
 @Value
 public class CreditLimitTypeId implements RepoIdAware
 {
-	@JsonValue
 	int repoId;
 
 	@JsonCreator
