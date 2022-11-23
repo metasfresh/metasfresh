@@ -12,6 +12,9 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13979](https://github.com/metasfresh/metasfresh/pull/13979) External system config metasfresh improvement 
+  * [#13955](https://github.com/metasfresh/metasfresh/pull/13955) ExternalSystem component for batched bpartner-upserts via REST follow up 
+  * [#13929](https://github.com/metasfresh/metasfresh/issues/13929) ExternalSystem component for batched bpartner-upserts via REST
   * [#13251](https://github.com/metasfresh/metasfresh/pull/13251) Resolve importing of product variants from Shopware
   * [#13970](https://github.com/metasfresh/metasfresh/issues/13970) Externally referenced records: further improvements 
   * [#13968](https://github.com/metasfresh/metasfresh/issues/13968) Include in MD_Stock inactive HUs
