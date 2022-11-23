@@ -106,7 +106,6 @@ public interface IPPOrderBL extends ISingletonService
 	void postPPOrderCreatedEvent(@NonNull I_PP_Order ppOrder);
 
 	void completeDocument(@NonNull I_PP_Order ppOrder);
-	void postPPOrderCreatedEvent(@NonNull final I_PP_Order ppOrder);
 
 	boolean hasSerialNumberSequence(@NonNull PPOrderId ppOrderId);
 }

@@ -46,8 +46,7 @@ public class PPOrderLinesViewDataSupplier
 			@Nullable final ASIViewRowAttributesProvider asiAttributesProvider,
 			@NonNull final SqlViewBinding huSQLViewBinding,
 			@NonNull final HUReservationService huReservationService,
-			@NonNull final ADReferenceService adReferenceService)
-			@NonNull final HUReservationService huReservationService,
+			@NonNull final ADReferenceService adReferenceService,
 			final boolean serialNoFromSequence)
 	{
 		this.asiAttributesProvider = asiAttributesProvider;
