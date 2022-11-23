@@ -915,6 +915,14 @@ class ExternalSystemConfigRepoTest
 				.value(value)
 				.build();
 
+		ExternalSystemTestUtil.createSAPContentSourceSFTPBuilder()
+				.externalSystemConfigSAPId(childRecord.getExternalSystem_Config_SAP_ID())
+				.build();
+
+		ExternalSystemTestUtil.createSAPContentSourceLocalFileBuilder()
+				.externalSystemConfigSAPId(childRecord.getExternalSystem_Config_SAP_ID())
+				.build();
+
 		// when
 		final ExternalSystemSAPConfigId id = ExternalSystemSAPConfigId.ofRepoId(childRecord.getExternalSystem_Config_SAP_ID());
 		final ExternalSystemParentConfig result = externalSystemConfigRepo.getById(id);
@@ -934,9 +942,17 @@ class ExternalSystemConfigRepoTest
 
 		final String value = "testSAPValue";
 
-		ExternalSystemTestUtil.createSAPConfigBuilder()
+		final I_ExternalSystem_Config_SAP childRecord = ExternalSystemTestUtil.createSAPConfigBuilder()
 				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
 				.value(value)
+				.build();
+
+		ExternalSystemTestUtil.createSAPContentSourceSFTPBuilder()
+				.externalSystemConfigSAPId(childRecord.getExternalSystem_Config_SAP_ID())
+				.build();
+
+		ExternalSystemTestUtil.createSAPContentSourceLocalFileBuilder()
+				.externalSystemConfigSAPId(childRecord.getExternalSystem_Config_SAP_ID())
 				.build();
 
 		// when
@@ -966,7 +982,7 @@ class ExternalSystemConfigRepoTest
 		// when
 		final Optional<ExternalSystemParentConfig> externalSystemParentConfig = externalSystemConfigRepo.getByTypeAndValue(ExternalSystemType.Shopware6, value);
 
-		//then
+		// then
 		assertThat(externalSystemParentConfig).isEmpty();
 	}
 
@@ -978,8 +994,16 @@ class ExternalSystemConfigRepoTest
 				.type(ExternalSystemType.SAP.getCode())
 				.build();
 
-		ExternalSystemTestUtil.createSAPConfigBuilder()
+		final I_ExternalSystem_Config_SAP childRecord = ExternalSystemTestUtil.createSAPConfigBuilder()
 				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
+				.build();
+
+		ExternalSystemTestUtil.createSAPContentSourceSFTPBuilder()
+				.externalSystemConfigSAPId(childRecord.getExternalSystem_Config_SAP_ID())
+				.build();
+
+		ExternalSystemTestUtil.createSAPContentSourceLocalFileBuilder()
+				.externalSystemConfigSAPId(childRecord.getExternalSystem_Config_SAP_ID())
 				.build();
 
 		// when
@@ -1001,9 +1025,17 @@ class ExternalSystemConfigRepoTest
 
 		final String value = "testSAPValue";
 
-		ExternalSystemTestUtil.createSAPConfigBuilder()
+		final I_ExternalSystem_Config_SAP childRecord = ExternalSystemTestUtil.createSAPConfigBuilder()
 				.externalSystemConfigId(parentRecord.getExternalSystem_Config_ID())
 				.value(value)
+				.build();
+
+		ExternalSystemTestUtil.createSAPContentSourceSFTPBuilder()
+				.externalSystemConfigSAPId(childRecord.getExternalSystem_Config_SAP_ID())
+				.build();
+
+		ExternalSystemTestUtil.createSAPContentSourceLocalFileBuilder()
+				.externalSystemConfigSAPId(childRecord.getExternalSystem_Config_SAP_ID())
 				.build();
 
 		final ExternalSystemParentConfigId externalSystemParentConfigId = ExternalSystemParentConfigId.ofRepoId(parentRecord.getExternalSystem_Config_ID());

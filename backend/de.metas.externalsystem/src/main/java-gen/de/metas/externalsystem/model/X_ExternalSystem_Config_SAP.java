@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_ExternalSystem_Config_SAP extends org.compiere.model.PO implements I_ExternalSystem_Config_SAP, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1886505240L;
+	private static final long serialVersionUID = -688300913L;
 
     /** Standard Constructor */
     public X_ExternalSystem_Config_SAP (final Properties ctx, final int ExternalSystem_Config_SAP_ID, @Nullable final String trxName)
@@ -35,27 +35,15 @@ public class X_ExternalSystem_Config_SAP extends org.compiere.model.PO implement
 	}
 
 	@Override
-	public void setErroredDirectory (final String ErroredDirectory)
+	public de.metas.externalsystem.model.I_ExternalSystem_Config getExternalSystem_Config()
 	{
-		set_Value (COLUMNNAME_ErroredDirectory, ErroredDirectory);
+		return get_ValueAsPO(COLUMNNAME_ExternalSystem_Config_ID, de.metas.externalsystem.model.I_ExternalSystem_Config.class);
 	}
 
 	@Override
-	public String getErroredDirectory()
+	public void setExternalSystem_Config(final de.metas.externalsystem.model.I_ExternalSystem_Config ExternalSystem_Config)
 	{
-		return get_ValueAsString(COLUMNNAME_ErroredDirectory);
-	}
-
-	@Override
-	public I_ExternalSystem_Config getExternalSystem_Config()
-	{
-		return get_ValueAsPO(COLUMNNAME_ExternalSystem_Config_ID, I_ExternalSystem_Config.class);
-	}
-
-	@Override
-	public void setExternalSystem_Config(final I_ExternalSystem_Config ExternalSystem_Config)
-	{
-		set_ValueFromPO(COLUMNNAME_ExternalSystem_Config_ID, I_ExternalSystem_Config.class, ExternalSystem_Config);
+		set_ValueFromPO(COLUMNNAME_ExternalSystem_Config_ID, de.metas.externalsystem.model.I_ExternalSystem_Config.class, ExternalSystem_Config);
 	}
 
 	@Override
@@ -89,158 +77,14 @@ public class X_ExternalSystem_Config_SAP extends org.compiere.model.PO implement
 	}
 
 	@Override
-	public void setExternalSystemValue (final String ExternalSystemValue)
+	public void setExternalSystemValue (final java.lang.String ExternalSystemValue)
 	{
 		set_Value (COLUMNNAME_ExternalSystemValue, ExternalSystemValue);
 	}
 
 	@Override
-	public String getExternalSystemValue()
+	public java.lang.String getExternalSystemValue() 
 	{
 		return get_ValueAsString(COLUMNNAME_ExternalSystemValue);
-	}
-
-	@Override
-	public void setPollingFrequencyInMs (final int PollingFrequencyInMs)
-	{
-		set_Value (COLUMNNAME_PollingFrequencyInMs, PollingFrequencyInMs);
-	}
-
-	@Override
-	public int getPollingFrequencyInMs() 
-	{
-		return get_ValueAsInt(COLUMNNAME_PollingFrequencyInMs);
-	}
-
-	@Override
-	public void setProcessedDirectory (final String ProcessedDirectory)
-	{
-		set_Value (COLUMNNAME_ProcessedDirectory, ProcessedDirectory);
-	}
-
-	@Override
-	public String getProcessedDirectory()
-	{
-		return get_ValueAsString(COLUMNNAME_ProcessedDirectory);
-	}
-
-	@Override
-	public void setSFTP_BPartner_FileName_Pattern (final @Nullable String SFTP_BPartner_FileName_Pattern)
-	{
-		set_Value (COLUMNNAME_SFTP_BPartner_FileName_Pattern, SFTP_BPartner_FileName_Pattern);
-	}
-
-	@Override
-	public String getSFTP_BPartner_FileName_Pattern()
-	{
-		return get_ValueAsString(COLUMNNAME_SFTP_BPartner_FileName_Pattern);
-	}
-
-	@Override
-	public void setSFTP_BPartner_TargetDirectory (final @Nullable String SFTP_BPartner_TargetDirectory)
-	{
-		set_Value (COLUMNNAME_SFTP_BPartner_TargetDirectory, SFTP_BPartner_TargetDirectory);
-	}
-
-	@Override
-	public String getSFTP_BPartner_TargetDirectory()
-	{
-		return get_ValueAsString(COLUMNNAME_SFTP_BPartner_TargetDirectory);
-	}
-
-	@Override
-	public void setSFTP_CreditLimit_FileName_Pattern (final @Nullable String SFTP_CreditLimit_FileName_Pattern)
-	{
-		set_Value (COLUMNNAME_SFTP_CreditLimit_FileName_Pattern, SFTP_CreditLimit_FileName_Pattern);
-	}
-
-	@Override
-	public String getSFTP_CreditLimit_FileName_Pattern()
-	{
-		return get_ValueAsString(COLUMNNAME_SFTP_CreditLimit_FileName_Pattern);
-	}
-
-	@Override
-	public void setSFTP_CreditLimit_TargetDirectory (final @Nullable String SFTP_CreditLimit_TargetDirectory)
-	{
-		set_Value (COLUMNNAME_SFTP_CreditLimit_TargetDirectory, SFTP_CreditLimit_TargetDirectory);
-	}
-
-	@Override
-	public String getSFTP_CreditLimit_TargetDirectory()
-	{
-		return get_ValueAsString(COLUMNNAME_SFTP_CreditLimit_TargetDirectory);
-	}
-
-	@Override
-	public void setSFTP_HostName (final String SFTP_HostName)
-	{
-		set_Value (COLUMNNAME_SFTP_HostName, SFTP_HostName);
-	}
-
-	@Override
-	public String getSFTP_HostName()
-	{
-		return get_ValueAsString(COLUMNNAME_SFTP_HostName);
-	}
-
-	@Override
-	public void setSFTP_Password (final String SFTP_Password)
-	{
-		set_Value (COLUMNNAME_SFTP_Password, SFTP_Password);
-	}
-
-	@Override
-	public String getSFTP_Password()
-	{
-		return get_ValueAsString(COLUMNNAME_SFTP_Password);
-	}
-
-	@Override
-	public void setSFTP_Port (final String SFTP_Port)
-	{
-		set_Value (COLUMNNAME_SFTP_Port, SFTP_Port);
-	}
-
-	@Override
-	public String getSFTP_Port()
-	{
-		return get_ValueAsString(COLUMNNAME_SFTP_Port);
-	}
-
-	@Override
-	public void setSFTP_Product_FileName_Pattern (final @Nullable String SFTP_Product_FileName_Pattern)
-	{
-		set_Value (COLUMNNAME_SFTP_Product_FileName_Pattern, SFTP_Product_FileName_Pattern);
-	}
-
-	@Override
-	public String getSFTP_Product_FileName_Pattern()
-	{
-		return get_ValueAsString(COLUMNNAME_SFTP_Product_FileName_Pattern);
-	}
-
-	@Override
-	public void setSFTP_Product_TargetDirectory (final @Nullable String SFTP_Product_TargetDirectory)
-	{
-		set_Value (COLUMNNAME_SFTP_Product_TargetDirectory, SFTP_Product_TargetDirectory);
-	}
-
-	@Override
-	public String getSFTP_Product_TargetDirectory()
-	{
-		return get_ValueAsString(COLUMNNAME_SFTP_Product_TargetDirectory);
-	}
-
-	@Override
-	public void setSFTP_Username (final String SFTP_Username)
-	{
-		set_Value (COLUMNNAME_SFTP_Username, SFTP_Username);
-	}
-
-	@Override
-	public String getSFTP_Username()
-	{
-		return get_ValueAsString(COLUMNNAME_SFTP_Username);
 	}
 }
