@@ -54,17 +54,22 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
 public class M_ShipmentSchedule
 {
 	private final DeliveryPlanningService deliveryPlanningService;
-
+	private final IShipmentScheduleInvalidateBL invalidSchedulesService;
+	private final IShipmentScheduleUpdater shipmentScheduleUpdater;
 	private static final AdMessageKey MSG_DECREASE_QTY_ORDERED_BELOW_QTY_ALREADY_DELIVERED_IS_NOT_ALLOWED = //
 			AdMessageKey.of("de.metas.inoutcandidate.DecreaseQtyOrderedBelowQtyAlreadyDeliveredIsNotAllowed");
 
-	private final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
-	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-	private final IShipmentScheduleUpdater shipmentScheduleUpdater = Services.get(IShipmentScheduleUpdater.class);
 
-	public M_ShipmentSchedule(final DeliveryPlanningService deliveryPlanningService)
+	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+
+
+	public M_ShipmentSchedule(@NonNull final DeliveryPlanningService deliveryPlanningService,
+			@NonNull final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL,
+			@NonNull final IShipmentScheduleUpdater shipmentScheduleUpdater)
 	{
 		this.deliveryPlanningService = deliveryPlanningService;
+		this.invalidSchedulesService = shipmentScheduleInvalidateBL;
+		this.shipmentScheduleUpdater = shipmentScheduleUpdater;
 	}
 
 	/**

@@ -92,6 +92,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
+import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -164,6 +165,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
  * @see IShipmentSchedulePA
  * @see OlAndSched
  */
+@Service
 public class ShipmentScheduleBL implements IShipmentScheduleBL
 {
 	private static final AdMessageKey MSG_SHIPMENT_SCHEDULE_ALREADY_PROCESSED = AdMessageKey.of("ShipmentScheduleAlreadyProcessed");
