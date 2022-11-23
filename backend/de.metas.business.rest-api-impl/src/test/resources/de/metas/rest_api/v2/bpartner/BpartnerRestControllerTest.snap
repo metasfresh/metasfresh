@@ -190,7 +190,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
       "tableName" : "C_BPartner_CreditLimit"
     },
     "creditLimitTypeId" : 100027,
-    "dateFrom" : "2022-11-01T23:00:00Z",
+    "dateFrom" : "2022-11-02T00:00:00Z",
     "id" : 100036,
     "processed" : false
   } ],

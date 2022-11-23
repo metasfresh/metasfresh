@@ -32,8 +32,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;
-
 @Interceptor(I_ExternalSystem_Config_SAP.class)
 @Component
 public class ExternalSystem_Config_SAP
@@ -56,60 +54,5 @@ public class ExternalSystem_Config_SAP
 		{
 			throw new AdempiereException("Invalid external system type!");
 		}
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = { I_ExternalSystem_Config_SAP.COLUMNNAME_SFTP_Product_TargetDirectory })
-	public void sanitizeProductTargetDirectory(final I_ExternalSystem_Config_SAP sapConfig)
-	{
-		sapConfig.setSFTP_Product_TargetDirectory(sanitizeDirectoryRelativePath(sapConfig.getSFTP_Product_TargetDirectory()));
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = { I_ExternalSystem_Config_SAP.COLUMNNAME_SFTP_BPartner_TargetDirectory })
-	public void sanitizeBPartnerTargetDirectory(final I_ExternalSystem_Config_SAP sapConfig)
-	{
-		sapConfig.setSFTP_BPartner_TargetDirectory(sanitizeDirectoryRelativePath(sapConfig.getSFTP_BPartner_TargetDirectory()));
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = { I_ExternalSystem_Config_SAP.COLUMNNAME_SFTP_CreditLimit_TargetDirectory })
-	public void sanitizeCreditLimitTargetDirectory(final I_ExternalSystem_Config_SAP sapConfig)
-	{
-		sapConfig.setSFTP_CreditLimit_TargetDirectory(sanitizeDirectoryRelativePath(sapConfig.getSFTP_CreditLimit_TargetDirectory()));
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = { I_ExternalSystem_Config_SAP.COLUMNNAME_ProcessedDirectory })
-	public void sanitizeProcessedDirectory(final I_ExternalSystem_Config_SAP sapConfig)
-	{
-		sapConfig.setProcessedDirectory(sanitizeDirectoryRelativePath(sapConfig.getProcessedDirectory()));
-	}
-
-	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
-			ifColumnsChanged = { I_ExternalSystem_Config_SAP.COLUMNNAME_ErroredDirectory })
-	public void sanitizeErroredDirectory(final I_ExternalSystem_Config_SAP sapConfig)
-	{
-		sapConfig.setErroredDirectory(sanitizeDirectoryRelativePath(sapConfig.getErroredDirectory()));
-	}
-
-	@Nullable
-	private static String sanitizeDirectoryRelativePath(@Nullable final String sftpTargetDirectory)
-	{
-		if (sftpTargetDirectory == null)
-		{
-			return null;
-		}
-
-		if (sftpTargetDirectory.startsWith("/"))
-		{
-			return sftpTargetDirectory.replaceFirst("/", "");
-		}
-		else if (sftpTargetDirectory.startsWith("./"))
-		{
-			return sftpTargetDirectory.replaceFirst("\\./", "");
-		}
-
-		return sftpTargetDirectory;
 	}
 }

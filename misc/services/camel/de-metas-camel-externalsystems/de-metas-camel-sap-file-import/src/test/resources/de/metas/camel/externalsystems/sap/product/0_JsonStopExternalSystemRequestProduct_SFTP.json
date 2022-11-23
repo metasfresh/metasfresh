@@ -3,7 +3,7 @@
   "orgCode": "orgCode",
   "externalSystemName": "SAP",
   "externalSystemChildConfigValue": "sapValue",
-  "command": "startProductsSync",
+  "command": "stopProductSyncSFTP",
   "externalSystemConfigId": 1,
   "adPInstanceId": 2,
   "writeAuditEndpoint": "fileFolder",
@@ -15,6 +15,7 @@
     "SFTP_Product_Target_Directory" : "doesntmatter",
     "SFTPProcessedDirectory": "doesntmatter",
     "SFTPErroredDirectory": "doesntmatter",
-    "SFTPPollingFrequencyInMs": "1000"
+    "SFTPPollingFrequencyInMs": "1000",
+    "SFTPProductFileNamePattern": "doesntmatter"
   }
 }

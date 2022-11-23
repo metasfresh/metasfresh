@@ -61,6 +61,7 @@ import de.metas.common.product.v2.response.JsonResponseProductBPartner;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.util.time.SystemTime;
+import de.metas.common.util.time.TimeSource;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.CurrencyRepository;
 import de.metas.externalreference.ExternalBusinessKey;
@@ -115,7 +116,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.io.InputStream;
+import java.time.ZoneId;
 import java.util.Optional;
+import java.util.TimeZone;
 
 import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.AD_ORG_ID;
 import static de.metas.rest_api.v2.bpartner.BPartnerRecordsUtil.AD_USER_EXTERNAL_ID;
@@ -383,7 +386,21 @@ class BpartnerRestControllerTest
 				.requestItem(requestItem)
 				.build();
 
-		SystemTime.setTimeSource(() -> 1561134560); // Fri, 21 Jun 2019 16:29:20 GMT
+		SystemTime.setTimeSource( new TimeSource()
+		{
+			@Override
+			public long millis()
+			{
+				return 1561134560;
+			}
+
+			@Override
+			public ZoneId zoneId()
+			{
+				return TimeZone.getTimeZone("GMT").toZoneId();
+			}
+		});
+
 		Env.setLoggedUserId(Env.getCtx(), UserId.ofRepoId(BPartnerRecordsUtil.AD_USER_ID));
 
 		// invoke the method under test
