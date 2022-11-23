@@ -24,8 +24,8 @@ package de.metas.camel.externalsystems.sap.product;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.camel.externalsystems.common.ProcessLogger;
+import de.metas.camel.externalsystems.sap.SAPConfigUtil;
 import de.metas.camel.externalsystems.sap.service.OnDemandRoutesController;
-import de.metas.camel.externalsystems.sap.sftp.SFTPConfigUtil;
 import de.metas.common.externalsystem.IExternalSystemService;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.NonNull;
@@ -43,13 +43,13 @@ import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 @Component
 public class SFTPProductSyncServiceRouteBuilder extends RouteBuilder implements IExternalSystemService
 {
-	private static final String START_PRODUCTS_SYNC_ROUTE = "startProductsSync";
-	private static final String STOP_PRODUCTS_SYNC_ROUTE = "stopProductsSync";
+	private static final String START_PRODUCTS_SYNC_SFTP_ROUTE = "startProductSyncSFTP";
+	private static final String STOP_PRODUCTS_SYNC_SFTP_ROUTE = "stopProductSyncSFTP";
 
 	@VisibleForTesting
-	public static final String START_PRODUCTS_SYNC_ROUTE_ID = SAP_SYSTEM_NAME + "-" + START_PRODUCTS_SYNC_ROUTE;
+	public static final String START_PRODUCTS_SYNC_SFTP_ROUTE_ID = SAP_SYSTEM_NAME + "-" + START_PRODUCTS_SYNC_SFTP_ROUTE;
 	@VisibleForTesting
-	public static final String STOP_PRODUCTS_SYNC_ROUTE_ID = SAP_SYSTEM_NAME + "-" + STOP_PRODUCTS_SYNC_ROUTE;
+	public static final String STOP_PRODUCTS_SYNC_SFTP_ROUTE_ID = SAP_SYSTEM_NAME + "-" + STOP_PRODUCTS_SYNC_SFTP_ROUTE;
 
 	@NonNull
 	private final ProcessLogger processLogger;
@@ -66,15 +66,15 @@ public class SFTPProductSyncServiceRouteBuilder extends RouteBuilder implements 
 		onException(Exception.class)
 				.to(direct(MF_ERROR_ROUTE_ID));
 
-		from(direct(START_PRODUCTS_SYNC_ROUTE_ID))
-				.routeId(START_PRODUCTS_SYNC_ROUTE_ID)
+		from(direct(START_PRODUCTS_SYNC_SFTP_ROUTE_ID))
+				.routeId(START_PRODUCTS_SYNC_SFTP_ROUTE_ID)
 				.log("Route invoked")
 				.process(this::getStartOnDemandRequest)
 				.to(direct(START_HANDLE_ON_DEMAND_ROUTE_ID))
 				.end();
 
-		from(direct(STOP_PRODUCTS_SYNC_ROUTE_ID))
-				.routeId(STOP_PRODUCTS_SYNC_ROUTE_ID)
+		from(direct(STOP_PRODUCTS_SYNC_SFTP_ROUTE_ID))
+				.routeId(STOP_PRODUCTS_SYNC_SFTP_ROUTE_ID)
 				.log("Route invoked")
 				.process(this::getStopOnDemandRequest)
 				.to(direct(STOP_HANDLE_ON_DEMAND_ROUTE_ID))
@@ -86,7 +86,7 @@ public class SFTPProductSyncServiceRouteBuilder extends RouteBuilder implements 
 		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 
 		final OnDemandRoutesController.StartOnDemandRouteRequest startOnDemandRouteRequest = OnDemandRoutesController.StartOnDemandRouteRequest.builder()
-				.onDemandRouteBuilder(getSFTPRouteBuilder(request, exchange.getContext()))
+				.onDemandRouteBuilder(getProductsFromSFTPServerRouteBuilder(request, exchange.getContext()))
 				.externalSystemRequest(request)
 				.externalSystemService(this)
 				.build();
@@ -99,7 +99,7 @@ public class SFTPProductSyncServiceRouteBuilder extends RouteBuilder implements 
 		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 
 		final OnDemandRoutesController.StopOnDemandRouteRequest stopOnDemandRouteRequest = OnDemandRoutesController.StopOnDemandRouteRequest.builder()
-				.routeId(getSFTPProductsSyncRouteId(request))
+				.routeId(getProductsFromSFTPServerRouteId(request))
 				.externalSystemRequest(request)
 				.externalSystemService(this)
 				.build();
@@ -108,22 +108,23 @@ public class SFTPProductSyncServiceRouteBuilder extends RouteBuilder implements 
 	}
 
 	@NonNull
-	private GetProductsSFTPRouteBuilder getSFTPRouteBuilder(@NonNull final JsonExternalSystemRequest request, @NonNull final CamelContext camelContext)
+	private GetProductsFromFileRouteBuilder getProductsFromSFTPServerRouteBuilder(@NonNull final JsonExternalSystemRequest request, @NonNull final CamelContext camelContext)
 	{
-		return GetProductsSFTPRouteBuilder
+		return GetProductsFromFileRouteBuilder
 				.builder()
-				.sftpConfig(SFTPConfigUtil.extractSFTPConfig(request, camelContext))
+				.fileEndpointConfig(SAPConfigUtil.extractSFTPConfig(request, camelContext))
 				.camelContext(camelContext)
 				.enabledByExternalSystemRequest(request)
 				.processLogger(processLogger)
-				.routeId(getSFTPProductsSyncRouteId(request))
+				.routeId(getProductsFromSFTPServerRouteId(request))
 				.build();
 	}
 
 	@NonNull
-	private static String getSFTPProductsSyncRouteId(@NonNull final JsonExternalSystemRequest externalSystemRequest)
+	@VisibleForTesting
+	public static String getProductsFromSFTPServerRouteId(@NonNull final JsonExternalSystemRequest externalSystemRequest)
 	{
-		return GetProductsSFTPRouteBuilder.buildRouteId(externalSystemRequest.getExternalSystemChildConfigValue());
+		return "GetProductsFromSFTPServer#" + externalSystemRequest.getExternalSystemChildConfigValue();
 	}
 
 	@Override
@@ -141,12 +142,12 @@ public class SFTPProductSyncServiceRouteBuilder extends RouteBuilder implements 
 	@Override
 	public String getEnableCommand()
 	{
-		return START_PRODUCTS_SYNC_ROUTE;
+		return START_PRODUCTS_SYNC_SFTP_ROUTE;
 	}
 
 	@Override
 	public String getDisableCommand()
 	{
-		return STOP_PRODUCTS_SYNC_ROUTE;
+		return STOP_PRODUCTS_SYNC_SFTP_ROUTE;
 	}
 }

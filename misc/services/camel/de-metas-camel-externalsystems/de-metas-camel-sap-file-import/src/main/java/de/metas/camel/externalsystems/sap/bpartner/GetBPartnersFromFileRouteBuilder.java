@@ -27,8 +27,8 @@ import de.metas.camel.externalsystems.common.IdAwareRouteBuilder;
 import de.metas.camel.externalsystems.common.PInstanceUtil;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
+import de.metas.camel.externalsystems.sap.config.BPartnerFileEndpointConfig;
 import de.metas.camel.externalsystems.sap.model.bpartner.BPartnerRow;
-import de.metas.camel.externalsystems.sap.sftp.SFTPConfig;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.Builder;
 import lombok.Getter;
@@ -40,7 +40,7 @@ import org.apache.camel.dataformat.bindy.csv.BindyCsvDataFormat;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI;
 
-public class GetBPartnersSFTPRouteBuilder extends IdAwareRouteBuilder
+public class GetBPartnersFromFileRouteBuilder extends IdAwareRouteBuilder
 {
 	@VisibleForTesting
 	public static final String UPSERT_BPARTNER_GROUP_ENDPOINT_ID = "SAP-BPartners-upsertBPartnerEndpointId";
@@ -50,7 +50,7 @@ public class GetBPartnersSFTPRouteBuilder extends IdAwareRouteBuilder
 	public static final String ROUTE_PROPERTY_UPSERT_BPARTNERS_ROUTE_CONTEXT = "UpsertBPartnersRouteContext";
 
 	@NonNull
-	private final SFTPConfig sftpConfig;
+	private final BPartnerFileEndpointConfig fileEndpointConfig;
 
 	@Getter
 	@NonNull
@@ -63,31 +63,25 @@ public class GetBPartnersSFTPRouteBuilder extends IdAwareRouteBuilder
 	private final ProcessLogger processLogger;
 
 	@Builder
-	private GetBPartnersSFTPRouteBuilder(
-			@NonNull final SFTPConfig sftpConfig,
+	private GetBPartnersFromFileRouteBuilder(
+			@NonNull final BPartnerFileEndpointConfig fileEndpointConfig,
 			@NonNull final CamelContext camelContext,
 			@NonNull final String routeId,
 			@NonNull final JsonExternalSystemRequest enabledByExternalSystemRequest,
 			@NonNull final ProcessLogger processLogger)
 	{
 		super(camelContext);
-		this.sftpConfig = sftpConfig;
+		this.fileEndpointConfig = fileEndpointConfig;
 		this.routeId = routeId;
 		this.enabledByExternalSystemRequest = enabledByExternalSystemRequest;
 		this.processLogger = processLogger;
-	}
-
-	@NonNull
-	public static String buildRouteId(@NonNull final String externalSystemConfigValue)
-	{
-		return GetBPartnersSFTPRouteBuilder.class.getSimpleName() + "#" + externalSystemConfigValue;
 	}
 
 	@Override
 	public void configure() throws Exception
 	{
 		//@formatter:off
-		from(sftpConfig.getSFTPConnectionStringBPartner())
+		from(fileEndpointConfig.getBPartnerFileEndpoint())
 				.id(routeId)
 				.log("Business Partner Sync Route Started with Id=" + routeId)
 				.process(exchange -> PInstanceUtil.setPInstanceHeader(exchange, enabledByExternalSystemRequest))

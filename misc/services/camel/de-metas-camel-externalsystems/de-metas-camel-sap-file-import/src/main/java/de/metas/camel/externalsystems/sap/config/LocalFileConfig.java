@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-sap
+ * de-metas-camel-sap-file-import
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.sap.sftp;
+package de.metas.camel.externalsystems.sap.config;
 
 import de.metas.common.util.Check;
 import lombok.Builder;
@@ -33,19 +33,10 @@ import java.util.Optional;
 
 @Value
 @Builder
-public class SFTPConfig
+public class LocalFileConfig implements BPartnerFileEndpointConfig, ProductFileEndpointConfig, CreditLimitFileEndpointConfig
 {
 	@NonNull
-	String username;
-
-	@Nullable
-	String password;
-
-	@NonNull
-	String port;
-
-	@NonNull
-	String hostName;
+	String rootLocation;
 
 	@NonNull
 	String processedFilesFolder;
@@ -80,33 +71,32 @@ public class SFTPConfig
 	@Nullable
 	String fileNamePatternCreditLimit;
 
+	@Override
 	@NonNull
-	public String getSFTPConnectionStringProduct()
+	public String getProductFileEndpoint()
 	{
-		return getSFTPConnectionString(targetDirectoryProduct, fileNamePatternProduct);
+		return getLocalFileConnectionString(targetDirectoryProduct, fileNamePatternProduct);
+	}
+
+	@Override
+	@NonNull
+	public String getBPartnerFileEndpoint()
+	{
+		return getLocalFileConnectionString(targetDirectoryBPartner, fileNamePatternBPartner);
+	}
+
+	@Override
+	@NonNull
+	public String getCreditLimitFileEndpoint()
+	{
+		return getLocalFileConnectionString(targetDirectoryCreditLimit, fileNamePatternCreditLimit);
 	}
 
 	@NonNull
-	public String getSFTPConnectionStringBPartner()
+	private String getLocalFileConnectionString(@Nullable final String targetDir, @Nullable final String includeFilePattern)
 	{
-		return getSFTPConnectionString(targetDirectoryBPartner, fileNamePatternBPartner);
-	}
-
-	@NonNull
-	public String getSFTPConnectionStringCreditLimit()
-	{
-		return getSFTPConnectionString(targetDirectoryCreditLimit, fileNamePatternCreditLimit);
-	}
-
-	@NonNull
-	private String getSFTPConnectionString(@Nullable final String targetDir, @Nullable final String includeFilePattern)
-	{
-		final StringBuilder sftpEndpoint = new StringBuilder("sftp://");
-		sftpEndpoint.append(username)
-				.append("@")
-				.append(hostName)
-				.append(":")
-				.append(port)
+		final StringBuilder fileEndpoint = new StringBuilder("file://");
+		fileEndpoint.append(rootLocation)
 				.append("/")
 				.append(Optional.ofNullable(targetDir).filter(Check::isNotBlank).orElse(""))
 				.append("?")
@@ -116,9 +106,8 @@ public class SFTPConfig
 				.append("&")
 				.append("moveFailed=.").append(erroredFilesFolder).append("/").append(seenFileRenamePattern);
 
-		Optional.ofNullable(password).ifPresent(pass -> sftpEndpoint.append("&").append("password=").append(pass));
-		Optional.ofNullable(includeFilePattern).ifPresent(filePattern -> sftpEndpoint.append("&").append("antInclude=").append(filePattern));
+		Optional.ofNullable(includeFilePattern).ifPresent(filePattern -> fileEndpoint.append("&").append("antInclude=").append(filePattern));
 
-		return sftpEndpoint.toString();
+		return fileEndpoint.toString();
 	}
 }

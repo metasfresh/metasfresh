@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.externalsystem
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,42 +20,36 @@
  * #L%
  */
 
-package de.metas.bpartner.creditLimit;
+package de.metas.externalsystem.sap.interceptor;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonValue;
-import de.metas.util.Check;
-import de.metas.util.lang.RepoIdAware;
-import lombok.Value;
+import lombok.experimental.UtilityClass;
 
 import javax.annotation.Nullable;
 
-@Value
-public class CreditLimitTypeId implements RepoIdAware
+@UtilityClass
+public class ExternalSystemConfigSAPHelper
 {
-	int repoId;
-
-	@JsonCreator
-	public static CreditLimitTypeId ofRepoId(final int repoId)
-	{
-		return new CreditLimitTypeId(repoId);
-	}
-
 	@Nullable
-	public static CreditLimitTypeId ofRepoIdOrNull(final int repoId)
+	public static String sanitizeDirectoryRelativePath(@Nullable final String directoryPath)
 	{
-		return repoId > 0 ? ofRepoId(repoId) : null;
-	}
+		if (directoryPath == null)
+		{
+			return null;
+		}
 
-	private CreditLimitTypeId(final int repoId)
-	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "C_CreditLimit_Type_ID");
-	}
+		if (directoryPath.startsWith("/"))
+		{
+			return directoryPath.replaceFirst("/", "");
+		}
+		else if (directoryPath.startsWith("\\"))
+		{
+			return directoryPath.replaceFirst("\\\\", "");
+		}
+		else if (directoryPath.startsWith("./"))
+		{
+			return directoryPath.replaceFirst("\\./", "");
+		}
 
-	@Override
-	@JsonValue
-	public int getRepoId()
-	{
-		return repoId;
+		return directoryPath;
 	}
 }
