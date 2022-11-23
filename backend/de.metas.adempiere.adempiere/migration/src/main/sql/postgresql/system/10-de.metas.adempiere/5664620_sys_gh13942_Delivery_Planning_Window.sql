@@ -2183,3 +2183,45 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 
 
 
+
+
+-- Field: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> UOM
+-- Column: M_Delivery_Planning.C_UOM_ID
+-- 2022-11-23T15:18:50.472Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,585130,708191,0,546674,TO_TIMESTAMP('2022-11-23 17:18:50','YYYY-MM-DD HH24:MI:SS'),100,'Unit of Measure',10,'D','The UOM defines a unique non monetary Unit of Measure','Y','Y','N','N','N','N','N','UOM',TO_TIMESTAMP('2022-11-23 17:18:50','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-11-23T15:18:50.501Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=708191 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-11-23T15:18:50.534Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(215) 
+;
+
+-- 2022-11-23T15:18:50.676Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=708191
+;
+
+-- 2022-11-23T15:18:50.705Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(708191)
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 20 -> qtys.UOM
+-- Column: M_Delivery_Planning.C_UOM_ID
+-- 2022-11-23T15:19:25.704Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,708191,0,546674,550032,613566,'F',TO_TIMESTAMP('2022-11-23 17:19:25','YYYY-MM-DD HH24:MI:SS'),100,'Unit of Measure','The UOM defines a unique non monetary Unit of Measure','Y','N','N','Y','N','N','N',0,'UOM',50,0,0,TO_TIMESTAMP('2022-11-23 17:19:25','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- UI Column: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 20
+-- UI Element Group: qtys
+-- 2022-11-23T15:19:35.543Z
+UPDATE AD_UI_ElementGroup SET SeqNo=30,Updated=TO_TIMESTAMP('2022-11-23 17:19:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_ElementGroup_ID=550032
+;
+
+-- UI Column: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 20
+-- UI Element Group: org
+-- 2022-11-23T15:19:39.288Z
+UPDATE AD_UI_ElementGroup SET SeqNo=40,Updated=TO_TIMESTAMP('2022-11-23 17:19:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_ElementGroup_ID=550031
+;
+

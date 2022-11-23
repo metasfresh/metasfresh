@@ -1007,6 +1007,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				.isActive(shipmentScheduleRecord.isActive())
 				.qtyOredered(qtyOrdered)
 				.qtyTotalOpen(qtyOrdered.subtract(getQtyDelivered(shipmentScheduleRecord)))
+				.uom(uomOfProduct)
 				.plannedDeliveryDate(LocalDateAndOrgId.ofTimestamp(shipmentScheduleRecord.getDeliveryDate_Effective(), orgId, orgDAO::getTimeZone))
 				.batch(huBatchNo)
 				.originCountry(originCountry);

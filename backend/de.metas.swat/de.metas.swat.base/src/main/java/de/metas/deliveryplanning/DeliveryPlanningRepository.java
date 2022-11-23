@@ -42,16 +42,21 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Delivery_Planning;
 import org.springframework.stereotype.Repository;
 
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 @Repository
 public class DeliveryPlanningRepository
 {
-
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	public I_M_Delivery_Planning getById(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	{
+		return load(deliveryPlanningId, I_M_Delivery_Planning.class);
+	}
 
 	public void generateDeliveryPlanning(@NonNull final DeliveryPlanningCreateRequest request)
 	{
@@ -84,6 +89,8 @@ public class DeliveryPlanningRepository
 		final Quantity qtyTotalOpen = request.getQtyTotalOpen();
 		final Quantity actualDeliveredQty = request.getActualDeliveredQty();
 		final Quantity actualLoadQty = request.getActualLoadQty();
+
+		deliveryPlanningRecord.setC_UOM_ID(request.getUom().getC_UOM_ID());
 
 		deliveryPlanningRecord.setQtyOrdered(qtyOredered == null ? null : qtyOredered.toBigDecimal());
 		deliveryPlanningRecord.setQtyTotalOpen(qtyTotalOpen == null ? null : qtyTotalOpen.toBigDecimal());

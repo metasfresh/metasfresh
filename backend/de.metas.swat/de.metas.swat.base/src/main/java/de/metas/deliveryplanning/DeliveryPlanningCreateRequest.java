@@ -38,9 +38,9 @@ import de.metas.shipping.model.ShipperTransportationId;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NonNull;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
 
@@ -59,6 +59,8 @@ public class DeliveryPlanningCreateRequest
 	OrderLineId orderLineId;
 
 	@NonNull ProductId productId;
+
+	@NonNull I_C_UOM uom;
 
 	@NonNull BPartnerId partnerId;
 

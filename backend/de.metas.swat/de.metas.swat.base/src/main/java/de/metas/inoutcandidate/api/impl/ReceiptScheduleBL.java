@@ -792,6 +792,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 				.isActive(receiptScheduleRecord.isActive())
 				.qtyOredered(qtyOrdered)
 				.qtyTotalOpen(qtyOrdered.subtract(qtyMoved))
+				.uom(uom)
 				.plannedDeliveryDate(LocalDateAndOrgId.ofTimestamp(receiptScheduleRecord.getMovementDate(), orgId, orgDAO::getTimeZone))
 				.batch(huBatchNo)
 				.originCountry(originCountry);

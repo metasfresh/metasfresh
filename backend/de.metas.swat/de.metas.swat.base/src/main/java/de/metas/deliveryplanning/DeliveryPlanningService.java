@@ -22,17 +22,35 @@
 
 package de.metas.deliveryplanning;
 
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.i18n.AdMessageKey;
+import de.metas.incoterms.IncotermsId;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.LocalDateAndOrgId;
+import de.metas.organization.OrgId;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.sectionCode.SectionCodeId;
+import de.metas.shipping.model.ShipperTransportationId;
+import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Delivery_Planning;
 import org.springframework.stereotype.Service;
 
@@ -43,6 +61,12 @@ public class DeliveryPlanningService
 	private static final AdMessageKey MSG_M_Delivery_Planning_AtLeastOnePerOrderLine = AdMessageKey.of("M_Delivery_Planning_AtLeastOnePerOrderLine");
 
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	private final DeliveryPlanningRepository deliveryPlanningRepository;
 
@@ -86,6 +110,59 @@ public class DeliveryPlanningService
 		if (!otherDeliveryPlanningsExistForOrderLine)
 		{
 			throw new AdempiereException(MSG_M_Delivery_Planning_AtLeastOnePerOrderLine);
+		}
+	}
+
+	private DeliveryPlanningCreateRequest createRequest(@NonNull final I_M_Delivery_Planning deliveryPlanningRecord)
+	{
+		final OrgId orgId = OrgId.ofRepoId(deliveryPlanningRecord.getAD_Org_ID());
+
+		final ProductId productId = ProductId.ofRepoId(deliveryPlanningRecord.getM_Product_ID());
+		final I_C_UOM uomOfRecord = uomDAO.getByIdOrNull(deliveryPlanningRecord.getC_UOM_ID());
+		final I_C_UOM uomToUse = uomOfRecord != null ? uomOfRecord : productBL.getStockUOM(productId);
+
+		return DeliveryPlanningCreateRequest.builder()
+				.orgId(orgId)
+				.clientId(ClientId.ofRepoId(deliveryPlanningRecord.getAD_Client_ID()))
+				.shipmentScheduleId(ShipmentScheduleId.ofRepoIdOrNull(deliveryPlanningRecord.getM_ShipmentSchedule_ID()))
+				.receiptScheduleId(ReceiptScheduleId.ofRepoIdOrNull(deliveryPlanningRecord.getM_ReceiptSchedule_ID()))
+				.orderId(OrderId.ofRepoId(deliveryPlanningRecord.getC_Order_ID()))
+				.productId(productId)
+				.partnerId(BPartnerId.ofRepoId(deliveryPlanningRecord.getC_BPartner_ID()))
+				.bPartnerLocationId(BPartnerLocationId.ofRepoId(deliveryPlanningRecord.getC_BPartner_ID(), deliveryPlanningRecord.getC_BPartner_Location_ID()))
+				.shipperTransportationId(ShipperTransportationId.ofRepoIdOrNull(deliveryPlanningRecord.getM_ShipperTransportation_ID()))
+				.incotermsId(IncotermsId.ofRepoIdOrNull(deliveryPlanningRecord.getC_Incoterms_ID()))
+				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(deliveryPlanningRecord.getM_SectionCode_ID()))
+				.warehouseId(WarehouseId.ofRepoId(deliveryPlanningRecord.getM_Warehouse_ID()))
+				.deliveryPlanningType(DeliveryPlanningType.ofCode(deliveryPlanningRecord.getM_Delivery_Planning_Type()))
+				.orderStatus(OrderStatus.ofNullableCode(deliveryPlanningRecord.getOrderStatus()))
+				.meansOfTransportation(MeansOfTransportation.ofNullableCode(deliveryPlanningRecord.getMeansOfTransportation()))
+				.isActive(deliveryPlanningRecord.isActive())
+				.isB2B(deliveryPlanningRecord.isB2B())
+				.qtyOredered(Quantity.of(deliveryPlanningRecord.getQtyOrdered(), uomToUse))
+				.qtyTotalOpen(Quantity.of(deliveryPlanningRecord.getQtyTotalOpen(), uomToUse))
+				.actualLoadQty(Quantity.of(deliveryPlanningRecord.getActualLoadQty(), uomToUse))
+				.actualDeliveredQty(Quantity.of(deliveryPlanningRecord.getActualDeliveredQty(), uomToUse))
+				.uom(uomToUse)
+				.plannedLoadingDate(LocalDateAndOrgId.ofTimestamp(deliveryPlanningRecord.getPlannedLoadingDate(), orgId, orgDAO::getTimeZone))
+				.actualLoadingDate(LocalDateAndOrgId.ofTimestamp(deliveryPlanningRecord.getActualLoadingDate(), orgId, orgDAO::getTimeZone))
+				.plannedDeliveryDate(LocalDateAndOrgId.ofTimestamp(deliveryPlanningRecord.getPlannedDeliveryDate(), orgId, orgDAO::getTimeZone))
+				.actualDeliveryDate(LocalDateAndOrgId.ofTimestamp(deliveryPlanningRecord.getActualDeliveryDate(), orgId, orgDAO::getTimeZone))
+				.releaseNo(deliveryPlanningRecord.getReleaseNo())
+				.wayBillNo(deliveryPlanningRecord.getWayBillNo())
+				.batch(deliveryPlanningRecord.getBatch())
+				.originCountry(deliveryPlanningRecord.getOriginCountry())
+				.build();
+	}
+
+	public void createAdditionalDeliveryPlannings(@NonNull final DeliveryPlanningId deliveryPlanningId, final int additionalLines)
+	{
+		final I_M_Delivery_Planning deliveryPlanniingRecord = deliveryPlanningRepository.getById(deliveryPlanningId);
+
+		for (int i = 0; i < additionalLines; i++)
+		{
+			final DeliveryPlanningCreateRequest request = createRequest(deliveryPlanniingRecord);
+			deliveryPlanningRepository.generateDeliveryPlanning(request);
 		}
 	}
 }
