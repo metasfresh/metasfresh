@@ -189,9 +189,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
       },
       "tableName" : "C_BPartner_CreditLimit"
     },
-    "creditLimitTypeId" : {
-      "repoId" : 100027
-    },
+    "creditLimitTypeId" : 100027,
     "dateFrom" : "2022-11-02T00:00:00Z",
     "id" : 100036,
     "processed" : false
@@ -439,9 +437,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
       },
       "tableName" : "C_BPartner_CreditLimit"
     },
-    "creditLimitTypeId" : {
-      "repoId" : 123
-    },
+    "creditLimitTypeId" : 123,
     "dateFrom" : "2022-10-01T00:00:00Z",
     "id" : 60,
     "processed" : false
@@ -646,9 +642,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
       },
       "tableName" : "C_BPartner_CreditLimit"
     },
-    "creditLimitTypeId" : {
-      "repoId" : 123
-    },
+    "creditLimitTypeId" : 123,
     "dateFrom" : "2022-10-01T00:00:00Z",
     "id" : 60,
     "processed" : false
@@ -821,9 +815,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
       },
       "tableName" : "C_BPartner_CreditLimit"
     },
-    "creditLimitTypeId" : {
-      "repoId" : 123
-    },
+    "creditLimitTypeId" : 123,
     "dateFrom" : "2022-10-01T00:00:00Z",
     "id" : 60,
     "processed" : false
@@ -996,9 +988,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
       },
       "tableName" : "C_BPartner_CreditLimit"
     },
-    "creditLimitTypeId" : {
-      "repoId" : 123
-    },
+    "creditLimitTypeId" : 123,
     "dateFrom" : "2022-10-01T00:00:00Z",
     "id" : 60,
     "processed" : false
