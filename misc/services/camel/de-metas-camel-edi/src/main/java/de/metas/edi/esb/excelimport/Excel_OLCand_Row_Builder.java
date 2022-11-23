@@ -28,7 +28,6 @@ import de.metas.edi.esb.commons.SystemTime;
 import de.metas.edi.esb.commons.Util;
 import lombok.NonNull;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.NumberFormat;
