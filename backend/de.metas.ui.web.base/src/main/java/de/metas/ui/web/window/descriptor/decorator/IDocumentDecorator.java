@@ -29,12 +29,18 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 public interface IDocumentDecorator
 {
 	@NonNull
-	default BooleanWithReason isReadOnly(@NonNull final TableRecordReference tableRecordReference)
+	default ReadOnlyInfo isReadOnly(@NonNull final TableRecordReference tableRecordReference)
 	{
-		return BooleanWithReason.FALSE;
+		return ReadOnlyInfo.of(BooleanWithReason.FALSE);
 	}
 	@NonNull
 	default BooleanWithReason isDeleteForbidden(@NonNull final TableRecordReference tableRecordReference)
+	{
+		return BooleanWithReason.FALSE;
+	}
+
+	@NonNull
+	default BooleanWithReason isDeleteSubDocumentsForbidden(@NonNull final TableRecordReference tableRecordReference)
 	{
 		return BooleanWithReason.FALSE;
 	}

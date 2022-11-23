@@ -29,6 +29,7 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl_ProductMapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Metasfresh;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import lombok.Builder;
@@ -168,5 +169,33 @@ public class ExternalSystemTestUtil
 		saveRecord(productCategoryId);
 
 		return productMappingRecord;
+	}
+
+	@NonNull
+	@Builder(builderMethodName = "createSAPConfigBuilder", builderClassName = "sapConfigBuilder")
+	private I_ExternalSystem_Config_SAP createSAPConfig(
+			final int externalSystemConfigId,
+			@Nullable final String value)
+	{
+		final String configValue = CoalesceUtil.coalesceNotNull(value, "notImportant");
+
+		final I_ExternalSystem_Config_SAP childRecord = newInstance(I_ExternalSystem_Config_SAP.class);
+		childRecord.setExternalSystemValue(configValue);
+		childRecord.setSFTP_HostName("testSAPSFTPHostName");
+		childRecord.setSFTP_Port("testSAPSFTPPort");
+		childRecord.setSFTP_Username("testSAPUsername");
+		childRecord.setSFTP_Password("testSAPPassword");
+		childRecord.setSFTP_BPartner_TargetDirectory("testSAPBPartnerDirectory");
+		childRecord.setSFTP_Product_TargetDirectory("testSAPProductDirectory");
+		childRecord.setProcessedDirectory("testSAPProcessedDirectory");
+		childRecord.setErroredDirectory("testSAPErroredDirectory");
+		childRecord.setPollingFrequencyInMs(1000);
+		childRecord.setExternalSystem_Config_ID(externalSystemConfigId);
+		childRecord.setSFTP_BPartner_FileName_Pattern("BPartner*");
+		childRecord.setSFTP_Product_FileName_Pattern("Pattern*");
+
+		saveRecord(childRecord);
+
+		return childRecord;
 	}
 }

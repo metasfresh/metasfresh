@@ -276,6 +276,11 @@ public final class CacheMgt
 		return reset(request, mode);
 	}
 
+	public long reset(@NonNull final TableRecordReference reference)
+	{
+		return reset(reference.getTableName(), reference.getRecord_ID());
+	}
+
 	/**
 	 * Reset cache for TableName/Record_ID when given transaction is committed.
 	 *

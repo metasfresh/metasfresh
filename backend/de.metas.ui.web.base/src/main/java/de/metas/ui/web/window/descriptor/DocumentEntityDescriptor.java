@@ -961,7 +961,7 @@ public class DocumentEntityDescriptor
 			return this;
 		}
 
-		private ILogicExpression getAllowCreateNewLogic()
+		public ILogicExpression getAllowCreateNewLogic()
 		{
 			return _allowCreateNewLogic;
 		}

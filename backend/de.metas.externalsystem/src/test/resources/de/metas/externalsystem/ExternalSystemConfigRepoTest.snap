@@ -399,6 +399,99 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
 ]
 
 
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_getById=[
+  {
+    "id" : 100001,
+    "type" : "SAP",
+    "name" : "name",
+    "active" : true,
+    "orgId" : 0,
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "value" : "testSAPValue",
+      "sftpHostName" : "testSAPSFTPHostName",
+      "sftpPort" : "testSAPSFTPPort",
+      "sftpUsername" : "testSAPUsername",
+      "sftpPassword" : "testSAPPassword",
+      "processedDirectory" : "testSAPProcessedDirectory",
+      "erroredDirectory" : "testSAPErroredDirectory",
+      "pollingFrequency" : {
+        "seconds" : 1,
+        "nanos" : 0,
+        "negative" : false,
+        "zero" : false
+      },
+      "sftpTargetDirectoryProduct" : "testSAPProductDirectory",
+      "sftpFileNamePatternProduct" : "Pattern*",
+      "sftpTargetDirectoryBPartner" : "testSAPBPartnerDirectory",
+      "sftpFileNamePatternBPartner" : "BPartner*"
+    },
+    "writeAudit" : true,
+    "auditFileFolder" : "auditFileFolder"
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_getByTypeAndParent=[
+  {
+    "id" : 100002,
+    "parentId" : 100001,
+    "value" : "testSAPValue",
+    "sftpHostName" : "testSAPSFTPHostName",
+    "sftpPort" : "testSAPSFTPPort",
+    "sftpUsername" : "testSAPUsername",
+    "sftpPassword" : "testSAPPassword",
+    "processedDirectory" : "testSAPProcessedDirectory",
+    "erroredDirectory" : "testSAPErroredDirectory",
+    "pollingFrequency" : {
+      "seconds" : 1,
+      "nanos" : 0,
+      "negative" : false,
+      "zero" : false
+    },
+    "sftpTargetDirectoryProduct" : "testSAPProductDirectory",
+    "sftpFileNamePatternProduct" : "Pattern*",
+    "sftpTargetDirectoryBPartner" : "testSAPBPartnerDirectory",
+    "sftpFileNamePatternBPartner" : "BPartner*"
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_getTypeAndValue=[
+  {
+    "id" : 100001,
+    "type" : "SAP",
+    "name" : "name",
+    "active" : true,
+    "orgId" : 0,
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "value" : "testSAPValue",
+      "sftpHostName" : "testSAPSFTPHostName",
+      "sftpPort" : "testSAPSFTPPort",
+      "sftpUsername" : "testSAPUsername",
+      "sftpPassword" : "testSAPPassword",
+      "processedDirectory" : "testSAPProcessedDirectory",
+      "erroredDirectory" : "testSAPErroredDirectory",
+      "pollingFrequency" : {
+        "seconds" : 1,
+        "nanos" : 0,
+        "negative" : false,
+        "zero" : false
+      },
+      "sftpTargetDirectoryProduct" : "testSAPProductDirectory",
+      "sftpFileNamePatternProduct" : "Pattern*",
+      "sftpTargetDirectoryBPartner" : "testSAPBPartnerDirectory",
+      "sftpFileNamePatternBPartner" : "BPartner*"
+    },
+    "writeAudit" : true,
+    "auditFileFolder" : "auditFileFolder"
+  }
+]
+
+
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopware6_getById=[
   {
     "id" : 100001,
@@ -667,6 +760,42 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getAc
         "autoSendSubjectWhenCreatedByUserGroup" : false,
         "syncBPartnerToRabbitMQ" : false,
         "syncExternalReferencesToRabbitMQ" : false
+      },
+      "writeAudit" : true,
+      "auditFileFolder" : "auditFileFolder"
+    }
+  ]
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getActiveByType_SAP=[
+  [
+    {
+      "id" : 100001,
+      "type" : "SAP",
+      "name" : "name",
+      "active" : true,
+      "orgId" : 0,
+      "childConfig" : {
+        "id" : 100002,
+        "parentId" : 100001,
+        "value" : "notImportant",
+        "sftpHostName" : "testSAPSFTPHostName",
+        "sftpPort" : "testSAPSFTPPort",
+        "sftpUsername" : "testSAPUsername",
+        "sftpPassword" : "testSAPPassword",
+        "processedDirectory" : "testSAPProcessedDirectory",
+        "erroredDirectory" : "testSAPErroredDirectory",
+        "pollingFrequency" : {
+          "seconds" : 1,
+          "nanos" : 0,
+          "negative" : false,
+          "zero" : false
+        },
+        "sftpTargetDirectoryProduct" : "testSAPProductDirectory",
+        "sftpFileNamePatternProduct" : "Pattern*",
+        "sftpTargetDirectoryBPartner" : "testSAPBPartnerDirectory",
+        "sftpFileNamePatternBPartner" : "BPartner*"
       },
       "writeAudit" : true,
       "auditFileFolder" : "auditFileFolder"

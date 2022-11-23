@@ -14,6 +14,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
     "group" : "bpGroupRecord.name",
     "metasfreshId" : 12345,
     "name" : "bpartnerRecord.name_updated",
+    "storageWarehouse" : false,
     "vendor" : false
   },
   "locations" : [ {
@@ -29,7 +30,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
     "countryCode" : "countryRecord.countryCode",
     "ephemeral" : false,
     "handoverLocation" : false,
-    "metasfreshId" : 100016,
+    "metasfreshId" : 100021,
     "poBox" : "poBox",
     "postal" : "5040",
     "remitTo" : false,
@@ -54,7 +55,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
       "recordId" : {
         "keyColumnNames" : [ "C_BPartner_ID" ],
         "keysByColumnName" : {
-          "C_BPartner_ID" : 100017
+          "C_BPartner_ID" : 100029
         }
       },
       "tableName" : "C_BPartner"
@@ -62,10 +63,13 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
     "company" : true,
     "companyName" : "bPartner.companyName",
     "customer" : false,
+    "customerPaymentTermId" : 100023,
     "excludeFromPromotions" : false,
     "groupId" : 15,
-    "id" : 100017,
+    "id" : 100029,
     "identifiedByExternalReference" : false,
+    "incotermsCustomerId" : 100025,
+    "incotermsVendorId" : 100026,
     "language" : {
       "_mediaSize" : {
         "mediaName" : {
@@ -83,10 +87,15 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
     },
     "name" : "bPartner.name",
     "parentId" : 1,
+    "paymentRule" : "OnCredit",
+    "paymentRulePO" : "Cash",
     "phone" : "bPartner.phone",
+    "sectionCodeId" : 100022,
+    "storageWarehouse" : true,
     "url" : "bPartner.url",
     "vatId" : "bPartner.vatId",
-    "vendor" : false
+    "vendor" : false,
+    "vendorPaymentTermId" : 100024
   },
   "contacts" : [ {
     "active" : true,
@@ -99,7 +108,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
       "recordId" : {
         "keyColumnNames" : [ "AD_User_ID" ],
         "keysByColumnName" : {
-          "AD_User_ID" : 100022
+          "AD_User_ID" : 100034
         }
       },
       "tableName" : "AD_User"
@@ -115,7 +124,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
     },
     "email" : "c1_email@email.net",
     "handles" : [ ],
-    "id" : "100017-100022",
+    "id" : "100029-100034",
     "invoiceEmailEnabled" : true,
     "membershipContact" : false,
     "name" : "c1_name",
@@ -134,7 +143,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
       "recordId" : {
         "keyColumnNames" : [ "AD_User_ID" ],
         "keysByColumnName" : {
-          "AD_User_ID" : 100023
+          "AD_User_ID" : 100035
         }
       },
       "tableName" : "AD_User"
@@ -150,7 +159,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
     },
     "email" : "c2_email@email.net",
     "handles" : [ ],
-    "id" : "100017-100023",
+    "id" : "100029-100035",
     "invoiceEmailEnabled" : true,
     "membershipContact" : false,
     "name" : "c2_name",
@@ -158,6 +167,32 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
     "phone" : "c2_phone",
     "roles" : [ ],
     "subjectMatterContact" : false
+  } ],
+  "creditLimits" : [ {
+    "active" : true,
+    "amount" : {
+      "currencyId" : 100028,
+      "value" : 10
+    },
+    "bPartnerId" : 100029,
+    "changeLog" : {
+      "createdByUserId" : 30,
+      "createdTimestamp" : "1970-01-19T01:38:54.560Z",
+      "entries" : [ ],
+      "lastChangedByUserId" : 30,
+      "lastChangedTimestamp" : "1970-01-19T01:38:54.560Z",
+      "recordId" : {
+        "keyColumnNames" : [ "C_BPartner_CreditLimit_ID" ],
+        "keysByColumnName" : {
+          "C_BPartner_CreditLimit_ID" : 100036
+        }
+      },
+      "tableName" : "C_BPartner_CreditLimit"
+    },
+    "creditLimitTypeId" : 100027,
+    "dateFrom" : "2022-11-01T23:00:00Z",
+    "id" : 100036,
+    "processed" : false
   } ],
   "locations" : [ {
     "active" : true,
@@ -172,7 +207,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
       "recordId" : {
         "keyColumnNames" : [ "C_BPartner_Location_ID" ],
         "keysByColumnName" : {
-          "C_BPartner_Location_ID" : 100019
+          "C_BPartner_Location_ID" : 100031
         }
       },
       "tableName" : "C_BPartner_Location"
@@ -180,27 +215,26 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
     "city" : "l1_city",
     "countryCode" : "CH",
     "ephemeral" : false,
-    "existingLocationId" : 100018,
+    "existingLocationId" : 100030,
     "gln" : "l1_gln",
-    "handOverLocation" : false,
+    "handOverLocation" : true,
     "handles" : [ ],
     "id" : {
-      "bpartnerId" : 100017,
-      "repoId" : 100019
+      "bpartnerId" : 100029,
+      "repoId" : 100031
     },
     "locationType" : {
       "billTo" : false,
       "billToDefault" : false,
       "shipTo" : false,
-      "shipToDefault" : false,
-      "visitorsAddress" : false
+      "shipToDefault" : false
     },
     "poBox" : "l1_poBox",
     "postal" : "l1_postal",
     "region" : "l1_region",
-    "remitTo" : false,
-    "replicationLookupDefault" : false,
-    "visitorsAddress" : false
+    "remitTo" : true,
+    "replicationLookupDefault" : true,
+    "visitorsAddress" : true
   }, {
     "active" : true,
     "address1" : "l2_address1",
@@ -214,7 +248,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
       "recordId" : {
         "keyColumnNames" : [ "C_BPartner_Location_ID" ],
         "keysByColumnName" : {
-          "C_BPartner_Location_ID" : 100021
+          "C_BPartner_Location_ID" : 100033
         }
       },
       "tableName" : "C_BPartner_Location"
@@ -222,27 +256,26 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
     "city" : "l2_city",
     "countryCode" : "DE",
     "ephemeral" : false,
-    "existingLocationId" : 100020,
+    "existingLocationId" : 100032,
     "gln" : "l2_gln",
-    "handOverLocation" : false,
+    "handOverLocation" : true,
     "handles" : [ ],
     "id" : {
-      "bpartnerId" : 100017,
-      "repoId" : 100021
+      "bpartnerId" : 100029,
+      "repoId" : 100033
     },
     "locationType" : {
       "billTo" : false,
       "billToDefault" : false,
       "shipTo" : false,
-      "shipToDefault" : false,
-      "visitorsAddress" : false
+      "shipToDefault" : false
     },
     "poBox" : "l2_poBox",
     "postal" : "l2_postal",
     "region" : "l2_region",
-    "remitTo" : false,
-    "replicationLookupDefault" : false,
-    "visitorsAddress" : false
+    "remitTo" : true,
+    "replicationLookupDefault" : true,
+    "visitorsAddress" : true
   } ],
   "orgId" : 10
 } ]
@@ -265,13 +298,13 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
       },
       "tableName" : "C_BP_BankAccount"
     },
-    "currencyId" : 100013,
+    "currencyId" : 100018,
     "iban" : "INITIAL-IBAN-1",
-    "swiftCode" : "INITIAL-SWIFTCODE-1",
     "id" : {
       "bpartnerId" : 20,
       "repoId" : 50
-    }
+    },
+    "swiftCode" : "INITIAL-SWIFTCODE-1"
   } ],
   "bpartner" : {
     "active" : true,
@@ -291,14 +324,24 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
     },
     "company" : false,
     "customer" : true,
+    "customerPaymentTermId" : 100008,
+    "deliveryRule" : "AVAILABILITY",
+    "deliveryViaRule" : "Shipper",
     "excludeFromPromotions" : false,
     "groupId" : 15,
     "id" : 20,
     "identifiedByExternalReference" : false,
+    "incotermsCustomerId" : 100010,
+    "incotermsVendorId" : 100011,
     "name" : "bpartnerRecord.name",
+    "paymentRule" : "OnCredit",
+    "paymentRulePO" : "Cash",
+    "sectionCodeId" : 100007,
+    "storageWarehouse" : true,
     "value" : "bpartnerRecord.value",
     "vatId" : "VATaxID",
-    "vendor" : true
+    "vendor" : true,
+    "vendorPaymentTermId" : 100009
   },
   "contacts" : [ {
     "active" : true,
@@ -349,7 +392,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
       "recordId" : {
         "keyColumnNames" : [ "AD_User_ID" ],
         "keysByColumnName" : {
-          "AD_User_ID" : 100015
+          "AD_User_ID" : 100021
         }
       },
       "tableName" : "AD_User"
@@ -365,7 +408,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
     },
     "email" : "newContact_email@email.net",
     "handles" : [ ],
-    "id" : "20-100015",
+    "id" : "20-100021",
     "invoiceEmailEnabled" : true,
     "membershipContact" : false,
     "name" : "newContact_name",
@@ -373,6 +416,32 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
     "phone" : "newContact_phone",
     "roles" : [ ],
     "subjectMatterContact" : false
+  } ],
+  "creditLimits" : [ {
+    "active" : true,
+    "amount" : {
+      "currencyId" : 100020,
+      "value" : 25.5
+    },
+    "bPartnerId" : 20,
+    "changeLog" : {
+      "createdByUserId" : 30,
+      "createdTimestamp" : "1970-01-19T01:38:53.544Z",
+      "entries" : [ ],
+      "lastChangedByUserId" : 30,
+      "lastChangedTimestamp" : "1970-01-19T01:38:54.560Z",
+      "recordId" : {
+        "keyColumnNames" : [ "C_BPartner_CreditLimit_ID" ],
+        "keysByColumnName" : {
+          "C_BPartner_CreditLimit_ID" : 60
+        }
+      },
+      "tableName" : "C_BPartner_CreditLimit"
+    },
+    "creditLimitTypeId" : 123,
+    "dateFrom" : "2022-10-01T00:00:00Z",
+    "id" : 60,
+    "processed" : false
   } ],
   "locations" : [ {
     "active" : true,
@@ -396,9 +465,9 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
     "countryCode" : "countryRecord.countryCode",
     "district" : "postalRecord.district",
     "ephemeral" : false,
-    "existingLocationId" : 100011,
+    "existingLocationId" : 100016,
     "gln" : "bpartnerLocationRecord.gln",
-    "handOverLocation" : false,
+    "handOverLocation" : true,
     "handles" : [ ],
     "id" : {
       "bpartnerId" : 20,
@@ -408,15 +477,14 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
       "billTo" : false,
       "billToDefault" : false,
       "shipTo" : false,
-      "shipToDefault" : false,
-      "visitorsAddress" : false
+      "shipToDefault" : false
     },
     "poBox" : "locationRecord.poBox",
     "postal" : "locationRecord.postal",
     "region" : "locationRecord.regionName",
-    "remitTo" : false,
-    "replicationLookupDefault" : false,
-    "visitorsAddress" : false
+    "remitTo" : true,
+    "replicationLookupDefault" : true,
+    "visitorsAddress" : true
   } ],
   "orgId" : 10
 } ]
@@ -439,13 +507,13 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
       },
       "tableName" : "C_BP_BankAccount"
     },
-    "currencyId" : 100013,
+    "currencyId" : 100018,
     "iban" : "INITIAL-IBAN-1",
-    "swiftCode" : "INITIAL-SWIFTCODE-1",
     "id" : {
       "bpartnerId" : 20,
       "repoId" : 50
-    }
+    },
+    "swiftCode" : "INITIAL-SWIFTCODE-1"
   } ],
   "bpartner" : {
     "active" : true,
@@ -465,14 +533,24 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
     },
     "company" : false,
     "customer" : true,
+    "customerPaymentTermId" : 100008,
+    "deliveryRule" : "AVAILABILITY",
+    "deliveryViaRule" : "Shipper",
     "excludeFromPromotions" : false,
     "groupId" : 15,
     "id" : 20,
     "identifiedByExternalReference" : false,
+    "incotermsCustomerId" : 100010,
+    "incotermsVendorId" : 100011,
     "name" : "bpartnerRecord.name",
+    "paymentRule" : "OnCredit",
+    "paymentRulePO" : "Cash",
+    "sectionCodeId" : 100007,
+    "storageWarehouse" : true,
     "value" : "bpartnerRecord.value",
     "vatId" : "VATaxID",
-    "vendor" : true
+    "vendor" : true,
+    "vendorPaymentTermId" : 100009
   },
   "contacts" : [ {
     "active" : true,
@@ -523,7 +601,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
       "recordId" : {
         "keyColumnNames" : [ "AD_User_ID" ],
         "keysByColumnName" : {
-          "AD_User_ID" : 100015
+          "AD_User_ID" : 100021
         }
       },
       "tableName" : "AD_User"
@@ -538,12 +616,38 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
       "shipToDefault" : false
     },
     "handles" : [ ],
-    "id" : "20-100015",
+    "id" : "20-100021",
     "membershipContact" : false,
     "name" : "jsonContact.name-UPDATED",
     "newsletter" : false,
     "roles" : [ ],
     "subjectMatterContact" : false
+  } ],
+  "creditLimits" : [ {
+    "active" : true,
+    "amount" : {
+      "currencyId" : 100020,
+      "value" : 25.5
+    },
+    "bPartnerId" : 20,
+    "changeLog" : {
+      "createdByUserId" : 30,
+      "createdTimestamp" : "1970-01-19T01:38:53.544Z",
+      "entries" : [ ],
+      "lastChangedByUserId" : 30,
+      "lastChangedTimestamp" : "1970-01-19T01:38:54.560Z",
+      "recordId" : {
+        "keyColumnNames" : [ "C_BPartner_CreditLimit_ID" ],
+        "keysByColumnName" : {
+          "C_BPartner_CreditLimit_ID" : 60
+        }
+      },
+      "tableName" : "C_BPartner_CreditLimit"
+    },
+    "creditLimitTypeId" : 123,
+    "dateFrom" : "2022-10-01T00:00:00Z",
+    "id" : 60,
+    "processed" : false
   } ],
   "locations" : [ {
     "active" : true,
@@ -567,9 +671,9 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
     "countryCode" : "countryRecord.countryCode",
     "district" : "postalRecord.district",
     "ephemeral" : false,
-    "existingLocationId" : 100011,
+    "existingLocationId" : 100016,
     "gln" : "bpartnerLocationRecord.gln",
-    "handOverLocation" : false,
+    "handOverLocation" : true,
     "handles" : [ ],
     "id" : {
       "bpartnerId" : 20,
@@ -579,15 +683,14 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
       "billTo" : false,
       "billToDefault" : false,
       "shipTo" : false,
-      "shipToDefault" : false,
-      "visitorsAddress" : false
+      "shipToDefault" : false
     },
     "poBox" : "locationRecord.poBox",
     "postal" : "locationRecord.postal",
     "region" : "locationRecord.regionName",
-    "remitTo" : false,
-    "replicationLookupDefault" : false,
-    "visitorsAddress" : false
+    "remitTo" : true,
+    "replicationLookupDefault" : true,
+    "visitorsAddress" : true
   } ],
   "orgId" : 10
 } ]
@@ -610,13 +713,13 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
       },
       "tableName" : "C_BP_BankAccount"
     },
-    "currencyId" : 100013,
+    "currencyId" : 100018,
     "iban" : "INITIAL-IBAN-1",
-    "swiftCode" : "INITIAL-SWIFTCODE-1",
     "id" : {
       "bpartnerId" : 20,
       "repoId" : 50
-    }
+    },
+    "swiftCode" : "INITIAL-SWIFTCODE-1"
   } ],
   "bpartner" : {
     "active" : true,
@@ -636,14 +739,24 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
     },
     "company" : false,
     "customer" : true,
+    "customerPaymentTermId" : 100008,
+    "deliveryRule" : "AVAILABILITY",
+    "deliveryViaRule" : "Shipper",
     "excludeFromPromotions" : false,
     "groupId" : 15,
     "id" : 20,
     "identifiedByExternalReference" : false,
+    "incotermsCustomerId" : 100010,
+    "incotermsVendorId" : 100011,
     "name" : "bpartnerRecord.name",
+    "paymentRule" : "OnCredit",
+    "paymentRulePO" : "Cash",
+    "sectionCodeId" : 100007,
+    "storageWarehouse" : true,
     "value" : "bpartnerRecord.value",
     "vatId" : "VATaxID",
-    "vendor" : true
+    "vendor" : true,
+    "vendorPaymentTermId" : 100009
   },
   "contacts" : [ {
     "active" : true,
@@ -684,6 +797,32 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
     "subjectMatterContact" : false,
     "value" : "contactRecord.value"
   } ],
+  "creditLimits" : [ {
+    "active" : true,
+    "amount" : {
+      "currencyId" : 100020,
+      "value" : 25.5
+    },
+    "bPartnerId" : 20,
+    "changeLog" : {
+      "createdByUserId" : 30,
+      "createdTimestamp" : "1970-01-19T01:38:53.544Z",
+      "entries" : [ ],
+      "lastChangedByUserId" : 30,
+      "lastChangedTimestamp" : "1970-01-19T01:38:54.560Z",
+      "recordId" : {
+        "keyColumnNames" : [ "C_BPartner_CreditLimit_ID" ],
+        "keysByColumnName" : {
+          "C_BPartner_CreditLimit_ID" : 60
+        }
+      },
+      "tableName" : "C_BPartner_CreditLimit"
+    },
+    "creditLimitTypeId" : 123,
+    "dateFrom" : "2022-10-01T00:00:00Z",
+    "id" : 60,
+    "processed" : false
+  } ],
   "locations" : [ {
     "active" : true,
     "address1" : "locationRecord.address1",
@@ -706,9 +845,9 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
     "countryCode" : "countryRecord.countryCode",
     "district" : "postalRecord.district",
     "ephemeral" : false,
-    "existingLocationId" : 100011,
+    "existingLocationId" : 100016,
     "gln" : "bpartnerLocationRecord.gln",
-    "handOverLocation" : false,
+    "handOverLocation" : true,
     "handles" : [ ],
     "id" : {
       "bpartnerId" : 20,
@@ -718,15 +857,14 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
       "billTo" : false,
       "billToDefault" : false,
       "shipTo" : false,
-      "shipToDefault" : false,
-      "visitorsAddress" : false
+      "shipToDefault" : false
     },
     "poBox" : "locationRecord.poBox",
     "postal" : "locationRecord.postal",
     "region" : "locationRecord.regionName",
-    "remitTo" : false,
-    "replicationLookupDefault" : false,
-    "visitorsAddress" : false
+    "remitTo" : true,
+    "replicationLookupDefault" : true,
+    "visitorsAddress" : true
   } ],
   "orgId" : 10
 } ]
@@ -749,13 +887,13 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
       },
       "tableName" : "C_BP_BankAccount"
     },
-    "currencyId" : 100013,
+    "currencyId" : 100018,
     "iban" : "INITIAL-IBAN-1",
-    "swiftCode" : "INITIAL-SWIFTCODE-1",
     "id" : {
       "bpartnerId" : 20,
       "repoId" : 50
-    }
+    },
+    "swiftCode" : "INITIAL-SWIFTCODE-1"
   } ],
   "bpartner" : {
     "active" : true,
@@ -775,14 +913,24 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
     },
     "company" : false,
     "customer" : true,
+    "customerPaymentTermId" : 100008,
+    "deliveryRule" : "AVAILABILITY",
+    "deliveryViaRule" : "Shipper",
     "excludeFromPromotions" : false,
     "groupId" : 15,
     "id" : 20,
     "identifiedByExternalReference" : false,
+    "incotermsCustomerId" : 100010,
+    "incotermsVendorId" : 100011,
     "name" : "bpartnerRecord.name",
+    "paymentRule" : "OnCredit",
+    "paymentRulePO" : "Cash",
+    "sectionCodeId" : 100007,
+    "storageWarehouse" : true,
     "value" : "bpartnerRecord.value",
     "vatId" : "VATaxID",
-    "vendor" : true
+    "vendor" : true,
+    "vendorPaymentTermId" : 100009
   },
   "contacts" : [ {
     "active" : true,
@@ -823,6 +971,32 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
     "subjectMatterContact" : false,
     "value" : "contactRecord.value"
   } ],
+  "creditLimits" : [ {
+    "active" : true,
+    "amount" : {
+      "currencyId" : 100021,
+      "value" : 25.5
+    },
+    "bPartnerId" : 20,
+    "changeLog" : {
+      "createdByUserId" : 30,
+      "createdTimestamp" : "1970-01-19T01:38:53.544Z",
+      "entries" : [ ],
+      "lastChangedByUserId" : 30,
+      "lastChangedTimestamp" : "1970-01-19T01:38:54.560Z",
+      "recordId" : {
+        "keyColumnNames" : [ "C_BPartner_CreditLimit_ID" ],
+        "keysByColumnName" : {
+          "C_BPartner_CreditLimit_ID" : 60
+        }
+      },
+      "tableName" : "C_BPartner_CreditLimit"
+    },
+    "creditLimitTypeId" : 123,
+    "dateFrom" : "2022-10-01T00:00:00Z",
+    "id" : 60,
+    "processed" : false
+  } ],
   "locations" : [ {
     "active" : true,
     "address1" : "locationRecord.address1",
@@ -845,9 +1019,9 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
     "countryCode" : "countryRecord.countryCode",
     "district" : "postalRecord.district",
     "ephemeral" : false,
-    "existingLocationId" : 100011,
+    "existingLocationId" : 100016,
     "gln" : "bpartnerLocationRecord.gln",
-    "handOverLocation" : false,
+    "handOverLocation" : true,
     "handles" : [ ],
     "id" : {
       "bpartnerId" : 20,
@@ -857,15 +1031,14 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
       "billTo" : false,
       "billToDefault" : false,
       "shipTo" : false,
-      "shipToDefault" : false,
-      "visitorsAddress" : false
+      "shipToDefault" : false
     },
     "poBox" : "locationRecord.poBox",
     "postal" : "locationRecord.postal",
     "region" : "locationRecord.regionName",
-    "remitTo" : false,
-    "replicationLookupDefault" : false,
-    "visitorsAddress" : false
+    "remitTo" : true,
+    "replicationLookupDefault" : true,
+    "visitorsAddress" : true
   }, {
     "active" : true,
     "address1" : "newLocation_address1",
@@ -879,7 +1052,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
       "recordId" : {
         "keyColumnNames" : [ "C_BPartner_Location_ID" ],
         "keysByColumnName" : {
-          "C_BPartner_Location_ID" : 100017
+          "C_BPartner_Location_ID" : 100023
         }
       },
       "tableName" : "C_BPartner_Location"
@@ -887,27 +1060,26 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
     "city" : "newLocation_city",
     "countryCode" : "DE",
     "ephemeral" : false,
-    "existingLocationId" : 100016,
+    "existingLocationId" : 100022,
     "gln" : "newLocation_gln",
-    "handOverLocation" : false,
+    "handOverLocation" : true,
     "handles" : [ ],
     "id" : {
       "bpartnerId" : 20,
-      "repoId" : 100017
+      "repoId" : 100023
     },
     "locationType" : {
       "billTo" : false,
       "billToDefault" : false,
       "shipTo" : false,
-      "shipToDefault" : false,
-      "visitorsAddress" : false
+      "shipToDefault" : false
     },
     "poBox" : "newLocation_poBox",
     "postal" : "newLocation_postal",
     "region" : "newLocation_region",
-    "remitTo" : false,
-    "replicationLookupDefault" : false,
-    "visitorsAddress" : false
+    "remitTo" : true,
+    "replicationLookupDefault" : true,
+    "visitorsAddress" : true
   } ],
   "orgId" : 10
 } ]
@@ -984,16 +1156,16 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnerLocatio
   "district" : "postalRecord.district",
   "ephemeral" : false,
   "gln" : "bpartnerLocationRecord.gln",
-  "handoverLocation" : false,
+  "handoverLocation" : true,
   "metasfreshId" : 40,
   "poBox" : "locationRecord.poBox",
   "postal" : "locationRecord.postal",
   "region" : "locationRecord.regionName",
-  "remitTo" : false,
-  "replicationLookupDefault" : false,
+  "remitTo" : true,
+  "replicationLookupDefault" : true,
   "shipTo" : false,
   "shipToDefault" : false,
-  "visitorsAddress" : false
+  "visitorsAddress" : true
 } ]
 
 
@@ -1014,16 +1186,16 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnerLocatio
   "district" : "postalRecord.district",
   "ephemeral" : false,
   "gln" : "bpartnerLocationRecord.gln",
-  "handoverLocation" : false,
+  "handoverLocation" : true,
   "metasfreshId" : 40,
   "poBox" : "locationRecord.poBox",
   "postal" : "locationRecord.postal",
   "region" : "locationRecord.regionName",
-  "remitTo" : false,
-  "replicationLookupDefault" : false,
+  "remitTo" : true,
+  "replicationLookupDefault" : true,
   "shipTo" : false,
   "shipToDefault" : false,
-  "visitorsAddress" : false
+  "visitorsAddress" : true
 } ]
 
 
@@ -1044,16 +1216,16 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnerLocatio
   "district" : "postalRecord.district",
   "ephemeral" : false,
   "gln" : "bpartnerLocationRecord.gln",
-  "handoverLocation" : false,
+  "handoverLocation" : true,
   "metasfreshId" : 40,
   "poBox" : "locationRecord.poBox",
   "postal" : "locationRecord.postal",
   "region" : "locationRecord.regionName",
-  "remitTo" : false,
-  "replicationLookupDefault" : false,
+  "remitTo" : true,
+  "replicationLookupDefault" : true,
   "shipTo" : false,
   "shipToDefault" : false,
-  "visitorsAddress" : false
+  "visitorsAddress" : true
 } ]
 
 
@@ -1069,11 +1241,21 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_ext=[ 
     "code" : "bpartnerRecord.value",
     "company" : false,
     "customer" : true,
+    "customerPaymentTermId" : 100008,
+    "deliveryRule" : "Availability",
+    "deliveryViaRule" : "Shipper",
     "group" : "bpGroupRecord.name",
+    "incotermsCustomerId" : 100010,
+    "incotermsVendorId" : 100011,
     "metasfreshId" : 20,
     "name" : "bpartnerRecord.name",
+    "paymentRule" : "OnCredit",
+    "paymentRulePO" : "Cash",
+    "sectionCodeId" : 100007,
+    "storageWarehouse" : true,
     "vatId" : "VATaxID",
-    "vendor" : true
+    "vendor" : true,
+    "vendorPaymentTermId" : 100009
   },
   "contacts" : [ {
     "active" : true,
@@ -1117,16 +1299,16 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_ext=[ 
     "district" : "postalRecord.district",
     "ephemeral" : false,
     "gln" : "bpartnerLocationRecord.gln",
-    "handoverLocation" : false,
+    "handoverLocation" : true,
     "metasfreshId" : 40,
     "poBox" : "locationRecord.poBox",
     "postal" : "locationRecord.postal",
     "region" : "locationRecord.regionName",
-    "remitTo" : false,
-    "replicationLookupDefault" : false,
+    "remitTo" : true,
+    "replicationLookupDefault" : true,
     "shipTo" : false,
     "shipToDefault" : false,
-    "visitorsAddress" : false
+    "visitorsAddress" : true
   } ]
 } ]
 
@@ -1143,11 +1325,21 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_gln=[ 
     "code" : "bpartnerRecord.value",
     "company" : false,
     "customer" : true,
+    "customerPaymentTermId" : 100008,
+    "deliveryRule" : "Availability",
+    "deliveryViaRule" : "Shipper",
     "group" : "bpGroupRecord.name",
+    "incotermsCustomerId" : 100010,
+    "incotermsVendorId" : 100011,
     "metasfreshId" : 20,
     "name" : "bpartnerRecord.name",
+    "paymentRule" : "OnCredit",
+    "paymentRulePO" : "Cash",
+    "sectionCodeId" : 100007,
+    "storageWarehouse" : true,
     "vatId" : "VATaxID",
-    "vendor" : true
+    "vendor" : true,
+    "vendorPaymentTermId" : 100009
   },
   "contacts" : [ {
     "active" : true,
@@ -1191,16 +1383,16 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_gln=[ 
     "district" : "postalRecord.district",
     "ephemeral" : false,
     "gln" : "bpartnerLocationRecord.gln",
-    "handoverLocation" : false,
+    "handoverLocation" : true,
     "metasfreshId" : 40,
     "poBox" : "locationRecord.poBox",
     "postal" : "locationRecord.postal",
     "region" : "locationRecord.regionName",
-    "remitTo" : false,
-    "replicationLookupDefault" : false,
+    "remitTo" : true,
+    "replicationLookupDefault" : true,
     "shipTo" : false,
     "shipToDefault" : false,
-    "visitorsAddress" : false
+    "visitorsAddress" : true
   } ]
 } ]
 
@@ -1217,11 +1409,21 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_id=[ {
     "code" : "bpartnerRecord.value",
     "company" : false,
     "customer" : true,
+    "customerPaymentTermId" : 100008,
+    "deliveryRule" : "Availability",
+    "deliveryViaRule" : "Shipper",
     "group" : "bpGroupRecord.name",
+    "incotermsCustomerId" : 100010,
+    "incotermsVendorId" : 100011,
     "metasfreshId" : 20,
     "name" : "bpartnerRecord.name",
+    "paymentRule" : "OnCredit",
+    "paymentRulePO" : "Cash",
+    "sectionCodeId" : 100007,
+    "storageWarehouse" : true,
     "vatId" : "VATaxID",
-    "vendor" : true
+    "vendor" : true,
+    "vendorPaymentTermId" : 100009
   },
   "contacts" : [ {
     "active" : true,
@@ -1265,16 +1467,16 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartner_id=[ {
     "district" : "postalRecord.district",
     "ephemeral" : false,
     "gln" : "bpartnerLocationRecord.gln",
-    "handoverLocation" : false,
+    "handoverLocation" : true,
     "metasfreshId" : 40,
     "poBox" : "locationRecord.poBox",
     "postal" : "locationRecord.postal",
     "region" : "locationRecord.regionName",
-    "remitTo" : false,
-    "replicationLookupDefault" : false,
+    "remitTo" : true,
+    "replicationLookupDefault" : true,
     "shipTo" : false,
     "shipToDefault" : false,
-    "visitorsAddress" : false
+    "visitorsAddress" : true
   } ]
 } ]
 
@@ -1306,11 +1508,21 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
       "code" : "bpartnerRecord.value",
       "company" : false,
       "customer" : true,
+      "customerPaymentTermId" : 100008,
+      "deliveryRule" : "Availability",
+      "deliveryViaRule" : "Shipper",
       "group" : "bpGroupRecord.name",
+      "incotermsCustomerId" : 100010,
+      "incotermsVendorId" : 100011,
       "metasfreshId" : 20,
       "name" : "bpartnerRecord.name",
+      "paymentRule" : "OnCredit",
+      "paymentRulePO" : "Cash",
+      "sectionCodeId" : 100007,
+      "storageWarehouse" : true,
       "vatId" : "VATaxID",
-      "vendor" : true
+      "vendor" : true,
+      "vendorPaymentTermId" : 100009
     },
     "contacts" : [ {
       "active" : true,
@@ -1354,16 +1566,16 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
       "district" : "postalRecord.district",
       "ephemeral" : false,
       "gln" : "bpartnerLocationRecord.gln",
-      "handoverLocation" : false,
+      "handoverLocation" : true,
       "metasfreshId" : 40,
       "poBox" : "locationRecord.poBox",
       "postal" : "locationRecord.postal",
       "region" : "locationRecord.regionName",
-      "remitTo" : false,
-      "replicationLookupDefault" : false,
+      "remitTo" : true,
+      "replicationLookupDefault" : true,
       "shipTo" : false,
       "shipToDefault" : false,
-      "visitorsAddress" : false
+      "visitorsAddress" : true
     } ]
   }, {
     "bpartner" : {
@@ -1377,11 +1589,21 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
       "code" : "bpartnerRecord.value_1",
       "company" : false,
       "customer" : true,
+      "customerPaymentTermId" : 100022,
+      "deliveryRule" : "Availability",
+      "deliveryViaRule" : "Shipper",
       "group" : "bpGroupRecord.name",
+      "incotermsCustomerId" : 100024,
+      "incotermsVendorId" : 100025,
       "metasfreshId" : 21,
       "name" : "bpartnerRecord.name_1",
+      "paymentRule" : "OnCredit",
+      "paymentRulePO" : "Cash",
+      "sectionCodeId" : 100021,
+      "storageWarehouse" : true,
       "vatId" : "VATaxID_1",
-      "vendor" : true
+      "vendor" : true,
+      "vendorPaymentTermId" : 100023
     },
     "contacts" : [ {
       "active" : true,
@@ -1425,19 +1647,19 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
       "district" : "postalRecord.district_1",
       "ephemeral" : false,
       "gln" : "bpartnerLocationRecord.gln_1",
-      "handoverLocation" : false,
+      "handoverLocation" : true,
       "metasfreshId" : 41,
       "poBox" : "locationRecord.poBox_1",
       "postal" : "locationRecord.postal_1",
       "region" : "locationRecord.regionName_1",
-      "remitTo" : false,
-      "replicationLookupDefault" : false,
+      "remitTo" : true,
+      "replicationLookupDefault" : true,
       "shipTo" : false,
       "shipToDefault" : false,
-      "visitorsAddress" : false
+      "visitorsAddress" : true
     } ]
   } ],
-  "nextPage" : "e57d6ba2-e91e-4557-8fc7-cb3c0acfe1f1_D",
+  "nextPage" : "e57d6ba2-e91e-4557-8fc7-cb3c0acfe1f1_E",
   "pageSize" : 2,
   "resultTimestamp" : 1561014385,
   "totalSize" : 5
@@ -1454,11 +1676,21 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
       "code" : "bpartnerRecord.value_2",
       "company" : false,
       "customer" : true,
+      "customerPaymentTermId" : 100034,
+      "deliveryRule" : "Availability",
+      "deliveryViaRule" : "Shipper",
       "group" : "bpGroupRecord.name",
+      "incotermsCustomerId" : 100036,
+      "incotermsVendorId" : 100037,
       "metasfreshId" : 22,
       "name" : "bpartnerRecord.name_2",
+      "paymentRule" : "OnCredit",
+      "paymentRulePO" : "Cash",
+      "sectionCodeId" : 100033,
+      "storageWarehouse" : true,
       "vatId" : "VATaxID_2",
-      "vendor" : true
+      "vendor" : true,
+      "vendorPaymentTermId" : 100035
     },
     "contacts" : [ {
       "active" : true,
@@ -1502,16 +1734,16 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
       "district" : "postalRecord.district_2",
       "ephemeral" : false,
       "gln" : "bpartnerLocationRecord.gln_2",
-      "handoverLocation" : false,
+      "handoverLocation" : true,
       "metasfreshId" : 42,
       "poBox" : "locationRecord.poBox_2",
       "postal" : "locationRecord.postal_2",
       "region" : "locationRecord.regionName_2",
-      "remitTo" : false,
-      "replicationLookupDefault" : false,
+      "remitTo" : true,
+      "replicationLookupDefault" : true,
       "shipTo" : false,
       "shipToDefault" : false,
-      "visitorsAddress" : false
+      "visitorsAddress" : true
     } ]
   }, {
     "bpartner" : {
@@ -1525,11 +1757,21 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
       "code" : "bpartnerRecord.value_3",
       "company" : false,
       "customer" : true,
+      "customerPaymentTermId" : 100046,
+      "deliveryRule" : "Availability",
+      "deliveryViaRule" : "Shipper",
       "group" : "bpGroupRecord.name",
+      "incotermsCustomerId" : 100048,
+      "incotermsVendorId" : 100049,
       "metasfreshId" : 23,
       "name" : "bpartnerRecord.name_3",
+      "paymentRule" : "OnCredit",
+      "paymentRulePO" : "Cash",
+      "sectionCodeId" : 100045,
+      "storageWarehouse" : true,
       "vatId" : "VATaxID_3",
-      "vendor" : true
+      "vendor" : true,
+      "vendorPaymentTermId" : 100047
     },
     "contacts" : [ {
       "active" : true,
@@ -1573,19 +1815,19 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
       "district" : "postalRecord.district_3",
       "ephemeral" : false,
       "gln" : "bpartnerLocationRecord.gln_3",
-      "handoverLocation" : false,
+      "handoverLocation" : true,
       "metasfreshId" : 43,
       "poBox" : "locationRecord.poBox_3",
       "postal" : "locationRecord.postal_3",
       "region" : "locationRecord.regionName_3",
-      "remitTo" : false,
-      "replicationLookupDefault" : false,
+      "remitTo" : true,
+      "replicationLookupDefault" : true,
       "shipTo" : false,
       "shipToDefault" : false,
-      "visitorsAddress" : false
+      "visitorsAddress" : true
     } ]
   } ],
-  "nextPage" : "e57d6ba2-e91e-4557-8fc7-cb3c0acfe1f1_E",
+  "nextPage" : "e57d6ba2-e91e-4557-8fc7-cb3c0acfe1f1_F",
   "pageSize" : 2,
   "resultTimestamp" : 1561014385,
   "totalSize" : 5
@@ -1602,11 +1844,21 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
       "code" : "bpartnerRecord.value_4",
       "company" : false,
       "customer" : true,
+      "customerPaymentTermId" : 100058,
+      "deliveryRule" : "Availability",
+      "deliveryViaRule" : "Shipper",
       "group" : "bpGroupRecord.name",
+      "incotermsCustomerId" : 100060,
+      "incotermsVendorId" : 100061,
       "metasfreshId" : 24,
       "name" : "bpartnerRecord.name_4",
+      "paymentRule" : "OnCredit",
+      "paymentRulePO" : "Cash",
+      "sectionCodeId" : 100057,
+      "storageWarehouse" : true,
       "vatId" : "VATaxID_4",
-      "vendor" : true
+      "vendor" : true,
+      "vendorPaymentTermId" : 100059
     },
     "contacts" : [ {
       "active" : true,
@@ -1650,16 +1902,16 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.retrieveBPartnersSince=
       "district" : "postalRecord.district_4",
       "ephemeral" : false,
       "gln" : "bpartnerLocationRecord.gln_4",
-      "handoverLocation" : false,
+      "handoverLocation" : true,
       "metasfreshId" : 44,
       "poBox" : "locationRecord.poBox_4",
       "postal" : "locationRecord.postal_4",
       "region" : "locationRecord.regionName_4",
-      "remitTo" : false,
-      "replicationLookupDefault" : false,
+      "remitTo" : true,
+      "replicationLookupDefault" : true,
       "shipTo" : false,
       "shipToDefault" : false,
-      "visitorsAddress" : false
+      "visitorsAddress" : true
     } ]
   } ],
   "pageSize" : 1,

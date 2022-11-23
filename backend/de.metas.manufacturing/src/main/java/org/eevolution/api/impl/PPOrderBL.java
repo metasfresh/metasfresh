@@ -631,4 +631,11 @@ public class PPOrderBL implements IPPOrderBL
 				"Completed ppOrder; PP_Order_ID={}; DocumentNo={}",
 				ppOrder.getPP_Order_ID(), ppOrder.getDocumentNo());
 	}
+
+	@Override
+	public boolean hasSerialNumberSequence(@NonNull final PPOrderId ppOrderId)
+	{
+		return orderBOMService.getSerialNoSequenceId(ppOrderId).isPresent();
+	}
+
 }

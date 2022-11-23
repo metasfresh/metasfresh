@@ -47,14 +47,10 @@ import javax.annotation.Nullable;
 public class S_Issue
 {
 	private final EffortControlService effortControlService;
-	private final IssueRepository issueRepository;
 
-	public S_Issue(
-			@NonNull final EffortControlService effortControlService,
-			@NonNull final IssueRepository issueRepository)
+	public S_Issue(@NonNull final EffortControlService effortControlService)
 	{
 		this.effortControlService = effortControlService;
-		this.issueRepository = issueRepository;
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },

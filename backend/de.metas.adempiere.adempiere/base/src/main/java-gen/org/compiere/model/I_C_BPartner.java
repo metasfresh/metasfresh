@@ -5,10 +5,10 @@ import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_BPartner
- *  @author metasfresh (generated) 
+ *  @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
-public interface I_C_BPartner 
+public interface I_C_BPartner
 {
 
 	String Table_Name = "C_BPartner";
@@ -39,7 +39,7 @@ public interface I_C_BPartner
 	String COLUMNNAME_ABC = "ABC";
 
 	/**
-	 * Set Akquisitionskosten.
+	 * Set Acquisition Cost.
 	 * The cost of gaining the prospect as a customer
 	 *
 	 * <br>Type: CostPrice
@@ -49,7 +49,7 @@ public interface I_C_BPartner
 	void setAcqusitionCost (@Nullable BigDecimal AcqusitionCost);
 
 	/**
-	 * Get Akquisitionskosten.
+	 * Get Acquisition Cost.
 	 * The cost of gaining the prospect as a customer
 	 *
 	 * <br>Type: CostPrice
@@ -60,6 +60,27 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_AcqusitionCost = new ModelColumn<>(I_C_BPartner.class, "AcqusitionCost", null);
 	String COLUMNNAME_AcqusitionCost = "AcqusitionCost";
+
+	/**
+	 * Set Actis Rating.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setActis_Rating (@Nullable java.lang.String Actis_Rating);
+
+	/**
+	 * Get Actis Rating.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getActis_Rating();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_Actis_Rating = new ModelColumn<>(I_C_BPartner.class, "Actis_Rating", null);
+	String COLUMNNAME_Actis_Rating = "Actis_Rating";
 
 	/**
 	 * Get Client.
@@ -1612,6 +1633,27 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsCustomer = "IsCustomer";
 
 	/**
+	 * Set Default Forwarder.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsDefaultForwarder (boolean IsDefaultForwarder);
+
+	/**
+	 * Get Default Forwarder.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isDefaultForwarder();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_IsDefaultForwarder = new ModelColumn<>(I_C_BPartner.class, "IsDefaultForwarder", null);
+	String COLUMNNAME_IsDefaultForwarder = "IsDefaultForwarder";
+
+	/**
 	 * Set Rabatte drucken.
 	 * Print Discount on Invoice and Order
 	 *
@@ -1677,6 +1719,27 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_IsEmployee = new ModelColumn<>(I_C_BPartner.class, "IsEmployee", null);
 	String COLUMNNAME_IsEmployee = "IsEmployee";
+
+	/**
+	 * Set Forwarder.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsForwarder (boolean IsForwarder);
+
+	/**
+	 * Get Forwarder.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isForwarder();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_IsForwarder = new ModelColumn<>(I_C_BPartner.class, "IsForwarder", null);
+	String COLUMNNAME_IsForwarder = "IsForwarder";
 
 	/**
 	 * Set Haddex Prüfung erforderlich.
@@ -1788,6 +1851,48 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsProspect = "IsProspect";
 
 	/**
+	 * Set Running Contracts.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsRunningContracts (boolean IsRunningContracts);
+
+	/**
+	 * Get Running Contracts.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isRunningContracts();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_IsRunningContracts = new ModelColumn<>(I_C_BPartner.class, "IsRunningContracts", null);
+	String COLUMNNAME_IsRunningContracts = "IsRunningContracts";
+
+	/**
+	 * Set Sales Partner.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsSalesPartner (boolean IsSalesPartner);
+
+	/**
+	 * Get Sales Partner.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSalesPartner();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_IsSalesPartner = new ModelColumn<>(I_C_BPartner.class, "IsSalesPartner", null);
+	String COLUMNNAME_IsSalesPartner = "IsSalesPartner";
+
+	/**
 	 * Set Sales partner required.
 	 * Specifies for a bill partner whether a sales partner has to be specified in a sales order.
 	 *
@@ -1834,6 +1939,48 @@ public interface I_C_BPartner
 	String COLUMNNAME_IsSalesRep = "IsSalesRep";
 
 	/**
+	 * Set Section Group Partner.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsSectionGroupPartner (boolean IsSectionGroupPartner);
+
+	/**
+	 * Get Section Group Partner.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSectionGroupPartner();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_IsSectionGroupPartner = new ModelColumn<>(I_C_BPartner.class, "IsSectionGroupPartner", null);
+	String COLUMNNAME_IsSectionGroupPartner = "IsSectionGroupPartner";
+
+	/**
+	 * Set Section Partner.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsSectionPartner (boolean IsSectionPartner);
+
+	/**
+	 * Get Section Partner.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isSectionPartner();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_IsSectionPartner = new ModelColumn<>(I_C_BPartner.class, "IsSectionPartner", null);
+	String COLUMNNAME_IsSectionPartner = "IsSectionPartner";
+
+	/**
 	 * Set SEPA Signed.
 	 *
 	 * <br>Type: YesNo
@@ -1874,6 +2021,27 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_IsShippingNotificationEmail = new ModelColumn<>(I_C_BPartner.class, "IsShippingNotificationEmail", null);
 	String COLUMNNAME_IsShippingNotificationEmail = "IsShippingNotificationEmail";
+
+	/**
+	 * Set Storage/Warehouse.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsStorageWarehouse (boolean IsStorageWarehouse);
+
+	/**
+	 * Get Storage/Warehouse.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isStorageWarehouse();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_IsStorageWarehouse = new ModelColumn<>(I_C_BPartner.class, "IsStorageWarehouse", null);
+	String COLUMNNAME_IsStorageWarehouse = "IsStorageWarehouse";
 
 	/**
 	 * Set Summary Level.
@@ -2299,6 +2467,26 @@ public interface I_C_BPartner
 	String COLUMNNAME_MRN_ABN = "MRN_ABN";
 
 	/**
+	 * Set Group/Mother Company.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMother_Company_ID (int Mother_Company_ID);
+
+	/**
+	 * Get Group/Mother Company.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getMother_Company_ID();
+
+	String COLUMNNAME_Mother_Company_ID = "Mother_Company_ID";
+
+	/**
 	 * Set Exclude from MRP.
 	 *
 	 * <br>Type: List
@@ -2318,6 +2506,31 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_MRP_Exclude = new ModelColumn<>(I_C_BPartner.class, "MRP_Exclude", null);
 	String COLUMNNAME_MRP_Exclude = "MRP_Exclude";
+
+	/**
+	 * Set Section Code.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_SectionCode_ID (int M_SectionCode_ID);
+
+	/**
+	 * Get Section Code.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_SectionCode_ID();
+
+	@Nullable org.compiere.model.I_M_SectionCode getM_SectionCode();
+
+	void setM_SectionCode(@Nullable org.compiere.model.I_M_SectionCode M_SectionCode);
+
+	ModelColumn<I_C_BPartner, org.compiere.model.I_M_SectionCode> COLUMN_M_SectionCode_ID = new ModelColumn<>(I_C_BPartner.class, "M_SectionCode_ID", org.compiere.model.I_M_SectionCode.class);
+	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
 
 	/**
 	 * Set Shipper.
@@ -3080,7 +3293,28 @@ public interface I_C_BPartner
 	String COLUMNNAME_ReminderDateIntern = "ReminderDateIntern";
 
 	/**
-	 * Set Statistik Gruppe.
+	 * Set RIM Category.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setRIM_Category (@Nullable java.lang.String RIM_Category);
+
+	/**
+	 * Get RIM Category.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getRIM_Category();
+
+	ModelColumn<I_C_BPartner, Object> COLUMN_RIM_Category = new ModelColumn<>(I_C_BPartner.class, "RIM_Category", null);
+	String COLUMNNAME_RIM_Category = "RIM_Category";
+
+	/**
+	 * Set Statistic Group.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -3187,6 +3421,26 @@ public interface I_C_BPartner
 
 	ModelColumn<I_C_BPartner, Object> COLUMN_SalesVolume = new ModelColumn<>(I_C_BPartner.class, "SalesVolume", null);
 	String COLUMNNAME_SalesVolume = "SalesVolume";
+
+	/**
+	 * Set Section Group Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setSection_Group_Partner_ID (int Section_Group_Partner_ID);
+
+	/**
+	 * Get Section Group Partner.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getSection_Group_Partner_ID();
+
+	String COLUMNNAME_Section_Group_Partner_ID = "Section_Group_Partner_ID";
 
 	/**
 	 * Set Self Disclosure.

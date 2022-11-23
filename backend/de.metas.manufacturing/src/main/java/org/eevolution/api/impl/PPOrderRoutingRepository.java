@@ -13,6 +13,7 @@ import de.metas.material.planning.pporder.PPRoutingActivityId;
 import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
 import de.metas.material.planning.pporder.PPRoutingActivityType;
 import de.metas.material.planning.pporder.PPRoutingId;
+import de.metas.material.planning.pporder.UserInstructions;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
@@ -257,6 +258,7 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 				//
 				.milestone(record.isMilestone())
 				.alwaysAvailableToUser(PPAlwaysAvailableToUser.ofNullableCode(record.getPP_AlwaysAvailableToUser()))
+				.userInstructions(UserInstructions.ofNullableString(record.getPP_UserInstructions()))
 				//
 				.resourceId(resourceId)
 				//
@@ -548,6 +550,7 @@ public class PPOrderRoutingRepository implements IPPOrderRoutingRepository
 
 		record.setIsMilestone(from.isMilestone());
 		record.setPP_AlwaysAvailableToUser(from.getAlwaysAvailableToUser().getCode());
+		record.setPP_UserInstructions(from.getUserInstructions() != null ? from.getUserInstructions().getAsString() : null);
 
 		record.setS_Resource_ID(from.getResourceId().getRepoId());
 

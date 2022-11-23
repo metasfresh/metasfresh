@@ -19,6 +19,7 @@ import de.metas.document.engine.DocStatus;
 import de.metas.inout.IInOutDAO;
 import de.metas.invoice.InvoiceId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
+import de.metas.invoicecandidate.InvoiceLineAllocId;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandRecomputeTagger;
@@ -83,6 +84,7 @@ import org.compiere.model.IQuery;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_InterimInvoice_FlatrateTerm;
 import org.compiere.model.I_C_InterimInvoice_FlatrateTerm_Line;
+import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
 import org.compiere.model.I_C_InvoiceSchedule;
 import org.compiere.model.I_C_OrderLine;
@@ -108,6 +110,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
@@ -1862,6 +1865,30 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.createSelection(pInstanceId);
 	}
 
+	@NonNull
+	public ImmutableList<I_C_Invoice> getInvoicesForCandidateId(@NonNull final InvoiceCandidateId invoiceCandidateId)
+	{
+		return queryBL.createQueryBuilder(I_C_Invoice_Line_Alloc.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Invoice_Line_Alloc.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCandidateId)
+				//collect related invoice lines
+				.andCollect(I_C_Invoice_Line_Alloc.COLUMN_C_InvoiceLine_ID)
+				.addOnlyActiveRecordsFilter()
+				//collect related invoices
+				.andCollect(I_C_InvoiceLine.COLUMN_C_Invoice_ID)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.listImmutable(I_C_Invoice.class);
+	}
+
+	@Override
+	public Optional<InvoiceCandidateId> getInvoiceCandidateIdByInvoiceLineAllocId(final InvoiceLineAllocId invoiceLineAllocId)
+	{
+		return Optional.ofNullable(getInvoiceLineAlloc(invoiceLineAllocId))
+				.map(I_C_Invoice_Line_Alloc::getC_Invoice_Candidate_ID)
+				.map(InvoiceCandidateId::ofRepoId);
+	}
+
 	private IQuery<I_C_Invoice_Candidate> convertToIQuery(@NonNull final InvoiceCandidateMultiQuery multiQuery)
 	{
 		final IQueryBuilder<I_C_Invoice_Candidate> queryBuilder = queryBL
@@ -1985,5 +2012,11 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 		}
 
 		return filter;
+	}
+
+	@Nullable
+	private I_C_Invoice_Line_Alloc getInvoiceLineAlloc(@NonNull final InvoiceLineAllocId invoiceLineAllocId)
+	{
+		return InterfaceWrapperHelper.load(invoiceLineAllocId, I_C_Invoice_Line_Alloc.class);
 	}
 }

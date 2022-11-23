@@ -138,8 +138,7 @@ public class ContactRestController
 		for (final JsonRequestContactUpsertItem requestItem : contacts.getRequestItems())
 		{
 			final JsonResponseUpsertItem responseItem = persister.persist(
-					ExternalIdentifier.of(requestItem.getContactIdentifier()),
-					requestItem.getContact(),
+					requestItem,
 					syncAdvise);
 			response.responseItem(responseItem);
 		}

@@ -1238,10 +1238,15 @@ public class ExternalSystemConfigRepo
 				.sftpUsername(config.getSFTP_Username())
 				.sftpPassword(config.getSFTP_Password())
 				.value(config.getExternalSystemValue())
-				.sftpTargetDirectory(config.getSFTP_TargetDirectory())
+				.sftpTargetDirectoryProduct(config.getSFTP_Product_TargetDirectory())
+				.sftpTargetDirectoryBPartner(config.getSFTP_BPartner_TargetDirectory())
 				.processedDirectory(config.getProcessedDirectory())
 				.erroredDirectory(config.getErroredDirectory())
 				.pollingFrequency(Duration.ofMillis(config.getPollingFrequencyInMs()))
+				.sftpFileNamePatternProduct(config.getSFTP_Product_FileName_Pattern())
+				.sftpFileNamePatternBPartner(config.getSFTP_BPartner_FileName_Pattern())
+				.sftpCreditLimitTargetDirectory(config.getSFTP_CreditLimit_TargetDirectory())
+				.sftpCreditLimitFileNamePattern(config.getSFTP_CreditLimit_FileName_Pattern())
 				.build();
 	}
 }

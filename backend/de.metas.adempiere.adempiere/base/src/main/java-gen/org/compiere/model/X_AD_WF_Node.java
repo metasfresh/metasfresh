@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1109543707L;
+	private static final long serialVersionUID = -8131728L;
 
     /** Standard Constructor */
     public X_AD_WF_Node (final Properties ctx, final int AD_WF_Node_ID, @Nullable final String trxName)
@@ -695,7 +695,7 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 		return get_ValueAsString(COLUMNNAME_PP_Activity_Type);
 	}
 
-	/**
+	/** 
 	 * PP_AlwaysAvailableToUser AD_Reference_ID=319
 	 * Reference name: _YesNo
 	 */
@@ -711,9 +711,21 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	}
 
 	@Override
-	public java.lang.String getPP_AlwaysAvailableToUser()
+	public java.lang.String getPP_AlwaysAvailableToUser() 
 	{
 		return get_ValueAsString(COLUMNNAME_PP_AlwaysAvailableToUser);
+	}
+
+	@Override
+	public void setPP_UserInstructions (final @Nullable java.lang.String PP_UserInstructions)
+	{
+		set_Value (COLUMNNAME_PP_UserInstructions, PP_UserInstructions);
+	}
+
+	@Override
+	public java.lang.String getPP_UserInstructions() 
+	{
+		return get_ValueAsString(COLUMNNAME_PP_UserInstructions);
 	}
 
 	@Override
@@ -765,18 +777,6 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	public int getR_MailText_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_R_MailText_ID);
-	}
-
-	@Override
-	public org.compiere.model.I_S_Resource getS_Resource()
-	{
-		return get_ValueAsPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class);
-	}
-
-	@Override
-	public void setS_Resource(final org.compiere.model.I_S_Resource S_Resource)
-	{
-		set_ValueFromPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class, S_Resource);
 	}
 
 	@Override

@@ -23,8 +23,11 @@
 package de.metas.camel.externalsystems.sap.product;
 
 import com.google.common.annotations.VisibleForTesting;
+import de.metas.camel.externalsystems.common.IdAwareRouteBuilder;
+import de.metas.camel.externalsystems.common.PInstanceUtil;
 import de.metas.camel.externalsystems.common.ProcessLogger;
-import de.metas.camel.externalsystems.sap.api.model.product.ProductRow;
+import de.metas.camel.externalsystems.common.v2.ProductUpsertCamelRequest;
+import de.metas.camel.externalsystems.sap.model.product.ProductRow;
 import de.metas.camel.externalsystems.sap.sftp.SFTPConfig;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.Builder;
@@ -32,13 +35,12 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.apache.camel.CamelContext;
 import org.apache.camel.LoggingLevel;
-import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.dataformat.bindy.csv.BindyCsvDataFormat;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_UPSERT_PRODUCT_V2_CAMEL_URI;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
-public class GetProductsSFTPRouteBuilder extends RouteBuilder
+public class GetProductsSFTPRouteBuilder extends IdAwareRouteBuilder
 {
 	@VisibleForTesting
 	public static final String UPSERT_PRODUCT_ENDPOINT_ID = "SAP-Products-upsertProductEndpointId";
@@ -76,14 +78,16 @@ public class GetProductsSFTPRouteBuilder extends RouteBuilder
 	public void configure() throws Exception
 	{
 		//@formatter:off
-		from(sftpConfig.getSFTPConnectionString())
+		from(sftpConfig.getSFTPConnectionStringProduct())
 				.id(routeId)
-				.log("Product Sync Route Started")
-				.unmarshal(new BindyCsvDataFormat(ProductRow.class))
-				.split(body())
+				.log("Product Sync Route Started with Id=" + routeId)
+				.process(exchange -> PInstanceUtil.setPInstanceHeader(exchange, enabledByExternalSystemRequest))
+				.split(body().tokenize("\n"))
+					.streaming()
+					.unmarshal(new BindyCsvDataFormat(ProductRow.class))
 					.process(new ProductUpsertProcessor(enabledByExternalSystemRequest, processLogger)).id(UPSERT_PRODUCT_PROCESSOR_ID)
 					.choice()
-						.when(body().isNull())
+						.when(bodyAs(ProductUpsertCamelRequest.class).isNull())
 							.log(LoggingLevel.INFO, "Nothing to do! No product to upsert!")
 						.otherwise()
 							.log(LoggingLevel.DEBUG, "Calling metasfresh-api to upsert Product: ${body}")

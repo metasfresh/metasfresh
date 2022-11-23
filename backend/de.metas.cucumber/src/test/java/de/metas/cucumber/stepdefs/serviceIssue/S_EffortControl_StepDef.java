@@ -30,15 +30,17 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.activity.C_Activity_StepDefData;
 import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
+import de.metas.serviceprovider.effortcontrol.EffortControlService;
+import de.metas.serviceprovider.effortcontrol.repository.EffortControlRepository;
 import de.metas.serviceprovider.model.I_S_EffortControl;
 import de.metas.serviceprovider.model.I_S_Issue;
-import de.metas.serviceprovider.model.X_S_Issue;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Activity;
 import org.compiere.model.I_C_Project;
 
@@ -56,6 +58,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 public class S_EffortControl_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	private final EffortControlService effortControlService = SpringContextHolder.instance.getBean(EffortControlService.class);
 
 	private final C_Activity_StepDefData activityTable;
 	private final C_Project_StepDefData projectTable;
@@ -138,6 +142,18 @@ public class S_EffortControl_StepDef
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
 			StepDefUtil.tryAndWaitForItem(timeoutSeconds, 500, () -> validateEffortControl(row));
+		}
+	}
+
+	@And("'generate invoice candidate' from effort control process is invoked")
+	public void generateInvoiceCandidateFromEffortControl(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String effortControlIdentifier = DataTableUtil.extractStringForColumnName(row, I_S_EffortControl.COLUMNNAME_S_EffortControl_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final I_S_EffortControl effortControl = effortControlTable.get(effortControlIdentifier);
+
+			effortControlService.generateICFromEffortControl(EffortControlRepository.fromRecord(effortControl));
 		}
 	}
 
@@ -244,20 +260,19 @@ public class S_EffortControl_StepDef
 
 	private boolean isIssueClosed(@NonNull final I_S_EffortControl effortControl)
 	{
-		final List<I_S_Issue> effortIssues = queryBL.createQueryBuilder(I_S_Issue.class)
+		final List<I_S_Issue> issues = queryBL.createQueryBuilder(I_S_Issue.class)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_S_Issue.COLUMNNAME_C_Activity_ID, effortControl.getC_Activity_ID())
 				.addEqualsFilter(I_S_Issue.COLUMNNAME_C_Project_ID, effortControl.getC_Project_ID())
 				.addEqualsFilter(I_S_Issue.COLUMNNAME_AD_Org_ID, effortControl.getAD_Org_ID())
-				.addEqualsFilter(I_S_Issue.COLUMNNAME_IsEffortIssue, true)
 				.create()
 				.list();
 
-		if (effortIssues.isEmpty())
+		if (issues.isEmpty())
 		{
 			return false;
 		}
 
-		return effortIssues.stream().allMatch(issue -> issue.getStatus().equals(X_S_Issue.INTERNAL_STATUS_Invoiced));
+		return issues.stream().allMatch(I_S_Issue::isProcessed);
 	}
 }

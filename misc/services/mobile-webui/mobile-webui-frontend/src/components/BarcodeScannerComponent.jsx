@@ -33,13 +33,6 @@ const BarcodeScannerComponent = ({ resolveScannedBarcode, onResolvedResult }) =>
     }
     scanningStatus.running = true;
 
-    console.log('Resolving scanned barcode', {
-      scannedBarcode,
-      resolveScannedBarcode,
-      onResolvedResult,
-      scanningStatus: { ...scanningStatus },
-    });
-
     try {
       let resolvedResult;
       if (resolveScannedBarcode) {
@@ -47,7 +40,6 @@ const BarcodeScannerComponent = ({ resolveScannedBarcode, onResolvedResult }) =>
       } else {
         resolvedResult = { scannedBarcode, error: null };
       }
-      console.log('Got resolvedResult', resolvedResult);
 
       if (resolvedResult.error) {
         toastError({ plainMessage: resolvedResult.error });

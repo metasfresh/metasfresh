@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_Project
  *  @author metasfresh (generated) 
@@ -666,7 +667,7 @@ public interface I_C_Project
 
 	ModelColumn<I_C_Project, Object> COLUMN_InvoicedQty = new ModelColumn<>(I_C_Project.class, "InvoicedQty", null);
 	String COLUMNNAME_InvoicedQty = "InvoicedQty";
-	
+
 	/**
 	 * Set Active.
 	 * The record is active in the system
@@ -780,6 +781,28 @@ public interface I_C_Project
 	int getM_PriceList_Version_ID();
 
 	String COLUMNNAME_M_PriceList_Version_ID = "M_PriceList_Version_ID";
+
+	/**
+	 * Set Product.
+	 * Product, Service, Item
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Product_ID (int M_Product_ID);
+
+	/**
+	 * Get Product.
+	 * Product, Service, Item
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Product_ID();
+
+	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
 	 * Set Warehouse.

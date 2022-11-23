@@ -27,12 +27,15 @@ import de.metas.bpartner.OrgMappingId;
 import de.metas.bpartner.composite.BPartnerBankAccount;
 import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerLocation;
+import de.metas.bpartner.creditLimit.BPartnerCreditLimit;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.model.I_AD_Org_Mapping;
 import org.compiere.model.I_C_BP_BankAccount;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.I_C_BPartner_Location;
 import org.springframework.stereotype.Repository;
 
@@ -131,5 +134,26 @@ public class OrgMappingRepository
 		}
 
 		return orgMappingId;
+	}
+
+	@NonNull
+	public OrgMappingId getCreateOrgMappingId(@NonNull final BPartnerCreditLimit creditLimit)
+	{
+		if (creditLimit.getOrgMappingId() != null)
+		{
+			return creditLimit.getOrgMappingId();
+		}
+
+		final I_AD_Org_Mapping orgMapping = newInstance(I_AD_Org_Mapping.class);
+
+		orgMapping.setAD_Org_ID(0);
+		orgMapping.setAD_Table_ID(getTableId(I_C_BPartner_CreditLimit.class));
+
+		Check.assumeNotNull(creditLimit.getId(), "We assume creditLimit was loaded from DB so C_BPartner_CreditLimit_ID cannot be missing!");
+		orgMapping.setValue(String.valueOf(creditLimit.getId()));
+
+		save(orgMapping);
+
+		return OrgMappingId.ofRepoId(orgMapping.getAD_Org_Mapping_ID());
 	}
 }

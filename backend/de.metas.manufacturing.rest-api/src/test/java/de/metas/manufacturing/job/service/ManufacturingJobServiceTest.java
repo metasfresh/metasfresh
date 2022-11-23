@@ -8,6 +8,8 @@ import de.metas.handlingunits.inventory.InventoryRepository;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleRepository;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
+import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHURepository;
+import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesRepository;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.reservation.HUReservationRepository;
@@ -33,13 +35,16 @@ class ManufacturingJobServiceTest
 	{
 		AdempiereTestHelper.get().init();
 
+		final PPOrderIssueScheduleService ppOrderIssueScheduleService = new PPOrderIssueScheduleService(
+				new PPOrderIssueScheduleRepository(),
+				new InventoryService(new InventoryRepository(), new SourceHUsService())
+		);
+
 		this.manufacturingJobService = new ManufacturingJobService(
 				ResourceService.newInstanceForJUnitTesting(),
-				new PPOrderIssueScheduleService(
-						new PPOrderIssueScheduleRepository(),
-						new InventoryService(new InventoryRepository(), new SourceHUsService())
-				),
+				ppOrderIssueScheduleService,
 				new HUReservationService(new HUReservationRepository()),
+				new PPOrderSourceHUService(new PPOrderSourceHURepository(), ppOrderIssueScheduleService),
 				new DeviceAccessorsHubFactory(new DeviceConfigPoolFactory()),
 				new DeviceWebsocketNamingStrategy("/test/"),
 				new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService())

@@ -85,6 +85,7 @@ const renderActivityComponent = ({ applicationId, wfProcessId, activityItem, isL
           activityId={activityItem.activityId}
           caption={activityItem.caption}
           promptQuestion={activityItem.componentProps.promptQuestion}
+          userInstructions={activityItem.userInstructions}
           isUserEditable={activityItem.dataStored.isUserEditable}
           completeStatus={activityItem.dataStored.completeStatus}
           isLastActivity={isLastActivity}

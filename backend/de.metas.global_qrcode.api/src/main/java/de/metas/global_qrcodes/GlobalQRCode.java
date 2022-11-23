@@ -3,6 +3,7 @@ package de.metas.global_qrcodes;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.io.BaseEncoding;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.util.Check;
 import de.metas.util.StringUtils;
@@ -11,6 +12,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 @Value
@@ -58,6 +60,12 @@ public class GlobalQRCode
 	public static GlobalQRCode ofString(@NonNull final String string)
 	{
 		return parse(string).orThrow();
+	}
+
+	public static GlobalQRCode ofBase64Encoded(@NonNull final String string)
+	{
+		final byte[] bytes = BaseEncoding.base64().decode(string);
+		return ofString(new String(bytes, StandardCharsets.UTF_8));
 	}
 
 	public static GlobalQRCodeParseResult parse(@NonNull final String string)

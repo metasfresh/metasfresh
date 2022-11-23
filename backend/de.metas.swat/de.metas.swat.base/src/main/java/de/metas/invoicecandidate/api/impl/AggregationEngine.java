@@ -50,6 +50,8 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.user.User;
 import de.metas.util.Check;
@@ -465,7 +467,14 @@ public final class AggregationEngine
 			// 06630: set shipment id to header
 			invoiceHeader.setM_InOut_ID(InOutId.toRepoId(inoutId));
 
-			invoiceHeader.setM_SectionCode_ID(SectionCodeId.toRepoId(getSectionCodeId(icRecord, headerAggregationId)));
+			getSectionCodeId(icRecord, headerAggregationId)
+					.ifPresent(sectionCodeId -> invoiceHeader.setM_SectionCode_ID(SectionCodeId.toRepoId(sectionCodeId)));
+
+			getProjectId(icRecord, headerAggregationId)
+					.ifPresent(projectId -> invoiceHeader.setC_Project_ID(ProjectId.toRepoId(projectId)));
+
+			getActivityId(icRecord, headerAggregationId)
+					.ifPresent(activityId -> invoiceHeader.setC_Activity_ID(ActivityId.toRepoId(activityId)));
 		}
 		catch (final RuntimeException rte)
 		{
@@ -780,23 +789,47 @@ public final class AggregationEngine
 				.collect(GuavaCollectors.toImmutableMapByKey(line -> PaymentTermId.optionalOfRepoId(line.getC_PaymentTerm_ID())));
 	}
 
-	@Nullable
-	private SectionCodeId getSectionCodeId(
+	@NonNull
+	private Optional<SectionCodeId> getSectionCodeId(
+			@NonNull final I_C_Invoice_Candidate icRecord,
+			@Nullable final AggregationId headerAggregationId)
+	{
+		return retrieveAggregation(icRecord, headerAggregationId)
+				.map(aggregation -> aggregation.hasColumnName(I_C_Invoice_Candidate.COLUMNNAME_M_SectionCode_ID))
+				.map(hasColumnName -> hasColumnName ? SectionCodeId.ofRepoIdOrNull(icRecord.getM_SectionCode_ID()) : null);
+	}
+
+	@NonNull
+	private Optional<ProjectId> getProjectId(
+			@NonNull final I_C_Invoice_Candidate icRecord,
+			@Nullable final AggregationId headerAggregationId)
+	{
+		return retrieveAggregation(icRecord, headerAggregationId)
+				.map(aggregation -> aggregation.hasColumnName(I_C_Invoice_Candidate.COLUMNNAME_C_Project_ID))
+				.map(hasColumnName -> hasColumnName ? ProjectId.ofRepoIdOrNull(icRecord.getC_Project_ID()) : null);
+	}
+
+	@NonNull
+	private Optional<ActivityId> getActivityId(
+			@NonNull final I_C_Invoice_Candidate icRecord,
+			@Nullable final AggregationId headerAggregationId)
+	{
+		return retrieveAggregation(icRecord, headerAggregationId)
+				.map(aggregation -> aggregation.hasColumnName(I_C_Invoice_Candidate.COLUMNNAME_C_Activity_ID))
+				.map(hasColumnName -> hasColumnName ? ActivityId.ofRepoIdOrNull(icRecord.getC_Activity_ID()) : null);
+	}
+
+	@NonNull
+	private Optional<Aggregation> retrieveAggregation(
 			@NonNull final I_C_Invoice_Candidate icRecord,
 			@Nullable final AggregationId headerAggregationId)
 	{
 		if (headerAggregationId == null)
 		{
-			return null;
+			return Optional.empty();
 		}
 
-		final Aggregation icHeaderAggregation = aggregationDAO.retrieveAggregation(InterfaceWrapperHelper.getCtx(icRecord),
-																				   headerAggregationId.getRepoId());
-		if (icHeaderAggregation.hasColumnName(I_C_Invoice_Candidate.COLUMNNAME_M_SectionCode_ID))
-		{
-			return SectionCodeId.ofRepoIdOrNull(icRecord.getM_SectionCode_ID());
-		}
-
-		return null;
+		return Optional.of(aggregationDAO.retrieveAggregation(InterfaceWrapperHelper.getCtx(icRecord),
+															  headerAggregationId.getRepoId()));
 	}
 }
