@@ -146,3 +146,28 @@ DELETE FROM  AD_Element_Trl WHERE AD_Element_ID=581722
 DELETE FROM AD_Element WHERE AD_Element_ID=581722
 ;
 
+
+
+-- adjust import foramt---
+
+
+
+-- 2022-11-23T15:47:27.112Z
+INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFormat_Row_ID,AD_Org_ID,Created,CreatedBy,DataType,DecimalPoint,DivideBy100,EndNo,IsActive,Name,SeqNo,StartNo,Updated,UpdatedBy) VALUES (0,585124,540077,541802,0,TO_TIMESTAMP('2022-11-23 17:47:26','YYYY-MM-DD HH24:MI:SS'),100,'S','.','N',0,'Y','Schlusstext',180,18,TO_TIMESTAMP('2022-11-23 17:47:26','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-11-23T15:48:07.822Z
+INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFormat_Row_ID,AD_Org_ID,Created,CreatedBy,DataType,DecimalPoint,DivideBy100,IsActive,Name,SeqNo,StartNo,Updated,UpdatedBy) VALUES (0,585126,540077,541803,0,TO_TIMESTAMP('2022-11-23 17:48:07','YYYY-MM-DD HH24:MI:SS'),100,'N','.','N','Y','Betreuer',20,2,TO_TIMESTAMP('2022-11-23 17:48:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-11-23T15:48:25.859Z
+UPDATE AD_ImpFormat_Row SET SeqNo=190, StartNo=19,Updated=TO_TIMESTAMP('2022-11-23 17:48:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_ImpFormat_Row_ID=541803
+;
+
+-- 2022-11-23T15:48:52.582Z
+INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFormat_Row_ID,AD_Org_ID,Created,CreatedBy,DataType,DecimalPoint,DivideBy100,EndNo,IsActive,Name,SeqNo,StartNo,Updated,UpdatedBy) VALUES (0,585125,540077,541804,0,TO_TIMESTAMP('2022-11-23 17:48:52','YYYY-MM-DD HH24:MI:SS'),100,'N','.','N',0,'Y','Rabatt ',200,20,TO_TIMESTAMP('2022-11-23 17:48:52','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-11-23T15:49:10.419Z
+INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFormat_Row_ID,AD_Org_ID,Created,CreatedBy,DataType,DecimalPoint,DivideBy100,EndNo,IsActive,Name,SeqNo,StartNo,Updated,UpdatedBy) VALUES (0,585127,540077,541805,0,TO_TIMESTAMP('2022-11-23 17:49:10','YYYY-MM-DD HH24:MI:SS'),100,'N','.','N',0,'Y','Price',210,21,TO_TIMESTAMP('2022-11-23 17:49:10','YYYY-MM-DD HH24:MI:SS'),100)
+;
