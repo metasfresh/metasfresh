@@ -1,5 +1,6 @@
 package org.adempiere.mm.attributes.api.impl;
 
+import de.metas.cache.CacheMgt;
 import de.metas.document.sequence.IDocumentNoBuilder;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.util.Services;
@@ -9,6 +10,7 @@ import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ISerialNoBL;
 import org.adempiere.mm.attributes.api.SerialNoContext;
+import org.compiere.model.I_AD_Sequence;
 import org.compiere.util.Evaluatees;
 
 import java.util.Objects;
@@ -50,6 +52,8 @@ public class SerialNoBL implements ISerialNoBL
 						.put("ProductNo", context.getProductNo())
 						.build())
 				.build();
+
+		CacheMgt.get().reset(I_AD_Sequence.Table_Name, context.getSequenceId().getRepoId());
 
 		return serialNo != null && !Objects.equals(serialNo, IDocumentNoBuilder.NO_DOCUMENTNO)
 				? Optional.of(serialNo)
