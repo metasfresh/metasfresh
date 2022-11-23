@@ -116,7 +116,7 @@ try {
 
 private void buildAll(String mfVersion, MvnConf mvnConf, scmVars) {
 
-    withEnv(["MF_VERSION=${mfVersion}, MF_TEST_APPLY_MIGRATIONSCRIPTS_DB_IMAGE_NAME=${params.MF_SQL_SEED_DUMP_IMAGE}"]) {
+    withEnv(["MF_VERSION=${mfVersion}", "MF_TEST_APPLY_MIGRATIONSCRIPTS_DB_IMAGE_NAME=${params.MF_SQL_SEED_DUMP_IMAGE}"]) {
                 // disable automatic fingerprinting and archiving by artifactsPublisher, because in particular the archiving takes up too much space on the jenkins server.
                 withMaven(jdk: 'java-8-AdoptOpenJDK', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)]) {
 
