@@ -22,8 +22,11 @@
 
 package de.metas.externalsystem;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.document.sequence.DocSequenceId;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
+import de.metas.externalsystem.producttype.ProductTypeExternalMapping;
+import de.metas.externalsystem.producttype.ProductTypeExternalMappingRepo;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
@@ -37,10 +40,14 @@ public class ExternalSystemConfigService
 	public static final int AUDIT_AD_SEQUENCE_ID = 555613;
 
 	private final IDocumentNoBuilderFactory documentNoFactory;
+	private final ProductTypeExternalMappingRepo productTypeExternalMappingRepo;
 
-	public ExternalSystemConfigService(@NonNull final IDocumentNoBuilderFactory documentNoFactory)
+	public ExternalSystemConfigService(
+			@NonNull final IDocumentNoBuilderFactory documentNoFactory,
+			@NonNull final ProductTypeExternalMappingRepo productTypeExternalMappingRepo)
 	{
 		this.documentNoFactory = documentNoFactory;
+		this.productTypeExternalMappingRepo = productTypeExternalMappingRepo;
 	}
 
 	@NonNull
@@ -52,5 +59,11 @@ public class ExternalSystemConfigService
 				.orElseThrow(() -> new AdempiereException("Failed to compute sequenceId")
 						.appendParametersToMessage()
 						.setParameter("adSequenceId", AUDIT_AD_SEQUENCE_ID));
+	}
+
+	@NonNull
+	public ImmutableList<ProductTypeExternalMapping> retrieveProductTypeExternalMappings(@NonNull final ExternalSystemParentConfigId parentConfigId)
+	{
+		return productTypeExternalMappingRepo.getProductTypeExternalMappings(parentConfigId);
 	}
 }

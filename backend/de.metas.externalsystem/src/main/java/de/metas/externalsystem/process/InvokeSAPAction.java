@@ -38,6 +38,7 @@ import de.metas.i18n.BooleanWithReason;
 import de.metas.process.IProcessPreconditionsContext;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -70,6 +71,8 @@ import static de.metas.common.externalsystem.ExternalSystemConstants.PARAM_SFTP_
 
 public class InvokeSAPAction extends AlterExternalSystemServiceStatusAction
 {
+	private final InvokeSAPService invokeSAPService = SpringContextHolder.instance.getBean(InvokeSAPService.class);
+
 	@Override
 	protected IExternalSystemChildConfigId getExternalChildConfigId()
 	{
@@ -101,6 +104,8 @@ public class InvokeSAPAction extends AlterExternalSystemServiceStatusAction
 
 		parameters.put(PARAM_CHILD_CONFIG_VALUE, sapConfig.getValue());
 		parameters.putAll(extractContentSourceParameters(sapConfig));
+
+		parameters.putAll(invokeSAPService.getMappingParameters(externalSystemParentConfig.getId()));
 
 		return parameters;
 	}

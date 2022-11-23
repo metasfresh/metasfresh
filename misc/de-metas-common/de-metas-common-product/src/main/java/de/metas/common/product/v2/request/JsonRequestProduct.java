@@ -43,7 +43,7 @@ public class JsonRequestProduct
 {
 	public enum Type
 	{
-		ITEM, SERVICE
+		ITEM, SERVICE, RESOURCE, EXPENSE_TYPE, ONLINE, FREIGHT_COST, NAHRUNG
 	}
 
 	@ApiModelProperty(position = 20, value = "Corresponding to `M_Product.Value`")

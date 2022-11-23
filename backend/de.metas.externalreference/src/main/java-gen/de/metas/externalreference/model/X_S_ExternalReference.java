@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_ExternalReference, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -837092087L;
+	private static final long serialVersionUID = 1810181895L;
 
     /** Standard Constructor */
     public X_S_ExternalReference (final Properties ctx, final int S_ExternalReference_ID, @Nullable final String trxName)
@@ -94,14 +94,14 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	@Override
 	public void setExternalSystem_Config_ID (final int ExternalSystem_Config_ID)
 	{
-		if (ExternalSystem_Config_ID < 1)
+		if (ExternalSystem_Config_ID < 1) 
 			set_Value (COLUMNNAME_ExternalSystem_Config_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_ExternalSystem_Config_ID, ExternalSystem_Config_ID);
 	}
 
 	@Override
-	public int getExternalSystem_Config_ID()
+	public int getExternalSystem_Config_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_ExternalSystem_Config_ID);
 	}
@@ -113,7 +113,7 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	}
 
 	@Override
-	public boolean isReadOnlyInMetasfresh()
+	public boolean isReadOnlyInMetasfresh() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsReadOnlyInMetasfresh);
 	}
@@ -211,6 +211,10 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	public static final String TYPE_Shipper = "Shipper";
 	/** Warehouse = Warehouse */
 	public static final String TYPE_Warehouse = "Warehouse";
+	/** UOM = UOM */
+	public static final String TYPE_UOM = "UOM";
+	/** ProductType = ProductType */
+	public static final String TYPE_ProductType = "ProductType";
 	@Override
 	public void setType (final java.lang.String Type)
 	{

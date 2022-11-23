@@ -27,6 +27,7 @@ import de.metas.camel.externalsystems.common.IdAwareRouteBuilder;
 import de.metas.camel.externalsystems.common.PInstanceUtil;
 import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.v2.ProductUpsertCamelRequest;
+import de.metas.camel.externalsystems.sap.common.MessageLogger;
 import de.metas.camel.externalsystems.sap.config.ProductFileEndpointConfig;
 import de.metas.camel.externalsystems.sap.model.product.ProductRow;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
@@ -34,6 +35,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
 import org.apache.camel.CamelContext;
+import org.apache.camel.Exchange;
 import org.apache.camel.LoggingLevel;
 import org.apache.camel.dataformat.bindy.csv.BindyCsvDataFormat;
 
@@ -45,6 +47,8 @@ public class GetProductsFromFileRouteBuilder extends IdAwareRouteBuilder
 	@VisibleForTesting
 	public static final String UPSERT_PRODUCT_ENDPOINT_ID = "SAP-Products-upsertProductEndpointId";
 	private static final String UPSERT_PRODUCT_PROCESSOR_ID = "SAP-Products-upsertProductProcessorId";
+
+	public static final String ROUTE_PROPERTY_UPSERT_PRODUCT_ROUTE_CONTEXT = "UpsertProductRouteContext";
 
 	@NonNull
 	private final ProductFileEndpointConfig fileEndpointConfig;
@@ -82,6 +86,7 @@ public class GetProductsFromFileRouteBuilder extends IdAwareRouteBuilder
 				.id(routeId)
 				.log("Product Sync Route Started with Id=" + routeId)
 				.process(exchange -> PInstanceUtil.setPInstanceHeader(exchange, enabledByExternalSystemRequest))
+				.process(this::prepareProductSyncRouteContext)
 				.split(body().tokenize("\n"))
 					.streaming()
 					.unmarshal(new BindyCsvDataFormat(ProductRow.class))
@@ -95,5 +100,15 @@ public class GetProductsFromFileRouteBuilder extends IdAwareRouteBuilder
 					.endChoice()
 					.end();
 		//@formatter:on
+	}
+
+	private void prepareProductSyncRouteContext(@NonNull final Exchange exchange)
+	{
+		final UpsertProductRouteContext getProductRouteContext = UpsertProductRouteContext.builder()
+				.sapExternalMappingsHolder(ExternalMappingsHolder.holdExternalMappings(enabledByExternalSystemRequest.getParameters()))
+				.messageLogger(MessageLogger.of(processLogger, enabledByExternalSystemRequest.getAdPInstanceId()))
+				.build();
+
+		exchange.setProperty(ROUTE_PROPERTY_UPSERT_PRODUCT_ROUTE_CONTEXT, getProductRouteContext);
 	}
 }
