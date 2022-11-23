@@ -113,12 +113,4 @@ public class InvokeMetasfreshAction extends AlterExternalSystemServiceStatusActi
 				.filter(recordRef -> I_ExternalSystem_Config_Metasfresh.Table_Name.equals(recordRef.getTableName()))
 				.count();
 	}
-
-	@Override
-	protected String getOrgCode()
-	{
-		final ExternalSystemParentConfig config = externalSystemConfigDAO.getById(getExternalChildConfigId());
-
-		return orgDAO.getById(config.getOrgId()).getValue();
-	}
 }
