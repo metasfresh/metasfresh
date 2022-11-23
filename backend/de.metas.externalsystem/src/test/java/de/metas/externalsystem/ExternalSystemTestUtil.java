@@ -30,6 +30,8 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl_ProductMa
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Metasfresh;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP_LocalFile;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP_SFTP;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import lombok.Builder;
@@ -181,21 +183,61 @@ public class ExternalSystemTestUtil
 
 		final I_ExternalSystem_Config_SAP childRecord = newInstance(I_ExternalSystem_Config_SAP.class);
 		childRecord.setExternalSystemValue(configValue);
-		childRecord.setSFTP_HostName("testSAPSFTPHostName");
-		childRecord.setSFTP_Port("testSAPSFTPPort");
-		childRecord.setSFTP_Username("testSAPUsername");
-		childRecord.setSFTP_Password("testSAPPassword");
-		childRecord.setSFTP_BPartner_TargetDirectory("testSAPBPartnerDirectory");
-		childRecord.setSFTP_Product_TargetDirectory("testSAPProductDirectory");
-		childRecord.setProcessedDirectory("testSAPProcessedDirectory");
-		childRecord.setErroredDirectory("testSAPErroredDirectory");
-		childRecord.setPollingFrequencyInMs(1000);
 		childRecord.setExternalSystem_Config_ID(externalSystemConfigId);
-		childRecord.setSFTP_BPartner_FileName_Pattern("BPartner*");
-		childRecord.setSFTP_Product_FileName_Pattern("Pattern*");
 
 		saveRecord(childRecord);
 
 		return childRecord;
+	}
+
+	@NonNull
+	@Builder(builderMethodName = "createSAPContentSourceSFTPBuilder", builderClassName = "sapContentSourceSFTPBuilder")
+	private I_ExternalSystem_Config_SAP_SFTP createSAPContentSourceSFTP(
+			final int externalSystemConfigSAPId)
+	{
+		final I_ExternalSystem_Config_SAP_SFTP contentSourceSAPSFTP = newInstance(I_ExternalSystem_Config_SAP_SFTP.class);
+
+		contentSourceSAPSFTP.setSFTP_HostName("testSAPSFTPHostName");
+		contentSourceSAPSFTP.setSFTP_Port("testSAPSFTPPort");
+		contentSourceSAPSFTP.setSFTP_Username("testSAPSFTPUsername");
+		contentSourceSAPSFTP.setSFTP_Password("testSAPSFTPPassword");
+		contentSourceSAPSFTP.setSFTP_Product_TargetDirectory("testSAPSFTPProductDirectory");
+		contentSourceSAPSFTP.setSFTP_BPartner_TargetDirectory("testSAPSFTPBPartnerDirectory");
+		contentSourceSAPSFTP.setSFTP_CreditLimit_TargetDirectory("testSAPSFTPCreditLimitDirectory");
+		contentSourceSAPSFTP.setProcessedDirectory("testSAPSFTPProcessedDirectory");
+		contentSourceSAPSFTP.setErroredDirectory("testSAPSFTPErroredDirectory");
+		contentSourceSAPSFTP.setPollingFrequencyInMs(1000);
+		contentSourceSAPSFTP.setSFTP_Product_FileName_Pattern("ProductSFTP*");
+		contentSourceSAPSFTP.setSFTP_BPartner_FileName_Pattern("BPartnerSFTP*");
+		contentSourceSAPSFTP.setSFTP_CreditLimit_FileName_Pattern("CreditLimitSFTP*");
+		contentSourceSAPSFTP.setExternalSystem_Config_SAP_ID(externalSystemConfigSAPId);
+
+		saveRecord(contentSourceSAPSFTP);
+
+		return contentSourceSAPSFTP;
+	}
+
+	@NonNull
+	@Builder(builderMethodName = "createSAPContentSourceLocalFileBuilder", builderClassName = "sapContentSourceLocalFileBuilder")
+	private I_ExternalSystem_Config_SAP_LocalFile createSAPContentSourceLocalFile(
+			final int externalSystemConfigSAPId)
+	{
+		final I_ExternalSystem_Config_SAP_LocalFile contentSourceSAPLocalFile = newInstance(I_ExternalSystem_Config_SAP_LocalFile.class);
+
+		contentSourceSAPLocalFile.setLocal_Root_Location("testLocalFileRootLocation");
+		contentSourceSAPLocalFile.setLocalFile_Product_TargetDirectory("testSAPLocalFileProductDirectory");
+		contentSourceSAPLocalFile.setLocalFile_BPartner_TargetDirectory("testSAPLocalFileBPartnerDirectory");
+		contentSourceSAPLocalFile.setLocalFile_CreditLimit_TargetDirectory("testSAPLocalFileCreditLimitDirectory");
+		contentSourceSAPLocalFile.setProcessedDirectory("testSAPLocalFileProcessedDirectory");
+		contentSourceSAPLocalFile.setErroredDirectory("testSAPLocalFileErroredDirectory");
+		contentSourceSAPLocalFile.setPollingFrequencyInMs(1000);
+		contentSourceSAPLocalFile.setLocalFile_Product_FileName_Pattern("ProductLocalFile*");
+		contentSourceSAPLocalFile.setLocalFile_BPartner_FileName_Pattern("BPartnerLocalFile*");
+		contentSourceSAPLocalFile.setLocalFile_CreditLimit_FileName_Pattern("CreditLimitLocalFile*");
+		contentSourceSAPLocalFile.setExternalSystem_Config_SAP_ID(externalSystemConfigSAPId);
+
+		saveRecord(contentSourceSAPLocalFile);
+
+		return contentSourceSAPLocalFile;
 	}
 }
