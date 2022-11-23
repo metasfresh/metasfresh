@@ -134,7 +134,7 @@ describe('TableActions grid', () => {
     nock(config.API_URL)
       .defaultReplyHeaders({ 'access-control-allow-origin': '*' })
       .persist()
-      .get(uri => uri.includes('quickActions'))
+      .post(uri => uri.includes('quickActions'))
       .reply(200, { data: { actions: [] } });
   });
 
