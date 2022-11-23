@@ -44,8 +44,10 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.compiere.model.I_M_Attribute;
+import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
 
@@ -199,7 +201,7 @@ public class HUUniqueAttributesService
 			}
 
 			final I_M_HU huRecord = huDAO.getById(HuId.ofRepoId(huAttribute.getM_HU_ID()));
-			if(!huStatusBL.isQtyOnHand(huRecord.getHUStatus()))
+			if (!huStatusBL.isQtyOnHand(huRecord.getHUStatus()))
 			{
 				// don't validate HU Statuses that are not qtyOnHand here
 				continue;
@@ -237,4 +239,30 @@ public class HUUniqueAttributesService
 				.forEach(this::createOrUpdateHUUniqueAttribute);
 	}
 
+	public void validateASI(@NonNull final AttributeSetInstanceId attributeSetInstanceId, @NonNull final ProductId productId)
+	{
+		if (!attributeSetInstanceId.isRegular())
+		{
+			//nothing to do
+			return;
+		}
+
+		final List<I_M_AttributeInstance> attributeInstances = attributeDAO.retrieveAttributeInstances(attributeSetInstanceId);
+
+		for (final I_M_AttributeInstance attributeInstance : attributeInstances)
+		{
+			if (Check.isBlank(attributeInstance.getValue()))
+			{
+				continue;
+			}
+
+			final HUUniqueAttributeParameters parameters = HUUniqueAttributeParameters.builder()
+					.productId(productId)
+					.attributeId(AttributeId.ofRepoId(attributeInstance.getM_Attribute_ID()))
+					.attributeValue(attributeInstance.getValue())
+					.build();
+
+			validateHUUniqueAttributeValue(parameters);
+		}
+	}
 }
