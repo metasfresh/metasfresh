@@ -59,7 +59,7 @@ ALTER TABLE I_Invoice_Candidate ADD CONSTRAINT ADUserInCharge_IInvoiceCandidate 
 -- Column: I_Invoice_Candidate.Price
 -- Column: I_Invoice_Candidate.Price
 -- 2022-11-23T08:28:33.218Z
-INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,Description,EntityType,FacetFilterSeqNo,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,585127,1416,0,37,542207,'Price',TO_TIMESTAMP('2022-11-23 10:28:33','YYYY-MM-DD HH24:MI:SS'),100,'N','0','Preis','D',0,10,'Bezeichnet den Preis für ein Produkt oder eine Dienstleistung.','Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','Y','N',0,'Preis',0,0,TO_TIMESTAMP('2022-11-23 10:28:33','YYYY-MM-DD HH24:MI:SS'),100,0)
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,DefaultValue,Description,EntityType,FacetFilterSeqNo,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsRestAPICustomColumn,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,585127,1416,0,37,542207,'Price',TO_TIMESTAMP('2022-11-23 10:28:33','YYYY-MM-DD HH24:MI:SS'),100,'N','0','Preis','D',0,10,'Bezeichnet den Preis für ein Produkt oder eine Dienstleistung.','Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Preis',0,0,TO_TIMESTAMP('2022-11-23 10:28:33','YYYY-MM-DD HH24:MI:SS'),100,0)
 ;
 
 -- 2022-11-23T08:28:33.220Z
@@ -71,25 +71,7 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ;
 
 -- 2022-11-23T08:28:35.182Z
-/* DDL */ SELECT public.db_alter_table('I_Invoice_Candidate','ALTER TABLE public.I_Invoice_Candidate ADD COLUMN Price NUMERIC DEFAULT 0 NOT NULL')
-;
-
--- Column: I_Invoice_Candidate.Discount
--- Column: I_Invoice_Candidate.Discount
--- 2022-11-23T08:28:47.163Z
-UPDATE AD_Column SET DefaultValue='0', IsMandatory='Y',Updated=TO_TIMESTAMP('2022-11-23 10:28:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585125
-;
-
--- 2022-11-23T08:28:48.111Z
-INSERT INTO t_alter_column values('i_invoice_candidate','Discount','NUMERIC',null,'0')
-;
-
--- 2022-11-23T08:28:48.115Z
-UPDATE I_Invoice_Candidate SET Discount=0 WHERE Discount IS NULL
-;
-
--- 2022-11-23T08:28:48.116Z
-INSERT INTO t_alter_column values('i_invoice_candidate','Discount',null,'NOT NULL',null)
+/* DDL */ SELECT public.db_alter_table('I_Invoice_Candidate','ALTER TABLE public.I_Invoice_Candidate ADD COLUMN Price NUMERIC ')
 ;
 
 -- 2022-11-23T08:37:29.429Z
