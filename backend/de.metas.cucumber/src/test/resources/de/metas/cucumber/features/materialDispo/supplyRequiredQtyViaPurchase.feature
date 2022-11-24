@@ -19,6 +19,7 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
     And metasfresh initially has no MD_Candidate data
 
   @from:cucumber
+  @Id:S0222_100
   Scenario: Disposal is correctly considered in Material Dispo when the product is both Sold and Purchased;
   No stock available at demand time, supplied via purchased
     Given metasfresh contains M_Products:
@@ -72,6 +73,11 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
     And after not more than 30s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | il_1                          | hu_1               |
+
+    And after not more than 60s, metasfresh has this MD_Cockpit data
+      | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PurchaseOrder_AtDate |
+      | cp_1       | p_1                     | 2021-04-16  |                              | 10                           | 10                 | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 10                             | 10                         | 0                                  |
+
     And M_HU are disposed:
       | M_HU_ID.Identifier | MovementDate         |
       | hu_1               | 2021-04-16T21:00:00Z |
@@ -80,6 +86,10 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.DateProjected_LocalTimeZone |
       | c_1        | INVENTORY_UP      |                               | p_1                     |                      | 10  | 10                     | 2021-04-16T00:00:00             |
       | c_2        | INVENTORY_DOWN    |                               | p_1                     | 2021-04-16T21:00:00Z | -10 | 0                      |                                 |
+
+    And after not more than 60s, metasfresh has this MD_Cockpit data
+      | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PurchaseOrder_AtDate |
+      | cp_1       | p_1                     | 2021-04-16  |                              | 0                            | 0                  | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 0                              | 0                          | 0                                  |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  |
@@ -145,6 +155,7 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | cp_dd_2                                 | cp_1                     | pol_1                     | 10             | 10              |
 
   @from:cucumber
+  @Id:S0222_200
   Scenario: Disposal is correctly considered in Material Dispo when the product is both Sold and Purchased
   Partial stock available at demand time, supplied via purchased
     Given metasfresh contains M_Products:
@@ -198,6 +209,10 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
     And the inventory identified by i_1 is completed
     And the inventory identified by i_2 is completed
 
+    And after not more than 60s, metasfresh has this MD_Cockpit data
+      | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PurchaseOrder_AtDate |
+      | cp_1       | p_1                     | 2021-04-16  |                              | 15                           | 15                 | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 15                             | 15                         | 0                                  |
+
     And after not more than 30s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | il_1                          | hu_1               |
@@ -211,6 +226,10 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
       | c_1        | INVENTORY_UP      |                               | p_1                     |                      | 10  | 10                     | 2021-04-16T00:00:00             |
       | c_2        | INVENTORY_UP      |                               | p_1                     |                      | 5   | 15                     | 2021-04-16T00:00:00             |
       | c_3        | INVENTORY_DOWN    |                               | p_1                     | 2021-04-16T21:00:00Z | -10 | 5                      |                                 |
+
+    And after not more than 60s, metasfresh has this MD_Cockpit data
+      | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PurchaseOrder_AtDate |
+      | cp_1       | p_1                     | 2021-04-16  |                              | 5                            | 5                  | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 5                              | 5                          | 0                                  |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  |
@@ -326,6 +345,10 @@ Feature: Disposal is correctly considered in Material Dispo; Stock shortage solv
     And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected | Qty | Qty_AvailableToPromise | OPT.DateProjected_LocalTimeZone |
       | c_1        | INVENTORY_UP      |                               | p_1                     |               | 10  | 10                     | 2021-04-16T00:00:00             |
+
+    And after not more than 60s, metasfresh has this MD_Cockpit data
+      | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PurchaseOrder_AtDate |
+      | cp_1       | p_1                     | 2021-04-16  |                              | 10                           | 10                 | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 10                             | 10                         | 0                                  |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  |

@@ -61,19 +61,23 @@ public class M_Product_StepDef
 		this.productTable = productTable;
 	}
 
-	@And("metasfresh contains M_Product with M_Product_ID {string}")
-	public void add_M_Product(@NonNull final String productIdentifier)
+	@And("metasfresh contains M_Product with M_Product_ID {string} and identifier {string}")
+	public void add_M_Product(
+			@NonNull final String productId,
+			@NonNull final String productIdentifier)
 	{
 		final I_M_Product mockedProduct = newInstance(I_M_Product.class);
-		mockedProduct.setM_Product_ID(Integer.parseInt(productIdentifier));
-		mockedProduct.setValue("product_value" + productIdentifier);
-		mockedProduct.setName("product_name_" + productIdentifier);
+		mockedProduct.setM_Product_ID(Integer.parseInt(productId));
+		mockedProduct.setValue("product_value" + productId);
+		mockedProduct.setName("product_name_" + productId);
 		mockedProduct.setM_Product_Category_ID(standardCategoryId.getRepoId());
 		mockedProduct.setC_UOM_ID(PCEUOMId.getRepoId());
 		mockedProduct.setProductType("I");
 		mockedProduct.setIsPurchased(false);
 		mockedProduct.setIsSold(false);
 		saveRecord(mockedProduct);
+
+		productTable.putOrReplace(productIdentifier, mockedProduct);
 	}
 
 	@Given("load M_Product:")
