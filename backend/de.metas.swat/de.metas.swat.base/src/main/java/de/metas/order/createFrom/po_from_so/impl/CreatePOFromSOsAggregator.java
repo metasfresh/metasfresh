@@ -278,6 +278,16 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 			purchaseOrder.setSalesRep_ID(Env.getAD_User_ID(ctx));
 		}
 
+		// FW dropship ad
+		if (PurchaseTypeEnum.MEDIATED.equals(p_TypeOfPurchase)
+				&& salesOrder.isDropShip() && salesOrder.getDropShip_BPartner_ID() != 0)
+		{
+			purchaseOrder.setIsDropShip(true);
+			OrderDocumentLocationAdapterFactory
+					.deliveryLocationAdapter(purchaseOrder)
+					.setFromDeliveryLocation(salesOrder);
+		}
+
 		// Drop Ship
 		if (p_IsDropShip)
 		{
@@ -307,6 +317,7 @@ public class CreatePOFromSOsAggregator extends MapReduceAggregator<I_C_Order, I_
 				Loggables.addLog("@Missing@ @AD_OrgInfo@ @DropShip_Warehouse_ID@");
 			}
 		}
+
 		// References
 		purchaseOrder.setC_Activity_ID(salesOrder.getC_Activity_ID());
 		purchaseOrder.setC_Campaign_ID(salesOrder.getC_Campaign_ID());

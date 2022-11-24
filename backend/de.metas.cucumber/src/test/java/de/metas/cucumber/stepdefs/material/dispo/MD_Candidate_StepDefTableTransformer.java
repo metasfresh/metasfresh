@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.material.dispo;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefUtil;
@@ -34,12 +35,12 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.datatable.TableTransformer;
 import io.cucumber.java.DataTableType;
 import lombok.NonNull;
+import org.assertj.core.api.Assertions;
 import org.compiere.model.I_M_Product;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Map;
 
@@ -65,22 +66,24 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 
 		for (final Map<String, String> dataTableRow : dataTableRows)
 		{
-			final String identifier = DataTableUtil.extractRecordIdentifier(dataTableRow, "MD_Candidate");
+			final String identifier = DataTableUtil.extractRecordIdentifier(dataTableRow, I_MD_Candidate.COLUMNNAME_MD_Candidate_ID, "MD_Candidate");
 
-			final CandidateType type = CandidateType.ofCode(dataTableRow.get(I_MD_Candidate.COLUMNNAME_MD_Candidate_Type));
+			final String candidateTypeStr = dataTableRow.get(I_MD_Candidate.COLUMNNAME_MD_Candidate_Type);
+			Assertions.assertThat(candidateTypeStr).as("Missing value for %s in dataTableRow=%s",I_MD_Candidate.COLUMNNAME_MD_Candidate_Type, dataTableRow).isNotBlank();
+			final CandidateType type = CandidateType.ofCode(candidateTypeStr);
+
 			final CandidateBusinessCase businessCase = CandidateBusinessCase.ofCodeOrNull(dataTableRow.get("OPT." + I_MD_Candidate.COLUMNNAME_MD_Candidate_BusinessCase));
 
 			final String productIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, I_M_Product.COLUMNNAME_M_Product_ID + ".Identifier");
-
 			final int productId = StepDefUtil.extractId(productIdentifier, productTable);
 
 			final Instant time;
-
 			final String timeInLocalTimeZone = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.DateProjected_LocalTimeZone");
+
 			if (timeInLocalTimeZone != null)
 			{
 				final LocalDateTime localDateTime = LocalDateTime.parse(timeInLocalTimeZone);
-				time = localDateTime.toInstant(ZonedDateTime.now().getOffset());
+				time = localDateTime.atZone(SystemTime.zoneId()).toInstant();
 			}
 			else
 			{
@@ -89,7 +92,7 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 
 			BigDecimal qty = DataTableUtil.extractBigDecimalForColumnName(dataTableRow, I_MD_Candidate.COLUMNNAME_Qty);
 
-			if (type.equals(CandidateType.DEMAND) || type.equals(CandidateType.INVENTORY_DOWN))
+			if (type.equals(CandidateType.DEMAND) || type.equals(CandidateType.INVENTORY_DOWN) || type.equals(CandidateType.UNEXPECTED_DECREASE))
 			{
 				qty = qty.negate();
 			}

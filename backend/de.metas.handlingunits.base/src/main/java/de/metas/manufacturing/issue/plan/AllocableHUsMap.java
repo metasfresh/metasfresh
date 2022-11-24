@@ -20,6 +20,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.Set;
@@ -44,6 +45,8 @@ class AllocableHUsMap
 		this.uomConverter = uomConverter;
 		this.pickFromHUsSupplier = pickFromHUsSupplier;
 	}
+
+	public Collection<AllocableHU> getAllAllocableHUsInvolved() {return allocableHUs.values();}
 
 	public void addSourceHUs(@NonNull final Set<HuId> huIds)
 	{
@@ -99,6 +102,7 @@ class AllocableHUsMap
 							.asiId(AttributeSetInstanceId.NONE) // TODO match attributes
 							.bestBeforePolicy(bestBeforePolicy)
 							.reservationRef(Optional.empty()) // TODO introduce some PP Order reservation
+							.enforceMandatoryAttributesOnPicking(false)
 							.build());
 		}
 

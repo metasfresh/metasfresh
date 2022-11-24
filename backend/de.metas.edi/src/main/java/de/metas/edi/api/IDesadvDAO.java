@@ -22,14 +22,7 @@
 
 package de.metas.edi.api;
 
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.List;
-
 import de.metas.bpartner.BPartnerId;
-import lombok.NonNull;
-import org.adempiere.util.lang.IContextAware;
-
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_C_OrderLine;
 import de.metas.edi.model.I_M_InOut;
@@ -39,8 +32,13 @@ import de.metas.esb.edi.model.I_EDI_DesadvLine;
 import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
+import org.adempiere.util.lang.IContextAware;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.List;
 
 public interface IDesadvDAO extends ISingletonService
 {
@@ -112,7 +110,10 @@ public interface IDesadvDAO extends ISingletonService
 	 */
 	List<I_C_Order> retrieveAllOrders(I_EDI_Desadv desadv);
 
-	List<I_EDI_DesadvLine_Pack> retrieveDesadvLinePacks(I_EDI_DesadvLine desadvLine);
+	/**
+	 * @param withInOutLine optional; specifies if only packs with/without an iol shall be selected. If {@code null}, no restriction is added.
+	 */
+	List<I_EDI_DesadvLine_Pack> retrieveDesadvLinePacks(@NonNull I_EDI_DesadvLine desadvLine, @Nullable Boolean withInOutLine);
 
 	List<I_EDI_DesadvLine_Pack> retrieveDesadvLinePackRecords(I_M_InOutLine inOutLineRecord);
 

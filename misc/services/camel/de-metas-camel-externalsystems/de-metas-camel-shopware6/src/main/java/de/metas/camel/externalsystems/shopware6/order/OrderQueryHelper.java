@@ -27,7 +27,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.camel.externalsystems.shopware6.api.model.JsonQuery;
 import de.metas.camel.externalsystems.shopware6.api.model.MultiJsonFilter;
 import de.metas.camel.externalsystems.shopware6.api.model.MultiQueryRequest;
-import de.metas.camel.externalsystems.shopware6.api.model.Shopware6QueryRequest;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.util.Check;
@@ -86,7 +85,7 @@ public class OrderQueryHelper
 
 	@NonNull
 	@VisibleForTesting
-	public Shopware6QueryRequest buildShopware6QueryRequest(@NonNull final JsonExternalSystemRequest request)
+	public ImportOrdersRequest buildShopware6QueryRequest(@NonNull final JsonExternalSystemRequest request)
 	{
 		final ImmutableList.Builder<JsonQuery> jsonQueries = ImmutableList.builder();
 
@@ -106,21 +105,35 @@ public class OrderQueryHelper
 
 		if (!Check.isEmpty(queries))
 		{
-			return MultiQueryRequest.builder()
+			final MultiQueryRequest multiQueryRequest = MultiQueryRequest.builder()
 					.filter(MultiJsonFilter.builder()
 									.operatorType(MultiJsonFilter.OperatorType.AND)
 									.jsonQueries(queries)
 									.build())
 					.build();
+
+			return ImportOrdersRequest.builder()
+					.shopware6QueryRequest(multiQueryRequest)
+					.ignoreNextImportTimestamp(true)
+					.build();
 		}
 		else
 		{
+			final String updatedAfterOverride = request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER_OVERRIDE);
+
+			final boolean ignoreNextImportTimestamp = updatedAfterOverride != null;
+
 			final String updatedAfter = CoalesceUtil.coalesceNotNull(
-					request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER_OVERRIDE),
+					updatedAfterOverride,
 					request.getParameters().get(ExternalSystemConstants.PARAM_UPDATED_AFTER),
 					Instant.ofEpochSecond(0).toString());
 
-			return buildUpdatedAfterQueryRequest(updatedAfter);
+			final MultiQueryRequest multiQueryRequest = buildUpdatedAfterQueryRequest(updatedAfter);
+
+			return ImportOrdersRequest.builder()
+					.shopware6QueryRequest(multiQueryRequest)
+					.ignoreNextImportTimestamp(ignoreNextImportTimestamp)
+					.build();
 		}
 	}
 }

@@ -13,7 +13,8 @@ RUN apt update \
     && apt -y autoremove \
     && apt -y clean
 
-RUN mkdir -p /opt/metasfresh
+# create the metasfresh-folder as well as a folder for optional jars that might be volume-mounted from outside
+RUN mkdir -p /opt/metasfresh/external-lib
 
 # metasfresh_server.jar is just for historical reasons (service configs on some legacy servers etc)
 COPY ./metasfresh_server.jar /opt/metasfresh/metasfresh-app.jar

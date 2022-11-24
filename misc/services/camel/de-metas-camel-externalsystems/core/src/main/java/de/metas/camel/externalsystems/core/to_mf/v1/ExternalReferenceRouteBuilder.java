@@ -25,7 +25,6 @@ package de.metas.camel.externalsystems.core.to_mf.v1;
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
-import de.metas.camel.externalsystems.core.CoreConstants;
 import de.metas.common.externalreference.v1.JsonExternalReferenceCreateRequest;
 import de.metas.common.externalreference.v1.JsonExternalReferenceLookupRequest;
 import de.metas.common.externalreference.v1.JsonRequestExternalReferenceUpsert;
@@ -67,7 +66,6 @@ public class ExternalReferenceRouteBuilder extends RouteBuilder
 				})
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonExternalReferenceCreateRequest.class))
 				.removeHeaders("CamelHttp*")
-				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
 				.to("{{metasfresh.create-externalreference.api.uri}}");
 
@@ -86,7 +84,6 @@ public class ExternalReferenceRouteBuilder extends RouteBuilder
 				})
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonExternalReferenceLookupRequest.class))
 				.removeHeaders("CamelHttp*")
-				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
 				.toD("{{metasfresh.lookup-externalreference.api.uri}}/${header.orgCode}");
 
@@ -106,7 +103,6 @@ public class ExternalReferenceRouteBuilder extends RouteBuilder
 				})
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonRequestExternalReferenceUpsert.class))
 				.removeHeaders("CamelHttp*")
-				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
 				.toD("{{metasfresh.upsert-externalreference.api.uri}}/${header.orgCode}");
 	}

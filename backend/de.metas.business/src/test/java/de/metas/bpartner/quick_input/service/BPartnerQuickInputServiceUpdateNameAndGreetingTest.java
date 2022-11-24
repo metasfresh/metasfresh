@@ -58,7 +58,7 @@ import java.util.Optional;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.refresh;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 {
@@ -118,7 +118,7 @@ public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 
 		refresh(partner);
 		assertThat(partner.getBPartnerName()).isEqualTo(lastname + ", " + firstName);
-		assertThat(partner.getC_Greeting_ID()).isEqualTo(greeting_MRS.getC_Greeting_ID());
+		assertThat(partner.getC_Greeting_ID()).isEqualTo(-1);
 	}
 
 	@Test

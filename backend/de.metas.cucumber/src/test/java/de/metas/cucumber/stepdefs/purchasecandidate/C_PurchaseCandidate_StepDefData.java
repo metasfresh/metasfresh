@@ -25,6 +25,13 @@ package de.metas.cucumber.stepdefs.purchasecandidate;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
 
+/**
+ * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
+ */
 public class C_PurchaseCandidate_StepDefData extends StepDefData<I_C_PurchaseCandidate>
 {
+	public C_PurchaseCandidate_StepDefData()
+	{
+		super(I_C_PurchaseCandidate.class);
+	}
 }

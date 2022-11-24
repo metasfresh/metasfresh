@@ -1,13 +1,13 @@
 package de.metas.contracts.subscription.impl;
 
-import java.sql.Timestamp;
-import java.util.List;
-
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-
 import com.google.common.base.Preconditions;
-
+import de.metas.bpartner.BPartnerId;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
+import de.metas.cache.model.CacheInvalidateRequest;
+import de.metas.cache.model.IModelCacheInvalidationService;
+import de.metas.cache.model.ModelCacheInvalidationTiming;
+import de.metas.contracts.FlatrateDataId;
+import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_SubscriptionProgress;
 import de.metas.contracts.subscription.ISubscriptionDAO;
@@ -15,12 +15,18 @@ import de.metas.contracts.subscription.ISubscriptionDAO.SubscriptionProgressQuer
 import de.metas.contracts.subscription.impl.subscriptioncommands.ChangeRecipient;
 import de.metas.contracts.subscription.impl.subscriptioncommands.InsertPause;
 import de.metas.contracts.subscription.impl.subscriptioncommands.RemovePauses;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
-
 import lombok.Builder;
 import lombok.NonNull;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
+
+import java.sql.Timestamp;
+import java.util.List;
 
 /*
  * #%L
@@ -46,7 +52,7 @@ import lombok.NonNull;
 
 public class SubscriptionService
 {
-	public static final String MSG_NO_SPS_AFTER_DATE_1P = "Subscription.NoSpsAfterDate_1P";
+	public static final AdMessageKey MSG_NO_SPS_AFTER_DATE_1P = AdMessageKey.of("Subscription.NoSpsAfterDate_1P");
 
 	public static SubscriptionService get()
 	{
@@ -63,11 +69,16 @@ public class SubscriptionService
 			@NonNull final Timestamp dateTo)
 	{
 		new InsertPause(this).insertPause(term, dateFrom, dateTo);
+		resetCache(BPartnerId.ofRepoId(term.getBill_BPartner_ID()), FlatrateDataId.ofRepoId(term.getC_Flatrate_Data_ID()));
 	}
 
 	public static int changeRecipient(@NonNull final ChangeRecipientsRequest changeRecipientsRequest)
 	{
-		return ChangeRecipient.changeRecipient(changeRecipientsRequest);
+		final int result = ChangeRecipient.changeRecipient(changeRecipientsRequest);
+		final I_C_Flatrate_Term term = changeRecipientsRequest.getTerm();
+		resetCache(BPartnerId.ofRepoId(term.getBill_BPartner_ID()), FlatrateDataId.ofRepoId(term.getC_Flatrate_Data_ID()));
+		return result;
+
 	}
 
 	@lombok.Value
@@ -92,7 +103,7 @@ public class SubscriptionService
 				final int DropShip_BPartner_ID,
 				final int DropShip_Location_ID,
 				final int DropShip_User_ID,
-				boolean IsPermanentRecipient)
+				final boolean IsPermanentRecipient)
 		{
 			this.term = term;
 
@@ -123,6 +134,7 @@ public class SubscriptionService
 			@NonNull final Timestamp pauseUntil)
 	{
 		new RemovePauses(this).removePausesAroundTimeframe(term, pauseFrom, pauseUntil);
+		resetCache(BPartnerId.ofRepoId(term.getBill_BPartner_ID()), FlatrateDataId.ofRepoId(term.getC_Flatrate_Data_ID()));
 	}
 
 	public void removePausesAroundDate(
@@ -130,8 +142,8 @@ public class SubscriptionService
 			@NonNull final Timestamp date)
 	{
 		new RemovePauses(this).removePausesAroundTimeframe(term, date, date);
+		resetCache(BPartnerId.ofRepoId(term.getBill_BPartner_ID()), FlatrateDataId.ofRepoId(term.getC_Flatrate_Data_ID()));
 	}
-
 
 	public void removeAllPauses(final I_C_Flatrate_Term term)
 	{
@@ -139,7 +151,7 @@ public class SubscriptionService
 		final Timestamp distantFuture = TimeUtil.getDay(9999, 12, 31);
 
 		new RemovePauses(this).removePausesAroundTimeframe(term, distantPast, distantFuture);
-
+		resetCache(BPartnerId.ofRepoId(term.getBill_BPartner_ID()), FlatrateDataId.ofRepoId(term.getC_Flatrate_Data_ID()));
 	}
 
 	public final List<I_C_SubscriptionProgress> retrieveNextSPsAndLogIfEmpty(
@@ -159,6 +171,21 @@ public class SubscriptionService
 			Loggables.addLog(msgBL.getMsg(Env.getCtx(), MSG_NO_SPS_AFTER_DATE_1P, new Object[] { pauseFrom }));
 		}
 		return sps;
+	}
+
+	/**
+	 * This is needed because no direct parent-child relationship can be established between these tables, as the {@code I_C_SubscriptionProgress} tabs would want to show
+	 * records for which the C_BPartner_ID in context is either the recipient or the contract holder.
+	 */
+	private static void resetCache(@NonNull final BPartnerId bpartnerId, @NonNull final FlatrateDataId flatrateDataId)
+	{
+		final IModelCacheInvalidationService modelCacheInvalidationService = Services.get(IModelCacheInvalidationService.class);
+		modelCacheInvalidationService.invalidate(
+				CacheInvalidateMultiRequest.of(
+						CacheInvalidateRequest.allChildRecords(I_C_Flatrate_Data.Table_Name, flatrateDataId, I_C_SubscriptionProgress.Table_Name),
+						CacheInvalidateRequest.allChildRecords(I_C_BPartner.Table_Name, bpartnerId, I_C_SubscriptionProgress.Table_Name)),
+				ModelCacheInvalidationTiming.CHANGE
+		);
 	}
 
 }

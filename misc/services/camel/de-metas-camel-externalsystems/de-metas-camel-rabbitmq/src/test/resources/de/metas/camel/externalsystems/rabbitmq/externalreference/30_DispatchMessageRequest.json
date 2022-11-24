@@ -1,0 +1,15 @@
+{
+  "url": "https://test",
+  "authToken": "authToken",
+  "message": {
+    "properties": {
+      "delivery_mode": 2,
+      "headers": {
+        "subject": "metasfresh_external_reference_sync"
+      }
+    },
+    "routing_key": "routingKey",
+    "payload": "{\"items\":[{\"lookupItem\":{\"type\":\"BPartner\",\"id\":\"externalRef_bpartner\"},\"metasfreshId\":2156428,\"externalReference\":\"externalRef_bpartner\",\"systemName\":\"ALBERTA\",\"externalReferenceId\":100000},{\"lookupItem\":{\"type\":\"BPartnerLocation\",\"id\":\"externalRef_bpLocation\"},\"metasfreshId\":2205178,\"externalReference\":\"externalRef_bpLocation\",\"systemName\":\"ALBERTA\",\"externalReferenceId\":100001},{\"lookupItem\":{\"type\":\"UserID\",\"id\":\"externalRef_user\"},\"metasfreshId\":2188227,\"externalReference\":\"externalRef_user\",\"systemName\":\"ALBERTA\",\"externalReferenceId\":100002}]}",
+    "payload_encoding": "string"
+  }
+}

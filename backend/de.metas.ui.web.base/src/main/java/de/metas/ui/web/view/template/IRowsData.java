@@ -1,14 +1,14 @@
 package de.metas.ui.web.view.template;
 
-import java.util.Collection;
-import java.util.Map;
-
-import org.adempiere.util.lang.impl.TableRecordReferenceSet;
-
 import de.metas.ui.web.exceptions.EntityNotFoundException;
 import de.metas.ui.web.view.IViewRow;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Map;
 
 /*
  * #%L
@@ -69,7 +69,7 @@ public interface IRowsData<T extends IViewRow>
 	/** @return top level or include row */
 	default T getById(final DocumentId rowId) throws EntityNotFoundException
 	{
-		final T row = getDocumentId2AllRows().get(rowId);
+		final T row = getByIdOrNull(rowId);
 		if (row == null)
 		{
 			throw new EntityNotFoundException("Row not found")
@@ -78,4 +78,11 @@ public interface IRowsData<T extends IViewRow>
 		}
 		return row;
 	}
+
+	@Nullable
+	default T getByIdOrNull(final DocumentId rowId)
+	{
+		return getDocumentId2AllRows().get(rowId);
+	}
+
 }

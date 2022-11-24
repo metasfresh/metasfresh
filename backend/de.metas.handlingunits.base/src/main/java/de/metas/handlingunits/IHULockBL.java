@@ -1,12 +1,11 @@
 package de.metas.handlingunits;
 
-import java.util.Collection;
-
-import org.adempiere.ad.dao.IQueryFilter;
-
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.lock.api.LockOwner;
 import de.metas.util.ISingletonService;
+import org.adempiere.ad.dao.IQueryFilter;
+
+import java.util.Collection;
 
 /*
  * #%L

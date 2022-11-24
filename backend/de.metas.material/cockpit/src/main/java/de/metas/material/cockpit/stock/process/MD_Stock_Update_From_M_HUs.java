@@ -1,14 +1,5 @@
 package de.metas.material.cockpit.stock.process;
 
-import static java.math.BigDecimal.ZERO;
-
-import java.util.List;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.service.ClientId;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.SpringContextHolder;
-
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.material.cockpit.model.I_MD_Stock_From_HUs_V;
 import de.metas.material.cockpit.stock.StockChangeSourceInfo;
@@ -22,9 +13,19 @@ import de.metas.process.JavaProcess;
 import de.metas.process.RunOutOfTrx;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.service.ClientId;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
+
+import java.util.List;
+
+import static java.math.BigDecimal.ZERO;
 
 /*
  * #%L
@@ -57,6 +58,7 @@ import lombok.NonNull;
  */
 public class MD_Stock_Update_From_M_HUs extends JavaProcess
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final StockDataUpdateRequestHandler dataUpdateRequestHandler = SpringContextHolder.instance.getBean(StockDataUpdateRequestHandler.class);
 
@@ -77,12 +79,11 @@ public class MD_Stock_Update_From_M_HUs extends JavaProcess
 	private List<I_MD_Stock_From_HUs_V> retrieveHuData()
 	{
 		addLog("Performing a select for Records to correct on MD_Stock_From_HUs_V");
-		final List<I_MD_Stock_From_HUs_V> huBasedDataRecords = Services.get(IQueryBL.class)
+		return queryBL
 				.createQueryBuilder(I_MD_Stock_From_HUs_V.class)
 				.addNotEqualsFilter(I_MD_Stock_From_HUs_V.COLUMNNAME_QtyOnHandChange, ZERO)
 				.create()
 				.list();
-		return huBasedDataRecords;
 	}
 
 	private void createAndHandleDataUpdateRequests(
@@ -108,15 +109,14 @@ public class MD_Stock_Update_From_M_HUs extends JavaProcess
 		final StockDataRecordIdentifier recordIdentifier = toStockDataRecordIdentifier(huBasedDataRecord);
 
 		final ProductId productId = ProductId.ofRepoId(huBasedDataRecord.getM_Product_ID());
-		final Quantity qtyInStorageUOM = Quantity.of(huBasedDataRecord.getQtyOnHandChange(), huBasedDataRecord.getC_UOM());
+		final Quantity qtyInStorageUOM = Quantitys.create(huBasedDataRecord.getQtyOnHandChange(), UomId.ofRepoId(huBasedDataRecord.getC_UOM_ID()));
 		final Quantity qtyInProductUOM = uomConversionBL.convertToProductUOM(qtyInStorageUOM, productId);
 
-		final StockDataUpdateRequest dataUpdateRequest = StockDataUpdateRequest.builder()
+		return StockDataUpdateRequest.builder()
 				.identifier(recordIdentifier)
 				.onHandQtyChange(qtyInProductUOM.toBigDecimal())
 				.sourceInfo(stockDataUpdateRequestSourceInfo)
 				.build();
-		return dataUpdateRequest;
 	}
 
 	private static StockDataRecordIdentifier toStockDataRecordIdentifier(@NonNull final I_MD_Stock_From_HUs_V huBasedDataRecord)

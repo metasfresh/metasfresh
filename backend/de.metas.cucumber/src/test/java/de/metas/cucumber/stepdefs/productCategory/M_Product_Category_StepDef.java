@@ -23,7 +23,6 @@
 package de.metas.cucumber.stepdefs.productCategory;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSet_StepDefData;
 import de.metas.util.Check;
 import de.metas.util.Services;

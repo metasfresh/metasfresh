@@ -1,10 +1,15 @@
 package de.metas.ui.web.window.descriptor.factory.standard;
 
-import java.math.BigDecimal;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
+import de.metas.logging.LogManager;
+import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
+import de.metas.ui.web.window.descriptor.sql.AutoSequenceDefaultValueExpression;
+import de.metas.ui.web.window.descriptor.sql.SqlDefaultValueExpression;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.expression.api.IExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
@@ -18,16 +23,9 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
-import de.metas.ui.web.window.WindowConstants;
-import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
-import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
-import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.sql.AutoSequenceDefaultValueExpression;
-import de.metas.ui.web.window.descriptor.sql.SqlDefaultValueExpression;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Optional;
 
 /*
  * #%L
@@ -54,14 +52,14 @@ import lombok.NonNull;
 public class DefaultValueExpressionsFactory
 {
 	/** @return new default instance */
-	public static final DefaultValueExpressionsFactory newInstance()
+	public static DefaultValueExpressionsFactory newInstance()
 	{
 		final String tableName = null; // N/A
 		final boolean isDetailTab = false;
 		return new DefaultValueExpressionsFactory(tableName, isDetailTab);
 	}
 
-	public static final DefaultValueExpressionsFactory newInstance(@NonNull final String tableName, final boolean isDetailTab)
+	public static DefaultValueExpressionsFactory newInstance(@NonNull final String tableName, final boolean isDetailTab)
 	{
 		return new DefaultValueExpressionsFactory(tableName, isDetailTab);
 	}
@@ -105,7 +103,7 @@ public class DefaultValueExpressionsFactory
 	private final String _tableName;
 	private final boolean _isDetailTab;
 
-	private DefaultValueExpressionsFactory(final String tableName, final boolean isDetailTab)
+	private DefaultValueExpressionsFactory(@Nullable final String tableName, final boolean isDetailTab)
 	{
 		_tableName = tableName;
 		_isDetailTab = isDetailTab;
@@ -286,10 +284,10 @@ public class DefaultValueExpressionsFactory
 	 * <li>we have some cases where a Table's reference default value is something like 'de.metas.swat'
 	 * </ul>
 	 *
-	 * @param expressionStr
 	 * @return fixed expression or same expression if does not apply
 	 */
-	private static final String stripDefaultValueQuotes(final String expressionStr)
+	@Nullable
+	private static String stripDefaultValueQuotes(final String expressionStr)
 	{
 		if (expressionStr == null || expressionStr.isEmpty())
 		{

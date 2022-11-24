@@ -36,15 +36,10 @@ package org.compiere.grid;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Vector;
-
+import de.metas.i18n.Msg;
 import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
+import de.metas.util.Services;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.adempiere.warehouse.api.IWarehouseDAO;
@@ -65,8 +60,12 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.KeyNamePair;
 
-import de.metas.i18n.Msg;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Vector;
 
 /**
  * Create Invoice Transactions from PO Orders or Receipt
@@ -740,6 +739,7 @@ public class CreateFromShipment extends CreateFrom
 			inout.setUser1_ID(p_order.getUser1_ID());
 			inout.setUser2_ID(p_order.getUser2_ID());
 			inout.setC_Incoterms_ID(p_order.getC_Incoterms_ID());
+			inout.setAD_InputDataSource_ID(p_order.getAD_InputDataSource_ID());
 
 			if (p_order.isDropShip())
 			{
@@ -761,6 +761,7 @@ public class CreateFromShipment extends CreateFrom
 			inout.setC_Activity_ID(m_invoice.getC_Activity_ID());
 			inout.setUser1_ID(m_invoice.getUser1_ID());
 			inout.setUser2_ID(m_invoice.getUser2_ID());
+			inout.setAD_InputDataSource_ID(m_invoice.getAD_InputDataSource_ID());
 		}
 		if (m_rma != null && m_rma.getM_RMA_ID() != 0)
 		{
@@ -775,6 +776,7 @@ public class CreateFromShipment extends CreateFrom
 			inout.setC_Activity_ID(originalIO.getC_Activity_ID());
 			inout.setUser1_ID(originalIO.getUser1_ID());
 			inout.setUser2_ID(originalIO.getUser2_ID());
+			inout.setAD_InputDataSource_ID(originalIO.getAD_InputDataSource_ID());
 		}
 		inout.saveEx();
 		return true;

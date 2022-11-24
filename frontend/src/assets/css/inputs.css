@@ -591,6 +591,10 @@ input:checked + .input-slider:before {
 
         .input-icon {
             bottom: -1px;
+            >.meta-icon-close-alt, .meta-icon-down-1 {
+              font-size:20px;
+              padding-right: 1px;
+           }
         }
     }
     &.lookup-dropdown {
@@ -772,6 +776,7 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
     padding: 0;
     padding-right: .5rem;
     justify-content: space-between;
+    padding-right: 3px;
 
     .input-dropdown-container {
         position: static;
@@ -803,6 +808,10 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
     padding: 0;
     flex: 1;
 
+    :first-child {
+        width: 100%;
+    }
+
     &.input-icon {
         flex: 0.05;
         justify-content: flex-end;
@@ -813,8 +822,10 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
             top: -3px;
         }
 
-        .meta-icon-preview {
+        .meta-icon-close-alt, .meta-icon-preview {
             cursor: default;
+            font-size: 20px;
+            width: 25px;
         }
     }
 
@@ -849,7 +860,7 @@ input[type=checkbox]:disabled, input[type=radio]:disabled {
 }
 
 .lookup-tooltip {
-    flex: 0.05;
+    flex: 0.02;
     justify-content: flex-end;
     pointer-events: initial;
 }

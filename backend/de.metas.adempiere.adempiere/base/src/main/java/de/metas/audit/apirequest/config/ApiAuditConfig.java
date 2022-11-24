@@ -43,6 +43,7 @@ public class ApiAuditConfig
 {
 	@NonNull
 	ApiAuditConfigId apiAuditConfigId;
+	
 	boolean active;
 
 	@NonNull
@@ -58,6 +59,7 @@ public class ApiAuditConfig
 	int keepRequestBodyDays;
 	int keepResponseDays;
 	int keepResponseBodyDays;
+	int keepErroredRequestDays;
 
 	@Nullable
 	HttpMethod method;

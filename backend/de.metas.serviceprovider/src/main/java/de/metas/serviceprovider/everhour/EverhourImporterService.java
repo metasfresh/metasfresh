@@ -27,16 +27,16 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
+import de.metas.externalreference.ExternalId;
+import de.metas.externalreference.ExternalReferenceQuery;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalUserReferenceType;
-import de.metas.externalreference.ExternalReferenceQuery;
 import de.metas.issue.tracking.everhour.api.EverhourClient;
 import de.metas.issue.tracking.everhour.api.model.GetTeamTimeRecordsRequest;
 import de.metas.issue.tracking.everhour.api.model.TimeRecord;
 import de.metas.logging.LogManager;
 import de.metas.organization.OrgId;
 import de.metas.serviceprovider.ImportQueue;
-import de.metas.externalreference.ExternalId;
 import de.metas.serviceprovider.external.ExternalSystem;
 import de.metas.serviceprovider.external.reference.ExternalServiceReferenceType;
 import de.metas.serviceprovider.issue.IssueId;
@@ -114,7 +114,7 @@ public class EverhourImporterService implements TimeBookingsImporter
 					.map(interval -> buildGetTeamTimeRecordsRequest(request.getAuthToken(), interval))
 					.map(everhourClient::getTeamTimeRecords)
 					.flatMap(List::stream)
-					.filter(timeRecord -> isGithubID(timeRecord.getTask().getId()))
+					.filter(timeRecord -> timeRecord.getTask() != null && isGithubID(timeRecord.getTask().getId()))
 					.forEach(timeBooking-> importTimeBooking(timeBooking, request.getOrgId()));
 		}
 		catch (final Exception e)

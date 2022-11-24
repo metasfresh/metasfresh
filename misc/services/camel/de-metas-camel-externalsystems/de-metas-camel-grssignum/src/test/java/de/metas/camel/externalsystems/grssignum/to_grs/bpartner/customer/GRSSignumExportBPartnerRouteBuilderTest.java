@@ -35,6 +35,7 @@ import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExportDirectorySettings;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -47,10 +48,12 @@ import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Optional;
 import java.util.Properties;
 
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_GET_BPARTNER_PRODUCTS_ROUTE_ID;
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_LOOKUP_EXTERNAL_REFERENCE_v2_ROUTE_ID;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_LOOKUP_EXTERNALREFERENCE_V2_CAMEL_URI;
 import static de.metas.camel.externalsystems.grssignum.to_grs.bpartner.GRSSignumExportBPartnerRouteBuilder.EXPORT_BPARTNER_ROUTE_ID;
 import static de.metas.camel.externalsystems.grssignum.to_grs.client.GRSSignumDispatcherRouteBuilder.GRS_DISPATCHER_ROUTE_ID;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -137,7 +140,8 @@ public class GRSSignumExportBPartnerRouteBuilderTest extends CamelTestSupport
 		final JsonExternalSystemRequest invokeExternalSystemRequest = objectMapper.readValue(invokeExternalSystemRequestIS, JsonExternalSystemRequest.class);
 
 		// when
-		template.sendBody("direct:" + EXPORT_BPARTNER_ROUTE_ID, invokeExternalSystemRequest);
+		final Integer pinstanceId = Optional.ofNullable(invokeExternalSystemRequest.getAdPInstanceId()).map(JsonMetasfreshId::getValue).orElse(null);
+		template.sendBodyAndHeader("direct:" + EXPORT_BPARTNER_ROUTE_ID, invokeExternalSystemRequest, HEADER_PINSTANCE_ID, pinstanceId);
 
 		// then
 		assertThat(mockRetrieveBPartnerProcessor.called).isEqualTo(1);
@@ -172,7 +176,7 @@ public class GRSSignumExportBPartnerRouteBuilderTest extends CamelTestSupport
 										  .to(MOCK_BPARTNER_PRODUCT_RETRIEVE_ENDPOINT)
 										  .process(retrieveBPartnerProductProcessor);
 
-								  advice.interceptSendToEndpoint("direct:" + MF_LOOKUP_EXTERNAL_REFERENCE_v2_ROUTE_ID)
+								  advice.interceptSendToEndpoint("direct:" + MF_LOOKUP_EXTERNALREFERENCE_V2_CAMEL_URI)
 										  .skipSendToOriginalEndpoint()
 										  .to(MOCK_EXTERNAL_REFERENCE_LOOOKUP_ENDPOINT)
 										  .process(mockLookupExternalReferenceProcessor);

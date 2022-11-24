@@ -22,21 +22,19 @@ package de.metas.inoutcandidate.api.impl;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
 import de.metas.inoutcandidate.filter.GenerateReceiptScheduleForModelAggregateFilter;
+import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
+import de.metas.util.Services;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_OrderLine;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.inoutcandidate.api.IReceiptScheduleProducerFactory;
-import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
-import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
-import de.metas.util.Services;
+import java.util.ArrayList;
+import java.util.List;
 
 public class OrderReceiptScheduleProducerTest extends ReceiptScheduleTestBase
 {

@@ -90,7 +90,8 @@ public class C_OrderLine_HandlerDAO implements IC_OrderLine_HandlerDAO
 																				 X_C_DocType.DOCSUBTYPE_Proposal,
 																				 X_C_DocType.DOCSUBTYPE_Quotation,
 																				 X_C_DocType.DOCSUBTYPE_POSOrder,
-																				 X_C_DocType.DOCSUBTYPE_FrameAgrement)));
+																				 X_C_DocType.DOCSUBTYPE_FrameAgrement,
+																				 X_C_DocType.DOCSUBTYPE_CostEstimate)));
 			docTypeFilter.addFilter(docTypeFilterSO);
 
 			final ICompositeQueryFilter<I_C_DocType> docTypeFilterPO = queryBL.createCompositeQueryFilter(I_C_DocType.class);
@@ -129,6 +130,9 @@ public class C_OrderLine_HandlerDAO implements IC_OrderLine_HandlerDAO
 				.filter(filters)
 				.filterByClientId();
 
+		// order lines that are *not* a IsGroupCompensationLine need to come first,
+		// because later invoice candidates might need the previously created ones that have a C_Order_CompensationGroup_ID set
+		queryBuilder.orderBy(I_C_OrderLine.COLUMNNAME_IsGroupCompensationLine);
 		return queryBuilder;
 	}
 

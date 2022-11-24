@@ -22,18 +22,17 @@ package org.adempiere.ad.trx.processor.api;
  * #L%
  */
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-import java.util.function.Consumer;
-
+import com.google.common.base.Preconditions;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxSavepoint;
 import org.adempiere.ad.trx.processor.spi.ITrxItemProcessor;
 import org.adempiere.ad.trx.processor.spi.TrxItemProcessorAdapter;
 
-import com.google.common.base.Preconditions;
-
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Properties;
+import java.util.function.Consumer;
 
 /**
  * Helper interface which can assist you configure and execute an {@link ITrxItemProcessor}.<br>
@@ -52,7 +51,7 @@ public interface ITrxItemExecutorBuilder<IT, RT>
 	 * Used to specify what shall be done when processing a chunk failed. See {@link ITrxItemExecutorBuilder#setOnItemErrorPolicy(OnItemErrorPolicy)}.
 	 *
 	 * @author metas-dev <dev@metasfresh.com>
-	 * @task https://github.com/metasfresh/metasfresh/issues/302
+	 * task https://github.com/metasfresh/metasfresh/issues/302
 	 */
 	enum OnItemErrorPolicy
 	{
@@ -72,7 +71,7 @@ public interface ITrxItemExecutorBuilder<IT, RT>
 		 * the processor's {@link ITrxItemExceptionHandler#onItemError(Exception, Object)} method already dealt with it, and no other items of the chunk are affected.
 		 * This is what we need for issue #302
 		 *
-		 * @task https://github.com/metasfresh/metasfresh/issues/302
+		 * task https://github.com/metasfresh/metasfresh/issues/302
 		 */
 		ContinueChunkAndCommit;
 
@@ -92,9 +91,6 @@ public interface ITrxItemExecutorBuilder<IT, RT>
 
 	/**
 	 * Builds the executor, runs it on given items and return the result
-	 *
-	 * @param items
-	 * @return result
 	 */
 	RT process(Iterator<? extends IT> items);
 
@@ -109,10 +105,9 @@ public interface ITrxItemExecutorBuilder<IT, RT>
 	/**
 	 * Configures the context
 	 *
-	 * @param ctx
 	 * @param trxName use {@link org.adempiere.ad.trx.api.ITrx#TRXNAME_None} if you want each chunk to be processed in a single transaction.
 	 */
-	ITrxItemExecutorBuilder<IT, RT> setContext(Properties ctx, String trxName);
+	ITrxItemExecutorBuilder<IT, RT> setContext(Properties ctx, @Nullable String trxName);
 
 	/** Configures the context */
 	ITrxItemExecutorBuilder<IT, RT> setContext(ITrxItemProcessorContext processorCtx);
@@ -139,7 +134,6 @@ public interface ITrxItemExecutorBuilder<IT, RT>
 	/**
 	 * Sets exception handler to be used if processing fails.
 	 *
-	 * @param exceptionHandler
 	 * @see ITrxItemProcessorExecutor#setExceptionHandler(ITrxItemExceptionHandler)
 	 * @see ITrxItemProcessorExecutor#DEFAULT_ExceptionHandler
 	 */
@@ -148,12 +142,9 @@ public interface ITrxItemExecutorBuilder<IT, RT>
 	/**
 	 * Specifies what to do if processing an item fails.
 	 *
-	 * @param onItemErrorPolicy
-	 * @return
-	 *
 	 * @see ITrxItemProcessorExecutor#DEFAULT_OnItemErrorPolicy for the default value.
 	 *
-	 * @task https://github.com/metasfresh/metasfresh/issues/302
+	 * task https://github.com/metasfresh/metasfresh/issues/302
 	 */
 	ITrxItemExecutorBuilder<IT, RT> setOnItemErrorPolicy(OnItemErrorPolicy onItemErrorPolicy);
 
@@ -174,7 +165,6 @@ public interface ITrxItemExecutorBuilder<IT, RT>
 	 * Without a savepoint, the executor will not roll back.
 	 *
 	 *
-	 * @param useTrxSavepoints
 	 * @see ITrxItemProcessorExecutor#setUseTrxSavepoints(boolean)
 	 */
 	ITrxItemExecutorBuilder<IT, RT> setUseTrxSavepoints(boolean useTrxSavepoints);

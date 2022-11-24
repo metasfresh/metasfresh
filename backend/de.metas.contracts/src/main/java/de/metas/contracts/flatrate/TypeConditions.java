@@ -33,6 +33,7 @@ import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_C
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_Commission;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_FlatFee;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_HoldingFee;
+import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_LicenseFee;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_MarginCommission;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_MediatedCommission;
 import static de.metas.contracts.model.X_C_Flatrate_Conditions.TYPE_CONDITIONS_Procurement;
@@ -54,7 +55,9 @@ public enum TypeConditions implements ReferenceListAwareEnum
 	COMMISSION(TYPE_CONDITIONS_Commission),
 	MEDIATED_COMMISSION(TYPE_CONDITIONS_MediatedCommission),
 	MARGIN_COMMISSION(TYPE_CONDITIONS_MarginCommission),
-	CALL_ORDER(TYPE_CONDITIONS_CallOrder);
+	LICENSE_FEE(TYPE_CONDITIONS_LicenseFee),
+	CALL_ORDER(TYPE_CONDITIONS_CallOrder)
+	;
 
 	@Getter
 	private final String code;

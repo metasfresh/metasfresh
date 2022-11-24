@@ -36,7 +36,6 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.TimeUtil;
@@ -68,17 +67,18 @@ public class PP_Product_Bom_StepDef
 	private static final int DEFAULT_C_DOCTYPE_ID = 541027;
 
 	private final M_Product_StepDefData productTable;
-	private final PP_Product_Bom_StepDefData productBOMTable;
+	private final PP_Product_BOM_StepDefData productBOMTable;
 	private final PP_Product_BOMVersions_StepDefData productBomVersionsTable;
 	private final PP_Product_BOMLine_StepDefData productBOMLineTable;
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
 
 	public PP_Product_Bom_StepDef(
 			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final PP_Product_Bom_StepDefData productBOMTable,
+			@NonNull final PP_Product_BOM_StepDefData productBOMTable,
 			@NonNull final PP_Product_BOMVersions_StepDefData productBomVersionsTable,
 			@NonNull final PP_Product_BOMLine_StepDefData productBOMLineTable,
-			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable)
+			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable
+	)
 	{
 		this.productTable = productTable;
 		this.productBOMTable = productBOMTable;
@@ -123,7 +123,14 @@ public class PP_Product_Bom_StepDef
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final I_M_Product productRecord = productTable.get(productIdentifier);
 
-		final I_PP_Product_BOMLine bomLine = InterfaceWrapperHelper.newInstance(I_PP_Product_BOMLine.class);
+		final I_PP_Product_BOMLine bomLine = CoalesceUtil.coalesceSuppliersNotNull(
+				() -> queryBL.createQueryBuilder(I_PP_Product_BOMLine.class)
+						.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_M_Product_ID, productRecord.getM_Product_ID())
+						.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_PP_Product_BOM_ID, productBOMRecord.getPP_Product_BOM_ID())
+						.create()
+						.firstOnly(I_PP_Product_BOMLine.class),
+				() -> newInstance(I_PP_Product_BOMLine.class));
+
 		bomLine.setPP_Product_BOM_ID(productBOMRecord.getPP_Product_BOM_ID());
 		bomLine.setM_Product_ID(productRecord.getM_Product_ID());
 		bomLine.setC_UOM_ID(productRecord.getC_UOM_ID());

@@ -1,34 +1,10 @@
 package de.metas.error.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Optional;
-import java.util.function.IntFunction;
-
-import javax.annotation.Nullable;
-
 import de.metas.common.util.EmptyUtil;
-import de.metas.error.InsertRemoteIssueRequest;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.exceptions.DBException;
-import org.adempiere.exceptions.IssueReportableExceptions;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_AD_Issue;
-import org.compiere.util.DB;
-import org.compiere.util.Util;
-import org.slf4j.Logger;
-
+import de.metas.error.AdIssueFactory;
 import de.metas.error.AdIssueId;
 import de.metas.error.IErrorManager;
+import de.metas.error.InsertRemoteIssueRequest;
 import de.metas.error.IssueCategory;
 import de.metas.error.IssueCountersByCategory;
 import de.metas.error.IssueCreateRequest;
@@ -41,6 +17,29 @@ import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.exceptions.IssueReportableExceptions;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_AD_Issue;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.compiere.util.Util;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Optional;
+import java.util.function.IntFunction;
+
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class ErrorManager implements IErrorManager
 {
@@ -79,7 +78,7 @@ public class ErrorManager implements IErrorManager
 	@NonNull
 	private AdIssueId insertRemoteIssueInTrx(@NonNull final InsertRemoteIssueRequest request)
 	{
-		final I_AD_Issue issue = newInstance(I_AD_Issue.class);
+		final I_AD_Issue issue = AdIssueFactory.prepareNewIssueRecord(Env.getCtx());
 
 		final IssueCategory issueCategory = IssueCategory.ofNullableCodeOrOther(request.getIssueCategory());
 		issue.setIssueCategory(issueCategory.getCode());
@@ -110,7 +109,7 @@ public class ErrorManager implements IErrorManager
 		// Create AD_Issue
 		final AdIssueId adIssueId;
 		{
-			final I_AD_Issue issue = newInstance(I_AD_Issue.class);
+			final I_AD_Issue issue = AdIssueFactory.prepareNewIssueRecord(Env.getCtx());
 
 			final IssueCategory issueCategory = extractIssueCategory(throwable);
 			issue.setIssueCategory(issueCategory.getCode());

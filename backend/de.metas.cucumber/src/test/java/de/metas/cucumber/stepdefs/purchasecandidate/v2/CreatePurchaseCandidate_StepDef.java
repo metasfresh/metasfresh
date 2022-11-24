@@ -202,6 +202,7 @@ public class CreatePurchaseCandidate_StepDef
 	{
 		final String externalHeaderId = DataTableUtil.extractStringForColumnName(dataTableEntries, "ExternalHeaderId");
 		final String externalLineId = DataTableUtil.extractStringForColumnName(dataTableEntries, "ExternalLineId");
+		final String poReference = DataTableUtil.extractStringForColumnName(dataTableEntries, "POReference");
 		final String orgCode = DataTableUtil.extractStringForColumnName(dataTableEntries, "orgCode");
 		final String warehouse = DataTableUtil.extractStringForColumnName(dataTableEntries, "warehouse");
 		final String product = DataTableUtil.extractStringForColumnName(dataTableEntries, "product");
@@ -232,6 +233,7 @@ public class CreatePurchaseCandidate_StepDef
 				.orgCode(orgCode)
 				.externalHeaderId(externalHeaderId)
 				.externalLineId(externalLineId)
+				.poReference(poReference)
 				.warehouseIdentifier(warehouse)
 				.productIdentifier(product)
 				.vendor(JsonVendor.builder().bpartnerIdentifier(vendorId).build())

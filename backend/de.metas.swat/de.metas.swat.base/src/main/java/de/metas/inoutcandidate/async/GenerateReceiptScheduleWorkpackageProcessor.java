@@ -22,12 +22,6 @@ package de.metas.inoutcandidate.async;
  * #L%
  */
 
-import java.util.Collections;
-import java.util.List;
-
-import lombok.NonNull;
-import org.adempiere.model.InterfaceWrapperHelper;
-
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.IWorkpackageProcessor;
@@ -36,6 +30,11 @@ import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.IReceiptScheduleProducer;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Process given models and creates {@link I_M_ReceiptSchedule} records.
@@ -52,7 +51,7 @@ public class GenerateReceiptScheduleWorkpackageProcessor implements IWorkpackage
 		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 
 		// maybe the underlying order line was deleted meanwhile, after the order was reactivated. Using retrieveItemsSkipMissing() because we don't need to make a fuss about that.
-		final List<Object> models = queueDAO.retrieveItemsSkipMissing(workpackage, Object.class, localTrxName);
+		final List<Object> models = queueDAO.retrieveAllItemsSkipMissing(workpackage, Object.class);
 		Loggables.addLog("Retrieved {} items for this work package", models.size());
 
 		for (final Object model : models)

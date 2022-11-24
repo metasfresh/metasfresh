@@ -25,7 +25,6 @@ package de.metas.contracts.bpartner.repository;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.OrgMappingId;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
@@ -52,7 +51,6 @@ import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.compiere.model.I_C_UOM;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
@@ -117,7 +115,7 @@ public class OrgChangeRepository
 			@NonNull final Instant orgChangeDate,
 			@NonNull final OrgId orgId)
 	{
-		final Set<FlatrateTermId> flatrateTermIds = retrieveAllRunningSubscriptionIds(bpartnerId, orgChangeDate, orgId);
+		final Set<FlatrateTermId> flatrateTermIds = flatrateDAO.retrieveAllRunningSubscriptionIds(bpartnerId, orgChangeDate, orgId);
 		return flatrateTermIds.stream()
 				.map(this::createFlatrateTerm)
 				.collect(ImmutableList.toImmutableList());
@@ -168,19 +166,8 @@ public class OrgChangeRepository
 	{
 		return membershipContractRepo.queryMembershipProducts(orgId).anyMatch();
 	}
-	private Set<FlatrateTermId> retrieveAllRunningSubscriptionIds(
-			@NonNull final BPartnerId bPartnerId,
-			@NonNull final Instant orgChangeDate,
-			@NonNull final OrgId orgId)
-	{
-		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_AD_Org_ID, orgId)
-				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, bPartnerId)
-				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, FlatrateTermStatus.Quit.getCode())
-				.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_ContractStatus, FlatrateTermStatus.Voided.getCode())
-				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate, CompareQueryFilter.Operator.GREATER, orgChangeDate)
-				.create()
-				.listIds(FlatrateTermId::ofRepoId);
-	}
+
+
+
 
 }
