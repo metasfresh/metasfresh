@@ -23,6 +23,7 @@
 package de.metas.camel.externalsystems.shopware6.order.processor;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrder;
 import de.metas.camel.externalsystems.shopware6.api.model.order.JsonOrderLine;
@@ -38,7 +39,7 @@ import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsert;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartnerCompositeUpsertItem;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsertItem;
 import de.metas.common.externalsystem.JsonExternalSystemShopware6ConfigMapping;
-import de.metas.common.ordercandidates.v2.request.JSONPaymentRule;
+import de.metas.common.rest_api.v2.JSONPaymentRule;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateBulkRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandCreateRequest;
 import de.metas.common.ordercandidates.v2.request.JsonOrderDocType;
@@ -59,7 +60,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
-import static de.metas.camel.externalsystems.shopware6.ProcessorHelper.getPropertyOrThrowError;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.DATA_SOURCE_INT_SHOPWARE;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.DEFAULT_DELIVERY_RULE;
 import static de.metas.camel.externalsystems.shopware6.Shopware6Constants.DEFAULT_DELIVERY_VIA_RULE;
@@ -76,7 +76,7 @@ public class OLCandRequestProcessor implements Processor
 	@Override
 	public void process(final Exchange exchange) throws Exception
 	{
-		final ImportOrdersRouteContext importOrdersRouteContext = getPropertyOrThrowError(exchange, ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ImportOrdersRouteContext.class);
+		final ImportOrdersRouteContext importOrdersRouteContext = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT, ImportOrdersRouteContext.class);
 
 		final JsonResponseBPartnerCompositeUpsert bPartnerUpsertResponseList = exchange.getIn().getBody(JsonResponseBPartnerCompositeUpsert.class);
 		final JsonResponseBPartnerCompositeUpsertItem bPartnerUpsertResponse = Check.singleElement(bPartnerUpsertResponseList.getResponseItems());
@@ -360,18 +360,24 @@ public class OLCandRequestProcessor implements Processor
 		final PaymentMethodType candidatePaymentMethod = PaymentMethodType.ofValue(orderCompositeInfo.getJsonPaymentMethod().getShortName());
 		final String customerGroupValue = routeContext.getBPartnerCustomerGroup().getName();
 
-		final Optional<JsonExternalSystemShopware6ConfigMapping> matchingConfig = routeContext.getShopware6ConfigMappings()
+		final Optional<JsonExternalSystemShopware6ConfigMapping> matchingConfigOpt = routeContext.getShopware6ConfigMappings()
 				.getJsonExternalSystemShopware6ConfigMappingList()
 				.stream()
 				.sorted(Comparator.comparingInt(JsonExternalSystemShopware6ConfigMapping::getSeqNo))
 				.filter(config -> config.isGroupMatching(customerGroupValue) && config.isPaymentMethodMatching(candidatePaymentMethod.getValue()))
 				.findFirst();
 
-		matchingConfig.ifPresent(config -> olCandCreateRequestBuilder.orderDocType(JsonOrderDocType.ofCode(config.getDocTypeOrder()))
-				.paymentRule(JSONPaymentRule.ofCode(config.getPaymentRule()))
-				.paymentTerm(Check.isBlank(config.getPaymentTermValue())
-									 ? null
-									 : VALUE_PREFIX + "-" + config.getPaymentTermValue()));
+		if(matchingConfigOpt.isPresent())
+		{
+			final JsonExternalSystemShopware6ConfigMapping matchingConfig = matchingConfigOpt.get();
+			olCandCreateRequestBuilder
+					.orderDocType(JsonOrderDocType.ofCodeOrNull(matchingConfig.getDocTypeOrder()))
+					.paymentRule(JSONPaymentRule.ofCodeOrNull(matchingConfig.getPaymentRule()))
+					.paymentTerm(Check.isBlank(matchingConfig.getPaymentTermValue())
+										 ? null
+										 : VALUE_PREFIX + "-" + matchingConfig.getPaymentTermValue());	
+		}
+		
 	}
 
 	@NonNull

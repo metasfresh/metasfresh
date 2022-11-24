@@ -114,6 +114,8 @@ public interface IShipmentScheduleBL extends ISingletonService
 
 	void closeShipmentSchedule(ShipmentScheduleId shipmentScheduleId);
 
+	void closeShipmentSchedules(@NonNull Set<ShipmentScheduleId> shipmentScheduleIds);
+
 	/**
 	 * Reopen the closed shipment schedule given as parameter
 	 */

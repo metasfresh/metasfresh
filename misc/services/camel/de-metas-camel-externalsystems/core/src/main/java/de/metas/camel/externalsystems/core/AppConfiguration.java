@@ -24,16 +24,21 @@ package de.metas.camel.externalsystems.core;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.ProducerTemplate;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import javax.annotation.PostConstruct;
 
 @Configuration
 public class AppConfiguration
 {
+	private final ApplicationContext context;
 	private final CamelContext camelContext;
 
-	public AppConfiguration(final CamelContext camelContext)
+	public AppConfiguration(final ApplicationContext context, final CamelContext camelContext)
 	{
+		this.context = context;
 		this.camelContext = camelContext;
 	}
 
@@ -41,5 +46,12 @@ public class AppConfiguration
 	public ProducerTemplate producerTemplate()
 	{
 		return camelContext.createProducerTemplate();
+	}
+
+	@PostConstruct
+	public void auditEventNotifier()
+	{
+		camelContext.getManagementStrategy()
+				.addEventNotifier(new AuditEventNotifier(context.getBean(ProducerTemplate.class)));
 	}
 }

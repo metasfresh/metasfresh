@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_HU_Reservation extends org.compiere.model.PO implements I_M_HU_Reservation, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1748134686L;
+	private static final long serialVersionUID = 39689038L;
 
     /** Standard Constructor */
     public X_M_HU_Reservation (final Properties ctx, final int M_HU_Reservation_ID, @Nullable final String trxName)
@@ -120,6 +120,33 @@ public class X_M_HU_Reservation extends org.compiere.model.PO implements I_M_HU_
 	public int getM_HU_Reservation_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_HU_Reservation_ID);
+	}
+
+	@Override
+	public de.metas.handlingunits.model.I_M_Picking_Job_Step getM_Picking_Job_Step()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Picking_Job_Step_ID, de.metas.handlingunits.model.I_M_Picking_Job_Step.class);
+	}
+
+	@Override
+	public void setM_Picking_Job_Step(final de.metas.handlingunits.model.I_M_Picking_Job_Step M_Picking_Job_Step)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Picking_Job_Step_ID, de.metas.handlingunits.model.I_M_Picking_Job_Step.class, M_Picking_Job_Step);
+	}
+
+	@Override
+	public void setM_Picking_Job_Step_ID (final int M_Picking_Job_Step_ID)
+	{
+		if (M_Picking_Job_Step_ID < 1) 
+			set_Value (COLUMNNAME_M_Picking_Job_Step_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Picking_Job_Step_ID, M_Picking_Job_Step_ID);
+	}
+
+	@Override
+	public int getM_Picking_Job_Step_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Picking_Job_Step_ID);
 	}
 
 	@Override

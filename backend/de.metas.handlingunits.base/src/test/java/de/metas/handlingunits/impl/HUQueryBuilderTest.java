@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
+import de.metas.handlingunits.reservation.HUReservationDocRef;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.wrapper.POJOWrapper;
 
@@ -128,7 +129,7 @@ public class HUQueryBuilderTest
 		assertSameStringRepresentation(huQueryBuilder, husQueryCopy);
 	}
 
-	private final void assertSameStringRepresentation(final Object expected, final Object actual)
+	private void assertSameStringRepresentation(final Object expected, final Object actual)
 	{
 		final String expectedStr = toString(expected);
 		final String actualStr = toString(actual);
@@ -139,7 +140,7 @@ public class HUQueryBuilderTest
 		Assert.assertEquals(message, expectedStr, actualStr);
 	}
 
-	private final String toString(final Object obj)
+	private String toString(final Object obj)
 	{
 		return new ExtendedReflectionToStringBuilder(obj, RecursiveIndentedMultilineToStringStyle.instance)
 				.toString();
@@ -169,7 +170,7 @@ public class HUQueryBuilderTest
 		// invoke the method under test
 		final IQueryFilter<I_M_HU> huFilters = huQueryBuilder.createQueryFilter();
 
-		assertThat(hus).allMatch(hu -> huFilters.accept(hu));
+		assertThat(hus).allMatch(huFilters::accept);
 	}
 
 	@Test
@@ -182,7 +183,7 @@ public class HUQueryBuilderTest
 		final OrderLineId otherOrderLineId = OrderLineId.ofRepoId(20);
 		createReservationRecord(otherOrderLineId, hus.get(1));
 
-		huQueryBuilder.setExcludeReservedToOtherThan(orderLineId);
+		huQueryBuilder.setExcludeReservedToOtherThan(HUReservationDocRef.ofSalesOrderLineId(orderLineId));
 
 		// invoke the method under test
 		final IQueryFilter<I_M_HU> huFilters = huQueryBuilder.createQueryFilter();

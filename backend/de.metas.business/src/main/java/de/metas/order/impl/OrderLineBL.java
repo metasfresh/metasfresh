@@ -3,18 +3,23 @@ package de.metas.order.impl;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.costing.ChargeId;
 import de.metas.costing.impl.ChargeRepository;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.currency.ICurrencyDAO;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.location.DocumentLocation;
-import de.metas.document.location.adapter.IDocumentLocationAdapterTemplate;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
+import de.metas.location.ILocationDAO;
+import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -24,14 +29,15 @@ import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderAndLineId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLinePriceAndDiscount;
-import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
-import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.order.OrderLinePriceUpdateRequest;
+import de.metas.order.location.adapter.OrderLineDocumentLocationAdapterFactory;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PriceListId;
+import de.metas.pricing.PriceListVersionId;
+import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.limit.PriceLimitRuleResult;
 import de.metas.pricing.service.IPriceListBL;
 import de.metas.pricing.service.IPriceListDAO;
@@ -59,10 +65,13 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
+import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Charge;
+import org.compiere.model.I_C_Location;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
 import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_PriceList;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.MTax;
@@ -73,15 +82,18 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
 import static de.metas.util.Check.assume;
+import static org.adempiere.model.InterfaceWrapperHelper.isNull;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.translate;
 
@@ -125,6 +137,8 @@ public class OrderLineBL implements IOrderLineBL
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IProductBOMBL productBOMBL = Services.get(IProductBOMBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final ILocationDAO locationDAO = Services.get(ILocationDAO.class);
+	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
 
 	private IOrderBL orderBL()
 	{
@@ -499,25 +513,29 @@ public class OrderLineBL implements IOrderLineBL
 	/**
 	 * task 07080
 	 */
+	@NonNull
 	static ZonedDateTime getPriceDate(
 			final org.compiere.model.I_C_OrderLine orderLine,
 			final I_C_Order order)
 	{
-		ZonedDateTime date = TimeUtil.asZonedDateTime(orderLine.getDatePromised());
+		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));
+		
+		ZonedDateTime date = TimeUtil.asZonedDateTime(orderLine.getDatePromised(), timeZone);
 		// if null, then get date promised from order
 		if (date == null)
 		{
-			date = TimeUtil.asZonedDateTime(order.getDatePromised());
+			date = TimeUtil.asZonedDateTime(order.getDatePromised(), timeZone);
 		}
 		// still null, then get date ordered from order line
 		if (date == null)
 		{
-			date = TimeUtil.asZonedDateTime(orderLine.getDateOrdered());
+			date = TimeUtil.asZonedDateTime(orderLine.getDateOrdered(), timeZone);
 		}
 		// still null, then get date ordered from order
 		if (date == null)
 		{
-			date = TimeUtil.asZonedDateTime(order.getDateOrdered());
+			date = TimeUtil.asZonedDateTime(order.getDateOrdered(), timeZone);
 		}
 		return date;
 	}
@@ -843,6 +861,7 @@ public class OrderLineBL implements IOrderLineBL
 		if (productId == null)
 		{
 			orderLine.setM_Product_DocumentNote(null);
+			return;
 		}
 
 		final I_C_Order order = orderLine.getC_Order();
@@ -878,5 +897,70 @@ public class OrderLineBL implements IOrderLineBL
 	public void save(final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		orderDAO.save(orderLine);
+	}
+
+	@Override
+	@NonNull
+	public CurrencyPrecision extractPricePrecision(@NonNull final org.compiere.model.I_C_OrderLine olRecord)
+	{
+		return extractPriceList(olRecord)
+				.filter(priceListRecord -> !isNull(priceListRecord, I_M_PriceList.COLUMNNAME_PricePrecision))
+				.filter(priceListRecord -> priceListRecord.getPricePrecision() >= 0)
+				.map(I_M_PriceList::getPricePrecision)
+				.map(CurrencyPrecision::ofInt)
+				.orElseGet(() -> getPrecisionFromCurrency(olRecord));
+	}
+
+	@NonNull
+	private Optional<I_M_PriceList> extractPriceList(@NonNull final org.compiere.model.I_C_OrderLine olRecord)
+	{
+		final PriceListVersionId priceListVersionId = PriceListVersionId.ofRepoIdOrNull(olRecord.getM_PriceList_Version_ID());
+
+		if (priceListVersionId != null)
+		{
+			final I_M_PriceList result = priceListDAO.getPriceListByPriceListVersionId(priceListVersionId);
+			logger.debug("C_OrderLine {} has M_PriceList_Version_ID={}; -> return M_PriceList={}", olRecord.getC_OrderLine_ID(), priceListVersionId, result);
+			return Optional.ofNullable(result);
+		}
+
+		final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(olRecord.getC_Order_ID()));
+		final PricingSystemId orderPricingSystemId = PricingSystemId.ofRepoIdOrNull(order.getM_PricingSystem_ID());
+
+		if (orderPricingSystemId != null)
+		{
+			final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(olRecord.getC_BPartner_ID(), olRecord.getC_BPartner_Location_ID());
+			final I_C_BPartner_Location partnerLocation = bpartnerDAO.getBPartnerLocationByIdEvenInactive(bPartnerLocationId);
+
+			if (partnerLocation == null)
+			{
+				logger.debug("C_OrderLine {} has M_PricingSystem_ID={}, but no partnerLocation; -> return M_PriceList=null", olRecord.getC_OrderLine_ID(), olRecord.getBase_PricingSystem_ID());
+				return Optional.empty();
+			}
+
+			final OrgId orgId = OrgId.ofRepoId(olRecord.getAD_Org_ID());
+			final ZoneId orgZoneId = orgDAO.getTimeZone(orgId);
+			final ZonedDateTime orderDate = Objects.requireNonNull(TimeUtil.asZonedDateTime(olRecord.getDateOrdered(), orgZoneId));
+
+			final SOTrx soTrx = SOTrx.ofBoolean(order.isSOTrx());
+
+			final I_C_Location location = locationDAO.getById(LocationId.ofRepoId(partnerLocation.getC_Location_ID()));
+			final CountryId bpCountryId = CountryId.ofRepoId(location.getC_Country_ID());
+
+			final I_M_PriceList result = priceListBL.getCurrentPricelistOrNull(orderPricingSystemId, bpCountryId, orderDate, soTrx);
+
+			logger.debug("C_OrderLine {} has M_PricingSystem_ID={}, effective C_BPartner_Location_ID={}, DateOrdered={} and SOTrx={}; -> return M_PriceList={}",
+						 olRecord.getC_OrderLine_ID(), orderPricingSystemId, bPartnerLocationId, orderDate, soTrx, result);
+			return Optional.ofNullable(result);
+		}
+
+		logger.debug("C_OrderLine {} has neither M_PriceList_Version_ID nor M_PricingSystem_ID; -> return M_PriceList=null", olRecord.getC_OrderLine_ID());
+		return Optional.empty();
+	}
+
+	@NonNull
+	private CurrencyPrecision getPrecisionFromCurrency(@NonNull final org.compiere.model.I_C_OrderLine olRecord)
+	{
+		final CurrencyId currencyId = CurrencyId.ofRepoId(olRecord.getC_Currency_ID());
+		return currencyDAO.getStdPrecision(currencyId);
 	}
 }

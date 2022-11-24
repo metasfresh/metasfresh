@@ -71,7 +71,7 @@ public class SubscriptionService
 	}
 
 	@lombok.Value
-	public static final class ChangeRecipientsRequest
+	public static class ChangeRecipientsRequest
 	{
 		@NonNull
 		I_C_Flatrate_Term term;

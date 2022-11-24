@@ -23,8 +23,8 @@
 package de.metas.util.web.audit;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.audit.request.ApiRequestAudit;
-import de.metas.audit.request.ApiRequestAuditRepository;
+import de.metas.audit.apirequest.request.ApiRequestAudit;
+import de.metas.audit.apirequest.request.ApiRequestAuditRepository;
 import lombok.NonNull;
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
 import org.springframework.stereotype.Component;

@@ -30,6 +30,10 @@ import lombok.NonNull;
 import org.apache.camel.CamelContext;
 import org.apache.camel.component.jackson.JacksonDataFormat;
 
+/**
+ * @deprecated please use (and extend if needed) {@link de.metas.camel.externalsystems.common.CamelRouteUtil}.
+ */
+@Deprecated
 public class CamelRouteUtil
 {
 	@NonNull

@@ -28,6 +28,7 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
 import javax.annotation.Nullable;
@@ -68,5 +69,10 @@ public class ApiResponse
 		}
 
 		return new ApiResponse(statusCode, httpHeaders, body);
+	}
+
+	public boolean hasStatus2xx()
+	{
+		return getStatusCode() / 100 == HttpStatus.OK.series().value();
 	}
 }

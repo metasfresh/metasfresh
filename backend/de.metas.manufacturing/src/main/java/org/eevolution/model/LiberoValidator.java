@@ -24,12 +24,13 @@ package org.eevolution.model;
 
 import de.metas.cache.CacheMgt;
 import de.metas.cache.model.IModelCacheService;
+import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
+import de.metas.distribution.ddorder.lowlevel.interceptor.DDOrderLowLevelInterceptors;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.material.planning.pporder.PPOrderPojoConverter;
 import lombok.NonNull;
-import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.compiere.SpringContextHolder;
@@ -56,25 +57,29 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 	private final PostMaterialEventService materialEventService;
 	private final IDocumentNoBuilderFactory documentNoBuilderFactory;
 	private final IPPOrderBOMBL ppOrderBOMBL;
+	private final DDOrderLowLevelService ddOrderLowLevelService;
 
 	public LiberoValidator()
 	{
 		this(SpringContextHolder.instance.getBean(PPOrderPojoConverter.class),
 				SpringContextHolder.instance.getBean(PostMaterialEventService.class),
 				SpringContextHolder.instance.getBean(IDocumentNoBuilderFactory.class),
-				SpringContextHolder.instance.getBean(IPPOrderBOMBL.class));
+				SpringContextHolder.instance.getBean(IPPOrderBOMBL.class),
+				SpringContextHolder.instance.getBean(DDOrderLowLevelService.class));
 	}
 
 	public LiberoValidator(
 			@NonNull final PPOrderPojoConverter ppOrderConverter,
 			@NonNull final PostMaterialEventService materialEventService,
 			@NonNull final IDocumentNoBuilderFactory documentNoBuilderFactory,
-			@NonNull final IPPOrderBOMBL ppOrderBOMBL)
+			@NonNull final IPPOrderBOMBL ppOrderBOMBL,
+			@NonNull final DDOrderLowLevelService ddOrderLowLevelService)
 	{
 		this.ppOrderConverter = ppOrderConverter;
 		this.materialEventService = materialEventService;
 		this.documentNoBuilderFactory = documentNoBuilderFactory;
 		this.ppOrderBOMBL = ppOrderBOMBL;
+		this.ddOrderLowLevelService = ddOrderLowLevelService;
 	}
 
 	@Override
@@ -100,21 +105,11 @@ public final class LiberoValidator extends AbstractModuleInterceptor
 
 		//
 		// DRP
-		engine.addModelValidator(new org.eevolution.model.validator.DD_Order());
-		//engine.addModelValidator(new org.eevolution.model.validator.DD_OrderFireMaterialEvent()); // gh #523
-		engine.addModelValidator(new org.eevolution.model.validator.DD_OrderLine());
-		engine.addModelValidator(new org.eevolution.drp.model.validator.M_Movement());
+		engine.addModelValidator(new DDOrderLowLevelInterceptors(ddOrderLowLevelService, documentNoBuilderFactory));
 
 		//
 		// Forecast
-		engine.addModelValidator(new org.eevolution.model.validator.M_Forecast());
-	}
-
-	@Override
-	protected void registerCallouts(final IProgramaticCalloutProvider calloutsRegistry)
-	{
-		calloutsRegistry.registerAnnotatedCallout(org.eevolution.callout.DD_Order.instance);
-		calloutsRegistry.registerAnnotatedCallout(org.eevolution.callout.DD_OrderLine.instance);
+		engine.addModelValidator(new org.eevolution.model.validator.M_Forecast(ddOrderLowLevelService));
 	}
 
 	@Override

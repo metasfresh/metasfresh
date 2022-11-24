@@ -5,7 +5,7 @@ package de.metas.contracts.flatrate.impexp;
 
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.common.util.time.SystemTime;
-import de.metas.contracts.CreateFlatrateTermRequest;
+import de.metas.contracts.FlatrateTermRequest.CreateFlatrateTermRequest;
 import de.metas.contracts.FlatrateTermPricing;
 import de.metas.contracts.IFlatrateBL;
 import de.metas.contracts.location.adapter.ContractDocumentLocationAdapterFactory;

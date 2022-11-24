@@ -87,13 +87,14 @@ public interface IESRImportDAO extends ISingletonService
 
 	List<I_ESR_Import> getByIds(@NonNull Set<ESRImportId> esrImportIds);
 
+	List<I_ESR_ImportLine> fetchESRLinesForESRLineText(String esrImportLineText,
+			int excludeESRImportLineID);
+
 	ImmutableSet<ESRImportId> retrieveNotReconciledESRImportIds(@NonNull Set<ESRImportId> esrImportIds);
 
 	Optional<PaymentId> findExistentPaymentId(@NonNull I_ESR_ImportLine esrLine);
 
 	I_ESR_ImportLine fetchLineForESRLineText(@NonNull I_ESR_ImportFile esrImportFile, @NonNull String esrImportLineText);
-
-	List<I_ESR_ImportLine> fetchESRLinesForESRLineText(String esrImportLineText);
 
 	I_ESR_ImportFile createESRImportFile(@NonNull I_ESR_Import header);
 

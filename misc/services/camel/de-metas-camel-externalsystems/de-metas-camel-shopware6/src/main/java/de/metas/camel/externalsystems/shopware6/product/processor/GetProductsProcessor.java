@@ -22,18 +22,14 @@
 
 package de.metas.camel.externalsystems.shopware6.product.processor;
 
-import de.metas.camel.externalsystems.common.v2.ProductUpsertCamelRequest;
-import de.metas.camel.externalsystems.shopware6.ProcessorHelper;
+import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.shopware6.api.ShopwareClient;
-import de.metas.camel.externalsystems.shopware6.api.model.JsonFilter;
 import de.metas.camel.externalsystems.shopware6.api.model.JsonQuery;
-import de.metas.camel.externalsystems.shopware6.api.model.QueryRequest;
+import de.metas.camel.externalsystems.shopware6.api.model.MultiJsonFilter;
+import de.metas.camel.externalsystems.shopware6.api.model.MultiQueryRequest;
 import de.metas.camel.externalsystems.shopware6.api.model.product.JsonProduct;
 import de.metas.camel.externalsystems.shopware6.api.model.product.JsonProducts;
 import de.metas.camel.externalsystems.shopware6.product.ImportProductsRouteContext;
-import de.metas.camel.externalsystems.shopware6.product.ProductUpsertRequestProducer;
-import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import de.metas.common.product.v2.request.JsonRequestProductUpsert;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
@@ -55,11 +51,9 @@ public class GetProductsProcessor implements Processor
 	{
 		final ImportProductsRouteContext context = ProcessorHelper.getPropertyOrThrowError(exchange, ROUTE_PROPERTY_IMPORT_PRODUCTS_CONTEXT, ImportProductsRouteContext.class);
 
-		final JsonExternalSystemRequest externalSystemRequest = context.getExternalSystemRequest();
-
 		final ShopwareClient shopwareClient = context.getShopwareClient();
 
-		final QueryRequest getProductsRequest = buildQueryProductsRequest(context.getNextImportStartingTimestamp());
+		final MultiQueryRequest getProductsRequest = buildQueryProductsRequest(context.getNextImportStartingTimestamp());
 
 		final Optional<JsonProducts> jsonProductsOptional = shopwareClient.getProducts(getProductsRequest);
 
@@ -71,32 +65,18 @@ public class GetProductsProcessor implements Processor
 
 		final List<JsonProduct> products = jsonProductsOptional.get().getProductList();
 
-		final ProductUpsertRequestProducer productUpsertRequestProducer = ProductUpsertRequestProducer.builder()
-				.products(products)
-				.routeContext(context)
-				.build();
-
-		final Optional<JsonRequestProductUpsert> productRequestProducerResult = productUpsertRequestProducer.run();
-
-		final ProductUpsertCamelRequest productUpsertCamelRequest = productRequestProducerResult.map(result -> ProductUpsertCamelRequest.builder()
-				.jsonRequestProductUpsert(productRequestProducerResult.get())
-				.orgCode(externalSystemRequest.getOrgCode())
-				.build())
-				.orElse(null);
-
-		exchange.getIn().setBody(productUpsertCamelRequest);
+		exchange.getIn().setBody(products);
 	}
 
 	@NonNull
-	private QueryRequest buildQueryProductsRequest(@NonNull final Instant updatedAfter)
+	private MultiQueryRequest buildQueryProductsRequest(@NonNull final Instant updatedAfter)
 	{
 		final HashMap<String, String> parameters = new HashMap<>();
 		parameters.put(PARAMETERS_DATE_GTE, updatedAfter.toString());
 
-		return QueryRequest.builder()
-				.filter(JsonFilter.builder()
-								.filterType(JsonFilter.FilterType.MULTI)
-								.operatorType(JsonFilter.OperatorType.OR)
+		return MultiQueryRequest.builder()
+				.filter(MultiJsonFilter.builder()
+								.operatorType(MultiJsonFilter.OperatorType.OR)
 								.jsonQuery(JsonQuery.builder()
 												   .field(FIELD_UPDATED_AT)
 												   .queryType(JsonQuery.QueryType.RANGE)

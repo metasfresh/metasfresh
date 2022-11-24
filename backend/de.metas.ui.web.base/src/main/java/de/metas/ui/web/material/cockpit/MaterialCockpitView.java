@@ -79,7 +79,7 @@ public class MaterialCockpitView extends AbstractCustomView<MaterialCockpitRow>
 	 * @return {@code null}, because each record of this view is based on > 1 tables.
 	 */
 	@Override
-	public String getTableNameOrNull(DocumentId documentId)
+	public String getTableNameOrNull(final DocumentId documentId)
 	{
 		return null;
 	}

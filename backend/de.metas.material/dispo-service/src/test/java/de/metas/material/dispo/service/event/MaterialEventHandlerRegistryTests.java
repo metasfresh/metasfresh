@@ -6,6 +6,8 @@ import de.metas.document.dimension.DimensionService;
 import de.metas.document.dimension.MDCandidateDimensionFactory;
 import de.metas.event.log.EventLogUserService;
 import de.metas.event.log.EventLogUserService.InvokeHandlerAndLogRequest;
+import de.metas.material.cockpit.view.ddorderdetail.DDOrderDetailRequestHandler;
+import de.metas.material.cockpit.view.mainrecord.MainDataRequestHandler;
 import de.metas.material.dispo.commons.DispoTestUtils;
 import de.metas.material.dispo.commons.RequestMaterialOrderService;
 import de.metas.material.dispo.commons.candidate.CandidateType;
@@ -144,12 +146,15 @@ public class MaterialEventHandlerRegistryTests
 				candidateRepositoryCommands,
 				candidateChangeHandler,
 				supplyProposalEvaluator,
-				new RequestMaterialOrderService(candidateRepositoryRetrieval, postMaterialEventService));
+				new RequestMaterialOrderService(candidateRepositoryRetrieval, postMaterialEventService),
+				new DDOrderDetailRequestHandler(),
+				new MainDataRequestHandler());
 
 		final PPOrderAdvisedHandler ppOrderAdvisedHandler = new PPOrderAdvisedHandler(
 				candidateChangeHandler,
 				candidateRepositoryRetrieval,
-				postMaterialEventService);
+				postMaterialEventService,
+				new MainDataRequestHandler());
 
 		final ForecastCreatedHandler forecastCreatedEventHandler = new ForecastCreatedHandler(candidateChangeHandler);
 

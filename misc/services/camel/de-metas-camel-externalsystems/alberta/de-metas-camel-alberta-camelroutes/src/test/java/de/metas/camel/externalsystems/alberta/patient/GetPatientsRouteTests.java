@@ -245,6 +245,7 @@ public class GetPatientsRouteTests extends CamelTestSupport
 					.build();
 
 			final JsonExternalSystemRequest externalSystemRequest = JsonExternalSystemRequest.builder()
+					.traceId("traceId")
 					.externalSystemName(JsonExternalSystemName.of("externalSystem"))
 					.externalSystemConfigId(JsonMetasfreshId.of(1))
 					.orgCode("orgCode")

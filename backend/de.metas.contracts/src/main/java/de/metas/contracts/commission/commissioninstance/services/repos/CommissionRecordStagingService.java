@@ -1,18 +1,5 @@
 package de.metas.contracts.commission.commissioninstance.services.repos;
 
-import static de.metas.common.util.CoalesceUtil.coalesce;
-
-import java.util.Collection;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.ICompositeQueryFilter;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.compiere.model.IQuery;
-import org.springframework.stereotype.Service;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
@@ -20,10 +7,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimaps;
-
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstanceId;
-import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionState;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionState;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerDocumentId;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.mediatedorder.MediatedOrderLineDocId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoicecandidate.SalesInvoiceCandidateDocumentId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.salesinvoiceline.SalesInvoiceLineDocumentId;
 import de.metas.contracts.commission.commissioninstance.services.repos.CommissionRecordStagingService.CommissionStagingRecords.CommissionStagingRecordsBuilder;
@@ -32,11 +19,22 @@ import de.metas.contracts.commission.model.I_C_Commission_Instance;
 import de.metas.contracts.commission.model.I_C_Commission_Share;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
-import de.metas.util.lang.RepoIdAware;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ICompositeQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.IQuery;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
+
+import static de.metas.common.util.CoalesceUtil.coalesce;
 
 /*
  * #%L
@@ -75,35 +73,32 @@ public class CommissionRecordStagingService
 		return retrieveRecords(instanceQueryBuilder.create());
 	}
 
-	CommissionStagingRecords retrieveRecordsForInvoiceCandidateId(@NonNull final Collection<CommissionTriggerDocumentId> commissionTriggerDocumentIds)
+	CommissionStagingRecords retrieveRecordsForTriggerDocumentId(@NonNull final CommissionTriggerDocumentId commissionTriggerDocumentId)
 	{
 		// ------------------ I_C_Commission_Instance
 		final IQueryBuilder<I_C_Commission_Instance> instanceQueryBuilder = createInstanceQueryBuilder();
 
-		final ImmutableListMultimap<Class<? extends CommissionTriggerDocumentId>, CommissionTriggerDocumentId> classToIds = Multimaps.index(commissionTriggerDocumentIds, CommissionTriggerDocumentId::getClass);
+		final ICompositeQueryFilter<I_C_Commission_Instance> documentIdFilter = queryBL
+				.createCompositeQueryFilter(I_C_Commission_Instance.class);
 
-		final ICompositeQueryFilter<I_C_Commission_Instance> inArrayfilters = queryBL
-				.createCompositeQueryFilter(I_C_Commission_Instance.class)
-				.setJoinOr();
-
-		if (classToIds.containsKey(SalesInvoiceCandidateDocumentId.class))
+		if (commissionTriggerDocumentId instanceof SalesInvoiceCandidateDocumentId)
 		{
-			final ImmutableList<RepoIdAware> invoiceCandidateIds = classToIds.get(SalesInvoiceCandidateDocumentId.class)
-					.stream()
-					.map(CommissionTriggerDocumentId::getRepoIdAware)
-					.collect(ImmutableList.toImmutableList());
-			inArrayfilters.addInArrayFilter(I_C_Commission_Instance.COLUMN_C_Invoice_Candidate_ID, invoiceCandidateIds);
+			documentIdFilter.addEqualsFilter(I_C_Commission_Instance.COLUMNNAME_C_Invoice_Candidate_ID, commissionTriggerDocumentId.getRepoIdAware().getRepoId());
 		}
-		if (classToIds.containsKey(SalesInvoiceLineDocumentId.class))
+		else if (commissionTriggerDocumentId instanceof SalesInvoiceLineDocumentId)
 		{
-			final ImmutableList<RepoIdAware> invoiceLineIds = classToIds.get(SalesInvoiceLineDocumentId.class)
-					.stream()
-					.map(CommissionTriggerDocumentId::getRepoIdAware)
-					.collect(ImmutableList.toImmutableList());
-			inArrayfilters.addInArrayFilter(I_C_Commission_Instance.COLUMN_C_InvoiceLine_ID, invoiceLineIds);
+			documentIdFilter.addEqualsFilter(I_C_Commission_Instance.COLUMNNAME_C_InvoiceLine_ID, commissionTriggerDocumentId.getRepoIdAware().getRepoId());
+		}
+		else if (commissionTriggerDocumentId instanceof MediatedOrderLineDocId)
+		{
+			documentIdFilter.addEqualsFilter(I_C_Commission_Instance.COLUMNNAME_C_OrderLine_ID, commissionTriggerDocumentId.getRepoIdAware().getRepoId());
+		}
+		else
+		{
+			throw new AdempiereException("Unexpected CommissionTriggerDocumentId type=" + commissionTriggerDocumentId.getClass());
 		}
 
-		instanceQueryBuilder.filter(inArrayfilters);
+		instanceQueryBuilder.filter(documentIdFilter);
 
 		return retrieveRecords(instanceQueryBuilder.create());
 	}
@@ -154,7 +149,7 @@ public class CommissionRecordStagingService
 				.createQueryBuilder(I_C_Commission_Fact.class)
 				.addOnlyActiveRecordsFilter()
 				.addInArrayFilter(I_C_Commission_Fact.COLUMN_C_Commission_Share_ID, shareRecordIds)
-				.addInArrayFilter(I_C_Commission_Fact.COLUMN_Commission_Fact_State, SalesCommissionState.allRecordCodes());
+				.addInArrayFilter(I_C_Commission_Fact.COLUMN_Commission_Fact_State, CommissionState.allRecordCodes());
 
 		final List<I_C_Commission_Fact> factRecords = factQueryBuilder.create().list();
 
@@ -196,7 +191,7 @@ public class CommissionRecordStagingService
 			return instanceRecordIdToShareRecords.get(commissionInstanceId.getRepoId());
 		}
 
-		ImmutableList<I_C_Commission_Fact> getSalesFactRecordsForShareRecordId(int commissionShareRecordId)
+		ImmutableList<I_C_Commission_Fact> getSalesFactRecordsForShareRecordId(final int commissionShareRecordId)
 		{
 			return shareRecordIdToSalesFactRecords.get(commissionShareRecordId);
 		}

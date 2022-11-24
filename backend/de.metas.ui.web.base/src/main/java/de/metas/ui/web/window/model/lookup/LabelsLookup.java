@@ -1,6 +1,7 @@
 package de.metas.ui.web.window.model.lookup;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.reflist.ReferenceId;
 import de.metas.ui.web.window.datatypes.LookupValue;
 import de.metas.ui.web.window.datatypes.LookupValuesList;
 import de.metas.ui.web.window.datatypes.LookupValuesPage;
@@ -84,6 +85,10 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 	@NonNull
 	private final String labelsLinkColumnName;
 
+	@Getter
+	@Nullable
+	private final ReferenceId labelsValueReferenceId;
+
 	/**
 	 * Table name (e.g. C_BPartner)
 	 */
@@ -108,11 +113,13 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 			@NonNull final String labelsTableName,
 			@NonNull final String labelsValueColumnName,
 			@NonNull final String labelsLinkColumnName,
-			@NonNull final LookupDescriptor labelsValuesLookupDescriptor)
+			@NonNull final LookupDescriptor labelsValuesLookupDescriptor,
+			@Nullable final ReferenceId labelsValueReferenceId)
 	{
 		this.fieldName = fieldName;
 		this.labelsTableName = labelsTableName;
 		this.labelsValueColumnName = labelsValueColumnName;
+		this.labelsValueReferenceId = labelsValueReferenceId;
 		this.labelsValuesLookupDataSource = LookupDataSourceFactory.instance.getLookupDataSource(labelsValuesLookupDescriptor);
 		this.labelsValuesUseNumericKey = labelsValuesLookupDescriptor.isNumericKey();
 		this.labelsLinkColumnName = labelsLinkColumnName;
@@ -250,7 +257,8 @@ public class LabelsLookup implements LookupDescriptor, LookupDataSourceFetcher
 	{
 		return LookupDataSourceContext.builder(tableName)
 				.setRequiredParameters(parameters)
-				.requiresAD_Language();
+				.requiresAD_Language()
+				.requiresUserRolePermissionsKey();
 	}
 
 	@Override

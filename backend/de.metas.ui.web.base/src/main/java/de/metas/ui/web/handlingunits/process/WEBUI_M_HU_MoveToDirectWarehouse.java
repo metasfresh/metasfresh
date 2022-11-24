@@ -1,9 +1,6 @@
 package de.metas.ui.web.handlingunits.process;
 
-import java.util.stream.Stream;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
+import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -14,6 +11,9 @@ import de.metas.ui.web.handlingunits.HUEditorRowFilter.Select;
 import de.metas.ui.web.handlingunits.WEBUI_HU_Constants;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 import de.metas.ui.web.window.model.DocumentCollection;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -80,7 +80,7 @@ public class WEBUI_M_HU_MoveToDirectWarehouse extends HUEditorProcessTemplate im
 		HUMoveToDirectWarehouseService.newInstance()
 				.setDocumentsCollection(documentsCollection)
 				.setHUView(getView())
-				// .setMovementDate(movementDate) // now
+				.setMovementDate(SystemTime.asInstant()) // now
 				// .setDescription(description) // none
 				.setFailOnFirstError(true)
 				.setFailIfNoHUs(true)

@@ -91,6 +91,22 @@
             <artifactId>de.metas.manufacturing.rest-api</artifactId>
             <version>${metasfresh.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>de.metas.workflow</groupId>
+            <artifactId>de.metas.workflow.rest-api</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.picking</groupId>
+            <artifactId>de.metas.picking.rest-api</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>de.metas.distribution</groupId>
+            <artifactId>de.metas.distribution.rest-api</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
     </dependencies>
 
     <build>

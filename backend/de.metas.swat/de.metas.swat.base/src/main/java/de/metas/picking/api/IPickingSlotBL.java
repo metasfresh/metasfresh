@@ -4,6 +4,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 
 public interface IPickingSlotBL extends ISingletonService
 {
@@ -15,4 +16,6 @@ public interface IPickingSlotBL extends ISingletonService
 	boolean isAvailableForBPartnerId(I_M_PickingSlot pickingSlot, BPartnerId bpartnerId);
 
 	boolean isAvailableForBPartnerAndLocation(I_M_PickingSlot pickingSlot, BPartnerId bpartnerId, BPartnerLocationId bpartnerLocationId);
+
+	PickingSlotIdAndCaption getPickingSlotIdAndCaption(@NonNull PickingSlotId pickingSlotId);
 }

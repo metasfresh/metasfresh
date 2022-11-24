@@ -73,12 +73,11 @@ public class PricingTestHelper
 	public static final int C_Currency_ID_CHF = 318;
 	public I_C_Country defaultCountry;
 
-	private I_M_PricingSystem defaultPricingSystem;
-	private I_M_PriceList defaultPriceList;
-	private I_M_PriceList_Version defaultPriceListVerion;
+	private final I_M_PricingSystem defaultPricingSystem;
+	private final I_M_PriceList defaultPriceList;
+	private final I_M_PriceList_Version defaultPriceListVerion;
 
-	private I_M_Product defaultProduct;
-	private I_C_UOM defaultUOM;
+	private final I_M_Product defaultProduct;
 
 	public I_M_Attribute attr_Country;
 	public AttributeListValue attr_Country_DE;
@@ -100,7 +99,7 @@ public class PricingTestHelper
 		defaultPriceList = createPriceList(defaultPricingSystem, defaultCountry);
 		defaultPriceListVerion = createPriceListVersion(defaultPriceList);
 		//
-		defaultUOM = newInstance(I_C_UOM.class);
+		final I_C_UOM defaultUOM = newInstance(I_C_UOM.class);
 		saveRecord(defaultUOM);
 		defaultProduct = createProduct("Product1", defaultUOM);
 		//
@@ -123,7 +122,7 @@ public class PricingTestHelper
 				de.metas.pricing.rules.Discount.class.getName());
 	}
 
-	private final void createPricingRules()
+	private void createPricingRules()
 	{
 		final List<String> classnames = getPricingRuleClassnamesToRegister();
 
@@ -141,9 +140,6 @@ public class PricingTestHelper
 		}
 	}
 
-	/**
-	 * @param countryAreaValue if not {@code null}, then a country area is created and the new country is assigned to it.
-	 */
 	public final I_C_Country createCountry(
 			@NonNull final String countryCode,
 			final int currencyId)
@@ -172,7 +168,6 @@ public class PricingTestHelper
 			@NonNull final I_C_Country country,
 			@NonNull final String countryAreaValue)
 	{
-
 		final I_C_CountryArea countryAreaRecord = newInstance(I_C_CountryArea.class);
 		countryAreaRecord.setValue(countryAreaValue);
 		saveRecord(countryAreaRecord);

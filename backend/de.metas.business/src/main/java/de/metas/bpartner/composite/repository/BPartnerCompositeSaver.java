@@ -497,8 +497,10 @@ final class BPartnerCompositeSaver
 			bpartnerContactRecord.setDescription(bpartnerContact.getDescription());
 
 			bpartnerContactRecord.setPhone(bpartnerContact.getPhone());
+			bpartnerContactRecord.setPhone2(bpartnerContact.getPhone2());
 			bpartnerContactRecord.setFax(bpartnerContact.getFax());
 			bpartnerContactRecord.setMobilePhone(bpartnerContact.getMobilePhone());
+			bpartnerContactRecord.setTitle(bpartnerContact.getTitle());
 
 			String invoiceEmailEnabled = null;
 

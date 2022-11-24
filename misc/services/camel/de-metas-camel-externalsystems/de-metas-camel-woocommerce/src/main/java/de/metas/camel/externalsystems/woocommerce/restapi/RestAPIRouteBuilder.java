@@ -22,8 +22,11 @@
 
 package de.metas.camel.externalsystems.woocommerce.restapi;
 
-import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.ProcessLogger;
+import de.metas.camel.externalsystems.common.RestServiceAuthority;
+import de.metas.camel.externalsystems.common.RestServiceRoutes;
+import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import de.metas.camel.externalsystems.common.LogMessageRequest;
 import de.metas.camel.externalsystems.common.auth.JsonAuthenticateRequest;
 import de.metas.camel.externalsystems.common.auth.JsonExpireTokenResponse;
 import de.metas.camel.externalsystems.common.auth.TokenCredentials;
@@ -38,9 +41,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_LOG_MESSAGE_ROUTE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.REST_API_AUTHENTICATE_TOKEN;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.REST_API_EXPIRE_TOKEN;
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.REST_WOOCOMMERCE_PATH;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
@@ -54,14 +57,6 @@ public class RestAPIRouteBuilder extends RouteBuilder
 	public static final String DISABLE_RESOURCE_ROUTE_PROCESSOR_ID = "WOO-disableRestAPIProcessor";
 	public static final String ENABLE_RESOURCE_ATTACH_AUTHENTICATE_REQ_PROCESSOR_ID = "WOO-ER-AttachAuthenticateReqProcessorId";
 	public static final String DISABLE_RESOURCE_ATTACH_AUTHENTICATE_REQ_PROCESSOR_ID = "WOO-DR-AttachAuthenticateReqProcessorId";
-
-	@NonNull
-	private final ProcessLogger processLogger;
-
-	public RestAPIRouteBuilder(final @NonNull ProcessLogger processLogger)
-	{
-		this.processLogger = processLogger;
-	}
 
 	@Override
 	public void configure()
@@ -89,26 +84,27 @@ public class RestAPIRouteBuilder extends RouteBuilder
 				.process(this::disableRestAPIProcessor).id(DISABLE_RESOURCE_ROUTE_PROCESSOR_ID)
 				.end();
 
-		rest().path(REST_WOOCOMMERCE_PATH)
+		rest().path(RestServiceRoutes.WOO.getPath())
 				.post()
 				.route()
 				.routeId(REST_API_ROUTE_ID)
 				.autoStartup(false)
 				.process(this::restAPIProcessor)
+				.to(direct(MF_LOG_MESSAGE_ROUTE_ID))
 				.end();
 
 		//@formatter:on
 
 	}
 
-	public void enableRestAPIProcessor(@NonNull final Exchange exchange) throws Exception
+	private void enableRestAPIProcessor(@NonNull final Exchange exchange) throws Exception
 	{
 		final RouteController routeController = getContext().getRouteController();
 
 		routeController.resumeRoute(REST_API_ROUTE_ID);
 	}
 
-	public void disableRestAPIProcessor(@NonNull final Exchange exchange) throws Exception
+	private void disableRestAPIProcessor(@NonNull final Exchange exchange) throws Exception
 	{
 		final JsonExpireTokenResponse response = exchange.getIn().getBody(JsonExpireTokenResponse.class);
 
@@ -118,7 +114,7 @@ public class RestAPIRouteBuilder extends RouteBuilder
 		}
 	}
 
-	public void restAPIProcessor(@NonNull final Exchange exchange)
+	private void restAPIProcessor(@NonNull final Exchange exchange)
 	{
 		final TokenCredentials credentials = (TokenCredentials)SecurityContextHolder.getContext().getAuthentication().getCredentials();
 
@@ -129,7 +125,14 @@ public class RestAPIRouteBuilder extends RouteBuilder
 
 		final String requestBody = exchange.getIn().getBody(String.class);
 
-		processLogger.logMessage(REST_API_ROUTE_ID + " has been called with requestBody:" + requestBody, credentials.getPInstance().getValue());
+		final String logMessage = REST_API_ROUTE_ID + " has been called with requestBody:" + requestBody;
+
+		final LogMessageRequest logMessageRequest = LogMessageRequest.builder()
+				.logMessage(logMessage)
+				.pInstanceId(credentials.getPInstance())
+				.build();
+
+		exchange.getIn().setBody(logMessageRequest);
 	}
 
 	private void attachAuthenticateRequest(@NonNull final Exchange exchange)
@@ -156,10 +159,16 @@ public class RestAPIRouteBuilder extends RouteBuilder
 			throw new RuntimeCamelException("Missing authKey from request!");
 		}
 
+		final String externalSystemValue = request.getParameters().get(ExternalSystemConstants.PARAM_CHILD_CONFIG_VALUE);
+		final String auditTrailEndpoint = request.getWriteAuditEndpoint();
+
 		return JsonAuthenticateRequest.builder()
-				.grantedAuthority(ExternalSystemCamelConstants.WOOCOMMERCE_AUTHORITY)
+				.grantedAuthority(RestServiceAuthority.WOO.getValue())
 				.authKey(authKey)
 				.pInstance(request.getAdPInstanceId())
+				.externalSystemValue(externalSystemValue)
+				.auditTrailEndpoint(auditTrailEndpoint)
+				.orgCode(request.getOrgCode())
 				.build();
 	}
 }

@@ -7,7 +7,7 @@ export function loginRequest(username, password) {
   });
 }
 
-export function localLoginRequest() {
+export function checkLoginRequest() {
   return axios.get(`${config.API_URL}/login/isLoggedIn`);
 }
 

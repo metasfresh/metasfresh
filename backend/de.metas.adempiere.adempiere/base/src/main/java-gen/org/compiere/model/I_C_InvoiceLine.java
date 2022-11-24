@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_InvoiceLine
  *  @author metasfresh (generated) 
@@ -500,6 +501,27 @@ public interface I_C_InvoiceLine
 	int getC_Tax_ID();
 
 	String COLUMNNAME_C_Tax_ID = "C_Tax_ID";
+
+	/**
+	 * Set Shipping Location.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Shipping_Location_ID (int C_Shipping_Location_ID);
+
+	/**
+	 * Get Shipping Location.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Shipping_Location_ID();
+
+	ModelColumn<I_C_InvoiceLine, Object> COLUMN_C_Shipping_Location_ID = new ModelColumn<>(I_C_InvoiceLine.class, "C_Shipping_Location_ID", null);
+	String COLUMNNAME_C_Shipping_Location_ID = "C_Shipping_Location_ID";
 
 	/**
 	 * Set UOM.

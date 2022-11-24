@@ -3,6 +3,8 @@ package org.eevolution.mrp.api.impl;
 import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
+import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
+import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.impl.PlainDocumentBL;
@@ -284,7 +286,8 @@ public class MRPTestHelper
 				ppOrderConverter,
 				postMaterialEventService,
 				new DocumentNoBuilderFactory(Optional.empty()),
-				new PPOrderBOMBL());
+				new PPOrderBOMBL(),
+				new DDOrderLowLevelService(new DDOrderLowLevelDAO()));
 	}
 
 	public Timestamp getToday()

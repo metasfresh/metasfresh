@@ -91,6 +91,7 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.ZonedDateTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -318,6 +319,18 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulePA.getById(shipmentScheduleId);
 
 		closeShipmentSchedule(shipmentSchedule);
+	}
+
+	@Override
+	public void closeShipmentSchedules(@NonNull final Set<ShipmentScheduleId> shipmentScheduleIds)
+	{
+		if (shipmentScheduleIds.isEmpty())
+		{
+			return;
+		}
+
+		final Collection<I_M_ShipmentSchedule> shipmentSchedules = shipmentSchedulePA.getByIds(shipmentScheduleIds).values();
+		shipmentSchedules.forEach(this::closeShipmentSchedule);
 	}
 
 	@Override

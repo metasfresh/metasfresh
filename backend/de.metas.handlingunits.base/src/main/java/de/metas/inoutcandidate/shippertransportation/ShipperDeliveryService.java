@@ -23,6 +23,10 @@
 package de.metas.inoutcandidate.shippertransportation;
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.async.AsyncBatchId;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.shipper.gateway.commons.ShipperGatewayFacade;
 import de.metas.shipper.gateway.spi.model.DeliveryOrderCreateRequest;
 import de.metas.shipping.IShipperDAO;
@@ -31,14 +35,15 @@ import de.metas.shipping.model.I_M_ShipperTransportation;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Check;
 import de.metas.util.Services;
-import de.metas.common.util.CoalesceUtil;
 import lombok.NonNull;
 import org.compiere.model.I_M_Package;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Collection;
 import java.util.Set;
 
@@ -65,12 +70,13 @@ public class ShipperDeliveryService
 	public void generateShipperDeliveryOrderIfPossible(
 			@NonNull final ShipperId shipperId,
 			@NonNull final ShipperTransportationId shipperTransportationId,
-			@NonNull final Collection<I_M_Package> packages)
+			@NonNull final Collection<I_M_Package> packages,
+			@Nullable final AsyncBatchId asyncBatchId)
 	{
 		final I_M_Shipper shipper = Services.get(IShipperDAO.class).getById(shipperId);
 		final String shipperGatewayId = shipper.getShipperGateway();
 		// no ShipperGateway, so no API to call/no courier to request
-		if (Check.isEmpty(shipperGatewayId, true))
+		if (Check.isBlank(shipperGatewayId))
 		{
 			return;
 		}
@@ -93,12 +99,18 @@ public class ShipperDeliveryService
 				.packageIds(mPackageIds)
 				.shipperTransportationId(shipperTransportationId)
 				.shipperGatewayId(shipperGatewayId)
+				.asyncBatchId(asyncBatchId)
 				.build();
 		shipperGatewayFacade.createAndSendDeliveryOrdersForPackages(request);
 	}
 
 	private LocalDate getPickupDate(@NonNull final I_M_ShipperTransportation shipperTransportation)
 	{
-		return CoalesceUtil.coalesce(TimeUtil.asLocalDate(shipperTransportation.getDateToBeFetched()), TimeUtil.asLocalDate(shipperTransportation.getDateDoc()));
+		final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+		final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(shipperTransportation.getAD_Org_ID()));
+		
+		return CoalesceUtil.coalesceNotNull(
+				TimeUtil.asLocalDate(shipperTransportation.getDateToBeFetched(), timeZone),
+				TimeUtil.asLocalDate(shipperTransportation.getDateDoc(), timeZone));
 	}
 }

@@ -34,7 +34,7 @@ import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
 import org.springframework.stereotype.Component;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_EXTERNAL_SYSTEM_URI;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_EXTERNAL_SYSTEM_V2_URI;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_LOG_MESSAGE_ROUTE_ID;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
@@ -56,7 +56,7 @@ public class LogMessageRouteBuilder extends RouteBuilder
 				.removeHeaders("CamelHttp*")
 				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
-				.toD("{{" + MF_EXTERNAL_SYSTEM_URI + "}}/${header." + HEADER_PINSTANCE_ID + "}/externalstatus/message");
+				.toD("{{" + MF_EXTERNAL_SYSTEM_V2_URI + "}}/externalstatus/${header." + HEADER_PINSTANCE_ID + "}/message");
 		//@formatter:on
 	}
 

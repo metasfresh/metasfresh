@@ -1067,6 +1067,8 @@ body{
     width: 200px;
     max-width: 480px;
     max-height: 80vh;
+    display: flex;
+    flex-direction: column;
     overflow-y: auto;
     overflow-x: hidden;
 }
@@ -1086,6 +1088,7 @@ body{
     display: flex;
     align-items: center;
     justify-content: space-between;
+    padding-bottom: 5px;
 }
 
 .filter-clear {
@@ -1644,10 +1647,8 @@ body{
 }
 
 .modal-spinner {
-    height: 70%;
-    left:15%;
-    top: 15%;
-    width: 70%;
+    height: 100%;
+    width: 100%;
     background-color: transparent !important;
 }
 

@@ -283,27 +283,27 @@ public class CandidateRepositoryWriteService
 			previousTime = null;
 		}
 
-		final I_MD_Candidate synchedRecord = updateOrCreateCandidateRecord(
+		final I_MD_Candidate syncedRecord = updateOrCreateCandidateRecord(
 				oldCandidateRecord,
 				candidate,
 				preserveExistingSeqNoAndParentId);
-		save(synchedRecord); // save now, because we need to have MD_Candidate_ID > 0
+		save(syncedRecord); // save now, because we need to have MD_Candidate_ID > 0
 
-		setFallBackSeqNoAndGroupIdIfNeeded(synchedRecord);
+		setFallBackSeqNoAndGroupIdIfNeeded(syncedRecord);
 
-		addOrReplaceProductionDetail(candidate, synchedRecord);
+		addOrReplaceProductionDetail(candidate, syncedRecord);
 
-		addOrReplaceDistributionDetail(candidate, synchedRecord);
+		addOrReplaceDistributionDetail(candidate, syncedRecord);
 
-		addOrReplaceDemandDetail(candidate, synchedRecord);
+		addOrReplaceDemandDetail(candidate, syncedRecord);
 
-		addOrReplacePurchaseDetail(candidate, synchedRecord);
+		addOrReplacePurchaseDetail(candidate, syncedRecord);
 
-		addOrReplaceTransactionDetail(candidate, synchedRecord);
+		addOrReplaceTransactionDetail(candidate, syncedRecord);
 
-		addOrReplaceStockChangeDetail(candidate, synchedRecord);
+		addOrReplaceStockChangeDetail(candidate, syncedRecord);
 
-		final Candidate savedCandidate = createNewCandidateWithIdsFromRecord(candidate, synchedRecord);
+		final Candidate savedCandidate = createNewCandidateWithIdsFromRecord(candidate, syncedRecord);
 
 		// add a log message to be shown in the event log
 		final String verb = oldCandidateRecord == null ? "created" : "updated";

@@ -22,7 +22,7 @@
 
 package de.metas.util.web.audit.process;
 
-import de.metas.audit.ApiAuditCleanUpService;
+import de.metas.audit.apirequest.ApiAuditCleanUpService;
 import de.metas.process.JavaProcess;
 import org.compiere.SpringContextHolder;
 

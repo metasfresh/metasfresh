@@ -7,6 +7,7 @@ import org.adempiere.model.ModelColumn;
 /** Generated Interface for C_Commission_Instance
  *  @author metasfresh (generated) 
  */
+@SuppressWarnings("unused")
 public interface I_C_Commission_Instance 
 {
 
@@ -90,6 +91,28 @@ public interface I_C_Commission_Instance
 
 	ModelColumn<I_C_Commission_Instance, Object> COLUMN_C_Commission_Instance_ID = new ModelColumn<>(I_C_Commission_Instance.class, "C_Commission_Instance_ID", null);
 	String COLUMNNAME_C_Commission_Instance_ID = "C_Commission_Instance_ID";
+
+	/**
+	 * Set Currency.
+	 * The Currency for this record
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_Currency_ID (int C_Currency_ID);
+
+	/**
+	 * Get Currency.
+	 * The Currency for this record
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_Currency_ID();
+
+	String COLUMNNAME_C_Currency_ID = "C_Currency_ID";
 
 	/**
 	 * Set Invoice candidate.
@@ -240,6 +263,31 @@ public interface I_C_Commission_Instance
 	String COLUMNNAME_C_Order_ID = "C_Order_ID";
 
 	/**
+	 * Set Orderline.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_OrderLine_ID (int C_OrderLine_ID);
+
+	/**
+	 * Get Orderline.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_OrderLine_ID();
+
+	@Nullable org.compiere.model.I_C_OrderLine getC_OrderLine();
+
+	void setC_OrderLine(@Nullable org.compiere.model.I_C_OrderLine C_OrderLine);
+
+	ModelColumn<I_C_Commission_Instance, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_ID = new ModelColumn<>(I_C_Commission_Instance.class, "C_OrderLine_ID", org.compiere.model.I_C_OrderLine.class);
+	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -263,6 +311,28 @@ public interface I_C_Commission_Instance
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Active.
@@ -413,6 +483,29 @@ public interface I_C_Commission_Instance
 
 	ModelColumn<I_C_Commission_Instance, Object> COLUMN_POReference = new ModelColumn<>(I_C_Commission_Instance.class, "POReference", null);
 	String COLUMNNAME_POReference = "POReference";
+
+	/**
+	 * Set Quantity.
+	 * Quantity
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setQty (BigDecimal Qty);
+
+	/**
+	 * Get Quantity.
+	 * Quantity
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getQty();
+
+	ModelColumn<I_C_Commission_Instance, Object> COLUMN_Qty = new ModelColumn<>(I_C_Commission_Instance.class, "Qty", null);
+	String COLUMNNAME_Qty = "Qty";
 
 	/**
 	 * Get Updated.

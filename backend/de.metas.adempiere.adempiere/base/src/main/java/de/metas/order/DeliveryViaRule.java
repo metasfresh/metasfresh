@@ -1,16 +1,15 @@
 package de.metas.order;
 
-import java.util.Arrays;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.X_C_Order;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-
 import de.metas.util.lang.ReferenceListAwareEnum;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.X_C_Order;
+
+import javax.annotation.Nullable;
+import java.util.Arrays;
 
 /*
  * #%L
@@ -51,13 +50,15 @@ public enum DeliveryViaRule implements ReferenceListAwareEnum
 		this.code = code;
 	}
 
-	public static DeliveryViaRule ofNullableCode(final String code)
+	@Nullable
+	public static DeliveryViaRule ofNullableCode(@Nullable final String code)
 	{
 		final DeliveryViaRule defaultWhenNull = null;
 		return ofNullableCodeOr(code, defaultWhenNull);
 	}
 
-	public static DeliveryViaRule ofNullableCodeOr(final String code, final DeliveryViaRule defaultWhenNull)
+	@Nullable
+	public static DeliveryViaRule ofNullableCodeOr(@Nullable final String code, @Nullable final DeliveryViaRule defaultWhenNull)
 	{
 		return code != null ? ofCode(code) : defaultWhenNull;
 	}
@@ -79,6 +80,7 @@ public enum DeliveryViaRule implements ReferenceListAwareEnum
 		return this == Shipper;
 	}
 
+	@Nullable
 	public static String toCodeOrNull(final DeliveryViaRule type)
 	{
 		return type != null ? type.getCode() : null;

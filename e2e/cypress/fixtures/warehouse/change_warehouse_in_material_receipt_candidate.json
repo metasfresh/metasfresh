@@ -3,5 +3,6 @@
     "warehouse2" : "Lager für Streckengeschäft",
     "businessPartnerName" : "Test Lieferant 1",
     "productQuantity" : 222,
+    "huItem": "IFCO 6410 x 10 Stk",
     "productName" : "Convenience Salat 250g" 
 }

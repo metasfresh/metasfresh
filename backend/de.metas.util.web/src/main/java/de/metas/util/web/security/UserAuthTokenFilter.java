@@ -1,6 +1,9 @@
 package de.metas.util.web.security;
 
-import java.io.IOException;
+import de.metas.security.UserNotAuthorizedException;
+import de.metas.util.Check;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -8,51 +11,24 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.annotation.WebFilter;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.DatatypeConverter;
+import java.io.IOException;
 
-import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-
-import de.metas.security.UserNotAuthorizedException;
-import de.metas.util.Check;
-import de.metas.util.web.MetasfreshRestAPIConstants;
-
-/*
- * #%L
- * de.metas.adempiere.adempiere.serverRoot.base
- * %%
- * Copyright (C) 2018 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-@WebFilter({ MetasfreshRestAPIConstants.URL_PATTERN_API })
 public class UserAuthTokenFilter implements Filter
 {
 	public static final String HEADER_Authorization = "Authorization";
 
 	private final UserAuthTokenService userAuthTokenService;
+	private final UserAuthTokenFilterConfiguration configuration;
 
 	public UserAuthTokenFilter(
-			@NonNull final UserAuthTokenService userAuthTokenService)
+			@NonNull final UserAuthTokenService userAuthTokenService,
+			@NonNull final UserAuthTokenFilterConfiguration configuration)
 	{
 		this.userAuthTokenService = userAuthTokenService;
+		this.configuration = configuration;
 	}
 
 	@Override
@@ -69,25 +45,37 @@ public class UserAuthTokenFilter implements Filter
 	public void doFilter(final ServletRequest request, final ServletResponse response, final FilterChain chain) throws IOException, ServletException
 	{
 		final HttpServletRequest httpRequest = (HttpServletRequest)request;
-		final HttpServletResponse httpResponse = (HttpServletResponse)response;
-
-		try
+		if (isExcludedFromSecurityChecking(httpRequest))
 		{
-			userAuthTokenService.run(
-					() -> extractTokenString(httpRequest),
-					() -> chain.doFilter(request, response));
+			chain.doFilter(request, response);
 		}
-		catch (final UserNotAuthorizedException ex)
+		else
 		{
-			httpResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, ex.getLocalizedMessage());
-			return;
+			final HttpServletResponse httpResponse = (HttpServletResponse)response;
+
+			try
+			{
+				userAuthTokenService.run(
+						() -> extractTokenString(httpRequest),
+						() -> chain.doFilter(httpRequest, httpResponse));
+			}
+			catch (final UserNotAuthorizedException ex)
+			{
+				httpResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, ex.getLocalizedMessage());
+			}
 		}
 	}
 
-	private String extractTokenString(final HttpServletRequest httpRequest)
+	private boolean isExcludedFromSecurityChecking(@NonNull final HttpServletRequest httpRequest)
+	{
+		return "OPTIONS".equals(httpRequest.getMethod()) // don't check auth for OPTIONS method calls because this causes troubles on chrome preflight checks
+				|| configuration.isExcludedFromSecurityChecking(httpRequest);
+	}
+
+	private static String extractTokenString(final HttpServletRequest httpRequest)
 	{
 		final String authorizationString = httpRequest.getHeader(HEADER_Authorization);
-		if (Check.isEmpty(authorizationString, true))
+		if (Check.isBlank(authorizationString))
 		{
 			throw new AdempiereException("Provide token in `" + HEADER_Authorization + "` HTTP header");
 		}
@@ -108,4 +96,5 @@ public class UserAuthTokenFilter implements Filter
 			return authorizationString;
 		}
 	}
+
 }

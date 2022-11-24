@@ -25,7 +25,6 @@ package de.metas.camel.externalsystems.woocommerce.restapi;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
-import de.metas.camel.externalsystems.common.ProcessLogger;
 import de.metas.camel.externalsystems.common.auth.JsonAuthenticateRequest;
 import de.metas.camel.externalsystems.common.auth.JsonExpireTokenResponse;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
@@ -38,7 +37,6 @@ import org.apache.camel.component.mock.MockEndpoint;
 import org.apache.camel.test.junit5.CamelTestSupport;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import java.io.InputStream;
 
@@ -60,8 +58,7 @@ public class RestAPIRouteBuilderTests extends CamelTestSupport
 	@Override
 	protected RouteBuilder createRouteBuilder()
 	{
-		final ProcessLogger processLogger = Mockito.mock(ProcessLogger.class);
-		return new RestAPIRouteBuilder(processLogger);
+		return new RestAPIRouteBuilder();
 	}
 
 	@Override

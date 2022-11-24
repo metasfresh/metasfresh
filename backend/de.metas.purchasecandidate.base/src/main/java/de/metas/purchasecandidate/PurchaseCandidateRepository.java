@@ -695,4 +695,16 @@ public class PurchaseCandidateRepository
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	@NonNull
+	public List<PurchaseCandidate> getAllByPurchaseOrderId(@NonNull final OrderId purchaseOrderId)
+	{
+		return queryBL.createQueryBuilder(I_C_PurchaseCandidate_Alloc.class)
+				.addEqualsFilter(I_C_PurchaseCandidate_Alloc.COLUMNNAME_C_OrderPO_ID, purchaseOrderId.getRepoId())
+				.create()
+				.stream()
+				.map(I_C_PurchaseCandidate_Alloc::getC_PurchaseCandidate_ID)
+				.map(PurchaseCandidateId::ofRepoId)
+				.map(this::getById)
+				.collect(ImmutableList.toImmutableList());
+	}
 }

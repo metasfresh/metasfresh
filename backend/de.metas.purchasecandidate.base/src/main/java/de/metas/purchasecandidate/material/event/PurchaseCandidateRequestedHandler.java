@@ -87,7 +87,7 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 	}
 
 	@Override
-	public Collection<Class<? extends PurchaseCandidateRequestedEvent>> getHandeledEventType()
+	public Collection<Class<? extends PurchaseCandidateRequestedEvent>> getHandledEventType()
 	{
 		return ImmutableList.of(PurchaseCandidateRequestedEvent.class);
 	}

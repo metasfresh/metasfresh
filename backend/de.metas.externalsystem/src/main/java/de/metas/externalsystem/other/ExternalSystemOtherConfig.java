@@ -50,4 +50,10 @@ public class ExternalSystemOtherConfig implements IExternalSystemChildConfig
 	{
 		return (ExternalSystemOtherConfig)externalSystemChildConfig;
 	}
+
+	@Override
+	public String getValue()
+	{
+		throw new UnsupportedOperationException("getValue() not supported for external system Other");
+	}
 }

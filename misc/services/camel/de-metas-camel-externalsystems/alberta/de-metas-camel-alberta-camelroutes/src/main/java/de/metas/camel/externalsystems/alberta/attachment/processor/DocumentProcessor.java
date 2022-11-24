@@ -59,7 +59,6 @@ public class DocumentProcessor implements Processor
 		final Document document = routeContext.getDocument();
 
 		final File file = getFile(routeContext, document.getId());
-
 		final byte[] fileData = Files.readAllBytes(file.toPath());
 
 		final String base64FileData = Base64.getEncoder().encodeToString(fileData);

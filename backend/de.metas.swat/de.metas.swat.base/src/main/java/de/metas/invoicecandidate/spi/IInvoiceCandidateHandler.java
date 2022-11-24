@@ -1,6 +1,27 @@
 package de.metas.invoicecandidate.spi;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
+import de.metas.invoicecandidate.model.I_C_ILCandHandler;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.money.CurrencyId;
+import de.metas.pricing.InvoicableQtyBasedOn;
+import de.metas.pricing.PriceListVersionId;
+import de.metas.pricing.PricingSystemId;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.tax.api.TaxId;
+import de.metas.uom.UomId;
+import de.metas.util.Services;
+import de.metas.util.lang.Percent;
+import lombok.NonNull;
+import org.adempiere.ad.modelvalidator.DocTimingType;
+import org.adempiere.model.InterfaceWrapperHelper;
+
 import java.math.BigDecimal;
+import java.util.Iterator;
+import java.util.List;
 
 /*
  * #%L
@@ -24,30 +45,6 @@ import java.math.BigDecimal;
  * #L%
  */
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.modelvalidator.DocTimingType;
-import org.adempiere.model.InterfaceWrapperHelper;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.bpartner.service.IBPartnerDAO;
-import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.api.IInvoiceCandidateHandlerBL;
-import de.metas.invoicecandidate.model.I_C_ILCandHandler;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.money.CurrencyId;
-import de.metas.pricing.InvoicableQtyBasedOn;
-import de.metas.pricing.PriceListVersionId;
-import de.metas.pricing.PricingSystemId;
-import de.metas.tax.api.TaxCategoryId;
-import de.metas.uom.UomId;
-import de.metas.util.Services;
-import de.metas.util.lang.Percent;
-import lombok.NonNull;
-
 /**
  * Implementors of this class have the job to create and invalidate {@link I_C_Invoice_Candidate} records.
  * <p>
@@ -55,7 +52,7 @@ import lombok.NonNull;
  * <p>
  * To get an instance of this interface, use {@link IInvoiceCandidateHandlerBL} methods.
  *
- * Registered implementations will instantiated and their {@link #createMissingCandidates(Properties, String)} method will be called by API.
+ * Registered implementations will instantiated their methods be called by API.
  *
  * NOTE: because the API will create a new instance each time a handler is needed, it's safe to have status/field variables.
  * NOTE to future devs: It might be tempting to try and add a generic type parameter; i just failed miserably when it came to {@link #expandRequest(InvoiceCandidateGenerateRequest)} and to extending adjacent classes and services.
@@ -65,7 +62,7 @@ import lombok.NonNull;
 public interface IInvoiceCandidateHandler
 {
 	/** Which action shall be performed when an invoice candidate invalidation was requested */
-	public enum OnInvalidateForModelAction
+	enum OnInvalidateForModelAction
 	{
 		REVALIDATE,
 
@@ -123,7 +120,7 @@ public interface IInvoiceCandidateHandler
 	 *
 	 * @param limit advises how many models shall be retrieved. Note that this is an advise which could be respected or not by current implementations.
 	 */
-	Iterator<? extends Object> retrieveAllModelsWithMissingCandidates(int limit);
+	Iterator<?> retrieveAllModelsWithMissingCandidates(int limit);
 
 	boolean isMissingInvoiceCandidate(Object model);
 
@@ -221,8 +218,6 @@ public interface IInvoiceCandidateHandler
 	 * of the given invoice candidate.
 	 * <p>
 	 * Implementors can assume that this method is called before {@link #setDeliveredData(I_C_Invoice_Candidate)}.
-	 *
-	 * @param ic
 	 */
 	void setOrderedData(I_C_Invoice_Candidate ic);
 
@@ -237,8 +232,6 @@ public interface IInvoiceCandidateHandler
 	 * of the given invoice candidate.
 	 * <p>
 	 * Implementors can assume that when this method is called then {@link #setOrderedData(I_C_Invoice_Candidate)} was already called.
-	 *
-	 * @param ic
 	 */
 	void setDeliveredData(I_C_Invoice_Candidate ic);
 
@@ -246,6 +239,8 @@ public interface IInvoiceCandidateHandler
 	{
 		return PriceAndTax.NONE;
 	}
+
+	default void setShipmentSchedule(final I_C_Invoice_Candidate ic) { /* do nothing */ };
 
 	/**
 	 * * Method responsible for setting
@@ -288,12 +283,14 @@ public interface IInvoiceCandidateHandler
 
 		Percent discount;
 
-		TaxCategoryId taxCategoryId;
+		InvoicableQtyBasedOn invoicableQtyBasedOn;
+
 		Boolean taxIncluded;
+		TaxId taxId;
+		TaxCategoryId taxCategoryId;
 
 		BigDecimal compensationGroupBaseAmt;
 
-		InvoicableQtyBasedOn invoicableQtyBasedOn;
 	}
 
 }

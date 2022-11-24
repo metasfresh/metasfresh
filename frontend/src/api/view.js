@@ -1,9 +1,7 @@
 import { post, get, patch, delete as del } from 'axios';
-import {
-  getQueryString,
-  cleanupFilter,
-  createPatchRequestPayload,
-} from '../utils';
+
+import { getQueryString, createPatchRequestPayload } from '../utils';
+import { prepareFilterForBackend } from '../utils/filterHelpers';
 
 export function getData({
   entity,
@@ -167,7 +165,7 @@ export function createViewRequest({
 
 export function filterViewRequest(windowId, viewId, filters) {
   filters.map((filter, idx) => {
-    filter = cleanupFilter(filter);
+    filter = prepareFilterForBackend(filter);
     filters[idx] = filter;
   });
 
@@ -223,33 +221,32 @@ export async function quickActionsRequest({
   childView,
   parentView,
 }) {
-  let query = null;
-
+  let requestBody;
   if (childView && childView.viewId) {
-    query = getQueryString({
+    requestBody = {
       viewProfileId,
       selectedIds,
       childViewId: childView.viewId,
       childViewSelectedIds: childView.selected,
-    });
+    };
   } else if (parentView && parentView.viewId) {
-    query = getQueryString({
+    requestBody = {
       viewProfileId,
       selectedIds,
       parentViewId: parentView.viewId,
       parentViewSelectedIds: parentView.selected,
-    });
+    };
   } else {
-    query = getQueryString({
+    requestBody = {
       viewProfileId,
       selectedIds,
-    });
+    };
   }
 
-  return get(`
-    ${config.API_URL}/documentView/${windowId}/${viewId}/quickActions${
-    query ? `?${query}` : ''
-  }`);
+  return post(
+    `${config.API_URL}/documentView/${windowId}/${viewId}/quickActions`,
+    requestBody
+  );
 }
 
 /*
@@ -338,7 +335,7 @@ export function patchViewAttributesRequest(
  * @param {number} windowId
  * @param {string} viewId
  * @param {string} rowId
- * @param {attribute} - field name
+ * @param attribute
  */
 export function getViewAttributeDropdown(windowId, viewId, rowId, attribute) {
   return get(
@@ -364,11 +361,10 @@ export function getViewAttributeTypeahead(
   query
 ) {
   return get(
-    `${config.API_URL}/documentView/
-      ${windowId}/
-      ${viewId}/
-      ${rowId}/attributes/attribute/
-      ${attribute}/typeahead?query=
-      ${encodeURIComponent(query)}`
+    `${
+      config.API_URL
+    }/documentView/${windowId}/${viewId}/${rowId}/attributes/attribute/${attribute}/typeahead?query=${encodeURIComponent(
+      query
+    )}`
   );
 }

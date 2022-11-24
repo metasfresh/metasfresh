@@ -17,6 +17,7 @@ import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.I_M_Warehouse;
 
 /**
  * Default implementation of {@link IWarehouseAdvisor}.
@@ -88,15 +89,7 @@ public class WarehouseAdvisor implements IWarehouseAdvisor
 			return pickingWarehouseId;
 		}
 
-		//
-		final WarehouseId orgWarehouseId = orgsRepo.getOrgWarehouseId(adOrgId);
-		if (orgWarehouseId != null)
-		{
-			return orgWarehouseId;
-		}
-
-		//
-		return null;
+		return orgsRepo.getOrgWarehouseId(adOrgId);
 	}
 
 	/**
@@ -135,7 +128,7 @@ public class WarehouseAdvisor implements IWarehouseAdvisor
 	private boolean isPickingWarehouse(final WarehouseId warehouseId)
 	{
 		final IWarehouseDAO warehousesRepo = Services.get(IWarehouseDAO.class);
-		final org.adempiere.warehouse.model.I_M_Warehouse warehouse = warehousesRepo.getById(warehouseId, org.adempiere.warehouse.model.I_M_Warehouse.class);
+		final I_M_Warehouse warehouse = warehousesRepo.getById(warehouseId);
 		return warehouse.isPickingWarehouse();
 	}
 }

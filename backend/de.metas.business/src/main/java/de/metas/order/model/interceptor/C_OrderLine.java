@@ -35,6 +35,7 @@ import org.adempiere.ad.service.IDeveloperModeBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.CalloutOrder;
 import org.compiere.model.I_C_Order;
+import org.compiere.model.I_C_PO_OrderLine_Alloc;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -110,22 +111,19 @@ public class C_OrderLine
 	 * Task http://dewiki908/mediawiki/index.php/09557_Wrong_aggregation_on_OrderPOCreate_%28109614894753%29
 	 * Task https://metasfresh.atlassian.net/browse/FRESH-386
 	 */
-	private void unlinkReferencedOrderLines(final I_C_OrderLine orderLine)
+	private void unlinkReferencedOrderLines(final I_C_OrderLine purchaseOrderLine)
 	{
 		// 09557
 		queryBL
-				.createQueryBuilder(I_C_OrderLine.class, orderLine)
-				.addEqualsFilter(org.compiere.model.I_C_OrderLine.COLUMNNAME_Link_OrderLine_ID, orderLine.getC_OrderLine_ID())
+				.createQueryBuilder(I_C_PO_OrderLine_Alloc.class)
+				.addEqualsFilter(I_C_PO_OrderLine_Alloc.COLUMNNAME_C_PO_OrderLine_ID, purchaseOrderLine.getC_OrderLine_ID())
 				.create()
-				.update(ol -> {
-					ol.setLink_OrderLine(null);
-					return IQueryUpdater.MODEL_UPDATED;
-				});
+				.delete();
 
 		// FRESH-386
 		queryBL
-				.createQueryBuilder(I_C_OrderLine.class, orderLine)
-				.addEqualsFilter(org.compiere.model.I_C_OrderLine.COLUMNNAME_Ref_OrderLine_ID, orderLine.getC_OrderLine_ID()) // ref_orderline_id is used with counter docs
+				.createQueryBuilder(I_C_OrderLine.class, purchaseOrderLine)
+				.addEqualsFilter(org.compiere.model.I_C_OrderLine.COLUMNNAME_Ref_OrderLine_ID, purchaseOrderLine.getC_OrderLine_ID()) // ref_orderline_id is used with counter docs
 				.create()
 				.update(ol -> {
 					ol.setRef_OrderLine(null);

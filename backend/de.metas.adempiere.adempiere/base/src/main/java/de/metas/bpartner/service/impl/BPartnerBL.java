@@ -1,7 +1,5 @@
 package de.metas.bpartner.service.impl;
 
-import com.google.common.base.Joiner;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPGroupId;
 import de.metas.bpartner.BPartnerId;
@@ -38,7 +36,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
@@ -47,17 +44,18 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Group;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_BPartner_QuickInput;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class BPartnerBL implements IBPartnerBL
@@ -542,7 +540,7 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public CountryId getCountryId(@NonNull BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId)
+	public CountryId getCountryId(@NonNull final BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId)
 	{
 		final LocationId locationId = getLocationId(bpartnerLocationAndCaptureId);
 		return locationDAO.getCountryIdByLocationId(locationId);
@@ -562,7 +560,7 @@ public class BPartnerBL implements IBPartnerBL
 	}
 
 	@Override
-	public LocationId getLocationId(@NonNull BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId)
+	public LocationId getLocationId(@NonNull final BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId)
 	{
 		if (bpartnerLocationAndCaptureId.getLocationCaptureId() != null)
 		{
@@ -661,21 +659,21 @@ public class BPartnerBL implements IBPartnerBL
 		final BPartnerNameAndGreetingStrategies partnerNameAndGreetingStrategies = SpringContextHolder.instance.getBean(BPartnerNameAndGreetingStrategies.class);
 
 		final NameAndGreeting nameAndGreeting = partnerNameAndGreetingStrategies.compute(
-				strategyId,
-				ComputeNameAndGreetingRequest.builder()
-						.adLanguage(bpartner.getAD_Language())
-						.contacts(bpartnersRepo.retrieveContacts(bpartner)
-								.stream()
-								.map(contact -> ComputeNameAndGreetingRequest.Contact.builder()
-										.greetingId(GreetingId.ofRepoIdOrNull(contact.getC_Greeting_ID()))
-										.firstName(contact.getFirstname())
-										.lastName(contact.getLastname())
-										.seqNo(contact.getAD_User_ID()) // TODO: introduce AD_User.SeqNo
-										.isDefaultContact(contact.isDefaultContact())
-										.isMembershipContact(contact.isMembershipContact())
-										.build())
-								.collect(ImmutableList.toImmutableList()))
-						.build())
+						strategyId,
+						ComputeNameAndGreetingRequest.builder()
+								.adLanguage(bpartner.getAD_Language())
+								.contacts(bpartnersRepo.retrieveContacts(bpartner)
+										.stream()
+										.map(contact -> ComputeNameAndGreetingRequest.Contact.builder()
+												.greetingId(GreetingId.ofRepoIdOrNull(contact.getC_Greeting_ID()))
+												.firstName(contact.getFirstname())
+												.lastName(contact.getLastname())
+												.seqNo(contact.getAD_User_ID()) // TODO: introduce AD_User.SeqNo
+												.isDefaultContact(contact.isDefaultContact())
+												.isMembershipContact(contact.isMembershipContact())
+												.build())
+										.collect(ImmutableList.toImmutableList()))
+								.build())
 				.orElse(null);
 
 		if (nameAndGreeting == null)
@@ -687,4 +685,64 @@ public class BPartnerBL implements IBPartnerBL
 		bpartner.setC_Greeting_ID(GreetingId.toRepoId(nameAndGreeting.getGreetingId()));
 		bpartnersRepo.save(bpartner);
 	}
+
+	@Override
+	public void setPreviousIdIfPossible(@NonNull final I_C_BPartner_Location location)
+	{
+		final List<I_C_BPartner_Location> locations = bpartnersRepo.retrieveBPartnerLocations(BPartnerId.ofRepoId(location.getC_BPartner_ID()));
+		final Set<Integer> oldLocations = locations.stream()
+				.map(I_C_BPartner_Location::getPrevious_ID)
+				.collect(Collectors.toSet());
+		final List<I_C_BPartner_Location> locationCandidates = locations.stream()
+				.filter(loc -> !oldLocations.contains(loc.getC_BPartner_Location_ID()) && loc.getC_BPartner_Location_ID() != location.getC_BPartner_Location_ID())
+				.collect(Collectors.toList());
+		if (locationCandidates.size() == 1)
+		{
+			location.setPrevious_ID(locationCandidates.stream().findFirst().get().getC_BPartner_Location_ID());
+			bpartnersRepo.save(location);
+		}
+	}
+
+	@Override
+	public void updateFromPreviousLocation(final I_C_BPartner_Location bpLocation)
+	{
+		updateFromPreviousLocationNoSave(bpLocation);
+		bpartnersRepo.save(bpLocation);
+	}
+
+	@Override
+	public void updateFromPreviousLocationNoSave(final I_C_BPartner_Location bpLocation)
+	{
+		final int previousId = bpLocation.getPrevious_ID();
+		if (previousId <= 0)
+		{
+			return;
+		}
+
+		final Timestamp validFrom = bpLocation.getValidFrom();
+		if (validFrom == null)
+		{
+			return;
+		}
+
+		final I_C_BPartner_Location previousLocation = bpartnersRepo.getBPartnerLocationByIdEvenInactive(BPartnerLocationId.ofRepoId(bpLocation.getC_BPartner_ID(), previousId));
+		if (previousLocation == null)
+		{
+			return;
+		}
+		// Don't update the defaults if the current location is still valid.
+		if (validFrom.before(Env.getDate()))
+		{
+			bpLocation.setIsBillToDefault(previousLocation.isBillToDefault());
+			bpLocation.setIsShipToDefault(previousLocation.isShipToDefault());
+
+			previousLocation.setIsBillToDefault(false);
+			previousLocation.setIsShipToDefault(false);
+			bpartnersRepo.save(previousLocation);
+		}
+
+		bpLocation.setIsBillTo(previousLocation.isBillTo());
+		bpLocation.setIsShipTo(previousLocation.isShipTo());
+	}
+
 }

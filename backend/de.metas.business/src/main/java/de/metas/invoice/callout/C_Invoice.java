@@ -8,6 +8,7 @@ import de.metas.common.util.time.SystemTime;
 import de.metas.document.location.IDocumentLocationBL;
 import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.document.sequence.impl.IDocumentNoInfo;
+import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapter;
 import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.lang.SOTrx;
@@ -172,4 +173,15 @@ public class C_Invoice
 	{
 		documentLocationBL.updateRenderedAddressAndCapturedLocation(InvoiceDocumentLocationAdapterFactory.locationAdapter(invoice));
 	}
+
+	@CalloutMethod(columnNames = {
+			I_C_Invoice.COLUMNNAME_C_BPartner_ID,
+			I_C_Invoice.COLUMNNAME_C_BPartner_Location_ID },
+			skipIfCopying = true)
+	public void updateBPartnerAddressForceUpdateCapturedLocation(final I_C_Invoice invoice)
+	{
+		documentLocationBL.updateCapturedLocation(InvoiceDocumentLocationAdapterFactory.locationAdapter(invoice));
+
+	}
+
 }

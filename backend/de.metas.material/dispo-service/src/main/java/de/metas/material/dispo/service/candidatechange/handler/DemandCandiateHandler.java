@@ -200,7 +200,7 @@ public class DemandCandiateHandler implements CandidateHandler
 					.minMaxDescriptor(demandCandidateWithId.getMinMaxDescriptor())
 					.quantity(requiredQty)
 					.build();
-			final Candidate supplyCandidateWithId = supplyCandidateHandler.onCandidateNewOrChange(supplyCandidate, OnNewOrChangeAdvise.DEFAULT);
+			final Candidate supplyCandidateWithId = supplyCandidateHandler.onCandidateNewOrChange(supplyCandidate, OnNewOrChangeAdvise.DONT_UPDATE);
 
 			final SupplyRequiredEvent supplyRequiredEvent = SupplyRequiredEventCreator //
 					.createSupplyRequiredEvent(demandCandidateWithId, requiredQty, supplyCandidateWithId.getId());

@@ -1,9 +1,14 @@
 package de.metas.contracts.commission;
 
 import de.metas.contracts.ConditionsId;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.experimental.UtilityClass;
 
 import java.time.Duration;
+
+import static org.compiere.model.X_C_DocType.DOCBASETYPE_APInvoice;
+import static org.compiere.model.X_C_DocType.DOCBASETYPE_ARInvoice;
 
 /*
  * #%L
@@ -30,13 +35,20 @@ import java.time.Duration;
 @UtilityClass
 public class CommissionConstants
 {
-	public static final String COMMISSION_DOC_SUBTYPE_VALUE = "CA";
-	public static final String COMMISSION_DOC_SUBTYPE_VALUENAME = "CommissionSettlement";
-
-	/**
-	 * Please keep in sysnc with {@code AD_Ref_List_ID=542010} and various display logic expressions.
-	 */
-	public static final String TYPE_CONDITIONS_COMMISSION = "Commission";
 	public static final ConditionsId FLATRATE_CONDITION_0_COMMISSION_ID = ConditionsId.ofRepoId(540047);
 	public static final Duration NO_COMMISSION_AGREEMENT_DEFAULT_CONTRACT_DURATION = Duration.ofDays(365);
+
+	private static final String COMMISSION_DOC_SUBTYPE_VALUE = "CA";
+	private static final String MEDIATED_COMMISSION_DOC_SUBTYPE_VALUE = "RD";
+
+	@AllArgsConstructor
+	@Getter
+	public enum CommissionDocType
+	{
+		PURCHASE_COMMISSION(DOCBASETYPE_APInvoice, COMMISSION_DOC_SUBTYPE_VALUE),
+		SALES_COMMISSION(DOCBASETYPE_ARInvoice, MEDIATED_COMMISSION_DOC_SUBTYPE_VALUE);
+
+		private final String docBaseType;
+		private final String docSubType;
+	}
 }

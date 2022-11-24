@@ -118,6 +118,7 @@ public class Discount implements IPricingRule
 		updatePricingResultFromPricingConditionsResult(result, pricingConditionsResult);
 	}
 
+	@Nullable
 	private CalculatePricingConditionsRequest createCalculatePricingConditionsRequest(
 			@NonNull final IPricingContext pricingCtx,
 			@NonNull final IPricingResult result)

@@ -8,7 +8,7 @@ de.metas.rest_api.v1.bpartner.ContactRestControllerTest.createOrUpdateContact_cr
           "AD_User_ID"
         ],
         "keysByColumnName" : {
-          "AD_User_ID" : 100010
+          "AD_User_ID" : 100011
         }
       },
       "createdByUserId" : 30,
@@ -57,7 +57,7 @@ de.metas.rest_api.v1.bpartner.ContactRestControllerTest.createOrUpdateContact_cr
     "handles" : [ ],
     "id" : {
       "bpartnerId" : 20,
-      "userId" : 100010
+      "userId" : 100011
     },
     "membershipContact" : false,
     "name" : "jsonContact.name",

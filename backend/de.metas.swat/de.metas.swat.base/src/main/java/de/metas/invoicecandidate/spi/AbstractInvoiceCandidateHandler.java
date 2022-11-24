@@ -22,12 +22,6 @@ package de.metas.invoicecandidate.spi;
  * #L%
  */
 
-import java.math.BigDecimal;
-
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_Product;
-
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.internalbusinesslogic.InvoiceCandidateRecordService;
 import de.metas.invoicecandidate.internalbusinesslogic.ToInvoiceData;
@@ -46,6 +40,13 @@ import de.metas.quantity.Quantitys;
 import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_Product;
+
+import java.math.BigDecimal;
+
+import javax.annotation.Nullable;
 
 /**
  * Simple abstract base class that implements {@link #setHandlerRecord(I_C_ILCandHandler)} and {@link #setNetAmtToInvoice(I_C_Invoice_Candidate)}.
@@ -114,9 +115,8 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 	/**
 	 * Checks if the underlying product is a service which will never ever be received.
 	 *
-	 * @param ic
 	 * @return true if we deal with a service which will never ever be received
-	 * @task http://dewiki908/mediawiki/index.php/08408_Transporte_auf_Rechnungsstellung_sofort_setzen_in_Rechnungsdispo_%28107611160033%29
+	 * task http://dewiki908/mediawiki/index.php/08408_Transporte_auf_Rechnungsstellung_sofort_setzen_in_Rechnungsdispo_%28107611160033%29
 	 */
 	protected final boolean isNotReceivebleService(final I_C_Invoice_Candidate ic)
 	{
@@ -156,7 +156,7 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 	 * @param ic invoice candidate
 	 * @param firstInOut first shipment/receipt or <code>null</code>
 	 */
-	protected final void setDeliveredDataFromFirstInOut(final I_C_Invoice_Candidate ic, final I_M_InOut firstInOut)
+	protected final void setDeliveredDataFromFirstInOut(@NonNull final I_C_Invoice_Candidate ic, @Nullable final I_M_InOut firstInOut)
 	{
 		ic.setM_InOut(firstInOut);
 
@@ -164,16 +164,18 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 		{
 			ic.setDeliveryDate(null);
 			ic.setFirst_Ship_BPLocation_ID(-1);
+			ic.setC_Shipping_Location_ID(-1);
 		}
 		else
 		{
 			ic.setDeliveryDate(firstInOut.getMovementDate());
-			ic.setFirst_Ship_BPLocation_ID(firstInOut.getC_BPartner_Location_ID());
+			ic.setFirst_Ship_BPLocation_ID(firstInOut.getC_BPartner_Location_ID()); // C_BPartner_Location
+			ic.setC_Shipping_Location_ID(firstInOut.getC_BPartner_Location_Value_ID()); // C_Location
 		}
 	}
 
 	@Override
-	public boolean isMissingInvoiceCandidate(Object model)
+	public boolean isMissingInvoiceCandidate(final Object model)
 	{
 		return true;
 	}

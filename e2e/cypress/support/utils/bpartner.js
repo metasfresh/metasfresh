@@ -127,7 +127,7 @@ export class BPartner {
 
   static applyBPartner(bPartner) {
     const basicUri = `${config.API_URL}/window/123`;
-
+    cy.get('.avatar').should('be.visible');
     return cy
       .request({
         url: `${basicUri}/NEW`,
@@ -135,9 +135,10 @@ export class BPartner {
         body: JSON.stringify([]),
         headers: {
           'Content-Type': 'application/json',
+          accept: 'application/json',
         },
       })
-      .then(newResponse => {
+      .then((newResponse) => {
         if (!newResponse.body.documents) {
           newResponse.body.documents = newResponse.response.body;
         }
@@ -163,10 +164,11 @@ export class BPartner {
             body: JSON.stringify(basicDataObject),
             headers: {
               'Content-Type': 'application/json',
+              accept: 'application/json',
             },
           })
           .then(() => {
-            BPartner.getVendorData(basicUri, bPartner).then(data => {
+            BPartner.getVendorData(basicUri, bPartner).then((data) => {
               const dataObject = data;
 
               return cy
@@ -176,6 +178,7 @@ export class BPartner {
                   body: JSON.stringify(dataObject),
                   headers: {
                     'Content-Type': 'application/json',
+                    accept: 'application/json',
                   },
                 })
                 .then(() => bPartner);
@@ -187,21 +190,14 @@ export class BPartner {
   static getVendorData(basicUri, bPartner) {
     const dataObject = [];
 
-    if (
-      bPartner.isVendor ||
-      bPartner.vendorDiscountSchema ||
-      bPartner.vendorPricingSystem ||
-      bPartner.isCustomer ||
-      bPartner.customerPricingSystem ||
-      bPartner.bPartnerLocations ||
-      bPartner.dunning
-    ) {
+    if (bPartner.isVendor || bPartner.vendorDiscountSchema || bPartner.vendorPricingSystem || bPartner.isCustomer || bPartner.customerPricingSystem || bPartner.bPartnerLocations || bPartner.dunning) {
       const vendorRequest = wrapRequest(
         cy.request({
           url: `${basicUri}/${bPartner.id}/AD_Tab-224`,
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            accept: 'application/json',
           },
         })
       );
@@ -212,6 +208,7 @@ export class BPartner {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            accept: 'application/json',
           },
         })
       );
@@ -222,6 +219,7 @@ export class BPartner {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            accept: 'application/json',
           },
         })
       );
@@ -232,6 +230,7 @@ export class BPartner {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            accept: 'application/json',
           },
         })
       );
@@ -242,6 +241,7 @@ export class BPartner {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            accept: 'application/json',
           },
         })
       );
@@ -252,6 +252,7 @@ export class BPartner {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            accept: 'application/json',
           },
         })
       );
@@ -262,6 +263,7 @@ export class BPartner {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            accept: 'application/json',
           },
         })
       );
@@ -272,6 +274,7 @@ export class BPartner {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            accept: 'application/json',
           },
         })
       );
@@ -282,6 +285,7 @@ export class BPartner {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            accept: 'application/json',
           },
         })
       );
@@ -296,7 +300,7 @@ export class BPartner {
         cPricingSystemRequest,
         cPaymentTermRequest,
         cDunningRequest,
-      ]).then(vals => {
+      ]).then((vals) => {
         const [
           vendorResponse,
           vendorDiscountSchemaResponse,
@@ -427,13 +431,13 @@ export class BPartner {
 
   static applyManual(bPartner) {
     if (bPartner.bPartnerLocations.length > 0) {
-      bPartner.bPartnerLocations.forEach(function(bPartnerLocation) {
+      bPartner.bPartnerLocations.forEach(function (bPartnerLocation) {
         applyLocation(bPartnerLocation);
       });
       cy.get('table tbody tr').should('have.length', bPartner.bPartnerLocations.length);
     }
     if (bPartner.contacts.length > 0) {
-      bPartner.contacts.forEach(function(bPartnerContact) {
+      bPartner.contacts.forEach(function (bPartnerContact) {
         applyContact(bPartnerContact);
       });
       cy.get('table tbody tr').should('have.length', bPartner.contacts.length);
@@ -452,17 +456,10 @@ function applyLocation(bPartnerLocation) {
   cy.writeIntoStringField('Name', `${bPartnerLocation.name}`, true /*modal*/, false, true);
   cy.get('.panel-modal-header-title').click();
 
-  cy.editAddress('C_Location_ID', function(url) {
+  cy.editAddress('C_Location_ID', function (url) {
     cy.writeIntoStringField('Address1', ' ', null, url);
     cy.writeIntoStringField('City', bPartnerLocation.city, null, url);
-    cy.writeIntoLookupListField(
-      'C_Country_ID',
-      bPartnerLocation.country,
-      bPartnerLocation.country,
-      false /*typeList */,
-      false /*modal THIS MUST BE FALSE EVEN IF IT'S A MODAL!*/,
-      url
-    );
+    cy.writeIntoLookupListField('C_Country_ID', bPartnerLocation.country, bPartnerLocation.country, false /*typeList */, false /*modal THIS MUST BE FALSE EVEN IF IT'S A MODAL!*/, url);
   });
   cy.get('.form-field-Address').should('contain', bPartnerLocation.city);
   cy.pressDoneButton();

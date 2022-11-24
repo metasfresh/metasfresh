@@ -68,6 +68,8 @@ final class OLCandFactory
 				.orderDocTypeId(DocTypeId.ofRepoIdOrNull(record.getC_DocTypeOrder_ID()))
 				.orderLineGroup(orderLineGroup)
 				.asyncBatchId(AsyncBatchId.ofRepoIdOrNull(record.getC_Async_Batch_ID()))
+				.salesRepInternalId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_SalesRep_Internal_ID()))
+				.assignSalesRepRule(AssignSalesRepRule.ofCode(record.getApplySalesRepFrom()))
 				.build();
 	}
 }

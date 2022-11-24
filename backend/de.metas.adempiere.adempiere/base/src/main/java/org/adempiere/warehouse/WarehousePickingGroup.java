@@ -30,12 +30,12 @@ import lombok.Value;
  */
 
 @Value
-public final class WarehousePickingGroup
+public class WarehousePickingGroup
 {
-	private final WarehousePickingGroupId id;
-	private final String name;
-	private final String description;
-	private final ImmutableSet<WarehouseId> warehouseIds;
+	WarehousePickingGroupId id;
+	String name;
+	String description;
+	ImmutableSet<WarehouseId> warehouseIds;
 
 	@Builder
 	public WarehousePickingGroup(

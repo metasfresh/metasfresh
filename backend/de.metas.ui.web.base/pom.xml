@@ -71,6 +71,12 @@
         </dependency>
 
         <dependency>
+            <groupId>de.metas.salesorder</groupId>
+            <artifactId>de-metas-salesorder</artifactId>
+            <version>${metasfresh.version}</version>
+        </dependency>
+
+        <dependency>
             <groupId>de.metas.adempiere.adempiere</groupId>
             <artifactId>de.metas.adempiere.adempiere.base</artifactId>
             <version>${metasfresh.version}</version>
@@ -162,14 +168,8 @@
         <!-- Swagger -->
         <dependency>
             <groupId>io.springfox</groupId>
-            <artifactId>springfox-swagger2</artifactId>
+            <artifactId>springfox-boot-starter</artifactId>
             <version>${springfox-swagger.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.google.guava</groupId>
-                    <artifactId>guava</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>io.springfox</groupId>

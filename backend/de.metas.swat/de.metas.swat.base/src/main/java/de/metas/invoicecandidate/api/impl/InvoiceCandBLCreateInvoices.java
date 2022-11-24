@@ -18,8 +18,8 @@ import de.metas.i18n.IADMessageDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
 import de.metas.interfaces.I_C_OrderLine;
-import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.InvoiceDocBaseType;
+import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoice.service.IMatchInvBL;
@@ -48,6 +48,7 @@ import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.Tax;
+import de.metas.user.UserId;
 import de.metas.user.api.IUserBL;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -373,6 +374,8 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 			invoice.setAD_Org_ID(invoiceHeader.getOrgId().getRepoId());
 
+			invoice.setSalesRep_ID(UserId.toRepoId(invoiceHeader.getSalesRepId()));
+
 			setC_DocType(invoice, invoiceHeader);
 
 			final BPartnerInfo billTo = invoiceHeader.getBillTo();
@@ -399,7 +402,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 				invoice.setM_InOut_ID(invoiceHeader.getM_InOut_ID()); // task 06630
 			}
 
-			//
+			invoice.setPaymentRule(invoiceHeader.getPaymentRule());
 			// Save and return the invoice
 			invoicesRepo.save(invoice);
 			return invoice;
@@ -629,6 +632,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 
 				invoiceLine.setC_UOM_ID(cand.getC_UOM_ID()); // 06718
 				invoiceLine.setPrice_UOM_ID(cand.getPrice_UOM_ID()); // 06942
+				invoiceLine.setC_Shipping_Location_ID(cand.getC_Shipping_Location_ID());
 
 				//
 				// Product / Charge

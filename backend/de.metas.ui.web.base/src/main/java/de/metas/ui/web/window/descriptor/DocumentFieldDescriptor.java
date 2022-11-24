@@ -149,7 +149,7 @@ public final class DocumentFieldDescriptor
 	@Getter
 	private final DeviceDescriptorsProvider deviceDescriptorsProvider;
 
-	private DocumentFieldDescriptor(final Builder builder)
+	private DocumentFieldDescriptor(@NonNull final Builder builder)
 	{
 		fieldName = Preconditions.checkNotNull(builder.fieldName, "name is null");
 		caption = builder.getCaption();
@@ -375,6 +375,7 @@ public final class DocumentFieldDescriptor
 	 * @param lookupDataSource optional Lookup data source, if needed
 	 * @return converted value
 	 */
+	@Nullable
 	public <T> T convertToValueClass(
 			@Nullable final Object value,
 			@Nullable final DocumentFieldWidgetType widgetType,

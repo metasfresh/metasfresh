@@ -222,4 +222,6 @@ public interface IOrderLineBL extends ISingletonService
 	BigDecimal computeQtyNetPriceFromOrderLine(org.compiere.model.I_C_OrderLine orderLine, Quantity qty);
 
 	void save(org.compiere.model.I_C_OrderLine orderLine);
+
+	CurrencyPrecision extractPricePrecision(org.compiere.model.I_C_OrderLine olRecord);
 }

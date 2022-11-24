@@ -2,6 +2,7 @@ package org.adempiere.util.api;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Map;
@@ -181,6 +182,12 @@ public class RangeAwareParams implements IRangeAwareParams
 	public ZonedDateTime getParameterAsZonedDateTime(String parameterName)
 	{
 		return values.getParameterAsZonedDateTime(parameterName);
+	}
+
+	@Override
+	public Instant getParameterAsInstant(final String parameterName)
+	{
+		return values.getParameterAsInstant(parameterName);
 	}
 
 	@Override

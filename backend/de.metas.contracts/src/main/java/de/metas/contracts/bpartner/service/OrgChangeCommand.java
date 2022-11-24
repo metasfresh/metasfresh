@@ -40,7 +40,7 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.contracts.ConditionsId;
-import de.metas.contracts.CreateFlatrateTermRequest;
+import de.metas.contracts.FlatrateTermRequest.CreateFlatrateTermRequest;
 import de.metas.contracts.FlatrateTerm;
 import de.metas.contracts.FlatrateTermPricing;
 import de.metas.contracts.IContractChangeBL;

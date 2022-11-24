@@ -24,6 +24,7 @@ package de.metas.rest_api.v2.externlasystem.dto;
 
 import de.metas.RestUtils;
 import de.metas.common.externalsystem.JsonESRuntimeParameterUpsertRequest;
+import de.metas.common.externalsystem.JsonInvokeExternalSystemParams;
 import de.metas.common.externalsystem.JsonRuntimeParameterUpsertItem;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.CreatePInstanceLogRequest;
@@ -96,7 +97,6 @@ public class ExternalSystemService
 	@NonNull
 	public ProcessExecutionResult invokeExternalSystem(@NonNull final InvokeExternalSystemProcessRequest invokeExternalSystemProcessRequest)
 	{
-
 		final ExternalSystemParentConfig externalSystemParentConfig =
 				externalSystemConfigRepo.getByTypeAndValue(invokeExternalSystemProcessRequest.getExternalSystemType(),
 														   invokeExternalSystemProcessRequest.getChildSystemConfigValue())
@@ -115,6 +115,12 @@ public class ExternalSystemService
 		processInfoBuilder.setAD_Process_ID(processId.getRepoId());
 		processInfoBuilder.addParameter(PARAM_EXTERNAL_REQUEST, invokeExternalSystemProcessRequest.getRequest());
 		processInfoBuilder.addParameter(PARAM_CHILD_CONFIG_ID, configIdAsString);
+
+		final JsonInvokeExternalSystemParams externalSystemParams = invokeExternalSystemProcessRequest.getJsonInvokeExternalSystemParams();
+		if (externalSystemParams != null)
+		{
+			externalSystemParams.getParams().forEach(processInfoBuilder::addParameter);
+		}
 
 		processInfoBuilder.setRecord(externalSystemParentConfig.getTableRecordReference());
 

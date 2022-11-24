@@ -33,7 +33,7 @@ import java.time.LocalDate;
 
 @Value
 @Builder
-class CreateShipperTransportationRequest
+public class CreateShipperTransportationRequest
 {
 	@NonNull
 	OrgId orgId;

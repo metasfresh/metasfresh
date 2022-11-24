@@ -171,20 +171,15 @@ import lombok.experimental.UtilityClass;
 	}
 
 	@Value
-	public class Address
+	private static class Address
 	{
-		final int counrytId;
-		@Nullable
-		final String city;
-		@Nullable
-		final String address1;
-		@Nullable
-		final String address2;
-		@Nullable
-		final String postal;
-		@Nullable
-		final String pobox;;
-		final int bpLocationId;
+		int counrytId;
+		@Nullable String city;
+		@Nullable String address1;
+		@Nullable String address2;
+		@Nullable String postal;
+		@Nullable String pobox;;
+		int bpLocationId;
 
 		@Builder(builderMethodName = "builder")
 		public Address(int counrytId, String city, String address1, String address2, String postal, String pobox, int bpLocationId)

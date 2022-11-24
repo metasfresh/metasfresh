@@ -1,6 +1,3 @@
-/**
- *
- */
 package de.metas.async.processor.impl;
 
 /*
@@ -59,7 +56,7 @@ public class CheckProcessedAsynBatchWorkpackageProcessor implements IWorkpackage
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@Override
-	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
+	public Result processWorkPackage(@NonNull final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
 		boolean hasError = false;
 
@@ -86,8 +83,7 @@ public class CheckProcessedAsynBatchWorkpackageProcessor implements IWorkpackage
 			final boolean batchIsProcessed = asyncBatchBL.updateProcessed(asyncBatchId);
 			if (!batchIsProcessed)
 			{
-				final WorkpackageSkipRequestException skipExcep = WorkpackageSkipRequestException.createWithTimeout("Not processed yet. Postponed!", getWorkpackageSkipTimeoutMillis(asyncBatch));
-				throw skipExcep;
+				throw WorkpackageSkipRequestException.createWithTimeout("Not processed yet. Postponed!", getWorkpackageSkipTimeoutMillis(asyncBatch));
 			}
 
 		}
@@ -100,7 +96,7 @@ public class CheckProcessedAsynBatchWorkpackageProcessor implements IWorkpackage
 		return Result.SUCCESS;
 	}
 
-	private final int getWorkpackageSkipTimeoutMillis(@NonNull final I_C_Async_Batch asyncBatch)
+	private int getWorkpackageSkipTimeoutMillis(@NonNull final I_C_Async_Batch asyncBatch)
 	{
 		if (asyncBatch.getC_Async_Batch_Type_ID() > 0)
 		{

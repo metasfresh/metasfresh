@@ -97,7 +97,7 @@ public class TransactionEventHandler implements MaterialEventHandler<AbstractTra
 	}
 
 	@Override
-	public Collection<Class<? extends AbstractTransactionEvent>> getHandeledEventType()
+	public Collection<Class<? extends AbstractTransactionEvent>> getHandledEventType()
 	{
 		return ImmutableList.of(TransactionCreatedEvent.class, TransactionDeletedEvent.class);
 	}

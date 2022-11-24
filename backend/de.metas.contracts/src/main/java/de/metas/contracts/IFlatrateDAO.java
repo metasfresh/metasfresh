@@ -24,6 +24,7 @@ package de.metas.contracts;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.contracts.flatrate.TypeConditions;
 import de.metas.contracts.model.I_C_Flatrate_Conditions;
 import de.metas.contracts.model.I_C_Flatrate_Data;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
@@ -120,6 +121,10 @@ public interface IFlatrateDAO extends ISingletonService
 
 	List<I_C_Flatrate_Term> retrieveTerms(I_C_Flatrate_Conditions flatrateConditions);
 
+	Iterable<I_C_Flatrate_Term> retrieveTerms(@NonNull FlatrateDataId flatrateDataId);
+
+	ImmutableList<I_C_Flatrate_Term> retrieveTermsAsList(@NonNull FlatrateDataId flatrateDataId);
+
 	List<I_C_Flatrate_Term> retrieveTerms(I_C_Flatrate_Data flatrateData);
 
 	List<I_C_Flatrate_Term> retrieveTerms(I_C_BPartner bPartner, I_C_Flatrate_Conditions flatrateConditions);
@@ -139,13 +144,15 @@ public interface IFlatrateDAO extends ISingletonService
 
 	void save(@NonNull I_C_Flatrate_Term flatrateTerm);
 
+	I_C_Invoice_Candidate retrieveInvoiceCandidate(I_C_Flatrate_Term term);
+
 	@Value
 	@Builder
 	class TermsQuery
 	{
-		@NonNull 
+		@NonNull
 		OrgId orgId;
-		
+
 		@Singular
 		List<BPartnerId> billPartnerIds;
 
@@ -225,11 +232,13 @@ public interface IFlatrateDAO extends ISingletonService
 	 * that a term is directly created.
 	 *
 	 */
-	I_C_Flatrate_Data retriveOrCreateFlatrateData(I_C_BPartner bPartner);
+	I_C_Flatrate_Data retrieveOrCreateFlatrateData(I_C_BPartner bPartner);
 
 	I_C_Flatrate_Term retrieveAncestorFlatrateTerm(I_C_Flatrate_Term contract);
 
 	List<I_C_Invoice> retrieveInvoicesForFlatrateTerm(I_C_Flatrate_Term contract);
 
 	I_C_Flatrate_Conditions getConditionsById(int flatrateConditionsId);
+
+	List<I_C_Flatrate_Term> retrieveTerms(BPartnerId bPartnerId, OrgId orgId, TypeConditions typeConditions);
 }

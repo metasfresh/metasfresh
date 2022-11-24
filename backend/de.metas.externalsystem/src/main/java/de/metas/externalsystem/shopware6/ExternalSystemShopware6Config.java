@@ -24,6 +24,7 @@ package de.metas.externalsystem.shopware6;
 
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.IExternalSystemChildConfig;
+import de.metas.pricing.PriceListId;
 import de.metas.product.ProductId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -47,6 +48,8 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 	String clientSecret;
 	@NonNull
 	List<ExternalSystemShopware6ConfigMapping> externalSystemShopware6ConfigMappingList;
+	@NonNull
+	List<UOMShopwareMapping> uomShopwareMappingList;
 	@Nullable
 	String bPartnerIdJSONPath;
 	@Nullable
@@ -57,8 +60,12 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 	FreightCostConfig freightCostNormalVatConfig;
 	@Nullable
 	FreightCostConfig freightCostReducedVatConfig;
+	@Nullable
+	PriceListId priceListId;
 	@NonNull
 	Boolean isActive;
+	@NonNull
+	String value;
 
 	@Builder(toBuilder = true)
 	public ExternalSystemShopware6Config(final @NonNull ExternalSystemShopware6ConfigId id,
@@ -67,25 +74,31 @@ public class ExternalSystemShopware6Config implements IExternalSystemChildConfig
 			final @NonNull String clientId,
 			final @NonNull String clientSecret,
 			final @NonNull List<ExternalSystemShopware6ConfigMapping> externalSystemShopware6ConfigMappingList,
+			final @NonNull List<UOMShopwareMapping> uomShopwareMappingList,
 			final @Nullable String bPartnerIdJSONPath,
 			final @Nullable String bPartnerLocationIdJSONPath,
 			final @Nullable String salesRepJSONPath,
 			final @Nullable FreightCostConfig freightCostNormalVatConfig,
 			final @Nullable FreightCostConfig freightCostReducedVatConfig,
-			final @NonNull Boolean isActive)
+			final @Nullable PriceListId priceListId,
+			final @NonNull Boolean isActive,
+			final @NonNull String value)
 	{
 		this.id = id;
 		this.parentId = parentId;
 		this.clientId = clientId;
 		this.clientSecret = clientSecret;
 		this.externalSystemShopware6ConfigMappingList = externalSystemShopware6ConfigMappingList;
+		this.uomShopwareMappingList = uomShopwareMappingList;
 		this.baseUrl = baseUrl;
 		this.bPartnerIdJSONPath = bPartnerIdJSONPath;
 		this.bPartnerLocationIdJSONPath = bPartnerLocationIdJSONPath;
 		this.salesRepJSONPath = salesRepJSONPath;
 		this.freightCostNormalVatConfig = freightCostNormalVatConfig;
 		this.freightCostReducedVatConfig = freightCostReducedVatConfig;
+		this.priceListId = priceListId;
 		this.isActive = isActive;
+		this.value = value;
 	}
 
 	public static ExternalSystemShopware6Config cast(@NonNull final IExternalSystemChildConfig childConfig)

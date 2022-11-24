@@ -15,6 +15,7 @@ export const initialState = {
   },
   keymap: {},
   hotkeys: {},
+  lastBackPage: '',
 };
 
 export default function appHandler(state = initialState, action) {
@@ -32,6 +33,12 @@ export default function appHandler(state = initialState, action) {
           ...state.me,
           ...action.me,
         },
+      };
+
+    case types.UPDATE_LAST_BACK_PAGE:
+      return {
+        ...state,
+        lastBackPage: action.lastBackPage,
       };
 
     case types.SET_LANGUAGES:

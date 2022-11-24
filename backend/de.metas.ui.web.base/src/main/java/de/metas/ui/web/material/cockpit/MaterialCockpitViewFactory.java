@@ -1,10 +1,5 @@
 package de.metas.ui.web.material.cockpit;
 
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigBL;
-
 import de.metas.i18n.TranslatableStrings;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
@@ -30,6 +25,10 @@ import de.metas.ui.web.window.descriptor.factory.standard.DefaultDocumentDescrip
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ISysConfigBL;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -126,13 +125,14 @@ public class MaterialCockpitViewFactory
 				.setHasTreeSupport(displayIncludedRows)
 				.setTreeCollapsible(true)
 				.setTreeExpandedDepth(ViewLayout.TreeExpandedDepth_AllCollapsed)
+				.setAllowOpeningRowDetails(false)
 				.addElementsFromViewRowClass(MaterialCockpitRow.class, viewDataType)
 				.setFilters(materialCockpitFilters.getFilterDescriptors().getAll());
 
 		return viewlayOutBuilder.build();
 	}
 
-	private final RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)
+	private RelatedProcessDescriptor createProcessDescriptor(@NonNull final Class<?> processClass)
 	{
 		final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 		final AdProcessId processId = adProcessDAO.retrieveProcessIdByClass(processClass);

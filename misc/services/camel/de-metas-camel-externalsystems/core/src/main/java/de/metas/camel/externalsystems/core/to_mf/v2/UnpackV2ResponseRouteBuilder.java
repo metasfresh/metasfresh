@@ -14,7 +14,7 @@ public class UnpackV2ResponseRouteBuilder extends EndpointRouteBuilder
 	public final static String UNPACK_V2_API_RESPONSE = "UnpackV2ApiResponse";
 
 	@Override
-	public void configure() throws Exception
+	public void configure()
 	{
 		from(direct(UNPACK_V2_API_RESPONSE))
 				.routeId(UNPACK_V2_API_RESPONSE)

@@ -373,43 +373,49 @@ Metasfresh | Alberta | Note
 | Alberta | metasfresh | mandatory in mf | note |
 | --- | --- | --- | --- |
 | `_id` | `C_OLCand.ExternalHeaderId`, also used for `C_OLCand.POReference` if salesId is empty | Y | |
+| `_id` | Alberta_Order.ExternalId | Y |
 | `salesId` | `C_OLCand.POReference` | Y | |
 | patientId | C_OLCand.C_BPartner_ID | Y | ..via external reference lookup |
-| rootId | C_OLCand_AlbertaOrder.RootId | |
-| creationDate | C_OLCand_AlbertaOrder.CreationDate | |
+| rootId | Alberta_Order.RootId | |
+| creationDate | Alberta_Order.CreationDate | |
 | deliveryDate | C_OLCand.DatePromised | |
-| startDate | C_OLCand_AlbertaOrder.StartDate | |
-| endDate | C_OLCand_AlbertaOrder.EndDate | |
-| dayOfDelivery | C_OLCand_AlbertaOrder.DayOfDelivery | |
-| nextDelivery | C_OLCand_AlbertaOrder.NextDelivery | |
+| startDate | Alberta_Order.StartDate | |
+| endDate | Alberta_Order.EndDate | |
+| dayOfDelivery | Alberta_Order.DayOfDelivery | |
+| nextDelivery | Alberta_Order.NextDelivery | |
 | deliveryAddress | C_OLCand.C_BPartnerLocation_ID |  Y | note that we already have `de.metas.camel.alberta.BPartnerUpsertRequestProducer#getShippingAddress` | 
-| doctorId | C_OLCand_AlbertaOrder.C_Doctor_BPartner_ID | ..via external reference lookup |
-| pharmacyId | C_OLCand_AlbertaOrder.C_Pharmacy_BPartner_ID | ..via external reference lookup |
+| doctorId | Alberta_Order.C_Doctor_BPartner_ID | ..via external reference lookup |
+| pharmacyId | Alberta_Order.C_Pharmacy_BPartner_ID | ..via external reference lookup |
 | therapyId |  C_OLCand_AlbertaTherapy | |
 | therapyTypeIds | C_OLCand_AlbertaTherapyType | eine andere enum als therapy, mit mehr Werten |
-| isInitialCare | C_OLCand_AlbertaOrder.IsInitialCare | |
+| isInitialCare | Alberta_Order.IsInitialCare | |
 | orderedArticleLines | | |
 | createdBy | | Alberta-User => checken..|
 | status | | |
-| isSeriesOrder | C_OLCand_AlbertaOrder.IsSeriesOrder | |
-| annotation | C_OLCand_AlbertaOrder.Annotation | Notiz für den Innendienst |
-| archived | C_OLCand_AlbertaOrder.IsArchived | |
-| updated | C_OLCand_AlbertaOrder.Updated | |
+| isSeriesOrder | Alberta_Order.IsSeriesOrder | |
+| annotation | Alberta_Order.Annotation | Notiz für den Innendienst |
+| archived | Alberta_Order.IsArchived | |
+| updated | Alberta_Order.ExternallyUpdatedAt | |
+| deliveryInformation | Alberta_Order.DeliveryInfo | |
+| deliveryNote | Alberta_Order.DeliveryNote | |
 
 ### OrderedArticleLines
 
 | Alberta | metasfresh | mandatory in mf | note |
 | --- | --- | --- | --- |
 | _id | C_OLCand.ExternalLineId | Y | |
-| salesLineId | C_OLCand_AlbertaOrder.SalesLineId | | |
+| _id | Alberta_OrderedArticleLine.ExternalId | Y | |
+| salesLineId | Alberta_OrderedArticleLine.SalesLineId | | |
 | articleId | C_OLCand.M_Product_ID | Y | ..via external reference lookup |
 | articleCustomerNumber |  | (ignore) | this is basically the M_Product.Value that we had send to Alberta..but who knows, maybe it was meanwhile edited in metasfresh | 
 | quantity | C_OLCand.QtyEntered | Y | |
-| unit | C_OLCand_AlbertaOrder.Unit | | Ref-List with values Stk and Ktn |
+| unit | Alberta_OrderedArticleLine.Unit | | Ref-List with values Stk and Ktn |
 | duration | | |
-| isRentalEquipment | C_OLCand_AlbertaOrder.IsRentalEquipment | |
-| isPrivateSale | C_OLCand_AlbertaOrder.IsPrivateSale | |
-| updated | C_OLCand_AlbertaOrder.Updated | |
+| isRentalEquipment | Alberta_OrderedArticleLine.IsRentalEquipment | |
+| isPrivateSale | Alberta_OrderedArticleLine.IsPrivateSale | |
+| updated | Alberta_OrderedArticleLine.ExternallyUpdatedAt | |
+| duration.amount | Alberta_OrderedArticleLine.DurationAmount | |
+| duration.timePeriod | Alberta_OrderedArticleLine.TimePeriod | |
 
 ### Duration
 

@@ -20,18 +20,14 @@ class Tab extends PureComponent {
     } = this.props;
 
     if (docId && queryOnActivate) {
-      const query = orderBy
-        ? (orderBy[0].ascending ? '+' : '-') + orderBy[0].fieldName
-        : '';
-
       if (singleRowView) {
-        fetchTab({ tabId, windowId, docId, query }).then((res) => {
+        fetchTab({ tabId, windowId, docId, orderBy }).then((res) => {
           if (res.length) {
             onChange && onChange();
           }
         });
       } else {
-        fetchTab({ tabId, windowId, docId, query }).then(() => {
+        fetchTab({ tabId, windowId, docId, orderBy }).then(() => {
           onChange && onChange();
         });
       }
