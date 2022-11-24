@@ -22,6 +22,7 @@
 
 package de.metas.rest_api.v2.testing;
 
+import de.metas.cache.CacheMgt;
 import de.metas.common.rest_api.common.JsonTestResponse;
 import de.metas.common.util.EmptyUtil;
 import de.metas.logging.LogManager;
@@ -146,5 +147,11 @@ public class AppTestingRestController
 				.build();
 
 		return ResponseEntity.status(responseCode).body(response);
+	}
+
+	@GetMapping("/cacheReset")
+	public void cacheReset()
+	{
+		CacheMgt.get().reset();
 	}
 }
