@@ -22,6 +22,7 @@
 
 package de.metas.ui.web.order;
 
+import de.metas.acct.vatcode.VatCodeId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.handlingunits.HUPIItemProductId;
@@ -71,4 +72,7 @@ public class OrderLineCandidate
 
 	@Nullable
 	ProductBOMLineId explodedFromBOMLineId;
+
+	@Nullable
+	VatCodeId vatCodeId;
 }

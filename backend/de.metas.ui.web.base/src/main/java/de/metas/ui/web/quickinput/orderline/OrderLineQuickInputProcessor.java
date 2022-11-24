@@ -1,5 +1,6 @@
 package de.metas.ui.web.quickinput.orderline;
 
+import de.metas.acct.vatcode.VatCodeId;
 import de.metas.adempiere.callout.OrderFastInput;
 import de.metas.adempiere.gui.search.HUPackingAwareCopy.ASICopyMode;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
@@ -221,6 +222,7 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 				.productId(productAndAttributes.getProductId())
 				.attributes(productAndAttributes.getAttributes())
 				.piItemProductId(HUPIItemProductId.ofRepoIdOrNull(orderLineQuickInput.getM_HU_PI_Item_Product_ID()))
+				.vatCodeId(VatCodeId.ofRepoIdOrNull(orderLineQuickInput.getC_VAT_Code_ID()))
 				.qty(Quantitys.create(quickInputQty, uomId))
 				.bestBeforePolicy(ShipmentAllocationBestBeforePolicy.ofNullableCode(orderLineQuickInput.getShipmentAllocation_BestBefore_Policy()))
 				.bpartnerId(bpartnerId)

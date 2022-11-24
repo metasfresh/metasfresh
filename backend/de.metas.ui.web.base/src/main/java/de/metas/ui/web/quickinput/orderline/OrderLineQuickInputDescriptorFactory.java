@@ -135,6 +135,7 @@ import java.util.Set;
 				//
 				.addField(createProductField(soTrx))
 				.addFieldIf(QuickInputConstants.isEnablePackingInstructionsField(), this::createPackingInstructionField)
+				.addFieldIf(QuickInputConstants.isEnableVatCodeField(), this::createVatCodeField)
 				.addField(createCompensationGroupSchemaField())
 				.addField(createContractConditionsField())
 				.addField(createQuantityField())
@@ -206,6 +207,26 @@ import java.util.Set;
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)
 				.setAlwaysUpdateable(true)
 				.setMandatoryLogic(ConstantLogicExpression.FALSE)
+				.setDisplayLogic(ConstantLogicExpression.TRUE)
+				.addCharacteristic(Characteristic.PublicField);
+	}
+
+	private DocumentFieldDescriptor.Builder createVatCodeField()
+	{
+		return DocumentFieldDescriptor.builder(IOrderLineQuickInput.COLUMNNAME_C_VAT_Code_ID)
+				.setCaption(msgBL.translatable(IOrderLineQuickInput.COLUMNNAME_C_VAT_Code_ID))
+				//
+				.setWidgetType(DocumentFieldWidgetType.Lookup)
+				.setLookupDescriptorProvider(lookupDescriptorProviders.sql()
+						.setCtxTableName(null) // ctxTableName
+						.setCtxColumnName(IOrderLineQuickInput.COLUMNNAME_C_VAT_Code_ID)
+						.setDisplayType(DisplayType.TableDir)
+						.setAD_Val_Rule_ID(AdValRuleId.ofRepoId(540610))// FIXME: hardcoded "VAT_Code_for_soTrx"
+						.build())
+				.setValueClass(IntegerLookupValue.class)
+				.setReadonlyLogic(ConstantLogicExpression.FALSE)
+				.setAlwaysUpdateable(true)
+				.setMandatoryLogic(ConstantLogicExpression.TRUE)
 				.setDisplayLogic(ConstantLogicExpression.TRUE)
 				.addCharacteristic(Characteristic.PublicField);
 	}
@@ -300,6 +321,7 @@ import java.util.Set;
 				{ "M_Product_ID", "M_HU_PI_Item_Product_ID" },
 				{ "ShipmentAllocation_BestBefore_Policy" },
 				{ "C_Flatrate_Conditions_ID" },
+				{ "C_VAT_Code_ID" },
 				{ "Qty" },
 		});
 	}

@@ -1,9 +1,8 @@
 package de.metas.ui.web.quickinput;
 
-import org.adempiere.service.ISysConfigBL;
-
 import de.metas.util.Services;
 import lombok.experimental.UtilityClass;
+import org.adempiere.service.ISysConfigBL;
 
 /*
  * #%L
@@ -32,6 +31,7 @@ public class QuickInputConstants
 {
 	private static final String SYSCONFIG_EnablePackingInstructionsField = "webui.quickinput.EnablePackingInstructionsField";
 	private static final String SYSCONFIG_EnableBestBeforePolicy = "webui.quickinput.EnableBestBeforePolicy";
+	private static final String SYSCONFIG_EnableVatCodeField = "webui.quickinput.EnableVatCodeField";
 
 	public static boolean isEnablePackingInstructionsField()
 	{
@@ -41,6 +41,10 @@ public class QuickInputConstants
 	public static boolean isEnableBestBeforePolicy()
 	{
 		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_EnableBestBeforePolicy, true);
+	}
+	public static boolean isEnableVatCodeField()
+	{
+		return Services.get(ISysConfigBL.class).getBooleanValue(SYSCONFIG_EnableVatCodeField, false);
 	}
 
 }
