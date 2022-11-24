@@ -408,7 +408,7 @@ final class BPartnerCompositesLoader
 				.handOverLocation(bPartnerLocationRecord.isHandOverLocation())
 				.remitTo(bPartnerLocationRecord.isRemitTo())
 				.replicationLookupDefault(bPartnerLocationRecord.isReplicationLookupDefault())
-				.vatId(trimBlankToNull(bPartnerLocationRecord.getVATaxID()))
+				.vatTaxId(trimBlankToNull(bPartnerLocationRecord.getVATaxID()))
 				.build();
 
 		bpartnerLocation.setFromAddress(address);
