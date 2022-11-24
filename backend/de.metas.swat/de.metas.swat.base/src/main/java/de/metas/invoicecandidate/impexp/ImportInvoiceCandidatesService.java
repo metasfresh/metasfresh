@@ -142,7 +142,7 @@ public class ImportInvoiceCandidatesService
 				.qtyDelivered(qtyDelivered)
 
 				.priceEnteredOverride(priceEnteredOverride)
-				.discountOverride(Percent.ofNullable(record.getPrice()))
+				.discountOverride(Percent.ofNullable(record.getDiscount()))
 
 				.recordReference(recordReference)
 				.soTrx(SOTrx.ofBoolean(record.isSOTrx()))
