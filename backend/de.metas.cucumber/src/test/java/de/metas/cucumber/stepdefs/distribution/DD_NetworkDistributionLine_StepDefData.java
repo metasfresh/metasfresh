@@ -27,4 +27,8 @@ import org.eevolution.model.I_DD_NetworkDistributionLine;
 
 public class DD_NetworkDistributionLine_StepDefData extends StepDefData<I_DD_NetworkDistributionLine>
 {
+	public DD_NetworkDistributionLine_StepDefData()
+	{
+		super(I_DD_NetworkDistributionLine.class);
+	}
 }

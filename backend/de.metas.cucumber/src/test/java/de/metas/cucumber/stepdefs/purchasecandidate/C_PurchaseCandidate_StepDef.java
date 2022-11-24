@@ -23,15 +23,18 @@
 package de.metas.cucumber.stepdefs.purchasecandidate;
 
 import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
+import de.metas.cucumber.stepdefs.C_Order_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.IdentifierIds_StepDefData;
 import de.metas.cucumber.stepdefs.ItemProvider;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.purchasecandidate.v2.CreatePurchaseCandidate_StepDef;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
+import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
@@ -43,10 +46,15 @@ import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 import org.springframework.lang.Nullable;
 
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import static de.metas.purchasecandidate.model.I_C_PurchaseCandidate.COLUMNNAME_C_OrderLineSO_ID;
+import static de.metas.purchasecandidate.model.I_C_PurchaseCandidate.COLUMNNAME_C_OrderSO_ID;
+import static de.metas.purchasecandidate.model.I_C_PurchaseCandidate.COLUMNNAME_M_Product_ID;
 import static org.assertj.core.api.Assertions.*;
 
 public class C_PurchaseCandidate_StepDef
@@ -65,7 +73,7 @@ public class C_PurchaseCandidate_StepDef
 			@NonNull final C_PurchaseCandidate_StepDefData purchaseCandidateTable,
 			@NonNull final C_OrderLine_StepDefData orderLineTable,
 			@NonNull final M_Product_StepDefData productTable,
-			@NonNull final C_Order_StepDefData orderTable,)
+			@NonNull final C_Order_StepDefData orderTable)
 	{
 		this.identifierIdsTable = identifierIdsTable;
 		this.purchaseCandidateTable = purchaseCandidateTable;
@@ -142,7 +150,7 @@ public class C_PurchaseCandidate_StepDef
 		final StringBuilder message = new StringBuilder();
 
 		message.append("Validating no records found for orderLineID :").append("\n")
-				.append(I_C_PurchaseCandidate.COLUMNNAME_C_OrderLineSO_ID).append(" : ").append(orderLineId).append("\n");
+				.append(COLUMNNAME_C_OrderLineSO_ID).append(" : ").append(orderLineId).append("\n");
 
 		message.append("C_PurchaseCandidate records:").append("\n");
 

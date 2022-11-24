@@ -180,13 +180,6 @@ public class PP_Product_Planning_StepDef
 			productPlanningRecord.setIsManufactured(X_PP_Product_Planning.ISMANUFACTURED_No);
 		}
 
-		final boolean isPurchased = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_PP_Product_Planning.COLUMNNAME_IsPurchased, false);
-		if(isPurchased)
-		{
-			productPlanningRecord.setIsPurchased(X_PP_Product_Planning.ISPURCHASED_Yes);
-			productPlanningRecord.setIsManufactured(X_PP_Product_Planning.ISMANUFACTURED_No);
-		}
-
 		final String warehouseIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Product_Planning.COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if(Check.isNotBlank(warehouseIdentifier))
 		{

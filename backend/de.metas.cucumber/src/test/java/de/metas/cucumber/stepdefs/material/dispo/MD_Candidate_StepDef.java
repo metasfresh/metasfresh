@@ -489,7 +489,7 @@ public class MD_Candidate_StepDef
 
 		postMaterialEventService.postEventNow(DeactivateAllSimulatedCandidatesEvent.builder()
 													  .eventDescriptor(EventDescriptor.ofClientOrgAndTraceId(clientAndOrgId, traceId))
-													  .build());
+													  .build(), null);
 
 		materialEventObserver.awaitProcessing(traceId);
 	}

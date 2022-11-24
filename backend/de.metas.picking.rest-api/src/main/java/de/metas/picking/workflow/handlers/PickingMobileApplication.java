@@ -74,7 +74,7 @@ import static de.metas.picking.workflow.handlers.activity_handlers.PickingWFActi
 public class PickingMobileApplication implements WorkflowBasedMobileApplication
 {
 	@VisibleForTesting
-	static final MobileApplicationId APPLICATION_ID = MobileApplicationId.ofString("picking");
+	public static final MobileApplicationId APPLICATION_ID = MobileApplicationId.ofString("picking");
 
 	private static final AdMessageKey MSG_Caption = AdMessageKey.of("mobileui.picking.appName");
 	private static final MobileApplicationInfo APPLICATION_INFO = MobileApplicationInfo.builder()
