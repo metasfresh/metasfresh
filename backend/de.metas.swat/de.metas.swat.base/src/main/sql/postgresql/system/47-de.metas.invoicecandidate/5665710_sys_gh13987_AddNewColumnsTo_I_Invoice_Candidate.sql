@@ -130,6 +130,144 @@ DELETE FROM AD_Element WHERE AD_Element_ID=581722
 
 
 
+-- Table: I_Invoice_Candidate
+-- Table: I_Invoice_Candidate
+-- 2022-11-24T14:58:31.742Z
+UPDATE AD_Table SET AD_Window_ID=541605,Updated=TO_TIMESTAMP('2022-11-24 16:58:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=542207
+;
+
+-- Field: Import - Rechnungskandidaten -> Import - Invoice candiate -> Schlusstext
+-- Column: I_Invoice_Candidate.DescriptionBottom
+-- Field: Import - Rechnungskandidaten(541605,D) -> Import - Invoice candiate(546594,D) -> Schlusstext
+-- Column: I_Invoice_Candidate.DescriptionBottom
+-- 2022-11-24T14:58:48.817Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,585124,708205,0,546594,TO_TIMESTAMP('2022-11-24 16:58:48','YYYY-MM-DD HH24:MI:SS'),100,2048,'D','Y','N','N','N','N','N','N','N','Schlusstext',TO_TIMESTAMP('2022-11-24 16:58:48','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-11-24T14:58:48.818Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=708205 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-11-24T14:58:48.820Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(501680) 
+;
+
+-- 2022-11-24T14:58:48.832Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=708205
+;
+
+-- 2022-11-24T14:58:48.833Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(708205)
+;
+
+-- Field: Import - Rechnungskandidaten -> Import - Invoice candiate -> Rabatt %
+-- Column: I_Invoice_Candidate.Discount
+-- Field: Import - Rechnungskandidaten(541605,D) -> Import - Invoice candiate(546594,D) -> Rabatt %
+-- Column: I_Invoice_Candidate.Discount
+-- 2022-11-24T14:58:48.918Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,585125,708206,0,546594,TO_TIMESTAMP('2022-11-24 16:58:48','YYYY-MM-DD HH24:MI:SS'),100,'Abschlag in Prozent',22,'D','"Rabatt %" bezeichnet den angewendeten Abschlag in Prozent.','Y','N','N','N','N','N','N','N','Rabatt %',TO_TIMESTAMP('2022-11-24 16:58:48','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-11-24T14:58:48.919Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=708206 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-11-24T14:58:48.920Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(280) 
+;
+
+-- 2022-11-24T14:58:48.925Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=708206
+;
+
+-- 2022-11-24T14:58:48.926Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(708206)
+;
+
+-- Field: Import - Rechnungskandidaten -> Import - Invoice candiate -> Betreuer
+-- Column: I_Invoice_Candidate.AD_User_InCharge_ID
+-- Field: Import - Rechnungskandidaten(541605,D) -> Import - Invoice candiate(546594,D) -> Betreuer
+-- Column: I_Invoice_Candidate.AD_User_InCharge_ID
+-- 2022-11-24T14:58:49.014Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,585126,708207,0,546594,TO_TIMESTAMP('2022-11-24 16:58:48','YYYY-MM-DD HH24:MI:SS'),100,'Person, die bei einem fachlichen Problem vom System informiert wird.',10,'D','Y','N','N','N','N','N','N','N','Betreuer',TO_TIMESTAMP('2022-11-24 16:58:48','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-11-24T14:58:49.015Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=708207 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-11-24T14:58:49.017Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(541510) 
+;
+
+-- 2022-11-24T14:58:49.020Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=708207
+;
+
+-- 2022-11-24T14:58:49.021Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(708207)
+;
+
+-- Field: Import - Rechnungskandidaten -> Import - Invoice candiate -> Preis
+-- Column: I_Invoice_Candidate.Price
+-- Field: Import - Rechnungskandidaten(541605,D) -> Import - Invoice candiate(546594,D) -> Preis
+-- Column: I_Invoice_Candidate.Price
+-- 2022-11-24T14:58:49.100Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,585127,708208,0,546594,TO_TIMESTAMP('2022-11-24 16:58:49','YYYY-MM-DD HH24:MI:SS'),100,'Preis',10,'D','Bezeichnet den Preis für ein Produkt oder eine Dienstleistung.','Y','N','N','N','N','N','N','N','Preis',TO_TIMESTAMP('2022-11-24 16:58:49','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-11-24T14:58:49.101Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=708208 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-11-24T14:58:49.102Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(1416) 
+;
+
+-- 2022-11-24T14:58:49.106Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=708208
+;
+
+-- 2022-11-24T14:58:49.107Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(708208)
+;
+
+-- UI Element: Import - Rechnungskandidaten -> Import - Invoice candiate.Preis
+-- Column: I_Invoice_Candidate.Price
+-- UI Element: Import - Rechnungskandidaten(541605,D) -> Import - Invoice candiate(546594,D) -> main -> 10 -> details.Preis
+-- Column: I_Invoice_Candidate.Price
+-- 2022-11-24T14:59:25.233Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,708208,0,546594,549841,613582,'F',TO_TIMESTAMP('2022-11-24 16:59:25','YYYY-MM-DD HH24:MI:SS'),100,'Preis','Bezeichnet den Preis für ein Produkt oder eine Dienstleistung.','Y','N','N','Y','N','N','N',0,'Preis',50,0,0,TO_TIMESTAMP('2022-11-24 16:59:25','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- UI Element: Import - Rechnungskandidaten -> Import - Invoice candiate.Rabatt %
+-- Column: I_Invoice_Candidate.Discount
+-- UI Element: Import - Rechnungskandidaten(541605,D) -> Import - Invoice candiate(546594,D) -> main -> 10 -> details.Rabatt %
+-- Column: I_Invoice_Candidate.Discount
+-- 2022-11-24T14:59:34.885Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,708206,0,546594,549841,613583,'F',TO_TIMESTAMP('2022-11-24 16:59:34','YYYY-MM-DD HH24:MI:SS'),100,'Abschlag in Prozent','"Rabatt %" bezeichnet den angewendeten Abschlag in Prozent.','Y','N','N','Y','N','N','N',0,'Rabatt %',60,0,0,TO_TIMESTAMP('2022-11-24 16:59:34','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- UI Element: Import - Rechnungskandidaten -> Import - Invoice candiate.Schlusstext
+-- Column: I_Invoice_Candidate.DescriptionBottom
+-- UI Element: Import - Rechnungskandidaten(541605,D) -> Import - Invoice candiate(546594,D) -> main -> 10 -> details.Schlusstext
+-- Column: I_Invoice_Candidate.DescriptionBottom
+-- 2022-11-24T15:00:19.788Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,708205,0,546594,549841,613584,'F',TO_TIMESTAMP('2022-11-24 17:00:19','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Schlusstext',70,0,0,TO_TIMESTAMP('2022-11-24 17:00:19','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- UI Element: Import - Rechnungskandidaten -> Import - Invoice candiate.Betreuer
+-- Column: I_Invoice_Candidate.AD_User_InCharge_ID
+-- UI Element: Import - Rechnungskandidaten(541605,D) -> Import - Invoice candiate(546594,D) -> main -> 10 -> details.Betreuer
+-- Column: I_Invoice_Candidate.AD_User_InCharge_ID
+-- 2022-11-24T15:00:28.663Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,708207,0,546594,549841,613585,'F',TO_TIMESTAMP('2022-11-24 17:00:28','YYYY-MM-DD HH24:MI:SS'),100,'Person, die bei einem fachlichen Problem vom System informiert wird.','Y','N','N','Y','N','N','N',0,'Betreuer',80,0,0,TO_TIMESTAMP('2022-11-24 17:00:28','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+
+
+
+
 -- adjust import foramt---
 
 
@@ -153,3 +291,6 @@ INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFo
 -- 2022-11-23T15:49:10.419Z
 INSERT INTO AD_ImpFormat_Row (AD_Client_ID,AD_Column_ID,AD_ImpFormat_ID,AD_ImpFormat_Row_ID,AD_Org_ID,Created,CreatedBy,DataType,DecimalPoint,DivideBy100,EndNo,IsActive,Name,SeqNo,StartNo,Updated,UpdatedBy) VALUES (0,585127,540077,541805,0,TO_TIMESTAMP('2022-11-23 17:49:10','YYYY-MM-DD HH24:MI:SS'),100,'N','.','N',0,'Y','Price',210,21,TO_TIMESTAMP('2022-11-23 17:49:10','YYYY-MM-DD HH24:MI:SS'),100)
 ;
+
+
+--
