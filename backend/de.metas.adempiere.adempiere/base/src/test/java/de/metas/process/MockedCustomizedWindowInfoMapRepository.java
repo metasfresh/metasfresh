@@ -29,7 +29,7 @@ import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.exceptions.AdempiereException;
 
 @ToString
-class MockedCustomizedWindowInfoMapRepository implements CustomizedWindowInfoMapRepository
+public class MockedCustomizedWindowInfoMapRepository implements CustomizedWindowInfoMapRepository
 {
 	private CustomizedWindowInfoMap map;
 

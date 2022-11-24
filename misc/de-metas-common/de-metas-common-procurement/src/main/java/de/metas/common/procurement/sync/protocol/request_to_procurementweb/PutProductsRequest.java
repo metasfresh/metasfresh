@@ -30,10 +30,14 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
+import java.util.UUID;
 
 @Value
+@Builder
+@Jacksonized
 public class PutProductsRequest extends RequestToProcurementWeb
 {
 	public static PutProductsRequest of(@NonNull final SyncProduct syncProduct)
@@ -41,23 +45,10 @@ public class PutProductsRequest extends RequestToProcurementWeb
 		return PutProductsRequest.builder().product(syncProduct).build();
 	}
 
-	public static PutProductsRequest of(@NonNull final List<SyncProduct> syncProducts)
-	{
-		return PutProductsRequest.builder().products(syncProducts).build();
-	}
-	
+	@Builder.Default
+	String eventId = UUID.randomUUID().toString();
+	String relatedEventId;
+
+	@Singular
 	List<SyncProduct> products;
-
-	@Builder
-	@JsonCreator
-	private PutProductsRequest(@JsonProperty("products") @Singular final List<SyncProduct> products)
-	{
-		this.products = products;
-	}
-
-	@Override
-	public String toString()
-	{
-		return "SyncProductsRequest [products=" + products + "]";
-	}
 }

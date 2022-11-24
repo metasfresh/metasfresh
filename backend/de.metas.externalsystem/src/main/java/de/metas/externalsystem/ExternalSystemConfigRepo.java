@@ -32,8 +32,8 @@ import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfig;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfigId;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
-import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6_UOM;
@@ -46,6 +46,7 @@ import de.metas.externalsystem.rabbitmqhttp.ExternalSystemRabbitMQConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6Config;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigId;
 import de.metas.externalsystem.shopware6.ExternalSystemShopware6ConfigMapping;
+import de.metas.externalsystem.shopware6.ProductLookup;
 import de.metas.externalsystem.shopware6.UOMShopwareMapping;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfig;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfigId;
@@ -53,6 +54,7 @@ import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
+import de.metas.user.UserGroupId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
@@ -79,9 +81,9 @@ public class ExternalSystemConfigRepo
 
 	public boolean isAnyConfigActive(final @NonNull ExternalSystemType type)
 	{
-		return getAllByType(type)
+		return getActiveByType(type)
 				.stream()
-				.anyMatch(ExternalSystemParentConfig::getIsActive);
+				.anyMatch(ExternalSystemParentConfig::isActive);
 	}
 
 	@NonNull
@@ -163,36 +165,50 @@ public class ExternalSystemConfigRepo
 		return externalSystemConfigRecord.getType();
 	}
 
+	/**
+	 * @return the configs if both their parent and child records have {@code IsActive='Y'}
+	 */
 	@NonNull
-	public ImmutableList<ExternalSystemParentConfig> getAllByType(@NonNull final ExternalSystemType externalSystemType)
+	public ImmutableList<ExternalSystemParentConfig> getActiveByType(@NonNull final ExternalSystemType externalSystemType)
 	{
+		final ImmutableList<ExternalSystemParentConfig> result;
+
 		switch (externalSystemType)
 		{
 			case Alberta:
-				return getAllByTypeAlberta();
+				result = getAllByTypeAlberta();
+				break;
 			case RabbitMQ:
-				return getAllByTypeRabbitMQ();
+				result = getAllByTypeRabbitMQ();
+				break;
 			case WOO:
-				return getAllByTypeWOO();
+				result = getAllByTypeWOO();
+				break;
+			case GRSSignum:
+				result = getAllByTypeGRS();
+				break;
 			case Shopware6:
 			case Other:
 				throw new AdempiereException("Method not supported")
 						.appendParametersToMessage()
 						.setParameter("externalSystemType", externalSystemType);
-			case GRSSignum:
-				return getAllByTypeGRS();
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 		}
-	}
 
+		return result
+				.stream()
+				.filter(ExternalSystemParentConfig::isActive)
+				.collect(ImmutableList.toImmutableList());
+	}
+	
 	public void saveConfig(@NonNull final ExternalSystemParentConfig config)
 	{
 		switch (config.getType())
 		{
 			case Shopware6:
 				storeShopware6Config(config);
-				return;
+				break;
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", config.getType());
 		}
@@ -205,6 +221,8 @@ public class ExternalSystemConfigRepo
 	{
 		switch (externalSystemType)
 		{
+			case Alberta:
+					return getAlbertaConfigByQuery(query);
 			case Shopware6:
 				return getShopware6ConfigByQuery(query);
 			default:
@@ -332,6 +350,9 @@ public class ExternalSystemConfigRepo
 				.remoteUrl(rabbitMQConfigRecord.getRemoteURL())
 				.authToken(rabbitMQConfigRecord.getAuthToken())
 				.isSyncBPartnerToRabbitMQ(rabbitMQConfigRecord.isSyncBPartnersToRabbitMQ())
+				.isAutoSendWhenCreatedByUserGroup(rabbitMQConfigRecord.isAutoSendWhenCreatedByUserGroup())
+				.userGroupId(UserGroupId.ofRepoIdOrNull(rabbitMQConfigRecord.getSubjectCreatedByUserGroup_ID()))
+				.isSyncExternalReferencesToRabbitMQ(rabbitMQConfigRecord.isSyncExternalReferencesToRabbitMQ())
 				.build();
 	}
 
@@ -400,11 +421,12 @@ public class ExternalSystemConfigRepo
 				.uomShopwareMappingList(getUOMShopwareMappingList(externalSystemShopware6ConfigId))
 				.priceListId(PriceListId.ofRepoIdOrNull(config.getM_PriceList_ID()))
 				.clientId(config.getClient_Id())
-				.bPartnerIdJSONPath(config.getJSONPathConstantBPartnerID())
 				.bPartnerLocationIdJSONPath(config.getJSONPathConstantBPartnerLocationID())
 				.salesRepJSONPath(config.getJSONPathSalesRepID())
+				.emailJSONPath(config.getJSONPathEmail())
 				.isActive(config.isActive())
 				.value(config.getExternalSystemValue())
+				.productLookup(ProductLookup.ofCode(config.getProductLookup()))
 				.build();
 	}
 
@@ -452,7 +474,7 @@ public class ExternalSystemConfigRepo
 				.id(ExternalSystemParentConfigId.ofRepoId(externalSystemConfigRecord.getExternalSystem_Config_ID()))
 				.name(externalSystemConfigRecord.getName())
 				.orgId(OrgId.ofRepoId(externalSystemConfigRecord.getAD_Org_ID()))
-				.isActive(externalSystemConfigRecord.isActive())
+				.active(externalSystemConfigRecord.isActive())
 				.writeAudit(externalSystemConfigRecord.isWriteAudit())
 				.auditFileFolder(externalSystemConfigRecord.getAuditFileFolder());
 	}
@@ -538,6 +560,27 @@ public class ExternalSystemConfigRepo
 				.collect(ImmutableList.toImmutableList());
 	}
 
+
+	@NonNull
+	private Optional<ExternalSystemParentConfig> getAlbertaConfigByQuery(@NonNull final ExternalSystemConfigQuery query)
+	{
+		final IQueryBuilder<I_ExternalSystem_Config_Alberta> queryBuilder = queryBL.createQueryBuilder(I_ExternalSystem_Config_Alberta.class);
+
+		queryBuilder.addEqualsFilter(I_ExternalSystem_Config_Shopware6.COLUMNNAME_ExternalSystem_Config_ID, query.getParentConfigId().getRepoId());
+
+		if (query.getIsActive() != null)
+		{
+			queryBuilder.addEqualsFilter(I_ExternalSystem_Config_Shopware6.COLUMNNAME_IsActive, query.getIsActive());
+		}
+
+		return queryBuilder
+				.create()
+				.firstOnlyOptional(I_ExternalSystem_Config_Alberta.class)
+				.map(ex -> buildExternalSystemAlbertaConfig(ex, query.getParentConfigId()))
+				.map(shopwareConfig -> getById(query.getParentConfigId())
+						.childConfig(shopwareConfig).build());
+	}
+
 	@NonNull
 	private Optional<ExternalSystemParentConfig> getShopware6ConfigByQuery(@NonNull final ExternalSystemConfigQuery query)
 	{
@@ -578,13 +621,14 @@ public class ExternalSystemConfigRepo
 		record.setClient_Id(config.getClientId());
 		record.setClient_Secret(config.getClientSecret());
 
-		record.setJSONPathConstantBPartnerID(config.getBPartnerIdJSONPath());
 		record.setJSONPathConstantBPartnerLocationID(config.getBPartnerLocationIdJSONPath());
 		record.setJSONPathSalesRepID(config.getSalesRepJSONPath());
 
 		record.setM_PriceList_ID(NumberUtils.asInteger(config.getPriceListId(), -1));
 		record.setIsActive(config.getIsActive());
 		record.setExternalSystemValue(config.getValue());
+
+		record.setProductLookup(config.getProductLookup().getCode());
 
 		if (config.getFreightCostNormalVatConfig() != null)
 		{
@@ -622,11 +666,10 @@ public class ExternalSystemConfigRepo
 
 		record.setName(config.getName());
 		record.setType(config.getType().getCode());
-		record.setIsActive(config.getIsActive());
+		record.setIsActive(config.isActive());
 
 		return record;
 	}
-
 
 	@NonNull
 	private Optional<IExternalSystemChildConfig> getGRSSignumConfigByParentId(@NonNull final ExternalSystemParentConfigId id)
@@ -668,6 +711,16 @@ public class ExternalSystemConfigRepo
 				.value(config.getExternalSystemValue())
 				.camelHttpResourceAuthKey(config.getCamelHttpResourceAuthKey())
 				.baseUrl(config.getBaseURL())
+				.tenantId(config.getTenantId())
+				.authToken(config.getAuthToken())
+				.syncBPartnersToRestEndpoint(config.isSyncBPartnersToRestEndpoint())
+				.autoSendVendors(config.isAutoSendVendors())
+				.autoSendCustomers(config.isAutoSendCustomers())
+				.syncHUsOnMaterialReceipt(config.isSyncHUsOnMaterialReceipt())
+				.syncHUsOnProductionReceipt(config.isSyncHUsOnProductionReceipt())
+				.basePathForExportDirectories(config.getBasePathForExportDirectories())
+				.createBPartnerFolders(config.isCreateBPartnerFolders())
+				.bPartnerExportDirectories(config.getBPartnerExportDirectories())
 				.build();
 	}
 

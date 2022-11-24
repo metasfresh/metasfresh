@@ -178,6 +178,7 @@ public class ProductPrices
 				.list();
 	}
 
+	@NonNull
 	private static ProductPriceQuery newMainProductPriceQuery(final I_M_PriceList_Version plv, final ProductId productId)
 	{
 		return newQuery(plv)
@@ -189,7 +190,7 @@ public class ProductPrices
 	}
 
 	@Nullable
-	private static I_M_ProductPrice getFirstOrThrowExceptionIfMoreThanOne(final List<I_M_ProductPrice> allMainPrices)
+	private static I_M_ProductPrice getFirstOrThrowExceptionIfMoreThanOne(@NonNull final List<I_M_ProductPrice> allMainPrices)
 	{
 		if (allMainPrices.isEmpty())
 		{
@@ -271,7 +272,7 @@ public class ProductPrices
 	@Nullable public static <T extends I_M_ProductPrice> T iterateAllPriceListVersionsAndFindProductPrice(
 			@Nullable final I_M_PriceList_Version startPriceListVersion,
 			@NonNull final Function<I_M_PriceList_Version, T> productPriceMapper,
-			@NonNull ZonedDateTime priceDate)
+			@NonNull final ZonedDateTime priceDate)
 	{
 		if (startPriceListVersion == null)
 		{

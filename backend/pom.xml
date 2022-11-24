@@ -32,7 +32,7 @@
 
         <spring-boot.version>2.4.3</spring-boot.version>
         <lucene.version>8.6.2</lucene.version>
-        
+
         <!-- Note that we need spring in de.metas.report.jasper.client and ...jasper.server.base for some reason. -->
         <!-- For versions info, see https://docs.spring.io/spring-boot/docs/current/reference/html/appendix-dependency-versions.html -->
         <spring.version>5.3.4</spring.version>
@@ -73,6 +73,8 @@
 
         <module>de.metas.aggregation</module>
 
+        <module>de.metas.global_qrcode.api</module>
+        <module>de.metas.global_qrcode.services</module>
         <module>de.metas.business</module>
 
         <module>de.metas.business.rest-api</module>
@@ -85,6 +87,7 @@
         <module>de.metas.device.adempiere</module>
         <module>de.metas.device.api</module>
         <module>de.metas.device.scales</module>
+        <module>de.metas.device.webui</module>
 
         <module>de.metas.dimension</module> <!-- task 08681 -->
 
@@ -126,6 +129,7 @@
         <module>de.metas.material</module>
 
         <module>de.metas.handlingunits.base</module>
+        <module>de.metas.handlingunits.webui</module>
 
         <module>de.metas.payment.esr</module>
         <module>de.metas.payment.sepa</module>
@@ -208,7 +212,7 @@
             <dependency>
                 <groupId>org.postgresql</groupId>
                 <artifactId>postgresql</artifactId>
-                <version>42.2.9</version>
+                <version>42.3.3</version>
             </dependency>
 
             <dependency>
@@ -604,6 +608,15 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+
+            <!-- Disable the f..ing stupid false positive giver enforcer plugin (teo, tobi) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
             </plugin>
         </plugins>
     </build>

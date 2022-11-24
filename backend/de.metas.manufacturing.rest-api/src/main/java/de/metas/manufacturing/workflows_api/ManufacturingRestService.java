@@ -1,108 +1,137 @@
 package de.metas.manufacturing.workflows_api;
 
-import de.metas.dao.ValueRestriction;
-import de.metas.material.planning.pporder.IPPOrderBOMBL;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.InstantAndOrgId;
-import de.metas.product.IProductBL;
-import de.metas.product.ProductId;
+import com.google.common.collect.ImmutableList;
+import de.metas.common.util.time.SystemTime;
+import de.metas.handlingunits.picking.QtyRejectedReasonCode;
+import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleId;
+import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleProcessRequest;
+import de.metas.i18n.TranslatableStrings;
+import de.metas.manufacturing.job.model.ManufacturingJob;
+import de.metas.manufacturing.job.model.ManufacturingJobActivity;
+import de.metas.manufacturing.job.model.ManufacturingJobReference;
+import de.metas.manufacturing.job.service.ManufacturingJobService;
+import de.metas.manufacturing.workflows_api.activity_handlers.confirmation.ConfirmationActivityHandler;
+import de.metas.manufacturing.workflows_api.activity_handlers.generateHUQRCodes.GenerateHUQRCodesActivityHandler;
+import de.metas.manufacturing.workflows_api.activity_handlers.issue.RawMaterialsIssueActivityHandler;
+import de.metas.manufacturing.workflows_api.activity_handlers.issue.RawMaterialsIssueAdjustmentActivityHandler;
+import de.metas.manufacturing.workflows_api.activity_handlers.receive.MaterialReceiptActivityHandler;
+import de.metas.manufacturing.workflows_api.activity_handlers.scanScaleDevice.ScanScaleDeviceActivityHandler;
+import de.metas.manufacturing.workflows_api.activity_handlers.work_report.WorkReportActivityHandler;
+import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
 import de.metas.user.UserId;
-import de.metas.util.Services;
+import de.metas.workflow.rest_api.model.WFActivity;
+import de.metas.workflow.rest_api.model.WFActivityId;
+import de.metas.workflow.rest_api.model.WFProcess;
+import de.metas.workflow.rest_api.model.WFProcessId;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.exceptions.AdempiereException;
-import org.eevolution.api.IPPOrderDAO;
-import org.eevolution.api.IPPOrderRoutingRepository;
-import org.eevolution.api.ManufacturingOrderQuery;
 import org.eevolution.api.PPOrderId;
-import org.eevolution.model.I_PP_Order;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
 import java.util.stream.Stream;
 
 @Service
 public class ManufacturingRestService
 {
-	private final IPPOrderDAO ppOrderDAO = Services.get(IPPOrderDAO.class);
-	private final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
-	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	private final ManufacturingJobLoaderSupportingServices loadingSupportServices;
+	private final ManufacturingJobService manufacturingJobService;
 
-	public ManufacturingRestService()
+	public ManufacturingRestService(final ManufacturingJobService manufacturingJobService)
 	{
-		this.loadingSupportServices = ManufacturingJobLoaderSupportingServices.builder()
-				.ppOrderDAO(ppOrderDAO)
-				.ppOrderRoutingRepository(Services.get(IPPOrderRoutingRepository.class))
-				.build();
+		this.manufacturingJobService = manufacturingJobService;
 	}
 
-	public Stream<PPOrderReference> streamActiveReferencesAssignedTo(@NonNull final UserId responsibleId)
+	public Stream<ManufacturingJobReference> streamJobReferencesForUser(final @NonNull UserId responsibleId, final @NonNull QueryLimit suggestedLimit)
 	{
-		return ppOrderDAO.streamManufacturingOrders(ManufacturingOrderQuery.builder()
-						.onlyCompleted(true)
-						.responsibleId(ValueRestriction.equalsTo(responsibleId))
-						.build())
-				.map(this::toPPOrderReference);
-	}
-
-	public Stream<PPOrderReference> streamActiveReferencesNotAssigned()
-	{
-		return ppOrderDAO.streamManufacturingOrders(ManufacturingOrderQuery.builder()
-						.onlyCompleted(true)
-						.responsibleId(ValueRestriction.isNull())
-						.build())
-				.map(this::toPPOrderReference);
-	}
-
-	private PPOrderReference toPPOrderReference(final I_PP_Order ppOrder)
-	{
-		return PPOrderReference.builder()
-				.ppOrderId(PPOrderId.ofRepoId(ppOrder.getPP_Order_ID()))
-				.documentNo(ppOrder.getDocumentNo())
-				.datePromised(InstantAndOrgId.ofTimestamp(ppOrder.getDatePromised(), ppOrder.getAD_Org_ID()).toZonedDateTime(orgDAO::getTimeZone))
-				.productName(productBL.getProductNameTrl(ProductId.ofRepoId(ppOrder.getM_Product_ID())))
-				.qtyRequiredToProduce(ppOrderBOMBL.getQuantities(ppOrder).getQtyRequiredToProduce())
-				.build();
+		return manufacturingJobService.streamJobReferencesForUser(responsibleId, suggestedLimit);
 	}
 
 	public ManufacturingJob createJob(final PPOrderId ppOrderId, final UserId responsibleId)
 	{
-		final I_PP_Order ppOrder = ppOrderDAO.getById(ppOrderId);
-
-		setResponsible(ppOrder, responsibleId);
-
-		return newLoader()
-				.addToCache(ppOrder)
-				.load(ppOrderId);
+		return manufacturingJobService.createJob(ppOrderId, responsibleId);
 	}
 
-	private void setResponsible(@NonNull final I_PP_Order ppOrder, @NonNull final UserId responsibleId)
+	public void abortJob(@NonNull final PPOrderId ppOrderId, @NonNull final UserId responsibleId)
 	{
-		final UserId previousResponsibleId = UserId.ofRepoIdOrNullIfSystem(ppOrder.getAD_User_Responsible_ID());
-		if (UserId.equals(previousResponsibleId, responsibleId))
-		{
-			//noinspection UnnecessaryReturnStatement
-			return;
-		}
-		else if (previousResponsibleId != null)
-		{
-			throw new AdempiereException("Order is already assigned");
-		}
-		else
-		{
-			ppOrder.setAD_User_Responsible_ID(responsibleId.getRepoId());
-			ppOrderDAO.save(ppOrder);
-		}
+		manufacturingJobService.abortJob(ppOrderId, responsibleId);
 	}
 
 	public ManufacturingJob getJobById(final PPOrderId ppOrderId)
 	{
-		return newLoader().load(ppOrderId);
+		return manufacturingJobService.getJobById(ppOrderId);
 	}
 
-	@NonNull
-	private ManufacturingJobLoader newLoader()
+	private static WFActivity toWFActivity(final ManufacturingJobActivity jobActivity)
 	{
-		return new ManufacturingJobLoader(loadingSupportServices);
+		final WFActivity.WFActivityBuilder builder = WFActivity.builder()
+				.id(WFActivityId.ofId(jobActivity.getId()))
+				.caption(TranslatableStrings.anyLanguage(jobActivity.getName()))
+				.status(jobActivity.getStatus());
+
+		switch (jobActivity.getType())
+		{
+			case RawMaterialsIssue:
+				return builder.wfActivityType(RawMaterialsIssueActivityHandler.HANDLED_ACTIVITY_TYPE).build();
+			case RawMaterialsIssueAdjustment:
+				return builder.wfActivityType(RawMaterialsIssueAdjustmentActivityHandler.HANDLED_ACTIVITY_TYPE).build();
+			case MaterialReceipt:
+				return builder.wfActivityType(MaterialReceiptActivityHandler.HANDLED_ACTIVITY_TYPE).build();
+			case WorkReport:
+				return builder.wfActivityType(WorkReportActivityHandler.HANDLED_ACTIVITY_TYPE).build();
+			case ActivityConfirmation:
+				return builder.wfActivityType(ConfirmationActivityHandler.HANDLED_ACTIVITY_TYPE).build();
+			case GenerateHUQRCodes:
+				return builder.wfActivityType(GenerateHUQRCodesActivityHandler.HANDLED_ACTIVITY_TYPE).build();
+			case ScanScaleDevice:
+				return builder.wfActivityType(ScanScaleDeviceActivityHandler.HANDLED_ACTIVITY_TYPE).build();
+			default:
+				throw new AdempiereException("Unknown type: " + jobActivity);
+		}
+	}
+
+	public static WFProcess toWFProcess(final ManufacturingJob job)
+	{
+		return WFProcess.builder()
+				.id(WFProcessId.ofIdPart(ManufacturingMobileApplication.HANDLER_ID, job.getPpOrderId()))
+				.invokerId(Objects.requireNonNull(job.getResponsibleId()))
+				.caption(TranslatableStrings.anyLanguage("" + job.getPpOrderId().getRepoId())) // TODO
+				.document(job)
+				.activities(job.getActivities()
+						.stream()
+						.map(ManufacturingRestService::toWFActivity)
+						.collect(ImmutableList.toImmutableList()))
+				.build();
+	}
+
+	public ManufacturingJob processEvent(final ManufacturingJob job, final JsonManufacturingOrderEvent event)
+	{
+		job.assertUserReporting();
+
+		if (event.getIssueTo() != null)
+		{
+			final JsonManufacturingOrderEvent.IssueTo issueTo = event.getIssueTo();
+			return manufacturingJobService.issueRawMaterials(job, PPOrderIssueScheduleProcessRequest.builder()
+					.ppOrderId(job.getPpOrderId())
+					.issueScheduleId(PPOrderIssueScheduleId.ofString(issueTo.getIssueStepId()))
+					.qtyIssued(issueTo.getQtyIssued())
+					.qtyRejected(issueTo.getQtyRejected())
+					.qtyRejectedReasonCode(QtyRejectedReasonCode.ofNullableCode(issueTo.getQtyRejectedReasonCode()).orElse(null))
+					.build());
+		}
+		else if (event.getReceiveFrom() != null)
+		{
+			final JsonManufacturingOrderEvent.ReceiveFrom receiveFrom = event.getReceiveFrom();
+			return manufacturingJobService.receiveGoods(
+					job,
+					receiveFrom.getFinishedGoodsReceiveLineId(),
+					receiveFrom.getAggregateToLU(),
+					receiveFrom.getQtyReceived(),
+					SystemTime.asZonedDateTime());
+		}
+		else
+		{
+			throw new AdempiereException("Cannot handle: " + event);
+		}
 	}
 }

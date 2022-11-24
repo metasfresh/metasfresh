@@ -137,6 +137,11 @@ public class CommissionConfigProvider
 
 		@NonNull
 		CommissionTriggerType commissionTriggerType;
+
+		public boolean isCustomerTheSalesRep()
+		{
+			return customerBPartnerId.equals(salesRepBPartnerId);
+		}
 	}
 
 	@Builder

@@ -46,7 +46,7 @@ import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.inoutcandidate.api.IShipmentScheduleUpdater;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateBL;
 import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepository;
 import de.metas.inoutcandidate.invalidation.segments.IShipmentScheduleSegment;
@@ -61,8 +61,9 @@ import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.springframework.stereotype.Service;
 
-@Component
+@Service
 public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidateBL
 {
 	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
@@ -205,6 +206,15 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 		notifySegmentChanged(segment);
 	}
 
+	@Override
+	public void notifySegmentChangedForShipmentScheduleInclSched(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
+	{
+		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
+		
+		flagForRecompute(shipmentScheduleId); // 08746: make sure that at any rate, the schedule itself is invalidated, even if it has delivery rule "force"
+		notifySegmentChangedForShipmentSchedule(shipmentSchedule);
+	}
+
 	/**
 	 * Note that this method is overridden in the de.metas.handlingunits.base module!
 	 * TODO: don't override this whole method, there are plenty of better ways
@@ -226,7 +236,6 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	@Override
 	public void notifySegmentChangedForOrderLine(@NonNull final I_C_OrderLine orderLine)
 	{
-
 		// we can't restrict the segment to the sched's bpartner, because we don't know if the qty could in theory be reallocated to a *different* partner.
 		// So we have to notify *all* partners' segments.
 		final int bpartnerId = 0;
@@ -290,7 +299,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 		final ShipmentScheduleSegmentChangedProcessor collector = ShipmentScheduleSegmentChangedProcessor.getOrCreateIfThreadInheritedElseNull(this);
 		if (collector != null)
 		{
-			collector.addSegments(segmentsEffective);
+			collector.addSegments(segmentsEffective); // they will be flagged for recompute after commit
 		}
 		else
 		{

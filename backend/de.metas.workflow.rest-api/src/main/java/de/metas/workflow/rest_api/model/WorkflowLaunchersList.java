@@ -21,14 +21,19 @@ public class WorkflowLaunchersList implements Iterable<WorkflowLauncher>
 	@NonNull private final ImmutableList<WorkflowLauncher> launchers;
 
 	@Getter
+	private final boolean scanBarcodeToStartJobSupport;
+
+	@Getter
 	@NonNull private final Instant timestamp;
 
 	@Builder
 	private WorkflowLaunchersList(
 			@NonNull final ImmutableList<WorkflowLauncher> launchers,
+			final boolean scanBarcodeToStartJobSupport,
 			@NonNull final Instant timestamp)
 	{
 		this.launchers = launchers;
+		this.scanBarcodeToStartJobSupport = scanBarcodeToStartJobSupport;
 		this.timestamp = timestamp;
 	}
 

@@ -4,8 +4,8 @@ import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.product.IProductBL;
 import de.metas.quantity.Quantity;
-import de.metas.uom.IUOMDAO;
 import de.metas.util.Services;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import org.compiere.model.I_C_UOM;
@@ -43,6 +43,9 @@ import static de.metas.quantity.Quantity.addToNullable;
 @Getter
 public class MainRowBucket
 {
+	@Getter(AccessLevel.NONE)
+	private final transient IProductBL productBL = Services.get(IProductBL.class);
+	
 	private Quantity qtyStockCurrent;
 
 	private Quantity qtyOnHand;
@@ -76,6 +79,9 @@ public class MainRowBucket
 	private Quantity qtyExpectedSurplus;
 
 	private Quantity qtyStockEstimateCount;
+
+	@Nullable
+	private Integer qtyStockEstimateSeqNo;
 
 	@Nullable
 	private Instant qtyStockEstimateTime;
@@ -112,6 +118,7 @@ public class MainRowBucket
 
 		qtyStockEstimateCount = addToNullable(qtyStockEstimateCount, cockpitRecord.getQtyStockEstimateCount(), uom);
 		qtyStockEstimateTime = TimeUtil.max(qtyStockEstimateTime, TimeUtil.asInstant(cockpitRecord.getQtyStockEstimateTime()));
+		qtyStockEstimateSeqNo = cockpitRecord.getQtyStockEstimateSeqNo();
 
 		qtyInventoryCount = addToNullable(qtyInventoryCount, cockpitRecord.getQtyInventoryCount(), uom);
 		qtyInventoryTime = TimeUtil.max(qtyInventoryTime, TimeUtil.asInstant(cockpitRecord.getQtyInventoryTime()));
@@ -124,9 +131,7 @@ public class MainRowBucket
 
 	public void addStockRecord(@NonNull final I_MD_Stock stockRecord)
 	{
-		final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-
-		final I_C_UOM uom = uomDAO.getById(stockRecord.getM_Product().getC_UOM_ID());
+		final I_C_UOM uom = productBL.getStockUOM(stockRecord.getM_Product_ID());
 
 		qtyOnHand = addToNullable(qtyOnHand, stockRecord.getQtyOnHand(), uom);
 		stockRecordIds.add(stockRecord.getMD_Stock_ID());

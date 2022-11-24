@@ -28,6 +28,8 @@ import de.metas.handlingunits.HuPackingInstructionsVersionId;
 import de.metas.handlingunits.IHUQueryBuilder;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.age.AgeAttributesService;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.model.I_M_HU_Storage;
 import de.metas.handlingunits.model.I_M_Locator;
 import de.metas.handlingunits.reservation.HUReservationDocRef;
@@ -42,11 +44,13 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.api.IAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.warehouse.WarehouseId;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_M_Attribute;
 
@@ -59,12 +63,10 @@ import java.util.List;
 import java.util.Set;
 
 /**
- *
  * A HU-based IStorageQuery implementation.
  * <p>
  * <b>IMPORTANT</b> this implementation will ignore HUs that are located in a <code>M_Locator</code> with {@link I_M_Locator#COLUMNNAME_IsAfterPickingLocator IsAfterPickingLocator} <code>='Y'</code>,
  * because HUs on such a locator are actually bound to be shipped in the very nearest future and are considered to be not "there" for normal storage stuff any more.
- *
  */
 @EqualsAndHashCode
 @ToString
@@ -201,6 +203,7 @@ public class HUStorageQuery implements IStorageQuery
 		return this;
 	}
 
+	@NonNull
 	private Set<ProductId> getProductIds()
 	{
 		return _productIds;
@@ -213,6 +216,7 @@ public class HUStorageQuery implements IStorageQuery
 		return this;
 	}
 
+	@NonNull
 	private Set<BPartnerId> getBPartnerIds()
 	{
 		return huQueryBuilder.getOnlyInBPartnerIds();
@@ -250,6 +254,8 @@ public class HUStorageQuery implements IStorageQuery
 			final String attributeValueType,
 			@Nullable final Object attributeValue)
 	{
+		final AgeAttributesService ageAttributesService = SpringContextHolder.instance.getBean(AgeAttributesService.class);
+
 		// Skip null values because in this case user filled nothing => so we accept any value
 		if (attributeValue == null)
 		{
@@ -268,8 +274,19 @@ public class HUStorageQuery implements IStorageQuery
 
 		//
 		// Add attribute query restrictions
-		final List<Object> attributeValues = Collections.singletonList(attributeValue);
-		huQueryBuilder.addOnlyWithAttributeInList(attribute, attributeValueType, attributeValues);
+		if (HUAttributeConstants.ATTR_Age.equals(AttributeCode.ofString(attribute.getValue())))
+		{
+			// "explode" the age-attribute value to a range, using before- and after-intervals from the masterdata
+			final List<Object> ageValues = ageAttributesService.extractMatchingValues(getBPartnerIds(), getProductIds(), attributeValue);
+
+			huQueryBuilder.addOnlyWithAttributeInList(attribute, attributeValueType, ageValues);
+		}
+		else
+		{
+			final List<Object> attributeValues = Collections.singletonList(attributeValue);
+
+			huQueryBuilder.addOnlyWithAttributeInList(attribute, attributeValueType, attributeValues);
+		}
 
 		return this;
 	}

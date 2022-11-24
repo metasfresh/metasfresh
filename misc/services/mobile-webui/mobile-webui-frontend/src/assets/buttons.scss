@@ -1,39 +1,3 @@
-.btn-icon {
-    font-size: 48px;
-    color: white;
-    display: block;
-    cursor: pointer;
-    height: 1em;
-}
-
-.btn-green {
-    background-color: $base-mf-green;
-    color: white;
-
-    &[disabled] {
-        background-color: $base-mf-green;
-        border-color: transparent;
-        box-shadow: none;        
-    }
-}
-
-.logout-btn-green {
-    width: 8em;
-    color: white;
-    background-color: $custom-dk-green;
-    font-weight: 400;
-    border: 0px;
-}
-.logout-btn-green:hover {
-    color: white;
-    background-color: $custom-dk-green;
-    border: 0px;
-}
-.logout-btn-green:focus {
-    color: white;
-    border-color: $base-mf-green;
-}
-
 .full-size-btn {
     width: 100%;
 }
@@ -47,6 +11,7 @@
     white-space:nowrap
 }
 .left-btn-side {
+    position: absolute;
     width: 5%;
     float: left;
 }
@@ -55,41 +20,39 @@
     float: right;
 }
 
-.indicator-red {
+.indicator-red, .indicator-yellow, .indicator-green {
     display: inline-block;
     width: 7px;
     height: 7px;
     margin-right: 10px;
     border: 1px solid #000;
     border-radius: 7px;
+    margin-bottom: 5px;
+}
+
+.indicator-red {
     background-color: $indicator-red;
     border-color: $indicator-red-border;
-    box-shadow: 0px 0px 4px 1px $indicator-red;
-    margin-bottom: 5px;
+    box-shadow: 0 0 4px 1px $indicator-red;
 }
 
 .indicator-green {
-    display: inline-block;
-    width: 7px;
-    height: 7px;
-    margin-right: 10px;
-    border: 1px solid #000;
-    border-radius: 7px;
     background-color: $indicator-green;
     border-color: $indicator-green-border;
-    box-shadow: 0px 0px 4px 1px $indicator-green;
-    margin-bottom: 5px;
+    box-shadow: 0 0 4px 1px $indicator-green;
 }
 
 .indicator-yellow {
-    display: inline-block;
-    width: 7px;
-    height: 7px;
-    margin-right: 10px;
-    border: 1px solid #000;
-    border-radius: 7px;
     background-color: $indicator-yellow;
     border-color: $indicator-yellow-border;
-    box-shadow: 0px 0px 4px 1px $indicator-yellow;
-    margin-bottom: 5px;
+    box-shadow: 0 0 4px 1px $indicator-yellow;
+}
+
+.warning-sign {
+    color: $indicator-yellow;
+}
+
+.complete-btn {
+    width: 100%;
+    font-size: 1.5rem;
 }

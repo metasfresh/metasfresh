@@ -1,30 +1,30 @@
 package de.metas.distribution.ddorder.movement.schedule;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.time.SystemTime;
 import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
 import de.metas.distribution.ddorder.movement.generate.DDOrderMovementHelper;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
-import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.movement.generate.HUMovementGenerateRequest;
 import de.metas.handlingunits.movement.generate.HUMovementGenerator;
-import de.metas.handlingunits.picking.QtyRejectedReasonCode;
-import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mmovement.MovementAndLineId;
+import org.adempiere.mmovement.MovementId;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
 import org.eevolution.model.I_DD_Order;
 
-import javax.annotation.Nullable;
 import java.time.Instant;
+import java.util.List;
+import java.util.Set;
 
 class DDOrderPickFromCommand
 {
@@ -37,8 +37,6 @@ class DDOrderPickFromCommand
 	// Params
 	@NonNull private final Instant movementDate = SystemTime.asInstant();
 	@NonNull private final DDOrderMoveScheduleId scheduleId;
-	@NonNull private final Quantity qtyPicked;
-	@Nullable private final QtyRejectedReasonCode qtyNotPickedReason;
 
 	// State
 	private DDOrderMoveSchedule schedule;
@@ -50,7 +48,6 @@ class DDOrderPickFromCommand
 			final @NonNull DDOrderLowLevelDAO ddOrderLowLevelDAO,
 			final @NonNull DDOrderMoveScheduleRepository ddOrderMoveScheduleRepository,
 			final @NonNull IHandlingUnitsBL handlingUnitsBL,
-			//
 			final @NonNull DDOrderPickFromRequest request)
 	{
 		this.ddOrderLowLevelDAO = ddOrderLowLevelDAO;
@@ -58,8 +55,6 @@ class DDOrderPickFromCommand
 		this.handlingUnitsBL = handlingUnitsBL;
 
 		this.scheduleId = request.getScheduleId();
-		this.qtyPicked = request.getQtyPicked();
-		this.qtyNotPickedReason = request.getQtyNotPickedReason();
 	}
 
 	public DDOrderMoveSchedule execute()
@@ -79,68 +74,69 @@ class DDOrderPickFromCommand
 		inTransitLocatorId = warehouseBL.getDefaultLocatorId(warehouseInTransitId);
 
 		//
-		if (schedule.getPickFromMovementLineId() != null
-				|| schedule.getActualHUIdPicked() != null)
+		if (schedule.isPickedFrom())
 		{
 			throw new AdempiereException("Already picked");
 		}
 
 		//
 		// Extract the HU if needed
-		final HuId actualPickedHUId = splitOutOfPickFromHU(schedule);
+		final List<I_M_HU> actualPickedHURecords = splitOutOfPickFromHU(schedule);
 
 		//
 		// generate movement Pick From Locator -> InTransit
-		final MovementAndLineId pickFromMovementLineId = createPickFromMovement(actualPickedHUId);
+		final MovementId pickFromMovementId = createPickFromMovement(extractHUIds(actualPickedHURecords));
+
+		final DDOrderMoveSchedulePickedHUs pickedHUs = actualPickedHURecords.stream()
+				.map(actualPickedHU -> DDOrderMoveSchedulePickedHU.builder()
+						.actualHUIdPicked(HuId.ofRepoId(actualPickedHU.getM_HU_ID()))
+						.qtyPicked(getStorageQty(actualPickedHU))
+						.pickFromMovementId(pickFromMovementId)
+						.inTransitLocatorId(inTransitLocatorId)
+						.build())
+				.collect(DDOrderMoveSchedulePickedHUs.collect());
 
 		//
 		// update the schedule
-		schedule.markAsPickedFrom(qtyPicked, qtyNotPickedReason, actualPickedHUId, pickFromMovementLineId, inTransitLocatorId);
+		schedule.markAsPickedFrom(null, pickedHUs);
 		ddOrderMoveScheduleRepository.save(schedule);
 
 		return schedule;
 	}
 
-	private HuId splitOutOfPickFromHU(final DDOrderMoveSchedule schedule)
+	private Quantity getStorageQty(final I_M_HU actualPickedHU)
 	{
-		final HuId pickFromHUId = schedule.getPickFromHUId();
-		final ProductId productId = schedule.getProductId();
-		final I_M_HU pickFromHU = handlingUnitsBL.getById(pickFromHUId);
-
-		final Quantity pickFromHU_TotalQty = handlingUnitsBL.getStorageFactory()
-				.getStorage(pickFromHU)
-				.getQuantity(productId, qtyPicked.getUOM());
-
-		if (pickFromHU_TotalQty.qtyAndUomCompareToEquals(qtyPicked))
-		{
-			return pickFromHUId;
-		}
-		else
-		{
-			final I_M_HU newCU = HUTransformService.newInstance()
-					.huToNewSingleCU(HUTransformService.HUsToNewCUsRequest.builder()
-							.sourceHU(pickFromHU)
-							.productId(productId)
-							.qtyCU(qtyPicked)
-							.keepNewCUsUnderSameParent(false)
-							.onlyFromUnreservedHUs(true)
-							.build());
-
-			return HuId.ofRepoId(newCU.getM_HU_ID());
-		}
+		return handlingUnitsBL.getStorageFactory()
+				.getStorage(actualPickedHU)
+				.getQuantity(schedule.getProductId())
+				.orElseThrow(() -> new AdempiereException("No storage found for " + actualPickedHU));
 	}
 
-	private MovementAndLineId createPickFromMovement(@NonNull final HuId huIdToMove)
+	private static ImmutableSet<HuId> extractHUIds(final List<I_M_HU> hus)
+	{
+		return hus.stream().map(hu -> HuId.ofRepoId(hu.getM_HU_ID())).collect(ImmutableSet.toImmutableSet());
+	}
+
+	private List<I_M_HU> splitOutOfPickFromHU(final DDOrderMoveSchedule schedule)
+	{
+		// Atm we always take top level HUs
+		// TODO: implement TU level support
+		final I_M_HU pickFromHU = handlingUnitsBL.getById(schedule.getPickFromHUId());
+		return ImmutableList.of(pickFromHU);
+	}
+
+	private MovementId createPickFromMovement(@NonNull final Set<HuId> huIdsToMove)
 	{
 		final HUMovementGenerateRequest request = DDOrderMovementHelper.prepareMovementGenerateRequest(ddOrder, schedule.getDdOrderLineId())
 				.movementDate(movementDate)
 				.fromLocatorId(schedule.getPickFromLocatorId())
 				.toLocatorId(inTransitLocatorId)
-				.huIdToMove(huIdToMove)
+				.huIdsToMove(huIdsToMove)
 				.build();
 
 		return new HUMovementGenerator(request)
 				.createMovement()
-				.getSingleMovementLineId();
+				.getSingleMovementLineId()
+				.getMovementId();
 	}
 }

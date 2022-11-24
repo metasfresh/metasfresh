@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.handlingunits.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for M_HU_Reservation
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_HU_Reservation extends org.compiere.model.PO implements I_M_HU_Reservation, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 39689038L;
+	private static final long serialVersionUID = -100137566L;
 
     /** Standard Constructor */
     public X_M_HU_Reservation (final Properties ctx, final int M_HU_Reservation_ID, @Nullable final String trxName)
@@ -105,6 +105,33 @@ public class X_M_HU_Reservation extends org.compiere.model.PO implements I_M_HU_
 	public int getC_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
+	}
+
+	@Override
+	public org.eevolution.model.I_DD_OrderLine getDD_OrderLine()
+	{
+		return get_ValueAsPO(COLUMNNAME_DD_OrderLine_ID, org.eevolution.model.I_DD_OrderLine.class);
+	}
+
+	@Override
+	public void setDD_OrderLine(final org.eevolution.model.I_DD_OrderLine DD_OrderLine)
+	{
+		set_ValueFromPO(COLUMNNAME_DD_OrderLine_ID, org.eevolution.model.I_DD_OrderLine.class, DD_OrderLine);
+	}
+
+	@Override
+	public void setDD_OrderLine_ID (final int DD_OrderLine_ID)
+	{
+		if (DD_OrderLine_ID < 1) 
+			set_Value (COLUMNNAME_DD_OrderLine_ID, null);
+		else 
+			set_Value (COLUMNNAME_DD_OrderLine_ID, DD_OrderLine_ID);
+	}
+
+	@Override
+	public int getDD_OrderLine_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_DD_OrderLine_ID);
 	}
 
 	@Override

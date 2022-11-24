@@ -1,7 +1,15 @@
 import axios from 'axios';
 import { apiBasePath } from '../constants';
 
-export function postStepPicked({ wfProcessId, activityId, stepId, huBarcode, qtyPicked, qtyRejectedReasonCode }) {
+export function postStepPicked({
+  wfProcessId,
+  activityId,
+  stepId,
+  huQRCode,
+  qtyPicked,
+  qtyRejected,
+  qtyRejectedReasonCode,
+}) {
   return axios.post(`${apiBasePath}/picking/events`, {
     events: [
       {
@@ -9,15 +17,16 @@ export function postStepPicked({ wfProcessId, activityId, stepId, huBarcode, qty
         wfActivityId: activityId,
         pickingStepId: stepId,
         type: 'PICK',
-        huBarcode: huBarcode,
-        qtyPicked: qtyPicked,
-        qtyRejectedReasonCode: qtyRejectedReasonCode,
+        huQRCode,
+        qtyPicked,
+        qtyRejectedReasonCode,
+        qtyRejected,
       },
     ],
   });
 }
 
-export function postStepUnPicked({ wfProcessId, activityId, stepId, huBarcode }) {
+export function postStepUnPicked({ wfProcessId, activityId, stepId, huQRCode }) {
   return axios.post(`${apiBasePath}/picking/events`, {
     events: [
       {
@@ -25,7 +34,7 @@ export function postStepUnPicked({ wfProcessId, activityId, stepId, huBarcode })
         wfActivityId: activityId,
         pickingStepId: stepId,
         type: 'UNPICK',
-        huBarcode: huBarcode,
+        huQRCode,
       },
     ],
   });

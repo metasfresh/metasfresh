@@ -79,6 +79,7 @@ class TableFilter extends PureComponent {
     allowCreateNew: PropTypes.bool,
     openTableModal: PropTypes.func,
     addNotification: PropTypes.func.isRequired,
+    pending: PropTypes.bool,
   };
 
   actionButtons = null;
@@ -174,7 +175,7 @@ class TableFilter extends PureComponent {
    * this on each render
    */
   generateActionButtons = (actions) => {
-    const { openModal, tabIndex, docId, tabId, docType } = this.props;
+    const { openModal, tabIndex, docId, tabId, docType, pending } = this.props;
     const { isTooltipShow } = this.state;
 
     if (actions && !actions.length) {
@@ -190,6 +191,7 @@ class TableFilter extends PureComponent {
           docId,
           tabId,
           docType,
+          pending,
         }}
         showTooltip={() => this.showTooltip(action.processId)}
         hideTooltip={this.hideTooltip}
@@ -257,6 +259,7 @@ class TableFilter extends PureComponent {
       modalVisible,
       wrapperHeight,
       addNotification,
+      pending,
     } = this.props;
     const { isTooltipShow, shortcutActions } = this.state;
     const tabIndex = fullScreen || modalVisible ? -1 : this.props.tabIndex;
@@ -282,6 +285,7 @@ class TableFilter extends PureComponent {
                 className="btn btn-meta-outline-secondary btn-distance btn-sm"
                 onClick={openTableModal}
                 tabIndex={tabIndex}
+                disabled={pending}
               >
                 {counterpart.translate('window.addNew.caption')}
               </button>
@@ -293,6 +297,7 @@ class TableFilter extends PureComponent {
                 onMouseEnter={() => this.showTooltip(keymap.TOGGLE_QUICK_INPUT)}
                 onMouseLeave={this.hideTooltip}
                 tabIndex={tabIndex}
+                disabled={pending}
               >
                 {isBatchEntry
                   ? quickInputSupport.closeButtonCaption

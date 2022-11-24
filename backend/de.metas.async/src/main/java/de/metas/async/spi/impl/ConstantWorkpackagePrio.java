@@ -26,6 +26,7 @@ package de.metas.async.spi.impl;
 import java.util.HashMap;
 import java.util.Map;
 
+import lombok.EqualsAndHashCode;
 import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
@@ -38,10 +39,9 @@ import de.metas.util.Services;
 
 /**
  * TODO: check if we can do this better (using enum??)
- * 
- * @author ts
  *
  */
+@EqualsAndHashCode
 public class ConstantWorkpackagePrio implements IWorkpackagePrioStrategy
 {
 	private final String prio;
@@ -114,31 +114,6 @@ public class ConstantWorkpackagePrio implements IWorkpackagePrioStrategy
 	public String toString()
 	{
 		return "ConstantWorkpackagePrio[" + prio + "]";
-	}
-
-	@Override
-	public int hashCode()
-	{
-		return new HashcodeBuilder()
-				.append(prio)
-				.toHashcode();
-	}
-
-	@Override
-	public boolean equals(Object obj)
-	{
-		if (this == obj)
-		{
-			return true;
-		}
-		final ConstantWorkpackagePrio other = EqualsBuilder.getOther(this, obj);
-		if (other == null)
-		{
-			return false;
-		}
-		return new EqualsBuilder()
-				.append(prio, other.prio)
-				.isEqual();
 	}
 
 }

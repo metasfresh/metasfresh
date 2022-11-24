@@ -1,8 +1,7 @@
 package de.metas.externalsystem.model;
 
-import org.adempiere.model.ModelColumn;
-
 import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for ExternalSystem_Config_Shopware6
  *  @author metasfresh (generated) 
@@ -165,7 +164,7 @@ public interface I_ExternalSystem_Config_Shopware6
 	String COLUMNNAME_ExternalSystem_Config_ID = "ExternalSystem_Config_ID";
 
 	/**
-	 * Set ExternalSystem_Config_Shopware6.
+	 * Set External system config Shopware6.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -174,7 +173,7 @@ public interface I_ExternalSystem_Config_Shopware6
 	void setExternalSystem_Config_Shopware6_ID (int ExternalSystem_Config_Shopware6_ID);
 
 	/**
-	 * Get ExternalSystem_Config_Shopware6.
+	 * Get External system config Shopware6.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -276,29 +275,6 @@ public interface I_ExternalSystem_Config_Shopware6
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
-	 * Set Customer JSON-path.
-	 * JSON-Path expression that specifies where within a customized Shopware order the permanent customer-ID can be found. IMPORTANT: if set, then orders without a respective value are ignored!
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setJSONPathConstantBPartnerID (@Nullable java.lang.String JSONPathConstantBPartnerID);
-
-	/**
-	 * Get Customer JSON-path.
-	 * JSON-Path expression that specifies where within a customized Shopware order the permanent customer-ID can be found. IMPORTANT: if set, then orders without a respective value are ignored!
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getJSONPathConstantBPartnerID();
-
-	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_JSONPathConstantBPartnerID = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "JSONPathConstantBPartnerID", null);
-	String COLUMNNAME_JSONPathConstantBPartnerID = "JSONPathConstantBPartnerID";
-
-	/**
 	 * Set Address JSON-path.
 	 * JSON-Path expression that specifies where within a customized Shopware address the permanent address-ID can be found. IMPORTANT: if set, then addresses without a respective value are ignored!
 	 *
@@ -322,6 +298,52 @@ public interface I_ExternalSystem_Config_Shopware6
 	String COLUMNNAME_JSONPathConstantBPartnerLocationID = "JSONPathConstantBPartnerLocationID";
 
 	/**
+	 * Set Recipient EMail JSON Path.
+	 * JSON path specifying where within a customised Shopware address the delivery recipient's email address can be read, if set there. This value is transferred to the address master data and to the order.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setJSONPathEmail (@Nullable java.lang.String JSONPathEmail);
+
+	/**
+	 * Get Recipient EMail JSON Path.
+	 * JSON path specifying where within a customised Shopware address the delivery recipient's email address can be read, if set there. This value is transferred to the address master data and to the order.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getJSONPathEmail();
+
+	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_JSONPathEmail = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "JSONPathEmail", null);
+	String COLUMNNAME_JSONPathEmail = "JSONPathEmail";
+
+	/**
+	 * Set Business partner mapping - metasfresh-ID JSON-Path.
+	 * JSON path that specifies where within a customized Shopware order the customer's metasfresh ID (C_BPartner_ID) can be read.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setJSONPathMetasfreshID (@Nullable java.lang.String JSONPathMetasfreshID);
+
+	/**
+	 * Get Business partner mapping - metasfresh-ID JSON-Path.
+	 * JSON path that specifies where within a customized Shopware order the customer's metasfresh ID (C_BPartner_ID) can be read.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getJSONPathMetasfreshID();
+
+	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_JSONPathMetasfreshID = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "JSONPathMetasfreshID", null);
+	String COLUMNNAME_JSONPathMetasfreshID = "JSONPathMetasfreshID";
+
+	/**
 	 * Set Sales rep JSON-path.
 	 * JSON-Path expression that specifies where within a customized Shopware order the sales rep's search-key can be found.
 	 *
@@ -343,6 +365,29 @@ public interface I_ExternalSystem_Config_Shopware6
 
 	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_JSONPathSalesRepID = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "JSONPathSalesRepID", null);
 	String COLUMNNAME_JSONPathSalesRepID = "JSONPathSalesRepID";
+
+	/**
+	 * Set Business partner mapping - Shopware6-ID JSON-Path.
+	 * JSON path that specifies where within a customized Shopware order the customer's Shopware6 reference can be read.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setJSONPathShopwareID (@Nullable java.lang.String JSONPathShopwareID);
+
+	/**
+	 * Get Business partner mapping - Shopware6-ID JSON-Path.
+	 * JSON path that specifies where within a customized Shopware order the customer's Shopware6 reference can be read.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getJSONPathShopwareID();
+
+	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_JSONPathShopwareID = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "JSONPathShopwareID", null);
+	String COLUMNNAME_JSONPathShopwareID = "JSONPathShopwareID";
 
 	/**
 	 * Set Freight cost product (normal VAT).
@@ -409,6 +454,29 @@ public interface I_ExternalSystem_Config_Shopware6
 	int getM_PriceList_ID();
 
 	String COLUMNNAME_M_PriceList_ID = "M_PriceList_ID";
+
+	/**
+	 * Set Product Lookup.
+	 * Determines how the product for a Shopware line-item is determined in metasfresh.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setProductLookup (java.lang.String ProductLookup);
+
+	/**
+	 * Get Product Lookup.
+	 * Determines how the product for a Shopware line-item is determined in metasfresh.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.lang.String getProductLookup();
+
+	ModelColumn<I_ExternalSystem_Config_Shopware6, Object> COLUMN_ProductLookup = new ModelColumn<>(I_ExternalSystem_Config_Shopware6.class, "ProductLookup", null);
+	String COLUMNNAME_ProductLookup = "ProductLookup";
 
 	/**
 	 * Get Updated.

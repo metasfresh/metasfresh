@@ -3,19 +3,19 @@ package de.metas.ui.web.pickingV2.productsToPick.rows;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.HuPackingInstructionsId;
+import de.metas.handlingunits.picking.PackToSpec;
 import de.metas.handlingunits.picking.PickFrom;
 import de.metas.handlingunits.picking.PickingCandidate;
 import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.candidate.commands.PickHUResult;
+import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
+import de.metas.handlingunits.picking.config.PickingConfigV2;
 import de.metas.handlingunits.picking.requests.PickRequest;
 import de.metas.handlingunits.picking.requests.PickRequest.IssueToPickingOrderRequest;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
-import de.metas.ui.web.pickingV2.config.PickingConfigRepositoryV2;
-import de.metas.ui.web.pickingV2.config.PickingConfigV2;
 import de.metas.ui.web.pickingV2.packageable.PackageableRow;
 import de.metas.ui.web.pickingV2.productsToPick.rows.factory.ProductsToPickRowsDataFactory;
 import de.metas.ui.web.window.datatypes.DocumentId;
@@ -103,7 +103,7 @@ public class ProductsToPickRowsService
 		{
 			final ImmutableList<IssueToPickingOrderRequest> issues = row.getIncludedRows()
 					.stream()
-					.map(issueRow -> toIssueToPickingOrderRequest(issueRow))
+					.map(ProductsToPickRowsService::toIssueToPickingOrderRequest)
 					.collect(ImmutableList.toImmutableList());
 
 			return PickRequest.builder()
@@ -168,13 +168,13 @@ public class ProductsToPickRowsService
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	public ImmutableList<WebuiPickHUResult> setPackingInstruction(final List<ProductsToPickRow> selectedRows, final HuPackingInstructionsId huPackingInstructionsId)
+	public ImmutableList<WebuiPickHUResult> setPackingInstruction(final List<ProductsToPickRow> selectedRows, final PackToSpec packToSpec)
 	{
 		final Map<PickingCandidateId, DocumentId> rowIdsByPickingCandidateId = streamRowsEligibleForPacking(selectedRows)
 				.collect(ImmutableMap.toImmutableMap(ProductsToPickRow::getPickingCandidateId, ProductsToPickRow::getId));
 
 		final Set<PickingCandidateId> pickingCandidateIds = rowIdsByPickingCandidateId.keySet();
-		final List<PickingCandidate> pickingCandidates = pickingCandidateService.setHuPackingInstructionId(pickingCandidateIds, huPackingInstructionsId);
+		final List<PickingCandidate> pickingCandidates = pickingCandidateService.setHuPackingInstructionId(pickingCandidateIds, packToSpec);
 
 		return pickingCandidates.stream()
 				.map(cand -> WebuiPickHUResult.of(rowIdsByPickingCandidateId.get(cand.getId()), cand))

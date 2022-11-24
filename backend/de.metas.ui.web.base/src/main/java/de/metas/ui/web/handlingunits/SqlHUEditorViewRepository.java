@@ -3,6 +3,7 @@ package de.metas.ui.web.handlingunits;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUStatusBL;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -17,6 +18,7 @@ import de.metas.handlingunits.storage.IHUStorage;
 import de.metas.handlingunits.storage.IHUStorageFactory;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
+import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.order.OrderLineId;
 import de.metas.product.IProductBL;
@@ -265,9 +267,8 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 				.setHUStatusDisplay(huStatusDisplay)
 				.setHUStatus(hu.getHUStatus())
 				.setReservedForOrderLine(orderLineIdWithReservation.orElse(null))
-
-				.setPackingInfo(extractPackingInfo(hu, huRecordType));
-
+				.setPackingInfo(extractPackingInfo(hu, huRecordType))
+				.setClearanceStatus(getHUClearanceStatusLookupValue(hu));
 		//
 		// Acquire Best Before Date if required
 		if (showBestBeforeDate)
@@ -414,7 +415,7 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 				.setProduct(createProductLookupValue(productId))
 				.setUOM(createUOMLookupValue(huStorage.getC_UOM()))
 				.setQtyCU(huStorage.getQty().toBigDecimal())
-				//
+				.setClearanceStatus(getHUClearanceStatusLookupValue(hu))
 				.build();
 	}
 
@@ -620,7 +621,14 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 			final ViewRowIdsOrderedSelection fromSelection,
 			final DocumentQueryOrderByList orderBys)
 	{
-		return viewSelectionFactory.createOrderedSelectionFromSelection(viewEvalCtx, fromSelection, DocumentFilterList.EMPTY, orderBys, SqlDocumentFilterConverterContext.EMPTY);
+		return viewSelectionFactory.createOrderedSelectionFromSelection(
+				viewEvalCtx,
+				fromSelection,
+				DocumentFilterList.EMPTY,
+				orderBys,
+				SqlDocumentFilterConverterContext.builder()
+						.userRolePermissionsKey(viewEvalCtx.getPermissionsKey())
+						.build());
 	}
 
 	@Override
@@ -664,6 +672,21 @@ public class SqlHUEditorViewRepository implements HUEditorViewRepository
 	{
 		InterfaceWrapperHelper.loadByRepoIdAwares(huIds, I_M_HU.class); // caches the given HUs with one SQL query
 		huReservationService.warmup(huIds);
+	}
+
+	@Nullable
+	private JSONLookupValue getHUClearanceStatusLookupValue(@NonNull final I_M_HU hu)
+	{
+		final ClearanceStatus huClearanceStatus = ClearanceStatus.ofNullableCode(hu.getClearanceStatus());
+
+		if (huClearanceStatus == null)
+		{
+			return null;
+		}
+
+		final ITranslatableString huClearanceStatusCaption = handlingUnitsBL.getClearanceStatusCaption(huClearanceStatus);
+
+		return JSONLookupValue.of(huClearanceStatus.getCode(), huClearanceStatusCaption.translate(Env.getAD_Language()));
 	}
 
 }

@@ -100,6 +100,8 @@ public class AdvancedSearchBPartnerProcessor implements AdvancedSearchDescriptor
 				return I_C_Order.COLUMNNAME_DropShip_Location_ID;
 			case I_C_Order.COLUMNNAME_Pay_BPartner_ID:
 				return I_C_Order.COLUMNNAME_Pay_Location_ID;
+			case I_C_Order.COLUMNNAME_C_BPartner_SalesRep_ID:
+				return I_C_Order.COLUMNNAME_C_BPartner_SalesRep_ID;
 			default:
 				throw new AdempiereException("Can't find Location field for Bpartner field: " + bpartnerFieldName);
 		}
@@ -116,6 +118,8 @@ public class AdvancedSearchBPartnerProcessor implements AdvancedSearchDescriptor
 				return I_C_Order.COLUMNNAME_Bill_User_ID;
 			case I_C_Order.COLUMNNAME_DropShip_BPartner_ID:
 				return I_C_Order.COLUMNNAME_DropShip_User_ID;
+			case I_C_Order.COLUMNNAME_C_BPartner_SalesRep_ID:
+				return I_C_Order.COLUMNNAME_C_BPartner_SalesRep_ID;
 			default:
 				throw new AdempiereException("Can't find Location field for Bpartner field: " + bpartnerFieldName);
 		}

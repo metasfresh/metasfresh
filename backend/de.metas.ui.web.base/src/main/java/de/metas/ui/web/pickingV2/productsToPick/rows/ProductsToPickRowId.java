@@ -3,7 +3,7 @@ package de.metas.ui.web.pickingV2.productsToPick.rows;
 import javax.annotation.Nullable;
 
 import de.metas.handlingunits.HuId;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import de.metas.product.ProductId;

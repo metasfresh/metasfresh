@@ -25,6 +25,7 @@ package de.metas.ui.web.picking.packageable.filters;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerId;
+import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
@@ -34,17 +35,21 @@ import de.metas.handlingunits.edi.EDIProductLookup;
 import de.metas.handlingunits.edi.EDIProductLookupService;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.qrcodes.model.HUQRCode;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.storage.IHUProductStorage;
 import de.metas.inoutcandidate.model.I_M_Packageable_V;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.ui.web.view.descriptor.SqlAndParams;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.ISqlQueryFilter;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.PlainContextAware;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
@@ -63,11 +68,14 @@ public class ProductBarcodeFilterServicesFacade
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final EDIProductLookupService ediProductLookupService;
+	private final HUQRCodesService huQRCodesService;
 
 	public ProductBarcodeFilterServicesFacade(
-			@NonNull final EDIProductLookupService ediProductLookupService)
+			@NonNull final EDIProductLookupService ediProductLookupService,
+			@NonNull final HUQRCodesService huQRCodesService)
 	{
 		this.ediProductLookupService = ediProductLookupService;
+		this.huQRCodesService = huQRCodesService;
 	}
 
 	public ICompositeQueryFilter<I_M_Packageable_V> createCompositeQueryFilter()
@@ -93,13 +101,30 @@ public class ProductBarcodeFilterServicesFacade
 		return productDAO.getProductIdByBarcode(barcode, clientId);
 	}
 
-	public Optional<I_M_HU> getHUByBarcode(@NonNull final String barcode)
+	public Optional<I_M_HU> getHUByBarcode(@NonNull final String barcodeStringParam)
 	{
-		final I_M_HU hu = handlingUnitsDAO.createHUQueryBuilder()
-				.setHUStatus(X_M_HU.HUSTATUS_Active)
-				.setOnlyWithBarcode(barcode)
-				.firstOnly();
-		return Optional.ofNullable(hu);
+		final String barcodeString = StringUtils.trimBlankToNull(barcodeStringParam);
+		if (barcodeString == null)
+		{
+			// shall not happen
+			throw new AdempiereException("No barcode provided");
+		}
+
+		final GlobalQRCode globalQRCode = GlobalQRCode.parse(barcodeString).orNullIfError();
+		if(globalQRCode != null)
+		{
+			final HUQRCode huQRCode = HUQRCode.fromGlobalQRCode(globalQRCode);
+			return huQRCodesService.getHuIdByQRCodeIfExists(huQRCode)
+					.map(handlingUnitsDAO::getById);
+		}
+		else
+		{
+			final I_M_HU hu = handlingUnitsDAO.createHUQueryBuilder()
+					.setHUStatus(X_M_HU.HUSTATUS_Active)
+					.setOnlyWithBarcode(barcodeString)
+					.firstOnly();
+			return Optional.ofNullable(hu);
+		}
 	}
 
 	public Optional<I_M_HU> getHUBySSCC18(@NonNull final String sscc18)
@@ -161,18 +186,4 @@ public class ProductBarcodeFilterServicesFacade
 				.map(IHUProductStorage::getProductId)
 				.collect(ImmutableSet.toImmutableSet());
 	}
-
-	private Optional<SqlAndParams> createSqlWhereClauseByProductIds(@Nullable final ImmutableSet<ProductId> productIds)
-	{
-		if (productIds == null || productIds.isEmpty())
-		{
-			return Optional.empty();
-		}
-
-		final ICompositeQueryFilter<I_M_Packageable_V> filter = queryBL.createCompositeQueryFilter(I_M_Packageable_V.class)
-				.addInArrayFilter(I_M_Packageable_V.COLUMNNAME_M_Product_ID, productIds);
-
-		return Optional.of(toSqlAndParams(filter));
-	}
-
 }
