@@ -458,9 +458,9 @@ public class AttributeSetInstanceBL implements IAttributeSetInstanceBL
 	}
 
 	@Override
-	public String getAttributeValueOrNull(@NonNull AttributeCode attributeCode, @NonNull final AttributeSetInstanceId asiId)
+	@Nullable
+	public String getAttributeValueOrNull(@NonNull final AttributeCode attributeCode, @NonNull final AttributeSetInstanceId asiId)
 	{
-
 		final AttributeId attributeId = attributeDAO.retrieveAttributeIdByValueOrNull(attributeCode);
 		if (attributeId == null)
 		{
