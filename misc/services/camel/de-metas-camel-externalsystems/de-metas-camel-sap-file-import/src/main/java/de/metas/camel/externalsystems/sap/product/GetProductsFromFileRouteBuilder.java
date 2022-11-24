@@ -125,7 +125,10 @@ public class GetProductsFromFileRouteBuilder extends IdAwareRouteBuilder
 	@NonNull
 	private ProductUpsertProcessor getProductUpsertProcessor()
 	{
-		final PInstanceLogger pInstanceLogger = PInstanceLogger.of(processLogger);
+		final PInstanceLogger pInstanceLogger = PInstanceLogger.builder()
+				.processLogger(processLogger)
+				.pInstanceId(enabledByExternalSystemRequest.getAdPInstanceId())
+				.build();
 
 		return new ProductUpsertProcessor(enabledByExternalSystemRequest, pInstanceLogger, externalMappingsHolder);
 	}
