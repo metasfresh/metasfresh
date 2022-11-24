@@ -369,7 +369,6 @@ public class MMovement extends X_M_Movement implements IDocument
 			{
 				final IStorageBL storageBL = Services.get(IStorageBL.class);
 
-
 					//Update Storage
 					final WarehouseId warehouseId = warehousesRepo.getWarehouseIdByLocatorRepoId(line.getM_Locator_ID());
 					storageBL.add(getCtx(),
@@ -390,27 +389,27 @@ public class MMovement extends X_M_Movement implements IDocument
 
 				//
 				final MTransaction trxFrom = new MTransaction(getCtx(),
-							line.getAD_Org_ID(),
-							MTransaction.MOVEMENTTYPE_MovementFrom,
-							line.getM_Locator_ID(),
-							line.getM_Product_ID(),
-							line.getM_AttributeSetInstance_ID(),
-							line.getMovementQty().negate(),
-							getMovementDate(),
-							get_TrxName());
-					trxFrom.setM_MovementLine_ID(line.getM_MovementLine_ID());
+						line.getAD_Org_ID(),
+						MTransaction.MOVEMENTTYPE_MovementFrom,
+						line.getM_Locator_ID(),
+						line.getM_Product_ID(),
+						line.getM_AttributeSetInstance_ID(),
+						line.getMovementQty().negate(),
+						getMovementDate(),
+						get_TrxName());
+				trxFrom.setM_MovementLine_ID(line.getM_MovementLine_ID());
 					InterfaceWrapperHelper.save(trxFrom);
 				//
 				final MTransaction trxTo = new MTransaction(getCtx(),
-							line.getAD_Org_ID(),
-							MTransaction.MOVEMENTTYPE_MovementTo,
-							line.getM_LocatorTo_ID(),
-							line.getM_Product_ID(),
-							line.getM_AttributeSetInstanceTo_ID(),
-							line.getMovementQty(),
-							getMovementDate(),
-							get_TrxName());
-					trxTo.setM_MovementLine_ID(line.getM_MovementLine_ID());
+						line.getAD_Org_ID(),
+						MTransaction.MOVEMENTTYPE_MovementTo,
+						line.getM_LocatorTo_ID(),
+						line.getM_Product_ID(),
+						line.getM_AttributeSetInstanceTo_ID(),
+						line.getMovementQty(),
+						getMovementDate(),
+						get_TrxName());
+				trxTo.setM_MovementLine_ID(line.getM_MovementLine_ID());
 					InterfaceWrapperHelper.save(trxTo);
 			} // product stock
 		}    //	for all lines
