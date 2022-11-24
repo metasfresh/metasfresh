@@ -1021,5 +1021,4 @@ public class AttributeDAO implements IAttributeDAO
 			return getAttributeIdByCode(AttributeCode.ofString(attributeCode));
 		}
 	}
-
 }
