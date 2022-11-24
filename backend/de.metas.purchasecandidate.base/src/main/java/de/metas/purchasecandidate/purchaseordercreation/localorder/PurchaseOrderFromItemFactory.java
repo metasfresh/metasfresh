@@ -86,7 +86,6 @@ import java.util.Set;
 
 	private final IdentityHashMap<PurchaseOrderItem, OrderLineBuilder> purchaseItem2OrderLine = new IdentityHashMap<>();
 	private final OrderUserNotifications userNotifications;
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Builder
 	private PurchaseOrderFromItemFactory(

@@ -10,14 +10,11 @@ import de.metas.order.OrderAndLineId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
-import de.metas.product.acct.api.ActivityId;
 import de.metas.purchasecandidate.grossprofit.PurchaseProfitInfo;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem;
-import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseErrorItem.PurchaseErrorItemBuilder;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItem;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseItemId;
 import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem;
-import de.metas.purchasecandidate.purchaseordercreation.remotepurchaseitem.PurchaseOrderItem.PurchaseOrderItemBuilder;
 import de.metas.quantity.Quantity;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
@@ -456,7 +453,7 @@ public class PurchaseCandidate
 	public static final class ErrorItemBuilder
 	{
 		private final PurchaseCandidate parent;
-		private final PurchaseErrorItemBuilder innerBuilder;
+		private final PurchaseErrorItem.PurchaseErrorItemBuilder innerBuilder;
 
 		private ErrorItemBuilder(@NonNull final PurchaseCandidate parent)
 		{
@@ -506,7 +503,7 @@ public class PurchaseCandidate
 	public static final class OrderItemBuilder
 	{
 		private final PurchaseCandidate parent;
-		private final PurchaseOrderItemBuilder innerBuilder;
+		private final PurchaseOrderItem.PurchaseOrderItemBuilder innerBuilder;
 
 		private OrderItemBuilder(@NonNull final PurchaseCandidate parent)
 		{
