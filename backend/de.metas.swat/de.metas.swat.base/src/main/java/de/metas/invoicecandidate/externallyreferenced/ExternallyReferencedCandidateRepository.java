@@ -129,6 +129,9 @@ public class ExternallyReferencedCandidateRepository
 			icRecord.setC_Tax_ID(ic.getTaxId().getRepoId());
 
 			icRecord.setInvoiceRule(ic.getInvoiceRule().getCode());
+
+			icRecord.setPriceEntered_Override(ic.getPriceEnteredOverride().toBigDecimal());
+			icRecord.setDiscount_Override(ic.getDiscountOverride().toBigDecimal());
 		}
 		else
 		{
