@@ -27,6 +27,8 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
+import de.metas.cache.model.CacheInvalidateMultiRequest;
+import org.adempiere.util.lang.impl.TableRecordReferenceSet;
 import org.compiere.model.I_M_Product;
 import org.springframework.stereotype.Service;
 
@@ -46,7 +48,6 @@ import lombok.NonNull;
  * The actual work is done by an internal instance of {@link DefaultViewsRepositoryStorage}.
  * We store {@link MaterialCockpitView}s inside this dedicated storage,
  * because we need to invalidate those views on changes in two different tables (the standard framework could handle only one).
- *
  */
 @Service
 public class MaterialCockpitViewsIndexStorage implements IViewsIndexStorage
@@ -56,17 +57,33 @@ public class MaterialCockpitViewsIndexStorage implements IViewsIndexStorage
 	public MaterialCockpitViewsIndexStorage()
 	{
 		CacheMgt.get().addCacheResetListener(I_MD_Cockpit.Table_Name, cacheInvalidateRequest -> {
-			streamAllViews().forEach(IView::invalidateAll);
+			notifyViewOfCacheReset(cacheInvalidateRequest);
 			return 0;
 		});
 		CacheMgt.get().addCacheResetListener(I_MD_Stock.Table_Name, cacheInvalidateRequest -> {
-			streamAllViews().forEach(IView::invalidateAll);
+			notifyViewOfCacheReset(cacheInvalidateRequest);
 			return 0;
 		});
 		CacheMgt.get().addCacheResetListener(I_M_Product.Table_Name, cacheInvalidateRequest -> {
-			streamAllViews().forEach(IView::invalidateAll);
+			notifyViewOfCacheReset(cacheInvalidateRequest);
 			return 0;
 		});
+	}
+
+	private void notifyViewOfCacheReset(@NonNull final CacheInvalidateMultiRequest cacheInvalidateRequest)
+	{
+		for (final IView view : getAllViews())
+		{
+			if (cacheInvalidateRequest.isResetAll())
+			{
+				view.invalidateAll();
+			}
+			else
+			{
+				final TableRecordReferenceSet recordsEffective = cacheInvalidateRequest.getRecordsEffective();
+				view.notifyRecordsChanged(recordsEffective, true);
+			}
+		}
 	}
 
 	/**
@@ -82,7 +99,6 @@ public class MaterialCockpitViewsIndexStorage implements IViewsIndexStorage
 	public void put(final IView view)
 	{
 		defaultViewsRepositoryStorage.put(view);
-
 	}
 
 	@Nullable
@@ -109,5 +125,4 @@ public class MaterialCockpitViewsIndexStorage implements IViewsIndexStorage
 	{
 		defaultViewsRepositoryStorage.invalidateView(viewId);
 	}
-
 }

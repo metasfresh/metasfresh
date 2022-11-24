@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -209734604L;
+	private static final long serialVersionUID = -1957217738L;
 
     /** Standard Constructor */
     public X_C_Invoice (final Properties ctx, final int C_Invoice_ID, @Nullable final String trxName)
@@ -33,6 +33,21 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	@Override
+	public void setAD_InputDataSource_ID (final int AD_InputDataSource_ID)
+	{
+		if (AD_InputDataSource_ID < 1) 
+			set_Value (COLUMNNAME_AD_InputDataSource_ID, null);
+		else 
+			set_Value (COLUMNNAME_AD_InputDataSource_ID, AD_InputDataSource_ID);
+	}
+
+	@Override
+	public int getAD_InputDataSource_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_AD_InputDataSource_ID);
 	}
 
 	@Override
@@ -366,6 +381,46 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
+	public void setChargeAmt (final @Nullable BigDecimal ChargeAmt)
+	{
+		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
+	}
+
+	@Override
+	public BigDecimal getChargeAmt() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ChargeAmt);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public org.compiere.model.I_C_Incoterms getC_Incoterms()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Incoterms_ID, org.compiere.model.I_C_Incoterms.class);
+	}
+
+	@Override
+	public void setC_Incoterms(final org.compiere.model.I_C_Incoterms C_Incoterms)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Incoterms_ID, org.compiere.model.I_C_Incoterms.class, C_Incoterms);
+	}
+
+	@Override
+	public void setC_Incoterms_ID (final int C_Incoterms_ID)
+	{
+		if (C_Incoterms_ID < 1) 
+			set_Value (COLUMNNAME_C_Incoterms_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Incoterms_ID, C_Incoterms_ID);
+	}
+
+	@Override
+	public int getC_Incoterms_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Incoterms_ID);
+	}
+
+	@Override
 	public void setC_Invoice_ID (final int C_Invoice_ID)
 	{
 		if (C_Invoice_ID < 1) 
@@ -378,6 +433,18 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	public int getC_Invoice_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Invoice_ID);
+	}
+
+	@Override
+	public void setCopyFrom (final @Nullable java.lang.String CopyFrom)
+	{
+		set_Value (COLUMNNAME_CopyFrom, CopyFrom);
+	}
+
+	@Override
+	public java.lang.String getCopyFrom() 
+	{
+		return get_ValueAsString(COLUMNNAME_CopyFrom);
 	}
 
 	@Override
@@ -450,31 +517,6 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	public int getC_Project_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Project_ID);
-	}
-
-	@Override
-	public void setChargeAmt (final @Nullable BigDecimal ChargeAmt)
-	{
-		set_Value (COLUMNNAME_ChargeAmt, ChargeAmt);
-	}
-
-	@Override
-	public BigDecimal getChargeAmt() 
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ChargeAmt);
-		return bd != null ? bd : BigDecimal.ZERO;
-	}
-
-	@Override
-	public void setCopyFrom (final @Nullable java.lang.String CopyFrom)
-	{
-		set_Value (COLUMNNAME_CopyFrom, CopyFrom);
-	}
-
-	@Override
-	public java.lang.String getCopyFrom() 
-	{
-		return get_ValueAsString(COLUMNNAME_CopyFrom);
 	}
 
 	@Override
@@ -742,6 +784,18 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	}
 
 	@Override
+	public void setEMail (final @Nullable java.lang.String EMail)
+	{
+		set_Value (COLUMNNAME_EMail, EMail);
+	}
+
+	@Override
+	public java.lang.String getEMail() 
+	{
+		return get_ValueAsString(COLUMNNAME_EMail);
+	}
+
+	@Override
 	public void setExternalId (final @Nullable java.lang.String ExternalId)
 	{
 		set_Value (COLUMNNAME_ExternalId, ExternalId);
@@ -778,49 +832,6 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
-	/** 
-	 * Incoterm AD_Reference_ID=501599
-	 * Reference name: Incoterms
-	 */
-	public static final int INCOTERM_AD_Reference_ID=501599;
-	/** EXW_AbWerk = EXW */
-	public static final String INCOTERM_EXW_AbWerk = "EXW";
-	/** FCA_FreiSpediteur = FCA */
-	public static final String INCOTERM_FCA_FreiSpediteur = "FCA";
-	/** FAS_FreiLaengsseitsSchiff = FAS */
-	public static final String INCOTERM_FAS_FreiLaengsseitsSchiff = "FAS";
-	/** FOB_FreiAnBord = FOB */
-	public static final String INCOTERM_FOB_FreiAnBord = "FOB";
-	/** CFR_KostenUndFracht = CFR */
-	public static final String INCOTERM_CFR_KostenUndFracht = "CFR";
-	/** CIF_KostenVersicherungUndFracht = CIF */
-	public static final String INCOTERM_CIF_KostenVersicherungUndFracht = "CIF";
-	/** CPT_FrachtPortoBezahltBis = CPT */
-	public static final String INCOTERM_CPT_FrachtPortoBezahltBis = "CPT";
-	/** CIP_FrachtPortoUndVersicherungBezahltBis = CIP */
-	public static final String INCOTERM_CIP_FrachtPortoUndVersicherungBezahltBis = "CIP";
-	/** DAF_FreiGrenze = DAF */
-	public static final String INCOTERM_DAF_FreiGrenze = "DAF";
-	/** DES_FreiAbSchiff = DES */
-	public static final String INCOTERM_DES_FreiAbSchiff = "DES";
-	/** DEQ_FreiAbKai = DEQ */
-	public static final String INCOTERM_DEQ_FreiAbKai = "DEQ";
-	/** DDU_FreiUnverzollt = DDU */
-	public static final String INCOTERM_DDU_FreiUnverzollt = "DDU";
-	/** DDP_Verzollt = DDP */
-	public static final String INCOTERM_DDP_Verzollt = "DDP";
-	@Override
-	public void setIncoterm (final @Nullable java.lang.String Incoterm)
-	{
-		set_Value (COLUMNNAME_Incoterm, Incoterm);
-	}
-
-	@Override
-	public java.lang.String getIncoterm() 
-	{
-		return get_ValueAsString(COLUMNNAME_Incoterm);
-	}
-
 	@Override
 	public void setIncotermLocation (final @Nullable java.lang.String IncotermLocation)
 	{
@@ -831,18 +842,6 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	public java.lang.String getIncotermLocation() 
 	{
 		return get_ValueAsString(COLUMNNAME_IncotermLocation);
-	}
-
-	@Override
-	public void setInvoice_includedTab (final @Nullable java.lang.String Invoice_includedTab)
-	{
-		set_Value (COLUMNNAME_Invoice_includedTab, Invoice_includedTab);
-	}
-
-	@Override
-	public java.lang.String getInvoice_includedTab() 
-	{
-		return get_ValueAsString(COLUMNNAME_Invoice_includedTab);
 	}
 
 	/** 
@@ -868,6 +867,18 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	public java.lang.String getInvoiceCollectionType() 
 	{
 		return get_ValueAsString(COLUMNNAME_InvoiceCollectionType);
+	}
+
+	@Override
+	public void setInvoice_includedTab (final @Nullable java.lang.String Invoice_includedTab)
+	{
+		set_Value (COLUMNNAME_Invoice_includedTab, Invoice_includedTab);
+	}
+
+	@Override
+	public java.lang.String getInvoice_includedTab() 
+	{
+		return get_ValueAsString(COLUMNNAME_Invoice_includedTab);
 	}
 
 	@Override
@@ -1092,6 +1103,12 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	public static final String PAYMENTRULE_Mixed = "M";
 	/** PayPal = L */
 	public static final String PAYMENTRULE_PayPal = "L";
+	/** PayPal Extern = V */
+	public static final String PAYMENTRULE_PayPalExtern = "V";
+	/** Kreditkarte Extern = U */
+	public static final String PAYMENTRULE_KreditkarteExtern = "U";
+	/** Sofortüberweisung = R */
+	public static final String PAYMENTRULE_Sofortueberweisung = "R";
 	@Override
 	public void setPaymentRule (final java.lang.String PaymentRule)
 	{
@@ -1219,6 +1236,17 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	public int getReversal_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Reversal_ID);
+	}
+
+	@Override
+	public void setSales_Invoice_Count (final int Sales_Invoice_Count)
+	{
+		throw new IllegalArgumentException ("Sales_Invoice_Count is virtual column");	}
+
+	@Override
+	public int getSales_Invoice_Count() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Sales_Invoice_Count);
 	}
 
 	@Override

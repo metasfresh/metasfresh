@@ -17,7 +17,7 @@ DECLARE
     v_address           text;
 BEGIN
 
-    SELECT Count(distinct io.M_InOut_ID)::NUMERIC
+    SELECT Count(distinct io.bpartneraddress)::NUMERIC
     INTO v_rows_no
     FROM C_Customs_Invoice_Line cil
              JOIN M_InOutLine_To_C_Customs_Invoice_Line alloc
@@ -44,4 +44,4 @@ END;
 $$
     LANGUAGE 'plpgsql';
 
-COMMENT ON FUNCTION de_metas_endcustomer_fresh_reports.getCustomsInvoiceShipmentAddressorNull(numeric) IS 'Returns the inout address if is there only one inout linked to customs invoice';
+COMMENT ON FUNCTION de_metas_endcustomer_fresh_reports.getCustomsInvoiceShipmentAddressorNull(numeric) IS 'Returns the inout address if all the inouts linked to customs invoice have the same address';

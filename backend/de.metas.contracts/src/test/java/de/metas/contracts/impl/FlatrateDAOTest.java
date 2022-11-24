@@ -63,7 +63,7 @@ public class FlatrateDAOTest extends ContractsTestBase
 
 		final I_C_Flatrate_Matching matching = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Matching.class);
 		matching.setC_Flatrate_Conditions(fc);
-		matching.setM_Product(product);
+		matching.setM_Product_ID(product.getM_Product_ID());
 		InterfaceWrapperHelper.save(matching);
 
 		final I_C_Flatrate_Term ft = InterfaceWrapperHelper.newInstance(I_C_Flatrate_Term.class);

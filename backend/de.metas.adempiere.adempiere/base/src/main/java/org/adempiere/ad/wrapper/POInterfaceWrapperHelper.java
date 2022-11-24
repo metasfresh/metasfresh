@@ -12,6 +12,8 @@ import org.slf4j.Logger;
 
 import de.metas.logging.LogManager;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -214,6 +216,7 @@ public class POInterfaceWrapperHelper extends AbstractInterfaceWrapperHelper
 		return POWrapper.isNull(model, columnName);
 	}
 
+	@Nullable
 	@Override
 	public <T> T getDynAttribute(final Object model, final String attributeName)
 	{

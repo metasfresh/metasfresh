@@ -22,7 +22,7 @@
 
 package de.metas.camel.externalsystems.shopware6.order.processor;
 
-import de.metas.camel.externalsystems.shopware6.ProcessorHelper;
+import de.metas.camel.externalsystems.common.ProcessorHelper;
 import de.metas.camel.externalsystems.shopware6.order.ImportOrdersRouteContext;
 import de.metas.common.ordercandidates.v2.request.JsonOLCandClearRequest;
 import org.apache.camel.Exchange;

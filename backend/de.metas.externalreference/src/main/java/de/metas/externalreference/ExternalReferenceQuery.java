@@ -23,12 +23,15 @@
 package de.metas.externalreference;
 
 import de.metas.organization.OrgId;
+import de.metas.rest_api.utils.MetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
 
 @Value
-@Builder
 public class ExternalReferenceQuery
 {
 	@NonNull
@@ -38,8 +41,57 @@ public class ExternalReferenceQuery
 	IExternalSystem externalSystem;
 
 	@NonNull
+	IExternalReferenceType externalReferenceType;
+
+	@Nullable
 	String externalReference;
 
-	@NonNull
-	IExternalReferenceType externalReferenceType;
+	@Nullable
+	MetasfreshId metasfreshId;
+
+	@Builder
+	public ExternalReferenceQuery(
+			@NonNull final OrgId orgId,
+			@NonNull final IExternalSystem externalSystem,
+			@NonNull final IExternalReferenceType externalReferenceType,
+			@Nullable final String externalReference,
+			@Nullable final MetasfreshId metasfreshId)
+	{
+		if (externalReference == null && metasfreshId == null)
+		{
+			throw new AdempiereException("externalReference && metasfreshId cannot be both null!");
+		}
+
+		if (externalReference != null && metasfreshId != null)
+		{
+			throw new AdempiereException("Only one of externalReference && metasfreshId must be provided!");
+		}
+
+		this.orgId = orgId;
+		this.externalSystem = externalSystem;
+		this.externalReferenceType = externalReferenceType;
+		this.externalReference = externalReference;
+		this.metasfreshId = metasfreshId;
+	}
+
+	public boolean matches(@NonNull final ExternalReference externalReference)
+	{
+		boolean matches = this.externalReferenceType.equals(externalReference.getExternalReferenceType())
+				&& this.orgId.equals(externalReference.getOrgId())
+				&& this.externalSystem.equals(externalReference.getExternalSystem());
+
+		if (this.externalReference != null)
+		{
+			matches = matches
+					&& this.externalReference.equals(externalReference.getExternalReference());
+		}
+
+		if (this.metasfreshId != null)
+		{
+			matches = matches
+					&& this.metasfreshId.getValue() == externalReference.getRecordId();
+		}
+
+		return matches;
+	}
 }

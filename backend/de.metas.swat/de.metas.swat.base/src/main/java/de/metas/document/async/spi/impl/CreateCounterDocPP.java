@@ -85,7 +85,7 @@ public class CreateCounterDocPP extends WorkpackageProcessorAdapter
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage, final String localTrxName)
 	{
-		final List<Object> models = queueDAO.retrieveItemsSkipMissing(workpackage, Object.class, localTrxName);
+		final List<Object> models = queueDAO.retrieveAllItemsSkipMissing(workpackage, Object.class);
 		for (final Object model : models)
 		{
 			final IDocument document = docActionBL.getDocument(model);

@@ -22,11 +22,14 @@
 
 package org.adempiere.model.validator;
 
+import de.metas.cache.CacheMgt;
 import de.metas.organization.OrgId;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.compiere.model.I_AD_SysConfig;
@@ -41,6 +44,8 @@ import java.util.List;
 @Interceptor(I_AD_SysConfig.class)
 public class AD_SysConfig
 {
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void beforeSave(final I_AD_SysConfig record)
 	{
@@ -62,7 +67,7 @@ public class AD_SysConfig
 		if (clientId.isRegular() || orgId.isRegular())
 		{
 			// Get the configuration level from the System Record
-			String newConfigLevel = retrieveConfigLevel(name, ClientId.SYSTEM, OrgId.ANY);
+			String newConfigLevel = retrieveConfigLevel(name, ClientId.SYSTEM);
 
 			if (newConfigLevel == null)
 			{
@@ -70,7 +75,7 @@ public class AD_SysConfig
 				// if saving an org parameter - look config in client
 				if (orgId.isRegular())
 				{
-					newConfigLevel = retrieveConfigLevel(name, clientId, OrgId.ANY);
+					newConfigLevel = retrieveConfigLevel(name, clientId);
 				}
 			}
 
@@ -111,11 +116,23 @@ public class AD_SysConfig
 	@Nullable
 	private static String retrieveConfigLevel(
 			@NonNull final String name,
-			@NonNull final ClientId clientId,
-			@NonNull final OrgId orgId)
+			@NonNull final ClientId clientId)
 	{
 		final String sql = "SELECT ConfigurationLevel FROM AD_SysConfig WHERE Name=? AND AD_Client_ID=? AND AD_Org_ID=?";
-		final List<Object> sqlParams = Arrays.asList(name, clientId, orgId);
+		final List<Object> sqlParams = Arrays.asList(name, clientId, OrgId.ANY);
 		return DB.getSQLValueStringEx(ITrx.TRXNAME_ThreadInherited, sql, sqlParams);
 	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
+	public void afterSave(final I_AD_SysConfig record)
+	{
+		// IMPORTANT: we have to reset the SysConfigs cache once again
+		// because cache is invalidated while saving, and it's also accessed before the trx which changed a give sysconfig gets committed,
+		// so at that time the sysconfigs cache is still stale.
+		// To make sure we have fresh sysconfigs, we are resetting the cache again after trx commit.
+		final CacheMgt cacheMgt = CacheMgt.get();
+		final int recordId = record.getAD_SysConfig_ID();
+		trxManager.runAfterCommit(() -> cacheMgt.reset(I_AD_SysConfig.Table_Name, recordId));
+	}
+
 }

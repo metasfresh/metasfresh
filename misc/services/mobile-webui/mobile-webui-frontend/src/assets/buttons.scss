@@ -1,0 +1,58 @@
+.full-size-btn {
+    width: 100%;
+}
+
+.caption-btn {
+    width:90%;
+    float: left;
+    text-align: center;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space:nowrap
+}
+.left-btn-side {
+    position: absolute;
+    width: 5%;
+    float: left;
+}
+.right-btn-side {
+    width: 5%;
+    float: right;
+}
+
+.indicator-red, .indicator-yellow, .indicator-green {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    margin-right: 10px;
+    border: 1px solid #000;
+    border-radius: 7px;
+    margin-bottom: 5px;
+}
+
+.indicator-red {
+    background-color: $indicator-red;
+    border-color: $indicator-red-border;
+    box-shadow: 0 0 4px 1px $indicator-red;
+}
+
+.indicator-green {
+    background-color: $indicator-green;
+    border-color: $indicator-green-border;
+    box-shadow: 0 0 4px 1px $indicator-green;
+}
+
+.indicator-yellow {
+    background-color: $indicator-yellow;
+    border-color: $indicator-yellow-border;
+    box-shadow: 0 0 4px 1px $indicator-yellow;
+}
+
+.warning-sign {
+    color: $indicator-yellow;
+}
+
+.complete-btn {
+    width: 100%;
+    font-size: 1.5rem;
+}

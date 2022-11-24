@@ -16,70 +16,64 @@
  *****************************************************************************/
 package org.compiere.util;
 
-import java.util.Map;
-
+import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSetMultimap;
+import de.metas.util.FileUtil;
+import lombok.NonNull;
+import lombok.experimental.UtilityClass;
+import org.springframework.http.MediaType;
 
-import de.metas.util.Check;
+import javax.annotation.Nullable;
 
-/**
- * Mime - Content type map.
- * http://www.iana.org/assignments/media-types/
- *
- * @author Jorg Janke
- * @version $Id: MimeType.java,v 1.2 2006/07/30 00:54:35 jjanke Exp $
- */
+@UtilityClass
 public final class MimeType
 {
 	/**
-	 * Get Mime Type of file name
-	 *
-	 * @param fileName file name
-	 * @return mime type
+	 * @return Mime Type of file name or #TYPE_BINARY if not found
 	 */
-	public static String getMimeType(final String fileName)
+	public static String getMimeType(@Nullable final String filename)
 	{
-		if (fileName == null || fileName.indexOf('.') < 0)
+		if (filename == null)
 		{
 			return TYPE_BINARY;
 		}
-		//
-		final String extension = fileName.substring(fileName.lastIndexOf('.'));
+
+		final String extension = FileUtil.getFileExtension(filename);
 		if (extension == null)
 		{
 			return TYPE_BINARY;
 		}
 
-		final String extensionLC = extension.toLowerCase();
-		final String type = fileExtension2mimeType.get(extensionLC);
+		final String extensionWithDotLC = "." + extension.toLowerCase();
+		final String type = fileExtension2mimeType.get(extensionWithDotLC);
 		return type == null ? TYPE_BINARY : type;
 	}
 
-	/**
-	 * Gets file extension by mime type. Note, file extension contains the "." prefix. If extension was not found, empty string is returned.
-	 *
-	 * @param mimeType
-	 * @return
-	 */
-	public static String getExtensionByType(final String mimeType)
+	public static MediaType getMediaType(@NonNull final String filename)
 	{
-		Check.assumeNotNull(mimeType, "mimeType not null");
-		for (final Map.Entry<String, String> e : fileExtension2mimeType.entrySet())
-		{
-			final String currentMimeType = e.getValue();
-			if (currentMimeType.equalsIgnoreCase(mimeType))
-			{
-				final String extension = e.getKey();
-				return extension;
-			}
-		}
-		return "";
+		final String mimeType = getMimeType(filename);
+		return MediaType.parseMediaType(mimeType);
+	}
+
+	/**
+	 * @return file extension (including the dot prefix) by mime type. If extension was not found, empty string is returned.
+	 */
+	public static String getExtensionByType(@NonNull final String mimeType)
+	{
+		final String mimeTypeNorm = mimeType.toLowerCase();
+
+		final ImmutableCollection<String> fileExtensions = mimeType2fileExtension.get(mimeTypeNorm);
+		return !fileExtensions.isEmpty()
+				? fileExtensions.iterator().next()
+				: "";
 	}
 
 	public static String getExtensionByTypeWithoutDot(final String mimeType)
 	{
 		String extension = getExtensionByType(mimeType);
-		if(extension == null || extension.isEmpty())
+		if (extension == null || extension.isEmpty())
 		{
 			return extension;
 		}
@@ -87,7 +81,9 @@ public final class MimeType
 		return extension.substring(1); // extension without the leading dot
 	}
 
-	/** application/octet-stream */
+	/**
+	 * application/octet-stream
+	 */
 	public static final String TYPE_BINARY = "application/octet-stream";
 	public static final String TYPE_PDF = "application/pdf";
 	public static final String TYPE_TextPlain = "text/plain";
@@ -95,10 +91,7 @@ public final class MimeType
 	public static final String TYPE_IMAGE_PNG = "image/png";
 	public static final String TYPE_IMAGE_JPEG = "image/jpeg";
 
-	/**************************************************************************
-	 * Mime / Content Type Map
-	 */
-	private static final Map<String, String> fileExtension2mimeType = ImmutableMap.<String, String> builder()
+	private static final ImmutableMap<String, String> fileExtension2mimeType = ImmutableMap.<String, String>builder()
 			// Frequently used:
 			.put(".txt", TYPE_TextPlain)
 			.put(".pdf", TYPE_PDF)
@@ -770,8 +763,12 @@ public final class MimeType
 			//
 			.build();
 
-	private MimeType()
-	{
-	}
+	private static final ImmutableMultimap<String, String> mimeType2fileExtension;
 
+	static
+	{
+		final ImmutableSetMultimap.Builder<String, String> builder = ImmutableSetMultimap.builder();
+		fileExtension2mimeType.forEach((fileExtension, mimeType) -> builder.put(mimeType.toLowerCase(), fileExtension));
+		mimeType2fileExtension = builder.build();
+	}
 }

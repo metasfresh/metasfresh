@@ -82,6 +82,7 @@ import lombok.ToString;
 import org.adempiere.ad.table.RecordChangeLog;
 import org.adempiere.ad.table.RecordChangeLogEntry;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Env;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
 
@@ -359,7 +360,8 @@ public class JsonRetrieverService
 			if (contact.getGreetingId() != null)
 			{
 				final Greeting greeting = greetingRepository.getById(contact.getGreetingId());
-				greetingTrl = greeting.getGreeting(language.getAD_Language());
+				final String ad_language = language != null ? language.getAD_Language() : Env.getAD_Language();
+				greetingTrl = greeting.getGreeting(ad_language);
 			}
 			return JsonResponseContact.builder()
 					.active(contact.isActive())
@@ -424,6 +426,11 @@ public class JsonRetrieverService
 					.billTo(locationType.getIsBillToOr(false))
 					.billToDefault(locationType.getIsBillToDefaultOr(false))
 					.changeInfo(jsonChangeInfo)
+					.setupPlaceNo(location.getSetupPlaceNo())
+					.remitTo(location.isRemitTo())
+					.handoverLocation(location.isHandOverLocation())
+					.replicationLookupDefault(location.isReplicationLookupDefault())
+					.visitorsAddress(location.isVisitorsAddress())
 					.build();
 		}
 		catch (final RuntimeException rte)

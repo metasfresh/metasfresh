@@ -31,9 +31,12 @@ public interface Shopware6Constants
 	String FIELD_UPDATED_AT = "updatedAt";
 	String FIELD_CREATED_AT = "createdAt";
 	String FIELD_ORDER_NUMBER = "orderNumber";
-	
+	String FIELD_ORDER_ID = "id";
+
 	String PARAMETERS_DATE_GTE = "gte";
 
+	String SALUTATION_KEY_NOT_SPECIFIED = "not_specified";
+	
 	//camel route properties
 	String ROUTE_PROPERTY_IMPORT_ORDERS_CONTEXT = "GetOrdersRouteContext";
 	String ROUTE_PROPERTY_IMPORT_PRODUCTS_CONTEXT = "GetProductsRouteContext";
@@ -61,4 +64,7 @@ public interface Shopware6Constants
 	String MULTIPLE_SHIPPING_ADDRESSES_WARN_MESSAGE = "The order had multiple shipping addresses, the process picked the last one!";
 	String FREIGHT_COST_EXTERNAL_LINE_ID_PREFIX = "TaxRate_";
 	String DEFAULT_PRODUCT_UOM = "PCE";
+
+	int ORDER_LINE_SEQUENCE_INITIAL_VALUE = 0;
+	int ORDER_LINE_SEQUENCE_INCREMENT = 10;
 }

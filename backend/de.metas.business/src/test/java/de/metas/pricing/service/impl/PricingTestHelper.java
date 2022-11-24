@@ -1,10 +1,21 @@
 package de.metas.pricing.service.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.util.List;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.adempiere.model.I_M_Product;
+import de.metas.location.ICountryAreaBL;
+import de.metas.pricing.IEditablePricingContext;
+import de.metas.pricing.IPricingContext;
+import de.metas.pricing.IPricingResult;
+import de.metas.pricing.PriceListId;
+import de.metas.pricing.PriceListVersionId;
+import de.metas.pricing.PricingSystemId;
+import de.metas.pricing.service.IPricingBL;
+import de.metas.pricing.service.ProductScalePriceService;
+import de.metas.product.IProductPA;
+import de.metas.product.ProductId;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeId;
 import org.adempiere.mm.attributes.AttributeListValue;
@@ -13,6 +24,7 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAware;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.pricing.model.I_C_PricingRule;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Country;
 import org.compiere.model.I_C_CountryArea;
 import org.compiere.model.I_C_CountryArea_Assign;
@@ -26,22 +38,12 @@ import org.compiere.model.I_M_PricingSystem;
 import org.compiere.model.X_M_Attribute;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.mockito.Mockito;
 
-import com.google.common.collect.ImmutableList;
+import java.util.List;
 
-import de.metas.adempiere.model.I_M_Product;
-import de.metas.location.ICountryAreaBL;
-import de.metas.pricing.IEditablePricingContext;
-import de.metas.pricing.IPricingContext;
-import de.metas.pricing.IPricingResult;
-import de.metas.pricing.PriceListId;
-import de.metas.pricing.PriceListVersionId;
-import de.metas.pricing.PricingSystemId;
-import de.metas.pricing.service.IPricingBL;
-import de.metas.product.ProductId;
-import de.metas.tax.api.TaxCategoryId;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -91,6 +93,11 @@ public class PricingTestHelper
 
 	public PricingTestHelper()
 	{
+		final IProductPA productPA = Mockito.mock(IProductPA.class);
+		Services.registerService(IProductPA.class, productPA);
+
+		SpringContextHolder.registerJUnitBean(new ProductScalePriceService());
+
 		createPricingRules();
 
 		defaultCountry = createCountryWithArea("DE", C_Currency_ID_EUR, ICountryAreaBL.COUNTRYAREAKEY_EU);
@@ -117,7 +124,6 @@ public class PricingTestHelper
 	{
 		return ImmutableList.of(
 				de.metas.pricing.attributebased.impl.AttributePricing.class.getName(),
-				de.metas.adempiere.pricing.spi.impl.rules.ProductScalePrice.class.getName(),
 				de.metas.pricing.rules.PriceListVersion.class.getName(),
 				de.metas.pricing.rules.Discount.class.getName());
 	}

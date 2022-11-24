@@ -1,7 +1,6 @@
 package de.metas.ui.web.receiptSchedule;
 
 import com.google.common.collect.ImmutableList;
-
 import de.metas.ui.web.handlingunits.HUEditorRow;
 import de.metas.ui.web.handlingunits.HUEditorViewFactoryTemplate;
 import de.metas.ui.web.view.ViewFactory;
@@ -59,4 +58,7 @@ public class HUsToReceiveViewFactory extends HUEditorViewFactoryTemplate
 						ClassViewColumnOverrides.ofFieldName(HUEditorRow.FIELDNAME_UOM),
 						ClassViewColumnOverrides.builder(HUEditorRow.FIELDNAME_HUStatus).restrictToMediaType(MediaType.SCREEN).build());
 	}
+
+	@Override
+	protected boolean isMaterialReceipt() {return true;}
 }

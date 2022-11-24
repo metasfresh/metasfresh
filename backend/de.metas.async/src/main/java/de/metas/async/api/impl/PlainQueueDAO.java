@@ -22,22 +22,6 @@ package de.metas.async.api.impl;
  * #L%
  */
 
-
-import java.sql.Timestamp;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.ad.dao.IQueryFilter;
-import org.adempiere.ad.dao.impl.POJOQuery;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.wrapper.POJOLookupMap;
-import org.compiere.model.IQuery;
-import org.slf4j.Logger;
-
 import de.metas.async.api.IWorkPackageQuery;
 import de.metas.async.exceptions.PackageItemNotAvailableException;
 import de.metas.async.model.I_C_Queue_Element;
@@ -45,59 +29,52 @@ import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_Processor;
 import de.metas.async.model.I_C_Queue_Processor_Assign;
 import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.processor.QueuePackageProcessorId;
+import de.metas.common.util.time.SystemTime;
 import de.metas.logging.LogManager;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
+import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.ad.dao.impl.POJOQuery;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.wrapper.POJOLookupMap;
+import org.compiere.model.IQuery;
+import org.slf4j.Logger;
+
+import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 public class PlainQueueDAO extends AbstractQueueDAO
 {
 	private static final transient Logger slogger = LogManager.getLogger(PlainQueueDAO.class);
 
-	private POJOLookupMap db = POJOLookupMap.get();
+	private final POJOLookupMap db = POJOLookupMap.get();
 
 	public PlainQueueDAO()
 	{
-		super();
-
-		this.filter_C_Queue_Element_SkipAlreadyScheduledItems = new IQueryFilter<I_C_Queue_Element>()
-		{
-
-			@Override
-			public boolean accept(I_C_Queue_Element model)
-			{
-				final List<I_C_Queue_Element> previousElements = retrievePreviousScheduledElements(model);
-				if (!previousElements.isEmpty())
-				{
-					return false;
-				}
-
-				return true;
-			}
+		this.filter_C_Queue_Element_SkipAlreadyScheduledItems = model -> {
+			final List<I_C_Queue_Element> previousElements = retrievePreviousScheduledElements(model);
+			return previousElements.isEmpty();
 		};
 	}
 
 	@Override
 	public List<I_C_Queue_Processor> retrieveAllProcessors()
 	{
-		return db.getRecords(I_C_Queue_Processor.class, new IQueryFilter<I_C_Queue_Processor>()
-		{
-
-			@Override
-			public boolean accept(I_C_Queue_Processor pojo)
-			{
-				if (!pojo.isActive())
-				{
-					return false;
-				}
-				return true;
-			}
-		});
+		return db.getRecords(I_C_Queue_Processor.class, I_C_Queue_Processor::isActive);
 	}
 
 	@Override
-	protected Map<Integer, I_C_Queue_PackageProcessor> retrieveWorkpackageProcessorsMap(Properties ctx)
+	protected Map<Integer, I_C_Queue_PackageProcessor> retrieveWorkpackageProcessorsMap(final Properties ctx)
 	{
 		final List<I_C_Queue_PackageProcessor> processors = db.getRecords(I_C_Queue_PackageProcessor.class);
-		final Map<Integer, I_C_Queue_PackageProcessor> map = new HashMap<Integer, I_C_Queue_PackageProcessor>(processors.size());
+		final Map<Integer, I_C_Queue_PackageProcessor> map = new HashMap<>(processors.size());
 		for (final I_C_Queue_PackageProcessor p : processors)
 		{
 			map.put(p.getC_Queue_PackageProcessor_ID(), p);
@@ -108,74 +85,64 @@ public class PlainQueueDAO extends AbstractQueueDAO
 	@Override
 	protected List<I_C_Queue_Processor_Assign> retrieveQueueProcessorAssignments(final I_C_Queue_Processor processor)
 	{
-		return db.getRecords(I_C_Queue_Processor_Assign.class, new IQueryFilter<I_C_Queue_Processor_Assign>()
-		{
-
-			@Override
-			public boolean accept(I_C_Queue_Processor_Assign pojo)
+		return db.getRecords(I_C_Queue_Processor_Assign.class, pojo -> {
+			if (pojo.getC_Queue_Processor_ID() != processor.getC_Queue_Processor_ID())
 			{
-				if (pojo.getC_Queue_Processor_ID() != processor.getC_Queue_Processor_ID())
-				{
-					return false;
-				}
-				if (!pojo.isActive())
-				{
-					return false;
-				}
-				return true;
+				return false;
 			}
+			if (!pojo.isActive())
+			{
+				return false;
+			}
+			return true;
 		});
 	}
 
 	private List<I_C_Queue_Element> retrievePreviousScheduledElements(final I_C_Queue_Element element)
 	{
-		return db.getRecords(I_C_Queue_Element.class, new IQueryFilter<I_C_Queue_Element>()
-		{
-			@Override
-			public boolean accept(I_C_Queue_Element pojo)
+		return db.getRecords(I_C_Queue_Element.class, pojo -> {
+			// Same record
+			if (pojo.getAD_Table_ID() != element.getAD_Table_ID())
 			{
-				// Same record
-				if (pojo.getAD_Table_ID() != element.getAD_Table_ID())
-				{
-					return false;
-				}
-				if (pojo.getRecord_ID() != element.getRecord_ID())
-				{
-					return false;
-				}
-				// But on different queue element
-				if (pojo.getC_Queue_Element_ID() == element.getC_Queue_Element_ID())
-				{
-					return false;
-				}
-				// Submitted in the past
-				if (pojo.getC_Queue_WorkPackage_ID() > element.getC_Queue_WorkPackage_ID())
-				{
-					return false;
-				}
-				// and those workpackages were not processed yet
-				if (pojo.getC_Queue_WorkPackage().isProcessed())
-				{
-					return false;
-				}
-
-				return true;
+				return false;
 			}
+			if (pojo.getRecord_ID() != element.getRecord_ID())
+			{
+				return false;
+			}
+			// But on different queue element
+			if (pojo.getC_Queue_Element_ID() == element.getC_Queue_Element_ID())
+			{
+				return false;
+			}
+			// Submitted in the past
+			if (pojo.getC_Queue_WorkPackage_ID() > element.getC_Queue_WorkPackage_ID())
+			{
+				return false;
+			}
+			// and those workpackages were not processed yet
+			if (pojo.getC_Queue_WorkPackage().isProcessed())
+			{
+				return false;
+			}
+
+			return true;
 		});
 	}
 
 	@Override
-	protected <T> T retrieveItem(I_C_Queue_Element element, Class<T> clazz, String trxName)
+	@NonNull
+	protected <T> T retrieveItem(final I_C_Queue_Element element, final Class<T> clazz, final String trxName)
 	{
 		final int tableId = element.getAD_Table_ID();
 		final int recordId = element.getRecord_ID();
 
-		T item = null;
+		T item;
 		try
 		{
 			item = db.lookup(tableId, recordId, clazz);
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			final String tableName = Services.get(IADTableDAO.class).retrieveTableName(tableId);
 			throw new PackageItemNotAvailableException(tableName, recordId);
@@ -190,13 +157,14 @@ public class PlainQueueDAO extends AbstractQueueDAO
 	}
 
 	@Override
-	public IQuery<I_C_Queue_WorkPackage> createQuery(Properties ctx, IWorkPackageQuery packageQuery)
+	public IQuery<I_C_Queue_WorkPackage> createQuery(final Properties ctx, final IWorkPackageQuery packageQuery)
 	{
 		return new POJOQuery<>(ctx,
 				I_C_Queue_WorkPackage.class,
 				null,  // tableName=null => get it from the given model class
 				ITrx.TRXNAME_None)
 				.addFilter(new QueueFilter(packageQuery))
+				.setLimit(QueryLimit.getQueryLimitOrNoLimit(packageQuery.getLimit()))
 				.setOrderBy(queueOrderByComparator);
 	}
 
@@ -210,7 +178,7 @@ public class PlainQueueDAO extends AbstractQueueDAO
 		}
 
 		@Override
-		public boolean accept(I_C_Queue_WorkPackage workpackage)
+		public boolean accept(final I_C_Queue_WorkPackage workpackage)
 		{
 			if (packageQuery.getProcessed() != null && packageQuery.getProcessed() != workpackage.isProcessed())
 			{
@@ -239,7 +207,7 @@ public class PlainQueueDAO extends AbstractQueueDAO
 			}
 
 			// Only work packages for given process
-			final List<Integer> packageProcessorIds = packageQuery.getPackageProcessorIds();
+			final Set<QueuePackageProcessorId> packageProcessorIds = packageQuery.getPackageProcessorIds();
 			if (packageProcessorIds != null)
 			{
 				if (packageProcessorIds.isEmpty())
@@ -247,7 +215,7 @@ public class PlainQueueDAO extends AbstractQueueDAO
 					slogger.warn("There were no package processor Ids set in the package query. This could be a posible development error"
 							+"\n Package query: "+packageQuery);
 				}
-				final int packageProcessorId = workpackage.getC_Queue_Block().getC_Queue_PackageProcessor_ID();
+				final QueuePackageProcessorId packageProcessorId = QueuePackageProcessorId.ofRepoId(workpackage.getC_Queue_PackageProcessor_ID());
 				if (!packageProcessorIds.contains(packageProcessorId))
 				{
 					return false;

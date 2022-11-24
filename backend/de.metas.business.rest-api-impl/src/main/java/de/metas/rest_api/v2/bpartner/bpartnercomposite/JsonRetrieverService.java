@@ -39,6 +39,7 @@ import de.metas.bpartner.composite.BPartnerContact;
 import de.metas.bpartner.composite.BPartnerContactType;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationType;
+import de.metas.bpartner.composite.SalesRep;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.composite.repository.NextPageQuery;
 import de.metas.bpartner.composite.repository.SinceQuery;
@@ -46,17 +47,23 @@ import de.metas.bpartner.service.BPartnerContactQuery;
 import de.metas.bpartner.service.BPartnerContactQuery.BPartnerContactQueryBuilder;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartner;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite.JsonResponseCompositeBuilder;
 import de.metas.common.bpartner.v2.response.JsonResponseContact;
+import de.metas.common.bpartner.v2.response.JsonResponseContactPosition;
 import de.metas.common.bpartner.v2.response.JsonResponseContactRole;
 import de.metas.common.bpartner.v2.response.JsonResponseLocation;
+import de.metas.common.bpartner.v2.response.JsonResponseSalesRep;
 import de.metas.common.changelog.JsonChangeInfo;
 import de.metas.common.changelog.JsonChangeInfo.JsonChangeInfoBuilder;
 import de.metas.common.changelog.JsonChangeLogItem;
 import de.metas.common.changelog.JsonChangeLogItem.JsonChangeLogItemBuilder;
+import de.metas.common.product.v2.response.JsonProductBPartner;
+import de.metas.common.product.v2.response.JsonResponseProductBPartner;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.JSONPaymentRule;
 import de.metas.dao.selection.pagination.QueryResultPage;
 import de.metas.dao.selection.pagination.UnknownPageIdentifierException;
 import de.metas.externalreference.ExternalIdentifier;
@@ -64,19 +71,24 @@ import de.metas.externalreference.ExternalUserReferenceType;
 import de.metas.externalreference.IExternalReferenceType;
 import de.metas.externalreference.bpartner.BPartnerExternalReferenceType;
 import de.metas.externalreference.bpartnerlocation.BPLocationExternalReferenceType;
-import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
+import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.greeting.Greeting;
 import de.metas.greeting.GreetingRepository;
 import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.job.Job;
+import de.metas.job.JobRepository;
 import de.metas.logging.TableRecordMDC;
 import de.metas.organization.OrgId;
+import de.metas.payment.PaymentRule;
 import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKeyList;
+import de.metas.title.Title;
+import de.metas.title.TitleRepository;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
@@ -89,6 +101,10 @@ import lombok.ToString;
 import org.adempiere.ad.table.RecordChangeLog;
 import org.adempiere.ad.table.RecordChangeLogEntry;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.TableRecordUtil;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_BPartner_Product;
+import org.compiere.util.Env;
 import org.slf4j.MDC;
 import org.slf4j.MDC.MDCCloseable;
 
@@ -127,7 +143,13 @@ public class JsonRetrieverService
 			.put(BPartner.VENDOR, JsonResponseBPartner.VENDOR)
 			.put(BPartner.CUSTOMER, JsonResponseBPartner.CUSTOMER)
 			.put(BPartner.COMPANY, JsonResponseBPartner.COMPANY)
+			.put(BPartner.SALES_PARTNER_CODE, JsonResponseBPartner.SALES_PARTNER_CODE)
+			.put(BPartner.C_BPARTNER_SALES_REP_ID, JsonResponseSalesRep.SALES_REP_ID)
+			.put(BPartner.INTERNAL_NAME, JsonResponseBPartner.INTERNAL_NAME)
+			.put(BPartner.PAYMENT_RULE, JsonResponseBPartner.PAYMENT_RULE)
 			.put(BPartner.VAT_ID, JsonResponseBPartner.VAT_ID)
+			.put(BPartner.CREDITOR_ID, JsonResponseBPartner.CREDITOR_ID)
+			.put(BPartner.DEBTOR_ID, JsonResponseBPartner.DEBTOR_ID)
 			.build();
 
 	/**
@@ -141,16 +163,24 @@ public class JsonRetrieverService
 			.put(BPartnerContact.ACTIVE, JsonResponseContact.ACTIVE)
 			.put(BPartnerContact.FIRST_NAME, JsonResponseContact.FIRST_NAME)
 			.put(BPartnerContact.LAST_NAME, JsonResponseContact.LAST_NAME)
+			.put(BPartnerContact.BIRTHDAY, JsonResponseContact.BIRTHDAY)
 			.put(BPartnerContact.ID, JsonResponseContact.METASFRESH_ID)
 			.put(BPartnerContact.BPARTNER_ID, JsonResponseContact.METASFRESH_BPARTNER_ID)
 			.put(BPartnerContact.NAME, JsonResponseContact.NAME)
 			.put(BPartnerContact.GREETING_ID, JsonResponseContact.GREETING)
+			.put(BPartnerContact.TITLE_ID, JsonResponseContact.TITLE)
 			.put(BPartnerContact.PHONE, JsonResponseContact.PHONE)
 			.put(BPartnerContact.MOBILE_PHONE, JsonResponseContact.MOBILE_PHONE)
 			.put(BPartnerContact.FAX, JsonResponseContact.FAX)
 			.put(BPartnerContact.DESCRIPTION, JsonResponseContact.DESCRIPTION)
 			.put(BPartnerContact.NEWSLETTER, JsonResponseContact.NEWSLETTER)
 			.put(BPartnerContact.SUBJECT_MATTER, JsonResponseContact.SUBJECT_MATTER)
+			.put(BPartnerContact.BPARTNER_LOCATION_ID, JsonResponseContact.METASFRESH_LOCATION_ID)
+			.put(BPartnerContact.EMAIL2, JsonResponseContact.EMAIL2)
+			.put(BPartnerContact.EMAIL3, JsonResponseContact.EMAIL3)
+			.put(BPartnerContact.TITLE, JsonResponseContact.TITLE)
+			.put(BPartnerContact.PHONE2, JsonResponseContact.PHONE2)
+			.put(BPartnerContact.JOB_ID, JsonResponseContact.POSITION)
 
 			.put(BPartnerContactType.SHIP_TO_DEFAULT, JsonResponseContact.SHIP_TO_DEFAULT)
 			.put(BPartnerContactType.BILL_TO_DEFAULT, JsonResponseContact.BILL_TO_DEFAULT)
@@ -183,19 +213,26 @@ public class JsonRetrieverService
 			.put(BPartnerLocation.REGION, JsonResponseLocation.REGION)
 			.put(BPartnerLocation.DISTRICT, JsonResponseLocation.DISTRICT)
 			.put(BPartnerLocation.COUNTRYCODE, JsonResponseLocation.COUNTRY_CODE)
+			.put(BPartnerLocation.PHONE, JsonResponseLocation.PHONE)
+			.put(BPartnerLocation.EMAIL, JsonResponseLocation.EMAIL)
 			.put(BPartnerLocationType.BILL_TO, JsonResponseLocation.BILL_TO)
 			.put(BPartnerLocationType.BILL_TO_DEFAULT, JsonResponseLocation.BILL_TO_DEFAULT)
 			.put(BPartnerLocationType.SHIP_TO, JsonResponseLocation.SHIP_TO)
 			.put(BPartnerLocationType.SHIP_TO_DEFAULT, JsonResponseLocation.SHIP_TO_DEFAULT)
+			.put(BPartnerLocation.EPHEMERAL, JsonResponseLocation.EPHEMERAL)
+			.put(BPartnerLocationType.VISITORS_ADDRESS, JsonResponseLocation.VISITORS_ADDRESS)
 			.build();
 
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
+	private final IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
 
 	private final transient BPartnerQueryService bPartnerQueryService;
 	private final transient BPartnerCompositeRepository bpartnerCompositeRepository;
 	private final transient BPGroupRepository bpGroupRepository;
 
 	private final transient GreetingRepository greetingRepository;
+	private final JobRepository jobRepository;
+	private final transient TitleRepository titleRepository;
 	private final ExternalReferenceRestControllerService externalReferenceService;
 
 	private final transient BPartnerCompositeCacheByLookupKey cache;
@@ -208,6 +245,8 @@ public class JsonRetrieverService
 			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
 			@NonNull final BPGroupRepository bpGroupRepository,
 			@NonNull final GreetingRepository greetingRepository,
+			@NonNull final TitleRepository titleRepository,
+			@NonNull final JobRepository jobRepository,
 			final ExternalReferenceRestControllerService externalReferenceService,
 			@NonNull final String identifier)
 	{
@@ -215,6 +254,8 @@ public class JsonRetrieverService
 		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
 		this.bpGroupRepository = bpGroupRepository;
 		this.greetingRepository = greetingRepository;
+		this.titleRepository = titleRepository;
+		this.jobRepository = jobRepository;
 		this.externalReferenceService = externalReferenceService;
 		this.identifier = identifier;
 
@@ -284,6 +325,8 @@ public class JsonRetrieverService
 	{
 		final JsonChangeInfo jsonChangeInfo = createJsonChangeInfo(bpartner.getChangeLog(), BPARTNER_FIELD_MAP);
 
+		final TableRecordReference bPartnerRecordRef = TableRecordReference.of(I_C_BPartner.Table_Name, bpartner.getId());
+
 		return JsonResponseBPartner.builder()
 				.active(bpartner.isActive())
 				.code(bpartner.getValue())
@@ -303,8 +346,18 @@ public class JsonRetrieverService
 				.vendor(bpartner.isVendor())
 				.customer(bpartner.isCustomer())
 				.company(bpartner.isCompany())
+				.salesPartnerCode(bpartner.getSalesPartnerCode())
+				.responseSalesRep(getJsonResponseSalesRep(bpartner.getSalesRep()))
+				.paymentRule(Optional.ofNullable(bpartner.getPaymentRule())
+									 .map(PaymentRule::getCode)
+									 .map(JSONPaymentRule::ofCode)
+									 .orElse(null))
+				.internalName(bpartner.getInternalName())
 				.vatId(bpartner.getVatId())
 				.changeInfo(jsonChangeInfo)
+				.metasfreshUrl(TableRecordUtil.getMetasfreshUrl(bPartnerRecordRef))
+				.creditorId(bpartner.getCreditorId())
+				.debtorId(bpartner.getDebtorId())
 				.build();
 	}
 
@@ -343,6 +396,7 @@ public class JsonRetrieverService
 		return jsonChangeInfo.build();
 	}
 
+	@Nullable
 	private String convertIdToGroupName(@Nullable final BPGroupId bpGroupId)
 	{
 		if (bpGroupId == null)
@@ -362,6 +416,7 @@ public class JsonRetrieverService
 		{
 			final JsonMetasfreshId metasfreshId = JsonMetasfreshId.of(BPartnerContactId.toRepoId(contact.getId()));
 			final JsonMetasfreshId metasfreshBPartnerId = JsonMetasfreshId.of(BPartnerId.toRepoId(contact.getId().getBpartnerId()));
+			final JsonMetasfreshId metasfreshLocationId = JsonMetasfreshId.ofOrNull(BPartnerLocationId.toRepoIdOrNull(contact.getBPartnerLocationId()));
 
 			final JsonChangeInfo jsonChangeInfo = createJsonChangeInfo(contact.getChangeLog(), CONTACT_FIELD_MAP);
 
@@ -371,8 +426,24 @@ public class JsonRetrieverService
 			if (contact.getGreetingId() != null)
 			{
 				final Greeting greeting = greetingRepository.getById(contact.getGreetingId());
-				greetingTrl = greeting.getGreeting(language.getAD_Language());
+				final String ad_language = language != null ? language.getAD_Language() : Env.getAD_Language();
+				greetingTrl = greeting.getGreeting(ad_language);
 			}
+
+			String titleTrl = null;
+			if (contact.getTitleId() != null)
+			{
+				final Title title = titleRepository.getByIdAndLang(contact.getTitleId(),language);
+				titleTrl = title.getTitle();
+			}
+
+
+			Job job = null;
+			if (contact.getJobId() != null)
+			{
+				job = jobRepository.getById(contact.getJobId());
+			}
+
 			final List<JsonResponseContactRole> roles = contact.getRoles()
 					.stream()
 					.map(role -> JsonResponseContactRole.builder()
@@ -386,10 +457,12 @@ public class JsonRetrieverService
 					.email(contact.getEmail())
 					.firstName(contact.getFirstName())
 					.lastName(contact.getLastName())
+					.birthday(contact.getBirthday())
 					.metasfreshBPartnerId(metasfreshBPartnerId)
 					.metasfreshId(metasfreshId)
 					.name(contact.getName())
 					.greeting(greetingTrl)
+					.title(titleTrl)
 					.newsletter(contact.isNewsletter())
 					.invoiceEmailEnabled(contact.getInvoiceEmailEnabled())
 					.phone(contact.getPhone())
@@ -406,6 +479,12 @@ public class JsonRetrieverService
 					.subjectMatter(contact.isSubjectMatterContact())
 					.roles(roles)
 					.changeInfo(jsonChangeInfo)
+					.metasfreshLocationId(metasfreshLocationId)
+					.email2(contact.getEmail2())
+					.email3(contact.getEmail3())
+					.title(contact.getTitle())
+					.phone2(contact.getPhone2())
+					.position(toJson(job))
 					.build();
 		}
 		catch (final RuntimeException rte)
@@ -443,7 +522,16 @@ public class JsonRetrieverService
 					.shipToDefault(locationType.getIsShipToDefaultOr(false))
 					.billTo(locationType.getIsBillToOr(false))
 					.billToDefault(locationType.getIsBillToDefaultOr(false))
+					.setupPlaceNo(location.getSetupPlaceNo())
+					.remitTo(location.isRemitTo())
+					.replicationLookupDefault(location.isReplicationLookupDefault())
+					.handoverLocation(location.isHandOverLocation())
+					.visitorsAddress(location.isVisitorsAddress())
 					.changeInfo(jsonChangeInfo)
+					.ephemeral(location.isEphemeral())
+					.phone(location.getPhone())
+					.email(location.getEmail())
+					.visitorsAddress(locationType.getIsVisitorsAddressOr(false))
 					.build();
 		}
 		catch (final RuntimeException rte)
@@ -552,6 +640,27 @@ public class JsonRetrieverService
 				.stream()
 				.filter(jsonBPartnerLocation -> isBPartnerLocationMatches(orgId, jsonBPartnerLocation, bPartnerLocationExternalId))
 				.findAny());
+	}
+
+	@NonNull
+	public JsonResponseProductBPartner getJsonResponseProductBPartner(
+			@NonNull final OrgId orgId,
+			@NonNull final ExternalIdentifier bPartnerExternalIdentifier)
+	{
+		final BPartnerId bPartnerId = resolveBPartnerExternalIdentifier(bPartnerExternalIdentifier, orgId)
+				.orElseThrow(() -> new AdempiereException("No BPartner could be found for the given external BPartner identifier!")
+						.appendParametersToMessage()
+						.setParameter("externalBPartnerIdentifier", bPartnerExternalIdentifier.getRawValue())
+						.setParameter("orgId", orgId));
+
+		final List<JsonProductBPartner> productBPartners = partnerProductDAO.retrieveByBPartnerId(bPartnerId)
+				.stream()
+				.map(this::toJsonProductBPartner)
+				.collect(ImmutableList.toImmutableList());
+
+		return JsonResponseProductBPartner.builder()
+				.bPartnerProducts(productBPartners)
+				.build();
 	}
 
 	/**
@@ -718,5 +827,62 @@ public class JsonRetrieverService
 			default:
 				throw new AdempiereException("Unexpected type=" + locationIdentifier.getType());
 		}
+	}
+
+	@Nullable
+	private JsonResponseSalesRep getJsonResponseSalesRep(@Nullable final SalesRep salesRep)
+	{
+		if (salesRep == null)
+		{
+			return null;
+		}
+
+		return JsonResponseSalesRep.builder()
+				.salesRepId(JsonMetasfreshId.of(salesRep.getId().getRepoId()))
+				.salesRepValue(salesRep.getValue())
+				.build();
+	}
+
+	@Nullable
+	private static JsonResponseContactPosition toJson(@Nullable final Job job)
+	{
+		if (job == null)
+		{
+			return null;
+		}
+
+		return JsonResponseContactPosition.builder()
+				.metasfreshId(JsonMetasfreshId.of(job.getId().getRepoId()))
+				.name(job.getName())
+				.active(job.isActive())
+				.build();
+	}
+
+	@NonNull
+	private JsonProductBPartner toJsonProductBPartner(final I_C_BPartner_Product record)
+	{
+		return JsonProductBPartner.builder()
+				.bpartnerId(JsonMetasfreshId.of(record.getC_BPartner_ID()))
+				.productId(JsonMetasfreshId.of(record.getM_Product_ID()))
+				//
+				.productNo(record.getProductNo())
+				.productName(record.getProductName())
+				.productDescription(record.getProductDescription())
+				.productCategory(record.getProductCategory())
+				//
+				.ean(record.getUPC())
+				//
+				.vendor(record.isUsedForVendor())
+				.currentVendor(record.isUsedForVendor() && record.isCurrentVendor())
+				.customer(record.isUsedForCustomer())
+				//
+				.leadTimeInDays(record.getDeliveryTime_Promised())
+				//
+				.excludedFromSale(record.isExcludedFromSale())
+				.exclusionFromSaleReason(record.getExclusionFromSaleReason())
+				.excludedFromPurchase(record.isExcludedFromPurchase())
+				.exclusionFromPurchaseReason(record.getExclusionFromPurchaseReason())
+				//
+				.build();
 	}
 }

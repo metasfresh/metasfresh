@@ -1,5 +1,7 @@
 package de.metas.util;
 
+import lombok.NonNull;
+
 import javax.annotation.Nullable;
 
 /*
@@ -63,9 +65,9 @@ public enum OptionalBoolean
 		return this == UNKNOWN;
 	}
 
-	public boolean orElseTrue() { return orElse(true); }
+	public boolean orElseTrue() {return orElse(true);}
 
-	public boolean orElseFalse() { return orElse(false); }
+	public boolean orElseFalse() {return orElse(false);}
 
 	public boolean orElse(final boolean other)
 	{
@@ -96,6 +98,18 @@ public enum OptionalBoolean
 				return null;
 			default:
 				throw new IllegalStateException("Type not handled: " + this);
+		}
+	}
+
+	public void ifPresent(@NonNull final BooleanConsumer action)
+	{
+		if (this == TRUE)
+		{
+			action.accept(true);
+		}
+		else if (this == FALSE)
+		{
+			action.accept(false);
 		}
 	}
 

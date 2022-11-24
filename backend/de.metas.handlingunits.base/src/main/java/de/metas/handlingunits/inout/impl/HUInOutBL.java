@@ -38,6 +38,7 @@ import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHUWarehouseDAO;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.IHUAttributesDAO;
 import de.metas.handlingunits.impl.DocumentLUTUConfigurationManager;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
@@ -61,15 +62,20 @@ import de.metas.inout.InOutLineId;
 import de.metas.logging.LogManager;
 import de.metas.materialtracking.IMaterialTrackingAttributeBL;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ISerialNoBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
@@ -99,6 +105,9 @@ public class HUInOutBL implements IHUInOutBL
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final ISerialNoBL serialNoBL = Services.get(ISerialNoBL.class);
+	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@Override
 	public I_M_InOut getById(@NonNull final InOutId inoutId)
@@ -338,9 +347,9 @@ public class HUInOutBL implements IHUInOutBL
 	public void moveHUsToQualityReturnWarehouse(final List<I_M_HU> husToReturn)
 	{
 		final List<I_M_Warehouse> warehouses = huWarehouseDAO.retrieveQualityReturnWarehouses();
-		final I_M_Warehouse qualityReturnWarehouse = warehouses.get(0);
+		final WarehouseId qualityReturnWarehouseId = WarehouseId.ofRepoId(warehouses.get(0).getM_Warehouse_ID());
 
-		huMovementBL.moveHUsToWarehouse(husToReturn, qualityReturnWarehouse);
+		huMovementBL.moveHUsToWarehouse(husToReturn, qualityReturnWarehouseId);
 	}
 
 	@Override
@@ -368,8 +377,8 @@ public class HUInOutBL implements IHUInOutBL
 		for (final I_M_InOutLine lineRecord : lineRecords)
 		{
 			Check.errorIf(lineRecord.getReversalLine_ID() <= 0,
-					"copyAssignmentsToReversal - current M_InOutLine_ID={} has no reversal line; M_InOut={}",
-					lineRecord.getM_InOutLine_ID(), inOutRecord);
+						  "copyAssignmentsToReversal - current M_InOutLine_ID={} has no reversal line; M_InOut={}",
+						  lineRecord.getM_InOutLine_ID(), inOutRecord);
 
 			huAssignmentBL.copyHUAssignments(lineRecord, lineRecord.getReversalLine());
 		}
@@ -435,12 +444,37 @@ public class HUInOutBL implements IHUInOutBL
 			return true;
 		}
 		final ImmutableSet<HuId> topLevelHUs = handlingUnitsBL.getTopLevelHUs(huIds);
-		return !handlingUnitsBL.createHUQueryBuilder().addOnlyHUIds(HuId.toRepoIds(topLevelHUs))
+		return !handlingUnitsBL.createHUQueryBuilder().addOnlyHUIds(topLevelHUs)
 				.addHUStatusToInclude(X_M_HU.HUSTATUS_Planning)
 				.addOnlyWithAttribute(AttributeConstants.ATTR_SerialNo, serialNoAttr.getValue())
 				.createQueryBuilder()
 				.create()
 				.anyMatch();
+	}
+
+	@Override
+	public void validateMandatoryOnShipmentAttributes(@NonNull final I_M_InOut shipment)
+	{
+		final List<I_M_InOutLine> inOutLines = retrieveLines(shipment, I_M_InOutLine.class);
+
+		for (final I_M_InOutLine line : inOutLines)
+		{
+			final AttributeSetInstanceId asiID = AttributeSetInstanceId.ofRepoIdOrNull(line.getM_AttributeSetInstance_ID());
+
+			if (asiID == null)
+			{
+				continue;
+			}
+
+			final ProductId productId = ProductId.ofRepoId(line.getM_Product_ID());
+
+			final List<I_M_HU> husForLine = huAssignmentDAO.retrieveTopLevelHUsForModel(line);
+
+			for (final I_M_HU hu : husForLine)
+			{
+				huAttributesBL.validateMandatoryShipmentAttributes(HuId.ofRepoId(hu.getM_HU_ID()), productId);
+			}
+		}
 	}
 
 }

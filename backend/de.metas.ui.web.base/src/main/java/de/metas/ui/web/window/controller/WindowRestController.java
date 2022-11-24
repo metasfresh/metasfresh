@@ -25,8 +25,10 @@ package de.metas.ui.web.window.controller;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import de.metas.document.NewRecordContext;
 import de.metas.document.references.zoom_into.CustomizedWindowInfoMapRepository;
 import de.metas.process.RelatedProcessDescriptor.DisplayPlace;
+import de.metas.reflist.ReferenceId;
 import de.metas.ui.web.cache.ETagResponseEntityBuilder;
 import de.metas.ui.web.comments.CommentsService;
 import de.metas.ui.web.config.WebConfig;
@@ -776,16 +778,19 @@ public class WindowRestController
 		else if (field.getDescriptor().getWidgetType() == DocumentFieldWidgetType.Labels)
 		{
 			final LabelsLookup lookup = LabelsLookup.cast(field.getDescriptor()
-					.getLookupDescriptor()
-					.orElseThrow(() -> new AdempiereException("Because the widget type is Labels, expect a LookupDescriptor")
-							.setParameter("field", field)));
+																  .getLookupDescriptor()
+																  .orElseThrow(() -> new AdempiereException("Because the widget type is Labels, expect a LookupDescriptor")
+																		  .setParameter("field", field)));
 			final String labelsValueColumnName = lookup.getLabelsValueColumnName();
 
 			if (labelsValueColumnName.endsWith("_ID"))
 			{
 				final ILookupDAO lookupDAO = Services.get(ILookupDAO.class);
-				final TableRefInfo tableRefInfo = lookupDAO
-						.retrieveTableDirectRefInfo(labelsValueColumnName);
+
+				final ReferenceId labelsValueReferenceId = lookup.getLabelsValueReferenceId();
+				final TableRefInfo tableRefInfo = labelsValueReferenceId != null
+						? lookupDAO.retrieveTableRefInfo(labelsValueReferenceId.getRepoId())
+						: lookupDAO.retrieveTableDirectRefInfo(labelsValueColumnName);
 
 				return DocumentZoomIntoInfo.of(tableRefInfo.getTableName(), -1);
 			}
@@ -949,9 +954,16 @@ public class WindowRestController
 				throw new AdempiereException("Not saved");
 			}
 
+			final NewRecordContext newRecordContext = NewRecordContext.builder()
+					.loginOrgId(userSession.getOrgId())
+					.loggedUserId(userSession.getLoggedUserId())
+					.loginLanguage(userSession.getAD_Language())
+					.build();
+
 			return newRecordDescriptorsProvider.getNewRecordDescriptor(document.getEntityDescriptor())
 					.getProcessor()
-					.processNewRecordDocument(document);
+					.processNewRecordDocument(document,
+											  newRecordContext);
 		}));
 	}
 

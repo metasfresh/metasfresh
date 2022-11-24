@@ -1,5 +1,30 @@
 package de.metas.async.model.validator;
 
+import com.google.common.collect.ImmutableList;
+import de.metas.Profiles;
+import de.metas.async.Async_Constants;
+import de.metas.async.api.IAsyncBatchListeners;
+import de.metas.async.api.impl.AsyncBatchDAO;
+import de.metas.async.model.I_C_Queue_WorkPackage;
+import de.metas.async.model.I_C_Queue_WorkPackage_Log;
+import de.metas.async.model.I_C_Queue_WorkPackage_Param;
+import de.metas.async.processor.IQueueProcessorExecutorService;
+import de.metas.async.spi.impl.DefaultAsyncBatchListener;
+import de.metas.event.Topic;
+import de.metas.impexp.DataImportService;
+import de.metas.logging.LogManager;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.NonNull;
+import org.adempiere.ad.migration.logger.IMigrationLogger;
+import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
+import org.adempiere.ad.modelvalidator.IModelValidationEngine;
+import org.adempiere.ad.session.MFSession;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.SpringContextHolder;
+import org.compiere.util.Ini;
+import org.slf4j.Logger;
+
 import java.util.List;
 
 /*
@@ -23,33 +48,6 @@ import java.util.List;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-import lombok.NonNull;
-import org.adempiere.ad.migration.logger.IMigrationLogger;
-import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
-import org.adempiere.ad.modelvalidator.IModelValidationEngine;
-import org.adempiere.ad.session.MFSession;
-import org.adempiere.service.ISysConfigBL;
-import org.compiere.SpringContextHolder;
-import org.compiere.util.Ini;
-import org.slf4j.Logger;
-
-import com.google.common.collect.ImmutableList;
-
-import de.metas.Profiles;
-import de.metas.async.Async_Constants;
-import de.metas.async.api.IAsyncBatchListeners;
-import de.metas.async.api.impl.AsyncBatchDAO;
-import de.metas.async.model.I_C_Queue_WorkPackage;
-import de.metas.async.model.I_C_Queue_WorkPackage_Log;
-import de.metas.async.model.I_C_Queue_WorkPackage_Param;
-import de.metas.async.processor.IQueueProcessorExecutorService;
-import de.metas.async.spi.impl.DefaultAsyncBatchListener;
-import de.metas.event.Topic;
-import de.metas.impexp.DataImportService;
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
 
 /**
  * ASync module main validator. This is the entry point for all other stuff.
@@ -117,9 +115,7 @@ public class Main extends AbstractModuleInterceptor
 	private int getInitDelayMillis()
 	{
 		// I will leave the default value of 3 minutes, which was the common time until #2894
-		final int delayTimeInMillis = Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_ASYNC_INIT_DELAY_MILLIS, THREE_MINUTES);
-
-		return delayTimeInMillis;
+		return Services.get(ISysConfigBL.class).getIntValue(SYSCONFIG_ASYNC_INIT_DELAY_MILLIS, THREE_MINUTES);
 
 	}
 
@@ -130,8 +126,8 @@ public class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(new C_Queue_Processor());
 		engine.addModelValidator(new de.metas.lock.model.validator.Main());
 		engine.addModelValidator(new C_Async_Batch());
-		engine.addModelValidator(C_Queue_WorkPackage.INSTANCE);
 	}
+
 
 	/**
 	 * Init the async queue processor service on user login.

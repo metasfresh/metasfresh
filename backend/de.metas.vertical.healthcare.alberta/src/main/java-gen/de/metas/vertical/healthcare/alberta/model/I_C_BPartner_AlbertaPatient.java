@@ -1,30 +1,9 @@
-/*
- * #%L
- * de.metas.vertical.healthcare.alberta
- * %%
- * Copyright (C) 2021 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package de.metas.vertical.healthcare.alberta.model;
 
 import org.adempiere.model.ModelColumn;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_BPartner_AlbertaPatient
  *  @author metasfresh (generated) 
@@ -134,7 +113,7 @@ public interface I_C_BPartner_AlbertaPatient
 	String COLUMNNAME_AD_User_UpdatedBy_ID = "AD_User_UpdatedBy_ID";
 
 	/**
-	 * Set Patient.
+	 * Set Alberta patient data.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -143,7 +122,7 @@ public interface I_C_BPartner_AlbertaPatient
 	void setC_BPartner_AlbertaPatient_ID (int C_BPartner_AlbertaPatient_ID);
 
 	/**
-	 * Get Patient.
+	 * Get Alberta patient data.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -213,6 +192,50 @@ public interface I_C_BPartner_AlbertaPatient
 	int getC_BPartner_Payer_ID();
 
 	String COLUMNNAME_C_BPartner_Payer_ID = "C_BPartner_Payer_ID";
+
+	/**
+	 * Set CareDegree.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setCareDegree (@Nullable BigDecimal CareDegree);
+
+	/**
+	 * Get CareDegree.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getCareDegree();
+
+	ModelColumn<I_C_BPartner_AlbertaPatient, Object> COLUMN_CareDegree = new ModelColumn<>(I_C_BPartner_AlbertaPatient.class, "CareDegree", null);
+	String COLUMNNAME_CareDegree = "CareDegree";
+
+	/**
+	 * Set Classification.
+	 * Classification for grouping
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setClassification (@Nullable String Classification);
+
+	/**
+	 * Get Classification.
+	 * Classification for grouping
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable String getClassification();
+
+	ModelColumn<I_C_BPartner_AlbertaPatient, Object> COLUMN_Classification = new ModelColumn<>(I_C_BPartner_AlbertaPatient.class, "Classification", null);
+	String COLUMNNAME_Classification = "Classification";
 
 	/**
 	 * Set Copayment exempt from.
@@ -309,7 +332,7 @@ public interface I_C_BPartner_AlbertaPatient
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDeactivationComment (@Nullable java.lang.String DeactivationComment);
+	void setDeactivationComment (@Nullable String DeactivationComment);
 
 	/**
 	 * Get Deactivation comment.
@@ -318,7 +341,7 @@ public interface I_C_BPartner_AlbertaPatient
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDeactivationComment();
+	@Nullable String getDeactivationComment();
 
 	ModelColumn<I_C_BPartner_AlbertaPatient, Object> COLUMN_DeactivationComment = new ModelColumn<>(I_C_BPartner_AlbertaPatient.class, "DeactivationComment", null);
 	String COLUMNNAME_DeactivationComment = "DeactivationComment";
@@ -351,7 +374,7 @@ public interface I_C_BPartner_AlbertaPatient
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setDeactivationReason (@Nullable java.lang.String DeactivationReason);
+	void setDeactivationReason (@Nullable String DeactivationReason);
 
 	/**
 	 * Get Reason for deactivation.
@@ -360,7 +383,7 @@ public interface I_C_BPartner_AlbertaPatient
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getDeactivationReason();
+	@Nullable String getDeactivationReason();
 
 	ModelColumn<I_C_BPartner_AlbertaPatient, Object> COLUMN_DeactivationReason = new ModelColumn<>(I_C_BPartner_AlbertaPatient.class, "DeactivationReason", null);
 	String COLUMNNAME_DeactivationReason = "DeactivationReason";
@@ -460,7 +483,7 @@ public interface I_C_BPartner_AlbertaPatient
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setNumberOfInsured (@Nullable java.lang.String NumberOfInsured);
+	void setNumberOfInsured (@Nullable String NumberOfInsured);
 
 	/**
 	 * Get Insurance number.
@@ -469,7 +492,7 @@ public interface I_C_BPartner_AlbertaPatient
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getNumberOfInsured();
+	@Nullable String getNumberOfInsured();
 
 	ModelColumn<I_C_BPartner_AlbertaPatient, Object> COLUMN_NumberOfInsured = new ModelColumn<>(I_C_BPartner_AlbertaPatient.class, "NumberOfInsured", null);
 	String COLUMNNAME_NumberOfInsured = "NumberOfInsured";
@@ -481,7 +504,7 @@ public interface I_C_BPartner_AlbertaPatient
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setPayerType (@Nullable java.lang.String PayerType);
+	void setPayerType (@Nullable String PayerType);
 
 	/**
 	 * Get Payer type.
@@ -490,7 +513,7 @@ public interface I_C_BPartner_AlbertaPatient
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	@Nullable java.lang.String getPayerType();
+	@Nullable String getPayerType();
 
 	ModelColumn<I_C_BPartner_AlbertaPatient, Object> COLUMN_PayerType = new ModelColumn<>(I_C_BPartner_AlbertaPatient.class, "PayerType", null);
 	String COLUMNNAME_PayerType = "PayerType";

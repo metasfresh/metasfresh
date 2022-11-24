@@ -22,6 +22,14 @@
 
 package de.metas.edi.esb.excelimport;
 
+import com.google.common.io.Closeables;
+import lombok.NonNull;
+import org.apache.poi.hssf.usermodel.HSSFDateUtil;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -35,23 +43,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.poi.hssf.usermodel.HSSFDateUtil;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-
-import com.google.common.io.Closeables;
-
-import lombok.NonNull;
-
 /**
  * Immutable XLS to {@link Map}s list converter.
  *
  * To create a new instance, use {@link #builder()}.
  *
  * @author tsa
- * @task 08839
+ * task 08839
  */
 public class ExcelToMapListConverter
 {
@@ -66,7 +64,7 @@ public class ExcelToMapListConverter
 	private final boolean discardRepeatingHeaders;
 	private final boolean useTypeColumn;
 
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
