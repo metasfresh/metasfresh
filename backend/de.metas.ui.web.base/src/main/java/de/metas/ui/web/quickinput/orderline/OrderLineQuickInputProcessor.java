@@ -1,6 +1,5 @@
 package de.metas.ui.web.quickinput.orderline;
 
-import de.metas.acct.vatcode.VatCodeId;
 import de.metas.adempiere.callout.OrderFastInput;
 import de.metas.adempiere.gui.search.HUPackingAwareCopy.ASICopyMode;
 import de.metas.adempiere.gui.search.IHUPackingAwareBL;
@@ -31,6 +30,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantitys;
+import de.metas.tax.api.VatCodeId;
 import de.metas.ui.web.order.BOMExploderCommand;
 import de.metas.ui.web.order.OrderLineCandidate;
 import de.metas.ui.web.quickinput.IQuickInputProcessor;

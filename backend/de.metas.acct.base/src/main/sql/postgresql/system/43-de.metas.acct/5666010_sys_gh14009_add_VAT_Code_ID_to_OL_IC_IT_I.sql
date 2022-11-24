@@ -440,3 +440,25 @@ INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Code,Created,Crea
 UPDATE AD_Val_Rule SET Name='VAT_Code_for_soTrx',Updated=TO_TIMESTAMP('2022-11-24 13:53:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540610
 ;
 
+-- Column: C_OrderLine.C_VAT_Code_ID
+-- 2022-11-24T16:11:45.194Z
+UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2022-11-24 18:11:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585131
+;
+
+-- 2022-11-24T16:27:40.513Z
+/* DDL */ SELECT public.db_alter_table('C_Invoice','ALTER TABLE C_Invoice DROP COLUMN IF EXISTS C_VAT_Code_ID')
+;
+
+-- Column: C_Invoice.C_VAT_Code_ID
+-- 2022-11-24T16:27:41.036Z
+DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=585133
+;
+
+-- 2022-11-24T16:27:41.040Z
+DELETE FROM AD_Column WHERE AD_Column_ID=585133
+;
+
+-- Name: VAT_Code_for_soTrx
+-- 2022-11-24T19:04:13.746Z
+UPDATE AD_Val_Rule SET Code='C_Vat_Code.IsSoTrx =''@IsSoTrx/Y@''',Updated=TO_TIMESTAMP('2022-11-24 21:04:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540610
+;

@@ -98,7 +98,8 @@ public interface ITaxBL extends ISingletonService
 			int AD_Org_ID, int M_Warehouse_ID,
 			BPartnerLocationAndCaptureId billC_BPartner_Location_ID,
 			BPartnerLocationAndCaptureId shipC_BPartner_Location_ID,
-			boolean IsSOTrx);
+			boolean IsSOTrx,
+			@Nullable VatCodeId vatCodeId);
 
 	/**
 	 * Sets the correct flags if given tax has {@link I_C_Tax#isWholeTax()} set.

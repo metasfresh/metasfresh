@@ -189,6 +189,8 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 			icRecord.setInvoiceRule_Override(X_C_Invoice_Candidate.INVOICERULE_OVERRIDE_Immediate); // immediate
 		}
 
+		icRecord.setC_VAT_Code_ID(orderLine.getC_VAT_Code_ID());
+
 		// 05265
 		icRecord.setIsSOTrx(order.isSOTrx());
 

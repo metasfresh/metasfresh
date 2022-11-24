@@ -318,11 +318,11 @@ import java.util.Set;
 	{
 		// IMPORTANT: if Qty is not the last field then frontend will not react on pressing "ENTER" to complete the entry
 		return QuickInputLayoutDescriptor.build(entityDescriptor, new String[][] {
-				{ "M_Product_ID", "M_HU_PI_Item_Product_ID" },
-				{ "ShipmentAllocation_BestBefore_Policy" },
-				{ "C_Flatrate_Conditions_ID" },
-				{ "C_VAT_Code_ID" },
-				{ "Qty" },
+				{ IOrderLineQuickInput.COLUMNNAME_M_Product_ID, IOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID},
+				{ IOrderLineQuickInput.COLUMNNAME_ShipmentAllocation_BestBefore_Policy },
+				{ IOrderLineQuickInput.COLUMNNAME_C_Flatrate_Conditions_ID },
+				{ IOrderLineQuickInput.COLUMNNAME_C_VAT_Code_ID },
+				{ IOrderLineQuickInput.COLUMNNAME_Qty },
 		});
 	}
 }

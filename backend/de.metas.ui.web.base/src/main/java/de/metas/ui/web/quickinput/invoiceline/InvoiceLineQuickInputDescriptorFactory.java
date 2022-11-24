@@ -8,6 +8,7 @@ import de.metas.ui.web.quickinput.IQuickInputDescriptorFactory;
 import de.metas.ui.web.quickinput.QuickInputConstants;
 import de.metas.ui.web.quickinput.QuickInputDescriptor;
 import de.metas.ui.web.quickinput.QuickInputLayoutDescriptor;
+import de.metas.ui.web.quickinput.orderline.IOrderLineQuickInput;
 import de.metas.ui.web.window.datatypes.DocumentId;
 import de.metas.ui.web.window.datatypes.DocumentType;
 import de.metas.ui.web.window.datatypes.LookupValue;
@@ -97,9 +98,10 @@ public class InvoiceLineQuickInputDescriptorFactory implements IQuickInputDescri
 				.setIsSOTrx(soTrx)
 				.disableDefaultTableCallouts()
 				.setDetailId(detailId)
-				.addField( createProductFieldDescriptor() )
-				.addFieldIf( QuickInputConstants.isEnablePackingInstructionsField(), this::createPackingItemFieldDescriptor )
-				.addField( createQtyFieldDescriptor() )
+				.addField(createProductFieldDescriptor())
+				.addFieldIf(QuickInputConstants.isEnablePackingInstructionsField(), this::createPackingItemFieldDescriptor)
+				.addFieldIf(QuickInputConstants.isEnableVatCodeField(), this::createVatCodeField)
+				.addField(createQtyFieldDescriptor())
 				.build();
 	}
 
@@ -111,13 +113,33 @@ public class InvoiceLineQuickInputDescriptorFactory implements IQuickInputDescri
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
 				.setLookupDescriptorProvider(
 						ProductLookupDescriptor
-						.builderWithoutStockInfo()
-						.bpartnerParamName(I_C_Invoice.COLUMNNAME_C_BPartner_ID)
-						.pricingDateParamName(I_C_Invoice.COLUMNNAME_DateInvoiced)
-						.build() )
+								.builderWithoutStockInfo()
+								.bpartnerParamName(I_C_Invoice.COLUMNNAME_C_BPartner_ID)
+								.pricingDateParamName(I_C_Invoice.COLUMNNAME_DateInvoiced)
+								.build())
 				.setMandatoryLogic(true)
 				.setDisplayLogic(ConstantLogicExpression.TRUE)
 				.addCallout(invoiceLineQuickInputCallout::onProductChange)
+				.addCharacteristic(Characteristic.PublicField);
+	}
+
+	private DocumentFieldDescriptor.Builder createVatCodeField()
+	{
+		return DocumentFieldDescriptor.builder(IOrderLineQuickInput.COLUMNNAME_C_VAT_Code_ID)
+				.setCaption(msgBL.translatable(IOrderLineQuickInput.COLUMNNAME_C_VAT_Code_ID))
+				//
+				.setWidgetType(DocumentFieldWidgetType.Lookup)
+				.setLookupDescriptorProvider(lookupDescriptorProviders.sql()
+						.setCtxTableName(null) // ctxTableName
+						.setCtxColumnName(IOrderLineQuickInput.COLUMNNAME_C_VAT_Code_ID)
+						.setDisplayType(DisplayType.TableDir)
+						.setAD_Val_Rule_ID(AdValRuleId.ofRepoId(540610))// FIXME: hardcoded "VAT_Code_for_soTrx"
+						.build())
+				.setValueClass(LookupValue.IntegerLookupValue.class)
+				.setReadonlyLogic(ConstantLogicExpression.FALSE)
+				.setAlwaysUpdateable(true)
+				.setMandatoryLogic(ConstantLogicExpression.TRUE)
+				.setDisplayLogic(ConstantLogicExpression.TRUE)
 				.addCharacteristic(Characteristic.PublicField);
 	}
 
@@ -153,6 +175,7 @@ public class InvoiceLineQuickInputDescriptorFactory implements IQuickInputDescri
 	{
 		return QuickInputLayoutDescriptor.build(entityDescriptor, new String[][] {
 				{ IInvoiceLineQuickInput.COLUMNNAME_M_Product_ID, IInvoiceLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID },
+				{ IInvoiceLineQuickInput.COLUMNNAME_C_VAT_Code_ID },
 				{ IInvoiceLineQuickInput.COLUMNNAME_Qty }
 		});
 	}

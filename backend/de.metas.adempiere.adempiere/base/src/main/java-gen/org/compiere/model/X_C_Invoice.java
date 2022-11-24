@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1045560320L;
+	private static final long serialVersionUID = 1525901284L;
 
     /** Standard Constructor */
     public X_C_Invoice (final Properties ctx, final int C_Invoice_ID, @Nullable final String trxName)
@@ -586,21 +586,6 @@ public class X_C_Invoice extends org.compiere.model.PO implements I_C_Invoice, o
 	public java.lang.String getCreditMemoReason() 
 	{
 		return get_ValueAsString(COLUMNNAME_CreditMemoReason);
-	}
-
-	@Override
-	public void setC_VAT_Code_ID (final int C_VAT_Code_ID)
-	{
-		if (C_VAT_Code_ID < 1) 
-			set_Value (COLUMNNAME_C_VAT_Code_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_VAT_Code_ID, C_VAT_Code_ID);
-	}
-
-	@Override
-	public int getC_VAT_Code_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_VAT_Code_ID);
 	}
 
 	@Override

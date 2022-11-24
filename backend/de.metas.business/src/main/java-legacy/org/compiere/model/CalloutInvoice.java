@@ -33,6 +33,7 @@ import de.metas.pricing.service.IPriceListDAO;
 import de.metas.product.IProductBL;
 import de.metas.security.IUserRolePermissions;
 import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.VatCodeId;
 import de.metas.uom.LegacyUOMConversionUtils;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -507,12 +508,15 @@ public class CalloutInvoice extends CalloutEngine
 
 		log.debug("Warehouse={}", warehouseID);
 
+		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(invoiceLine.getC_VAT_Code_ID());
+
 		//
 		final int taxID = Tax.get(ctx, productID, chargeID, billDate,
 								  shipDate, orgID, warehouseID,
 								  billBPartnerLocationID,
 								  shipBPartnerLocationID,
-								  invoice.isSOTrx());
+								  invoice.isSOTrx(),
+				vatCodeId);
 
 		log.debug("Tax ID={}", taxID);
 

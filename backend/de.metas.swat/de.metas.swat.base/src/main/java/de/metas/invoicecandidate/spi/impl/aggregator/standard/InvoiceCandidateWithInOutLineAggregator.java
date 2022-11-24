@@ -77,6 +77,8 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 	private int _orderLineId = -1; // -1 means "didn't yet try to set", -2 means "cannot set"
 	private boolean _printed = false;
 	private int _invoiceLineNo = 0;
+
+	private int _vatCodeId;
 	private final IInvoiceLineAttributeAggregator invoiceLineAttributesAggregator = new CommonInvoiceLineAttributeAggregator();
 
 	//
@@ -149,6 +151,7 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 		invoiceLine.setC_Tax(getC_Tax());
 
 		invoiceLine.setC_PaymentTerm_ID(getC_PaymentTerm_ID());
+		invoiceLine.setC_VAT_Code_ID(getC_VAT_Code_ID());
 		return invoiceLine;
 	}
 
@@ -363,6 +366,7 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 		setC_OrderLine_ID(cand.getC_OrderLine_ID()); // overall C_OrderLine_ID
 		setPrinted(cand.isPrinted());
 		setInvoiceLineNo(cand.getLine());
+		setC_VAT_Code_ID(cand.getC_VAT_Code_ID());
 
 		//
 		// Collect invoice line product attributes
@@ -373,6 +377,8 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 		addQtyToInvoice(candQtyToInvoiceFinal, ics, forcedAdditionalQty);
 
 		addLineNetAmount(candNetAmtToInvoice);
+
+
 	}
 
 	private final void initializeIfNeeded(final InvoiceCandidateWithInOutLine ics)
@@ -409,6 +415,7 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 		_qtysToInvoice = StockQtyAndUOMQtys.createZero(ics.getProductId(), ics.getIcUomId());
 		_netLineAmt = Money.zero(ics.getCurrencyId());
+		_vatCodeId = _firstCand.getC_VAT_Code_ID();
 
 		// Flag it as initialized
 		_initialized = true;
@@ -473,6 +480,8 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 					_discount);
 		}
 	}
+
+
 
 	private final Percent getDiscount()
 	{
@@ -577,6 +586,16 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 	{
 		final I_C_Invoice_Candidate firstCand = getFirstInvoiceCandidate();
 		return invoiceCandBL.getTaxEffective(firstCand);
+	}
+
+	private void setC_VAT_Code_ID(int vatCodeId)
+	{
+		Check.assume(_vatCodeId == vatCodeId, "All invoice candidates shall have the same VAT Code={}", _vatCodeId);
+	}
+
+	private int getC_VAT_Code_ID()
+	{
+		return _vatCodeId;
 	}
 
 	public List<InvoiceCandidateInOutLineToUpdate> getInvoiceCandidateInOutLinesToUpdate()
