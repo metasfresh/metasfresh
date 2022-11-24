@@ -22,6 +22,8 @@
 
 package de.metas.deliveryplanning.process;
 
+import de.metas.cache.CacheMgt;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.process.IProcessPrecondition;
@@ -31,14 +33,16 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_Delivery_Planning;
 
 public class M_DeliveryPlanning_CreateAdditionalLines extends JavaProcess implements IProcessPrecondition
 {
 	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
 
 	private final String PARAM_AdditionalLines = "AdditionalLines";
-	@Param(parameterName = "PARAM_AdditionalLines")
+	@Param(parameterName = PARAM_AdditionalLines)
 	private int additionalLines;
 	@Override
 	protected String doIt() throws Exception
@@ -48,6 +52,10 @@ public class M_DeliveryPlanning_CreateAdditionalLines extends JavaProcess implem
 		final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoId(getRecord_ID());
 
 		deliveryPlanningService.createAdditionalDeliveryPlannings(deliveryPlanningId, additionalLines);
+
+		CacheMgt.get().resetLocalNowAndBroadcastOnTrxCommit(
+				ITrx.TRXNAME_ThreadInherited,
+				CacheInvalidateMultiRequest.allRecordsForTable(I_M_Delivery_Planning.Table_Name));
 
 		return MSG_OK;
 	}

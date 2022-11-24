@@ -1089,3 +1089,314 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ;
 
 
+-- Column: M_Delivery_Planning.C_Country_ID
+-- 2022-11-24T13:07:38.663Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,Description,EntityType,FacetFilterSeqNo,FieldLength,Help,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,585137,192,0,30,542259,'C_Country_ID',TO_TIMESTAMP('2022-11-24 15:07:38','YYYY-MM-DD HH24:MI:SS'),100,'N','Land','D',0,10,'"Land" bezeichnet ein Land. Jedes Land muss angelegt sein, bevor es in einem Beleg verwendet werden kann.','Y','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Land',0,0,TO_TIMESTAMP('2022-11-24 15:07:38','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- 2022-11-24T13:07:38.668Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=585137 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2022-11-24T13:07:38.697Z
+/* DDL */  select update_Column_Translation_From_AD_Element(192) 
+;
+
+
+
+
+-- Column: M_Delivery_Planning.OriginCountry
+-- 2022-11-24T13:09:00.616Z
+UPDATE AD_Column SET ColumnSQL='(SELECT c.Name from C_Country c where c.C_Country_ID = M_Delivery_Planning.C_Country_ID)', IsLazyLoading='Y', IsUpdateable='N',Updated=TO_TIMESTAMP('2022-11-24 15:09:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585031
+;
+
+-- Column: M_Delivery_Planning.OriginCountry
+-- 2022-11-24T13:13:53.253Z
+UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2022-11-24 15:13:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585031
+;
+
+-- Column: M_Delivery_Planning.OriginCountry
+-- 2022-11-24T13:14:04.354Z
+UPDATE AD_Column SET IsSelectionColumn='N',Updated=TO_TIMESTAMP('2022-11-24 15:14:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585031
+;
+
+-- Column: M_Delivery_Planning.C_Country_ID
+-- 2022-11-24T13:14:17.516Z
+UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2022-11-24 15:14:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585137
+;
+
+
+
+
+-- Column: M_Delivery_Planning.PlannedDeliveryDate
+-- 2022-11-24T13:30:48.929Z
+UPDATE AD_Column SET FilterOperator='B', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2022-11-24 15:30:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585023
+;
+
+-- Column: M_Delivery_Planning.PlannedLoadingDate
+-- 2022-11-24T13:31:20.701Z
+UPDATE AD_Column SET FilterOperator='B', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2022-11-24 15:31:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585026
+;
+
+-- Column: M_Delivery_Planning.ActualDeliveryDate
+-- 2022-11-24T13:32:00.331Z
+UPDATE AD_Column SET FilterOperator='B', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2022-11-24 15:32:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585024
+;
+
+-- Column: M_Delivery_Planning.ActualLoadingDate
+-- 2022-11-24T13:32:08.437Z
+UPDATE AD_Column SET FilterOperator='B', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2022-11-24 15:32:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585027
+;
+
+-- Column: M_Delivery_Planning.M_Delivery_Planning_Type
+-- 2022-11-24T13:32:50.799Z
+UPDATE AD_Column SET FilterOperator='B', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2022-11-24 15:32:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585005
+;
+
+-- Column: M_Delivery_Planning.M_Delivery_Planning_Type
+-- 2022-11-24T13:33:07.588Z
+UPDATE AD_Column SET FilterOperator='E',Updated=TO_TIMESTAMP('2022-11-24 15:33:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585005
+;
+
+-- Column: M_Delivery_Planning.Forwarder
+-- 2022-11-24T13:33:20.307Z
+UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2022-11-24 15:33:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585035
+;
+
+-- Column: M_Delivery_Planning.M_Warehouse_ID
+-- 2022-11-24T13:33:34.572Z
+UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2022-11-24 15:33:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585021
+;
+
+-- Column: M_Delivery_Planning.M_Product_ID
+-- 2022-11-24T13:33:50.562Z
+UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2022-11-24 15:33:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585046
+;
+
+-- Column: M_Delivery_Planning.Grade
+-- 2022-11-24T13:33:59.683Z
+UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2022-11-24 15:33:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585017
+;
+
+-- Column: M_Delivery_Planning.MeansOfTransportation
+-- 2022-11-24T13:34:26.602Z
+UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2022-11-24 15:34:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585034
+;
+
+-- Column: M_Delivery_Planning.Batch
+-- 2022-11-24T13:34:40.882Z
+UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2022-11-24 15:34:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585030
+;
+
+-- Column: M_Delivery_Planning.M_SectionCode_ID
+-- 2022-11-24T13:34:55.216Z
+UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2022-11-24 15:34:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585007
+;
+
+-- Column: M_Delivery_Planning.OrderStatus
+-- 2022-11-24T13:35:11.551Z
+UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2022-11-24 15:35:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585022
+;
+
+-- Column: M_Delivery_Planning.OrderDocumentNo
+-- 2022-11-24T13:35:29.871Z
+UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2022-11-24 15:35:29','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585009
+;
+
+-- Column: M_Delivery_Planning.C_BPartner_Location_ID
+-- 2022-11-24T13:36:06.286Z
+UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2022-11-24 15:36:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585013
+;
+
+-- Column: M_Delivery_Planning.AD_Org_ID
+-- 2022-11-24T13:39:40.726Z
+UPDATE AD_Column SET IsSelectionColumn='N', SelectionColumnSeqNo=0,Updated=TO_TIMESTAMP('2022-11-24 15:39:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=584993
+;
+
+-- Column: M_Delivery_Planning.ActualDeliveryDate
+-- 2022-11-24T13:39:41.069Z
+UPDATE AD_Column SET IsSelectionColumn='N', SelectionColumnSeqNo=0,Updated=TO_TIMESTAMP('2022-11-24 15:39:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585024
+;
+
+-- Column: M_Delivery_Planning.ActualLoadingDate
+-- 2022-11-24T13:39:41.384Z
+UPDATE AD_Column SET IsSelectionColumn='N', SelectionColumnSeqNo=0,Updated=TO_TIMESTAMP('2022-11-24 15:39:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585027
+;
+
+-- Column: M_Delivery_Planning.PlannedDeliveryDate
+-- 2022-11-24T13:39:41.722Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=10,Updated=TO_TIMESTAMP('2022-11-24 15:39:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585023
+;
+
+-- Column: M_Delivery_Planning.PlannedLoadingDate
+-- 2022-11-24T13:39:42.053Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=20,Updated=TO_TIMESTAMP('2022-11-24 15:39:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585026
+;
+
+-- Column: M_Delivery_Planning.M_Delivery_Planning_Type
+-- 2022-11-24T13:39:42.400Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=30,Updated=TO_TIMESTAMP('2022-11-24 15:39:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585005
+;
+
+-- Column: M_Delivery_Planning.Forwarder
+-- 2022-11-24T13:39:42.759Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=40,Updated=TO_TIMESTAMP('2022-11-24 15:39:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585035
+;
+
+-- Column: M_Delivery_Planning.M_Warehouse_ID
+-- 2022-11-24T13:39:43.100Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=50,Updated=TO_TIMESTAMP('2022-11-24 15:39:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585021
+;
+
+-- Column: M_Delivery_Planning.M_Product_ID
+-- 2022-11-24T13:39:43.429Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=60,Updated=TO_TIMESTAMP('2022-11-24 15:39:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585046
+;
+
+-- Column: M_Delivery_Planning.Grade
+-- 2022-11-24T13:39:43.786Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=70,Updated=TO_TIMESTAMP('2022-11-24 15:39:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585017
+;
+
+-- Column: M_Delivery_Planning.C_Country_ID
+-- 2022-11-24T13:39:44.132Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=80,Updated=TO_TIMESTAMP('2022-11-24 15:39:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585137
+;
+
+-- Column: M_Delivery_Planning.MeansOfTransportation
+-- 2022-11-24T13:39:44.451Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=90,Updated=TO_TIMESTAMP('2022-11-24 15:39:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585034
+;
+
+-- Column: M_Delivery_Planning.Batch
+-- 2022-11-24T13:39:44.845Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=100,Updated=TO_TIMESTAMP('2022-11-24 15:39:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585030
+;
+
+-- Column: M_Delivery_Planning.M_SectionCode_ID
+-- 2022-11-24T13:39:45.163Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=110,Updated=TO_TIMESTAMP('2022-11-24 15:39:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585007
+;
+
+-- Column: M_Delivery_Planning.OrderStatus
+-- 2022-11-24T13:39:45.487Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=120,Updated=TO_TIMESTAMP('2022-11-24 15:39:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585022
+;
+
+-- Column: M_Delivery_Planning.OrderDocumentNo
+-- 2022-11-24T13:39:45.886Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=130,Updated=TO_TIMESTAMP('2022-11-24 15:39:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585009
+;
+
+-- Column: M_Delivery_Planning.C_BPartner_Location_ID
+-- 2022-11-24T13:39:46.219Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=140,Updated=TO_TIMESTAMP('2022-11-24 15:39:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585013
+;
+
+
+
+
+
+
+
+
+
+
+
+-- 2022-11-24T13:41:00.979Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,581730,0,'C_DestinationCountry_ID',TO_TIMESTAMP('2022-11-24 15:41:00','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Destination Country','Destination Country',TO_TIMESTAMP('2022-11-24 15:41:00','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-11-24T13:41:00.980Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=581730 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- Column: M_Delivery_Planning.C_DestinationCountry_ID
+-- 2022-11-24T13:41:21.423Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,585138,581730,0,30,156,542259,'C_DestinationCountry_ID',TO_TIMESTAMP('2022-11-24 15:41:21','YYYY-MM-DD HH24:MI:SS'),100,'N','D',0,10,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Destination Country',0,0,TO_TIMESTAMP('2022-11-24 15:41:21','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- 2022-11-24T13:41:21.425Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=585138 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2022-11-24T13:41:21.427Z
+/* DDL */  select update_Column_Translation_From_AD_Element(581730) 
+;
+
+
+
+
+-- Column: M_Delivery_Planning.C_DestinationCountry_ID
+-- 2022-11-24T13:43:32.326Z
+UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2022-11-24 15:43:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585138
+;
+
+-- Column: M_Delivery_Planning.CreationDate
+-- 2022-11-24T13:49:46.848Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Table_ID,ColumnName,ColumnSQL,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,585139,578970,0,15,542259,'CreationDate','(now()::timestamp)',TO_TIMESTAMP('2022-11-24 15:49:46','YYYY-MM-DD HH24:MI:SS'),100,'N','de.metas.vertical.healthcare.alberta',0,7,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N',0,'Creation date',0,0,TO_TIMESTAMP('2022-11-24 15:49:46','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- 2022-11-24T13:49:46.850Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=585139 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2022-11-24T13:49:46.853Z
+/* DDL */  select update_Column_Translation_From_AD_Element(578970) 
+;
+
+
+
+
+-- Column: M_Delivery_Planning.CreationDate
+-- 2022-11-24T14:16:58.926Z
+UPDATE AD_Column SET AD_Reference_ID=16,Updated=TO_TIMESTAMP('2022-11-24 16:16:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585139
+;
+
+
+
+-- 2022-11-24T14:26:26.231Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,581734,0,'C_OriginCountry_ID',TO_TIMESTAMP('2022-11-24 16:26:26','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Origin Country','Origin Country',TO_TIMESTAMP('2022-11-24 16:26:26','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-11-24T14:26:26.232Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=581734 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- Column: M_Delivery_Planning.C_OriginCountry_ID
+-- 2022-11-24T14:26:46.114Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,585140,581734,0,30,156,542259,'C_OriginCountry_ID',TO_TIMESTAMP('2022-11-24 16:26:45','YYYY-MM-DD HH24:MI:SS'),100,'N','D',0,10,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'Origin Country',0,0,TO_TIMESTAMP('2022-11-24 16:26:45','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- 2022-11-24T14:26:46.116Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=585140 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2022-11-24T14:26:46.119Z
+/* DDL */  select update_Column_Translation_From_AD_Element(581734) 
+;
+
+
+-- Column: M_Delivery_Planning.C_OriginCountry_ID
+-- 2022-11-24T14:44:45.667Z
+UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2022-11-24 16:44:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585140
+;
+
+-- Column: M_Delivery_Planning.C_OriginCountry_ID
+-- 2022-11-24T14:45:38.130Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=80,Updated=TO_TIMESTAMP('2022-11-24 16:45:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585140
+;
+
+-- Column: M_Delivery_Planning.C_DestinationCountry_ID
+-- 2022-11-24T14:45:38.535Z
+UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=150,Updated=TO_TIMESTAMP('2022-11-24 16:45:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585138
+;
+
+
+
+-- Column: M_Delivery_Planning.OriginCountry
+-- Column SQL (old): (SELECT c.Name from C_Country c where c.C_Country_ID = M_Delivery_Planning.C_Country_ID)
+-- 2022-11-24T15:02:59.776Z
+UPDATE AD_Column SET ColumnSQL='(SELECT c.Name from C_Country c where c.C_Country_ID = M_Delivery_Planning.C_OriginCountry_ID)',Updated=TO_TIMESTAMP('2022-11-24 17:02:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585031
+;
+

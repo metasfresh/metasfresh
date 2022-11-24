@@ -27,6 +27,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.incoterms.IncotermsId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ReceiptScheduleId;
+import de.metas.location.CountryId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.LocalDateAndOrgId;
@@ -121,7 +122,10 @@ public class DeliveryPlanningCreateRequest
 	Quantity actualDeliveredQty;
 
 	@Nullable
-	String originCountry;
+	CountryId originCountryId;
+
+	@Nullable
+	CountryId destinationCountryId;
 
 	@Nullable
 	String batch;

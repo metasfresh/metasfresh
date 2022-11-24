@@ -21,8 +21,8 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
@@ -49,7 +49,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
  *
  * @author tsa
  */
-@Validator(I_M_ShipmentSchedule.class)
+@Interceptor(I_M_ShipmentSchedule.class)
 @Component
 public class M_ShipmentSchedule
 {
@@ -59,9 +59,7 @@ public class M_ShipmentSchedule
 	private static final AdMessageKey MSG_DECREASE_QTY_ORDERED_BELOW_QTY_ALREADY_DELIVERED_IS_NOT_ALLOWED = //
 			AdMessageKey.of("de.metas.inoutcandidate.DecreaseQtyOrderedBelowQtyAlreadyDeliveredIsNotAllowed");
 
-
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-
 
 	public M_ShipmentSchedule(@NonNull final DeliveryPlanningService deliveryPlanningService,
 			@NonNull final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL,
@@ -341,7 +339,5 @@ public class M_ShipmentSchedule
 			return;
 		}
 		M_ShipmentSchedule_Create_M_Delivery_Planning.scheduleOnTrxCommit(sched);
-
 	}
-
 }

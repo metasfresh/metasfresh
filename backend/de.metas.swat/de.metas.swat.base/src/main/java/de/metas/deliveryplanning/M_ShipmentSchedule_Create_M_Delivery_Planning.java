@@ -36,7 +36,7 @@ public class M_ShipmentSchedule_Create_M_Delivery_Planning extends WorkpackagePr
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 	private DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
 
-	private static final WorkpackagesOnCommitSchedulerTemplate<I_M_ShipmentSchedule> //
+	private static final WorkpackagesOnCommitSchedulerTemplate<I_M_ShipmentSchedule>
 			SCHEDULER = WorkpackagesOnCommitSchedulerTemplate
 			.newModelScheduler(M_ShipmentSchedule_Create_M_Delivery_Planning.class, I_M_ShipmentSchedule.class)
 			.setCreateOneWorkpackagePerModel(true);
@@ -49,11 +49,9 @@ public class M_ShipmentSchedule_Create_M_Delivery_Planning extends WorkpackagePr
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workPackage, final String localTrxName)
 	{
-		// retrieve the order and generate requests
 		queueDAO.retrieveAllItems(workPackage, I_M_ShipmentSchedule.class)
 				.forEach(deliveryPlanningService::generateOutgoingDeliveryPlanning);
 
 		return Result.SUCCESS;
 	}
-
 }

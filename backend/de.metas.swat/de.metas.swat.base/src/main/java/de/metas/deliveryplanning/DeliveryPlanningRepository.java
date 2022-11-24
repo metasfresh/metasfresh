@@ -27,6 +27,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.incoterms.IncotermsId;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ReceiptScheduleId;
+import de.metas.location.CountryId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
@@ -110,7 +111,8 @@ public class DeliveryPlanningRepository
 		deliveryPlanningRecord.setM_Delivery_Planning_Type(DeliveryPlanningType.toCodeOrNull(request.getDeliveryPlanningType()));
 
 		deliveryPlanningRecord.setBatch(request.getBatch());
-		deliveryPlanningRecord.setOriginCountry(request.getOriginCountry());
+		deliveryPlanningRecord.setC_OriginCountry_ID(CountryId.toRepoId(request.getOriginCountryId()));
+		deliveryPlanningRecord.setC_DestinationCountry_ID(CountryId.toRepoId(request.getDestinationCountryId()));
 
 		save(deliveryPlanningRecord);
 	}

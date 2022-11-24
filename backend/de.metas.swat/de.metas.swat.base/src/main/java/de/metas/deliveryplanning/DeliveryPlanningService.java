@@ -32,6 +32,7 @@ import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.location.CountryId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.ClientAndOrgId;
@@ -144,14 +145,17 @@ public class DeliveryPlanningService
 				.actualLoadQty(Quantity.of(deliveryPlanningRecord.getActualLoadQty(), uomToUse))
 				.actualDeliveredQty(Quantity.of(deliveryPlanningRecord.getActualDeliveredQty(), uomToUse))
 				.uom(uomToUse)
-				.plannedLoadingDate(LocalDateAndOrgId.ofTimestamp(deliveryPlanningRecord.getPlannedLoadingDate(), orgId, orgDAO::getTimeZone))
-				.actualLoadingDate(LocalDateAndOrgId.ofTimestamp(deliveryPlanningRecord.getActualLoadingDate(), orgId, orgDAO::getTimeZone))
-				.plannedDeliveryDate(LocalDateAndOrgId.ofTimestamp(deliveryPlanningRecord.getPlannedDeliveryDate(), orgId, orgDAO::getTimeZone))
-				.actualDeliveryDate(LocalDateAndOrgId.ofTimestamp(deliveryPlanningRecord.getActualDeliveryDate(), orgId, orgDAO::getTimeZone))
+				.plannedLoadingDate(LocalDateAndOrgId.ofTimestampOrNull(deliveryPlanningRecord.getPlannedLoadingDate(), orgId, orgDAO::getTimeZone))
+				.actualLoadingDate(LocalDateAndOrgId.ofTimestampOrNull(deliveryPlanningRecord.getActualLoadingDate(), orgId, orgDAO::getTimeZone))
+				.plannedDeliveryDate(LocalDateAndOrgId.ofTimestampOrNull(deliveryPlanningRecord.getPlannedDeliveryDate(), orgId, orgDAO::getTimeZone))
+				.actualDeliveryDate(LocalDateAndOrgId.ofTimestampOrNull(deliveryPlanningRecord.getActualDeliveryDate(), orgId, orgDAO::getTimeZone))
 				.releaseNo(deliveryPlanningRecord.getReleaseNo())
 				.wayBillNo(deliveryPlanningRecord.getWayBillNo())
 				.batch(deliveryPlanningRecord.getBatch())
-				.originCountry(deliveryPlanningRecord.getOriginCountry())
+				.originCountryId(CountryId.ofRepoIdOrNull(deliveryPlanningRecord.getC_OriginCountry_ID()))
+				.destinationCountryId(CountryId.ofRepoIdOrNull(deliveryPlanningRecord.getC_DestinationCountry_ID()))
+				.forwarder(deliveryPlanningRecord.getForwarder())
+				.transportDetails(deliveryPlanningRecord.getTransportDetails())
 				.build();
 	}
 

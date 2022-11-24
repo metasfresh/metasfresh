@@ -43,7 +43,6 @@ public class M_ReceiptSchedule_Create_M_Delivery_Planning extends WorkpackagePro
 	public static void scheduleOnTrxCommit(@NonNull final I_M_ReceiptSchedule receiptScheduleRecord)
 	{
 		SCHEDULER.schedule(receiptScheduleRecord);
-
 	}
 
 	@Override

@@ -49,6 +49,8 @@ import de.metas.inoutcandidate.modelvalidator.M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.IReceiptScheduleListener;
 import de.metas.inoutcandidate.spi.impl.CompositeReceiptScheduleListener;
 import de.metas.interfaces.I_C_BPartner;
+import de.metas.location.CountryId;
+import de.metas.location.ICountryDAO;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
@@ -125,6 +127,9 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+
+	final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
+
 	private IReceiptScheduleQtysBL receiptScheduleQtysBL = Services.get(IReceiptScheduleQtysBL.class);
 
 	@Override
@@ -775,7 +780,9 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNull(receiptScheduleRecord.getM_AttributeSetInstance_ID());
 
-		final String originCountry = attributeSetInstanceBL.getAttributeValueOrNull(AttributeConstants.CountryOfOrigin, asiId);
+		final String originCountryCode = attributeSetInstanceBL.getAttributeValueOrNull(AttributeConstants.CountryOfOrigin, asiId);
+		final CountryId countryId = originCountryCode == null? null : countryDAO.getCountryIdByCountryCode(originCountryCode);
+
 		final String huBatchNo = attributeSetInstanceBL.getAttributeValueOrNull(AttributeConstants.HU_BatchNo, asiId);
 
 		final DeliveryPlanningCreateRequest.DeliveryPlanningCreateRequestBuilder requestBuilder = DeliveryPlanningCreateRequest.builder()
@@ -784,6 +791,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 				.receiptScheduleId(ReceiptScheduleId.ofRepoId(receiptScheduleRecord.getM_ReceiptSchedule_ID()))
 				.deliveryPlanningType(DeliveryPlanningType.Incoming)
 				.orderId(orderId)
+				.orderLineId(orderLineId)
 				.warehouseId(WarehouseId.ofRepoId(receiptScheduleRecord.getM_Warehouse_ID()))
 				.productId(ProductId.ofRepoId(receiptScheduleRecord.getM_Product_ID()))
 				.partnerId(BPartnerId.ofRepoId(receiptScheduleRecord.getC_BPartner_ID()))
@@ -792,10 +800,12 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 				.isActive(receiptScheduleRecord.isActive())
 				.qtyOredered(qtyOrdered)
 				.qtyTotalOpen(qtyOrdered.subtract(qtyMoved))
+				.actualLoadQty(Quantity.zero(uom))
+				.actualDeliveredQty(Quantity.zero(uom))
 				.uom(uom)
-				.plannedDeliveryDate(LocalDateAndOrgId.ofTimestamp(receiptScheduleRecord.getMovementDate(), orgId, orgDAO::getTimeZone))
+				.plannedDeliveryDate(LocalDateAndOrgId.ofTimestampOrNull(receiptScheduleRecord.getMovementDate(), orgId, orgDAO::getTimeZone))
 				.batch(huBatchNo)
-				.originCountry(originCountry);
+				.originCountryId(countryId);
 
 		if (orderId != null)
 		{

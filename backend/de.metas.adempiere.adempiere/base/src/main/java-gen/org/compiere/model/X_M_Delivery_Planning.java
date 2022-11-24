@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_Delivery_Planning, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 682175820L;
+	private static final long serialVersionUID = -54787385L;
 
     /** Standard Constructor */
     public X_M_Delivery_Planning (final Properties ctx, final int M_Delivery_Planning_ID, @Nullable final String trxName)
@@ -139,6 +139,33 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	}
 
 	@Override
+	public org.compiere.model.I_C_Country getC_DestinationCountry()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_DestinationCountry_ID, org.compiere.model.I_C_Country.class);
+	}
+
+	@Override
+	public void setC_DestinationCountry(final org.compiere.model.I_C_Country C_DestinationCountry)
+	{
+		set_ValueFromPO(COLUMNNAME_C_DestinationCountry_ID, org.compiere.model.I_C_Country.class, C_DestinationCountry);
+	}
+
+	@Override
+	public void setC_DestinationCountry_ID (final int C_DestinationCountry_ID)
+	{
+		if (C_DestinationCountry_ID < 1) 
+			set_Value (COLUMNNAME_C_DestinationCountry_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_DestinationCountry_ID, C_DestinationCountry_ID);
+	}
+
+	@Override
+	public int getC_DestinationCountry_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_DestinationCountry_ID);
+	}
+
+	@Override
 	public org.compiere.model.I_C_Incoterms getC_Incoterms()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Incoterms_ID, org.compiere.model.I_C_Incoterms.class);
@@ -217,6 +244,33 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	public int getC_OrderLine_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_OrderLine_ID);
+	}
+
+	@Override
+	public org.compiere.model.I_C_Country getC_OriginCountry()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_OriginCountry_ID, org.compiere.model.I_C_Country.class);
+	}
+
+	@Override
+	public void setC_OriginCountry(final org.compiere.model.I_C_Country C_OriginCountry)
+	{
+		set_ValueFromPO(COLUMNNAME_C_OriginCountry_ID, org.compiere.model.I_C_Country.class, C_OriginCountry);
+	}
+
+	@Override
+	public void setC_OriginCountry_ID (final int C_OriginCountry_ID)
+	{
+		if (C_OriginCountry_ID < 1) 
+			set_Value (COLUMNNAME_C_OriginCountry_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_OriginCountry_ID, C_OriginCountry_ID);
+	}
+
+	@Override
+	public int getC_OriginCountry_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_OriginCountry_ID);
 	}
 
 	@Override
@@ -469,8 +523,7 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	@Override
 	public void setOriginCountry (final @Nullable java.lang.String OriginCountry)
 	{
-		set_Value (COLUMNNAME_OriginCountry, OriginCountry);
-	}
+		throw new IllegalArgumentException ("OriginCountry is virtual column");	}
 
 	@Override
 	public java.lang.String getOriginCountry() 

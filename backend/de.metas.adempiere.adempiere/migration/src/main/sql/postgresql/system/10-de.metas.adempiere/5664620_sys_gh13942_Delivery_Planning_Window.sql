@@ -2225,3 +2225,333 @@ UPDATE AD_UI_ElementGroup SET SeqNo=30,Updated=TO_TIMESTAMP('2022-11-23 17:19:35
 UPDATE AD_UI_ElementGroup SET SeqNo=40,Updated=TO_TIMESTAMP('2022-11-23 17:19:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_ElementGroup_ID=550031
 ;
 
+
+-- Tab: Delivery Planning(541632,D) -> Delivery Planning
+-- Table: M_Delivery_Planning
+-- 2022-11-24T10:18:53.317Z
+UPDATE AD_Tab SET IsInsertRecord='N',Updated=TO_TIMESTAMP('2022-11-24 12:18:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=546674
+;
+
+
+
+-- Field: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> Land
+-- Column: M_Delivery_Planning.C_Country_ID
+-- 2022-11-24T13:10:27.902Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,Help,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,585137,708201,0,546674,TO_TIMESTAMP('2022-11-24 15:10:27','YYYY-MM-DD HH24:MI:SS'),100,'Land',10,'D','"Land" bezeichnet ein Land. Jedes Land muss angelegt sein, bevor es in einem Beleg verwendet werden kann.','Y','Y','N','N','N','N','N','Land',TO_TIMESTAMP('2022-11-24 15:10:27','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-11-24T13:10:27.903Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=708201 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-11-24T13:10:27.905Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(192) 
+;
+
+-- 2022-11-24T13:10:27.920Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=708201
+;
+
+-- 2022-11-24T13:10:27.921Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(708201)
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 10 -> links.Land
+-- Column: M_Delivery_Planning.C_Country_ID
+-- 2022-11-24T13:11:24.539Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,708201,0,546674,550033,613577,'F',TO_TIMESTAMP('2022-11-24 15:11:24','YYYY-MM-DD HH24:MI:SS'),100,'Land','"Land" bezeichnet ein Land. Jedes Land muss angelegt sein, bevor es in einem Beleg verwendet werden kann.','Y','N','N','Y','N','N','N',0,'Land',90,0,0,TO_TIMESTAMP('2022-11-24 15:11:24','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+
+
+
+
+-- Field: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> Destination Country
+-- Column: M_Delivery_Planning.C_DestinationCountry_ID
+-- 2022-11-24T13:42:40.661Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,585138,708202,0,546674,TO_TIMESTAMP('2022-11-24 15:42:40','YYYY-MM-DD HH24:MI:SS'),100,10,'D','Y','Y','N','N','N','N','N','Destination Country',TO_TIMESTAMP('2022-11-24 15:42:40','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-11-24T13:42:40.663Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=708202 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-11-24T13:42:40.665Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(581730) 
+;
+
+-- 2022-11-24T13:42:40.668Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=708202
+;
+
+-- 2022-11-24T13:42:40.670Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(708202)
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 10 -> default.Destination Country
+-- Column: M_Delivery_Planning.C_DestinationCountry_ID
+-- 2022-11-24T13:43:10.031Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,708202,0,546674,550028,613578,'F',TO_TIMESTAMP('2022-11-24 15:43:09','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Destination Country',390,0,0,TO_TIMESTAMP('2022-11-24 15:43:09','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+
+
+
+
+
+
+-- Field: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> Creation date
+-- Column: M_Delivery_Planning.CreationDate
+-- 2022-11-24T13:50:10.109Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,585139,708203,0,546674,TO_TIMESTAMP('2022-11-24 15:50:09','YYYY-MM-DD HH24:MI:SS'),100,7,'D','Y','Y','N','N','N','N','N','Creation date',TO_TIMESTAMP('2022-11-24 15:50:09','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-11-24T13:50:10.111Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=708203 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-11-24T13:50:10.113Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(578970) 
+;
+
+-- 2022-11-24T13:50:10.116Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=708203
+;
+
+-- 2022-11-24T13:50:10.117Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(708203)
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 10 -> links.Creation date
+-- Column: M_Delivery_Planning.CreationDate
+-- 2022-11-24T13:51:05.352Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,708203,0,546674,550033,613579,'F',TO_TIMESTAMP('2022-11-24 15:51:05','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','N','N','N','N',0,'Creation date',100,0,0,TO_TIMESTAMP('2022-11-24 15:51:05','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 10 -> links.Creation date
+-- Column: M_Delivery_Planning.CreationDate
+-- 2022-11-24T13:51:15.947Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=10,Updated=TO_TIMESTAMP('2022-11-24 15:51:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613579
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 20 -> flags.Type
+-- Column: M_Delivery_Planning.M_Delivery_Planning_Type
+-- 2022-11-24T13:51:15.954Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=20,Updated=TO_TIMESTAMP('2022-11-24 15:51:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613482
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 20 -> flags.B2B
+-- Column: M_Delivery_Planning.IsB2B
+-- 2022-11-24T13:51:15.961Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=30,Updated=TO_TIMESTAMP('2022-11-24 15:51:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613483
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 10 -> default.Section Code
+-- Column: M_Delivery_Planning.M_SectionCode_ID
+-- 2022-11-24T13:51:15.968Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=40,Updated=TO_TIMESTAMP('2022-11-24 15:51:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613484
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 10 -> default.Incoterms
+-- Column: M_Delivery_Planning.C_Incoterms_ID
+-- 2022-11-24T13:51:15.975Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=50,Updated=TO_TIMESTAMP('2022-11-24 15:51:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613485
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 10 -> default.Order Document No
+-- Column: M_Delivery_Planning.OrderDocumentNo
+-- 2022-11-24T13:51:15.981Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=60,Updated=TO_TIMESTAMP('2022-11-24 15:51:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613486
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 10 -> default.Order Reference
+-- Column: M_Delivery_Planning.POReference
+-- 2022-11-24T13:51:15.988Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=70,Updated=TO_TIMESTAMP('2022-11-24 15:51:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613487
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 10 -> default.Partner Name
+-- Column: M_Delivery_Planning.BPartnerName
+-- 2022-11-24T13:51:15.994Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=80,Updated=TO_TIMESTAMP('2022-11-24 15:51:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613488
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 10 -> default.Ship-to location
+-- Column: M_Delivery_Planning.ShipToLocation_Name
+-- 2022-11-24T13:51:16Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=90,Updated=TO_TIMESTAMP('2022-11-24 15:51:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613490
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 10 -> default.Product Name
+-- Column: M_Delivery_Planning.ProductName
+-- 2022-11-24T13:51:16.007Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=100,Updated=TO_TIMESTAMP('2022-11-24 15:51:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613491
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 10 -> default.Product Value
+-- Column: M_Delivery_Planning.ProductValue
+-- 2022-11-24T13:51:16.013Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=110,Updated=TO_TIMESTAMP('2022-11-24 15:51:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613492
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 10 -> default.Grade
+-- Column: M_Delivery_Planning.Grade
+-- 2022-11-24T13:51:16.018Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=120,Updated=TO_TIMESTAMP('2022-11-24 15:51:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613493
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 20 -> qtys.Qty Ordered
+-- Column: M_Delivery_Planning.QtyOrdered
+-- 2022-11-24T13:51:16.024Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=130,Updated=TO_TIMESTAMP('2022-11-24 15:51:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613494
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 20 -> qtys.Qty Total Open
+-- Column: M_Delivery_Planning.QtyTotalOpen
+-- 2022-11-24T13:51:16.029Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=140,Updated=TO_TIMESTAMP('2022-11-24 15:51:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613495
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 10 -> default.Warehouse Name
+-- Column: M_Delivery_Planning.WarehouseName
+-- 2022-11-24T13:51:16.035Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=150,Updated=TO_TIMESTAMP('2022-11-24 15:51:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613496
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 10 -> default.Order Status
+-- Column: M_Delivery_Planning.OrderStatus
+-- 2022-11-24T13:51:16.040Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=160,Updated=TO_TIMESTAMP('2022-11-24 15:51:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613498
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 20 -> dates.Planned Delivery Date
+-- Column: M_Delivery_Planning.PlannedDeliveryDate
+-- 2022-11-24T13:51:16.046Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=170,Updated=TO_TIMESTAMP('2022-11-24 15:51:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613499
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 20 -> dates.Actual Delivery Date
+-- Column: M_Delivery_Planning.ActualDeliveryDate
+-- 2022-11-24T13:51:16.052Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=180,Updated=TO_TIMESTAMP('2022-11-24 15:51:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613500
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 10 -> default.Release No
+-- Column: M_Delivery_Planning.ReleaseNo
+-- 2022-11-24T13:51:16.057Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=190,Updated=TO_TIMESTAMP('2022-11-24 15:51:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613501
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 20 -> dates.Planned Loading Date
+-- Column: M_Delivery_Planning.PlannedLoadingDate
+-- 2022-11-24T13:51:16.062Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=200,Updated=TO_TIMESTAMP('2022-11-24 15:51:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613502
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 20 -> dates.Actual Loading Date
+-- Column: M_Delivery_Planning.ActualLoadingDate
+-- 2022-11-24T13:51:16.067Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=210,Updated=TO_TIMESTAMP('2022-11-24 15:51:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613503
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 20 -> qtys.Actual Load Qty
+-- Column: M_Delivery_Planning.ActualLoadQty
+-- 2022-11-24T13:51:16.072Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=220,Updated=TO_TIMESTAMP('2022-11-24 15:51:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613504
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 20 -> qtys.Actual Delivered Qty
+-- Column: M_Delivery_Planning.ActualDeliveredQty
+-- 2022-11-24T13:51:16.078Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=230,Updated=TO_TIMESTAMP('2022-11-24 15:51:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613505
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 10 -> default.Batch
+-- Column: M_Delivery_Planning.Batch
+-- 2022-11-24T13:51:16.083Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=240,Updated=TO_TIMESTAMP('2022-11-24 15:51:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613506
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 10 -> default.Country Of Origin
+-- Column: M_Delivery_Planning.OriginCountry
+-- 2022-11-24T13:51:16.088Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=250,Updated=TO_TIMESTAMP('2022-11-24 15:51:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613507
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 10 -> default.Means of Transportation
+-- Column: M_Delivery_Planning.MeansOfTransportation
+-- 2022-11-24T13:51:16.093Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=260,Updated=TO_TIMESTAMP('2022-11-24 15:51:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613508
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 10 -> default.Forwarder
+-- Column: M_Delivery_Planning.Forwarder
+-- 2022-11-24T13:51:16.098Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=270,Updated=TO_TIMESTAMP('2022-11-24 15:51:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613509
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 10 -> default.Transport Details
+-- Column: M_Delivery_Planning.TransportDetails
+-- 2022-11-24T13:51:16.103Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=280,Updated=TO_TIMESTAMP('2022-11-24 15:51:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613510
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 10 -> default.Way Bill No
+-- Column: M_Delivery_Planning.WayBillNo
+-- 2022-11-24T13:51:16.109Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=290,Updated=TO_TIMESTAMP('2022-11-24 15:51:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613511
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 10 -> default.Transport Order
+-- Column: M_Delivery_Planning.TransportationOrderNo
+-- 2022-11-24T13:51:16.114Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=300,Updated=TO_TIMESTAMP('2022-11-24 15:51:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613512
+;
+
+
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 10 -> links.Destination Country
+-- Column: M_Delivery_Planning.C_DestinationCountry_ID
+-- 2022-11-24T14:16:05.253Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,708202,0,546674,550033,613580,'F',TO_TIMESTAMP('2022-11-24 16:16:05','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Destination Country',110,0,0,TO_TIMESTAMP('2022-11-24 16:16:05','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+
+
+
+
+-- Field: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> Origin Country
+-- Column: M_Delivery_Planning.C_OriginCountry_ID
+-- 2022-11-24T14:27:26.996Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,585140,708204,0,546674,TO_TIMESTAMP('2022-11-24 16:27:26','YYYY-MM-DD HH24:MI:SS'),100,10,'D','Y','Y','N','N','N','N','N','Origin Country',TO_TIMESTAMP('2022-11-24 16:27:26','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-11-24T14:27:26.998Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=708204 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-11-24T14:27:27Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(581734) 
+;
+
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 10 -> links.Origin Country
+-- Column: M_Delivery_Planning.C_OriginCountry_ID
+-- 2022-11-24T14:28:14.260Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,708204,0,546674,550033,613581,'F',TO_TIMESTAMP('2022-11-24 16:28:14','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Origin Country',120,0,0,TO_TIMESTAMP('2022-11-24 16:28:14','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 10 -> links.Destination Country
+-- Column: M_Delivery_Planning.C_DestinationCountry_ID
+-- 2022-11-24T14:28:23.169Z
+UPDATE AD_UI_Element SET SeqNo=130,Updated=TO_TIMESTAMP('2022-11-24 16:28:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613580
+;
+
+
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 10 -> default.Destination Country
+-- Column: M_Delivery_Planning.C_DestinationCountry_ID
+-- 2022-11-24T15:21:10.819Z
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=613578
+;
+

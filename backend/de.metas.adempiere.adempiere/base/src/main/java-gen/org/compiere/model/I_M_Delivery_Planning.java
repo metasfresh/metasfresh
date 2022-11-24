@@ -222,6 +222,31 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_C_BPartner_Location_ID = "C_BPartner_Location_ID";
 
 	/**
+	 * Set Destination Country.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_DestinationCountry_ID (int C_DestinationCountry_ID);
+
+	/**
+	 * Get Destination Country.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_DestinationCountry_ID();
+
+	@Nullable org.compiere.model.I_C_Country getC_DestinationCountry();
+
+	void setC_DestinationCountry(@Nullable org.compiere.model.I_C_Country C_DestinationCountry);
+
+	ModelColumn<I_M_Delivery_Planning, org.compiere.model.I_C_Country> COLUMN_C_DestinationCountry_ID = new ModelColumn<>(I_M_Delivery_Planning.class, "C_DestinationCountry_ID", org.compiere.model.I_C_Country.class);
+	String COLUMNNAME_C_DestinationCountry_ID = "C_DestinationCountry_ID";
+
+	/**
 	 * Set Incoterms.
 	 *
 	 * <br>Type: Search
@@ -297,6 +322,31 @@ public interface I_M_Delivery_Planning
 
 	ModelColumn<I_M_Delivery_Planning, org.compiere.model.I_C_OrderLine> COLUMN_C_OrderLine_ID = new ModelColumn<>(I_M_Delivery_Planning.class, "C_OrderLine_ID", org.compiere.model.I_C_OrderLine.class);
 	String COLUMNNAME_C_OrderLine_ID = "C_OrderLine_ID";
+
+	/**
+	 * Set Origin Country.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_OriginCountry_ID (int C_OriginCountry_ID);
+
+	/**
+	 * Get Origin Country.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_OriginCountry_ID();
+
+	@Nullable org.compiere.model.I_C_Country getC_OriginCountry();
+
+	void setC_OriginCountry(@Nullable org.compiere.model.I_C_Country C_OriginCountry);
+
+	ModelColumn<I_M_Delivery_Planning, org.compiere.model.I_C_Country> COLUMN_C_OriginCountry_ID = new ModelColumn<>(I_M_Delivery_Planning.class, "C_OriginCountry_ID", org.compiere.model.I_C_Country.class);
+	String COLUMNNAME_C_OriginCountry_ID = "C_OriginCountry_ID";
 
 	/**
 	 * Get Created.
@@ -683,8 +733,10 @@ public interface I_M_Delivery_Planning
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a virtual column
 	 */
+	@Deprecated
 	void setOriginCountry (@Nullable java.lang.String OriginCountry);
 
 	/**
@@ -692,8 +744,10 @@ public interface I_M_Delivery_Planning
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
+	 * <br>Virtual Column: true (lazy loading)
+	 * @deprecated Please don't use it because this is a lazy loading column and it might affect the performances
 	 */
+	@Deprecated
 	@Nullable java.lang.String getOriginCountry();
 
 	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_OriginCountry = new ModelColumn<>(I_M_Delivery_Planning.class, "OriginCountry", null);

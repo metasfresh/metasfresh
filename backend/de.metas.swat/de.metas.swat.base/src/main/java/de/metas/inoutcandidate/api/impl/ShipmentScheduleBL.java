@@ -9,6 +9,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.deliveryplanning.DeliveryPlanningCreateRequest;
 import de.metas.deliveryplanning.DeliveryPlanningType;
@@ -35,6 +36,8 @@ import de.metas.inoutcandidate.location.ShipmentScheduleLocationsUpdater;
 import de.metas.inoutcandidate.location.adapter.ShipmentScheduleDocumentLocationAdapterFactory;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.lang.SOTrx;
+import de.metas.location.CountryId;
+import de.metas.location.ICountryDAO;
 import de.metas.lock.api.ILockManager;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
@@ -186,7 +189,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-
+	final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 	final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private final ThreadLocal<Boolean> postponeMissingSchedsCreationUntilClose = ThreadLocal.withInitial(() -> false);
@@ -989,11 +992,15 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final Quantity qtyOrdered = Quantity.of(shipmentScheduleRecord.getQtyOrdered(), uomOfProduct);
 		final OrgId orgId = OrgId.ofRepoId(shipmentScheduleRecord.getAD_Org_ID());
 
-
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNull(shipmentScheduleRecord.getM_AttributeSetInstance_ID());
 
-		final String originCountry = attributeSetInstanceBL.getAttributeValueOrNull(AttributeConstants.CountryOfOrigin, asiId);
+		final String originCountryCode = attributeSetInstanceBL.getAttributeValueOrNull(AttributeConstants.CountryOfOrigin, asiId);
+		final CountryId countryId = originCountryCode == null ? null : countryDAO.getCountryIdByCountryCode(originCountryCode);
 		final String huBatchNo = attributeSetInstanceBL.getAttributeValueOrNull(AttributeConstants.HU_BatchNo, asiId);
+
+		final Timestamp deliveryDate_effective = CoalesceUtil.coalesce(shipmentScheduleRecord.getPreparationDate_Override(), shipmentScheduleRecord.getPreparationDate());
+
+		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(shipmentScheduleRecord.getC_BPartner_ID(), shipmentScheduleRecord.getC_BPartner_Location_ID());
 
 		final DeliveryPlanningCreateRequest.DeliveryPlanningCreateRequestBuilder requestBuilder = DeliveryPlanningCreateRequest.builder()
 				.orgId(orgId)
@@ -1001,18 +1008,22 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				.shipmentScheduleId(ShipmentScheduleId.ofRepoId(shipmentScheduleRecord.getM_ShipmentSchedule_ID()))
 				.deliveryPlanningType(DeliveryPlanningType.Outgoing)
 				.orderId(orderId)
+				.orderLineId(orderLineId)
 				.warehouseId(WarehouseId.ofRepoId(shipmentScheduleRecord.getM_Warehouse_ID()))
 				.productId(ProductId.ofRepoId(shipmentScheduleRecord.getM_Product_ID()))
 				.partnerId(BPartnerId.ofRepoId(shipmentScheduleRecord.getC_BPartner_ID()))
-				.bPartnerLocationId(BPartnerLocationId.ofRepoId(shipmentScheduleRecord.getC_BPartner_ID(), shipmentScheduleRecord.getC_BPartner_Location_ID()))
+				.bPartnerLocationId(
+						bPartnerLocationId)
 				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(shipmentScheduleRecord.getM_SectionCode_ID()))
 				.isActive(shipmentScheduleRecord.isActive())
 				.qtyOredered(qtyOrdered)
 				.qtyTotalOpen(qtyOrdered.subtract(getQtyDelivered(shipmentScheduleRecord)))
+				.actualLoadQty(Quantity.zero(uomOfProduct))
+				.actualDeliveredQty(Quantity.zero(uomOfProduct))
 				.uom(uomOfProduct)
-				.plannedDeliveryDate(LocalDateAndOrgId.ofTimestamp(shipmentScheduleRecord.getDeliveryDate_Effective(), orgId, orgDAO::getTimeZone))
+				.plannedDeliveryDate(LocalDateAndOrgId.ofTimestampOrNull(deliveryDate_effective, orgId, orgDAO::getTimeZone))
 				.batch(huBatchNo)
-				.originCountry(originCountry);
+				.originCountryId(countryId);
 
 		if (orderId != null)
 		{
@@ -1020,15 +1031,22 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 			requestBuilder.isB2B(order.isDropShip())
 					.incotermsId(IncotermsId.ofRepoIdOrNull(order.getC_Incoterms_ID()));
+
 		}
 
 		if (orderLineId != null)
 		{
+
 			final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderLineId);
 			final Timestamp dateDelivered = orderLine.getDateDelivered();
 			if (dateDelivered != null)
 			{
+
 				requestBuilder.actualDeliveryDate(LocalDateAndOrgId.ofTimestamp(dateDelivered, orgId, orgDAO::getTimeZone));
+			}
+			if (deliveryDate_effective == null)
+			{
+				requestBuilder.plannedDeliveryDate(LocalDateAndOrgId.ofTimestampOrNull(orderLine.getDatePromised(), orgId, orgDAO::getTimeZone));
 			}
 		}
 

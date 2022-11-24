@@ -33,3 +33,8 @@ INSERT INTO AD_Process_Para_Trl (AD_Language,AD_Process_Para_ID, Description,Hel
 INSERT INTO AD_Table_Process (AD_Client_ID,AD_Org_ID,AD_Process_ID,AD_Table_ID,AD_Table_Process_ID,Created,CreatedBy,EntityType,IsActive,Updated,UpdatedBy,WEBUI_DocumentAction,WEBUI_IncludedTabTopAction,WEBUI_ViewAction,WEBUI_ViewQuickAction,WEBUI_ViewQuickAction_Default) VALUES (0,0,585153,542259,541313,TO_TIMESTAMP('2022-11-23 18:26:50','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',TO_TIMESTAMP('2022-11-23 18:26:50','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','Y','Y','N')
 ;
 
+-- Value: M_DeliveryPlanning_CreateAdditionalLines
+-- Classname: de.metas.deliveryplanning.process.M_DeliveryPlanning_CreateAdditionalLines
+-- 2022-11-24T10:16:18.388Z
+UPDATE AD_Process SET RefreshAllAfterExecution='Y',Updated=TO_TIMESTAMP('2022-11-24 12:16:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Process_ID=585153
+;

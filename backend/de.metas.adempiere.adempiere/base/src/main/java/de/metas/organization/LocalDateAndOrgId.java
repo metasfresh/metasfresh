@@ -59,6 +59,16 @@ public class LocalDateAndOrgId implements Comparable<LocalDateAndOrgId>
 		return new LocalDateAndOrgId(localDate, orgId);
 	}
 
+	public static LocalDateAndOrgId ofTimestampOrNull(@Nullable final Timestamp timestamp, @NonNull final OrgId orgId, @NonNull final Function<OrgId, ZoneId> orgMapper)
+	{
+		if(timestamp == null)
+		{
+			return null;
+		}
+		final LocalDate localDate = timestamp.toInstant().atZone(orgMapper.apply(orgId)).toLocalDate();
+		return new LocalDateAndOrgId(localDate, orgId);
+	}
+
 	public Instant toInstant(@NonNull final Function<OrgId, ZoneId> orgMapper)
 	{
 		return localDate.atStartOfDay().atZone(orgMapper.apply(orgId)).toInstant();
