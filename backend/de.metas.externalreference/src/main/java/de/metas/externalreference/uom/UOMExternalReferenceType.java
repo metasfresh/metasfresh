@@ -25,6 +25,7 @@ package de.metas.externalreference.uom;
 import de.metas.externalreference.IExternalReferenceType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 
@@ -39,7 +40,8 @@ public enum UOMExternalReferenceType implements IExternalReferenceType
 	private final String code;
 	private final String tableName;
 
-	public static UOMExternalReferenceType ofCode(final String code)
+	@NonNull
+	public static UOMExternalReferenceType ofCode(@NonNull final String code)
 	{
 		if (UOM.getCode().equals(code))
 		{

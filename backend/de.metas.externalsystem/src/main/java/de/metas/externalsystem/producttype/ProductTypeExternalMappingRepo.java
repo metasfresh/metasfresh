@@ -24,7 +24,7 @@ package de.metas.externalsystem.producttype;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.externalsystem.ExternalSystemParentConfigId;
-import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
+import de.metas.externalsystem.model.I_ProductType_External_Mapping;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -36,26 +36,25 @@ public class ProductTypeExternalMappingRepo
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@NonNull
-	public ImmutableList<ProductTypeExternalMapping> getProductTypeExternalMappings(@NonNull final ExternalSystemParentConfigId parentConfigId)
+	public ImmutableList<ProductTypeExternalMapping> getByConfigId(@NonNull final ExternalSystemParentConfigId parentConfigId)
 	{
-		return queryBL.createQueryBuilder(I_ExternalSystem_Config_RabbitMQ_HTTP.I_ProductType_External_Mapping.class)
-				.addEqualsFilter(I_ExternalSystem_Config_RabbitMQ_HTTP.I_ProductType_External_Mapping.COLUMNNAME_ExternalSystem_Config_ID, parentConfigId)
+		return queryBL.createQueryBuilder(I_ProductType_External_Mapping.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ProductType_External_Mapping.COLUMNNAME_ExternalSystem_Config_ID, parentConfigId)
 				.create()
 				.stream()
-				.map(this::ofRecord)
+				.map(ProductTypeExternalMappingRepo::ofRecord)
 				.collect(ImmutableList.toImmutableList());
 	}
 
 	@NonNull
-	private ProductTypeExternalMapping ofRecord(@NonNull final I_ExternalSystem_Config_RabbitMQ_HTTP.I_ProductType_External_Mapping record)
+	private static ProductTypeExternalMapping ofRecord(@NonNull final I_ProductType_External_Mapping record)
 	{
 		return ProductTypeExternalMapping.builder()
 				.productTypeExternalMappingId(ProductTypeExternalMappingId.ofRepoId(record.getProductType_External_Mapping_ID()))
 				.externalValue(record.getExternalValue())
 				.value(record.getValue())
-				.externalSystemParentConfigId(record.getExternalSystem_Config_ID() > 0
-													  ? ExternalSystemParentConfigId.ofRepoId(record.getExternalSystem_Config_ID())
-													  : null)
+				.externalSystemParentConfigId(ExternalSystemParentConfigId.ofRepoId(record.getExternalSystem_Config_ID()))
 				.build();
 	}
 }

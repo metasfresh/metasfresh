@@ -32,7 +32,7 @@ import java.util.function.Function;
 
 @Value
 @Builder
-public class ExternalReferenceMappingQuery
+public class ByTypeAndSystemConfigIdQuery
 {
 	@NonNull
 	Integer externalSystemParentConfigId;
@@ -41,7 +41,7 @@ public class ExternalReferenceMappingQuery
 	Set<IExternalReferenceType> externalReferenceTypeSet;
 
 	@NonNull
-	public RepoIdAware getExternalSystemParentConfigId(@NonNull final Function<Integer, RepoIdAware> idMapper)
+	public <T extends RepoIdAware> T getExternalSystemParentConfigId(@NonNull final Function<Integer, T> idMapper)
 	{
 		return idMapper.apply(externalSystemParentConfigId);
 	}

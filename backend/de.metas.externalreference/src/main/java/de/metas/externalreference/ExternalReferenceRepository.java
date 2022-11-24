@@ -230,18 +230,18 @@ public class ExternalReferenceRepository
 	}
 
 	@NonNull
-	public Map<IExternalReferenceType, List<ExternalReference>> getExternalMappingsByConfigIdAndType(@NonNull final ExternalReferenceMappingQuery externalReferenceMappingQuery)
+	public Map<IExternalReferenceType, List<ExternalReference>> getExternalReferenceByConfigIdAndType(@NonNull final ByTypeAndSystemConfigIdQuery query)
 	{
-		final ExternalSystemParentConfigId externalSystemConfigId = (ExternalSystemParentConfigId)externalReferenceMappingQuery.getExternalSystemParentConfigId(ExternalSystemParentConfigId::ofRepoIdOrNull);
+		final ExternalSystemParentConfigId externalSystemConfigId = query.getExternalSystemParentConfigId(ExternalSystemParentConfigId::ofRepoIdOrNull);
 
-		final ImmutableSet<String> externalTypesCodes = externalReferenceMappingQuery.getExternalReferenceTypeSet()
+		final ImmutableSet<String> externalTypeCodes = query.getExternalReferenceTypeSet()
 				.stream()
 				.map(ReferenceListAwareEnum::getCode)
 				.collect(ImmutableSet.toImmutableSet());
 
 		return queryBL.createQueryBuilder(I_S_ExternalReference.class)
 				.addEqualsFilter(I_S_ExternalReference.COLUMN_ExternalSystem_Config_ID, externalSystemConfigId)
-				.addInArrayFilter(I_S_ExternalReference.COLUMNNAME_Type, externalTypesCodes)
+				.addInArrayFilter(I_S_ExternalReference.COLUMNNAME_Type, externalTypeCodes)
 				.create()
 				.stream()
 				.map(this::buildExternalReference)

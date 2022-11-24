@@ -23,9 +23,12 @@
 package de.metas.externalsystem.producttype;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 /**
  * ProductType_External_Mapping
@@ -33,6 +36,7 @@ import lombok.Value;
 @Value
 public class ProductTypeExternalMappingId implements RepoIdAware
 {
+	@JsonValue
 	int repoId;
 
 	@JsonCreator
@@ -41,8 +45,14 @@ public class ProductTypeExternalMappingId implements RepoIdAware
 		return new ProductTypeExternalMappingId(productTypeExternalMappingId);
 	}
 
+	@Nullable
+	public static ProductTypeExternalMappingId ofRepoIdOrNull(final int repoId)
+	{
+		return repoId > 0 ? new ProductTypeExternalMappingId(repoId) : null;
+	}
+
 	private ProductTypeExternalMappingId(final int productTypeExternalMappingId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(productTypeExternalMappingId, "ProductType_External_Mapping");
+		this.repoId = Check.assumeGreaterThanZero(productTypeExternalMappingId, "ProductType_External_Mapping_ID");
 	}
 }

@@ -27,13 +27,11 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
 @Value
 @Builder
 public class ProductTypeExternalMapping
 {
-	@Nullable
+	@NonNull
 	ProductTypeExternalMappingId productTypeExternalMappingId;
 
 	@NonNull
@@ -42,6 +40,6 @@ public class ProductTypeExternalMapping
 	@NonNull
 	String value;
 
-	@Nullable
+	@NonNull
 	ExternalSystemParentConfigId externalSystemParentConfigId;
 }

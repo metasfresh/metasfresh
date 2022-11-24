@@ -35,9 +35,10 @@ import org.springframework.stereotype.Component;
 @Component
 public class C_UOM
 {
+	@NonNull
 	private final ExternalReferenceRepository externalReferenceRepository;
 
-	public C_UOM(final ExternalReferenceRepository externalReferenceRepository)
+	public C_UOM(@NonNull final ExternalReferenceRepository externalReferenceRepository)
 	{
 		this.externalReferenceRepository = externalReferenceRepository;
 	}

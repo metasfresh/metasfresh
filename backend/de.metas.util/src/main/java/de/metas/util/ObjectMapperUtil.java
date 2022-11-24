@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-sap-file-import
+ * de.metas.util
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,37 +20,32 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.sap.common;
+package de.metas.util;
 
-import de.metas.camel.externalsystems.common.ProcessLogger;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import de.metas.JsonObjectMapperHolder;
+import lombok.experimental.UtilityClass;
 
 import javax.annotation.Nullable;
 
-@Builder
-@Value
-public class MessageLogger
+@UtilityClass
+public class ObjectMapperUtil
 {
-	@NonNull
-	ProcessLogger processLogger;
-
 	@Nullable
-	JsonMetasfreshId pInstanceId;
-
-	@NonNull
-	public static MessageLogger of(@NonNull final ProcessLogger processLogger, @Nullable final JsonMetasfreshId pInstanceId)
+	public static String writeAsStringUnchecked(@Nullable final Object object)
 	{
-		return MessageLogger.builder()
-				.pInstanceId(pInstanceId)
-				.processLogger(processLogger)
-				.build();
-	}
+		try
+		{
+			if (object == null)
+			{
+				return null;
+			}
 
-	public void logErrorMessage(@NonNull final String message)
-	{
-		processLogger.logMessage(message, JsonMetasfreshId.toValue(pInstanceId));
+			return JsonObjectMapperHolder.sharedJsonObjectMapper().writeValueAsString(object);
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw new RuntimeException(e);
+		}
 	}
 }

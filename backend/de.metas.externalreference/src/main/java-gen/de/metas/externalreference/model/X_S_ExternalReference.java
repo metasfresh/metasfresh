@@ -213,8 +213,6 @@ public class X_S_ExternalReference extends org.compiere.model.PO implements I_S_
 	public static final String TYPE_Warehouse = "Warehouse";
 	/** UOM = UOM */
 	public static final String TYPE_UOM = "UOM";
-	/** ProductType = ProductType */
-	public static final String TYPE_ProductType = "ProductType";
 	@Override
 	public void setType (final java.lang.String Type)
 	{

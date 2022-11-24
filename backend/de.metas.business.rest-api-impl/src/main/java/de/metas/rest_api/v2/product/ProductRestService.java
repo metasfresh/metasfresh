@@ -875,7 +875,7 @@ public class ProductRestService
 	}
 
 	@NonNull
-	private String getType(final @NonNull JsonRequestProduct jsonRequestProductUpsertItem)
+	private static String getType(final @NonNull JsonRequestProduct jsonRequestProductUpsertItem)
 	{
 		final String productType;
 		switch (jsonRequestProductUpsertItem.getType())

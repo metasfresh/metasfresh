@@ -23,9 +23,9 @@
 package de.metas.camel.externalsystems.sap.product;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.camel.externalsystems.common.ProcessLogger;
+import de.metas.camel.externalsystems.common.PInstanceLogger;
+import de.metas.camel.externalsystems.common.mapping.ExternalMappingsHolder;
 import de.metas.camel.externalsystems.common.v2.ProductUpsertCamelRequest;
-import de.metas.camel.externalsystems.sap.common.MessageLogger;
 import de.metas.camel.externalsystems.sap.model.product.ProductRow;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import de.metas.common.product.v2.request.JsonRequestProduct;
@@ -41,21 +41,24 @@ import org.apache.camel.Processor;
 import java.util.Optional;
 
 import static de.metas.camel.externalsystems.sap.common.ExternalIdentifierFormat.formatExternalId;
-import static de.metas.camel.externalsystems.sap.product.GetProductsFromFileRouteBuilder.ROUTE_PROPERTY_UPSERT_PRODUCT_ROUTE_CONTEXT;
 
 public class ProductUpsertProcessor implements Processor
 {
 	@NonNull
 	final JsonExternalSystemRequest externalSystemRequest;
 	@NonNull
-	final ProcessLogger processLogger;
+	final PInstanceLogger pInstanceLogger;
+	@NonNull
+	final ExternalMappingsHolder externalMappingsHolder;
 
 	public ProductUpsertProcessor(
 			final @NonNull JsonExternalSystemRequest externalSystemRequest,
-			final @NonNull ProcessLogger processLogger)
+			final @NonNull PInstanceLogger pInstanceLogger,
+			final @NonNull ExternalMappingsHolder externalMappingsHolder)
 	{
 		this.externalSystemRequest = externalSystemRequest;
-		this.processLogger = processLogger;
+		this.pInstanceLogger = pInstanceLogger;
+		this.externalMappingsHolder = externalMappingsHolder;
 	}
 
 	@Override
@@ -63,10 +66,7 @@ public class ProductUpsertProcessor implements Processor
 	{
 		final ProductRow product = exchange.getIn().getBody(ProductRow.class);
 
-		final UpsertProductRouteContext routeContext = exchange.getProperty(ROUTE_PROPERTY_UPSERT_PRODUCT_ROUTE_CONTEXT, UpsertProductRouteContext.class);
-		routeContext.setProductRow(product);
-
-		final ProductUpsertCamelRequest productUpsertCamelRequest = mapProductToProductRequestItem(routeContext)
+		final ProductUpsertCamelRequest productUpsertCamelRequest = mapProductToProductRequestItem(product)
 				.map(ProductUpsertProcessor::wrapUpsertItem)
 				.map(upsertRequest -> ProductUpsertCamelRequest.builder()
 						.jsonRequestProductUpsert(upsertRequest)
@@ -78,19 +78,16 @@ public class ProductUpsertProcessor implements Processor
 	}
 
 	@NonNull
-	private Optional<JsonRequestProductUpsertItem> mapProductToProductRequestItem(@NonNull final UpsertProductRouteContext routeContext)
+	private Optional<JsonRequestProductUpsertItem> mapProductToProductRequestItem(@NonNull final ProductRow product)
 	{
-		if (!validProductRow(routeContext) || !existingMappings(routeContext))
+		if (skipProduct(product))
 		{
 			return Optional.empty();
 		}
 
-		final ProductRow product = routeContext.getProductRow();
-		Check.assumeNotNull(product, "ProductRow cannot be missing at this point!");
-
 		final String productIdentifier = formatExternalId(product.getMaterialCode());
 
-		return mapToJsonRequestProduct(routeContext)
+		return mapToJsonRequestProduct(product)
 				.map(jsonRequestProduct -> JsonRequestProductUpsertItem.builder()
 						.productIdentifier(productIdentifier)
 						.requestProduct(jsonRequestProduct)
@@ -100,41 +97,30 @@ public class ProductUpsertProcessor implements Processor
 	}
 
 	@NonNull
-	private static JsonRequestProductUpsert wrapUpsertItem(@NonNull final JsonRequestProductUpsertItem upsertItem)
+	private Optional<JsonRequestProduct> mapToJsonRequestProduct(@NonNull final ProductRow product)
 	{
-		return JsonRequestProductUpsert.builder()
-				.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
-				.requestItems(ImmutableList.of(upsertItem))
-				.build();
-	}
-
-	@NonNull
-	private Optional<JsonRequestProduct> mapToJsonRequestProduct(@NonNull final UpsertProductRouteContext routeContext)
-	{
-		final ProductRow product = routeContext.getProductRow();
-		Check.assumeNotNull(product, "ProductRow cannot be missing at this point!");
-
-		final ExternalMappingsHolder externalMappingsHolder = routeContext.getSapExternalMappingsHolder();
-		final MessageLogger messageLogger = routeContext.getMessageLogger();
-
-		final String resolvedUOMValue = externalMappingsHolder.resolveUOMSAPValue(product.getUom()).orElse(null);
+		String resolvedUOMValue = externalMappingsHolder.resolveUOMValue(product.getUom()).orElse(null);
 		if (resolvedUOMValue == null)
 		{
-			messageLogger.logErrorMessage("Skipping row due to missing mapping for provided uom code: " + product.getUom());
-			return Optional.empty();
+			pInstanceLogger.logMessage("Warning: missing mapping for provided uom code: " + product.getUom() +
+											   "! MaterialCode =" + product.getMaterialCode());
+
+			resolvedUOMValue = product.getUom();
 		}
 
-		final String resolvedProductTypeValue = externalMappingsHolder.resolveProductTypeSAPValue(product.getMaterialGroup()).orElse(null);
+		final String resolvedProductTypeValue = externalMappingsHolder.resolveProductTypeValue(product.getMaterialGroup()).orElse(null);
 		if (resolvedProductTypeValue == null)
 		{
-			messageLogger.logErrorMessage("Skipping row due to missing mapping for provided product type code: " + product.getMaterialGroup());
+			pInstanceLogger.logMessage("Skipping row due to missing mapping for provided product type code: " + product.getMaterialGroup() +
+											   "! MaterialCode =" + product.getMaterialCode());
 			return Optional.empty();
 		}
 
-		final JsonMetasfreshId resolvedProductCategoryIdentifier = externalMappingsHolder.resolveProductCategorySAPValue(product.getMaterialCategory()).orElse(null);
-		if (resolvedProductCategoryIdentifier == null)
+		final JsonMetasfreshId resolvedProductCategoryId = externalMappingsHolder.resolveProductCategoryId(product.getMaterialType()).orElse(null);
+		if (resolvedProductCategoryId == null)
 		{
-			messageLogger.logErrorMessage("Skipping row due to missing mapping for provided product category code: " + product.getMaterialCategory());
+			pInstanceLogger.logMessage("Skipping row due to missing mapping for provided product category code: " + product.getMaterialType() +
+											   "! MaterialCode =" + product.getMaterialCode());
 			return Optional.empty();
 		}
 
@@ -147,73 +133,48 @@ public class ProductUpsertProcessor implements Processor
 		jsonRequestProduct.setDiscontinued(false);
 
 		jsonRequestProduct.setUomCode(resolvedUOMValue);
-		jsonRequestProduct.setType(JsonRequestProduct.Type.valueOf(resolvedProductTypeValue));
-		jsonRequestProduct.setProductCategoryIdentifier(String.valueOf(resolvedProductCategoryIdentifier.getValue()));
+		jsonRequestProduct.setType(JsonRequestProduct.Type.ofCode(resolvedProductTypeValue));
+		jsonRequestProduct.setProductCategoryIdentifier(String.valueOf(resolvedProductCategoryId.getValue()));
 
 		return Optional.of(jsonRequestProduct);
 	}
 
-	private boolean validProductRow(@NonNull final UpsertProductRouteContext routeContext)
+	private boolean skipProduct(@NonNull final ProductRow product)
 	{
-		final ProductRow product = routeContext.getProductRow();
-		Check.assumeNotNull(product, "ProductRow cannot be missing at this point!");
-
-		final MessageLogger messageLogger = routeContext.getMessageLogger();
-
 		if (Check.isBlank(product.getName()))
 		{
-			messageLogger.logErrorMessage("Skipping row due to missing product name! MaterialCode=" + product.getMaterialCode());
+			pInstanceLogger.logMessage("Skipping row due to missing product name! MaterialCode =" + product.getMaterialCode());
 
-			return false;
+			return true;
 		}
 
 		if (Check.isBlank(product.getUom()))
 		{
-			messageLogger.logErrorMessage("Skipping row due to missing uom code! MaterialCode=" + product.getMaterialCode());
-			return false;
+			pInstanceLogger.logMessage("Skipping row due to missing uom code! MaterialCode =" + product.getMaterialCode());
+			return true;
 		}
 
 		if (Check.isBlank(product.getMaterialGroup()))
 		{
-			messageLogger.logErrorMessage("Skipping row due to missing product type! MaterialCode=" + product.getMaterialCode());
-			return false;
+			pInstanceLogger.logMessage("Skipping row due to missing product type! MaterialCode =" + product.getMaterialCode());
+			return true;
 		}
 
-		if (Check.isBlank(product.getMaterialCategory()))
+		if (Check.isBlank(product.getMaterialType()))
 		{
-			messageLogger.logErrorMessage("Skipping row due to missing product category! MaterialCode=" + product.getMaterialCode());
-			return false;
+			pInstanceLogger.logMessage("Skipping row due to missing product category! MaterialCode =" + product.getMaterialCode());
+			return true;
 		}
 
-		return true;
+		return false;
 	}
 
-	private boolean existingMappings(@NonNull final UpsertProductRouteContext routeContext)
+	@NonNull
+	private static JsonRequestProductUpsert wrapUpsertItem(@NonNull final JsonRequestProductUpsertItem upsertItem)
 	{
-		final ProductRow product = routeContext.getProductRow();
-		Check.assumeNotNull(product, "ProductRow cannot be missing at this point!");
-
-		final MessageLogger messageLogger = routeContext.getMessageLogger();
-
-		final ExternalMappingsHolder externalMappingsHolder = routeContext.getSapExternalMappingsHolder();
-		if (externalMappingsHolder.getExternalRef2UOMMapping().isEmpty())
-		{
-			messageLogger.logErrorMessage("Skipping row due to missing mappings for S_ExternalReference.Type = UOM! MaterialCode=" + product.getMaterialCode());
-			return false;
-		}
-
-		if (externalMappingsHolder.getExternalRef2ProductCategoryMapping().isEmpty())
-		{
-			messageLogger.logErrorMessage("Skipping row due to missing mappings for S_ExternalReference.Type = ProductCategory! MaterialCode=" + product.getMaterialCode());
-			return false;
-		}
-
-		if (externalMappingsHolder.getExternalValue2ProductType().isEmpty())
-		{
-			messageLogger.logErrorMessage("Skipping row due to missing ProductType_External_Mapping mappings! MaterialCode=" + product.getMaterialCode());
-			return false;
-		}
-
-		return true;
+		return JsonRequestProductUpsert.builder()
+				.syncAdvise(SyncAdvise.CREATE_OR_MERGE)
+				.requestItems(ImmutableList.of(upsertItem))
+				.build();
 	}
 }

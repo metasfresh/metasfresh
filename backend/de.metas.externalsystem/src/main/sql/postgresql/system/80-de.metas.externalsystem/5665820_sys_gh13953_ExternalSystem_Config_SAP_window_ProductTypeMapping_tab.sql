@@ -677,5 +677,278 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=20,Updated=TO_TIMESTAMP(
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=30,Updated=TO_TIMESTAMP('2022-11-23 17:34:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613551
 ;
 
+-- UI Element: External system config SAP(541631,de.metas.externalsystem) -> UOM Zuordnung(546681,de.metas.externalreference) -> main -> 10 -> externalRef.External system
+-- Column: S_ExternalReference.ExternalSystem
+-- 2022-11-24T07:35:12.021Z
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=613548
+;
+
+-- UI Element: External system config SAP(541631,de.metas.externalsystem) -> Product Category Mapping(546682,de.metas.externalreference) -> main -> 10 -> externalRef.External system
+-- Column: S_ExternalReference.ExternalSystem
+-- 2022-11-24T07:35:25.483Z
+DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=613554
+;
+
+-- Field: External system config SAP(541631,de.metas.externalsystem) -> ExternalSystem_Config_SAP(546671,de.metas.externalsystem) -> Externes System
+-- Column: ExternalSystem_Config_SAP.ExternalSystem_Config_ID
+-- 2022-11-24T07:36:04.372Z
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2022-11-24 09:36:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=708036
+;
+
+
+-- Element: null
+-- 2022-11-24T07:43:09.096Z
+UPDATE AD_Element_Trl SET Name='Produktkategorie-Zuordnung', PrintName='Produktkategorie-Zuordnung',Updated=TO_TIMESTAMP('2022-11-24 09:43:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581723 AND AD_Language='de_CH'
+;
+
+-- 2022-11-24T07:43:09.141Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581723,'de_CH')
+;
+
+-- Element: null
+-- 2022-11-24T07:43:14.701Z
+UPDATE AD_Element_Trl SET Name='Produktkategorie-Zuordnung', PrintName='Produktkategorie-Zuordnung',Updated=TO_TIMESTAMP('2022-11-24 09:43:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581723 AND AD_Language='de_DE'
+;
+
+-- 2022-11-24T07:43:14.703Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(581723,'de_DE')
+;
+
+-- 2022-11-24T07:43:14.741Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581723,'de_DE')
+;
+
+-- Element: null
+-- 2022-11-24T07:44:00.213Z
+UPDATE AD_Element_Trl SET Name='Produktkategorie Zuordnung', PrintName='Produktkategorie Zuordnung',Updated=TO_TIMESTAMP('2022-11-24 09:44:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581723 AND AD_Language='de_CH'
+;
+
+-- 2022-11-24T07:44:00.215Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581723,'de_CH')
+;
+
+-- Element: null
+-- 2022-11-24T07:44:06.109Z
+UPDATE AD_Element_Trl SET Name='Produktkategorie Zuordnung', PrintName='Produktkategorie Zuordnung',Updated=TO_TIMESTAMP('2022-11-24 09:44:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581723 AND AD_Language='de_DE'
+;
+
+-- 2022-11-24T07:44:06.111Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(581723,'de_DE')
+;
+
+-- 2022-11-24T07:44:06.112Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581723,'de_DE')
+;
+
+-- Element: null
+-- 2022-11-24T07:44:51.233Z
+UPDATE AD_Element_Trl SET Name='Produkttyp Zuordnung', PrintName='Produkttyp Zuordnung',Updated=TO_TIMESTAMP('2022-11-24 09:44:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581724 AND AD_Language='de_CH'
+;
+
+-- 2022-11-24T07:44:51.235Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581724,'de_CH')
+;
+
+-- Element: null
+-- 2022-11-24T07:44:56.110Z
+UPDATE AD_Element_Trl SET Name='Produkttyp Zuordnung', PrintName='Produkttyp Zuordnung',Updated=TO_TIMESTAMP('2022-11-24 09:44:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581724 AND AD_Language='de_DE'
+;
+
+-- 2022-11-24T07:44:56.111Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(581724,'de_DE')
+;
+
+-- 2022-11-24T07:44:56.112Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581724,'de_DE')
+;
+
+-- Element: ExternalValue
+-- 2022-11-24T07:45:37.518Z
+UPDATE AD_Element_Trl SET Name='Außenwert', PrintName='Außenwert',Updated=TO_TIMESTAMP('2022-11-24 09:45:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581718 AND AD_Language='de_CH'
+;
+
+-- 2022-11-24T07:45:37.520Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581718,'de_CH')
+;
+
+-- Element: ExternalValue
+-- 2022-11-24T07:45:42.631Z
+UPDATE AD_Element_Trl SET Name='Außenwert', PrintName='Außenwert',Updated=TO_TIMESTAMP('2022-11-24 09:45:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581718 AND AD_Language='de_DE'
+;
+
+-- 2022-11-24T07:45:42.633Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(581718,'de_DE')
+;
+
+-- 2022-11-24T07:45:42.665Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581718,'de_DE')
+;
+
+-- Element: null
+-- 2022-11-24T07:46:47.336Z
+UPDATE AD_Element_Trl SET Name='SAP Einstellungen', PrintName='SAP Einstellungen',Updated=TO_TIMESTAMP('2022-11-24 09:46:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581725 AND AD_Language='de_CH'
+;
+
+-- 2022-11-24T07:46:47.337Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581725,'de_CH')
+;
+
+-- Element: null
+-- 2022-11-24T07:46:50.921Z
+UPDATE AD_Element_Trl SET Name='SAP Einstellungen', PrintName='SAP Einstellungen',Updated=TO_TIMESTAMP('2022-11-24 09:46:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581725 AND AD_Language='de_DE'
+;
+
+-- 2022-11-24T07:46:50.923Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(581725,'de_DE')
+;
+
+-- 2022-11-24T07:46:50.945Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581725,'de_DE')
+;
+
+-- 2022-11-24T14:05:58.238Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,581731,0,TO_TIMESTAMP('2022-11-24 16:05:58','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.externalsystem','Y','SAP Material Group','SAP Material Group',TO_TIMESTAMP('2022-11-24 16:05:58','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-11-24T14:05:58.249Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=581731 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- Element: null
+-- 2022-11-24T14:06:12.466Z
+UPDATE AD_Element_Trl SET Name='SAP-Materialgruppe', PrintName='SAP-Materialgruppe',Updated=TO_TIMESTAMP('2022-11-24 16:06:12','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581731 AND AD_Language='de_CH'
+;
+
+-- 2022-11-24T14:06:12.486Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581731,'de_CH')
+;
+
+-- Element: null
+-- 2022-11-24T14:06:16.107Z
+UPDATE AD_Element_Trl SET Name='SAP-Materialgruppe', PrintName='SAP-Materialgruppe',Updated=TO_TIMESTAMP('2022-11-24 16:06:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581731 AND AD_Language='de_DE'
+;
+
+-- 2022-11-24T14:06:16.108Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(581731,'de_DE')
+;
+
+-- 2022-11-24T14:06:16.109Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581731,'de_DE')
+;
+
+-- Field: External system config SAP(541631,de.metas.externalsystem) -> Produkttyp Zuordnung(546683,de.metas.externalsystem) -> SAP-Materialgruppe
+-- Column: ProductType_External_Mapping.ExternalValue
+-- 2022-11-24T14:06:38.423Z
+UPDATE AD_Field SET AD_Name_ID=581731, Description=NULL, Help=NULL, Name='SAP-Materialgruppe',Updated=TO_TIMESTAMP('2022-11-24 16:06:38','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=708188
+;
+
+-- 2022-11-24T14:06:38.425Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(581731)
+;
+
+-- 2022-11-24T14:06:38.439Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=708188
+;
+
+-- 2022-11-24T14:06:38.444Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(708188)
+;
+
+-- 2022-11-24T14:07:28.651Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,581732,0,TO_TIMESTAMP('2022-11-24 16:07:28','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.externalsystem','Y','SAP Material Type','SAP Material Type',TO_TIMESTAMP('2022-11-24 16:07:28','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-11-24T14:07:28.652Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=581732 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- Element: null
+-- 2022-11-24T14:08:22.296Z
+UPDATE AD_Element_Trl SET Name='SAP Materialtyp', PrintName='SAP Materialtyp',Updated=TO_TIMESTAMP('2022-11-24 16:08:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581732 AND AD_Language='de_CH'
+;
+
+-- 2022-11-24T14:08:22.298Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581732,'de_CH')
+;
+
+-- Element: null
+-- 2022-11-24T14:08:25.548Z
+UPDATE AD_Element_Trl SET Name='SAP Materialtyp', PrintName='SAP Materialtyp',Updated=TO_TIMESTAMP('2022-11-24 16:08:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581732 AND AD_Language='de_DE'
+;
+
+-- 2022-11-24T14:08:25.550Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(581732,'de_DE')
+;
+
+-- 2022-11-24T14:08:25.551Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581732,'de_DE')
+;
+
+-- Field: External system config SAP(541631,de.metas.externalsystem) -> Produktkategorie Zuordnung(546682,de.metas.externalreference) -> SAP Materialtyp
+-- Column: S_ExternalReference.ExternalReference
+-- 2022-11-24T14:08:43.706Z
+UPDATE AD_Field SET AD_Name_ID=581732, Description=NULL, Help=NULL, Name='SAP Materialtyp',Updated=TO_TIMESTAMP('2022-11-24 16:08:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=708184
+;
+
+-- 2022-11-24T14:08:43.707Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(581732)
+;
+
+-- 2022-11-24T14:08:43.709Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=708184
+;
+
+-- 2022-11-24T14:08:43.709Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(708184)
+;
+
+-- 2022-11-24T14:09:36.185Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,581733,0,TO_TIMESTAMP('2022-11-24 16:09:36','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.externalsystem','Y','SAP Base Unit of Measure','SAP Base Unit of Measure',TO_TIMESTAMP('2022-11-24 16:09:36','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-11-24T14:09:36.189Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=581733 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- Element: null
+-- 2022-11-24T14:14:03.113Z
+UPDATE AD_Element_Trl SET Name='SAP Basismengeneinheit', PrintName='SAP Basismengeneinheit',Updated=TO_TIMESTAMP('2022-11-24 16:14:03','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581733 AND AD_Language='de_CH'
+;
+
+-- 2022-11-24T14:14:03.115Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581733,'de_CH')
+;
+
+-- Element: null
+-- 2022-11-24T14:14:07.066Z
+UPDATE AD_Element_Trl SET Name='SAP Basismengeneinheit', PrintName='SAP Basismengeneinheit',Updated=TO_TIMESTAMP('2022-11-24 16:14:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581733 AND AD_Language='de_DE'
+;
+
+-- 2022-11-24T14:14:07.068Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(581733,'de_DE')
+;
+
+-- 2022-11-24T14:14:07.069Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581733,'de_DE')
+;
+
+-- Field: External system config SAP(541631,de.metas.externalsystem) -> UOM Zuordnung(546681,de.metas.externalreference) -> SAP Basismengeneinheit
+-- Column: S_ExternalReference.ExternalReference
+-- 2022-11-24T14:14:46.278Z
+UPDATE AD_Field SET AD_Name_ID=581733, Description=NULL, Help=NULL, Name='SAP Basismengeneinheit',Updated=TO_TIMESTAMP('2022-11-24 16:14:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=708163
+;
+
+-- 2022-11-24T14:14:46.279Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(581733)
+;
+
+-- 2022-11-24T14:14:46.282Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=708163
+;
+
+-- 2022-11-24T14:14:46.287Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(708163)
+;
+
 
 

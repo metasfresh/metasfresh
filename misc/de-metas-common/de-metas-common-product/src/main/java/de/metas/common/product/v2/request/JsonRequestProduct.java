@@ -23,14 +23,18 @@
 package de.metas.common.product.v2.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 
 import static de.metas.common.product.v2.request.constants.SwaggerDocConstants.PRODUCT_CATEGORY_IDENTIFIER_DOC;
@@ -41,11 +45,6 @@ import static de.metas.common.rest_api.v2.SwaggerDocConstants.READ_ONLY_SYNC_ADV
 @EqualsAndHashCode
 public class JsonRequestProduct
 {
-	public enum Type
-	{
-		ITEM, SERVICE, RESOURCE, EXPENSE_TYPE, ONLINE, FREIGHT_COST, NAHRUNG
-	}
-
 	@ApiModelProperty(position = 20, value = "Corresponding to `M_Product.Value`")
 	private String code;
 
@@ -217,5 +216,32 @@ public class JsonRequestProduct
 	{
 		this.sectionCode = sectionCode;
 		this.sectionCodeSet = true;
+	}
+
+	@AllArgsConstructor
+	public static enum Type
+	{
+		ITEM("I"),
+		SERVICE("S"),
+		RESOURCE("R"),
+		EXPENSE_TYPE("E"),
+		ONLINE("O"),
+		FREIGHT_COST("F"),
+		NAHRUNG("N");
+
+		@Getter
+		private String code;
+		private static final ImmutableMap<String, Type> typesByCode = Maps.uniqueIndex(Arrays.asList(values()), Type::getCode);
+
+		@NonNull
+		public static Type ofCode(@NonNull final String code)
+		{
+			final Type type = typesByCode.get(code);
+			if (type == null)
+			{
+				throw new RuntimeException("No " + Type.class + " found for code: " + code);
+			}
+			return type;
+		}
 	}
 }
