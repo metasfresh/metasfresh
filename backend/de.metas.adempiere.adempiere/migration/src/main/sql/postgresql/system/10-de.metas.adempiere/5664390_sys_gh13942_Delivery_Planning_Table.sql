@@ -1400,3 +1400,9 @@ UPDATE AD_Column SET IsSelectionColumn='Y', SelectionColumnSeqNo=150,Updated=TO_
 UPDATE AD_Column SET ColumnSQL='(SELECT c.Name from C_Country c where c.C_Country_ID = M_Delivery_Planning.C_OriginCountry_ID)',Updated=TO_TIMESTAMP('2022-11-24 17:02:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585031
 ;
 
+
+-- Table: M_Delivery_Planning
+-- 2022-11-24T16:10:27.041Z
+UPDATE AD_Table SET IsEnableRemoteCacheInvalidation='Y',Updated=TO_TIMESTAMP('2022-11-24 18:10:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Table_ID=542259
+;
+

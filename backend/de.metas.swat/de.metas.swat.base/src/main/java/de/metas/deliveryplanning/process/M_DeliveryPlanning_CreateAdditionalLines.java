@@ -53,10 +53,6 @@ public class M_DeliveryPlanning_CreateAdditionalLines extends JavaProcess implem
 
 		deliveryPlanningService.createAdditionalDeliveryPlannings(deliveryPlanningId, additionalLines);
 
-		CacheMgt.get().resetLocalNowAndBroadcastOnTrxCommit(
-				ITrx.TRXNAME_ThreadInherited,
-				CacheInvalidateMultiRequest.allRecordsForTable(I_M_Delivery_Planning.Table_Name));
-
 		return MSG_OK;
 	}
 

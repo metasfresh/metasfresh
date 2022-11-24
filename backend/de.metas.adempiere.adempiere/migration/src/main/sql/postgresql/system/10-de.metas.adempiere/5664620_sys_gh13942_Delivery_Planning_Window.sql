@@ -2555,3 +2555,14 @@ UPDATE AD_UI_Element SET SeqNo=130,Updated=TO_TIMESTAMP('2022-11-24 16:28:23','Y
 DELETE FROM AD_UI_Element WHERE AD_UI_Element_ID=613578
 ;
 
+
+
+-- Tab: Delivery Planning(541632,D) -> Delivery Planning
+-- Table: M_Delivery_Planning
+-- 2022-11-24T16:03:05.270Z
+UPDATE AD_Tab SET IsRefreshViewOnChangeEvents='Y',Updated=TO_TIMESTAMP('2022-11-24 18:03:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=546674
+;
+
+
+
+
