@@ -22,14 +22,13 @@ package org.adempiere.process.rpl;
  * #L%
  */
 
-
-import java.util.Properties;
-
 import org.adempiere.server.rpl.exceptions.ExportProcessorException;
 import org.compiere.model.MEXPProcessor;
 import org.compiere.model.PO;
 import org.compiere.util.Trx;
 import org.w3c.dom.Document;
+
+import java.util.Properties;
 
 public class ExportProcessor2Wrapper implements IExportProcessor2
 {
@@ -69,10 +68,10 @@ public class ExportProcessor2Wrapper implements IExportProcessor2
 		{
 			exportProcessor.process(ctx, expProcessor, document, trx);
 		}
-		catch (Exception e)
+		catch (final Exception e)
 		{
 			// TODO add AD_Message
-			throw new ExportProcessorException(null, e);
+			throw new ExportProcessorException(e.getClass().getSimpleName(), e);
 		}
 	}
 }
