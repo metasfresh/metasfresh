@@ -30,6 +30,7 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
 import org.springframework.stereotype.Component;
 
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.metasfresh.MetasfreshConstants.FEEDBACK_RESOURCE_URL_HEADER;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
@@ -41,6 +42,10 @@ public class MassUpsertFeedbackRouteBuilder extends RouteBuilder
 	@Override
 	public void configure()
 	{
+		errorHandler(defaultErrorHandler());
+		onException(Exception.class)
+				.to(direct(MF_ERROR_ROUTE_ID));
+		
 		//@formatter:off
 		from(direct(MASS_UPSERT_FEEDBACK_ROUTE_ID))
 			.process(new PrepareFeedbackRequest())
