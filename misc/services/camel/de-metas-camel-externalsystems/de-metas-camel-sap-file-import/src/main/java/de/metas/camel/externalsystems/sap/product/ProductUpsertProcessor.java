@@ -38,6 +38,8 @@ import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static de.metas.camel.externalsystems.sap.common.ExternalIdentifierFormat.formatExternalId;
@@ -108,12 +110,14 @@ public class ProductUpsertProcessor implements Processor
 			resolvedUOMValue = product.getUom();
 		}
 
+		boolean skipProduct = false;
+
 		final String resolvedProductTypeValue = externalMappingsHolder.resolveProductTypeValue(product.getMaterialGroup()).orElse(null);
 		if (resolvedProductTypeValue == null)
 		{
 			pInstanceLogger.logMessage("Skipping row due to missing mapping for provided product type code: " + product.getMaterialGroup() +
 											   "! MaterialCode =" + product.getMaterialCode());
-			return Optional.empty();
+			skipProduct = true;
 		}
 
 		final JsonMetasfreshId resolvedProductCategoryId = externalMappingsHolder.resolveProductCategoryId(product.getMaterialType()).orElse(null);
@@ -121,6 +125,11 @@ public class ProductUpsertProcessor implements Processor
 		{
 			pInstanceLogger.logMessage("Skipping row due to missing mapping for provided product category code: " + product.getMaterialType() +
 											   "! MaterialCode =" + product.getMaterialCode());
+			skipProduct = true;
+		}
+
+		if (skipProduct)
+		{
 			return Optional.empty();
 		}
 
@@ -141,32 +150,33 @@ public class ProductUpsertProcessor implements Processor
 
 	private boolean skipProduct(@NonNull final ProductRow product)
 	{
+		boolean skipProduct = false;
 		if (Check.isBlank(product.getName()))
 		{
 			pInstanceLogger.logMessage("Skipping row due to missing product name! MaterialCode =" + product.getMaterialCode());
 
-			return true;
+			skipProduct = true;
 		}
 
 		if (Check.isBlank(product.getUom()))
 		{
 			pInstanceLogger.logMessage("Skipping row due to missing uom code! MaterialCode =" + product.getMaterialCode());
-			return true;
+			skipProduct = true;
 		}
 
 		if (Check.isBlank(product.getMaterialGroup()))
 		{
 			pInstanceLogger.logMessage("Skipping row due to missing product type! MaterialCode =" + product.getMaterialCode());
-			return true;
+			skipProduct = true;
 		}
 
 		if (Check.isBlank(product.getMaterialType()))
 		{
 			pInstanceLogger.logMessage("Skipping row due to missing product category! MaterialCode =" + product.getMaterialCode());
-			return true;
+			skipProduct = true;
 		}
 
-		return false;
+		return skipProduct;
 	}
 
 	@NonNull
