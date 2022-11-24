@@ -22,8 +22,6 @@
 
 package de.metas.deliveryplanning.process;
 
-import de.metas.cache.CacheMgt;
-import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.process.IProcessPrecondition;
@@ -33,9 +31,7 @@ import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Check;
 import lombok.NonNull;
-import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_M_Delivery_Planning;
 
 public class M_DeliveryPlanning_CreateAdditionalLines extends JavaProcess implements IProcessPrecondition
 {
