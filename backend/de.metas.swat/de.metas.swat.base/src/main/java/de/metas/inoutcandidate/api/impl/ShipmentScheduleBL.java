@@ -46,7 +46,6 @@ import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
-import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
@@ -190,7 +189,6 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
-	final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private final ThreadLocal<Boolean> postponeMissingSchedsCreationUntilClose = ThreadLocal.withInitial(() -> false);
 
@@ -1015,13 +1013,12 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				.bPartnerLocationId(
 						bPartnerLocationId)
 				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(shipmentScheduleRecord.getM_SectionCode_ID()))
-				.isActive(shipmentScheduleRecord.isActive())
 				.qtyOredered(qtyOrdered)
 				.qtyTotalOpen(qtyOrdered.subtract(getQtyDelivered(shipmentScheduleRecord)))
 				.actualLoadQty(Quantity.zero(uomOfProduct))
 				.actualDeliveredQty(Quantity.zero(uomOfProduct))
 				.uom(uomOfProduct)
-				.plannedDeliveryDate(LocalDateAndOrgId.ofTimestampOrNull(deliveryDate_effective, orgId, orgDAO::getTimeZone))
+				.plannedDeliveryDate(TimeUtil.asInstant(deliveryDate_effective))
 				.batch(huBatchNo)
 				.originCountryId(countryId);
 
@@ -1036,17 +1033,13 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 
 		if (orderLineId != null)
 		{
-
 			final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderLineId);
-			final Timestamp dateDelivered = orderLine.getDateDelivered();
-			if (dateDelivered != null)
-			{
 
-				requestBuilder.actualDeliveryDate(LocalDateAndOrgId.ofTimestamp(dateDelivered, orgId, orgDAO::getTimeZone));
-			}
+			requestBuilder.actualDeliveryDate(TimeUtil.asInstant(orderLine.getDateDelivered()));
+
 			if (deliveryDate_effective == null)
 			{
-				requestBuilder.plannedDeliveryDate(LocalDateAndOrgId.ofTimestampOrNull(orderLine.getDatePromised(), orgId, orgDAO::getTimeZone));
+				requestBuilder.plannedDeliveryDate(TimeUtil.asInstant(orderLine.getDatePromised()));
 			}
 		}
 

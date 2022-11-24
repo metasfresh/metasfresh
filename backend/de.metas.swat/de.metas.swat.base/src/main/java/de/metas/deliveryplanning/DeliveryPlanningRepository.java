@@ -30,8 +30,6 @@ import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.location.CountryId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.LocalDateAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.sectionCode.SectionCodeId;
@@ -41,6 +39,7 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Delivery_Planning;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -50,11 +49,9 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 @Repository
 public class DeliveryPlanningRepository
 {
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	public I_M_Delivery_Planning getById(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	protected I_M_Delivery_Planning getById(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
 		return load(deliveryPlanningId, I_M_Delivery_Planning.class);
 	}
@@ -62,7 +59,6 @@ public class DeliveryPlanningRepository
 	public void generateDeliveryPlanning(@NonNull final DeliveryPlanningCreateRequest request)
 	{
 		final I_M_Delivery_Planning deliveryPlanningRecord = newInstance(I_M_Delivery_Planning.class);
-
 
 		deliveryPlanningRecord.setAD_Org_ID(request.getOrgId().getRepoId());
 		deliveryPlanningRecord.setM_ReceiptSchedule_ID(ReceiptScheduleId.toRepoId(request.getReceiptScheduleId()));
@@ -77,15 +73,10 @@ public class DeliveryPlanningRepository
 		deliveryPlanningRecord.setC_Incoterms_ID(IncotermsId.toRepoId(request.getIncotermsId()));
 		deliveryPlanningRecord.setM_SectionCode_ID(SectionCodeId.toRepoId(request.getSectionCodeId()));
 
-		final LocalDateAndOrgId plannedDeliveryDate = request.getPlannedDeliveryDate();
-		final LocalDateAndOrgId actualDeliveryDate = request.getActualDeliveryDate();
-		final LocalDateAndOrgId plannedLoadingDate = request.getPlannedLoadingDate();
-		final LocalDateAndOrgId actualLoadingDate = request.getActualLoadingDate();
-
-		deliveryPlanningRecord.setPlannedDeliveryDate(plannedDeliveryDate == null ? null : plannedDeliveryDate.toTimestamp(orgDAO::getTimeZone));
-		deliveryPlanningRecord.setActualDeliveryDate(actualDeliveryDate == null ? null : actualDeliveryDate.toTimestamp(orgDAO::getTimeZone));
-		deliveryPlanningRecord.setPlannedLoadingDate(plannedLoadingDate == null ? null : plannedLoadingDate.toTimestamp(orgDAO::getTimeZone));
-		deliveryPlanningRecord.setActualLoadingDate(actualLoadingDate == null ? null : actualLoadingDate.toTimestamp(orgDAO::getTimeZone));
+		deliveryPlanningRecord.setPlannedDeliveryDate(TimeUtil.asTimestamp(request.getPlannedDeliveryDate()));
+		deliveryPlanningRecord.setActualDeliveryDate(TimeUtil.asTimestamp(request.getActualDeliveryDate()));
+		deliveryPlanningRecord.setPlannedLoadingDate(TimeUtil.asTimestamp(request.getPlannedLoadingDate()));
+		deliveryPlanningRecord.setActualLoadingDate(TimeUtil.asTimestamp(request.getActualLoadingDate()));
 
 		final Quantity qtyOrdered = request.getQtyOredered();
 		final Quantity qtyTotalOpen = request.getQtyTotalOpen();
@@ -104,7 +95,6 @@ public class DeliveryPlanningRepository
 		deliveryPlanningRecord.setReleaseNo(request.getReleaseNo());
 		deliveryPlanningRecord.setTransportDetails(request.getTransportDetails());
 
-		deliveryPlanningRecord.setIsActive(request.isActive);
 		deliveryPlanningRecord.setIsB2B(request.isB2B);
 
 		deliveryPlanningRecord.setMeansOfTransportation(MeansOfTransportation.toCodeOrNull(request.getMeansOfTransportation()));
@@ -118,7 +108,7 @@ public class DeliveryPlanningRepository
 		save(deliveryPlanningRecord);
 	}
 
-	public boolean otherDeliveryPlanningsExistForOrderLine(@NonNull final OrderLineId orderLineId, @NonNull final DeliveryPlanningId excludeDeliveryPlanningId)
+	public boolean isOtherDeliveryPlanningsExistForOrderLine(@NonNull final OrderLineId orderLineId, @NonNull final DeliveryPlanningId excludeDeliveryPlanningId)
 	{
 		return queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
 				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_C_OrderLine_ID, orderLineId)

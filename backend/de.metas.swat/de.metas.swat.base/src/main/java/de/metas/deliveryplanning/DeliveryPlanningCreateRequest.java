@@ -30,7 +30,6 @@ import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.location.CountryId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
-import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -44,6 +43,7 @@ import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 
 @Data
 @Builder
@@ -68,8 +68,6 @@ public class DeliveryPlanningCreateRequest
 	@NonNull BPartnerLocationId bPartnerLocationId;
 
 	boolean isB2B;
-
-	boolean isActive;
 
 	@NonNull DeliveryPlanningType deliveryPlanningType;
 
@@ -98,16 +96,16 @@ public class DeliveryPlanningCreateRequest
 	ReceiptScheduleId receiptScheduleId;
 
 	@Nullable
-	LocalDateAndOrgId plannedLoadingDate;
+	Instant plannedLoadingDate;
 
 	@Nullable
-	LocalDateAndOrgId actualLoadingDate;
+	Instant actualLoadingDate;
 
 	@Nullable
-	LocalDateAndOrgId plannedDeliveryDate;
+	Instant plannedDeliveryDate;
 
 	@Nullable
-	LocalDateAndOrgId actualDeliveryDate;
+	Instant actualDeliveryDate;
 
 	@NonNull
 	Quantity qtyOredered;

@@ -36,14 +36,13 @@ import org.compiere.SpringContextHolder;
 public class M_DeliveryPlanning_CreateAdditionalLines extends JavaProcess implements IProcessPrecondition
 {
 	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
-
-	private final String PARAM_AdditionalLines = "AdditionalLines";
-	@Param(parameterName = PARAM_AdditionalLines)
+	@Param(parameterName = DeliveryPlanningService.PARAM_AdditionalLines)
 	private int additionalLines;
+
 	@Override
 	protected String doIt() throws Exception
 	{
-		Check.assumeGreaterThanZero(additionalLines, PARAM_AdditionalLines);
+		Check.assumeGreaterThanZero(additionalLines, DeliveryPlanningService.PARAM_AdditionalLines);
 
 		final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoId(getRecord_ID());
 

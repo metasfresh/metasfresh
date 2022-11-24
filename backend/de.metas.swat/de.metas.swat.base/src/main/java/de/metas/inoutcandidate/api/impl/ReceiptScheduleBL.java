@@ -45,7 +45,6 @@ import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.exportaudit.APIExportStatus;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule_Alloc;
-import de.metas.inoutcandidate.modelvalidator.M_ReceiptSchedule;
 import de.metas.inoutcandidate.spi.IReceiptScheduleListener;
 import de.metas.inoutcandidate.spi.impl.CompositeReceiptScheduleListener;
 import de.metas.interfaces.I_C_BPartner;
@@ -55,8 +54,6 @@ import de.metas.logging.LogManager;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.ProductId;
@@ -98,7 +95,6 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -112,7 +108,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 {
 	public static final String SYSCONFIG_CAN_BE_EXPORTED_AFTER_SECONDS = "de.metas.inoutcandidate.M_ReceiptSchedule.canBeExportedAfterSeconds";
 
-	private final static transient Logger logger = LogManager.getLogger(M_ReceiptSchedule.class);
+	private final static transient Logger logger = LogManager.getLogger(ReceiptScheduleBL.class);
 
 	private final CompositeReceiptScheduleListener listeners = new CompositeReceiptScheduleListener();
 	private final IAggregationKeyBuilder<I_M_ReceiptSchedule> headerAggregationKeyBuilder = new ReceiptScheduleHeaderAggregationKeyBuilder();
@@ -121,9 +117,6 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	private final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
-
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
@@ -781,7 +774,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNull(receiptScheduleRecord.getM_AttributeSetInstance_ID());
 
 		final String originCountryCode = attributeSetInstanceBL.getAttributeValueOrNull(AttributeConstants.CountryOfOrigin, asiId);
-		final CountryId countryId = originCountryCode == null? null : countryDAO.getCountryIdByCountryCode(originCountryCode);
+		final CountryId countryId = originCountryCode == null ? null : countryDAO.getCountryIdByCountryCode(originCountryCode);
 
 		final String huBatchNo = attributeSetInstanceBL.getAttributeValueOrNull(AttributeConstants.HU_BatchNo, asiId);
 
@@ -797,13 +790,12 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 				.partnerId(BPartnerId.ofRepoId(receiptScheduleRecord.getC_BPartner_ID()))
 				.bPartnerLocationId(BPartnerLocationId.ofRepoId(receiptScheduleRecord.getC_BPartner_ID(), receiptScheduleRecord.getC_BPartner_Location_ID()))
 				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(receiptScheduleRecord.getM_SectionCode_ID()))
-				.isActive(receiptScheduleRecord.isActive())
 				.qtyOredered(qtyOrdered)
 				.qtyTotalOpen(qtyOrdered.subtract(qtyMoved))
 				.actualLoadQty(Quantity.zero(uom))
 				.actualDeliveredQty(Quantity.zero(uom))
 				.uom(uom)
-				.plannedDeliveryDate(LocalDateAndOrgId.ofTimestampOrNull(receiptScheduleRecord.getMovementDate(), orgId, orgDAO::getTimeZone))
+				.plannedDeliveryDate(TimeUtil.asInstant(receiptScheduleRecord.getMovementDate()))
 				.batch(huBatchNo)
 				.originCountryId(countryId);
 
@@ -818,11 +810,8 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 		if (orderLineId != null)
 		{
 			final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderLineId);
-			final Timestamp dateDelivered = orderLine.getDateDelivered();
-			if (dateDelivered != null)
-			{
-				requestBuilder.actualDeliveryDate(LocalDateAndOrgId.ofTimestamp(dateDelivered, orgId, orgDAO::getTimeZone));
-			}
+
+			requestBuilder.actualDeliveryDate(TimeUtil.asInstant(orderLine.getDateDelivered()));
 		}
 
 		return requestBuilder.build();

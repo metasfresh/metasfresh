@@ -331,7 +331,7 @@ public class M_ShipmentSchedule
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
 	public void createDeliveryPlanning(@NonNull final I_M_ShipmentSchedule sched)
 	{
-		final boolean autoCreateEnabled = deliveryPlanningService.autoCreateEnabled(ClientAndOrgId.ofClientAndOrg(sched.getAD_Client_ID(), sched.getAD_Org_ID()));
+		final boolean autoCreateEnabled = deliveryPlanningService.isAutoCreateEnabled(ClientAndOrgId.ofClientAndOrg(sched.getAD_Client_ID(), sched.getAD_Org_ID()));
 
 		if (!autoCreateEnabled)
 		{

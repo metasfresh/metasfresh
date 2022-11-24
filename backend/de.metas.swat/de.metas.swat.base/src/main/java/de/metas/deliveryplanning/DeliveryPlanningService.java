@@ -36,8 +36,6 @@ import de.metas.location.CountryId;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.ClientAndOrgId;
-import de.metas.organization.IOrgDAO;
-import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
@@ -45,6 +43,7 @@ import de.metas.quantity.Quantity;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.uom.IUOMDAO;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -53,6 +52,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Delivery_Planning;
+import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -60,15 +60,12 @@ public class DeliveryPlanningService
 {
 	private static final String SYSCONFIG_M_Delivery_Planning_CreateAutomatically = "de.metas.deliveryplanning.DeliveryPlanningService.M_Delivery_Planning_CreateAutomatically";
 	private static final AdMessageKey MSG_M_Delivery_Planning_AtLeastOnePerOrderLine = AdMessageKey.of("M_Delivery_Planning_AtLeastOnePerOrderLine");
-
+	public static final String PARAM_AdditionalLines = "AdditionalLines";
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-
-	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
-
 	private final IProductBL productBL = Services.get(IProductBL.class);
-
+	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 	private final DeliveryPlanningRepository deliveryPlanningRepository;
 
 	public DeliveryPlanningService(@NonNull final DeliveryPlanningRepository deliveryPlanningRepository)
@@ -76,14 +73,10 @@ public class DeliveryPlanningService
 		this.deliveryPlanningRepository = deliveryPlanningRepository;
 	}
 
-	public boolean autoCreateEnabled(@NonNull final ClientAndOrgId clientAndOrgId)
+	public boolean isAutoCreateEnabled(@NonNull final ClientAndOrgId clientAndOrgId)
 	{
 		return sysConfigBL.getBooleanValue(SYSCONFIG_M_Delivery_Planning_CreateAutomatically, false, clientAndOrgId);
 	}
-
-	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-
-	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 
 	public void generateIncomingDeliveryPlanning(final I_M_ReceiptSchedule receiptScheduleRecord)
 	{
@@ -106,7 +99,7 @@ public class DeliveryPlanningService
 			return;
 		}
 
-		final boolean otherDeliveryPlanningsExistForOrderLine = deliveryPlanningRepository.otherDeliveryPlanningsExistForOrderLine(orderLineId, DeliveryPlanningId.ofRepoId(deliveryPlanning.getM_Delivery_Planning_ID()));
+		final boolean otherDeliveryPlanningsExistForOrderLine = deliveryPlanningRepository.isOtherDeliveryPlanningsExistForOrderLine(orderLineId, DeliveryPlanningId.ofRepoId(deliveryPlanning.getM_Delivery_Planning_ID()));
 
 		if (!otherDeliveryPlanningsExistForOrderLine)
 		{
@@ -114,8 +107,9 @@ public class DeliveryPlanningService
 		}
 	}
 
-	private DeliveryPlanningCreateRequest createRequest(@NonNull final I_M_Delivery_Planning deliveryPlanningRecord)
+	private DeliveryPlanningCreateRequest createRequest(@NonNull final DeliveryPlanningId deliveryPlanningId)
 	{
+		final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningRepository.getById(deliveryPlanningId);
 		final OrgId orgId = OrgId.ofRepoId(deliveryPlanningRecord.getAD_Org_ID());
 
 		final ProductId productId = ProductId.ofRepoId(deliveryPlanningRecord.getM_Product_ID());
@@ -138,17 +132,16 @@ public class DeliveryPlanningService
 				.deliveryPlanningType(DeliveryPlanningType.ofCode(deliveryPlanningRecord.getM_Delivery_Planning_Type()))
 				.orderStatus(OrderStatus.ofNullableCode(deliveryPlanningRecord.getOrderStatus()))
 				.meansOfTransportation(MeansOfTransportation.ofNullableCode(deliveryPlanningRecord.getMeansOfTransportation()))
-				.isActive(deliveryPlanningRecord.isActive())
 				.isB2B(deliveryPlanningRecord.isB2B())
 				.qtyOredered(Quantity.of(deliveryPlanningRecord.getQtyOrdered(), uomToUse))
 				.qtyTotalOpen(Quantity.of(deliveryPlanningRecord.getQtyTotalOpen(), uomToUse))
 				.actualLoadQty(Quantity.of(deliveryPlanningRecord.getActualLoadQty(), uomToUse))
 				.actualDeliveredQty(Quantity.of(deliveryPlanningRecord.getActualDeliveredQty(), uomToUse))
 				.uom(uomToUse)
-				.plannedLoadingDate(LocalDateAndOrgId.ofTimestampOrNull(deliveryPlanningRecord.getPlannedLoadingDate(), orgId, orgDAO::getTimeZone))
-				.actualLoadingDate(LocalDateAndOrgId.ofTimestampOrNull(deliveryPlanningRecord.getActualLoadingDate(), orgId, orgDAO::getTimeZone))
-				.plannedDeliveryDate(LocalDateAndOrgId.ofTimestampOrNull(deliveryPlanningRecord.getPlannedDeliveryDate(), orgId, orgDAO::getTimeZone))
-				.actualDeliveryDate(LocalDateAndOrgId.ofTimestampOrNull(deliveryPlanningRecord.getActualDeliveryDate(), orgId, orgDAO::getTimeZone))
+				.plannedLoadingDate(TimeUtil.asInstant(deliveryPlanningRecord.getPlannedDeliveryDate()))
+				.actualLoadingDate(TimeUtil.asInstant(deliveryPlanningRecord.getActualLoadingDate()))
+				.plannedDeliveryDate(TimeUtil.asInstant(deliveryPlanningRecord.getPlannedDeliveryDate()))
+				.actualDeliveryDate(TimeUtil.asInstant(deliveryPlanningRecord.getActualDeliveryDate()))
 				.releaseNo(deliveryPlanningRecord.getReleaseNo())
 				.wayBillNo(deliveryPlanningRecord.getWayBillNo())
 				.batch(deliveryPlanningRecord.getBatch())
@@ -161,11 +154,10 @@ public class DeliveryPlanningService
 
 	public void createAdditionalDeliveryPlannings(@NonNull final DeliveryPlanningId deliveryPlanningId, final int additionalLines)
 	{
-		final I_M_Delivery_Planning deliveryPlanniingRecord = deliveryPlanningRepository.getById(deliveryPlanningId);
-
+		Check.assumeGreaterThanZero(additionalLines, PARAM_AdditionalLines);
 		for (int i = 0; i < additionalLines; i++)
 		{
-			final DeliveryPlanningCreateRequest request = createRequest(deliveryPlanniingRecord);
+			final DeliveryPlanningCreateRequest request = createRequest(deliveryPlanningId);
 			deliveryPlanningRepository.generateDeliveryPlanning(request);
 		}
 	}
