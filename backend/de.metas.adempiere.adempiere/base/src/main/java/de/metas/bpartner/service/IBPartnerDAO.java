@@ -397,7 +397,4 @@ public interface IBPartnerDAO extends ISingletonService
 	List<I_C_BPartner> retrieveByIds(Set<BPartnerId> bpartnerIds);
 
 	BPartnerLocationId getCurrentLocation(final BPartnerLocationId locationId);
-
-	@NonNull
-	Optional<String> getVATTaxId(final BPartnerLocationAndCaptureId shipBPLocationId);
 }
