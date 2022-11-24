@@ -236,12 +236,12 @@ public class WarehouseService
 				.attributeSetInstanceId(targetAsiId)
 				.build();
 
-
 		final List<ShipmentScheduleId> closedShipmentScheduleIds = shipmentScheduleRepository.streamFromSegment(shipmentScheduleSegment)
 				.filter(shipmentSchedule -> !shipmentSchedule.isProcessed())
 				.map(ShipmentSchedule::getId)
 				.peek(shipmentScheduleBL::closeShipmentSchedule)
 				.collect(ImmutableList.toImmutableList());
+
 		Loggables.addLog("WarehouseService.closeShipmentSchedules: Just closed from warehouse: {} the following shipmentSchedules: {}",
 						 warehouseId, closedShipmentScheduleIds);
 
