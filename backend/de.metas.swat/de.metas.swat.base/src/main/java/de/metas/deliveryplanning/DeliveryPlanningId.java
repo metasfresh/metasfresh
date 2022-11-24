@@ -1,8 +1,8 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.swat.base
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,45 +20,37 @@
  * #L%
  */
 
-package de.metas.shipping.model;
-
-import javax.annotation.Nullable;
+package de.metas.deliveryplanning;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-import lombok.NonNull;
 import lombok.Value;
+import org.compiere.model.I_M_Delivery_Planning;
+
+import javax.annotation.Nullable;
 
 @Value
-public class ShipperTransportationId implements RepoIdAware
+public class DeliveryPlanningId implements RepoIdAware
 {
 	int repoId;
 
-	@NonNull
 	@JsonCreator
-	public static ShipperTransportationId ofRepoId(final int repoId)
+	public static DeliveryPlanningId ofRepoId(final int repoId)
 	{
-		return new ShipperTransportationId(repoId);
+		return new DeliveryPlanningId(repoId);
 	}
 
 	@Nullable
-	public static ShipperTransportationId ofRepoIdOrNull(final int repoId)
+	public static DeliveryPlanningId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
-	private ShipperTransportationId(final int repoId)
+	private DeliveryPlanningId(final int repoId)
 	{
-		this.repoId = Check.assumeGreaterThanZero(repoId, "M_ShipperTransportation_ID");
-	}
-
-
-	public static int toRepoId(@Nullable final ShipperTransportationId shipperTransportationId)
-	{
-		return shipperTransportationId != null ? shipperTransportationId.getRepoId() : -1;
+		this.repoId = Check.assumeGreaterThanZero(repoId, I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID);
 	}
 
 	@Override
@@ -67,4 +59,10 @@ public class ShipperTransportationId implements RepoIdAware
 	{
 		return repoId;
 	}
+
+	public static int toRepoId(@Nullable final DeliveryPlanningId id)
+	{
+		return id != null ? id.getRepoId() : -1;
+	}
+
 }
