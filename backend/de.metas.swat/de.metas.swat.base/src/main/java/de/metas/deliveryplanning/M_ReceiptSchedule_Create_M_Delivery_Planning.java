@@ -34,7 +34,7 @@ import org.compiere.SpringContextHolder;
 public class M_ReceiptSchedule_Create_M_Delivery_Planning extends WorkpackageProcessorAdapter
 {
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
-	private static final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(de.metas.deliveryplanning.DeliveryPlanningService.class);
+	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(de.metas.deliveryplanning.DeliveryPlanningService.class);
 	private static final WorkpackagesOnCommitSchedulerTemplate<I_M_ReceiptSchedule> //
 			SCHEDULER = WorkpackagesOnCommitSchedulerTemplate
 			.newModelScheduler(M_ReceiptSchedule_Create_M_Delivery_Planning.class, I_M_ReceiptSchedule.class)
@@ -54,5 +54,4 @@ public class M_ReceiptSchedule_Create_M_Delivery_Planning extends WorkpackagePro
 
 		return Result.SUCCESS;
 	}
-
 }

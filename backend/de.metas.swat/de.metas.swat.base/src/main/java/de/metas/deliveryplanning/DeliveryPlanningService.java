@@ -106,7 +106,7 @@ public class DeliveryPlanningService
 			return;
 		}
 
-		final boolean otherDeliveryPlanningsExistForOrderLine = deliveryPlanningRepository.otherDeliveryPlanningsExistForOrderLine(orderLineId, DeliveryPlanningId.ofRepoIdOrNull(deliveryPlanning.getM_Delivery_Planning_ID()));
+		final boolean otherDeliveryPlanningsExistForOrderLine = deliveryPlanningRepository.otherDeliveryPlanningsExistForOrderLine(orderLineId, DeliveryPlanningId.ofRepoId(deliveryPlanning.getM_Delivery_Planning_ID()));
 
 		if (!otherDeliveryPlanningsExistForOrderLine)
 		{

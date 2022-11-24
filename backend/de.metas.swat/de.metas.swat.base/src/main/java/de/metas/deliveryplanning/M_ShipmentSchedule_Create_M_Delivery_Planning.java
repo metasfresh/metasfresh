@@ -34,7 +34,7 @@ import org.compiere.SpringContextHolder;
 public class M_ShipmentSchedule_Create_M_Delivery_Planning extends WorkpackageProcessorAdapter
 {
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
-	private DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
+	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
 
 	private static final WorkpackagesOnCommitSchedulerTemplate<I_M_ShipmentSchedule>
 			SCHEDULER = WorkpackagesOnCommitSchedulerTemplate

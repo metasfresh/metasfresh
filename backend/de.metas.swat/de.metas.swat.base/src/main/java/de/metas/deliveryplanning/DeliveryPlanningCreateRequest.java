@@ -109,16 +109,16 @@ public class DeliveryPlanningCreateRequest
 	@Nullable
 	LocalDateAndOrgId actualDeliveryDate;
 
-	@Nullable
+	@NonNull
 	Quantity qtyOredered;
 
-	@Nullable
+	@NonNull
 	Quantity qtyTotalOpen;
 
-	@Nullable
+	@NonNull
 	Quantity actualLoadQty;
 
-	@Nullable
+	@NonNull
 	Quantity actualDeliveredQty;
 
 	@Nullable

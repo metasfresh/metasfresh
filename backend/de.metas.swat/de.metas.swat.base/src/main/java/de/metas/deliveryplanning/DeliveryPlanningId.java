@@ -34,7 +34,6 @@ import javax.annotation.Nullable;
 @Value
 public class DeliveryPlanningId implements RepoIdAware
 {
-
 	int repoId;
 
 	@JsonCreator
@@ -43,6 +42,7 @@ public class DeliveryPlanningId implements RepoIdAware
 		return new DeliveryPlanningId(repoId);
 	}
 
+	@Nullable
 	public static DeliveryPlanningId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;

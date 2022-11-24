@@ -63,6 +63,7 @@ public class DeliveryPlanningRepository
 	{
 		final I_M_Delivery_Planning deliveryPlanningRecord = newInstance(I_M_Delivery_Planning.class);
 
+
 		deliveryPlanningRecord.setAD_Org_ID(request.getOrgId().getRepoId());
 		deliveryPlanningRecord.setM_ReceiptSchedule_ID(ReceiptScheduleId.toRepoId(request.getReceiptScheduleId()));
 		deliveryPlanningRecord.setM_ShipmentSchedule_ID(ShipmentScheduleId.toRepoId(request.getShipmentScheduleId()));
@@ -86,17 +87,17 @@ public class DeliveryPlanningRepository
 		deliveryPlanningRecord.setPlannedLoadingDate(plannedLoadingDate == null ? null : plannedLoadingDate.toTimestamp(orgDAO::getTimeZone));
 		deliveryPlanningRecord.setActualLoadingDate(actualLoadingDate == null ? null : actualLoadingDate.toTimestamp(orgDAO::getTimeZone));
 
-		final Quantity qtyOredered = request.getQtyOredered();
+		final Quantity qtyOrdered = request.getQtyOredered();
 		final Quantity qtyTotalOpen = request.getQtyTotalOpen();
 		final Quantity actualDeliveredQty = request.getActualDeliveredQty();
 		final Quantity actualLoadQty = request.getActualLoadQty();
 
 		deliveryPlanningRecord.setC_UOM_ID(request.getUom().getC_UOM_ID());
 
-		deliveryPlanningRecord.setQtyOrdered(qtyOredered == null ? null : qtyOredered.toBigDecimal());
-		deliveryPlanningRecord.setQtyTotalOpen(qtyTotalOpen == null ? null : qtyTotalOpen.toBigDecimal());
-		deliveryPlanningRecord.setActualDeliveredQty(actualDeliveredQty == null ? null : actualDeliveredQty.toBigDecimal());
-		deliveryPlanningRecord.setActualLoadQty(actualLoadQty == null ? null : actualLoadQty.toBigDecimal());
+		deliveryPlanningRecord.setQtyOrdered(qtyOrdered.toBigDecimal());
+		deliveryPlanningRecord.setQtyTotalOpen(qtyTotalOpen.toBigDecimal());
+		deliveryPlanningRecord.setActualDeliveredQty( actualDeliveredQty.toBigDecimal());
+		deliveryPlanningRecord.setActualLoadQty(actualLoadQty.toBigDecimal());
 
 		deliveryPlanningRecord.setForwarder(request.getForwarder());
 		deliveryPlanningRecord.setWayBillNo(request.getWayBillNo());
