@@ -1,8 +1,8 @@
 /*
  * #%L
- * de-metas-edi-esb-camel
+ * de-metas-camel-edi
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,27 +20,22 @@
  * #L%
  */
 
-package de.metas.edi.esb.desadvexport;
+package de.metas.edi.esb.desadvexport.helper;
 
-import de.metas.edi.esb.desadvexport.helper.SinglePack;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvLineType;
+import lombok.Builder;
 import lombok.NonNull;
-import lombok.ToString;
 import lombok.Value;
-import org.springframework.lang.Nullable;
+
+import java.util.List;
 
 @Value
-@ToString
-public class LineAndPack
+@Builder
+public class DesadvLineWithPacks
 {
 	@NonNull
-	EDIExpDesadvLineType line;
+	EDIExpDesadvLineType desadvLine;
 
-	@Nullable
-	SinglePack singlePack;
-
-	public boolean hasPack()
-	{
-		return singlePack != null;
-	}
+	@NonNull
+	List<SinglePack> singlePacks;
 }

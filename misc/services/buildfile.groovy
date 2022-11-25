@@ -27,13 +27,10 @@ def build(final MvnConf mvnConf,
         }
        
         withMaven(jdk: 'java-17', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)]) {
-// Comment out EDI in big_coconut_uat.
-// The user doesn't care and it fails - not locally in the IDE, but on jenkins - with
-// "Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.8.1:compile (default-compile) on project de-metas-camel-edi: Compilation failure -> [Help 1]"            
-//            dir('camel/de-metas-camel-edi') {
-//                def ediBuildFile = load('buildfile.groovy')
-//                ediBuildFile.build(mvnConf, scmVars, forceBuild)
-//            }
+            dir('camel/de-metas-camel-edi') {
+                def ediBuildFile = load('buildfile.groovy')
+                ediBuildFile.build(mvnConf, scmVars, forceBuild)
+            }
         }
         withMaven(jdk: 'java-17', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)]) {
             dir('camel/de-metas-camel-externalsystems') {
