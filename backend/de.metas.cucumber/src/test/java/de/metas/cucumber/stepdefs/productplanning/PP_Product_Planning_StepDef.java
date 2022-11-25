@@ -127,6 +127,7 @@ public class PP_Product_Planning_StepDef
 		productPlanningRecord.setAD_Workflow_ID(workflowId);
 		productPlanningRecord.setIsCreatePlan(isCreatePlan);
 		productPlanningRecord.setIsAttributeDependant(isAttributeDependant);
+		productPlanningRecord.setIsManufactured(X_PP_Product_Planning.ISMANUFACTURED_Yes);
 
 		if (bomVersionsIdentifier != null)
 		{
@@ -142,10 +143,7 @@ public class PP_Product_Planning_StepDef
 		if (isPurchased)
 		{
 			productPlanningRecord.setIsPurchased(X_PP_Product_Planning.ISPURCHASED_Yes);
-		}
-		else
-		{
-			productPlanningRecord.setIsManufactured(X_PP_Product_Planning.ISMANUFACTURED_Yes);
+			productPlanningRecord.setIsManufactured(X_PP_Product_Planning.ISMANUFACTURED_No);
 		}
 
 		final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
