@@ -62,13 +62,6 @@ public class GlobalQRCode
 		return parse(string).orThrow();
 	}
 
-	@Nullable
-	public static GlobalQRCode ofNullableString(@Nullable final String string)
-	{
-		final String stringNorm = StringUtils.trimBlankToNull(string);
-		return stringNorm != null ? ofString(stringNorm) : null;
-	}
-
 	public static GlobalQRCode ofBase64Encoded(@NonNull final String string)
 	{
 		final byte[] bytes = BaseEncoding.base64().decode(string);
