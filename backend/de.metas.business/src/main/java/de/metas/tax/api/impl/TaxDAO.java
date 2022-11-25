@@ -253,7 +253,7 @@ public class TaxDAO implements ITaxDAO
 	@Nullable
 	public Tax getBy(@NonNull final TaxQuery taxQuery)
 	{
-		final Tax taxFromVatCode = getTaxFromVatCodeIdIfManualOrNull(taxQuery.getVatCodeId());
+		final Tax taxFromVatCode = getTaxFromVatCodeIfManualOrNull(taxQuery.getVatCodeId());
 		if (taxFromVatCode != null)
 		{
 			Loggables.withLogger(logger, Level.DEBUG).addLog("Exact match found via VAT Code: C_Tax_ID={}", taxFromVatCode.getTaxId());
@@ -284,7 +284,7 @@ public class TaxDAO implements ITaxDAO
 
 	@Override
 	@Nullable
-	public Tax getTaxFromVatCodeIdIfManualOrNull(@Nullable final VatCodeId vatCodeId)
+	public Tax getTaxFromVatCodeIfManualOrNull(@Nullable final VatCodeId vatCodeId)
 	{
 		if (vatCodeId == null)
 		{
@@ -306,7 +306,7 @@ public class TaxDAO implements ITaxDAO
 				.subQuery(manualTaxCategories)
 				.end()
 				.create()
-				.firstOptional(I_C_Tax.class)
+				.firstOnlyOptional(I_C_Tax.class)
 				.map(TaxUtils::from)
 				.orElse(null);
 	}

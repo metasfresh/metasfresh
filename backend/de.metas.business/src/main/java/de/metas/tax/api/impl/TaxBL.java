@@ -79,7 +79,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 			@NonNull final SOTrx soTrx,
 			@Nullable final VatCodeId vatCodeId)
 	{
-		final Tax taxFromVatCode = taxDAO.getTaxFromVatCodeIdIfManualOrNull(vatCodeId);
+		final Tax taxFromVatCode = taxDAO.getTaxFromVatCodeIfManualOrNull(vatCodeId);
 		if (taxFromVatCode != null)
 		{
 			return taxFromVatCode.getTaxId();
@@ -355,7 +355,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	@Nullable
 	private int getTaxFromVatCodeIdIfManualOrNull(final @Nullable VatCodeId vatCodeId)
 	{
-		final Tax tax = taxDAO.getTaxFromVatCodeIdIfManualOrNull(vatCodeId);
+		final Tax tax = taxDAO.getTaxFromVatCodeIfManualOrNull(vatCodeId);
 		return TaxId.toRepoId(tax != null ? tax.getTaxId() : null);
 	}
 

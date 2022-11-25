@@ -40,6 +40,7 @@ import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.function.Consumer;
 
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 
 public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificInvoiceCandidateHandler
@@ -114,7 +115,7 @@ public class FlatrateTermSubscription_Handler implements ConditionTypeSpecificIn
 		final I_C_Flatrate_Term term = HandlerTools.retrieveTerm(ic);
 
 		final TaxCategoryId taxCategoryId = TaxCategoryId.ofRepoIdOrNull(term.getC_TaxCategory_ID());
-		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(ic.getC_VAT_Code_ID());
+		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(firstGreaterThanZero(ic.getC_VAT_Code_Override_ID(),ic.getC_VAT_Code_ID()));
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				term,

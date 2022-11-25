@@ -89,6 +89,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 import static org.adempiere.model.InterfaceWrapperHelper.create;
@@ -374,10 +375,10 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			final I_C_BPartner billBPartner = bpartnerDAO.getById(icRecord.getBill_BPartner_ID());
 
 			final InvoiceRule invoiceRule = inOut.isSOTrx() ?
-					InvoiceRule.ofNullableCode(billBPartner.getInvoiceRule()):
+					InvoiceRule.ofNullableCode(billBPartner.getInvoiceRule()) :
 					InvoiceRule.ofNullableCode(billBPartner.getPO_InvoiceRule());
 
-			if (invoiceRule!= null)
+			if (invoiceRule != null)
 			{
 				icRecord.setInvoiceRule(invoiceRule.getCode());
 			}
@@ -887,9 +888,9 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 			);
 
 			final User billUser = bPartnerBL.retrieveContactOrNull(RetrieveContactRequest.builder()
-																		   .bpartnerId(billLocationFromInOut.getBpartnerId())
-																		   .bPartnerLocationId(billLocationFromInOut.getBpartnerLocationId())
-																		   .build());
+					.bpartnerId(billLocationFromInOut.getBpartnerId())
+					.bPartnerLocationId(billLocationFromInOut.getBpartnerLocationId())
+					.build());
 			final BPartnerContactId billBPContactId = billUser != null
 					? BPartnerContactId.of(billLocationFromInOut.getBpartnerId(), billUser.getId())
 					: null;
@@ -945,7 +946,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		final org.compiere.model.I_M_InOut inOutRecord = inoutLineRecord.getM_InOut();
 		final Properties ctx = getCtx(inoutLineRecord);
 		final Timestamp shipDate = inOutRecord.getMovementDate();
-		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(icRecord.getC_VAT_Code_ID());
+		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(firstGreaterThanZero(icRecord.getC_VAT_Code_Override_ID(), icRecord.getC_VAT_Code_ID()));
 
 		final BPartnerLocationAndCaptureId deliveryLocation = InOutDocumentLocationAdapterFactory
 				.locationAdapter(inOutRecord)

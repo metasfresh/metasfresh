@@ -78,11 +78,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
+
 /**
  * Takes {@link IQualityInvoiceLineGroup}s and creates {@link I_C_Invoice_Candidate}s.
  *
  * @author tsa
- *
  */
 public class InvoiceCandidateWriter
 {
@@ -100,7 +101,7 @@ public class InvoiceCandidateWriter
 	private int invoiceDocTypeId = -1;
 	/**
 	 * Original invoice candidates that need to be cleared when a new invoice candidate is created by this builder.
-	 *
+	 * <p>
 	 * NOTE: please don't use this object in other scope then clearing. If you want more invoicing informations, please take them from {@link #_vendorInvoicingInfo}.
 	 */
 	private List<I_C_Invoice_Candidate> _invoiceCandidatesToClear;
@@ -157,7 +158,7 @@ public class InvoiceCandidateWriter
 
 	/**
 	 * Sets which group types will be accepted and saved.
-	 *
+	 * <p>
 	 * Also, the {@link IQualityInvoiceLineGroup}s will be sorted exactly by the order of given types.
 	 *
 	 * @param types
@@ -588,7 +589,6 @@ public class InvoiceCandidateWriter
 	}
 
 	/**
-	 *
 	 * @param invoiceCandidate
 	 * @task 07442
 	 */
@@ -614,7 +614,7 @@ public class InvoiceCandidateWriter
 		final BPartnerLocationAndCaptureId billToLocation = InvoiceCandidateLocationAdapterFactory
 				.billLocationAdapter(ic)
 				.getBPartnerLocationAndCaptureId();
-		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(ic.getC_VAT_Code_ID());
+		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(firstGreaterThanZero(ic.getC_VAT_Code_Override_ID(), ic.getC_VAT_Code_ID()));
 
 		final TaxId taxID = taxBL.getTaxNotNull(
 				ic,

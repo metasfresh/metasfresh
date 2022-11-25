@@ -9,6 +9,9 @@ import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IInvoiceLineBL;
 import de.metas.lang.SOTrx;
 import de.metas.product.ProductId;
+import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.Tax;
+import de.metas.tax.api.VatCodeId;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -27,6 +30,7 @@ public class C_InvoiceLine
 	private final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
 	private final IInvoiceLineBL invoiceLineBL = Services.get(IInvoiceLineBL.class);
 	private final IBPartnerProductBL partnerProductBL = Services.get(IBPartnerProductBL.class);
+	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 
 	/**
 	 * Set QtyInvoicedInPriceUOM, just to make sure is up2date.
@@ -96,4 +100,23 @@ public class C_InvoiceLine
 		invoiceLine.setM_SectionCode_ID(invoiceLine.getC_Invoice().getM_SectionCode_ID());
 	}
 
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = { I_C_InvoiceLine.COLUMNNAME_C_VAT_Code_ID })
+	public void updateTaxFromVatCodeId(final I_C_InvoiceLine invoiceLine)
+	{
+		if (invoiceLine.isProcessed())
+		{
+			return;
+		}
+		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(invoiceLine.getC_VAT_Code_ID());
+		if (vatCodeId == null)
+		{
+			return;
+		}
+		final Tax tax = taxDAO.getTaxFromVatCodeIfManualOrNull(vatCodeId);
+		if (tax != null)
+		{
+			invoiceLine.setC_Tax_ID(tax.getTaxId().getRepoId());
+		}
+	}
 }

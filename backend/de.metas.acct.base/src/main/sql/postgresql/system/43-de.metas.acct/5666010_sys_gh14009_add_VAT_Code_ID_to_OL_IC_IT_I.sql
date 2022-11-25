@@ -460,5 +460,193 @@ DELETE FROM AD_Column WHERE AD_Column_ID=585133
 
 -- Name: VAT_Code_for_soTrx
 -- 2022-11-24T19:04:13.746Z
-UPDATE AD_Val_Rule SET Code='C_Vat_Code.IsSoTrx =''@IsSoTrx/Y@''',Updated=TO_TIMESTAMP('2022-11-24 21:04:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540610
+UPDATE AD_Val_Rule SET Code='C_Vat_Code.IsSoTrx =''@IsSoTrx/Y@'' OR C_Vat_Code.IsSoTrx IS NULL',Updated=TO_TIMESTAMP('2022-11-24 21:04:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540610
 ;
+
+-- Column: C_OrderLine.C_VAT_Code_ID
+-- 2022-11-24T16:11:45.194Z
+UPDATE AD_Column SET EntityType='D',Updated=TO_TIMESTAMP('2022-11-24 18:11:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585131
+;
+
+-- 2022-11-24T16:27:40.513Z
+/* DDL */ SELECT public.db_alter_table('C_Invoice','ALTER TABLE C_Invoice DROP COLUMN IF EXISTS C_VAT_Code_ID')
+;
+
+-- Column: C_Invoice.C_VAT_Code_ID
+-- 2022-11-24T16:27:41.036Z
+DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=585133
+;
+
+-- 2022-11-24T16:27:41.040Z
+DELETE FROM AD_Column WHERE AD_Column_ID=585133
+;
+
+-- Column: C_VAT_Code.Description
+-- 2022-11-25T09:21:05.196Z
+UPDATE AD_Column SET IsIdentifier='N',Updated=TO_TIMESTAMP('2022-11-25 11:21:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=553151
+;
+
+-- 2022-11-25T13:44:19.807Z
+INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,581738,0,'C_VAT_Code_Override_ID',TO_TIMESTAMP('2022-11-25 15:44:19','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','VAT Code','VAT Code',TO_TIMESTAMP('2022-11-25 15:44:19','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-11-25T13:44:19.811Z
+INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description,Help,Name,PO_Description,PO_Help,PO_Name,PO_PrintName,PrintName,WEBUI_NameBrowse,WEBUI_NameNew,WEBUI_NameNewBreadcrumb, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Element_ID, t.CommitWarning,t.Description,t.Help,t.Name,t.PO_Description,t.PO_Help,t.PO_Name,t.PO_PrintName,t.PrintName,t.WEBUI_NameBrowse,t.WEBUI_NameNew,t.WEBUI_NameNewBreadcrumb, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Element t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Element_ID=581738 AND NOT EXISTS (SELECT 1 FROM AD_Element_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Element_ID=t.AD_Element_ID)
+;
+
+-- Column: C_Invoice_Candidate.C_VAT_Code_Override_ID
+-- 2022-11-25T13:45:05.747Z
+INSERT INTO AD_Column (AD_Client_ID,AD_Column_ID,AD_Element_ID,AD_Org_ID,AD_Reference_ID,AD_Reference_Value_ID,AD_Table_ID,ColumnName,Created,CreatedBy,DDL_NoForeignKey,EntityType,FacetFilterSeqNo,FieldLength,IsActive,IsAdvancedText,IsAllowLogging,IsAlwaysUpdateable,IsAutoApplyValidationRule,IsAutocomplete,IsCalculated,IsDimension,IsDLMPartitionBoundary,IsEncrypted,IsExcludeFromZoomTargets,IsFacetFilter,IsForceIncludeInGeneratedModel,IsGenericZoomKeyColumn,IsGenericZoomOrigin,IsIdentifier,IsKey,IsLazyLoading,IsMandatory,IsParent,IsSelectionColumn,IsShowFilterIncrementButtons,IsShowFilterInline,IsStaleable,IsSyncDatabase,IsTranslated,IsUpdateable,IsUseDocSequence,MaxFacetsToFetch,Name,SelectionColumnSeqNo,SeqNo,Updated,UpdatedBy,Version) VALUES (0,585141,581738,0,30,541071,540270,'C_VAT_Code_Override_ID',TO_TIMESTAMP('2022-11-25 15:45:05','YYYY-MM-DD HH24:MI:SS'),100,'N','de.metas.invoicecandidate',0,10,'Y','N','Y','N','N','N','N','N','N','N','Y','N','N','N','N','N','N','N','N','N','N','N','N','N','N','N','Y','N',0,'VAT Code',0,0,TO_TIMESTAMP('2022-11-25 15:45:05','YYYY-MM-DD HH24:MI:SS'),100,0)
+;
+
+-- 2022-11-25T13:45:05.749Z
+INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Column_ID, t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Column t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Column_ID=585141 AND NOT EXISTS (SELECT 1 FROM AD_Column_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Column_ID=t.AD_Column_ID)
+;
+
+-- 2022-11-25T13:45:05.778Z
+/* DDL */  select update_Column_Translation_From_AD_Element(581738)
+;
+
+-- Name: VAT_Code_for_soTrx
+-- 2022-11-25T13:46:11.760Z
+UPDATE AD_Val_Rule SET Code='C_Vat_Code.IsSoTrx =''@IsSoTrx/Y@'' OR C_Vat_Code.IsSoTrx IS NULL AND C_Vat_Code.AD_Org_ID IN (@AD_Org_ID/-1@, 0)',Updated=TO_TIMESTAMP('2022-11-25 15:46:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540610
+;
+
+-- Column: C_Invoice_Candidate.C_VAT_Code_Override_ID
+-- 2022-11-25T13:46:18.521Z
+UPDATE AD_Column SET AD_Val_Rule_ID=540610,Updated=TO_TIMESTAMP('2022-11-25 15:46:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585141
+;
+
+-- Field: Rechnungsdisposition(540092,de.metas.invoicecandidate) -> Rechnungskandidaten(540279,de.metas.invoicecandidate) -> VAT Code
+-- Column: C_Invoice_Candidate.C_VAT_Code_Override_ID
+-- 2022-11-25T14:21:31.258Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsAlwaysUpdateable,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,585141,708211,0,540279,0,TO_TIMESTAMP('2022-11-25 16:21:31','YYYY-MM-DD HH24:MI:SS'),100,0,'D',0,'Y','N','Y','Y','N','N','N','N','N','VAT Code',0,560,0,1,1,TO_TIMESTAMP('2022-11-25 16:21:31','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-11-25T14:21:31.262Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=708211 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-11-25T14:21:31.264Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(581738)
+;
+
+-- 2022-11-25T14:21:31.276Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=708211
+;
+
+-- 2022-11-25T14:21:31.277Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(708211)
+;
+
+-- Field: Rechnungsdisposition(540092,de.metas.invoicecandidate) -> Rechnungskandidaten(540279,de.metas.invoicecandidate) -> VAT Code
+-- Column: C_Invoice_Candidate.C_VAT_Code_ID
+-- 2022-11-25T14:21:40.409Z
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2022-11-25 16:21:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=708195
+;
+
+-- UI Element: Rechnungsdisposition(540092,de.metas.invoicecandidate) -> Rechnungskandidaten(540279,de.metas.invoicecandidate) -> advanced edit -> 10 -> advanced edit.VAT Code
+-- Column: C_Invoice_Candidate.C_VAT_Code_Override_ID
+-- 2022-11-25T14:22:22.244Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,708211,0,540279,540056,613587,'F',TO_TIMESTAMP('2022-11-25 16:22:22','YYYY-MM-DD HH24:MI:SS'),100,'Y','Y','N','Y','N','N','N',0,'VAT Code',1050,0,0,TO_TIMESTAMP('2022-11-25 16:22:22','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- Element: C_VAT_Code_Override_ID
+-- 2022-11-25T14:26:36.928Z
+UPDATE AD_Element_Trl SET Name='VAT Code abw.', PrintName='VAT Code abw.',Updated=TO_TIMESTAMP('2022-11-25 16:26:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581738 AND AD_Language='de_CH'
+;
+
+-- 2022-11-25T14:26:36.930Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581738,'de_CH')
+;
+
+-- Element: C_VAT_Code_Override_ID
+-- 2022-11-25T14:26:40.968Z
+UPDATE AD_Element_Trl SET Name='VAT Code abw.', PrintName='VAT Code abw.',Updated=TO_TIMESTAMP('2022-11-25 16:26:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581738 AND AD_Language='de_DE'
+;
+
+-- 2022-11-25T14:26:40.969Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(581738,'de_DE')
+;
+
+-- 2022-11-25T14:26:40.970Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581738,'de_DE')
+;
+
+-- Element: C_VAT_Code_Override_ID
+-- 2022-11-25T14:26:44.897Z
+UPDATE AD_Element_Trl SET Name='VAT Code abw.', PrintName='VAT Code abw.',Updated=TO_TIMESTAMP('2022-11-25 16:26:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581738 AND AD_Language='nl_NL'
+;
+
+-- 2022-11-25T14:26:44.899Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581738,'nl_NL')
+;
+
+-- Element: C_VAT_Code_Override_ID
+-- 2022-11-25T14:26:50.684Z
+UPDATE AD_Element_Trl SET Name='VAT Code override', PrintName='VAT Code override',Updated=TO_TIMESTAMP('2022-11-25 16:26:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581738 AND AD_Language='en_US'
+;
+
+-- 2022-11-25T14:26:50.686Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581738,'en_US')
+;
+
+-- 2022-11-25T14:51:06.463Z
+/* DDL */ SELECT public.db_alter_table('C_Invoice_Candidate','ALTER TABLE public.C_Invoice_Candidate ADD COLUMN C_VAT_Code_Override_ID NUMERIC(10)')
+;
+
+-- 2022-11-25T14:51:06.738Z
+ALTER TABLE C_Invoice_Candidate ADD CONSTRAINT CVATCodeOverride_CInvoiceCandidate FOREIGN KEY (C_VAT_Code_Override_ID) REFERENCES public.C_VAT_Code DEFERRABLE INITIALLY DEFERRED
+;
+
+-- 2022-11-25T15:14:12.014Z
+INSERT INTO AD_Index_Table (AD_Client_ID,AD_Index_Table_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsUnique,Name,Processing,Updated,UpdatedBy) VALUES (0,540714,0,540703,TO_TIMESTAMP('2022-11-25 17:14:11','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','Y','unique_vatcode_organization','N',TO_TIMESTAMP('2022-11-25 17:14:11','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-11-25T15:14:12.019Z
+INSERT INTO AD_Index_Table_Trl (AD_Language,AD_Index_Table_ID, ErrorMsg, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Index_Table_ID, t.ErrorMsg, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Index_Table t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Index_Table_ID=540714 AND NOT EXISTS (SELECT 1 FROM AD_Index_Table_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Index_Table_ID=t.AD_Index_Table_ID)
+;
+
+-- 2022-11-25T15:14:35.152Z
+INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,553150,541282,540714,0,TO_TIMESTAMP('2022-11-25 17:14:35','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',10,TO_TIMESTAMP('2022-11-25 17:14:35','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-11-25T15:14:44.358Z
+INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,553140,541283,540714,0,TO_TIMESTAMP('2022-11-25 17:14:44','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',20,TO_TIMESTAMP('2022-11-25 17:14:44','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-11-25T15:14:52.105Z
+CREATE UNIQUE INDEX unique_vatcode_organization ON C_VAT_Code (VATCode,AD_Org_ID)
+;
+
+-- Name: VAT_Code_for_soTrx
+-- 2022-11-25T15:37:11.849Z
+UPDATE AD_Val_Rule SET Code='(C_Vat_Code.IsSoTrx =''@IsSoTrx/Y@'' OR C_Vat_Code.IsSoTrx IS NULL) AND C_Vat_Code.AD_Org_ID IN (@AD_Org_ID/-1@, 0)',Updated=TO_TIMESTAMP('2022-11-25 17:37:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540610
+;
+
+-- Name: VAT_Code_for_soTrx
+-- 2022-11-25T15:37:45.856Z
+UPDATE AD_Val_Rule SET Code='(C_Vat_Code.IsSoTrx =''@IsSoTrx/Y@''X OR C_Vat_Code.IsSoTrx IS NULL) AND C_Vat_Code.AD_Org_ID IN (@AD_Org_ID/-1@, 0)',Updated=TO_TIMESTAMP('2022-11-25 17:37:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540610
+;
+
+-- Name: VAT_Code_for_SO
+-- 2022-11-25T15:53:10.975Z
+UPDATE AD_Val_Rule SET Code='(C_Vat_Code.IsSoTrx =''Y'' OR C_Vat_Code.IsSoTrx IS NULL) AND C_Vat_Code.AD_Org_ID IN (@AD_Org_ID/-1@, 0)', Name='VAT_Code_for_SO',Updated=TO_TIMESTAMP('2022-11-25 17:53:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540610
+;
+
+-- Name: VAT_Code_for_PO
+-- 2022-11-25T15:53:19.703Z
+INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Code,Created,CreatedBy,EntityType,IsActive,Name,Type,Updated,UpdatedBy) VALUES (0,0,540611,'(C_Vat_Code.IsSoTrx =''N'' OR C_Vat_Code.IsSoTrx IS NULL) AND C_Vat_Code.AD_Org_ID IN (@AD_Org_ID/-1@, 0)',TO_TIMESTAMP('2022-11-25 17:53:19','YYYY-MM-DD HH24:MI:SS'),100,'U','Y','VAT_Code_for_PO','S',TO_TIMESTAMP('2022-11-25 17:53:19','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- Column: C_Invoice_Candidate.C_VAT_Code_Override_ID
+-- 2022-11-25T15:54:07.132Z
+UPDATE AD_Column SET AD_Val_Rule_ID=NULL,Updated=TO_TIMESTAMP('2022-11-25 17:54:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585141
+;
+
+-- Field: Rechnungsdisposition(540092,de.metas.invoicecandidate) -> Rechnungskandidaten(540279,de.metas.invoicecandidate) -> VAT Code abw.
+-- Column: C_Invoice_Candidate.C_VAT_Code_Override_ID
+-- 2022-11-25T15:55:16.913Z
+UPDATE AD_Field SET Filter_Val_Rule_ID=540610,Updated=TO_TIMESTAMP('2022-11-25 17:55:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=708211
+;
+

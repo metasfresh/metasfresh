@@ -76,7 +76,7 @@ public interface ITaxDAO extends ISingletonService
 	Tax getBy(final TaxQuery taxQuery);
 
 	@Nullable
-	Tax getTaxFromVatCodeIdIfManualOrNull(@Nullable VatCodeId vatCodeId);
+	Tax getTaxFromVatCodeIfManualOrNull(@Nullable VatCodeId vatCodeId);
 
 	@Builder
 	@Value

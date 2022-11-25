@@ -59,6 +59,7 @@ import java.sql.Timestamp;
 import java.util.Iterator;
 import java.util.Properties;
 
+import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.ZERO;
 
@@ -209,7 +210,7 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 		final BPartnerLocationAndCaptureId inoutBPLocationId = InOutDocumentLocationAdapterFactory
 				.locationAdapter(inOut)
 				.getBPartnerLocationAndCaptureId();
-		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(ic.getC_VAT_Code_ID());
+		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(firstGreaterThanZero(ic.getC_VAT_Code_Override_ID(), ic.getC_VAT_Code_ID()));
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				ic,
@@ -325,9 +326,9 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 
 			final User billUser = bPartnerBL
 					.retrieveContactOrNull(RetrieveContactRequest.builder()
-												   .bpartnerId(billLocationFromInOut.getBpartnerId())
-												   .bPartnerLocationId(billLocationFromInOut.getBpartnerLocationId())
-												   .build());
+							.bpartnerId(billLocationFromInOut.getBpartnerId())
+							.bPartnerLocationId(billLocationFromInOut.getBpartnerLocationId())
+							.build());
 			final BPartnerContactId billBPContactId = billUser != null
 					? BPartnerContactId.of(billLocationFromInOut.getBpartnerId(), billUser.getId())
 					: null;

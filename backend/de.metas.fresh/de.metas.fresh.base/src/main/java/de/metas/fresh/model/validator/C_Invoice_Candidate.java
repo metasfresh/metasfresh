@@ -22,36 +22,53 @@ package de.metas.fresh.model.validator;
  * #L%
  */
 
-
+import de.metas.fresh.api.invoicecandidate.IFreshInvoiceCandBL;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.Tax;
+import de.metas.tax.api.VatCodeId;
+import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.compiere.model.ModelValidator;
 
-import de.metas.fresh.api.invoicecandidate.IFreshInvoiceCandBL;
-import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.util.Services;
-
 @Validator(I_C_Invoice_Candidate.class)
 public class C_Invoice_Candidate
 {
+	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void setProduzentenabrechnung(final I_C_Invoice_Candidate candidate)
 	{
-		if(candidate.isProcessed())
+		if (candidate.isProcessed())
 		{
 			// #335: if the IC was just invoiced, then don't consider changing its C_DocTypeInvoice, but leave whatever doctype was propagated to the invoice
 			return;
 		}
-		
+
 		final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
-		if(invoiceCandBL.extractProcessedOverride(candidate).isTrue())
+		if (invoiceCandBL.extractProcessedOverride(candidate).isTrue())
 		{
 			return; // #183 FRESH-511: nothing to check or update, if the user wants the IC to be "processed"
 		}
-		
+
 		// set DocType invoice Produzentenabrechnung based on the flag Produzentenabrechnung from c_BPartner
 		Services.get(IFreshInvoiceCandBL.class).updateC_DocTypeInvoice(candidate);
+	}
+
+	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = { I_C_Invoice_Candidate.COLUMNNAME_C_VAT_Code_Override_ID })
+	public void updateTaxOverrideFromVatCodeOverride(final I_C_Invoice_Candidate candidate)
+	{
+		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(candidate.getC_VAT_Code_Override_ID());
+		if (vatCodeId == null)
+		{
+			return;
+		}
+		final Tax tax = taxDAO.getTaxFromVatCodeIfManualOrNull(vatCodeId);
+		if (tax != null)
+		{
+			candidate.setC_Tax_Override_ID(tax.getTaxId().getRepoId());
+		}
 	}
 }

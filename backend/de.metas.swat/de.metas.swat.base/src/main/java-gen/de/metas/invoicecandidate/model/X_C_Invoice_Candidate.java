@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_Invoice_Candidate, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -552689838L;
+	private static final long serialVersionUID = -1619935458L;
 
     /** Standard Constructor */
     public X_C_Invoice_Candidate (final Properties ctx, final int C_Invoice_Candidate_ID, @Nullable final String trxName)
@@ -830,6 +830,21 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public int getC_VAT_Code_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_VAT_Code_ID);
+	}
+
+	@Override
+	public void setC_VAT_Code_Override_ID (final int C_VAT_Code_Override_ID)
+	{
+		if (C_VAT_Code_Override_ID < 1) 
+			set_Value (COLUMNNAME_C_VAT_Code_Override_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_VAT_Code_Override_ID, C_VAT_Code_Override_ID);
+	}
+
+	@Override
+	public int getC_VAT_Code_Override_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_VAT_Code_Override_ID);
 	}
 
 	@Override
