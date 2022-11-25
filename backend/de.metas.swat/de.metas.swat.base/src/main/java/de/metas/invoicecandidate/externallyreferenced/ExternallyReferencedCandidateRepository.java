@@ -132,10 +132,6 @@ public class ExternallyReferencedCandidateRepository
 
 			icRecord.setInvoiceRule(ic.getInvoiceRule().getCode());
 
-
-			icRecord.setPriceEntered_Override(ic.getPriceEnteredOverride().toBigDecimal());
-			icRecord.setDiscount_Override(ic.getDiscountOverride().toBigDecimal());
-
 			icRecord.setDescriptionBottom(ic.getDescriptionBottom());
 			icRecord.setAD_User_InCharge_ID(UserId.toRepoIdOr(ic.getUserInChargeId(), -1 ));
 		}
