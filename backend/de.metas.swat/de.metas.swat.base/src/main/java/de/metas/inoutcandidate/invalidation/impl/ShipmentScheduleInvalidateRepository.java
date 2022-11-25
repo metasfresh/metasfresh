@@ -556,8 +556,8 @@ public class ShipmentScheduleInvalidateRepository implements IShipmentScheduleIn
 		// This is crucial because the invalidation-SQL checks if there exist un-tagged recompute records to avoid creating too many unneeded records.
 		// So if the tagging was in-trx, then the invalidation-SQL would still see them as un-tagged and therefore the invalidation would fail.
 		final String sqlUpdate = " UPDATE " + M_SHIPMENT_SCHEDULE_RECOMPUTE + " sr " +
-				"SET AD_Pinstance_ID=" + pinstanceId.getRepoId() + " " +
-				"FROM (" +
+				"SET AD_Pinstance_ID=" + pinstanceId.getRepoId() +
+				" FROM (" +
 				"	SELECT s.M_ShipmentSchedule_ID " +
 				"	FROM M_ShipmentSchedule s " +
 				// task 08959: also retrieve locked records. The async processor is expected to wait until they are updated.
