@@ -120,9 +120,8 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-
+	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 	final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
-
 	private IReceiptScheduleQtysBL receiptScheduleQtysBL = Services.get(IReceiptScheduleQtysBL.class);
 
 	@Override
@@ -769,26 +768,28 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 		final Quantity qtyOrdered = Quantity.of(receiptScheduleQtysBL.getQtyOrdered(receiptScheduleRecord), uom);
 
 		final Quantity qtyMoved = Quantity.of(receiptScheduleQtysBL.getQtyMoved(receiptScheduleRecord), uom);
-		final OrgId orgId = OrgId.ofRepoId(receiptScheduleRecord.getAD_Org_ID());
 
-		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNull(receiptScheduleRecord.getM_AttributeSetInstance_ID());
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(receiptScheduleRecord.getM_AttributeSetInstance_ID());
 
-		final String originCountryCode = attributeSetInstanceBL.getAttributeValueOrNull(AttributeConstants.CountryOfOrigin, asiId);
-		final CountryId countryId = originCountryCode == null ? null : countryDAO.getCountryIdByCountryCode(originCountryCode);
+		final CountryId originCountryId = getOriginCountryId(asiId);
+
+		final WarehouseId warehouseId = WarehouseId.ofRepoId(receiptScheduleRecord.getM_Warehouse_ID());
+		final BPartnerLocationId destinationBPLocationId = warehouseBL.getBPartnerLocationId(warehouseId);
+		final CountryId destinationCountryId = warehouseBL.getCountryId(warehouseId);
 
 		final String huBatchNo = attributeSetInstanceBL.getAttributeValueOrNull(AttributeConstants.HU_BatchNo, asiId);
 
 		final DeliveryPlanningCreateRequest.DeliveryPlanningCreateRequestBuilder requestBuilder = DeliveryPlanningCreateRequest.builder()
-				.orgId(orgId)
+				.orgId(OrgId.ofRepoId(receiptScheduleRecord.getAD_Org_ID()))
 				.clientId(ClientId.ofRepoId(receiptScheduleRecord.getAD_Client_ID()))
 				.receiptScheduleId(ReceiptScheduleId.ofRepoId(receiptScheduleRecord.getM_ReceiptSchedule_ID()))
 				.deliveryPlanningType(DeliveryPlanningType.Incoming)
 				.orderId(orderId)
 				.orderLineId(orderLineId)
-				.warehouseId(WarehouseId.ofRepoId(receiptScheduleRecord.getM_Warehouse_ID()))
+				.warehouseId(warehouseId)
 				.productId(ProductId.ofRepoId(receiptScheduleRecord.getM_Product_ID()))
 				.partnerId(BPartnerId.ofRepoId(receiptScheduleRecord.getC_BPartner_ID()))
-				.bPartnerLocationId(BPartnerLocationId.ofRepoId(receiptScheduleRecord.getC_BPartner_ID(), receiptScheduleRecord.getC_BPartner_Location_ID()))
+				.bPartnerLocationId(destinationBPLocationId)
 				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(receiptScheduleRecord.getM_SectionCode_ID()))
 				.qtyOredered(qtyOrdered)
 				.qtyTotalOpen(qtyOrdered.subtract(qtyMoved))
@@ -797,7 +798,8 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 				.uom(uom)
 				.plannedDeliveryDate(TimeUtil.asInstant(receiptScheduleRecord.getMovementDate()))
 				.batch(huBatchNo)
-				.originCountryId(countryId);
+				.originCountryId(originCountryId)
+				.destinationCountryId(destinationCountryId);
 
 		if (orderId != null)
 		{
@@ -815,5 +817,13 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 		}
 
 		return requestBuilder.build();
+	}
+
+	@Nullable
+	private CountryId getOriginCountryId(final AttributeSetInstanceId asiId)
+	{
+		final String originCountryCode = attributeSetInstanceBL.getAttributeValueOrNull(AttributeConstants.CountryOfOrigin, asiId);
+		final CountryId originCountryId = originCountryCode == null ? null : countryDAO.getCountryIdByCountryCode(originCountryCode);
+		return originCountryId;
 	}
 }

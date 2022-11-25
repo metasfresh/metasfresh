@@ -6,6 +6,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import de.metas.async.AsyncBatchId;
 import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.bpartner.service.IBPartnerBL;
@@ -45,7 +46,7 @@ import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
-import de.metas.organization.IOrgDAO;
+import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.product.IProductBL;
@@ -189,7 +190,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
-
+	private final IBPartnerBL bPartnerBL = Services.get(IBPartnerBL.class);
 	private final ThreadLocal<Boolean> postponeMissingSchedsCreationUntilClose = ThreadLocal.withInitial(() -> false);
 
 	@Override
@@ -1029,6 +1030,10 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 			requestBuilder.isB2B(order.isDropShip())
 					.incotermsId(IncotermsId.ofRepoIdOrNull(order.getC_Incoterms_ID()));
 
+			final BPartnerLocationAndCaptureId bpartnerLocationId = OrderDocumentLocationAdapterFactory.locationAdapter(order).getBPartnerLocationAndCaptureId();
+			final CountryId destinationCountryId = bPartnerBL.getCountryId(bpartnerLocationId);
+
+			requestBuilder.destinationCountryId(destinationCountryId);
 		}
 
 		if (orderLineId != null)
