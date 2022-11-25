@@ -39,6 +39,7 @@ import de.metas.product.ProductPrice;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
@@ -65,6 +66,9 @@ public class ManualCandidateService
 	public ExternallyReferencedCandidate createInvoiceCandidate(@NonNull final NewManualInvoiceCandidate newIC)
 	{
 		final ExternallyReferencedCandidate.ExternallyReferencedCandidateBuilder candidate = ExternallyReferencedCandidate.createBuilder(newIC);
+
+		final ProductPrice priceEnteredOverride = newIC.getPriceEnteredOverride();
+		final Percent discountOverride = newIC.getDiscountOverride();
 
 		final ICountryDAO countryDAO = Services.get(ICountryDAO.class);
 
@@ -95,6 +99,10 @@ public class ManualCandidateService
 				.build();
 		candidate.priceEntered(priceEntered);
 		candidate.discount(pricingResult.getDiscount());
+
+		candidate.priceEnteredOverride(priceEnteredOverride);
+		candidate.discountOverride(discountOverride);
+
 
 		final BigDecimal priceActualBD = pricingResult.getDiscount()
 				.subtractFromBase(
@@ -129,6 +137,9 @@ public class ManualCandidateService
 
 		candidate.invoiceRule(CoalesceUtil.coalesceNotNull(newICInvoiceRule, InvoiceRule.Immediate));
 		candidate.recordReference(newIC.getRecordReference());
+
+		candidate.descriptionBottom(newIC.getDescriptionBottom());
+		candidate.userInChargeId(newIC.getUserInChargeId());
 
 		return candidate.build();
 
