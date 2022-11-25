@@ -46,6 +46,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -626,7 +627,8 @@ class SqlViewDataRepository implements IViewDataRepository
 	public ViewRowIdsOrderedSelection addRemoveChangedRows(
 			@NonNull final ViewRowIdsOrderedSelection selection,
 			@NonNull final DocumentFilterList filters,
-			@NonNull final Set<DocumentId> changedRowIds)
+			@NonNull final Set<DocumentId> changedRowIds,
+			@NonNull final AddRemoveChangedRowIdsCollector changesCollector)
 	{
 		if (changedRowIds.isEmpty())
 		{
@@ -635,20 +637,33 @@ class SqlViewDataRepository implements IViewDataRepository
 
 		final ViewId viewId = selection.getViewId();
 
-		final Set<DocumentId> rowIdsToAdd = retrieveRowIdsMatchingFiltersButNotInView(viewId, filters, changedRowIds);
+		final Set<DocumentId> rowIdsToAdd = retrieveRowIdsMatchingFiltersButNotInView(viewId, filters, changedRowIds)
+				.stream()
+				// sort them by ID because at least to have them appended using the creation order
+				// ideally would be to insert them in the right place respecting the view's ORDER BY clause
+				.sorted(Comparator.comparing(DocumentId::toJson))
+				.collect(ImmutableSet.toImmutableSet());
 
 		final Set<DocumentId> rowIdsToRemove = new HashSet<>(changedRowIds);
 		rowIdsToRemove.removeAll((rowIdsToAdd));
-		if(!rowIdsToRemove.isEmpty())
+		if (!rowIdsToRemove.isEmpty())
 		{
 			final Set<DocumentId> rowIdsInViewAndMatching = retrieveRowIdsMatchingFilters(viewId, filters, rowIdsToRemove);
 			rowIdsToRemove.removeAll(rowIdsInViewAndMatching);
 		}
 
-		return viewRowIdsOrderedSelectionFactory.removeAndAddRowIdsFromSelection(
+		final ViewRowIdsOrderedSelection changedSelection = viewRowIdsOrderedSelectionFactory.removeAndAddRowIdsFromSelection(
 				selection,
 				DocumentIdsSelection.of(rowIdsToRemove),
 				DocumentIdsSelection.of(rowIdsToAdd));
+
+		if (!ViewRowIdsOrderedSelection.equals(selection, changedSelection))
+		{
+			changesCollector.collectAddedRowIds(rowIdsToAdd);
+			changesCollector.collectRemovedRowIds(rowIdsToRemove);
+		}
+
+		return changedSelection;
 	}
 
 	public Set<DocumentId> retrieveRowIdsMatchingFilters(
