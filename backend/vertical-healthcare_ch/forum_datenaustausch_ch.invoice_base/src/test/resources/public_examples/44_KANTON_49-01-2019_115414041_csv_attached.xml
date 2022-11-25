@@ -110,6 +110,6 @@
         <invoice:record_other amount="24.60" code="53202.1" date_begin="2019-01-29T11:00:00" date_end="2019-01-29T12:00:00" external_factor="1" name="Tarif b 1h" obligation="true" provider_id="F123456" quantity="60" record_id="4" responsible_id="I135792" session="1" tariff_type="532" unit="0.41" unit_factor="1" validate="true" vat_rate="0"/>
         <invoice:record_other amount="-8.00" code="53299" date_begin="2019-01-29T00:00:00" date_end="2019-01-29T00:00:00" external_factor="1" name="Abzugsposition Eigenbeitrag" obligation="true" provider_id="F123456" quantity="-60" record_id="5" responsible_id="I135792" session="1" tariff_type="532" unit="0.1333" unit_factor="1" validate="true" vat_rate="0"/>
       </invoice:services>
-    <invoice:documents number="1"><invoice:document filename="F123456_KANTON_49_verordnung.csv" mimeType="text/csv"><invoice:base64>YW5hIGFyZSBtZXJl</invoice:base64></invoice:document></invoice:documents></invoice:body>
+      <invoice:documents number="1"><invoice:document filename="F123456_KANTON_49_verordnung.csv" mimeType="text/csv"><invoice:base64>YW5hIGFyZSBtZXJl</invoice:base64></invoice:document></invoice:documents></invoice:body>
   </invoice:payload>
 </invoice:request>
