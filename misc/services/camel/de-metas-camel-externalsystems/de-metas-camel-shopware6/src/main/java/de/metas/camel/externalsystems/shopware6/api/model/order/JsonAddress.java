@@ -32,8 +32,8 @@ import lombok.Value;
 
 @Value
 @Builder
-@JsonDeserialize(builder = JsonOrderAddress.JsonOrderAddressBuilder.class)
-public class JsonOrderAddress
+@JsonDeserialize(builder = JsonAddress.JsonAddressBuilder.class)
+public class JsonAddress
 {
 	@NonNull
 	@JsonProperty("id")
@@ -81,7 +81,7 @@ public class JsonOrderAddress
 
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	@JsonPOJOBuilder(withPrefix = "")
-	static class JsonOrderAddressBuilder
+	static class JsonAddressBuilder
 	{
 	}
 }

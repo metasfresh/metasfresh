@@ -1,0 +1,58 @@
+{
+  "data": [
+    {
+      "id": "externalHeaderId",
+      "billingAddressId": "billingAddressId",
+      "orderCustomer": {
+        "id": "0f3f41c12f4a41a6a084f8d9b9d67144",
+        "orderId": "externalHeaderId",
+        "company": "company",
+        "customerId": "customerId",
+        "firstName": "firstName",
+        "lastName": "lastName",
+        "customerNumber": "customerNumber",
+        "email": "orderCustomerEmail@example.com",
+        "vatIds": [
+          "vatId12"
+        ],
+        "customFields": {
+          "externalReference": "customerId",
+          "customUserId": "userId1",
+          "customSalesRepId": "mockSalesRepIdentifier"
+        }
+      },
+      "currencyId": "currencyId",
+      "orderNumber": "poReference",
+      "orderDate": "2021-01-12T00:00:00.000+00:00",
+      "createdAt": "2021-01-11T15:05:08.921+00:00",
+      "stateMachineState": {
+        "technicalName": "open"
+      }
+    },
+    {
+      "id": "willNotBeImportedDueToStateMachineState",
+      "billingAddressId": "willNotBeImportedDueToStateMachineState",
+      "orderCustomer": {
+        "id": "willNotBeImportedDueToStateMachineState",
+        "orderId": "willNotBeImportedDueToStateMachineState",
+        "company": "willNotBeImportedDueToStateMachineState",
+        "customerId": "willNotBeImportedDueToStateMachineState",
+        "firstName": "willNotBeImportedDueToStateMachineState",
+        "lastName": "willNotBeImportedDueToStateMachineState",
+        "customerNumber": "willNotBeImportedDueToStateMachineState",
+        "email": "orderCustomerEmail@example.com",
+        "customFields": {
+          "externalReference": "customerId",
+          "customSalesRepId": "mockSalesRepIdentifier"
+        }
+      },
+      "currencyId": "willNotBeImportedDueToStateMachineState",
+      "orderNumber": "butWeDoCareAboutTheCreatedDateForEstablishingTheNextStartingDate",
+      "orderDate": "2021-01-12T00:00:00.000+00:00",
+      "createdAt": "2021-01-07T15:05:08.921+00:00",
+      "stateMachineState": {
+        "technicalName": "anything_but_open"
+      }
+    }
+  ]
+}
