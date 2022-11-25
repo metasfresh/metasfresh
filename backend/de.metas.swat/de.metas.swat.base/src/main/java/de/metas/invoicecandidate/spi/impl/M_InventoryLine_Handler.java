@@ -32,6 +32,7 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
+import de.metas.tax.api.VatCodeId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.user.User;
@@ -208,6 +209,7 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 		final BPartnerLocationAndCaptureId inoutBPLocationId = InOutDocumentLocationAdapterFactory
 				.locationAdapter(inOut)
 				.getBPartnerLocationAndCaptureId();
+		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(ic.getC_VAT_Code_ID());
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				ic,
@@ -217,7 +219,8 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 				orgId,
 				WarehouseId.ofRepoId(inOut.getM_Warehouse_ID()),
 				inoutBPLocationId, // shipC_BPartner_Location_ID
-				SOTrx.PURCHASE); // isSOTrx same as in vendor return
+				SOTrx.PURCHASE,
+				vatCodeId); // isSOTrx same as in vendor return
 		ic.setC_Tax_ID(taxId.getRepoId());
 
 		//

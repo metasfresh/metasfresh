@@ -76,8 +76,14 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 			@NonNull final OrgId orgId,
 			@Nullable final WarehouseId warehouseId,
 			@NonNull final BPartnerLocationAndCaptureId shipBPartnerLocationId,
-			@NonNull final SOTrx soTrx)
+			@NonNull final SOTrx soTrx,
+			@Nullable final VatCodeId vatCodeId)
 	{
+		final Tax taxFromVatCode = taxDAO.getTaxFromVatCodeIdIfManualOrNull(vatCodeId);
+		if (taxFromVatCode != null)
+		{
+			return taxFromVatCode.getTaxId();
+		}
 		if (taxCategoryId != null)
 		{
 			final CountryId countryFromId;

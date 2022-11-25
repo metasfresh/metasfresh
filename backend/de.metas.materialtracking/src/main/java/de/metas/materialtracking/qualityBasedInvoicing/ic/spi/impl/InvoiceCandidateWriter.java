@@ -51,6 +51,7 @@ import de.metas.quantity.Quantity;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
+import de.metas.tax.api.VatCodeId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -76,7 +77,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 
 /**
  * Takes {@link IQualityInvoiceLineGroup}s and creates {@link I_C_Invoice_Candidate}s.
@@ -614,6 +614,7 @@ public class InvoiceCandidateWriter
 		final BPartnerLocationAndCaptureId billToLocation = InvoiceCandidateLocationAdapterFactory
 				.billLocationAdapter(ic)
 				.getBPartnerLocationAndCaptureId();
+		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(ic.getC_VAT_Code_ID());
 
 		final TaxId taxID = taxBL.getTaxNotNull(
 				ic,
@@ -623,7 +624,8 @@ public class InvoiceCandidateWriter
 				OrgId.ofRepoId(ic.getAD_Org_ID()),
 				(WarehouseId)null,
 				billToLocation, // shipPartnerLocation TODO
-				SOTrx.PURCHASE);
+				SOTrx.PURCHASE,
+				vatCodeId);
 		ic.setC_Tax_ID(taxID.getRepoId());
 	}
 }

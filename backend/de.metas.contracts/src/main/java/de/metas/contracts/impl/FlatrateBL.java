@@ -95,6 +95,7 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
+import de.metas.tax.api.VatCodeId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
@@ -114,7 +115,6 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
@@ -127,8 +127,6 @@ import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_C_Year;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.Lookup;
-import org.compiere.model.POInfo;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
@@ -485,6 +483,7 @@ public class FlatrateBL implements IFlatrateBL
 		final BPartnerLocationAndCaptureId shipToLocationId = CoalesceUtil.coalesceSuppliers(
 				() -> ContractLocationHelper.extractDropshipLocationId(term),
 				() -> ContractLocationHelper.extractBillToLocationId(term));
+		final VatCodeId vatCodeId = null;
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				term,
@@ -494,7 +493,8 @@ public class FlatrateBL implements IFlatrateBL
 				orgId,
 				null,
 				shipToLocationId,
-				SOTrx.SALES);
+				SOTrx.SALES,
+				vatCodeId);
 
 		newCand.setC_Tax_ID(taxId.getRepoId());
 
@@ -618,6 +618,7 @@ public class FlatrateBL implements IFlatrateBL
 		final BPartnerLocationAndCaptureId shipToLocationId = CoalesceUtil.coalesceSuppliers(
 				() -> ContractLocationHelper.extractDropshipLocationId(term),
 				() -> ContractLocationHelper.extractBillToLocationId(term));
+		final VatCodeId vatCodeId = null;
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				term,
@@ -627,7 +628,8 @@ public class FlatrateBL implements IFlatrateBL
 				OrgId.ofRepoId(dataEntry.getAD_Org_ID()),
 				null,
 				shipToLocationId,
-				SOTrx.SALES);
+				SOTrx.SALES,
+				vatCodeId);
 
 		newCand.setC_Tax_ID(TaxId.toRepoId(taxId)); // guard against NPEs in unit tests
 

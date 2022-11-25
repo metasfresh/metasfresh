@@ -57,6 +57,7 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxId;
+import de.metas.tax.api.VatCodeId;
 import de.metas.user.User;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -944,6 +945,7 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 		final org.compiere.model.I_M_InOut inOutRecord = inoutLineRecord.getM_InOut();
 		final Properties ctx = getCtx(inoutLineRecord);
 		final Timestamp shipDate = inOutRecord.getMovementDate();
+		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(icRecord.getC_VAT_Code_ID());
 
 		final BPartnerLocationAndCaptureId deliveryLocation = InOutDocumentLocationAdapterFactory
 				.locationAdapter(inOutRecord)
@@ -957,7 +959,8 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 				orgId,
 				WarehouseId.ofRepoId(inOutRecord.getM_Warehouse_ID()),
 				deliveryLocation, // shipC_BPartner_Location_ID
-				SOTrx.ofBoolean(inOutRecord.isSOTrx()));
+				SOTrx.ofBoolean(inOutRecord.isSOTrx()),
+				vatCodeId);
 
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 		final ProductPrice pp = inoutLineRecord.getC_OrderLine_ID() != 0 ? orderLineBL.getPriceActual(inoutLineRecord.getC_OrderLine()) : null;

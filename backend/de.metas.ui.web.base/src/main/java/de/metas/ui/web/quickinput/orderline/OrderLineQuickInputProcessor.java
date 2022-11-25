@@ -269,6 +269,11 @@ public class OrderLineQuickInputProcessor implements IQuickInputProcessor
 		{
 			to.setExplodedFrom_BOMLine_ID(candidate.getExplodedFromBOMLineId().getRepoId());
 		}
+		final VatCodeId vatCodeId = candidate.getVatCodeId();
+		if (vatCodeId != null)
+		{
+			to.setC_VAT_Code_ID(vatCodeId.getRepoId());
+		}
 	}
 
 	private PlainHUPackingAware createQuickInputPackingAware(@NonNull final OrderLineCandidate candidate)

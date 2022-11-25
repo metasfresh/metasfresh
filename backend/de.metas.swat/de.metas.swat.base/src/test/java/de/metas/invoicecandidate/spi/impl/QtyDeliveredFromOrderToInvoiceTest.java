@@ -64,7 +64,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.create;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SuppressWarnings("FieldCanBeLocal")
 @ExtendWith(AdempiereTestWatcher.class)
@@ -161,7 +161,6 @@ public class QtyDeliveredFromOrderToInvoiceTest
 		Mockito.doReturn(activityId).when(productAcctDAO).retrieveActivityForAcct(clientId, orgId, productId);
 		Mockito.doReturn(docType).when(docTypeBL).getById(docTypeId);
 
-
 		final Properties ctx = Env.getCtx();
 		Mockito
 				.when(taxBL.getTaxNotNull(
@@ -172,7 +171,8 @@ public class QtyDeliveredFromOrderToInvoiceTest
 						OrgId.ofRepoId(order.getAD_Org_ID()),
 						WarehouseId.ofRepoIdOrNull(order.getM_Warehouse_ID()),
 						BPartnerLocationAndCaptureId.ofRepoId(order.getC_BPartner_ID(), order.getC_BPartner_Location_ID(), order.getC_BPartner_Location_Value_ID()),
-						SOTrx.ofBoolean(order.isSOTrx())))
+						SOTrx.ofBoolean(order.isSOTrx()),
+						null))//vatCodeId
 				.thenReturn(TaxId.ofRepoId(3));
 	}
 
