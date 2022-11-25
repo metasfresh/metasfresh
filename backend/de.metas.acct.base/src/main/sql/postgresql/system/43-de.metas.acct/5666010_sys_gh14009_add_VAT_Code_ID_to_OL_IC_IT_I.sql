@@ -481,11 +481,6 @@ DELETE FROM  AD_Column_Trl WHERE AD_Column_ID=585133
 DELETE FROM AD_Column WHERE AD_Column_ID=585133
 ;
 
--- Column: C_VAT_Code.Description
--- 2022-11-25T09:21:05.196Z
-UPDATE AD_Column SET IsIdentifier='N',Updated=TO_TIMESTAMP('2022-11-25 11:21:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=553151
-;
-
 -- 2022-11-25T13:44:19.807Z
 INSERT INTO AD_Element (AD_Client_ID,AD_Element_ID,AD_Org_ID,ColumnName,Created,CreatedBy,EntityType,IsActive,Name,PrintName,Updated,UpdatedBy) VALUES (0,581738,0,'C_VAT_Code_Override_ID',TO_TIMESTAMP('2022-11-25 15:44:19','YYYY-MM-DD HH24:MI:SS'),100,'D','Y','VAT Code','VAT Code',TO_TIMESTAMP('2022-11-25 15:44:19','YYYY-MM-DD HH24:MI:SS'),100)
 ;
