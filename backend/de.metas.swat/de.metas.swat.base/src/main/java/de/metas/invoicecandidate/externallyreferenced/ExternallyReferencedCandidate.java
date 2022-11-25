@@ -39,6 +39,7 @@ import de.metas.project.ProjectId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
+import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.Percent;
@@ -132,6 +133,10 @@ public class ExternallyReferencedCandidate
 
 	private String lineDescription;
 
+	private String descriptionBottom;
+
+	private UserId userInChargeId;
+
 	private ProjectId projectId;
 
 	/**
@@ -141,7 +146,6 @@ public class ExternallyReferencedCandidate
 	private final TableRecordReference recordReference;
 
 	private List<InvoiceDetailItem> invoiceDetailItems;
-
 
 	@Builder
 	private ExternallyReferencedCandidate(
@@ -169,8 +173,10 @@ public class ExternallyReferencedCandidate
 			@NonNull final ProductPrice priceActual,
 			@NonNull final TaxId taxId,
 			@Nullable final DocTypeId invoiceDocTypeId,
+			@Nullable final UserId userInChargeId,
 			@Nullable final String lineDescription,
 			@Nullable final ProjectId projectId,
+			@Nullable final String descriptionBottom,
 			@Nullable final TableRecordReference recordReference,
 			@Nullable final List<InvoiceDetailItem> invoiceDetailItems)
 	{
@@ -200,6 +206,8 @@ public class ExternallyReferencedCandidate
 		this.invoiceDocTypeId = invoiceDocTypeId;
 		this.lineDescription = lineDescription;
 		this.projectId = projectId;
+		this.descriptionBottom = descriptionBottom;
+		this.userInChargeId = userInChargeId;
 		this.recordReference = recordReference;
 		this.invoiceDetailItems = invoiceDetailItems != null ? ImmutableList.copyOf(invoiceDetailItems) : ImmutableList.of();
 
