@@ -130,3 +130,9 @@ UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2022-11-25 17:20:04','Y
 UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2022-11-25 17:20:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=708204
 ;
 
+-- Field: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> Maßeinheit
+-- Column: M_Delivery_Planning.C_UOM_ID
+-- 2022-11-25T15:22:50.068Z
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2022-11-25 17:22:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=708191
+;
+
