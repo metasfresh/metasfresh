@@ -24,6 +24,8 @@ package de.metas.inoutcandidate.modelvalidator;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
+import de.metas.deliveryplanning.DeliveryPlanningService;
+import de.metas.deliveryplanning.M_ShipmentSchedule_Create_M_Delivery_Planning;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
@@ -39,12 +41,13 @@ import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.order.IOrderBL;
 import de.metas.order.OrderLineId;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.ad.modelvalidator.annotations.Validator;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.LegacyAdapters;
@@ -55,6 +58,7 @@ import org.compiere.model.MDocType;
 import org.compiere.model.MOrder;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.ModelValidator;
+import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.HashSet;
@@ -70,18 +74,28 @@ import static org.adempiere.model.InterfaceWrapperHelper.getTableId;
  *
  * @author tsa
  */
-@Validator(I_M_ShipmentSchedule.class)
+@Interceptor(I_M_ShipmentSchedule.class)
+@Component
 public class M_ShipmentSchedule
 {
+	private final DeliveryPlanningService deliveryPlanningService;
+	private final IShipmentScheduleInvalidateBL invalidSchedulesService;
+	private final IShipmentScheduleUpdater shipmentScheduleUpdater;
 	private static final AdMessageKey MSG_DECREASE_QTY_ORDERED_BELOW_QTY_ALREADY_DELIVERED_IS_NOT_ALLOWED = //
 			AdMessageKey.of("de.metas.inoutcandidate.DecreaseQtyOrderedBelowQtyAlreadyDeliveredIsNotAllowed");
 
-	private final IShipmentScheduleInvalidateBL invalidSchedulesService = Services.get(IShipmentScheduleInvalidateBL.class);
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-	private final IShipmentScheduleUpdater shipmentScheduleUpdater = Services.get(IShipmentScheduleUpdater.class);
-	private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 
+	public M_ShipmentSchedule(@NonNull final DeliveryPlanningService deliveryPlanningService,
+			@NonNull final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL,
+			@NonNull final IShipmentScheduleUpdater shipmentScheduleUpdater)
+	{
+		this.deliveryPlanningService = deliveryPlanningService;
+		this.invalidSchedulesService = shipmentScheduleInvalidateBL;
+		this.shipmentScheduleUpdater = shipmentScheduleUpdater;
+	}
+private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	/**
 	 * Does some sanity checks on the given <code>schedule</code>
 	 */
@@ -114,7 +128,7 @@ public class M_ShipmentSchedule
 	/**
 	 * If a shipment schedule is deleted, then this method makes sure that all {@link I_M_IolCandHandler_Log} records which refer to the same record as the schedule are also deleted.<br>
 	 * Otherwise, that referenced record would never be considered again by {@link de.metas.inoutcandidate.spi.ShipmentScheduleHandler#retrieveModelsWithMissingCandidates(Properties, String)}.
-	 *
+	 * <p>
 	 * Task 08288
 	 */
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
@@ -361,5 +375,18 @@ public class M_ShipmentSchedule
 	public void updateCanBeExportedAfter(@NonNull final I_M_ShipmentSchedule sched)
 	{
 		shipmentScheduleBL.updateCanBeExportedAfter(sched);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW })
+	public void createDeliveryPlanning(@NonNull final I_M_ShipmentSchedule sched)
+	{
+		final boolean autoCreateEnabled = deliveryPlanningService.isAutoCreateEnabled(ClientAndOrgId.ofClientAndOrg(sched.getAD_Client_ID(), sched.getAD_Org_ID()));
+
+		if (!autoCreateEnabled)
+		{
+			//nothing to do
+			return;
+		}
+		M_ShipmentSchedule_Create_M_Delivery_Planning.scheduleOnTrxCommit(sched);
 	}
 }

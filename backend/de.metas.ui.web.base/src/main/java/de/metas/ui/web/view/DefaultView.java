@@ -362,7 +362,7 @@ public final class DefaultView implements IEditableView
 			final ViewRowsOrderBy orderBy)
 	{
 		assertNotClosed();
-		checkChangedRows();
+		checkChangedRows(AddRemoveChangedRowIdsCollector.NOT_RECORDING);
 
 		final ViewEvaluationCtx evalCtx = getViewEvaluationCtx();
 		final ViewRowIdsOrderedSelection orderedSelection = getOrderedSelection(orderBy.toDocumentQueryOrderByList());
@@ -435,7 +435,7 @@ public final class DefaultView implements IEditableView
 			@NonNull final ViewRowsOrderBy orderBy)
 	{
 		assertNotClosed();
-		checkChangedRows();
+		checkChangedRows(AddRemoveChangedRowIdsCollector.NOT_RECORDING);
 
 		final ViewEvaluationCtx evalCtx = getViewEvaluationCtx();
 		final ViewRowIdsOrderedSelection orderedSelection = getOrderedSelection(orderBy.toDocumentQueryOrderByList());
@@ -460,7 +460,7 @@ public final class DefaultView implements IEditableView
 
 	private IViewRow getOrRetrieveById(final DocumentId rowId)
 	{
-		checkChangedRows();
+		checkChangedRows(AddRemoveChangedRowIdsCollector.NOT_RECORDING);
 
 		return cache_rowsById.getOrLoad(rowId, () -> retrieveRowById(rowId));
 	}
@@ -580,7 +580,7 @@ public final class DefaultView implements IEditableView
 		else if (rowIds.isAll())
 		{
 			assertNotClosed();
-			checkChangedRows();
+			checkChangedRows(AddRemoveChangedRowIdsCollector.NOT_RECORDING);
 
 			final ViewEvaluationCtx evalCtx = getViewEvaluationCtx();
 			final ViewRowIdsOrderedSelection orderedSelection = selectionsRef.getDefaultSelection();
@@ -645,8 +645,22 @@ public final class DefaultView implements IEditableView
 
 		// If the view is watched by a frontend browser, make sure we will notify only for rows which are part of that view
 		// TODO: introduce a SysConfig to be able to disable this feature
+		boolean hasViewAdditions = false;
 		if (watchedByFrontend)
 		{
+			// Process changed rows because if not, "retainExistingRowIds" will not consider rows to be added.
+			// And for the particular case when we have only new rows to be added the rowIds will get empty an websocket event will be sent to frontend.
+			if(refreshViewOnChangeEvents)
+			{
+				final AddRemoveChangedRowIdsCollector changesCollector = AddRemoveChangedRowIdsCollector.newRecording();
+				checkChangedRows(changesCollector);
+
+				if(changesCollector.hasAddedRows())
+				{
+					hasViewAdditions = true;
+				}
+			}
+
 			rowIds = selectionsRef.retainExistingRowIds(rowIds);
 		}
 
@@ -655,11 +669,15 @@ public final class DefaultView implements IEditableView
 		{
 			// do nothing
 		}
-		else if (rowIds.size() >= 20)
+		// IMPORTANT: atm in case many rows were changed, avoid sending them to frontend.
+		// Better notify the frontend that the whole view changed,
+		// so the frontend would fetch the whole page instead of querying 1k of changed rows.
+		//
+		// Also, in case the view has additions we have to ask for page reload,
+		// because frontend does not react to rowIds which are not in its list.
+		// To optimize, it would be better to tell frontend that it was a row addition.
+		else if (hasViewAdditions || rowIds.size() >= 20)
 		{
-			// IMPORTANT: atm in case many rows were changed, avoid sending them to frontend.
-			// Better notify the frontend that the whole view changed,
-			// so the frontend would fetch the whole page instead of querying 1k of changed rows.
 			ViewChangesCollector.getCurrentOrAutoflush().collectFullyChanged(this);
 		}
 		else
@@ -699,9 +717,9 @@ public final class DefaultView implements IEditableView
 		}
 	}
 
-	private void checkChangedRows()
+	private void checkChangedRows(@NonNull final AddRemoveChangedRowIdsCollector changesCollector)
 	{
-		changedRowIdsToCheck.process(selectionsRef::updateChangedRows);
+		changedRowIdsToCheck.process(rowIds -> selectionsRef.updateChangedRows(rowIds, changesCollector));
 	}
 
 	@Override
