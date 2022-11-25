@@ -57,6 +57,7 @@ import de.metas.tax.api.TaxId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
+import de.metas.user.UserId;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
@@ -70,6 +71,7 @@ import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.ZoneId;
 import java.util.Collection;
@@ -135,6 +137,10 @@ public class ExternallyReferencedCandidateRepository
 			icRecord = load(invoiceCandidateId, I_C_Invoice_Candidate.class);
 		}
 
+
+		final BigDecimal discountOverride = ic.getDiscountOverride().toBigDecimal() != null ? ic.getDiscountOverride().toBigDecimal() : null;
+		icRecord.setDiscount_Override(discountOverride);
+
 		final ProductPrice priceEnteredOverride = ic.getPriceEnteredOverride();
 		if (priceEnteredOverride != null)
 		{
@@ -154,7 +160,6 @@ public class ExternallyReferencedCandidateRepository
 			icRecord.setPriceEntered_Override(null);
 		}
 
-		icRecord.setDiscount_Override(Percent.toBigDecimalOrNull(ic.getDiscountOverride()));
 		icRecord.setDateOrdered(TimeUtil.asTimestamp(ic.getDateOrdered(), timeZone));
 		icRecord.setC_DocTypeInvoice_ID(DocTypeId.toRepoId(ic.getInvoiceDocTypeId()));
 		icRecord.setInvoiceRule_Override(InvoiceRule.toCodeOrNull(ic.getInvoiceRuleOverride()));
@@ -165,6 +170,9 @@ public class ExternallyReferencedCandidateRepository
 
 		icRecord.setExternalHeaderId(ExternalId.toValue(ic.getExternalHeaderId()));
 		icRecord.setExternalLineId(ExternalId.toValue(ic.getExternalLineId()));
+		
+		icRecord.setDescriptionBottom(ic.getDescriptionBottom());
+		icRecord.setAD_User_InCharge_ID(UserId.toRepoIdOr(ic.getUserInChargeId(), -1 ));
 
 		final TableRecordReference recordReference = ic.getRecordReference();
 		if (recordReference == null)
