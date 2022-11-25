@@ -17,8 +17,8 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
 import de.metas.lang.SOTrx;
-import de.metas.organization.IOrgDAO;
 import de.metas.money.CurrencyId;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.quantity.Quantity;
@@ -32,7 +32,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_C_UOM;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;

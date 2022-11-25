@@ -22,6 +22,9 @@
 
 package de.metas.scheduler.housekeeping;
 
+import ch.qos.logback.classic.Level;
+import de.metas.logging.LogManager;
+import de.metas.util.Loggables;
 import org.adempiere.ad.housekeeping.spi.IStartupHouseKeepingTask;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_AD_Scheduler;
@@ -29,10 +32,6 @@ import org.compiere.model.X_AD_Scheduler;
 import org.compiere.util.DB;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
-
-import ch.qos.logback.classic.Level;
-import de.metas.logging.LogManager;
-import de.metas.util.Loggables;
 
 /**
  * Updates <code>AD_Scheduler</code> records from status "Running" to "Started".

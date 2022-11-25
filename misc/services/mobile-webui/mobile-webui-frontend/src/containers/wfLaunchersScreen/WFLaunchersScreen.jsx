@@ -1,87 +1,101 @@
-import React, { useEffect, useRef } from 'react';
-import { useHistory, useRouteMatch } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useRouteMatch } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { map } from 'lodash';
-import * as ws from '../../utils/websocket';
 
-import { getLaunchers } from '../../api/launchers';
-import { appLaunchersBarcodeScannerLocation } from '../../routes/launchers';
-import { populateLaunchers } from '../../actions/LauncherActions';
+import { getLaunchers, useLaunchersWebsocket } from '../../api/launchers';
+import { populateLaunchersComplete, populateLaunchersStart } from '../../actions/LauncherActions';
 import { getApplicationLaunchers } from '../../reducers/launchers';
 
 import WFLauncherButton from './WFLauncherButton';
-import ButtonWithIndicator from '../../components/buttons/ButtonWithIndicator';
 import { getTokenFromState } from '../../reducers/appHandler';
+import { getApplicationInfoById } from '../../reducers/applications';
+import BarcodeScannerComponent from '../../components/BarcodeScannerComponent';
+import ButtonWithIndicator from '../../components/buttons/ButtonWithIndicator';
+import { toQRCodeDisplayable, toQRCodeObject, toQRCodeString } from '../../utils/huQRCodes';
 
 const WFLaunchersScreen = () => {
   const {
     params: { applicationId },
   } = useRouteMatch();
 
+  const [showQRCodeScanner, setShowQRCodeScanner] = useState(false);
+
+  const { requiresLaunchersQRCodeFilter } = useSelector((state) => getApplicationInfoById({ state, applicationId }));
+
+  const {
+    filterByQRCode: currentFilterByQRCode,
+    requestTimestamp,
+    list: launchers,
+  } = useSelector((state) => getApplicationLaunchers(state, applicationId));
+
+  const filterByQRCode = requiresLaunchersQRCodeFilter ? currentFilterByQRCode : null;
+  const isFilterValid = !requiresLaunchersQRCodeFilter || !!filterByQRCode;
+
+  const onNewLaunchers = ({ applicationId, applicationLaunchers }) => {
+    setShowQRCodeScanner(false);
+    dispatch(populateLaunchersComplete({ applicationId, applicationLaunchers }));
+  };
   //
   // Load application launchers
   const dispatch = useDispatch();
   useEffect(() => {
-    getLaunchers(applicationId).then((applicationLaunchers) => {
-      dispatch(populateLaunchers({ applicationId, applicationLaunchers }));
+    if (!isFilterValid) {
+      console.log('Skip fetching because QR Code is required but not yet scanned');
+      return;
+    }
+
+    getLaunchers(applicationId, filterByQRCode).then((applicationLaunchers) => {
+      onNewLaunchers({ applicationId, applicationLaunchers });
     });
-  }, [applicationId]);
+  }, [isFilterValid, applicationId, toQRCodeString(filterByQRCode), requestTimestamp]);
 
   //
   // Connect to WebSocket topic
   const userToken = useSelector((state) => getTokenFromState(state));
-  const wsClientRef = useRef(null);
-  useEffect(() => {
-    if (!wsClientRef.current) {
-      wsClientRef.current = ws.connectAndSubscribe({
-        topic: `/v2/userWorkflows/launchers/${userToken}/${applicationId}`,
-        debug: false,
-        onWebsocketMessage: (message) => {
-          const applicationLaunchers = JSON.parse(message.body);
-          dispatch(populateLaunchers({ applicationId, applicationLaunchers }));
-        },
-      });
-    }
+  useLaunchersWebsocket({
+    enabled: isFilterValid,
+    userToken,
+    applicationId,
+    filterByQRCode,
+    onWebsocketMessage: ({ applicationId, applicationLaunchers }) =>
+      onNewLaunchers({ applicationId, applicationLaunchers }),
+  });
 
-    return () => {
-      if (wsClientRef.current) {
-        ws.disconnectClient(wsClientRef.current);
-        wsClientRef.current = null;
-      }
-    };
-  }, []);
-
-  const history = useHistory();
-  const onScanBarcodeButtonClicked = () => {
-    history.push(appLaunchersBarcodeScannerLocation({ applicationId }));
-  };
-
-  const applicationLaunchers = useSelector((state) => getApplicationLaunchers(state, applicationId));
+  const showQRCodeScannerEffective = showQRCodeScanner || !isFilterValid;
 
   return (
     <div className="container launchers-container">
-      {applicationLaunchers.scanBarcodeToStartJobSupport && (
-        <>
-          <div className="mt-0">
-            <ButtonWithIndicator caption="Scan barcode" onClick={onScanBarcodeButtonClicked} />
-          </div>
-          <br />
-        </>
+      {showQRCodeScannerEffective && (
+        <BarcodeScannerComponent
+          onResolvedResult={({ scannedBarcode }) => {
+            dispatch(populateLaunchersStart({ applicationId, filterByQRCode: toQRCodeObject(scannedBarcode) }));
+          }}
+        />
       )}
-
-      {map(applicationLaunchers.list, (launcher, index) => {
-        const key = launcher.startedWFProcessId ? 'started-' + launcher.startedWFProcessId : 'new-' + index;
-        return (
-          <WFLauncherButton
-            key={key}
-            applicationId={launcher.applicationId}
-            caption={launcher.caption}
-            startedWFProcessId={launcher.startedWFProcessId}
-            wfParameters={launcher.wfParameters}
-            showWarningSign={launcher.showWarningSign}
+      {!showQRCodeScannerEffective && requiresLaunchersQRCodeFilter && (
+        <div className="mb-5">
+          <ButtonWithIndicator
+            caption={filterByQRCode ? toQRCodeDisplayable(filterByQRCode) : 'Scan barcode'}
+            onClick={() => setShowQRCodeScanner(true)}
           />
-        );
-      })}
+        </div>
+      )}
+      {!showQRCodeScannerEffective &&
+        launchers &&
+        map(launchers, (launcher, index) => {
+          const key = launcher.startedWFProcessId ? 'started-' + launcher.startedWFProcessId : 'new-' + index;
+          return (
+            <WFLauncherButton
+              key={key}
+              applicationId={launcher.applicationId}
+              caption={launcher.caption}
+              startedWFProcessId={launcher.startedWFProcessId}
+              wfParameters={launcher.wfParameters}
+              showWarningSign={launcher.showWarningSign}
+            />
+          );
+        })}
     </div>
   );
 };

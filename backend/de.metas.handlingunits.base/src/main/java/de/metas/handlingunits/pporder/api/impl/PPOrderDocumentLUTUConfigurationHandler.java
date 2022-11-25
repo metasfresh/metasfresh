@@ -1,6 +1,7 @@
 package de.metas.handlingunits.pporder.api.impl;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.impl.AbstractDocumentLUTUConfigurationHandler;
@@ -116,6 +117,12 @@ import java.util.Properties;
 			{
 				return pip;
 			}
+		}
+
+		final HUPIItemProductId packingMaterialId = HUPIItemProductId.ofRepoIdOrNull(ppOrder.getM_HU_PI_Item_Product_ID());
+		if (packingMaterialId != null)
+		{
+			return hupiItemProductDAO.getById(packingMaterialId);
 		}
 
 		//

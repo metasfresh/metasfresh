@@ -22,8 +22,17 @@ const RawMaterialIssueLineScreen = () => {
     params: { applicationId, workflowId: wfProcessId, activityId, lineId },
   } = useRouteMatch();
 
-  const { caption, productName, uom, qtyToIssue, qtyToIssueTolerancePerc, qtyToIssueRemaining, qtyIssued, steps } =
-    useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }), shallowEqual);
+  const {
+    caption,
+    userInstructions,
+    productName,
+    uom,
+    qtyToIssue,
+    qtyToIssueTolerancePerc,
+    qtyToIssueRemaining,
+    qtyIssued,
+    steps,
+  } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }), shallowEqual);
 
   const dispatch = useDispatch();
   useEffect(() => {
@@ -32,6 +41,7 @@ const RawMaterialIssueLineScreen = () => {
         computeHeaderEntriesFromParams({
           url,
           caption,
+          userInstructions,
           productName,
           uom,
           qtyToIssue,
@@ -83,6 +93,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
 
   return {
     caption: activity?.caption ?? 'Issue',
+    userInstructions: activity?.userInstructions,
     productName: line?.productName,
     uom: line?.uom,
     qtyToIssue: line?.qtyToIssue,
@@ -98,6 +109,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
 const computeHeaderEntriesFromParams = ({
   url,
   caption,
+  userInstructions,
   productName,
   uom,
   qtyToIssue,
@@ -108,6 +120,7 @@ const computeHeaderEntriesFromParams = ({
   return {
     location: url,
     caption: caption,
+    userInstructions,
     values: [
       { caption: trl('general.Product'), value: productName },
       {

@@ -4,12 +4,14 @@ import Moment from 'moment-timezone';
 import currentDevice from 'current-device';
 import { toInteger } from 'lodash';
 
-import { getItemsByProperty, nullToEmptyStrings, deepUnfreeze } from './index';
-import { viewState, getView } from '../reducers/viewHandler';
-import { getTable, getTableId, getSelection } from '../reducers/tables';
-import { getEntityRelatedId, getCachedFilter } from '../reducers/filters';
+import { deepUnfreeze, getItemsByProperty, nullToEmptyStrings } from './index';
+import { getView, viewState } from '../reducers/viewHandler';
+import { getSelection, getTable, getTableId } from '../reducers/tables';
+import { getCachedFilter, getEntityRelatedId } from '../reducers/filters';
 import { TIME_REGEX_TEST } from '../constants/Constants';
 import { getCurrentActiveLocale } from './locale';
+
+const DEFAULT_PAGE_LENGTH = 20;
 
 /**
  * @typedef {object} Props Component props
@@ -552,3 +554,15 @@ export function renderHeaderProperties(groups) {
     return acc;
   }, []);
 }
+
+export const computePageLengthEffective = (pageLengthFromLayout) => {
+  if (currentDevice.type === 'mobile' || currentDevice.type === 'tablet') {
+    return 9999;
+  }
+
+  if (pageLengthFromLayout && pageLengthFromLayout > 0) {
+    return pageLengthFromLayout;
+  }
+
+  return DEFAULT_PAGE_LENGTH;
+};

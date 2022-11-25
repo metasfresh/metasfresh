@@ -22,25 +22,18 @@ package de.metas.migration.applier.impl;
  * #L%
  */
 
-import java.awt.Desktop;
-import java.awt.Dimension;
-import java.io.File;
-
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
-import javax.swing.JTextPane;
-import javax.swing.WindowConstants;
-import javax.swing.event.HyperlinkEvent;
-import javax.swing.event.HyperlinkListener;
-
+import de.metas.migration.IScript;
+import de.metas.migration.applier.IScriptsApplierListener;
+import de.metas.migration.exception.ScriptExecutionException;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import de.metas.migration.IScript;
-import de.metas.migration.applier.IScriptsApplierListener;
-import de.metas.migration.exception.ScriptExecutionException;
+import javax.swing.*;
+import javax.swing.event.HyperlinkEvent;
+import javax.swing.event.HyperlinkListener;
+import java.awt.*;
+import java.io.File;
 
 public class SwingUIScriptsApplierListener implements IScriptsApplierListener
 {

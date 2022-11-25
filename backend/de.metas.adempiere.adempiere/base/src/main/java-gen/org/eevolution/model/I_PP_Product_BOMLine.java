@@ -399,7 +399,7 @@ public interface I_PP_Product_BOMLine
 	void setIsQtyPercentage (boolean IsQtyPercentage);
 
 	/**
-	 * Get Is Qty Percentage.
+	 * Get Is %.
 	 * Indicate that this component is based in % Quantity
 	 *
 	 * <br>Type: YesNo
@@ -436,7 +436,7 @@ public interface I_PP_Product_BOMLine
 
 	/**
 	 * Set Lead Time Offset.
-	 * Optional Lead Time offest before starting production
+	 * Optional Lead Time offset before starting production
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -446,7 +446,7 @@ public interface I_PP_Product_BOMLine
 
 	/**
 	 * Get Lead Time Offset.
-	 * Optional Lead Time offest before starting production
+	 * Optional Lead Time offset before starting production
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -506,7 +506,7 @@ public interface I_PP_Product_BOMLine
 	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
-	 * Set Änderungsmeldung.
+	 * Set Change Notice.
 	 * Bill of Materials (Engineering) Change Notice (Version)
 	 *
 	 * <br>Type: TableDir
@@ -516,7 +516,7 @@ public interface I_PP_Product_BOMLine
 	void setM_ChangeNotice_ID (int M_ChangeNotice_ID);
 
 	/**
-	 * Get Änderungsmeldung.
+	 * Get Change Notice.
 	 * Bill of Materials (Engineering) Change Notice (Version)
 	 *
 	 * <br>Type: TableDir
@@ -648,7 +648,7 @@ public interface I_PP_Product_BOMLine
 	String COLUMNNAME_Qty_Attribute_ID = "Qty_Attribute_ID";
 
 	/**
-	 * Set Quantity in %.
+	 * Set % Qty.
 	 * Indicate the Quantity % use in this Formula
 	 *
 	 * <br>Type: Number
@@ -658,7 +658,7 @@ public interface I_PP_Product_BOMLine
 	void setQtyBatch (@Nullable BigDecimal QtyBatch);
 
 	/**
-	 * Get Quantity in %.
+	 * Get % Qty.
 	 * Indicate the Quantity % use in this Formula
 	 *
 	 * <br>Type: Number
@@ -671,7 +671,7 @@ public interface I_PP_Product_BOMLine
 	String COLUMNNAME_QtyBatch = "QtyBatch";
 
 	/**
-	 * Set Quantity.
+	 * Set Qty.
 	 * Indicate the Quantity  use in this BOM
 	 *
 	 * <br>Type: Number
@@ -681,7 +681,7 @@ public interface I_PP_Product_BOMLine
 	void setQtyBOM (@Nullable BigDecimal QtyBOM);
 
 	/**
-	 * Get Quantity.
+	 * Get Qty.
 	 * Indicate the Quantity  use in this BOM
 	 *
 	 * <br>Type: Number
@@ -695,7 +695,7 @@ public interface I_PP_Product_BOMLine
 
 	/**
 	 * Set % Scrap.
-	 * Indicate the % Scrap  for calculate the Scrap Quantity
+	 * Indicate the Scrap %  for calculate the Scrap Quantity
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -705,7 +705,7 @@ public interface I_PP_Product_BOMLine
 
 	/**
 	 * Get % Scrap.
-	 * Indicate the % Scrap  for calculate the Scrap Quantity
+	 * Indicate the Scrap %  for calculate the Scrap Quantity
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false

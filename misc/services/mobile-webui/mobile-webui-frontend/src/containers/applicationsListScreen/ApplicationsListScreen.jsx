@@ -10,6 +10,7 @@ import { useHistory } from 'react-router-dom';
 import { getApplicationStartFunction } from '../../apps';
 import { appLaunchersLocation } from '../../routes/launchers';
 import { useAuth } from '../../hooks/useAuth';
+import { trl } from '../../utils/translations';
 
 const ApplicationsListScreen = () => {
   const applications = useSelector((state) => getAvailableApplicationsArray(state));
@@ -49,8 +50,8 @@ const ApplicationsListScreen = () => {
         <br />
         <ApplicationButton
           key="logout"
-          caption={'Logout'}
-          iconClassNames="fas fa-sign-out-alt"
+          caption={trl('logout')}
+          iconClassNames="fas fa-power-off"
           onClick={() => handleLogout()}
         />
       </div>

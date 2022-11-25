@@ -1,13 +1,5 @@
 package de.metas.banking.payment.paymentallocation.service;
 
-import java.time.LocalDate;
-import java.util.Objects;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.invoiceProcessingServiceCompany.InvoiceProcessingFeeCalculation;
 import de.metas.money.CurrencyId;
@@ -16,6 +8,12 @@ import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.Objects;
 
 /**
  * Immutable allocation candidate.

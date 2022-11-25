@@ -22,6 +22,11 @@ package de.metas.device.scales.endpoint;
  * #L%
  */
 
+import com.google.common.base.MoreObjects;
+import de.metas.device.scales.impl.ICmd;
+import de.metas.logging.LogManager;
+import org.slf4j.Logger;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -30,16 +35,9 @@ import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 
-import org.slf4j.Logger;
-
-import com.google.common.base.MoreObjects;
-
-import de.metas.device.scales.impl.ICmd;
-import de.metas.logging.LogManager;
-
 public class TcpConnectionEndPoint implements ITcpConnectionEndPoint
 {
-	private static final transient Logger logger = LogManager.getLogger(TcpConnectionEndPoint.class);
+	private static final Logger logger = LogManager.getLogger(TcpConnectionEndPoint.class);
 
 	private String hostName;
 	private int port;
@@ -63,13 +61,13 @@ public class TcpConnectionEndPoint implements ITcpConnectionEndPoint
 	{
 
 		try (final Socket clientSocket = new Socket(hostName, port);
-				final BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream(), ICmd.SICS_CMD_CHARSET));
+				final BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream(), ICmd.DEFAULT_CMD_CHARSET));
 				final OutputStream out = clientSocket.getOutputStream();)
 		{
 			clientSocket.setSoTimeout(readTimeoutMillis);
 
 			logger.debug("Writing cmd to the socket: {}", cmd);
-			out.write(cmd.getBytes(ICmd.SICS_CMD_CHARSET));
+			out.write(cmd.getBytes(ICmd.DEFAULT_CMD_CHARSET));
 			out.flush();
 
 			String result = null;

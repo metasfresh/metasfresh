@@ -79,7 +79,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import static de.metas.util.StringUtils.trimBlankToNull;
 import static org.compiere.util.TimeUtil.asLocalDate;

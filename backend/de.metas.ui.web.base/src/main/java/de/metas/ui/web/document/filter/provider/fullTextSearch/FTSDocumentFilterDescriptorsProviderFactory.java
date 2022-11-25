@@ -43,7 +43,6 @@ import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
-import org.adempiere.ad.element.api.AdTabId;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 

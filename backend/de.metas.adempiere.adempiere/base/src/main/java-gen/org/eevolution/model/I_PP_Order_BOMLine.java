@@ -254,7 +254,7 @@ public interface I_PP_Order_BOMLine
 	String COLUMNNAME_Current_Receiving_TU_PI_Item_Product_ID = "Current_Receiving_TU_PI_Item_Product_ID";
 
 	/**
-	 * Set Lieferdatum.
+	 * Set Date Delivered.
 	 * Date when the product was delivered
 	 *
 	 * <br>Type: DateTime
@@ -264,7 +264,7 @@ public interface I_PP_Order_BOMLine
 	void setDateDelivered (@Nullable java.sql.Timestamp DateDelivered);
 
 	/**
-	 * Get Lieferdatum.
+	 * Get Date Delivered.
 	 * Date when the product was delivered
 	 *
 	 * <br>Type: DateTime
@@ -455,7 +455,7 @@ public interface I_PP_Order_BOMLine
 	String COLUMNNAME_IsManualQtyInput = "IsManualQtyInput";
 
 	/**
-	 * Set Is Qty Percentage.
+	 * Set Is %.
 	 * Indicate that this component is based in % Quantity
 	 *
 	 * <br>Type: YesNo
@@ -465,7 +465,7 @@ public interface I_PP_Order_BOMLine
 	void setIsQtyPercentage (boolean IsQtyPercentage);
 
 	/**
-	 * Get Is Qty Percentage.
+	 * Get Is %.
 	 * Indicate that this component is based in % Quantity
 	 *
 	 * <br>Type: YesNo
@@ -502,7 +502,7 @@ public interface I_PP_Order_BOMLine
 
 	/**
 	 * Set Lead Time Offset.
-	 * Optional Lead Time offest before starting production
+	 * Optional Lead Time offset before starting production
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -512,7 +512,7 @@ public interface I_PP_Order_BOMLine
 
 	/**
 	 * Get Lead Time Offset.
-	 * Optional Lead Time offest before starting production
+	 * Optional Lead Time offset before starting production
 	 *
 	 * <br>Type: Integer
 	 * <br>Mandatory: false
@@ -572,7 +572,7 @@ public interface I_PP_Order_BOMLine
 	String COLUMNNAME_M_AttributeSetInstance_ID = "M_AttributeSetInstance_ID";
 
 	/**
-	 * Set Änderungsmeldung.
+	 * Set Change Notice.
 	 * Bill of Materials (Engineering) Change Notice (Version)
 	 *
 	 * <br>Type: TableDir
@@ -582,7 +582,7 @@ public interface I_PP_Order_BOMLine
 	void setM_ChangeNotice_ID (int M_ChangeNotice_ID);
 
 	/**
-	 * Get Änderungsmeldung.
+	 * Get Change Notice.
 	 * Bill of Materials (Engineering) Change Notice (Version)
 	 *
 	 * <br>Type: TableDir
@@ -786,7 +786,7 @@ public interface I_PP_Order_BOMLine
 	String COLUMNNAME_Processed = "Processed";
 
 	/**
-	 * Set Quantity in %.
+	 * Set % Qty.
 	 * Indicate the Quantity % use in this Formula
 	 *
 	 * <br>Type: Quantity
@@ -796,7 +796,7 @@ public interface I_PP_Order_BOMLine
 	void setQtyBatch (BigDecimal QtyBatch);
 
 	/**
-	 * Get Quantity in %.
+	 * Get % Qty.
 	 * Indicate the Quantity % use in this Formula
 	 *
 	 * <br>Type: Quantity
@@ -830,7 +830,7 @@ public interface I_PP_Order_BOMLine
 	String COLUMNNAME_QtyBeforeClose = "QtyBeforeClose";
 
 	/**
-	 * Set Quantity.
+	 * Set Qty.
 	 * Indicate the Quantity  use in this BOM
 	 *
 	 * <br>Type: Quantity
@@ -840,7 +840,7 @@ public interface I_PP_Order_BOMLine
 	void setQtyBOM (BigDecimal QtyBOM);
 
 	/**
-	 * Get Quantity.
+	 * Get Qty.
 	 * Indicate the Quantity  use in this BOM
 	 *
 	 * <br>Type: Quantity
@@ -874,7 +874,7 @@ public interface I_PP_Order_BOMLine
 	String COLUMNNAME_QtyDelivered = "QtyDelivered";
 
 	/**
-	 * Set Tatsächlich gelieferte Menge.
+	 * Set Quantity Delivered Actual.
 	 * Tatsächlich gelieferte Menge
 	 *
 	 * <br>Type: Quantity
@@ -884,7 +884,7 @@ public interface I_PP_Order_BOMLine
 	void setQtyDeliveredActual (BigDecimal QtyDeliveredActual);
 
 	/**
-	 * Get Tatsächlich gelieferte Menge.
+	 * Get Quantity Delivered Actual.
 	 * Tatsächlich gelieferte Menge
 	 *
 	 * <br>Type: Quantity
@@ -1004,8 +1004,8 @@ public interface I_PP_Order_BOMLine
 	String COLUMNNAME_QtyReserved = "QtyReserved";
 
 	/**
-	 * Set QtyScrap.
-	 * Scrap Quantity for this componet
+	 * Set Quantity Scrap %.
+	 * Scrap % Quantity for this componet
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -1014,8 +1014,8 @@ public interface I_PP_Order_BOMLine
 	void setQtyScrap (BigDecimal QtyScrap);
 
 	/**
-	 * Get QtyScrap.
-	 * Scrap Quantity for this componet
+	 * Get Quantity Scrap %.
+	 * Scrap % Quantity for this componet
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -1027,7 +1027,7 @@ public interface I_PP_Order_BOMLine
 	String COLUMNNAME_QtyScrap = "QtyScrap";
 
 	/**
-	 * Set abweichende menge.
+	 * Set Quantity Usage Variance.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -1036,7 +1036,7 @@ public interface I_PP_Order_BOMLine
 	void setQtyUsageVariance (BigDecimal QtyUsageVariance);
 
 	/**
-	 * Get abweichende menge.
+	 * Get Quantity Usage Variance.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -1049,7 +1049,7 @@ public interface I_PP_Order_BOMLine
 
 	/**
 	 * Set % Scrap.
-	 * Indicate the % Scrap  for calculate the Scrap Quantity
+	 * Indicate the Scrap %  for calculate the Scrap Quantity
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false
@@ -1059,7 +1059,7 @@ public interface I_PP_Order_BOMLine
 
 	/**
 	 * Get % Scrap.
-	 * Indicate the % Scrap  for calculate the Scrap Quantity
+	 * Indicate the Scrap %  for calculate the Scrap Quantity
 	 *
 	 * <br>Type: Number
 	 * <br>Mandatory: false

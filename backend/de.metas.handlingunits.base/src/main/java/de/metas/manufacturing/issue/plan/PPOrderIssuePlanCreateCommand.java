@@ -3,6 +3,7 @@ package de.metas.manufacturing.issue.plan;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHUsSupplier;
+import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
@@ -28,6 +29,7 @@ public class PPOrderIssuePlanCreateCommand
 {
 	//
 	// Services
+	private final PPOrderSourceHUService ppOrderSourceHUService;
 	private final IPPOrderBOMBL ppOrderBOMBL = Services.get(IPPOrderBOMBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
@@ -44,10 +46,12 @@ public class PPOrderIssuePlanCreateCommand
 
 	@Builder
 	private PPOrderIssuePlanCreateCommand(
+			final @NonNull PPOrderSourceHUService ppOrderSourceHUService,
 			final @NonNull HUReservationService huReservationService,
 			//
 			final @NonNull PPOrderId ppOrderId)
 	{
+		this.ppOrderSourceHUService = ppOrderSourceHUService;
 		this.ppOrderId = ppOrderId;
 
 		this.allocableHUsMap = AllocableHUsMap.builder()
@@ -61,6 +65,8 @@ public class PPOrderIssuePlanCreateCommand
 
 	public PPOrderIssuePlan execute()
 	{
+		allocableHUsMap.addSourceHUs(ppOrderSourceHUService.getSourceHUIds(ppOrderId));
+
 		final ImmutableList<PPOrderIssuePlanStep> steps = ppOrderBOMBL.retrieveOrderBOMLines(ppOrderId, I_PP_Order_BOMLine.class)
 				.stream()
 				.flatMap(this::createSteps)
@@ -150,7 +156,7 @@ public class PPOrderIssuePlanCreateCommand
 		}
 
 		final Quantity qtyToAllocate = targetQty.subtract(allocatedQty);
-		if (qtyToAllocate.signum() != 0)
+		if (qtyToAllocate.signum() > 0)
 		{
 			throw new AdempiereException(MSG_CannotFullAllocate,
 					productBL.getProductName(productId),

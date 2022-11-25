@@ -22,12 +22,21 @@ package de.metas.contracts.interceptor;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.List;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.contracts.IFlatrateBL;
+import de.metas.contracts.IFlatrateDAO;
+import de.metas.contracts.model.I_C_Flatrate_DataEntry;
+import de.metas.contracts.model.I_C_Flatrate_Term;
+import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
+import de.metas.contracts.model.X_C_Flatrate_DataEntry;
+import de.metas.contracts.model.X_C_Flatrate_Term;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.uom.UomId;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -36,20 +45,9 @@ import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.ModelValidator;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.contracts.IFlatrateBL;
-import de.metas.contracts.IFlatrateDAO;
-import de.metas.contracts.model.I_C_Flatrate_DataEntry;
-import de.metas.contracts.model.I_C_Flatrate_Term;
-import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
-import de.metas.contracts.model.X_C_Flatrate_DataEntry;
-import de.metas.contracts.model.X_C_Flatrate_Term;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.uom.UomId;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.List;
 
 @Interceptor(I_C_Flatrate_DataEntry.class)
 public class C_Flatrate_DataEntry

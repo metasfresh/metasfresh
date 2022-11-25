@@ -18,7 +18,7 @@ import java.io.InputStream;
 import static io.github.jsonSnapshot.SnapshotMatcher.expect;
 import static io.github.jsonSnapshot.SnapshotMatcher.start;
 import static io.github.jsonSnapshot.SnapshotMatcher.validateSnapshots;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L

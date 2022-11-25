@@ -47,7 +47,7 @@ import javax.annotation.Nullable;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 public class HUIdsSqlDocumentFilterConverterTest
 {

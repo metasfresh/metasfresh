@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order_Node, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -249241893L;
+	private static final long serialVersionUID = -1712971244L;
 
     /** Standard Constructor */
     public X_PP_Order_Node (final Properties ctx, final int PP_Order_Node_ID, @Nullable final String trxName)
@@ -355,7 +355,7 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 		return get_ValueAsString(COLUMNNAME_PP_Activity_Type);
 	}
 
-	/** 
+	/**
 	 * PP_AlwaysAvailableToUser AD_Reference_ID=319
 	 * Reference name: _YesNo
 	 */
@@ -371,7 +371,7 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 	}
 
 	@Override
-	public java.lang.String getPP_AlwaysAvailableToUser() 
+	public java.lang.String getPP_AlwaysAvailableToUser()
 	{
 		return get_ValueAsString(COLUMNNAME_PP_AlwaysAvailableToUser);
 	}
@@ -443,6 +443,18 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 	public int getPP_Order_Workflow_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_PP_Order_Workflow_ID);
+	}
+
+	@Override
+	public void setPP_UserInstructions (final @Nullable java.lang.String PP_UserInstructions)
+	{
+		set_Value (COLUMNNAME_PP_UserInstructions, PP_UserInstructions);
+	}
+
+	@Override
+	public java.lang.String getPP_UserInstructions()
+	{
+		return get_ValueAsString(COLUMNNAME_PP_UserInstructions);
 	}
 
 	@Override
@@ -543,7 +555,7 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 	}
 
 	@Override
-	public java.lang.String getScannedQRCode() 
+	public java.lang.String getScannedQRCode()
 	{
 		return get_ValueAsString(COLUMNNAME_ScannedQRCode);
 	}

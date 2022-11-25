@@ -19,6 +19,8 @@ public class JsonRawMaterialsIssueLine
 {
 	@NonNull String productName;
 	@NonNull String uom;
+	@NonNull List<JsonHazardSymbol> hazardSymbols;
+	@NonNull List<JsonAllergen> allergens;
 
 	boolean isWeightable;
 	@NonNull BigDecimal qtyToIssue;
@@ -30,9 +32,9 @@ public class JsonRawMaterialsIssueLine
 
 	@NonNull List<JsonRawMaterialsIssueLineStep> steps;
 
-	public static JsonRawMaterialsIssueLine of(
-			final RawMaterialsIssueLine from,
-			final JsonOpts jsonOpts)
+	public static JsonRawMaterialsIssueLineBuilder builderFrom(
+			@NonNull final RawMaterialsIssueLine from,
+			@NonNull final JsonOpts jsonOpts)
 	{
 		return builder()
 				.productName(from.getProductName().translate(jsonOpts.getAdLanguage()))
@@ -46,7 +48,6 @@ public class JsonRawMaterialsIssueLine
 				.steps(from.getSteps()
 						.stream()
 						.map(step -> JsonRawMaterialsIssueLineStep.of(step, jsonOpts))
-						.collect(ImmutableList.toImmutableList()))
-				.build();
+						.collect(ImmutableList.toImmutableList()));
 	}
 }

@@ -22,16 +22,6 @@ package de.metas.materialtracking.qualityBasedInvoicing.ic.spi.impl;
  * #L%
  */
 
-import java.util.Iterator;
-import java.util.List;
-
-import lombok.NonNull;
-import org.adempiere.ad.dao.QueryLimit;
-import org.adempiere.ad.modelvalidator.DocTimingType;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.util.Env;
-
 import de.metas.invoicecandidate.model.IIsInvoiceCandidateAware;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
@@ -41,6 +31,13 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.materialtracking.model.I_M_Material_Tracking;
 import de.metas.materialtracking.model.I_PP_Order;
 import de.metas.util.Check;
+import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.ad.modelvalidator.DocTimingType;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Creates invoice candidates for {@link I_PP_Order}s that reference a {@link I_M_Material_Tracking}.<br>
