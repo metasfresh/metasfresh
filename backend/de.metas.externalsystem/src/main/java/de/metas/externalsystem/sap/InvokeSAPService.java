@@ -106,7 +106,7 @@ public class InvokeSAPService
 	}
 
 	@NonNull
-	public ImmutableMap<String, String> getParameters(
+	public Map<String, String> getParameters(
 			@NonNull final ExternalSystemSAPConfig sapConfig,
 			@NonNull final String externalRequest)
 	{
@@ -117,7 +117,7 @@ public class InvokeSAPService
 
 		parameters.putAll(getMappingParameters(sapConfig.getParentId()));
 
-		return ImmutableMap.copyOf(parameters);
+		return parameters;
 	}
 
 	@NonNull
