@@ -116,9 +116,9 @@ public class NewManualInvoiceCandidate
 			@Nullable final ProductPrice priceEnteredOverride,
 			@Nullable final Percent discountOverride,
 			@Nullable final DocTypeId invoiceDocTypeId,
-			@Nullable final UserId userInChargeId,
 			@Nullable final String lineDescription,
 			@Nullable final String descriptionBottom,
+			@Nullable final UserId userInChargeId,
 			@Nullable final TableRecordReference recordReference,
 			@Nullable final List<InvoiceDetailItem> invoiceDetailItems)
 	{
