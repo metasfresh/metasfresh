@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13942](https://github.com/metasfresh/metasfresh/issues/13942) Delivery Planning
   * [#13998](https://github.com/metasfresh/metasfresh/issues/13998) Sub-Task No 3: Test & Fix Purchase candidate interaction with MD_Cockpit
   * [#13937](https://github.com/metasfresh/metasfresh/issues/13937) Add source sub configs for ExternalSystem_Config_SAP 
   * [#13979](https://github.com/metasfresh/metasfresh/pull/13979) External system config metasfresh improvement 
