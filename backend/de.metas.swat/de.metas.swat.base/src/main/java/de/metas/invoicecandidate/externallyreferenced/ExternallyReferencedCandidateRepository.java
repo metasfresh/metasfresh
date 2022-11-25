@@ -57,6 +57,7 @@ import de.metas.tax.api.TaxId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
+import de.metas.user.UserId;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
@@ -132,6 +133,9 @@ public class ExternallyReferencedCandidateRepository
 
 			icRecord.setPriceEntered_Override(ic.getPriceEnteredOverride().toBigDecimal());
 			icRecord.setDiscount_Override(ic.getDiscountOverride().toBigDecimal());
+
+			icRecord.setDescriptionBottom(ic.getDescriptionBottom());
+			icRecord.setAD_User_InCharge_ID(UserId.toRepoIdOr(ic.getUserInChargeId(), -1 ));
 		}
 		else
 		{

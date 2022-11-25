@@ -103,6 +103,7 @@ public class ManualCandidateService
 		candidate.priceEnteredOverride(priceEnteredOverride);
 		candidate.discountOverride(discountOverride);
 
+
 		final BigDecimal priceActualBD = pricingResult.getDiscount()
 				.subtractFromBase(
 						pricingResult.getPriceStd(),
@@ -136,6 +137,9 @@ public class ManualCandidateService
 
 		candidate.invoiceRule(CoalesceUtil.coalesceNotNull(newICInvoiceRule, InvoiceRule.Immediate));
 		candidate.recordReference(newIC.getRecordReference());
+
+		candidate.descriptionBottom(newIC.getDescriptionBottom());
+		candidate.userInChargeId(newIC.getUserInChargeId());
 
 		return candidate.build();
 

@@ -10,6 +10,7 @@ import de.metas.product.ProductId;
 import de.metas.product.ProductPrice;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.uom.UomId;
+import de.metas.user.UserId;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
@@ -87,6 +88,10 @@ public class NewManualInvoiceCandidate
 
 	String lineDescription;
 
+	String descriptionBottom;
+
+	UserId userInChargeId;
+
 	TableRecordReference recordReference;
 
 	List<InvoiceDetailItem> invoiceDetailItems;
@@ -111,7 +116,9 @@ public class NewManualInvoiceCandidate
 			@Nullable final ProductPrice priceEnteredOverride,
 			@Nullable final Percent discountOverride,
 			@Nullable final DocTypeId invoiceDocTypeId,
+			@Nullable final UserId userInChargeId,
 			@Nullable final String lineDescription,
+			@Nullable final String descriptionBottom,
 			@Nullable final TableRecordReference recordReference,
 			@Nullable final List<InvoiceDetailItem> invoiceDetailItems)
 	{
@@ -134,6 +141,8 @@ public class NewManualInvoiceCandidate
 		this.discountOverride = discountOverride;
 		this.invoiceDocTypeId = invoiceDocTypeId;
 		this.lineDescription = lineDescription;
+		this.descriptionBottom = descriptionBottom;
+		this.userInChargeId = userInChargeId;
 		this.recordReference = recordReference;
 		this.invoiceRule = invoiceRule;
 		this.invoiceDetailItems = invoiceDetailItems;

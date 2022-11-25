@@ -45,6 +45,7 @@ import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.UomId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.Percent;
@@ -144,6 +145,8 @@ public class ImportInvoiceCandidatesService
 				.priceEnteredOverride(priceEnteredOverride)
 				.discountOverride(Percent.ofNullable(record.getDiscount()))
 
+				.descriptionBottom(record.getDescriptionBottom())
+				.userInChargeId(UserId.ofRepoIdOrNull(record.getAD_User_InCharge_ID()))
 				.recordReference(recordReference)
 				.soTrx(SOTrx.ofBoolean(record.isSOTrx()))
 				.build();
