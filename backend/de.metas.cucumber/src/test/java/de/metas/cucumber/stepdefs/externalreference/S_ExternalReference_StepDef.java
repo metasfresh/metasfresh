@@ -251,7 +251,6 @@ public class S_ExternalReference_StepDef
 		}
 	}
 
-
 	@And("metasfresh contains S_ExternalReferences:")
 	public void metasfresh_contains_s_external_reference(@NonNull final DataTable dataTable)
 	{

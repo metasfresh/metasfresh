@@ -226,3 +226,112 @@ Feature: create or update BPartner v2
     And verify that contact was created for bpartner
       | bpartnerIdentifier | contactIdentifier | Name                  | OPT.Email          | OPT.Fax     | Code | OPT.InvoiceEmailEnabled |
       | ext-ALBERTA-001    | ext-ALBERTA-c33   | test_name_c33_created | test_email_created | fax_created | c22  | true                    |
+
+
+  @from:cucumber
+  Scenario: create a BPartner record - no OrgCode set on bpartnerComposite
+
+    Given load AD_Org:
+      | AD_Org_ID.Identifier | Value |
+      | providedOrg          | 001   |
+
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
+    """
+{
+   "requestItems":[
+      {
+         "bpartnerIdentifier":"ext-ALBERTA-bPartner1111111",
+         "externalReferenceUrl":"www.ExternalReferenceURL.com",
+         "bpartnerComposite":{
+            "bpartner":{
+               "code":"ext-ALBERTA-BPartnerTestCode1111111",
+               "name":"BPartnerTestName1111111",
+               "companyName":"BPartnerTestCompany1",
+               "parentId":null,
+               "phone":null,
+               "language":"de",
+               "url":null,
+               "group":"test-group",
+               "vatId":null
+            }
+         }
+      }
+   ],
+   "syncAdvise":{
+      "ifNotExists":"CREATE",
+      "ifExists":"UPDATE_MERGE"
+   }
+}
+"""
+
+    Then verify that S_ExternalReference was created
+      | ExternalSystem | Type          | ExternalReference      |
+      | ALBERTA        | BPartnerValue | BPartnerTestCode1111111 |
+    Then verify that bPartner was created for externalIdentifier
+      | C_BPartner_ID.Identifier | externalIdentifier         | Name                   | OPT.CompanyName      | OPT.AD_Org_ID.Identifier |
+      | bpartner                 | ext-ALBERTA-bPartner1111111 | BPartnerTestName1111111 | BPartnerTestCompany1 | providedOrg              |
+
+
+  @from:cucumber
+  Scenario: create a BPartner record - no OrgCode path parameter set
+
+    Given metasfresh contains AD_Org:
+      | AD_Org_ID.Identifier | Name                   | Value    |
+      | bPartner2_orgCode    | BPartner2 Organization | orgCode2 |
+      | bPartner3_orgCode    | BPartner3 Organization | orgCode3 |
+
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/' and fulfills with '201' status code
+    """
+{
+   "requestItems":[
+      {
+         "bpartnerIdentifier":"ext-ALBERTA-bPartner2222222",
+         "externalReferenceUrl":"www.ExternalReferenceURL.com",
+         "bpartnerComposite":{
+            "orgCode": "orgCode2",
+            "bpartner":{
+               "code":"ext-ALBERTA-BPartnerTestCode2222222",
+               "name":"BPartnerTestName2222222",
+               "companyName":"BPartnerTestCompany2",
+               "parentId":null,
+               "phone":null,
+               "language":"de",
+               "url":null,
+               "group":"test-group",
+               "vatId":null
+            }
+         }
+      },
+      {
+         "bpartnerIdentifier":"ext-ALBERTA-bPartner3333333",
+         "externalReferenceUrl":"www.ExternalReferenceURL.com",
+         "bpartnerComposite":{
+            "orgCode": "orgCode3",
+            "bpartner":{
+               "code":"ext-ALBERTA-BPartnerTestCode3333333",
+               "name":"BPartnerTestName3333333",
+               "companyName":"BPartnerTestCompany3",
+               "parentId":null,
+               "phone":null,
+               "language":"de",
+               "url":null,
+               "group":"test-group",
+               "vatId":null
+            }
+         }
+      }
+   ],
+   "syncAdvise":{
+      "ifNotExists":"CREATE",
+      "ifExists":"UPDATE_MERGE"
+   }
+}
+"""
+    Then verify that S_ExternalReference was created
+      | ExternalSystem | Type          | ExternalReference      |
+      | ALBERTA        | BPartnerValue | BPartnerTestCode2222222 |
+      | ALBERTA        | BPartnerValue | BPartnerTestCode3333333 |
+    And verify that bPartner was created for externalIdentifier
+      | C_BPartner_ID.Identifier | externalIdentifier         | Name                   | OPT.CompanyName      | OPT.AD_Org_ID.Identifier |
+      | bpartner2                | ext-ALBERTA-bPartner2222222 | BPartnerTestName2222222 | BPartnerTestCompany2 | bPartner2_orgCode        |
+      | bpartner3                | ext-ALBERTA-bPartner3333333 | BPartnerTestName3333333 | BPartnerTestCompany3 | bPartner3_orgCode        |

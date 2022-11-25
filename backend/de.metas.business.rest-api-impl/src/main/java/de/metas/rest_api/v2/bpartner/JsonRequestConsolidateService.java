@@ -31,6 +31,7 @@ import de.metas.common.bpartner.v2.request.JsonRequestLocation;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsert;
 import de.metas.common.bpartner.v2.request.JsonRequestLocationUpsertItem;
 import de.metas.externalreference.ExternalIdentifier;
+import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
@@ -74,6 +75,23 @@ public class JsonRequestConsolidateService
 		for (final JsonRequestLocationUpsertItem locationRequestItem : locations.getRequestItems())
 		{
 			consolidateWithIdentifier(locationRequestItem);
+		}
+	}
+
+	public void consolidateWithOrg(@NonNull final JsonRequestBPartnerUpsertItem requestItem, @Nullable final String orgCode)
+	{
+		final String jsonBPartnerCompositeOrgCode = requestItem.getBpartnerComposite().getOrgCode();
+
+		if (Check.isNotBlank(orgCode) && Check.isNotBlank(jsonBPartnerCompositeOrgCode) && !orgCode.equals(jsonBPartnerCompositeOrgCode))
+		{
+			throw new AdempiereException("Path parameter OrgCode: " + orgCode + " and JsonRequestComposite.OrgCode: " + jsonBPartnerCompositeOrgCode + " don't match!")
+					.appendParametersToMessage()
+					.setParameter(requestItem.getBpartnerIdentifier(), "BPartnerIdentifier");
+		}
+
+		if (Check.isNotBlank(orgCode) && Check.isBlank(requestItem.getBpartnerComposite().getOrgCode()))
+		{
+			requestItem.getBpartnerComposite().setOrgCode(orgCode);
 		}
 	}
 
