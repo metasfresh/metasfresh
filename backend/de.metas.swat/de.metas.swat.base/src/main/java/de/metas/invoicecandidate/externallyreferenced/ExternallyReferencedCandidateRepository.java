@@ -131,9 +131,6 @@ public class ExternallyReferencedCandidateRepository
 			icRecord.setC_Tax_ID(ic.getTaxId().getRepoId());
 
 			icRecord.setInvoiceRule(ic.getInvoiceRule().getCode());
-
-			icRecord.setDescriptionBottom(ic.getDescriptionBottom());
-			icRecord.setAD_User_InCharge_ID(UserId.toRepoIdOr(ic.getUserInChargeId(), -1 ));
 		}
 		else
 		{
@@ -173,6 +170,9 @@ public class ExternallyReferencedCandidateRepository
 
 		icRecord.setExternalHeaderId(ExternalId.toValue(ic.getExternalHeaderId()));
 		icRecord.setExternalLineId(ExternalId.toValue(ic.getExternalLineId()));
+		
+		icRecord.setDescriptionBottom(ic.getDescriptionBottom());
+		icRecord.setAD_User_InCharge_ID(UserId.toRepoIdOr(ic.getUserInChargeId(), -1 ));
 
 		final TableRecordReference recordReference = ic.getRecordReference();
 		if (recordReference == null)
