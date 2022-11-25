@@ -39,7 +39,6 @@ public class DocumentReportInfo
 {
 	@NonNull TableRecordReference recordRef;
 
-	@NonNull PrintFormatId printFormatId;
 	AdProcessId reportProcessId;
 
 	@NonNull

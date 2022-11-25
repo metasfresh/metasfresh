@@ -1,14 +1,5 @@
 package de.metas.handlingunits.shipmentschedule.async;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.util.api.IParams;
-import org.compiere.util.Env;
-
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.ILatchStragegy;
@@ -23,6 +14,13 @@ import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
+import org.adempiere.util.api.IParams;
+import org.compiere.util.Env;
+
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.List;
+import java.util.Properties;
 
 /**
  * Generates Shipment document from given loading units (LUs).
@@ -86,9 +84,7 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 		final Properties ctx = Env.getCtx();
 		return Services.get(IWorkPackageQueueFactory.class)
 				.getQueueForEnqueuing(ctx, GenerateInOutFromHU.class)
-				.newBlock()
-				.setContext(ctx)
-				.newWorkpackage()
+				.newWorkPackage()
 				.bindToThreadInheritedTrx()
 				.setUserInChargeId(Env.getLoggedUserIdIfExists(ctx).orElse(null)) // invoker
 				.parameters()
@@ -97,7 +93,7 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 				.setParameter(PARAMETERNAME_IsCompleteShipments, completeShipments)
 				.end()
 				.addElements(hus)
-				.build();
+				.buildAndEnqueue();
 	}
 
 	@Override

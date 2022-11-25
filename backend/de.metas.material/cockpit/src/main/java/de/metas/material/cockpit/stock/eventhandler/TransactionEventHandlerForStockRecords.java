@@ -1,12 +1,6 @@
 package de.metas.material.cockpit.stock.eventhandler;
 
-import java.util.Collection;
-
-import org.springframework.context.annotation.Profile;
-import org.springframework.stereotype.Service;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.Profiles;
 import de.metas.material.cockpit.stock.StockChangeSourceInfo;
 import de.metas.material.cockpit.stock.StockDataRecordIdentifier;
@@ -20,6 +14,10 @@ import de.metas.material.event.transactions.TransactionCreatedEvent;
 import de.metas.material.event.transactions.TransactionDeletedEvent;
 import de.metas.product.ProductId;
 import lombok.NonNull;
+import org.springframework.context.annotation.Profile;
+import org.springframework.stereotype.Service;
+
+import java.util.Collection;
 
 /*
  * #%L
@@ -61,7 +59,7 @@ public class TransactionEventHandlerForStockRecords
 	}
 
 	@Override
-	public Collection<Class<? extends AbstractTransactionEvent>> getHandeledEventType()
+	public Collection<Class<? extends AbstractTransactionEvent>> getHandledEventType()
 	{
 		return ImmutableList.of(TransactionCreatedEvent.class, TransactionDeletedEvent.class);
 	}
@@ -90,11 +88,10 @@ public class TransactionEventHandlerForStockRecords
 
 		final StockChangeSourceInfo stockChangeSourceInfo = StockChangeSourceInfo.ofTransactionId(event.getTransactionId());
 
-		final StockDataUpdateRequest request = StockDataUpdateRequest.builder()
+		return StockDataUpdateRequest.builder()
 				.identifier(identifier)
 				.onHandQtyChange(event.getQuantityDelta())
 				.sourceInfo(stockChangeSourceInfo)
 				.build();
-		return request;
 	}
 }

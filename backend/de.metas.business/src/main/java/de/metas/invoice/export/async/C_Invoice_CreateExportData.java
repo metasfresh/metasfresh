@@ -42,7 +42,7 @@ public class C_Invoice_CreateExportData implements IWorkpackageProcessor
 			@NonNull final I_C_Queue_WorkPackage workpackage,
 			@NonNull final String localTrxName)
 	{
-		final List<I_C_Invoice> invoiceRecords = queueDAO.retrieveItemsSkipMissing(workpackage, I_C_Invoice.class, localTrxName);
+		final List<I_C_Invoice> invoiceRecords = queueDAO.retrieveAllItemsSkipMissing(workpackage, I_C_Invoice.class);
 		for (final I_C_Invoice invoiceRecord : invoiceRecords)
 		{
 			try (final MDCCloseable ignore = TableRecordMDC.putTableRecordReference(invoiceRecord))

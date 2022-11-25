@@ -60,6 +60,7 @@ import org.compiere.model.I_C_Charge;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Tax;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.model.I_M_PriceList;
@@ -109,6 +110,7 @@ public class InvoiceLineBL implements IInvoiceLineBL
 	private final IPriceListBL priceListBL = Services.get(IPriceListBL.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final ITaxBL taxBL = Services.get(ITaxBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	@Override
 	public void setTaxAmtInfo(final Properties ctx, final I_C_InvoiceLine il, final String getTrxName)
@@ -537,5 +539,30 @@ public class InvoiceLineBL implements IInvoiceLineBL
 				.applyTo(invoiceLine);
 
 		invoiceLine.setPrice_UOM_ID(UomId.toRepoId(pricingResult.getPriceUomId())); //
+	}
+
+	@NonNull
+	public Quantity getQtyEnteredInStockUOM(@NonNull final I_C_InvoiceLine invoiceLine)
+	{
+		final Quantity qtyEntered = Quantitys.create(invoiceLine.getQtyEntered(), UomId.ofRepoId(invoiceLine.getC_UOM_ID()));
+
+		final UomId stockUOMId = productBL.getStockUOMId(invoiceLine.getM_Product_ID());
+
+		return Quantitys.create(
+				qtyEntered,
+				UOMConversionContext.of(ProductId.ofRepoId(invoiceLine.getM_Product_ID())),
+				stockUOMId);
+	}
+
+
+	@NonNull
+	@Override
+	public Quantity getQtyInvoicedStockUOM(@NonNull final I_C_InvoiceLine invoiceLine)
+	{
+		final BigDecimal qtyInvoiced = invoiceLine.getQtyInvoiced();
+
+		final I_C_UOM stockUOM = productBL.getStockUOM(invoiceLine.getM_Product_ID());
+
+		return Quantity.of(qtyInvoiced, stockUOM);
 	}
 }

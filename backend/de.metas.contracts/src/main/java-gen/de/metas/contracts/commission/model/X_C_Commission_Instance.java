@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.contracts.commission.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Commission_Instance
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_Commission_Instance extends org.compiere.model.PO implements I_C_Commission_Instance, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1559329349L;
+	private static final long serialVersionUID = -1723332694L;
 
     /** Standard Constructor */
     public X_C_Commission_Instance (final Properties ctx, final int C_Commission_Instance_ID, @Nullable final String trxName)
@@ -63,6 +63,21 @@ public class X_C_Commission_Instance extends org.compiere.model.PO implements I_
 	public int getC_Commission_Instance_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Commission_Instance_ID);
+	}
+
+	@Override
+	public void setC_Currency_ID (final int C_Currency_ID)
+	{
+		if (C_Currency_ID < 1) 
+			set_Value (COLUMNNAME_C_Currency_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Currency_ID, C_Currency_ID);
+	}
+
+	@Override
+	public int getC_Currency_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Currency_ID);
 	}
 
 	@Override
@@ -135,6 +150,43 @@ public class X_C_Commission_Instance extends org.compiere.model.PO implements I_
 	}
 
 	@Override
+	public void setCommissionDate (final java.sql.Timestamp CommissionDate)
+	{
+		set_Value (COLUMNNAME_CommissionDate, CommissionDate);
+	}
+
+	@Override
+	public java.sql.Timestamp getCommissionDate() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_CommissionDate);
+	}
+
+	/** 
+	 * CommissionTrigger_Type AD_Reference_ID=541115
+	 * Reference name: CommissionTrigger_Type
+	 */
+	public static final int COMMISSIONTRIGGER_TYPE_AD_Reference_ID=541115;
+	/** InvoiceCandidate = InvoiceCandidate */
+	public static final String COMMISSIONTRIGGER_TYPE_InvoiceCandidate = "InvoiceCandidate";
+	/** CustomerInvoice = CustomerInvoice */
+	public static final String COMMISSIONTRIGGER_TYPE_CustomerInvoice = "CustomerInvoice";
+	/** CustomerCreditmemo = CustomerCreditmemo */
+	public static final String COMMISSIONTRIGGER_TYPE_CustomerCreditmemo = "CustomerCreditmemo";
+	/** Mediated order = MediatedOrder */
+	public static final String COMMISSIONTRIGGER_TYPE_MediatedOrder = "MediatedOrder";
+	@Override
+	public void setCommissionTrigger_Type (final java.lang.String CommissionTrigger_Type)
+	{
+		set_Value (COLUMNNAME_CommissionTrigger_Type, CommissionTrigger_Type);
+	}
+
+	@Override
+	public java.lang.String getCommissionTrigger_Type() 
+	{
+		return get_ValueAsString(COLUMNNAME_CommissionTrigger_Type);
+	}
+
+	@Override
 	public org.compiere.model.I_C_Order getC_Order()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class);
@@ -189,40 +241,30 @@ public class X_C_Commission_Instance extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public void setCommissionDate (final java.sql.Timestamp CommissionDate)
+	public void setC_UOM_ID (final int C_UOM_ID)
 	{
-		set_Value (COLUMNNAME_CommissionDate, CommissionDate);
+		if (C_UOM_ID < 1) 
+			set_Value (COLUMNNAME_C_UOM_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_UOM_ID, C_UOM_ID);
 	}
 
 	@Override
-	public java.sql.Timestamp getCommissionDate() 
+	public int getC_UOM_ID() 
 	{
-		return get_ValueAsTimestamp(COLUMNNAME_CommissionDate);
-	}
-
-	/** 
-	 * CommissionTrigger_Type AD_Reference_ID=541115
-	 * Reference name: CommissionTrigger_Type
-	 */
-	public static final int COMMISSIONTRIGGER_TYPE_AD_Reference_ID=541115;
-	/** InvoiceCandidate = InvoiceCandidate */
-	public static final String COMMISSIONTRIGGER_TYPE_InvoiceCandidate = "InvoiceCandidate";
-	/** CustomerInvoice = CustomerInvoice */
-	public static final String COMMISSIONTRIGGER_TYPE_CustomerInvoice = "CustomerInvoice";
-	/** CustomerCreditmemo = CustomerCreditmemo */
-	public static final String COMMISSIONTRIGGER_TYPE_CustomerCreditmemo = "CustomerCreditmemo";
-	/** Mediated order = MediatedOrder */
-	public static final String COMMISSIONTRIGGER_TYPE_MediatedOrder = "MediatedOrder";
-	@Override
-	public void setCommissionTrigger_Type (final String CommissionTrigger_Type)
-	{
-		set_Value (COLUMNNAME_CommissionTrigger_Type, CommissionTrigger_Type);
+		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
 	}
 
 	@Override
-	public String getCommissionTrigger_Type()
+	public void setMostRecentTriggerTimestamp (final java.sql.Timestamp MostRecentTriggerTimestamp)
 	{
-		return get_ValueAsString(COLUMNNAME_CommissionTrigger_Type);
+		set_Value (COLUMNNAME_MostRecentTriggerTimestamp, MostRecentTriggerTimestamp);
+	}
+
+	@Override
+	public java.sql.Timestamp getMostRecentTriggerTimestamp() 
+	{
+		return get_ValueAsTimestamp(COLUMNNAME_MostRecentTriggerTimestamp);
 	}
 
 	@Override
@@ -238,18 +280,6 @@ public class X_C_Commission_Instance extends org.compiere.model.PO implements I_
 	public int getM_Product_Order_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_Product_Order_ID);
-	}
-
-	@Override
-	public void setMostRecentTriggerTimestamp (final java.sql.Timestamp MostRecentTriggerTimestamp)
-	{
-		set_Value (COLUMNNAME_MostRecentTriggerTimestamp, MostRecentTriggerTimestamp);
-	}
-
-	@Override
-	public java.sql.Timestamp getMostRecentTriggerTimestamp() 
-	{
-		return get_ValueAsTimestamp(COLUMNNAME_MostRecentTriggerTimestamp);
 	}
 
 	@Override
@@ -292,14 +322,27 @@ public class X_C_Commission_Instance extends org.compiere.model.PO implements I_
 	}
 
 	@Override
-	public void setPOReference (final @Nullable String POReference)
+	public void setPOReference (final @Nullable java.lang.String POReference)
 	{
 		set_Value (COLUMNNAME_POReference, POReference);
 	}
 
 	@Override
-	public String getPOReference()
+	public java.lang.String getPOReference() 
 	{
 		return get_ValueAsString(COLUMNNAME_POReference);
+	}
+
+	@Override
+	public void setQty (final BigDecimal Qty)
+	{
+		set_Value (COLUMNNAME_Qty, Qty);
+	}
+
+	@Override
+	public BigDecimal getQty() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Qty);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 }

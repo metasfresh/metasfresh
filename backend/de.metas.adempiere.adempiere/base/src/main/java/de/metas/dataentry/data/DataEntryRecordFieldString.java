@@ -2,6 +2,7 @@ package de.metas.dataentry.data;
 
 import javax.annotation.Nullable;
 
+import de.metas.CreatedUpdatedInfo;
 import de.metas.dataentry.DataEntryFieldId;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -39,7 +40,7 @@ public class DataEntryRecordFieldString extends DataEntryRecordField<String>
 
 	public static DataEntryRecordFieldString of(
 			@NonNull final DataEntryFieldId dataEntryFieldId,
-			@NonNull final DataEntryCreatedUpdatedInfo createdUpdatedInfo,
+			@NonNull final CreatedUpdatedInfo createdUpdatedInfo,
 			@Nullable final String value)
 	{
 		return new DataEntryRecordFieldString(dataEntryFieldId, createdUpdatedInfo, value);
@@ -47,7 +48,7 @@ public class DataEntryRecordFieldString extends DataEntryRecordField<String>
 
 	private DataEntryRecordFieldString(
 			@NonNull final DataEntryFieldId dataEntryFieldRepoId,
-			@NonNull final DataEntryCreatedUpdatedInfo createdUpdatedInfo,
+			@NonNull final CreatedUpdatedInfo createdUpdatedInfo,
 			@Nullable final String value)
 	{
 		super(dataEntryFieldRepoId, createdUpdatedInfo);

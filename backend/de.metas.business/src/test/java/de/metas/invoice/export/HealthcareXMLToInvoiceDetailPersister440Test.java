@@ -31,6 +31,7 @@ import de.metas.invoice.detail.InvoiceWithDetailsRepository;
 import de.metas.lang.SOTrx;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.uom.UomId;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.Invoice440RequestConversionService;
 import de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion.request.model.XmlRequest;
 import org.adempiere.ad.wrapper.POJOLookupMap;
@@ -45,8 +46,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
+import static org.assertj.core.api.Assertions.*;
 
 public class HealthcareXMLToInvoiceDetailPersister440Test
 {
@@ -65,7 +65,11 @@ public class HealthcareXMLToInvoiceDetailPersister440Test
 				.orgId(orgId)
 				.soTrx(SOTrx.SALES)
 				.customerId(BPartnerId.ofRepoId(10))
-				.testInvoiceLine(TestInvoiceLine.builder().productId(ProductId.ofRepoId(20)).externalIds("doesnt_really_matter_1").build())
+				.testInvoiceLine(TestInvoiceLine.builder()
+										 .productId(ProductId.ofRepoId(20))
+										 .externalIds("doesnt_really_matter_1")
+										 .uomId(UomId.ofRepoId(1))
+										 .build())
 				.build().createInvoiceRecord();
 
 		final InputStream inputStream = getClass().getResourceAsStream("/de/metas/invoice/export/md_440_tp_kvg_de.xml");
@@ -90,7 +94,11 @@ public class HealthcareXMLToInvoiceDetailPersister440Test
 				.orgId(orgId)
 				.soTrx(SOTrx.SALES)
 				.customerId(BPartnerId.ofRepoId(10))
-				.testInvoiceLine(TestInvoiceLine.builder().productId(ProductId.ofRepoId(20)).externalIds("doesnt_really_matter_1").build())
+				.testInvoiceLine(TestInvoiceLine.builder()
+										 .productId(ProductId.ofRepoId(20))
+										 .externalIds("doesnt_really_matter_1")
+										 .uomId(UomId.ofRepoId(1))
+										 .build())
 				.build().createInvoiceRecord();
 
 		final InputStream inputStream = getClass().getResourceAsStream("/de/metas/invoice/export/md_440_tp_kvg_de.xml");

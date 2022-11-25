@@ -33,9 +33,9 @@ import lombok.Value;
 public class ProductExclude
 {
 	@NonNull
-	private final ProductId productId;
+	ProductId productId;
 	@NonNull
-	private final BPartnerId bpartnerId;
+	BPartnerId bpartnerId;
 	@NonNull
-	private final String reason;
+	String reason;
 }

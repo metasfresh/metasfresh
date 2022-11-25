@@ -1,9 +1,9 @@
 package de.metas.ui.web.attachments;
 
-import java.net.URI;
-
-import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentEntryType;
 import de.metas.ui.web.window.datatypes.DocumentId;
+
+import java.net.URI;
 
 /*
  * #%L
@@ -31,7 +31,7 @@ public interface IDocumentAttachmentEntry
 {
 	DocumentId getId();
 
-	AttachmentEntry.Type getType();
+	AttachmentEntryType getType();
 
 	String getFilename();
 

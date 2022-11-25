@@ -79,7 +79,7 @@ public class InvokeAlbertaForBPartnerIds extends JavaProcess implements IProcess
 	{
 		if (PARAM_EXTERNAL_SYSTEM_CONFIG_ALBERTA_ID.equals(parameter.getColumnName()))
 		{
-			final ImmutableList<ExternalSystemParentConfig> configs = externalSystemConfigDAO.getAllByType(ExternalSystemType.Alberta);
+			final ImmutableList<ExternalSystemParentConfig> configs = externalSystemConfigDAO.getActiveByType(ExternalSystemType.Alberta);
 
 			return configs.size() == 1
 					? configs.get(0).getChildConfig().getId().getRepoId()
@@ -91,7 +91,7 @@ public class InvokeAlbertaForBPartnerIds extends JavaProcess implements IProcess
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
 	{
-		final ImmutableList<ExternalSystemParentConfig> configs = externalSystemConfigDAO.getAllByType(ExternalSystemType.Alberta);
+		final ImmutableList<ExternalSystemParentConfig> configs = externalSystemConfigDAO.getActiveByType(ExternalSystemType.Alberta);
 
 		if (configs.size() > 0)
 		{

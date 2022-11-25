@@ -37,7 +37,7 @@ public class RecreateArchiveWorkpackageProcessor implements IWorkpackageProcesso
 		final Properties ctx = InterfaceWrapperHelper.getCtx(workpackage);
 		final String trxName = InterfaceWrapperHelper.getTrxName(workpackage);
 
-		final List<I_C_Doc_Outbound_Log> logs = queueDAO.retrieveItems(workpackage, I_C_Doc_Outbound_Log.class, localTrxName);
+		final List<I_C_Doc_Outbound_Log> logs = queueDAO.retrieveAllItems(workpackage, I_C_Doc_Outbound_Log.class);
 
 		logs.forEach(docOutboundLog -> {
 			final PO po = TableModelLoader.instance.getPO(ctx, adTableDAO.retrieveTableName(docOutboundLog.getAD_Table_ID()), docOutboundLog.getRecord_ID(), trxName);

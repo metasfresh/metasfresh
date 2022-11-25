@@ -320,7 +320,7 @@ public class GetAttachmentsRouteTests extends CamelTestSupport
 		final String jsonString = loadAsString(JSON_DOCUMENT_USER_GET_RESPONSE);
 		final Users users = json.deserialize(jsonString, Users.class);
 
-		Mockito.when(userApi.getUser(any(String.class), any(String.class), any(String.class)))
+		Mockito.when(userApi.getUser(any(String.class), any(String.class)))
 				.thenReturn(users);
 
 		return userApi;

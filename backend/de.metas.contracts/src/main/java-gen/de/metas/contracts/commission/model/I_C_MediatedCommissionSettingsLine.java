@@ -1,30 +1,7 @@
-/*
- * #%L
- * de.metas.contracts
- * %%
- * Copyright (C) 2021 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package de.metas.contracts.commission.model;
 
-import org.adempiere.model.ModelColumn;
-
 import java.math.BigDecimal;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for C_MediatedCommissionSettingsLine
  *  @author metasfresh (generated) 
@@ -74,7 +51,7 @@ public interface I_C_MediatedCommissionSettingsLine
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Mediated commission settings.
+	 * Set Brokerage commission settings.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -83,7 +60,7 @@ public interface I_C_MediatedCommissionSettingsLine
 	void setC_MediatedCommissionSettings_ID (int C_MediatedCommissionSettings_ID);
 
 	/**
-	 * Get Mediated commission settings.
+	 * Get Brokerage commission settings.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: true
@@ -91,15 +68,15 @@ public interface I_C_MediatedCommissionSettingsLine
 	 */
 	int getC_MediatedCommissionSettings_ID();
 
-	I_C_MediatedCommissionSettings getC_MediatedCommissionSettings();
+	de.metas.contracts.commission.model.I_C_MediatedCommissionSettings getC_MediatedCommissionSettings();
 
-	void setC_MediatedCommissionSettings(I_C_MediatedCommissionSettings C_MediatedCommissionSettings);
+	void setC_MediatedCommissionSettings(de.metas.contracts.commission.model.I_C_MediatedCommissionSettings C_MediatedCommissionSettings);
 
-	ModelColumn<I_C_MediatedCommissionSettingsLine, I_C_MediatedCommissionSettings> COLUMN_C_MediatedCommissionSettings_ID = new ModelColumn<>(I_C_MediatedCommissionSettingsLine.class, "C_MediatedCommissionSettings_ID", I_C_MediatedCommissionSettings.class);
+	ModelColumn<I_C_MediatedCommissionSettingsLine, de.metas.contracts.commission.model.I_C_MediatedCommissionSettings> COLUMN_C_MediatedCommissionSettings_ID = new ModelColumn<>(I_C_MediatedCommissionSettingsLine.class, "C_MediatedCommissionSettings_ID", de.metas.contracts.commission.model.I_C_MediatedCommissionSettings.class);
 	String COLUMNNAME_C_MediatedCommissionSettings_ID = "C_MediatedCommissionSettings_ID";
 
 	/**
-	 * Set C_MediatedCommissionSettingsLine.
+	 * Set Brokerage commission detail.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true
@@ -108,7 +85,7 @@ public interface I_C_MediatedCommissionSettingsLine
 	void setC_MediatedCommissionSettingsLine_ID (int C_MediatedCommissionSettingsLine_ID);
 
 	/**
-	 * Get C_MediatedCommissionSettingsLine.
+	 * Get Brokerage commission detail.
 	 *
 	 * <br>Type: ID
 	 * <br>Mandatory: true

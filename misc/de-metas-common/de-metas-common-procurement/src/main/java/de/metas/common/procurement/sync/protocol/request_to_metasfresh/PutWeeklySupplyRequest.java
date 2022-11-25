@@ -32,6 +32,7 @@ import lombok.Singular;
 import lombok.Value;
 
 import java.util.List;
+import java.util.UUID;
 
 @Value
 public class PutWeeklySupplyRequest extends RequestToMetasfresh
@@ -40,14 +41,17 @@ public class PutWeeklySupplyRequest extends RequestToMetasfresh
 	{
 		return PutWeeklySupplyRequest.builder().weeklySupply(syncWeeklySupply).build();
 	}
-	
+
+	String eventId;
 	List<SyncWeeklySupply> weeklySupplies;
 
 	@Builder
 	@JsonCreator
 	public PutWeeklySupplyRequest(
+			@JsonProperty("eventId") final String eventId,
 			@JsonProperty("weeklySupplies") @Singular final List<SyncWeeklySupply> weeklySupplies)
 	{
+		this.eventId = eventId != null ? eventId : UUID.randomUUID().toString();
 		this.weeklySupplies = weeklySupplies;
 	}
 }

@@ -462,7 +462,7 @@ public class ServiceRepairProjectService
 			costCollectorIdsToDelete.add(costCollector.getId());
 		}
 
-		huReservationService.deleteReservations(reservedVHUIds);
+		huReservationService.deleteReservationsByVHUIds(reservedVHUIds);
 		projectCostCollectorRepository.deleteByIds(costCollectorIdsToDelete);
 		addQtyToProjectTaskRequests.forEach(this::addQtyToProjectTask);
 	}

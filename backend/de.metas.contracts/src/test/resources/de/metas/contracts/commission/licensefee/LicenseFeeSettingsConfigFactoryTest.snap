@@ -1,0 +1,16 @@
+de.metas.contracts.commission.licensefee.LicenseFeeSettingsConfigFactoryTest.givenValidRequest_whenCreateForNewCommissionInstances_thenReturnOneCommissionConfig=[
+  [
+    {
+      "licenseFeeContract" : {
+        "@type" : "LicenseFeeContract",
+        "id" : 100004,
+        "contractOwnerBPartnerId" : 2,
+        "simulation" : false
+      },
+      "commissionProductId" : 103,
+      "commissionPercent" : 10,
+      "pointsPrecision" : 2,
+      "licenseFeeSettingsLineId" : 100002
+    }
+  ]
+]

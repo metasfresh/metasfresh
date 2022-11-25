@@ -28,9 +28,7 @@ import lombok.NonNull;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 public class NumberUtils
 {
@@ -70,7 +68,7 @@ public class NumberUtils
 		else
 		{
 			final String valueStr = value.toString();
-			if(EmptyUtil.isBlank(valueStr))
+			if (EmptyUtil.isBlank(valueStr))
 			{
 				return null;
 			}
@@ -88,4 +86,38 @@ public class NumberUtils
 			}
 		}
 	}
+
+	public static int asInt(@NonNull final Object value)
+	{
+		if (value instanceof Integer)
+		{
+			return (int)value;
+		}
+		else if (value instanceof BigDecimal)
+		{
+			return ((BigDecimal)value).intValueExact();
+		}
+		else if (value instanceof Long)
+		{
+			return BigDecimal.valueOf((long)value).intValueExact();
+		}
+		else
+		{
+			final String valueStr = StringUtils.trimBlankToNull(value.toString());
+			if (valueStr == null)
+			{
+				throw Check.mkEx("Cannot convert empty `" + value + "` (" + value.getClass() + ") to int");
+			}
+
+			try
+			{
+				return Integer.parseInt(valueStr);
+			}
+			catch (final NumberFormatException numberFormatException)
+			{
+				throw Check.mkEx("Cannot convert `" + value + "` (" + value.getClass() + ") to int", numberFormatException);
+			}
+		}
+	}
+
 }

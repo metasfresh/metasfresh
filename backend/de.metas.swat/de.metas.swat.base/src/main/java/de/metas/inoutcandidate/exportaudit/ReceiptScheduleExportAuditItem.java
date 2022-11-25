@@ -24,7 +24,6 @@ package de.metas.inoutcandidate.exportaudit;
 
 import de.metas.error.AdIssueId;
 import de.metas.inoutcandidate.ReceiptScheduleId;
-import de.metas.inoutcandidate.ShipmentScheduleId;
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.Data;

@@ -1,51 +1,5 @@
 package de.metas.materialtracking;
 
-import static org.compiere.util.TimeUtil.asTimestamp;
-import static org.compiere.util.TimeUtil.getDay;
-
-/*
- * #%L
- * de.metas.materialtracking
- * %%
- * Copyright (C) 2015 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Date;
-import java.util.List;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.lang.IContextAware;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Country;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_Location;
-import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.X_C_DocType;
-import org.eevolution.api.BOMComponentType;
-import org.eevolution.api.CostCollectorType;
-import org.eevolution.api.IPPOrderDAO;
-import org.eevolution.model.I_PP_Cost_Collector;
-import org.junit.Assert;
-
 import de.metas.inout.model.I_M_InOut;
 import de.metas.materialtracking.ch.lagerkonf.impl.HardCodedQualityBasedConfig;
 import de.metas.materialtracking.model.I_M_InOutLine;
@@ -59,6 +13,27 @@ import de.metas.uom.IUOMDAO;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_Country;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_UOM;
+import org.compiere.model.I_M_Product;
+import org.compiere.model.X_C_DocType;
+import org.eevolution.api.BOMComponentType;
+import org.eevolution.api.IPPOrderDAO;
+import org.junit.Assert;
+
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.util.Date;
+import java.util.List;
+
+import static org.compiere.util.TimeUtil.asTimestamp;
+import static org.compiere.util.TimeUtil.getDay;
 
 /**
  * Defines mater-data and standard helpers for testing the WaschProbe use-case.
@@ -223,8 +198,8 @@ public class WaschprobeStandardMasterData
 		final I_PP_Order_BOMLine ppOrderBOMLine = InterfaceWrapperHelper.newInstance(I_PP_Order_BOMLine.class, context);
 		ppOrderBOMLine.setPP_Order(ppOrder);
 		ppOrderBOMLine.setComponentType(componentType.getCode());
-		ppOrderBOMLine.setM_Product(product);
-		ppOrderBOMLine.setC_UOM(uom);
+		ppOrderBOMLine.setM_Product_ID(product.getM_Product_ID());
+		ppOrderBOMLine.setC_UOM_ID(uom.getC_UOM_ID());
 
 		ppOrderBOMLine.setQtyDelivered(qtyDelivered);
 		ppOrderBOMLine.setQtyDeliveredActual(qtyDelivered);

@@ -1,17 +1,5 @@
 package de.metas.material.planning;
 
-import java.util.Optional;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_M_Warehouse;
-import org.compiere.model.I_S_Resource;
-import org.eevolution.api.ProductBOMId;
-import org.eevolution.model.I_PP_Product_Planning;
-
 import de.metas.material.planning.exception.NoPlantForWarehouseException;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
@@ -20,6 +8,17 @@ import de.metas.util.ISingletonService;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.warehouse.WarehouseId;
+import org.compiere.model.I_M_Warehouse;
+import org.compiere.model.I_S_Resource;
+import org.eevolution.api.ProductBOMVersionsId;
+import org.eevolution.model.I_PP_Product_Planning;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 public interface IProductPlanningDAO extends ISingletonService
 {
@@ -33,10 +32,10 @@ public interface IProductPlanningDAO extends ISingletonService
 		AttributeSetInstanceId attributeSetInstanceId;
 
 		/**
-		 * @param orgId may be null which means only the * org
-		 * @param warehouseId may be null which means "no warehouse" (not any warehouse!)
-		 * @param plantId may be null which means "no plantId"
-		 * @param productId mandatory
+		 * @param orgId                  may be null which means only the * org
+		 * @param warehouseId            may be null which means "no warehouse" (not any warehouse!)
+		 * @param plantId                may be null which means "no plantId"
+		 * @param productId              mandatory
 		 * @param attributeSetInstanceId mandatory, but might contain the 0-ASI-Id;
 		 */
 		@Builder
@@ -71,7 +70,9 @@ public interface IProductPlanningDAO extends ISingletonService
 
 	void save(I_PP_Product_Planning productPlanningRecord);
 
-	void setProductBOMIdIfAbsent(ProductId productId, ProductBOMId bomId);
+	void setProductBOMVersionsIdIfAbsent(ProductId productId, ProductBOMVersionsId bomVersionsId);
 
-	Set<ProductBOMId> retrieveAllPickingBOMIds();
+	Set<ProductBOMVersionsId> retrieveAllPickingBOMVersionsIds();
+
+	List<I_PP_Product_Planning> retrieveProductPlanningForBomVersions(final ProductBOMVersionsId bomId);
 }

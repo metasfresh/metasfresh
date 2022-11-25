@@ -1,18 +1,18 @@
 package de.metas.pricing.service.impl;
 
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.math.BigDecimal;
-
+import de.metas.pricing.service.IPriceListDAO;
+import de.metas.pricing.service.ScalePriceUsage;
+import de.metas.tax.api.TaxCategoryId;
+import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_PriceList_Version;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_ProductPrice;
 
-import de.metas.pricing.service.IPriceListDAO;
-import de.metas.tax.api.TaxCategoryId;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -67,6 +67,8 @@ public class ProductPriceBuilder
 
 		final int nextMatchSeqNo = Services.get(IPriceListDAO.class).retrieveNextMatchSeqNo(pp);
 		pp.setMatchSeqNo(nextMatchSeqNo);
+
+		pp.setUseScalePrice(ScalePriceUsage.DONT_USE_SCALE_PRICE.getCode());
 
 		saveRecord(pp);
 		return pp;

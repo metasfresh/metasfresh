@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.handlingunits.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for M_HU_PackingMaterial
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_HU_PackingMaterial extends org.compiere.model.PO implements I_M_HU_PackingMaterial, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 439819935L;
+	private static final long serialVersionUID = 1707182421L;
 
     /** Standard Constructor */
     public X_M_HU_PackingMaterial (final Properties ctx, final int M_HU_PackingMaterial_ID, @Nullable final String trxName)
@@ -165,6 +165,18 @@ public class X_M_HU_PackingMaterial extends org.compiere.model.PO implements I_M
 	public boolean isClosed() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsClosed);
+	}
+
+	@Override
+	public void setIsInvoiceable (final boolean IsInvoiceable)
+	{
+		set_Value (COLUMNNAME_IsInvoiceable, IsInvoiceable);
+	}
+
+	@Override
+	public boolean isInvoiceable() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsInvoiceable);
 	}
 
 	@Override

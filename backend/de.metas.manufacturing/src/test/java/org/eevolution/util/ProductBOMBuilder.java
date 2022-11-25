@@ -22,9 +22,10 @@ package org.eevolution.util;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-
+import de.metas.document.engine.DocStatus;
+import de.metas.uom.IUOMDAO;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.model.I_C_UOM;
@@ -32,10 +33,10 @@ import org.compiere.model.I_M_Product;
 import org.eevolution.api.BOMType;
 import org.eevolution.api.BOMUse;
 import org.eevolution.model.I_PP_Product_BOM;
+import org.eevolution.model.I_PP_Product_BOMVersions;
 
-import de.metas.uom.IUOMDAO;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ProductBOMBuilder
 {
@@ -44,6 +45,7 @@ public class ProductBOMBuilder
 	private I_M_Product _product;
 	private I_C_UOM _uom;
 	private I_PP_Product_BOM _productBOM;
+	private I_PP_Product_BOMVersions _bomVersions;
 
 	// BOM Line Builders
 	private final List<ProductBOMLineBuilder> lineBuilders = new ArrayList<>();
@@ -97,6 +99,13 @@ public class ProductBOMBuilder
 		productBOM.setName(product.getName());
 		productBOM.setBOMType(BOMType.CurrentActive.getCode());
 		productBOM.setBOMUse(BOMUse.Manufacturing.getCode());
+		productBOM.setDocStatus(DocStatus.Completed.getCode());
+
+		if (_bomVersions != null)
+		{
+			productBOM.setPP_Product_BOMVersions_ID(_bomVersions.getPP_Product_BOMVersions_ID());
+		}
+
 		InterfaceWrapperHelper.save(productBOM);
 		this._productBOM = productBOM;
 
@@ -116,6 +125,13 @@ public class ProductBOMBuilder
 		this._product = product;
 		return this;
 	}
+
+	public ProductBOMBuilder bomVersions(final I_PP_Product_BOMVersions bomVersions)
+	{
+		this._bomVersions = bomVersions;
+		return this;
+	}
+
 
 	private I_M_Product getM_Product()
 	{
