@@ -138,7 +138,7 @@ public class ExternallyReferencedCandidateRepository
 		}
 
 
-		final BigDecimal discountOverride = ic.getDiscountOverride().toBigDecimal() != null ? ic.getDiscountOverride().toBigDecimal() : null;
+		final BigDecimal discountOverride = ic.getDiscountOverride() != null ? ic.getDiscountOverride().toBigDecimal() : null;
 		icRecord.setDiscount_Override(discountOverride);
 
 		final ProductPrice priceEnteredOverride = ic.getPriceEnteredOverride();
@@ -170,7 +170,7 @@ public class ExternallyReferencedCandidateRepository
 
 		icRecord.setExternalHeaderId(ExternalId.toValue(ic.getExternalHeaderId()));
 		icRecord.setExternalLineId(ExternalId.toValue(ic.getExternalLineId()));
-		
+
 		icRecord.setDescriptionBottom(ic.getDescriptionBottom());
 		icRecord.setAD_User_InCharge_ID(UserId.toRepoIdOr(ic.getUserInChargeId(), -1 ));
 
