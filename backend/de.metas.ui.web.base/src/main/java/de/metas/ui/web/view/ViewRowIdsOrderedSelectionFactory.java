@@ -58,6 +58,11 @@ public interface ViewRowIdsOrderedSelectionFactory
 
 	ViewRowIdsOrderedSelection removeRowIdsFromSelection(ViewRowIdsOrderedSelection selection, DocumentIdsSelection rowIds);
 
+	ViewRowIdsOrderedSelection removeAndAddRowIdsFromSelection(
+			@NonNull ViewRowIdsOrderedSelection selection,
+			@NonNull DocumentIdsSelection rowIdsToRemove,
+			@NonNull DocumentIdsSelection rowIdsToAdd);
+
 	boolean containsAnyOfRowIds(ViewRowIdsOrderedSelection selection, DocumentIdsSelection rowIds);
 
 	default void deleteSelection(@NonNull final String selectionId)
