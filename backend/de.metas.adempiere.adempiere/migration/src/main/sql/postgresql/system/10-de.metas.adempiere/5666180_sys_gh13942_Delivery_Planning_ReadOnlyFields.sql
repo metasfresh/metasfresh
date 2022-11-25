@@ -112,3 +112,21 @@ UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2022-11-25 17:17:07','Y
 UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2022-11-25 17:17:13','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=708093
 ;
 
+-- Field: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> Material
+-- Column: M_Delivery_Planning.M_Product_ID
+-- 2022-11-25T15:19:59.985Z
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2022-11-25 17:19:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=708110
+;
+
+-- Field: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> Country of destination
+-- Column: M_Delivery_Planning.C_DestinationCountry_ID
+-- 2022-11-25T15:20:04.789Z
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2022-11-25 17:20:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=708202
+;
+
+-- Field: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> Country of Origin
+-- Column: M_Delivery_Planning.C_OriginCountry_ID
+-- 2022-11-25T15:20:06.243Z
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2022-11-25 17:20:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=708204
+;
+
