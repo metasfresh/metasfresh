@@ -769,14 +769,13 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 
 		final Quantity qtyMoved = Quantity.of(receiptScheduleQtysBL.getQtyMoved(receiptScheduleRecord), uom);
 
-		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNull(receiptScheduleRecord.getM_AttributeSetInstance_ID());
+		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(receiptScheduleRecord.getM_AttributeSetInstance_ID());
 
-		final String originCountryCode = attributeSetInstanceBL.getAttributeValueOrNull(AttributeConstants.CountryOfOrigin, asiId);
-		final CountryId originCountryId = originCountryCode == null ? null : countryDAO.getCountryIdByCountryCode(originCountryCode);
+		final CountryId originCountryId = getOriginCountryId(asiId);
 
 		final WarehouseId warehouseId = WarehouseId.ofRepoId(receiptScheduleRecord.getM_Warehouse_ID());
+		final BPartnerLocationId destinationBPLocationId = warehouseBL.getBPartnerLocationId(warehouseId);
 		final CountryId destinationCountryId = warehouseBL.getCountryId(warehouseId);
-		final I_M_Warehouse warehouseRecord = warehouseBL.getById(warehouseId);
 
 		final String huBatchNo = attributeSetInstanceBL.getAttributeValueOrNull(AttributeConstants.HU_BatchNo, asiId);
 
@@ -790,7 +789,7 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 				.warehouseId(warehouseId)
 				.productId(ProductId.ofRepoId(receiptScheduleRecord.getM_Product_ID()))
 				.partnerId(BPartnerId.ofRepoId(receiptScheduleRecord.getC_BPartner_ID()))
-				.bPartnerLocationId(BPartnerLocationId.ofRepoId(warehouseRecord.getC_BPartner_ID(), warehouseRecord.getC_BPartner_Location_ID()))
+				.bPartnerLocationId(destinationBPLocationId)
 				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(receiptScheduleRecord.getM_SectionCode_ID()))
 				.qtyOredered(qtyOrdered)
 				.qtyTotalOpen(qtyOrdered.subtract(qtyMoved))
@@ -818,5 +817,13 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 		}
 
 		return requestBuilder.build();
+	}
+
+	@Nullable
+	private CountryId getOriginCountryId(final AttributeSetInstanceId asiId)
+	{
+		final String originCountryCode = attributeSetInstanceBL.getAttributeValueOrNull(AttributeConstants.CountryOfOrigin, asiId);
+		final CountryId originCountryId = originCountryCode == null ? null : countryDAO.getCountryIdByCountryCode(originCountryCode);
+		return originCountryId;
 	}
 }
