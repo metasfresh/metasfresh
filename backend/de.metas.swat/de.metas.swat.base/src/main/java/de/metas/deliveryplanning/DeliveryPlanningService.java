@@ -138,7 +138,7 @@ public class DeliveryPlanningService
 				.actualLoadQty(Quantity.of(deliveryPlanningRecord.getActualLoadQty(), uomToUse))
 				.actualDeliveredQty(Quantity.of(deliveryPlanningRecord.getActualDeliveredQty(), uomToUse))
 				.uom(uomToUse)
-				.plannedLoadingDate(TimeUtil.asInstant(deliveryPlanningRecord.getPlannedDeliveryDate()))
+				.plannedLoadingDate(TimeUtil.asInstant(deliveryPlanningRecord.getPlannedLoadingDate()))
 				.actualLoadingDate(TimeUtil.asInstant(deliveryPlanningRecord.getActualLoadingDate()))
 				.plannedDeliveryDate(TimeUtil.asInstant(deliveryPlanningRecord.getPlannedDeliveryDate()))
 				.actualDeliveryDate(TimeUtil.asInstant(deliveryPlanningRecord.getActualDeliveryDate()))
