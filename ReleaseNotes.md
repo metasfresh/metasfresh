@@ -12,6 +12,9 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#14032](https://github.com/metasfresh/metasfresh/pull/14032) webui: (refreshViewOnChangeEvents) notify FE also when we have pure rows removal
+  * [#14023](https://github.com/metasfresh/metasfresh/pull/14023) webui: Make sure all views are notified on view addition changes
+  * [#14017](https://github.com/metasfresh/metasfresh/pull/14017) webui: When rows are changed consider also adding new ones to the view if it's matching the filter
   * [#13604](https://github.com/metasfresh/metasfresh/issues/13604) Add ExternalHeaderId to invoiceCand header aggregation key
   * [#13561](https://github.com/metasfresh/metasfresh/issues/13561) Approval for invoicing: add description to field and process
   * [#13631](https://github.com/metasfresh/metasfresh/issues/13631) InEffect invoice candidates testId
