@@ -655,20 +655,15 @@ class SqlViewDataRepository implements IViewDataRepository
 		{
 			final Set<DocumentId> rowIdsInViewAndMatching = retrieveRowIdsMatchingFilters(viewId, filters, rowIdsToRemove);
 			rowIdsToRemove.removeAll(rowIdsInViewAndMatching);
+
+			changesCollector.collectChangedRowIds(rowIdsInViewAndMatching);
 		}
 
-		final ViewRowIdsOrderedSelection changedSelection = viewRowIdsOrderedSelectionFactory.removeAndAddRowIdsFromSelection(
+		return viewRowIdsOrderedSelectionFactory.removeAndAddRowIdsFromSelection(
 				selection,
 				DocumentIdsSelection.of(rowIdsToRemove),
-				DocumentIdsSelection.of(rowIdsToAdd));
-
-		if (!ViewRowIdsOrderedSelection.equals(selection, changedSelection))
-		{
-			changesCollector.collectAddedRowIds(rowIdsToAdd);
-			changesCollector.collectRemovedRowIds(rowIdsToRemove);
-		}
-
-		return changedSelection;
+				DocumentIdsSelection.of(rowIdsToAdd),
+				changesCollector);
 	}
 
 	public Set<DocumentId> retrieveRowIdsMatchingFilters(

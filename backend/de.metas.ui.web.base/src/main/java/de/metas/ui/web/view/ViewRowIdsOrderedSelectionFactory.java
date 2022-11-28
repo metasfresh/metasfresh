@@ -61,7 +61,8 @@ public interface ViewRowIdsOrderedSelectionFactory
 	ViewRowIdsOrderedSelection removeAndAddRowIdsFromSelection(
 			@NonNull ViewRowIdsOrderedSelection selection,
 			@NonNull DocumentIdsSelection rowIdsToRemove,
-			@NonNull DocumentIdsSelection rowIdsToAdd);
+			@NonNull DocumentIdsSelection rowIdsToAdd,
+			@NonNull AddRemoveChangedRowIdsCollector changesCollector);
 
 	boolean containsAnyOfRowIds(ViewRowIdsOrderedSelection selection, DocumentIdsSelection rowIds);
 

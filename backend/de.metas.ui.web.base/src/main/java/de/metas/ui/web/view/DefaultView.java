@@ -648,24 +648,28 @@ public final class DefaultView implements IEditableView
 		boolean hasViewAdditions = false;
 		if (watchedByFrontend)
 		{
-			// Process changed rows because if not, "retainExistingRowIds" will not consider rows to be added.
-			// And for the particular case when we have only new rows to be added the rowIds will get empty an websocket event will be sent to frontend.
-			if(refreshViewOnChangeEvents)
+			// Process changed rows because if not, "retainExistingRowIds" will consider only the changed rows. The added or removed rowIds will be "discarded".
+			// And for the particular case when we have only new rows to be added the rowIds will get empty a websocket event will be sent to frontend.
+			if (refreshViewOnChangeEvents)
 			{
 				final AddRemoveChangedRowIdsCollector changesCollector = AddRemoveChangedRowIdsCollector.newRecording();
 				checkChangedRows(changesCollector);
 
-				if(changesCollector.hasAddedRows())
+				if (changesCollector.hasAddedRows())
 				{
 					hasViewAdditions = true;
 				}
-			}
 
-			rowIds = selectionsRef.retainExistingRowIds(rowIds);
+				rowIds = changesCollector.getChangedOrRemovedRowIds();
+			}
+			else
+			{
+				rowIds = selectionsRef.retainExistingRowIds(rowIds);
+			}
 		}
 
 		// Collect event
-		if (rowIds.isEmpty())
+		if (!hasViewAdditions && rowIds.isEmpty())
 		{
 			// do nothing
 		}

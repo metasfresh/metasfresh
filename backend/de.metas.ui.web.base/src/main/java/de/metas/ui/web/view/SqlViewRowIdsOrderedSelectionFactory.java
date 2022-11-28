@@ -214,7 +214,7 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 	public ViewRowIdsOrderedSelection addRowIdsToSelection(final ViewRowIdsOrderedSelection selection, final DocumentIdsSelection rowIds)
 	{
 		return !rowIds.isEmpty()
-				? removeAndAddRowIdsFromSelection(selection, DocumentIdsSelection.EMPTY, rowIds)
+				? removeAndAddRowIdsFromSelection(selection, DocumentIdsSelection.EMPTY, rowIds, AddRemoveChangedRowIdsCollector.NOT_RECORDING)
 				: selection;
 	}
 
@@ -222,7 +222,7 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 	public ViewRowIdsOrderedSelection removeRowIdsFromSelection(final ViewRowIdsOrderedSelection selection, final DocumentIdsSelection rowIds)
 	{
 		return !rowIds.isEmpty()
-				? removeAndAddRowIdsFromSelection(selection, rowIds, DocumentIdsSelection.EMPTY)
+				? removeAndAddRowIdsFromSelection(selection, rowIds, DocumentIdsSelection.EMPTY, AddRemoveChangedRowIdsCollector.NOT_RECORDING)
 				: selection;
 	}
 
@@ -230,7 +230,8 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 	public ViewRowIdsOrderedSelection removeAndAddRowIdsFromSelection(
 			@NonNull final ViewRowIdsOrderedSelection selection,
 			@NonNull final DocumentIdsSelection rowIdsToRemove,
-			@NonNull final DocumentIdsSelection rowIdsToAdd)
+			@NonNull final DocumentIdsSelection rowIdsToAdd,
+			@NonNull final AddRemoveChangedRowIdsCollector changesCollector)
 	{
 		boolean hasChanges = false;
 
@@ -244,6 +245,7 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 				final int deleted = DB.executeUpdateAndThrowExceptionOnFail(sqlDelete.getSql(), sqlDelete.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
 				if (deleted > 0)
 				{
+					changesCollector.collectRemovedRowIds(rowIdsToRemove.toSet());
 					hasChanges = true;
 				}
 			}
@@ -267,6 +269,7 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 				final int added = DB.executeUpdateAndThrowExceptionOnFail(sqlAdd.getSql(), sqlAdd.getSqlParamsArray(), ITrx.TRXNAME_ThreadInherited);
 				if (added > 0)
 				{
+					changesCollector.collectAddedRowId(rowId);
 					hasChanges = true;
 				}
 			}
@@ -358,7 +361,10 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 			while (rs.next())
 			{
 				final DocumentId rowId = keyColumnNamesMap.retrieveRowId(rs, "", false);
-				rowIds.add(rowId);
+				if(rowId != null)
+				{
+					rowIds.add(rowId);
+				}
 			}
 			return rowIds.build();
 		}
