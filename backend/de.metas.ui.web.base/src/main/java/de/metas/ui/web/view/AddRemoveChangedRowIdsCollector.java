@@ -2,7 +2,9 @@ package de.metas.ui.web.view;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import lombok.NonNull;
 import lombok.ToString;
+import org.elasticsearch.common.util.set.Sets;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -14,25 +16,39 @@ public abstract class AddRemoveChangedRowIdsCollector
 
 	public static AddRemoveChangedRowIdsCollector newRecording() {return new RecordingAddRemoveChangedRowIdsCollector();}
 
-	public abstract void collectAddedRowIds(final Collection<DocumentId> rowIds);
+	//
+	//
+	//
 
-	public abstract void collectRemovedRowIds(final Collection<DocumentId> rowIds);
+	public abstract void collectAddedRowId(final DocumentId rowId);
 
 	public abstract Set<DocumentId> getAddedRowIds();
 
 	public boolean hasAddedRows() {return !getAddedRowIds().isEmpty();}
 
+	public abstract void collectRemovedRowIds(final Collection<DocumentId> rowIds);
+
 	public abstract Set<DocumentId> getRemovedRowIds();
+
+	public abstract void collectChangedRowIds(final Collection<DocumentId> rowIds);
+
+	public abstract Set<DocumentId> getChangedRowIds();
+
+	public Set<DocumentId> getChangedOrRemovedRowIds()
+	{
+		return Sets.union(getChangedRowIds(), getRemovedRowIds());
+	}
 
 	//
 	//
 	//
+
 	public static class NotRecordingAddRemoveChangedRowIdsCollector extends AddRemoveChangedRowIdsCollector
 	{
 		private NotRecordingAddRemoveChangedRowIdsCollector() {}
 
 		@Override
-		public void collectAddedRowIds(final Collection<DocumentId> rowIds) {}
+		public void collectAddedRowId(final DocumentId rowId) {}
 
 		@Override
 		public Set<DocumentId> getAddedRowIds()
@@ -48,6 +64,15 @@ public abstract class AddRemoveChangedRowIdsCollector
 		{
 			throw new IllegalArgumentException("changes are not recorded");
 		}
+
+		@Override
+		public void collectChangedRowIds(final Collection<DocumentId> rowIds) {}
+
+		@Override
+		public Set<DocumentId> getChangedRowIds()
+		{
+			throw new IllegalArgumentException("changes are not recorded");
+		}
 	}
 
 	//
@@ -58,20 +83,18 @@ public abstract class AddRemoveChangedRowIdsCollector
 	{
 		private HashSet<DocumentId> addedRowIds;
 		private HashSet<DocumentId> removedRowIds;
+		private HashSet<DocumentId> changedRowIds;
 
 		private RecordingAddRemoveChangedRowIdsCollector() {}
 
 		@Override
-		public void collectAddedRowIds(final Collection<DocumentId> rowIds)
+		public void collectAddedRowId(@NonNull final DocumentId rowId)
 		{
 			if (addedRowIds == null)
 			{
-				addedRowIds = new HashSet<>(rowIds);
+				addedRowIds = new HashSet<>();
 			}
-			else
-			{
-				addedRowIds.addAll(rowIds);
-			}
+			addedRowIds.add(rowId);
 		}
 
 		@Override
@@ -106,6 +129,26 @@ public abstract class AddRemoveChangedRowIdsCollector
 		{
 			final HashSet<DocumentId> removedRowIds = this.removedRowIds;
 			return removedRowIds != null ? removedRowIds : ImmutableSet.of();
+		}
+
+		@Override
+		public void collectChangedRowIds(final Collection<DocumentId> rowIds)
+		{
+			if (changedRowIds == null)
+			{
+				changedRowIds = new HashSet<>(rowIds);
+			}
+			else
+			{
+				changedRowIds.addAll(rowIds);
+			}
+		}
+
+		@Override
+		public Set<DocumentId> getChangedRowIds()
+		{
+			final HashSet<DocumentId> changedRowIds = this.changedRowIds;
+			return changedRowIds != null ? changedRowIds : ImmutableSet.of();
 		}
 	}
 }
