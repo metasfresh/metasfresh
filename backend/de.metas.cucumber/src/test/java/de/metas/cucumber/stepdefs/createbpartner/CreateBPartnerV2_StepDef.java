@@ -90,17 +90,17 @@ public class CreateBPartnerV2_StepDef
 			final String vatId = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.VatId");
 			final String orgIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_AD_Org.COLUMNNAME_AD_Org_ID + "." + TABLECOLUMN_IDENTIFIER);
 
-			I_AD_Org org = null;
-			if (Check.isNotBlank(orgIdentifier))
-			{
-				org = orgTable.get(orgIdentifier);
-				assertThat(org).isNotNull();
-			}
+			final I_AD_Org org = Optional.ofNullable(orgIdentifier)
+					.map(orgTable::get)
+					.orElse(null);
+
+			final String orgCode = Optional.ofNullable(org)
+					.map(I_AD_Org::getValue)
+					.orElse(null);
 
 			// persisted value
-			final Optional<JsonResponseComposite> persistedResult = bpartnerEndpointService.retrieveBPartner(org != null
-																													 ? org.getValue()
-																													 : null, ExternalIdentifier.of(externalIdentifier));
+			final Optional<JsonResponseComposite> persistedResult = bpartnerEndpointService.retrieveBPartner(orgCode, ExternalIdentifier.of(externalIdentifier));
+
 			final JsonResponseBPartner persistedBPartner = persistedResult.get().getBpartner();
 
 			assertThat(persistedBPartner.getName()).isEqualTo(name);

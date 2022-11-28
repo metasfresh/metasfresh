@@ -78,20 +78,27 @@ public class JsonRequestConsolidateService
 		}
 	}
 
-	public void consolidateWithOrg(@NonNull final JsonRequestBPartnerUpsertItem requestItem, @Nullable final String orgCode)
+	public static void consolidateWithOrg(@NonNull final JsonRequestBPartnerUpsertItem requestItem, @Nullable final String orgCode)
 	{
-		final String jsonBPartnerCompositeOrgCode = requestItem.getBpartnerComposite().getOrgCode();
-
-		if (Check.isNotBlank(orgCode) && Check.isNotBlank(jsonBPartnerCompositeOrgCode) && !orgCode.equals(jsonBPartnerCompositeOrgCode))
+		if (Check.isBlank(orgCode))
 		{
-			throw new AdempiereException("Path parameter OrgCode: " + orgCode + " and JsonRequestComposite.OrgCode: " + jsonBPartnerCompositeOrgCode + " don't match!")
-					.appendParametersToMessage()
-					.setParameter(requestItem.getBpartnerIdentifier(), "BPartnerIdentifier");
+			//nothing to consolidate
+			return;
 		}
 
-		if (Check.isNotBlank(orgCode) && Check.isBlank(requestItem.getBpartnerComposite().getOrgCode()))
+		final String requestItemOrgCode = requestItem.getBpartnerComposite().getOrgCode();
+
+		if (Check.isBlank(requestItemOrgCode))
 		{
 			requestItem.getBpartnerComposite().setOrgCode(orgCode);
+			return;
+		}
+
+		if (!orgCode.equals(requestItemOrgCode))
+		{
+			throw new AdempiereException("Path parameter orgCode: " + orgCode + " and JsonRequestComposite.OrgCode: " + requestItemOrgCode + " don't match!")
+					.appendParametersToMessage()
+					.setParameter(requestItem.getBpartnerIdentifier(), "BPartnerIdentifier");
 		}
 	}
 

@@ -229,7 +229,7 @@ Feature: create or update BPartner v2
 
 
   @from:cucumber
-  Scenario: create a BPartner record - no OrgCode set on bpartnerComposite
+  Scenario: create BPartner with external reference type of code - orgCode set in path
 
     Given load AD_Org:
       | AD_Org_ID.Identifier | Value |
@@ -241,18 +241,13 @@ Feature: create or update BPartner v2
    "requestItems":[
       {
          "bpartnerIdentifier":"ext-ALBERTA-bPartner1",
-         "externalReferenceUrl":"www.ExternalReferenceURL.com",
          "bpartnerComposite":{
             "bpartner":{
                "code":"ext-ALBERTA-BPartnerTestCode1",
                "name":"BPartnerTestName1",
                "companyName":"BPartnerTestCompany1",
-               "parentId":null,
-               "phone":null,
                "language":"de",
-               "url":null,
-               "group":"test-group",
-               "vatId":null
+               "group":"test-group"
             }
          }
       }
@@ -263,19 +258,19 @@ Feature: create or update BPartner v2
    }
 }
 """
-    Then set context properties:
-      | Key         | Value  |
-      | #AD_Role_ID | 540024 |
     And verify that S_ExternalReference was created
-      | ExternalSystem | Type          | ExternalReference |
-      | ALBERTA        | BPartnerValue | BPartnerTestCode1 |
+      | ExternalSystem | Type          | ExternalReference | OPT.AD_Org_ID.Identifier |
+      | ALBERTA        | BPartnerValue | BPartnerTestCode1 | providedOrg              |
+      | ALBERTA        | BPartner      | bPartner1         | providedOrg              |
     And verify that bPartner was created for externalIdentifier
       | C_BPartner_ID.Identifier | externalIdentifier    | Name              | OPT.CompanyName      | OPT.AD_Org_ID.Identifier |
       | bpartner                 | ext-ALBERTA-bPartner1 | BPartnerTestName1 | BPartnerTestCompany1 | providedOrg              |
 
 
   @from:cucumber
-  Scenario: create a BPartner record - no OrgCode path parameter set
+  Scenario: process CreateBPartner requests given:
+  _no orgCode in path
+  _different orgCode set for each request item
 
     Given metasfresh contains AD_Org:
       | AD_Org_ID.Identifier | Name                   | Value    |
@@ -288,37 +283,26 @@ Feature: create or update BPartner v2
    "requestItems":[
       {
          "bpartnerIdentifier":"ext-ALBERTA-bPartner2",
-         "externalReferenceUrl":"www.ExternalReferenceURL.com",
          "bpartnerComposite":{
             "orgCode": "orgCode2",
             "bpartner":{
                "code":"ext-ALBERTA-BPartnerTestCode2",
                "name":"BPartnerTestName2",
                "companyName":"BPartnerTestCompany2",
-               "parentId":null,
-               "phone":null,
-               "language":"de",
-               "url":null,
-               "group":"test-group",
-               "vatId":null
+               "group":"test-group"
             }
          }
       },
       {
          "bpartnerIdentifier":"ext-ALBERTA-bPartner3",
-         "externalReferenceUrl":"www.ExternalReferenceURL.com",
          "bpartnerComposite":{
             "orgCode": "orgCode3",
             "bpartner":{
                "code":"ext-ALBERTA-BPartnerTestCode3",
                "name":"BPartnerTestName3",
                "companyName":"BPartnerTestCompany3",
-               "parentId":null,
-               "phone":null,
                "language":"de",
-               "url":null,
-               "group":"test-group",
-               "vatId":null
+               "group":"test-group"
             }
          }
       }
@@ -333,9 +317,11 @@ Feature: create or update BPartner v2
       | Key         | Value  |
       | #AD_Role_ID | 540024 |
     And verify that S_ExternalReference was created
-      | ExternalSystem | Type          | ExternalReference |
-      | ALBERTA        | BPartnerValue | BPartnerTestCode2 |
-      | ALBERTA        | BPartnerValue | BPartnerTestCode3 |
+      | ExternalSystem | Type          | ExternalReference | OPT.AD_Org_ID.Identifier |
+      | ALBERTA        | BPartnerValue | BPartnerTestCode2 | bPartner2_orgCode        |
+      | ALBERTA        | BPartner      | bPartner2         | bPartner2_orgCode        |
+      | ALBERTA        | BPartnerValue | BPartnerTestCode3 | bPartner3_orgCode        |
+      | ALBERTA        | BPartner      | bPartner3         | bPartner3_orgCode        |
     And verify that bPartner was created for externalIdentifier
       | C_BPartner_ID.Identifier | externalIdentifier    | Name              | OPT.CompanyName      | OPT.AD_Org_ID.Identifier |
       | bpartner2                | ext-ALBERTA-bPartner2 | BPartnerTestName2 | BPartnerTestCompany2 | bPartner2_orgCode        |

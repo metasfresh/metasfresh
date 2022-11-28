@@ -36,6 +36,7 @@ import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.M_Shipper_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
+import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
@@ -89,6 +90,7 @@ public class S_ExternalReference_StepDef
 	private final S_ExternalReference_StepDefData externalRefTable;
 	private final M_Shipper_StepDefData shipperTable;
 	private final M_Product_StepDefData productTable;
+	private final AD_Org_StepDefData orgTable;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -102,12 +104,14 @@ public class S_ExternalReference_StepDef
 			@NonNull final S_ExternalReference_StepDefData externalRefTable,
 			@NonNull final M_Shipper_StepDefData shipperTable,
 			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final AD_Org_StepDefData orgTable,
 			@NonNull final TestContext testContext)
 	{
 		this.userTable = userTable;
 		this.externalRefTable = externalRefTable;
 		this.shipperTable = shipperTable;
 		this.productTable = productTable;
+		this.orgTable = orgTable;
 		this.testContext = testContext;
 		this.externalReferenceTypes = SpringContextHolder.instance.getBean(ExternalReferenceTypes.class);
 		this.externalSystems = SpringContextHolder.instance.getBean(ExternalSystems.class);
@@ -125,15 +129,24 @@ public class S_ExternalReference_StepDef
 			final String externalReference = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "ExternalReference");
 			final String externalReferenceURL = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "ExternalReferenceURL");
 
-			final boolean externalRefExists = queryBL.createQueryBuilder(I_S_ExternalReference.class)
+			final I_S_ExternalReference externalReferenceRecord = queryBL.createQueryBuilder(I_S_ExternalReference.class)
 					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem, externalSystem)
 					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_Type, type)
 					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReference, externalReference)
-					.addEqualsFilter(I_S_ExternalReference.COLUMN_ExternalReferenceURL, externalReferenceURL)
+					.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalReferenceURL, externalReferenceURL)
 					.create()
-					.anyMatch();
+					.firstOnlyOrNull(I_S_ExternalReference.class);
 
-			assertThat(externalRefExists).isTrue();
+			assertThat(externalReferenceRecord).isNotNull();
+
+			final String orgCodeIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.AD_Org_ID.Identifier");
+
+			if (Check.isNotBlank(orgCodeIdentifier))
+			{
+				final int orgId = orgTable.get(orgCodeIdentifier).getAD_Org_ID();
+
+				assertThat(externalReferenceRecord.getAD_Org_ID()).isEqualTo(orgId);
+			}
 		}
 	}
 

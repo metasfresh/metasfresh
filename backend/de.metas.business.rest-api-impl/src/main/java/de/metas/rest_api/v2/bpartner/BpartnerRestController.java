@@ -324,7 +324,7 @@ public class BpartnerRestController
 		{
 			try (final MDCCloseable ignored = MDC.putCloseable("bpartnerIdentifier", requestItem.getBpartnerIdentifier()))
 			{
-				jsonRequestConsolidateService.consolidateWithOrg(requestItem, orgCode);
+				JsonRequestConsolidateService.consolidateWithOrg(requestItem, orgCode);
 
 				jsonRequestConsolidateService.consolidateWithIdentifier(requestItem);
 
