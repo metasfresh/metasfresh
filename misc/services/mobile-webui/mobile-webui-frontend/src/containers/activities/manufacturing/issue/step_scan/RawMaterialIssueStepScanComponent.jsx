@@ -36,7 +36,7 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
       qtyToIssueTarget,
       qtyToIssueMax,
       lineQtyToIssue,
-      lineQtyToIssueTolerancePerc,
+      lineQtyToIssueTolerance,
       lineQtyToIssueRemaining,
       isWeightable,
       isIssueWholeHU,
@@ -50,7 +50,7 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
       userInfo: computeStepScanUserInfoQtys({
         uom,
         lineQtyToIssue,
-        lineQtyToIssueTolerancePerc,
+        lineQtyToIssueTolerance,
         lineQtyToIssueRemaining,
       }),
       qtyTarget: qtyToIssueTarget,

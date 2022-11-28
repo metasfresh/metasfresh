@@ -18,7 +18,7 @@ export const computeStepScanPropsFromActivity = ({ activity, lineId, stepId }) =
   const lineQtyToIssue = line.qtyToIssue;
   const lineQtyToIssueMax = Math.max(line.qtyToIssueMax, lineQtyToIssue);
   const lineQtyIssued = line.qtyIssued;
-  const lineQtyToIssueTolerancePerc = line.qtyToIssueTolerancePerc;
+  const lineQtyToIssueTolerance = line.qtyToIssueTolerance;
   const isWeightable = !!line.weightable;
 
   const uom = step.uom;
@@ -55,7 +55,7 @@ export const computeStepScanPropsFromActivity = ({ activity, lineId, stepId }) =
     qtyToIssueMax,
     qtyHUCapacity,
     lineQtyToIssue,
-    lineQtyToIssueTolerancePerc,
+    lineQtyToIssueTolerance,
     lineQtyToIssueRemaining,
     isWeightable,
     isIssueWholeHU,

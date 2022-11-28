@@ -27,7 +27,9 @@ public class JsonRawMaterialsIssueLine
 	@NonNull BigDecimal qtyToIssue;
 	@Nullable BigDecimal qtyToIssueMin;
 	@Nullable BigDecimal qtyToIssueMax;
+	@Deprecated
 	@Nullable BigDecimal qtyToIssueTolerancePerc;
+	@Nullable JsonQtyToleranceSpec qtyToIssueTolerance;
 
 	@NonNull BigDecimal qtyIssued;
 
@@ -45,6 +47,7 @@ public class JsonRawMaterialsIssueLine
 				.qtyToIssueMin(from.getQtyToIssueMin().map(qty -> qty.toBigDecimal()).orElse(null))
 				.qtyToIssueMax(from.getQtyToIssueMax().map(qty -> qty.toBigDecimal()).orElse(null))
 				.qtyToIssueTolerancePerc(from.getQtyToIssueTolerance().map(Percent::toBigDecimal).orElse(null))
+				.qtyToIssueTolerance(JsonQtyToleranceSpec.ofNullable(from.getIssuingToleranceSpec()))
 				.qtyIssued(from.getQtyIssued().toBigDecimal())
 				.steps(from.getSteps()
 						.stream()
