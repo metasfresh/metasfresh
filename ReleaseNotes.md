@@ -12,6 +12,8 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13953](https://github.com/metasfresh/metasfresh/pull/13953) [SAP]: Add mappings for required masterdata
+  * [#13980](https://github.com/metasfresh/metasfresh/pull/13980) Introduce C_BPartner_Location.VATaxID
   * [#14032](https://github.com/metasfresh/metasfresh/pull/14032) webui: (refreshViewOnChangeEvents) notify FE also when we have pure rows removal
   * [#14023](https://github.com/metasfresh/metasfresh/pull/14023) webui: Make sure all views are notified on view addition changes
   * [#14017](https://github.com/metasfresh/metasfresh/pull/14017) webui: When rows are changed consider also adding new ones to the view if it's matching the filter
