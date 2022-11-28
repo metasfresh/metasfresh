@@ -32,7 +32,6 @@ import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.externalreference.ExternalIdentifier;
-import de.metas.organization.OrgId;
 import de.metas.rest_api.v2.bpartner.BPartnerEndpointService;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -44,7 +43,6 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
-import org.compiere.util.Env;
 
 import java.util.List;
 import java.util.Map;
@@ -98,8 +96,6 @@ public class CreateBPartnerV2_StepDef
 				org = orgTable.get(orgIdentifier);
 				assertThat(org).isNotNull();
 			}
-
-			Env.setOrgId(Env.getCtx(), OrgId.ofRepoId(0));
 
 			// persisted value
 			final Optional<JsonResponseComposite> persistedResult = bpartnerEndpointService.retrieveBPartner(org != null
