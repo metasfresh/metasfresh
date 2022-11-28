@@ -63,7 +63,6 @@ Feature: create multiple production candidates
   resulting in a second manufacturing candidate to supply the additional demand.
   Also validate that PP_Order_Candidate is marked as 'processed' after PP_Order is created.
 
-    Given metasfresh initially has no MD_Candidate data
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  |
       | o_1        | true    | endcustomer_2            | 2021-04-17  | 2021-04-16T21:00:00Z |
