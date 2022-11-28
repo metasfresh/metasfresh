@@ -147,4 +147,7 @@ public class ExternalSystemConstants
 
 	public static final String PARAM_FEEDBACK_RESOURCE_URL = "FeedbackResourceURL";
 	public static final String PARAM_FEEDBACK_RESOURCE_AUTH_TOKEN = "FeedbackResourceAuthToken";
+
+	public static final String PARAM_PRODUCT_TYPE_MAPPINGS = "ProductTypeMappings";
+	public static final String PARAM_PRODUCT_CATEGORY_MAPPINGS = "ProductCategoryMappings";
 }

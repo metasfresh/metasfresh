@@ -239,6 +239,7 @@ public class JsonRetrieverService
 			.put(BPartnerLocation.HANDOVER_LOCATION, JsonResponseLocation.HANDOVER_LOCATION)
 			.put(BPartnerLocation.REMIT_TO, JsonResponseLocation.REMIT_TO)
 			.put(BPartnerLocation.REPLICATION_LOOKUP_DEFAULT, JsonResponseLocation.REPLICATION_LOOKUP_DEFAULT)
+			.put(BPartnerLocation.VAT_TAX_ID, JsonResponseLocation.VAT_ID)
 			.build();
 
 	private final IBPartnerDAO bpartnersRepo = Services.get(IBPartnerDAO.class);
@@ -574,6 +575,7 @@ public class JsonRetrieverService
 					.ephemeral(location.isEphemeral())
 					.phone(location.getPhone())
 					.email(location.getEmail())
+					.vatId(location.getVatTaxId())
 					.build();
 		}
 		catch (final RuntimeException rte)

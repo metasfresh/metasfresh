@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-sap-file-import
+ * de.metas.externalsystem
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,31 +20,26 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.sap.model.product;
+package de.metas.externalsystem.producttype;
 
-import lombok.Getter;
-import org.apache.camel.dataformat.bindy.annotation.CsvRecord;
-import org.apache.camel.dataformat.bindy.annotation.DataField;
+import de.metas.externalsystem.ExternalSystemParentConfigId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
-@CsvRecord(separator = "	", skipField =true)
-@Getter
-public class ProductRow
+@Value
+@Builder
+public class ProductTypeExternalMapping
 {
-	@DataField(pos = 1)
-	private String materialCode;
+	@NonNull
+	ProductTypeExternalMappingId productTypeExternalMappingId;
 
-	@DataField(pos = 3)
-	private String sectionCode;
+	@NonNull
+	String externalValue;
 
-	@DataField(pos = 4)
-	private String name;
+	@NonNull
+	String value;
 
-	@DataField(pos = 5)
-	private String uom;
-
-	@DataField(pos = 13)
-	private String materialType;
-
-	@DataField(pos = 17)
-	private String materialGroup;
+	@NonNull
+	ExternalSystemParentConfigId externalSystemParentConfigId;
 }

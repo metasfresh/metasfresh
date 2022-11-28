@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-sap-file-import
+ * de.metas.externalreference
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,31 +20,29 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.sap.model.product;
+package de.metas.externalreference;
 
-import lombok.Getter;
-import org.apache.camel.dataformat.bindy.annotation.CsvRecord;
-import org.apache.camel.dataformat.bindy.annotation.DataField;
+import de.metas.util.lang.RepoIdAware;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
 
-@CsvRecord(separator = "	", skipField =true)
-@Getter
-public class ProductRow
+import java.util.Set;
+import java.util.function.Function;
+
+@Value
+@Builder
+public class ByTypeAndSystemConfigIdQuery
 {
-	@DataField(pos = 1)
-	private String materialCode;
+	@NonNull
+	Integer externalSystemParentConfigId;
 
-	@DataField(pos = 3)
-	private String sectionCode;
+	@NonNull
+	Set<IExternalReferenceType> externalReferenceTypeSet;
 
-	@DataField(pos = 4)
-	private String name;
-
-	@DataField(pos = 5)
-	private String uom;
-
-	@DataField(pos = 13)
-	private String materialType;
-
-	@DataField(pos = 17)
-	private String materialGroup;
+	@NonNull
+	public <T extends RepoIdAware> T getExternalSystemParentConfigId(@NonNull final Function<Integer, T> idMapper)
+	{
+		return idMapper.apply(externalSystemParentConfigId);
+	}
 }
