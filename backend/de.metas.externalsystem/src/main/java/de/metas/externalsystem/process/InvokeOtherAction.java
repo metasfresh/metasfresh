@@ -30,6 +30,7 @@ import de.metas.externalsystem.IExternalSystemChildConfigId;
 import de.metas.externalsystem.other.ExternalSystemOtherConfig;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
 import de.metas.process.IProcessPreconditionsContext;
+import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
 import lombok.NonNull;
 import org.compiere.util.TimeUtil;
@@ -39,6 +40,10 @@ import java.util.Map;
 
 public class InvokeOtherAction extends InvokeExternalSystemProcess
 {
+	private static final String PARAM_AUFTRAG_ID = "AUFTRAG_ID";
+	@Param(parameterName = PARAM_AUFTRAG_ID)
+	private String auftragId;
+
 	@Override
 	protected IExternalSystemChildConfigId getExternalChildConfigId()
 	{
