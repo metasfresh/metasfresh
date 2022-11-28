@@ -71,6 +71,11 @@ public class BPartnerLocation
 	public static final String EPHEMERAL = "ephemeral";
 	public static final String PHONE = "phone";
 	public static final String EMAIL = "email";
+	public static final String VISITORS_ADDRESS = "visitorsAddress";
+	public static final String HANDOVER_LOCATION = "handoverLocation";
+	public static final String REMIT_TO = "remitTo";
+	public static final String REPLICATION_LOOKUP_DEFAULT = "replicationLookupDefault";
+	public static final String VAT_TAX_ID = "vatTaxId";
 
 	@Nullable
 	private BPartnerLocationId id;
@@ -142,10 +147,13 @@ public class BPartnerLocation
 
 	@Nullable final String setupPlaceNo;
 
-	final boolean remitTo;
-	final boolean handOverLocation;
-	final boolean replicationLookupDefault;
-	final boolean visitorsAddress;
+	@Nullable
+	private String vatTaxId;
+
+	final private boolean remitTo;
+	final private boolean handOverLocation;
+	final private boolean replicationLookupDefault;
+	final private boolean visitorsAddress;
 
 	/**
 	 * Can be set in order to identify this label independently of its "real" properties. Won't be saved by the repo.
@@ -186,6 +194,7 @@ public class BPartnerLocation
 			@Nullable final String mobile,
 			@Nullable final String fax,
 			@Nullable final String setupPlaceNo,
+			@Nullable final String vatTaxId,
 			@Nullable final Boolean remitTo,
 			@Nullable final Boolean handOverLocation,
 			@Nullable final Boolean replicationLookupDefault,
@@ -229,6 +238,7 @@ public class BPartnerLocation
 		this.email = email;
 
 		this.setupPlaceNo = setupPlaceNo;
+		this.vatTaxId = vatTaxId;
 
 		this.handOverLocation = handOverLocation != null ? handOverLocation : false;
 

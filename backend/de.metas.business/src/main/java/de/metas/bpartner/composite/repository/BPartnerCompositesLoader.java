@@ -380,7 +380,13 @@ final class BPartnerCompositesLoader
 				.ephemeral(bPartnerLocationRecord.isEphemeral())
 				.phone(trimBlankToNull(bPartnerLocationRecord.getPhone()))
 				.email(trimBlankToNull(bPartnerLocationRecord.getEMail()))
+				.visitorsAddress(bPartnerLocationRecord.isVisitorsAddress())
+				.handOverLocation(bPartnerLocationRecord.isHandOverLocation())
+				.remitTo(bPartnerLocationRecord.isRemitTo())
+				.replicationLookupDefault(bPartnerLocationRecord.isReplicationLookupDefault())
+				.vatTaxId(trimBlankToNull(bPartnerLocationRecord.getVATaxID()))
 				.build();
+
 
 		bpartnerLocation.setFromAddress(address);
 

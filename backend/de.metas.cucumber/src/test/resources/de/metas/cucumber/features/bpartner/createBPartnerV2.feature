@@ -27,7 +27,18 @@ Feature: create or update BPartner v2
                "language":"de",
                "url":null,
                "group":"test-group",
-               "vatId":null
+               "vatId": "vatId_BPartner001",
+               "sectionCodeValue":"ALBERTA_001_sectionCode",
+               "description":"ALBERTA BPartner Description",
+               "deliveryRule":"Availability",
+               "deliveryViaRule":"Shipper",
+               "storageWarehouse": true,
+               "customerPaymentTermIdentifier": "val-10 Tage 1 %",
+               "vendorPaymentTermIdentifier": "val-10 Tage 4%",
+               "incotermsCustomerValue":"DAF",
+               "incotermsVendorValue":"DDU",
+               "paymentRule":"OnCredit",
+               "paymentRulePO":"Cash"
             },
             "locations":{
                "requestItems":[
@@ -42,7 +53,11 @@ Feature: create or update BPartner v2
                         "city":null,
                         "countryCode":"DE",
                         "gln":null,
-                        "postal":null
+                        "postal":null,
+                        "handoverLocation":true,
+                        "remitTo":false,
+                        "replicationLookupDefault":false,
+                        "vatId": null
                      }
                   },
                   {
@@ -56,7 +71,8 @@ Feature: create or update BPartner v2
                         "city":"test_city",
                         "countryCode":"DE",
                         "gln":null,
-                        "postal":null
+                        "postal":null,
+                        "vatId": "vatId_Location_l22"
                      }
                   }
                ]
@@ -127,6 +143,40 @@ Feature: create or update BPartner v2
                "url":"url_updated",
                "group":"test-group",
                "vatId":null
+            },
+            "locations":{
+               "requestItems":[
+                  {
+                     "locationIdentifier":"gln-l11",
+                     "isReadOnlyInMetasfresh": false,
+                     "location":{
+                        "address1":null,
+                        "address2":"test_address2",
+                        "poBox":"test_poBox",
+                        "district":null,
+                        "region":"test_region",
+                        "city":"test_city",
+                        "countryCode":"DE",
+                        "gln":null,
+                        "postal":null,
+                        "vatId": null
+                     }
+                  }
+               ]
+            },
+            "contacts":{
+               "requestItems":[
+                  {
+                     "contactIdentifier":"ext-ALBERTA-c11",
+                     "contact":{
+                        "code":"c11",
+                        "name":"test_name_c11",
+                        "email":"test_email",
+                        "fax":"fax",
+                        "invoiceEmailEnabled" : false
+                     }
+                  }
+               ]
             }
          }
       }
@@ -140,6 +190,14 @@ Feature: create or update BPartner v2
     Then verify that bPartner was updated for externalIdentifier
       | C_BPartner_ID.Identifier | externalIdentifier | OPT.Code          | Name              | OPT.CompanyName | OPT.ParentId | OPT.Phone | OPT.Language | OPT.Url     | OPT.Group  | OPT.VatId |
       | created_bpartner         | ext-ALBERTA-001    | test_code_updated | test_name_updated | test_company    | null         | null      | de           | url_updated | test-group | null      |
+    And verify that location was created for bpartner
+      | bpartnerIdentifier | locationIdentifier | OPT.Address1 | OPT.Address2  | OPT.PoBox  | OPT.District | OPT.Region  | OPT.City  | CountryCode | OPT.Gln | OPT.Postal | OPT.VATaxId |
+      | ext-ALBERTA-001    | gln-l11            | null         | test_address2 | test_poBox | null         | test_region | test_city | DE          | null    | null       | null        |
+    And verify that S_ExternalReference was created
+      | ExternalSystem | Type             | ExternalReference | ExternalReferenceURL         | OPT.ExternalSystem_Config_ID | OPT.IsReadOnlyInMetasfresh |
+      | ALBERTA        | BPartner         | 001               | www.ExternalReferenceURL.com | 540000                       | true                       |
+      | ALBERTA        | BPartnerLocation | l22               |                              | 540000                       | false                      |
+      | ALBERTA        | UserID           | c11               |                              | 540000                       | true                       |
 
   Scenario: Update a BPartner contact record
     When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
@@ -271,7 +329,7 @@ Feature: create or update BPartner v2
               "accountStreet": "test-accountStreet_1",
               "accountZip": "test-accountZip_1",
               "accountCity": "test-accountCity_1",
-              "accountCountry": "test-accountCountry_1" 
+              "accountCountry": "test-accountCountry_1"
             },
             {
               "iban": "DE54500105178721351673",

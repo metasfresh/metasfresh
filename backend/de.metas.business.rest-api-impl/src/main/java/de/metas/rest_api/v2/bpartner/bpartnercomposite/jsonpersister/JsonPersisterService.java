@@ -335,11 +335,11 @@ public class JsonPersisterService
 			bpartnerComposite.getContacts().add(contact);
 			syncOutcome = SyncOutcome.CREATED;
 		}
-		
+
 		contact.addHandle(contactIdentifier.getRawValue()); // always add the handle; we'll need it later, even if the contact existed and was not updated
-		
+
 		syncJsonToContact(jsonContact, contact);
-		
+
 		bpartnerCompositeRepository.save(bpartnerComposite, true);
 
 		final Optional<BPartnerContact> persistedContact = bpartnerComposite.extractContactByHandle(contactIdentifier.getRawValue());
@@ -960,6 +960,114 @@ public class JsonPersisterService
 		if (jsonBPartner.isMemoIsSet())
 		{
 			bpartner.setMemo(jsonBPartner.getMemo());
+		}
+
+		if (jsonBPartner.isSectionCodeValueSet())
+		{
+			final SectionCodeId sectionCodeId = Optional.ofNullable(jsonBPartner.getSectionCodeValue())
+					.filter(Check::isNotBlank)
+					.map(StringUtils::trim)
+					.map(code -> sectionCodeService.getSectionCodeIdByValue(orgId, code))
+					.orElse(null);
+
+			bpartner.setSectionCodeId(sectionCodeId);
+		}
+
+		if (jsonBPartner.isDescriptionSet())
+		{
+			bpartner.setDescription(StringUtils.trim(jsonBPartner.getDescription()));
+		}
+
+		if (jsonBPartner.isDeliveryRuleSet())
+		{
+			bpartner.setDeliveryRule(Optional.ofNullable(jsonBPartner.getDeliveryRule())
+											 .map(ValueMappingHelper::getDeliveryRule)
+											 .orElse(null));
+		}
+
+		if (jsonBPartner.isDeliveryViaRuleSet())
+		{
+			bpartner.setDeliveryViaRule(Optional.ofNullable(jsonBPartner.getDeliveryViaRule())
+												.map(ValueMappingHelper::getDeliveryViaRule)
+												.orElse(null));
+		}
+
+		if (jsonBPartner.isStorageWarehouseSet())
+		{
+			bpartner.setStorageWarehouse(Boolean.TRUE.equals(jsonBPartner.getStorageWarehouse()));
+		}
+
+		if (jsonBPartner.isIncotermsCustomerValueSet())
+		{
+			final IncotermsId incotermsCustomerId = Optional.ofNullable(jsonBPartner.getIncotermsCustomerValue())
+					.filter(Check::isNotBlank)
+					.map(StringUtils::trim)
+					.map(incotermsRepository::getIncotermsByValue)
+					.map(Incoterms::getIncotermsId)
+					.orElse(null);
+
+			bpartner.setIncotermsCustomerId(incotermsCustomerId);
+		}
+
+		if (jsonBPartner.isIncotermsVendorValueSet())
+		{
+			final IncotermsId incotermsVendorId = Optional.ofNullable(jsonBPartner.getIncotermsVendorValue())
+					.filter(Check::isNotBlank)
+					.map(StringUtils::trim)
+					.map(incotermsRepository::getIncotermsByValue)
+					.map(Incoterms::getIncotermsId)
+					.orElse(null);
+
+			bpartner.setIncotermsVendorId(incotermsVendorId);
+		}
+
+		if (jsonBPartner.isCustomerPaymentTermIdentifierSet())
+		{
+			final PaymentTermId customerPaymentTermId = Optional.ofNullable(jsonBPartner.getCustomerPaymentTermIdentifier())
+					.filter(Check::isNotBlank)
+					.map(StringUtils::trim)
+					.map(ExternalIdentifier::of)
+					.map(paymentIdentifier -> jsonRetrieverService.getPaymentTermId(paymentIdentifier, orgId))
+					.orElse(null);
+
+			bpartner.setCustomerPaymentTermId(customerPaymentTermId);
+		}
+
+		if (jsonBPartner.isVendorPaymentTermIdentifierSet())
+		{
+			final PaymentTermId vendorPaymentTermId = Optional.ofNullable(jsonBPartner.getVendorPaymentTermIdentifier())
+					.filter(Check::isNotBlank)
+					.map(StringUtils::trim)
+					.map(ExternalIdentifier::of)
+					.map(paymentIdentifier -> jsonRetrieverService.getPaymentTermId(paymentIdentifier, orgId))
+					.orElse(null);
+
+			bpartner.setVendorPaymentTermId(vendorPaymentTermId);
+		}
+
+		if (jsonBPartner.isParentIdentifierSet())
+		{
+			final BPartnerId parentBPartnerId = Optional.ofNullable(StringUtils.trim(jsonBPartner.getParentIdentifier()))
+					.filter(Check::isNotBlank)
+					.map(ExternalIdentifier::of)
+					.flatMap(parentIdentifier -> jsonRetrieverService.resolveBPartnerExternalIdentifier(parentIdentifier, orgId))
+					.orElse(null);
+
+			bpartner.setParentId(parentBPartnerId);
+		}
+
+		if (jsonBPartner.isPaymentRuleSet())
+		{
+			bpartner.setPaymentRule(Optional.ofNullable(jsonBPartner.getPaymentRule())
+											.map(ValueMappingHelper::getPaymentRule)
+											.orElse(null));
+		}
+
+		if (jsonBPartner.isPaymentRulePOSet())
+		{
+			bpartner.setPaymentRulePO(Optional.ofNullable(jsonBPartner.getPaymentRulePO())
+											  .map(ValueMappingHelper::getPaymentRule)
+											  .orElse(null));
 		}
 
 		return BooleanWithReason.TRUE;
@@ -1747,6 +1855,32 @@ public class JsonPersisterService
 		if (jsonBPartnerLocation.isPhoneSet())
 		{
 			location.setPhone(jsonBPartnerLocation.getPhone());
+		}
+
+		if (jsonBPartnerLocation.isVisitorsAddressSet())
+		{
+			location.setVisitorsAddress(Boolean.TRUE.equals(jsonBPartnerLocation.getVisitorsAddress()));
+		}
+
+		if (jsonBPartnerLocation.isHandoverLocationSet())
+		{
+			location.setHandOverLocation(Boolean.TRUE.equals(jsonBPartnerLocation.getHandoverLocation()));
+		}
+
+		if (jsonBPartnerLocation.isRemitToAddressSet())
+		{
+			location.setRemitTo(Boolean.TRUE.equals(jsonBPartnerLocation.getRemitTo()));
+		}
+
+		if (jsonBPartnerLocation.isReplicationLookupDefaultSet())
+		{
+			location.setReplicationLookupDefault(Boolean.TRUE.equals(jsonBPartnerLocation.getReplicationLookupDefault()));
+		}
+
+		// VAT ID
+		if (jsonBPartnerLocation.isVatIdSet())
+		{
+			location.setVatTaxId(StringUtils.trim(jsonBPartnerLocation.getVatId()));
 		}
 
 		final BPartnerLocationType locationType = syncJsonToLocationType(jsonBPartnerLocation);

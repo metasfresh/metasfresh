@@ -224,6 +224,10 @@ public class JsonRetrieverService
 			.put(BPartnerLocationType.SHIP_TO_DEFAULT, JsonResponseLocation.SHIP_TO_DEFAULT)
 			.put(BPartnerLocation.EPHEMERAL, JsonResponseLocation.EPHEMERAL)
 			.put(BPartnerLocationType.VISITORS_ADDRESS, JsonResponseLocation.VISITORS_ADDRESS)
+			.put(BPartnerLocation.HANDOVER_LOCATION, JsonResponseLocation.HANDOVER_LOCATION)
+			.put(BPartnerLocation.REMIT_TO, JsonResponseLocation.REMIT_TO)
+			.put(BPartnerLocation.REPLICATION_LOOKUP_DEFAULT, JsonResponseLocation.REPLICATION_LOOKUP_DEFAULT)
+			.put(BPartnerLocation.VAT_TAX_ID, JsonResponseLocation.VAT_ID)
 			.build();
 
 	/**
@@ -556,6 +560,7 @@ public class JsonRetrieverService
 					.ephemeral(location.isEphemeral())
 					.phone(location.getPhone())
 					.email(location.getEmail())
+					.vatId(location.getVatTaxId())
 					.visitorsAddress(locationType.getIsVisitorsAddressOr(false))
 					.build();
 		}

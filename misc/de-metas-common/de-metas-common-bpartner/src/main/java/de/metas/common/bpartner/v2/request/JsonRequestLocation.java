@@ -190,6 +190,34 @@ public class JsonRequestLocation
 	@ApiModelProperty(hidden = true)
 	private boolean visitorsAddressSet;
 
+	@ApiModelProperty(position = 240, //
+			value = "Translates to C_BPartner_Location.IsHandoverLocation")
+	private Boolean handoverLocation;
+
+	@ApiModelProperty(hidden = true)
+	private boolean handoverLocationSet;
+
+	@ApiModelProperty(position = 250, //
+			value = "Translates to C_BPartner_Location.IsRemitTo")
+	private Boolean remitTo;
+
+	@ApiModelProperty(hidden = true)
+	private boolean remitToAddressSet;
+
+	@ApiModelProperty(position = 260, //
+			value = "Translates to C_BPartner_Location.IsReplicationLookupDefault")
+	private Boolean replicationLookupDefault;
+
+	@ApiModelProperty(hidden = true)
+	private boolean replicationLookupDefaultSet;
+
+	@ApiModelProperty(position = 270, //
+			value = "Translates to C_BPartner_Location.VATaxId")
+	private String vatId;
+
+	@ApiModelProperty(hidden = true)
+	private boolean vatIdSet;
+
 	public void setActive(final Boolean active)
 	{
 		this.active = active;
@@ -320,5 +348,29 @@ public class JsonRequestLocation
 	{
 		this.visitorsAddress = visitorsAddress;
 		this.visitorsAddressSet = true;
+	}
+
+	public void setHandoverLocation(final Boolean handoverLocation)
+	{
+		this.handoverLocation = handoverLocation;
+		this.handoverLocationSet = true;
+	}
+
+	public void setRemitTo(final Boolean remitTo)
+	{
+		this.remitTo = remitTo;
+		this.remitToAddressSet = true;
+	}
+
+	public void setReplicationLookupDefault(final Boolean replicationLookupDefault)
+	{
+		this.replicationLookupDefault = replicationLookupDefault;
+		this.replicationLookupDefaultSet = true;
+	}
+
+	public void setVatId(final String vatId)
+	{
+		this.vatId = vatId;
+		this.vatIdSet = true;
 	}
 }
