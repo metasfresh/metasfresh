@@ -1,15 +1,9 @@
 import {
-  getActivityById,
   getLineByIdFromActivity,
   getQtyRejectedReasonsFromActivity,
   getScaleDeviceFromActivity,
   getStepByIdFromLine,
 } from '../../../../../reducers/wfProcesses';
-
-export const computeStepScanPropsFromState = ({ state, wfProcessId, activityId, lineId, stepId }) => {
-  const activity = getActivityById(state, wfProcessId, activityId);
-  return computeStepScanPropsFromActivity({ activity, lineId, stepId });
-};
 
 export const computeStepScanPropsFromActivity = ({ activity, lineId, stepId }) => {
   const line = getLineByIdFromActivity(activity, lineId);
