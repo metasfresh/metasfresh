@@ -489,12 +489,20 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	public OrderBOMLineQuantities getQuantities(@NonNull final I_PP_Order_BOMLine orderBOMLine)
 	{
 		final I_C_UOM uom = getBOMLineUOM(orderBOMLine);
+
+		IssuingToleranceSpec issuingToleranceSpec = extractIssuingToleranceSpec(orderBOMLine).orElse(null);
+		if (issuingToleranceSpec != null)
+		{
+			final UOMConversionContext uomConversionContext = extractUOMConversionContext(orderBOMLine);
+			issuingToleranceSpec = issuingToleranceSpec.convertQty(qty -> uomConversionService.convertQuantityTo(qty, uomConversionContext, uom));
+		}
+
 		return OrderBOMLineQuantities.builder()
 				.qtyRequired(Quantity.of(orderBOMLine.getQtyRequiered(), uom))
 				.qtyRequiredBeforeClose(Quantity.of(orderBOMLine.getQtyBeforeClose(), uom))
 				.qtyIssuedOrReceived(Quantity.of(orderBOMLine.getQtyDelivered(), uom))
 				.qtyIssuedOrReceivedActual(Quantity.of(orderBOMLine.getQtyDeliveredActual(), uom))
-				.issuingToleranceSpec(extractIssuingToleranceSpec(orderBOMLine).orElse(null))
+				.issuingToleranceSpec(issuingToleranceSpec)
 				.qtyReject(Quantity.of(orderBOMLine.getQtyReject(), uom))
 				.qtyScrap(Quantity.of(orderBOMLine.getQtyScrap(), uom))
 				.qtyUsageVariance(Quantity.of(orderBOMLine.getQtyUsageVariance(), uom))

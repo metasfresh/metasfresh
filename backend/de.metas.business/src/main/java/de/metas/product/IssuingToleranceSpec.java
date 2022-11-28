@@ -12,6 +12,7 @@ import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
+import java.util.function.UnaryOperator;
 
 @EqualsAndHashCode(doNotUseGetters = true)
 @ToString(doNotUseGetters = true)
@@ -21,7 +22,7 @@ public final class IssuingToleranceSpec
 	@Nullable private final Percent percent;
 	@Nullable private final Quantity qty;
 
-	@Builder
+	@Builder(toBuilder = true)
 	private IssuingToleranceSpec(
 			@NonNull final IssuingToleranceValueType valueType,
 			@Nullable final Percent percent,
@@ -152,6 +153,24 @@ public final class IssuingToleranceSpec
 		{
 			// shall not happen
 			throw new AdempiereException("Unknown valueType: " + valueType);
+		}
+	}
+
+	public IssuingToleranceSpec convertQty(@NonNull final UnaryOperator<Quantity> qtyConverter)
+	{
+		if (valueType == IssuingToleranceValueType.QUANTITY)
+		{
+			final Quantity qtyConv = qtyConverter.apply(qty);
+			if (qtyConv.equals(qty))
+			{
+				return this;
+			}
+
+			return toBuilder().qty(qtyConv).build();
+		}
+		else
+		{
+			return this;
 		}
 	}
 }
