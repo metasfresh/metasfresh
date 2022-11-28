@@ -50,6 +50,16 @@ import java.math.BigInteger;
 
 import static de.metas.edi.esb.commons.Util.resolveGenericLookup;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
+import static de.metas.edi.esb.commons.Util.resolveGenericLookup;
+
+import java.math.BigDecimal;
+import java.math.BigInteger;
+
+import static de.metas.edi.esb.commons.Util.resolveGenericLookup;
+
 /**
  * Builds {@link XLSImpCOLCandType}s.
  *
