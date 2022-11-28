@@ -823,4 +823,10 @@ public final class Quantity implements Comparable<Quantity>
 	{
 		return UOMType.ofNullableCodeOrOther(uom.getUOMType()).isWeight();
 	}
+
+	public Percent percentOf(@NonNull Quantity base)
+	{
+		assertSameUOM(this, base);
+		return Percent.of(toBigDecimal(), base.toBigDecimal());
+	}
 }

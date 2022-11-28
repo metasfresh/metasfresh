@@ -208,7 +208,7 @@ public class ManufacturingJobLoaderAndSaver
 				.productName(supportingServices.getProductName(productId))
 				.isWeightable(isWeightable)
 				.qtyToIssue(qtyToIssue)
-				.qtyToIssueTolerance(PPOrderBOMBL.extractQtyToIssueTolerance(orderBOMLine))
+				.issuingToleranceSpec(PPOrderBOMBL.extractIssuingToleranceSpec(orderBOMLine).orElse(null))
 				//.qtyIssued(bomLineQuantities.getQtyIssuedOrReceived())
 				.steps(getIssueSchedules(ppOrderId)
 						.get(ppOrderBOMLineId)
