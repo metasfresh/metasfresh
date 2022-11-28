@@ -12,6 +12,9 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13604](https://github.com/metasfresh/metasfresh/issues/13604) Add ExternalHeaderId to invoiceCand header aggregation key
+  * [#13561](https://github.com/metasfresh/metasfresh/issues/13561) Approval for invoicing: add description to field and process
+  * [#13631](https://github.com/metasfresh/metasfresh/issues/13631) InEffect invoice candidates testId
   * [#13942](https://github.com/metasfresh/metasfresh/issues/13942) Delivery Planning
   * [#13998](https://github.com/metasfresh/metasfresh/issues/13998) Sub-Task No 3: Test & Fix Purchase candidate interaction with MD_Cockpit
   * [#13937](https://github.com/metasfresh/metasfresh/issues/13937) Add source sub configs for ExternalSystem_Config_SAP 
