@@ -875,7 +875,7 @@ public class ProductRestService
 	}
 
 	@NonNull
-	private String getType(final @NonNull JsonRequestProduct jsonRequestProductUpsertItem)
+	private static String getType(final @NonNull JsonRequestProduct jsonRequestProductUpsertItem)
 	{
 		final String productType;
 		switch (jsonRequestProductUpsertItem.getType())
@@ -885,6 +885,21 @@ public class ProductRestService
 				break;
 			case ITEM:
 				productType = X_M_Product.PRODUCTTYPE_Item;
+				break;
+			case RESOURCE:
+				productType = X_M_Product.PRODUCTTYPE_Resource;
+				break;
+			case ONLINE:
+				productType = X_M_Product.PRODUCTTYPE_Online;
+				break;
+			case FREIGHT_COST:
+				productType = X_M_Product.PRODUCTTYPE_FreightCost;
+				break;
+			case EXPENSE_TYPE:
+				productType = X_M_Product.PRODUCTTYPE_ExpenseType;
+				break;
+			case NAHRUNG:
+				productType = X_M_Product.PRODUCTTYPE_Nahrung;
 				break;
 			default:
 				throw Check.fail("Unexpected type={}; jsonRequestProductUpsertItem={}", jsonRequestProductUpsertItem.getType(), jsonRequestProductUpsertItem);

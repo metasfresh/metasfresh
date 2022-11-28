@@ -122,4 +122,7 @@ public class ExternalSystemConstants
 
 	public static final String HEADER_PINSTANCE_ID = "x-adpinstanceid";
 	public static final String HEADER_EXTERNALSYSTEM_CONFIG_ID = "x-externalsystemconfigid";
+
+	public static final String PARAM_PRODUCT_TYPE_MAPPINGS = "ProductTypeMappings";
+	public static final String PARAM_PRODUCT_CATEGORY_MAPPINGS = "ProductCategoryMappings";
 }

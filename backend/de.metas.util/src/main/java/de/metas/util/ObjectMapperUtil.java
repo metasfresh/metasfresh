@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-sap-file-import
+ * de.metas.util
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,31 +20,32 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.sap.model.product;
+package de.metas.util;
 
-import lombok.Getter;
-import org.apache.camel.dataformat.bindy.annotation.CsvRecord;
-import org.apache.camel.dataformat.bindy.annotation.DataField;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import de.metas.JsonObjectMapperHolder;
+import lombok.experimental.UtilityClass;
 
-@CsvRecord(separator = "	", skipField =true)
-@Getter
-public class ProductRow
+import javax.annotation.Nullable;
+
+@UtilityClass
+public class ObjectMapperUtil
 {
-	@DataField(pos = 1)
-	private String materialCode;
+	@Nullable
+	public static String writeAsStringUnchecked(@Nullable final Object object)
+	{
+		try
+		{
+			if (object == null)
+			{
+				return null;
+			}
 
-	@DataField(pos = 3)
-	private String sectionCode;
-
-	@DataField(pos = 4)
-	private String name;
-
-	@DataField(pos = 5)
-	private String uom;
-
-	@DataField(pos = 13)
-	private String materialType;
-
-	@DataField(pos = 17)
-	private String materialGroup;
+			return JsonObjectMapperHolder.sharedJsonObjectMapper().writeValueAsString(object);
+		}
+		catch (final JsonProcessingException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
 }

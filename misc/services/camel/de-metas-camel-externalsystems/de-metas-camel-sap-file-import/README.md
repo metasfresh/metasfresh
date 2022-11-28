@@ -89,7 +89,7 @@ ProductRow.sectionCode | `m_sectioncode_id`                    | N              
 ---- | `isstocked`                           | Y               | JsonRequestProduct.stocked                     | always set to `true`                                               |
 ---- | `discontinued`                        | N               | JsonRequestProduct.discontinued                | always set to `false`                                              |
 ProductRow.materialGroup | `producttype`                         | Y               | JsonRequestProduct.type                        | always set to JsonRequestProduct.Type.ITEM                         |
-ProductRow.materialCategory | `m_product_category_id`               | Y               | JsonRequestProduct.productCategoryIdentifier   | never set, but will be STANDARD due to default value in metasfresh |
+ProductRow.materialType | `m_product_category_id`               | Y               | JsonRequestProduct.productCategoryIdentifier   | never set, but will be STANDARD due to default value in metasfresh |
 --- | ----                                  | N               | JsonRequestProductUpsert.syncAdvise            | default value CREATE_OR_MERGE                                      |
 ProductRow.materialCode | `S_ExternalReference.externalReference` | Y               | JsonRequestProductUpsertItem.productIdentifier | ext-SAP-MaterialCode                                               |
 --- | `S_ExternalReference.isreadonlyinmetasfresh` | Y               | JsonRequestBPartnerUpsertItem.isReadOnlyInMetasfresh                                                                        | always set to `true`                                               |
