@@ -213,7 +213,9 @@
                   "remitTo":false,
                   "remitToAddressSet":true,
                   "replicationLookupDefault":false,
-                  "replicationLookupDefaultSet":true
+                  "replicationLookupDefaultSet":true,
+                  "vatId":"DE111111111",
+                  "vatIdSet":true
                 }
               },
               {
@@ -271,7 +273,9 @@
                   "remitTo":false,
                   "remitToAddressSet":true,
                   "replicationLookupDefault":false,
-                  "replicationLookupDefaultSet":true
+                  "replicationLookupDefaultSet":true,
+                  "vatId":"DE111111111",
+                  "vatIdSet":true
                 }
               },
               {
@@ -329,7 +333,9 @@
                   "remitTo":false,
                   "remitToAddressSet":true,
                   "replicationLookupDefault":false,
-                  "replicationLookupDefaultSet":true
+                  "replicationLookupDefaultSet":true,
+                  "vatId":"DE111111111",
+                  "vatIdSet":true
                 }
               }
             ],
@@ -470,7 +476,9 @@
                   "remitTo":false,
                   "remitToAddressSet":true,
                   "replicationLookupDefault":false,
-                  "replicationLookupDefaultSet":true
+                  "replicationLookupDefaultSet":true,
+                  "vatId":"DE111111111",
+                  "vatIdSet":true
                 }
               }
             ],
