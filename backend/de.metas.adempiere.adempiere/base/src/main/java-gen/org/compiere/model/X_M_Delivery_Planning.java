@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_Delivery_Planning, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -54787385L;
+	private static final long serialVersionUID = -1796724276L;
 
     /** Standard Constructor */
     public X_M_Delivery_Planning (final Properties ctx, final int M_Delivery_Planning_ID, @Nullable final String trxName)
@@ -289,18 +289,6 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	}
 
 	@Override
-	public void setForwarder (final @Nullable java.lang.String Forwarder)
-	{
-		set_Value (COLUMNNAME_Forwarder, Forwarder);
-	}
-
-	@Override
-	public java.lang.String getForwarder() 
-	{
-		return get_ValueAsString(COLUMNNAME_Forwarder);
-	}
-
-	@Override
 	public void setGrade (final @Nullable java.lang.String Grade)
 	{
 		throw new IllegalArgumentException ("Grade is virtual column");	}
@@ -361,7 +349,7 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 
 	/** 
 	 * MeansOfTransportation AD_Reference_ID=541691
-	 * Reference name: Means of Trasportation
+	 * Reference name: Means of Trasportation Type
 	 */
 	public static final int MEANSOFTRANSPORTATION_AD_Reference_ID=541691;
 	/** Truck = Truck */
@@ -382,6 +370,33 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	public java.lang.String getMeansOfTransportation() 
 	{
 		return get_ValueAsString(COLUMNNAME_MeansOfTransportation);
+	}
+
+	@Override
+	public org.compiere.model.I_M_Forwarder getM_Forwarder()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_Forwarder_ID, org.compiere.model.I_M_Forwarder.class);
+	}
+
+	@Override
+	public void setM_Forwarder(final org.compiere.model.I_M_Forwarder M_Forwarder)
+	{
+		set_ValueFromPO(COLUMNNAME_M_Forwarder_ID, org.compiere.model.I_M_Forwarder.class, M_Forwarder);
+	}
+
+	@Override
+	public void setM_Forwarder_ID (final int M_Forwarder_ID)
+	{
+		if (M_Forwarder_ID < 1) 
+			set_Value (COLUMNNAME_M_Forwarder_ID, null);
+		else 
+			set_Value (COLUMNNAME_M_Forwarder_ID, M_Forwarder_ID);
+	}
+
+	@Override
+	public int getM_Forwarder_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_M_Forwarder_ID);
 	}
 
 	@Override
@@ -534,7 +549,7 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	@Override
 	public void setPlannedDeliveryDate (final @Nullable java.sql.Timestamp PlannedDeliveryDate)
 	{
-		set_Value (COLUMNNAME_PlannedDeliveryDate, PlannedDeliveryDate);
+		set_ValueNoCheck (COLUMNNAME_PlannedDeliveryDate, PlannedDeliveryDate);
 	}
 
 	@Override
