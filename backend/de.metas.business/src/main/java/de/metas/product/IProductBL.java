@@ -38,10 +38,6 @@ import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
-import java.util.Optional;
-import java.util.Properties;
-import java.util.Set;
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Properties;
