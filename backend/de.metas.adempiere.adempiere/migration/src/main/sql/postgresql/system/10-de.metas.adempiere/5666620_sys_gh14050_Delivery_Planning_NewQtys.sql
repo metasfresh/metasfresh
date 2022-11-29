@@ -241,3 +241,13 @@ UPDATE M_Delivery_Planning SET ActualLoadQty=0 WHERE ActualLoadQty IS NULL
 /* DDL */ SELECT public.db_alter_table('M_Delivery_Planning','ALTER TABLE public.M_Delivery_Planning ADD COLUMN ActualDischargeQuantity NUMERIC DEFAULT 0 NOT NULL')
 ;
 
+
+
+-- UI Element: Delivery Planning(541632,D) -> Delivery Planning(546674,D) -> main -> 20 -> qtys.UOM
+-- Column: M_Delivery_Planning.C_UOM_ID
+-- 2022-11-29T09:56:42.681Z
+UPDATE AD_UI_Element SET SeqNo=100,Updated=TO_TIMESTAMP('2022-11-29 11:56:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613566
+;
+
+
+
