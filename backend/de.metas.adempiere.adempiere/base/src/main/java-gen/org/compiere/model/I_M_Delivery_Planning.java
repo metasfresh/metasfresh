@@ -60,6 +60,27 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_ActualDeliveryDate = "ActualDeliveryDate";
 
 	/**
+	 * Set Actual Discharge Quantity.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setActualDischargeQuantity (BigDecimal ActualDischargeQuantity);
+
+	/**
+	 * Get Actual Discharge Quantity.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getActualDischargeQuantity();
+
+	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_ActualDischargeQuantity = new ModelColumn<>(I_M_Delivery_Planning.class, "ActualDischargeQuantity", null);
+	String COLUMNNAME_ActualDischargeQuantity = "ActualDischargeQuantity";
+
+	/**
 	 * Set Actual Loading Date.
 	 *
 	 * <br>Type: Date
@@ -81,7 +102,7 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_ActualLoadingDate = "ActualLoadingDate";
 
 	/**
-	 * Set Actual Load Qty.
+	 * Set Actual Loaded Quantity.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -90,7 +111,7 @@ public interface I_M_Delivery_Planning
 	void setActualLoadQty (BigDecimal ActualLoadQty);
 
 	/**
-	 * Get Actual Load Qty.
+	 * Get Actual Loaded Quantity.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: true
@@ -729,7 +750,7 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_OrderStatus = "OrderStatus";
 
 	/**
-	 * Set Country Of Origin.
+	 * Set Country of Origin.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -740,7 +761,7 @@ public interface I_M_Delivery_Planning
 	void setOriginCountry (@Nullable java.lang.String OriginCountry);
 
 	/**
-	 * Get Country Of Origin.
+	 * Get Country of Origin.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: false
@@ -773,6 +794,48 @@ public interface I_M_Delivery_Planning
 
 	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_PlannedDeliveryDate = new ModelColumn<>(I_M_Delivery_Planning.class, "PlannedDeliveryDate", null);
 	String COLUMNNAME_PlannedDeliveryDate = "PlannedDeliveryDate";
+
+	/**
+	 * Set Planned Discharge Quantity.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPlannedDischargeQuantity (BigDecimal PlannedDischargeQuantity);
+
+	/**
+	 * Get Planned Discharge Quantity.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getPlannedDischargeQuantity();
+
+	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_PlannedDischargeQuantity = new ModelColumn<>(I_M_Delivery_Planning.class, "PlannedDischargeQuantity", null);
+	String COLUMNNAME_PlannedDischargeQuantity = "PlannedDischargeQuantity";
+
+	/**
+	 * Set Planned Loaded Quantity.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPlannedLoadedQuantity (BigDecimal PlannedLoadedQuantity);
+
+	/**
+	 * Get Planned Loaded Quantity.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getPlannedLoadedQuantity();
+
+	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_PlannedLoadedQuantity = new ModelColumn<>(I_M_Delivery_Planning.class, "PlannedLoadedQuantity", null);
+	String COLUMNNAME_PlannedLoadedQuantity = "PlannedLoadedQuantity";
 
 	/**
 	 * Set Planned Loading Date.

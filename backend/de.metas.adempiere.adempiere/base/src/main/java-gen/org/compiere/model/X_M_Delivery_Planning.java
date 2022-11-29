@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_Delivery_Planning, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -54787385L;
+	private static final long serialVersionUID = 1069711623L;
 
     /** Standard Constructor */
     public X_M_Delivery_Planning (final Properties ctx, final int M_Delivery_Planning_ID, @Nullable final String trxName)
@@ -58,6 +58,19 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	public java.sql.Timestamp getActualDeliveryDate() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_ActualDeliveryDate);
+	}
+
+	@Override
+	public void setActualDischargeQuantity (final BigDecimal ActualDischargeQuantity)
+	{
+		set_Value (COLUMNNAME_ActualDischargeQuantity, ActualDischargeQuantity);
+	}
+
+	@Override
+	public BigDecimal getActualDischargeQuantity() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ActualDischargeQuantity);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
@@ -534,13 +547,39 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	@Override
 	public void setPlannedDeliveryDate (final @Nullable java.sql.Timestamp PlannedDeliveryDate)
 	{
-		set_Value (COLUMNNAME_PlannedDeliveryDate, PlannedDeliveryDate);
+		set_ValueNoCheck (COLUMNNAME_PlannedDeliveryDate, PlannedDeliveryDate);
 	}
 
 	@Override
 	public java.sql.Timestamp getPlannedDeliveryDate() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_PlannedDeliveryDate);
+	}
+
+	@Override
+	public void setPlannedDischargeQuantity (final BigDecimal PlannedDischargeQuantity)
+	{
+		set_Value (COLUMNNAME_PlannedDischargeQuantity, PlannedDischargeQuantity);
+	}
+
+	@Override
+	public BigDecimal getPlannedDischargeQuantity() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PlannedDischargeQuantity);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setPlannedLoadedQuantity (final BigDecimal PlannedLoadedQuantity)
+	{
+		set_Value (COLUMNNAME_PlannedLoadedQuantity, PlannedLoadedQuantity);
+	}
+
+	@Override
+	public BigDecimal getPlannedLoadedQuantity() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PlannedLoadedQuantity);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override

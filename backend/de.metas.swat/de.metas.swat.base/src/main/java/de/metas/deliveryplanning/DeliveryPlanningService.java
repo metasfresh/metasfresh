@@ -138,6 +138,11 @@ public class DeliveryPlanningService
 				.qtyTotalOpen(Quantity.of(deliveryPlanningRecord.getQtyTotalOpen(), uomToUse))
 				.actualLoadQty(Quantity.of(deliveryPlanningRecord.getActualLoadQty(), uomToUse))
 				.actualDeliveredQty(Quantity.of(deliveryPlanningRecord.getActualDeliveredQty(), uomToUse))
+
+				.plannedLoadedQty(Quantity.of(deliveryPlanningRecord.getPlannedLoadedQuantity(), uomToUse))
+				.plannedDischargeQty(Quantity.of(deliveryPlanningRecord.getPlannedDischargeQuantity(), uomToUse))
+				.actualDischargeQty(Quantity.of(deliveryPlanningRecord.getActualDischargeQuantity(), uomToUse))
+
 				.uom(uomToUse)
 				.plannedLoadingDate(TimeUtil.asInstant(deliveryPlanningRecord.getPlannedLoadingDate()))
 				.actualLoadingDate(TimeUtil.asInstant(deliveryPlanningRecord.getActualLoadingDate()))

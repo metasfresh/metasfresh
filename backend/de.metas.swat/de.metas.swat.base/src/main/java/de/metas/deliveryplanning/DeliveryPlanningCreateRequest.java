@@ -119,6 +119,12 @@ public class DeliveryPlanningCreateRequest
 	@NonNull
 	Quantity actualDeliveredQty;
 
+	@NonNull Quantity plannedLoadedQty;
+
+	@NonNull Quantity plannedDischargeQty;
+
+	@NonNull Quantity actualDischargeQty;
+
 	@Nullable
 	CountryId originCountryId;
 

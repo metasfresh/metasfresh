@@ -83,12 +83,20 @@ public class DeliveryPlanningRepository
 		final Quantity actualDeliveredQty = request.getActualDeliveredQty();
 		final Quantity actualLoadQty = request.getActualLoadQty();
 
+		final Quantity plannedLoadedQty = request.getPlannedLoadedQty();
+		final Quantity plannedDischargeQty = request.getPlannedDischargeQty();
+		final Quantity actualDischargeQty = request.getActualDischargeQty();
+
 		deliveryPlanningRecord.setC_UOM_ID(request.getUom().getC_UOM_ID());
 
 		deliveryPlanningRecord.setQtyOrdered(qtyOrdered.toBigDecimal());
 		deliveryPlanningRecord.setQtyTotalOpen(qtyTotalOpen.toBigDecimal());
 		deliveryPlanningRecord.setActualDeliveredQty( actualDeliveredQty.toBigDecimal());
 		deliveryPlanningRecord.setActualLoadQty(actualLoadQty.toBigDecimal());
+
+		deliveryPlanningRecord.setPlannedLoadedQuantity(plannedLoadedQty.toBigDecimal());
+		deliveryPlanningRecord.setPlannedDischargeQuantity(plannedDischargeQty.toBigDecimal());
+		deliveryPlanningRecord.setActualDischargeQuantity(actualDischargeQty.toBigDecimal());
 
 		deliveryPlanningRecord.setForwarder(request.getForwarder());
 		deliveryPlanningRecord.setWayBillNo(request.getWayBillNo());
