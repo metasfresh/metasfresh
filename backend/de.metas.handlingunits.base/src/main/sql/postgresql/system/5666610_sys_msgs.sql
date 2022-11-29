@@ -51,3 +51,49 @@ UPDATE AD_Message_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2022-11-29 10:0
 UPDATE AD_Message_Trl SET IsTranslated='Y', MsgText='Für die Ausstellung werden keine Produkte der HU benötigt',Updated=TO_TIMESTAMP('2022-11-29 10:09:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545215
 ;
 
+
+
+
+
+
+
+-- Value: de.metas.handlingunits.HUProductsNotMatchingIssuingProducts
+-- 2022-11-29T09:06:43.582Z
+UPDATE AD_Message SET MsgText='Keines der Produkte der HU entspricht den für die Zuteilung erforderlichen Produkten.',Updated=TO_TIMESTAMP('2022-11-29 11:06:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545215
+;
+
+-- Value: de.metas.handlingunits.HUProductsNotMatchingIssuingProducts
+-- 2022-11-29T09:06:48.400Z
+UPDATE AD_Message_Trl SET MsgText='Keines der Produkte der HU entspricht den für die Zuteilung erforderlichen Produkten.',Updated=TO_TIMESTAMP('2022-11-29 11:06:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545215
+;
+
+-- Value: de.metas.handlingunits.HUProductsNotMatchingIssuingProducts
+-- 2022-11-29T09:06:52.607Z
+UPDATE AD_Message_Trl SET MsgText='Keines der Produkte der HU entspricht den für die Zuteilung erforderlichen Produkten.',Updated=TO_TIMESTAMP('2022-11-29 11:06:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545215
+;
+
+-- Value: de.metas.handlingunits.HUProductsNotMatchingIssuingProducts
+-- 2022-11-29T09:07:05.113Z
+UPDATE AD_Message_Trl SET MsgText='None of the HU products match the products needed for issuing.',Updated=TO_TIMESTAMP('2022-11-29 11:07:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545215
+;
+
+-- Value: de.metas.handlingunits.HUIsEmpty
+-- 2022-11-29T09:07:33.986Z
+UPDATE AD_Message SET MsgText='Handling Unit ist leer.',Updated=TO_TIMESTAMP('2022-11-29 11:07:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Message_ID=545214
+;
+
+-- Value: de.metas.handlingunits.HUIsEmpty
+-- 2022-11-29T09:07:40.559Z
+UPDATE AD_Message_Trl SET MsgText='Handling Unit ist leer.',Updated=TO_TIMESTAMP('2022-11-29 11:07:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_CH' AND AD_Message_ID=545214
+;
+
+-- Value: de.metas.handlingunits.HUIsEmpty
+-- 2022-11-29T09:07:45.308Z
+UPDATE AD_Message_Trl SET MsgText='Handling Unit ist leer.',Updated=TO_TIMESTAMP('2022-11-29 11:07:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='de_DE' AND AD_Message_ID=545214
+;
+
+-- Value: de.metas.handlingunits.HUIsEmpty
+-- 2022-11-29T09:07:57.409Z
+UPDATE AD_Message_Trl SET MsgText='Handling Unit is empty.',Updated=TO_TIMESTAMP('2022-11-29 11:07:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Language='en_US' AND AD_Message_ID=545214
+;
+
