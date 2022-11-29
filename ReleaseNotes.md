@@ -176,6 +176,7 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#14003](https://github.com/metasfresh/metasfresh/pull/14003) Fix NPE that happens if IExportProcessor.process throws an exception
   * [#14027](https://github.com/metasfresh/metasfresh/issues/14027) Display SEPA/REVOLUT Export Details
   * [#13906](https://github.com/metasfresh/metasfresh/pull/13906) Delete chat when deleting documents and implement voiding draft orders
   * [#13884](https://github.com/metasfresh/metasfresh/pull/13884) fix jenkins - also allow skipping cucumber tests
