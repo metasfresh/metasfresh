@@ -8,7 +8,6 @@ import de.metas.product.IssuingToleranceSpec;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.collections.CollectionUtils;
-import de.metas.util.lang.Percent;
 import de.metas.workflow.rest_api.model.WFActivityStatus;
 import lombok.Builder;
 import lombok.NonNull;
@@ -92,13 +91,6 @@ public class RawMaterialsIssueLine
 	{
 		return issuingToleranceSpec != null
 				? Optional.of(issuingToleranceSpec.addTo(qtyToIssue))
-				: Optional.empty();
-	}
-
-	public Optional<Percent> getQtyToIssueTolerance()
-	{
-		return issuingToleranceSpec != null
-				? Optional.of(issuingToleranceSpec.percentOf(qtyToIssue))
 				: Optional.empty();
 	}
 

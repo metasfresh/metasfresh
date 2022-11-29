@@ -138,24 +138,6 @@ public final class IssuingToleranceSpec
 		}
 	}
 
-	public Percent percentOf(@NonNull final Quantity qtyBase)
-	{
-		if (valueType == IssuingToleranceValueType.PERCENTAGE)
-		{
-			return getPercent();
-		}
-		else if (valueType == IssuingToleranceValueType.QUANTITY)
-		{
-			final Quantity qty = getQty();
-			return qty.percentOf(qtyBase);
-		}
-		else
-		{
-			// shall not happen
-			throw new AdempiereException("Unknown valueType: " + valueType);
-		}
-	}
-
 	public IssuingToleranceSpec convertQty(@NonNull final UnaryOperator<Quantity> qtyConverter)
 	{
 		if (valueType == IssuingToleranceValueType.QUANTITY)

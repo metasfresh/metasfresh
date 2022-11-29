@@ -2,7 +2,6 @@ package de.metas.manufacturing.workflows_api.activity_handlers.issue.json;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.manufacturing.job.model.RawMaterialsIssueLine;
-import de.metas.util.lang.Percent;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import lombok.Builder;
 import lombok.NonNull;
@@ -27,8 +26,6 @@ public class JsonRawMaterialsIssueLine
 	@NonNull BigDecimal qtyToIssue;
 	@Nullable BigDecimal qtyToIssueMin;
 	@Nullable BigDecimal qtyToIssueMax;
-	@Deprecated
-	@Nullable BigDecimal qtyToIssueTolerancePerc;
 	@Nullable JsonQtyToleranceSpec qtyToIssueTolerance;
 
 	@NonNull BigDecimal qtyIssued;
@@ -46,7 +43,6 @@ public class JsonRawMaterialsIssueLine
 				.qtyToIssue(from.getQtyToIssue().toBigDecimal())
 				.qtyToIssueMin(from.getQtyToIssueMin().map(qty -> qty.toBigDecimal()).orElse(null))
 				.qtyToIssueMax(from.getQtyToIssueMax().map(qty -> qty.toBigDecimal()).orElse(null))
-				.qtyToIssueTolerancePerc(from.getQtyToIssueTolerance().map(Percent::toBigDecimal).orElse(null))
 				.qtyToIssueTolerance(JsonQtyToleranceSpec.ofNullable(from.getIssuingToleranceSpec()))
 				.qtyIssued(from.getQtyIssued().toBigDecimal())
 				.steps(from.getSteps()
