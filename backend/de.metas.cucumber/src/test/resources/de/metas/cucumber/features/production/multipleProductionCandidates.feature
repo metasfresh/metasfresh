@@ -48,9 +48,6 @@ Feature: create multiple production candidates
       | Identifier | PP_Product_BOM_ID.Identifier | M_Product_ID.Identifier | ValidFrom  | QtyBatch |
       | boml_1     | bom_1                        | p_2                     | 2021-04-01 | 10       |
     And the PP_Product_BOM identified by bom_1 is completed
-    And metasfresh contains PP_Product_Plannings
-      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.MaxManufacturedQtyPerOrderDispo | OPT.MaxManufacturedQtyPerOrderDispoUOMCode | OPT.SeqNo |
-      | ppln_1     | p_1                     | bomVersions_1                            | false        | 5                                   | PCE                                        | 10        |
     And metasfresh contains C_BPartners:
       | Identifier    | Name            | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
       | endcustomer_2 | EndcustomerPP_2 | N            | Y              | ps_1                          |
@@ -63,6 +60,9 @@ Feature: create multiple production candidates
   resulting in a second manufacturing candidate to supply the additional demand.
   Also validate that PP_Order_Candidate is marked as 'processed' after PP_Order is created.
 
+    Given metasfresh contains PP_Product_Plannings
+      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
+      | ppln_1     | p_1                     | bomVersions_1                            | false        |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  |
       | o_1        | true    | endcustomer_2            | 2021-04-17  | 2021-04-16T21:00:00Z |
@@ -138,7 +138,11 @@ Feature: create multiple production candidates
   Scenario:  The manufacturing candidate is created for a sales order line and `Generate PP_Order` process is invoked resulting multiple manufacturing orders
   and the candidate remains open as it still has unprocessed quantity and `autoProcessCandidates` parameter is not set.
 
-    Given metasfresh contains C_Orders:
+    Given metasfresh contains PP_Product_Plannings
+      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan |
+      | ppln_1     | p_1                     | bomVersions_1                            | false        |
+
+    And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  |
       | o_2        | true    | endcustomer_2            | 2022-10-10  | 2022-10-10T21:00:00Z |
     And metasfresh contains C_OrderLines:
@@ -191,7 +195,11 @@ Feature: create multiple production candidates
   then `Generate PP_Order`process is invoked enforcing the candidates to be processed
   and both candidates are marked as processed
 
-    Given metasfresh contains C_Orders:
+    Given metasfresh contains PP_Product_Plannings
+      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.MaxManufacturedQtyPerOrderDispo | OPT.MaxManufacturedQtyPerOrderDispoUOMCode | OPT.SeqNo |
+      | ppln_1     | p_1                     | bomVersions_1                            | false        | 10                                  | PCE                                        | 10        |
+
+    And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.PreparationDate  |
       | o_3        | true    | endcustomer_2            | 2022-11-07  | 2022-11-07T21:00:00Z |
     And metasfresh contains C_OrderLines:
@@ -259,7 +267,11 @@ Feature: create multiple production candidates
   _Then PP_Order_Candidate (for P2) with SeqNo = 10 will be manufactured first
   _And PP_Order_Candidate (for P1) with SeqNo = 20  will be manufactured second
 
-    Given metasfresh contains M_Products:
+    Given metasfresh contains PP_Product_Plannings
+      | Identifier | M_Product_ID.Identifier | OPT.PP_Product_BOMVersions_ID.Identifier | IsCreatePlan | OPT.MaxManufacturedQtyPerOrderDispo | OPT.MaxManufacturedQtyPerOrderDispoUOMCode | OPT.SeqNo |
+      | ppln_1     | p_1                     | bomVersions_1                            | false        | 5                                   | PCE                                        | 10        |
+
+    And metasfresh contains M_Products:
       | Identifier  | Name                 | OPT.M_Product_Category_ID.Identifier |
       | product_4   | product_09112022_1   | standard_category                    |
       | component_4 | component_09112022_1 | standard_category                    |

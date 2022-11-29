@@ -6,7 +6,7 @@ Feature: create distribution simulation
     And metasfresh has date and time 2021-04-14T08:00:00+00:00
 
   @from:cucumber
-  @Id:S0171.300	
+  @Id:S0171.300
   Scenario: create distribution simulation
     Given metasfresh contains M_Products:
       | Identifier | Name                            |
@@ -15,8 +15,8 @@ Feature: create distribution simulation
       | Identifier | Name                | Value                | OPT.Description            | OPT.IsActive |
       | ps_1       | pricing_system_name | pricing_system_value | pricing_system_description | true         |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name            | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name | null            | true  | false         | 2              | true         |
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                 | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_S0171_300 | null            | true  | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
       | Identifier | M_PriceList_ID.Identifier | Name        | ValidFrom  |
       | plv_1      | pl_1                      | plv_product | 2022-07-01 |
@@ -60,13 +60,13 @@ Feature: create distribution simulation
     And create and process 'simulated demand' for:
       | C_Order_ID.Identifier | C_OrderLine_ID.Identifier |
       | o_1                   | ol_1                      |
-    And after not more than 30s, the MD_Candidate table has only the following records
+    And after not more than 60s, the MD_Candidate table has only the following records
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise | OPT.simulated |
       | c_1        | DEMAND            | SHIPMENT                      | p_1                     | 2022-07-04T00:00:00Z | -14 | -14                    | true          |
       | c_2        | SUPPLY            | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | 14  | 0                      | true          |
       | c_3        | DEMAND            | DISTRIBUTION                  | p_1                     | 2022-07-04T00:00:00Z | -14 | -14                    | true          |
       | c_4        | SUPPLY            |                               | p_1                     | 2022-07-04T00:00:00Z | 14  | 0                      | true          |
-    And after not more than 30s, DD_OrderLine found for orderLine ol_1
+    And after not more than 60s, DD_OrderLine found for orderLine ol_1
       | Identifier |
       | ddol_1     |
     And delete C_OrderLine identified by ol_1, but keep its id into identifierIds table
