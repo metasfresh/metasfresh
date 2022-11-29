@@ -121,6 +121,8 @@ public interface IProductDAO extends ISingletonService
 
 	ImmutableSet<ProductId> retrieveStockedProductIds(@NonNull final ClientId clientId);
 
+	Optional<IssuingToleranceSpec> getIssuingToleranceSpec(@NonNull ProductId productId);
+
 	@Value
 	class ProductQuery
 	{
