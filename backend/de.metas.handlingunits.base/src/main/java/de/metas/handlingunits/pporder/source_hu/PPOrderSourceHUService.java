@@ -1,19 +1,25 @@
 package de.metas.handlingunits.pporder.source_hu;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import de.metas.document.engine.DocStatus;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
+import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.i18n.BooleanWithReason;
+import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order;
 import org.springframework.stereotype.Service;
+
+import java.util.Set;
 
 @Service
 public class PPOrderSourceHUService
@@ -35,7 +41,32 @@ public class PPOrderSourceHUService
 	{
 		checkEligibleToAddToManufacturingOrder(ppOrderId).assertTrue();
 		checkEligibleToAddAsSourceHU(huId).assertTrue();
+
+		final ImmutableSet<ProductId> huProductIds = getHUProductIds(huId);
+		if (huProductIds.isEmpty())
+		{
+			throw new AdempiereException("HU is empty"); // TODO trl
+		}
+
+		final Set<ProductId> productIdsToIssue = ppOrderBL.getProductIdsToIssue(ppOrderId);
+		if (Sets.intersection(productIdsToIssue, huProductIds).isEmpty())
+		{
+			throw new AdempiereException("None of the HU's products are needed for issuing"); // TODO trl
+		}
+
 		ppOrderSourceHURepository.addSourceHU(ppOrderId, huId);
+	}
+
+	private ImmutableSet<ProductId> getHUProductIds(final @NonNull HuId huId)
+	{
+		final I_M_HU hu = handlingUnitsBL.getById(huId);
+		return handlingUnitsBL.getStorageFactory()
+				.getStorage(hu)
+				.getProductStorages()
+				.stream()
+				.filter(huProductStorage -> !huProductStorage.isEmpty())
+				.map(IProductStorage::getProductId)
+				.collect(ImmutableSet.toImmutableSet());
 	}
 
 	public BooleanWithReason checkEligibleToAddAsSourceHU(@NonNull final HuId huId)
