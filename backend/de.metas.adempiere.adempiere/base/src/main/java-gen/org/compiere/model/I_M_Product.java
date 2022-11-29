@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for M_Product
  *  @author metasfresh (generated) 
@@ -794,6 +795,27 @@ public interface I_M_Product
 	String COLUMNNAME_IsDropShip = "IsDropShip";
 
 	/**
+	 * Set Enforce Issuing Tolerance.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsEnforceIssuingTolerance (boolean IsEnforceIssuingTolerance);
+
+	/**
+	 * Get Enforce Issuing Tolerance.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isEnforceIssuingTolerance();
+
+	ModelColumn<I_M_Product, Object> COLUMN_IsEnforceIssuingTolerance = new ModelColumn<>(I_M_Product.class, "IsEnforceIssuingTolerance", null);
+	String COLUMNNAME_IsEnforceIssuingTolerance = "IsEnforceIssuingTolerance";
+
+	/**
 	 * Set Ausnehmen von Automatischer Lieferung.
 	 * Exclude from automatic Delivery
 	 *
@@ -1018,6 +1040,89 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, Object> COLUMN_IsStocked = new ModelColumn<>(I_M_Product.class, "IsStocked", null);
 	String COLUMNNAME_IsStocked = "IsStocked";
+
+	/**
+	 * Set Tolerance %.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIssuingTolerance_Perc (@Nullable BigDecimal IssuingTolerance_Perc);
+
+	/**
+	 * Get Tolerance %.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getIssuingTolerance_Perc();
+
+	ModelColumn<I_M_Product, Object> COLUMN_IssuingTolerance_Perc = new ModelColumn<>(I_M_Product.class, "IssuingTolerance_Perc", null);
+	String COLUMNNAME_IssuingTolerance_Perc = "IssuingTolerance_Perc";
+
+	/**
+	 * Set Tolerance.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIssuingTolerance_Qty (@Nullable BigDecimal IssuingTolerance_Qty);
+
+	/**
+	 * Get Tolerance.
+	 *
+	 * <br>Type: Quantity
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getIssuingTolerance_Qty();
+
+	ModelColumn<I_M_Product, Object> COLUMN_IssuingTolerance_Qty = new ModelColumn<>(I_M_Product.class, "IssuingTolerance_Qty", null);
+	String COLUMNNAME_IssuingTolerance_Qty = "IssuingTolerance_Qty";
+
+	/**
+	 * Set Tolerance UOM.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIssuingTolerance_UOM_ID (int IssuingTolerance_UOM_ID);
+
+	/**
+	 * Get Tolerance UOM.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getIssuingTolerance_UOM_ID();
+
+	String COLUMNNAME_IssuingTolerance_UOM_ID = "IssuingTolerance_UOM_ID";
+
+	/**
+	 * Set Tolerance Value Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIssuingTolerance_ValueType (@Nullable java.lang.String IssuingTolerance_ValueType);
+
+	/**
+	 * Get Tolerance Value Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIssuingTolerance_ValueType();
+
+	ModelColumn<I_M_Product, Object> COLUMN_IssuingTolerance_ValueType = new ModelColumn<>(I_M_Product.class, "IssuingTolerance_ValueType", null);
+	String COLUMNNAME_IssuingTolerance_ValueType = "IssuingTolerance_ValueType";
 
 	/**
 	 * Set Summary Level.

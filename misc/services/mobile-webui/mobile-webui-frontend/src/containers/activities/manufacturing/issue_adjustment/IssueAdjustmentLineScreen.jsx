@@ -22,7 +22,7 @@ const IssueAdjustmentLineScreen = () => {
     qtyToIssue,
     qtyToIssueMin,
     qtyToIssueMax,
-    qtyToIssueTolerancePerc,
+    qtyToIssueTolerance,
     qtyToIssueRemaining,
     qtyIssued,
   } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }));
@@ -39,7 +39,7 @@ const IssueAdjustmentLineScreen = () => {
             value: formatQtyToHumanReadable({
               qty: qtyToIssue,
               uom,
-              tolerancePercent: qtyToIssueTolerancePerc,
+              tolerance: qtyToIssueTolerance,
               precision: 999,
             }),
           },
@@ -82,7 +82,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
     productName: line?.productName,
     uom: line?.uom,
     qtyToIssue: line?.qtyToIssue,
-    qtyToIssueTolerancePerc: line?.qtyToIssueTolerancePerc,
+    qtyToIssueTolerance: line?.qtyToIssueTolerance,
     qtyToIssueMin: line?.qtyToIssueMin,
     qtyToIssueMax: line?.qtyToIssueMax,
     qtyToIssueRemaining: line?.qtyToIssueRemaining,

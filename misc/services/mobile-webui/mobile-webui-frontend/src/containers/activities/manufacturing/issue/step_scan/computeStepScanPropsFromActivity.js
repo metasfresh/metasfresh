@@ -1,15 +1,9 @@
 import {
-  getActivityById,
   getLineByIdFromActivity,
   getQtyRejectedReasonsFromActivity,
   getScaleDeviceFromActivity,
   getStepByIdFromLine,
 } from '../../../../../reducers/wfProcesses';
-
-export const computeStepScanPropsFromState = ({ state, wfProcessId, activityId, lineId, stepId }) => {
-  const activity = getActivityById(state, wfProcessId, activityId);
-  return computeStepScanPropsFromActivity({ activity, lineId, stepId });
-};
 
 export const computeStepScanPropsFromActivity = ({ activity, lineId, stepId }) => {
   const line = getLineByIdFromActivity(activity, lineId);
@@ -18,7 +12,7 @@ export const computeStepScanPropsFromActivity = ({ activity, lineId, stepId }) =
   const lineQtyToIssue = line.qtyToIssue;
   const lineQtyToIssueMax = Math.max(line.qtyToIssueMax, lineQtyToIssue);
   const lineQtyIssued = line.qtyIssued;
-  const lineQtyToIssueTolerancePerc = line.qtyToIssueTolerancePerc;
+  const lineQtyToIssueTolerance = line.qtyToIssueTolerance;
   const isWeightable = !!line.weightable;
 
   const uom = step.uom;
@@ -55,7 +49,7 @@ export const computeStepScanPropsFromActivity = ({ activity, lineId, stepId }) =
     qtyToIssueMax,
     qtyHUCapacity,
     lineQtyToIssue,
-    lineQtyToIssueTolerancePerc,
+    lineQtyToIssueTolerance,
     lineQtyToIssueRemaining,
     isWeightable,
     isIssueWholeHU,
