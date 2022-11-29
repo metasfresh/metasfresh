@@ -73,28 +73,6 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
   }
 ]
 
-de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_RabbitMQ_getById=[
-  {
-    "id" : 100001,
-    "type" : "RabbitMQ",
-    "name" : "name",
-    "active" : true,
-    "orgId" : 0,
-    "childConfig" : {
-      "id" : 100002,
-      "parentId" : 100001,
-      "value" : "testRabbitMQValue",
-      "routingKey" : "routingKey",
-      "remoteUrl" : "remoteURL",
-      "authToken" : "authToken",
-      "isSyncBPartnerToRabbitMQ" : true,
-      "syncBPartnerToRabbitMQ" : true
-    },
-    "writeAudit" : true,
-    "auditFileFolder" : "auditFileFolder"
-  }
-]
-
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSignum_getById=[
   {
@@ -168,6 +146,23 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_GRSSi
   }
 ]
 
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_RabbitMQ_getByTypeAndParent=[
+  {
+    "id" : 100002,
+    "parentId" : 100001,
+    "value" : "testRabbitMQValue",
+    "routingKey" : "routingKey",
+    "remoteUrl" : "remoteURL",
+    "authToken" : "authToken",
+    "isSyncBPartnerToRabbitMQ" : true,
+    "isAutoSendWhenCreatedByUserGroup" : false,
+    "syncBPartnerToRabbitMQ" : true,
+    "autoSendWhenCreatedByUserGroup" : false,
+    "autoSendBPartnerEnabled" : false,
+    "sendBPartnerAllowed" : true
+  }
+]
+
 
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_RabbitMQ_getById=[
   {
@@ -184,7 +179,11 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "remoteUrl" : "remoteURL",
       "authToken" : "authToken",
       "isSyncBPartnerToRabbitMQ" : true,
-      "syncBPartnerToRabbitMQ" : true
+      "isAutoSendWhenCreatedByUserGroup" : false,
+      "isSyncExternalReferencesToRabbitMQ" : false,
+      "syncExternalReferencesToRabbitMQ" : false,
+      "syncBPartnerToRabbitMQ" : true,
+      "autoSendSubjectWhenCreatedByUserGroup" : false
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -201,7 +200,11 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
     "remoteUrl" : "remoteURL",
     "authToken" : "authToken",
     "isSyncBPartnerToRabbitMQ" : true,
-    "syncBPartnerToRabbitMQ" : true
+    "isAutoSendWhenCreatedByUserGroup" : false,
+    "isSyncExternalReferencesToRabbitMQ" : false,
+    "syncExternalReferencesToRabbitMQ" : false,
+    "syncBPartnerToRabbitMQ" : true,
+    "autoSendSubjectWhenCreatedByUserGroup" : false
   }
 ]
 
@@ -220,8 +223,13 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "routingKey" : "routingKey",
       "remoteUrl" : "remoteURL",
       "authToken" : "authToken",
-      "isSyncBPartnerToRabbitMQ" : true,
-      "syncBPartnerToRabbitMQ" : true
+	  "isSyncBPartnerToRabbitMQ" : true,
+	  "isAutoSendWhenCreatedByUserGroup" : true,
+	  "userGroupId" : 1,
+      "isSyncExternalReferencesToRabbitMQ" : false,
+      "syncExternalReferencesToRabbitMQ" : false,
+	  "syncBPartnerToRabbitMQ" : true,
+	  "autoSendSubjectWhenCreatedByUserGroup" : true
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -250,11 +258,10 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
           "shopwareCode" : "shopwareCode"
         }
       ],
-      "bPartnerIdJSONPath" : "/test/bp",
-      "bPartnerLocationIdJSONPath" : "/test/bpl",
       "salesRepJSONPath" : "/test/salesrep",
       "priceListId" : 1,
       "isActive" : true,
+      "productLookup" : "ProductNumber",
       "value" : "testShopware6Value"
     },
     "writeAudit" : true,
@@ -284,11 +291,10 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
           "shopwareCode" : "shopwareCode"
         }
       ],
-      "bPartnerIdJSONPath" : "/test/bp",
-      "bPartnerLocationIdJSONPath" : "/test/bpl",
       "salesRepJSONPath" : "/test/salesrep",
       "priceListId" : 1,
       "isActive" : false,
+      "productLookup" : "ProductNumber",
       "value" : "testShopware6Value"
     },
     "writeAudit" : true,
@@ -327,12 +333,11 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
         "shopwareCode" : "shopwareCode"
       }
     ],
-    "bPartnerIdJSONPath" : "/test/bp",
-    "bPartnerLocationIdJSONPath" : "/test/bpl",
     "salesRepJSONPath" : "/test/salesrep",
     "priceListId" : 1,
     "isActive" : true,
-    "value" : "testShopware6Value"
+    "value" : "testShopware6Value",
+    "productLookup" : "ProductNumber"
   }
 ]
 
@@ -358,12 +363,11 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
           "shopwareCode" : "shopwareCode"
         }
       ],
-      "bPartnerIdJSONPath" : "/test/bp",
-      "bPartnerLocationIdJSONPath" : "/test/bpl",
       "salesRepJSONPath" : "/test/salesrep",
       "priceListId" : 1,
       "isActive" : true,
-      "value" : "testShopware6Value"
+      "value" : "testShopware6Value",
+      "productLookup" : "ProductNumber"
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -386,12 +390,11 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Shopw
       "clientSecret" : "new-clientSecret",
       "externalSystemShopware6ConfigMappingList" : [ ],
       "uomShopwareMappingList" : [ ],
-      "bPartnerIdJSONPath" : "/test/bp",
-      "bPartnerLocationIdJSONPath" : "/test/bpl",
       "salesRepJSONPath" : "/test/salesrep",
       "priceListId" : 2,
       "isActive" : true,
-      "value" : "new-value"
+      "value" : "new-value",
+      "productLookup" : "ProductNumber"
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -433,6 +436,35 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Wooco
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
   }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getActiveByType_RabbitMQ=[
+  [
+    {
+      "id" : 100001,
+      "type" : "RabbitMQ",
+      "name" : "name",
+      "active" : true,
+      "orgId" : 0,
+      "childConfig" : {
+        "id" : 100002,
+        "parentId" : 100001,
+        "value" : "notImportant",
+        "routingKey" : "routingKey",
+        "remoteUrl" : "remoteURL",
+        "authToken" : "authToken",
+        "isSyncBPartnerToRabbitMQ" : false,
+        "isAutoSendWhenCreatedByUserGroup" : false,
+        "isSyncExternalReferencesToRabbitMQ" : false,
+        "syncExternalReferencesToRabbitMQ" : false,
+        "syncBPartnerToRabbitMQ" : false,
+        "autoSendSubjectWhenCreatedByUserGroup" : false
+      },
+	  "writeAudit" : true,
+	  "auditFileFolder" : "auditFileFolder"
+    }
+  ]
 ]
 
 

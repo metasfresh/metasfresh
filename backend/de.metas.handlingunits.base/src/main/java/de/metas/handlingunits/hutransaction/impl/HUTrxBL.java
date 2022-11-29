@@ -24,7 +24,6 @@ package de.metas.handlingunits.hutransaction.impl;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
-import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;

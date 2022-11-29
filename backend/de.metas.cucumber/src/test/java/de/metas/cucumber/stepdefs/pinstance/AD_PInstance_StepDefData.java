@@ -25,6 +25,13 @@ package de.metas.cucumber.stepdefs.pinstance;
 import de.metas.cucumber.stepdefs.StepDefData;
 import org.compiere.model.I_AD_PInstance;
 
+/**
+ * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
+ */
 public class AD_PInstance_StepDefData extends StepDefData<I_AD_PInstance>
 {
+	public AD_PInstance_StepDefData()
+	{
+		super(I_AD_PInstance.class);
+	}
 }

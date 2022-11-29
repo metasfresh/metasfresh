@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for I_BankStatement
  *  @author metasfresh (generated) 
@@ -116,6 +117,27 @@ public interface I_I_BankStatement
 	String COLUMNNAME_BankAccountNo = "BankAccountNo";
 
 	/**
+	 * Set Bank Fee.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setBankFeeAmt (BigDecimal BankFeeAmt);
+
+	/**
+	 * Get Bank Fee.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getBankFeeAmt();
+
+	ModelColumn<I_I_BankStatement, Object> COLUMN_BankFeeAmt = new ModelColumn<>(I_I_BankStatement.class, "BankFeeAmt", null);
+	String COLUMNNAME_BankFeeAmt = "BankFeeAmt";
+
+	/**
 	 * Set Name Bill Partner.
 	 *
 	 * <br>Type: String
@@ -137,7 +159,7 @@ public interface I_I_BankStatement
 	String COLUMNNAME_Bill_BPartner_Name = "Bill_BPartner_Name";
 
 	/**
-	 * Set Geschäftspartner-Schlüssel.
+	 * Set Partner No..
 	 * Key of the Business Partner
 	 *
 	 * <br>Type: String
@@ -147,7 +169,7 @@ public interface I_I_BankStatement
 	void setBPartnerValue (@Nullable java.lang.String BPartnerValue);
 
 	/**
-	 * Get Geschäftspartner-Schlüssel.
+	 * Get Partner No..
 	 * Key of the Business Partner
 	 *
 	 * <br>Type: String
@@ -566,7 +588,7 @@ public interface I_I_BankStatement
 	 * Set Debitor No./Kreditor No..
 	 *
 	 * <br>Type: Integer
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setDebitorOrCreditorId (int DebitorOrCreditorId);
@@ -575,7 +597,7 @@ public interface I_I_BankStatement
 	 * Get Debitor No./Kreditor No..
 	 *
 	 * <br>Type: Integer
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getDebitorOrCreditorId();
@@ -1476,7 +1498,7 @@ public interface I_I_BankStatement
 	String COLUMNNAME_ReferenceNo = "ReferenceNo";
 
 	/**
-	 * Set BLZ.
+	 * Set Routing No.
 	 * Bank Routing Number
 	 *
 	 * <br>Type: String
@@ -1486,7 +1508,7 @@ public interface I_I_BankStatement
 	void setRoutingNo (@Nullable java.lang.String RoutingNo);
 
 	/**
-	 * Get BLZ.
+	 * Get Routing No.
 	 * Bank Routing Number
 	 *
 	 * <br>Type: String

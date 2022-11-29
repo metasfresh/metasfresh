@@ -346,6 +346,7 @@ public class ShipmentService
 		final ImmutableList<ShipmentScheduleWithHU> scheduleWithHUS = shipmentScheduleWithHUService.createShipmentSchedulesWithHU(
 				shipmentSchedules,
 				request.getQuantityTypeToUse(),
+				false /* backwards compatibility: on-the-fly-pick to (anonymous) CUs */,
 				ImmutableMap.of());
 
 		return huShipmentScheduleBL

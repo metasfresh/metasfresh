@@ -25,6 +25,13 @@ package de.metas.cucumber.stepdefs.contract.commission.hierarchy;
 import de.metas.contracts.commission.model.I_C_HierarchyCommissionSettings;
 import de.metas.cucumber.stepdefs.StepDefData;
 
+/**
+ * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
+ */
 public class C_HierarchyCommissionSettings_StepDefData extends StepDefData<I_C_HierarchyCommissionSettings>
 {
+	public C_HierarchyCommissionSettings_StepDefData()
+	{
+		super(I_C_HierarchyCommissionSettings.class);
+	}
 }

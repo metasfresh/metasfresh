@@ -47,6 +47,7 @@ import org.eevolution.model.I_PP_Product_BOM;
 import org.eevolution.model.I_PP_Product_BOMLine;
 import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.model.X_PP_Product_BOM;
+import org.eevolution.model.X_PP_Product_BOMLine;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
@@ -404,6 +405,7 @@ public class ProductBOMDAO implements IProductBOMDAO
 	/**
 	 * @param docStatus if set, then more recent versions without the given docstatus are skipped, and the returned version - if any - has this docStatus.
 	 */
+	@Override
 	@NonNull
 	public Optional<I_PP_Product_BOM> getPreviousVersion(final @NonNull I_PP_Product_BOM bomVersion, final @Nullable DocStatus docStatus)
 	{
@@ -423,6 +425,20 @@ public class ProductBOMDAO implements IProductBOMDAO
 				.orderByDescending(I_PP_Product_BOM.COLUMNNAME_ValidFrom)
 				.create()
 				.firstOptional(I_PP_Product_BOM.class);
+	}
+
+	@Override
+	public boolean isComponent(final ProductId productId)
+	{
+		return queryBL
+				.createQueryBuilder(I_PP_Product_BOMLine.class)
+				.addEqualsFilter(I_PP_Product_BOMLine.COLUMNNAME_M_Product_ID, productId.getRepoId())
+				.addInArrayFilter(I_PP_Product_BOMLine.COLUMNNAME_ComponentType
+						, X_PP_Product_BOMLine.COMPONENTTYPE_Component
+						, X_PP_Product_BOMLine.COMPONENTTYPE_Variant)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.anyMatch();
 	}
 
 	@NonNull

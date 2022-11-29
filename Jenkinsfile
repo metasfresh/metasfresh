@@ -9,10 +9,7 @@ chuckNorris()
 // keep the last 20 builds for master and stable, but onkly the last 10 for the rest, to preserve disk space on jenkins
 final String numberOfBuildsToKeepStr = (env.BRANCH_NAME == 'master' || env.BRANCH_NAME == 'stable') ? '20' : '10'
 
-final String MF_SQL_SEED_DUMP_URL_DEFAULT =
-        env.BRANCH_NAME == 'release'
-                ? 'https://metasfresh.com/wp-content/releases/db_seeds/metasfresh-5_39.pgdump'
-                : 'https://metasfresh.com/wp-content/releases/db_seeds/metasfresh_latest.pgdump'
+final String MF_SQL_SEED_DUMP_URL_DEFAULT = 'https://nexus.metasfresh.com/repository/mvn-release-releases/de/metas/dist/metasfresh-dist-dist/5.173/metasfresh-dist-dist-5.173-customfmt.pgdump'
 
 // thx to http://stackoverflow.com/a/36949007/1012103 with respect to the parameters
 properties([
@@ -32,8 +29,16 @@ properties([
                 booleanParam(defaultValue: true,
                         description: 'If true, and the backend is build, then don\'t run the cucumber tests.<br/>Note that the cucumber tests are run by the github Actions (docker-based) builds',
                         name: 'MF_FORCE_SKIP_CUCUMBER_BUILD'),
-                
-                booleanParam(defaultValue: true,
+
+                booleanParam(defaultValue: false,
+                        description: 'If true, then don\'t build the mobile webui, even if there were changes or <code>MF_FORCE_FULL_BUILD</code> is set to <code>true<code>',
+                        name: 'MF_FORCE_SKIP_MOBILE_WEBUI_BUILD'),
+
+                booleanParam(defaultValue: false,
+                        description: 'If true, then don\'t build the procurement webui, even if there were changes or <code>MF_FORCE_FULL_BUILD</code> is set to <code>true<code>',
+                        name: 'MF_FORCE_SKIP_PROCUREMENT_WEBUI_BUILD'),
+
+                booleanParam(defaultValue: false,
                         description: 'If true, then don\'t build cypress (e2e), even if there were changes or <code>MF_FORCE_FULL_BUILD</code> is set to <code>true<code>',
                         name: 'MF_FORCE_SKIP_CYPRESS_BUILD'),
 
@@ -111,11 +116,11 @@ private void buildAll(String mfVersion, MvnConf mvnConf, scmVars) {
 
     withEnv(["MF_VERSION=${mfVersion}"]) {
                 // disable automatic fingerprinting and archiving by artifactsPublisher, because in particular the archiving takes up too much space on the jenkins server.
-                withMaven(jdk: 'java-8-AdoptOpenJDK', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx2048M', options: [artifactsPublisher(disabled: true)]) {
+                withMaven(jdk: 'java-8-AdoptOpenJDK', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)]) {
 
                     nexusCreateRepoIfNotExists(mvnConf.mvnDeployRepoBaseURL, mvnConf.mvnRepoName)
                     stage('Build parent-pom & commons') { // for display purposes
-                    
+
                                 dir('misc/parent-pom') {
                                             def buildFile = load('buildfile.groovy')
                                             buildFile.build(mvnConf, scmVars) // in there we don't do diff..we always build&deploy it.
@@ -132,16 +137,16 @@ private void buildAll(String mfVersion, MvnConf mvnConf, scmVars) {
                             }
                     dir('backend') {
                                 def backendBuildFile = load('buildfile.groovy')
-                                backendBuildFile.build(mvnConf, 
-                                        scmVars, 
-                                        params.MF_FORCE_FULL_BUILD, 
+                                backendBuildFile.build(mvnConf,
+                                        scmVars,
+                                        params.MF_FORCE_FULL_BUILD,
                                         params.MF_FORCE_SKIP_BACKEND_BUILD,
                                         params.MF_FORCE_SKIP_CUCUMBER_BUILD)
                             }
                 }
                 dir('misc/services') { // misc/services has modules with different maven/jdk settings
                             def miscServices = load('buildfile.groovy')
-                            miscServices.build(mvnConf, scmVars, params.MF_FORCE_FULL_BUILD)
+                            miscServices.build(mvnConf, scmVars, params.MF_FORCE_FULL_BUILD, params.MF_FORCE_SKIP_MOBILE_WEBUI_BUILD, params.MF_FORCE_SKIP_PROCUREMENT_WEBUI_BUILD)
                         }
 
                 withMaven(jdk: 'java-8-AdoptOpenJDK', maven: 'maven-3.6.3', mavenLocalRepo: '.repository', mavenOpts: '-Xmx1536M', options: [artifactsPublisher(disabled: true)]) {

@@ -79,11 +79,11 @@ public class PickingCandidateService
 	private final PickingConfigRepository pickingConfigRepository;
 	private final PickingCandidateRepository pickingCandidateRepository;
 	private final HuId2SourceHUsService sourceHUsRepository;
+	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
+	private final IShipmentSchedulePA ShipmentScheduleRepo = Services.get(IShipmentSchedulePA.class);
 	private final HUReservationService huReservationService;
 	private final IBPartnerBL bpartnersService;
 	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
-	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
-	private final IShipmentSchedulePA ShipmentScheduleRepo = Services.get(IShipmentSchedulePA.class);
 
 	public PickingCandidateService(
 			@NonNull final PickingConfigRepository pickingConfigRepository,
@@ -199,7 +199,7 @@ public class PickingCandidateService
 				.filter(pc -> shipmentScheduleId == null || shipmentScheduleId.equals(pc.getShipmentScheduleId()))
 				.collect(ImmutableList.toImmutableList());
 
-		for(PickingCandidate pickingCandidate : pickingCandidatesToProcess)
+		for(final PickingCandidate pickingCandidate : pickingCandidatesToProcess)
 		{
 			validateAttributes(pickingCandidate);
 		}
@@ -249,7 +249,7 @@ public class PickingCandidateService
 				.build());
 	}
 
-	public ProcessPickingCandidatesResult process(@NonNull ProcessPickingCandidatesRequest request)
+	public ProcessPickingCandidatesResult process(@NonNull final ProcessPickingCandidatesRequest request)
 	{
 		return ProcessPickingCandidatesCommand.builder()
 				.pickingCandidateRepository(pickingCandidateRepository)

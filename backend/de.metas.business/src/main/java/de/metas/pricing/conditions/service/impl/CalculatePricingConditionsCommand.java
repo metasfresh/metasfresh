@@ -3,11 +3,6 @@
  */
 package de.metas.pricing.conditions.service.impl;
 
-import java.math.BigDecimal;
-import java.util.Optional;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.pricing.IEditablePricingContext;
@@ -30,6 +25,10 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.math.BigDecimal;
+import java.util.Optional;
 
 /*
  * #%L
@@ -93,7 +92,7 @@ import lombok.NonNull;
 		}
 	}
 
-	private final PricingConditionsDiscountType getDiscountType()
+	private PricingConditionsDiscountType getDiscountType()
 	{
 		if (request.getForcePricingConditionsBreak() != null)
 		{
@@ -220,9 +219,7 @@ import lombok.NonNull;
 		Check.assumeNotNull(pricingCtx, "pricingCtx shall not be null for {}", request);
 
 		final IPricingContext basePricingSystemPricingCtx = createBasePricingSystemPricingCtx(pricingCtx, basePricingSystemId);
-		final IPricingResult pricingResult = pricingBL.calculatePrice(basePricingSystemPricingCtx);
-
-		return pricingResult;
+		return pricingBL.calculatePrice(basePricingSystemPricingCtx);
 	}
 
 	private static IPricingContext createBasePricingSystemPricingCtx(@NonNull final IPricingContext pricingCtx, @NonNull final PricingSystemId basePricingSystemId)

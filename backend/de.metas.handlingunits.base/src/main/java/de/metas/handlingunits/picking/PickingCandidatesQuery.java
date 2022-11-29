@@ -2,6 +2,7 @@ package de.metas.handlingunits.picking;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.inout.ShipmentScheduleId;
+import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.qrcode.PickingSlotQRCode;
 import lombok.Builder;
 import lombok.Singular;
@@ -40,13 +41,15 @@ public class PickingCandidatesQuery
 	boolean includeShippedHUs;
 
 	boolean onlyNotClosedOrNotRackSystem;
-	@Nullable PickingSlotQRCode pickingSlotQRCode;
+	ImmutableSet<PickingSlotId> onlyPickingSlotIds;
+	PickingSlotQRCode pickingSlotQRCode;
 
 	@Builder
 	private PickingCandidatesQuery(
 			@Singular final Set<ShipmentScheduleId> shipmentScheduleIds,
 			final boolean includeShippedHUs,
 			final boolean onlyNotClosedOrNotRackSystem,
+			@Nullable final Set<PickingSlotId> onlyPickingSlotIds,
 			@Nullable final PickingSlotQRCode pickingSlotQRCode)
 	{
 		this.shipmentScheduleIds = ImmutableSet.copyOf(shipmentScheduleIds);
@@ -54,6 +57,7 @@ public class PickingCandidatesQuery
 		this.includeShippedHUs = includeShippedHUs;
 
 		this.onlyNotClosedOrNotRackSystem = onlyNotClosedOrNotRackSystem;
+		this.onlyPickingSlotIds = onlyPickingSlotIds != null ? ImmutableSet.copyOf(onlyPickingSlotIds) : ImmutableSet.of();
 		this.pickingSlotQRCode = pickingSlotQRCode;
 	}
 

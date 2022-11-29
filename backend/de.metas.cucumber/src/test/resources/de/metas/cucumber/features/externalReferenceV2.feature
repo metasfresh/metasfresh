@@ -53,10 +53,28 @@ Feature: external references for metasfresh resources
     """
 {
     "items": [
-        { "lookupItem": { "id": "2", "type": "IssueID" } },
-        { "lookupItem": { "id": "1", "type": "IssueID" }, "metasfreshId": 43, "externalReference":"1"},
-        { "lookupItem": { "id": "3", "type": "IssueID" } }
-    ]
+            {
+                "lookupItem": {
+                    "type": "IssueID",
+                    "id": "2"
+                }
+            },
+            {
+                "lookupItem": {
+                    "type": "IssueID",
+                    "id": "1"
+                },
+                "metasfreshId": 43,
+                "externalReference": "1",
+                "systemName": "Github"
+            },
+            {
+                "lookupItem": {
+                    "type": "IssueID",
+                    "id": "3"
+                }
+            }
+        ]
 }
     """
 
@@ -85,8 +103,24 @@ Feature: external references for metasfresh resources
     """
 {
     "items": [
-        { "lookupItem": { "metasfreshId": 53, "type": "BPartner" }, "metasfreshId": 53, "externalReference": "1" },
-        { "lookupItem": { "id": "2", "type": "IssueID" }, "metasfreshId": 54, "externalReference": "2" }
-    ]
+            {
+                "lookupItem": {
+                    "metasfreshId": 53,
+                    "type": "BPartner"
+                },
+                "metasfreshId": 53,
+                "externalReference": "1",
+                "systemName": "GRSSignum"
+            },
+            {
+                "lookupItem": {
+                    "type": "IssueID",
+                    "id": "2"
+                },
+                "metasfreshId": 54,
+                "externalReference": "2",
+                "systemName": "GRSSignum"
+            }
+        ]
 }
     """

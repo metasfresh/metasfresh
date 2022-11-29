@@ -22,43 +22,31 @@
 
 package de.metas.common.procurement.sync.protocol.request_to_procurementweb;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.procurement.sync.protocol.RequestToProcurementWeb;
 import de.metas.common.procurement.sync.protocol.dto.SyncBPartner;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
+import java.util.UUID;
 
 @Value
 @Builder
+@Jacksonized
 public class PutBPartnersRequest extends RequestToProcurementWeb
 {
-	public static final PutBPartnersRequest of(@NonNull final SyncBPartner syncBPartner)
+	public static PutBPartnersRequest of(@NonNull final SyncBPartner syncBPartner)
 	{
 		return PutBPartnersRequest.builder().bpartner(syncBPartner).build();
 	}
 
-	public static final PutBPartnersRequest of(@NonNull final List<SyncBPartner> syncBPartners)
-	{
-		return PutBPartnersRequest.builder().bpartners(syncBPartners).build();
-	}
+	@Builder.Default
+	String eventId = UUID.randomUUID().toString();
+	String relatedEventId;
 
 	@Singular
 	List<SyncBPartner> bpartners;
-
-	@JsonCreator
-	private PutBPartnersRequest(@JsonProperty("bpartners") final List<SyncBPartner> bpartners)
-	{
-		this.bpartners = bpartners;
-	}
-
-	@Override
-	public String toString()
-	{
-		return "SyncBPartnersRequest [bpartners=" + bpartners + "]";
-	}
 }

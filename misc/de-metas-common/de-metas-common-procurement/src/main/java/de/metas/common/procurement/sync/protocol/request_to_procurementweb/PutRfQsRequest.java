@@ -22,34 +22,28 @@
 
 package de.metas.common.procurement.sync.protocol.request_to_procurementweb;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.procurement.sync.protocol.RequestToProcurementWeb;
 import de.metas.common.procurement.sync.protocol.dto.SyncRfQ;
 import lombok.Builder;
-import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import lombok.extern.jackson.Jacksonized;
 
 import java.util.List;
+import java.util.UUID;
 
 @Value
+@Builder
+@Jacksonized
 public class PutRfQsRequest extends RequestToProcurementWeb
 {
-	public static PutRfQsRequest of(@NonNull final List<SyncRfQ> syncRfqs)
-	{
-		return PutRfQsRequest.builder().syncRfqs(syncRfqs).build();
-	}
+	@Builder.Default
+	String eventId = UUID.randomUUID().toString();
+	String relatedEventId;
 
+	@Singular
 	List<SyncRfQ> syncRfqs;
-
-	@Builder
-	@JsonCreator
-	public PutRfQsRequest(@JsonProperty("syncRfqs") @Singular @NonNull final List<SyncRfQ> syncRfqs)
-	{
-		this.syncRfqs = syncRfqs;
-	}
 
 	@JsonIgnore
 	public boolean isEmpty()

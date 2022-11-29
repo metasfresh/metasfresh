@@ -96,7 +96,6 @@ import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
-import org.compiere.model.X_C_BP_Relation;
 import org.compiere.model.X_C_Location;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -311,6 +310,38 @@ public class BPartnerDAO implements IBPartnerDAO
 				.orElse(null);
 	}
 
+	@Nullable
+	public String getContactLocationEmail(@Nullable final BPartnerContactId contactId)
+	{
+		if (contactId == null)
+		{
+			return null;
+		}
+
+		final I_AD_User user = getContactById(contactId);
+		if (user == null)
+		{
+			return null;
+		}
+		final BPartnerLocationId contactLocationId = BPartnerLocationId.ofRepoIdOrNull(contactId.getBpartnerId(), user.getC_BPartner_Location_ID());
+
+		if (contactLocationId != null)
+		{
+			final I_C_BPartner_Location contactLocationRecord = getBPartnerLocationByIdInTrx(contactLocationId);
+			if (contactLocationRecord == null)
+			{
+				return null;
+			}
+			final String contactLocationEmail = contactLocationRecord.getEMail();
+			if (!Check.isEmpty(contactLocationEmail))
+			{
+				return contactLocationEmail;
+			}
+		}
+
+		return null;
+	}
+
 	@Override
 	public I_AD_User getContactByIdInTrx(@NonNull final BPartnerContactId contactId)
 	{
@@ -322,7 +353,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
-	public <T extends I_AD_User> T getContactById(final BPartnerContactId contactId, final Class<T> modelClass)
+	public <T extends I_AD_User> T getContactById(@NonNull final BPartnerContactId contactId, final Class<T> modelClass)
 	{
 		return InterfaceWrapperHelper.create(getContactById(contactId), modelClass);
 	}
@@ -903,8 +934,8 @@ public class BPartnerDAO implements IBPartnerDAO
 
 	@Override
 	public I_C_BPartner retrieveBPartnerByValueOrSuffix(final Properties ctx,
-														final String bpValue,
-														final String bpValueSuffixToFallback)
+			final String bpValue,
+			final String bpValueSuffixToFallback)
 	{
 		//
 		// try exact match
@@ -1860,7 +1891,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	@Override
 	public List<I_C_BPartner> retrieveByIds(@NonNull final Set<BPartnerId> bpartnerIds)
 	{
-		if(bpartnerIds.isEmpty())
+		if (bpartnerIds.isEmpty())
 		{
 			return ImmutableList.of();
 		}

@@ -2,10 +2,12 @@ package org.adempiere.model.tree;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
+
+import javax.annotation.Nullable;
+import java.util.Objects;
 
 /*
  * #%L
@@ -32,6 +34,7 @@ import lombok.Value;
 @Value
 public class AdTreeId implements RepoIdAware
 {
+	@Nullable
 	public static AdTreeId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? ofRepoId(repoId) : null;
@@ -50,7 +53,7 @@ public class AdTreeId implements RepoIdAware
 		}
 	}
 
-	public static int toRepoId(final AdTreeId id)
+	public static int toRepoId(@Nullable final AdTreeId id)
 	{
 		return id != null ? id.getRepoId() : -1;
 	}
@@ -69,5 +72,10 @@ public class AdTreeId implements RepoIdAware
 	public int getRepoId()
 	{
 		return repoId;
+	}
+
+	public static boolean equals(@Nullable final AdTreeId id1, @Nullable final AdTreeId id2)
+	{
+		return Objects.equals(id1, id2);
 	}
 }

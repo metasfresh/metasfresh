@@ -5,7 +5,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import de.metas.acct.api.AccountId;
-import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.IAcctSchemaDAO;
 import de.metas.acct.api.IProductAcctDAO;
@@ -31,12 +30,10 @@ import org.compiere.model.I_M_Product_Acct;
 import org.compiere.model.I_M_Product_Category_Acct;
 import org.compiere.model.POInfo;
 import org.compiere.util.DisplayType;
-import org.compiere.util.Env;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
-import java.util.Properties;
 
 public class ProductAcctDAO implements IProductAcctDAO
 {
@@ -116,20 +113,6 @@ public class ProductAcctDAO implements IProductAcctDAO
 		}
 
 		return Optional.of(AccountId.ofRepoId(validCombinationId));
-	}
-
-	@Override
-	public ActivityId getProductActivityId(@NonNull final ProductId productId)
-	{
-		final Properties ctx = Env.getCtx();
-		final AcctSchema schema = acctSchemaDAO.getByClientAndOrg(ctx);
-		final I_M_Product_Acct productAcct = getProductAcctRecord(schema.getId(), productId).orElse(null);
-		if (productAcct == null)
-		{
-			return null;
-		}
-
-		return ActivityId.ofRepoIdOrNull(productAcct.getC_Activity_ID());
 	}
 
 	private ProductCategoryAccountsCollection getProductCategoryAccountsCollection()

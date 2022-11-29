@@ -96,6 +96,8 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 	{
 		final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 
+		final IAttributeSetInstanceBL attributeSetInstanceBL = Services.get(IAttributeSetInstanceBL.class);
+
 		final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
 
 		//
@@ -140,12 +142,12 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 		{
 
 			final Timestamp dateOrdered = CoalesceUtil.coalesceSuppliers(
-					() -> line.getDateOrdered(),
+					line::getDateOrdered,
 					() -> line.getC_Order().getDateOrdered());
 			receiptSchedule.setDateOrdered(dateOrdered);
 
 			final Timestamp datePromised = CoalesceUtil.coalesceSuppliers(
-					() -> line.getDatePromised(),
+					line::getDatePromised,
 					() -> line.getC_Order().getDatePromised());
 			receiptSchedule.setMovementDate(datePromised);
 		}
@@ -209,7 +211,7 @@ public class OrderLineReceiptScheduleProducer extends AbstractReceiptSchedulePro
 
 			receiptSchedule.setC_UOM_ID(line.getC_UOM_ID());
 
-			Services.get(IAttributeSetInstanceBL.class).cloneASI(receiptSchedule, line);
+			attributeSetInstanceBL.cloneOrCreateASI(receiptSchedule, line);
 
 			// task #653
 			// Set the LotNumberDate as attribute in the new receipt schedule's ASI

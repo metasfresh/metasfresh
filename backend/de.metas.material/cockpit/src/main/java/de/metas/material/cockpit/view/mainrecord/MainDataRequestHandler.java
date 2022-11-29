@@ -39,7 +39,7 @@ import java.util.stream.Stream;
 
 import static de.metas.util.NumberUtils.stripTrailingDecimalZeros;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 @Service
 @Profile(Profiles.PROFILE_App) // the event handler is also just on this profile
@@ -51,7 +51,7 @@ public class MainDataRequestHandler
 		{
 			final I_MD_Cockpit dataRecord = retrieveOrCreateDataRecord(dataUpdateRequest.getIdentifier());
 			updateDataRecordWithRequestQtys(dataRecord, dataUpdateRequest);
-			save(dataRecord);
+			saveRecord(dataRecord);
 		}
 	}
 
@@ -62,7 +62,7 @@ public class MainDataRequestHandler
 			final I_MD_Cockpit dataRecord = retrieveOrCreateDataRecord(updateMainStockDataRequest.getIdentifier());
 
 			dataRecord.setMDCandidateQtyStock(updateMainStockDataRequest.getQtyStockCurrent());
-			save(dataRecord);
+			saveRecord(dataRecord);
 		}
 	}
 
@@ -116,11 +116,7 @@ public class MainDataRequestHandler
 
 		dataRecord.setQtySupplyRequired(CoalesceUtil.firstPositiveOrZero(computeSum(dataRecord.getQtySupplyRequired(), dataUpdateRequest.getQtySupplyRequired())));
 
-		if (dataUpdateRequest.getQtyStockEstimateCount() != null)
-		{
-			dataRecord.setQtyStockEstimateCount(dataUpdateRequest.getQtyStockEstimateCount());
-			dataRecord.setQtyStockEstimateTime(TimeUtil.asTimestamp(dataUpdateRequest.getQtyStockEstimateTime()));
-		}
+		updateQtyStockEstimateColumns(dataRecord, dataUpdateRequest);
 
 		dataRecord.setQtyInventoryCount(computeSum(dataRecord.getQtyInventoryCount(), dataUpdateRequest.getQtyInventoryCount()));
 		dataRecord.setQtyInventoryTime(TimeUtil.asTimestamp(TimeUtil.max(TimeUtil.asInstant(dataRecord.getDateGeneral()),
@@ -128,6 +124,31 @@ public class MainDataRequestHandler
 
 		dataRecord.setQtySupplySum(computeQtySupply_Sum(dataRecord));
 		dataRecord.setQtyDemandSum(computeQtyDemand_Sum(dataRecord));
+	}
+
+	private static void updateQtyStockEstimateColumns(
+			@NonNull final I_MD_Cockpit dataRecord, 
+			@NonNull final UpdateMainDataRequest dataUpdateRequest)
+	{
+		if (dataUpdateRequest.getQtyStockEstimateCount() != null)
+		{
+			dataRecord.setQtyStockEstimateTime(TimeUtil.asTimestamp(dataUpdateRequest.getQtyStockEstimateTime()));
+		}
+		else
+		{
+			dataRecord.setQtyStockEstimateTime(null);
+		}
+		dataRecord.setQtyStockEstimateCount(CoalesceUtil.coalesceNotNull(dataUpdateRequest.getQtyStockEstimateCount(), BigDecimal.ZERO));
+
+		final Integer qtyStockEstimateSeqNo = dataUpdateRequest.getQtyStockEstimateSeqNo();
+		if (qtyStockEstimateSeqNo == null || qtyStockEstimateSeqNo == 0)
+		{
+			dataRecord.setQtyStockEstimateSeqNo(99999);
+		}
+		else
+		{
+			dataRecord.setQtyStockEstimateSeqNo(qtyStockEstimateSeqNo);
+		}
 	}
 
 	/**
@@ -159,7 +180,7 @@ public class MainDataRequestHandler
 	}
 
 	/**
-	 *  The quantity required according to material disposition that is not yet addressed by purchase order, production-receipt or distribution order.
+	 * The quantity required according to material disposition that is not yet addressed by purchase order, production-receipt or distribution order.
 	 *
 	 * @param dataRecord I_MD_Cockpit
 	 * @return dataRecord.QtySupplyRequired - dataRecord.QtySupplySum
@@ -182,7 +203,7 @@ public class MainDataRequestHandler
 	}
 
 	@NonNull
-	private static BigDecimal computeSum(@NonNull final BigDecimal ...args)
+	private static BigDecimal computeSum(@NonNull final BigDecimal... args)
 	{
 		final BigDecimal sum = Stream.of(args)
 				.reduce(BigDecimal::add)

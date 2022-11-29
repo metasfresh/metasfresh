@@ -2,7 +2,6 @@ package de.metas;
 
 import com.google.common.base.Stopwatch;
 import de.metas.currency.CurrencyRepository;
-import de.metas.document.location.IDocumentLocationBL;
 import de.metas.handlingunits.impl.ShipperTransportationRepository;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
@@ -29,7 +28,7 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L

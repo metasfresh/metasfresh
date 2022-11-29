@@ -1,19 +1,25 @@
 package org.adempiere.ad.column.model.interceptor;
 
 import de.metas.i18n.po.POTrlRepository;
+import de.metas.logging.LogManager;
 import de.metas.security.impl.ParsedSql;
 import de.metas.translation.api.IElementTranslationBL;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.ad.column.ColumnSql;
 import org.adempiere.ad.element.api.AdElementId;
 import org.adempiere.ad.expression.api.impl.LogicExpressionCompiler;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.table.api.AdTableId;
 import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Column;
+import org.compiere.model.I_AD_Field;
+import org.compiere.model.MLookupFactory;
+import org.compiere.model.MLookupInfo;
 import org.compiere.model.ModelValidator;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
@@ -21,6 +27,9 @@ import org.slf4j.Logger;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nullable;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /*
  * #%L
@@ -48,6 +57,7 @@ import javax.annotation.Nullable;
 @Component
 public class AD_Column
 {
+	private static final Logger logger = LogManager.getLogger(AD_Column.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE },
@@ -63,6 +73,41 @@ public class AD_Column
 
 		final String columnSqlFixed = ParsedSql.rewriteWhereClauseWithLowercaseKeyWords(columnSql);
 		column.setColumnSQL(columnSqlFixed);
+
+		validateColumnSql(getTableName(column), columnSqlFixed);
+	}
+
+	private void validateColumnSql(
+			@NonNull final String ctxTableName,
+			@NonNull final String columnSqlString)
+	{
+		final String columnSqlStringAdapted = ColumnSql.ofSql(columnSqlString, ctxTableName)
+				.withJoinOnTableNameOrAlias("master")
+				.toSqlStringWrappedInBracketsIfNeeded();
+
+		final String sql = "SELECT"
+				+ " " + columnSqlStringAdapted
+				+ " FROM " + ctxTableName + " master"
+				+ " LIMIT 1";
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		try
+		{
+			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_ThreadInherited);
+			rs = pstmt.executeQuery();
+		}
+		catch (final SQLException ex)
+		{
+			throw new AdempiereException("Invalid Column SQL. Hints:"
+					+ "\n 1. To reference context table name, always use the right case, e.g. C_Invoice instead of c_invoice"
+					+ "\n 2. If in your sub-query you need to join again the context table name, consider using @JoinTableNameOrAliasIncludingDot@ to reference the context table name. Pls search for examples."
+					+ "\n 3. If you think this validation is not correct, feel free to temporary deactivate this check.", ex)
+					.setParameter("Test SQL", sql);
+		}
+		finally
+		{
+			DB.close(rs, pstmt);
+		}
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
@@ -79,6 +124,43 @@ public class AD_Column
 		if (mandatoryLogic != null)
 		{
 			LogicExpressionCompiler.instance.compile(mandatoryLogic);
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = {
+					I_AD_Field.COLUMNNAME_AD_Column_ID,
+					I_AD_Field.COLUMNNAME_AD_Reference_ID,
+					I_AD_Field.COLUMNNAME_AD_Reference_Value_ID })
+	public void onBeforeSave_ValidateReference(final I_AD_Column column)
+	{
+		final int adReferenceId = column.getAD_Reference_ID();
+		if (DisplayType.isAnyLookup(adReferenceId))
+		{
+			final MLookupInfo lookupInfo;
+			try
+			{
+				final String ctxTableName = getTableName(column);
+				lookupInfo = MLookupFactory.getLookupInfo(
+						Integer.MAX_VALUE, // WindowNo
+						adReferenceId,
+						ctxTableName, // ctxTableName
+						column.getColumnName(), // ctxColumnName
+						column.getAD_Reference_Value_ID(),
+						column.isParent(), // IsParent,
+						column.getAD_Val_Rule_ID() //AD_Val_Rule_ID
+				);
+			}
+			catch (final Exception ex)
+			{
+				fireExceptionInvalidLookup(logger, ex);
+				return;
+			}
+
+			if (lookupInfo == null)
+			{
+				fireExceptionInvalidLookup(logger, null);
+			}
 		}
 	}
 

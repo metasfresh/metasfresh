@@ -147,12 +147,17 @@ final class ViewRowIdsOrderedSelectionsHolder
 
 		final ViewEvaluationCtx viewEvalCtx = getViewEvaluationCtx();
 
+		final SqlDocumentFilterConverterContext filterConverterContext = SqlDocumentFilterConverterContext.builder()
+				.viewId(viewId)
+				.userRolePermissionsKey(viewEvalCtx.getPermissionsKey())
+				.build();
+
 		final ViewRowIdsOrderedSelection selectionBeforeFacetsFiltering = viewDataRepository.createOrderedSelection(
 				viewEvalCtx,
 				viewId,
 				filtersExcludingFacets,
 				applySecurityRestrictions,
-				SqlDocumentFilterConverterContext.EMPTY);
+				filterConverterContext);
 
 		final ViewRowIdsOrderedSelection selection;
 		if (!facetFilters.isEmpty())
@@ -162,7 +167,7 @@ final class ViewRowIdsOrderedSelectionsHolder
 					selectionBeforeFacetsFiltering,
 					facetFilters,
 					/* orderBys */DocumentQueryOrderByList.EMPTY,
-					SqlDocumentFilterConverterContext.EMPTY);
+					filterConverterContext);
 		}
 		else
 		{
@@ -242,12 +247,17 @@ final class ViewRowIdsOrderedSelectionsHolder
 			@NonNull final ViewRowIdsOrderedSelection fromSelection,
 			@Nullable final DocumentQueryOrderByList orderBys)
 	{
+		final ViewEvaluationCtx viewEvaluationCtx = getViewEvaluationCtx();
+		final SqlDocumentFilterConverterContext filterConverterContext = SqlDocumentFilterConverterContext.builder()
+				.userRolePermissionsKey(viewEvaluationCtx.getPermissionsKey())
+				.build();
+
 		return viewDataRepository.createOrderedSelectionFromSelection(
-				getViewEvaluationCtx(),
+				viewEvaluationCtx,
 				fromSelection,
 				DocumentFilterList.EMPTY,
 				orderBys,
-				SqlDocumentFilterConverterContext.EMPTY);
+				filterConverterContext);
 	}
 
 	public Set<DocumentId> retainExistingRowIds(@NonNull final Set<DocumentId> rowIds)

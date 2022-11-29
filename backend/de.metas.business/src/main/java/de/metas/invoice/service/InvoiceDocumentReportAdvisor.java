@@ -27,10 +27,11 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.i18n.Language;
 import de.metas.invoice.InvoiceId;
+import de.metas.process.AdProcessId;
 import de.metas.report.DocumentReportAdvisor;
 import de.metas.report.DocumentReportAdvisorUtil;
-import de.metas.report.PrintFormatId;
 import de.metas.report.DocumentReportInfo;
+import de.metas.report.PrintFormatId;
 import de.metas.report.StandardDocumentReportType;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -70,7 +71,7 @@ public class InvoiceDocumentReportAdvisor implements DocumentReportAdvisor
 	@Override
 	public @NonNull DocumentReportInfo getDocumentReportInfo(
 			@NonNull final TableRecordReference recordRef,
-			@Nullable final PrintFormatId adPrintFormatToUseId)
+			@Nullable final PrintFormatId adPrintFormatToUseId, final AdProcessId reportProcessIdToUse)
 	{
 		final InvoiceId invoiceId = recordRef.getIdAssumingTableName(I_C_Invoice.Table_Name, InvoiceId::ofRepoId);
 		final I_C_Invoice invoice = invoiceBL.getById(invoiceId);
@@ -97,7 +98,6 @@ public class InvoiceDocumentReportAdvisor implements DocumentReportAdvisor
 
 		return DocumentReportInfo.builder()
 				.recordRef(TableRecordReference.of(I_C_Invoice.Table_Name, invoiceId))
-				.printFormatId(printFormatId)
 				.reportProcessId(util.getReportProcessIdByPrintFormatId(printFormatId))
 				.copies(util.getDocumentCopies(bpartner, docType))
 				.documentNo(invoice.getDocumentNo())

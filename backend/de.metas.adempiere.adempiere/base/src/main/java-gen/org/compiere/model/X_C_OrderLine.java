@@ -103,6 +103,19 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
+	public void setBPartner_QtyItemCapacity (final @Nullable BigDecimal BPartner_QtyItemCapacity)
+	{
+		set_ValueNoCheck (COLUMNNAME_BPartner_QtyItemCapacity, BPartner_QtyItemCapacity);
+	}
+
+	@Override
+	public BigDecimal getBPartner_QtyItemCapacity() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_BPartner_QtyItemCapacity);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setBPartnerAddress (final @Nullable java.lang.String BPartnerAddress)
 	{
 		set_Value (COLUMNNAME_BPartnerAddress, BPartnerAddress);
@@ -189,14 +202,14 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	@Override
 	public void setC_BPartner_Vendor_ID (final int C_BPartner_Vendor_ID)
 	{
-		if (C_BPartner_Vendor_ID < 1) 
+		if (C_BPartner_Vendor_ID < 1)
 			set_Value (COLUMNNAME_C_BPartner_Vendor_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_BPartner_Vendor_ID, C_BPartner_Vendor_ID);
 	}
 
 	@Override
-	public int getC_BPartner_Vendor_ID() 
+	public int getC_BPartner_Vendor_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_BPartner_Vendor_ID);
 	}
@@ -526,6 +539,21 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
+	public void setC_UOM_BPartner_ID (final int C_UOM_BPartner_ID)
+	{
+		if (C_UOM_BPartner_ID < 1) 
+			set_Value (COLUMNNAME_C_UOM_BPartner_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_UOM_BPartner_ID, C_UOM_BPartner_ID);
+	}
+
+	@Override
+	public int getC_UOM_BPartner_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_UOM_BPartner_ID);
+	}
+
+	@Override
 	public void setC_UOM_ID (final int C_UOM_ID)
 	{
 		if (C_UOM_ID < 1) 
@@ -650,6 +678,30 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public int getExplodedFrom_BOMLine_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_ExplodedFrom_BOMLine_ID);
+	}
+
+	@Override
+	public void setExternalId (final @Nullable java.lang.String ExternalId)
+	{
+		set_Value (COLUMNNAME_ExternalId, ExternalId);
+	}
+
+	@Override
+	public java.lang.String getExternalId()
+	{
+		return get_ValueAsString(COLUMNNAME_ExternalId);
+	}
+
+	@Override
+	public void setExternalSeqNo (final int ExternalSeqNo)
+	{
+		set_Value (COLUMNNAME_ExternalSeqNo, ExternalSeqNo);
+	}
+
+	@Override
+	public int getExternalSeqNo() 
+	{
+		return get_ValueAsInt(COLUMNNAME_ExternalSeqNo);
 	}
 
 	@Override
@@ -1474,6 +1526,19 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	public BigDecimal getQtyEntered() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyEntered);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setQtyEnteredInBPartnerUOM (final @Nullable BigDecimal QtyEnteredInBPartnerUOM)
+	{
+		set_Value (COLUMNNAME_QtyEnteredInBPartnerUOM, QtyEnteredInBPartnerUOM);
+	}
+
+	@Override
+	public BigDecimal getQtyEnteredInBPartnerUOM() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyEnteredInBPartnerUOM);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 

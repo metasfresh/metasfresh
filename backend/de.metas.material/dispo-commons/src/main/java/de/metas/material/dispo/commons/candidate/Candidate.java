@@ -120,7 +120,7 @@ public class Candidate
 			final BusinessCaseDetail businessCaseDetail,
 			final DemandDetail additionalDemandDetail,
 			@Singular @NonNull final List<TransactionDetail> transactionDetails,
-			Dimension dimension,
+			final Dimension dimension,
 			final boolean simulated)
 	{
 		this.clientAndOrgId = clientAndOrgId;

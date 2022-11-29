@@ -24,7 +24,6 @@ import de.metas.util.Services;
 import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.FillMandatoryException;
-import org.compiere.util.CtxNames;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 import org.slf4j.Logger;
@@ -247,13 +246,6 @@ public class MColumn extends X_AD_Column
 		// Virtual Column
 		if (isVirtualColumn())
 		{
-			// Make sure there are no context variables in ColumnSQL
-			final String columnSql = getColumnSQL();
-			if (columnSql != null && columnSql.indexOf(CtxNames.NAME_Marker) >= 0)
-			{
-				throw new AdempiereException("Context variables are not allowed in ColumnSQL: " + columnSql);
-			}
-
 			if (isMandatory())
 				setIsMandatory(false);
 			if (isUpdateable())

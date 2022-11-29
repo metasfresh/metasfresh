@@ -36,12 +36,12 @@ import de.metas.ui.web.document.filter.sql.FilterSql;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverter;
 import de.metas.ui.web.document.filter.sql.SqlDocumentFilterConverterContext;
 import de.metas.ui.web.view.descriptor.SqlAndParams;
+import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.model.sql.SqlOptions;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.element.api.AdTabId;
 import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_C_BPartner;
 import org.springframework.stereotype.Component;
@@ -82,11 +82,10 @@ public class BPartnerSimpleFuzzySearchFilterProvider implements DocumentFilterDe
 	@Nullable
 	@Override
 	public DocumentFilterDescriptorsProvider createFiltersProvider(
-			@Nullable final AdTabId adTabId,
-			@Nullable final String tableName,
+			@NonNull final CreateFiltersProviderContext context,
 			@NonNull final Collection<DocumentFieldDescriptor> fields)
 	{
-		if (I_C_BPartner.Table_Name.equals(tableName)
+		if (I_C_BPartner.Table_Name.equals(context.getTableName())
 				&& isEnabled())
 		{
 			return ImmutableDocumentFilterDescriptorsProvider.of(FILTER_DESCRIPTOR);

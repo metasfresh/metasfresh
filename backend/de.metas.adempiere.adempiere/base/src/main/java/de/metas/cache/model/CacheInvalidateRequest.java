@@ -1,18 +1,18 @@
 package de.metas.cache.model;
 
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.Trace;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.Trace;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -158,6 +158,7 @@ public class CacheInvalidateRequest
 		}
 	}
 
+	@Nullable
 	public TableRecordReference getRootRecordOrNull()
 	{
 		if (rootTableName != null && rootRecordId >= 0)
@@ -170,6 +171,7 @@ public class CacheInvalidateRequest
 		}
 	}
 
+	@Nullable
 	public TableRecordReference getChildRecordOrNull()
 	{
 		if (childTableName != null && childRecordId >= 0)

@@ -31,6 +31,27 @@ public interface I_C_Order
 	String COLUMNNAME_AD_Client_ID = "AD_Client_ID";
 
 	/**
+	 * Set Inputsource.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_InputDataSource_ID (int AD_InputDataSource_ID);
+
+	/**
+	 * Get Inputsource.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_InputDataSource_ID();
+
+	ModelColumn<I_C_Order, Object> COLUMN_AD_InputDataSource_ID = new ModelColumn<>(I_C_Order.class, "AD_InputDataSource_ID", null);
+	String COLUMNNAME_AD_InputDataSource_ID = "AD_InputDataSource_ID";
+
+	/**
 	 * Set Organisation.
 	 * Organisational entity within client
 	 *
@@ -289,6 +310,27 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_BPartnerAddress = new ModelColumn<>(I_C_Order.class, "BPartnerAddress", null);
 	String COLUMNNAME_BPartnerAddress = "BPartnerAddress";
+
+	/**
+	 * Set Partner Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBPartnerName (@Nullable java.lang.String BPartnerName);
+
+	/**
+	 * Get Partner Name.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getBPartnerName();
+
+	ModelColumn<I_C_Order, Object> COLUMN_BPartnerName = new ModelColumn<>(I_C_Order.class, "BPartnerName", null);
+	String COLUMNNAME_BPartnerName = "BPartnerName";
 
 	/**
 	 * Set Activity.
@@ -630,7 +672,7 @@ public interface I_C_Order
 	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
 	/**
-	 * Set Zielbelegart.
+	 * Set Document Type.
 	 * Target document type for conversing documents
 	 *
 	 * <br>Type: Table
@@ -640,7 +682,7 @@ public interface I_C_Order
 	void setC_DocTypeTarget_ID (int C_DocTypeTarget_ID);
 
 	/**
-	 * Get Zielbelegart.
+	 * Get Document Type.
 	 * Target document type for conversing documents
 	 *
 	 * <br>Type: Table
@@ -1222,6 +1264,31 @@ public interface I_C_Order
 	String COLUMNNAME_DocStatus = "DocStatus";
 
 	/**
+	 * Set Doc Sub Type.
+	 * Document Sub Type
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 * @deprecated Please don't use it because this is a virtual column
+	 */
+	@Deprecated
+	void setDocSubType (@Nullable java.lang.String DocSubType);
+
+	/**
+	 * Get Doc Sub Type.
+	 * Document Sub Type
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: true
+	 */
+	@Nullable java.lang.String getDocSubType();
+
+	ModelColumn<I_C_Order, Object> COLUMN_DocSubType = new ModelColumn<>(I_C_Order.class, "DocSubType", null);
+	String COLUMNNAME_DocSubType = "DocSubType";
+
+	/**
 	 * Set Document No.
 	 * Document sequence number of the document
 	 *
@@ -1355,6 +1422,27 @@ public interface I_C_Order
 	int getDropShip_User_ID();
 
 	String COLUMNNAME_DropShip_User_ID = "DropShip_User_ID";
+
+	/**
+	 * Set eMail.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setEMail (@Nullable java.lang.String EMail);
+
+	/**
+	 * Get eMail.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getEMail();
+
+	ModelColumn<I_C_Order, Object> COLUMN_EMail = new ModelColumn<>(I_C_Order.class, "EMail", null);
+	String COLUMNNAME_EMail = "EMail";
 
 	/**
 	 * Set External ID.
@@ -1785,7 +1873,7 @@ public interface I_C_Order
 	String COLUMNNAME_IsDiscountPrinted = "IsDiscountPrinted";
 
 	/**
-	 * Set Streckengeschäft.
+	 * Set Different shipping address.
 	 * Drop Shipments are sent from the Vendor directly to the Customer
 	 *
 	 * <br>Type: YesNo
@@ -1795,7 +1883,7 @@ public interface I_C_Order
 	void setIsDropShip (boolean IsDropShip);
 
 	/**
-	 * Get Streckengeschäft.
+	 * Get Different shipping address.
 	 * Drop Shipments are sent from the Vendor directly to the Customer
 	 *
 	 * <br>Type: YesNo
@@ -2371,6 +2459,29 @@ public interface I_C_Order
 
 	ModelColumn<I_C_Order, Object> COLUMN_PaymentRule = new ModelColumn<>(I_C_Order.class, "PaymentRule", null);
 	String COLUMNNAME_PaymentRule = "PaymentRule";
+
+	/**
+	 * Set Phone.
+	 * Identifies a telephone number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPhone (@Nullable java.lang.String Phone);
+
+	/**
+	 * Get Phone.
+	 * Identifies a telephone number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPhone();
+
+	ModelColumn<I_C_Order, Object> COLUMN_Phone = new ModelColumn<>(I_C_Order.class, "Phone", null);
+	String COLUMNNAME_Phone = "Phone";
 
 	/**
 	 * Set Order Reference.

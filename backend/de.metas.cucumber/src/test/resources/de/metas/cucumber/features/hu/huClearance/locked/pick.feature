@@ -96,7 +96,7 @@ Feature: Locked HUs can not be picked
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
 
-    When generate shipments process is invoked
+    When 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | true                | false       |
 
@@ -176,5 +176,5 @@ Feature: Locked HUs can not be picked
       | newCreatedCU       | Locked          | Locked HU         |
 
     And process picking
-      | M_HU_ID.Identifier | M_ShipmentSchedule_ID.Identifier | OPT.ErrorMessage                               |
+      | M_HU_ID.Identifier | M_ShipmentSchedule_ID.Identifier | OPT.ErrorMessage                                                     |
       | newCreatedCU       | s_s_3                            | Nur freigegebene HUs können zur Kommissionierung verarbeitet werden! |

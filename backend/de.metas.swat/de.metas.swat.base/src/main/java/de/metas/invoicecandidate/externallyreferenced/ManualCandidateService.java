@@ -1,5 +1,6 @@
 package de.metas.invoicecandidate.externallyreferenced;
 
+import de.metas.bpartner.composite.BPartner;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
@@ -17,7 +18,6 @@ import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -60,7 +60,9 @@ public class ManualCandidateService
 		this.bPartnerCompositeRepository = bPartnerCompositeRepository;
 	}
 
-	/** Invokes different metasfresh services to complement additional fields such as the price. */
+	/**
+	 * Invokes different metasfresh services to complement additional fields such as the price.
+	 */
 	public ExternallyReferencedCandidate createInvoiceCandidate(@NonNull final NewManualInvoiceCandidate newIC)
 	{
 		final ExternallyReferencedCandidateBuilder candidate = ExternallyReferencedCandidate.createBuilder(newIC);
@@ -109,7 +111,6 @@ public class ManualCandidateService
 		final ZoneId timeZone = orgDAO.getTimeZone(newIC.getOrgId());
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
-				Env.getCtx(),
 				newIC,
 				pricingResult.getTaxCategoryId(),
 				newIC.getProductId().getRepoId(),
@@ -120,9 +121,16 @@ public class ManualCandidateService
 				newIC.getSoTrx());
 		candidate.taxId(taxId);
 
+		final BPartner bpartner = bpartnerComp.getBpartner();
+
+		final InvoiceRule partnerInvoiceRule = newIC.getSoTrx().isSales() ?
+				bpartner.getCustomerInvoiceRule() :
+				bpartner.getVendorInvoiceRule();
+
 		final InvoiceRule invoiceRule = coalesce(
-				bpartnerComp.getBpartner().getInvoiceRule(),
+				partnerInvoiceRule,
 				InvoiceRule.Immediate);
+
 		candidate.invoiceRule(invoiceRule);
 
 		return candidate.build();

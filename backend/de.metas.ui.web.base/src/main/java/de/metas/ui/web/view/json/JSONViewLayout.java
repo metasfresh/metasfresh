@@ -309,10 +309,12 @@ public final class JSONViewLayout
 			return builder()
 					.openOnSelect(includedViewLayout.isOpenOnSelect())
 					.blurWhenOpen(includedViewLayout.isBlurWhenOpen())
+					.closeOnDeselect(includedViewLayout.isCloseOnDeselect())
 					.build();
 		}
 
 		boolean openOnSelect;
 		boolean blurWhenOpen;
+		boolean closeOnDeselect;
 	}
 }

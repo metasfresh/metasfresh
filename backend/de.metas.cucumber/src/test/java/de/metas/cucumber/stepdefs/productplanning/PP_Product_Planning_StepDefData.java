@@ -27,4 +27,8 @@ import org.eevolution.model.I_PP_Product_Planning;
 
 public class PP_Product_Planning_StepDefData extends StepDefData<I_PP_Product_Planning>
 {
+	public PP_Product_Planning_StepDefData()
+	{
+		super(I_PP_Product_Planning.class);
+	}
 }

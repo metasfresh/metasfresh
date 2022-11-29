@@ -1,0 +1,85 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: metasfresh-{{ .Release.Name }}-webui
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: metasfresh-{{ .Release.Name }}-webui
+spec:
+  ports:
+  - name: webui
+    port: {{ .Values.webui.port.webui }}
+    protocol: TCP
+    targetPort: {{ .Values.webui.port.webui }}
+  selector:
+    app: metasfresh-{{ .Release.Name }}-webui
+  sessionAffinity: None
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: metasfresh-{{ .Release.Name }}-webui
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: metasfresh-{{ .Release.Name }}-webui
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: metasfresh-{{ .Release.Name }}-webui
+  template:
+    metadata:
+      labels:
+        app: metasfresh-{{ .Release.Name }}-webui
+    spec:
+      containers:
+      - name: metasfresh-{{ .Release.Name }}-webui
+        image: {{ .Values.webui.image }}
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: {{ .Values.webui.port.webui }}
+        env:
+        - name: WEBUI_API_CLIENT_HOST
+          value: {{ .Values.ingress.webui.url }}
+        {{ if .Values.ingress.tls.enabled }}  
+        - name: WEBUI_API_CLIENT_PROTOCOL
+          value: https
+        - name: WEBUI_API_CLIENT_PORT
+          value: '443'
+        {{ else }}
+        - name: WEBUI_API_CLIENT_PROTOCOL
+          value: http
+        - name: WEBUI_API_CLIENT_PORT
+          value: '80'
+        {{ end }}
+        - name: WEBUI_API_PROXYPASS_PROTOCOL
+          value: http
+        - name: WEBUI_API_PROXYPASS_HOST
+          value: metasfresh-{{ .Release.Name }}-webapi
+        - name: WEBUI_API_PROXYPASS_PORT
+          value: '{{ .Values.webapi.port.webapi }}'
+        - name: DEBUG_CAT_NGINX_CONF_FILE
+          value: {{ .Values.webui.debug.CatNginxConfigFile }}  
+        volumeMounts:
+        - mountPath: /etc/localtime
+          name: host-localtime
+          readOnly: true
+        - mountPath: /etc/timezone
+          name: host-timezone
+          readOnly: true
+      restartPolicy: Always
+      initContainers:
+      - name: init-wait-for-webapi
+        image: busybox
+        command: ['sh', '-c', 'until nc -vz metasfresh-{{ .Release.Name }}-webapi {{ .Values.webapi.port.webapi }}; do echo waiting for webapi; sleep 2; done;']
+      volumes:
+      - name: host-localtime
+        hostPath:
+          path: /etc/localtime
+      - name: host-timezone
+        hostPath:
+          path: /etc/timezone

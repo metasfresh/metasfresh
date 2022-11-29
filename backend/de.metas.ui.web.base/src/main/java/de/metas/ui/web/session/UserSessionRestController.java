@@ -5,9 +5,11 @@ import de.metas.organization.ClientAndOrgId;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.session.json.JSONUserSession;
 import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
+import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.service.ISysConfigBL;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -50,6 +52,9 @@ public class UserSessionRestController
 	private final UserSession userSession;
 	private final UserSessionRepository userSessionRepo;
 
+	@Autowired
+	private DocumentCollection documentCollection;
+
 	public UserSessionRestController(
 			@NonNull final UserSession userSession,
 			@NonNull final UserSessionRepository userSessionRepo)
@@ -74,6 +79,7 @@ public class UserSessionRestController
 	{
 		final String adLanguage = value.getKey();
 		userSessionRepo.setAD_Language(userSession.getLoggedUserId(), adLanguage);
+		documentCollection.cacheReset(false); // don't evict unsaved documents from the cache, because they would be lost entirely
 
 		return getLanguage();
 	}

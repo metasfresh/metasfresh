@@ -38,7 +38,7 @@ import java.util.List;
 public class MultiQueryRequest implements Shopware6QueryRequest
 {
 	@NonNull
-	@JsonProperty("filters")
+	@JsonProperty("filter")
 	List<MultiJsonFilter> filterList;
 
 	@JsonIgnore
@@ -46,7 +46,7 @@ public class MultiQueryRequest implements Shopware6QueryRequest
 
 	@Builder
 	public MultiQueryRequest(
-			@NonNull @Singular @JsonProperty("filters") final List<MultiJsonFilter> filters,
+			@NonNull @Singular @JsonProperty("filter") final List<MultiJsonFilter> filters,
 			@Nullable final Boolean isQueryByDate)
 	{
 		this.filterList = filters;

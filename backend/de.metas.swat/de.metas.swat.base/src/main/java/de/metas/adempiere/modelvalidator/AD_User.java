@@ -59,9 +59,7 @@ public class AD_User
 	@CalloutMethod(columnNames = { org.compiere.model.I_AD_User.COLUMNNAME_Firstname, org.compiere.model.I_AD_User.COLUMNNAME_Lastname })
 	public void setName(final org.compiere.model.I_AD_User user)
 	{
-		final IUserBL userService = Services.get(IUserBL.class);
-
-		final String contactName = userService.buildContactName(user.getFirstname(), user.getLastname());
+		final String contactName = IUserBL.buildContactName(user.getFirstname(), user.getLastname());
 		if (Check.isEmpty(contactName))
 		{
 			return; // make sure not to overwrite an existing name with an empty string!

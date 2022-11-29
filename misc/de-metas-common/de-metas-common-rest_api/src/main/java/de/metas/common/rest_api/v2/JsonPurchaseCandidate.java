@@ -28,8 +28,8 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.common.rest_api.common.JsonExternalId;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.common.util.CoalesceUtil;
 import de.metas.common.rest_api.common.JsonWorkPackageStatus;
+import de.metas.common.util.CoalesceUtil;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
@@ -48,7 +48,7 @@ public class JsonPurchaseCandidate
 
 	@JsonProperty("externalLineId")
 	JsonExternalId externalLineId;
-
+	
 	@JsonProperty("externalPurchaseOrderUrl")
 	String externalPurchaseOrderUrl;
 

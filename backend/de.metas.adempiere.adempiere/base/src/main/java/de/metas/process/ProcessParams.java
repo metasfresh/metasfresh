@@ -33,6 +33,7 @@ import org.adempiere.util.api.IRangeAwareParams;
 import org.adempiere.util.lang.IReference;
 import org.adempiere.util.lang.ImmutableReference;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -84,7 +85,7 @@ public class ProcessParams implements IRangeAwareParams
 	/**
 	 * Lazy loading constructor
 	 *
-	 * @param parametersLoader loader which will provide the paramaters. It will be called ONLY when needed
+	 * @param parametersLoader loader which will provide the parameters. It will be called ONLY when needed
 	 */
 	public ProcessParams(@NonNull final IReference<List<ProcessInfoParameter>> parametersLoader)
 	{
@@ -167,7 +168,7 @@ public class ProcessParams implements IRangeAwareParams
 		}
 		return processInfoParameter.getParameterAsInt(defaultValue);
 	}
-	
+		
 	@Override
 	public <T extends RepoIdAware> T getParameterAsId(final String parameterName, final Class<T> type)
 	{
@@ -215,12 +216,16 @@ public class ProcessParams implements IRangeAwareParams
 	@Override
 	public final boolean getParameterAsBool(final String parameterName)
 	{
+		//noinspection ConstantConditions
+		return getParameterAsBoolean(parameterName, false);
+	}
+
+	@Nullable
+	@Override
+	public Boolean getParameterAsBoolean(final String parameterName, @Nullable final Boolean defaultValue)
+	{
 		final ProcessInfoParameter processInfoParameter = getProcessInfoParameterOrNull(parameterName);
-		if (processInfoParameter == null)
-		{
-			return false;
-		}
-		return processInfoParameter.getParameterAsBoolean();
+		return processInfoParameter != null ? processInfoParameter.getParameterAsBoolean(defaultValue) : defaultValue;
 	}
 
 	@Override
@@ -261,7 +266,7 @@ public class ProcessParams implements IRangeAwareParams
 		final ProcessInfoParameter processInfoParameter = getProcessInfoParameterOrNull(parameterName);
 		return processInfoParameter != null ? processInfoParameter.getParameterAsInstant() : null;
 	}
-
+	
 	@Override
 	public Timestamp getParameter_ToAsTimestamp(final String parameterName)
 	{

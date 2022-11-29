@@ -166,10 +166,31 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_C_HierarchyCommissionSettings_ID = "C_HierarchyCommissionSettings_ID";
 
 	/**
-	 * Set Brokerage commission settings.
+	 * Set License fee settings.
 	 *
 	 * <br>Type: Search
 	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_LicenseFeeSettings_ID (int C_LicenseFeeSettings_ID);
+
+	/**
+	 * Get License fee settings.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_LicenseFeeSettings_ID();
+
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_C_LicenseFeeSettings_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_LicenseFeeSettings_ID", null);
+	String COLUMNNAME_C_LicenseFeeSettings_ID = "C_LicenseFeeSettings_ID";
+
+	/**
+	 * Set Brokerage commission settings.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	void setC_MediatedCommissionSettings_ID (int C_MediatedCommissionSettings_ID);
@@ -178,13 +199,35 @@ public interface I_C_Flatrate_Conditions
 	 * Get Brokerage commission settings.
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: false
+	 * <br>Mandatory: true
 	 * <br>Virtual Column: false
 	 */
 	int getC_MediatedCommissionSettings_ID();
 
 	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_C_MediatedCommissionSettings_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_MediatedCommissionSettings_ID", null);
 	String COLUMNNAME_C_MediatedCommissionSettings_ID = "C_MediatedCommissionSettings_ID";
+
+	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Abo-Rabatt.
@@ -211,27 +254,6 @@ public interface I_C_Flatrate_Conditions
 	ModelColumn<I_C_Flatrate_Conditions, de.metas.contracts.model.I_C_SubscrDiscount> COLUMN_C_SubscrDiscount_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_SubscrDiscount_ID", de.metas.contracts.model.I_C_SubscrDiscount.class);
 	String COLUMNNAME_C_SubscrDiscount_ID = "C_SubscrDiscount_ID";
 
-	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Basis für Verrechnungs-Zahlbetrag.
@@ -280,7 +302,7 @@ public interface I_C_Flatrate_Conditions
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
-
+	
 	/**
 	 * Set Description.
 	 *

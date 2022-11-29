@@ -24,6 +24,13 @@ package de.metas.cucumber.stepdefs;
 
 import org.compiere.model.I_M_Product;
 
+/**
+ * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
+ */
 public class M_Product_StepDefData extends StepDefData<I_M_Product>
 {
+	public M_Product_StepDefData()
+	{
+		super(I_M_Product.class);
+	}
 }

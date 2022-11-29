@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_BPartner_Product
  *  @author metasfresh (generated) 
@@ -159,7 +159,7 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	}
 
 	@Override
-	public java.lang.String getFLO_Identifier() 
+	public java.lang.String getFLO_Identifier()
 	{
 		return get_ValueAsString(COLUMNNAME_FLO_Identifier);
 	}
@@ -243,7 +243,7 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	}
 
 	@Override
-	public int getLeadTime() 
+	public int getLeadTime()
 	{
 		return get_ValueAsInt(COLUMNNAME_LeadTime);
 	}
@@ -255,7 +255,7 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	}
 
 	@Override
-	public java.lang.String getManufacturer() 
+	public java.lang.String getManufacturer()
 	{
 		return get_ValueAsString(COLUMNNAME_Manufacturer);
 	}
@@ -326,6 +326,30 @@ public class X_C_BPartner_Product extends org.compiere.model.PO implements I_C_B
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Order_Pack);
 		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setPicking_AgeTolerance_AfterMonths (final int Picking_AgeTolerance_AfterMonths)
+	{
+		set_Value (COLUMNNAME_Picking_AgeTolerance_AfterMonths, Picking_AgeTolerance_AfterMonths);
+	}
+
+	@Override
+	public int getPicking_AgeTolerance_AfterMonths()
+	{
+		return get_ValueAsInt(COLUMNNAME_Picking_AgeTolerance_AfterMonths);
+	}
+
+	@Override
+	public void setPicking_AgeTolerance_BeforeMonths (final int Picking_AgeTolerance_BeforeMonths)
+	{
+		set_Value (COLUMNNAME_Picking_AgeTolerance_BeforeMonths, Picking_AgeTolerance_BeforeMonths);
+	}
+
+	@Override
+	public int getPicking_AgeTolerance_BeforeMonths()
+	{
+		return get_ValueAsInt(COLUMNNAME_Picking_AgeTolerance_BeforeMonths);
 	}
 
 	@Override

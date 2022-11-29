@@ -71,8 +71,14 @@ public class WebuiHUTransformCommand
 	 */
 	public enum ActionType
 	{
+		/**
+		 * Invokes {@link HUTransformService#cuToNewCU(I_M_HU, Quantity)}.
+		 */
 		CU_To_NewCU,
 
+		/**
+		 * Invokes {@link HUTransformService#cuToNewTUs(I_M_HU, Quantity, I_M_HU_PI_Item_Product, boolean)}.
+		 */
 		CU_To_NewTUs,
 
 		/**
@@ -81,13 +87,19 @@ public class WebuiHUTransformCommand
 		 * Parameters:
 		 * <ul>
 		 * <li>the currently selected TU line</li>
-		 * <li>HUPlanningReceiptOwnerPM_TU</li>
+		 * <li>{@link WEBUI_M_HU_Transform#PARAM_HUPlanningReceiptOwnerPM_TU}</li>
 		 * </ul>
 		 */
 		TU_Set_Ownership,
 
+		/**
+		 * Invokes {@link HUTransformService#cuToExistingTU(I_M_HU, Quantity, I_M_HU)}.
+		 */
 		CU_To_ExistingTU,
 
+		/**
+		 * Invokes {@link HUTransformService#tuToNewTUs(I_M_HU, BigDecimal)}.
+		 */
 		TU_To_NewTUs,
 
 		/**
@@ -106,7 +118,7 @@ public class WebuiHUTransformCommand
 		 * Parameters:
 		 * <ul>
 		 * <li>the currently selected LU line</li>
-		 * <li>HUPlanningReceiptOwnerPM_LU</li>
+		 * <li>{@link WEBUI_M_HU_Transform#PARAM_HUPlanningReceiptOwnerPM_LU}</li>
 		 * </ul>
 		 */
 		LU_Set_Ownership
@@ -122,8 +134,7 @@ public class WebuiHUTransformCommand
 	private WebuiHUTransformCommand(
 			@NonNull final HUEditorRow selectedRow,
 			@Nullable final List<TableRecordReference> contextDocumentLines,
-			@NonNull final WebuiHUTransformParameters parameters,
-			final HUEditorRow.HUEditorRowHierarchy huEditorRowHierarchy)
+			@NonNull final WebuiHUTransformParameters parameters)
 	{
 		this._selectedRow = selectedRow;
 		this._contextDocumentLines = contextDocumentLines != null ? ImmutableList.copyOf(contextDocumentLines) : ImmutableList.of();
@@ -284,7 +295,6 @@ public class WebuiHUTransformCommand
 	 *
 	 * @param cuRow                 cu row to split
 	 * @param qtyCU                 quantity CU to split
-	 * @param tuPIItemProduct     to TU
 	 */
 	private WebuiHUTransformCommandResult action_SplitCU_To_NewTUs(
 			final HUEditorRow cuRow, final I_M_HU_PI_Item_Product tuPIItemProduct, final Quantity qtyCU, final boolean isOwnPackingMaterials)

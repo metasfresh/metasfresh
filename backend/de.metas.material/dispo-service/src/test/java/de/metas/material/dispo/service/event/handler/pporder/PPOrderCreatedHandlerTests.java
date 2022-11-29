@@ -178,6 +178,7 @@ public class PPOrderCreatedHandlerTests
 			assertThat(t2Supply.getMD_Candidate_GroupId()).isNotEqualTo(t2Stock.getMD_Candidate_GroupId()); // stock candidates' groupIds are different from supply/demand groups' groupIds
 
 			supplyDemandGroupId = MaterialDispoGroupId.ofInt(t2Supply.getMD_Candidate_GroupId());
+
 			//
 			// Check bom lines demand candidates
 			final I_MD_Candidate t1Product1Demand = DispoTestUtils.filter(CandidateType.DEMAND, NOW, rawProduct1Id).get(0);

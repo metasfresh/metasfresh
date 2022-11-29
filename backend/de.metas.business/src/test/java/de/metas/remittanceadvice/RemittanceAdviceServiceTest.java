@@ -52,7 +52,6 @@ import org.compiere.model.I_C_Conversion_Rate;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.util.TimeUtil;
-import org.jpedal.fonts.tt.Loca;
 import org.junit.Before;
 import org.junit.Test;
 

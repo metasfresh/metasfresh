@@ -22,22 +22,17 @@ package de.metas.fresh.ordercheckup.printing.spi.impl;
  * #L%
  */
 
-import org.slf4j.Logger;
-import de.metas.logging.LogManager;
-
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.archive.api.IArchiveDAO;
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.document.archive.model.I_AD_Archive;
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.fresh.ordercheckup.IOrderCheckupBL;
+import de.metas.logging.LogManager;
 import de.metas.printing.api.IPrintingQueueBL;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.printing.spi.PrintingQueueHandlerAdapter;
 import de.metas.util.Services;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.slf4j.Logger;
 
 /**
  * The job of this handler is
@@ -56,6 +51,8 @@ public class OrderCheckupPrintingQueueHandler extends PrintingQueueHandlerAdapte
 
 	private static final transient Logger logger = LogManager.getLogger(OrderCheckupPrintingQueueHandler.class);
 
+	private final transient IOrderCheckupBL orderCheckupBL = Services.get(IOrderCheckupBL.class);
+
 	/**
 	 * Set the number of copies to the configured value.
 	 * Note that this handler is invoked after the "standard" handler, because the main validator of de.metas.fresh
@@ -66,7 +63,7 @@ public class OrderCheckupPrintingQueueHandler extends PrintingQueueHandlerAdapte
 	@Override
 	public void afterEnqueueBeforeSave(final I_C_Printing_Queue queueItem, final I_AD_Archive printOut)
 	{
-		final int copies = Services.get(IOrderCheckupBL.class).getNumberOfCopies(queueItem);
+		final int copies = orderCheckupBL.getNumberOfCopies(queueItem, printOut);
 		queueItem.setCopies(copies);
 	}
 
@@ -75,7 +72,7 @@ public class OrderCheckupPrintingQueueHandler extends PrintingQueueHandlerAdapte
 	{
 		//
 		// Get the underlying report if applies
-		final I_C_Order_MFGWarehouse_Report report = getReportOrNull(printOut);
+		final I_C_Order_MFGWarehouse_Report report = orderCheckupBL.getReportOrNull(printOut);
 		if (report == null)
 		{
 			return;
@@ -93,22 +90,7 @@ public class OrderCheckupPrintingQueueHandler extends PrintingQueueHandlerAdapte
 		return Services.get(IADTableDAO.class).isTableId(I_C_Order_MFGWarehouse_Report.Table_Name, printOut.getAD_Table_ID());
 	}
 
-	private final I_C_Order_MFGWarehouse_Report getReportOrNull(final I_AD_Archive printOut)
-	{
-		if (!Services.get(IADTableDAO.class).isTableId(I_C_Order_MFGWarehouse_Report.Table_Name, printOut.getAD_Table_ID()))
-		{
-			return null;
-		}
 
-		final I_C_Order_MFGWarehouse_Report report = Services.get(IArchiveDAO.class).retrieveReferencedModel(printOut, I_C_Order_MFGWarehouse_Report.class);
-		if (report == null)
-		{
-			new AdempiereException("No report was found for " + printOut)
-					.throwIfDeveloperModeOrLogWarningElse(logger);
-		}
-
-		return report;
-	}
 
 	private final void setUserToPrint(final I_C_Printing_Queue queueItem, final I_C_Order_MFGWarehouse_Report report)
 	{

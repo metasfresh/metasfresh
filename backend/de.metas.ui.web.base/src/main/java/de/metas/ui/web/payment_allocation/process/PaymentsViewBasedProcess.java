@@ -9,8 +9,6 @@ import de.metas.ui.web.payment_allocation.PaymentsView;
 import de.metas.ui.web.process.adprocess.ViewBasedProcessTemplate;
 import de.metas.ui.web.window.datatypes.DocumentIdsSelection;
 
-import java.util.List;
-
 /*
  * #%L
  * metasfresh-webui-api
@@ -35,6 +33,9 @@ import java.util.List;
 
 abstract class PaymentsViewBasedProcess extends ViewBasedProcessTemplate
 {
+	private transient ImmutableList<PaymentRow> _paymentRowsSelectedForAllocation;
+	private transient ImmutableList<InvoiceRow> _invoiceRowsSelectedForAllocation;
+
 	@Override
 	protected final PaymentsView getView()
 	{
@@ -65,7 +66,17 @@ abstract class PaymentsViewBasedProcess extends ViewBasedProcessTemplate
 	//
 	//
 
-	protected final List<PaymentRow> getPaymentRowsSelectedForAllocation()
+	protected final ImmutableList<PaymentRow> getPaymentRowsSelectedForAllocation()
+	{
+		ImmutableList<PaymentRow> paymentRowsSelectedForAllocation = this._paymentRowsSelectedForAllocation;
+		if (paymentRowsSelectedForAllocation == null)
+		{
+			paymentRowsSelectedForAllocation = this._paymentRowsSelectedForAllocation = computePaymentRowsSelectedForAllocation();
+		}
+		return paymentRowsSelectedForAllocation;
+	}
+
+	private ImmutableList<PaymentRow> computePaymentRowsSelectedForAllocation()
 	{
 		final DocumentIdsSelection selectedPaymentRowIds = getSelectedPaymentRowIdsIncludingDefaultRow();
 
@@ -74,7 +85,17 @@ abstract class PaymentsViewBasedProcess extends ViewBasedProcessTemplate
 				.collect(ImmutableList.toImmutableList());
 	}
 
-	protected final List<InvoiceRow> getInvoiceRowsSelectedForAllocation()
+	protected final ImmutableList<InvoiceRow> getInvoiceRowsSelectedForAllocation()
+	{
+		ImmutableList<InvoiceRow> invoiceRowsSelectedForAllocation = this._invoiceRowsSelectedForAllocation;
+		if (invoiceRowsSelectedForAllocation == null)
+		{
+			invoiceRowsSelectedForAllocation = this._invoiceRowsSelectedForAllocation = computeInvoiceRowsSelectedForAllocation();
+		}
+		return invoiceRowsSelectedForAllocation;
+	}
+
+	private ImmutableList<InvoiceRow> computeInvoiceRowsSelectedForAllocation()
 	{
 		final InvoicesView invoicesView = getInvoicesView();
 		if (InvoicesViewFactory.isEnablePreparedForAllocationFlag())

@@ -90,8 +90,10 @@ public class ExportBPartnerRequestBuilder
 				.build();
 
 		final ExternalReferenceLookupCamelRequest externalReferenceSearchCamelRequest = ExternalReferenceLookupCamelRequest.builder()
+				.externalSystemConfigId(routeContext.getExternalSystemConfigId())
+				.adPInstanceId(JsonMetasfreshId.ofOrNull(routeContext.getPinstanceId()))
 				.orgCode(routeContext.getOrgCode())
-				.externalReferenceLookupRequest(jsonExternalReferenceLookupRequest)
+				.jsonExternalReferenceLookupRequest(jsonExternalReferenceLookupRequest)
 				.build();
 
 		exchange.getIn().setBody(externalReferenceSearchCamelRequest);

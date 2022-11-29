@@ -190,7 +190,7 @@ public class OrgDAO implements IOrgDAO
 				.firstOnly(I_AD_OrgInfo.class);
 	}
 
-	public static OrgInfo toOrgInfo(final I_AD_OrgInfo record)
+	public static OrgInfo toOrgInfo(@NonNull final I_AD_OrgInfo record)
 	{
 		final OrgId parentOrgId = record.getParent_Org_ID() > 0
 				? OrgId.ofRepoId(record.getParent_Org_ID())
@@ -222,6 +222,9 @@ public class OrgDAO implements IOrgDAO
 				.orgBPartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(record.getOrg_BPartner_ID(), record.getOrgBP_Location_ID()))
 				.reportsPathPrefix(record.getReportPrefix())
 				.timeZone(timeZone)
+
+				.autoInvoiceFlatrateTerms(record.isAutoInvoiceFlatrateTerm())
+
 				//
 				.partnerCreatedFromAnotherOrgNotifyUserGroupID(UserGroupId.ofRepoIdOrNull(record.getC_BPartner_CreatedFromAnotherOrg_Notify_UserGroup_ID()))
 				.supplierApprovalExpirationNotifyUserGroupID(UserGroupId.ofRepoIdOrNull(record.getC_BP_SupplierApproval_Expiration_Notify_UserGroup_ID()))
@@ -372,6 +375,15 @@ public class OrgDAO implements IOrgDAO
 	public String getOrgName(@NonNull final OrgId orgId)
 	{
 		return getById(orgId).getName();
+	}
+
+	@Override
+	public boolean isAutoInvoiceFlatrateTerm(@NonNull final OrgId orgId)
+	{
+		final OrgInfo orgInfo = getOrgInfoById(orgId);
+
+		return orgInfo.isAutoInvoiceFlatrateTerms();
+
 	}
 
 }

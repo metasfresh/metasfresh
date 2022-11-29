@@ -22,12 +22,19 @@ package de.metas.acct.callout;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.time.LocalDate;
-
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaId;
+import de.metas.acct.api.IAcctSchemaDAO;
+import de.metas.acct.gljournal.IGLJournalLineBL;
+import de.metas.acct.tax.ITaxAccountable;
 import de.metas.common.util.time.SystemTime;
+import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRate;
+import de.metas.currency.ICurrencyBL;
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
+import de.metas.organization.OrgId;
+import de.metas.util.Services;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.exceptions.AdempiereException;
@@ -40,17 +47,9 @@ import org.compiere.model.I_GL_JournalLine;
 import org.compiere.model.X_GL_JournalLine;
 import org.compiere.util.TimeUtil;
 
-import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.api.IAcctSchemaDAO;
-import de.metas.acct.gljournal.IGLJournalLineBL;
-import de.metas.acct.tax.ITaxAccountable;
-import de.metas.currency.CurrencyPrecision;
-import de.metas.currency.ICurrencyBL;
-import de.metas.money.CurrencyConversionTypeId;
-import de.metas.money.CurrencyId;
-import de.metas.organization.OrgId;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
 
 @Callout(value = I_GL_JournalLine.class, recursionAvoidanceLevel = Callout.RecursionAvoidanceLevel.CalloutMethod)
 public class GL_JournalLine
@@ -101,8 +100,6 @@ public class GL_JournalLine
 				adOrgId)
 				.map(CurrencyRate::getConversionRate)
 				.orElse(BigDecimal.ZERO);
-
-		//
 		glJournalLine.setCurrencyRate(currencyRate);
 	}
 
@@ -112,15 +109,21 @@ public class GL_JournalLine
 		final AcctSchemaId acctSchemaId = AcctSchemaId.ofRepoId(journalLine.getGL_Journal().getC_AcctSchema_ID());
 		final AcctSchema acctSchema = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
 		final CurrencyPrecision precision = acctSchema.getStandardPrecision();
+
 		final BigDecimal currencyRate = journalLine.getCurrencyRate();
+		final BigDecimal parentCurrencyRate = journalLine.getGL_Journal().getCurrencyRate();
+		if(currencyRate.signum() == 0 && parentCurrencyRate.signum() != 0)
+		{
+			journalLine.setCurrencyRate(parentCurrencyRate);
+		}
 
 		// AmtAcct = AmtSource * CurrencyRate ==> Precision
 		final BigDecimal amtSourceDr = journalLine.getAmtSourceDr();
-		final BigDecimal amtAcctDr = amtSourceDr.multiply(currencyRate).setScale(precision.toInt(), RoundingMode.HALF_UP);
+		final BigDecimal amtAcctDr = amtSourceDr.multiply(journalLine.getCurrencyRate()).setScale(precision.toInt(), RoundingMode.HALF_UP);
 		journalLine.setAmtAcctDr(amtAcctDr);
 
 		final BigDecimal amtSourceCr = journalLine.getAmtSourceCr();
-		final BigDecimal amtAcctCr = amtSourceCr.multiply(currencyRate).setScale(precision.toInt(), RoundingMode.HALF_UP);
+		final BigDecimal amtAcctCr = amtSourceCr.multiply(journalLine.getCurrencyRate()).setScale(precision.toInt(), RoundingMode.HALF_UP);
 		journalLine.setAmtAcctCr(amtAcctCr);
 	}
 
