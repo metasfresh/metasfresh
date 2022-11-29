@@ -9,6 +9,7 @@ import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
 import de.metas.handlingunits.storage.IProductStorage;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
@@ -29,6 +30,9 @@ public class PPOrderSourceHUService
 	private final PPOrderSourceHURepository ppOrderSourceHURepository;
 	private final PPOrderIssueScheduleService ppOrderIssueScheduleService;
 
+	private static final AdMessageKey MSG_HUProductsNotMatchingIssuingProducts = AdMessageKey.of("de.metas.handlingunits.HUProductsNotMatchingIssuingProducts");
+	private static final AdMessageKey MSG_HUIsEmpty = AdMessageKey.of("de.metas.handlingunits.HUIsEmpty");
+
 	public PPOrderSourceHUService(
 			@NonNull final PPOrderSourceHURepository ppOrderSourceHURepository,
 			@NonNull final PPOrderIssueScheduleService ppOrderIssueScheduleService)
@@ -45,13 +49,13 @@ public class PPOrderSourceHUService
 		final ImmutableSet<ProductId> huProductIds = getHUProductIds(huId);
 		if (huProductIds.isEmpty())
 		{
-			throw new AdempiereException("HU is empty"); // TODO trl
+			throw new AdempiereException(MSG_HUIsEmpty);
 		}
 
 		final Set<ProductId> productIdsToIssue = ppOrderBL.getProductIdsToIssue(ppOrderId);
 		if (Sets.intersection(productIdsToIssue, huProductIds).isEmpty())
 		{
-			throw new AdempiereException("None of the HU's products are needed for issuing"); // TODO trl
+			throw new AdempiereException(MSG_HUProductsNotMatchingIssuingProducts);
 		}
 
 		ppOrderSourceHURepository.addSourceHU(ppOrderId, huId);
