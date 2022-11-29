@@ -1192,3 +1192,8 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=70,Updated=TO_TIMESTAMP(
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=80,Updated=TO_TIMESTAMP('2022-11-28 16:33:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613626
 ;
 
+-- Column: M_Forwarder.C_BPartner_ID
+-- 2022-11-29T20:29:36.178Z
+UPDATE AD_Column SET AD_Reference_Value_ID=541252,Updated=TO_TIMESTAMP('2022-11-29 21:29:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585167
+;
+
