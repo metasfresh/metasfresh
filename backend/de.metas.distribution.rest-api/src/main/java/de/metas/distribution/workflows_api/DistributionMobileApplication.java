@@ -33,6 +33,7 @@ import java.util.function.UnaryOperator;
 @Component
 public class DistributionMobileApplication implements WorkflowBasedMobileApplication
 {
+	@VisibleForTesting
 	public static final MobileApplicationId APPLICATION_ID = MobileApplicationId.ofString("distribution");
 
 	private static final AdMessageKey MSG_Caption = AdMessageKey.of("mobileui.distribution.appName");

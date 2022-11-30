@@ -12,11 +12,11 @@ import lombok.Value;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseAndLocatorValue;
 import org.adempiere.warehouse.WarehouseId;
-import org.adempiere.warehouse.groups.picking.WarehousePickingGroup;
-import org.adempiere.warehouse.groups.picking.WarehousePickingGroupId;
 import org.adempiere.warehouse.WarehouseType;
 import org.adempiere.warehouse.WarehouseTypeId;
 import org.adempiere.warehouse.groups.WarehouseGroupAssignmentType;
+import org.adempiere.warehouse.groups.picking.WarehousePickingGroup;
+import org.adempiere.warehouse.groups.picking.WarehousePickingGroupId;
 import org.compiere.model.I_M_Locator;
 import org.compiere.model.I_M_Warehouse;
 

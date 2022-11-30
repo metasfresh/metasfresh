@@ -22,14 +22,13 @@ package de.metas.handlingunits.pporder.api;
  * #L%
  */
 
-import java.util.Collection;
-import java.util.List;
-
-import org.eevolution.api.ReceiptCostCollectorCandidate;
-
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Cost_Collector;
 import de.metas.util.ISingletonService;
+import org.eevolution.api.ReceiptCostCollectorCandidate;
+
+import java.util.Collection;
+import java.util.List;
 
 public interface IHUPPCostCollectorBL extends ISingletonService
 {

@@ -17,13 +17,8 @@ import io.swagger.client.model.ArrayOfMappings;
 import io.swagger.client.model.ArrayOfPatients;
 import io.swagger.client.model.CustomerMapping;
 import io.swagger.client.model.Patient;
-import org.junit.Test;
 import org.junit.Ignore;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.junit.Test;
 
 /**
  * API tests for PatientApi
