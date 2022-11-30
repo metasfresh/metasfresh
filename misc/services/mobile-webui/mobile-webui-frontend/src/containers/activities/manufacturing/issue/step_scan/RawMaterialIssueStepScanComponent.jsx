@@ -7,7 +7,7 @@ import { updateManufacturingIssue } from '../../../../../actions/ManufacturingAc
 
 import ScanHUAndGetQtyComponent from '../../../../../components/ScanHUAndGetQtyComponent';
 import { toQRCodeString } from '../../../../../utils/huQRCodes';
-import { computeStepScanPropsFromActivity } from './computeStepScanPropsFromState';
+import { computeStepScanPropsFromActivity } from './computeStepScanPropsFromActivity';
 import { computeStepScanUserInfoQtys } from './computeStepScanUserInfoQtys';
 import PropTypes from 'prop-types';
 import {
@@ -36,7 +36,7 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
       qtyToIssueTarget,
       qtyToIssueMax,
       lineQtyToIssue,
-      lineQtyToIssueTolerancePerc,
+      lineQtyToIssueTolerance,
       lineQtyToIssueRemaining,
       isWeightable,
       isIssueWholeHU,
@@ -50,7 +50,7 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
       userInfo: computeStepScanUserInfoQtys({
         uom,
         lineQtyToIssue,
-        lineQtyToIssueTolerancePerc,
+        lineQtyToIssueTolerance,
         lineQtyToIssueRemaining,
       }),
       qtyTarget: qtyToIssueTarget,

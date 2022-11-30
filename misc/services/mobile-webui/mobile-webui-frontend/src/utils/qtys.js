@@ -2,7 +2,7 @@ import { getLanguage } from './translations';
 
 const MAX_maximumFractionDigits = 20; // ... to avoid "maximumFractionDigits value is out of range"
 
-export const formatQtyToHumanReadable = ({ qty, uom, precision = null, tolerancePercent = null }) => {
+export const formatQtyToHumanReadable = ({ qty, uom, precision = null, tolerance = null }) => {
   //console.log('formatQtyToHumanReadable', { qty, uom, precision, tolerancePercent });
 
   let qtyEffective = qty ?? 0;
@@ -36,8 +36,16 @@ export const formatQtyToHumanReadable = ({ qty, uom, precision = null, tolerance
 
   let result = `${qtyEffectiveStr}${uomEffective ? uomEffective : ''}`;
 
-  if (tolerancePercent != null && tolerancePercent !== 0) {
-    result += ' ±' + tolerancePercent + '%';
+  if (tolerance != null && typeof tolerance === 'object') {
+    if (tolerance.percentage != null) {
+      result += ' ±' + tolerance.percentage + '%';
+    } else if (tolerance.qty != null) {
+      const toleranceQtyStr = formatQtyToHumanReadable({
+        qty: tolerance.qty,
+        uom: tolerance.uom,
+      });
+      result += ' ±' + toleranceQtyStr;
+    }
   }
 
   // console.log('formatQtyToHumanReadable', {
@@ -45,7 +53,7 @@ export const formatQtyToHumanReadable = ({ qty, uom, precision = null, tolerance
   //   qty,
   //   uom,
   //   precision,
-  //   tolerancePercent,
+  //   tolerance,
   //   qtyEffective,
   //   uomEffective,
   //   maximumFractionDigits,

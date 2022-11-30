@@ -24,7 +24,6 @@ import de.metas.manufacturing.job.model.RawMaterialsIssueStep;
 import de.metas.manufacturing.job.model.ReceivingTarget;
 import de.metas.material.planning.pporder.OrderBOMLineQuantities;
 import de.metas.material.planning.pporder.PPOrderQuantities;
-import de.metas.material.planning.pporder.impl.PPOrderBOMBL;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -202,7 +201,8 @@ public class ManufacturingJobLoaderAndSaver
 		final PPOrderId ppOrderId = PPOrderId.ofRepoId(orderBOMLine.getPP_Order_ID());
 		final PPOrderBOMLineId ppOrderBOMLineId = PPOrderBOMLineId.ofRepoId(orderBOMLine.getPP_Order_BOMLine_ID());
 		final ProductId productId = ProductId.ofRepoId(orderBOMLine.getM_Product_ID());
-		final Quantity qtyToIssue = supportingServices.getQuantities(orderBOMLine).getQtyRequired();
+		final OrderBOMLineQuantities quantities = supportingServices.getQuantities(orderBOMLine);
+		final Quantity qtyToIssue = quantities.getQtyRequired();
 		final boolean isWeightable = !orderBOMLine.isManualQtyInput() && qtyToIssue.isWeightable();
 
 		return RawMaterialsIssueLine.builder()
@@ -210,8 +210,7 @@ public class ManufacturingJobLoaderAndSaver
 				.productName(supportingServices.getProductName(productId))
 				.isWeightable(isWeightable)
 				.qtyToIssue(qtyToIssue)
-				.qtyToIssueTolerance(PPOrderBOMBL.extractQtyToIssueTolerance(orderBOMLine))
-				//.qtyIssued(bomLineQuantities.getQtyIssuedOrReceived())
+				.issuingToleranceSpec(quantities.getIssuingToleranceSpec())
 				.steps(getIssueSchedules(ppOrderId)
 						.get(ppOrderBOMLineId)
 						.stream()
