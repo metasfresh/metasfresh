@@ -184,7 +184,10 @@ public class C_Flatrate_Term
 	{
 		final I_C_Flatrate_Data flatrateData = term.getC_Flatrate_Data();
 
-		term.setBill_BPartner_ID(flatrateData.getC_BPartner_ID());
+		if (term.getBill_BPartner_ID() == 0)
+		{
+			term.setBill_BPartner_ID(flatrateData.getC_BPartner_ID());
+		}
 
 		if (!flatrateData.isHasContracts())
 		{
