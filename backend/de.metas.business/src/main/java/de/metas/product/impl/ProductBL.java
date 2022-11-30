@@ -552,6 +552,7 @@ public final class ProductBL implements IProductBL
 		return productRecord.getDiscontinuedFrom() == null
 				|| TimeUtil.asLocalDate(productRecord.getDiscontinuedFrom(), zoneId).compareTo(targetDate) <= 0;
 	}
+
 	@Override
 	public Optional<IssuingToleranceSpec> getIssuingToleranceSpec(@NonNull final ProductId productId)
 	{

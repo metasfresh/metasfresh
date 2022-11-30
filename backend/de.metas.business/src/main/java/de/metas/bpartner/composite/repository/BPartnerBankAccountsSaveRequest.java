@@ -24,7 +24,6 @@ package de.metas.bpartner.composite.repository;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.composite.BPartnerBankAccount;
-import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;

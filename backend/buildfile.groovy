@@ -10,7 +10,7 @@ Map build(
         final boolean forceSkipBackend = false,
         final boolean forceSkipCucumber = false,
         final String multithreadParam = "-T 2C") {
-    
+
     final dockerImages = [:]
     String publishedDBInitDockerImageName
 

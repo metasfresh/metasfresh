@@ -1,9 +1,8 @@
 package de.metas.pricing.rules;
 
-import org.adempiere.pricing.model.I_C_PricingRule;
-
 import de.metas.pricing.IPricingContext;
 import de.metas.pricing.IPricingResult;
+import org.adempiere.pricing.model.I_C_PricingRule;
 
 /**
  * Pluggable Pricing Rule interface.<br>
