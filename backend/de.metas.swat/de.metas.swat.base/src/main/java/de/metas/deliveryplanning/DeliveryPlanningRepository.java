@@ -90,7 +90,7 @@ public class DeliveryPlanningRepository
 		deliveryPlanningRecord.setActualDeliveredQty( actualDeliveredQty.toBigDecimal());
 		deliveryPlanningRecord.setActualLoadQty(actualLoadQty.toBigDecimal());
 
-		deliveryPlanningRecord.setForwarder(request.getForwarder());
+		deliveryPlanningRecord.setM_Forwarder_ID(ForwarderId.toRepoId(request.getForwarderId()));
 		deliveryPlanningRecord.setWayBillNo(request.getWayBillNo());
 		deliveryPlanningRecord.setReleaseNo(request.getReleaseNo());
 		deliveryPlanningRecord.setTransportDetails(request.getTransportDetails());
