@@ -3,13 +3,13 @@ import { formatQtyToHumanReadable } from '../../../../../utils/qtys';
 export const computeStepScanUserInfoQtys = ({
   uom,
   lineQtyToIssue,
-  lineQtyToIssueTolerancePerc,
+  lineQtyToIssueTolerance,
   lineQtyToIssueRemaining,
 }) => {
   return [
     {
       captionKey: 'general.QtyToPick_Total',
-      value: formatQtyToHumanReadable({ qty: lineQtyToIssue, uom, tolerancePercent: lineQtyToIssueTolerancePerc }),
+      value: formatQtyToHumanReadable({ qty: lineQtyToIssue, uom, tolerance: lineQtyToIssueTolerance }),
     },
     {
       captionKey: 'general.QtyToPick',

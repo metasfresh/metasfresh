@@ -43,7 +43,6 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Optional;
 
 public class ApiAuditFilter implements Filter
 {
@@ -77,12 +76,12 @@ public class ApiAuditFilter implements Filter
 				return;
 			}
 
-			final Optional<ApiRequestAuditId> requestAuditIdOpt = apiAuditService.extractApiRequestAuditId(httpServletRequest);
+			final ApiRequestAuditId requestAuditId = apiAuditService.extractApiRequestAuditId(httpServletRequest).orElse(null);
 
 			// dev-note: this means the request was already filtered once
-			if (requestAuditIdOpt.isPresent())
+			if (requestAuditId != null)
 			{
-				final ApiAuditLoggable apiAuditLoggable = apiAuditService.createLogger(requestAuditIdOpt.get(), Env.getLoggedUserId());
+				final ApiAuditLoggable apiAuditLoggable = apiAuditService.createLogger(requestAuditId, Env.getLoggedUserId());
 
 				try (final IAutoCloseable ignored = Loggables.temporarySetLoggable(apiAuditLoggable))
 				{
@@ -91,15 +90,14 @@ public class ApiAuditFilter implements Filter
 				}
 			}
 
-			final Optional<ApiAuditConfig> matchingAuditConfig = apiAuditService.getMatchingAuditConfig(httpServletRequest);
-
-			if (!matchingAuditConfig.isPresent())
+			final ApiAuditConfig matchingAuditConfig = apiAuditService.getMatchingAuditConfig(httpServletRequest).orElse(null);
+			if (matchingAuditConfig == null || matchingAuditConfig.isBypassAudit())
 			{
 				chain.doFilter(request, response);
 				return;
 			}
 
-			apiAuditService.processRequest(chain, httpServletRequest, httpServletResponse, matchingAuditConfig.get());
+			apiAuditService.processRequest(chain, httpServletRequest, httpServletResponse, matchingAuditConfig);
 		}
 		catch (final Throwable t)
 		{
@@ -117,6 +115,7 @@ public class ApiAuditFilter implements Filter
 
 	private boolean isBypassAll()
 	{
+		//if(true) return true;
 		return sysConfigBL.getBooleanValue(SYSCONFIG_BypassAll, false);
 	}
 }

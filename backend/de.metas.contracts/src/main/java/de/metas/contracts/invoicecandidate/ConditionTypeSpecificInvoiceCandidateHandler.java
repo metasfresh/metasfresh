@@ -1,17 +1,16 @@
 package de.metas.contracts.invoicecandidate;
 
-import java.sql.Timestamp;
-import java.util.Iterator;
-import java.util.function.Consumer;
-
 import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.CandidatesAutoCreateMode;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
 import de.metas.quantity.Quantity;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
+
+import java.sql.Timestamp;
+import java.util.Iterator;
+import java.util.function.Consumer;
 
 /*
  * #%L

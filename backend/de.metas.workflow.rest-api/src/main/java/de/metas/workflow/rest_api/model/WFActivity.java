@@ -39,6 +39,7 @@ public class WFActivity
 	@NonNull WFActivityType wfActivityType;
 	@With @NonNull WFActivityStatus status;
 	@NonNull WFActivityAlwaysAvailableToUser alwaysAvailableToUser;
+	@Nullable String userInstructions;
 
 	@Builder
 	private WFActivity(
@@ -46,13 +47,15 @@ public class WFActivity
 			@NonNull final ITranslatableString caption,
 			@NonNull final WFActivityType wfActivityType,
 			@Nullable final WFActivityStatus status,
-			@Nullable final WFActivityAlwaysAvailableToUser alwaysAvailableToUser)
+			@Nullable final WFActivityAlwaysAvailableToUser alwaysAvailableToUser,
+			@Nullable final String userInstructions)
 	{
 		this.id = id;
 		this.caption = caption;
 		this.wfActivityType = wfActivityType;
 		this.status = status != null ? status : WFActivityStatus.NOT_STARTED;
 		this.alwaysAvailableToUser = CoalesceUtil.coalesceNotNull(alwaysAvailableToUser, WFActivityAlwaysAvailableToUser.DEFAULT);
+		this.userInstructions = userInstructions;
 	}
 
 	public boolean isCompleted()

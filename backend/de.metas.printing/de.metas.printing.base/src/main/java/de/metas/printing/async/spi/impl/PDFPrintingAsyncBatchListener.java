@@ -1,6 +1,5 @@
 package de.metas.printing.async.spi.impl;
 
-import de.metas.async.Async_Constants;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IAsyncBatchDAO;
 import de.metas.async.api.IQueueDAO;

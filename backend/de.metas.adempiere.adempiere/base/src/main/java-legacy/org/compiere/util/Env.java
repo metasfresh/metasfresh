@@ -1731,6 +1731,10 @@ public final class Env
 				sb.append(name).append("  ");
 			}
 		}
+		else
+		{
+			sb.append("metasfresh Swing Client");
+		}
 
 		final String connectionInfo;
 		if (Adempiere.isUnitTestMode())
@@ -1739,13 +1743,10 @@ public final class Env
 		}
 		else
 		{
-			connectionInfo = CConnection.get().toString();
+			connectionInfo = CConnection.get().getConnectionURL();
 		}
 
-		sb.append(getContext(ctx, "#AD_User_Name")).append("@")
-				.append(getContext(ctx, "#AD_Client_Name")).append(".")
-				.append(getContext(ctx, "#AD_Org_Name"))
-				.append(" [").append(connectionInfo).append("]");
+		sb.append(" [").append(connectionInfo).append("]");
 		return sb.toString();
 	}    // getHeader
 

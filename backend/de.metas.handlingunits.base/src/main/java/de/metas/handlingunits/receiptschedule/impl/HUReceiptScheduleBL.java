@@ -592,7 +592,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		//
 		// Set PriceActual in HUContext
 		Check.assumeNotNull(priceActual, "priceActual not null");
-		final IHUContext huContext = request.getHUContext();
+		final IHUContext huContext = request.getHuContext();
 		Map<AttributeId, Object> initialAttributeValueDefaults = huContext.getProperty(HUAttributeConstants.CTXATTR_DefaultAttributesValue);
 		if (initialAttributeValueDefaults == null)
 		{

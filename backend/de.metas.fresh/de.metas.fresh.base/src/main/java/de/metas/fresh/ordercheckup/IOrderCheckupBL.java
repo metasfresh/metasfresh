@@ -1,11 +1,10 @@
 package de.metas.fresh.ordercheckup;
 
 import de.metas.document.archive.model.I_AD_Archive;
-import org.compiere.model.I_C_Order;
-
 import de.metas.fresh.model.I_C_Order_MFGWarehouse_Report;
 import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.util.ISingletonService;
+import org.compiere.model.I_C_Order;
 
 public interface IOrderCheckupBL extends ISingletonService
 {

@@ -69,6 +69,11 @@ public interface IADReferenceDAO extends ISingletonService
 		public Collection<ADRefListItem> getItems() {return itemsByValue.values();}
 
 		public Optional<ADRefListItem> getItemByValue(final String value) {return Optional.ofNullable(itemsByValue.get(value));}
+
+		public int getFieldLength()
+		{
+			return getValues().stream().mapToInt(String::length).max().orElse(0);
+		}
 	}
 
 	@Value

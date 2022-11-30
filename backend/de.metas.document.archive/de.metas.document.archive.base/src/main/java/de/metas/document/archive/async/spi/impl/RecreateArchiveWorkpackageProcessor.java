@@ -1,13 +1,5 @@
 package de.metas.document.archive.async.spi.impl;
 
-import java.util.List;
-import java.util.Properties;
-
-import org.adempiere.ad.persistence.TableModelLoader;
-import org.adempiere.ad.table.api.IADTableDAO;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.PO;
-
 import de.metas.async.Async_Constants;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Async_Batch;
@@ -17,6 +9,13 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.spi.impl.DefaultModelArchiver;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.persistence.TableModelLoader;
+import org.adempiere.ad.table.api.IADTableDAO;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.PO;
+
+import java.util.List;
+import java.util.Properties;
 
 /**
  * @author cg

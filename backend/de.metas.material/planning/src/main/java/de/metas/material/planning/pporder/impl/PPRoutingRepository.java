@@ -21,6 +21,7 @@ import de.metas.material.planning.pporder.PPRoutingId;
 import de.metas.material.planning.pporder.PPRoutingProduct;
 import de.metas.material.planning.pporder.PPRoutingProductId;
 import de.metas.material.planning.pporder.PPRoutingType;
+import de.metas.material.planning.pporder.UserInstructions;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
@@ -233,6 +234,7 @@ public class PPRoutingRepository implements IPPRoutingRepository
 				//
 				.milestone(activityRecord.isMilestone())
 				.alwaysAvailableToUser(PPAlwaysAvailableToUser.ofNullableCode(activityRecord.getPP_AlwaysAvailableToUser()))
+				.userInstructions(UserInstructions.ofNullableString(activityRecord.getPP_UserInstructions()))
 				//
 				.nextActivityIds(nextActivityIds)
 				//
@@ -359,6 +361,7 @@ public class PPRoutingRepository implements IPPRoutingRepository
 				.createQueryBuilder(I_AD_WF_Node.class, routingRecord)
 				.addOnlyActiveRecordsFilter()
 				.addEqualsFilter(I_AD_WF_Node.COLUMNNAME_AD_Workflow_ID, routingId)
+				.addNotNull(I_AD_WF_Node.COLUMN_S_Resource_ID) // in the context of production and product-planning, we can't work with a resource-less AD_WF_Node
 				.orderBy(I_AD_WF_Node.COLUMNNAME_AD_WF_Node_ID)
 				.create()
 				.list();

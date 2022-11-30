@@ -23,13 +23,7 @@
 package de.metas.error.impl;
 
 import de.metas.error.AdIssueId;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.impl.SysConfigBL;
 import org.adempiere.test.AdempiereTestHelper;
-import org.assertj.core.api.Assertions;
-import org.compiere.Adempiere;
-
-import org.compiere.model.I_AD_System;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 

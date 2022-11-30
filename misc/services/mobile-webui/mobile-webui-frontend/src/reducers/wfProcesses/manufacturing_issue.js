@@ -164,11 +164,13 @@ const normalizeLines = (lines) => {
     return {
       productName: line.productName,
       uom: line.uom,
+      hazardSymbols: line.hazardSymbols ?? [],
+      allergens: line.allergens ?? [],
       weightable: line.weightable,
       qtyToIssue: line.qtyToIssue,
       qtyToIssueMin: line.qtyToIssueMin,
       qtyToIssueMax: line.qtyToIssueMax,
-      qtyToIssueTolerancePerc: line.qtyToIssueTolerancePerc,
+      qtyToIssueTolerance: line.qtyToIssueTolerance,
       steps: line.steps.reduce((accum, step) => {
         accum[step.id] = step;
         return accum;

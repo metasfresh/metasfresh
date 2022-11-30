@@ -123,6 +123,12 @@ public class ResourceDAO implements IResourceDAO
 	}
 
 	@Override
+	public List<I_S_Resource> getByIds(@NonNull final Set<ResourceId> resourceIds)
+	{
+		return InterfaceWrapperHelper.loadByRepoIdAwaresOutOfTrx(resourceIds, I_S_Resource.class);
+	}
+
+	@Override
 	@Cached(cacheName = I_S_Resource.Table_Name + "#by"
 			+ "#" + I_S_Resource.COLUMNNAME_AD_Client_ID
 			+ "#" + I_S_Resource.COLUMNNAME_IsManufacturingResource)

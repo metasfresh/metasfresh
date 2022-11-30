@@ -22,17 +22,15 @@ package org.adempiere.model;
  * #L%
  */
 
-import java.util.Properties;
-
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.util.lang.EqualsBuilder;
 import org.adempiere.util.lang.HashcodeBuilder;
 import org.adempiere.util.lang.IContextAware;
 import org.compiere.util.Env;
 
-import lombok.NonNull;
-
 import javax.annotation.Nullable;
+import java.util.Properties;
 
 public final class PlainContextAware implements IContextAware
 {

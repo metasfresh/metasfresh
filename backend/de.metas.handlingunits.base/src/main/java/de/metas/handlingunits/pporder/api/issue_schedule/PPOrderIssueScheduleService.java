@@ -180,4 +180,10 @@ public class PPOrderIssueScheduleService
 
 		issueScheduleRepository.deleteNotProcessedById(issueSchedule.getId());
 	}
+
+	public boolean matchesByOrderId(@NonNull final PPOrderId ppOrderId)
+	{
+		return issueScheduleRepository.matchesByOrderId(ppOrderId);
+	}
+
 }

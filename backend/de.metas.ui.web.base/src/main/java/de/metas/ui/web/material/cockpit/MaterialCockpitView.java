@@ -1,13 +1,6 @@
 package de.metas.ui.web.material.cockpit;
 
-import java.util.List;
-
-import de.metas.ui.web.window.model.DocumentQueryOrderBy;
-import de.metas.ui.web.window.model.DocumentQueryOrderByList;
-import org.adempiere.util.lang.impl.TableRecordReference;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.i18n.ITranslatableString;
 import de.metas.material.cockpit.model.I_MD_Cockpit;
 import de.metas.material.cockpit.model.I_MD_Stock;
@@ -22,9 +15,14 @@ import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.template.AbstractCustomView;
 import de.metas.ui.web.view.template.IRowsData;
 import de.metas.ui.web.window.datatypes.DocumentId;
+import de.metas.ui.web.window.model.DocumentQueryOrderBy;
+import de.metas.ui.web.window.model.DocumentQueryOrderByList;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
+import org.adempiere.util.lang.impl.TableRecordReference;
+
+import java.util.List;
 
 /*
  * #%L

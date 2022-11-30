@@ -171,6 +171,8 @@ public class PPOrderCostsTestHelper
 			ppOrderNode.setPP_Activity_Type(PPRoutingActivityType.WorkReport.getCode());
 			ppOrderNode.setName("Name");
 			ppOrderNode.setDocStatus(PPOrderRoutingActivityStatus.NOT_STARTED.getDocStatus());
+			ppOrderNode.setPP_Activity_Type(PPRoutingActivityType.WorkReport.getCode());
+			ppOrderNode.setName("Name");
 			InterfaceWrapperHelper.saveRecord(ppOrderNode);
 
 			ppOrderWorkflow.setPP_Order_Node_ID((ppOrderNode.getPP_Order_Node_ID()));

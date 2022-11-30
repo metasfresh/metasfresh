@@ -80,6 +80,7 @@ public class PPRoutingActivity
 
 	boolean milestone;
 	@NonNull PPAlwaysAvailableToUser alwaysAvailableToUser;
+	@Nullable UserInstructions userInstructions;
 
 	@NonNull @Default ImmutableSet<PPRoutingActivityId> nextActivityIds = ImmutableSet.of();
 

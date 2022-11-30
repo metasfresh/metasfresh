@@ -1,5 +1,6 @@
 package org.adempiere.ad.window.api.impl;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.cache.CCache;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.i18n.ITranslatableString;
@@ -42,7 +43,6 @@ import org.compiere.util.Env;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
-import java.awt.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -1237,5 +1237,15 @@ public class ADWindowDAO implements IADWindowDAO
 			default:
 				throw new AdempiereException("Param 'soTrx' has an unspupported value; soTrx=" + soTrx);
 		}
+	}
+
+	@Override
+	public ImmutableSet<AdWindowId> retrieveAllAdWindowIdsByTableId(final AdTableId adTableId)
+	{
+		final List<AdWindowId> adWindowIds = queryBL.createQueryBuilder(I_AD_Tab.class)
+				.addEqualsFilter(I_AD_Tab.COLUMNNAME_AD_Table_ID, adTableId)
+				.create()
+				.listDistinct(I_AD_Tab.COLUMNNAME_AD_Window_ID, AdWindowId.class);
+		return ImmutableSet.copyOf(adWindowIds);
 	}
 }
