@@ -1,19 +1,17 @@
 package org.adempiere.ad.table;
 
-import java.util.List;
-
-import org.adempiere.ad.table.LogEntriesRepository.LogEntriesQuery;
-import org.adempiere.ad.table.RecordChangeLog.RecordChangeLogBuilder;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.POInfo;
-import org.compiere.util.DB;
-import org.compiere.util.TimeUtil;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.adempiere.ad.table.LogEntriesRepository.LogEntriesQuery;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.POInfo;
+import org.compiere.util.DB;
+import org.compiere.util.TimeUtil;
+
+import java.util.List;
 
 /*
  * #%L
@@ -57,7 +55,7 @@ final class RecordChangeLogLoader
 
 	public RecordChangeLog getByRecordId(@NonNull final ComposedRecordId recordId)
 	{
-		final RecordChangeLogBuilder changeLogsBuilder = RecordChangeLog.builder()
+		final RecordChangeLog.RecordChangeLogBuilder changeLogsBuilder = RecordChangeLog.builder()
 				.tableName(poInfo.getTableName())
 				.recordId(recordId);
 
@@ -71,7 +69,7 @@ final class RecordChangeLogLoader
 
 	public RecordChangeLog getSummaryByRecordId(@NonNull final ComposedRecordId recordId)
 	{
-		final RecordChangeLogBuilder changeLogsBuilder = RecordChangeLog.builder()
+		final RecordChangeLog.RecordChangeLogBuilder changeLogsBuilder = RecordChangeLog.builder()
 				.tableName(poInfo.getTableName())
 				.recordId(recordId);
 
@@ -80,7 +78,7 @@ final class RecordChangeLogLoader
 		return changeLogsBuilder.build();
 	}
 
-	private void loadRecordSummary(final RecordChangeLogBuilder changeLogsBuilder, final ComposedRecordId recordId)
+	private void loadRecordSummary(final RecordChangeLog.RecordChangeLogBuilder changeLogsBuilder, final ComposedRecordId recordId)
 	{
 		final String sql = new StringBuilder()
 				.append("SELECT Created, CreatedBy, Updated, UpdatedBy FROM ").append(poInfo.getTableName())
