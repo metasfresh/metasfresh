@@ -114,9 +114,9 @@ public interface IProductDAO extends ISingletonService
 			@NonNull GroupCategoryId groupCategoryId,
 			@NonNull OrgId targetOrgId);
 
-	Optional<IssuingToleranceSpec> getIssuingToleranceSpec(@NonNull ProductId productId);
-
 	ProductCategoryId retrieveProductCategoryForGroupTemplateId(@NonNull GroupTemplateId groupTemplateId);
+
+	Optional<IssuingToleranceSpec> getIssuingToleranceSpec(@NonNull ProductId productId);
 
 	@Value
 	class ProductQuery

@@ -651,6 +651,17 @@ public class ProductDAO implements IProductDAO
 	}
 
 	@Override
+	public ProductCategoryId retrieveProductCategoryForGroupTemplateId(@NonNull final GroupTemplateId groupTemplateId)
+	{
+		return queryBL.createQueryBuilder(I_M_Product_Category.class)
+				.addEqualsFilter(I_M_Product_Category.COLUMNNAME_C_CompensationGroup_Schema_ID, groupTemplateId)
+				.addOnlyActiveRecordsFilter()
+				.orderBy(I_M_Product_Category.COLUMNNAME_M_Product_Category_ID)
+				.create()
+				.firstId(ProductCategoryId::ofRepoIdOrNull);
+	}
+
+	@Override
 	public Optional<IssuingToleranceSpec> getIssuingToleranceSpec(@NonNull final ProductId productId)
 	{
 		final I_M_Product product = getById(productId);
@@ -684,16 +695,5 @@ public class ProductDAO implements IProductDAO
 		{
 			throw new AdempiereException("Unknown valueType: " + valueType);
 		}
-	}
-
-	@Override
-	public ProductCategoryId retrieveProductCategoryForGroupTemplateId(@NonNull final GroupTemplateId groupTemplateId)
-	{
-		return queryBL.createQueryBuilder(I_M_Product_Category.class)
-				.addEqualsFilter(I_M_Product_Category.COLUMNNAME_C_CompensationGroup_Schema_ID, groupTemplateId)
-				.addOnlyActiveRecordsFilter()
-				.orderBy(I_M_Product_Category.COLUMNNAME_M_Product_Category_ID)
-				.create()
-				.firstId(ProductCategoryId::ofRepoIdOrNull);
 	}
 }
