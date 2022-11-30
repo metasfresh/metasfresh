@@ -12,7 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
-* [#14060](https://github.com/metasfresh/metasfresh/issues/14060)  format Qty based on on the precision defined in SysConfig
+* [#14060](https://github.com/metasfresh/metasfresh/issues/14060) Format Qty based on on the precision defined in SysConfig
   * [#13953](https://github.com/metasfresh/metasfresh/pull/13953) [SAP]: Add mappings for required masterdata
   * [#13980](https://github.com/metasfresh/metasfresh/pull/13980) Introduce C_BPartner_Location.VATaxID
   * [#14032](https://github.com/metasfresh/metasfresh/pull/14032) webui: (refreshViewOnChangeEvents) notify FE also when we have pure rows removal
