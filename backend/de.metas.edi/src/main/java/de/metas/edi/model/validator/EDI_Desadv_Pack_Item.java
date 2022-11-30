@@ -22,8 +22,7 @@
 
 package de.metas.edi.model.validator;
 
-import de.metas.edi.api.IDesadvDAO;
-import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
+import de.metas.esb.edi.model.I_EDI_Desadv_Pack_Item;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
