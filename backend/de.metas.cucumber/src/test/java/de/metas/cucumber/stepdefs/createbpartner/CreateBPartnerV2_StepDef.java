@@ -30,6 +30,7 @@ import de.metas.common.bpartner.v2.response.JsonResponseLocation;
 import de.metas.cucumber.stepdefs.AD_User_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.rest_api.v2.bpartner.BPartnerEndpointService;
 import de.metas.util.Check;
@@ -39,6 +40,7 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 
@@ -55,15 +57,18 @@ public class CreateBPartnerV2_StepDef
 	private final BPartnerEndpointService bpartnerEndpointService;
 	private final C_BPartner_StepDefData bPartnerTable;
 	private final AD_User_StepDefData userTable;
+	private final AD_Org_StepDefData orgTable;
 
 	final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 
 	public CreateBPartnerV2_StepDef(
 			@NonNull final C_BPartner_StepDefData bPartnerTable,
-			@NonNull final AD_User_StepDefData userTable)
+			@NonNull final AD_User_StepDefData userTable,
+			@NonNull final AD_Org_StepDefData orgTable)
 	{
 		this.bPartnerTable = bPartnerTable;
 		this.userTable = userTable;
+		this.orgTable = orgTable;
 		this.bpartnerEndpointService = SpringContextHolder.instance.getBean(BPartnerEndpointService.class);
 	}
 
@@ -83,18 +88,52 @@ public class CreateBPartnerV2_StepDef
 			final String url = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Url");
 			final String group = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.Group");
 			final String vatId = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.VatId");
+			final String orgIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_AD_Org.COLUMNNAME_AD_Org_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+			final I_AD_Org org = Optional.ofNullable(orgIdentifier)
+					.map(orgTable::get)
+					.orElse(null);
+
+			final String orgCode = Optional.ofNullable(org)
+					.map(I_AD_Org::getValue)
+					.orElse(null);
 
 			// persisted value
-			final Optional<JsonResponseComposite> persistedResult = bpartnerEndpointService.retrieveBPartner(null, ExternalIdentifier.of(externalIdentifier));
+			final Optional<JsonResponseComposite> persistedResult = bpartnerEndpointService.retrieveBPartner(orgCode, ExternalIdentifier.of(externalIdentifier));
+
 			final JsonResponseBPartner persistedBPartner = persistedResult.get().getBpartner();
 
-			assertThat(persistedBPartner.getCompanyName()).isEqualTo(companyName);
 			assertThat(persistedBPartner.getName()).isEqualTo(name);
-			assertThat(persistedBPartner.getUrl()).isEqualTo(url);
-			assertThat(persistedBPartner.getVatId()).isEqualTo(vatId);
-			assertThat(persistedBPartner.getLanguage()).contains(language);
-			assertThat(persistedBPartner.getCode()).isEqualTo(code);
-			assertThat(persistedBPartner.getPhone()).isEqualTo(phone);
+
+			if (Check.isNotBlank(code))
+			{
+				assertThat(persistedBPartner.getCode()).isEqualTo(code);
+			}
+
+			if (Check.isNotBlank(companyName))
+			{
+				assertThat(persistedBPartner.getCompanyName()).isEqualTo(companyName);
+			}
+
+			if (Check.isNotBlank(url))
+			{
+				assertThat(persistedBPartner.getUrl()).isEqualTo(url);
+			}
+
+			if (Check.isNotBlank(vatId))
+			{
+				assertThat(persistedBPartner.getVatId()).isEqualTo(vatId);
+			}
+
+			if (Check.isNotBlank(phone))
+			{
+				assertThat(persistedBPartner.getPhone()).isEqualTo(phone);
+			}
+
+			if (Check.isNotBlank(language))
+			{
+				assertThat(persistedBPartner.getLanguage()).contains(language);
+			}
 
 			if (Check.isNotBlank(group))
 			{
@@ -115,6 +154,11 @@ public class CreateBPartnerV2_StepDef
 
 				assertThat(userRecord).isNotNull();
 				assertThat(bPartnerRecord.getCreatedBy()).isEqualTo(userRecord.getAD_User_ID());
+			}
+
+			if (org != null)
+			{
+				assertThat(bPartnerRecord.getAD_Org_ID()).isEqualTo(org.getAD_Org_ID());
 			}
 
 			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
