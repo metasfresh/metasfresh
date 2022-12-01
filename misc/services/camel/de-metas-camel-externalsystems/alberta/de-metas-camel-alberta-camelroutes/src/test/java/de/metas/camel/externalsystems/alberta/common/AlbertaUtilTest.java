@@ -22,14 +22,12 @@
 
 package de.metas.camel.externalsystems.alberta.common;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.threeten.bp.OffsetDateTime;
 
 import java.time.Instant;
 
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.*;
 
 class AlbertaUtilTest
 {

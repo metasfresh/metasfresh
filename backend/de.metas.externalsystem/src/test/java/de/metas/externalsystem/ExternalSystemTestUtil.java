@@ -25,7 +25,6 @@ package de.metas.externalsystem;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
-import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import lombok.Builder;
 import lombok.NonNull;

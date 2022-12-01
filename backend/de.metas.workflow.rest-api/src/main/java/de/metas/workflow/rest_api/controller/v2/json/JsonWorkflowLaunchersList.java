@@ -25,12 +25,14 @@ package de.metas.workflow.rest_api.controller.v2.json;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.google.common.collect.ImmutableList;
+import de.metas.global_qrcodes.JsonDisplayableQRCode;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.Comparator;
 
@@ -41,7 +43,7 @@ public class JsonWorkflowLaunchersList
 {
 	@Singular
 	@NonNull ImmutableList<JsonWorkflowLauncher> launchers;
-	boolean scanBarcodeToStartJobSupport;
+	@Nullable JsonDisplayableQRCode filterByQRCode;
 	@NonNull Instant computedTime;
 
 	public static JsonWorkflowLaunchersList of(
@@ -49,11 +51,11 @@ public class JsonWorkflowLaunchersList
 			@NonNull final JsonOpts jsonOpts)
 	{
 		return builder()
-				.scanBarcodeToStartJobSupport(list.isScanBarcodeToStartJobSupport())
 				.launchers(list.stream()
 						.map(launcher -> JsonWorkflowLauncher.of(launcher, jsonOpts))
 						.sorted(Comparator.comparing(JsonWorkflowLauncher::getCaption))
 						.collect(ImmutableList.toImmutableList()))
+				.filterByQRCode(list.getFilterByQRCode() != null ? list.getFilterByQRCode().toJsonDisplayableQRCode() : null)
 				.computedTime(list.getTimestamp())
 				.build();
 	}

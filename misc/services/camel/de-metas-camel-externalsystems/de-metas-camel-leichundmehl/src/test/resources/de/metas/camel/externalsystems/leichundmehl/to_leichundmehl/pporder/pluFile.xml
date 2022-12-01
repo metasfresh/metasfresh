@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<!--
+  ~ #%L
+  ~ de-metas-camel-leichundmehl
+  ~ %%
+  ~ Copyright (C) 2022 metas GmbH
+  ~ %%
+  ~ This program is free software: you can redistribute it and/or modify
+  ~ it under the terms of the GNU General Public License as
+  ~ published by the Free Software Foundation, either version 2 of the
+  ~ License, or (at your option) any later version.
+  ~
+  ~ This program is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  ~ GNU General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU General Public
+  ~ License along with this program. If not, see
+  ~ <http://www.gnu.org/licenses/gpl-2.0.html>.
+  ~ #L%
+  -->
+
+<PLU xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <longName>longName</longName>
+    <printObjects>
+        <printObject xsi:type="textArea" ID="1" name="NAME-01">
+            <letterSpacing>0</letterSpacing>
+            <lineSpacing>0</lineSpacing>
+            <justify>No</justify>
+            <data>data</data>
+            <format>0</format>
+            <width>0</width>
+        </printObject>
+        <printObject xsi:type="textArea" ID="101" name="NAME-02">
+            <letterSpacing>0</letterSpacing>
+            <lineSpacing>0</lineSpacing>
+            <justify>No</justify>
+            <data>Hello TEST name!!</data>
+            <format>0</format>
+            <width>0</width>
+        </printObject>
+        <printObject xsi:type="numberField" ID="117" name="NAME-03">
+            <source>source</source>
+            <type>type</type>
+            <factor>3</factor>
+            <format digits="0">1</format>
+            <mode>1</mode>
+        </printObject>
+    </printObjects>
+    <parentTag>
+        <childTag>
+            content
+        </childTag>
+    </parentTag>
+</PLU>

@@ -1,27 +1,7 @@
 package de.metas.handlingunits.receiptschedule.impl;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.api.ITrxManager;
-import org.adempiere.ad.trx.api.ITrxRunConfig;
-import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
-import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.model.PlainContextAware;
-import org.adempiere.util.lang.IContextAware;
-import org.compiere.util.TrxRunnable;
-import org.compiere.util.TrxRunnableAdapter;
-
 import com.google.common.collect.ImmutableSet;
-
+import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IMutableHUContext;
@@ -51,6 +31,24 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.ad.trx.api.ITrxRunConfig;
+import org.adempiere.ad.trx.api.ITrxRunConfig.OnRunnableSuccess;
+import org.adempiere.ad.trx.api.ITrxRunConfig.TrxPropagation;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.model.PlainContextAware;
+import org.adempiere.util.lang.IContextAware;
+import org.compiere.util.TrxRunnable;
+import org.compiere.util.TrxRunnableAdapter;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Helper class for massive generation of HUs for receipt schedule(s).
@@ -328,9 +326,9 @@ public class ReceiptScheduleHUGenerator
 			final boolean runInOwntransaction)
 	{
 		// needs to be threadInherited because we run in our own little TrxRunnable and everything created from the request shall be committed when we commit that runnable's local transaction.
-		Check.errorUnless(ITrx.TRXNAME_ThreadInherited.equals(request.getHUContext().getTrxName()),
+		Check.errorUnless(ITrx.TRXNAME_ThreadInherited.equals(request.getHuContext().getTrxName()),
 				"The trxName of the given request's HUContext needs to be {} or 'null', but is {}",
-				ITrx.TRXNAME_ThreadInherited, request.getHUContext().getTrxName());
+				ITrx.TRXNAME_ThreadInherited, request.getHuContext().getTrxName());
 
 		final List<I_M_HU> result = new ArrayList<>();
 

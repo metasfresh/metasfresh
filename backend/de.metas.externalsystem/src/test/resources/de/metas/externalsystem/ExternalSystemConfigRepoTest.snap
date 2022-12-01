@@ -176,11 +176,13 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
         "id" : 100002,
         "parentId" : 100001,
         "value" : "testLeichMehlValue",
-        "ftpHost" : "hostname",
-        "ftpPort" : 1111,
-        "ftpUsername" : "ftpUsername",
-        "ftpPassword" : "ftpPassword",
-        "ftpDirectory" : "directory"
+        "productBaseFolderName" : "productBaseFolderName",
+        "tcpPort" : 8080,
+        "tcpHost" : "tcpHost",
+        "pluFileExportAuditEnabled" : false,
+        "productMappings" : [ ],
+        "pluFileConfigs" : [ ],
+        "productMappingEmpty" : true
       },
       "writeAudit" : true,
       "auditFileFolder" : "auditFileFolder"
@@ -194,11 +196,13 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
     "id" : 100002,
     "parentId" : 100001,
     "value" : "testLeichMehlValue",
-    "ftpHost" : "hostname",
-    "ftpPort" : 1111,
-    "ftpUsername" : "ftpUsername",
-    "ftpPassword" : "ftpPassword",
-    "ftpDirectory" : "directory"
+    "productBaseFolderName" : "productBaseFolderName",
+    "tcpPort" : 8080,
+    "tcpHost" : "tcpHost",
+    "pluFileExportAuditEnabled" : false,
+    "productMappings" : [ ],
+    "pluFileConfigs" : [ ],
+    "productMappingEmpty" : true
   }
 ]
 
@@ -214,11 +218,13 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
       "id" : 100002,
       "parentId" : 100001,
       "value" : "testLeichMehlValue",
-      "ftpHost" : "hostname",
-      "ftpPort" : 1111,
-      "ftpUsername" : "ftpUsername",
-      "ftpPassword" : "ftpPassword",
-      "ftpDirectory" : "directory"
+      "productBaseFolderName" : "productBaseFolderName",
+      "tcpPort" : 8080,
+      "tcpHost" : "tcpHost",
+      "pluFileExportAuditEnabled" : false,
+      "productMappings" : [ ],
+      "pluFileConfigs" : [ ],
+      "productMappingEmpty" : true
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -501,6 +507,31 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Wooco
 ]
 
 
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_LeichMehl_Config_getById=[
+  {
+    "id" : 100001,
+    "type" : "LeichUndMehl",
+    "name" : "name",
+    "active" : true,
+    "orgId" : 0,
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "value" : "LeichMehl",
+      "productBaseFolderName" : "productBaseFolderName",
+      "tcpPort" : 8080,
+      "tcpHost" : "tcpHost",
+      "pluFileExportAuditEnabled" : false,
+      "productMappings" : [ ],
+      "pluFileConfigs" : [ ],
+      "productMappingEmpty" : true
+    },
+    "writeAudit" : true,
+    "auditFileFolder" : "auditFileFolder"
+  }
+]
+
+
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getActiveByType_RabbitMQ=[
   [
     {
@@ -553,6 +584,50 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Other_Config
           "value" : "value2"
         }
       ]
+    },
+    "writeAudit" : true,
+    "auditFileFolder" : "auditFileFolder"
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.givenLeichMehlCofing_withProductMappings_andPluFileConfigs_whenGetById_thenReturnWholeInfo=[
+  {
+    "id" : 100001,
+    "type" : "LeichUndMehl",
+    "name" : "name",
+    "active" : true,
+    "orgId" : 0,
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "value" : "LeichMehl",
+      "productBaseFolderName" : "productBaseFolderName",
+      "tcpPort" : 8080,
+      "tcpHost" : "tcpHost",
+      "pluFileExportAuditEnabled" : false,
+      "productMappings" : [
+        {
+          "id" : 100003,
+          "seqNo" : 10,
+          "pluFile" : "plufile",
+          "productCategoryId" : 2,
+          "productId" : 1,
+          "bPartnerId" : 3
+        }
+      ],
+      "pluFileConfigs" : [
+        {
+          "id" : 100004,
+          "leichMehlConfigId" : 100002,
+          "targetFieldName" : "targetFileName",
+          "targetFieldType" : "Date",
+          "replaceRegExp" : "replacePattern",
+          "replacement" : "replacement",
+          "replacementSource" : "PPOrder"
+        }
+      ],
+      "productMappingEmpty" : false
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"

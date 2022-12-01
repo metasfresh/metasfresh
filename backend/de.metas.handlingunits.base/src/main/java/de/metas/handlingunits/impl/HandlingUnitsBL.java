@@ -76,6 +76,7 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.InstantAndOrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.util.Check;
@@ -1119,6 +1120,9 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 
 		hu.setClearanceStatus(clearanceStatusInfo.getClearanceStatus().getCode());
 		hu.setClearanceNote(clearanceStatusInfo.getClearanceNote());
+
+		final InstantAndOrgId clearanceDate = clearanceStatusInfo.getClearanceDate();
+		hu.setClearanceDate(clearanceDate != null ? clearanceDate.toTimestamp() : null);
 
 		handlingUnitsRepo.saveHU(hu);
 

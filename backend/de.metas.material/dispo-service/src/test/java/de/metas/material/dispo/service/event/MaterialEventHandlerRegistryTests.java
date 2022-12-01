@@ -40,6 +40,7 @@ import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.event.shipmentschedule.ShipmentScheduleCreatedEvent;
 import de.metas.material.event.supplyrequired.SupplyRequiredEvent;
 import de.metas.material.event.transactions.TransactionCreatedEvent;
+import de.metas.order.OrderLineRepository;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
 import org.adempiere.warehouse.WarehouseId;
@@ -146,7 +147,7 @@ public class MaterialEventHandlerRegistryTests
 				candidateRepositoryCommands,
 				candidateChangeHandler,
 				supplyProposalEvaluator,
-				new RequestMaterialOrderService(candidateRepositoryRetrieval, postMaterialEventService),
+				new RequestMaterialOrderService(candidateRepositoryRetrieval, postMaterialEventService, new OrderLineRepository()),
 				new DDOrderDetailRequestHandler(),
 				new MainDataRequestHandler());
 

@@ -96,7 +96,6 @@ import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
 import org.compiere.model.I_C_Location;
-import org.compiere.model.X_C_BP_Relation;
 import org.compiere.model.X_C_Location;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -633,6 +632,7 @@ public class BPartnerDAO implements IBPartnerDAO
 	}
 
 	@Override
+	@NonNull
 	public CountryId getCountryId(@NonNull final BPartnerLocationId bpLocationId)
 	{
 		final I_C_BPartner_Location bpLocation = getBPartnerLocationByIdEvenInactive(bpLocationId);
@@ -644,6 +644,7 @@ public class BPartnerDAO implements IBPartnerDAO
 		return getCountryId(bpLocation);
 	}
 
+	@NonNull
 	private CountryId getCountryId(@NonNull final I_C_BPartner_Location bpLocation)
 	{
 		final LocationId locationId = LocationId.ofRepoId(bpLocation.getC_Location_ID());

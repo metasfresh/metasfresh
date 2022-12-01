@@ -162,12 +162,12 @@ public class C_Order_StepDef
 					.map(I_AD_Org::getAD_Org_ID)
 					.orElse(StepDefConstants.ORG_ID.getRepoId());
 
-			final Integer bPartnerId = bpartnerTable.getOptional(bpartnerIdentifier)
+			final Integer bPartnerID = bpartnerTable.getOptional(bpartnerIdentifier)
 					.map(I_C_BPartner::getC_BPartner_ID)
 					.orElseGet(() -> Integer.parseInt(bpartnerIdentifier));
 
 			final I_C_Order order = newInstance(I_C_Order.class);
-			order.setC_BPartner_ID(bPartnerId);
+			order.setC_BPartner_ID(bPartnerID);
 			order.setIsSOTrx(DataTableUtil.extractBooleanForColumnName(tableRow, I_C_Order.COLUMNNAME_IsSOTrx));
 			order.setDateOrdered(DataTableUtil.extractDateTimestampForColumnName(tableRow, I_C_Order.COLUMNNAME_DateOrdered));
 			order.setDropShip_BPartner_ID(dropShipPartnerId);

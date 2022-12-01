@@ -112,7 +112,7 @@ public class PP_Order_PostMaterialEvent
 
 		if (isPPOrderCreatedFromCandidate(ppOrderRecord))
 		{
-			// dev-note: see org.eevolution.productioncandidate.service.PPOrderProducerFromCandidate#postPPOrderCreatedEvent(I_PP_Order)
+			// dev-note: see org.eevolution.productioncandidate.service.produce.PPOrderProducerFromCandidate#postPPOrderCreatedEvent(I_PP_Order)
 			return;
 		}
 

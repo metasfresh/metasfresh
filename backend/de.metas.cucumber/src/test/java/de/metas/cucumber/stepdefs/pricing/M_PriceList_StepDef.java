@@ -38,8 +38,6 @@ import de.metas.location.ICountryDAO;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.money.CurrencyId;
 import de.metas.pricing.PriceListId;
-import de.metas.pricing.service.IPriceListDAO;
-import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.tax.api.ITaxBL;
@@ -147,14 +145,14 @@ public class M_PriceList_StepDef
 		final String description = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.Description");
 		final boolean isActive = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT.IsActive", true);
 
+		final PricingSystemId pricingSystemId = priceListDAO.getPricingSystemIdByValueOrNull(value);
+		final I_M_PricingSystem m_pricingSystem = InterfaceWrapperHelper.loadOrNew(pricingSystemId, I_M_PricingSystem.class);
+
 		final String orgIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_PricingSystem.COLUMNNAME_AD_Org_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final int orgId = Optional.ofNullable(orgIdentifier)
 				.map(orgTable::get)
 				.map(I_AD_Org::getAD_Org_ID)
 				.orElse(ORG_ID.getRepoId());
-
-		final PricingSystemId pricingSystemId = priceListDAO.getPricingSystemIdByValueOrNull(value);
-		final I_M_PricingSystem m_pricingSystem = InterfaceWrapperHelper.loadOrNew(pricingSystemId, I_M_PricingSystem.class);
 
 		m_pricingSystem.setName(name);
 		m_pricingSystem.setValue(value);

@@ -23,6 +23,7 @@
 package de.metas.workflow.rest_api.service;
 
 import com.google.common.collect.ImmutableMap;
+import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.logging.LogManager;
 import de.metas.user.UserId;
 import de.metas.util.Services;
@@ -48,6 +49,7 @@ import org.adempiere.service.ISysConfigBL;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
@@ -78,18 +80,20 @@ public class WorkflowRestAPIService
 		this.wfActivityHandlersRegistry = wfActivityHandlersRegistry;
 	}
 
-	public List<MobileApplicationInfo> getMobileApplicationInfos()
+	public Stream<MobileApplicationInfo> streamMobileApplicationInfos(final UserId loggedUserId)
 	{
-		return applications.getApplicationInfos();
+		return applications.stream()
+				.map(application -> application.getApplicationInfo(loggedUserId));
 	}
 
 	public WorkflowLaunchersList getLaunchers(
 			@NonNull final MobileApplicationId applicationId,
 			@NonNull final UserId userId,
+			@Nullable final GlobalQRCode filterByQRCode,
 			@NonNull final Duration maxStaleAccepted)
 	{
 		return getWorkflowBasedMobileApplication(applicationId)
-				.provideLaunchers(userId, getLaunchersLimit(), maxStaleAccepted);
+				.provideLaunchers(userId, filterByQRCode, getLaunchersLimit(), maxStaleAccepted);
 	}
 
 	private WorkflowBasedMobileApplication getWorkflowBasedMobileApplication(@NonNull final MobileApplicationId applicationId)
@@ -112,37 +116,6 @@ public class WorkflowRestAPIService
 				.map(app -> (WorkflowBasedMobileApplication)app);
 	}
 
-	@Deprecated
-	public WorkflowLaunchersList getLaunchersFromAllApplications(
-			@NonNull final UserId userId,
-			@NonNull final Duration maxStaleAccepted)
-	{
-		final QueryLimit suggestedLimit = getLaunchersLimit();
-
-		return streamWorkflowBasedMobileApplications()
-				.map(application -> provideLaunchersNoFail(application, userId, suggestedLimit, maxStaleAccepted))
-				.reduce(WorkflowLaunchersList::mergeWith)
-				.orElseGet(WorkflowLaunchersList::emptyNow);
-	}
-
-	private static WorkflowLaunchersList provideLaunchersNoFail(
-			@NonNull final WorkflowBasedMobileApplication application,
-			@NonNull final UserId userId,
-			@NonNull final QueryLimit suggestedLimit,
-			@NonNull final Duration maxStaleAccepted)
-	{
-		try
-		{
-			final WorkflowLaunchersList launchers = application.provideLaunchers(userId, suggestedLimit, maxStaleAccepted);
-			return launchers != null ? launchers : WorkflowLaunchersList.emptyNow();
-		}
-		catch (final Exception ex)
-		{
-			logger.warn("Failed fetching launchers from {} for {}. Skipped", application, userId, ex);
-			return WorkflowLaunchersList.emptyNow();
-		}
-	}
-
 	private QueryLimit getLaunchersLimit()
 	{
 		final int limitInt = sysConfigBL.getIntValue(SYSCONFIG_LaunchersLimit, -100);
@@ -151,10 +124,22 @@ public class WorkflowRestAPIService
 				: QueryLimit.ofInt(limitInt);
 	}
 
+	public void logout(@NonNull final UserId userId)
+	{
+		applications.stream()
+				.forEach(application -> application.logout(userId));
+	}
+
 	public WFProcess getWFProcessById(@NonNull final WFProcessId wfProcessId)
 	{
 		return getWorkflowBasedMobileApplication(wfProcessId.getApplicationId())
 				.getWFProcessById(wfProcessId);
+	}
+
+	public WFProcess continueWFProcess(@NonNull final WFProcessId wfProcessId, @NonNull UserId userId)
+	{
+		return getWorkflowBasedMobileApplication(wfProcessId.getApplicationId())
+				.continueWorkflow(wfProcessId, userId);
 	}
 
 	public WFProcess changeWFProcessById(

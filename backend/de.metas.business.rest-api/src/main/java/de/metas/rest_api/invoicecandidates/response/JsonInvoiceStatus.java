@@ -1,16 +1,15 @@
 package de.metas.rest_api.invoicecandidates.response;
 
-import java.time.LocalDate;
-
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import de.metas.rest_api.utils.MetasfreshId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import java.time.LocalDate;
 
 /*
  * #%L

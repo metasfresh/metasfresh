@@ -22,6 +22,7 @@
 
 package org.eevolution.productioncandidate.service;
 
+import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
@@ -136,6 +137,7 @@ public class PPOrderCandidatePojoConverter
 									 .qtyDelivered(qtyProcessedInStockUOM.toBigDecimal())
 									 .plantId(ResourceId.ofRepoId(ppOrderCandidateRecord.getS_Resource_ID()))
 									 .materialDispoGroupId(getMaterialDispoGroupIdOrNull(ppOrderCandidateRecord))
+									 .packingMaterialId(HUPIItemProductId.ofRepoIdOrNull(ppOrderCandidateRecord.getM_HU_PI_Item_Product_ID()))
 									 .build())
 				.lines(toPPOrderLineCandidates(ppOrderCandidateRecord))
 				.build();

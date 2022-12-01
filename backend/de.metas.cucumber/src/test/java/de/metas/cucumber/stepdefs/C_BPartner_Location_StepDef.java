@@ -27,7 +27,6 @@ import de.metas.location.ILocationBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
-import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -182,14 +181,21 @@ public class C_BPartner_Location_StepDef
 
 		final I_C_BPartner_Location bPartnerLocation = InterfaceWrapperHelper.load(bPartnerLocationID, I_C_BPartner_Location.class);
 
-		final String gln = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_GLN);
+		final String email = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_EMail);
+		if (Check.isNotBlank(email))
+		{
+			bPartnerLocation.setEMail(DataTableUtil.nullToken2Null(email));
+		}
+
+		final String gln = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_GLN);
 
 		if (Check.isNotBlank(gln))
 		{
-			bPartnerLocation.setGLN(gln);
+			bPartnerLocation.setGLN(DataTableUtil.nullToken2Null(gln));
 		}
 
 		saveRecord(bPartnerLocation);
+		bPartnerLocationTable.putOrReplace(bPartnerLocationIdentifier, bPartnerLocation);
 	}
 
 	private void updateLocationOfTheBPartnerLocation(@NonNull final Map<String, String> tableRow)

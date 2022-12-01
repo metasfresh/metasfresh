@@ -1,6 +1,24 @@
 package de.metas.i18n;
 
-import java.awt.ComponentOrientation;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.Preconditions;
+import com.google.common.collect.ImmutableList;
+import de.metas.logging.LogManager;
+import de.metas.util.Check;
+import lombok.Builder;
+import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.ExtendedMemorizingSupplier;
+import org.compiere.Adempiere;
+import org.compiere.util.Env;
+import org.compiere.util.ValueNamePair;
+import org.slf4j.Logger;
+
+import javax.annotation.Nullable;
+import javax.print.attribute.standard.MediaSize;
+import java.awt.*;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.DecimalFormatSymbols;
@@ -12,27 +30,6 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
-import javax.print.attribute.standard.MediaSize;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Builder;
-import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.ExtendedMemorizingSupplier;
-import org.compiere.Adempiere;
-import org.compiere.util.Env;
-import org.compiere.util.ValueNamePair;
-import org.slf4j.Logger;
-
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.MoreObjects;
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableList;
-
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
 
 /*
  * #%L
