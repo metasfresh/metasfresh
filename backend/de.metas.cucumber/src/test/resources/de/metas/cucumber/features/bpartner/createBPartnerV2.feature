@@ -258,6 +258,9 @@ Feature: create or update BPartner v2
    }
 }
 """
+    Then set context properties:
+      | Key         | Value  |
+      | #AD_Role_ID | 540024 |
     And verify that S_ExternalReference was created
       | ExternalSystem | Type          | ExternalReference | OPT.AD_Org_ID.Identifier |
       | ALBERTA        | BPartnerValue | BPartnerTestCode1 | providedOrg              |

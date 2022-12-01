@@ -142,7 +142,7 @@ public class ImportInvoiceCandidatesService
 				.qtyOrdered(qtyOrdered)
 				.qtyDelivered(qtyDelivered)
 
-				.priceEnteredOverride(priceEnteredOverride)
+				.priceEnteredOverride(getPriceEnteredOverride(record).orElse(null))
 				.discountOverride(Percent.ofNullable(record.getDiscount()))
 
 				.descriptionBottom(record.getDescriptionBottom())
@@ -182,5 +182,24 @@ public class ImportInvoiceCandidatesService
 		}
 
 		return today;
+	}
+
+	@NonNull
+	private Optional<ProductPrice> getPriceEnteredOverride(@NonNull final I_I_Invoice_Candidate record)
+	{
+		if (record.getPrice() == null || record.getPrice().signum() == 0)
+		{
+			return Optional.empty();
+		}
+
+		final Properties ctx = InterfaceWrapperHelper.getCtx(record);
+		final CurrencyId baseCurrencyId = currencyBL.getBaseCurrency(ctx).getId(); //we're assuming that uses the same currency as the current one product price
+		final ProductPrice priceEnteredOverride = ProductPrice.builder()
+				.money(Money.ofOrNull(record.getPrice(), baseCurrencyId))
+				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
+				.uomId(UomId.ofRepoId(record.getC_UOM_ID()))
+				.build();
+
+		return Optional.of(priceEnteredOverride);
 	}
 }
