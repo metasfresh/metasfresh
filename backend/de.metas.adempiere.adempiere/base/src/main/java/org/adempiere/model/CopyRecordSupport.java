@@ -92,6 +92,11 @@ public interface CopyRecordSupport
 
 	CopyRecordSupport addChildRecordCopiedListener(IOnRecordCopiedListener listener);
 
+	/**
+	 * Allows to specify the names of columns that shall be copied no matter waht their {@code IsCalculated} value is.
+	 */
+	CopyRecordSupport setIgnoreIsCalculatedForColumns(@Nullable final String ...columnnames);
+
 	@FunctionalInterface
 	interface IOnRecordCopiedListener
 	{

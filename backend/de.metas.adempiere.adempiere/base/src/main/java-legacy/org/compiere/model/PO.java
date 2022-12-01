@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import com.google.common.collect.ImmutableSet;
 import de.metas.audit.apirequest.request.log.StateType;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.IModelCacheInvalidationService;
@@ -1567,13 +1568,18 @@ public abstract class PO
 	 */
 	public static void copyValues(final PO from, final PO to)
 	{
-		// metas: begin
-		copyValues(from, to, false);
+		copyValues(from, to, from.p_info.getColumnNames()); // ignore IsCalculated=Y for all columns
 	}
 
 	public static void copyValues(final PO from, final PO to, final boolean honorIsCalculated)
 	{
-		// metas: end
+		final Set<String> ignoreIsCalculatedForColumns = honorIsCalculated 
+				? ImmutableSet.of() // do not ignore IsCalculated=Y for any column
+				: from.p_info.getColumnNames(); // ignore IsCalculated=Y for all columns
+		copyValues(from, to, ignoreIsCalculatedForColumns);
+	}
+	public static void copyValues(@NonNull final PO from, @NonNull final PO to, @NonNull final Set<String> ignoreIsCalculatedFor)
+	{
 		s_log.debug("Copy values: From ID={}, To ID={}", from.get_ID(), to.get_ID());
 
 		//
@@ -1588,6 +1594,7 @@ public abstract class PO
 			for (int fromColumnIndex = 0; fromColumnIndex < from.m_oldValues.length; fromColumnIndex++)
 			{
 				final String fromColumnName = from.p_info.getColumnName(fromColumnIndex); // metas: us215
+				final boolean honorIsCalculated = !ignoreIsCalculatedFor.contains(fromColumnName);
 				if (from.p_info.isVirtualColumn(fromColumnIndex)
 						|| from.p_info.isKey(fromColumnIndex)) 		// KeyColumn
 				{
@@ -1647,6 +1654,7 @@ public abstract class PO
 			for (int i = 0; i < from.m_oldValues.length; i++)
 			{
 				final String colName = from.p_info.getColumnName(i); // metas
+				final boolean honorIsCalculated = !ignoreIsCalculatedFor.contains(colName);
 				if (from.p_info.isVirtualColumn(i)
 						|| from.p_info.isKey(i))
 				{

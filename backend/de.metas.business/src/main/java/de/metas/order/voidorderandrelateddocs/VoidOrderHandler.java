@@ -1,10 +1,9 @@
 package de.metas.order.voidorderandrelateddocs;
 
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import java.util.List;
-
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBUniqueConstraintException;
 import org.adempiere.model.CopyRecordFactory;
@@ -16,10 +15,10 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_C_Order;
 import org.springframework.stereotype.Component;
 
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.util.List;
+
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -80,6 +79,7 @@ public class VoidOrderHandler implements VoidOrderAndRelatedDocsHandler
 					.getCopyRecordSupport(I_C_Order.Table_Name)
 					.setParentPO(LegacyAdapters.convertToPO(copiedOrderRecord))
 					.setBase(true)
+					.setIgnoreIsCalculatedForColumns(I_C_Order.COLUMNNAME_DatePromised, I_C_Order.COLUMNNAME_DateOrdered, I_C_Order.COLUMNNAME_DateAcct) // make sure thevoiced order has the same dates as the original
 					.copyRecord(LegacyAdapters.convertToPO(orderRecord), ITrx.TRXNAME_ThreadInherited);
 
 			documentBL.processEx(orderRecord, IDocument.ACTION_Void);
@@ -90,7 +90,7 @@ public class VoidOrderHandler implements VoidOrderAndRelatedDocsHandler
 	private String setVoidedOrderNewDocumenTNo(
 			@NonNull final String voidedOrderDocumentNoPrefix,
 			@NonNull final I_C_Order orderRecord,
-			int attemptCount)
+			final int attemptCount)
 	{
 		final String prefixToUse;
 		if (attemptCount <= 1)

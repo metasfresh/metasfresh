@@ -23,6 +23,7 @@ package org.adempiere.model;
  */
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.IMsgBL;
@@ -33,6 +34,7 @@ import de.metas.user.api.IUserDAO;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import lombok.Setter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.element.api.AdWindowId;
@@ -90,6 +92,12 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 	@Nullable
 	private AdWindowId _adWindowId = null;
 
+	/**
+	 * By default this set is empty, i.e. any column with IsCalculated=Y is *not* copied.
+	 */
+	@Setter
+	private ImmutableSet<String> ignoreIsCalculatedForColumns = ImmutableSet.of();
+	
 	private final ArrayList<IOnRecordCopiedListener> recordCopiedListeners = new ArrayList<>();
 	private final ArrayList<IOnRecordCopiedListener> childRecordCopiedListeners = new ArrayList<>();
 
@@ -114,7 +122,7 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 		{
 			toPO = TableModelLoader.instance.newPO(getCtx(), fromPO.get_TableName(), trxName);
 			toPO.setDynAttribute(PO.DYNATTR_CopyRecordSupport, this); // need this for getting defaultValues at copy in PO
-			PO.copyValues(fromPO, toPO, true);
+			PO.copyValues(fromPO, toPO, ignoreIsCalculatedForColumns);
 			// reset for avoiding copy same object twice
 			toPO.setDynAttribute(PO.DYNATTR_CopyRecordSupport, null);
 			setBase(false);
@@ -762,6 +770,20 @@ public class GeneralCopyRecordSupport implements CopyRecordSupport
 			childRecordCopiedListeners.add(listener);
 		}
 
+		return this;
+	}
+
+	@Override
+	public CopyRecordSupport setIgnoreIsCalculatedForColumns(@Nullable final String... columnnames)
+	{
+		if (columnnames == null)
+		{
+			ignoreIsCalculatedForColumns = ImmutableSet.of();
+		}
+		else
+		{
+			ignoreIsCalculatedForColumns = ImmutableSet.copyOf(columnnames);
+		}
 		return this;
 	}
 }
