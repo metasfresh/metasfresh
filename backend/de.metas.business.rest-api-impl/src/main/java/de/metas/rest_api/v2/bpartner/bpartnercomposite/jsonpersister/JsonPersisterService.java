@@ -87,6 +87,7 @@ import de.metas.i18n.Language;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.v2.bpartner.JsonRequestConsolidateService;
@@ -130,6 +131,7 @@ public class JsonPersisterService
 {
 	private static final Logger logger = LogManager.getLogger(JsonPersisterService.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private final transient JsonRetrieverService jsonRetrieverService;
 	private final transient JsonRequestConsolidateService jsonRequestConsolidateService;
@@ -167,23 +169,20 @@ public class JsonPersisterService
 	}
 
 	public JsonResponseBPartnerCompositeUpsertItem persist(
-			@Nullable final String orgCode,
 			@NonNull final JsonRequestBPartnerUpsertItem requestItem,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
-		return trxManager.callInNewTrx(() -> persistWithinTrx(orgCode, requestItem, parentSyncAdvise));
+		return trxManager.callInNewTrx(() -> persistWithinTrx(requestItem, parentSyncAdvise));
 	}
 
-	/**
-	 * @param orgCode @{@code AD_Org.Value} of the bpartner in question. If {@code null}, the system will fall back to the current context-OrgId.
-	 */
 	private JsonResponseBPartnerCompositeUpsertItem persistWithinTrx(
-			@Nullable final String orgCode,
 			@NonNull final JsonRequestBPartnerUpsertItem requestItem,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
 		// TODO: add support to retrieve without changelog; we don't need changelog here;
 		// but! make sure we don't screw up caching
+
+		final String orgCode = requestItem.getBpartnerComposite().getOrgCode();
 
 		final OrgId orgId = retrieveOrgIdOrDefault(orgCode);
 		final String rawBpartnerIdentifier = requestItem.getBpartnerIdentifier();
@@ -334,11 +333,11 @@ public class JsonPersisterService
 			bpartnerComposite.getContacts().add(contact);
 			syncOutcome = SyncOutcome.CREATED;
 		}
-		
+
 		contact.addHandle(contactIdentifier.getRawValue()); // always add the handle; we'll need it later, even if the contact existed and was not updated
-		
+
 		syncJsonToContact(jsonContact, contact);
-		
+
 		bpartnerCompositeRepository.save(bpartnerComposite, true);
 
 		final Optional<BPartnerContact> persistedContact = bpartnerComposite.extractContactByHandle(contactIdentifier.getRawValue());
@@ -353,7 +352,10 @@ public class JsonPersisterService
 
 		if (SyncOutcome.CREATED.equals(syncOutcome))
 		{
-			handleExternalReference(contactIdentifier, metasfreshId, ExternalUserReferenceType.USER_ID);
+			handleExternalReference(contactIdentifier,
+									metasfreshId,
+									ExternalUserReferenceType.USER_ID,
+									bpartnerComposite.getOrgCode(orgDAO::getOrgCode));
 		}
 
 		return responseUpsertItem;
@@ -362,7 +364,8 @@ public class JsonPersisterService
 	private void handleExternalReference(
 			@NonNull final ExternalIdentifier externalIdentifier,
 			@NonNull final JsonMetasfreshId metasfreshId,
-			@NonNull final IExternalReferenceType externalReferenceType)
+			@NonNull final IExternalReferenceType externalReferenceType,
+			@Nullable final String orgCode)
 	{
 		if (EXTERNAL_REFERENCE.equals(externalIdentifier.getType()))
 		{
@@ -379,7 +382,7 @@ public class JsonPersisterService
 					.externalReferenceItem(externalReferenceItem)
 					.build();
 
-			externalReferenceRestControllerService.performInsertIfMissing(externalReferenceCreateRequest, null);
+			externalReferenceRestControllerService.performInsertIfMissing(externalReferenceCreateRequest, orgCode);
 		}
 	}
 
@@ -471,7 +474,11 @@ public class JsonPersisterService
 				final JsonMetasfreshId metasfreshId = JsonMetasfreshId.of(BPartnerLocationId.toRepoId(bpartnerLocation.get().getId()));
 
 				final ExternalIdentifier externalIdentifier = ExternalIdentifier.of(requestItem.getLocationIdentifier());
-				handleExternalReference(externalIdentifier, metasfreshId, BPLocationExternalReferenceType.BPARTNER_LOCATION);
+
+				handleExternalReference(externalIdentifier,
+										metasfreshId,
+										BPLocationExternalReferenceType.BPARTNER_LOCATION,
+										bpartnerComposite.getOrgCode(orgDAO::getOrgCode));
 
 				final JsonResponseUpsertItem responseItem = identifierToBuilder
 						.get(requestItem.getLocationIdentifier())
@@ -535,7 +542,10 @@ public class JsonPersisterService
 			final JsonMetasfreshId metasfreshId = JsonMetasfreshId.of(BPartnerContactId.toRepoId(bpartnerContact.getId()));
 
 			final ExternalIdentifier externalIdentifier = ExternalIdentifier.of(requestItem.getContactIdentifier());
-			handleExternalReference(externalIdentifier, metasfreshId, ExternalUserReferenceType.USER_ID);
+			handleExternalReference(externalIdentifier,
+									metasfreshId,
+									ExternalUserReferenceType.USER_ID,
+									bpartnerComposite.getOrgCode(orgDAO::getOrgCode));
 
 			final JsonResponseUpsertItem responseItem = identifierToBuilder
 					.get(requestItem.getContactIdentifier())
@@ -1220,7 +1230,6 @@ public class JsonPersisterService
 				contact.setSubjectMatterContact(jsonBPartnerContact.getSubjectMatter());
 			}
 		}
-
 
 		if (jsonBPartnerContact.isBirthdaySet())
 		{
