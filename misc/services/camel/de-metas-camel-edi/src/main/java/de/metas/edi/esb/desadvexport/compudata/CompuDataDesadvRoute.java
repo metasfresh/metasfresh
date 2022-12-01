@@ -36,7 +36,7 @@ import org.apache.camel.LoggingLevel;
 import org.apache.camel.Processor;
 import org.apache.camel.component.rabbitmq.RabbitMQConstants;
 import org.apache.camel.spi.DataFormat;
-import org.milyn.smooks.camel.dataformat.SmooksDataFormat;
+import org.smooks.cartridges.camel.dataformat.SmooksDataFormat;
 import org.springframework.stereotype.Component;
 
 import javax.xml.namespace.QName;

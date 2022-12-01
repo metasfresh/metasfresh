@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns:smooks="https://www.smooks.org/xsd/smooks-2.0.xsd"
+           targetNamespace="https://www.smooks.org/xsd/smooks-2.0.xsd"
+           elementFormDefault="qualified">
+
+    <xs:element name="smooks-resource-list">
+        <xs:complexType>
+            <xs:annotation>
+                <xs:documentation xml:lang="en">List of Smooks Resource Configuration.</xs:documentation>
+            </xs:annotation>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+                <xs:element minOccurs="0" maxOccurs="1" ref="smooks:params"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="smooks:conditions"/>
+                <xs:element minOccurs="0" maxOccurs="1" ref="smooks:profiles"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="smooks:abstract-reader"/>
+                <xs:element minOccurs="0" maxOccurs="unbounded" ref="smooks:abstract-resource-config"/>
+            </xs:choice>
+            <xs:attribute name="default-target-profile" type="xs:string"/>
+            <xs:attribute name="default-condition-ref" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="profiles">
+        <xs:complexType>
+            <xs:annotation>
+                <xs:documentation xml:lang="en">List of Profiles</xs:documentation>
+            </xs:annotation>
+            <xs:sequence>
+                <xs:element minOccurs="1" maxOccurs="unbounded" ref="smooks:profile"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="profile">
+        <xs:complexType>
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Profile Configuration. Basically allows you to specify the name of a
+                    base profile along with a list of its sub-profiles.
+                </xs:documentation>
+            </xs:annotation>
+            <xs:simpleContent>
+                <xs:extension base="xs:string">
+                    <xs:attribute name="base-profile" type="xs:string" use="required"/>
+                    <xs:attribute name="sub-profiles" type="xs:string"/>
+                </xs:extension>
+            </xs:simpleContent>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="abstract-resource-config" abstract="true" />
+    <xs:element name="abstract-resource-config" type="smooks:abstract-resource-config" abstract="true" />
+
+    <xs:complexType name="element-visitor" abstract="true">
+        <xs:complexContent>
+            <xs:extension base="smooks:abstract-resource-config">
+                <xs:annotation>
+                    <xs:documentation xml:lang="en">Element Visitor Resource Type</xs:documentation>
+                </xs:annotation>
+                <xs:choice>
+                    <xs:element minOccurs="0" maxOccurs="1" ref="smooks:condition"/>
+                </xs:choice>
+                <xs:attribute name="targetProfile" type="xs:string">
+       				<xs:annotation>
+       					<xs:documentation xml:lang="en">
+       						Defines the target profile
+       					</xs:documentation>
+       				</xs:annotation>
+       			</xs:attribute>
+            </xs:extension>
+        </xs:complexContent>
+    </xs:complexType>
+    <xs:element name="element-visitor" type="smooks:element-visitor" abstract="true" substitutionGroup="smooks:abstract-resource-config" />
+
+    <xs:element name="import" substitutionGroup="smooks:abstract-resource-config">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="smooks:abstract-resource-config">
+                    <xs:annotation>
+                        <xs:documentation xml:lang="en">Smooks Resource Configuration Import</xs:documentation>
+                    </xs:annotation>
+                    <xs:sequence>
+                        <xs:element ref="smooks:param" minOccurs="0" maxOccurs="unbounded" />
+                    </xs:sequence>
+                    <xs:attribute name="file" use="required" type="xs:anyURI"/>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:complexType name="abstract-reader" abstract="true">
+        <xs:attribute name="targetProfile" type="xs:string"></xs:attribute>
+    </xs:complexType>
+
+    <xs:element name="abstract-reader" type="smooks:abstract-reader" abstract="true" />
+
+	<xs:element name="reader" substitutionGroup="smooks:abstract-reader">
+		<xs:complexType>
+			<xs:complexContent>
+				<xs:extension base="smooks:abstract-reader">
+					<xs:annotation>
+						<xs:documentation xml:lang="en">Stream Reader</xs:documentation>
+					</xs:annotation>
+					<xs:sequence>
+						<xs:element minOccurs="0" maxOccurs="1" ref="smooks:handlers" />
+						<xs:element minOccurs="0" maxOccurs="1" ref="smooks:features" />
+						<xs:element minOccurs="0" maxOccurs="1" ref="smooks:params" />
+					</xs:sequence>
+					<xs:attribute name="class" use="optional" type="xs:string" />
+				</xs:extension>
+			</xs:complexContent>
+		</xs:complexType>
+	</xs:element>
+
+    <xs:element name="features">
+        <xs:complexType>
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Reader Features List</xs:documentation>
+            </xs:annotation>
+            <xs:sequence>
+                <xs:element ref="smooks:setOn" minOccurs="0" maxOccurs="unbounded" />
+                <xs:element ref="smooks:setOff" minOccurs="0" maxOccurs="unbounded" />
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="setOn">
+        <xs:complexType>
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Set Reader Feature 'On'</xs:documentation>
+            </xs:annotation>
+            <xs:attribute name="feature" type="xs:anyURI" use="required" />
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="setOff">
+        <xs:complexType>
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Set Reader Feature 'Off'</xs:documentation>
+            </xs:annotation>
+            <xs:attribute name="feature" type="xs:anyURI" use="required"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="handlers">
+        <xs:complexType>
+            <xs:annotation>
+                <xs:documentation xml:lang="en">
+                    Reader Handler Classes.
+                    <p/>
+                    Set a handler on the reader instance e.g. an EntityResolver, ErrorHandler etc.
+                </xs:documentation>
+            </xs:annotation>
+            <xs:sequence>
+                <xs:element ref="smooks:handler" minOccurs="1" maxOccurs="unbounded" />
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="handler">
+        <xs:complexType>
+            <xs:annotation>
+                <xs:documentation xml:lang="en">
+                    Handler class name.
+                    <p/>
+                    This is the Handler class name e.g. an EntityResolver, ErrorHandler implementation etc.
+                </xs:documentation>
+            </xs:annotation>
+            <xs:attribute name="class" type="xs:string" use="required"/>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="resource-config" substitutionGroup="smooks:abstract-resource-config">
+        <xs:complexType>
+            <xs:complexContent>
+                <xs:extension base="smooks:abstract-resource-config">
+                    <xs:annotation>
+                        <xs:documentation xml:lang="en">Smooks Resource Configuration</xs:documentation>
+                    </xs:annotation>
+                    <xs:sequence>
+                        <xs:element minOccurs="0" maxOccurs="1" ref="smooks:resource"/>
+                        <xs:element minOccurs="0" maxOccurs="1" ref="smooks:condition"/>
+                        <xs:element minOccurs="0" maxOccurs="unbounded" ref="smooks:param"/>
+                    </xs:sequence>
+                    <xs:attribute name="selector" type="xs:string"/>
+                    <xs:attribute name="target-profile" type="xs:string"/>
+                    <xs:attribute name="factory" type="xs:string" default="org.smooks.engine.resource.config.DefaultResourceConfigFactory"/>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="resource">
+        <xs:complexType>
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Resource Configuration Resource Type (xsl, class etc)</xs:documentation>
+            </xs:annotation>
+            <xs:simpleContent>
+                <xs:extension base="xs:string">
+                    <xs:attribute name="type" type="xs:string"/>
+                </xs:extension>
+            </xs:simpleContent>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="conditions">
+        <xs:complexType>
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Conditions List.</xs:documentation>
+            </xs:annotation>
+            <xs:sequence>
+                <xs:element ref="smooks:condition" minOccurs="1" maxOccurs="unbounded" />
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="condition">
+        <xs:complexType>
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Resource Targetting Condition</xs:documentation>
+            </xs:annotation>
+            <xs:simpleContent>
+                <xs:extension base="xs:string">
+                    <xs:attribute name="id" type="xs:string"/>
+                    <xs:attribute name="idRef" type="xs:string"/>
+                    <xs:attribute name="evaluator" type="xs:string"/>
+                </xs:extension>
+            </xs:simpleContent>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="params">
+        <xs:complexType>
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Resource Parameters</xs:documentation>
+            </xs:annotation>
+            <xs:sequence>
+                <xs:element ref="smooks:param" minOccurs="1" maxOccurs="unbounded" />
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+
+    <xs:element name="param">
+        <xs:complexType>
+            <xs:annotation>
+                <xs:documentation xml:lang="en">Resource Parameter</xs:documentation>
+            </xs:annotation>
+            <xs:complexContent>
+                <xs:extension base="xs:anyType">
+                    <xs:attribute name="name" type="xs:string" use="required"/>
+                    <xs:attribute name="type" type="xs:string"/>
+                </xs:extension>
+            </xs:complexContent>
+        </xs:complexType>
+    </xs:element>
+
+</xs:schema>

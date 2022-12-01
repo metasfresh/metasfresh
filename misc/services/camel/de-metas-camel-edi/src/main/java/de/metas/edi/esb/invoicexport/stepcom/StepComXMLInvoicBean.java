@@ -84,9 +84,7 @@ import org.apache.commons.lang.StringUtils;
 import javax.xml.datatype.XMLGregorianCalendar;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.Comparator;
-import java.util.Date;
 
 import static de.metas.edi.esb.commons.Util.formatNumber;
 import static de.metas.edi.esb.commons.Util.isEmpty;
@@ -283,8 +281,8 @@ public class StepComXMLInvoicBean
 
 			if (settings.isInvoicLineBUYRRequired())
 			{
-				final String buyr = ValidationHelper.validateString(xmlCctopInvoic500V.getVendorProductNo(),
-						"@FillMandatory@ @C_InvoiceLine_ID@=" + xmlCctopInvoic500V.getVendorProductNo() + " @VendorProductNo@");
+				final String buyr = ValidationHelper.validateString(xmlCctopInvoic500V.getCustomerProductNo(),
+						"@FillMandatory@ @C_InvoiceLine_ID@=" + xmlCctopInvoic500V.getCustomerProductNo() + " @CustomerProductNo@");
 
 				final DPRIN1 productInfo = INVOIC_objectFactory.createDPRIN1();
 				productInfo.setDOCUMENTID(documentId);
