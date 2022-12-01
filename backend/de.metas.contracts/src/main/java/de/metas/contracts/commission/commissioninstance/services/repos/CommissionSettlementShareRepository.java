@@ -1,22 +1,10 @@
 package de.metas.contracts.commission.commissioninstance.services.repos;
 
-import static de.metas.util.Check.assumeEquals;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.TimeUtil;
-import org.compiere.util.Util.ArrayKey;
-import org.springframework.stereotype.Repository;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionPoints;
-import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShareId;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionShareId;
 import de.metas.contracts.commission.commissioninstance.businesslogic.settlement.CommissionSettlementFact;
 import de.metas.contracts.commission.commissioninstance.businesslogic.settlement.CommissionSettlementShare;
 import de.metas.contracts.commission.commissioninstance.businesslogic.settlement.CommissionSettlementState;
@@ -27,6 +15,16 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.TimeUtil;
+import org.compiere.util.Util.ArrayKey;
+import org.springframework.stereotype.Repository;
+
+import static de.metas.util.Check.assumeEquals;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -68,7 +66,7 @@ public class CommissionSettlementShareRepository
 		final ImmutableList<CommissionSettlementFact> facts = createFacts(factRecords);
 
 		return CommissionSettlementShare.builder()
-				.salesCommissionShareId(SalesCommissionShareId.ofRepoId(shareRecord.getC_Commission_Share_ID()))
+				.salesCommissionShareId(CommissionShareId.ofRepoId(shareRecord.getC_Commission_Share_ID()))
 				.facts(facts)
 				.build();
 	}

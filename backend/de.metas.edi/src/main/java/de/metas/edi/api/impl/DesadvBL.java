@@ -6,7 +6,6 @@ import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.bpartner_product.IBPartnerProductDAO;
 import de.metas.common.util.CoalesceUtil;
@@ -44,10 +43,12 @@ import de.metas.inout.IInOutDAO;
 import de.metas.logging.LogManager;
 import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
+import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.pricing.InvoicableQtyBasedOn;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessInfo;
+import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -73,6 +74,7 @@ import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner_Product;
+import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
@@ -84,8 +86,10 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
+import java.time.ZoneId;
 import java.util.Collection;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
@@ -130,6 +134,8 @@ public class DesadvBL implements IDesadvBL
 	private final transient IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final transient IBPartnerProductDAO partnerProductDAO = Services.get(IBPartnerProductDAO.class);
 	private final IHUPackingMaterialDAO packingMaterialDAO = Services.get(IHUPackingMaterialDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	// @VisibleForTesting
 	public DesadvBL(@NonNull final HURepository huRepository)
@@ -182,9 +188,9 @@ public class DesadvBL implements IDesadvBL
 	}
 
 	private I_EDI_DesadvLine retrieveOrCreateDesadvLine(
-			final I_C_Order orderRecord,
-			final I_EDI_Desadv desadvRecord,
-			final I_C_OrderLine orderLineRecord)
+			@NonNull final I_C_Order orderRecord,
+			@NonNull final I_EDI_Desadv desadvRecord,
+			@NonNull final I_C_OrderLine orderLineRecord)
 	{
 		final I_EDI_DesadvLine existingDesadvLine = desadvDAO.retrieveMatchingDesadvLinevOrNull(desadvRecord, orderLineRecord.getLine());
 		if (existingDesadvLine != null)
@@ -270,6 +276,8 @@ public class DesadvBL implements IDesadvBL
 		}
 		newDesadvLine.setIsSubsequentDeliveryPlanned(false); // the default
 
+		setExternalBPartnerInfo(newDesadvLine, orderLineRecord);
+
 		InterfaceWrapperHelper.save(newDesadvLine);
 		return newDesadvLine;
 	}
@@ -285,17 +293,18 @@ public class DesadvBL implements IDesadvBL
 		{
 			final ProductId productId = ProductId.ofRepoId(orderLine.getM_Product_ID());
 			final BPartnerId buyerBPartnerId = BPartnerId.ofRepoId(order.getC_BPartner_ID());
+			final ZoneId timeZone = orgDAO.getTimeZone(OrgId.ofRepoId(order.getAD_Org_ID()));
 
 			materialItemProduct = hupiItemProductDAO.retrieveMaterialItemProduct(
 					productId,
 					buyerBPartnerId,
-					TimeUtil.asZonedDateTime(order.getDateOrdered()),
+					TimeUtil.asZonedDateTime(order.getDateOrdered(), timeZone),
 					X_M_HU_PI_Version.HU_UNITTYPE_TransportUnit, true/* allowInfiniteCapacity */);
 		}
 		return materialItemProduct;
 	}
 
-	private I_EDI_Desadv retrieveOrCreateDesadv(final I_C_Order order)
+	private I_EDI_Desadv retrieveOrCreateDesadv(@NonNull final I_C_Order order)
 	{
 		I_EDI_Desadv desadv = desadvDAO.retrieveMatchingDesadvOrNull(
 				order.getPOReference(),
@@ -305,6 +314,7 @@ public class DesadvBL implements IDesadvBL
 			desadv = InterfaceWrapperHelper.newInstance(I_EDI_Desadv.class, order);
 
 			desadv.setPOReference(order.getPOReference());
+			desadv.setDeliveryViaRule(order.getDeliveryViaRule());
 
 			desadv.setC_BPartner_ID(order.getC_BPartner_ID());
 			desadv.setC_BPartner_Location_ID(order.getC_BPartner_Location_ID());
@@ -316,7 +326,7 @@ public class DesadvBL implements IDesadvBL
 			// the DESADV recipient might need an explicitly set dropship/handover partner and location; even if it is the same as the buyer's one
 			desadv.setHandOver_Partner_ID(CoalesceUtil.firstGreaterThanZero(order.getHandOver_Partner_ID(), order.getC_BPartner_ID()));
 			desadv.setHandOver_Location_ID(CoalesceUtil.firstGreaterThanZero(order.getHandOver_Location_ID(), order.getC_BPartner_Location_ID()));
-			
+
 			desadv.setDropShip_BPartner_ID(CoalesceUtil.firstGreaterThanZero(order.getDropShip_BPartner_ID(), order.getC_BPartner_ID()));
 			desadv.setDropShip_Location_ID(CoalesceUtil.firstGreaterThanZero(order.getDropShip_Location_ID(), order.getC_BPartner_Location_ID()));
 
@@ -387,22 +397,28 @@ public class DesadvBL implements IDesadvBL
 		final InvoicableQtyBasedOn invoicableQtyBasedOn = InvoicableQtyBasedOn.fromRecordString(desadvLineRecord.getInvoicableQtyBasedOn());
 		final StockQtyAndUOMQty inOutLineQty = extractInOutLineQty(inOutLineRecord, invoicableQtyBasedOn);
 
+		// update the desadvLineRecord first, so it's always <= the packs' sum and so our validating MI doesn't fail
+		addOrSubtractInOutLineQty(desadvLineRecord, inOutLineQty, orderLineRecord, true/* add */);
+		InterfaceWrapperHelper.save(desadvLineRecord);
+
 		StockQtyAndUOMQty remainingQtyToAdd = inOutLineQty;
+
+		// Get the records we might already have from DesadvLineSSCC18Generator
+		// These packs will be removed from this list, and will be used and updated.
+		final LinkedList<I_EDI_DesadvLine_Pack> existingUnusedPacks = new LinkedList<>(desadvDAO.retrieveDesadvLinePacks(desadvLineRecord, false/*withinOutLine*/));
+
 		// note that if inOutLineRecord has catch-weight, then logically we can't have HUs
 		final List<I_M_HU> topLevelHUs = huAssignmentDAO.retrieveTopLevelHUsForModel(inOutLineRecord);
 		for (final I_M_HU topLevelHU : topLevelHUs)
 		{
-			final StockQtyAndUOMQty addedPackQty = addPackRecordToLineUsingHU(desadvLineRecord, inOutLineRecord, topLevelHU, recipientBPartnerId);
+			final StockQtyAndUOMQty addedPackQty = addPackRecordToLineUsingHU(desadvLineRecord, inOutLineRecord, topLevelHU, recipientBPartnerId, existingUnusedPacks);
 			remainingQtyToAdd = StockQtyAndUOMQtys.subtract(remainingQtyToAdd, addedPackQty);
 		}
 
 		if (remainingQtyToAdd.getStockQty().signum() > 0)
 		{
-			addPackRecordsToLineUsingJustInOutLine(inOutLineRecord, orderLineRecord, desadvLineRecord, remainingQtyToAdd);
+			addPackRecordsToLineUsingJustInOutLine(inOutLineRecord, orderLineRecord, desadvLineRecord, remainingQtyToAdd, existingUnusedPacks);
 		}
-
-		addOrSubtractInOutLineQty(desadvLineRecord, inOutLineQty, true/* add */);
-		InterfaceWrapperHelper.save(desadvLineRecord);
 
 		inOutLineRecord.setEDI_DesadvLine_ID(desadvLineRecord.getEDI_DesadvLine_ID());
 		InterfaceWrapperHelper.save(inOutLineRecord);
@@ -434,7 +450,8 @@ public class DesadvBL implements IDesadvBL
 			@NonNull final I_M_InOutLine inOutLineRecord,
 			@NonNull final I_C_OrderLine orderLineRecord,
 			@NonNull final I_EDI_DesadvLine desadvLineRecord,
-			@NonNull final StockQtyAndUOMQty qtyToAdd)
+			@NonNull final StockQtyAndUOMQty qtyToAdd,
+			@NonNull final LinkedList<I_EDI_DesadvLine_Pack> existingUnusedPacks)
 	{
 		Check.assume(qtyToAdd.getStockQty().signum() > 0, "Parameter 'qtyToAdd' needs to be >0 for all this to make sense");
 
@@ -477,21 +494,32 @@ public class DesadvBL implements IDesadvBL
 		}
 
 		final Quantity qtyCUsPerTUInStockUOM;
-		if (lutuConfigurationInStockUOM.isInfiniteQtyCU())
+		if (orderLineRecord.getQtyItemCapacity().signum() > 0)
 		{
-			qtyCUsPerTUInStockUOM = qtyToAdd.getStockQty();
+			// we use the capacity which the goods were ordered in
+			qtyCUsPerTUInStockUOM = Quantitys.create(orderLineRecord.getQtyItemCapacity(), qtyToAdd.getStockQty().getUomId());
+		}
+		else if (!lutuConfigurationInStockUOM.isInfiniteQtyCU())
+		{
+			// we make an educated guess, based on the packing-instruction's information
+			qtyCUsPerTUInStockUOM = Quantitys.create(lutuConfigurationInStockUOM.getQtyCU(), qtyToAdd.getStockQty().getUomId());
 		}
 		else
 		{
-			qtyCUsPerTUInStockUOM = Quantitys.create(lutuConfigurationInStockUOM.getQtyCU(), qtyToAdd.getStockQty().getUomId());
+			// we just don't have the info. So we assume that everything was put into one TU
+			qtyCUsPerTUInStockUOM = qtyToAdd.getStockQty();
 		}
 
 		StockQtyAndUOMQty remainingQty = qtyToAdd;
 
 		for (int i = 0; i < requiredLUCount; i++)
 		{
-			final I_EDI_DesadvLine_Pack packRecord = createNewPackRecord(desadvLineRecord);
-			packRecord.setQtyItemCapacity(lutuConfigurationInStockUOM.getQtyCU());
+			final StockQtyAndUOMQty qtyCUsPerCurrentLU = remainingQty.min(maxQtyCUsPerLU);
+			final BigDecimal movementQty = qtyCUsPerCurrentLU.getStockQty().toBigDecimal();
+
+			final I_EDI_DesadvLine_Pack packRecord = findOrCreatePackRecord(existingUnusedPacks, desadvLineRecord, movementQty);
+
+			packRecord.setQtyItemCapacity(qtyCUsPerTUInStockUOM.toBigDecimal()); // CuPerTU
 			packRecord.setM_InOut_ID(inOutLineRecord.getM_InOut_ID());
 			packRecord.setM_InOutLine_ID(inOutLineRecord.getM_InOutLine_ID());
 
@@ -504,9 +532,12 @@ public class DesadvBL implements IDesadvBL
 			lotNumber.ifPresent(packRecord::setLotNumber);
 
 			// SSCC18
-			final String sscc18 = computeSSCC18(OrgId.ofRepoId(inOutLineRecord.getAD_Org_ID()));
-			packRecord.setIPA_SSCC18(sscc18);
-			packRecord.setIsManual_IPA_SSCC18(true); // because the SSCC string is not coming from any M_HU
+			if (Check.isBlank(packRecord.getIPA_SSCC18())) // if packRecord is a pre-existing record created by DesadvLineSSCC18Generator, then we need to stick with its SSCC18
+			{
+				final String sscc18 = computeSSCC18(OrgId.ofRepoId(inOutLineRecord.getAD_Org_ID()));
+				packRecord.setIPA_SSCC18(sscc18);
+				packRecord.setIsManual_IPA_SSCC18(true); // because the SSCC string is not coming from any M_HU
+			}
 
 			// PackagingCodes and PackagingGTINs
 			final int packagingCodeLU_ID = tuPIItemProduct.getM_HU_PackagingCode_LU_Fallback_ID();
@@ -521,9 +552,9 @@ public class DesadvBL implements IDesadvBL
 			{
 				final I_C_BPartner_Product bPartnerProductRecord = partnerProductDAO
 						.retrieveBPartnerProductAssociation(Env.getCtx(),
-								bpartnerId,
-								ProductId.ofRepoId(huPackingMaterials.get(0).getM_Product_ID()),
-								OrgId.ofRepoId(desadvLineRecord.getAD_Org_ID()));
+															bpartnerId,
+															ProductId.ofRepoId(huPackingMaterials.get(0).getM_Product_ID()),
+															OrgId.ofRepoId(desadvLineRecord.getAD_Org_ID()));
 				if (bPartnerProductRecord != null && isNotBlank(bPartnerProductRecord.getGTIN()))
 				{
 					packRecord.setGTIN_TU_PackingMaterial(bPartnerProductRecord.getGTIN());
@@ -532,10 +563,8 @@ public class DesadvBL implements IDesadvBL
 			else
 			{
 				logger.debug("M_HU_PI_Item_Product_ID={} has {} M_HU_PackingMaterials; -> skip setting GTIN_TU_PackingMaterial to EDI_DesadvLine_Pack_ID={}",
-						tuPIItemProduct.getM_HU_PI_Item_Product_ID(), huPackingMaterials.size(), packRecord.getEDI_DesadvLine_Pack_ID());
+							 tuPIItemProduct.getM_HU_PI_Item_Product_ID(), huPackingMaterials.size(), packRecord.getEDI_DesadvLine_Pack_ID());
 			}
-
-			final StockQtyAndUOMQty qtyCUsPerCurrentLU = remainingQty.min(maxQtyCUsPerLU);
 
 			final Quantity currentQtyTU = qtyCUsPerCurrentLU.getStockQty().divide(qtyCUsPerTUInStockUOM.toBigDecimal(), 0, RoundingMode.UP);
 			packRecord.setQtyTU(currentQtyTU.toBigDecimal().intValue());
@@ -544,9 +573,31 @@ public class DesadvBL implements IDesadvBL
 
 			saveRecord(packRecord);
 
-			// prepare next iteration within this for-look
+			// prepare next iteration within this for-loop
 			remainingQty = StockQtyAndUOMQtys.subtract(remainingQty, qtyCUsPerCurrentLU);
 		}
+	}
+
+	/**
+	 * @param existingUnusedPacks !! the pack is removed from this list, if matched. If no matching pack is found in this list, a new one is created.
+	 */
+	@NonNull
+	private I_EDI_DesadvLine_Pack findOrCreatePackRecord(
+			final @NonNull LinkedList<I_EDI_DesadvLine_Pack> existingUnusedPacks,
+			final @NonNull I_EDI_DesadvLine desadvLineRecord,
+			final @NonNull BigDecimal movementQty)
+	{
+		for (int i = 0; i < existingUnusedPacks.size(); i++)
+		{
+			final I_EDI_DesadvLine_Pack pack = existingUnusedPacks.get(i);
+			if (movementQty.compareTo(pack.getMovementQty()) == 0)
+			{
+				return existingUnusedPacks.remove(i);
+			}
+		}
+
+		// no matching pack found; create one
+		return createNewPackRecord(desadvLineRecord);
 	}
 
 	private String computeSSCC18(@NonNull final OrgId orgId)
@@ -559,7 +610,8 @@ public class DesadvBL implements IDesadvBL
 			@NonNull final I_EDI_DesadvLine desadvLineRecord,
 			@NonNull final I_M_InOutLine inOutLineRecord,
 			@NonNull final I_M_HU huRecord,
-			@NonNull final BPartnerId bPartnerId)
+			@NonNull final BPartnerId bPartnerId,
+			@NonNull final LinkedList<I_EDI_DesadvLine_Pack> existingPacks)
 	{
 		final ProductId productId = ProductId.ofRepoId(desadvLineRecord.getM_Product_ID());
 
@@ -574,7 +626,11 @@ public class DesadvBL implements IDesadvBL
 			return StockQtyAndUOMQtys.createZero(productId, desadvUomId); // we don't do HU-related stuffs if the HU is not a LU.
 		}
 
-		final I_EDI_DesadvLine_Pack packRecord = createNewPackRecord(desadvLineRecord);
+		// note that rootHU only contains children, quantities and weights for productId
+		final Quantity qtyInStockUOM = rootHU.getProductQtysInStockUOM().get(productId);
+
+		final I_EDI_DesadvLine_Pack packRecord = findOrCreatePackRecord(existingPacks, desadvLineRecord, qtyInStockUOM.toBigDecimal());
+
 		packRecord.setM_InOut_ID(inOutLineRecord.getM_InOut_ID());
 		packRecord.setM_InOutLine_ID(inOutLineRecord.getM_InOutLine_ID());
 		packRecord.setM_HU_ID(huRecord.getM_HU_ID());
@@ -615,8 +671,6 @@ public class DesadvBL implements IDesadvBL
 
 		packRecord.setQtyTU(rootHU.getChildHUs().size());
 
-		// note that rootHU only contains children, quantities and weights for productId
-		final Quantity qtyInStockUOM = rootHU.getProductQtysInStockUOM().get(productId);
 		final Optional<Quantity> weight = rootHU.getWeightNet();
 		final StockQtyAndUOMQty quantity;
 		if (weight.isPresent())
@@ -634,6 +688,7 @@ public class DesadvBL implements IDesadvBL
 					productId,
 					qtyInStockUOM.getUomId()); // don't try to convert to the pack's UOM! it might be a TU-uom
 		}
+
 		setQty(packRecord, productId, qtyCUInStockUOM, quantity);
 		saveRecord(packRecord);
 
@@ -691,6 +746,7 @@ public class DesadvBL implements IDesadvBL
 	private I_EDI_DesadvLine_Pack createNewPackRecord(@NonNull final I_EDI_DesadvLine desadvLineRecord)
 	{
 		final I_EDI_DesadvLine_Pack ssccRecord = newInstance(I_EDI_DesadvLine_Pack.class);
+		ssccRecord.setAD_Org_ID(desadvLineRecord.getAD_Org_ID());
 		ssccRecord.setEDI_DesadvLine_ID(desadvLineRecord.getEDI_DesadvLine_ID());
 		ssccRecord.setEDI_Desadv_ID(desadvLineRecord.getEDI_Desadv_ID());
 		ssccRecord.setC_UOM_ID(desadvLineRecord.getC_UOM_ID());
@@ -760,7 +816,7 @@ public class DesadvBL implements IDesadvBL
 				inOutLineRecord,
 				InvoicableQtyBasedOn.fromRecordString(desadvLineRecord.getInvoicableQtyBasedOn()));
 
-		addOrSubtractInOutLineQty(desadvLineRecord, inOutLineQty, false/* add=false, i.e. subtract */);
+		addOrSubtractInOutLineQty(desadvLineRecord, inOutLineQty, null/*orderLine*/, false/* add=false, i.e. subtract */);
 		InterfaceWrapperHelper.save(desadvLineRecord);
 
 		inOutLineRecord.setEDI_DesadvLine_ID(0);
@@ -771,17 +827,25 @@ public class DesadvBL implements IDesadvBL
 	void addOrSubtractInOutLineQty(
 			@NonNull final I_EDI_DesadvLine desadvLineRecord,
 			@NonNull final StockQtyAndUOMQty inOutLineQty,
+			@Nullable final I_C_OrderLine orderLine,
 			final boolean add)
 	{
 		final StockQtyAndUOMQty inOutLineQtyEff = inOutLineQty.negateIfNot(add);
 
 		final Quantity inOutLineStockQty = inOutLineQtyEff.getStockQty();
+		final BigDecimal oldMovementQtyInStockUOM = desadvLineRecord.getQtyDeliveredInStockingUOM();
 		final BigDecimal newMovementQty = desadvLineRecord.getQtyDeliveredInStockingUOM().add(inOutLineStockQty.toBigDecimal());
 		desadvLineRecord.setQtyDeliveredInStockingUOM(newMovementQty);
 
 		final Quantity desadvLineQtyDelivered = Quantitys.create(desadvLineRecord.getQtyDeliveredInUOM(), UomId.ofRepoId(desadvLineRecord.getC_UOM_ID()));
 		final Quantity newQtyDeliveredInUOM = addInOutLineQtyToDesadvLineQty(inOutLineQtyEff, desadvLineQtyDelivered, desadvLineRecord);
 		desadvLineRecord.setQtyDeliveredInUOM(newQtyDeliveredInUOM.toBigDecimal());
+
+		final Optional<BigDecimal> newQtyEnteredInBPartnerUOM = orderLine != null
+				? computeDeliveredQtyInBPartnerUOM(orderLine, desadvLineRecord)
+				: computeDeliveredQtyInBPartnerUOM(desadvLineRecord, oldMovementQtyInStockUOM);
+
+		newQtyEnteredInBPartnerUOM.ifPresent(desadvLineRecord::setQtyEnteredInBPartnerUOM);
 
 		// convert the delivered qty (which *might* also be in catch-weight!) to the invoicing-UOM
 		final UomId invoiceUomId = UomId.ofRepoIdOrNull(desadvLineRecord.getC_UOM_Invoice_ID());
@@ -843,8 +907,8 @@ public class DesadvBL implements IDesadvBL
 
 		final Quantity newQtyDeliveredInUOM = Quantitys
 				.add(conversionCtx,
-						desadvLineQtyToAugment,
-						augentQtyDeliveredInUOM);
+					 desadvLineQtyToAugment,
+					 augentQtyDeliveredInUOM);
 		return newQtyDeliveredInUOM;
 	}
 
@@ -1041,5 +1105,66 @@ public class DesadvBL implements IDesadvBL
 				MSG_EDI_DESADV_RefuseSending,
 				minimumSumPercentage, skippedDesadvsString.toString());
 		return Optional.of(msg);
+	}
+
+	@NonNull
+	private Optional<BigDecimal> computeDeliveredQtyInBPartnerUOM(
+			@NonNull final I_C_OrderLine orderLine,
+			@NonNull final I_EDI_DesadvLine desadvLine)
+	{
+		if (desadvLine.getC_UOM_BPartner_ID() <= 0)
+		{
+			return Optional.empty();
+		}
+
+		final UomId stockUOMId = productBL.getStockUOMId(orderLine.getM_Product_ID());
+		final I_C_UOM stockUOM = uomDAO.getById(stockUOMId);
+
+		//dev-note: calculating deliveredQtyInBPartnerUOM using proportion to avoid missing UOM conversion between
+		//BPartner_UOM_ID - which might not be considered at all in metas internal processing - and actual stock UOM
+		final BigDecimal deliveredQtyInBPartnerUOM = desadvLine.getQtyDeliveredInStockingUOM()
+				.multiply(orderLine.getQtyEnteredInBPartnerUOM())
+				.divide(orderLine.getQtyOrdered(), stockUOM.getStdPrecision(), RoundingMode.HALF_UP);
+
+		if (deliveredQtyInBPartnerUOM.signum() < 0)
+		{
+			return Optional.of(ZERO);
+		}
+
+		return Optional.of(deliveredQtyInBPartnerUOM);
+	}
+
+	private Optional<BigDecimal> computeDeliveredQtyInBPartnerUOM(
+			@NonNull final I_EDI_DesadvLine desadvLine,
+			@NonNull final BigDecimal oldMovementQtyInStockUOM)
+	{
+		if (desadvLine.getC_UOM_BPartner_ID() <= 0)
+		{
+			return Optional.empty();
+		}
+
+		final UomId stockUOMId = productBL.getStockUOMId(desadvLine.getM_Product_ID());
+		final I_C_UOM stockUOM = uomDAO.getById(stockUOMId);
+
+		//dev-note: calculating deliveredQtyInBPartnerUOM using proportion to avoid missing UOM conversion between
+		//BPartner_UOM_ID - which might not be considered at all in metas internal processing - and actual stock UOM
+		final BigDecimal deliveredQtyInBPartnerUOM = desadvLine.getQtyEnteredInBPartnerUOM()
+				.multiply(desadvLine.getQtyDeliveredInStockingUOM())
+				.divide(oldMovementQtyInStockUOM, stockUOM.getStdPrecision(), RoundingMode.HALF_UP);
+
+		if (deliveredQtyInBPartnerUOM.signum() < 0)
+		{
+			return Optional.of(ZERO);
+		}
+
+		return Optional.of(deliveredQtyInBPartnerUOM);
+	}
+
+	private static void setExternalBPartnerInfo(@NonNull final I_EDI_DesadvLine newDesadvLine, @NonNull final I_C_OrderLine orderLineRecord)
+	{
+		newDesadvLine.setExternalSeqNo(orderLineRecord.getExternalSeqNo());
+		newDesadvLine.setC_UOM_BPartner_ID(orderLineRecord.getC_UOM_BPartner_ID());
+		newDesadvLine.setQtyEnteredInBPartnerUOM(ZERO);
+		newDesadvLine.setBPartner_QtyItemCapacity(orderLineRecord.getBPartner_QtyItemCapacity());
 	}
 }

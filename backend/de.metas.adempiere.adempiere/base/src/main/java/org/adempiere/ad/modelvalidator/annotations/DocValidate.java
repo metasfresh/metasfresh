@@ -49,7 +49,7 @@ public @interface DocValidate
 	/**
 	 * On which timings shall we call the annotated methods.
 	 *
-	 * For more information about timings, please check {@link DocTimingType#getTiming()} values.
+	 * For more information about timings, please check {@link org.compiere.model.ModelValidator} values.
 	 *
 	 * At least one event shall be specified.
 	 */

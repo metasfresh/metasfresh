@@ -1,9 +1,30 @@
 package de.metas.handlingunits.shipmentschedule.integrationtest;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
+import de.metas.business.BusinessTestHelper;
+import de.metas.handlingunits.expectations.HUsExpectation;
+import de.metas.handlingunits.expectations.ShipmentScheduleQtyPickedExpectations;
+import de.metas.handlingunits.model.I_M_HU;
+import de.metas.handlingunits.model.I_M_ShipmentSchedule;
+import de.metas.handlingunits.model.X_M_HU;
+import de.metas.handlingunits.model.X_M_HU_Item;
+import de.metas.handlingunits.model.X_M_HU_PI_Item;
+import de.metas.inout.IInOutDAO;
+import de.metas.util.Services;
+import de.metas.util.collections.CollectionUtils;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IMutable;
+import org.adempiere.util.lang.Mutable;
+import org.compiere.model.I_M_InOut;
+import org.compiere.model.I_M_InOutLine;
+import org.compiere.model.I_M_Package;
+import org.compiere.model.I_M_Product;
+import org.junit.Assert;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.List;
+
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -26,29 +47,6 @@ import java.math.BigDecimal;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
-
-import java.util.Arrays;
-import java.util.List;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IMutable;
-import org.adempiere.util.lang.Mutable;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_InOutLine;
-import org.compiere.model.I_M_Package;
-import org.compiere.model.I_M_Product;
-import org.junit.Assert;
-
-import de.metas.business.BusinessTestHelper;
-import de.metas.handlingunits.expectations.HUsExpectation;
-import de.metas.handlingunits.expectations.ShipmentScheduleQtyPickedExpectations;
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_ShipmentSchedule;
-import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.model.X_M_HU_PI_Item;
-import de.metas.inout.IInOutDAO;
-import de.metas.util.Services;
-import de.metas.util.collections.CollectionUtils;
 
 /**
  * Test case:
@@ -92,6 +90,7 @@ public class HUShipmentProcess_LineNumberTests extends AbstractHUShipmentProcess
 		final I_M_ShipmentSchedule shipmentSchedule3 = shipmentSchedules.get(2);
 		//
 		// Create initial TU
+		final IMutable<I_M_HU> lu = new Mutable<>();
 		final IMutable<I_M_HU> tu = new Mutable<>();
 		final IMutable<I_M_HU> vhu1 = new Mutable<>();
 		final IMutable<I_M_HU> vhu2 = new Mutable<>();
@@ -100,8 +99,15 @@ public class HUShipmentProcess_LineNumberTests extends AbstractHUShipmentProcess
 		//@formatter:off
 		afterPick_HUExpectations = new HUsExpectation()
 			//
-			// TU
-			.newHUExpectation()
+		.newHUExpectation()
+			.capture(lu)
+			.huPI(piLU)
+			.huStatus(X_M_HU.HUSTATUS_Picked)
+			.bPartner(bpartner)
+			.bPartnerLocation(bpartnerLocation)
+			.item(piLU_Item)
+			.itemType(X_M_HU_Item.ITEMTYPE_HandlingUnit)
+			.includedHU()
 				.capture(tu)
 				.huStatus(X_M_HU.HUSTATUS_Picked)
 				.huPI(piTU)
@@ -145,7 +151,9 @@ public class HUShipmentProcess_LineNumberTests extends AbstractHUShipmentProcess
 							.endExpectation()
 						.endExpectation()
 					.endExpectation()
-				.endExpectation();
+				.endExpectation()
+			.endExpectation()
+		.endExpectation();
 		//@formatter:on
 		afterPick_HUExpectations.createHUs();
 
@@ -156,15 +164,15 @@ public class HUShipmentProcess_LineNumberTests extends AbstractHUShipmentProcess
 		afterPick_ShipmentScheduleQtyPickedExpectations = new ShipmentScheduleQtyPickedExpectations()
 			.newShipmentScheduleQtyPickedExpectation()
 				.shipmentSchedule(shipmentSchedule1)
-				.noLU().tu(tu).vhu(vhu1).qtyPicked("10")
+				.lu(lu).tu(tu).vhu(vhu1).qtyPicked("10")
 				.endExpectation()
 			.newShipmentScheduleQtyPickedExpectation()
 				.shipmentSchedule(shipmentSchedule2)
-				.noLU().tu(tu).vhu(vhu2).qtyPicked("20")
+				.lu(lu).tu(tu).vhu(vhu2).qtyPicked("20")
 				.endExpectation()
 			.newShipmentScheduleQtyPickedExpectation()
 				.shipmentSchedule(shipmentSchedule3)
-				.noLU().tu(tu).vhu(vhu3).qtyPicked("30")
+				.lu(lu).tu(tu).vhu(vhu3).qtyPicked("30")
 			.endExpectation();
 		//@formatter:on
 		afterPick_ShipmentScheduleQtyPickedExpectations.createM_ShipmentSchedule_QtyPickeds(helper.getContextProvider());

@@ -33,6 +33,8 @@ import java.util.List;
 @Value
 public class ExternalSystemOtherConfig implements IExternalSystemChildConfig
 {
+	public static final String OTHER_EXTERNAL_SYSTEM_CHILD_VALUE = "OtherChildSysValue";
+
 	ExternalSystemOtherConfigId id;
 	List<ExternalSystemOtherConfigParameter> parameters;
 
@@ -49,5 +51,11 @@ public class ExternalSystemOtherConfig implements IExternalSystemChildConfig
 	public static ExternalSystemOtherConfig cast(@NonNull final IExternalSystemChildConfig externalSystemChildConfig)
 	{
 		return (ExternalSystemOtherConfig)externalSystemChildConfig;
+	}
+
+	@Override
+	public String getValue()
+	{
+		return String.valueOf(id.getRepoId());
 	}
 }

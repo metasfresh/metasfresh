@@ -130,7 +130,7 @@ public class MSV3StockAvailabilityServiceTest
 		saveRecord(productRecord);
 
 		final I_MD_Stock_WarehouseAndProduct_v stockItemRecord = newInstance(I_MD_Stock_WarehouseAndProduct_v.class);
-		stockItemRecord.setM_Product(productRecord);
+		stockItemRecord.setM_Product_ID(productRecord.getM_Product_ID());
 		stockItemRecord.setProductValue(productRecord.getValue());
 		stockItemRecord.setM_Product_Category_ID(productRecord.getM_Product_Category_ID());
 		stockItemRecord.setQtyOnHand(ONE);

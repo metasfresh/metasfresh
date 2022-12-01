@@ -28,7 +28,7 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.Commission
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CreateCommissionSharesRequest;
 import de.metas.contracts.commission.commissioninstance.businesslogic.hierarchy.HierarchyLevel;
-import de.metas.contracts.commission.commissioninstance.businesslogic.sales.SalesCommissionShare;
+import de.metas.contracts.commission.commissioninstance.businesslogic.sales.CommissionShare;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerDocument;
 import de.metas.logging.LogManager;
 import lombok.NonNull;
@@ -86,7 +86,7 @@ public class CommissionInstanceService
 				.getShares()
 				.stream()
 				.filter(share -> share.getLevel() != null)
-				.map(SalesCommissionShare::getLevel)
+				.map(CommissionShare::getLevel)
 				.max(HierarchyLevel::compareTo);
 
 		final HierarchyLevel startingHierarchyLevel = existingSharesHierarchyTopLevel.isPresent()
@@ -96,7 +96,7 @@ public class CommissionInstanceService
 
 		final ImmutableSet<CommissionConfig> existingConfigs = instance.getShares()
 				.stream()
-				.map(SalesCommissionShare::getConfig)
+				.map(CommissionShare::getConfig)
 				.collect(ImmutableSet.toImmutableSet());
 
 		final CreateCommissionSharesRequest sparsedOutRequest = request.get()
@@ -111,7 +111,7 @@ public class CommissionInstanceService
 			return;
 		}
 
-		final ImmutableList<SalesCommissionShare> additionalShares = commissionAlgorithmInvoker.createCommissionShares(sparsedOutRequest);
+		final ImmutableList<CommissionShare> additionalShares = commissionAlgorithmInvoker.createCommissionShares(sparsedOutRequest);
 		instance.addShares(additionalShares);
 		logger.debug("Added {} additional salesCommissionShares to instance", additionalShares.size());
 	}

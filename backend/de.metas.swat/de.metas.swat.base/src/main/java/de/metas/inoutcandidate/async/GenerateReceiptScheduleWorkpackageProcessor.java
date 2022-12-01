@@ -52,7 +52,7 @@ public class GenerateReceiptScheduleWorkpackageProcessor implements IWorkpackage
 		final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 
 		// maybe the underlying order line was deleted meanwhile, after the order was reactivated. Using retrieveItemsSkipMissing() because we don't need to make a fuss about that.
-		final List<Object> models = queueDAO.retrieveItemsSkipMissing(workpackage, Object.class, localTrxName);
+		final List<Object> models = queueDAO.retrieveAllItemsSkipMissing(workpackage, Object.class);
 		Loggables.addLog("Retrieved {} items for this work package", models.size());
 
 		for (final Object model : models)

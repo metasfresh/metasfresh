@@ -22,18 +22,8 @@ package org.adempiere.util.api;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.common.util.time.SystemTime;
 import de.metas.util.NumberUtils;
 import de.metas.util.StringUtils;
@@ -43,10 +33,26 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZonedDateTime;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Objects;
+import java.util.function.Function;
+
 @ToString
 @EqualsAndHashCode
 public final class Params implements IParams
 {
+	public static ParamsBuilder builder() {return new ParamsBuilder();}
+
 	public static Params ofMap(final Map<String, Object> values)
 	{
 		if (values == null || values.isEmpty())
@@ -54,7 +60,9 @@ public final class Params implements IParams
 			return EMPTY;
 		}
 
-		return new Params(new HashMap<>(values));
+		final ParamsBuilder builder = builder();
+		values.forEach(builder::valueObj);
+		return builder.build();
 	}
 
 	public static Params copyOf(@NonNull final IParams from)
@@ -71,41 +79,51 @@ public final class Params implements IParams
 				return EMPTY;
 			}
 
-			final HashMap<String, Object> values = new HashMap<>(parameterNames.size());
+			final ParamsBuilder builder = builder();
 			for (final String parameterName : parameterNames)
 			{
 				final Object value = from.getParameterAsObject(parameterName);
-				values.put(parameterName, value);
+				builder.valueObj(parameterName, value);
 			}
 
-			return new Params(values);
+			return builder.build();
 		}
 	}
 
 	public static final Params EMPTY = new Params();
 
-	private final Map<String, Object> values;
+	private final ImmutableSet<String> parameterNames;
+	private final ImmutableMap<String, Object> values;
 
 	private Params()
 	{
+		parameterNames = ImmutableSet.of();
 		values = ImmutableMap.of();
 	}
 
-	private Params(@NonNull final Map<String, Object> values)
+	private Params(
+			@NonNull final ImmutableSet<String> parameterNames,
+			@NonNull final ImmutableMap<String, Object> values)
 	{
+		this.parameterNames = parameterNames;
 		this.values = values;
+	}
+
+	public ParamsBuilder toBuilder()
+	{
+		return new ParamsBuilder(this);
 	}
 
 	@Override
 	public ImmutableSet<String> getParameterNames()
 	{
-		return ImmutableSet.copyOf(values.keySet());
+		return parameterNames;
 	}
 
 	@Override
 	public boolean hasParameter(final String parameterName)
 	{
-		return values.containsKey(parameterName);
+		return parameterNames.contains(parameterName);
 	}
 
 	public boolean isEmpty()
@@ -119,6 +137,19 @@ public final class Params implements IParams
 		return values.get(parameterName);
 	}
 
+	@Nullable
+	public <T> Class<T> getParameterAsObject(@NonNull final Class<T> type)
+	{
+		//noinspection unchecked
+		return (Class<T>)values.get(toParameterName(type));
+	}
+
+	private static <T> String toParameterName(@NonNull final Class<T> type)
+	{
+		return type.getName();
+	}
+
+	@Nullable
 	@Override
 	public String getParameterAsString(final String parameterName)
 	{
@@ -133,6 +164,7 @@ public final class Params implements IParams
 		return NumberUtils.asInt(value, defaultValue);
 	}
 
+	@Nullable
 	@Override
 	public <T extends RepoIdAware> T getParameterAsId(@NonNull final String parameterName, @NonNull final Class<T> type)
 	{
@@ -143,13 +175,12 @@ public final class Params implements IParams
 		}
 		else if (type.isInstance(value))
 		{
-			@SuppressWarnings("unchecked")
-			final T id = (T)value;
+			@SuppressWarnings("unchecked") final T id = (T)value;
 			return id;
 		}
 		else
 		{
-			int repoId = NumberUtils.asInt(value, -1);
+			final int repoId = NumberUtils.asInt(value, -1);
 			return RepoIdAwares.ofRepoIdOrNull(repoId, type);
 		}
 	}
@@ -158,8 +189,7 @@ public final class Params implements IParams
 	public BigDecimal getParameterAsBigDecimal(final String parameterName)
 	{
 		final Object value = getParameterAsObject(parameterName);
-		final BigDecimal defaultValue = null;
-		return NumberUtils.asBigDecimal(value, defaultValue);
+		return NumberUtils.asBigDecimal(value, null);
 	}
 
 	@Override
@@ -169,6 +199,7 @@ public final class Params implements IParams
 		return (Timestamp)value;
 	}
 
+	@Nullable
 	@Override
 	public LocalDate getParameterAsLocalDate(final String parameterName)
 	{
@@ -179,34 +210,153 @@ public final class Params implements IParams
 
 	}
 
+	@Nullable
 	@Override
 	public ZonedDateTime getParameterAsZonedDateTime(final String parameterName)
 	{
 		final Timestamp value = getParameterAsTimestamp(parameterName);
 		return value != null
-				? value.toLocalDateTime().atZone(SystemTime.zoneId())
+				? value.toInstant().atZone(SystemTime.zoneId())
+				: null;
+	}
+
+	@Nullable
+	@Override
+	public Instant getParameterAsInstant(final String parameterName)
+	{
+		final Timestamp value = getParameterAsTimestamp(parameterName);
+		return value != null
+				? value.toInstant()
 				: null;
 	}
 
 	@Override
 	public boolean getParameterAsBool(final String parameterName)
 	{
-		final Object value = getParameterAsObject(parameterName);
-		return StringUtils.toBoolean(value);
+		//noinspection ConstantConditions
+		return getParameterAsBoolean(parameterName, false);
 	}
 
+	@Nullable
+	@Override
+	public Boolean getParameterAsBoolean(final String parameterName, @Nullable final Boolean defaultValue)
+	{
+		final Object value = getParameterAsObject(parameterName);
+		return StringUtils.toBoolean(value, defaultValue);
+	}
+
+	
+	
+	@SuppressWarnings("unused")
 	public Params withParameter(@NonNull final String parameterName, final Object value)
 	{
 		final Object existingValue = values.get(parameterName);
-		if (Objects.equals(value, existingValue))
+		return !Objects.equals(value, existingValue)
+				? toBuilder().valueObj(parameterName, value).build()
+				: this;
+	}
+
+	public Map<String, Object> toJson()
+	{
+		return toJson(Function.identity());
+	}
+
+	public Map<String, Object> toJson(@NonNull final Function<Object, Object> toJsonConverter)
+	{
+		final LinkedHashMap<String, Object> result = new LinkedHashMap<>(parameterNames.size());
+		for (final String parameterName : parameterNames)
 		{
+			final Object valueObj = values.get(parameterName);
+			final Object valueJson = toJsonConverter.apply(valueObj);
+			result.put(parameterName, valueJson);
+		}
+		return result;
+	}
+
+	public static class ParamsBuilder
+	{
+		private final LinkedHashSet<String> parameterNames = new LinkedHashSet<>();
+		private final HashMap<String, Object> values = new HashMap<>();
+
+		private ParamsBuilder()
+		{
+		}
+
+		private ParamsBuilder(@NonNull final Params from)
+		{
+			parameterNames.addAll(from.parameterNames);
+			values.putAll(from.values);
+		}
+
+		public Params build()
+		{
+			if (parameterNames.isEmpty())
+			{
+				return EMPTY;
+			}
+			else
+			{
+				return new Params(
+						ImmutableSet.copyOf(parameterNames),
+						ImmutableMap.copyOf(values));
+			}
+		}
+
+		public ParamsBuilder value(@NonNull final String parameterName, @Nullable final String valueStr)
+		{
+			return valueObj(parameterName, valueStr);
+		}
+
+		public ParamsBuilder value(@NonNull final String parameterName, @Nullable final Integer valueInt)
+		{
+			return valueObj(parameterName, valueInt);
+		}
+
+		public <T extends RepoIdAware> ParamsBuilder value(@NonNull final String parameterName, @Nullable final T id)
+		{
+			return valueObj(parameterName, id);
+		}
+
+		public ParamsBuilder value(@NonNull final String parameterName, final boolean valueBoolean)
+		{
+			return valueObj(parameterName, valueBoolean);
+		}
+
+		public ParamsBuilder value(@NonNull final String parameterName, @Nullable final BigDecimal valueBD)
+		{
+			return valueObj(parameterName, valueBD);
+		}
+
+		public ParamsBuilder value(@NonNull final String parameterName, @Nullable final ZonedDateTime valueZDT)
+		{
+			return valueObj(parameterName, valueZDT);
+		}
+
+		public ParamsBuilder value(@NonNull final String parameterName, @Nullable final LocalDate valueLD)
+		{
+			return valueObj(parameterName, valueLD);
+		}
+
+		public ParamsBuilder valueObj(@NonNull final String parameterName, @Nullable final Object value)
+		{
+			parameterNames.add(parameterName);
+
+			if (value != null)
+			{
+				values.put(parameterName, value);
+			}
+			else
+			{
+				values.remove(parameterName);
+			}
+
 			return this;
 		}
-		else
+
+		public ParamsBuilder valueObj(@NonNull final Object value)
 		{
-			final Map<String, Object> newValues = new HashMap<>(values);
-			newValues.put(parameterName, value);
-			return new Params(newValues);
+			return valueObj(toParameterName(value.getClass()), value);
 		}
+
 	}
 }

@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-shopware6
+ * de-metas-camel-externalsystems-core
  * %%
  * Copyright (C) 2021 metas GmbH
  * %%

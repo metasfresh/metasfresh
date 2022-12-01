@@ -22,34 +22,34 @@ package de.metas.materialtracking.qualityBasedInvoicing.impl;
  * #L%
  */
 
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_M_Product;
-import org.eevolution.model.I_PP_Order;
-import org.eevolution.model.I_PP_Order_BOMLine;
-import org.slf4j.Logger;
-
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.material.planning.pporder.PPOrderUtil;
 import de.metas.materialtracking.qualityBasedInvoicing.IProductionMaterial;
 import de.metas.materialtracking.qualityBasedInvoicing.IProductionMaterialQuery;
 import de.metas.materialtracking.qualityBasedInvoicing.ProductionMaterialType;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.model.I_M_Product;
+import org.eevolution.model.I_PP_Order;
+import org.eevolution.model.I_PP_Order_BOMLine;
+import org.slf4j.Logger;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /* package */class ProductionMaterialQueryExecutor
 {
-
 	private static final transient Logger logger = LogManager.getLogger(ProductionMaterialQueryExecutor.class);
 
 	// Services
-	private final transient IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
+	private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
 
 	private final IProductionMaterialQuery query;
 	private final I_PP_Order ppOrder;
@@ -161,7 +161,8 @@ import lombok.NonNull;
 		if (PPOrderUtil.isVariant(ppOrderBOMLine))
 		{
 			final I_PP_Order_BOMLine mainComponentBOMLine = getMainComponentOrderBOMLine(ppOrderBOMLine);
-			mainComponentProduct = mainComponentBOMLine.getM_Product();
+			final ProductId mainComponentProductId = ProductId.ofRepoId(ppOrderBOMLine.getM_Product_ID());
+			mainComponentProduct = productBL.getById(mainComponentProductId);
 		}
 		else
 		{

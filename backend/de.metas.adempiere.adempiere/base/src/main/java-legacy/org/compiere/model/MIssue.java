@@ -19,16 +19,10 @@ package org.compiere.model;
 import java.sql.ResultSet;
 import java.util.Properties;
 
-import org.adempiere.ad.service.ISystemBL;
-import org.adempiere.util.net.NetUtils;
-import org.compiere.Adempiere;
-import org.compiere.util.DB;
-
-import de.metas.util.Check;
-import de.metas.util.Services;
+import de.metas.error.AdIssueFactory;
 
 /**
- * Issue Report Model
+ * TODO remove this whole class. Move the required code to {@link de.metas.error.AdIssueFactory}. Or {@link de.metas.error.impl.ErrorManager}.
  */
 @SuppressWarnings("serial")
 public class MIssue extends X_AD_Issue
@@ -57,38 +51,9 @@ public class MIssue extends X_AD_Issue
 		super(ctx, rs, trxName);
 	}
 
-	private void init(final Properties ctx) throws Exception
+	private void init(final Properties ctx)
 	{
-		final ISystemBL systemBL = Services.get(ISystemBL.class);
-		final I_AD_System system = systemBL.get(ctx);
-
-		setName(system.getName());
-		setUserName(system.getUserName());
-		setDBAddress(system.getDBAddress());
-		setSystemStatus(system.getSystemStatus());
-		setReleaseNo(system.getReleaseNo());	// DB
-
-		String dateVersion = Adempiere.getDateVersion();
-		if (Check.isEmpty(dateVersion, true))
-		{
-			dateVersion = "?";
-		}
-		setVersion(dateVersion);		// Code
-
-		setDatabaseInfo(DB.getDatabaseInfo());
-		setOperatingSystemInfo(Adempiere.getOSInfo());
-		setJavaInfo(Adempiere.getJavaInfo());
-		setReleaseTag(Adempiere.getImplementationVersion());
-		setLocal_Host(NetUtils.getLocalHost().toString());
-		if (system.isAllowStatistics())
-		{
-			// NOTE: there is no need to recalculate how many tenants, bpartners, invoices etc are in the system.
-			// An aproximative information is also acceptable.
-			// Also counting all those infos could be quite expensive.
-			final boolean recalc = false;
-			setStatisticsInfo(systemBL.getStatisticsInfo(recalc));
-			setProfileInfo(systemBL.getProfileInfo(recalc));
-		}
+		AdIssueFactory.prepareNewIssueRecord(ctx, this);
 	}
 
 	@Override

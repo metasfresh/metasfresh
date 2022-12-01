@@ -16,6 +16,7 @@
 
     <properties>
         <metasfresh.version>10.0.0</metasfresh.version>
+        <metasfresh-common.version>10.0.0</metasfresh-common.version>
     </properties>
 
     <dependencies>
@@ -45,6 +46,18 @@
             <artifactId>de.metas.adempiere.adempiere.migration-sql</artifactId>
             <version>${metasfresh.version}</version>
             <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>de.metas.common.bpartner</groupId>
+            <artifactId>de-metas-common-bpartner</artifactId>
+            <version>${metasfresh-common.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>de.metas.global_qrcode</groupId>
+            <artifactId>de.metas.global_qrcode.api</artifactId>
+            <version>10.0.0</version>
         </dependency>
 
         <dependency>
@@ -220,17 +233,10 @@
             <version>4.1</version>
         </dependency>
 
-        <!-- needed for org.adempiere.plaf.UIDefaultsSerializer -->
+        <!-- legacy, needed for org.adempiere.plaf.UIDefaultsSerializer -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-        </dependency>
-
-        <!-- we use this for its "capability of serializing java.time objects with the Jackson core".  -->
-        <!-- jackson itself is pulled in via spring-boot -->
-        <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jsr310</artifactId>
         </dependency>
 
         <dependency>

@@ -56,6 +56,7 @@ import java.util.stream.Stream;
 @Service
 public class StockRepository
 {
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public BigDecimal getQtyOnHandForProductAndWarehouseIds(
 			@NonNull final ProductId productId,
@@ -66,8 +67,8 @@ public class StockRepository
 		final BigDecimal qtyOnHand = Services.get(IQueryBL.class)
 				.createQueryBuilder(I_MD_Stock.class)
 				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_MD_Stock.COLUMN_M_Product_ID, productId)
-				.addInArrayFilter(I_MD_Stock.COLUMN_M_Warehouse_ID, warehouseIds)
+				.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Product_ID, productId)
+				.addInArrayFilter(I_MD_Stock.COLUMNNAME_M_Warehouse_ID, warehouseIds)
 				.create()
 				.aggregate(I_MD_Stock.COLUMN_QtyOnHand, IQuery.Aggregate.SUM, BigDecimal.class);
 		return qtyOnHand != null ? qtyOnHand : BigDecimal.ZERO;
@@ -164,14 +165,10 @@ public class StockRepository
 		insertClause.append("\t, ").append(I_T_MD_Stock_WarehouseAndProduct.COLUMNNAME_T_MD_Stock_WarehouseAndProduct_ID).append("\n)");
 		selectClause.append("\t, ").append("nextval('T_MD_Stock_WarehouseAndProduct_seq')");
 
-		final StringBuilder insertSQL = new StringBuilder();
-		insertSQL
-				.append(insertClause).append("\n")
-				.append(selectClause).append("\n")
-				.append("FROM ").append(I_MD_Stock_WarehouseAndProduct_v.Table_Name).append("\n")
-				.append("WHERE ").append(sqlQuery.getWhereClause());
-
-		return insertSQL.toString();
+		return insertClause + "\n"
+				+ selectClause + "\n"
+				+ "FROM " + I_MD_Stock_WarehouseAndProduct_v.Table_Name + "\n"
+				+ "WHERE " + sqlQuery.getWhereClause();
 	}
 
 	private IQuery<I_MD_Stock_WarehouseAndProduct_v> createStockDataAggregateItemQuery(@NonNull final StockDataAggregateQuery query)
@@ -180,11 +177,11 @@ public class StockRepository
 		final IQueryBuilder<I_MD_Stock_WarehouseAndProduct_v> queryBuilder = queryBL.createQueryBuilder(I_MD_Stock_WarehouseAndProduct_v.class);
 		if (!query.getProductCategoryIds().isEmpty())
 		{
-			queryBuilder.addInArrayFilter(I_MD_Stock_WarehouseAndProduct_v.COLUMN_M_Product_Category_ID, query.getProductCategoryIds());
+			queryBuilder.addInArrayFilter(I_MD_Stock_WarehouseAndProduct_v.COLUMNNAME_M_Product_Category_ID, query.getProductCategoryIds());
 		}
 		if (!query.getWarehouseIds().isEmpty())
 		{
-			queryBuilder.addInArrayFilter(I_MD_Stock_WarehouseAndProduct_v.COLUMN_M_Warehouse_ID, query.getWarehouseIds());
+			queryBuilder.addInArrayFilter(I_MD_Stock_WarehouseAndProduct_v.COLUMNNAME_M_Warehouse_ID, query.getWarehouseIds());
 		}
 
 		query.getOrderBys().forEach(orderBy -> queryBuilder.orderBy(orderBy.getColumnName()));
@@ -236,14 +233,13 @@ public class StockRepository
 
 	private IQuery<I_MD_Stock> createStockDataItemQuery(@NonNull final StockDataQuery query)
 	{
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
 		final IQueryBuilder<I_MD_Stock> queryBuilder = queryBL.createQueryBuilder(I_MD_Stock.class);
 
-		queryBuilder.addEqualsFilter(I_MD_Stock.COLUMN_M_Product_ID, query.getProductId());
+		queryBuilder.addEqualsFilter(I_MD_Stock.COLUMNNAME_M_Product_ID, query.getProductId());
 
 		if (!query.getWarehouseIds().isEmpty())
 		{
-			queryBuilder.addInArrayFilter(I_MD_Stock.COLUMN_M_Warehouse_ID, query.getWarehouseIds());
+			queryBuilder.addInArrayFilter(I_MD_Stock.COLUMNNAME_M_Warehouse_ID, query.getWarehouseIds());
 		}
 
 		//

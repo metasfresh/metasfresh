@@ -2,7 +2,9 @@ package org.compiere.util;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Range;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.organization.InstantAndOrgId;
 import de.metas.util.Check;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -109,15 +111,15 @@ public class TimeUtil
 	/**
 	 * Get earliest time of a day (truncate)
 	 *
-	 * @param day   day 1..31
-	 * @param month month 1..12
 	 * @param year  year (if two digits: < 50 is 2000; > 50 is 1900)
+	 * @param month month 1..12
+	 * @param day   day 1..31
 	 * @return timestamp ** not too reliable
 	 * @deprecated the return value of this method is {@code instanceof Date}, but it's not equal to "real" {@link Date} instances of the same time.
 	 * Hint: you can use {@link #asDate(Object)} to get a "real" date
 	 */
 	@Deprecated
-	static public Timestamp getDay(final int year, final int month, final int day)
+	public static Timestamp getDay(final int year, final int month, final int day)
 	{
 		final int hour = 0;
 		final int minute = 0;
@@ -1288,8 +1290,18 @@ public class TimeUtil
 		return new Timestamp(gc.getTimeInMillis());
 	}
 
+	public static Timestamp asTimestampNotNull(@NonNull final ZonedDateTime zdt)
+	{
+		return Timestamp.from(zdt.toInstant());
+	}
+
 	@Nullable
 	public static Timestamp asTimestamp(@Nullable final Object obj)
+	{
+		return asTimestamp(obj, null);
+	}
+
+	public static Timestamp asTimestamp(@Nullable final Object obj, @Nullable final ZoneId zoneId)
 	{
 		if (obj == null)
 		{
@@ -1309,7 +1321,8 @@ public class TimeUtil
 		}
 		else
 		{
-			return Timestamp.from(asInstant(obj));
+			final ZoneId zoneIdNonNull = CoalesceUtil.coalesceNotNull(zoneId,SystemTime.zoneId());
+			return Timestamp.from(asInstant(obj, zoneIdNonNull));
 		}
 	}
 
@@ -1626,6 +1639,12 @@ public class TimeUtil
 	@Nullable
 	public static LocalDate asLocalDate(@Nullable final Object obj)
 	{
+		return asLocalDate(obj, null);
+	}
+
+	@Nullable
+	public static LocalDate asLocalDate(@Nullable final Object obj, @Nullable final ZoneId zoneId)
+	{
 		if (obj == null)
 		{
 			return null;
@@ -1640,7 +1659,7 @@ public class TimeUtil
 		}
 		else
 		{
-			return asLocalDateTime(obj).toLocalDate();
+			return asLocalDateTime(obj,zoneId).toLocalDate();
 		}
 	}
 
@@ -1667,8 +1686,14 @@ public class TimeUtil
 		return zonedDateTime != null ? zonedDateTime.toLocalDate() : null;
 	}
 
-
+	@Nullable
 	public static LocalTime asLocalTime(@Nullable final Object obj)
+	{
+		return asLocalTime(obj, null);
+	}
+
+	@Nullable
+	public static LocalTime asLocalTime(@Nullable final Object obj, @Nullable final ZoneId zoneId)
 	{
 		if (obj == null)
 		{
@@ -1680,7 +1705,7 @@ public class TimeUtil
 		}
 		else
 		{
-			return asLocalDateTime(obj).toLocalTime();
+			return asLocalDateTime(obj, zoneId).toLocalTime();
 		}
 	}
 
@@ -1695,6 +1720,12 @@ public class TimeUtil
 
 	@Nullable
 	public static LocalDateTime asLocalDateTime(@Nullable final Object obj)
+	{
+		return asLocalDateTime(obj, null);
+	}
+
+	@Nullable
+	public static LocalDateTime asLocalDateTime(@Nullable final Object obj, @Nullable final ZoneId zoneId)
 	{
 		if (obj == null)
 		{
@@ -1718,7 +1749,10 @@ public class TimeUtil
 		}
 		else
 		{
-			return asInstant(obj).atZone(de.metas.common.util.time.SystemTime.zoneId()).toLocalDateTime();
+			final ZoneId zoneIdNonNull = CoalesceUtil.coalesceNotNull(zoneId, SystemTime.zoneId());
+
+			return asInstant(obj, zoneIdNonNull)
+					.atZone(zoneIdNonNull).toLocalDateTime();
 		}
 	}
 
@@ -1744,6 +1778,28 @@ public class TimeUtil
 	public static ZonedDateTime asZonedDateTime(@Nullable final Instant instant)
 	{
 		return instant != null ? instant.atZone(SystemTime.zoneId()) : null;
+	}
+
+	/**
+	 * @return timestamp converted to ZonedDateTime using system time zone.
+	 * @deprecated Please consider using {@link #asZonedDateTime(Timestamp, ZoneId)}.
+	 * <p>
+	 * If you don't know the {@link ZoneId} then
+	 * <ul>
+	 *     <li>please consider using {@link de.metas.organization.InstantAndOrgId} and don't assume system time zone.
+	 *     <li>or please consider using {@link Instant}
+	 *     </ul>
+	 *     <b>But please don't just assume the time zone is system time zone.</b>
+	 */
+	@Deprecated
+	public static ZonedDateTime asZonedDateTime(@Nullable final Timestamp timestamp)
+	{
+		return timestamp != null ? timestamp.toInstant().atZone(SystemTime.zoneId()) : null;
+	}
+
+	public static ZonedDateTime asZonedDateTime(@Nullable final Timestamp timestamp, @NonNull final ZoneId zoneId)
+	{
+		return timestamp != null ? timestamp.toInstant().atZone(zoneId) : null;
 	}
 
 	/**
@@ -1836,6 +1892,10 @@ public class TimeUtil
 		{
 			return null;
 		}
+		else if (obj instanceof InstantAndOrgId)
+		{
+			return ((InstantAndOrgId)obj).toInstant();
+		}
 		else if (obj instanceof Instant)
 		{
 			return (Instant)obj;
@@ -1912,6 +1972,12 @@ public class TimeUtil
 		}
 	}
 
+	@NonNull
+	public static Instant maxNotNull(@NonNull final Instant instant1, @NonNull final Instant instant2)
+	{
+		return max(instant1, instant2);
+	}
+
 	@Nullable
 	public static Instant max(
 			@Nullable final Instant instant1,
@@ -1961,7 +2027,6 @@ public class TimeUtil
 
 		return d1.isAfter(d2) ? d1 : d2;
 	}
-
 
 	public static boolean isLastDayOfMonth(@NonNull final LocalDate localDate)
 	{
@@ -2032,16 +2097,18 @@ public class TimeUtil
 		return Duration.ofNanos(stopwatch.elapsed(TimeUnit.NANOSECONDS));
 	}
 
-	public static Range<LocalDate> toLocalDateRange(
+	public static Range<Instant> toInstantsRange(
 			@Nullable final java.sql.Timestamp from,
 			@Nullable final java.sql.Timestamp to)
 	{
-		return toLocalDateRange(asLocalDate(from), asLocalDate(to));
+		return toInstantsRange(
+				from != null ? from.toInstant() : null,
+				to != null ? to.toInstant() : null);
 	}
 
-	public static Range<LocalDate> toLocalDateRange(
-			@Nullable final LocalDate from,
-			@Nullable final LocalDate to)
+	public static Range<Instant> toInstantsRange(
+			@Nullable final Instant from,
+			@Nullable final Instant to)
 	{
 		if (from == null)
 		{
@@ -2053,4 +2120,8 @@ public class TimeUtil
 		}
 	}
 
+	public static long getMillisBetween(@NonNull final Timestamp timestamp1, @NonNull final Timestamp timestamp2)
+	{
+		return timestamp2.getTime() - timestamp1.getTime();
+	}
 }    // TimeUtil

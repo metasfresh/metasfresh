@@ -1,18 +1,17 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <groupId>de.metas.camel.alberta</groupId>
-    <artifactId>alberta-patient-api</artifactId>
-    <packaging>jar</packaging>
-    <version>10.0.0</version>
-    <url>https://github.com/swagger-api/swagger-codegen</url>
-
     <parent>
         <groupId>de.metas.camel.externalsystems</groupId>
         <artifactId>de-metas-camel-alberta</artifactId>
         <version>10.0.0</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>de.metas.camel.alberta</groupId>
+    <artifactId>alberta-patient-api</artifactId>
+    <packaging>jar</packaging>
+    <version>10.0.0</version>
+    <url>https://github.com/swagger-api/swagger-codegen</url>
 
     <scm>
         <connection>scm:git:git@github.com:swagger-api/swagger-codegen.git</connection>
@@ -142,6 +141,16 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <plugin>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
@@ -193,7 +202,7 @@
         </dependency>
     </dependencies>
     <properties>
-        <java.version>1.7</java.version>
+        <java.version>1.8</java.version>
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <swagger-core-version>2.0.0</swagger-core-version>

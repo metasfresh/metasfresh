@@ -1,27 +1,8 @@
 package de.metas.handlingunits.shipmentschedule.async;
 
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.List;
-
-import com.google.common.collect.ImmutableMap;
-import de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule;
-import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentScheduleExternalInfo;
-import de.metas.inoutcandidate.ShipmentScheduleId;
-import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryOrderBy.Direction;
-import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.api.IParams;
-import org.compiere.SpringContextHolder;
-import org.slf4j.Logger;
-
-import com.google.common.collect.ImmutableList;
-
 import ch.qos.logback.classic.Level;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.spi.ILatchStragegy;
@@ -31,11 +12,29 @@ import de.metas.handlingunits.shipmentschedule.api.M_ShipmentSchedule_QuantityTy
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleEnqueuer.ShipmentScheduleWorkPackageParameters;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHUService;
+import de.metas.handlingunits.shipmentschedule.spi.impl.CalculateShippingDateRule;
+import de.metas.handlingunits.shipmentschedule.spi.impl.ShipmentScheduleExternalInfo;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.logging.LogManager;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.dao.IQueryOrderBy.Direction;
+import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.api.IParams;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.compiere.SpringContextHolder;
+import org.slf4j.Logger;
+
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Generate Shipments from given shipment schedules by processing enqueued work packages.<br>
@@ -54,6 +53,14 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 	private final IHUShipmentScheduleBL shipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final ShipmentScheduleWithHUService shipmentScheduleWithHUService = SpringContextHolder.instance.getBean(ShipmentScheduleWithHUService.class);
+
+	@NonNull
+	public static CalculateShippingDateRule computeShippingDateRule(@Nullable final Boolean isShipDateToday)
+	{
+		return Boolean.TRUE.equals(isShipDateToday)
+				? CalculateShippingDateRule.FORCE_SHIPMENT_DATE_TODAY
+				: CalculateShippingDateRule.NONE;
+	}
 
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage_NOTUSED, final String localTrxName_NOTUSED)
@@ -81,9 +88,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 		final boolean isCreatePackingLines = !onlyUsePicked;
 
-		final CalculateShippingDateRule calculateShippingDateRule = isShipmentDateToday
-				? CalculateShippingDateRule.FORCE_SHIPMENT_DATE_TODAY
-				: CalculateShippingDateRule.NONE;
+		final CalculateShippingDateRule calculateShippingDateRule = computeShippingDateRule(isShipmentDateToday);
 
 		final ImmutableMap<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo = extractScheduleId2ExternalInfo(parameters);
 		
@@ -167,7 +172,14 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 				.getParameterAsEnum(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType, M_ShipmentSchedule_QuantityTypeToUse.class)
 				.orElseThrow(() -> new AdempiereException("Parameter " + ShipmentScheduleWorkPackageParameters.PARAM_QuantityType + " not provided"));
 
-		return shipmentScheduleWithHUService.createShipmentSchedulesWithHU(shipmentSchedules, quantityTypeToUse, scheduleId2QtyToDeliverOverride);
+		final boolean onTheFlyPickToPackingInstructions = getParameters()
+				.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsOnTheFlyPickToPackingInstructions);
+
+		return shipmentScheduleWithHUService.createShipmentSchedulesWithHU(
+				shipmentSchedules,
+				quantityTypeToUse,
+				onTheFlyPickToPackingInstructions,
+				scheduleId2QtyToDeliverOverride);
 	}
 
 	private List<I_M_ShipmentSchedule> retrieveShipmentSchedules()

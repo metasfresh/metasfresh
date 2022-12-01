@@ -18,7 +18,6 @@
         <java.version>14</java.version>
         <spring-boot.version>2.6.3</spring-boot.version>
         <camel.version>3.14.1</camel.version>
-        <guava.version>30.1.1-jre</guava.version>
         <smooks-cartridge.version>2.0.0-M3</smooks-cartridge.version>
         <jackson.version>2.13.1</jackson.version>
         <lombok.version>1.18.22</lombok.version>

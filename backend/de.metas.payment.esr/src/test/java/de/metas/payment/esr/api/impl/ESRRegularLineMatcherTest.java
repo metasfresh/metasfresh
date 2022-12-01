@@ -64,7 +64,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-															 Env.getAD_Org_ID(getCtx()),
+															 getAD_Org().getAD_Org_ID(),
 															 Env.getAD_User_ID(getCtx()),
 															 "01-059931-0",
 															 currencyEUR);
@@ -95,7 +95,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-															 Env.getAD_Org_ID(getCtx()),
+															 getAD_Org().getAD_Org_ID(),
 															 Env.getAD_User_ID(getCtx()),
 															 "01-059931-0",
 															 currencyEUR);
@@ -145,7 +145,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-															 Env.getAD_Org_ID(getCtx()),
+															 getAD_Org().getAD_Org_ID(),
 															 Env.getAD_User_ID(getCtx()),
 															 "01-059931-0",
 															 currencyEUR);
@@ -196,7 +196,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-															 Env.getAD_Org_ID(getCtx()),
+															 getAD_Org().getAD_Org_ID(),
 															 Env.getAD_User_ID(getCtx()),
 															 "01-059931-0",
 															 currencyEUR);
@@ -247,7 +247,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-															 Env.getAD_Org_ID(getCtx()),
+															 getAD_Org().getAD_Org_ID(),
 															 Env.getAD_User_ID(getCtx()),
 															 "01-059931-0",
 															 currencyEUR);
@@ -291,7 +291,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-															 Env.getAD_Org_ID(getCtx()),
+															 getAD_Org().getAD_Org_ID(),
 															 Env.getAD_User_ID(getCtx()),
 															 "01-059931-0",
 															 currencyEUR);
@@ -319,7 +319,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-															 Env.getAD_Org_ID(getCtx()),
+															 getAD_Org().getAD_Org_ID(),
 															 Env.getAD_User_ID(getCtx()),
 															 "01-059931-0",
 															 currencyEUR);
@@ -350,7 +350,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-															 Env.getAD_Org_ID(getCtx()),
+															 getAD_Org().getAD_Org_ID(),
 															 Env.getAD_User_ID(getCtx()),
 															 "01-059931-0",
 															 currencyEUR);
@@ -379,7 +379,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-															 Env.getAD_Org_ID(getCtx()),
+															 getAD_Org().getAD_Org_ID(),
 															 Env.getAD_User_ID(getCtx()),
 															 "01-888888-0",
 															 currencyEUR);
@@ -409,7 +409,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-															 Env.getAD_Org_ID(getCtx()),
+															 getAD_Org().getAD_Org_ID(),
 															 Env.getAD_User_ID(getCtx()),
 															 "01-888888-0",
 															 currencyEUR);
@@ -440,7 +440,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-															 Env.getAD_Org_ID(getCtx()),
+															getAD_Org().getAD_Org_ID(),
 															 Env.getAD_User_ID(getCtx()),
 															 "01-888888-0",
 															 currencyEUR);
@@ -471,7 +471,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-															 Env.getAD_Org_ID(getCtx()),
+															 getAD_Org().getAD_Org_ID(),
 															 Env.getAD_User_ID(getCtx()),
 															 "01-888888-0",
 															 currencyEUR);
@@ -508,7 +508,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-															 Env.getAD_Org_ID(getCtx()),
+															 getAD_Org().getAD_Org_ID(),
 															 Env.getAD_User_ID(getCtx()),
 															 "01-059931-0",
 															 currencyEUR);
@@ -570,7 +570,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-															 Env.getAD_Org_ID(getCtx()),
+															 getAD_Org().getAD_Org_ID(),
 															 Env.getAD_User_ID(getCtx()),
 															 "01-059931-0",
 															 currencyEUR);
@@ -613,7 +613,7 @@ public class ESRRegularLineMatcherTest extends ESRTestBase
 		final CurrencyId currencyEUR = PlainCurrencyDAO.createCurrencyId(CurrencyCode.EUR);
 
 		final I_C_BP_BankAccount account = createBankAccount(true,
-															 Env.getAD_Org_ID(getCtx()),
+															 org.getAD_Org_ID(),
 															 Env.getAD_User_ID(getCtx()),
 															 "01-059931-0",
 															 currencyEUR);

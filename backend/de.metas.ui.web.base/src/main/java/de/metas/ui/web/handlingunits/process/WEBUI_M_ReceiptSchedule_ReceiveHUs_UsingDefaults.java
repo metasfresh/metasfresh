@@ -2,6 +2,7 @@ package de.metas.ui.web.handlingunits.process;
 
 import java.math.BigDecimal;
 
+import lombok.NonNull;
 import org.adempiere.model.InterfaceWrapperHelper;
 
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
@@ -14,6 +15,8 @@ import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.handlingunits.util.HUPackingInfoFormatter;
 import de.metas.ui.web.handlingunits.util.HUPackingInfos;
 import de.metas.util.Services;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -39,19 +42,25 @@ import de.metas.util.Services;
 
 /**
  * Receive planning HUs using standard/default configuration.
- * 
- * @author metas-dev <dev@metasfresh.com>
  *
+ * @author metas-dev <dev@metasfresh.com>
  */
 public class WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults extends WEBUI_M_ReceiptSchedule_ReceiveHUs_Base
 {
 	// services
 	private final transient ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
+	private final transient IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
 
 	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
-		final String defaultPackingInfo = buildDefaultPackingInfo(context);
+		final I_M_ReceiptSchedule receiptSchedule = context.getSelectedModel(I_M_ReceiptSchedule.class);
+		if (receiptSchedule == null || huReceiptScheduleBL.getQtyToMoveTU(receiptSchedule).signum() <= 0)
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("quantity to receive is <= 0");
+		}
+
+		final String defaultPackingInfo = buildDefaultPackingInfo(receiptSchedule);
 		if (Check.isEmpty(defaultPackingInfo, true))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("no default LU/TU configuration");
@@ -61,14 +70,9 @@ public class WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults extends WEBUI_M_Re
 				.deriveWithCaptionOverride(defaultPackingInfo);
 	}
 
-	private String buildDefaultPackingInfo(final IProcessPreconditionsContext context)
+	@Nullable
+	private String buildDefaultPackingInfo(@NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
-		final I_M_ReceiptSchedule receiptSchedule = context.getSelectedModel(I_M_ReceiptSchedule.class);
-		if (receiptSchedule == null)
-		{
-			return null; // no override
-		}
-
 		final I_M_HU_LUTU_Configuration lutuConfig = getCurrentLUTUConfiguration(receiptSchedule);
 		adjustLUTUConfiguration(lutuConfig, receiptSchedule);
 
@@ -96,7 +100,7 @@ public class WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults extends WEBUI_M_Re
 		return lutuConfigurationNew;
 	}
 
-	private final void adjustLUTUConfiguration(final I_M_HU_LUTU_Configuration lutuConfig, final I_M_ReceiptSchedule receiptSchedule)
+	private void adjustLUTUConfiguration(final I_M_HU_LUTU_Configuration lutuConfig, final I_M_ReceiptSchedule receiptSchedule)
 	{
 		if (lutuConfigurationFactory.isNoLU(lutuConfig))
 		{
@@ -118,7 +122,7 @@ public class WEBUI_M_ReceiptSchedule_ReceiveHUs_UsingDefaults extends WEBUI_M_Re
 			// * else always take the standard QtyTU
 			// see https://github.com/metasfresh/metasfresh-webui/issues/228
 			{
-				final BigDecimal qtyToMoveTU = Services.get(IHUReceiptScheduleBL.class).getQtyToMoveTU(receiptSchedule);
+				final BigDecimal qtyToMoveTU = huReceiptScheduleBL.getQtyToMoveTU(receiptSchedule);
 
 				if (qtyToMoveTU.signum() > 0 && qtyToMoveTU.compareTo(lutuConfig.getQtyTU()) < 0)
 				{

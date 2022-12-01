@@ -1,19 +1,17 @@
 package de.metas.material.event.ddorder;
 
-import java.time.Instant;
-import java.util.List;
-
-import org.compiere.model.I_S_Resource;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import de.metas.material.event.pporder.MaterialDispoGroupId;
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.compiere.model.I_S_Resource;
+
+import java.time.Instant;
+import java.util.List;
 
 /*
  * #%L
@@ -36,10 +34,14 @@ import lombok.Value;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+/**
+ * About the source and dest warehouse: those are taken from the orderlines' network lines
+ * One DDOrder might end up being the source of multiple DD_Order records.
+ */
 @Value
 public class DDOrder
 {
-
 	/**
 	 * {@code AD_Org_ID} of the <b>receiving</b> organization.
 	 */
@@ -55,7 +57,7 @@ public class DDOrder
 	Instant datePromised;
 
 	int shipperId;
-
+	
 	@Singular
 	List<DDOrderLine> lines;
 
@@ -70,6 +72,8 @@ public class DDOrder
 	 */
 	MaterialDispoGroupId materialDispoGroupId;
 
+	boolean simulated;
+
 	@JsonCreator
 	@Builder
 	private DDOrder(
@@ -81,10 +85,11 @@ public class DDOrder
 			@JsonProperty("lines") @Singular final List<DDOrderLine> lines,
 			@JsonProperty("ddOrderId") final int ddOrderId,
 			@JsonProperty("docStatus") final String docStatus,
-			@JsonProperty("materialDispoGroupId") final MaterialDispoGroupId materialDispoGroupId)
+			@JsonProperty("materialDispoGroupId") final MaterialDispoGroupId materialDispoGroupId,
+			@JsonProperty("simulated") final boolean simulated)
 	{
 		this.orgId = orgId;
-		
+
 		// these two might be zero, if the DDOrder was created manually
 		this.plantId = plantId;
 		this.productPlanningId = productPlanningId;
@@ -95,5 +100,6 @@ public class DDOrder
 		this.ddOrderId = ddOrderId;
 		this.docStatus = docStatus;
 		this.materialDispoGroupId = materialDispoGroupId;
+		this.simulated = simulated;
 	}
 }

@@ -1,11 +1,5 @@
 package de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger;
 
-import java.util.Optional;
-
-import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
-import org.springframework.stereotype.Service;
-
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionInstance;
 import de.metas.contracts.commission.commissioninstance.services.CommissionAlgorithmInvoker;
 import de.metas.contracts.commission.commissioninstance.services.CommissionInstanceRequestFactory;
@@ -16,6 +10,11 @@ import de.metas.contracts.commission.model.I_C_Commission_Instance;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
 import lombok.NonNull;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
+import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 /*
  * #%L
@@ -66,7 +65,7 @@ public class CommissionTriggerDocumentService
 	/**
 	 * Note: creating/updating commission related records results in the invoice candidate handler framework being fired in order to also keep the commission-settlement IC up to date.
 	 */
-	public void syncSalesICToCommissionInstance(
+	public void syncTriggerDocumentToCommissionInstance(
 			@NonNull final CommissionTriggerDocument commissionTriggerDocument,
 			final boolean candidateDeleted)
 	{
@@ -91,7 +90,7 @@ public class CommissionTriggerDocumentService
 			return; // nothing to do
 		}
 
-		// initially create commission data for the given invoice candidate;
+		// initially create commission data for the given trigger document
 		// createdInstance might be not present, if there are no matching contracts and/or settings
 		final Optional<CommissionInstance> createdInstance = commissionInstanceService.createCommissionInstance(commissionTriggerDocument);
 		if (createdInstance.isPresent())

@@ -33,7 +33,6 @@ import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollector;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorId;
 import de.metas.servicerepair.project.model.ServiceRepairProjectCostCollectorType;
 import de.metas.util.Check;
-import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
 import lombok.Builder;
 import lombok.NonNull;
@@ -42,7 +41,6 @@ import org.adempiere.exceptions.AdempiereException;
 import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 

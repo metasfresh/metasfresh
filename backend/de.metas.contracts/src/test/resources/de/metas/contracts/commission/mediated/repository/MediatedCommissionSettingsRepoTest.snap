@@ -1,0 +1,23 @@
+de.metas.contracts.commission.mediated.repository.MediatedCommissionSettingsRepoTest.givenValidId_whenGetById_thenReturnSettings=[
+  {
+    "commissionSettingsId" : 100001,
+    "orgId" : 1,
+    "commissionProductId" : 1001,
+    "pointsPrecision" : 2,
+    "lines" : [
+      {
+        "mediatedCommissionSettingsLineId" : 100002,
+        "orgId" : 1,
+        "percentOfBasedPoints" : 10,
+        "productCategoryId" : 100,
+        "seqNo" : 3
+      },
+      {
+        "mediatedCommissionSettingsLineId" : 100003,
+        "orgId" : 1,
+        "percentOfBasedPoints" : 10,
+        "seqNo" : 3
+      }
+    ]
+  }
+]

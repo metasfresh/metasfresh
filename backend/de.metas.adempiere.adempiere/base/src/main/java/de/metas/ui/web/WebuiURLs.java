@@ -150,7 +150,6 @@ public class WebuiURLs
 
 	public boolean isCrossSiteUsageAllowed()
 	{
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		return sysConfigBL.getBooleanValue(SYSCONFIG_IsCrossSiteUsageAllowed, false);
 	}
 }

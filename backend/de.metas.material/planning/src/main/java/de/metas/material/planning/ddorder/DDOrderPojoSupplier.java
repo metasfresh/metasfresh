@@ -203,7 +203,8 @@ public class DDOrderPojoSupplier
 						.plantId(plant.getS_Resource_ID())
 						.productPlanningId(productPlanningData.getPP_Product_Planning_ID())
 						.datePromised(supplyDateFinishSchedule)
-						.shipperId(networkLine.getM_Shipper_ID());
+						.shipperId(networkLine.getM_Shipper_ID())
+						.simulated(request.isSimulated());
 
 				builders.add(ddOrderBuilder);
 
@@ -275,6 +276,7 @@ public class DDOrderPojoSupplier
 				.forProductIdAndAttributeSetInstanceId(
 						ProductId.toRepoId(mrpContext.getProductId()),
 						AttributeSetInstanceId.toRepoId(mrpContext.getAttributeSetInstanceId()));
+
 		final ProductDescriptor productDescriptor = productDescriptorFactory.createProductDescriptor(asiAware);
 
 		final int durationDays = DDOrderUtil.calculateDurationDays(mrpContext.getProductPlanning(), networkLine);
