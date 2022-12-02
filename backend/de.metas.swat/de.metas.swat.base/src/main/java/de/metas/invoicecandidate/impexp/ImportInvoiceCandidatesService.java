@@ -115,14 +115,6 @@ public class ImportInvoiceCandidatesService
 				.map(date -> TimeUtil.asLocalDate(date, orgZoneId))
 				.orElseGet(() -> computeDateOrderedBasedOnPresetDateInvoiced(orgZoneId, record.getPresetDateInvoiced()));
 
-		final Properties ctx = InterfaceWrapperHelper.getCtx(record);
-		final CurrencyId baseCurrencyId = currencyBL.getBaseCurrency(ctx).getId(); //we're assuming that uses the same currency as the current one product price
-		final ProductPrice priceEnteredOverride = ProductPrice.builder()
-				.money(Money.ofOrNull(record.getPrice(), baseCurrencyId))
-				.productId(productId)
-				.uomId(uomId)
-				.build();
-
 		return NewManualInvoiceCandidate.builder()
 				.externalHeaderId(ExternalId.ofOrNull(record.getExternalHeaderId()))
 				.externalLineId(ExternalId.ofOrNull(record.getExternalLineId()))
