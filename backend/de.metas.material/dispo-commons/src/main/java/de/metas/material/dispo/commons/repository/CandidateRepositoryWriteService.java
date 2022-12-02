@@ -731,6 +731,9 @@ public class CandidateRepositoryWriteService
 		return deleteResult;
 	}
 
+	/**
+	 *  All child (MD_Candidate) records are deleted as part of {@link CandidateRepositoryWriteService#deleteCandidateById(CandidateId, Set)};
+	 */
 	@NonNull
 	public Set<CandidateId> deleteCandidatesAndDetailsByQuery(@NonNull final DeleteCandidatesQuery deleteCandidatesQuery)
 	{
@@ -739,6 +742,7 @@ public class CandidateRepositoryWriteService
 		queryBL.createQueryBuilder(I_MD_Candidate.class)
 				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Status, deleteCandidatesQuery.getStatus())
 				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_IsActive, deleteCandidatesQuery.getIsActive())
+				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Parent_ID, null)
 				.create()
 				.iterateAndStreamIds(CandidateId::ofRepoId)
 				.filter(candidateId -> !alreadyDeletedIds.contains(candidateId))
