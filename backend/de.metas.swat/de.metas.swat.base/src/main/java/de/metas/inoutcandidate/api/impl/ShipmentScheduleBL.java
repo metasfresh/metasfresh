@@ -997,7 +997,7 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 		final CountryId countryId = originCountryCode == null ? null : countryDAO.getCountryIdByCountryCode(originCountryCode);
 		final String huBatchNo = attributeSetInstanceBL.getAttributeValueOrNull(AttributeConstants.HU_BatchNo, asiId);
 
-		final Timestamp deliveryDate_effective = CoalesceUtil.coalesce(shipmentScheduleRecord.getPreparationDate_Override(), shipmentScheduleRecord.getPreparationDate());
+		final Timestamp deliveryDate_effective = CoalesceUtil.coalesce(shipmentScheduleRecord.getDeliveryDate_Override(), shipmentScheduleRecord.getDeliveryDate());
 
 		final BPartnerLocationId bPartnerLocationId = BPartnerLocationId.ofRepoId(shipmentScheduleRecord.getC_BPartner_ID(), shipmentScheduleRecord.getC_BPartner_Location_ID());
 
