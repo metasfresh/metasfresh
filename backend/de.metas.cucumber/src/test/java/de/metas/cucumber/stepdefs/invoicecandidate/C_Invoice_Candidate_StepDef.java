@@ -671,11 +671,8 @@ public class C_Invoice_Candidate_StepDef
 	{
 		for (final Map<String, String> tableRow : dataTable.asMaps())
 		{
-			final Runnable logContext = () -> logger.error("C_Invoice_Candidate not found\n"
-																   + "**tableRow:**\n{}\n"
-																   + "**all candidates:**\n{}",
-														   tableRow, Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Candidate.class).create().list());
-			StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> isInvoiceCandidateUpdated(tableRow), logContext);
+			StepDefUtil.tryAndWaitForItem(timeoutSec, 500,
+										  () -> isInvoiceCandidateUpdated(tableRow));
 		}
 	}
 
@@ -903,14 +900,9 @@ public class C_Invoice_Candidate_StepDef
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
 			final IQuery<I_C_Invoice_Candidate> candidatesQuery = createInvoiceCandidateQuery(row);
-			final Runnable logContext = () -> logger.error("C_Invoice_Candidate not found\n"
-																   + "**tableRow:**\n{}\n" + "**candidatesQuery:**\n{}\n"
-																   + "**query result:**\n{}\n"
-																   + "**all candidates:**\n{}",
-														   row, candidatesQuery,
-														   candidatesQuery.list(),
-														   Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Candidate.class).create().list());
-			final I_C_Invoice_Candidate invoiceCandidate = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> retrieveInvoiceCandidate(row, candidatesQuery), logContext);
+
+			final I_C_Invoice_Candidate invoiceCandidate = StepDefUtil.tryAndWaitForItem(timeoutSec, 500,
+									   () -> retrieveInvoiceCandidate(row, candidatesQuery));
 
 			final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
 			invoiceCandTable.putOrReplace(invoiceCandIdentifier, invoiceCandidate);

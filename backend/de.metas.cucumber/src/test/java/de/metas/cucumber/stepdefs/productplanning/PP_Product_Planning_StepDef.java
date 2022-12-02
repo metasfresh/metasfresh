@@ -33,7 +33,6 @@ import de.metas.cucumber.stepdefs.workflow.AD_Workflow_StepDefData;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
-import de.metas.product.ProductId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;

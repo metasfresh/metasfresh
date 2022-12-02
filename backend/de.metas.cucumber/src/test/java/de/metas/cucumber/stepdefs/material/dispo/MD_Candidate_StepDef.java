@@ -524,19 +524,21 @@ public class MD_Candidate_StepDef
 			return ProviderResult.resultWasNotFound(sb.toString());
 		};
 
-		final Runnable logContext = () -> logger.error("MD_Candidate not found\n"
-															   + "**tableRow:**\n{}\n" + "**candidatesQuery:**\n{}\n"
-															   + "**query result candidates:**\n{}\n"
-															   + "**all product related candidates:**\n{}",
-													   tableRow,
-													   candidatesQuery,
-													   materialDispoRecordRepository.getAllByQueryAsString(candidatesQuery),
-													   materialDispoRecordRepository.getAllAsString(tableRow.getProductId()));
+		final Supplier<String> contextSupplier = () -> {
+
+			final StringBuilder context = new StringBuilder("MD_Candidate not found\n");
+			context.append("**tableRow:** \n").append(tableRow).append("\n");
+			context.append("**candidatesQuery:** \n").append(candidatesQuery).append("\n");
+			context.append("**query result candidates:** \n").append(materialDispoRecordRepository.getAllByQueryAsString(candidatesQuery)).append("\n");
+			context.append("**all product related candidates:** \n").append(materialDispoRecordRepository.getAllAsString(tableRow.getProductId()));
+
+			return context.toString();
+		};
 
 		return StepDefUtil
 				.tryAndWaitForItem(timeoutSec, 1000,
 								   itemProvider,
-								   logContext);
+								   contextSupplier);
 	}
 
 	private void validate_md_candidate_stock(@NonNull final Map<String, String> tableRow)

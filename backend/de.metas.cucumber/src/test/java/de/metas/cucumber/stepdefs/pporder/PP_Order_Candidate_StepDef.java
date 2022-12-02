@@ -403,7 +403,7 @@ public class PP_Order_Candidate_StepDef
 				StepDefUtil.tryAndWaitForItem(timeoutSec,
 											  500,
 											  () -> locatePPOrderCandidate(candidateQuery),
-											  () -> logCurrentContext(ProductId.ofRepoId(productRecord.getM_Product_ID())));
+											  () -> getPPOrderCandidateContextForProductId(ProductId.ofRepoId(productRecord.getM_Product_ID())));
 
 		final String orderCandidateRecordIdentifier = DataTableUtil.extractRecordIdentifier(tableRow, I_PP_Order_Candidate.Table_Name);
 
@@ -631,7 +631,8 @@ public class PP_Order_Candidate_StepDef
 		}
 	}
 
-	private void logCurrentContext(@NonNull final ProductId productId)
+	@NonNull
+	private String getPPOrderCandidateContextForProductId(@NonNull final ProductId productId)
 	{
 		final List<I_PP_Order_Candidate> candidatesForProductId = queryBL.createQueryBuilder(I_PP_Order_Candidate.class)
 				.addEqualsFilter(I_PP_Order_Candidate.COLUMNNAME_M_Product_ID, productId)
@@ -659,6 +660,6 @@ public class PP_Order_Candidate_StepDef
 										 .append(candidate.getPP_Product_Planning_ID())
 										 .append("\n"));
 
-		logger.error("Current PP_Order_Candidates available for M_Product_ID:\n\n {}", messageBuilder);
+		return "Current PP_Order_Candidates available for M_Product_ID:\n\n" + messageBuilder;
 	}
 }
