@@ -49,8 +49,8 @@ Feature: create multiple production candidates
       | boml_1     | bom_1                        | p_2                     | 2021-04-01 | 10       |
     And the PP_Product_BOM identified by bom_1 is completed
     And metasfresh contains C_BPartners:
-      | Identifier    | Name            | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | endcustomer_2 | EndcustomerPP_2 | N            | Y              | ps_1                          |
+      | Identifier    | Name             | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | endcustomer_2 | EndcustomerS0212 | N            | Y              | ps_1                          |
 
   @Id:S0129.1_140
   @Id:S0212.100
