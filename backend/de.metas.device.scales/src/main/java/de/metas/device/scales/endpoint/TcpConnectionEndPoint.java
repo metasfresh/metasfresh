@@ -33,6 +33,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 
 public class TcpConnectionEndPoint implements ITcpConnectionEndPoint
@@ -81,13 +82,22 @@ public class TcpConnectionEndPoint implements ITcpConnectionEndPoint
 	{
 		final StringBuilder sb = new StringBuilder();
 		int i;
-		while ((i = in.read()) != -1)
+		try
 		{
-			sb.append((char)i);
+			while ((i = in.read()) != -1)
+			{
+				sb.append((char)i);
+			}
+		}
+		catch (final SocketTimeoutException e)
+		{
+			// if the device doesn't send "EOF", then there is nothing we can do here
+			// ..because at this place here we don't know how the response is terminated.
+			// so we just wait for the respective timeout
 		}
 		return sb.toString();
 	}
-	
+
 	public TcpConnectionEndPoint setHost(final String hostName)
 	{
 		this.hostName = hostName;
