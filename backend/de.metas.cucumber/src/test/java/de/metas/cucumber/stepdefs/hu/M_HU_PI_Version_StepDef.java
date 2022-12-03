@@ -24,7 +24,6 @@ package de.metas.cucumber.stepdefs.hu;
 
 import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.handlingunits.model.I_M_HU_PI;
 import de.metas.handlingunits.model.I_M_HU_PI_Version;
 import de.metas.util.Services;
@@ -79,12 +78,11 @@ public class M_HU_PI_Version_StepDef
 
 			final I_M_HU_PI_Version existingPiVersion = queryBL.createQueryBuilder(I_M_HU_PI_Version.class)
 					.addEqualsFilter(COLUMNNAME_M_HU_PI_ID, huPi.getM_HU_PI_ID())
-					.addEqualsFilter(COLUMNNAME_Name, name)
+					.addStringLikeFilter(COLUMNNAME_Name, name, true)
 					.addEqualsFilter(COLUMNNAME_HU_UnitType, huUnitType)
-					.addEqualsFilter(COLUMNNAME_IsCurrent, isCurrent)
 					.addEqualsFilter(COLUMNNAME_IsActive, active)
 					.create()
-					.firstOnlyOrNull(I_M_HU_PI_Version.class);
+					.firstOnly(I_M_HU_PI_Version.class);
 
 			final I_M_HU_PI_Version piVersion = CoalesceUtil.coalesceSuppliers(() -> existingPiVersion,
 																			   () -> InterfaceWrapperHelper.newInstanceOutOfTrx(I_M_HU_PI_Version.class));

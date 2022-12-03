@@ -49,8 +49,7 @@ import javax.annotation.Nullable;
 @Deprecated
 public class ExternalReferenceRestController
 {
-
-private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
+		private final ExternalReferenceRestControllerService externalReferenceRestControllerService;
 
 	public ExternalReferenceRestController(@NonNull final ExternalReferenceRestControllerService externalReferenceRestControllerService)
 	{
@@ -68,7 +67,6 @@ private final ExternalReferenceRestControllerService externalReferenceRestContro
 	{
 		return externalReferenceRestControllerService.performLookup(orgCode, request);
 	}
-
 
 	// note that we are not going to update references because they are not supposed to change
 	@PostMapping("{orgCode}")

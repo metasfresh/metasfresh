@@ -1,14 +1,14 @@
 package de.metas.product;
 
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.product.model.X_M_Product_PlanningSchema;
 import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -41,14 +41,15 @@ public enum ProductPlanningSchemaSelector implements ReferenceListAwareEnum
 	private static final ImmutableMap<String, ProductPlanningSchemaSelector> typesByCode = ReferenceListAwareEnums.indexByCode(values());
 
 	@Getter
-	private String code;
+	private final String code;
 
-	private ProductPlanningSchemaSelector(final String code)
+	ProductPlanningSchemaSelector(final String code)
 	{
 		this.code = code;
 	}
 
-	public static ProductPlanningSchemaSelector ofNullableCode(final String code)
+	@Nullable
+	public static ProductPlanningSchemaSelector ofNullableCode(@Nullable final String code)
 	{
 		return code != null ? ofCode(code) : null;
 	}

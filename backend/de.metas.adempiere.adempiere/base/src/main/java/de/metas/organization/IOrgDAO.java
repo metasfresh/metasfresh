@@ -126,4 +126,5 @@ public interface IOrgDAO extends ISingletonService
 
 	String getOrgName(@NonNull OrgId orgId);
 
+	boolean isAutoInvoiceFlatrateTerm(OrgId orgId);
 }

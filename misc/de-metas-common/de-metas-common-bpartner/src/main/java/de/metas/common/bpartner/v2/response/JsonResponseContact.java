@@ -65,11 +65,14 @@ public class JsonResponseContact
 	public static final String PURCHASE = "purchase";
 	public static final String SUBJECT_MATTER = "subjectMatter";
 	public static final String ROLES = "roles";
+	public static final String METASFRESH_LOCATION_ID = "metasfreshLocationId";
+	public static final String EMAIL2 = "email2";
+	public static final String EMAIL3 = "email3";
 	public static final String PHONE2 = "phone2";
 	public static final String TITLE = "title";
 	public static final String POSITION = "position";
 
-	@ApiModelProperty(allowEmptyValue = false, dataType = "java.lang.Long")
+	@ApiModelProperty(dataType = "java.lang.Long")
 	JsonMetasfreshId metasfreshId;
 
 	@ApiModelProperty(dataType = "java.lang.Integer")
@@ -79,10 +82,10 @@ public class JsonResponseContact
 	@JsonInclude(Include.NON_NULL)
 	String code;
 
-	@ApiModelProperty(allowEmptyValue = false)
+	@ApiModelProperty()
 	boolean active;
 
-	@ApiModelProperty(allowEmptyValue = false)
+	@ApiModelProperty()
 	String name;
 
 	@JsonInclude(Include.NON_EMPTY)
@@ -121,43 +124,52 @@ public class JsonResponseContact
 	@JsonInclude(Include.NON_EMPTY)
 	JsonResponseContactPosition position;
 
-	@ApiModelProperty(allowEmptyValue = false)
+	@ApiModelProperty()
 	boolean newsletter;
 
-	@ApiModelProperty(allowEmptyValue = false)
+	@ApiModelProperty()
 	Boolean invoiceEmailEnabled;
 
-	@ApiModelProperty(allowEmptyValue = false)
+	@ApiModelProperty()
 	boolean shipToDefault;
 
-	@ApiModelProperty(allowEmptyValue = false)
+	@ApiModelProperty()
 	boolean billToDefault;
 
-	@ApiModelProperty(allowEmptyValue = false)
+	@ApiModelProperty()
 	boolean defaultContact;
 
-	@ApiModelProperty(allowEmptyValue = false)
+	@ApiModelProperty()
 	boolean sales;
 
-	@ApiModelProperty(allowEmptyValue = false)
+	@ApiModelProperty()
 	boolean salesDefault;
 
-	@ApiModelProperty(allowEmptyValue = false)
+	@ApiModelProperty()
 	boolean purchase;
 
-	@ApiModelProperty(allowEmptyValue = false)
+	@ApiModelProperty()
 	boolean purchaseDefault;
 
-	@ApiModelProperty(allowEmptyValue = false)
+	@ApiModelProperty()
 	boolean subjectMatter;
 
-	@ApiModelProperty(allowEmptyValue = false)
+	@ApiModelProperty()
 	@JsonInclude(Include.NON_EMPTY)
 	List<JsonResponseContactRole> roles;
 
 	@JsonInclude(Include.NON_NULL)
 	@ApiModelProperty(position = 20) // shall be last
 	JsonChangeInfo changeInfo;
+
+	@ApiModelProperty(dataType = "java.lang.Integer")
+	JsonMetasfreshId metasfreshLocationId;
+
+	@JsonInclude(Include.NON_EMPTY)
+	String email2;
+
+	@JsonInclude(Include.NON_EMPTY)
+	String email3;
 
 	@Builder(toBuilder = true)
 	@JsonCreator
@@ -173,6 +185,8 @@ public class JsonResponseContact
 			@JsonProperty(BIRTHDAY) @Nullable final LocalDate birthday,
 			@JsonProperty(EMAIL) final String email,
 			@JsonProperty(PHONE) final String phone,
+			@JsonProperty(EMAIL2) final String email2,
+			@JsonProperty(EMAIL3) final String email3,
 			@JsonProperty(PHONE2) final String phone2,
 			@JsonProperty(TITLE) final String title,
 			@JsonProperty(POSITION) @Nullable final JsonResponseContactPosition position,
@@ -193,6 +207,7 @@ public class JsonResponseContact
 			@JsonProperty(SUBJECT_MATTER) final boolean subjectMatter,
 			@JsonProperty(INVOICE_EMAIL_ENABLED) final Boolean invoiceEmailEnabled,
 			@JsonProperty(ROLES) final List<JsonResponseContactRole> roles,
+			@JsonProperty(METASFRESH_LOCATION_ID) @Nullable final JsonMetasfreshId metasfreshLocationId,
 
 			@JsonProperty("changeInfo") @Nullable JsonChangeInfo changeInfo)
 	{
@@ -224,8 +239,11 @@ public class JsonResponseContact
 		this.phone = phone;
 		this.invoiceEmailEnabled = invoiceEmailEnabled;
 		this.roles = roles;
+		this.email2 = email2;
+		this.email3 = email3;
 
 		this.changeInfo = changeInfo;
+		this.metasfreshLocationId = metasfreshLocationId;
 
 		this.phone2 = phone2;
 		this.title = title;

@@ -24,8 +24,6 @@ package de.metas.inoutcandidate.filter;
 
 import com.google.common.collect.ImmutableList;
 import lombok.NonNull;
-import org.compiere.Adempiere;
-import org.compiere.SpringContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

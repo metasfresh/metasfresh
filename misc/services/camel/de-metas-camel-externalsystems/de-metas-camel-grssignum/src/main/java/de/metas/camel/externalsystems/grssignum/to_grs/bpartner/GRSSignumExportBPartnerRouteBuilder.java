@@ -56,7 +56,7 @@ import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.HEADER_PINSTANCE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_GET_BPARTNER_PRODUCTS_ROUTE_ID;
-import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_LOOKUP_EXTERNAL_REFERENCE_v2_ROUTE_ID;
+import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_LOOKUP_EXTERNALREFERENCE_V2_CAMEL_URI;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 
 @Component
@@ -79,7 +79,7 @@ public class GRSSignumExportBPartnerRouteBuilder extends RouteBuilder
 	}
 
 	@Override
-	public void configure() throws Exception
+	public void configure()
 	{
 		//@formatter:off
 		errorHandler(defaultErrorHandler());
@@ -131,7 +131,7 @@ public class GRSSignumExportBPartnerRouteBuilder extends RouteBuilder
 						.when(body().isNull())
 							.log(LoggingLevel.INFO, "Nothing to do! No bpartner products found!")
 						.otherwise()
-							.to(direct(MF_LOOKUP_EXTERNAL_REFERENCE_v2_ROUTE_ID))
+							.to(direct(MF_LOOKUP_EXTERNALREFERENCE_V2_CAMEL_URI))
 							.unmarshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), JsonExternalReferenceLookupResponse.class))
 							.process(ExportCustomerProcessor::collectProductExternalReferences)
 						.end()
@@ -170,6 +170,7 @@ public class GRSSignumExportBPartnerRouteBuilder extends RouteBuilder
 				.authToken(authToken)
 				.tenantId(tenantId)
 				.orgCode(request.getOrgCode())
+				.externalSystemConfigId(request.getExternalSystemConfigId())
 				.jsonExportDirectorySettings(jsonExportDirectorySettings)
 				.pinstanceId(pInstanceId)
 				.build();

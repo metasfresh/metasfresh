@@ -123,9 +123,19 @@ public class DemandCandiateHandler implements CandidateHandler
 				.createStockCandidate(savedCandidate.withNegatedQuantity())
 				.withCandidateId(preExistingChildStockId);
 
-		final Candidate savedStockCandidate = candidateRepositoryWriteService
-				.addOrUpdateOverwriteStoredSeqNo(stockCandidate.getCandidate().withParentId(savedCandidate.getId()))
-				.getCandidate();
+		final Candidate savedStockCandidate;
+		if (preExistingChildStockCandidate.isPresent())
+		{
+			savedStockCandidate = candidateRepositoryWriteService
+					.addOrUpdateOverwriteStoredSeqNo(stockCandidate.getCandidate().withParentId(savedCandidate.getId()))
+					.getCandidate();
+		}
+		else
+		{
+			savedStockCandidate = candidateRepositoryWriteService
+					.add(stockCandidate.getCandidate().withParentId(savedCandidate.getId()))
+					.getCandidate();
+		}
 
 		final SaveResult deltaToApplyToLaterStockCandiates = candidateSaveResult.withNegatedQuantity();
 

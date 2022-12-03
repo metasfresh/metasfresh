@@ -133,7 +133,7 @@ public final class PPOrderCandidateAdvisedHandler extends PPOrderCandidateEventH
 				.directlyCreatePPOrder(eventWithRecomputedQty.isDirectlyCreatePPOrder())
 				.build();
 
-		materialEventService.postEventNow(ppOrderRequestEvent);
+		materialEventService.postEventAsync(ppOrderRequestEvent);
 	}
 
 	private MaterialDispoGroupId handlePPOrderCandidateAdvisedEvent(@NonNull final PPOrderCandidateAdvisedEvent ppOrderCandidateAdvisedEvent)

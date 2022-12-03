@@ -82,7 +82,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 public class MaterialCockpitRow implements IViewRow
 {
 	/**
-	 * Please keep its prefix in sync with {@link MaterialCockpitViewFactory#SYSCFG_DisplayIncludedRows}
+	 * Please keep its prefix in sync with {@link MaterialCockpitViewFactory#SYSCFG_DisplayIncludedRows}.
 	 */
 	public static final String SYSCFG_PREFIX = "de.metas.ui.web.material.cockpit.field";
 
@@ -94,9 +94,19 @@ public class MaterialCockpitRow implements IViewRow
 	private static final String SEPARATOR = "-";
 	private static final Joiner DOCUMENT_ID_JOINER = Joiner.on(SEPARATOR).skipNulls();
 
+	@Getter
 	private final LocalDate date;
+
 	@Getter
 	private final int productId;
+
+	public static final String FIELDNAME_QtyStockEstimateSeqNo = I_MD_Cockpit.COLUMNNAME_QtyStockEstimateSeqNo;
+	@ViewColumn(fieldName = FIELDNAME_QtyStockEstimateSeqNo, //
+			captionKey = FIELDNAME_QtyStockEstimateSeqNo, //
+			widgetType = DocumentFieldWidgetType.Integer, //
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 5, //
+					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
+	private final Integer qtyStockEstimateSeqNo;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Text, //
 			captionKey = I_MD_Cockpit.COLUMNNAME_ProductValue, //
@@ -126,7 +136,7 @@ public class MaterialCockpitRow implements IViewRow
 	@ViewColumn(fieldName = FIELDNAME_Manufacturer_ID, //
 			captionKey = FIELDNAME_Manufacturer_ID, //
 			widgetType = DocumentFieldWidgetType.Lookup, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 32, //
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 40, //
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)
 			})
 	private final Supplier<LookupValue> manufacturer;
@@ -135,7 +145,7 @@ public class MaterialCockpitRow implements IViewRow
 	@ViewColumn(fieldName = FIELDNAME_PackageSize, //
 			captionKey = FIELDNAME_PackageSize, //
 			widgetType = DocumentFieldWidgetType.Text, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 34, //
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50, //
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)
 			})
 	private final String packageSize;
@@ -148,7 +158,7 @@ public class MaterialCockpitRow implements IViewRow
 	@ViewColumn(fieldName = FIELDNAME_C_UOM_ID, //
 			captionKey = FIELDNAME_C_UOM_ID, //
 			widgetType = DocumentFieldWidgetType.Lookup, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 32, //
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 60, //
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)
 			})
 	private final Supplier<LookupValue> uom;
@@ -157,7 +167,7 @@ public class MaterialCockpitRow implements IViewRow
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, //
 			captionKey = I_MD_Cockpit.COLUMNNAME_PMM_QtyPromised_OnDate, //
 			layouts = {
-					@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 40, //
+					@ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 70, //
 							displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX)
 			})
 	private final BigDecimal pmmQtyPromised;
@@ -166,7 +176,7 @@ public class MaterialCockpitRow implements IViewRow
 	@ViewColumn(fieldName = FIELDNAME_QtyDemand_SalesOrder, //
 			captionKey = FIELDNAME_QtyDemand_SalesOrder, //
 			widgetType = DocumentFieldWidgetType.Quantity, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 50,
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 80,
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
 	private final BigDecimal qtyDemandSalesOrder;
 
@@ -174,7 +184,7 @@ public class MaterialCockpitRow implements IViewRow
 	@ViewColumn(fieldName = FIELDNAME_QtyDemand_DD_Order, //
 			captionKey = FIELDNAME_QtyDemand_DD_Order, //
 			widgetType = DocumentFieldWidgetType.Quantity, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 51,
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 90,
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
 	private final BigDecimal qtyDemandDDOrder;
 
@@ -182,7 +192,7 @@ public class MaterialCockpitRow implements IViewRow
 	@ViewColumn(fieldName = FIELDNAME_QtyDemandSum, //
 			captionKey = FIELDNAME_QtyDemandSum, //
 			widgetType = DocumentFieldWidgetType.Quantity, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 52,
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 100,
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
 	private final BigDecimal qtyDemandSum;
 
@@ -190,7 +200,7 @@ public class MaterialCockpitRow implements IViewRow
 	@ViewColumn(fieldName = FIELDNAME_QtySupplyPPOrder, //
 			captionKey = FIELDNAME_QtySupplyPPOrder, //
 			widgetType = DocumentFieldWidgetType.Quantity, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 53,
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 110,
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
 	private final BigDecimal qtySupplyPPOrder;
 
@@ -198,7 +208,7 @@ public class MaterialCockpitRow implements IViewRow
 	@ViewColumn(fieldName = FIELDNAME_QtySupply_PurchaseOrder, //
 			captionKey = FIELDNAME_QtySupply_PurchaseOrder, //
 			widgetType = DocumentFieldWidgetType.Quantity, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 60) })
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 120) })
 	@Getter // note that we use the getter for testing
 	private final BigDecimal qtySupplyPurchaseOrder;
 
@@ -206,7 +216,7 @@ public class MaterialCockpitRow implements IViewRow
 	@ViewColumn(fieldName = FIELDNAME_QtySupplyDDOrder, //
 			captionKey = FIELDNAME_QtySupplyDDOrder, //
 			widgetType = DocumentFieldWidgetType.Quantity, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 62,
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 130,
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
 	private final BigDecimal qtySupplyDDOrder;
 
@@ -214,7 +224,7 @@ public class MaterialCockpitRow implements IViewRow
 	@ViewColumn(fieldName = FIELDNAME_QtySupplySum, //
 			captionKey = FIELDNAME_QtySupplySum, //
 			widgetType = DocumentFieldWidgetType.Quantity, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 63,
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 140,
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
 	private final BigDecimal qtySupplySum;
 
@@ -222,7 +232,7 @@ public class MaterialCockpitRow implements IViewRow
 	@ViewColumn(fieldName = FIELDNAME_QtySupplyRequired, //
 			captionKey = FIELDNAME_QtySupplyRequired, //
 			widgetType = DocumentFieldWidgetType.Quantity, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 64,
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 150,
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
 	private final BigDecimal qtySupplyRequired;
 
@@ -230,7 +240,7 @@ public class MaterialCockpitRow implements IViewRow
 	@ViewColumn(fieldName = FIELDNAME_QtySupplyToSchedule, //
 			captionKey = FIELDNAME_QtySupplyToSchedule, //
 			widgetType = DocumentFieldWidgetType.Quantity, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 65,
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 160,
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
 	private final BigDecimal qtySupplyToSchedule;
 
@@ -238,7 +248,7 @@ public class MaterialCockpitRow implements IViewRow
 	@ViewColumn(fieldName = FIELDNAME_QtyMaterialentnahme, //
 			captionKey = FIELDNAME_QtyMaterialentnahme, //
 			widgetType = DocumentFieldWidgetType.Quantity, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 70, //
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 170, //
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
 	private final BigDecimal qtyMaterialentnahme;
 
@@ -247,7 +257,7 @@ public class MaterialCockpitRow implements IViewRow
 	@ViewColumn(fieldName = FIELDNAME_QtyDemand_PP_Order, //
 			captionKey = FIELDNAME_QtyDemand_PP_Order, //
 			widgetType = DocumentFieldWidgetType.Quantity, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 80, //
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 180, //
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
 	private final BigDecimal qtyDemandPPOrder;
 
@@ -256,7 +266,7 @@ public class MaterialCockpitRow implements IViewRow
 	@ViewColumn(fieldName = FIELDNAME_QtyStockCurrent, //
 			captionKey = FIELDNAME_QtyStockCurrent, //
 			widgetType = DocumentFieldWidgetType.Quantity, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 90, //
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 190, //
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
 	private final BigDecimal qtyStockCurrent;
 
@@ -264,7 +274,7 @@ public class MaterialCockpitRow implements IViewRow
 	@ViewColumn(fieldName = FIELDNAME_QtyStockEstimateCount, //
 			captionKey = FIELDNAME_QtyStockEstimateCount, //
 			widgetType = DocumentFieldWidgetType.Quantity, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 91, //
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 210, //
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
 	private final BigDecimal qtyStockEstimateCount;
 
@@ -272,7 +282,7 @@ public class MaterialCockpitRow implements IViewRow
 	@ViewColumn(fieldName = FIELDNAME_QtyStockEstimateTime, //
 			captionKey = FIELDNAME_QtyStockEstimateTime, //
 			widgetType = DocumentFieldWidgetType.Timestamp, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 92, //
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 220, //
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
 	private final Instant qtyStockEstimateTime;
 
@@ -280,7 +290,7 @@ public class MaterialCockpitRow implements IViewRow
 	@ViewColumn(fieldName = FIELDNAME_QtyInventoryCount, //
 			captionKey = FIELDNAME_QtyInventoryCount, //
 			widgetType = DocumentFieldWidgetType.Quantity, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 93, //
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 230, //
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
 	private final BigDecimal qtyInventoryCount;
 
@@ -288,7 +298,7 @@ public class MaterialCockpitRow implements IViewRow
 	@ViewColumn(fieldName = FIELDNAME_QtyInventoryTime, //
 			captionKey = FIELDNAME_QtyInventoryTime, //
 			widgetType = DocumentFieldWidgetType.Timestamp, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 94, //
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 240, //
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
 	private final Instant qtyInventoryTime;
 
@@ -297,13 +307,13 @@ public class MaterialCockpitRow implements IViewRow
 	@ViewColumn(fieldName = FIELDNAME_QtyExpectedSurplus, //
 			captionKey = FIELDNAME_QtyExpectedSurplus, //
 			widgetType = DocumentFieldWidgetType.Quantity, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 100, //
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 250, //
 					displayed = Displayed.SYSCONFIG, displayedSysConfigPrefix = SYSCFG_PREFIX) })
 	private final BigDecimal qtyExpectedSurplus;
 
 	@ViewColumn(widgetType = DocumentFieldWidgetType.Quantity, //
 			captionKey = I_MD_Stock.COLUMNNAME_QtyOnHand, //
-			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 110) })
+			layouts = { @ViewColumnLayout(when = JSONViewDataType.grid, seqNo = 260) })
 	@Getter // note that we use the getter for testing
 	private final BigDecimal qtyOnHandStock;
 
@@ -339,30 +349,30 @@ public class MaterialCockpitRow implements IViewRow
 			final Quantity qtyMaterialentnahme,
 			final Quantity qtyStockEstimateCount,
 			final Instant qtyStockEstimateTime,
+			@Nullable final Integer qtyStockEstimateSeqNo,
 			final Quantity qtyInventoryCount,
 			final Instant qtyInventoryTime,
 			final Quantity qtyExpectedSurplus,
 			final Quantity qtyStockCurrent,
 			final Quantity qtyOnHandStock,
-
+			@NonNull final ProductId productId,
+			@NonNull final LocalDate date,
 			@Singular final List<MaterialCockpitRow> includedRows,
 			@NonNull final Set<Integer> allIncludedCockpitRecordIds,
 			@NonNull final Set<Integer> allIncludedStockRecordIds)
 	{
-		Check.errorIf(includedRows.isEmpty(), "The given includedRows may not be empty");
-
 		this.rowType = DefaultRowType.Row;
 
-		this.date = extractDate(includedRows);
+		this.date = date;
 
 		this.dimensionGroupOrNull = null;
 
-		this.productId = extractProductId(includedRows);
+		this.productId = productId.getRepoId();
 
 		this.documentId = DocumentId.of(DOCUMENT_ID_JOINER.join(
 				"main",
 				date,
-				productId));
+				productId.getRepoId()));
 
 		this.documentPath = DocumentPath.rootDocumentPath(
 				MaterialCockpitUtil.WINDOWID_MaterialCockpitView,
@@ -370,7 +380,7 @@ public class MaterialCockpitRow implements IViewRow
 
 		final IProductDAO productDAO = Services.get(IProductDAO.class);
 
-		final I_M_Product productRecord = productDAO.getById(ProductId.ofRepoId(productId));
+		final I_M_Product productRecord = productDAO.getById(productId);
 		final I_M_Product_Category productCategoryRecord = productDAO.getProductCategoryById(ProductCategoryId.ofRepoId(productRecord.getM_Product_Category_ID()));
 
 		this.productValue = productRecord.getValue();
@@ -409,6 +419,7 @@ public class MaterialCockpitRow implements IViewRow
 		this.qtyOnHandStock = Quantity.toBigDecimal(qtyOnHandStock);
 		this.qtyStockEstimateCount = Quantity.toBigDecimal(qtyStockEstimateCount);
 		this.qtyStockEstimateTime = qtyStockEstimateTime;
+		this.qtyStockEstimateSeqNo = qtyStockEstimateSeqNo;
 		this.qtyInventoryCount = Quantity.toBigDecimal(qtyInventoryCount);
 		this.qtyInventoryTime = qtyInventoryTime;
 
@@ -471,6 +482,7 @@ public class MaterialCockpitRow implements IViewRow
 			final Quantity qtyDemandPPOrder,
 			final Quantity qtyStockEstimateCount,
 			final Instant qtyStockEstimateTime,
+			@Nullable final Integer qtyStockEstimateSeqNo,
 			final Quantity qtyInventoryCount,
 			final Instant qtyInventoryTime,
 			final Quantity qtyExpectedSurplus,
@@ -536,6 +548,7 @@ public class MaterialCockpitRow implements IViewRow
 		this.qtyExpectedSurplus = Quantity.toBigDecimal(qtyExpectedSurplus);
 		this.qtyStockEstimateCount = Quantity.toBigDecimal(qtyStockEstimateCount);
 		this.qtyStockEstimateTime = qtyStockEstimateTime;
+		this.qtyStockEstimateSeqNo = qtyStockEstimateSeqNo;
 		this.qtyInventoryCount = Quantity.toBigDecimal(qtyInventoryCount);
 		this.qtyInventoryTime = qtyInventoryTime;
 
@@ -550,6 +563,7 @@ public class MaterialCockpitRow implements IViewRow
 			final int plantId,
 			@Nullable final Quantity qtyStockEstimateCount,
 			@Nullable final Instant qtyStockEstimateTime,
+			@Nullable final Integer qtyStockEstimateSeqNo,
 			@Nullable final Quantity qtyInventoryCount,
 			@Nullable final Instant qtyInventoryTime,
 			@Nullable final Quantity qtyStockCurrent,
@@ -622,6 +636,7 @@ public class MaterialCockpitRow implements IViewRow
 		this.qtyExpectedSurplus = null;
 		this.qtyStockEstimateCount = Quantity.toBigDecimal(qtyStockEstimateCount);
 		this.qtyStockEstimateTime = qtyStockEstimateTime;
+		this.qtyStockEstimateSeqNo = qtyStockEstimateSeqNo;
 		this.qtyInventoryCount = Quantity.toBigDecimal(qtyInventoryCount);
 		this.qtyInventoryTime = qtyInventoryTime;
 
@@ -673,5 +688,4 @@ public class MaterialCockpitRow implements IViewRow
 	{
 		return values.get(this);
 	}
-
 }

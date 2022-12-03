@@ -1,11 +1,12 @@
 package de.metas.marketing.base.spi;
 
-import java.util.List;
-
 import de.metas.marketing.base.model.Campaign;
 import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.LocalToRemoteSyncResult;
 import de.metas.marketing.base.model.RemoteToLocalSyncResult;
+import lombok.NonNull;
+
+import java.util.List;
 
 /*
  * #%L
@@ -38,4 +39,8 @@ public interface PlatformClient
 	List<RemoteToLocalSyncResult> syncContactPersonsRemoteToLocal(Campaign campaign, List<ContactPerson> contactPersons);
 
 	List<RemoteToLocalSyncResult> syncCampaignsRemoteToLocal(List<Campaign> campaigns);
+
+	void sendEmailActivationForm(
+			@NonNull String formId,
+			@NonNull String email);
 }

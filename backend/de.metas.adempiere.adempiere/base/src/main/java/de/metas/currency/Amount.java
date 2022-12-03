@@ -1,21 +1,10 @@
 package de.metas.currency;
 
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Objects;
-import java.util.function.Function;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
-
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.collections.CollectionUtils;
@@ -24,6 +13,16 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.exceptions.AdempiereException;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Objects;
+import java.util.function.Function;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -148,6 +147,7 @@ public class Amount implements Comparable<Amount>
 	{
 		Check.assumeNotEmpty(amounts, "The given moneys may not be empty");
 
+		//noinspection ConstantConditions
 		final Iterator<Amount> moneysIterator = Stream.of(amounts)
 				.filter(Objects::nonNull)
 				.iterator();
@@ -264,5 +264,10 @@ public class Amount implements Comparable<Amount>
 		return value.signum() < 0
 				? new Amount(value.abs(), currencyCode)
 				: this;
+	}
+
+	public Money toMoney(@NonNull final Function<CurrencyCode, CurrencyId> currencyIdMapper)
+	{
+		return Money.of(value, currencyIdMapper.apply(currencyCode));
 	}
 }

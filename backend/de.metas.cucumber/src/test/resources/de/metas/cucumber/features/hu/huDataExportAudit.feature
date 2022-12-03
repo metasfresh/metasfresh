@@ -34,14 +34,14 @@ Feature: Handling unit data export audit
       | M_HU_PI_Item_Product_ID.Identifier | M_HU_PI_Item_ID.Identifier | M_Product_ID.Identifier | Qty | ValidFrom  |
       | huAuditProductTU                   | huPiItemTU                 | huAuditProduct          | 10  | 2022-01-01 |
 
-    And metasfresh initially has M_Inventory data
-      | M_Inventory_ID.Identifier | MovementDate         | DocumentNo     |
-      | inventory_1               | 2022-01-02T00:00:00Z | inventoryDocNo |
-    And metasfresh initially has M_InventoryLine data
-      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount |
-      | inventory_1               | inventory_line                | huAuditProduct          | 0       | 10       |
+    And metasfresh contains M_Inventories:
+      | M_Inventory_ID.Identifier | MovementDate | M_Warehouse_ID |
+      | inventory_1               | 2022-01-02   | 540008         |
+    And metasfresh contains M_InventoriesLines:
+      | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount | UOM.X12DE355 |
+      | inventory_1               | inventory_line                | huAuditProduct          | 0       | 10       | PCE          |
 
-    And complete inventory with inventoryIdentifier 'inventory_1'
+    And the inventory identified by inventory_1 is completed
 
     And after not more than 30s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
@@ -85,9 +85,9 @@ Feature: Handling unit data export audit
     And there are added records in Data_Export_Audit_Log
       | Data_Export_Audit_ID.Identifier | Data_Export_Action  | ExternalSystem_Config_ID.Identifier | AD_PInstance_ID.Identifier |
       | cu_data_export                  | Exported-Standalone | GRSConfig_HU                        | pInstance_exportHU         |
-    And update external system config:
-      | ExternalSystem_Config_ID.Identifier | Type | IsActive |
-      | GRSConfig_HU                        | GRS  | false    |
+    And deactivate ExternalSystem_Config
+      | ExternalSystem_Config_ID.Identifier |
+      | GRSConfig_HU                        |
 
   Scenario: When M_HU is changed, a proper camel-request is sent to rabbit-mq
     Given add external system parent-child pair
@@ -122,6 +122,6 @@ Feature: Handling unit data export audit
       | ExternalSystem_Config_ID.Identifier | OPT.M_HU_ID.Identifier |
       | GRSConfig_HU                        | createdTU              |
       | GRSConfig_HU                        | createdCU              |
-    And update external system config:
-      | ExternalSystem_Config_ID.Identifier | Type | IsActive |
-      | GRSConfig_HU                        | GRS  | false    |
+    And deactivate ExternalSystem_Config
+      | ExternalSystem_Config_ID.Identifier |
+      | GRSConfig_HU                        |

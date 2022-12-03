@@ -41,7 +41,9 @@ public class C_BPartner_PushAllToProcurement extends JavaProcess
 		final List<SyncBPartner> syncBPartners = SyncObjectsFactory.newFactory()
 				.createAllSyncBPartners();
 
-		agentSyncBL.syncBPartners(PutBPartnersRequest.of(syncBPartners));
+		agentSyncBL.syncBPartners(PutBPartnersRequest.builder()
+										  .bpartners(syncBPartners)
+										  .build());
 
 		return "@Sent@ (" + syncBPartners.size() + " records)";
 	}

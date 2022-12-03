@@ -23,7 +23,6 @@
 package de.metas.camel.externalsystems.alberta.attachment.processor;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.camel.externalsystems.alberta.attachment.AttachmentUtil;
 import de.metas.camel.externalsystems.alberta.attachment.GetAttachmentRouteConstants;
 import de.metas.camel.externalsystems.alberta.attachment.GetAttachmentRouteContext;
 import de.metas.camel.externalsystems.alberta.common.AlbertaUtil;
@@ -83,10 +82,11 @@ public class AttachmentProcessor implements Processor
 				.attachment(jsonAttachment)
 				.build();
 
-
-		if (attachment.getMetadata().getCreatedAt() != null)
+		// we do *not* use attachment=>metadata=>createdAt, because the "createdAfter" API-param corresponds to uploadDate
+		final String nextCreatedAtDate = attachment.getUploadDate();
+		if (nextCreatedAtDate != null)
 		{
-			routeContext.setNextAttachmentImportStartDate(AlbertaUtil.asInstant(attachment.getMetadata().getCreatedAt()));
+			routeContext.setNextAttachmentImportStartDate(AlbertaUtil.asInstantNotNull(nextCreatedAtDate));
 		}
 
 		exchange.getIn().setBody(jsonRequest);

@@ -1,6 +1,8 @@
 {
   "orgCode": "orgCode",
-  "externalReferenceLookupRequest": {
+  "externalSystemConfigId": 1,
+  "adPInstanceId": 2,
+  "jsonExternalReferenceLookupRequest": {
     "systemName": "GRSSignum",
     "items": [
       {

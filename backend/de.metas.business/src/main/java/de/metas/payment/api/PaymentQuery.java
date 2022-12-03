@@ -1,16 +1,8 @@
 package de.metas.payment.api;
 
-import java.util.Date;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.ad.dao.QueryLimit;
-
 import com.google.common.collect.ImmutableSet;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.document.engine.DocStatus;
-import de.metas.invoice_gateway.spi.model.InvoiceId;
 import de.metas.money.Money;
 import de.metas.payment.PaymentDirection;
 import de.metas.payment.PaymentId;
@@ -19,6 +11,10 @@ import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
+import org.adempiere.ad.dao.QueryLimit;
+
+import javax.annotation.Nullable;
+import java.util.Date;
 
 /*
  * #%L

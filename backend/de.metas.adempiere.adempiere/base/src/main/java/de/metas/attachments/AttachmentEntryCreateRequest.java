@@ -1,23 +1,20 @@
 package de.metas.attachments;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.util.Collection;
-
-import javax.activation.DataSource;
-
+import com.google.common.collect.ImmutableList;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.ToString;
+import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.util.MimeType;
 import org.compiere.util.Util;
 import org.springframework.core.io.Resource;
 
-import com.google.common.collect.ImmutableList;
-
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.ToString;
-import lombok.Value;
+import javax.activation.DataSource;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.util.Collection;
 
 /*
  * #%L
@@ -69,7 +66,7 @@ public class AttachmentEntryCreateRequest
 
 	public static AttachmentEntryCreateRequestBuilder builderFromByteArray(
 			@NonNull final String fileName,
-			@NonNull final byte[] data)
+			final byte[] data)
 	{
 		return AttachmentEntryCreateRequest.builder()
 				.type(AttachmentEntryType.Data)

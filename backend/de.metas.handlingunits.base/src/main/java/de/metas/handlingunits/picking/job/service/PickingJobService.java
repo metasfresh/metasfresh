@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableSet;
 import de.metas.dao.ValueRestriction;
 import de.metas.handlingunits.picking.PickingCandidateService;
+import de.metas.handlingunits.picking.config.PickingConfigRepositoryV2;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
@@ -48,6 +49,7 @@ public class PickingJobService
 	private final PickingCandidateService pickingCandidateService;
 	private final PickingJobHUReservationService pickingJobHUReservationService;
 	private final PickingJobLoaderSupportingServicesFactory pickingJobLoaderSupportingServicesFactory;
+	private final PickingConfigRepositoryV2 pickingConfigRepo;
 
 	public PickingJobService(
 			final PickingJobRepository pickingJobRepository,
@@ -55,13 +57,16 @@ public class PickingJobService
 			final PickingJobSlotService pickingSlotService,
 			final PickingCandidateService pickingCandidateService,
 			final PickingJobHUReservationService pickingJobHUReservationService,
-			final PickingJobLoaderSupportingServicesFactory pickingJobLoaderSupportingServicesFactory)
+			final PickingConfigRepositoryV2 pickingConfigRepo,
+			final PickingJobLoaderSupportingServicesFactory pickingJobLoaderSupportingServicesFactory
+	)
 	{
 		this.pickingSlotService = pickingSlotService;
 		this.pickingJobRepository = pickingJobRepository;
 		this.pickingJobLockService = pickingJobLockService;
 		this.pickingCandidateService = pickingCandidateService;
 		this.pickingJobHUReservationService = pickingJobHUReservationService;
+		this.pickingConfigRepo = pickingConfigRepo;
 		this.pickingJobLoaderSupportingServicesFactory = pickingJobLoaderSupportingServicesFactory;
 	}
 
@@ -85,6 +90,7 @@ public class PickingJobService
 				.pickingCandidateService(pickingCandidateService)
 				.pickingJobSlotService(pickingSlotService)
 				.pickingJobHUReservationService(pickingJobHUReservationService)
+				.pickingConfigRepo(pickingConfigRepo)
 				.loadingSupportServices(pickingJobLoaderSupportingServicesFactory.createLoaderSupportingServices())
 				//
 				.request(request)
@@ -158,17 +164,17 @@ public class PickingJobService
 	{
 		return packagingDAO
 				.stream(PackageableQuery.builder()
-						.onlyFromSalesOrder(true)
-						.lockedBy(userId)
-						.includeNotLocked(true)
-						.excludeShipmentScheduleIds(excludeShipmentScheduleIds)
-						.orderBys(ImmutableSet.of(
-								PackageableQuery.OrderBy.PriorityRule,
-								PackageableQuery.OrderBy.PreparationDate,
-								PackageableQuery.OrderBy.SalesOrderId,
-								PackageableQuery.OrderBy.DeliveryBPLocationId,
-								PackageableQuery.OrderBy.WarehouseTypeId))
-						.build())
+								.onlyFromSalesOrder(true)
+								.lockedBy(userId)
+								.includeNotLocked(true)
+								.excludeShipmentScheduleIds(excludeShipmentScheduleIds)
+								.orderBys(ImmutableSet.of(
+										PackageableQuery.OrderBy.PriorityRule,
+										PackageableQuery.OrderBy.PreparationDate,
+										PackageableQuery.OrderBy.SalesOrderId,
+										PackageableQuery.OrderBy.DeliveryBPLocationId,
+										PackageableQuery.OrderBy.WarehouseTypeId))
+								.build())
 				.map(PickingJobService::extractPickingJobCandidate)
 				.distinct();
 	}

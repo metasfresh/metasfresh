@@ -28,7 +28,9 @@ import de.metas.camel.externalsystems.alberta.ordercandidate.processor.ExternalR
 import de.metas.camel.externalsystems.alberta.ordercandidate.processor.JsonOLCandCreateRequestProcessor;
 import de.metas.camel.externalsystems.alberta.ordercandidate.processor.OrderCandRuntimeParametersProcessor;
 import de.metas.camel.externalsystems.alberta.ordercandidate.processor.RetrieveOrdersProcessor;
+import de.metas.camel.externalsystems.common.CamelRouteUtil;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import de.metas.common.bpartner.v2.response.JsonResponseComposite;
 import de.metas.common.bpartner.v2.response.JsonResponseUpsert;
 import de.metas.common.externalreference.v1.JsonExternalReferenceLookupResponse;
 import org.apache.camel.LoggingLevel;
@@ -53,6 +55,7 @@ public class AlbertaGetOrdersRouteBuilder extends RouteBuilder
 	public static final String CREATE_EXTERNAL_REF_LOOKUP_PROCESSOR_ID = "CreateExternalRefLookupProcessorId";
 	public static final String CREATE_BPARTNER_REQUEST_PROCESSOR_ID = "CreateBPartnerRequestProcessorId";
 	public static final String CREATE_DELIVERY_ADDRESS_PROCESSOR_ID = "CreateDeliveryAddressProcessorId";
+	public static final String CREATE_BP_RETRIEVE_CAMEL_REQUEST_PROCESSOR_ID = "BPRetrieveCamelRequestProcessorId";
 	public static final String CREATE_OLCAND_REQUEST_PROCESSOR_ID = "CreateOLCandRequestProcessorId";
 	public static final String RUNTIME_PARAMS_PROCESSOR_ID = "Alberta-Order-RuntimeParamsProcessorId";
 
@@ -96,6 +99,11 @@ public class AlbertaGetOrdersRouteBuilder extends RouteBuilder
 
 					.to("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_LOCATION_V2_CAMEL_URI + "}}")
 					.unmarshal(setupJacksonDataFormatFor(getContext(), JsonResponseUpsert.class))
+					.process(JsonOLCandCreateRequestProcessor::processUpsertDeliveryAddressResponse)
+
+					.process(JsonOLCandCreateRequestProcessor::prepareBPartnerInfoForPatientRequest).id(CREATE_BP_RETRIEVE_CAMEL_REQUEST_PROCESSOR_ID)
+					.to("{{" + ExternalSystemCamelConstants.MF_RETRIEVE_BPARTNER_V2_CAMEL_URI + "}}")
+					.unmarshal(CamelRouteUtil.setupJacksonDataFormatFor(getContext(), JsonResponseComposite.class))
 
 					.process(new JsonOLCandCreateRequestProcessor()).id(CREATE_OLCAND_REQUEST_PROCESSOR_ID)
 

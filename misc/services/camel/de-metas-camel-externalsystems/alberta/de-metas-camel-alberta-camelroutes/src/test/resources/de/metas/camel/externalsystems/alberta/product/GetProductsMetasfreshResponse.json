@@ -10,6 +10,7 @@
       "manufacturerId": 2156474,
       "manufacturerName": "myManufacturerName",
       "manufacturerNumber": "myNewManufacturerNumber",
+      "discontinuedFrom": "2021-06-07",
       "bpartners": [],
       "albertaProductInfo": {
         "albertaProductId": "7bc17275-cfe4-4ea5-a965-c7fdab54d0df",
@@ -24,8 +25,14 @@
         "stars": 4,
         "pharmacyPrice": 1600.00,
         "fixedPrice": 11.00,
+        "therapyIds": [
+          "1",
+          "2",
+          "3"
+        ],
         "billableTherapies": [
-          "1"
+          "1",
+          "3"
         ],
         "packagingUnits": [
           {

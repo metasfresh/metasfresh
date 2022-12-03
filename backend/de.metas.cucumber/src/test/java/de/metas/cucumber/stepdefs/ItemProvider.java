@@ -33,7 +33,7 @@ import java.text.MessageFormat;
 public interface ItemProvider<T>
 {
 	@Value
-	@AllArgsConstructor(access = AccessLevel.PRIVATE)
+	@AllArgsConstructor(access= AccessLevel.PRIVATE)
 	public class ProviderResult<T>
 	{
 		public static <T> ProviderResult<T> resultWasFound(final @Nullable T result)
@@ -46,7 +46,7 @@ public interface ItemProvider<T>
 			return new ProviderResult<>(false, null, log);
 		}
 
-		public static <T> ProviderResult<T> resultWasNotFound(final @NonNull String log, final @NonNull Object... args)
+		public static <T> ProviderResult<T> resultWasNotFound(final @NonNull String log, final @NonNull Object ...args)
 		{
 			final String logMessage = MessageFormat.format(log, args);
 

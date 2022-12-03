@@ -1,15 +1,5 @@
 package de.metas.event.remote;
 
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-
-import org.slf4j.Logger;
-import org.springframework.amqp.core.AmqpTemplate;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.messaging.handler.annotation.Header;
-import org.springframework.messaging.handler.annotation.Payload;
-
 import de.metas.event.Event;
 import de.metas.event.Event.Builder;
 import de.metas.event.EventBusConfig;
@@ -26,6 +16,15 @@ import de.metas.monitoring.adapter.PerformanceMonitoringService.TransactionMetad
 import de.metas.monitoring.adapter.PerformanceMonitoringService.TransactionMetadata.TransactionMetadataBuilder;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.slf4j.Logger;
+import org.springframework.amqp.core.AmqpTemplate;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.messaging.handler.annotation.Header;
+import org.springframework.messaging.handler.annotation.Payload;
+
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
 
 /*
  * #%L

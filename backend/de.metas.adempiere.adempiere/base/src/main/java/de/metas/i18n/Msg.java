@@ -151,9 +151,9 @@ public final class Msg
 			else
 			{
 				pstmt = DB.prepareStatement("SELECT m.Value, t.MsgText, t.MsgTip "
-						+ "FROM AD_Message_Trl t, AD_Message m "
-						+ "WHERE m.AD_Message_ID=t.AD_Message_ID"
-						+ " AND t.AD_Language=?", ITrx.TRXNAME_None);
+													+ "FROM AD_Message_Trl t, AD_Message m "
+													+ "WHERE m.AD_Message_ID=t.AD_Message_ID"
+													+ " AND t.AD_Language=?", ITrx.TRXNAME_None);
 				pstmt.setString(1, adLanguage);
 			}
 			rs = pstmt.executeQuery();
@@ -175,6 +175,8 @@ public final class Msg
 		finally
 		{
 			DB.close(rs, pstmt);
+			rs = null;
+			pstmt = null;
 		}
 
 		//
@@ -437,31 +439,44 @@ public final class Msg
 		for (int i = 0; i < args.length; i++)
 		{
 			final Object arg = args[i];
-			final Object argNorm;
-			if (arg instanceof ITranslatableString)
-			{
-				argNorm = ((ITranslatableString)arg).translate(adLanguage);
-			}
-			else if (arg instanceof Amount)
-			{
-				final Amount amount = (Amount)arg;
-				argNorm = TranslatableStrings.amount(amount).translate(adLanguage);
-			}
-			else if (arg instanceof ReferenceListAwareEnum)
-			{
-				final ReferenceListAwareEnum referenceListAwareEnum = (ReferenceListAwareEnum)arg;
-				argNorm = normalizeArgBeforeFormat_ReferenceListAwareEnum(referenceListAwareEnum, adLanguage);
-			}
-			else
-			{
-				argNorm = arg;
-			}
-
+			final Object argNorm = normalizeSingleArgumentBeforeFormat(arg, adLanguage);
 			args[i] = argNorm;
 		}
 	}
 
-	private static Object normalizeArgBeforeFormat_ReferenceListAwareEnum(
+	private static Object normalizeSingleArgumentBeforeFormat(@Nullable final Object arg, final String adLanguage)
+	{
+		if (arg == null)
+		{
+			return null;
+		}
+		else if (arg instanceof ITranslatableString)
+		{
+			return ((ITranslatableString)arg).translate(adLanguage);
+		}
+		else if (arg instanceof Amount)
+		{
+			final Amount amount = (Amount)arg;
+			return TranslatableStrings.amount(amount).translate(adLanguage);
+		}
+		else if (arg instanceof ReferenceListAwareEnum)
+		{
+			final ReferenceListAwareEnum referenceListAwareEnum = (ReferenceListAwareEnum)arg;
+			return normalizeSingleArgumentBeforeFormat_ReferenceListAwareEnum(referenceListAwareEnum, adLanguage);
+		}
+		else if (arg instanceof Iterable)
+		{
+			@SuppressWarnings("unchecked")
+			final Iterable<Object> iterable = (Iterable<Object>)arg;
+			return normalizeSingleArgumentBeforeFormat_Iterable(iterable, adLanguage);
+		}
+		else
+		{
+			return arg;
+		}
+	}
+
+	private static Object normalizeSingleArgumentBeforeFormat_ReferenceListAwareEnum(
 			@NonNull final ReferenceListAwareEnum referenceListAwareEnum,
 			final String adLanguage)
 	{
@@ -478,6 +493,37 @@ public final class Msg
 
 		// Fallback
 		return referenceListAwareEnum.toString();
+	}
+
+	private static String normalizeSingleArgumentBeforeFormat_Iterable(
+			@NonNull final Iterable<Object> iterable,
+			final String adLanguage)
+	{
+		final StringBuilder result = new StringBuilder();
+
+		for (final Object item : iterable)
+		{
+			String itemNormStr = null;
+			try
+			{
+				final Object itemNormObj = normalizeSingleArgumentBeforeFormat(item, adLanguage);
+				itemNormStr = itemNormObj != null ? itemNormObj.toString() : "-";
+			}
+			catch (Exception ex)
+			{
+				s_log.warn("Failed normalizing argument `{}`. Using toString().", item, ex);
+				itemNormStr = item.toString();
+			}
+
+			if (result.length() > 0)
+			{
+				result.append(", ");
+			}
+			result.append(itemNormStr);
+		}
+
+		return result.toString();
+
 	}
 
 	public static Map<String, String> getMsgMap(final String adLanguage, final String prefix, boolean removePrefix)
@@ -681,6 +727,8 @@ public final class Msg
 		finally
 		{
 			DB.close(rs, pstmt);
+			rs = null;
+			pstmt = null;
 		}
 	}
 

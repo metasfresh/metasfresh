@@ -426,6 +426,11 @@ public class JsonRetrieverService
 					.billTo(locationType.getIsBillToOr(false))
 					.billToDefault(locationType.getIsBillToDefaultOr(false))
 					.changeInfo(jsonChangeInfo)
+					.setupPlaceNo(location.getSetupPlaceNo())
+					.remitTo(location.isRemitTo())
+					.handoverLocation(location.isHandOverLocation())
+					.replicationLookupDefault(location.isReplicationLookupDefault())
+					.visitorsAddress(location.isVisitorsAddress())
 					.build();
 		}
 		catch (final RuntimeException rte)

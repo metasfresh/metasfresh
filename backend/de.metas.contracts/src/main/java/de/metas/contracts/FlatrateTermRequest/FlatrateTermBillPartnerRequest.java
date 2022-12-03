@@ -26,7 +26,6 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.contracts.FlatrateTermId;
-import de.metas.contracts.model.I_C_Flatrate_Term;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -44,5 +43,7 @@ public class FlatrateTermBillPartnerRequest
 
 	@Nullable
 	BPartnerContactId billUserId;
+
+	boolean termHasInvoices;
 
 }

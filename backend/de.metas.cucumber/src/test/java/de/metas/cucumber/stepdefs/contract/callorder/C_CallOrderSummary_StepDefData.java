@@ -25,6 +25,13 @@ package de.metas.cucumber.stepdefs.contract.callorder;
 import de.metas.contracts.model.I_C_CallOrderSummary;
 import de.metas.cucumber.stepdefs.StepDefData;
 
+/**
+ * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
+ */
 public class C_CallOrderSummary_StepDefData extends StepDefData<I_C_CallOrderSummary>
 {
+	public C_CallOrderSummary_StepDefData()
+	{
+		super(I_C_CallOrderSummary.class);
+	}
 }

@@ -16,6 +16,7 @@ import de.metas.order.OrderId;
 import de.metas.order.OrderLinePriceUpdateRequest;
 import de.metas.order.OrderLinePriceUpdateRequest.ResultUOM;
 import de.metas.order.compensationGroup.OrderGroupCompensationChangesHandler;
+import de.metas.order.compensationGroup.OrderGroupCompensationUtils;
 import de.metas.order.impl.OrderLineDetailRepository;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
@@ -352,7 +353,7 @@ public class C_OrderLine
 		final BPartnerId partnerId = BPartnerId.ofRepoId(orderLine.getC_BPartner_ID());
 
 		final I_C_Order order = orderBL.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
-		final SOTrx soTrx = SOTrx.ofBooleanNonNull(order.isSOTrx());
+		final SOTrx soTrx = SOTrx.ofBooleanNotNull(order.isSOTrx());
 
 		partnerProductBL.assertNotExcludedFromTransaction(soTrx, productId, partnerId);
 	}
@@ -406,5 +407,17 @@ public class C_OrderLine
 	public void updateProductDocumentNote(final I_C_OrderLine orderLine)
 	{
 		orderLineBL.updateProductDocumentNote(orderLine);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE },
+			ifColumnsChanged = { I_C_OrderLine.COLUMNNAME_IsGroupCompensationLine, I_C_OrderLine.COLUMNNAME_C_Order_CompensationGroup_ID })
+	public void renumberLinesIfCompensationGroupChanged(@NonNull final I_C_OrderLine orderLine)
+	{
+		if (!OrderGroupCompensationUtils.isInGroup(orderLine))
+		{
+			return;
+		}
+
+		groupChangesHandler.renumberOrderLinesForOrderId(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 	}
 }

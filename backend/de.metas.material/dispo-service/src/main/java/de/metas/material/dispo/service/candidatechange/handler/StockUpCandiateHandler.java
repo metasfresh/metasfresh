@@ -108,7 +108,7 @@ public class StockUpCandiateHandler implements CandidateHandler
 		{
 			final SupplyRequiredEvent supplyRequiredEvent = SupplyRequiredEventCreator //
 					.createSupplyRequiredEvent(candidateWithQtyDeltaAndId, requiredAdditionalQty, null);
-			materialEventService.postEventNow(supplyRequiredEvent);
+			materialEventService.postEventAsync(supplyRequiredEvent);
 		}
 
 		return candidateWithQtyDeltaAndId;

@@ -1,8 +1,9 @@
 package de.metas.invoicecandidate.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_Invoice_Line_Alloc
  *  @author metasfresh (generated) 
@@ -125,6 +126,27 @@ public interface I_C_Invoice_Line_Alloc
 	String COLUMNNAME_C_Invoice_Line_Alloc_ID = "C_Invoice_Line_Alloc_ID";
 
 	/**
+	 * Set Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Invoice_Line_Alloc_Type (@Nullable java.lang.String C_Invoice_Line_Alloc_Type);
+
+	/**
+	 * Get Type.
+	 *
+	 * <br>Type: List
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getC_Invoice_Line_Alloc_Type();
+
+	ModelColumn<I_C_Invoice_Line_Alloc, Object> COLUMN_C_Invoice_Line_Alloc_Type = new ModelColumn<>(I_C_Invoice_Line_Alloc.class, "C_Invoice_Line_Alloc_Type", null);
+	String COLUMNNAME_C_Invoice_Line_Alloc_Type = "C_Invoice_Line_Alloc_Type";
+
+	/**
 	 * Set Invoice Line.
 	 * Rechnungszeile
 	 *
@@ -152,28 +174,6 @@ public interface I_C_Invoice_Line_Alloc
 	String COLUMNNAME_C_InvoiceLine_ID = "C_InvoiceLine_ID";
 
 	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -197,6 +197,28 @@ public interface I_C_Invoice_Line_Alloc
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
 	 * Set Status.

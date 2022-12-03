@@ -54,10 +54,12 @@ import org.compiere.model.I_M_Product;
 
 import javax.annotation.Nullable;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 public interface IFlatrateDAO extends ISingletonService
 {
@@ -106,10 +108,9 @@ public interface IFlatrateDAO extends ISingletonService
 	List<I_C_Flatrate_DataEntry> retrieveInvoicingEntries(I_C_Flatrate_Term term, Timestamp dateFrom, Timestamp dateTo, UomId uomId);
 
 	/**
-	 *
-	 * @param term mandatory; the term whose data entries are returned
+	 * @param term          mandatory; the term whose data entries are returned
 	 * @param dataEntryType optional; if set, then only data entries with the given type are returned
-	 * @param uomId optional; if set, then only data entries with the given uom are returned
+	 * @param uomId         optional; if set, then only data entries with the given uom are returned
 	 */
 	List<I_C_Flatrate_DataEntry> retrieveDataEntries(I_C_Flatrate_Term term, String dataEntryType, UomId uomId);
 
@@ -140,11 +141,18 @@ public interface IFlatrateDAO extends ISingletonService
 
 	List<I_C_Flatrate_Term> retrieveTerms(TermsQuery query);
 
-	I_C_Flatrate_Conditions getConditionsById (ConditionsId flatrateConditionsId);
+	I_C_Flatrate_Conditions getConditionsById(ConditionsId flatrateConditionsId);
 
 	void save(@NonNull I_C_Flatrate_Term flatrateTerm);
 
 	I_C_Invoice_Candidate retrieveInvoiceCandidate(I_C_Flatrate_Term term);
+
+	Set<FlatrateTermId> retrieveAllRunningSubscriptionIds(
+			@NonNull BPartnerId bPartnerId,
+			@NonNull Instant date,
+			@NonNull OrgId orgId);
+
+	boolean bpartnerHasExistingRunningTerms(@NonNull final I_C_Flatrate_Term flatrateTerm);
 
 	@Value
 	@Builder
@@ -230,7 +238,6 @@ public interface IFlatrateDAO extends ISingletonService
 	/**
 	 * Retrieves a {@link I_C_Flatrate_Data} for the given partner or creates and saves it on the fly. Note that if a record is created, it is also directly set to processed, so the anticipation is
 	 * that a term is directly created.
-	 *
 	 */
 	I_C_Flatrate_Data retrieveOrCreateFlatrateData(I_C_BPartner bPartner);
 

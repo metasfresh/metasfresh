@@ -9,6 +9,7 @@ import de.metas.handlingunits.material.interceptor.transactionevent.HUDescriptor
 import de.metas.handlingunits.material.interceptor.transactionevent.TransactionDescriptor;
 import de.metas.handlingunits.material.interceptor.transactionevent.TransactionDescriptorFactory;
 import de.metas.handlingunits.material.interceptor.transactionevent.TransactionEventFactory;
+import de.metas.handlingunits.trace.HUTraceRepository;
 import de.metas.inout.InOutAndLineId;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_QtyPicked;
 import de.metas.material.event.MaterialEvent;
@@ -137,7 +138,6 @@ public class M_Transaction_PostTransactionEvent_InOutLineEventCreatorTest
 		final AbstractTransactionEvent event = (AbstractTransactionEvent)events.get(0);
 		assertCommon(transaction, event);
 		assertThat(event.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(MINUS_SEVEN);
-		assertThat(event.getShipmentScheduleIds2Qtys()).hasSize(0);
 	}
 
 	@Test
@@ -170,11 +170,6 @@ public class M_Transaction_PostTransactionEvent_InOutLineEventCreatorTest
 		final AbstractTransactionEvent event = (AbstractTransactionEvent)events.get(0);
 		assertCommon(transaction, event);
 		assertThat(event.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(MINUS_SEVEN);
-
-		assertThat(event.getShipmentScheduleIds2Qtys()).hasSize(1);
-		final Entry<Integer, BigDecimal> entry = event.getShipmentScheduleIds2Qtys().entrySet().iterator().next();
-		assertThat(entry.getKey()).isEqualTo(20);
-		assertThat(entry.getValue()).isEqualByComparingTo(MINUS_TEN);
 	}
 
 	@Test
@@ -210,9 +205,6 @@ public class M_Transaction_PostTransactionEvent_InOutLineEventCreatorTest
 		assertCommon(transaction, event);
 		assertThat(event.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(MINUS_SEVEN); // the HUs' qty takes precendence of the transaction's movementQty
 
-		final Map<Integer, BigDecimal> shipmentScheduleIds2Qtys = event.getShipmentScheduleIds2Qtys();
-		assertThat(shipmentScheduleIds2Qtys).containsOnly(entry(20, MINUS_ONE));
-
 	}
 
 	private HUDescriptorsFromHUAssignmentService createM_Transaction_HuDescriptor(@NonNull final String huQty)
@@ -227,9 +219,9 @@ public class M_Transaction_PostTransactionEvent_InOutLineEventCreatorTest
 				.quantity(new BigDecimal(huQty))
 				.build();
 
-		return new HUDescriptorsFromHUAssignmentService(new HUDescriptorService())
+		return new HUDescriptorsFromHUAssignmentService(new HUDescriptorService(), new HUTraceRepository())
 		{
-			public ImmutableList<HUDescriptor> createHuDescriptorsForInOutLine(@NonNull InOutAndLineId inOutLineId, boolean deleted)
+			public ImmutableList<HUDescriptor> createHuDescriptorsForInOutLine(@NonNull final InOutAndLineId inOutLineId, final boolean deleted)
 			{
 				return ImmutableList.of(huDescriptor);
 			}
@@ -286,11 +278,6 @@ public class M_Transaction_PostTransactionEvent_InOutLineEventCreatorTest
 		final AbstractTransactionEvent event = (AbstractTransactionEvent)events.get(0);
 		assertCommon(transaction, event);
 		assertThat(event.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(MINUS_SEVEN);
-
-		final Map<Integer, BigDecimal> shipmentScheduleIds2Qtys = event.getShipmentScheduleIds2Qtys();
-		assertThat(shipmentScheduleIds2Qtys).containsOnly(
-				entry(20, MINUS_ONE),
-				entry(21, MINUS_TWO));
 	}
 
 	private I_M_Transaction createShipmentTransaction()
@@ -320,7 +307,6 @@ public class M_Transaction_PostTransactionEvent_InOutLineEventCreatorTest
 		final AbstractTransactionEvent event = (AbstractTransactionEvent)events.get(0);
 		assertCommon(transaction, event);
 		assertThat(event.getMaterialDescriptor().getQuantity()).isEqualByComparingTo(SEVEN);
-		assertThat(event.getShipmentScheduleIds2Qtys()).hasSize(0);
 	}
 
 	private I_M_Transaction createReceiptTransaction()
@@ -375,7 +361,7 @@ public class M_Transaction_PostTransactionEvent_InOutLineEventCreatorTest
 
 		//
 		// invoke the method under test
-		final HUDescriptorsFromHUAssignmentService huDescriptorCreator = new HUDescriptorsFromHUAssignmentService(new HUDescriptorService());
+		final HUDescriptorsFromHUAssignmentService huDescriptorCreator = new HUDescriptorsFromHUAssignmentService(new HUDescriptorService(), new HUTraceRepository());
 		final Map<MaterialDescriptor, Collection<HUDescriptor>> materialDescriptors = huDescriptorCreator.newMaterialDescriptors()
 				.transaction(transactionDescriptor)
 				.huDescriptors(ImmutableList.of(huDescriptor1, huDescriptor2))
@@ -427,7 +413,7 @@ public class M_Transaction_PostTransactionEvent_InOutLineEventCreatorTest
 		final TransactionDescriptor transactionDescriptor = transactionDescriptorFactory.ofRecord(transaction);
 
 		// invoke the method under test
-		final HUDescriptorsFromHUAssignmentService huDescriptorCreator = new HUDescriptorsFromHUAssignmentService(new HUDescriptorService());
+		final HUDescriptorsFromHUAssignmentService huDescriptorCreator = new HUDescriptorsFromHUAssignmentService(new HUDescriptorService(), new HUTraceRepository());
 		final Map<MaterialDescriptor, Collection<HUDescriptor>> materialDescriptors = huDescriptorCreator.newMaterialDescriptors()
 				.transaction(transactionDescriptor)
 				.huDescriptors(ImmutableList.of(huDescriptor1, huDescriptor2))

@@ -1,8 +1,6 @@
 package org.adempiere.ad.wrapper;
 
-import java.util.Properties;
-import java.util.Set;
-
+import de.metas.logging.LogManager;
 import org.adempiere.ad.persistence.IModelInternalAccessor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.POWrapper;
@@ -10,7 +8,9 @@ import org.compiere.model.PO;
 import org.compiere.util.Evaluatee;
 import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
+import javax.annotation.Nullable;
+import java.util.Properties;
+import java.util.Set;
 
 /*
  * #%L
@@ -214,6 +214,7 @@ public class POInterfaceWrapperHelper extends AbstractInterfaceWrapperHelper
 		return POWrapper.isNull(model, columnName);
 	}
 
+	@Nullable
 	@Override
 	public <T> T getDynAttribute(final Object model, final String attributeName)
 	{

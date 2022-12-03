@@ -106,22 +106,19 @@ public class DocTypeService
 	}
 
 	@NonNull
-	public Optional<JsonOrderDocType> getOrderDocType(@NonNull final DocTypeId docTypeId)
+	public Optional<JsonOrderDocType> getOrderDocType(@Nullable final DocTypeId docTypeId)
 	{
-
+		if (docTypeId == null)
+		{
+			return Optional.empty();
+		}
+		
 		final I_C_DocType docType = docTypeDAO.getById(docTypeId);
-
 		if (!X_C_DocType.DOCBASETYPE_SalesOrder.equals(docType.getDocBaseType()))
 		{
 			throw new AdempiereException("Invalid base doc type!");
 		}
 
-		if (docType != null)
-		{
-			return Optional.of(JsonOrderDocType.ofCode(docType.getDocSubType()));
-		}
-
-		return Optional.empty();
-
+		return Optional.of(JsonOrderDocType.ofCode(docType.getDocSubType()));
 	}
 }

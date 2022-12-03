@@ -68,7 +68,7 @@ class SerializeDeserializeTest
 	@Test
 	void jsonExternalReferenceLookupRequest_fromString() throws IOException
 	{
-		String jsonString = "{\n"
+		final String jsonString = "{\n"
 				+ "  \"systemName\": \"Github\",\n"
 				+ "  \"items\": [\n"
 				+ "    { \"id\": \"noIssueWithThisId\", \"type\": \"IssueID\" }\n"
@@ -87,7 +87,9 @@ class SerializeDeserializeTest
 				.item(JsonExternalReferenceItem.builder()
 							  .lookupItem(JsonExternalReferenceLookupItem.builder().id("item1Id").type("item1Type").build())
 							  .metasfreshId(JsonMetasfreshId.of(24))
-							  .version("Version").build())
+							  .version("Version")
+							  .systemName(JsonExternalSystemName.of("itemSystemName"))
+							  .build())
 				.item(JsonExternalReferenceItem.of(
 						JsonExternalReferenceLookupItem.builder().id("item2Id").type("item2Type").build(),
 						JsonMetasfreshId.of(25)))
@@ -139,7 +141,7 @@ class SerializeDeserializeTest
 		testSerializeDeserialize(upsertRequest, JsonRequestExternalReferenceUpsert.class);
 	}
 
-	private <T> void testSerializeDeserialize(@NonNull final T json, Class<T> clazz) throws IOException
+	private <T> void testSerializeDeserialize(@NonNull final T json, final Class<T> clazz) throws IOException
 	{
 		final String jsonString = jsonObjectMapper.writeValueAsString(json);
 		final T jsonDeserialized = jsonObjectMapper.readValue(jsonString, clazz);

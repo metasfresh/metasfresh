@@ -76,7 +76,6 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 
 /**
  * Takes {@link IQualityInvoiceLineGroup}s and creates {@link I_C_Invoice_Candidate}s.
@@ -608,7 +607,6 @@ public class InvoiceCandidateWriter
 	{
 		final IContextAware contextProvider = getContext();
 
-		final Properties ctx = contextProvider.getCtx();
 		final TaxCategoryId taxCategoryId = pricingResult.getTaxCategoryId();
 
 		// TODO: we should use shipPartnerLocation
@@ -617,7 +615,6 @@ public class InvoiceCandidateWriter
 				.getBPartnerLocationAndCaptureId();
 
 		final TaxId taxID = taxBL.getTaxNotNull(
-				ctx,
 				ic,
 				taxCategoryId,
 				ic.getM_Product_ID(),

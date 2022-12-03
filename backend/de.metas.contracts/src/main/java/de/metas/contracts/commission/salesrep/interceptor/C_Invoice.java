@@ -161,7 +161,7 @@ public class C_Invoice
 	{
 		final BPartnerId bPartnerId = BPartnerId.ofRepoId(invoiceRecord.getC_BPartner_ID());
 		final InvoiceId invoiceId = InvoiceId.ofRepoId(invoiceRecord.getC_Invoice_ID());
-		final SOTrx soTrx = SOTrx.ofBooleanNonNull(invoiceRecord.isSOTrx());
+		final SOTrx soTrx = SOTrx.ofBooleanNotNull(invoiceRecord.isSOTrx());
 
 		invoiceDAO.retrieveLines(invoiceId)
 				.stream()

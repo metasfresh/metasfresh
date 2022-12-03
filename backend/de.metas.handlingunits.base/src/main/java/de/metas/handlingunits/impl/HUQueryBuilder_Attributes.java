@@ -1,10 +1,14 @@
 package de.metas.handlingunits.impl;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
 import de.metas.dimension.DimensionSpec;
 import de.metas.dimension.IDimensionspecDAO;
 import de.metas.handlingunits.HUConstants;
+import de.metas.handlingunits.age.AgeAttributesService;
+import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.model.I_M_HU;
+import de.metas.product.ProductId;
 import de.metas.storage.spi.hu.IHUStorageBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -21,8 +25,10 @@ import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.compiere.model.I_M_Attribute;
 import org.compiere.model.X_M_Attribute;
 
+import javax.annotation.Nullable;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,12 +45,12 @@ import java.util.Set;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -53,9 +59,8 @@ import java.util.Set;
 
 /**
  * {@link HUQueryBuilder} attributes related filtering
- * 
- * @author metas-dev <dev@metasfresh.com>
  *
+ * @author metas-dev <dev@metasfresh.com>
  */
 @EqualsAndHashCode
 @ToString(of = { "onlyAttributes", "barcode" })
@@ -63,21 +68,27 @@ final class HUQueryBuilder_Attributes
 {
 	private final transient IQueryBL queryBL = Services.get(IQueryBL.class);
 
+	private final AgeAttributesService ageAttributesService;
+
 	private final HashMap<AttributeId, HUAttributeQueryFilterVO> onlyAttributes;
 	private boolean allowSql = true;
+	@Nullable
 	private String barcode;
 	private final Set<AttributeId> huRelevantAttributeIds;
 
-	public HUQueryBuilder_Attributes()
+	public HUQueryBuilder_Attributes(@NonNull final AgeAttributesService ageAttributesService)
 	{
 		huRelevantAttributeIds = Services.get(IHUStorageBL.class).getAvailableAttributeIds();
 		onlyAttributes = new HashMap<>();
 		barcode = null;
+
+		this.ageAttributesService = ageAttributesService;
 	}
 
 	private HUQueryBuilder_Attributes(final HUQueryBuilder_Attributes from)
 	{
 		huRelevantAttributeIds = Services.get(IHUStorageBL.class).getAvailableAttributeIds();
+		this.ageAttributesService = from.ageAttributesService;
 		onlyAttributes = deepCopy(from.onlyAttributes);
 		barcode = from.barcode;
 		allowSql = from.allowSql;
@@ -122,6 +133,7 @@ final class HUQueryBuilder_Attributes
 		return filters;
 	}
 
+	@Nullable
 	private ICompositeQueryFilter<I_M_HU> createQueryFilter_OnlyAttributes()
 	{
 		if (onlyAttributes.isEmpty())
@@ -141,9 +153,10 @@ final class HUQueryBuilder_Attributes
 		return filters;
 	}
 
+	@Nullable
 	private ICompositeQueryFilter<I_M_HU> createQueryFilter_Barcode()
 	{
-		if (Check.isEmpty(barcode, true))
+		if (Check.isBlank(barcode))
 		{
 			return null;
 		}
@@ -217,9 +230,10 @@ final class HUQueryBuilder_Attributes
 		addOnlyWithAttribute(attribute, value);
 	}
 
-	public void addOnlyWithAttributeInList(final I_M_Attribute attribute, final String attributeValueType, @NonNull final List<? extends Object> values)
+	public void addOnlyWithAttributeInList(final I_M_Attribute attribute, 
+			@Nullable final String attributeValueType, 
+			@NonNull final List<?> values)
 	{
-		Check.assumeNotNull(values, "values not null");
 		getOrCreateAttributeFilterVO(attribute, attributeValueType)
 				.ifPresent(attributeFilterVO -> attributeFilterVO.addValues(values));
 	}
@@ -245,7 +259,7 @@ final class HUQueryBuilder_Attributes
 				.ifPresent(attributeFilterVO -> attributeFilterVO.setMatchingType(HUAttributeQueryFilterVO.AttributeValueMatchingType.MissingOrNull));
 	}
 
-	public void addOnlyWithAttributes(ImmutableAttributeSet attributeSet)
+	public void addOnlyWithAttributes(@NonNull final ImmutableAttributeSet attributeSet)
 	{
 		for (final I_M_Attribute attribute : attributeSet.getAttributes())
 		{
@@ -254,7 +268,37 @@ final class HUQueryBuilder_Attributes
 		}
 	}
 
-	private Optional<HUAttributeQueryFilterVO> getOrCreateAttributeFilterVO(@NonNull final I_M_Attribute attribute, final String attributeValueType)
+	public void addOnlyWithAttributeValuesMatchingPartnerAndProduct(
+			@NonNull final BPartnerId bPartnerId,
+			@NonNull final ProductId productId, 
+			@NonNull final ImmutableAttributeSet attributeSet)
+	{
+		for (final I_M_Attribute attribute : attributeSet.getAttributes())
+		{
+			final Object value = attributeSet.getValue(attribute);
+
+			if(value == null)
+			{
+				continue;
+			}
+
+			if (HUAttributeConstants.ATTR_Age.equals(AttributeCode.ofString(attribute.getValue())))
+			{
+				final List<Object> ageValues = ageAttributesService.extractMatchingValues(Collections.singleton(bPartnerId),
+																						  Collections.singleton(productId),
+																						  value);
+				final String attributeValueType = attributeSet.getAttributeValueType(attribute);
+
+				addOnlyWithAttributeInList(attribute, attributeValueType, ageValues);
+			}
+			else
+			{
+				addOnlyWithAttribute(attribute, value);
+			}
+		}
+	}
+
+	private Optional<HUAttributeQueryFilterVO> getOrCreateAttributeFilterVO(@NonNull final I_M_Attribute attribute, @Nullable final String attributeValueType)
 	{
 		if (!huRelevantAttributeIds.contains(AttributeId.ofRepoId(attribute.getM_Attribute_ID())))
 		{
@@ -267,7 +311,7 @@ final class HUQueryBuilder_Attributes
 	private HUAttributeQueryFilterVO getOrCreateAttributeFilterVO(
 			@NonNull final Map<AttributeId, HUAttributeQueryFilterVO> targetMap,
 			@NonNull final I_M_Attribute attribute,
-			final String attributeValueType)
+			@Nullable final String attributeValueType)
 	{
 		final HUAttributeQueryFilterVO attributeFilterVO = targetMap.computeIfAbsent(
 				AttributeId.ofRepoId(attribute.getM_Attribute_ID()),

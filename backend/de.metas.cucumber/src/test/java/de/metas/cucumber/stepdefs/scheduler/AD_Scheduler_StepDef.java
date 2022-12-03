@@ -24,6 +24,8 @@ package de.metas.cucumber.stepdefs.scheduler;
 
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
+import de.metas.scheduler.SchedulerAction;
+import de.metas.scheduler.SchedulerSearchKey;
 import de.metas.scheduler.eventbus.ManageSchedulerRequest;
 import de.metas.scheduler.eventbus.SchedulerEventBusService;
 import de.metas.util.Check;
@@ -46,10 +48,10 @@ public class AD_Scheduler_StepDef
 		Check.assumeNotNull(targetProcessId, "There should always be an AD_Process record for classname:" + className);
 
 		schedulerEventBusService.postRequest(ManageSchedulerRequest.builder()
-													 .adProcessId(targetProcessId)
+													 .schedulerSearchKey(SchedulerSearchKey.of(targetProcessId))
 													 .clientId(Env.getClientId())
-													 .schedulerAdvice(ManageSchedulerRequest.Advice.DISABLE)
-													 .supervisorAdvice(ManageSchedulerRequest.Advice.DISABLE)
+													 .schedulerAction(SchedulerAction.DISABLE)
+													 .supervisorAction(ManageSchedulerRequest.SupervisorAction.DISABLE)
 													 .build());
 	}
 
@@ -61,10 +63,10 @@ public class AD_Scheduler_StepDef
 		Check.assumeNotNull(targetProcessId, "There should always be an AD_Process record for classname:" + className);
 
 		schedulerEventBusService.postRequest(ManageSchedulerRequest.builder()
-													 .adProcessId(targetProcessId)
+													 .schedulerSearchKey(SchedulerSearchKey.of(targetProcessId))
 													 .clientId(Env.getClientId())
-													 .schedulerAdvice(ManageSchedulerRequest.Advice.ENABLE)
-													 .supervisorAdvice(ManageSchedulerRequest.Advice.ENABLE)
+													 .schedulerAction(SchedulerAction.ENABLE)
+													 .supervisorAction(ManageSchedulerRequest.SupervisorAction.ENABLE)
 													 .build());
 	}
 }

@@ -25,6 +25,7 @@ package de.metas.externalsystem;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
@@ -86,6 +87,41 @@ public class ExternalSystemTestUtil
 		childRecord.setIsSyncBPartnersToRestEndpoint(isSyncBPartnersToRestEndpoint);
 		childRecord.setIsSyncHUsOnMaterialReceipt(isSyncHUsOnMaterialReceipt);
 		childRecord.setIsSyncHUsOnProductionReceipt(isSyncHUsOnProductionReceipt);
+		saveRecord(childRecord);
+
+		return childRecord;
+	}
+
+	@NonNull
+	@Builder(builderMethodName = "createRabbitMQConfigBuilder", builderClassName = "rabbitMQConfigBuilder")
+	private I_ExternalSystem_Config_RabbitMQ_HTTP createRabbitMQConfig(
+			final int externalSystemConfigId,
+			@Nullable final String value,
+			final boolean isSyncBPartnerToRabbitMQ,
+			final boolean isAutoSendWhenCreatedByUserGroup,
+			final int subjectCreatedByUserGroupId,
+			final boolean isSyncExternalReferencesToRabbitMQ,
+			final int customChildConfigId)
+	{
+		final int subjectCreatedByUserGroup_ID = CoalesceUtil.coalesceNotNull(subjectCreatedByUserGroupId, 1);
+		final String configValue = CoalesceUtil.coalesceNotNull(value, "notImportant");
+
+		final I_ExternalSystem_Config_RabbitMQ_HTTP childRecord = newInstance(I_ExternalSystem_Config_RabbitMQ_HTTP.class);
+		childRecord.setExternalSystemValue(configValue);
+		childRecord.setRemoteURL("remoteURL");
+		childRecord.setRouting_Key("routingKey");
+		childRecord.setAuthToken("authToken");
+		childRecord.setIsSyncBPartnersToRabbitMQ(isSyncBPartnerToRabbitMQ);
+		childRecord.setExternalSystem_Config_ID(externalSystemConfigId);
+		childRecord.setIsAutoSendWhenCreatedByUserGroup(isAutoSendWhenCreatedByUserGroup);
+		childRecord.setSubjectCreatedByUserGroup_ID(subjectCreatedByUserGroup_ID);
+		childRecord.setIsSyncExternalReferencesToRabbitMQ(isSyncExternalReferencesToRabbitMQ);
+
+		if (customChildConfigId > 0)
+		{
+			childRecord.setExternalSystem_Config_RabbitMQ_HTTP_ID(customChildConfigId);
+		}
+
 		saveRecord(childRecord);
 
 		return childRecord;
