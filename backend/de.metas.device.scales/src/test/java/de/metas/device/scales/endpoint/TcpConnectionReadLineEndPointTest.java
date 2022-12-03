@@ -46,12 +46,12 @@ import static org.junit.Assert.fail;
  */
 
 /** Deactivating it because it's too unstable when run ion jenkins; TODO rewrite or incorporate into e2e. */
-public class TcpConnectionEndPointTest
+public class TcpConnectionReadLineEndPointTest
 {
 	private static volatile int weight = 100;
 	private volatile boolean exitServerSocketThread = false;
 
-	private static TcpConnectionEndPoint tcpConnectionEndPoint;
+	private static TcpConnectionReadLineEndPoint tcpConnectionEndPoint;
 
 	private static List<String> serverSocketReceived = new ArrayList<>();
 
@@ -62,7 +62,7 @@ public class TcpConnectionEndPointTest
 	@BeforeClass
 	public static void setupEP()
 	{
-		tcpConnectionEndPoint = new TcpConnectionEndPoint();
+		tcpConnectionEndPoint = new TcpConnectionReadLineEndPoint();
 		tcpConnectionEndPoint.setHost("localhost");
 		tcpConnectionEndPoint.setReturnLastLine(true);
 
@@ -72,8 +72,6 @@ public class TcpConnectionEndPointTest
 	/**
 	 * Create a server socket to emulate the scale.
 	 * It picks a port each time it is run, in order to prevent issued with ports that are already in use.
-	 *
-	 * @throws InterruptedException
 	 */
 	@Before
 	public void setUpServer() throws InterruptedException
@@ -86,7 +84,7 @@ public class TcpConnectionEndPointTest
 			@Override
 			public void run()
 			{
-				try (ServerSocket myServer = new ServerSocket(0))
+				try (final ServerSocket myServer = new ServerSocket(0))
 				{
 					final int port = myServer.getLocalPort();
 					System.out.println("TcpConnectionEndPointTest" + ": server socked listening on port " + port);
@@ -190,8 +188,6 @@ public class TcpConnectionEndPointTest
 
 	/**
 	 * Makes sure that the server socked thread has finished.
-	 *
-	 * @throws InterruptedException
 	 */
 	@After
 	public void tearDown() throws InterruptedException
