@@ -169,6 +169,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 	private final boolean m_IsChangeLog;
 
 	private final boolean m_HasStaleableColumns;
+	@Getter private final int webuiViewPageLength;
 
 	private final String sqlWhereClauseByKeys;
 	private final String sqlSelectByKeys;
@@ -215,6 +216,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 				+ ",t." + I_AD_Table.COLUMNNAME_IsView                            // 30 // metas
 				+ ", rt_table.TableName AS AD_Reference_Value_TableName"
 				+ ", rt_keyColumn.AD_Reference_ID AS AD_Reference_Value_KeyColumn_DisplayType"
+				+ ", t." + I_AD_Table.COLUMNNAME_WEBUI_View_PageLength
 				+ " FROM AD_Table t "
 				+ " INNER JOIN AD_Column c ON (t.AD_Table_ID=c.AD_Table_ID) "
 				+ " LEFT OUTER JOIN AD_Val_Rule vr ON (c.AD_Val_Rule_ID=vr.AD_Val_Rule_ID) "
@@ -306,6 +308,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		this.m_IsChangeLog = header.isChangeLog();
 		this.m_columns = ImmutableList.copyOf(columns);
 		this.m_HasStaleableColumns = hasStaleableColumns;
+		this.webuiViewPageLength = header.getWebuiViewPageLength();
 
 		//
 		// Iterate columns and build pre-calculated values and indexes
@@ -391,6 +394,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 				.accessLevel(TableAccessLevel.forAccessLevel(rs.getString(I_AD_Table.COLUMNNAME_AccessLevel)))
 				.isView(StringUtils.toBoolean(rs.getString(I_AD_Table.COLUMNNAME_IsView)))
 				.isChangeLog(StringUtils.toBoolean(rs.getString(I_AD_Table.COLUMNNAME_IsChangeLog)))
+				.webuiViewPageLength(Math.max(rs.getInt(I_AD_Table.COLUMNNAME_WEBUI_View_PageLength), 0))
 				.build();
 	}
 
@@ -1333,6 +1337,7 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		@NonNull TableAccessLevel accessLevel;
 		boolean isView;
 		boolean isChangeLog;
+		int webuiViewPageLength;
 	}
 
 	private static class POInfoMap
