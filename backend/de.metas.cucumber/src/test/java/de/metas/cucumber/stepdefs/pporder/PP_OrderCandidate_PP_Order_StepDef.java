@@ -24,7 +24,9 @@ package de.metas.cucumber.stepdefs.pporder;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.StepDefUtil;
+import de.metas.materialtracking.model.I_PP_Order_BOMLine;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
@@ -105,23 +107,38 @@ public class PP_OrderCandidate_PP_Order_StepDef
 		final I_PP_Order_Candidate ppOrderCandidate = ppOrderCandidateTable.get(ppOrderCandidateIdentifier);
 		assertThat(ppOrderCandidate).isNotNull();
 
-		final Supplier<Boolean> loadPPOrderAllocByCandidateId = () -> {
+		final ItemProvider<ImmutableList<I_PP_OrderCandidate_PP_Order>> arePPOrdersCreated = () -> {
 
-			final int noOfPPOrderAlloc = queryBL.createQueryBuilder(I_PP_OrderCandidate_PP_Order.class)
+			final List<I_PP_OrderCandidate_PP_Order> allocations = queryBL.createQueryBuilder(I_PP_OrderCandidate_PP_Order.class)
 					.addEqualsFilter(I_PP_OrderCandidate_PP_Order.COLUMNNAME_PP_Order_Candidate_ID, ppOrderCandidate.getPP_Order_Candidate_ID())
 					.create()
-					.count();
+					.list(I_PP_OrderCandidate_PP_Order.class);
 
-			return noOfPPOrderAlloc == dataTable.asMaps().size();
+			final boolean allOrdersArePresent = allocations.size() == dataTable.asMaps().size();
+
+			return allOrdersArePresent
+					? ItemProvider.ProviderResult.resultWasFound(ImmutableList.copyOf(allocations))
+					: ItemProvider.ProviderResult.resultWasNotFound(
+							"Only " + allocations.size() + " orders found! Expecting " + dataTable.asMaps().size());
 		};
 
-		StepDefUtil.tryAndWait(timeoutSec, 500, loadPPOrderAllocByCandidateId);
+		final Supplier<String> getLogContext = () -> {
+			final StringBuilder context = new StringBuilder();
 
-		final ImmutableList<I_PP_OrderCandidate_PP_Order> ppOrderAllocations = queryBL.createQueryBuilder(I_PP_OrderCandidate_PP_Order.class)
-				.addEqualsFilter(I_PP_OrderCandidate_PP_Order.COLUMNNAME_PP_Order_Candidate_ID, ppOrderCandidate.getPP_Order_Candidate_ID())
-				.create()
-				.stream()
-				.collect(ImmutableList.toImmutableList());
+			queryBL.createQueryBuilder(I_PP_Order_BOMLine.class)
+					.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_M_Product_ID, ppOrderCandidate.getM_Product_ID())
+					.create()
+					.stream()
+					.forEach(ppOrderLine -> {
+						context.append("\nPP_Order_ID=").append(ppOrderLine.getPP_Order_ID());
+						context.append("\nM_Product_ID=").append(ppOrderLine.getM_Product_ID());
+						context.append("\nQtyEntered=").append(ppOrderLine.getQtyEntered());
+					});
+
+			return context.toString();
+		};
+
+		final ImmutableList<I_PP_OrderCandidate_PP_Order> ppOrderAllocations = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, arePPOrdersCreated, getLogContext);
 
 		loadPPOrders(dataTable, ppOrderAllocations);
 	}

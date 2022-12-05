@@ -233,7 +233,7 @@ Feature: create multiple production candidates
       | ppOrderCandidate_3_1             |
       | ppOrderCandidate_3_2             |
 
-    Then after not more than 60s, load PP_Order by candidate id: ppOrderCandidate_3_2
+    Then after not more than 90s, load PP_Order by candidate id: ppOrderCandidate_3_2
       | PP_Order_ID.Identifier | QtyEntered |
       | ppOrder_3_1            | 2          |
       | ppOrder_3_2            | 2          |
