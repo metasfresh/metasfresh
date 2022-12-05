@@ -153,7 +153,7 @@ public class DeliveryPlanningService
 				.batch(deliveryPlanningRecord.getBatch())
 				.originCountryId(CountryId.ofRepoIdOrNull(deliveryPlanningRecord.getC_OriginCountry_ID()))
 				.destinationCountryId(CountryId.ofRepoIdOrNull(deliveryPlanningRecord.getC_DestinationCountry_ID()))
-				.forwarder(deliveryPlanningRecord.getForwarder())
+				.forwarderId(ForwarderId.ofRepoIdOrNull(deliveryPlanningRecord.getM_Forwarder_ID()))
 				.transportDetails(deliveryPlanningRecord.getTransportDetails())
 				.build();
 	}

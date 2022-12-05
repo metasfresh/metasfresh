@@ -141,7 +141,7 @@ public class DeliveryPlanningCreateRequest
 	String releaseNo;
 
 	@Nullable
-	String forwarder;
+	ForwarderId forwarderId;
 
 	@Nullable
 	String transportDetails;

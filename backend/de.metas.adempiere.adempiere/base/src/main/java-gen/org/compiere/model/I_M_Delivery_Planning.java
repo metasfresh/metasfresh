@@ -417,27 +417,6 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
-	 * Set Forwarder.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setForwarder (@Nullable java.lang.String Forwarder);
-
-	/**
-	 * Get Forwarder.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getForwarder();
-
-	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_Forwarder = new ModelColumn<>(I_M_Delivery_Planning.class, "Forwarder", null);
-	String COLUMNNAME_Forwarder = "Forwarder";
-
-	/**
 	 * Set Grade.
 	 *
 	 * <br>Type: String
@@ -549,7 +528,7 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_M_Delivery_Planning_Type = "M_Delivery_Planning_Type";
 
 	/**
-	 * Set Means of Transportation.
+	 * Set Means of Transportation Type.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -558,7 +537,7 @@ public interface I_M_Delivery_Planning
 	void setMeansOfTransportation (@Nullable java.lang.String MeansOfTransportation);
 
 	/**
-	 * Get Means of Transportation.
+	 * Get Means of Transportation Type.
 	 *
 	 * <br>Type: List
 	 * <br>Mandatory: false
@@ -568,6 +547,31 @@ public interface I_M_Delivery_Planning
 
 	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_MeansOfTransportation = new ModelColumn<>(I_M_Delivery_Planning.class, "MeansOfTransportation", null);
 	String COLUMNNAME_MeansOfTransportation = "MeansOfTransportation";
+
+	/**
+	 * Set Forwarder.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_Forwarder_ID (int M_Forwarder_ID);
+
+	/**
+	 * Get Forwarder.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_Forwarder_ID();
+
+	@Nullable org.compiere.model.I_M_Forwarder getM_Forwarder();
+
+	void setM_Forwarder(@Nullable org.compiere.model.I_M_Forwarder M_Forwarder);
+
+	ModelColumn<I_M_Delivery_Planning, org.compiere.model.I_M_Forwarder> COLUMN_M_Forwarder_ID = new ModelColumn<>(I_M_Delivery_Planning.class, "M_Forwarder_ID", org.compiere.model.I_M_Forwarder.class);
+	String COLUMNNAME_M_Forwarder_ID = "M_Forwarder_ID";
 
 	/**
 	 * Set Product.

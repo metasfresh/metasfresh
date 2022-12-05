@@ -67,7 +67,7 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	}
 
 	@Override
-	public BigDecimal getActualDischargeQuantity() 
+	public BigDecimal getActualDischargeQuantity()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ActualDischargeQuantity);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -547,7 +547,7 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	@Override
 	public void setPlannedDeliveryDate (final @Nullable java.sql.Timestamp PlannedDeliveryDate)
 	{
-		set_ValueNoCheck (COLUMNNAME_PlannedDeliveryDate, PlannedDeliveryDate);
+		set_Value (COLUMNNAME_PlannedDeliveryDate, PlannedDeliveryDate);
 	}
 
 	@Override
@@ -563,7 +563,7 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	}
 
 	@Override
-	public BigDecimal getPlannedDischargeQuantity() 
+	public BigDecimal getPlannedDischargeQuantity()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PlannedDischargeQuantity);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -576,7 +576,7 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	}
 
 	@Override
-	public BigDecimal getPlannedLoadedQuantity() 
+	public BigDecimal getPlannedLoadedQuantity()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PlannedLoadedQuantity);
 		return bd != null ? bd : BigDecimal.ZERO;
