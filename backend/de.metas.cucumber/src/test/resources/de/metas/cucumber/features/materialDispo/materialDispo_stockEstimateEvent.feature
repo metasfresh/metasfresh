@@ -20,6 +20,9 @@ Feature: material-dispo updates on StockEstimateEvent events
     Then after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected           | Qty | Qty_AvailableToPromise |
       | c_2        | INVENTORY_UP      | STOCK_CHANGE                  | p_1                     | 2021-06-23T00:00:00.00Z | 10  | 10                     |
+    And after not more than 60s, metasfresh has this MD_Cockpit data
+      | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PurchaseOrder_AtDate |
+      | cp_1       | p_1                     | 2021-06-23  |                              | 0                            | 0                  | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 10                             | 10                         | 0                                  |
     And metasfresh has this MD_Candidate_StockChange_Detail data
       | MD_Candidate_ID.Identifier | Fresh_QtyOnHand_ID | Fresh_QtyOnHand_Line_ID | IsReverted |
       | c_2                        | 1                  | 11                      | N          |
@@ -33,6 +36,10 @@ Feature: material-dispo updates on StockEstimateEvent events
     And metasfresh initially has this MD_Candidate data
       | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected           | Qty | Qty_AvailableToPromise |
       | INVENTORY_UP      |                               | p_1                     | 2020-12-12T00:00:00.00Z | 100 | 100                    |
+    And after not more than 60s, metasfresh has this MD_Cockpit data
+      | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PurchaseOrder_AtDate |
+      | cp_1       | p_1                     | 2020-12-12  |                              | 0                            | 0                  | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 100                            | 100                        | 0                                  |
+
     When metasfresh receives a StockEstimateCreatedEvent
       | M_Product_ID | Fresh_QtyOnHand_ID | Fresh_QtyOnHand_Line_ID | DateDoc                 | Qty |
       | p_1          | 2                  | 22                      | 2021-06-23T00:00:00.00Z | 90  |
@@ -43,6 +50,10 @@ Feature: material-dispo updates on StockEstimateEvent events
     And metasfresh has this MD_Candidate_StockChange_Detail data
       | MD_Candidate_ID.Identifier | Fresh_QtyOnHand_ID | Fresh_QtyOnHand_Line_ID | IsReverted |
       | c_2                        | 2                  | 22                      | N          |
+    And after not more than 60s, metasfresh has this MD_Cockpit data
+      | Identifier | M_Product_ID.Identifier | DateGeneral | OPT.AttributesKey.Identifier | OPT.QtyInventoryCount_AtDate | OPT.QtyStockChange | OPT.QtyDemand_SalesOrder_AtDate | OPT.QtyDemandSum_AtDate | OPT.QtySupplySum_AtDate | OPT.QtySupplyRequired_AtDate | OPT.QtyExpectedSurplus_AtDate | OPT.QtySupplyToSchedule_AtDate | OPT.MDCandidateQtyStock_AtDate | OPT.QtyStockCurrent_AtDate | OPT.QtySupply_PurchaseOrder_AtDate |
+      | cp_1       | p_1                     | 2020-12-12  |                              | 0                            | 0                  | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 100                            | 100                        | 0                                  |
+      | cp_1       | p_1                     | 2021-06-23  |                              | 0                            | 0                  | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 90                             | 90                         | 0                                  |
 
   @from:cucumber
   @topic:materialdispo
