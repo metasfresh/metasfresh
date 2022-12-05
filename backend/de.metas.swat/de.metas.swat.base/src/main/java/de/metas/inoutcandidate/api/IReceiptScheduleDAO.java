@@ -49,11 +49,11 @@ public interface IReceiptScheduleDAO extends ISingletonService
 	 * Retrieve an iterator over receipt schedules fetched by query.
 	 * <p>
 	 * The receipt schedules will be ordered by {@link I_M_ReceiptSchedule#COLUMNNAME_HeaderAggregationKey}.
-	 *
 	 */
 	Iterator<I_M_ReceiptSchedule> retrieve(IQuery<I_M_ReceiptSchedule> query);
 
-	@Nullable I_M_ReceiptSchedule retrieveForRecord(@Nullable Object model);
+	@Nullable
+	I_M_ReceiptSchedule retrieveForRecord(@Nullable Object model);
 
 	List<I_M_ReceiptSchedule_Alloc> retrieveRsaForRs(I_M_ReceiptSchedule rs);
 
@@ -88,7 +88,12 @@ public interface IReceiptScheduleDAO extends ISingletonService
 
 	boolean existsExportedReceiptScheduleForOrder(@NonNull OrderId orderId);
 
-	Map<ReceiptScheduleId, I_M_ReceiptSchedule> getByIds(ImmutableSet<ReceiptScheduleId> receiptScheduleIds);
+	<T extends I_M_ReceiptSchedule> Map<ReceiptScheduleId, T> getByIds(ImmutableSet<ReceiptScheduleId> receiptScheduleIds, Class<T> type);
+
+	default Map<ReceiptScheduleId, I_M_ReceiptSchedule> getByIds(@NonNull final ImmutableSet<ReceiptScheduleId> receiptScheduleIds)
+	{
+		return getByIds(receiptScheduleIds, I_M_ReceiptSchedule.class);
+	}
 
 	I_M_ReceiptSchedule getById(ReceiptScheduleId receiptScheduleId);
 }

@@ -38,7 +38,6 @@ import org.adempiere.util.jmx.JMXRegistry.OnJMXAlreadyExistsPolicy;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
-import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 import org.slf4j.MDC.MDCCloseable;
 
@@ -51,11 +50,6 @@ import com.google.common.collect.Maps;
 import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.cache.model.CacheInvalidateRequest;
 import de.metas.logging.LogManager;
-import de.metas.monitoring.adapter.NoopPerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringService;
-import de.metas.monitoring.adapter.PerformanceMonitoringService.SpanMetadata;
-import de.metas.monitoring.adapter.PerformanceMonitoringService.SubType;
-import de.metas.monitoring.adapter.PerformanceMonitoringService.Type;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -183,26 +177,6 @@ public final class CacheMgt
 			return 0;
 		}
 
-		final SpanMetadata spanMetadata = SpanMetadata.builder()
-				.name("Full CacheReset")
-				.type(Type.CACHE_OPERATION.getCode()).subType(SubType.CACHE_INVALIDATE.getCode())
-				.build();
-		return getPerfMonService().monitorSpan(
-				() -> reset0(),
-				spanMetadata);
-	}
-
-	@Nullable
-	private PerformanceMonitoringService getPerfMonService()
-	{
-		// this is called already very early in the startup phase, so we need to avoid an exception if there is no spring context yet
-		return SpringContextHolder.instance.getBeanOr(
-				PerformanceMonitoringService.class,
-				NoopPerformanceMonitoringService.INSTANCE);
-	}
-
-	private long reset0()
-	{
 		long total = 0;
 		try
 		{
@@ -302,6 +276,11 @@ public final class CacheMgt
 		return reset(request, mode);
 	}
 
+	public long reset(@NonNull final TableRecordReference reference)
+	{
+		return reset(reference.getTableName(), reference.getRecord_ID());
+	}
+
 	/**
 	 * Reset cache for TableName/Record_ID when given transaction is committed.
 	 *
@@ -349,18 +328,6 @@ public final class CacheMgt
 	 * @return how many cache entries were invalidated (estimated!)
 	 */
 	long reset(@NonNull final CacheInvalidateMultiRequest multiRequest, @NonNull final ResetMode mode)
-	{
-		final SpanMetadata spanMetadata = SpanMetadata.builder()
-				.name("CacheReset")
-				.type(Type.CACHE_OPERATION.getCode()).subType(SubType.CACHE_INVALIDATE.getCode())
-				.label("resetMode", mode.toString())
-				.build();
-		return getPerfMonService().monitorSpan(
-				() -> reset0(multiRequest, mode),
-				spanMetadata);
-	}
-
-	private Long reset0(final CacheInvalidateMultiRequest multiRequest, final ResetMode mode)
 	{
 		final long resetCount;
 		if (mode.isResetLocal())

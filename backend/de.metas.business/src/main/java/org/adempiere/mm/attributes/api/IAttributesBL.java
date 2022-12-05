@@ -71,15 +71,13 @@ public interface IAttributesBL extends ISingletonService
 
 	boolean hasAttributeAssigned(ProductId productId, AttributeId attributeId);
 
-	boolean isMandatoryOnReceipt(@NonNull ProductId productId, @NonNull AttributeId attributeId);
-
-	boolean isMandatoryOnShipment(@NonNull ProductId productId, @NonNull AttributeId attributeId);
+	boolean isMandatoryOn(@NonNull ProductId productId, @NonNull AttributeId attributeId, @NonNull AttributeSourceDocument attributeSourceDocument);
 
 	ImmutableList<I_M_Attribute> getAttributesMandatoryOnPicking(ProductId productId);
 
-	ImmutableList<I_M_Attribute> getAttributesMandatoryOnShipment(ProductId productId);
+	ImmutableList<I_M_Attribute> getAttributesMandatoryOnManufacturing(ProductId productId);
 
-	boolean isMandatoryOnPicking(@NonNull ProductId productId, @NonNull AttributeId attributeId);
+	ImmutableList<I_M_Attribute> getAttributesMandatoryOnShipment(ProductId productId);
 
 	/**
 	 * @return math context of this attribute or DEFAULT_MATHCONTEXT if the attribute's UOM is null
@@ -96,6 +94,6 @@ public interface IAttributesBL extends ISingletonService
 	int getNumberDisplayType(I_M_Attribute attribute);
 
 	boolean isStorageRelevant(final AttributeId attributeId);
-	
+
 	AttributeListValue retrieveAttributeValueOrNull(AttributeId attributeId, String value);
 }

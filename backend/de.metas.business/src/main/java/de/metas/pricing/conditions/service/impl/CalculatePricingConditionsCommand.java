@@ -20,8 +20,10 @@ import de.metas.pricing.conditions.service.IPricingConditionsRepository;
 import de.metas.pricing.conditions.service.PricingConditionsErrorCode;
 import de.metas.pricing.conditions.service.PricingConditionsResult;
 import de.metas.pricing.conditions.service.PricingConditionsResult.PricingConditionsResultBuilder;
+import de.metas.pricing.exceptions.ProductNotOnPriceListException;
 import de.metas.pricing.service.IPricingBL;
 import de.metas.util.Check;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
@@ -213,17 +215,29 @@ import java.util.Optional;
 		}
 	}
 
-	private IPricingResult computePricesForBasePricingSystem(final PricingSystemId basePricingSystemId)
+	private IPricingResult computePricesForBasePricingSystem(@NonNull final PricingSystemId basePricingSystemId)
 	{
 		final IPricingContext pricingCtx = request.getPricingCtx();
 		Check.assumeNotNull(pricingCtx, "pricingCtx shall not be null for {}", request);
 
 		final IPricingContext basePricingSystemPricingCtx = createBasePricingSystemPricingCtx(pricingCtx, basePricingSystemId);
-		return pricingBL.calculatePrice(basePricingSystemPricingCtx);
+		try
+		{
+			return pricingBL.calculatePrice(basePricingSystemPricingCtx);
+		}
+		catch (@NonNull final ProductNotOnPriceListException e)
+		{
+			Loggables.get().addLog(CalculatePricingConditionsCommand.class.getSimpleName() + ".computePricesForBasePricingSystem caught ProductNotOnPriceListException");
+			throw e.appendParametersToMessage() // augment and rethrow
+					.setParameter("Sub-Calculation", "true")
+					.setParameter("basePricingSystemPricingCtx", basePricingSystemPricingCtx);
+		}
 	}
 
 	private static IPricingContext createBasePricingSystemPricingCtx(@NonNull final IPricingContext pricingCtx, @NonNull final PricingSystemId basePricingSystemId)
 	{
+		Check.assumeNotNull(pricingCtx.getCountryId(), "Given pricingCtx needs to have a country-ID, so we can later dedic the priceListId! pricingCtx={}", pricingCtx);
+		
 		final IEditablePricingContext newPricingCtx = pricingCtx.copy();
 		newPricingCtx.setPricingSystemId(basePricingSystemId);
 		newPricingCtx.setPriceListId(null); // will be recomputed

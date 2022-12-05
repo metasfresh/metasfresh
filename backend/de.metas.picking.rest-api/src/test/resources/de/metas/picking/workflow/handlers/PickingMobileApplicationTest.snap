@@ -3,13 +3,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
     "1. AD_Language" : "de_DE",
     "2. After WFProcess started - JsonWFProcess" : {
       "activities" : [ {
-        "activityId" : "A1",
+        "activityId" : "A10",
         "caption" : "Kommissionierplatz scannen",
         "componentProps" : { },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
       }, {
-        "activityId" : "A2",
+        "activityId" : "A20",
         "caption" : "Pick",
         "componentProps" : {
           "lines" : [ {
@@ -75,7 +75,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
         "componentType" : "picking/pickProducts",
         "status" : "NOT_STARTED"
       }, {
-        "activityId" : "A3",
+        "activityId" : "A90",
         "caption" : "CO",
         "componentProps" : {
           "confirmed" : false,
@@ -110,11 +110,15 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
           "repoId" : 1000000
         },
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "isPickingReviewRequired" : false,
         "lockedBy" : 1234,
+        "pickingReviewRequired" : false,
         "preparationDate" : "2021-11-09T08:58:52Z",
         "salesOrderDocumentNo" : "salesOrder01"
       },
       "id" : 1000000,
+      "isApproved" : false,
+      "isReadyToReview" : false,
       "lines" : [ {
         "id" : 1000000,
         "productId" : 1000000,
@@ -292,13 +296,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
     },
     "5. After ABORT - JsonWFProcess" : {
       "activities" : [ {
-        "activityId" : "A1",
+        "activityId" : "A10",
         "caption" : "Kommissionierplatz scannen",
         "componentProps" : { },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
       }, {
-        "activityId" : "A2",
+        "activityId" : "A20",
         "caption" : "Pick",
         "componentProps" : {
           "lines" : [ {
@@ -364,7 +368,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
         "componentType" : "picking/pickProducts",
         "status" : "NOT_STARTED"
       }, {
-        "activityId" : "A3",
+        "activityId" : "A90",
         "caption" : "CO",
         "componentProps" : {
           "confirmed" : false,
@@ -399,11 +403,15 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.abortJob=[ {
           "repoId" : 1000000
         },
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "isPickingReviewRequired" : false,
         "lockedBy" : 1234,
+        "pickingReviewRequired" : false,
         "preparationDate" : "2021-11-09T08:58:52Z",
         "salesOrderDocumentNo" : "salesOrder01"
       },
       "id" : 1000000,
+      "isApproved" : false,
+      "isReadyToReview" : false,
       "lines" : [ {
         "id" : 1000000,
         "productId" : 1000000,
@@ -587,13 +595,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
   "steps" : {
     "1. After WFProcess started - JsonWFProcess" : {
       "activities" : [ {
-        "activityId" : "A1",
+        "activityId" : "A10",
         "caption" : "Kommissionierplatz scannen",
         "componentProps" : { },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
       }, {
-        "activityId" : "A2",
+        "activityId" : "A20",
         "caption" : "Pick",
         "componentProps" : {
           "lines" : [ {
@@ -659,7 +667,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
         "componentType" : "picking/pickProducts",
         "status" : "NOT_STARTED"
       }, {
-        "activityId" : "A3",
+        "activityId" : "A90",
         "caption" : "CO",
         "componentProps" : {
           "confirmed" : false,
@@ -694,11 +702,15 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.createJobAndGet=
           "repoId" : 1000000
         },
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "isPickingReviewRequired" : false,
         "lockedBy" : 1234,
+        "pickingReviewRequired" : false,
         "preparationDate" : "2021-11-09T08:58:52Z",
         "salesOrderDocumentNo" : "salesOrder01"
       },
       "id" : 1000000,
+      "isApproved" : false,
+      "isReadyToReview" : false,
       "lines" : [ {
         "id" : 1000000,
         "productId" : 1000000,
@@ -882,13 +894,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
   "steps" : {
     "1. After WFProcess started - JsonWFProcess" : {
       "activities" : [ {
-        "activityId" : "A1",
+        "activityId" : "A10",
         "caption" : "Kommissionierplatz scannen",
         "componentProps" : { },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
       }, {
-        "activityId" : "A2",
+        "activityId" : "A20",
         "caption" : "Pick",
         "componentProps" : {
           "lines" : [ {
@@ -954,7 +966,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "componentType" : "picking/pickProducts",
         "status" : "NOT_STARTED"
       }, {
-        "activityId" : "A3",
+        "activityId" : "A90",
         "caption" : "CO",
         "componentProps" : {
           "confirmed" : false,
@@ -989,11 +1001,15 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "repoId" : 1000000
         },
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "isPickingReviewRequired" : false,
         "lockedBy" : 1234,
+        "pickingReviewRequired" : false,
         "preparationDate" : "2021-11-09T08:58:52Z",
         "salesOrderDocumentNo" : "salesOrder01"
       },
       "id" : 1000000,
+      "isApproved" : false,
+      "isReadyToReview" : false,
       "lines" : [ {
         "id" : 1000000,
         "productId" : 1000000,
@@ -1171,13 +1187,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
     },
     "4. After pick - JsonWFProcess" : {
       "activities" : [ {
-        "activityId" : "A1",
+        "activityId" : "A10",
         "caption" : "Kommissionierplatz scannen",
         "componentProps" : { },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
       }, {
-        "activityId" : "A2",
+        "activityId" : "A20",
         "caption" : "Pick",
         "componentProps" : {
           "lines" : [ {
@@ -1247,7 +1263,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "componentType" : "picking/pickProducts",
         "status" : "COMPLETED"
       }, {
-        "activityId" : "A3",
+        "activityId" : "A90",
         "caption" : "CO",
         "componentProps" : {
           "confirmed" : false,
@@ -1282,11 +1298,15 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "repoId" : 1000000
         },
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "isPickingReviewRequired" : false,
         "lockedBy" : 1234,
+        "pickingReviewRequired" : false,
         "preparationDate" : "2021-11-09T08:58:52Z",
         "salesOrderDocumentNo" : "salesOrder01"
       },
       "id" : 1000000,
+      "isApproved" : false,
+      "isReadyToReview" : false,
       "lines" : [ {
         "id" : 1000000,
         "productId" : 1000000,
@@ -1503,13 +1523,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
     },
     "7. After Complete - JsonWFProcess" : {
       "activities" : [ {
-        "activityId" : "A1",
+        "activityId" : "A10",
         "caption" : "Kommissionierplatz scannen",
         "componentProps" : { },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
       }, {
-        "activityId" : "A2",
+        "activityId" : "A20",
         "caption" : "Pick",
         "componentProps" : {
           "lines" : [ {
@@ -1579,7 +1599,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "componentType" : "picking/pickProducts",
         "status" : "COMPLETED"
       }, {
-        "activityId" : "A3",
+        "activityId" : "A90",
         "caption" : "CO",
         "componentProps" : {
           "confirmed" : true,
@@ -1614,11 +1634,15 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "repoId" : 1000000
         },
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "isPickingReviewRequired" : false,
         "lockedBy" : 1234,
+        "pickingReviewRequired" : false,
         "preparationDate" : "2021-11-09T08:58:52Z",
         "salesOrderDocumentNo" : "salesOrder01"
       },
       "id" : 1000000,
+      "isApproved" : false,
+      "isReadyToReview" : false,
       "lines" : [ {
         "id" : 1000000,
         "productId" : 1000000,
@@ -1841,13 +1865,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
   "steps" : {
     "1. After WFProcess started - JsonWFProcess" : {
       "activities" : [ {
-        "activityId" : "A1",
+        "activityId" : "A10",
         "caption" : "Kommissionierplatz scannen",
         "componentProps" : { },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
       }, {
-        "activityId" : "A2",
+        "activityId" : "A20",
         "caption" : "Pick",
         "componentProps" : {
           "lines" : [ {
@@ -1913,7 +1937,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "componentType" : "picking/pickProducts",
         "status" : "NOT_STARTED"
       }, {
-        "activityId" : "A3",
+        "activityId" : "A90",
         "caption" : "CO",
         "componentProps" : {
           "confirmed" : false,
@@ -1941,7 +1965,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
     },
     "10. After pick 2 - JsonWFProcess" : {
       "activities" : [ {
-        "activityId" : "A1",
+        "activityId" : "A10",
         "caption" : "Kommissionierplatz scannen",
         "componentProps" : {
           "currentValue" : {
@@ -1952,7 +1976,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "componentType" : "common/scanBarcode",
         "status" : "COMPLETED"
       }, {
-        "activityId" : "A2",
+        "activityId" : "A20",
         "caption" : "Pick",
         "componentProps" : {
           "lines" : [ {
@@ -2018,7 +2042,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "componentType" : "picking/pickProducts",
         "status" : "COMPLETED"
       }, {
-        "activityId" : "A3",
+        "activityId" : "A90",
         "caption" : "CO",
         "componentProps" : {
           "confirmed" : false,
@@ -2053,11 +2077,15 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "repoId" : 1000000
         },
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "isPickingReviewRequired" : false,
         "lockedBy" : 1234,
+        "pickingReviewRequired" : false,
         "preparationDate" : "2021-11-09T08:58:52Z",
         "salesOrderDocumentNo" : "salesOrder01"
       },
       "id" : 1000000,
+      "isApproved" : false,
+      "isReadyToReview" : false,
       "lines" : [ {
         "id" : 1000000,
         "productId" : 1000000,
@@ -2263,7 +2291,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
     },
     "13. After Complete - JsonWFProcess" : {
       "activities" : [ {
-        "activityId" : "A1",
+        "activityId" : "A10",
         "caption" : "Kommissionierplatz scannen",
         "componentProps" : {
           "currentValue" : {
@@ -2274,7 +2302,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "componentType" : "common/scanBarcode",
         "status" : "COMPLETED"
       }, {
-        "activityId" : "A2",
+        "activityId" : "A20",
         "caption" : "Pick",
         "componentProps" : {
           "lines" : [ {
@@ -2340,7 +2368,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "componentType" : "picking/pickProducts",
         "status" : "COMPLETED"
       }, {
-        "activityId" : "A3",
+        "activityId" : "A90",
         "caption" : "CO",
         "componentProps" : {
           "confirmed" : true,
@@ -2375,11 +2403,15 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "repoId" : 1000000
         },
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "isPickingReviewRequired" : false,
         "lockedBy" : 1234,
+        "pickingReviewRequired" : false,
         "preparationDate" : "2021-11-09T08:58:52Z",
         "salesOrderDocumentNo" : "salesOrder01"
       },
       "id" : 1000000,
+      "isApproved" : false,
+      "isReadyToReview" : false,
       "lines" : [ {
         "id" : 1000000,
         "productId" : 1000000,
@@ -2592,11 +2624,15 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "repoId" : 1000000
         },
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "isPickingReviewRequired" : false,
         "lockedBy" : 1234,
+        "pickingReviewRequired" : false,
         "preparationDate" : "2021-11-09T08:58:52Z",
         "salesOrderDocumentNo" : "salesOrder01"
       },
       "id" : 1000000,
+      "isApproved" : false,
+      "isReadyToReview" : false,
       "lines" : [ {
         "id" : 1000000,
         "productId" : 1000000,
@@ -2774,7 +2810,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
     },
     "4. After Scan PickingSlot - JsonWFProcess" : {
       "activities" : [ {
-        "activityId" : "A1",
+        "activityId" : "A10",
         "caption" : "Kommissionierplatz scannen",
         "componentProps" : {
           "currentValue" : {
@@ -2785,7 +2821,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "componentType" : "common/scanBarcode",
         "status" : "COMPLETED"
       }, {
-        "activityId" : "A2",
+        "activityId" : "A20",
         "caption" : "Pick",
         "componentProps" : {
           "lines" : [ {
@@ -2851,7 +2887,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "componentType" : "picking/pickProducts",
         "status" : "NOT_STARTED"
       }, {
-        "activityId" : "A3",
+        "activityId" : "A90",
         "caption" : "CO",
         "componentProps" : {
           "confirmed" : false,
@@ -2886,11 +2922,15 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "repoId" : 1000000
         },
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "isPickingReviewRequired" : false,
         "lockedBy" : 1234,
+        "pickingReviewRequired" : false,
         "preparationDate" : "2021-11-09T08:58:52Z",
         "salesOrderDocumentNo" : "salesOrder01"
       },
       "id" : 1000000,
+      "isApproved" : false,
+      "isReadyToReview" : false,
       "lines" : [ {
         "id" : 1000000,
         "productId" : 1000000,
@@ -3071,7 +3111,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
     },
     "7. After pick 1 - JsonWFProcess" : {
       "activities" : [ {
-        "activityId" : "A1",
+        "activityId" : "A10",
         "caption" : "Kommissionierplatz scannen",
         "componentProps" : {
           "currentValue" : {
@@ -3082,7 +3122,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "componentType" : "common/scanBarcode",
         "status" : "COMPLETED"
       }, {
-        "activityId" : "A2",
+        "activityId" : "A20",
         "caption" : "Pick",
         "componentProps" : {
           "lines" : [ {
@@ -3148,7 +3188,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "componentType" : "picking/pickProducts",
         "status" : "IN_PROGRESS"
       }, {
-        "activityId" : "A3",
+        "activityId" : "A90",
         "caption" : "CO",
         "componentProps" : {
           "confirmed" : false,
@@ -3183,11 +3223,15 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "repoId" : 1000000
         },
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "isPickingReviewRequired" : false,
         "lockedBy" : 1234,
+        "pickingReviewRequired" : false,
         "preparationDate" : "2021-11-09T08:58:52Z",
         "salesOrderDocumentNo" : "salesOrder01"
       },
       "id" : 1000000,
+      "isApproved" : false,
+      "isReadyToReview" : false,
       "lines" : [ {
         "id" : 1000000,
         "productId" : 1000000,
@@ -3390,13 +3434,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
   "steps" : {
     "1. After WFProcess started - JsonWFProcess" : {
       "activities" : [ {
-        "activityId" : "A1",
+        "activityId" : "A10",
         "caption" : "Kommissionierplatz scannen",
         "componentProps" : { },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
       }, {
-        "activityId" : "A2",
+        "activityId" : "A20",
         "caption" : "Pick",
         "componentProps" : {
           "lines" : [ {
@@ -3462,7 +3506,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "componentType" : "picking/pickProducts",
         "status" : "NOT_STARTED"
       }, {
-        "activityId" : "A3",
+        "activityId" : "A90",
         "caption" : "CO",
         "componentProps" : {
           "confirmed" : false,
@@ -3490,7 +3534,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
     },
     "10. After unpick - JsonWFProcess" : {
       "activities" : [ {
-        "activityId" : "A1",
+        "activityId" : "A10",
         "caption" : "Kommissionierplatz scannen",
         "componentProps" : {
           "currentValue" : {
@@ -3501,7 +3545,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "componentType" : "common/scanBarcode",
         "status" : "COMPLETED"
       }, {
-        "activityId" : "A2",
+        "activityId" : "A20",
         "caption" : "Pick",
         "componentProps" : {
           "lines" : [ {
@@ -3567,7 +3611,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "componentType" : "picking/pickProducts",
         "status" : "NOT_STARTED"
       }, {
-        "activityId" : "A3",
+        "activityId" : "A90",
         "caption" : "CO",
         "componentProps" : {
           "confirmed" : false,
@@ -3602,11 +3646,15 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "repoId" : 1000000
         },
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "isPickingReviewRequired" : false,
         "lockedBy" : 1234,
+        "pickingReviewRequired" : false,
         "preparationDate" : "2021-11-09T08:58:52Z",
         "salesOrderDocumentNo" : "salesOrder01"
       },
       "id" : 1000000,
+      "isApproved" : false,
+      "isReadyToReview" : false,
       "lines" : [ {
         "id" : 1000000,
         "productId" : 1000000,
@@ -3784,13 +3832,13 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
     },
     "13. After ABORT - JsonWFProcess" : {
       "activities" : [ {
-        "activityId" : "A1",
+        "activityId" : "A10",
         "caption" : "Kommissionierplatz scannen",
         "componentProps" : { },
         "componentType" : "common/scanBarcode",
         "status" : "NOT_STARTED"
       }, {
-        "activityId" : "A2",
+        "activityId" : "A20",
         "caption" : "Pick",
         "componentProps" : {
           "lines" : [ {
@@ -3856,7 +3904,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "componentType" : "picking/pickProducts",
         "status" : "NOT_STARTED"
       }, {
-        "activityId" : "A3",
+        "activityId" : "A90",
         "caption" : "CO",
         "componentProps" : {
           "confirmed" : false,
@@ -3891,11 +3939,15 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "repoId" : 1000000
         },
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "isPickingReviewRequired" : false,
         "lockedBy" : 1234,
+        "pickingReviewRequired" : false,
         "preparationDate" : "2021-11-09T08:58:52Z",
         "salesOrderDocumentNo" : "salesOrder01"
       },
       "id" : 1000000,
+      "isApproved" : false,
+      "isReadyToReview" : false,
       "lines" : [ {
         "id" : 1000000,
         "productId" : 1000000,
@@ -4077,11 +4129,15 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "repoId" : 1000000
         },
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "isPickingReviewRequired" : false,
         "lockedBy" : 1234,
+        "pickingReviewRequired" : false,
         "preparationDate" : "2021-11-09T08:58:52Z",
         "salesOrderDocumentNo" : "salesOrder01"
       },
       "id" : 1000000,
+      "isApproved" : false,
+      "isReadyToReview" : false,
       "lines" : [ {
         "id" : 1000000,
         "productId" : 1000000,
@@ -4259,7 +4315,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
     },
     "4. After Scan PickingSlot - JsonWFProcess" : {
       "activities" : [ {
-        "activityId" : "A1",
+        "activityId" : "A10",
         "caption" : "Kommissionierplatz scannen",
         "componentProps" : {
           "currentValue" : {
@@ -4270,7 +4326,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "componentType" : "common/scanBarcode",
         "status" : "COMPLETED"
       }, {
-        "activityId" : "A2",
+        "activityId" : "A20",
         "caption" : "Pick",
         "componentProps" : {
           "lines" : [ {
@@ -4336,7 +4392,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "componentType" : "picking/pickProducts",
         "status" : "NOT_STARTED"
       }, {
-        "activityId" : "A3",
+        "activityId" : "A90",
         "caption" : "CO",
         "componentProps" : {
           "confirmed" : false,
@@ -4371,11 +4427,15 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "repoId" : 1000000
         },
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "isPickingReviewRequired" : false,
         "lockedBy" : 1234,
+        "pickingReviewRequired" : false,
         "preparationDate" : "2021-11-09T08:58:52Z",
         "salesOrderDocumentNo" : "salesOrder01"
       },
       "id" : 1000000,
+      "isApproved" : false,
+      "isReadyToReview" : false,
       "lines" : [ {
         "id" : 1000000,
         "productId" : 1000000,
@@ -4556,7 +4616,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
     },
     "7. After pick 1 - JsonWFProcess" : {
       "activities" : [ {
-        "activityId" : "A1",
+        "activityId" : "A10",
         "caption" : "Kommissionierplatz scannen",
         "componentProps" : {
           "currentValue" : {
@@ -4567,7 +4627,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "componentType" : "common/scanBarcode",
         "status" : "COMPLETED"
       }, {
-        "activityId" : "A2",
+        "activityId" : "A20",
         "caption" : "Pick",
         "componentProps" : {
           "lines" : [ {
@@ -4633,7 +4693,7 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
         "componentType" : "picking/pickProducts",
         "status" : "IN_PROGRESS"
       }, {
-        "activityId" : "A3",
+        "activityId" : "A90",
         "caption" : "CO",
         "componentProps" : {
           "confirmed" : false,
@@ -4668,11 +4728,15 @@ de.metas.picking.workflow.handlers.PickingMobileApplicationTest.scanPickingSlot_
           "repoId" : 1000000
         },
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "isPickingReviewRequired" : false,
         "lockedBy" : 1234,
+        "pickingReviewRequired" : false,
         "preparationDate" : "2021-11-09T08:58:52Z",
         "salesOrderDocumentNo" : "salesOrder01"
       },
       "id" : 1000000,
+      "isApproved" : false,
+      "isReadyToReview" : false,
       "lines" : [ {
         "id" : 1000000,
         "productId" : 1000000,

@@ -188,8 +188,8 @@ public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandida
 				.adOrgId(icRecord.getAD_Org_ID())
 				.isSOTrx(icRecord.isSOTrx())
 				.docBaseType(icRecord.isSOTrx()
-									 ? InvoiceDocBaseType.CustomerInvoice.getCode()
-									 : InvoiceDocBaseType.VendorInvoice.getCode())
+									 ? InvoiceDocBaseType.CustomerInvoice.getDocBaseType()
+									 : InvoiceDocBaseType.VendorInvoice.getDocBaseType())
 				.build();
 		final DocTypeId docTypeIdOrNull = docTypeBL.getDocTypeIdOrNull(docTypeQuery);
 		if (docTypeIdOrNull != null)

@@ -138,14 +138,6 @@ public class PP_Product_Planning_StepDef
 			productPlanningRecord.setPP_Product_BOMVersions_ID(bomVersions.getPP_Product_BOMVersions_ID());
 		}
 
-		final boolean isPurchased = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_PP_Product_Planning.COLUMNNAME_IsPurchased, false);
-
-		if (isPurchased)
-		{
-			productPlanningRecord.setIsPurchased(X_PP_Product_Planning.ISPURCHASED_Yes);
-			productPlanningRecord.setIsManufactured(X_PP_Product_Planning.ISMANUFACTURED_No);
-		}
-
 		final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(attributeSetInstanceIdentifier))
 		{
@@ -175,6 +167,13 @@ public class PP_Product_Planning_StepDef
 			assertThat(ddNetwork).isNotNull();
 
 			productPlanningRecord.setDD_NetworkDistribution_ID(ddNetwork.getDD_NetworkDistribution_ID());
+			productPlanningRecord.setIsManufactured(X_PP_Product_Planning.ISMANUFACTURED_No);
+		}
+
+		final boolean isPurchased = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_PP_Product_Planning.COLUMNNAME_IsPurchased, false);
+		if (isPurchased)
+		{
+			productPlanningRecord.setIsPurchased(X_PP_Product_Planning.ISPURCHASED_Yes);
 			productPlanningRecord.setIsManufactured(X_PP_Product_Planning.ISMANUFACTURED_No);
 		}
 

@@ -1,15 +1,13 @@
 package org.adempiere.ad.validationRule;
 
-import java.util.LinkedHashSet;
-import java.util.Objects;
-import java.util.Set;
-
-import org.compiere.util.NamePair;
-
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
+import lombok.EqualsAndHashCode;
+import org.compiere.util.NamePair;
 
-import de.metas.util.GuavaCollectors;
+import javax.annotation.Nullable;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /*
  * #%L
@@ -72,14 +70,14 @@ public final class NamePairPredicates
 		return new Composer();
 	}
 
+	@EqualsAndHashCode
 	private static final class ComposedNamePairPredicate implements INamePairPredicate
 	{
-		private final Set<INamePairPredicate> predicates;
-		private transient Set<String> _parameters = null; // lazy
+		private final ImmutableSet<INamePairPredicate> predicates;
+		private transient ImmutableSet<String> _parameters = null; // lazy
 
 		private ComposedNamePairPredicate(final Set<INamePairPredicate> predicates)
 		{
-			super();
 			// NOTE: we assume the predicates set is: not empty, has more than one element, does not contain nulls
 			this.predicates = ImmutableSet.copyOf(predicates);
 		}
@@ -93,41 +91,16 @@ public final class NamePairPredicates
 		}
 
 		@Override
-		public int hashCode()
+		public ImmutableSet<String> getParameters()
 		{
-			return Objects.hash(predicates);
-		}
-
-		@Override
-		public boolean equals(final Object obj)
-		{
-			if (this == obj)
+			ImmutableSet<String> parameters = this._parameters;
+			if (parameters == null)
 			{
-				return true;
-			}
-			if (obj == null)
-			{
-				return false;
-			}
-			if (!getClass().equals(obj.getClass()))
-			{
-				return false;
-			}
-
-			final ComposedNamePairPredicate other = (ComposedNamePairPredicate)obj;
-			return predicates.equals(other.predicates);
-		}
-
-		@Override
-		public Set<String> getParameters()
-		{
-			if (_parameters == null)
-			{
-				_parameters = predicates.stream()
+				parameters = this._parameters = predicates.stream()
 						.flatMap(predicate -> predicate.getParameters().stream())
-						.collect(GuavaCollectors.toImmutableSet());
+						.collect(ImmutableSet.toImmutableSet());
 			}
-			return _parameters;
+			return parameters;
 		}
 
 		@Override
@@ -170,7 +143,7 @@ public final class NamePairPredicates
 			}
 		}
 
-		public Composer add(final INamePairPredicate predicate)
+		public Composer add(@Nullable final INamePairPredicate predicate)
 		{
 			if (predicate == null || predicate == ACCEPT_ALL)
 			{

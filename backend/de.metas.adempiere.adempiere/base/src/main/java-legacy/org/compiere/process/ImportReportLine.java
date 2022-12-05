@@ -88,7 +88,7 @@ public class ImportReportLine extends JavaProcess
 		{
 			sql = new StringBuffer ("DELETE FROM I_ReportLine "
 				+ "WHERE I_IsImported='Y'").append(clientCheck);
-			no = DB.executeUpdate(sql.toString(), get_TrxName());
+			no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 			log.debug("Deleted Old Imported =" + no);
 		}
 
@@ -104,7 +104,7 @@ public class ImportReportLine extends JavaProcess
 			+ " I_ErrorMsg = ' ',"
 			+ " I_IsImported = 'N' "
 			+ "WHERE I_IsImported<>'Y' OR I_IsImported IS NULL");
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.debug("Reset=" + no);
 
 		//	ReportLineSetName (Default)
@@ -115,7 +115,7 @@ public class ImportReportLine extends JavaProcess
 				+ " WHERE PA_ReportLineSet_ID=").append(m_PA_ReportLineSet_ID).append(" AND i.AD_Client_ID=r.AD_Client_ID) "
 				+ "WHERE ReportLineSetName IS NULL AND PA_ReportLineSet_ID IS NULL"
 				+ " AND I_IsImported<>'Y'").append(clientCheck);
-			no = DB.executeUpdate(sql.toString(), get_TrxName());
+			no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 			log.debug("Set ReportLineSetName Default=" + no);
 		}
 		//	Set PA_ReportLineSet_ID
@@ -124,14 +124,14 @@ public class ImportReportLine extends JavaProcess
 			+ " WHERE i.ReportLineSetName=r.Name AND i.AD_Client_ID=r.AD_Client_ID) "
 			+ "WHERE PA_ReportLineSet_ID IS NULL"
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.debug("Set PA_ReportLineSet_ID=" + no);
 		//
 		sql = new StringBuffer ("UPDATE I_ReportLine "
 			+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid ReportLineSet, ' "
 			+ "WHERE PA_ReportLineSet_ID IS NULL"
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.info("Invalid ReportLineSet=" + no);
 
 		//	Ignore if there is no Report Line Name or ID
@@ -139,7 +139,7 @@ public class ImportReportLine extends JavaProcess
 			+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'Ignored=NoLineName, ' "
 			+ "WHERE PA_ReportLine_ID IS NULL AND Name IS NULL"
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.info("Invalid LineName=" + no);
 
 		//	Validate ElementValue
@@ -148,7 +148,7 @@ public class ImportReportLine extends JavaProcess
 			+ " WHERE i.ElementValue=e.Value AND i.AD_Client_ID=e.AD_Client_ID) "
 			+ "WHERE C_ElementValue_ID IS NULL AND ElementValue IS NOT NULL"
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.debug("Set C_ElementValue_ID=" + no);
 		
 		//	Validate C_ElementValue_ID
@@ -156,7 +156,7 @@ public class ImportReportLine extends JavaProcess
 			+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid ElementValue, ' "
 			+ "WHERE C_ElementValue_ID IS NULL AND LineType<>'C'" // MReportLine.LINETYPE_Calculation
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.info("Invalid AccountType=" + no);
 
 		//	Set SeqNo
@@ -164,7 +164,7 @@ public class ImportReportLine extends JavaProcess
 			+ "SET SeqNo=I_ReportLine_ID "
 			+ "WHERE SeqNo IS NULL"
 			+ " AND I_IsImported='N'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.debug("Set SeqNo Default=" + no);
 
 		//	Copy/Sync from first Row of Line
@@ -179,7 +179,7 @@ public class ImportReportLine extends JavaProcess
 			+ " AND ii.I_ReportLine_ID=(SELECT MIN(I_ReportLine_ID) FROM I_ReportLine iii"
 			+ " WHERE i.Name=iii.Name AND i.PA_ReportLineSet_ID=iii.PA_ReportLineSet_ID))"
 			+ " AND I_IsImported='N'").append(clientCheck);		//	 not if previous error
-		no = DB.executeUpdate(DB.convertSqlToNative(sql.toString()), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(DB.convertSqlToNative(sql.toString()), get_TrxName());
 		log.debug("Sync from first Row of Line=" + no);
 
 		//	Validate IsSummary - (N) Y
@@ -187,7 +187,7 @@ public class ImportReportLine extends JavaProcess
 			+ "SET IsSummary='N' "
 			+ "WHERE IsSummary IS NULL OR IsSummary NOT IN ('Y','N')"
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.debug("Set IsSummary Default=" + no);
 
 		//	Validate IsPrinted - (Y) N
@@ -195,7 +195,7 @@ public class ImportReportLine extends JavaProcess
 			+ "SET IsPrinted='Y' "
 			+ "WHERE IsPrinted IS NULL OR IsPrinted NOT IN ('Y','N')"
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.debug("Set IsPrinted Default=" + no);
 
 		//	Validate Line Type - (S) C
@@ -203,7 +203,7 @@ public class ImportReportLine extends JavaProcess
 			+ "SET LineType='S' "
 			+ "WHERE LineType IS NULL OR LineType NOT IN ('S','C')"
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.debug("Set LineType Default=" + no);
 
 		//	Validate Optional Calculation Type - A P R S
@@ -211,7 +211,7 @@ public class ImportReportLine extends JavaProcess
 			+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid CalculationType, ' "
 			+ "WHERE CalculationType IS NOT NULL AND CalculationType NOT IN ('A','P','R','S')"
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.info("Invalid CalculationType=" + no);
 
 		//	Convert Optional Amount Type to PAAmount Type and PAPeriodType
@@ -219,7 +219,7 @@ public class ImportReportLine extends JavaProcess
 			+ "SET PAAmountType = substr(AmountType,1,1), PAPeriodType = substr(AmountType,1,2) "
 			+ "WHERE AmountType IS NOT NULL AND (PAAmountType IS NULL OR PAPeriodType IS NULL) "
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.info("Converted AmountType=" + no);
 		
 		//		Validate Optional Amount Type -
@@ -227,7 +227,7 @@ public class ImportReportLine extends JavaProcess
 			+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid PAAmountType, ' "
 			+ "WHERE PAAmountType IS NOT NULL AND UPPER(AmountType) NOT IN ('B','C','D','Q','S','R')"
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.info("Invalid AmountType=" + no);
 		
 		//		Validate Optional Period Type -
@@ -235,7 +235,7 @@ public class ImportReportLine extends JavaProcess
 			+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid PAPeriodType, ' "
 			+ "WHERE PAPeriodType IS NOT NULL AND UPPER(AmountType) NOT IN ('P','Y','T','N')"
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.info("Invalid PeriodType=" + no);
 
 		//	Validate Optional Posting Type - A B E S R
@@ -243,7 +243,7 @@ public class ImportReportLine extends JavaProcess
 			+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||'ERR=Invalid CalculationType, ' "
 			+ "WHERE PostingType IS NOT NULL AND PostingType NOT IN ('A','B','E','S','R')"
 			+ " AND I_IsImported<>'Y'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.info("Invalid PostingType=" + no);
 
 		//	Set PA_ReportLine_ID
@@ -252,7 +252,7 @@ public class ImportReportLine extends JavaProcess
 			+ " WHERE i.Name=r.Name AND i.PA_ReportLineSet_ID=r.PA_ReportLineSet_ID) "
 			+ "WHERE PA_ReportLine_ID IS NULL AND PA_ReportLineSet_ID IS NOT NULL"
 			+ " AND I_IsImported='N'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.debug("Set PA_ReportLine_ID=" + no);
 
 		commitEx();
@@ -328,7 +328,7 @@ public class ImportReportLine extends JavaProcess
 			+ " WHERE i.Name=r.Name AND i.PA_ReportLineSet_ID=r.PA_ReportLineSet_ID) "
 			+ "WHERE PA_ReportLine_ID IS NULL AND PA_ReportLineSet_ID IS NOT NULL"
 			+ " AND I_IsImported='N'").append(clientCheck);
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		log.debug("Set PA_ReportLine_ID=" + no);
 
 		//	****	Update ReportLine
@@ -343,7 +343,7 @@ public class ImportReportLine extends JavaProcess
 			+ " AND i.I_ReportLine_ID=(SELECT MIN(I_ReportLine_ID) FROM I_ReportLine iii"
 			+ " WHERE i.Name=iii.Name AND i.PA_ReportLineSet_ID=iii.PA_ReportLineSet_ID AND i.I_IsImported='N'))")
 			.append(clientCheck);
-		noUpdateLine = DB.executeUpdate(DB.convertSqlToNative(sql.toString()), get_TrxName());
+		noUpdateLine = DB.executeUpdateAndSaveErrorOnFail(DB.convertSqlToNative(sql.toString()), get_TrxName());
 		log.info("Update PA_ReportLine=" + noUpdateLine);
 
 
@@ -428,7 +428,7 @@ public class ImportReportLine extends JavaProcess
 						sql = new StringBuffer ("UPDATE I_ReportLine i "
 							+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||").append(DB.TO_STRING("Insert ElementSource: " + ex.toString()))
 							.append("WHERE I_ReportLine_ID=").append(I_ReportLine_ID);
-						DB.executeUpdate(sql.toString(), get_TrxName());
+						DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 						continue;
 					}
 				}
@@ -459,7 +459,7 @@ public class ImportReportLine extends JavaProcess
 						sql = new StringBuffer ("UPDATE I_ReportLine i "
 							+ "SET I_IsImported='E', I_ErrorMsg=I_ErrorMsg||").append(DB.TO_STRING("Update ElementSource: " + ex.toString()))
 							.append("WHERE I_ReportLine_ID=").append(I_ReportLine_ID);
-						DB.executeUpdate(sql.toString(), get_TrxName());
+						DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 						continue;
 					}
 					pstmt_updateSource.close();
@@ -499,7 +499,7 @@ public class ImportReportLine extends JavaProcess
 			+ "SET I_IsImported='N', Updated=now() "
 			+ "WHERE I_IsImported<>'Y'").append(clientCheck);
 		
-		no = DB.executeUpdate(sql.toString(), get_TrxName());
+		no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 		addLog (0, null, new BigDecimal (no), "@Errors@");
 		addLog (0, null, new BigDecimal (noInsertLine), "@PA_ReportLine_ID@: @Inserted@");
 		addLog (0, null, new BigDecimal (noUpdateLine), "@PA_ReportLine_ID@: @Updated@");

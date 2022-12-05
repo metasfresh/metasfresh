@@ -80,6 +80,9 @@ class PickingJobCreateRepoCommand
 		record.setPicking_User_ID(request.getPickerId().getRepoId());
 		record.setDocStatus(DocStatus.Drafted.getCode());
 		record.setProcessed(false);
+		record.setIsPickingReviewRequired(request.isPickingReviewRequired());
+		record.setIsReadyToReview(false);
+		record.setIsApproved(false);
 		InterfaceWrapperHelper.save(record);
 
 		loader.addAlreadyLoadedFromDB(record);

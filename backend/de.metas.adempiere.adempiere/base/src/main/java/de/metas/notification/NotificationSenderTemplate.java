@@ -1,5 +1,6 @@
 package de.metas.notification;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import de.metas.document.DocBaseAndSubType;
@@ -422,11 +423,11 @@ public class NotificationSenderTemplate
 		{
 			final UserNotification notification = notificationsRepo.save(request);
 
-			final Topic topic = Topic.remote(request.getNotificationGroupName().getValueAsString());
+			final Topic topic = Topic.distributed(request.getNotificationGroupName().getValueAsString());
 
 			eventBusFactory
 					.getEventBus(topic)
-					.postEvent(UserNotificationUtils.toEvent(notification));
+					.enqueueEvent(UserNotificationUtils.toEvent(notification));
 		}
 		catch (final Exception ex)
 		{
@@ -441,12 +442,7 @@ public class NotificationSenderTemplate
 
 		final boolean html = true;
 		final String content = extractMailContent(request);
-
-		String subject = extractSubjectText(request);
-		if (Check.isEmpty(subject, true))
-		{
-			subject = extractSubjectFromContent(extractContentText(request, /* html */false));
-		}
+		final String subject = extractMailSubject(request);
 
 		final EMail mail = mailService.createEMail(
 				mailbox,
@@ -469,7 +465,21 @@ public class NotificationSenderTemplate
 				(EMailCustomType)null);  // customType
 	}
 
-	private String extractMailContent(final UserNotificationRequest request)
+	@VisibleForTesting
+	String extractMailSubject(final UserNotificationRequest request)
+	{
+		final String subject = extractSubjectText(request);
+
+		if (Check.isEmpty(subject, true))
+		{
+			return extractSubjectFromContent(extractContentText(request, /* html */false));
+		}
+
+		return subject;
+	}
+
+	@VisibleForTesting
+	String extractMailContent(final UserNotificationRequest request)
 	{
 		final body htmlBody = new body();
 		final String htmlBodyString = extractContentText(request, /* html */true);

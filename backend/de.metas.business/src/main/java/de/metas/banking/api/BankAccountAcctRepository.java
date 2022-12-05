@@ -113,7 +113,7 @@ public class BankAccountAcctRepository
 				+ " WHERE a.C_AcctSchema_ID=?"
 				+ " AND EXISTS (SELECT 1 FROM C_BP_BankAccount_Acct x WHERE x.C_BP_BankAccount_ID=a.C_BP_BankAccount_ID)";
 
-		return DB.executeUpdateEx(
+		return DB.executeUpdateAndThrowExceptionOnFail(
 				sql,
 				new Object[] { acctSchemaId },
 				ITrx.TRXNAME_ThreadInherited);
@@ -141,7 +141,7 @@ public class BankAccountAcctRepository
 				+ " WHERE acct.C_AcctSchema_ID=?"
 				+ " AND NOT EXISTS (SELECT 1 FROM C_BP_BankAccount_Acct a WHERE a.C_BP_BankAccount_ID=x.C_BP_BankAccount_ID AND a.C_AcctSchema_ID=acct.C_AcctSchema_ID)";
 
-		return DB.executeUpdateEx(
+		return DB.executeUpdateAndThrowExceptionOnFail(
 				sql,
 				new Object[] { acctSchemaId },
 				ITrx.TRXNAME_ThreadInherited);

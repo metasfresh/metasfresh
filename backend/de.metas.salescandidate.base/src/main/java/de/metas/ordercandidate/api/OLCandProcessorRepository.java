@@ -5,6 +5,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.loadOutOfTrx;
 import java.util.List;
 import java.util.Map;
 
+import org.adempiere.ad.column.AdColumnId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
@@ -129,7 +130,7 @@ public class OLCandProcessorRepository
 
 		return OLCandAggregationColumn.builder()
 				.columnName(adColumn.getColumnName())
-				.adColumnId(adColumn.getAD_Column_ID())
+				.adColumnId(AdColumnId.ofRepoId(adColumn.getAD_Column_ID()))
 				.orderBySeqNo(olCandAgg.getOrderBySeqNo())
 				.splitOrderDiscriminator(olCandAgg.isSplitOrder())
 				.groupByColumn(olCandAgg.isGroupBy())

@@ -37,9 +37,11 @@ import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.pricing.IPricingResult;
 import de.metas.pricing.PricingSystemId;
+import de.metas.process.PInstanceId;
 import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
+import lombok.NonNull;
 import org.compiere.model.PO;
 
 import javax.annotation.Nullable;
@@ -56,7 +58,7 @@ public interface IOLCandBL extends ISingletonService
 	/**
 	 * Creates and updates orders.
 	 */
-	void process(OLCandProcessorDescriptor processor, @Nullable AsyncBatchId asyncBatchId);
+	void process(OLCandProcessorDescriptor processor, @NonNull PInstanceId selectionId, @Nullable AsyncBatchId asyncBatchId);
 
 	I_C_OLCand invokeOLCandCreator(PO po, IOLCandCreator olCandCreator);
 
@@ -111,4 +113,8 @@ public interface IOLCandBL extends ISingletonService
 	void markAsProcessed(final OLCand olCand);
 
 	void markAsError(final UserId userInChargeId, final OLCand olCand, final Exception ex);
+
+	OLCand toOLCand(@NonNull I_C_OLCand olCandRecord, @NonNull OLCandOrderDefaults orderDefaults);
+
+	void saveCandidate(@NonNull final OLCand cand);
 }

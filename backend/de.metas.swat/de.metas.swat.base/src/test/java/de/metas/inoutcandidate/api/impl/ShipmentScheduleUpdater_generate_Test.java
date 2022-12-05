@@ -1,28 +1,6 @@
 package de.metas.inoutcandidate.api.impl;
 
-import static java.math.BigDecimal.TEN;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.util.List;
-
-import org.adempiere.inout.util.DeliveryLineCandidate;
-import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
-import org.adempiere.inout.util.ShipmentSchedulesDuringUpdate;
-import org.adempiere.test.AdempiereTestHelper;
-import org.adempiere.test.AdempiereTestWatcher;
-import org.assertj.core.api.AbstractBigDecimalAssert;
-import org.compiere.model.X_M_Product;
-import org.compiere.util.Env;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.inoutcandidate.api.OlAndSched;
@@ -37,10 +15,29 @@ import de.metas.inoutcandidate.api.impl.shipmentschedule_test_specs.TestSetupSpe
 import de.metas.inoutcandidate.api.impl.shipmentschedule_test_specs.TestSetupSpecHelper;
 import de.metas.inoutcandidate.api.impl.shipmentschedule_test_specs.UomSpec;
 import de.metas.order.DeliveryRule;
+import de.metas.product.ProductType;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
+import org.adempiere.inout.util.DeliveryLineCandidate;
+import org.adempiere.inout.util.IShipmentSchedulesDuringUpdate.CompleteStatus;
+import org.adempiere.inout.util.ShipmentSchedulesDuringUpdate;
+import org.adempiere.test.AdempiereTestHelper;
+import org.adempiere.test.AdempiereTestWatcher;
+import org.assertj.core.api.AbstractBigDecimalAssert;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import static java.math.BigDecimal.TEN;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -146,16 +143,14 @@ public class ShipmentScheduleUpdater_generate_Test
 			assertThat(result2.getAllLines()).isEmpty(); // product is stocked, but there is nothing on stock
 		}
 
-		/** If the product's type is not "item", then deliver the ordered quantity */
+		/**
+		 * If the product's type is not "item", then deliver the ordered quantity
+		 */
 		@ParameterizedTest
-		@ValueSource(strings = {
-				X_M_Product.PRODUCTTYPE_ExpenseType,
-				X_M_Product.PRODUCTTYPE_Online,
-				X_M_Product.PRODUCTTYPE_Resource,
-				X_M_Product.PRODUCTTYPE_Service })
-		public void availability_nonitem(final String productType)
+		@EnumSource(value = ProductType.class, names = { "ExpenseType", "Online", "Resource", "Service" })
+		public void availability_nonitem(final ProductType productType)
 		{
-			final ProductSpec nonStockedProduct = ProductSpec.builder().value("prod1").uomValue("stockUom").stocked(false).productType(productType).build();
+			final ProductSpec nonStockedProduct = ProductSpec.builder().value("prod1").uomValue("stockUom").stocked(false).productType(productType.getCode()).build();
 			final TestSetupSpec spec = TestSetupSpec.builder()
 					.uom(UomSpec.builder().name("stockUom").build())
 					.product(nonStockedProduct)
@@ -336,7 +331,7 @@ public class ShipmentScheduleUpdater_generate_Test
 		{
 			final ShipmentSchedulesDuringUpdate result = setup("0");
 
-			assertThat(result.getCandidates()).hasSize(0);
+			assertThat(result.getCandidates()).isEmpty();
 		}
 
 		@Test

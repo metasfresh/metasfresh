@@ -50,7 +50,7 @@ public class MColumn extends X_AD_Column
 	/**
 	 * Get MColumn from Cache
 	 *
-	 * @param ctx context
+	 * @param ctx          context
 	 * @param AD_Column_ID id
 	 * @return MColumn
 	 */
@@ -64,22 +64,19 @@ public class MColumn extends X_AD_Column
 		if (retValue.get_ID() != 0)
 			s_cache.put(key, retValue);
 		return retValue;
-	}	// get
+	}    // get
 
 	/**
 	 * Get Column Name
 	 *
-	 * @param ctx context
+	 * @param ignoredCtx          context
 	 * @param AD_Column_ID id
 	 * @return Column Name or null
 	 */
-	public static String getColumnName(Properties ctx, int AD_Column_ID)
+	public static String getColumnName(Properties ignoredCtx, int AD_Column_ID)
 	{
-		MColumn col = MColumn.get(ctx, AD_Column_ID);
-		if (col == null || col.getAD_Column_ID() <= 0)
-			return null;
-		return col.getColumnName();
-	}	// getColumnName
+		return Services.get(IADTableDAO.class).retrieveColumnName(AD_Column_ID);
+	}    // getColumnName
 
 	/**
 	 * Cache
@@ -109,7 +106,7 @@ public class MColumn extends X_AD_Column
 			// setColumnName (null);
 			// setName (null);
 			// setEntityType (null); // U
-			setIsAlwaysUpdateable(false);	// N
+			setIsAlwaysUpdateable(false);    // N
 			setIsEncrypted(false);
 			setIsIdentifier(false);
 			setIsKey(false);
@@ -117,22 +114,22 @@ public class MColumn extends X_AD_Column
 			setIsParent(false);
 			setIsSelectionColumn(false);
 			setIsTranslated(false);
-			setIsUpdateable(true);	// Y
+			setIsUpdateable(true);    // Y
 			setVersion(BigDecimal.ZERO);
 		}
-	}	// MColumn
+	}    // MColumn
 
 	/**
 	 * Load Constructor
 	 *
-	 * @param ctx context
-	 * @param rs result set
+	 * @param ctx     context
+	 * @param rs      result set
 	 * @param trxName transaction
 	 */
 	public MColumn(Properties ctx, ResultSet rs, String trxName)
 	{
 		super(ctx, rs, trxName);
-	}	// MColumn
+	}    // MColumn
 
 	/**
 	 * Parent Constructor
@@ -145,7 +142,7 @@ public class MColumn extends X_AD_Column
 		setClientOrg(parent);
 		setAD_Table_ID(parent.getAD_Table_ID());
 		setEntityType(parent.getEntityType());
-	}	// MColumn
+	}    // MColumn
 
 	/**
 	 * Is Standard Column
@@ -156,7 +153,7 @@ public class MColumn extends X_AD_Column
 	{
 		final String columnName = getColumnName();
 		return Services.get(IADTableDAO.class).isStandardColumn(columnName);
-	}	// isStandardColumn
+	}    // isStandardColumn
 
 	/**
 	 * Is Virtual Column
@@ -169,7 +166,7 @@ public class MColumn extends X_AD_Column
 	{
 		final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 		return tableDAO.isVirtualColumn(this);
-	}	// isVirtualColumn
+	}    // isVirtualColumn
 
 	/**
 	 * Is the Column Encrypted?
@@ -180,7 +177,7 @@ public class MColumn extends X_AD_Column
 	{
 		String s = getIsEncrypted();
 		return "Y".equals(s);
-	}	// isEncrypted
+	}    // isEncrypted
 
 	/**
 	 * Set Encrypted
@@ -190,7 +187,7 @@ public class MColumn extends X_AD_Column
 	public void setIsEncrypted(boolean IsEncrypted)
 	{
 		setIsEncrypted(IsEncrypted ? "Y" : "N");
-	}	// setIsEncrypted
+	}    // setIsEncrypted
 
 	/**
 	 * Before Save
@@ -202,7 +199,7 @@ public class MColumn extends X_AD_Column
 	protected boolean beforeSave(boolean newRecord)
 	{
 		int displayType = getAD_Reference_ID();
-		if (DisplayType.isLOB(displayType))  	// LOBs are 0
+		if (DisplayType.isLOB(displayType))    // LOBs are 0
 		{
 			if (getFieldLength() != 0)
 				setFieldLength(0);
@@ -232,10 +229,10 @@ public class MColumn extends X_AD_Column
 		if (isIdentifier())
 		{
 			int cnt = DB.getSQLValue(get_TrxName(), "SELECT COUNT(*) FROM AD_Column " +
-					"WHERE AD_Table_ID=?" +
-					" AND AD_Column_ID!=?" +
-					" AND IsIdentifier='Y'" +
-					" AND SeqNo=?",
+							"WHERE AD_Table_ID=?" +
+							" AND AD_Column_ID!=?" +
+							" AND IsIdentifier='Y'" +
+							" AND SeqNo=?",
 					new Object[] { getAD_Table_ID(), getAD_Column_ID(), getSeqNo() });
 			if (cnt > 0)
 			{
@@ -287,13 +284,13 @@ public class MColumn extends X_AD_Column
 			setHelp(element.getHelp());
 		}
 		return true;
-	}	// beforeSave
+	}    // beforeSave
 
 	/**
 	 * After Save
 	 *
 	 * @param newRecord new
-	 * @param success success
+	 * @param success   success
 	 * @return success
 	 */
 	@Override
@@ -311,7 +308,7 @@ public class MColumn extends X_AD_Column
 						.append(", Description=").append(DB.TO_STRING(getDescription()))
 						.append(", Help=").append(DB.TO_STRING(getHelp()))
 						.append(" WHERE AD_Column_ID=").append(get_ID());
-				int no = DB.executeUpdate(sql.toString(), get_TrxName());
+				int no = DB.executeUpdateAndSaveErrorOnFail(sql.toString(), get_TrxName());
 				log.debug("afterSave - Fields updated #" + no);
 			}
 		}
@@ -359,9 +356,9 @@ public class MColumn extends X_AD_Column
 	/**
 	 * Get Table Id for a column
 	 *
-	 * @param ctx context
+	 * @param ctx          context
 	 * @param AD_Column_ID id
-	 * @param trxName transaction
+	 * @param trxName      transaction
 	 * @return MColumn
 	 */
 	public static int getTable_ID(Properties ctx, int AD_Column_ID, String trxName)

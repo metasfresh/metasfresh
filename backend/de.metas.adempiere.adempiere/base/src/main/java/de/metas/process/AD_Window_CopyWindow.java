@@ -1,10 +1,9 @@
 package de.metas.process;
 
 import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.window.api.IADWindowDAO;
-
-import de.metas.util.Services;
+import org.adempiere.ad.window.api.ADWindowService;
 import org.adempiere.ad.window.api.WindowCopyRequest;
+import org.compiere.SpringContextHolder;
 
 /*
  * #%L
@@ -37,12 +36,12 @@ public class AD_Window_CopyWindow extends JavaProcess
 	@Param(parameterName = "IsCustomizationWindow", mandatory = true)
 	private boolean isCustomizationWindow;
 
-	private final IADWindowDAO windowDAO = Services.get(IADWindowDAO.class);
+	private final ADWindowService adWindowService = SpringContextHolder.instance.getBean(ADWindowService.class);
 
 	@Override
 	protected String doIt()
 	{
-		windowDAO.copyWindow(WindowCopyRequest.builder()
+		adWindowService.copyWindow(WindowCopyRequest.builder()
 				.sourceWindowId(sourceWindowId)
 				.targetWindowId(AdWindowId.ofRepoId(getProcessInfo().getRecord_ID()))
 				.isCustomizationWindow(isCustomizationWindow)

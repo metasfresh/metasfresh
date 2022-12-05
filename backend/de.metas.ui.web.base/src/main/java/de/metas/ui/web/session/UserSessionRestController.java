@@ -9,7 +9,6 @@ import de.metas.ui.web.window.model.DocumentCollection;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.service.ISysConfigBL;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -51,16 +50,16 @@ public class UserSessionRestController
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final UserSession userSession;
 	private final UserSessionRepository userSessionRepo;
-
-	@Autowired
-	private DocumentCollection documentCollection;
+	private final DocumentCollection documentCollection;
 
 	public UserSessionRestController(
 			@NonNull final UserSession userSession,
-			@NonNull final UserSessionRepository userSessionRepo)
+			@NonNull final UserSessionRepository userSessionRepo,
+			@NonNull final DocumentCollection documentCollection)
 	{
 		this.userSession = userSession;
 		this.userSessionRepo = userSessionRepo;
+		this.documentCollection = documentCollection;
 	}
 
 	@GetMapping

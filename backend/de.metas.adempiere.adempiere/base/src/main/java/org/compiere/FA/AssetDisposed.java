@@ -109,7 +109,7 @@ public class AssetDisposed extends JavaProcess
 				  + "WHERE Processed='Y'" 
 				  + " AND A_Entry_Type = 'DIS'" + clientCheck;
 			
-			no = DB.executeUpdate (sql,null);
+			no = DB.executeUpdateAndSaveErrorOnFail(sql, null);
 			log.info("doIt - Delete old processed entries =" + no);
 		}
 		
@@ -141,7 +141,7 @@ public class AssetDisposed extends JavaProcess
 			      	  + "SET A_ACCUMULATED_DEPR = " + v_Balance 
 			    	  + "WHERE A_DEPRECIATION_WORKFILE.A_ASSET_ID = " + AssetDisposed.getA_Asset_ID()
 			    	  + "AND A_DEPRECIATION_WORKFILE.POSTINGTYPE = '" + v_PostingType + "'";
-			      DB.executeUpdate(sql,null);
+			      DB.executeUpdateAndSaveErrorOnFail(sql, null);
 			      
 			      v_Balance = new BigDecimal("0.0");
 			      v_PostingType = rs.getString("PostingType");
@@ -209,13 +209,13 @@ public class AssetDisposed extends JavaProcess
 			    + " ASSETDISPOSALDATE = " + DB.TO_DATE(AssetDisposed.getA_Disposed_Date())
 			    + " WHERE A_ASSET_ID = " + AssetDisposed.getA_Asset_ID();
 			
-			DB.executeUpdate(sql,null);
+			DB.executeUpdateAndSaveErrorOnFail(sql, null);
 			
 			sql = "UPDATE A_DEPRECIATION_WORKFILE "
 		      	  + "SET A_ACCUMULATED_DEPR = " + v_Balance 
 		    	  + "WHERE A_DEPRECIATION_WORKFILE.A_ASSET_ID = " + AssetDisposed.getA_Asset_ID()
 		    	  + "AND A_DEPRECIATION_WORKFILE.POSTINGTYPE = '" + v_PostingType + "'";
-		    DB.executeUpdate(sql,null);
+		    DB.executeUpdateAndSaveErrorOnFail(sql, null);
 		    
 		    MAssetChange change = new MAssetChange (getCtx(), 0, null);
 			change.setA_Asset_ID(AssetDisposed.getA_Asset_ID());			

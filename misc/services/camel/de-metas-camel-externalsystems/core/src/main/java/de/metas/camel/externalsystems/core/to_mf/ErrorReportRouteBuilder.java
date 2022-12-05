@@ -28,10 +28,12 @@ import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.common.LogMessageRequest;
 import de.metas.camel.externalsystems.common.error.ErrorProcessor;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
+import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonApiResponse;
 import de.metas.common.rest_api.v2.JsonError;
 import de.metas.common.rest_api.v2.JsonErrorItem;
+import de.metas.common.rest_api.v2.tablerecordref.JsonTableRecordReference;
 import de.metas.common.util.Check;
 import de.metas.common.util.StringUtils;
 import lombok.NonNull;
@@ -95,10 +97,16 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 				.routeId(ERROR_WRITE_TO_ADISSUE)
 				.log("Route invoked")
 				.process(this::prepareJsonErrorRequest)
-				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonError.class))
-				.removeHeaders("CamelHttp*")
-				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
-				.toD("{{" + MF_EXTERNAL_SYSTEM_V2_URI + "}}/externalstatus/${header." + HEADER_PINSTANCE_ID + "}/error");
+				.choice()
+					.when(body().isNull())
+						.log("No PInstanceId available! => cannot log error in metasfresh, skipping...")
+					.otherwise()
+						.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonError.class))
+						.removeHeaders("CamelHttp*")
+						.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
+						.toD("{{" + MF_EXTERNAL_SYSTEM_V2_URI + "}}/externalstatus/${header." + HEADER_PINSTANCE_ID + "}/error")
+				.endChoice()
+				.end();
 
 		from(direct(ERROR_SEND_LOG_MESSAGE))
 				.routeId(ERROR_SEND_LOG_MESSAGE)
@@ -143,7 +151,8 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 
 		if (pInstanceId == null)
 		{
-			throw new RuntimeException("No PInstanceId available!");
+			exchange.getIn().setBody(null);
+			return;
 		}
 
 		final JsonErrorItem errorItem = ErrorProcessor.getErrorItem(exchange);
@@ -191,17 +200,20 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 		final JsonErrorItem errorItem = ErrorProcessor.getErrorItem(exchange);
 
 		final StringBuilder logMessageBuilder = new StringBuilder();
+		logMessageBuilder.append("Error: ").append(StringUtils.removeCRLF(errorItem.toString()));
 
-		getAPIRequestId(exchange)
-				.ifPresent(apiRequestId -> logMessageBuilder.append("ApiRequestAuditId: ")
-						.append(apiRequestId)
-						.append(";"));
-
-		logMessageBuilder.append(" Error: ").append(StringUtils.removeCRLF(errorItem.toString()));
+		final JsonTableRecordReference tableRecordReference = getAPIRequestId(exchange)
+				.map(apiRequestId -> JsonTableRecordReference
+						.builder()
+						.recordId(JsonMetasfreshId.of(apiRequestId))
+						.tableName(ExternalSystemConstants.API_REQUEST_AUDIT_TABLE_NAME)
+						.build())
+				.orElse(null);
 
 		final LogMessageRequest logMessageRequest = LogMessageRequest.builder()
 				.logMessage(logMessageBuilder.toString())
 				.pInstanceId(JsonMetasfreshId.of(pInstanceId))
+				.tableRecordReference(tableRecordReference)
 				.build();
 
 		exchange.getIn().setBody(logMessageRequest);

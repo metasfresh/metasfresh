@@ -25,6 +25,9 @@ package de.metas.cucumber.stepdefs.hu;
 import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.handlingunits.model.I_M_HU_PI;
 
+/**
+ * Having a dedicated class to help the IOC-framework injecting the right instances, if a step-def needs more than one.
+ */
 public class M_HU_PI_StepDefData extends StepDefData<I_M_HU_PI>
 {
 	public M_HU_PI_StepDefData()

@@ -6,10 +6,10 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
 /** Generated Interface for S_Resource
- *  @author metasfresh (generated) 
+ *  @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
-public interface I_S_Resource 
+public interface I_S_Resource
 {
 
 	String Table_Name = "S_Resource";
@@ -73,6 +73,7 @@ public interface I_S_Resource
 	int getAD_User_ID();
 
 	String COLUMNNAME_AD_User_ID = "AD_User_ID";
+
 
 	/**
 	 * Set Capacity Per Production Cycle.
@@ -202,6 +203,29 @@ public interface I_S_Resource
 
 	ModelColumn<I_S_Resource, Object> COLUMN_Description = new ModelColumn<>(I_S_Resource.class, "Description", null);
 	String COLUMNNAME_Description = "Description";
+
+	/**
+	 * Set Internal Name.
+	 * Generally used to give records a name that can be safely referenced from code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setInternalName (@Nullable java.lang.String InternalName);
+
+	/**
+	 * Get Internal Name.
+	 * Generally used to give records a name that can be safely referenced from code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getInternalName();
+
+	ModelColumn<I_S_Resource, Object> COLUMN_InternalName = new ModelColumn<>(I_S_Resource.class, "InternalName", null);
+	String COLUMNNAME_InternalName = "InternalName";
 
 	/**
 	 * Set Active.
@@ -399,6 +423,26 @@ public interface I_S_Resource
 	String COLUMNNAME_QueuingTime = "QueuingTime";
 
 	/**
+	 * Set Resource Group.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setS_Resource_Group_ID (int S_Resource_Group_ID);
+
+	/**
+	 * Get Resource Group.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getS_Resource_Group_ID();
+
+	String COLUMNNAME_S_Resource_Group_ID = "S_Resource_Group_ID";
+
+	/**
 	 * Set Resource.
 	 * Resource
 	 *
@@ -439,11 +483,6 @@ public interface I_S_Resource
 	 */
 	int getS_ResourceType_ID();
 
-	org.compiere.model.I_S_ResourceType getS_ResourceType();
-
-	void setS_ResourceType(org.compiere.model.I_S_ResourceType S_ResourceType);
-
-	ModelColumn<I_S_Resource, org.compiere.model.I_S_ResourceType> COLUMN_S_ResourceType_ID = new ModelColumn<>(I_S_Resource.class, "S_ResourceType_ID", org.compiere.model.I_S_ResourceType.class);
 	String COLUMNNAME_S_ResourceType_ID = "S_ResourceType_ID";
 
 	/**

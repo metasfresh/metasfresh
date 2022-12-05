@@ -48,14 +48,15 @@ public class ProductionSimulationRowsRepository
 	@Builder
 	public ProductionSimulationRowsRepository(
 			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval,
-			@NonNull final PPOrderCandidateDAO ppOrderCandidateDAO)
+			@NonNull final PPOrderCandidateDAO ppOrderCandidateDAO,
+			@NonNull final LookupDataSourceFactory lookupDataSourceFactory)
 	{
 		this.candidateRepositoryRetrieval = candidateRepositoryRetrieval;
 		this.ppOrderCandidateDAO = ppOrderCandidateDAO;
 
-		productLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_M_Product.Table_Name);
-		attributeSetInstanceLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_M_AttributeSetInstance.Table_Name);
-		warehouseLookup = LookupDataSourceFactory.instance.searchInTableLookup(I_M_Warehouse.Table_Name);
+		productLookup = lookupDataSourceFactory.searchInTableLookup(I_M_Product.Table_Name);
+		attributeSetInstanceLookup = lookupDataSourceFactory.searchInTableLookup(I_M_AttributeSetInstance.Table_Name);
+		warehouseLookup = lookupDataSourceFactory.searchInTableLookup(I_M_Warehouse.Table_Name);
 	}
 
 	public ProductionSimulationRows getByOrderLineDescriptor(@NonNull final OrderLineDescriptor orderLineDescriptor)

@@ -10,12 +10,12 @@ package de.metas.handlingunits.inout;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -34,11 +34,10 @@ import de.metas.util.ISingletonService;
 
 /**
  * Service used to manage the relation between {@link I_M_HU} and shipment line.
- *
+ * <p>
  * NOTE: please always use this service instead of bypassing it and assign HUs directly for example.
  *
  * @author tsa
- *
  */
 public interface IHUShipmentAssignmentBL extends ISingletonService
 {
@@ -59,8 +58,15 @@ public interface IHUShipmentAssignmentBL extends ISingletonService
 	void updateHUsOnShipmentComplete(I_M_InOut shipment);
 
 	/**
-	 * Remove HU Assignments for given Shipment.
+	 * Update HUStatus (i.e. it is setting it to Picked) for assigned HUs when shipment is re-activated.
 	 *
+	 * @param shipment
+	 */
+	void updateHUsOnShipmentReactivate(I_M_InOut shipment);
+
+	/**
+	 * Remove HU Assignments for given Shipment.
+	 * <p>
 	 * Also, this method restores HU's HUStatus (i.e. it is setting it to Picked).
 	 *
 	 * @param shipment
@@ -69,7 +75,7 @@ public interface IHUShipmentAssignmentBL extends ISingletonService
 
 	/**
 	 * Remove HU Assignments for given Shipment Line.
-	 *
+	 * <p>
 	 * Also, this method restores HU's HUStatus (i.e. it is setting it to Picked).
 	 *
 	 * @param shipmentLine

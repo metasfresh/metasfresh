@@ -3,6 +3,7 @@ package de.metas.resource.qrcode;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.global_qrcodes.PrintableQRCode;
 import de.metas.product.ResourceId;
+import de.metas.resource.ManufacturingResourceType;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -17,7 +18,7 @@ import java.util.Objects;
 public class ResourceQRCode
 {
 	@NonNull ResourceId resourceId;
-	@Nullable String resourceType;
+	@Nullable ManufacturingResourceType resourceType;
 	@NonNull String caption;
 
 	public static boolean equals(@Nullable final ResourceQRCode o1, @Nullable final ResourceQRCode o2)

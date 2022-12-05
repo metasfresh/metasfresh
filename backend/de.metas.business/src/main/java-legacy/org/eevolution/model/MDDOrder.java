@@ -17,10 +17,13 @@
 package org.eevolution.model;
 
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.document.DocBaseType;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.i18n.IMsgBL;
 import de.metas.order.DeliveryRule;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.IStorageBL;
 import de.metas.product.ProductId;
@@ -46,13 +49,11 @@ import org.compiere.model.ModelValidator;
 import org.compiere.model.Query;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Properties;
 
@@ -318,7 +319,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 			final String sql = "SET Processed='"
 					+ (processed ? "Y" : "N")
 					+ "' WHERE DD_Order_ID=" + getDD_Order_ID();
-			final int noLine = DB.executeUpdate("UPDATE DD_OrderLine " + sql, get_TrxName());
+			final int noLine = DB.executeUpdateAndSaveErrorOnFail("UPDATE DD_OrderLine " + sql, get_TrxName());
 			log.debug("setProcessed - " + processed + " - Lines=" + noLine);
 
 			m_lines = null; // reset cached lines
@@ -415,7 +416,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 					+ "(SELECT Description,POReference "
 					+ "FROM DD_Order o WHERE i.DD_Order_ID=o.DD_Order_ID) "
 					+ "WHERE DocStatus NOT IN ('RE','CL') AND DD_Order_ID=" + getDD_Order_ID());
-			int no = DB.executeUpdateEx(sql, get_TrxName());
+			int no = DB.executeUpdateAndThrowExceptionOnFail(sql, get_TrxName());
 			log.debug("Description -> #" + no);
 		}
 
@@ -439,7 +440,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 					+ "(SELECT " + columnName
 					+ " FROM DD_Order o WHERE ol.DD_Order_ID=o.DD_Order_ID) "
 					+ "WHERE DD_Order_ID=" + getDD_Order_ID();
-			int no = DB.executeUpdateEx(sql, get_TrxName());
+			int no = DB.executeUpdateAndThrowExceptionOnFail(sql, get_TrxName());
 			log.debug(columnName + " Lines -> #" + no);
 		}
 	}	// afterSaveSync
@@ -496,7 +497,7 @@ public class MDDOrder extends X_DD_Order implements IDocument
 
 		// Std Period open?
 		final MDocType dt = MDocType.get(getCtx(), getC_DocType_ID());
-		MPeriod.testPeriodOpen(getCtx(), getDateOrdered(), dt.getDocBaseType(), getAD_Org_ID());
+		MPeriod.testPeriodOpen(getCtx(), getDateOrdered(), DocBaseType.ofCode(dt.getDocBaseType()), getAD_Org_ID());
 
 		// Lines
 		final MDDOrderLine[] lines = getLines(true, I_DD_OrderLine.COLUMNNAME_M_Product_ID);
@@ -868,9 +869,9 @@ public class MDDOrder extends X_DD_Order implements IDocument
 	}	// getSummary
 
 	@Override
-	public LocalDate getDocumentDate()
+	public InstantAndOrgId getDocumentDate()
 	{
-		return TimeUtil.asLocalDate(getCreated());
+		return InstantAndOrgId.ofTimestamp(getCreated(), OrgId.ofRepoId(getAD_Org_ID()));
 	}
 
 	@Override

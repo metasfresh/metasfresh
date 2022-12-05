@@ -106,4 +106,5 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 				.getStorage(hu)
 				.getQuantity(productId, uom);
 	}
+
 }

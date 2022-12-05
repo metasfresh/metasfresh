@@ -676,7 +676,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 		}
 	}
 
-	private final <T> T call0(
+	private <T> T call0(
 			@NonNull final TrxCallable<T> callable,
 			@NonNull final ITrxRunConfig cfg,
 			@Nullable final String trxName)
@@ -1009,14 +1009,15 @@ public abstract class AbstractTrxManager implements ITrxManager
 	}
 
 	@Override
-	public final boolean isNull(final ITrx trx)
+	public final boolean isNull(@Nullable final ITrx trx)
 	{
 		return trx == null || trx == NullTrxPlaceholder.instance;
 	}
 
 	@Override
-	public final boolean isNull(final String trxName)
+	public final boolean isNull(@Nullable final String trxName)
 	{
+		//noinspection ConstantConditions
 		return trxName == null
 				|| trxName == ITrx.TRXNAME_None
 				|| trxName == ITrx.TRXNAME_NoneNotNull
@@ -1244,8 +1245,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 
 		// NOTE: at this point trxName is not null and we relly on "getTrx" method to make sure the transaction really exist
 		OnTrxMissingPolicyNotSupportedException.throwIf(onTrxMissingPolicy, OnTrxMissingPolicy.CreateNew); // createNew is not supported
-		final ITrx trx = get(trxName, onTrxMissingPolicy);
-		return trx;
+		return get(trxName, onTrxMissingPolicy);
 	}
 
 	@Override
@@ -1292,7 +1292,7 @@ public abstract class AbstractTrxManager implements ITrxManager
 		threadLocalOnRunnableFail.set(onRunnableFail);
 	}
 
-	private final OnRunnableFail getThreadInheritedOnRunnableFail(final OnRunnableFail onRunnableFailDefault)
+	private OnRunnableFail getThreadInheritedOnRunnableFail(final OnRunnableFail onRunnableFailDefault)
 	{
 		final OnRunnableFail onRunnableFail = threadLocalOnRunnableFail.get();
 		return onRunnableFail == null ? onRunnableFailDefault : onRunnableFail;

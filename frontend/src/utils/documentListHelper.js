@@ -136,6 +136,7 @@ const DLmapStateToProps = (state, props) => {
     viewData: master,
     layout: master.layout,
     layoutPending: master.layoutPending,
+    mapConfig: master.mapConfig,
     referenceId: queryReferenceId,
     refType: queryRefType,
     refDocumentId: queryRefDocumentId,
@@ -553,6 +554,16 @@ export function renderHeaderProperties(groups) {
 
     return acc;
   }, []);
+}
+
+export function getInvalidDataItem(data) {
+  return data.find(({ validStatus = {} }) => {
+    const { valid = null } = validStatus;
+
+    if (valid !== null && !valid) {
+      return validStatus;
+    }
+  }, null);
 }
 
 export const computePageLengthEffective = (pageLengthFromLayout) => {

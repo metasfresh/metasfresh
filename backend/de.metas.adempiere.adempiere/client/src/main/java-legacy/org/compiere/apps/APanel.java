@@ -53,8 +53,6 @@ import org.compiere.apps.search.InfoWindowMenuBuilder;
 import org.compiere.grid.APanelTab;
 import org.compiere.grid.GridController;
 import org.compiere.grid.GridSynchronizer;
-import org.compiere.grid.ICreateFrom;
-import org.compiere.grid.VCreateFromFactory;
 import org.compiere.grid.VOnlyCurrentDays;
 import org.compiere.grid.VSortTab;
 import org.compiere.grid.VTabbedPane;
@@ -2337,7 +2335,7 @@ public class APanel extends CPanel
 		{
 			try
 			{
-				sql = MLookupFactory.getLookup_TableDirEmbed(LanguageInfo.ofSpecificLanguage(m_ctx), keyColumnName, "[?", "?]")
+				sql = MLookupFactory.newInstance().getLookup_TableDirEmbed(LanguageInfo.ofSpecificLanguage(m_ctx), keyColumnName, "[?", "?]")
 						.replace("[?.?]", "?");
 			}
 			catch (Exception e)
@@ -2916,7 +2914,7 @@ public class APanel extends CPanel
 		final String columnName = vButton.getColumnName();
 
 		// Zoom
-		if (columnBL.isRecordIdColumnName (columnName))
+		if (IColumnBL.isRecordIdColumnName (columnName))
 		{
 			int AD_Table_ID = columnBL.getContextADTableID(m_ctx, m_curWindowNo, columnName);
 			int Record_ID = Env.getContextAsInt(m_ctx, m_curWindowNo, columnName);
@@ -3004,32 +3002,7 @@ public class APanel extends CPanel
 		// Pop up Create From
 		else if (columnName.equals("CreateFrom"))
 		{
-			// Ensure it's saved
-			if (noRowFound)
-			{
-				throw new AdempiereException("@SaveErrorRowNotFound@");
-			}
-
-			// Run form only if the button has no process defined - teo_sarca [ 1974354 ]
-			if (vButton.getProcess_ID() <= 0)
-			{
-				ICreateFrom cf = VCreateFromFactory.create(m_curTab);
-				if (cf != null)
-				{
-					if (cf.isInitOK())
-					{
-						cf.showWindow();
-						cf.closeWindow();
-						m_curTab.dataRefresh();
-					}
-					else
-					{
-						cf.closeWindow();
-					}
-					return;
-				}
-				// else may start process
-			}
+			throw new UnsupportedOperationException();
 		}  	// CreateFrom
 
 		// Posting -----

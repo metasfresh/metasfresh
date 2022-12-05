@@ -33,6 +33,8 @@ import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.web.MetasfreshRestAPIConstants;
 import io.swagger.annotations.ApiParam;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryStatisticsLogger;
 import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.Logger;
 import org.springframework.http.ResponseEntity;
@@ -54,6 +56,13 @@ public class AppTestingRestController
 	private static final Logger logger = LogManager.getLogger(AppTestingRestController.class);
 
 	private final AtomicLong nextNotificationId = new AtomicLong(1);
+
+	private final IQueryStatisticsLogger statisticsLogger;
+
+	public AppTestingRestController(@NonNull final IQueryStatisticsLogger statisticsLogger)
+	{
+		this.statisticsLogger = statisticsLogger;
+	}
 
 	/* when adding additional parameters, please also update https://github.com/metasfresh/metasfresh/issues/1577#issue-229774302 */
 	@GetMapping("/ping/notifications")
@@ -172,5 +181,20 @@ public class AppTestingRestController
 	public void cacheReset()
 	{
 		CacheMgt.get().reset();
+	}
+
+	@GetMapping("/recordSqlQueriesWithMicrometer")
+	public void setRecordSqlQueriesWithMicrometer(
+			@ApiParam("If Enabled, all SQL queries execution times are recorded with micrometer")
+			@RequestParam("enabled") final boolean enabled)
+	{
+		if (enabled)
+		{
+			statisticsLogger.enableRecordWithMicrometer();
+		}
+		else
+		{
+			statisticsLogger.disableRecordWithMicrometer();
+		}
 	}
 }

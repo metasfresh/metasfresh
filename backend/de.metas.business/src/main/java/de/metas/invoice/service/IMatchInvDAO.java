@@ -40,7 +40,7 @@ import lombok.NonNull;
 
 public interface IMatchInvDAO extends ISingletonService
 {
-	I_M_MatchInv getById(int matchInvId);
+	I_M_MatchInv getById(MatchInvId matchInvId);
 
 	/**
 	 * Retrieves the (active) records that reference the given invoice line.
@@ -68,7 +68,7 @@ public interface IMatchInvDAO extends ISingletonService
 
 	/**
 	 * Retrieves the quantity (in stock UOM) of given <code>iol</code> which was matched with {@link I_C_InvoiceLine}s.
-	 *
+	 * <p>
 	 * i.e. aggregates all (active) {@link I_M_MatchInv} records referencing the given <code>iol</code> and returns their <code>Qty</code> sum.
 	 *
 	 * @param initialQtys usually zero; the method will add its results to this parameter. The result will have the same UOMs.
@@ -77,9 +77,9 @@ public interface IMatchInvDAO extends ISingletonService
 
 	/**
 	 * Retrieves the quantity of given <code>invoiceLine</code> which was matched with {@link I_M_InOutLine}s.
-	 *
+	 * <p>
 	 * i.e. aggregates all (active) {@link I_M_MatchInv} records referencing the given <code>invoiceLine</code> and returns their <code>Qty</code> sum.
-	 *
+	 * <p>
 	 * NOTE: the quantity is NOT credit memo adjusted, NOR IsSOTrx adjusted.
 	 */
 	StockQtyAndUOMQty retrieveQtyMatched(I_C_InvoiceLine invoiceLine);

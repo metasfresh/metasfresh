@@ -47,7 +47,9 @@ public interface IInvoicingParams
 	String PARA_POReference = I_C_Invoice_Candidate.COLUMNNAME_POReference;
 	String PARA_Check_NetAmtToInvoice = "Check_NetAmtToInvoice";
 	String PARA_IsUpdateLocationAndContactForInvoice = "IsUpdateLocationAndContactForInvoice";
-
+	String PARA_IsCompleteInvoices = "IsCompleteInvoices";
+	
+	
 	/**
 	 * @return {@code true} if only those invoice candidates which were approved for invoicing shall be enqueued.
 	 */
@@ -89,7 +91,7 @@ public interface IInvoicingParams
 	 * This parameter is created and when invoice candidates to invoice workpackage is enqueued.
 	 *
 	 * @return total net amount to invoice checksum
-	 * @task http://dewiki908/mediawiki/index.php/08610_Make_sure_there_are_no_changes_in_enqueued_invoice_candidates_%28105439431951%29
+	 * task http://dewiki908/mediawiki/index.php/08610_Make_sure_there_are_no_changes_in_enqueued_invoice_candidates_%28105439431951%29
 	 */
 	BigDecimal getCheck_NetAmtToInvoice();
 
@@ -114,9 +116,15 @@ public interface IInvoicingParams
 	 */
 	boolean isUpdateLocationAndContactForInvoice();
 
-	default Map<String, ? extends Object> asMap()
+	/**
+	 *  When this parameter is set on true, the newly generated invoices are directly completed.
+	 *  Otherwise they are just prepared and left in the DocStatus IP (in progress);
+	 */
+	boolean isCompleteInvoices();
+	
+	default Map<String, ?> asMap()
 	{
-		final Builder<String, Object> result = ImmutableMap.<String, Object>builder();
+		final Builder<String, Object> result = ImmutableMap.builder();
 
 		if (getCheck_NetAmtToInvoice() != null)
 		{
@@ -140,6 +148,7 @@ public interface IInvoicingParams
 		result.put(InvoicingParams.PARA_IsUpdateLocationAndContactForInvoice, isUpdateLocationAndContactForInvoice());
 		result.put(InvoicingParams.PARA_OnlyApprovedForInvoicing, isOnlyApprovedForInvoicing());
 		result.put(InvoicingParams.PARA_SupplementMissingPaymentTermIds, isSupplementMissingPaymentTermIds());
+		result.put(InvoicingParams.PARA_IsCompleteInvoices, isCompleteInvoices());
 
 		return result.build();
 	}

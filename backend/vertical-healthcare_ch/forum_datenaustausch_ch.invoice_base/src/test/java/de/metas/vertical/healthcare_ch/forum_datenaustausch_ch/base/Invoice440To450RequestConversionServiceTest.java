@@ -18,8 +18,8 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.xmlunit.validation.Languages;
 import org.xmlunit.validation.ValidationResult;
 import org.xmlunit.validation.Validator;
@@ -85,14 +85,22 @@ public class Invoice440To450RequestConversionServiceTest
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 	}
 
-	/**
-	 * Ignored; un-ignore if you have a local (private) file you want to run a quick test with.
-	 */
 	@Test
-	@Ignore
-	public void localFile()
+	/**
+	 * Test if the conversion from Invoice440 to Invoice450 works as expected, when invoice:document is present.
+	 */
+	public void exampleFile_44_KANTON_49_01_2019_115414041()
 	{
-		testWithXmlFile("/44_KANTON_49-01-2019_115414041.xml");
+		testWithPublicExampleXmlFile("/44_KANTON_49-01-2019_115414041.xml");
+	}
+
+	@Test
+	/**
+	 * When invoice:document is present but an unsuported mime type is present, the conversion should fail.
+	 */
+	public void exampleFile_44_KANTON_49_01_2019_115414041_csv_attached()
+	{
+		Assertions.assertThrows(RuntimeException.class ,() -> testWithPublicExampleXmlFile("/44_KANTON_49-01-2019_115414041_csv_attached.xml"));
 	}
 
 	@Test

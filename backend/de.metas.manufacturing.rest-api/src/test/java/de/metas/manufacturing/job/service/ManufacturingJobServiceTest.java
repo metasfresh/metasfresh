@@ -16,6 +16,7 @@ import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.resource.ResourceService;
 import de.metas.util.Services;
 import org.adempiere.service.ISysConfigDAO;
 import org.adempiere.test.AdempiereTestHelper;
@@ -38,8 +39,9 @@ class ManufacturingJobServiceTest
 				new PPOrderIssueScheduleRepository(),
 				new InventoryService(new InventoryRepository(), new SourceHUsService())
 		);
-		
+
 		this.manufacturingJobService = new ManufacturingJobService(
+				ResourceService.newInstanceForJUnitTesting(),
 				ppOrderIssueScheduleService,
 				new HUReservationService(new HUReservationRepository()),
 				new PPOrderSourceHUService(new PPOrderSourceHURepository(), ppOrderIssueScheduleService),

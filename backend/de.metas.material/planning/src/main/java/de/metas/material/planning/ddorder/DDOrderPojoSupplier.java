@@ -11,6 +11,7 @@ import de.metas.material.planning.IMaterialRequest;
 import de.metas.material.planning.exception.MrpException;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.util.Loggables;
@@ -22,7 +23,6 @@ import org.adempiere.mm.attributes.api.PlainAttributeSetInstanceAware;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.model.I_S_Resource;
 import org.compiere.util.Env;
 import org.eevolution.model.I_DD_NetworkDistribution;
 import org.eevolution.model.I_DD_NetworkDistributionLine;
@@ -93,7 +93,7 @@ public class DDOrderPojoSupplier
 
 		final Properties ctx = mrpContext.getCtx();
 		final I_PP_Product_Planning productPlanningData = mrpContext.getProductPlanning();
-		final I_S_Resource plant = mrpContext.getPlant();
+		final ResourceId plantId = mrpContext.getPlantId();
 
 		// TODO vpj-cd I need to create logic for DRP-040 Shipment Due Action Notice
 		// Indicates that a shipment for a Order Distribution is due.
@@ -148,7 +148,7 @@ public class DDOrderPojoSupplier
 
 			// get supply target warehouse and locator
 			final WarehouseId warehouseToId = WarehouseId.ofRepoId(networkLine.getM_Warehouse_ID());
-			final LocatorId locatorToId = warehouseBL.getDefaultLocatorId(warehouseToId);
+			final LocatorId locatorToId = warehouseBL.getOrCreateDefaultLocatorId(warehouseToId);
 
 			// Get the warehouse in transit
 			final OrgId warehouseFromOrgId = warehouseBL.getWarehouseOrgId(warehouseFromId);
@@ -200,7 +200,7 @@ public class DDOrderPojoSupplier
 				// Consolidate the demand in a single order for each Shipper , Business Partner , DemandDateStartSchedule
 				ddOrderBuilder = DDOrder.builder()
 						.orgId(warehouseToOrgId)
-						.plantId(plant.getS_Resource_ID())
+						.plantId(ResourceId.toRepoId(plantId))
 						.productPlanningId(productPlanningData.getPP_Product_Planning_ID())
 						.datePromised(supplyDateFinishSchedule)
 						.shipperId(networkLine.getM_Shipper_ID())

@@ -24,6 +24,7 @@ package de.metas.error.related_documents;
 
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.document.references.related_documents.IRelatedDocumentsProvider;
 import de.metas.document.references.related_documents.IZoomSource;
 import de.metas.document.references.related_documents.RelatedDocumentsCandidate;
@@ -39,7 +40,6 @@ import de.metas.util.Services;
 import de.metas.util.lang.Priority;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdWindowId;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Issue;
 import org.compiere.model.MQuery;
@@ -54,10 +54,12 @@ import java.util.function.Supplier;
 public class AdIssueRelatedDocumentsProvider implements IRelatedDocumentsProvider
 {
 	private final IErrorManager errorManager = Services.get(IErrorManager.class);
-	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+	private final ADReferenceService adReferenceService;
 
 	private final Priority relatedDocumentsPriority = Priority.HIGHEST;
 	private final boolean onlyNotAcknowledged = true;
+
+	public AdIssueRelatedDocumentsProvider(@NonNull final ADReferenceService adReferenceService) {this.adReferenceService = adReferenceService;}
 
 	@Override
 	public List<RelatedDocumentsCandidateGroup> retrieveRelatedDocumentsCandidates(
@@ -86,7 +88,7 @@ public class AdIssueRelatedDocumentsProvider implements IRelatedDocumentsProvide
 		for (final IssueCategory issueCategory : IssueCategory.values())
 		{
 			final RelatedDocumentsId id = RelatedDocumentsId.ofString("issues-" + issueCategory.getCode());
-			final ITranslatableString issueCategoryDisplayName = adReferenceDAO.retrieveListNameTranslatableString(IssueCategory.AD_REFERENCE_ID, issueCategory.getCode());
+			final ITranslatableString issueCategoryDisplayName = adReferenceService.retrieveListNameTranslatableString(IssueCategory.AD_REFERENCE_ID, issueCategory.getCode());
 
 			groupBuilder.candidate(
 					RelatedDocumentsCandidate.builder()

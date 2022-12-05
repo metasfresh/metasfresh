@@ -25,7 +25,7 @@ package org.eevolution.productioncandidate.service.produce;
 import de.metas.common.util.time.SystemTime;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.material.event.pporder.PPOrderCandidate;
-import de.metas.material.planning.IResourceDAO;
+import de.metas.material.planning.IResourceProductService;
 import de.metas.material.planning.ProductPlanningId;
 import de.metas.order.OrderLineId;
 import de.metas.product.ProductId;
@@ -52,7 +52,7 @@ public class PPOrderAllocatorService
 	@NonNull
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	@NonNull
-	private final IResourceDAO resourceDAO = Services.get(IResourceDAO.class);
+	private final IResourceProductService resourceDAO = Services.get(IResourceProductService.class);
 
 	@NonNull
 	private final PPOrderCandidatePojoConverter ppOrderCandidateConverter;

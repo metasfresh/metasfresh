@@ -104,13 +104,13 @@ public class X_MD_Available_For_Sales_QueryResult extends org.compiere.model.PO 
 	}
 
 	@Override
-	public void setStorageAttributesKey (final @Nullable java.lang.String StorageAttributesKey)
+	public void setStorageAttributesKey (final @Nullable String StorageAttributesKey)
 	{
 		set_Value (COLUMNNAME_StorageAttributesKey, StorageAttributesKey);
 	}
 
 	@Override
-	public java.lang.String getStorageAttributesKey() 
+	public String getStorageAttributesKey()
 	{
 		return get_ValueAsString(COLUMNNAME_StorageAttributesKey);
 	}

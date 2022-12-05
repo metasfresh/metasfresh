@@ -1,8 +1,9 @@
 package org.adempiere.service.impl;
 
-import java.util.Properties;
-
+import de.metas.logging.LogManager;
 import de.metas.user.UserId;
+import de.metas.util.Check;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.model.PlainContextAware;
@@ -12,9 +13,7 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
+import java.util.Properties;
 
 /*
  * #%L

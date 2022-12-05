@@ -76,7 +76,7 @@ public class ProductionSimulationView extends AbstractCustomView<ProductionSimul
 	@Override
 	public void close(final ViewCloseAction closeAction)
 	{
-		postMaterialEventService.postEventAsync(DeactivateAllSimulatedCandidatesEvent.builder()
+		postMaterialEventService.enqueueEventNow(DeactivateAllSimulatedCandidatesEvent.builder()
 													  .eventDescriptor(EventDescriptor.ofClientAndOrg(Env.getClientId(), Env.getOrgId()))
 													  .build());
 	}

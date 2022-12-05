@@ -120,7 +120,7 @@ public class BuildDepWorkFile extends JavaProcess
 			+ " AND A_Entry_Type = 'DEP'" 
 			+ clientCheck;
 		
-		no = DB.executeUpdate(sql,null);
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, null);
 		log.info("doIt - Clear DepExpense = " + no);
 		
 		sql = null;
@@ -130,7 +130,7 @@ public class BuildDepWorkFile extends JavaProcess
 			+ " <= " + DepBuild.getA_End_Asset_ID()
 			+ clientCheck;
 		
-		no = DB.executeUpdate(sql,null);
+		no = DB.executeUpdateAndSaveErrorOnFail(sql, null);
 		log.info("doIt - DepExpense Reset= " + no);
 		
 		sql = null;

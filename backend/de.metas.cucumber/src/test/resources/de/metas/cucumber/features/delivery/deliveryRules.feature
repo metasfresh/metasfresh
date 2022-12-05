@@ -42,7 +42,7 @@ Feature: Delivery rules with and without quantity in stock
 
     When the order identified by order_A_stocked_1 is completed
 
-    Then after not more than 30s, M_ShipmentSchedules are found:
+    Then after not more than 60s, M_ShipmentSchedules are found:
       | Identifier         | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
       | shipmentSchedule_1 | orderLine_A_stocked_1     | N             | 0            |
 
@@ -82,7 +82,7 @@ Feature: Delivery rules with and without quantity in stock
 
     When the order identified by order_A_notStocked_1 is completed
 
-    Then after not more than 30s, M_ShipmentSchedules are found:
+    Then after not more than 60s, M_ShipmentSchedules are found:
       | Identifier         | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
       | shipmentSchedule_2 | orderLine_A_notStocked_1  | N             | 1            |
 
@@ -90,7 +90,7 @@ Feature: Delivery rules with and without quantity in stock
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | shipmentSchedule_2               | D            | true                | false       |
 
-    Then after not more than 30s, M_InOut is found:
+    Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | shipmentSchedule_2               | inOut                 |
     And validate single M_ShipmentSchedule_QtyPicked record created for shipment schedule
@@ -126,7 +126,7 @@ Feature: Delivery rules with and without quantity in stock
     And after not more than 60 seconds metasfresh has MD_Stock data
       | M_Product_ID.Identifier | QtyOnHand |
       | product_A_stocked_2     | 1         |
-    And after not more than 30s, there are added M_HUs for inventory
+    And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | inventoryLine_A_stocked_2     | hu_A_stocked       |
     And metasfresh contains C_BPartners:
@@ -139,7 +139,7 @@ Feature: Delivery rules with and without quantity in stock
       | Identifier            | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | orderLine_A_stocked_2 | order_A_stocked_2     | product_A_stocked_2     | 1          |
     And the order identified by order_A_stocked_2 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier         | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
       | shipmentSchedule_3 | orderLine_A_stocked_2     | N             | 1            |
 
@@ -147,7 +147,7 @@ Feature: Delivery rules with and without quantity in stock
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | shipmentSchedule_3               | D            | true                | false       |
 
-    Then after not more than 30s, M_InOut is found:
+    Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | shipmentSchedule_3               | inOut                 |
     And validate single M_ShipmentSchedule_QtyPicked record created for shipment schedule
@@ -183,7 +183,7 @@ Feature: Delivery rules with and without quantity in stock
     And after not more than 60 seconds metasfresh has MD_Stock data
       | M_Product_ID.Identifier | QtyOnHand |
       | product_A_notStocked_2  | 1         |
-    And after not more than 30s, there are added M_HUs for inventory
+    And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | inventoryLine_A_notStocked_2  | hu_A_notStocked    |
     And metasfresh contains C_BPartners:
@@ -199,7 +199,7 @@ Feature: Delivery rules with and without quantity in stock
       | Identifier               | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | orderLine_A_notStocked_2 | order_A_notStocked_2  | product_A_notStocked_2  | 1          |
     And the order identified by order_A_notStocked_2 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier         | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
       | shipmentSchedule_4 | orderLine_A_notStocked_2  | N             | 1            |
 
@@ -207,7 +207,7 @@ Feature: Delivery rules with and without quantity in stock
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | shipmentSchedule_4               | D            | true                | false       |
 
-    Then after not more than 30s, M_InOut is found:
+    Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | shipmentSchedule_4               | inOut                 |
     And validate single M_ShipmentSchedule_QtyPicked record created for shipment schedule
@@ -242,7 +242,7 @@ Feature: Delivery rules with and without quantity in stock
       | Identifier               | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | orderLine_F_notStocked_1 | order_F_notStocked_1  | product_F_notStocked_1  | 1          |
     And the order identified by order_F_notStocked_1 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier         | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
       | shipmentSchedule_5 | orderLine_F_notStocked_1  | N             | 1            |
 
@@ -250,7 +250,7 @@ Feature: Delivery rules with and without quantity in stock
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | shipmentSchedule_5               | D            | true                | false       |
 
-    Then after not more than 30s, M_InOut is found:
+    Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | shipmentSchedule_5               | inOut                 |
     And validate single M_ShipmentSchedule_QtyPicked record created for shipment schedule
@@ -285,7 +285,7 @@ Feature: Delivery rules with and without quantity in stock
       | Identifier            | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | orderLine_F_stocked_1 | order_F_stocked_1     | product_F_stocked_1     | 1          |
     And the order identified by order_F_stocked_1 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier         | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
       | shipmentSchedule_6 | orderLine_F_stocked_1     | N             | 1            |
 
@@ -293,7 +293,7 @@ Feature: Delivery rules with and without quantity in stock
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | shipmentSchedule_6               | D            | true                | false       |
 
-    Then after not more than 30s, M_InOut is found:
+    Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | shipmentSchedule_6               | inOut                 |
     And validate single M_ShipmentSchedule_QtyPicked record created for shipment schedule
@@ -329,7 +329,7 @@ Feature: Delivery rules with and without quantity in stock
     And after not more than 60 seconds metasfresh has MD_Stock data
       | M_Product_ID.Identifier | QtyOnHand |
       | product_F_notStocked_2  | 1         |
-    And after not more than 30s, there are added M_HUs for inventory
+    And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | inventoryLine_F_notStocked_2  | hu_F_notStocked    |
     And metasfresh contains C_BPartners:
@@ -345,7 +345,7 @@ Feature: Delivery rules with and without quantity in stock
       | Identifier               | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | orderLine_F_notStocked_2 | order_F_notStocked_2  | product_F_notStocked_2  | 1          |
     And the order identified by order_F_notStocked_2 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier         | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
       | shipmentSchedule_7 | orderLine_F_notStocked_2  | N             | 1            |
 
@@ -353,7 +353,7 @@ Feature: Delivery rules with and without quantity in stock
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | shipmentSchedule_7               | D            | true                | false       |
 
-    Then after not more than 30s, M_InOut is found:
+    Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | shipmentSchedule_7               | inOut                 |
     And validate single M_ShipmentSchedule_QtyPicked record created for shipment schedule
@@ -389,7 +389,7 @@ Feature: Delivery rules with and without quantity in stock
     And after not more than 60 seconds metasfresh has MD_Stock data
       | M_Product_ID.Identifier | QtyOnHand |
       | product_F_stocked_2     | 1         |
-    And after not more than 30s, there are added M_HUs for inventory
+    And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | inventoryLine_F_stocked_2     | hu_F_stocked       |
     And metasfresh contains C_BPartners:
@@ -402,7 +402,7 @@ Feature: Delivery rules with and without quantity in stock
       | Identifier            | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | orderLine_F_stocked_2 | order_F_stocked_2     | product_F_stocked_2     | 1          |
     And the order identified by order_F_stocked_2 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier         | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
       | shipmentSchedule_8 | orderLine_F_stocked_2     | N             | 1            |
 
@@ -410,7 +410,7 @@ Feature: Delivery rules with and without quantity in stock
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | shipmentSchedule_8               | D            | true                | false       |
 
-    Then after not more than 30s, M_InOut is found:
+    Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | shipmentSchedule_8               | inOut                 |
     And validate single M_ShipmentSchedule_QtyPicked record created for shipment schedule
@@ -420,7 +420,6 @@ Feature: Delivery rules with and without quantity in stock
 
   @from:cucumber
   @Id:S0159_B_10
-  @runThisOne
   Scenario: C_BPartner.DeliveryRule = `Availability` - FIFO
   _Given M_Product.IsStocked = true
   _And C_BPartner.DeliveryRule = Availability
@@ -453,7 +452,7 @@ Feature: Delivery rules with and without quantity in stock
     And after not more than 60 seconds metasfresh has MD_Stock data
       | M_Product_ID.Identifier | QtyOnHand |
       | product_FIFO_1          | 12        |
-    And after not more than 30s, there are added M_HUs for inventory
+    And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | inventoryLine_FIFO1_1         | hu_fifo_first      |
       | inventoryLine_FIFO1_2         | hu_fifo_second     |
@@ -468,7 +467,7 @@ Feature: Delivery rules with and without quantity in stock
       | Identifier       | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | orderLine_FIFO_1 | order_FIFO_1          | product_FIFO_1          | 20         |
     And the order identified by order_FIFO_1 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier              | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
       | shipmentSchedule_FIFO_1 | orderLine_FIFO_1          | N             | 12           |
 
@@ -476,7 +475,7 @@ Feature: Delivery rules with and without quantity in stock
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | shipmentSchedule_FIFO_1          | D            | true                | false       |
 
-    Then after not more than 30s, M_InOut is found:
+    Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | shipmentSchedule_FIFO_1          | inOut_FIFO_1          |
     And M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule shipmentSchedule_FIFO_1 can be located in specified order
@@ -493,7 +492,6 @@ Feature: Delivery rules with and without quantity in stock
 
   @from:cucumber
   @Id:S0159_B_20
-    @runThisOne
   Scenario: C_BPartner.DeliveryRule = `Availability` - FIFO
   _Given M_Product.IsStocked = true
   _And C_BPartner.DeliveryRule = Availability
@@ -526,7 +524,7 @@ Feature: Delivery rules with and without quantity in stock
     And after not more than 60 seconds metasfresh has MD_Stock data
       | M_Product_ID.Identifier | QtyOnHand |
       | product_FIFO_2          | 20        |
-    And after not more than 30s, there are added M_HUs for inventory
+    And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | inventoryLine_FIFO2_1         | hu_fifo_first_2    |
       | inventoryLine_FIFO2_2         | hu_fifo_second_2   |
@@ -541,7 +539,7 @@ Feature: Delivery rules with and without quantity in stock
       | Identifier       | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | orderLine_FIFO_2 | order_FIFO_2          | product_FIFO_2          | 6          |
     And the order identified by order_FIFO_2 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier              | C_OrderLine_ID.Identifier | IsToRecompute | QtyToDeliver |
       | shipmentSchedule_FIFO_2 | orderLine_FIFO_2          | N             | 6            |
 
@@ -549,7 +547,7 @@ Feature: Delivery rules with and without quantity in stock
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | shipmentSchedule_FIFO_2          | D            | true                | false       |
 
-    Then after not more than 30s, M_InOut is found:
+    Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | shipmentSchedule_FIFO_2          | inOut_FIFO_2          |
     And M_ShipmentSchedule_QtyPicked records for M_ShipmentSchedule shipmentSchedule_FIFO_2 can be located in specified order

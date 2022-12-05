@@ -20,6 +20,10 @@ import Table from '../../containers/Table';
 import QuickActions from './QuickActions';
 import GeoMap from '../maps/GeoMap';
 import {
+  INVOICE_TO_ALLOCATE_WINDOW_ID,
+  InvoiceToAllocateViewHeader,
+} from '../paymentAllocation/InvoiceToAllocateViewHeader';
+import {
   PP_ORDER_CANDIDATE_WINDOW_ID,
   PPOrderCandidateViewHeader,
 } from '../ppOrderCandidate/PPOrderCandidateViewHeader';
@@ -235,6 +239,15 @@ class DocumentList extends Component {
                 </button>
               )}
 
+              {windowId === INVOICE_TO_ALLOCATE_WINDOW_ID && (
+                <InvoiceToAllocateViewHeader
+                  windowId={windowId}
+                  viewId={viewId}
+                  selectedRowIds={selected}
+                  pageLength={pageLength}
+                />
+              )}
+
               {layout.filters && (
                 <Filters
                   {...{
@@ -245,7 +258,6 @@ class DocumentList extends Component {
                   updateDocList={onFilterChange}
                 />
               )}
-
               {staticFilters && (
                 <FiltersStatic
                   {...{

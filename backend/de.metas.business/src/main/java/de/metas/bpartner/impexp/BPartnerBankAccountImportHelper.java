@@ -80,6 +80,7 @@ import javax.validation.constraints.Null;
 			bankAccount.setC_BPartner_ID(bpartnerId.getRepoId());
 			bankAccount.setIBAN(importRecord.getIBAN());
 			bankAccount.setA_Name(importRecord.getSwiftCode());
+			bankAccount.setSwiftCode(importRecord.getSwiftCode());
 			bankAccount.setC_Currency_ID(currencyBL.getBaseCurrency(process.getCtx()).getId().getRepoId());
 			final BankId bankId = bankRepository.getBankIdBySwiftCode(importRecord.getSwiftCode()).orElse(null);
 			if (bankId != null)

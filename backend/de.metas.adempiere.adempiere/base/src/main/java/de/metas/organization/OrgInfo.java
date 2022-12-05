@@ -1,7 +1,7 @@
 package de.metas.organization;
 
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.calendar.CalendarId;
+import de.metas.calendar.standard.CalendarId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.user.UserGroupId;
 import de.metas.user.UserId;

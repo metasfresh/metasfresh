@@ -3,6 +3,7 @@ package de.metas.process.impl;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.error.AdIssueId;
 import de.metas.i18n.Language;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
@@ -26,6 +27,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.exceptions.DBException;
+import org.adempiere.util.lang.ITableRecordReference;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.Adempiere;
 import org.compiere.model.I_AD_PInstance;
@@ -44,8 +46,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -58,7 +62,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.setValue;
 
 public class ADPInstanceDAO implements IADPInstanceDAO
 {
-	private static final transient Logger logger = LogManager.getLogger(ADPInstanceDAO.class);
+	private static final Logger logger = LogManager.getLogger(ADPInstanceDAO.class);
 
 	/** Result OK = 1 */
 	public static final int RESULT_OK = 1;
@@ -277,7 +281,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 			return ImmutableList.of();
 		}
 
-		final String sql = "SELECT Log_ID, P_Date, P_Number, P_Msg "
+		final String sql = "SELECT Log_ID, P_Date, P_Number, P_Msg, AD_Table_ID, Record_ID, AD_Issue_ID "
 				+ "FROM AD_PInstance_Log "
 				+ "WHERE AD_PInstance_ID=? "
 				// Order chronologically
@@ -300,7 +304,14 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 				final Timestamp date = rs.getTimestamp(2);
 				final BigDecimal number = rs.getBigDecimal(3);
 				final String message = rs.getString(4);
-				final ProcessInfoLog log = new ProcessInfoLog(logId, date, number, message);
+				final int adTableId = rs.getInt(5);
+				final int recordId = rs.getInt(6);
+				final int issueId = rs.getInt(7);
+
+				final TableRecordReference tableRecordReference = TableRecordReference.ofOrNull(adTableId, recordId);
+
+				final ProcessInfoLog log = new ProcessInfoLog(logId, date, number, message, tableRecordReference, AdIssueId.ofRepoIdOrNull(issueId), ITrx.TRXNAME_None);
+
 				log.markAsSavedInDB();
 				logs.add(log);
 			}
@@ -341,40 +352,26 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 			return;
 		}
 
-		final String sql = "INSERT INTO " + I_AD_PInstance_Log.Table_Name
-				+ " (AD_PInstance_ID, Log_ID, P_Date, P_Number, P_Msg)"
-				+ " VALUES (?, ?, ?, ?, ?)";
-		PreparedStatement pstmt = null;
-		try
-		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
-			for (final ProcessInfoLog log : logsToSave)
-			{
-				final Object[] sqlParams = new Object[] {
-						pinstanceId,
-						log.getLog_ID(),
-						log.getP_Date(),
-						log.getP_Number(),
-						log.getP_Msg()
-				};
+		final String NO_TRX = "TrxNone";
 
-				DB.setParameters(pstmt, sqlParams);
-				pstmt.addBatch();
-			}
+		final Map<String,List<ProcessInfoLog>> trxName2ProcessLogInfo = new HashMap<>();
 
-			pstmt.executeBatch();
+		// dev-note: note that the different log records need to be persisted using their respective trx-names, so we need to first sort them accordingly
+		logsToSave.forEach(log -> {
+			final String currentTrx = CoalesceUtil.coalesceNotNull(log.getTrxName(), NO_TRX);
 
-			logsToSave.forEach(ProcessInfoLog::markAsSavedInDB);
-		}
-		catch (final SQLException e)
-		{
-			// log only, don't fail
-			logger.error("Error while saving the process log lines", e);
-		}
-		finally
-		{
-			DB.close(pstmt);
-		}
+			final List<ProcessInfoLog> logsForTrx = Optional.ofNullable(trxName2ProcessLogInfo.get(currentTrx))
+					.orElseGet(ArrayList::new);
+
+			logsForTrx.add(log);
+
+			trxName2ProcessLogInfo.put(currentTrx, logsForTrx);
+		});
+
+		trxName2ProcessLogInfo.forEach((trxName,processLogs) -> {
+			final String realTrxName = trxName.equals(NO_TRX) ? ITrx.TRXNAME_None : trxName;
+			this.insertLogs(pinstanceId, processLogs, realTrxName);
+		});
 	}
 
 	@Override
@@ -476,7 +473,7 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		adPInstance.setErrorMsg(result.getSummary());
 		saveRecord(adPInstance);
 
-		saveProcessInfoLogs(pinstanceId, result.getCurrentLogs());
+		result.syncLogsToDB();
 	}
 
 	@Override
@@ -598,6 +595,12 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 		return adPInstance;
 	}
 
+	@Override
+	public I_AD_PInstance getByIdOrNull(@NonNull final PInstanceId pinstanceId)
+	{
+		return loadOutOfTrx(pinstanceId, I_AD_PInstance.class);
+	}
+
 	private static final String SQL_SelectAll_AD_PInstance_SelectedIncludedRecords = "SELECT * FROM " + I_AD_PInstance_SelectedIncludedRecords.Table_Name
 			+ " WHERE " + I_AD_PInstance_SelectedIncludedRecords.COLUMNNAME_AD_PInstance_ID + "=?"
 			+ " ORDER BY " + I_AD_PInstance_SelectedIncludedRecords.COLUMNNAME_SeqNo;
@@ -690,6 +693,81 @@ public class ADPInstanceDAO implements IADPInstanceDAO
 
 	private void deleteSelectedIncludedRecords(final PInstanceId pinstanceId)
 	{
-		DB.executeUpdateEx(SQL_DeleteFrom_AD_PInstance_SelectedIncludedRecords, new Object[] { pinstanceId }, ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(SQL_DeleteFrom_AD_PInstance_SelectedIncludedRecords, new Object[] { pinstanceId }, ITrx.TRXNAME_ThreadInherited);
+	}
+
+	private void insertLogs(@NonNull final PInstanceId pInstanceId, @NonNull final List<ProcessInfoLog> logsToSave, @Nullable final String trxName)
+	{
+
+		final String sql = "INSERT INTO " + I_AD_PInstance_Log.Table_Name
+				+ " ("
+				+ I_AD_PInstance_Log.COLUMNNAME_AD_PInstance_ID
+				+ ", "
+				+ I_AD_PInstance_Log.COLUMNNAME_Log_ID
+				+ ", "
+				+ I_AD_PInstance_Log.COLUMNNAME_P_Date
+				+ ", "
+				+ I_AD_PInstance_Log.COLUMNNAME_P_Number
+				+ ", "
+				+ I_AD_PInstance_Log.COLUMNNAME_P_Msg
+				+ ", "
+				+ I_AD_PInstance_Log.COLUMNNAME_AD_Table_ID
+				+ ", "
+				+ I_AD_PInstance_Log.COLUMNNAME_Record_ID
+				+ ", "
+				+ I_AD_PInstance_Log.COLUMNNAME_AD_Issue_ID
+				+ ", "
+				+ I_AD_PInstance_Log.COLUMNNAME_Warnings
+				+ ")"
+				+ " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		PreparedStatement pstmt = null;
+
+		try
+		{
+			pstmt = DB.prepareStatement(sql, trxName);
+			for (final ProcessInfoLog log : logsToSave)
+			{
+				final Integer tableId = Optional.ofNullable(log.getTableRecordReference())
+						.map(ITableRecordReference::getAD_Table_ID)
+						.orElse(null);
+
+				final Integer recordId = Optional.ofNullable(log.getTableRecordReference())
+						.map(ITableRecordReference::getRecord_ID)
+						.orElse(null);
+
+				final Integer adIssueId = Optional.ofNullable(log.getAdIssueId())
+						.map(AdIssueId::getRepoId)
+						.orElse(null);
+
+				final Object[] sqlParams = new Object[] {
+						pInstanceId.getRepoId(),
+						log.getLog_ID(),
+						log.getP_Date(),
+						log.getP_Number(),
+						log.getP_Msg(),
+						tableId,
+						recordId,
+						adIssueId,
+						log.getWarningMessages()
+				};
+
+				DB.setParameters(pstmt, sqlParams);
+				pstmt.addBatch();
+			}
+
+			pstmt.executeBatch();
+
+			logsToSave.forEach(ProcessInfoLog::markAsSavedInDB);
+		}
+		catch (final SQLException e)
+		{
+			// log only, don't fail
+			logger.error("Error while saving the process log lines", e);
+		}
+		finally
+		{
+			DB.close(pstmt);
+		}
+		DB.executeUpdateAndThrowExceptionOnFail(SQL_DeleteFrom_AD_PInstance_SelectedIncludedRecords, new Object[] { pInstanceId }, ITrx.TRXNAME_ThreadInherited);
 	}
 }

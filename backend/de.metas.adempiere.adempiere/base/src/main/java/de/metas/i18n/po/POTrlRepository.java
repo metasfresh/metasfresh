@@ -148,10 +148,7 @@ public class POTrlRepository
 						+ "='Y'");
 
 		sql.append("AND (l." + I_AD_Language.COLUMNNAME_IsSystemLanguage + "='Y'");
-		if (I_AD_Element.Table_Name.equals(tableName))
-		{ // for AD_Element we need to make sure to have the BaseLanguage, no matter if that's also a system-language
-			sql.append(" OR l." + I_AD_Language.COLUMNNAME_IsBaseLanguage + "='Y'");
-		}
+		sql.append(" OR l." + I_AD_Language.COLUMNNAME_IsBaseLanguage + "='Y'");
 		sql.append(")");
 
 		sql.append(" AND t.")
@@ -160,7 +157,7 @@ public class POTrlRepository
 				+ I_AD_Language.COLUMNNAME_AD_Language
 				+ " AND tt.")
 				.append(keyColumn).append("=t.").append(keyColumn).append(")");
-		final int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Inserted {} translation records for {}", no, this);
 		return no > 0;
 	}
@@ -256,7 +253,7 @@ public class POTrlRepository
 				.append(sqlSet)
 				.append(" WHERE ").append(keyColumn).append("=").append(po.get_ID()).append(trlWhereChecks);
 
-		final int updatedCount = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		final int updatedCount = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Updated {} translation records for {}", updatedCount, po);
 
 		//
@@ -303,7 +300,7 @@ public class POTrlRepository
 				.append(" WHERE ").append(keyColumn).append("=").append(recordId)
 				.append(" AND AD_Language=").append(DB.TO_STRING(adLanguage));
 
-		final int updatedCount = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		final int updatedCount = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Updated {} translation records for {}/{}/{}", updatedCount, trlInfo, recordId, adLanguage);
 	}
 
@@ -341,7 +338,7 @@ public class POTrlRepository
 		final String tableName = trlInfo.getTableName();
 		final String keyColumn = trlInfo.getKeyColumnName();
 		final StringBuilder sql = new StringBuilder("DELETE FROM  ").append(tableName).append("_Trl WHERE ").append(keyColumn).append("=").append(recordId);
-		final int no = DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 		logger.debug("Deleted {} translation records for {}/{}", no, trlInfo, recordId);
 		return no >= 0;
 	}

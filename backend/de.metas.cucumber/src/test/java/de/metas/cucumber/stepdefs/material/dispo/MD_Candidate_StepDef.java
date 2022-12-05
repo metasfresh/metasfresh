@@ -114,12 +114,12 @@ public class MD_Candidate_StepDef
 	private CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 	private CandidateRepositoryWriteService candidateWriteService;
 	private MaterialEventObserver materialEventObserver;
+	private final MaterialDispoDataItem_StepDefData materialDispoDataItemStepDefData;
 	private SimulatedCandidateService simulatedCandidateService;
 	private final M_Product_StepDefData productTable;
 	private final MD_Candidate_StepDefData stockCandidateTable;
 	private final C_OrderLine_StepDefData orderLineTable;
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
-	private final MaterialDispoDataItem_StepDefData materialDispoDataItemStepDefData;
 
 	public MD_Candidate_StepDef(
 			@NonNull final MaterialDispoDataItem_StepDefData materialDispoDataItemStepDefData,
@@ -352,16 +352,17 @@ public class MD_Candidate_StepDef
 				throw new AdempiereException("Event type not handeled: " + eventType);
 		}
 
-		postMaterialEventService.postEventNow(event, null);
+		postMaterialEventService.enqueueEventNow(event);
 	}
 
-	@And("metasfresh has no MD_Candidate for identifier {string}")
-	public void metasfresh_has_no_md_cand_for_identifier(@NonNull final String identifier)
+	@And("^after not more than (.*)s, metasfresh has no MD_Candidate for identifier (.*)$")
+	public void metasfresh_has_no_md_cand_for_identifier(final int timeoutSec, @NonNull final String identifier) throws InterruptedException
 	{
 		final MaterialDispoDataItem materialDispoDataItem = materialDispoDataItemStepDefData.get(identifier);
-		final I_MD_Candidate candidateRecord = MaterialDispoUtils.getCandidateRecordById(materialDispoDataItem.getCandidateId());
 
-		assertThat(candidateRecord).isNull();
+		final Supplier<Boolean> candidateWasDeleted = () -> MaterialDispoUtils.getCandidateRecordById(materialDispoDataItem.getCandidateId()) == null;
+
+		StepDefUtil.tryAndWait(timeoutSec, 500, candidateWasDeleted);
 	}
 
 	@And("^after not more than (.*)s, the MD_Candidate table has only the following records$")
@@ -455,37 +456,6 @@ public class MD_Candidate_StepDef
 		}
 	}
 
-	@And("post DeactivateAllSimulatedCandidatesEvent and wait for processing")
-	public void deactivate_simulated_md_candidates()
-	{
-		final String traceId = UUID.randomUUID().toString();
-
-		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(Env.getClientId(), Env.getOrgId());
-
-		postMaterialEventService.postEventNow(DeactivateAllSimulatedCandidatesEvent.builder()
-													  .eventDescriptor(EventDescriptor.ofClientOrgAndTraceId(clientAndOrgId, traceId))
-													  .build(), null);
-
-		materialEventObserver.awaitProcessing(traceId);
-	}
-
-	@And("delete all simulated candidates")
-	public void delete_simulated_candidates()
-	{
-		simulatedCandidateService.deleteAllSimulatedCandidates();
-	}
-
-	@And("validate there is no simulated md_candidate")
-	public void validate_no_simulated_md_candidate()
-	{
-		final int noOfRecords = queryBL.createQueryBuilder(I_MD_Candidate.class)
-				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Status, X_MD_Candidate.MD_CANDIDATE_STATUS_Simulated)
-				.create()
-				.count();
-
-		assertThat(noOfRecords).isEqualTo(0);
-	}
-
 	private MaterialDispoDataItem tryAndWaitforCandidate(
 			final int timeoutSec,
 			final @NonNull MaterialDispoTableRow tableRow) throws InterruptedException
@@ -514,6 +484,7 @@ public class MD_Candidate_StepDef
 					sb.append("item with id=" + item.getCandidateId().getRepoId() + " does not match tableRow with Identifier " + tableRow.getIdentifier() + " because the time (resp. materialDecription.date) values are different\n");
 					continue;
 				}
+
 				if (!Objects.equals(item.getBusinessCase(), tableRow.getBusinessCase()))
 				{
 					sb.append("item with id=" + item.getCandidateId().getRepoId() + " does not match tableRow with Identifier " + tableRow.getIdentifier() + " because the business case values are different\n");
@@ -537,6 +508,37 @@ public class MD_Candidate_StepDef
 				.tryAndWaitForItem(timeoutSec, 1000,
 								   itemProvider,
 								   logContext);
+	}
+
+	@And("post DeactivateAllSimulatedCandidatesEvent and wait for processing")
+	public void deactivate_simulated_md_candidates()
+	{
+		final String traceId = UUID.randomUUID().toString();
+
+		final ClientAndOrgId clientAndOrgId = ClientAndOrgId.ofClientAndOrg(Env.getClientId(), Env.getOrgId());
+
+		postMaterialEventService.enqueueEventNow(DeactivateAllSimulatedCandidatesEvent.builder()
+														 .eventDescriptor(EventDescriptor.ofClientOrgAndTraceId(clientAndOrgId, traceId))
+														 .build());
+
+		materialEventObserver.awaitProcessing(traceId);
+	}
+
+	@And("delete all simulated candidates")
+	public void delete_simulated_candidates()
+	{
+		simulatedCandidateService.deleteAllSimulatedCandidates();
+	}
+
+	@And("validate there is no simulated md_candidate")
+	public void validate_no_simulated_md_candidate()
+	{
+		final int noOfRecords = queryBL.createQueryBuilder(I_MD_Candidate.class)
+				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Status, X_MD_Candidate.MD_CANDIDATE_STATUS_Simulated)
+				.create()
+				.count();
+
+		assertThat(noOfRecords).isEqualTo(0);
 	}
 
 	private void validate_md_candidate_stock(@NonNull final Map<String, String> tableRow)

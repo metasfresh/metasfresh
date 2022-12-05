@@ -3,6 +3,9 @@ de.metas.externalsystem.other.ExternalSystemOtherConfigRepositoryTest.getById=[
     "id" : {
       "externalSystemParentConfigId" : 1
     },
+    "value" : {
+      "externalSystemParentConfigId" : 1
+    },
     "parameters" : [
       {
         "id" : 100001,

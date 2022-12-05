@@ -1,16 +1,15 @@
 package org.adempiere.ad.table.process;
 
-import java.util.List;
-
+import de.metas.process.JavaProcess;
+import de.metas.process.RunOutOfTrx;
+import de.metas.util.Services;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.FillMandatoryException;
 import org.compiere.model.I_AD_Tab;
 import org.compiere.model.I_AD_Table;
 
-import de.metas.process.JavaProcess;
-import de.metas.process.RunOutOfTrx;
-import de.metas.util.Services;
+import java.util.List;
 
 /*
  * #%L

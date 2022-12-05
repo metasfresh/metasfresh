@@ -1,21 +1,18 @@
 package de.metas.ui.web.window.datatypes.json;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.IOException;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
+import de.metas.JsonObjectMapperHolder;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
+import de.metas.ui.web.window.datatypes.LookupValuesList;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.collect.ImmutableList;
+import java.io.IOException;
 
-import de.metas.JsonObjectMapperHolder;
-import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
-import de.metas.ui.web.window.datatypes.LookupValue.StringLookupValue;
-import de.metas.ui.web.window.datatypes.DebugProperties;
-import de.metas.ui.web.window.datatypes.LookupValuesList;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class JSONLookupValuesListTest
 {
@@ -23,6 +20,7 @@ public class JSONLookupValuesListTest
 	public void EMPTY_toString_does_not_fail()
 	{
 		final JSONLookupValuesList lookupValuesList = JSONLookupValuesList.ofLookupValuesList(LookupValuesList.EMPTY, "en_US");
+		//noinspection ResultOfMethodCallIgnored
 		lookupValuesList.toString();
 	}
 
@@ -56,7 +54,7 @@ public class JSONLookupValuesListTest
 			System.out.println("JSON: " + json);
 
 			final JSONLookupValuesList objDeserialized = jsonObjectMapper.readValue(json, JSONLookupValuesList.class);
-			assertThat(objDeserialized.toString()).isEqualTo(obj.toString());
+			assertThat(objDeserialized).isEqualTo(obj);
 		}
 	}
 
@@ -65,15 +63,14 @@ public class JSONLookupValuesListTest
 	{
 		private JSONLookupValuesList newJSONLookupValuesList(final JSONLookupValue... values)
 		{
-			final DebugProperties otherProperties = null;
-			return new JSONLookupValuesList(ImmutableList.copyOf(values), otherProperties);
+			return new JSONLookupValuesList(ImmutableList.copyOf(values), null);
 		}
 
 		@Test
 		public void empty()
 		{
 			assertThat(JSONLookupValuesList.ofLookupValuesList(LookupValuesList.EMPTY, "any_Lang"))
-					.isSameAs(JSONLookupValuesList.EMPTY);
+					.isEqualTo(JSONLookupValuesList.empty());
 		}
 
 		@Test
@@ -84,27 +81,27 @@ public class JSONLookupValuesListTest
 					IntegerLookupValue.of(2, "A")));
 			assertThat(list.isOrdered()).isTrue(); // make sure our preconditions are right
 
-			assertThat(JSONLookupValuesList.ofLookupValuesList(list, "any_Lang").toString())
+			assertThat(JSONLookupValuesList.ofLookupValuesList(list, "any_Lang"))
 					.isEqualTo(newJSONLookupValuesList(
 							JSONLookupValue.of("1", "Z"),
-							JSONLookupValue.of("2", "A")).toString());
+							JSONLookupValue.of("2", "A")));
 		}
 
 		@Test
 		public void notOrderedList()
 		{
 			final LookupValuesList list = LookupValuesList.fromCollection(ImmutableList.of(
-					IntegerLookupValue.of(1, "Z"),
-					IntegerLookupValue.of(2, "A")))
+							IntegerLookupValue.of(1, "Z"),
+							IntegerLookupValue.of(2, "A")))
 					.notOrdered();
 			assertThat(list.isOrdered()).isFalse(); // make sure our preconditions are right
 
-			assertThat(JSONLookupValuesList.ofLookupValuesList(list, "any_Lang").toString())
+			assertThat(JSONLookupValuesList.ofLookupValuesList(list, "any_Lang"))
 					.isEqualTo(newJSONLookupValuesList(
 							JSONLookupValue.of("2", "A"),
-							JSONLookupValue.of("1", "Z")).toString());
+							JSONLookupValue.of("1", "Z")));
 		}
 
 	}
-
 }
+

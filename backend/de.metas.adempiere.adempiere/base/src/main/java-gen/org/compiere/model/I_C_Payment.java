@@ -1400,6 +1400,31 @@ public interface I_C_Payment
 	String COLUMNNAME_Micr = "Micr";
 
 	/**
+	 * Set Section Code.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_SectionCode_ID (int M_SectionCode_ID);
+
+	/**
+	 * Get Section Code.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_SectionCode_ID();
+
+	@Nullable org.compiere.model.I_M_SectionCode getM_SectionCode();
+
+	void setM_SectionCode(@Nullable org.compiere.model.I_M_SectionCode M_SectionCode);
+
+	ModelColumn<I_C_Payment, org.compiere.model.I_M_SectionCode> COLUMN_M_SectionCode_ID = new ModelColumn<>(I_C_Payment.class, "M_SectionCode_ID", org.compiere.model.I_M_SectionCode.class);
+	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
+
+	/**
 	 * Set Original Transaction ID.
 	 * Original Transaction ID
 	 *
@@ -1847,6 +1872,29 @@ public interface I_C_Payment
 	int getReversal_ID();
 
 	String COLUMNNAME_Reversal_ID = "Reversal_ID";
+
+	/**
+	 * Set IBAN.
+	 * International Bank Account Number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIBAN (@Nullable java.lang.String IBAN);
+
+	/**
+	 * Get IBAN.
+	 * International Bank Account Number
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIBAN();
+
+	ModelColumn<I_C_Payment, Object> COLUMN_IBAN = new ModelColumn<>(I_C_Payment.class, "IBAN", null);
+	String COLUMNNAME_IBAN = "IBAN";
 
 	/**
 	 * Set BLZ.

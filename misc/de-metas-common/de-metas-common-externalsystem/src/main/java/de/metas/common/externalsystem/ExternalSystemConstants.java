@@ -69,11 +69,54 @@ public class ExternalSystemConstants
 
 	public static final String PARAM_CAMEL_HTTP_RESOURCE_AUTH_KEY = "CamelHttpResourceAuthKey";
 
+	// SFTP Config
+	public static final String PARAM_SFTP_HOST_NAME = "SFTP_HostName";
+	public static final String PARAM_SFTP_PORT = "SFTP_Port";
+	public static final String PARAM_SFTP_USERNAME = "SFTP_Username";
+	public static final String PARAM_SFTP_PASSWORD = "SFTP_Password";
+
+	public static final String PARAM_SFTP_PROCESSED_DIRECTORY = "SFTPProcessedDirectory";
+	public static final String PARAM_SFTP_ERRORED_DIRECTORY = "SFTPErroredDirectory";
+	public static final String PARAM_SFTP_POLLING_FREQUENCY_MS = "SFTPPollingFrequencyInMs";
+
+	public static final String PARAM_SFTP_PRODUCT_TARGET_DIRECTORY = "SFTP_Product_Target_Directory";
+	public static final String PARAM_SFTP_PRODUCT_FILE_NAME_PATTERN = "SFTPProductFileNamePattern";
+
+	public static final String PARAM_SFTP_BPARTNER_TARGET_DIRECTORY = "SFTP_BPartner_Target_Directory";
+	public static final String PARAM_SFTP_BPARTNER_FILE_NAME_PATTERN = "SFTPBPartnerFileNamePattern";
+
+	public static final String PARAM_SFTP_CREDIT_LIMIT_TARGET_DIRECTORY = "SFTP_CreditLimit_Target_Directory";
+	public static final String PARAM_SFTP_CREDIT_LIMIT_FILENAME_PATTERN = "SFTPCreditLimitFileNamePattern";
+
+	// Local File Config
+	public static final String PARAM_LOCAL_FILE_PRODUCT_TARGET_DIRECTORY = "LocalFile_Product_Target_Directory";
+	public static final String PARAM_LOCAL_FILE_PRODUCT_FILE_NAME_PATTERN = "LocalFileProductFileNamePattern";
+
+	public static final String PARAM_LOCAL_FILE_BPARTNER_FILE_NAME_PATTERN = "LocalFilePartnerFileNamePattern";
+	public static final String PARAM_LOCAL_FILE_BPARTNER_TARGET_DIRECTORY = "LocalFile_BPartner_Target_Directory";
+
+	public static final String PARAM_LOCAL_FILE_CREDIT_LIMIT_FILENAME_PATTERN = "LocalFileCreditLimitFileNamePattern";
+	public static final String PARAM_LOCAL_FILE_CREDIT_LIMIT_TARGET_DIRECTORY = "LocalFile_CreditLimit_Target_Directory";
+
+	public static final String PARAM_LOCAL_FILE_ROOT_LOCATION = "LocalFileRootLocation";
+	public static final String PARAM_LOCAL_FILE_PROCESSED_DIRECTORY = "LocalFileProcessedDirectory";
+	public static final String PARAM_LOCAL_FILE_ERRORED_DIRECTORY = "LocalFileErroredDirectory";
+	public static final String PARAM_LOCAL_FILE_POLLING_FREQUENCY_MS = "LocalFilePollingFrequencyInMs";
+	//
+
 	public static final String QUEUE_NAME_MF_TO_ES = "MF_TO_ExternalSystem";
 
 	public static final String QUEUE_NAME_ES_TO_MF_CUSTOM = "Custom_ExternalSystem_To_Metasfresh";
 
 	public static final String QUEUE_NAME_MF_TO_ES_CUSTOM = "Custom_Metasfresh_To_ExternalSystem";
+
+
+	public static final String PARAM_APP_ID = "AppId";
+	public static final String PARAM_CERT_ID = "CertId";
+	public static final String PARAM_DEV_ID = "DevId";
+	public static final String PARAM_REDIRECT_URL = "RedirectURL";
+	public static final String PARAM_API_MODE  = "ApiMode";
+	public static final String PARAM_API_USER_REFRESH_TOKEN  = "RefreshToken";
 
 	public static final String PARAM_RABBITMQ_HTTP_URL = "RemoteURL";
 	public static final String PARAM_RABBITMQ_HTTP_ROUTING_KEY = "RoutingKey";
@@ -85,6 +128,26 @@ public class ExternalSystemConstants
 	public static final String PARAM_RABBIT_MQ_AUTH_TOKEN = "RabbitMQAuthToken";
 	public static final String PARAM_JSON_EXTERNAL_REFERENCE_LOOKUP_REQUEST = "JsonExternalReferenceLookupRequest";
 
+	public static final String PARAM_PP_ORDER_ID = "PP_Order_ID";
+	public static final String PARAM_PRODUCT_BASE_FOLDER_NAME = "Product_BaseFolderName";
+	public static final String PARAM_TCP_PORT_NUMBER = "TCP_PortNumber";
+	public static final String PARAM_TCP_HOST = "TCP_Host";
+	public static final String PARAM_PLU_FILE_CONFIG = "PluFileConfig";
+	public static final String PARAM_PLU_FILE_EXPORT_AUDIT_ENABLED = "PluFileExportAuditEnabled";
+
 	public static final String HEADER_PINSTANCE_ID = "x-adpinstanceid";
 	public static final String HEADER_EXTERNALSYSTEM_CONFIG_ID = "x-externalsystemconfigid";
+	public static final String PARAM_JSON_AVAILABLE_FOR_SALES = "JsonAvailableForSales";
+
+	public static final int DEFAULT_SW6_ORDER_PAGE_SIZE = 100;
+
+	public static final String API_REQUEST_AUDIT_TABLE_NAME = "API_Request_Audit";
+
+	public static final String PARAM_JSON_AVAILABLE_STOCK = "JsonAvailableStock";
+
+	public static final String PARAM_FEEDBACK_RESOURCE_URL = "FeedbackResourceURL";
+	public static final String PARAM_FEEDBACK_RESOURCE_AUTH_TOKEN = "FeedbackResourceAuthToken";
+
+	public static final String PARAM_PRODUCT_TYPE_MAPPINGS = "ProductTypeMappings";
+	public static final String PARAM_PRODUCT_CATEGORY_MAPPINGS = "ProductCategoryMappings";
 }

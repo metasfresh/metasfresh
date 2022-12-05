@@ -81,7 +81,7 @@ public class M_Locator_StepDef
 	}
 
 	@And("metasfresh contains M_Locator:")
-	public void create_M_Locator_Simple(@NonNull final DataTable dataTable)
+	public void create_M_Locator_record(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> rows = dataTable.asMaps();
 		for (final Map<String, String> row : rows)

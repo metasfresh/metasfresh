@@ -93,7 +93,6 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 			@Nullable final BPartnerId customerId,
 			@NonNull final JsonOpts jsonOpts)
 	{
-		final JsonNewLUTargetsList newLUTargets = getNewLUTargets(line.getProductId(), customerId);
 		final String adLanguage = jsonOpts.getAdLanguage();
 
 		return JsonFinishedGoodsReceiveLine.builder()
@@ -106,7 +105,7 @@ public class MaterialReceiptActivityHandler implements WFActivityHandler
 				.qtyToReceive(line.getQtyToReceive().toBigDecimal())
 				.qtyReceived(line.getQtyReceived().toBigDecimal())
 				.currentReceivingHU(JsonHUQRCodeTargetConverters.fromNullable(line.getReceivingTarget(), huQRCodeService))
-				.availableReceivingTargets(newLUTargets)
+				.availableReceivingTargets(getNewLUTargets(line.getProductId(), customerId))
 				.build();
 	}
 

@@ -1,9 +1,30 @@
 package de.metas.banking.payment.impl;
 
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Properties;
+import java.util.Set;
+import java.util.StringJoiner;
+
+import de.metas.banking.PaySelectionLineId;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_BP_BankAccount;
+import org.compiere.model.I_C_Invoice;
+import org.compiere.model.I_C_PaySelection;
+import org.compiere.model.I_C_PaySelectionLine;
+import org.compiere.model.X_C_BP_BankAccount;
+import org.compiere.util.TimeUtil;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+
 import de.metas.banking.BankAccountId;
 import de.metas.banking.BankStatementAndLineAndRefId;
 import de.metas.banking.BankStatementId;
@@ -26,24 +47,10 @@ import de.metas.payment.api.IPaymentBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_BP_BankAccount;
-import org.compiere.model.I_C_Invoice;
-import org.compiere.model.I_C_PaySelection;
-import org.compiere.model.I_C_PaySelectionLine;
-import org.compiere.model.X_C_BP_BankAccount;
-import org.compiere.util.TimeUtil;
+import org.compiere.model.I_C_Payment;
 
-import java.time.LocalDate;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Properties;
-import java.util.Set;
-import java.util.StringJoiner;
+
+import java.util.Optional;
 
 public class PaySelectionBL implements IPaySelectionBL
 {
@@ -53,7 +60,13 @@ public class PaySelectionBL implements IPaySelectionBL
 	private final IPaySelectionDAO paySelectionDAO = Services.get(IPaySelectionDAO.class);
 
 	@Override
-	public void updateFromInvoice(final org.compiere.model.I_C_PaySelectionLine psl)
+	public Optional<I_C_PaySelection> getById(@NonNull final PaySelectionId paySelectionId)
+	{
+		return paySelectionDAO.getById(paySelectionId);
+	}
+
+	@Override
+	public void updateFromInvoice(final I_C_PaySelectionLine psl)
 	{
 		final IPaymentRequestBL paymentRequestBL = Services.get(IPaymentRequestBL.class);
 
@@ -174,14 +187,12 @@ public class PaySelectionBL implements IPaySelectionBL
 
 	/**
 	 * Creates a payment for given pay selection line, links the payment to line and saves the line.
-	 *
+	 * <p>
 	 * A payment will be created only if
 	 * <ul>
 	 * <li>was not created before
 	 * <li>line is not linked to a bank statement line ref
 	 * </ul>
-	 *
-	 * @return newly created payment or <code>null</code> if no payment was generated.
 	 */
 	private org.compiere.model.I_C_Payment createPaymentIfNeeded(final I_C_PaySelectionLine line)
 	{
@@ -200,8 +211,8 @@ public class PaySelectionBL implements IPaySelectionBL
 
 		try
 		{
-			final org.compiere.model.I_C_Payment payment = createPayment(line);
-			line.setC_Payment(payment);
+			final I_C_Payment payment = createPayment(line);
+			line.setC_Payment_ID(payment.getC_Payment_ID());
 			paySelectionDAO.save(line);
 
 			return payment;
@@ -217,7 +228,6 @@ public class PaySelectionBL implements IPaySelectionBL
 	 * <p>
 	 * NOTE: this method is NOT checking if the payment was already created or it's not needed.
 	 *
-	 * @param line
 	 * @return generated payment.
 	 */
 	private org.compiere.model.I_C_Payment createPayment(final I_C_PaySelectionLine line)
@@ -432,4 +442,13 @@ public class PaySelectionBL implements IPaySelectionBL
 				.collect(ImmutableSet.toImmutableSet());
 	}
 
+	@Override
+	public ImmutableSet<BPartnerId> getBPartnerIdsFromPaySelectionLineIds(@NonNull Collection<PaySelectionLineId> paySelectionLineIds)
+	{
+		return paySelectionDAO.retrievePaySelectionLinesByIds(paySelectionLineIds)
+				.stream()
+				.map(paySelectionLine -> BPartnerId.ofRepoIdOrNull(paySelectionLine.getC_BPartner_ID()))
+				.filter(Objects::nonNull)
+				.collect(ImmutableSet.toImmutableSet());
+	}
 }

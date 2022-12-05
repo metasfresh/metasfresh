@@ -22,9 +22,14 @@ package de.metas.contracts.interceptor;
  * #L%
  */
 
-
-import java.util.Properties;
-
+import de.metas.calendar.standard.ICalendarBL;
+import de.metas.contracts.model.I_C_Flatrate_Conditions;
+import de.metas.contracts.model.I_C_Flatrate_Transition;
+import de.metas.contracts.model.X_C_Flatrate_Conditions;
+import de.metas.contracts.model.X_C_Flatrate_Transition;
+import de.metas.i18n.IMsgBL;
+import de.metas.security.permissions.Access;
+import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
@@ -34,14 +39,7 @@ import org.compiere.model.I_C_Calendar;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.Query;
 
-import de.metas.calendar.ICalendarBL;
-import de.metas.contracts.model.I_C_Flatrate_Conditions;
-import de.metas.contracts.model.I_C_Flatrate_Transition;
-import de.metas.contracts.model.X_C_Flatrate_Conditions;
-import de.metas.contracts.model.X_C_Flatrate_Transition;
-import de.metas.i18n.IMsgBL;
-import de.metas.security.permissions.Access;
-import de.metas.util.Services;
+import java.util.Properties;
 
 @Validator(I_C_Flatrate_Transition.class)
 public class C_Flatrate_Transition

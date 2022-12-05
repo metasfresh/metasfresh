@@ -75,7 +75,7 @@ public class M_InOut
 	private final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
 	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 	private final IHUShipmentAssignmentBL huShipmentAssignmentBL = Services.get(IHUShipmentAssignmentBL.class);
-	private final IHUInOutDAO inOutDAO = Services.get(IHUInOutDAO.class);
+	private final IHUInOutDAO huInOutDAO = Services.get(IHUInOutDAO.class);
 	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 	private final IHUEmptiesService huEmptiesService = Services.get(IHUEmptiesService.class);
 	private final IHUPackageBL huPackageBL = Services.get(IHUPackageBL.class);
@@ -143,6 +143,18 @@ public class M_InOut
 		updateAttributes(shipment);
 	}
 
+	@DocValidate(timings = ModelValidator.TIMING_AFTER_REACTIVATE)
+	public void afterReactivate(@NonNull final I_M_InOut shipment)
+	{
+		// Make sure we deal with a shipment
+		if (!shipment.isSOTrx())
+		{
+			return;
+		}
+
+		huShipmentAssignmentBL.updateHUsOnShipmentReactivate(shipment);
+	}
+
 	private void updateAttributes(@NonNull final I_M_InOut shipment)
 	{
 		// Make sure we deal with a shipment
@@ -157,7 +169,7 @@ public class M_InOut
 			return;
 		}
 
-		final List<I_M_HU> hus = inOutDAO.retrieveHandlingUnits(shipment);
+		final List<I_M_HU> hus = huInOutDAO.retrieveHandlingUnits(shipment);
 		for (final I_M_HU hu : hus)
 		{
 			huAttributesBL.updateHUAttributeRecursive(HuId.ofRepoId(hu.getM_HU_ID()), AttributeConstants.WarrantyStartDate, shipment.getMovementDate(), null);
@@ -193,7 +205,7 @@ public class M_InOut
 		// Retrieve all HUs which we need to remove from their picking slots
 		final Set<I_M_HU> husToRemove = new TreeSet<>(HUByIdComparator.instance);
 
-		final List<I_M_HU> handlingUnits = inOutDAO.retrieveHandlingUnits(shipment);
+		final List<I_M_HU> handlingUnits = huInOutDAO.retrieveHandlingUnits(shipment);
 
 		husToRemove.addAll(handlingUnits);
 
@@ -335,7 +347,7 @@ public class M_InOut
 			return; // no HUs to generate if the whole InOut is about HUs
 		}
 
-		final List<I_M_HU> existingHandlingUnits = inOutDAO.retrieveHandlingUnits(customerReturn);
+		final List<I_M_HU> existingHandlingUnits = huInOutDAO.retrieveHandlingUnits(customerReturn);
 
 		// the handling units are already created
 		if (!existingHandlingUnits.isEmpty())

@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @ToString
-final class DeviceWebSocketProducer implements WebSocketProducer
+final class DeviceWebSocketProducer implements WebSocketProducer, WebSocketProducer.ProduceEventsOnPollSupport
 {
 	private final DeviceAccessorsHubFactory deviceAccessorsHubFactory;
 	private final DeviceId deviceId;

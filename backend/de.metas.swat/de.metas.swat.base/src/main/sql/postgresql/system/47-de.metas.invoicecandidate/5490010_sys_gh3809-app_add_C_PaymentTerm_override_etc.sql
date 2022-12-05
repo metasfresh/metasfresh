@@ -113,7 +113,7 @@ UPDATE AD_Column SET AD_Reference_ID=30, AD_Reference_Value_ID=227,Updated=TO_TI
 
 -- 2018-04-05T12:15:26.492
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,551877,563182,0,540279,TO_TIMESTAMP('2018-04-05 12:15:26','YYYY-MM-DD HH24:MI:SS'),100,10,'de.metas.invoicecandidate','Y','Y','N','N','N','N','N','Header aggregation builder',TO_TIMESTAMP('2018-04-05 12:15:26','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,551877,563182,0,540279,TO_TIMESTAMP('2018-04-05 12:15:26','YYYY-MM-DD HH24:MI:SS'),100,10,'de.metas.invoicecandidate','Y','Y','N','N','N','N','N','Header aggregation factory',TO_TIMESTAMP('2018-04-05 12:15:26','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2018-04-05T12:15:26.495
@@ -123,7 +123,7 @@ INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTran
 
 -- 2018-04-05T12:15:26.575
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,552549,563183,0,540279,TO_TIMESTAMP('2018-04-05 12:15:26','YYYY-MM-DD HH24:MI:SS'),100,10,'de.metas.invoicecandidate','Y','Y','N','N','N','N','N','Line aggregation builder',TO_TIMESTAMP('2018-04-05 12:15:26','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,552549,563183,0,540279,TO_TIMESTAMP('2018-04-05 12:15:26','YYYY-MM-DD HH24:MI:SS'),100,10,'de.metas.invoicecandidate','Y','Y','N','N','N','N','N','Line aggregation factory',TO_TIMESTAMP('2018-04-05 12:15:26','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2018-04-05T12:15:26.577

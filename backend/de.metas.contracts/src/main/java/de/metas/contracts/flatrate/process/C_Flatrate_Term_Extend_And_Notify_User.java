@@ -95,6 +95,7 @@ public class C_Flatrate_Term_Extend_And_Notify_User
 				.addInArrayFilter(I_C_Flatrate_Term.COLUMNNAME_AD_PInstance_EndOfTerm_ID, 0, null)
 				.addEqualsFilter(I_C_Flatrate_Term.COLUMN_DocStatus, IDocument.STATUS_Completed)
 				.addCompareFilter(I_C_Flatrate_Term.COLUMN_NoticeDate, Operator.LESS, SystemTime.asTimestamp())
+					.addInArrayFilter(I_C_Flatrate_Term.COLUMN_C_FlatrateTerm_Next_ID, 0, null) // make sure it was not somehow extended yet!
 				.filter(notQuitOrVoidedFilter)
 				.orderBy().addColumn(I_C_Flatrate_Term.COLUMN_C_Flatrate_Term_ID).endOrderBy()
 				.create()

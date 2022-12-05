@@ -266,7 +266,11 @@ public class JsonOLCandCreateRequest
 	@JsonInclude(Include.NON_NULL)
 	BigDecimal qtyShipped;
 
-	@ApiModelProperty(position = 430, //
+	@ApiModelProperty(position = 430, value = "Translates to C_OLCand.C_Project_ID")
+	@JsonInclude(Include.NON_NULL)
+	JsonMetasfreshId projectId;
+
+	@ApiModelProperty(position = 440, //
 			value = "Translates to C_OLCand.qtyItemCapacity")
 	@JsonInclude(Include.NON_NULL)
 	BigDecimal qtyItemCapacity;
@@ -294,6 +298,11 @@ public class JsonOLCandCreateRequest
 	@ApiModelProperty(position = 480)
 	@JsonInclude(Include.NON_NULL)
 	JsonAlbertaOrderInfo albertaOrderInfo;
+
+	@ApiModelProperty(position = 490,
+			value = "Translates to `M_SectionCode.Value`. The looked up sectionCode's ID is then set to `C_OLCand.M_SectionCode_ID`.")
+	@JsonInclude(Include.NON_NULL)
+	String sectionCode;
 
 	@JsonCreator
 	@Builder(toBuilder = true)
@@ -342,10 +351,12 @@ public class JsonOLCandCreateRequest
 			@JsonProperty("importWarningMessage") final @Nullable String importWarningMessage,
 			@JsonProperty("qtyShipped") final @Nullable BigDecimal qtyShipped,
 			@JsonProperty("qtyItemCapacity") final @Nullable BigDecimal qtyItemCapacity,
+			@JsonProperty("projectId") final @Nullable JsonMetasfreshId projectId,
 			@JsonProperty("applySalesRepFrom") final @Nullable JsonApplySalesRepFrom applySalesRepFrom,
 			@JsonProperty("bpartnerName") final @Nullable String bpartnerName,
 			@JsonProperty("email") final @Nullable String email,
-			@JsonProperty("phone") final @Nullable String phone)
+			@JsonProperty("phone") final @Nullable String phone,
+			@JsonProperty("sectionCode") final @Nullable String sectionCode)
 	{
 		this.orgCode = orgCode;
 		this.externalLineId = externalLineId;
@@ -396,7 +407,9 @@ public class JsonOLCandCreateRequest
 		this.importWarningMessage = importWarningMessage;
 		this.qtyShipped = qtyShipped;
 		this.qtyItemCapacity = qtyItemCapacity;
+		this.projectId = projectId;
 		this.applySalesRepFrom = CoalesceUtil.coalesceNotNull(applySalesRepFrom, JsonApplySalesRepFrom.CandidateFirst);
+		this.sectionCode = sectionCode;
 	}
 
 	/**

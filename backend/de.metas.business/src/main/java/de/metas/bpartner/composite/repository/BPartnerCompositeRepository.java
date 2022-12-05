@@ -8,6 +8,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.BPartnerCompositeAndContactId;
 import de.metas.bpartner.service.BPartnerContactQuery;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.BPartnerQuery;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.IBPartnerDAO;
@@ -63,15 +64,18 @@ public class BPartnerCompositeRepository
 	private final LogEntriesRepository recordChangeLogRepository;
 	private final UserRoleRepository userRoleRepository;
 	private final BPartnerCompositeCacheById bpartnerCompositeCache = new BPartnerCompositeCacheById(Services.get(IUserDAO.class));
+	private final BPartnerCreditLimitRepository bPartnerCreditLimitRepository;
 
 	public BPartnerCompositeRepository(
 			@NonNull final IBPartnerBL bpartnerBL,
 			@NonNull final LogEntriesRepository recordChangeLogRepository,
-			@NonNull final UserRoleRepository userRoleRepository)
+			@NonNull final UserRoleRepository userRoleRepository,
+			@NonNull final BPartnerCreditLimitRepository bPartnerCreditLimitRepository)
 	{
 		this.bpartnerBL = bpartnerBL;
 		this.recordChangeLogRepository = recordChangeLogRepository;
 		this.userRoleRepository = userRoleRepository;
+		this.bPartnerCreditLimitRepository = bPartnerCreditLimitRepository;
 	}
 
 	public BPartnerComposite getById(@NonNull final BPartnerId bpartnerId)
@@ -257,6 +261,7 @@ public class BPartnerCompositeRepository
 		final BPartnerCompositesLoader loader = BPartnerCompositesLoader.builder()
 				.recordChangeLogRepository(recordChangeLogRepository)
 				.userRoleRepository(userRoleRepository)
+				.bPartnerCreditLimitRepository(bPartnerCreditLimitRepository)
 				.build();
 
 		return loader.retrieveByIds(bpartnerIds);
@@ -267,7 +272,7 @@ public class BPartnerCompositeRepository
 	 */
 	public void save(@NonNull final BPartnerComposite bpartnerComposite, final boolean validatePermissions)
 	{
-		final BPartnerCompositeSaver saver = new BPartnerCompositeSaver(bpartnerBL);
-		saver.save(bpartnerComposite, validatePermissions );
+		final BPartnerCompositeSaver saver = new BPartnerCompositeSaver(bpartnerBL, bPartnerCreditLimitRepository);
+		saver.save(bpartnerComposite, validatePermissions);
 	}
 }

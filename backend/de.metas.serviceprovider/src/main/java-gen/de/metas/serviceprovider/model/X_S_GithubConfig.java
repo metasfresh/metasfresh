@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.serviceprovider.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for S_GithubConfig
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_S_GithubConfig extends org.compiere.model.PO implements I_S_GithubConfig, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 835160211L;
+	private static final long serialVersionUID = -1901723277L;
 
     /** Standard Constructor */
     public X_S_GithubConfig (final Properties ctx, final int S_GithubConfig_ID, @Nullable final String trxName)
@@ -46,6 +46,21 @@ public class X_S_GithubConfig extends org.compiere.model.PO implements I_S_Githu
 		return get_ValueAsString(COLUMNNAME_Config);
 	}
 
+	/** 
+	 * Name AD_Reference_ID=541633
+	 * Reference name: GithubConfigNameList
+	 */
+	public static final int NAME_AD_Reference_ID=541633;
+	/** Access token = accessToken */
+	public static final String NAME_AccessToken = "accessToken";
+	/** Look for parent = lookForParent */
+	public static final String NAME_LookForParent = "lookForParent";
+	/** Github secret = githubSecret */
+	public static final String NAME_GithubSecret = "githubSecret";
+	/** Github user = githubUser */
+	public static final String NAME_GithubUser = "githubUser";
+	/** Import timeout minutes = importTimeoutMinutes */
+	public static final String NAME_ImportTimeoutMinutes = "importTimeoutMinutes";
 	@Override
 	public void setName (final java.lang.String Name)
 	{

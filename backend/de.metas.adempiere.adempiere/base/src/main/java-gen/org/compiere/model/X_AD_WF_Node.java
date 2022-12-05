@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1639212581L;
+	private static final long serialVersionUID = -8131728L;
 
     /** Standard Constructor */
     public X_AD_WF_Node (final Properties ctx, final int AD_WF_Node_ID, @Nullable final String trxName)
@@ -681,6 +681,8 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	public static final String PP_ACTIVITY_TYPE_ScanScaleDevice = "ScanScaleDevice";
 	/** RawMaterialsIssueAdjustment = MIA */
 	public static final String PP_ACTIVITY_TYPE_RawMaterialsIssueAdjustment = "MIA";
+	/** CallExternalSystem = CallExternalSystem */
+	public static final String PP_ACTIVITY_TYPE_CallExternalSystem = "CallExternalSystem";
 	@Override
 	public void setPP_Activity_Type (final @Nullable java.lang.String PP_Activity_Type)
 	{
@@ -778,6 +780,21 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	}
 
 	@Override
+	public void setS_Resource_ID (final int S_Resource_ID)
+	{
+		if (S_Resource_ID < 1) 
+			set_Value (COLUMNNAME_S_Resource_ID, null);
+		else 
+			set_Value (COLUMNNAME_S_Resource_ID, S_Resource_ID);
+	}
+
+	@Override
+	public int getS_Resource_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_S_Resource_ID);
+	}
+
+	@Override
 	public void setSetupTime (final int SetupTime)
 	{
 		set_Value (COLUMNNAME_SetupTime, SetupTime);
@@ -808,33 +825,6 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	public java.lang.String getSplitElement() 
 	{
 		return get_ValueAsString(COLUMNNAME_SplitElement);
-	}
-
-	@Override
-	public org.compiere.model.I_S_Resource getS_Resource()
-	{
-		return get_ValueAsPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class);
-	}
-
-	@Override
-	public void setS_Resource(final org.compiere.model.I_S_Resource S_Resource)
-	{
-		set_ValueFromPO(COLUMNNAME_S_Resource_ID, org.compiere.model.I_S_Resource.class, S_Resource);
-	}
-
-	@Override
-	public void setS_Resource_ID (final int S_Resource_ID)
-	{
-		if (S_Resource_ID < 1) 
-			set_Value (COLUMNNAME_S_Resource_ID, null);
-		else 
-			set_Value (COLUMNNAME_S_Resource_ID, S_Resource_ID);
-	}
-
-	@Override
-	public int getS_Resource_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_S_Resource_ID);
 	}
 
 	/** 

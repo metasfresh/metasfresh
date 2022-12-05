@@ -25,10 +25,10 @@ import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.model.X_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
-import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax.PriceAndTaxBuilder;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.money.CurrencyId;
+import de.metas.order.IOrderBL;
 import de.metas.order.IOrderDAO;
 import de.metas.order.IOrderLineBL;
 import de.metas.order.OrderId;
@@ -81,14 +81,15 @@ import java.util.Properties;
 public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 {
 	private final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
-	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepo = SpringContextHolder.instance.getBean(OrderEmailPropagationSysConfigRepository.class);
+	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
 	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
 	/**
 	 * @return <code>false</code>, the candidates will be created by {@link C_Order_Handler}.
@@ -148,6 +149,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final I_C_Invoice_Candidate icRecord = InterfaceWrapperHelper.create(ctx, I_C_Invoice_Candidate.class, trxName);
 
 		icRecord.setAD_Org_ID(orderLine.getAD_Org_ID());
+		icRecord.setM_SectionCode_ID(orderLine.getM_SectionCode_ID());
 		icRecord.setC_ILCandHandler(getHandlerRecord());
 
 		icRecord.setAD_Table_ID(tableDAO.retrieveTableId(org.compiere.model.I_C_OrderLine.Table_Name));
@@ -202,6 +204,12 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final Dimension orderLineDimension = extractDimension(orderLine);
 		dimensionService.updateRecord(icRecord, orderLineDimension);
 
+		// task 13022 : set order's project if no dimension is already set one
+		if (icRecord.getC_Project_ID() <= 0)
+		{
+			icRecord.setC_Project_ID(order.getC_Project_ID());
+		}
+
 		//DocType
 		final DocTypeId orderDocTypeId = CoalesceUtil.coalesceSuppliersNotNull(
 				() -> DocTypeId.ofRepoIdOrNull(order.getC_DocType_ID()),
@@ -222,7 +230,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		invoiceCandBL.setQualityDiscountPercent_Override(icRecord, attributes);
 
-		if(orderEmailPropagationSysConfigRepo.isPropagateToCInvoice(ClientAndOrgId.ofClientAndOrg(order.getAD_Client_ID(), order.getAD_Org_ID())))
+		if (orderEmailPropagationSysConfigRepo.isPropagateToCInvoice(ClientAndOrgId.ofClientAndOrg(order.getAD_Client_ID(), order.getAD_Org_ID())))
 		{
 			icRecord.setEMail(order.getEMail());
 		}
@@ -324,8 +332,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		setC_Flatrate_Term_ID(ic, orderLine);
 
 		setPaymentRule(ic, orderLine);
-
-		setIncoterms(ic, orderLine);
 	}
 
 	private void setPaymentRule(
@@ -353,7 +359,6 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 			ic.setPaymentRule(Services.get(IInvoiceBL.class).getDefaultPaymentRule().getCode());
 		}
 	}
-
 
 	private void setIncoterms(@NonNull final I_C_Invoice_Candidate ic,
 			@NonNull final org.compiere.model.I_C_OrderLine orderLine)
@@ -450,7 +455,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final TaxId taxId = TaxId.ofRepoId(orderLine.getC_Tax_ID());
 
 		// ts: we *must* use the order line's data
-		final PriceAndTaxBuilder priceAndTax = PriceAndTax.builder()
+		final PriceAndTax.PriceAndTaxBuilder priceAndTax = PriceAndTax.builder()
 				.invoicableQtyBasedOn(InvoicableQtyBasedOn.fromRecordString(orderLine.getInvoicableQtyBasedOn()))
 				.pricingSystemId(PricingSystemId.ofRepoId(order.getM_PricingSystem_ID()))
 				.priceEntered(orderLine.getPriceEntered())
@@ -513,6 +518,16 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	{
 		final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
 		invoiceCandDAO.invalidateCandsThatReference(TableRecordReference.of(model));
+	}
+
+	@Override
+	public void setIsInEffect(final I_C_Invoice_Candidate ic)
+	{
+		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(OrderLineId.ofRepoId(ic.getC_OrderLine_ID()));
+
+		final DocStatus orderDocStatus = orderBL.getDocStatus(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+
+		invoiceCandBL.computeIsInEffect(orderDocStatus, ic);
 	}
 
 	private void setBPartnerData(@NonNull final I_C_Invoice_Candidate ic, @NonNull final org.compiere.model.I_C_OrderLine orderLine)

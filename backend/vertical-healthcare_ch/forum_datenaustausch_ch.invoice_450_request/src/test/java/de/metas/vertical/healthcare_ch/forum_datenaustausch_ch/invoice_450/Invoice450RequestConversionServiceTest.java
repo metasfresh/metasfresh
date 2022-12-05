@@ -279,7 +279,7 @@ public class Invoice450RequestConversionServiceTest
 		bankAccount.setC_Currency_ID(123);
 		bankAccount.setBPBankAcctUse(BPBankAcctUse.DEPOSIT.getCode());
 		bankAccount.setIBAN("123");
-
+		bankAccount.setSwiftCode("123");
 		if (createBankDetails)
 		{
 			final BankId bankId = addBankRecord();

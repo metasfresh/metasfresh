@@ -392,12 +392,12 @@ class TablePrimaryKeyGenerator
 			sql.append(" AND ").append(columnName).append("=").append(DB.TO_SQL(value));
 		}
 
-		DB.executeUpdateEx(sql.toString(), ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql.toString(), ITrx.TRXNAME_ThreadInherited);
 	}
 
 	private void updatePKFromDBSequence(final String tableName, final String pkColumnName)
 	{
-		final int count = DB.executeUpdateEx(
+		final int count = DB.executeUpdateAndThrowExceptionOnFail(
 				"UPDATE " + tableName + " SET " + pkColumnName + "=" + DB.TO_TABLESEQUENCE_NEXTVAL(tableName) + " WHERE " + pkColumnName + " IS NULL",
 				new Object[] {},
 				ITrx.TRXNAME_ThreadInherited);
@@ -406,7 +406,7 @@ class TablePrimaryKeyGenerator
 
 	private void executeDDL(final String sql)
 	{
-		DB.executeUpdateEx(sql, ITrx.TRXNAME_ThreadInherited);
+		DB.executeUpdateAndThrowExceptionOnFail(sql, ITrx.TRXNAME_ThreadInherited);
 		addLog("DDL: " + sql);
 	}
 

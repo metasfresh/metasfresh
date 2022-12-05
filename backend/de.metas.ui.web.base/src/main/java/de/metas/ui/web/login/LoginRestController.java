@@ -14,7 +14,6 @@ import de.metas.security.UserAuthToken;
 import de.metas.ui.web.config.WebConfig;
 import de.metas.ui.web.dashboard.UserDashboardSessionContextHolder;
 import de.metas.ui.web.kpi.data.KPIDataContext;
-import de.metas.ui.web.login.exceptions.NotAuthenticatedException;
 import de.metas.ui.web.login.exceptions.NotLoggedInException;
 import de.metas.ui.web.login.json.JSONLoginAuthRequest;
 import de.metas.ui.web.login.json.JSONLoginAuthResponse;
@@ -107,7 +106,7 @@ public class LoginRestController
 	private final WebuiImageService imageService;
 	private final UserAuthTokenService userAuthTokenService;
 	private final UserDashboardSessionContextHolder userDashboardContextHolder;
-
+	
 	private final static AdMessageKey MSG_UserLoginInternalError = AdMessageKey.of("UserLoginInternalError");
 
 	public LoginRestController(
@@ -422,7 +421,7 @@ public class LoginRestController
 				.stream()
 				.map(JSONLookupValue::ofNamePair)
 				.collect(JSONLookupValuesList.collect())
-				.setDefaultValue(userSession.getAD_Language());
+				.setDefaultId(userSession.getAD_Language());
 	}
 
 	@GetMapping("/logout")

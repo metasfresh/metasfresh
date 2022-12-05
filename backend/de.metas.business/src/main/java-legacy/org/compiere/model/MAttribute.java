@@ -295,7 +295,7 @@ public class MAttribute extends X_M_Attribute
 					+ " AND EXISTS (SELECT * FROM M_AttributeUse mau "
 					+ "WHERE mas.M_AttributeSet_ID=mau.M_AttributeSet_ID"
 					+ " AND mau.M_Attribute_ID=" + getM_Attribute_ID() + ")";
-			final int no = DB.executeUpdateEx(sql, get_TrxName());
+			final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, get_TrxName());
 			log.debug("AttributeSet Instance set #{}", no);
 		}
 		return success;

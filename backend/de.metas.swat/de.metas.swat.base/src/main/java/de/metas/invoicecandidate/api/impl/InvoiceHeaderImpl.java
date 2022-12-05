@@ -13,6 +13,9 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import lombok.Getter;
@@ -97,6 +100,17 @@ import java.util.List;
 	private int C_Incoterms_ID;
 
 	private String incotermLocation;
+
+	@Setter
+	private SectionCodeId sectionCodeId;
+
+	@Setter
+	@Getter
+	private ProjectId projectId;
+
+	@Setter
+	@Getter
+	private ActivityId activityId;
 
 	/* package */ InvoiceHeaderImpl()
 	{
@@ -388,4 +402,9 @@ import java.util.List;
 
 	public void setAD_InputDataSource_ID(final InputDataSourceId inputDataSourceId){this.inputDataSourceId = inputDataSourceId;}
 
+	@Override
+	public SectionCodeId getM_SectionCode_ID()
+	{
+		return sectionCodeId;
+	}
 }

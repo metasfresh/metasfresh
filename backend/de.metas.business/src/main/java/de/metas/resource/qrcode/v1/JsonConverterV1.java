@@ -3,6 +3,7 @@ package de.metas.resource.qrcode.v1;
 import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.global_qrcodes.GlobalQRCodeVersion;
 import de.metas.product.ResourceId;
+import de.metas.resource.ManufacturingResourceType;
 import de.metas.resource.qrcode.ResourceQRCode;
 import de.metas.resource.qrcode.ResourceQRCodeJsonConverter;
 import de.metas.util.Check;
@@ -23,7 +24,7 @@ public class JsonConverterV1
 	{
 		return JsonResourceQRCodePayloadV1.builder()
 				.id(qrCode.getResourceId().getRepoId())
-				.type(qrCode.getResourceType())
+				.type(ManufacturingResourceType.toCode(qrCode.getResourceType()))
 				.caption(qrCode.getCaption())
 				.build();
 	}
@@ -39,7 +40,7 @@ public class JsonConverterV1
 	{
 		return ResourceQRCode.builder()
 				.resourceId(ResourceId.ofRepoId(json.getId()))
-				.resourceType(json.getType())
+				.resourceType(ManufacturingResourceType.ofNullableCode(json.getType()))
 				.caption(json.getCaption())
 				.build();
 	}

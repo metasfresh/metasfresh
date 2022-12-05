@@ -37,6 +37,7 @@ import de.metas.ui.web.view.ViewProfileId;
 import de.metas.ui.web.view.descriptor.ViewLayout;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.ui.web.window.datatypes.WindowId;
+import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -56,11 +57,13 @@ public class ProductionSimulationViewFactory implements IViewFactory
 
 	public ProductionSimulationViewFactory(
 			@NonNull final CandidateRepositoryRetrieval candidateRepositoryRetrieval,
-			@NonNull final PPOrderCandidateDAO ppOrderCandidateDAO)
+			@NonNull final PPOrderCandidateDAO ppOrderCandidateDAO,
+			@NonNull final LookupDataSourceFactory lookupDataSourceFactory)
 	{
 		this.rowsRepo = ProductionSimulationRowsRepository.builder()
 				.candidateRepositoryRetrieval(candidateRepositoryRetrieval)
 				.ppOrderCandidateDAO(ppOrderCandidateDAO)
+				.lookupDataSourceFactory(lookupDataSourceFactory)
 				.build();
 	}
 

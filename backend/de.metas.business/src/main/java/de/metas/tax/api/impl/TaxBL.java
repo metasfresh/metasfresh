@@ -49,6 +49,8 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 {
 	private static final Logger log = LogManager.getLogger(TaxBL.class);
 	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
+	private final IBPartnerDAO bPartnerDAO  = Services.get(IBPartnerDAO.class);
+	private final IBPartnerBL bpartnerBL  = Services.get(IBPartnerBL.class);
 
 	@Override
 	public Tax getTaxById(final TaxId taxId)
@@ -145,7 +147,7 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 	{
 		//
 		// If organization is tax exempted then we will return the Tax Exempt for that organization (03871)
-		final I_C_BPartner orgBPartner = Services.get(IBPartnerDAO.class).retrieveOrgBPartner(ctx, orgId.getRepoId(), I_C_BPartner.class, ITrx.TRXNAME_None);
+		final I_C_BPartner orgBPartner = bPartnerDAO.retrieveOrgBPartner(ctx, orgId.getRepoId(), I_C_BPartner.class, ITrx.TRXNAME_None);
 		log.debug("Org BP: {}", orgBPartner);
 
 		final ICountryAreaBL countryAreaBL = Services.get(ICountryAreaBL.class);
@@ -189,8 +191,9 @@ public class TaxBL implements de.metas.tax.api.ITaxBL
 		}
 
 		// bp has tax certificate?
-		final I_C_BPartner bp = Services.get(IBPartnerDAO.class).getById(shipBPLocationId.getBpartnerId());
-		final boolean hasTaxCertificate = !Check.isEmpty(bp.getVATaxID(), true);
+		final String bpVATaxID = bpartnerBL.getVATTaxId(shipBPLocationId.getBpartnerLocationId()).orElse(null);
+
+		final boolean hasTaxCertificate = Check.isNotBlank(bpVATaxID);
 
 		// String sql = "SELECT DISTINCT t.C_Tax_ID,t.validFrom, t.To_Country_ID FROM C_Tax t,M_Product pr,C_Charge c " +
 		// " WHERE t.validFrom < ? AND t.isActive='Y' AND t.C_Country_ID = 101";

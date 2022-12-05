@@ -120,7 +120,7 @@ public class PPOrderCreatedHandlerTests
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 
 		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
-		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo);
+		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepositoryRetrieval);
 
 		final StockCandidateService stockCandidateService = new StockCandidateService(
 				candidateRepositoryRetrieval,
@@ -146,7 +146,7 @@ public class PPOrderCreatedHandlerTests
 	}
 
 	@Test
-	public void handle_CreatedEvent_with_groupId()
+	public void handle_CreatedEvent()
 	{
 		final PPOrderCreatedEvent ppOrderCreatedEvent = createPPOrderCreatedEvent(30/* ppOrderId */, MaterialDispoGroupId.ofInt(40));
 		ppOrderCreatedHandler.validateEvent(ppOrderCreatedEvent);

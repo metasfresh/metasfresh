@@ -7,13 +7,13 @@ import java.sql.ResultSet;
 import java.util.Properties;
 
 /** Generated Model for S_Resource
- *  @author metasfresh (generated) 
+ *  @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
-public class X_S_Resource extends org.compiere.model.PO implements I_S_Resource, org.compiere.model.I_Persistent 
+public class X_S_Resource extends org.compiere.model.PO implements I_S_Resource, org.compiere.model.I_Persistent
 {
 
-	private static final long serialVersionUID = 479981750L;
+	private static final long serialVersionUID = 1847142490L;
 
     /** Standard Constructor */
     public X_S_Resource (final Properties ctx, final int S_Resource_ID, @Nullable final String trxName)
@@ -38,14 +38,14 @@ public class X_S_Resource extends org.compiere.model.PO implements I_S_Resource,
 	@Override
 	public void setAD_User_ID (final int AD_User_ID)
 	{
-		if (AD_User_ID < 0) 
+		if (AD_User_ID < 0)
 			set_Value (COLUMNNAME_AD_User_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_AD_User_ID, AD_User_ID);
 	}
 
 	@Override
-	public int getAD_User_ID() 
+	public int getAD_User_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_User_ID);
 	}
@@ -57,7 +57,7 @@ public class X_S_Resource extends org.compiere.model.PO implements I_S_Resource,
 	}
 
 	@Override
-	public BigDecimal getCapacityPerProductionCycle() 
+	public BigDecimal getCapacityPerProductionCycle()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_CapacityPerProductionCycle);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -66,14 +66,14 @@ public class X_S_Resource extends org.compiere.model.PO implements I_S_Resource,
 	@Override
 	public void setCapacityPerProductionCycle_UOM_ID (final int CapacityPerProductionCycle_UOM_ID)
 	{
-		if (CapacityPerProductionCycle_UOM_ID < 1) 
+		if (CapacityPerProductionCycle_UOM_ID < 1)
 			set_Value (COLUMNNAME_CapacityPerProductionCycle_UOM_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_CapacityPerProductionCycle_UOM_ID, CapacityPerProductionCycle_UOM_ID);
 	}
 
 	@Override
-	public int getCapacityPerProductionCycle_UOM_ID() 
+	public int getCapacityPerProductionCycle_UOM_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_CapacityPerProductionCycle_UOM_ID);
 	}
@@ -85,7 +85,7 @@ public class X_S_Resource extends org.compiere.model.PO implements I_S_Resource,
 	}
 
 	@Override
-	public BigDecimal getChargeableQty() 
+	public BigDecimal getChargeableQty()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_ChargeableQty);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -98,7 +98,7 @@ public class X_S_Resource extends org.compiere.model.PO implements I_S_Resource,
 	}
 
 	@Override
-	public BigDecimal getDailyCapacity() 
+	public BigDecimal getDailyCapacity()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_DailyCapacity);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -111,9 +111,21 @@ public class X_S_Resource extends org.compiere.model.PO implements I_S_Resource,
 	}
 
 	@Override
-	public java.lang.String getDescription() 
+	public java.lang.String getDescription()
 	{
 		return get_ValueAsString(COLUMNNAME_Description);
+	}
+
+	@Override
+	public void setInternalName (final @Nullable java.lang.String InternalName)
+	{
+		set_Value (COLUMNNAME_InternalName, InternalName);
+	}
+
+	@Override
+	public java.lang.String getInternalName()
+	{
+		return get_ValueAsString(COLUMNNAME_InternalName);
 	}
 
 	@Override
@@ -123,7 +135,7 @@ public class X_S_Resource extends org.compiere.model.PO implements I_S_Resource,
 	}
 
 	@Override
-	public boolean isAvailable() 
+	public boolean isAvailable()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsAvailable);
 	}
@@ -135,26 +147,24 @@ public class X_S_Resource extends org.compiere.model.PO implements I_S_Resource,
 	}
 
 	@Override
-	public boolean isManufacturingResource() 
+	public boolean isManufacturingResource()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsManufacturingResource);
 	}
 
-	/** 
+	/**
 	 * ManufacturingResourceType AD_Reference_ID=53223
 	 * Reference name: S_Resource MFG Type
 	 */
 	public static final int MANUFACTURINGRESOURCETYPE_AD_Reference_ID=53223;
-	/** Production Line = PL */
+	/** ProductionLine = PL */
 	public static final String MANUFACTURINGRESOURCETYPE_ProductionLine = "PL";
 	/** Plant = PT */
 	public static final String MANUFACTURINGRESOURCETYPE_Plant = "PT";
-	/** Work Center = WC */
+	/** WorkCenter = WC */
 	public static final String MANUFACTURINGRESOURCETYPE_WorkCenter = "WC";
-	/** Work Station = WS */
+	/** WorkStation = WS */
 	public static final String MANUFACTURINGRESOURCETYPE_WorkStation = "WS";
-	/** Set Manufacturing Resource Type.
-		@param ManufacturingResourceType Manufacturing Resource Type	  */
 	@Override
 	public void setManufacturingResourceType (final @Nullable java.lang.String ManufacturingResourceType)
 	{
@@ -162,12 +172,12 @@ public class X_S_Resource extends org.compiere.model.PO implements I_S_Resource,
 	}
 
 	@Override
-	public java.lang.String getManufacturingResourceType() 
+	public java.lang.String getManufacturingResourceType()
 	{
 		return get_ValueAsString(COLUMNNAME_ManufacturingResourceType);
 	}
 
-	/** 
+	/**
 	 * MRP_Exclude AD_Reference_ID=319
 	 * Reference name: _YesNo
 	 */
@@ -183,7 +193,7 @@ public class X_S_Resource extends org.compiere.model.PO implements I_S_Resource,
 	}
 
 	@Override
-	public java.lang.String getMRP_Exclude() 
+	public java.lang.String getMRP_Exclude()
 	{
 		return get_ValueAsString(COLUMNNAME_MRP_Exclude);
 	}
@@ -195,7 +205,7 @@ public class X_S_Resource extends org.compiere.model.PO implements I_S_Resource,
 	}
 
 	@Override
-	public java.lang.String getName() 
+	public java.lang.String getName()
 	{
 		return get_ValueAsString(COLUMNNAME_Name);
 	}
@@ -207,7 +217,7 @@ public class X_S_Resource extends org.compiere.model.PO implements I_S_Resource,
 	}
 
 	@Override
-	public BigDecimal getPercentUtilization() 
+	public BigDecimal getPercentUtilization()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_PercentUtilization);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -220,7 +230,7 @@ public class X_S_Resource extends org.compiere.model.PO implements I_S_Resource,
 	}
 
 	@Override
-	public int getPlanningHorizon() 
+	public int getPlanningHorizon()
 	{
 		return get_ValueAsInt(COLUMNNAME_PlanningHorizon);
 	}
@@ -232,50 +242,53 @@ public class X_S_Resource extends org.compiere.model.PO implements I_S_Resource,
 	}
 
 	@Override
-	public BigDecimal getQueuingTime() 
+	public BigDecimal getQueuingTime()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QueuingTime);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override
+	public void setS_Resource_Group_ID (final int S_Resource_Group_ID)
+	{
+		if (S_Resource_Group_ID < 1)
+			set_Value (COLUMNNAME_S_Resource_Group_ID, null);
+		else
+			set_Value (COLUMNNAME_S_Resource_Group_ID, S_Resource_Group_ID);
+	}
+
+	@Override
+	public int getS_Resource_Group_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_S_Resource_Group_ID);
+	}
+
+	@Override
 	public void setS_Resource_ID (final int S_Resource_ID)
 	{
-		if (S_Resource_ID < 1) 
+		if (S_Resource_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_S_Resource_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_S_Resource_ID, S_Resource_ID);
 	}
 
 	@Override
-	public int getS_Resource_ID() 
+	public int getS_Resource_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_S_Resource_ID);
 	}
 
 	@Override
-	public org.compiere.model.I_S_ResourceType getS_ResourceType()
-	{
-		return get_ValueAsPO(COLUMNNAME_S_ResourceType_ID, org.compiere.model.I_S_ResourceType.class);
-	}
-
-	@Override
-	public void setS_ResourceType(final org.compiere.model.I_S_ResourceType S_ResourceType)
-	{
-		set_ValueFromPO(COLUMNNAME_S_ResourceType_ID, org.compiere.model.I_S_ResourceType.class, S_ResourceType);
-	}
-
-	@Override
 	public void setS_ResourceType_ID (final int S_ResourceType_ID)
 	{
-		if (S_ResourceType_ID < 1) 
+		if (S_ResourceType_ID < 1)
 			set_Value (COLUMNNAME_S_ResourceType_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_S_ResourceType_ID, S_ResourceType_ID);
 	}
 
 	@Override
-	public int getS_ResourceType_ID() 
+	public int getS_ResourceType_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_S_ResourceType_ID);
 	}
@@ -287,7 +300,7 @@ public class X_S_Resource extends org.compiere.model.PO implements I_S_Resource,
 	}
 
 	@Override
-	public java.lang.String getValue() 
+	public java.lang.String getValue()
 	{
 		return get_ValueAsString(COLUMNNAME_Value);
 	}
@@ -299,7 +312,7 @@ public class X_S_Resource extends org.compiere.model.PO implements I_S_Resource,
 	}
 
 	@Override
-	public BigDecimal getWaitingTime() 
+	public BigDecimal getWaitingTime()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_WaitingTime);
 		return bd != null ? bd : BigDecimal.ZERO;

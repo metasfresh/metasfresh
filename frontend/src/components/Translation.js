@@ -11,6 +11,29 @@ import { getCurrentActiveLanguage } from '../utils/locale';
 // Fake singleton
 let INSTANCE = null;
 
+const generateEntryFromKey = (key) => {
+  if (!key) {
+    return '';
+  }
+
+  let sourceText = key;
+  while (sourceText) {
+    const idx = sourceText.lastIndexOf('.');
+    if (idx > 0) {
+      const entry = sourceText.substring(idx + 1);
+      if (entry !== 'caption') {
+        return entry;
+      } else {
+        sourceText = sourceText.substring(0, idx);
+      }
+    } else {
+      return `${sourceText}`;
+    }
+  }
+
+  return `${key}`;
+};
+
 class Translation extends Component {
   static getMessages = () => {
     const parsedLangs = {
@@ -34,9 +57,16 @@ class Translation extends Component {
       counterpart.registerTranslations('lang', response.data);
       counterpart.setLocale('lang');
       counterpart.setMissingEntryGenerator(function (key) {
+        const entry = generateEntryFromKey(key);
+
         // eslint-disable-next-line no-console
-        console.error(`Missing translation: ${key}`);
-        return `{${key}}`;
+        console.error(`Missing translation for '${key}'. Returning: ${entry}`);
+
+        return entry;
+      });
+
+      counterpart.onError((err, entry, values) => {
+        console.error(`Got error on entry '${entry}': ${err}`, { values });
       });
 
       deepForceUpdate(INSTANCE);

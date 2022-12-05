@@ -26,6 +26,8 @@ import de.metas.i18n.ITranslatableString;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.logging.LogManager;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
@@ -113,6 +115,7 @@ public class FlatrateDAO implements IFlatrateDAO
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	@Override
 	public I_C_Flatrate_Term getById(final int flatrateTermId)
@@ -591,7 +594,8 @@ public class FlatrateDAO implements IFlatrateDAO
 	@Override
 	public final List<I_C_Flatrate_DataEntry> retrieveInvoicingEntries(
 			final I_C_Flatrate_Term flatrateTerm,
-			final Timestamp dateFrom, final Timestamp dateTo,
+			final @NonNull LocalDateAndOrgId dateFrom,
+			final @NonNull LocalDateAndOrgId dateTo,
 			final UomId uomId)
 	{
 		final List<I_C_Flatrate_DataEntry> result = new ArrayList<>();
@@ -602,8 +606,12 @@ public class FlatrateDAO implements IFlatrateDAO
 		for (final I_C_Flatrate_DataEntry entryToCorrect : entriesToCorrect)
 		{
 			final I_C_Period entryPeriod = entryToCorrect.getC_Period();
-			if (entryPeriod.getEndDate().before(dateFrom) // entryPeriod ends before dateFrom
-					|| entryPeriod.getStartDate().after(dateTo))      // entryPeriod begins after dateTo
+			final OrgId orgId = OrgId.ofRepoId(entryToCorrect.getAD_Org_ID());
+			final LocalDateAndOrgId endDate = LocalDateAndOrgId.ofTimestamp(entryPeriod.getEndDate(), orgId, orgDAO::getTimeZone);
+			final LocalDateAndOrgId startDate = LocalDateAndOrgId.ofTimestamp(entryPeriod.getEndDate(), orgId, orgDAO::getTimeZone);
+
+			if (endDate.compareTo(dateFrom) < 0  // entryPeriod ends before dateFrom
+					|| startDate.compareTo(dateTo) > 0)      // entryPeriod begins after dateTo
 			{
 				continue;
 			}
@@ -950,8 +958,8 @@ public class FlatrateDAO implements IFlatrateDAO
 		if (existingData == null)
 		{
 			existingData = InterfaceWrapperHelper.create(getCtx(bPartner),
-														 I_C_Flatrate_Data.class,
-														 getTrxName(bPartner));
+					I_C_Flatrate_Data.class,
+					getTrxName(bPartner));
 			existingData.setAD_Org_ID(bPartner.getAD_Org_ID());
 			existingData.setC_BPartner_ID(bPartner.getC_BPartner_ID());
 			existingData.setHasContracts(false);
@@ -1039,6 +1047,21 @@ public class FlatrateDAO implements IFlatrateDAO
 	}
 
 	@Override
+	public boolean hasOverlappingTerms(@NonNull final FlatrateTermOverlapCriteria flatrateTermOverlapCriteria)
+	{
+		return queryBL.createQueryBuilder(I_C_Flatrate_Term.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_Bill_BPartner_ID, flatrateTermOverlapCriteria.getBPartnerId())
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Flatrate_Conditions_ID, flatrateTermOverlapCriteria.getConditionsId())
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_AD_Org_ID, flatrateTermOverlapCriteria.getOrgId())
+				.addEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_M_Product_ID, flatrateTermOverlapCriteria.getProductId())
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_StartDate,Operator.LESS_OR_EQUAL,flatrateTermOverlapCriteria.getDatePromised())
+				.addCompareFilter(I_C_Flatrate_Term.COLUMNNAME_EndDate,Operator.GREATER_OR_EQUAL, flatrateTermOverlapCriteria.getDatePromised())
+				.create()
+				.anyMatch();
+	}
+
+	@Override
 	public Set<FlatrateTermId> retrieveAllRunningSubscriptionIds(
 			@NonNull final BPartnerId bPartnerId,
 			@NonNull final Instant date,
@@ -1070,8 +1093,8 @@ public class FlatrateDAO implements IFlatrateDAO
 
 		final IQueryBuilder<I_C_Flatrate_Term> queryBuilder = //
 				existingSubscriptionsQueryBuilder(OrgId.ofRepoId(flatrateTerm.getAD_Org_ID()),
-												  BPartnerId.ofRepoId(flatrateTerm.getBill_BPartner_ID()),
-												  instant);
+						BPartnerId.ofRepoId(flatrateTerm.getBill_BPartner_ID()),
+						instant);
 
 		queryBuilder.addNotEqualsFilter(I_C_Flatrate_Term.COLUMNNAME_C_Order_Term_ID, flatrateTerm.getC_Order_Term_ID());
 

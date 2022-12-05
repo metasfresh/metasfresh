@@ -10,6 +10,8 @@ import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
+import de.metas.error.AdIssueId;
+import de.metas.error.IErrorManager;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
@@ -21,16 +23,19 @@ import de.metas.order.BPartnerOrderParamsRepository.BPartnerOrderParamsQuery;
 import de.metas.order.DeliveryRule;
 import de.metas.order.DeliveryViaRule;
 import de.metas.order.InvoiceRule;
+import de.metas.order.OrderLineGroup;
+import de.metas.order.compensationGroup.GroupCompensationOrderBy;
+import de.metas.ordercandidate.api.AssignSalesRepRule;
 import de.metas.ordercandidate.api.IOLCandBL;
 import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.api.OLCand;
 import de.metas.ordercandidate.api.OLCandOrderDefaults;
 import de.metas.ordercandidate.api.OLCandProcessorDescriptor;
 import de.metas.ordercandidate.api.OLCandQuery;
-import de.metas.ordercandidate.api.OLCandRegistry;
 import de.metas.ordercandidate.api.OLCandRepository;
-import de.metas.ordercandidate.api.OLCandSource;
+import de.metas.ordercandidate.api.OLCandSPIRegistry;
 import de.metas.ordercandidate.api.OLCandsProcessorExecutor;
+import de.metas.ordercandidate.api.source.OLCandProcessingHelper;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.ordercandidate.spi.IOLCandCreator;
 import de.metas.payment.PaymentRule;
@@ -41,6 +46,10 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
 import de.metas.pricing.service.IPricingBL;
+import de.metas.process.PInstanceId;
+import de.metas.project.ProjectId;
+import de.metas.quantity.Quantity;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.shipping.ShipperId;
 import de.metas.user.UserId;
 import de.metas.user.api.IUserDAO;
@@ -68,6 +77,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -81,6 +91,7 @@ public class OLCandBL implements IOLCandBL
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IPriceListDAO priceListDAO = Services.get(IPriceListDAO.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
+	private final IErrorManager errorManager = Services.get(IErrorManager.class);
 
 	private final IBPartnerBL bpartnerBL;
 	private final BPartnerOrderParamsRepository bPartnerOrderParamsRepository;
@@ -94,19 +105,21 @@ public class OLCandBL implements IOLCandBL
 	}
 
 	@Override
-	public void process(@NonNull final OLCandProcessorDescriptor processor, @Nullable final AsyncBatchId asyncBatchId)
+	public void process(
+			@NonNull final OLCandProcessorDescriptor processor,
+			@NonNull final PInstanceId selectionId,
+			@Nullable final AsyncBatchId asyncBatchId)
 	{
 		final SpringContextHolder springContextHolder = SpringContextHolder.instance;
-		final OLCandRegistry olCandRegistry = springContextHolder.getBean(OLCandRegistry.class);
-		final OLCandRepository olCandRepo = springContextHolder.getBean(OLCandRepository.class);
-
-		final OLCandSource candidatesSource = olCandRepo.getForProcessor(processor);
+		final OLCandSPIRegistry olCandSPIRegistry = springContextHolder.getBean(OLCandSPIRegistry.class);
+		final OLCandProcessingHelper olCandProcessingHelper = springContextHolder.getBean(OLCandProcessingHelper.class);
 
 		OLCandsProcessorExecutor.builder()
 				.processorDescriptor(processor)
-				.olCandListeners(olCandRegistry.getListeners())
-				.groupingValuesProviders(olCandRegistry.getGroupingValuesProviders())
-				.candidatesSource(candidatesSource)
+				.olCandListeners(olCandSPIRegistry.getListeners())
+				.groupingValuesProviders(olCandSPIRegistry.getGroupingValuesProviders())
+				.olCandProcessingHelper(olCandProcessingHelper)
+				.selectionId(selectionId)
 				.asyncBatchId(asyncBatchId)
 				.build()
 				.process();
@@ -471,11 +484,74 @@ public class OLCandBL implements IOLCandBL
 
 		final I_AD_Note note = createOLCandErrorNote(userInChargeId, olCand, ex);
 
-		olCand.setError(ex.getLocalizedMessage(), note.getAD_Note_ID());
+		final AdIssueId issueId = errorManager.createIssue(ex);
+		olCand.setError(ex.getLocalizedMessage(), note.getAD_Note_ID(), issueId);
+
 		saveCandidate(olCand);
 	}
 
-	private void saveCandidate(final OLCand cand)
+	@NonNull
+	public OLCand toOLCand(
+			@NonNull final I_C_OLCand olCandRecord,
+			@NonNull final OLCandOrderDefaults orderDefaults)
+	{
+		final BPartnerOrderParams params = getBPartnerOrderParams(olCandRecord);
+
+		final DeliveryRule deliveryRule = getDeliveryRule(olCandRecord, params, orderDefaults);
+		final DeliveryViaRule deliveryViaRule = getDeliveryViaRule(olCandRecord, params, orderDefaults);
+		final FreightCostRule freightCostRule = getFreightCostRule(params, orderDefaults);
+		final InvoiceRule invoiceRule = getInvoiceRule(params, orderDefaults);
+		final PaymentRule paymentRule = getPaymentRule(params, orderDefaults, olCandRecord);
+		final PaymentTermId paymentTermId = getPaymentTermId(params, orderDefaults, olCandRecord);
+		final PricingSystemId pricingSystemId = getPricingSystemId(olCandRecord, params, orderDefaults);
+		final ShipperId shipperId = getShipperId(params, orderDefaults, olCandRecord);
+		final DocTypeId orderDocTypeId = getOrderDocTypeId(orderDefaults, olCandRecord);
+		final Quantity qtyItemCapacity = effectiveValuesBL.getQtyItemCapacity_Effective(olCandRecord);
+		final BPartnerId salesRepId = BPartnerId.ofRepoIdOrNull(olCandRecord.getC_BPartner_SalesRep_ID());
+		final BPartnerId salesRepInternalId = BPartnerId.ofRepoIdOrNull(olCandRecord.getC_BPartner_SalesRep_Internal_ID());
+		final AssignSalesRepRule assignSalesRepRule = AssignSalesRepRule.ofCode(olCandRecord.getApplySalesRepFrom());
+
+		final OrderLineGroup orderLineGroup = Check.isBlank(olCandRecord.getCompensationGroupKey())
+				? null
+				: OrderLineGroup.builder()
+				.groupKey(Objects.requireNonNull(olCandRecord.getCompensationGroupKey()))
+				.isGroupMainItem(olCandRecord.isGroupCompensationLine())
+				.isGroupingError(olCandRecord.isGroupingError())
+				.groupingErrorMessage(olCandRecord.getGroupingErrorMessage())
+				.discount(Percent.ofNullable(olCandRecord.getGroupCompensationDiscountPercentage()))
+				.groupCompensationOrderBy(GroupCompensationOrderBy.ofCodeOrNull(olCandRecord.getCompensationGroupOrderBy()))
+				.build();
+
+		return OLCand.builder()
+				.olCandEffectiveValuesBL(effectiveValuesBL)
+				.olCandRecord(olCandRecord)
+
+				.deliveryRule(deliveryRule)
+				.deliveryViaRule(deliveryViaRule)
+				.freightCostRule(freightCostRule)
+				.invoiceRule(invoiceRule)
+				.paymentRule(paymentRule)
+				.paymentTermId(paymentTermId)
+				.pricingSystemId(pricingSystemId)
+				.shipperId(shipperId)
+				.orderDocTypeId(orderDocTypeId)
+				.salesRepId(salesRepId)
+				.orderLineGroup(orderLineGroup)
+				.salesRepInternalId(salesRepInternalId)
+				.assignSalesRepRule(assignSalesRepRule)
+				.asyncBatchId(AsyncBatchId.ofRepoIdOrNull(olCandRecord.getC_Async_Batch_ID()))
+				.qtyItemCapacityEff(qtyItemCapacity)
+				.bpartnerName(olCandRecord.getBPartnerName())
+				.email(olCandRecord.getEMail())
+				.phone(olCandRecord.getPhone())
+				.projectId(ProjectId.ofRepoIdOrNull(olCandRecord.getC_Project_ID()))
+				.adIssueId(AdIssueId.ofRepoIdOrNull(olCandRecord.getAD_Issue_ID()))
+				.headerAggregationKey(olCandRecord.getHeaderAggregationKey())
+				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(olCandRecord.getM_SectionCode_ID()))
+				.build();
+	}
+
+	public void saveCandidate(@NonNull final OLCand cand)
 	{
 		save(cand.unbox());
 	}

@@ -9,11 +9,15 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.abort
           "repoId" : 1000000
         },
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "isPickingReviewRequired" : false,
         "lockedBy" : 1234,
+        "pickingReviewRequired" : false,
         "preparationDate" : "2021-11-09T08:58:52Z",
         "salesOrderDocumentNo" : "salesOrder001"
       },
       "id" : 1000000,
+      "isApproved" : false,
+      "isReadyToReview" : false,
       "lines" : [ {
         "id" : 1000000,
         "productId" : 1000000,
@@ -198,11 +202,15 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.abort
           "repoId" : 1000000
         },
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "isPickingReviewRequired" : false,
         "lockedBy" : 1234,
+        "pickingReviewRequired" : false,
         "preparationDate" : "2021-11-09T08:58:52Z",
         "salesOrderDocumentNo" : "salesOrder001"
       },
       "id" : 1000000,
+      "isApproved" : false,
+      "isReadyToReview" : false,
       "lines" : [ {
         "id" : 1000000,
         "productId" : 1000000,
@@ -393,11 +401,15 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.compl
           "repoId" : 1000000
         },
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "isPickingReviewRequired" : false,
         "lockedBy" : 1234,
+        "pickingReviewRequired" : false,
         "preparationDate" : "2021-11-09T08:58:52Z",
         "salesOrderDocumentNo" : "salesOrder001"
       },
       "id" : 1000000,
+      "isApproved" : false,
+      "isReadyToReview" : false,
       "lines" : [ {
         "id" : 1000000,
         "productId" : 1000000,
@@ -628,11 +640,15 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.compl
           "repoId" : 1000000
         },
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "isPickingReviewRequired" : false,
         "lockedBy" : 1234,
+        "pickingReviewRequired" : false,
         "preparationDate" : "2021-11-09T08:58:52Z",
         "salesOrderDocumentNo" : "salesOrder001"
       },
       "id" : 1000000,
+      "isApproved" : false,
+      "isReadyToReview" : false,
       "lines" : [ {
         "id" : 1000000,
         "productId" : 1000000,
@@ -848,11 +864,15 @@ de.metas.handlingunits.picking.job.service.PickingJobService_UsingTUs_Test.creat
           "repoId" : 1000000
         },
         "deliveryRenderedAddress" : "deliveryRenderedAddress",
+        "isPickingReviewRequired" : false,
         "lockedBy" : 1234,
+        "pickingReviewRequired" : false,
         "preparationDate" : "2021-11-09T08:58:52Z",
         "salesOrderDocumentNo" : "salesOrder001"
       },
       "id" : 1000000,
+      "isApproved" : false,
+      "isReadyToReview" : false,
       "lines" : [ {
         "id" : 1000000,
         "productId" : 1000000,

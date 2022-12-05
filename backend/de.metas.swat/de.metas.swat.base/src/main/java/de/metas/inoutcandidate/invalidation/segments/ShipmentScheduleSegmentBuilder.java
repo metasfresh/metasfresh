@@ -1,10 +1,8 @@
-package de.metas.inoutcandidate.invalidation.segments;
-
 /*
  * #%L
- * de.metas.storage
+ * de.metas.swat.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package de.metas.inoutcandidate.invalidation.segments;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.inoutcandidate.invalidation.segments;
 
 import de.metas.util.Services;
 import lombok.NonNull;

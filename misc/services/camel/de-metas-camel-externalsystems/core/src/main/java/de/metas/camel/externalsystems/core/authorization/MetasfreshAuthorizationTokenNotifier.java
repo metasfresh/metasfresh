@@ -93,7 +93,8 @@ public class MetasfreshAuthorizationTokenNotifier extends EventNotifierSupport
 	{
 		final Endpoint endpoint = event.getEndpoint();
 
-		if (endpoint.getEndpointUri() == null || !metasfreshAPIURL.contains(endpoint.getEndpointUri()))
+		if (endpoint.getEndpointUri() == null
+				|| (!metasfreshAPIURL.contains(endpoint.getEndpointUri()) && !endpoint.getEndpointUri().contains(metasfreshAPIURL)))
 		{
 			return;
 		}

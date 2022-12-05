@@ -87,12 +87,10 @@ Map build(
                         .withWorkDir('metasfresh-webui-api/target/docker');
                 final String publishedWebuiApiImageName = dockerBuildAndPush(webuiApiDockerConf)
 
-final DockerConf appDockerConf = reportDockerConf
+                final DockerConf appDockerConf = reportDockerConf
                         .withArtifactName('metasfresh-app')
                         .withWorkDir('metasfresh-dist/dist/target/docker/app');
-                final String publishedAppImageName = dockerBuildAndPush(appDockerConf)
-
-//                // postgres DB init container
+                final String publishedAppImageName = dockerBuildAndPush(appDockerConf)//                // postgres DB init container
 //                final DockerConf dbInitDockerConf = reportDockerConf
 //                        .withArtifactName('metasfresh-db-init-pg-14-2')
 //                        .withWorkDir('metasfresh-dist/dist/target/docker/db-init')
@@ -106,13 +104,13 @@ final DockerConf appDockerConf = reportDockerConf
 
                 currentBuild.description = """${currentBuild.description}<br/>
 				This build created the following deployable docker images 
-				<ul>
-				<li><code>${publishedMsv3ServerImageName}</code></li>
-				<li><code>${publishedWebuiApiImageName}</code></li>
-				<li><code>${publishedReportDockerImageName}</code> that can be used as <b>base image</b> for custom metasfresh-report docker images</li>
+			    <ul>
+                <li><code>${publishedMsv3ServerImageName}</code></li>
+                <li><code>${publishedWebuiApiImageName}</code></li>
+                <li><code>${publishedReportDockerImageName}</code> that can be used as <b>base image</b> for custom metasfresh-report docker images</li>
                 <li><code>${publishedAppImageName}</code></li>
-				<!-- <li><code>${publishedDBInitDockerImageName}</code></li> -->
-				</ul>
+                <!-- <li><code>${publishedDBInitDockerImageName}</code></li> -->
+                </ul>
 				"""
 
                 if(forceSkipCucumber) {

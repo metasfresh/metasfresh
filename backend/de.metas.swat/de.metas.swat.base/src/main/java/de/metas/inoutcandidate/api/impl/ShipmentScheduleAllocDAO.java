@@ -74,6 +74,8 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 
 	/**
 	 * Creates a filter which keeps {@link I_M_ShipmentSchedule_QtyPicked} all records (active or not), for given shipment schedule <b>AND</b> which were already delivered.
+	 *
+	 * @param shipmentSchedule
 	 */
 	private IQueryFilter<I_M_ShipmentSchedule_QtyPicked> createOnShipmentLineFilter(
 			@NonNull final I_M_ShipmentSchedule shipmentSchedule)
@@ -297,6 +299,7 @@ public class ShipmentScheduleAllocDAO implements IShipmentScheduleAllocDAO
 
 		logger.debug("Updated {} M_ShipmentSchedule_QtyPicked to Processed={} for intout={}", updated, newProcessedValue, inOut);
 	}
+
 
 	@Override
 	public List<I_M_ShipmentSchedule_QtyPicked> retrieveOnShipmentLineRecords(@NonNull final ShipmentScheduleId shipmentScheduleId)

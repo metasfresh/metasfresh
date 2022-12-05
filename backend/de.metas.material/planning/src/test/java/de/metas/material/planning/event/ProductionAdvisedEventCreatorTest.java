@@ -9,7 +9,6 @@ import de.metas.material.event.pporder.PPOrderCandidateAdvisedEvent;
 import de.metas.material.event.pporder.PPOrderData;
 import de.metas.material.planning.IMaterialPlanningContext;
 import de.metas.material.planning.IMaterialRequest;
-import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.pporder.PPOrderCandidateDemandMatcher;
 import de.metas.material.planning.ppordercandidate.PPOrderCandidateAdvisedEventCreator;
 import de.metas.material.planning.ppordercandidate.PPOrderCandidatePojoSupplier;
@@ -30,7 +29,7 @@ import java.util.List;
 import static de.metas.material.event.EventTestHelper.createSupplyRequiredDescriptorWithProductId;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -80,7 +79,7 @@ public class ProductionAdvisedEventCreatorTest
 	@Test
 	public void createProductionAdvisedEvents_returns_same_supplyRequiredDescriptor()
 	{
-		final IMutableMRPContext mrpContext = Mockito.mock(IMutableMRPContext.class);
+		final IMaterialPlanningContext mrpContext = Mockito.mock(IMaterialPlanningContext.class);
 		Mockito.when(mrpContext.getProductPlanning())
 				.thenReturn(newInstance(I_PP_Product_Planning.class));
 

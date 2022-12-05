@@ -20,6 +20,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import de.metas.document.DocBaseType;
 import org.adempiere.util.LegacyAdapters;
 import org.compiere.model.I_C_Cash;
 import org.compiere.model.I_C_CashLine;
@@ -48,7 +49,7 @@ public class Doc_Cash extends Doc<DocLine_Cash>
 {
 	public Doc_Cash(final AcctDocContext ctx)
 	{
-		super(ctx, DOCTYPE_CashJournal);
+		super(ctx, DocBaseType.CashJournal);
 	}	// Doc_Cash
 
 	@Override

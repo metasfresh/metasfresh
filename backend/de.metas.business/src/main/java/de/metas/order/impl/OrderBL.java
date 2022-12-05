@@ -36,9 +36,11 @@ import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeBL;
+import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.location.DocumentLocation;
 import de.metas.i18n.AdMessageKey;
@@ -340,7 +342,7 @@ public class OrderBL implements IOrderBL
 		else
 		{
 			final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
-					.docBaseType(X_C_DocType.DOCBASETYPE_PurchaseOrder)
+					.docBaseType(DocBaseType.PurchaseOrder)
 					.docSubType(DocTypeQuery.DOCSUBTYPE_Any)
 					.adClientId(order.getAD_Client_ID())
 					.adOrgId(order.getAD_Org_ID())
@@ -370,7 +372,7 @@ public class OrderBL implements IOrderBL
 		}
 
 		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_PurchaseOrder)
+				.docBaseType(DocBaseType.PurchaseOrder)
 				.docSubType(poDocSubType)
 				.adClientId(order.getAD_Client_ID())
 				.adOrgId(order.getAD_Org_ID())
@@ -399,7 +401,7 @@ public class OrderBL implements IOrderBL
 		}
 
 		final DocTypeQuery docTypeQuery = DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_SalesOrder)
+				.docBaseType(DocBaseType.SalesOrder)
 				.docSubType(soDocSubType)
 				.adClientId(order.getAD_Client_ID())
 				.adOrgId(order.getAD_Org_ID())
@@ -796,14 +798,8 @@ public class OrderBL implements IOrderBL
 	public void closeLine(final org.compiere.model.I_C_OrderLine orderLine)
 	{
 		Check.assumeNotNull(orderLine, "orderLine not null");
-
-		if (orderLine.getQtyDelivered().compareTo(orderLine.getQtyOrdered()) >= 0) // they delivered at least the ordered qty => nothing to do
-		{
-			return; // Do nothing
-		}
-
-		orderLine.setQtyOrdered(orderLine.getQtyDelivered());
-		InterfaceWrapperHelper.save(orderLine); // saving, just to be on the save side in case reserveStock() does a refresh or sth
+		orderLine.setIsDeliveryClosed(true);
+		InterfaceWrapperHelper.save(orderLine);
 
 		final I_C_Order order = orderLine.getC_Order();
 		reserveStock(order, orderLine); // FIXME: move reserveStock method to an orderBL service
@@ -821,6 +817,7 @@ public class OrderBL implements IOrderBL
 		//
 		// Set QtyOrdered
 		orderLine.setQtyOrdered(qtyOrdered.toBigDecimal());
+		orderLine.setIsDeliveryClosed(false);
 		InterfaceWrapperHelper.save(orderLine); // saving, just to be on the save side in case reserveStock() does a refresh or sth
 
 		//
@@ -1222,5 +1219,13 @@ public class OrderBL implements IOrderBL
 	public String getDocumentNoById(@NonNull final OrderId orderId)
 	{
 		return getById(orderId).getDocumentNo();
+	}
+
+	@NonNull
+	public DocStatus getDocStatus(@NonNull final OrderId orderId)
+	{
+		final I_C_Order order = getById(orderId);
+
+		return DocStatus.ofCode(order.getDocStatus());
 	}
 }

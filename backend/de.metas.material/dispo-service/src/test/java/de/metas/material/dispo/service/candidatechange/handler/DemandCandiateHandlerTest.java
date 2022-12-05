@@ -92,8 +92,8 @@ public class DemandCandiateHandlerTest
 
 		final StockChangeDetailRepo stockChangeDetailRepo = new StockChangeDetailRepo();
 
-		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo);
 		final CandidateRepositoryRetrieval candidateRepositoryRetrieval = new CandidateRepositoryRetrieval(dimensionService, stockChangeDetailRepo);
+		final CandidateRepositoryWriteService candidateRepositoryWriteService = new CandidateRepositoryWriteService(dimensionService, stockChangeDetailRepo, candidateRepositoryRetrieval);
 
 		postMaterialEventService = Mockito.mock(PostMaterialEventService.class);
 		availableToPromiseRepository = Mockito.spy(AvailableToPromiseRepository.class);
@@ -197,7 +197,7 @@ public class DemandCandiateHandlerTest
 	{
 		final ArgumentCaptor<MaterialEvent> eventCaptor = ArgumentCaptor.forClass(MaterialEvent.class);
 		Mockito.verify(postMaterialEventService)
-				.postEventAfterNextCommit(eventCaptor.capture());
+				.enqueueEventAfterNextCommit(eventCaptor.capture());
 
 		final MaterialEvent event = eventCaptor.getValue();
 
@@ -232,7 +232,7 @@ public class DemandCandiateHandlerTest
 		assertThat(stockCandidate.getMD_Candidate_Parent_ID()).isEqualTo(unrelatedTransactionCandidate.getMD_Candidate_ID());
 
 		Mockito.verify(postMaterialEventService, Mockito.times(0))
-				.postEventNow(Mockito.any(), Mockito.any());
+				.enqueueEventNow(Mockito.any());
 	}
 
 	private static Candidate createCandidateWithType(@NonNull final CandidateType type)

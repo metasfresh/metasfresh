@@ -317,7 +317,7 @@ public class MigrationLogger implements IMigrationLogger
 
 		final I_AD_MigrationData data = InterfaceWrapperHelper.create(po.getCtx(), I_AD_MigrationData.class, po.get_TrxName());
 		data.setColumnName(infoColumn.getColumnName());
-		data.setAD_Column_ID(infoColumn.getAD_Column_ID());
+		data.setAD_Column_ID(infoColumn.getAD_Column_ID().getRepoId());
 		boolean create = false;
 
 		//

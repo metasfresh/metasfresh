@@ -1,8 +1,11 @@
 package de.metas.dunning.model;
 
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for C_DunningDoc
- *  @author Adempiere (generated) 
+ *  @author Adempiere (generated)
  */
 @SuppressWarnings("javadoc")
 public interface I_C_DunningDoc 
@@ -480,6 +483,31 @@ public interface I_C_DunningDoc
     public static final org.adempiere.model.ModelColumn<I_C_DunningDoc, Object> COLUMN_IsWriteOff = new org.adempiere.model.ModelColumn<I_C_DunningDoc, Object>(I_C_DunningDoc.class, "IsWriteOff", null);
     /** Column name IsWriteOff */
     public static final String COLUMNNAME_IsWriteOff = "IsWriteOff";
+
+	/**
+	 * Set Section Code.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_SectionCode_ID (int M_SectionCode_ID);
+
+	/**
+	 * Get Section Code.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_SectionCode_ID();
+
+	@Nullable org.compiere.model.I_M_SectionCode getM_SectionCode();
+
+	void setM_SectionCode(@Nullable org.compiere.model.I_M_SectionCode M_SectionCode);
+
+	ModelColumn<I_C_DunningDoc, org.compiere.model.I_M_SectionCode> COLUMN_M_SectionCode_ID = new ModelColumn<>(I_C_DunningDoc.class, "M_SectionCode_ID", org.compiere.model.I_M_SectionCode.class);
+	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
 
 	/**
 	 * Set Verarbeitet.

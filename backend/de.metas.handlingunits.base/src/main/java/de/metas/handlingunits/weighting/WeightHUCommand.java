@@ -1,6 +1,7 @@
 package de.metas.handlingunits.weighting;
 
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
@@ -32,7 +33,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
-import org.compiere.model.X_C_DocType;
 
 import javax.annotation.Nullable;
 import java.util.List;
@@ -134,7 +134,7 @@ public class WeightHUCommand
 			@NonNull final OrgId orgId)
 	{
 		return docTypeDAO.getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(X_C_DocType.DOCBASETYPE_MaterialPhysicalInventory)
+				.docBaseType(DocBaseType.MaterialPhysicalInventory)
 				.docSubType(InventoryDocSubType.SingleHUInventory.getCode())
 				.adClientId(clientId.getRepoId())
 				.adOrgId(orgId.getRepoId())

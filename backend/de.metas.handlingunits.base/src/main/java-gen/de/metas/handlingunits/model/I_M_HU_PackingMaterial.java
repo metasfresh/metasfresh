@@ -344,6 +344,27 @@ public interface I_M_HU_PackingMaterial
 	String COLUMNNAME_IsInvoiceable = "IsInvoiceable";
 
 	/**
+	 * Set Qty LU By Max. Load Weight.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setisQtyLUByMaxLoadWeight (boolean isQtyLUByMaxLoadWeight);
+
+	/**
+	 * Get Qty LU By Max. Load Weight.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isQtyLUByMaxLoadWeight();
+
+	ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_isQtyLUByMaxLoadWeight = new ModelColumn<>(I_M_HU_PackingMaterial.class, "isQtyLUByMaxLoadWeight", null);
+	String COLUMNNAME_isQtyLUByMaxLoadWeight = "isQtyLUByMaxLoadWeight";
+
+	/**
 	 * Set Länge.
 	 *
 	 * <br>Type: Number
@@ -363,6 +384,27 @@ public interface I_M_HU_PackingMaterial
 
 	ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_Length = new ModelColumn<>(I_M_HU_PackingMaterial.class, "Length", null);
 	String COLUMNNAME_Length = "Length";
+
+	/**
+	 * Set Max. Load Weight.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setMaxLoadWeight (@Nullable BigDecimal MaxLoadWeight);
+
+	/**
+	 * Get Max. Load Weight.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getMaxLoadWeight();
+
+	ModelColumn<I_M_HU_PackingMaterial, Object> COLUMN_MaxLoadWeight = new ModelColumn<>(I_M_HU_PackingMaterial.class, "MaxLoadWeight", null);
+	String COLUMNNAME_MaxLoadWeight = "MaxLoadWeight";
 
 	/**
 	 * Set Packing Material.

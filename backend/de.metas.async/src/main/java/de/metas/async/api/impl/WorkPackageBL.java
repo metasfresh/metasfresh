@@ -1,10 +1,10 @@
 package de.metas.async.api.impl;
 
 import de.metas.async.api.IWorkPackageBL;
-import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.QueuePackageProcessorId;
-import de.metas.async.processor.impl.QueueProcessorDescriptorIndex;
+import de.metas.async.processor.descriptor.QueueProcessorDescriptorRepository;
+import de.metas.async.processor.descriptor.model.QueuePackageProcessor;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -15,8 +15,6 @@ import java.util.Optional;
 
 public class WorkPackageBL implements IWorkPackageBL
 {
-	private final QueueProcessorDescriptorIndex queueProcessorDescriptorIndex = QueueProcessorDescriptorIndex.getInstance();
-
 	@Override
 	public Optional<UserId> getUserIdInCharge(@NonNull final I_C_Queue_WorkPackage workPackage)
 	{
@@ -26,7 +24,7 @@ public class WorkPackageBL implements IWorkPackageBL
 		}
 
 		final QueuePackageProcessorId queuePackageProcessorId = QueuePackageProcessorId.ofRepoId(workPackage.getC_Queue_PackageProcessor_ID());
-		final I_C_Queue_PackageProcessor packageProcessor = queueProcessorDescriptorIndex.getPackageProcessor(queuePackageProcessorId);
+		final QueuePackageProcessor packageProcessor = QueueProcessorDescriptorRepository.getInstance().getPackageProcessor(queuePackageProcessorId);
 		Check.assumeNotNull(packageProcessor, "C_Queue_PackageProcessor is not null for 'workPackage'={}", workPackage);
 
 		if (Check.isEmpty(packageProcessor.getInternalName()))

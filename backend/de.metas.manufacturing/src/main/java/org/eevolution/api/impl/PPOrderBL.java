@@ -319,7 +319,7 @@ public class PPOrderBL implements IPPOrderBL
 			@Nullable final String docSubType)
 	{
 		final DocTypeId docTypeId = docTypesRepo.getDocTypeId(DocTypeQuery.builder()
-				.docBaseType(docBaseType.getCode())
+				.docBaseType(docBaseType.toDocBaseType())
 				.docSubType(docSubType)
 				.adClientId(ppOrder.getAD_Client_ID())
 				.adOrgId(ppOrder.getAD_Org_ID())
@@ -619,7 +619,7 @@ public class PPOrderBL implements IPPOrderBL
 				.directlyPickIfFeasible(PPOrderUtil.pickIfFeasible(ppOrderPojo.getPpOrderData()))
 				.build();
 
-		materialEventService.postEventAfterNextCommit(ppOrderCreatedEvent);
+		materialEventService.enqueueEventAfterNextCommit(ppOrderCreatedEvent);
 	}
 
 	@Override
@@ -631,4 +631,11 @@ public class PPOrderBL implements IPPOrderBL
 				"Completed ppOrder; PP_Order_ID={}; DocumentNo={}",
 				ppOrder.getPP_Order_ID(), ppOrder.getDocumentNo());
 	}
+
+	@Override
+	public boolean hasSerialNumberSequence(@NonNull final PPOrderId ppOrderId)
+	{
+		return orderBOMService.getSerialNoSequenceId(ppOrderId).isPresent();
+	}
+
 }

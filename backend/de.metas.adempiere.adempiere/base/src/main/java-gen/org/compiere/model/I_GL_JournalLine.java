@@ -16,6 +16,7 @@
  *****************************************************************************/
 package org.compiere.model;
 
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for GL_JournalLine
  *  @author Adempiere (generated) 
@@ -1240,4 +1241,29 @@ public interface I_GL_JournalLine
     public static final org.adempiere.model.ModelColumn<I_GL_JournalLine, org.compiere.model.I_AD_User> COLUMN_UpdatedBy = new org.adempiere.model.ModelColumn<I_GL_JournalLine, org.compiere.model.I_AD_User>(I_GL_JournalLine.class, "UpdatedBy", org.compiere.model.I_AD_User.class);
     /** Column name UpdatedBy */
     public static final String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set Section Code.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_SectionCode_ID (int M_SectionCode_ID);
+
+	/**
+	 * Get Section Code.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_SectionCode_ID();
+
+	org.compiere.model.I_M_SectionCode getM_SectionCode();
+
+	void setM_SectionCode(org.compiere.model.I_M_SectionCode M_SectionCode);
+
+	ModelColumn<I_GL_JournalLine, I_M_SectionCode> COLUMN_M_SectionCode_ID = new ModelColumn<>(I_GL_JournalLine.class, "M_SectionCode_ID", org.compiere.model.I_M_SectionCode.class);
+	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
 }

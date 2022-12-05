@@ -26,6 +26,6 @@ public class IdentifierIds_StepDefData extends StepDefData<Integer>
 {
 	public IdentifierIds_StepDefData()
 	{
-		super(Integer.class);
+		super(null);
 	}
 }

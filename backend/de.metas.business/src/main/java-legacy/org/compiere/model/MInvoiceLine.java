@@ -16,31 +16,8 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import static java.math.BigDecimal.ZERO;
-import static org.adempiere.model.InterfaceWrapperHelper.create;
-
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Properties;
-
-import de.metas.bpartner.BPartnerLocationAndCaptureId;
-import de.metas.document.dimension.Dimension;
-import de.metas.document.dimension.DimensionService;
-import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
-import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
-import de.metas.product.acct.api.ActivityId;
-import de.metas.project.ProjectId;
-import de.metas.tax.api.TaxId;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.SpringContextHolder;
-import org.compiere.util.DB;
-import org.slf4j.Logger;
-
 import de.metas.adempiere.model.I_C_InvoiceLine;
+import de.metas.bpartner.BPartnerLocationAndCaptureId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.currency.CurrencyPrecision;
@@ -49,7 +26,9 @@ import de.metas.document.dimension.DimensionService;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.inout.InOutLineId;
+import de.metas.inout.location.adapter.InOutDocumentLocationAdapterFactory;
 import de.metas.interfaces.I_C_OrderLine;
+import de.metas.invoice.location.adapter.InvoiceDocumentLocationAdapterFactory;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.lang.SOTrx;
@@ -560,14 +539,23 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		}
 		//
 		log.debug("M_PriceList_ID={}", M_PriceList_ID);
-		m_productPricing = new MProductPricing(getM_Product_ID(), C_BPartner_ID,
-											   getQtyInvoiced(), m_IsSOTrx);
+
+		final CountryId countryId = getC_Invoice().getC_BPartner_Location_ID() > 0
+				? Services.get(IBPartnerDAO.class).getCountryId(BPartnerLocationId.ofRepoId(getC_Invoice().getC_BPartner_ID(), getC_Invoice().getC_BPartner_Location_ID()))
+				: null;
+		
+		m_productPricing = new MProductPricing(
+				OrgId.ofRepoId(getAD_Org_ID()),
+				getM_Product_ID(), 
+				C_BPartner_ID,
+				countryId,						   
+				getQtyInvoiced(), 
+				m_IsSOTrx);
 		m_productPricing.setM_PriceList_ID(M_PriceList_ID);
 		m_productPricing.setPriceDate(m_DateInvoiced);
 
 		final I_C_InvoiceLine il = create(this, I_C_InvoiceLine.class);
-		final IInvoiceBL invoiceBL = Services.get(IInvoiceBL.class);
-
+		
 		// Set the IsManualPrice in the pricing engine based on the value in the invoice Line
 		m_productPricing.setManualPrice(il.isManualPrice());
 
@@ -690,7 +678,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 
 		final InOutLineId inoutLineId = InOutLineId.ofRepoIdOrNull(getM_InOutLine_ID());
 
-		final I_M_InOutLine inoutLineRecord = inoutLineId == null ? null : inoutDAO.getLineById(inoutLineId);
+		final I_M_InOutLine inoutLineRecord = inoutLineId == null ? null : inoutDAO.getLineByIdInTrx(inoutLineId);
 		final I_M_InOut io = inoutLineRecord == null ? null : inoutDAO.getById(InOutId.ofRepoId(inoutLineRecord.getM_InOut_ID()));
 
 		final OrgId fromOrgId = io != null ? OrgId.ofRepoId(io.getAD_Org_ID()) : OrgId.ofRepoId(invoice.getAD_Org_ID());
@@ -1352,7 +1340,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 					+ " SET TotalLines="
 					+ " (SELECT COALESCE(SUM(LineNetAmt),0) FROM C_InvoiceLine il WHERE i.C_Invoice_ID=il.C_Invoice_ID) "
 					+ " WHERE C_Invoice_ID=?";
-			final int no = DB.executeUpdateEx(sql, new Object[] { getC_Invoice_ID() }, get_TrxName());
+			final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { getC_Invoice_ID() }, get_TrxName());
 			if (no != 1)
 			{
 				throw new AdempiereException("Updating TotalLines failed; updated records=" + no + "; sql=" + sql);
@@ -1367,7 +1355,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 					// SUM up C_InvoiceTax.TaxAmt only for those lines which does not have Tax Included
 					+ " (SELECT COALESCE(SUM(TaxAmt),0) FROM C_InvoiceTax it WHERE i.C_Invoice_ID=it.C_Invoice_ID AND it.IsActive='Y' AND it.IsTaxIncluded='N') "
 					+ " WHERE C_Invoice_ID=?";
-			final int no = DB.executeUpdateEx(sql, new Object[] { getC_Invoice_ID() }, get_TrxName());
+			final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, new Object[] { getC_Invoice_ID() }, get_TrxName());
 			if (no != 1)
 			{
 				throw new AdempiereException("Updating GrandTotal failed; updated records=" + no + "; sql=" + sql);
@@ -1395,7 +1383,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 			return "";
 		}
 		String sql = "DELETE FROM C_LandedCostAllocation WHERE C_InvoiceLine_ID=" + getC_InvoiceLine_ID();
-		int no = DB.executeUpdate(sql, get_TrxName());
+		int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 		if (no != 0)
 		{
 			log.debug("Deleted #" + no);

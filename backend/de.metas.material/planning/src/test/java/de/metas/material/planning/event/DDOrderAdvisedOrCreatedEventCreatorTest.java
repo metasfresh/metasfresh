@@ -1,24 +1,6 @@
 package de.metas.material.planning.event;
 
-import static de.metas.material.event.EventTestHelper.createSupplyRequiredDescriptorWithProductId;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.util.List;
-
-import org.adempiere.test.AdempiereTestHelper;
-import org.compiere.model.I_C_UOM;
-import org.eevolution.model.I_DD_NetworkDistributionLine;
-import org.eevolution.model.I_PP_Product_Planning;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.ProductDescriptor;
@@ -27,11 +9,26 @@ import de.metas.material.event.ddorder.DDOrder;
 import de.metas.material.event.ddorder.DDOrderAdvisedEvent;
 import de.metas.material.event.ddorder.DDOrderLine;
 import de.metas.material.planning.IMaterialPlanningContext;
-import de.metas.material.planning.IMutableMRPContext;
 import de.metas.material.planning.ddorder.DDOrderAdvisedEventCreator;
 import de.metas.material.planning.ddorder.DDOrderDemandMatcher;
 import de.metas.material.planning.ddorder.DDOrderPojoSupplier;
 import de.metas.organization.OrgId;
+import org.adempiere.test.AdempiereTestHelper;
+import org.compiere.model.I_C_UOM;
+import org.eevolution.model.I_DD_NetworkDistributionLine;
+import org.eevolution.model.I_PP_Product_Planning;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+
+import java.math.BigDecimal;
+import java.time.Instant;
+import java.util.List;
+
+import static de.metas.material.event.EventTestHelper.createSupplyRequiredDescriptorWithProductId;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /*
  * #%L
@@ -81,7 +78,7 @@ public class DDOrderAdvisedOrCreatedEventCreatorTest
 	@Test
 	public void createProductionAdvisedEvents_returns_same_supplyRequiredDescriptor()
 	{
-		final IMutableMRPContext mrpContext = Mockito.mock(IMutableMRPContext.class);
+		final IMaterialPlanningContext mrpContext = Mockito.mock(IMaterialPlanningContext.class);
 		Mockito.when(mrpContext.getProductPlanning())
 				.thenReturn(newInstance(I_PP_Product_Planning.class));
 

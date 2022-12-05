@@ -42,7 +42,6 @@ import java.util.ArrayList;
 
 /**
  * Generate shipment for Vendor RMA.
- * Based on {@link org.compiere.process.InOutGenerate}.
  *
  * @author Ashley Ramdass
  * @author Teo Sarca
@@ -235,8 +234,8 @@ public class InOutGenerateRMA extends JavaProcess
 				final MInvoiceLine invoiceLine = new Query(shipment.getCtx(), MInvoiceLine.Table_Name,
 														   MInvoiceLine.COLUMNNAME_M_RMALine_ID + "=?",
 														   shipment.get_TrxName())
-						.setParameters(new Object[] { rmaLine.getM_RMALine_ID() })
-						.firstOnly();
+						.setParameters(rmaLine.getM_RMALine_ID())
+						.firstOnly(MInvoiceLine.class);
 				if (invoiceLine != null)
 				{
 					invoiceLine.setM_InOutLine_ID(shipLine.getM_InOutLine_ID());

@@ -25,9 +25,11 @@ package org.compiere.apps.search;
 import java.util.List;
 import java.util.Properties;
 
+import de.metas.ad_reference.ReferenceId;
 import org.adempiere.ad.expression.api.IExpressionEvaluator.OnVariableNotFound;
 import org.adempiere.ad.expression.api.IExpressionFactory;
 import org.adempiere.ad.expression.api.IStringExpression;
+import org.adempiere.ad.validationRule.AdValRuleId;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_InfoColumn;
 import org.compiere.model.Lookup;
@@ -101,15 +103,16 @@ public abstract class AbstractInfoQueryCriteriaGeneral implements IInfoQueryCrit
 			final MLookup lookup;
 			try
 			{
-				lookup = MLookupFactory.get(ctx,
+				lookup = MLookupFactory.newInstance().get(ctx,
 						windowNo,
 						0, // Column_ID,
 						infoColumn.getAD_Reference_ID(),
 						null, // tableName
 						columnName,
-						infoColumn.getAD_Reference_Value_ID(),
+						ReferenceId.ofRepoIdOrNull(infoColumn.getAD_Reference_Value_ID()),
 						false, // IsParent
-						infoColumn.getAD_Val_Rule_ID());
+						AdValRuleId.ofRepoIdOrNull(infoColumn.getAD_Val_Rule_ID())
+				);
 			}
 			catch (final Exception e)
 			{

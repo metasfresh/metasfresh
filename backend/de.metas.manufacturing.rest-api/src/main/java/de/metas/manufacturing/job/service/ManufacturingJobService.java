@@ -8,6 +8,7 @@ import de.metas.device.accessor.DeviceAccessor;
 import de.metas.device.accessor.DeviceAccessorsHubFactory;
 import de.metas.device.accessor.DeviceId;
 import de.metas.device.websocket.DeviceWebsocketNamingStrategy;
+import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
@@ -29,13 +30,13 @@ import de.metas.manufacturing.job.model.ScaleDevice;
 import de.metas.manufacturing.job.service.commands.ReceiveGoodsCommand;
 import de.metas.manufacturing.job.service.commands.create_job.ManufacturingJobCreateCommand;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.json.JsonReceivingTarget;
-import de.metas.material.planning.IResourceDAO;
 import de.metas.material.planning.pporder.IPPOrderBOMBL;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
+import de.metas.resource.ResourceService;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -49,6 +50,7 @@ import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.ManufacturingOrderQuery;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRouting;
+import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.api.PPOrderRoutingActivityId;
 import org.eevolution.model.I_PP_Order;
 import org.slf4j.Logger;
@@ -71,7 +73,7 @@ public class ManufacturingJobService
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	private final IResourceDAO resourceDAO = Services.get(IResourceDAO.class);
+	private final ResourceService resourceService;
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IHUPPOrderBL ppOrderBL;
 	private final IPPOrderBOMBL ppOrderBOMBL;
@@ -87,6 +89,7 @@ public class ManufacturingJobService
 	private static final AdMessageKey MSG_ScaleDeviceNotRegistered = AdMessageKey.of("ScaleDeviceNotRegistered");
 
 	public ManufacturingJobService(
+			final @NonNull ResourceService resourceService,
 			final @NonNull PPOrderIssueScheduleService ppOrderIssueScheduleService,
 			final @NonNull HUReservationService huReservationService,
 			final @NonNull PPOrderSourceHUService ppOrderSourceHUService,
@@ -94,6 +97,7 @@ public class ManufacturingJobService
 			final @NonNull DeviceWebsocketNamingStrategy deviceWebsocketNamingStrategy,
 			final @NonNull HUQRCodesService huQRCodeService)
 	{
+		this.resourceService = resourceService;
 		this.ppOrderIssueScheduleService = ppOrderIssueScheduleService;
 		this.huReservationService = huReservationService;
 		this.ppOrderSourceHUService = ppOrderSourceHUService;
@@ -198,7 +202,7 @@ public class ManufacturingJobService
 			{
 				case UserPlant:
 				{
-					final ImmutableSet<ResourceId> userPlantIds = resourceDAO.getResourceIdsByUserId(userId);
+					final ImmutableSet<ResourceId> userPlantIds = resourceService.getResourceIdsByUserId(userId);
 					if (!userPlantIds.isEmpty())
 					{
 						if (onlyPlantIds.isEmpty())
@@ -467,5 +471,33 @@ public class ManufacturingJobService
 				.getDeviceAccessors(Weightables.ATTR_WeightGross)
 				.stream(job.getWarehouseId())
 				.map(this::toScaleDevice);
+	}
+
+	public ManufacturingJob withScannedQRCode(
+			@NonNull final ManufacturingJob job,
+			@NonNull final ManufacturingJobActivityId jobActivityId,
+			@Nullable final GlobalQRCode scannedQRCode)
+	{
+		// No change
+		if(GlobalQRCode.equals(job.getActivityById(jobActivityId).getScannedQRCode(), scannedQRCode))
+		{
+			return job;
+		}
+
+		final ManufacturingJobLoaderAndSaver loaderAndSaver = newSaver();
+		final PPOrderId ppOrderId = job.getPpOrderId();
+		final PPOrderRouting orderRouting = loaderAndSaver.getRouting(ppOrderId);
+		final PPOrderRouting orderRoutingBeforeChange = orderRouting.copy();
+
+		final PPOrderRoutingActivity orderRoutingActivity = orderRouting.getActivityById(jobActivityId.toPPOrderRoutingActivityId(ppOrderId));
+		orderRoutingActivity.setScannedQRCode(scannedQRCode);
+		orderRoutingActivity.completeIt();
+
+		if (!PPOrderRouting.equals(orderRouting, orderRoutingBeforeChange))
+		{
+			loaderAndSaver.saveRouting(orderRouting);
+		}
+
+		return loaderAndSaver.load(ppOrderId);
 	}
 }

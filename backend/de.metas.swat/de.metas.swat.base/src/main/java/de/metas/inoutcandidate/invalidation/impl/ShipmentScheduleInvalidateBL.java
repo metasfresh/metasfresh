@@ -1,10 +1,8 @@
-package de.metas.inoutcandidate.invalidation.impl;
-
 /*
  * #%L
  * de.metas.swat.base
  * %%
- * Copyright (C) 2015 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -21,6 +19,8 @@ package de.metas.inoutcandidate.invalidation.impl;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.inoutcandidate.invalidation.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -206,7 +206,7 @@ public class ShipmentScheduleInvalidateBL implements IShipmentScheduleInvalidate
 	public void notifySegmentChangedForShipmentScheduleInclSched(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		final ShipmentScheduleId shipmentScheduleId = ShipmentScheduleId.ofRepoId(shipmentSchedule.getM_ShipmentSchedule_ID());
-		
+
 		flagForRecompute(shipmentScheduleId); // 08746: make sure that at any rate, the schedule itself is invalidated, even if it has delivery rule "force"
 		notifySegmentChangedForShipmentSchedule(shipmentSchedule);
 	}

@@ -6,6 +6,8 @@ import de.metas.printing.model.I_C_Printing_Queue;
 import de.metas.util.ISingletonService;
 import org.compiere.model.I_C_Order;
 
+import javax.annotation.Nullable;
+
 public interface IOrderCheckupBL extends ISingletonService
 {
 	/**
@@ -36,5 +38,6 @@ public interface IOrderCheckupBL extends ISingletonService
 	 */
 	int getNumberOfCopies(I_C_Printing_Queue queueItem, I_AD_Archive printOut);
 
+	@Nullable
 	I_C_Order_MFGWarehouse_Report getReportOrNull(I_AD_Archive printOut);
 }

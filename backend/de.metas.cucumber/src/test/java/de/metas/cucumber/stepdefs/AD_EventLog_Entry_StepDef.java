@@ -72,13 +72,13 @@ public class AD_EventLog_Entry_StepDef
 	@And("metasfresh has no AD_EventLog_Entry records")
 	public void delete_AD_EventLog_Entry_records()
 	{
-		DB.executeUpdateEx("DELETE FROM AD_EventLog_Entry;", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("DELETE FROM AD_EventLog_Entry;", ITrx.TRXNAME_None);
 	}
 
 	@And("metasfresh has no AD_EventLog records")
 	public void delete_AD_EventLog_records()
 	{
-		DB.executeUpdateEx("DELETE FROM AD_EventLog_Entry;", ITrx.TRXNAME_None);
+		DB.executeUpdateAndThrowExceptionOnFail("DELETE FROM AD_EventLog_Entry;", ITrx.TRXNAME_None);
 	}
 
 	@And("^after not more than (.*)s, AD_EventLog_Entry are found$")
@@ -154,7 +154,6 @@ public class AD_EventLog_Entry_StepDef
 			eventLogTable.put(eventLogIdentifier, eventLog);
 		}
 	}
-
 
 	private void logCurrentContext(@NonNull final Map<String, String> row)
 	{
@@ -234,7 +233,7 @@ public class AD_EventLog_Entry_StepDef
 	}
 
 	@Nullable
-	private static  <T> T getSpecificMaterialEvent(@NonNull final Event materialEvent, @NonNull final Class<T> clazz)
+	private static <T> T getSpecificMaterialEvent(@NonNull final Event materialEvent, @NonNull final Class<T> clazz)
 	{
 		try
 		{

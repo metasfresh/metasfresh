@@ -25,6 +25,7 @@ package de.metas.manufacturing.acct;
 import java.math.BigDecimal;
 import java.util.List;
 
+import de.metas.document.DocBaseType;
 import org.compiere.acct.Doc;
 import org.compiere.acct.DocLine;
 import org.compiere.acct.Fact;
@@ -41,7 +42,7 @@ public class Doc_DDOrder extends Doc<DocLine<Doc_DDOrder>>
 
 	public Doc_DDOrder(final AcctDocContext ctx)
 	{
-		super(ctx, MDocType.DOCBASETYPE_DistributionOrder);
+		super(ctx, DocBaseType.DistributionOrder);
 
 		final I_DD_Order ddOrder = getModel(I_DD_Order.class);
 		setDateAcct(ddOrder.getDateOrdered());

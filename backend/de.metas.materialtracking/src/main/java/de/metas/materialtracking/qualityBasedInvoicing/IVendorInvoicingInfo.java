@@ -30,8 +30,6 @@ import de.metas.document.location.DocumentLocation;
 import de.metas.pricing.PricingSystemId;
 import org.compiere.model.I_M_PriceList_Version;
 
-import javax.annotation.Nullable;
-
 /**
  * Contains vendor invoicing informations.
  * <p>

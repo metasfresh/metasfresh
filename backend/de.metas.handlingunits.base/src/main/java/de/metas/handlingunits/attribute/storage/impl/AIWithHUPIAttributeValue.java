@@ -22,24 +22,24 @@ package de.metas.handlingunits.attribute.storage.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.Date;
-
-import org.compiere.model.I_M_AttributeInstance;
-import org.compiere.util.TimeUtil;
-
+import com.google.common.annotations.VisibleForTesting;
 import de.metas.handlingunits.attribute.impl.AbstractHUAttributeValue;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.model.I_M_HU_PI_Attribute;
 import lombok.NonNull;
+import org.compiere.model.I_M_AttributeInstance;
+import org.compiere.util.TimeUtil;
+
+import java.math.BigDecimal;
+import java.util.Date;
 
 /**
  * Wraps an {@link I_M_AttributeInstance} and uses definition from {@link I_M_HU_PI_Attribute}
  *
  * @author tsa
- *
  */
-/* package */class AIWithHUPIAttributeValue extends AbstractHUAttributeValue
+@VisibleForTesting
+public class AIWithHUPIAttributeValue extends AbstractHUAttributeValue
 {
 	private final I_M_AttributeInstance attributeInstance;
 	private final boolean isGeneratedAttribute;

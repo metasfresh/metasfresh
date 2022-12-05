@@ -1,19 +1,19 @@
 package org.eevolution.process;
 
 import de.metas.common.util.time.SystemTime;
-import de.metas.material.planning.IResourceDAO;
 import de.metas.material.planning.IResourceProductService;
-import de.metas.material.planning.ResourceType;
-import de.metas.material.planning.ResourceTypeId;
 import de.metas.material.planning.WorkingTime;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
+import de.metas.resource.Resource;
+import de.metas.resource.ResourceService;
+import de.metas.resource.ResourceType;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.service.ISysConfigBL;
-import org.compiere.model.I_S_Resource;
+import org.compiere.SpringContextHolder;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.PPOrderActivityScheduleChangeRequest;
@@ -37,14 +37,13 @@ import java.util.Set;
  * Capacity Requirement Planning
  *
  * @author Gunther Hoppe, tranSIT GmbH Ilmenau/Germany (Original by Victor Perez, e-Evolution, S.C.)
- * @version 1.0, October 14th 2005
- *
  * @author Teo Sarca, www.arhipac.ro
+ * @version 1.0, October 14th 2005
  */
 @SuppressWarnings("all") // tsa: to many warnings in a code that we don't use. Suppress all to reduce noise.
 public class CRP extends JavaProcess
 {
-	private final IResourceDAO resourcesRepo = Services.get(IResourceDAO.class);
+	private final ResourceService resourceService = SpringContextHolder.instance.getBean(ResourceService.class);
 	private final IResourceProductService resourceProductService = Services.get(IResourceProductService.class);
 	private final IPPOrderBL ordersService = Services.get(IPPOrderBL.class);
 	private final IPPOrderRoutingRepository orderRoutingsRepo = Services.get(IPPOrderRoutingRepository.class);
@@ -55,12 +54,16 @@ public class CRP extends JavaProcess
 	private ResourceId plantId;
 	private String p_ScheduleType;
 
-	/** SysConfig parameter - maximum number of algorithm iterations */
+	/**
+	 * SysConfig parameter - maximum number of algorithm iterations
+	 */
 	private int p_MaxIterationsNo = -1;
 	public static final String SYSCONFIG_MaxIterationsNo = "CRP.MaxIterationsNo";
 	public static final int DEFAULT_MaxIterationsNo = 1000;
 
-	/** CRP Reasoner */
+	/**
+	 * CRP Reasoner
+	 */
 	private CRPReasoner reasoner;
 
 	@Override
@@ -162,10 +165,10 @@ public class CRP extends JavaProcess
 				continue;
 			}
 
-			final I_S_Resource resource = resourcesRepo.getById(resourceId);
+			final Resource resource = resourceService.getResourceById(resourceId);
 			if (!reasoner.isAvailable(resource))
 			{
-				throw new CRPException("@ResourceNotInSlotDay@").setS_Resource(resource);
+				throw new CRPException("@ResourceNotInSlotDay@").setResource(resource);
 			}
 
 			final Duration activityDuration = calculateActivityDuration(activity);
@@ -211,10 +214,10 @@ public class CRP extends JavaProcess
 				continue;
 			}
 
-			final I_S_Resource resource = resourcesRepo.getById(resourceId);
+			final Resource resource = resourceService.getResourceById(resourceId);
 			if (!reasoner.isAvailable(resource))
 			{
-				throw new CRPException("@ResourceNotInSlotDay@").setS_Resource(resource);
+				throw new CRPException("@ResourceNotInSlotDay@").setResource(resource);
 			}
 
 			final Duration activityDuration = calculateActivityDuration(activity);
@@ -271,18 +274,18 @@ public class CRP extends JavaProcess
 	 * @return dayEnd - dayStart in millis
 	 * @throws CRPException if dayStart > dayEnd
 	 */
-	private Duration getAvailableDuration(final Instant dayStart, final Instant dayEnd, final I_S_Resource resource)
+	private Duration getAvailableDuration(final Instant dayStart, final Instant dayEnd, final Resource resource)
 	{
 		final Duration availableDuration = Duration.between(dayStart, dayEnd);
 		if (availableDuration.isNegative())
 		{
 			throw new CRPException("@TimeSlotStart@ > @TimeSlotEnd@ (" + dayEnd + " > " + dayStart + ")")
-					.setS_Resource(resource);
+					.setResource(resource);
 		}
 		return availableDuration;
 	}
 
-	private Instant scheduleForward(final Instant start, final Duration activityDuration, final I_S_Resource resource)
+	private Instant scheduleForward(final Instant start, final Duration activityDuration, final Resource resource)
 	{
 		final ResourceType resourceType = getResourceType(resource);
 
@@ -339,16 +342,16 @@ public class CRP extends JavaProcess
 		return end;
 	}
 
-	private ResourceType getResourceType(final I_S_Resource r)
+	private ResourceType getResourceType(final Resource r)
 	{
-		final ResourceType resourceType = resourceProductService.getResourceTypeById(ResourceTypeId.ofRepoId(r.getS_ResourceType_ID()));
+		final ResourceType resourceType = resourceProductService.getResourceTypeById(r.getResourceTypeId());
 		return resourceType;
 	}
 
 	/**
 	 * Calculate start date having duration and resource
 	 */
-	private Instant scheduleBackward(final Instant end, final Duration activityDuration, final I_S_Resource resource)
+	private Instant scheduleBackward(final Instant end, final Duration activityDuration, final Resource resource)
 	{
 		final ResourceType resourceType = getResourceType(resource);
 

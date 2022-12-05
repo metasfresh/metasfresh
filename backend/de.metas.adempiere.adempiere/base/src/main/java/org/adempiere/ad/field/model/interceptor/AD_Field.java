@@ -2,6 +2,7 @@ package org.adempiere.ad.field.model.interceptor;
 
 import de.metas.common.util.CoalesceUtil;
 import de.metas.logging.LogManager;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.translation.api.IElementTranslationBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -99,18 +100,17 @@ public class AD_Field
 			{
 				final MinimalColumnInfo column = tableDAO.getMinimalColumnInfo(adColumnId);
 				final String ctxTableName = tableDAO.retrieveTableName(column.getAdTableId());
-				final AdValRuleId adValRuleId = CoalesceUtil.coalesceSuppliers(
-						() -> AdValRuleId.ofRepoIdOrNull(field.getAD_Val_Rule_ID()),
-						column::getAdValRuleId
-				);
-				lookupInfo = MLookupFactory.getLookupInfo(
+				lookupInfo = MLookupFactory.newInstance().getLookupInfo(
 						Integer.MAX_VALUE, // WindowNo
 						adReferenceId,
 						ctxTableName, // ctxTableName
 						column.getColumnName(), // ctxColumnName
-						field.getAD_Reference_Value_ID(),
+						ReferenceId.ofRepoIdOrNull(field.getAD_Reference_Value_ID()),
 						column.isParent(), // IsParent,
-						adValRuleId != null ? adValRuleId.getRepoId() : -1
+						CoalesceUtil.coalesceSuppliers(
+								() -> AdValRuleId.ofRepoIdOrNull(field.getAD_Val_Rule_ID()),
+								column::getAdValRuleId
+						)
 				);
 			}
 			catch (final Exception ex)

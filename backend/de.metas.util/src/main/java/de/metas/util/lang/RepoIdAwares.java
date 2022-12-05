@@ -12,6 +12,10 @@ import lombok.Value;
 import lombok.experimental.UtilityClass;
 
 import javax.annotation.Nullable;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Comparator;
@@ -44,6 +48,14 @@ import java.util.function.IntFunction;
 @UtilityClass
 public class RepoIdAwares
 {
+	/**
+	 * If an {@link de.metas.util.lang.RepoIdAware} instance is annotated with this,
+	 * then it will be skipped by automated tests which are checking if the repo ID is valid.
+	 */
+	@Retention(RetentionPolicy.RUNTIME)
+	@Target({ ElementType.TYPE })
+	public @interface SkipTest {}
+
 	public static ImmutableList<Integer> asRepoIds(@NonNull final Collection<? extends RepoIdAware> ids)
 	{
 		if (ids.isEmpty())
@@ -72,14 +84,27 @@ public class RepoIdAwares
 
 	public static <T extends RepoIdAware> T ofRepoId(final int repoId, final Class<T> repoIdClass)
 	{
-		final RepoIdAwareDescriptor repoIdAwareDescriptor = getRepoIdAwareDescriptor(repoIdClass);
-
-		@SuppressWarnings("unchecked") final T id = (T)repoIdAwareDescriptor.getOfRepoIdFunction().apply(repoId);
-
-		return id;
+		return getOfRepoIdFunction(repoIdClass).apply(repoId);
 	}
 
+	public static <T extends RepoIdAware> IntFunction<T> getOfRepoIdFunction(final Class<T> repoIdClass)
+	{
+		final RepoIdAwareDescriptor repoIdAwareDescriptor = getRepoIdAwareDescriptor(repoIdClass);
+		//noinspection unchecked
+		return (IntFunction<T>)repoIdAwareDescriptor.getOfRepoIdFunction();
+	}
+
+
 	public static <T extends RepoIdAware> T ofObject(@NonNull final Object repoIdObj, final Class<T> repoIdClass)
+	{
+		final IntFunction<T> ofRepoIdFunction = getOfRepoIdFunction(repoIdClass);
+		return ofObject(repoIdObj, repoIdClass, ofRepoIdFunction);
+	}
+
+	public static <T extends RepoIdAware> T ofObject(
+			@NonNull final Object repoIdObj,
+			@NonNull final Class<T> repoIdClass,
+			@NonNull final IntFunction<T> ofRepoIdFunction)
 	{
 		if (repoIdClass.isInstance(repoIdObj))
 		{
@@ -92,8 +117,9 @@ public class RepoIdAwares
 			throw Check.mkEx("Cannot convert `" + repoIdObj + "` (" + repoIdObj.getClass() + ") to " + repoIdClass.getSimpleName());
 		}
 
-		return ofRepoId(repoId, repoIdClass);
+		return ofRepoIdFunction.apply(repoId);
 	}
+
 
 	public static <T extends RepoIdAware> T ofRepoIdOrNull(final int repoId, final Class<T> repoIdClass)
 	{
@@ -108,10 +134,22 @@ public class RepoIdAwares
 			@Nullable final String commaSeparatedStr,
 			@NonNull final Class<T> repoIdClass)
 	{
+		final IntFunction<T> ofRepoIdFunction = getOfRepoIdFunction(repoIdClass);
 		return CollectionUtils.ofCommaSeparatedList(
 				commaSeparatedStr,
-				repoIdStr -> ofObject(repoIdStr, repoIdClass));
+				repoIdStr -> ofObject(repoIdStr, repoIdClass, ofRepoIdFunction));
 	}
+
+	public static <T extends RepoIdAware> ImmutableSet<T> ofCommaSeparatedSet(
+			@Nullable final String commaSeparatedStr,
+			@NonNull final Class<T> repoIdClass)
+	{
+		final IntFunction<T> ofRepoIdFunction = getOfRepoIdFunction(repoIdClass);
+		return CollectionUtils.ofCommaSeparatedSet(
+				commaSeparatedStr,
+				repoIdStr -> ofObject(repoIdStr, repoIdClass, ofRepoIdFunction));
+	}
+
 
 	public static int toRepoId(@Nullable final RepoIdAware repoIdAware)
 	{

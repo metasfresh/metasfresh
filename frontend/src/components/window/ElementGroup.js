@@ -1,91 +1,74 @@
-import React, { PureComponent } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
 
 import ElementsLine from './ElementsLine';
 
-class ElementGroup extends PureComponent {
-  render() {
-    const {
-      elementGroupLayout,
-      shouldBeFocused,
-      isModal,
-      requestElementGroupFocus,
-    } = this.props;
-
-    if (
-      elementGroupLayout.elementsLine === undefined ||
-      elementGroupLayout.elementsLine.length == 0
-    ) {
-      return null;
-    }
-
-    return (
-      <div
-        ref={(c) => {
-          if (c && isModal && shouldBeFocused) {
-            requestElementGroupFocus(c);
-          }
-        }}
-        className={classnames('panel panel-spaced panel-distance', {
-          'panel-bordered panel-primary': elementGroupLayout.type === 'primary',
-          'panel-secondary': elementGroupLayout.type !== 'primary',
-        })}
-      >
-        {this.renderElementsLinesArray(elementGroupLayout.elementsLine)}
-      </div>
-    );
+const ElementGroup = ({
+  elementGroupLayout,
+  elementGroupIndex,
+  columnIndex,
+  sectionIndex,
+  windowId,
+  tabId,
+  rowId,
+  dataId,
+  shouldBeFocused,
+  tabIndex,
+  isModal,
+  isAdvanced,
+  isFullScreen,
+  onBlurWidget,
+  addRefToWidgets,
+  requestElementGroupFocus,
+  disconnected,
+}) => {
+  if (
+    elementGroupLayout.elementsLine === undefined ||
+    elementGroupLayout.elementsLine.length === 0
+  ) {
+    return null;
   }
 
-  renderElementsLinesArray = (elementsLinesLayoutArray) => {
-    const {
-      windowId,
-      tabId,
-      rowId,
-      dataId,
-      shouldBeFocused,
-      tabIndex,
-      isModal,
-      isAdvanced,
-      isFullScreen,
-      addRefToWidgets,
-      onBlurWidget,
-      elementGroupIndex,
-      sectionIndex,
-      columnIndex,
-      disconnected,
-    } = this.props;
+  const elementsLinesArray = elementGroupLayout.elementsLine;
 
-    return elementsLinesLayoutArray.map(
-      (elementsLineLayout, elementsLineIndex) => {
-        const isFocused = shouldBeFocused && elementsLineIndex === 0;
-
-        return (
-          <ElementsLine
-            key={'line' + elementsLineIndex}
-            elementsLineLayout={elementsLineLayout}
-            elementsLineIndex={elementsLineIndex}
-            elementGroupIndex={elementGroupIndex}
-            columnIndex={columnIndex}
-            sectionIndex={sectionIndex}
-            windowId={windowId}
-            tabId={tabId}
-            rowId={rowId}
-            dataId={dataId}
-            isFocused={isFocused}
-            tabIndex={tabIndex}
-            isModal={isModal}
-            isAdvanced={isAdvanced}
-            isFullScreen={isFullScreen}
-            onBlurWidget={onBlurWidget}
-            addRefToWidgets={addRefToWidgets}
-            disconnected={disconnected}
-          />
-        );
-      }
-    );
-  };
-}
+  return (
+    <div
+      ref={(c) => {
+        if (c && isModal && shouldBeFocused) {
+          requestElementGroupFocus(c);
+        }
+      }}
+      className={classnames('panel panel-spaced panel-distance', {
+        'panel-bordered panel-primary': elementGroupLayout.type === 'primary',
+        'panel-secondary': elementGroupLayout.type !== 'primary',
+      })}
+    >
+      {elementsLinesArray.map((elementsLineLayout, elementsLineIndex) => (
+        <ElementsLine
+          key={'line' + elementsLineIndex}
+          elementsLineLayout={elementsLineLayout}
+          elementsLineIndex={elementsLineIndex}
+          elementGroupIndex={elementGroupIndex}
+          columnIndex={columnIndex}
+          sectionIndex={sectionIndex}
+          windowId={windowId}
+          tabId={tabId}
+          rowId={rowId}
+          dataId={dataId}
+          isFocused={shouldBeFocused && elementsLineIndex === 0}
+          tabIndex={tabIndex}
+          isModal={isModal}
+          isAdvanced={isAdvanced}
+          isFullScreen={isFullScreen}
+          onBlurWidget={onBlurWidget}
+          addRefToWidgets={addRefToWidgets}
+          disconnected={disconnected}
+        />
+      ))}
+    </div>
+  );
+};
 
 ElementGroup.propTypes = {
   elementGroupLayout: PropTypes.object.isRequired,

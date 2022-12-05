@@ -1,6 +1,7 @@
 package de.metas.resource.qrcode.v1;
 
 import de.metas.product.ResourceId;
+import de.metas.resource.ManufacturingResourceType;
 import de.metas.resource.qrcode.ResourceQRCode;
 import org.compiere.model.X_S_Resource;
 import org.junit.jupiter.api.Test;
@@ -14,7 +15,7 @@ class JsonConverterV1Test
 	{
 		final ResourceQRCode qrCode = ResourceQRCode.builder()
 				.resourceId(ResourceId.ofRepoId(123))
-				.resourceType(X_S_Resource.MANUFACTURINGRESOURCETYPE_Plant)
+				.resourceType(ManufacturingResourceType.Plant)
 				.caption("Plant 1")
 				.build();
 

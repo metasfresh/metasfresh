@@ -42,7 +42,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_M_Warehouse_ID;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_Value;
 
@@ -56,13 +56,12 @@ public class M_Warehouse_StepDef
 
 	public M_Warehouse_StepDef(
 			@NonNull final M_Warehouse_StepDefData warehouseTable,
-			@NonNull final C_BPartner_StepDefData bPartnerTable,
-			@NonNull final C_BPartner_Location_StepDefData bPartnerLocationTable
-	)
+			@NonNull final C_BPartner_StepDefData bpartnerTable,
+			@NonNull final C_BPartner_Location_StepDefData bpartnerLocationTable)
 	{
 		this.warehouseTable = warehouseTable;
-		this.bpartnerTable = bPartnerTable;
-		this.bpartnerLocationTable = bPartnerLocationTable;
+		this.bpartnerTable = bpartnerTable;
+		this.bpartnerLocationTable = bpartnerLocationTable;
 	}
 
 	@And("load M_Warehouse:")

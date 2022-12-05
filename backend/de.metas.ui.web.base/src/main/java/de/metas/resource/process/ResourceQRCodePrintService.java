@@ -5,12 +5,11 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.global_qrcodes.PrintableQRCode;
 import de.metas.global_qrcodes.service.GlobalQRCodeService;
 import de.metas.global_qrcodes.service.QRCodePDFResource;
-import de.metas.material.planning.IResourceDAO;
 import de.metas.product.ResourceId;
+import de.metas.resource.Resource;
+import de.metas.resource.ResourceService;
 import de.metas.resource.qrcode.ResourceQRCode;
-import de.metas.util.Services;
 import lombok.NonNull;
-import org.compiere.model.I_S_Resource;
 import org.springframework.stereotype.Service;
 
 import java.util.Set;
@@ -18,11 +17,14 @@ import java.util.Set;
 @Service
 public class ResourceQRCodePrintService
 {
-	private final IResourceDAO resourceDAO = Services.get(IResourceDAO.class);
+	private final ResourceService resourceService;
 	private final GlobalQRCodeService globalQRCodeService;
 
-	public ResourceQRCodePrintService(final @NonNull GlobalQRCodeService globalQRCodeService)
+	public ResourceQRCodePrintService(
+			final @NonNull ResourceService resourceService,
+			final @NonNull GlobalQRCodeService globalQRCodeService)
 	{
+		this.resourceService = resourceService;
 		this.globalQRCodeService = globalQRCodeService;
 	}
 
@@ -33,7 +35,7 @@ public class ResourceQRCodePrintService
 
 	public QRCodePDFResource createPDF(@NonNull final Set<ResourceId> resourceIds)
 	{
-		final ImmutableList<PrintableQRCode> printableQRCodes = resourceDAO.getByIds(resourceIds)
+		final ImmutableList<PrintableQRCode> printableQRCodes = resourceService.getResourcesByIds(resourceIds)
 				.stream()
 				.map(ResourceQRCodePrintService::toQRCode)
 				.map(ResourceQRCode::toPrintableQRCode)
@@ -42,12 +44,12 @@ public class ResourceQRCodePrintService
 		return globalQRCodeService.createPDF(printableQRCodes);
 	}
 
-	private static ResourceQRCode toQRCode(final I_S_Resource resourceRecord)
+	private static ResourceQRCode toQRCode(final Resource resource)
 	{
 		return ResourceQRCode.builder()
-				.resourceId(ResourceId.ofRepoId(resourceRecord.getS_Resource_ID()))
-				.resourceType(resourceRecord.getManufacturingResourceType())
-				.caption(resourceRecord.getName())
+				.resourceId(resource.getResourceId())
+				.resourceType(resource.getManufacturingResourceType())
+				.caption(resource.getName().getDefaultValue())
 				.build();
 	}
 

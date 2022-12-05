@@ -398,6 +398,23 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 
 		dimensionService.updateRecord(icRecord, inOutLineDimension);
 
+
+		// task 13022 : set inout's project if dimension didn't already
+		if(icRecord.getC_Project_ID() <= 0)
+		{
+			if(inOut.getC_Project_ID() > 0)
+			{
+				icRecord.setC_Project_ID(inOut.getC_Project_ID());
+			}
+			// get order's project if exists
+			else if(inOut.getC_Order_ID() > 0
+					&& inOut.getC_Order().getC_Project_ID() > 0)
+			{
+				final I_C_Order order = inOut.getC_Order();
+				icRecord.setC_Project_ID(order.getC_Project_ID());
+			}
+		}
+
 		//DocType
 		final DocTypeId invoiceDocTypeId = extractDocTypeId(inOutLineRecord);
 		if (invoiceDocTypeId != null)
@@ -852,6 +869,15 @@ public class M_InOutLine_Handler extends AbstractInvoiceCandidateHandler
 	{
 		final I_M_InOutLine inOutLine = getM_InOutLine(ic);
 		setBPartnerData(ic, inOutLine);
+	}
+
+	@Override
+	public void setIsInEffect(final I_C_Invoice_Candidate ic)
+	{
+		final I_M_InOutLine inOutLine = getM_InOutLine(ic);
+
+		final DocStatus inOutDocStatus = inOutBL.getDocStatus(InOutId.ofRepoId(inOutLine.getM_InOut_ID()));
+		invoiceCandBL.computeIsInEffect(inOutDocStatus, ic);
 	}
 
 	private void setBPartnerData(final I_C_Invoice_Candidate ic, final I_M_InOutLine fromInOutLine)

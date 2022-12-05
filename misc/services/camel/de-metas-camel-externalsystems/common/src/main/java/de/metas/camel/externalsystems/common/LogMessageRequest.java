@@ -25,9 +25,12 @@ package de.metas.camel.externalsystems.common;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.tablerecordref.JsonTableRecordReference;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+
+import javax.annotation.Nullable;
 
 @Value
 @Builder
@@ -41,4 +44,8 @@ public class LogMessageRequest
 	@NonNull
 	@JsonProperty("pinstanceId")
 	JsonMetasfreshId pInstanceId;
+
+	@Nullable
+	@JsonProperty("tableRecordRef")
+	JsonTableRecordReference tableRecordReference;
 }

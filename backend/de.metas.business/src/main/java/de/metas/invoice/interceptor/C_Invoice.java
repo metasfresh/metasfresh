@@ -32,6 +32,7 @@ import de.metas.pricing.service.ProductPrices;
 import de.metas.product.ProductId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.modelvalidator.annotations.DocValidate;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -407,5 +408,17 @@ public class C_Invoice // 03771
 	public void updateInvoiceLinesTax(@NonNull final I_C_Invoice invoice)
 	{
 		invoiceBL.setInvoiceLineTaxes(invoice);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },
+			ifColumnsChanged = { I_C_Invoice.COLUMNNAME_M_SectionCode_ID })
+	@CalloutMethod(columnNames = I_C_Invoice.COLUMNNAME_M_SectionCode_ID)
+	public void updateSectionCode(@NonNull final I_C_Invoice invoice)
+	{
+		for (final I_C_InvoiceLine line : invoiceDAO.retrieveLines(invoice))
+		{
+			line.setM_SectionCode_ID(invoice.getM_SectionCode_ID());
+			invoiceDAO.save(line);
+		}
 	}
 }

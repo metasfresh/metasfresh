@@ -22,6 +22,7 @@
 
 package de.metas.picking.workflow;
 
+import de.metas.ad_reference.ADRefList;
 import de.metas.handlingunits.picking.job.model.PickingJob;
 import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
@@ -33,7 +34,6 @@ import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.user.UserId;
 import lombok.NonNull;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -119,7 +119,9 @@ public class PickingJobRestService
 		return pickingJobService.complete(pickingJob);
 	}
 
-	public IADReferenceDAO.ADRefList getQtyRejectedReasons()
+	public PickingJob requestReview(@NonNull final PickingJob pickingJob) {return pickingJobService.requestReview(pickingJob);}
+
+	public ADRefList getQtyRejectedReasons()
 	{
 		return pickingJobService.getQtyRejectedReasons();
 	}

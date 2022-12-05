@@ -309,7 +309,7 @@ public final class DocumentFieldDescriptor
 	public Optional<LookupDataSource> createLookupDataSource()
 	{
 		return getLookupDescriptor()
-				.map(LookupDataSourceFactory.instance::getLookupDataSource);
+				.map(lookupDescriptor -> LookupDataSourceFactory.sharedInstance().getLookupDataSource(lookupDescriptor));
 	}
 
 	public Optional<IExpression<?>> getDefaultValueExpression()
@@ -812,7 +812,7 @@ public final class DocumentFieldDescriptor
 			return _entityReadonlyLogic;
 		}
 
-		public Builder setReadonlyLogic(final ILogicExpression readonlyLogic)
+		public Builder setReadonlyLogic(@NonNull final ILogicExpression readonlyLogic)
 		{
 			assertNotBuilt();
 			_readonlyLogic = Preconditions.checkNotNull(readonlyLogic);

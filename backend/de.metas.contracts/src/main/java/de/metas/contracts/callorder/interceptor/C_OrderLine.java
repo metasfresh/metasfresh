@@ -91,4 +91,35 @@ public class C_OrderLine
 			orderLineBL.updatePrices(orderLine);
 		}
 	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW,
+			ModelValidator.TYPE_BEFORE_CHANGE
+	}, ifColumnsChanged = { de.metas.contracts.order.model.I_C_OrderLine.COLUMNNAME_M_Product_ID,
+			de.metas.contracts.order.model.I_C_OrderLine.COLUMNNAME_C_Flatrate_Conditions_ID,
+			de.metas.contracts.order.model.I_C_OrderLine.COLUMNNAME_DatePromised
+	})
+	public void forbidOverlappingTerms(final de.metas.contracts.order.model.I_C_OrderLine orderLine)
+	{
+		if (orderLine.getM_Product_ID() <= 0)
+		{
+			return;
+		}
+
+		if (orderLine.getC_Flatrate_Conditions_ID() <= 0)
+		{
+			return;
+		}
+
+		if (orderLine.getDatePromised() == null)
+		{
+			return;
+		}
+
+		if (!contractService.isCallOrderContractLine(orderLine))
+		{
+			return;
+		}
+
+		contractService.forbidOverlappingTerms(orderLine);
+	}
 }

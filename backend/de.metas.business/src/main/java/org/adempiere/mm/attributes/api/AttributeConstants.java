@@ -72,4 +72,7 @@ public class AttributeConstants
 	public static final AttributeCode RouterMAC6 = AttributeCode.ofString("RouterMAC6");
 
 	public static final AttributeCode WarrantyStartDate = AttributeCode.ofString("WarrantyStartDate");
+
+	public static final AttributeCode CountryOfOrigin = AttributeCode.ofString("1000001");
+	public static final AttributeCode HU_BatchNo = AttributeCode.ofString("HU_BatchNo");
 }

@@ -13,6 +13,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 @Value
 @Builder
@@ -49,17 +50,16 @@ public class GlobalQRCode
 				.build();
 	}
 
+	@Nullable
+	public static GlobalQRCode ofNullableString(@Nullable final String string)
+	{
+		return StringUtils.trimBlankToNullAndMap(string, GlobalQRCode::ofString);
+	}
+
 	@JsonCreator
 	public static GlobalQRCode ofString(@NonNull final String string)
 	{
 		return parse(string).orThrow();
-	}
-
-	@Nullable
-	public static GlobalQRCode ofNullableString(@Nullable final String string)
-	{
-		final String stringNorm = StringUtils.trimBlankToNull(string);
-		return stringNorm != null ? ofString(stringNorm) : null;
 	}
 
 	public static GlobalQRCode ofBase64Encoded(@NonNull final String string)
@@ -133,5 +133,10 @@ public class GlobalQRCode
 	public String getAsString()
 	{
 		return type.toJson() + SEPARATOR + version + SEPARATOR + payloadAsJson;
+	}
+
+	public static boolean equals(@Nullable GlobalQRCode o1, @Nullable GlobalQRCode o2)
+	{
+		return Objects.equals(o1, o2);
 	}
 }

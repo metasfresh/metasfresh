@@ -26,7 +26,10 @@ import de.metas.cucumber.stepdefs.C_OrderLine_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.M_Locator_StepDefData;
 import de.metas.cucumber.stepdefs.M_Product_StepDefData;
+import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.project.C_Project_StepDefData;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -37,6 +40,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_OrderLine;
+import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_InOutLine;
@@ -65,6 +69,7 @@ public class M_InOut_Line_StepDef
 	private final M_InOutLine_StepDefData shipmentLineTable;
 	private final C_OrderLine_StepDefData orderLineTable;
 	private final M_Product_StepDefData productTable;
+	private final C_Project_StepDefData projectTable;
 	private final M_Locator_StepDefData locatorTable;
 
 	public M_InOut_Line_StepDef(
@@ -72,12 +77,14 @@ public class M_InOut_Line_StepDef
 			@NonNull final M_InOutLine_StepDefData shipmentLineTable,
 			@NonNull final C_OrderLine_StepDefData orderLineTable,
 			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final C_Project_StepDefData projectTable,
 			@NonNull final M_Locator_StepDefData locatorTable)
 	{
 		this.shipmentTable = shipmentTable;
 		this.shipmentLineTable = shipmentLineTable;
 		this.orderLineTable = orderLineTable;
 		this.productTable = productTable;
+		this.projectTable = projectTable;
 		this.locatorTable = locatorTable;
 	}
 
@@ -186,7 +193,7 @@ public class M_InOut_Line_StepDef
 		final List<Map<String, String>> table = dataTable.asMaps();
 		for (final Map<String, String> row : table)
 		{
-			final de.metas.inout.model.I_M_InOutLine inOutLine = InterfaceWrapperHelper.newInstance(de.metas.inout.model.I_M_InOutLine.class);
+			final de.metas.handlingunits.model.I_M_InOutLine inOutLine = InterfaceWrapperHelper.newInstance(de.metas.handlingunits.model.I_M_InOutLine.class);
 
 			final String inOutIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_M_InOut inOut = shipmentTable.get(inOutIdentifier);
@@ -224,10 +231,16 @@ public class M_InOut_Line_StepDef
 				inOutLine.setM_Locator_ID(locator.getM_Locator_ID());
 			}
 
-			final boolean isPackingMaterial = DataTableUtil.extractBooleanForColumnName(row, "OPT." + de.metas.inout.model.I_M_InOutLine.COLUMNNAME_IsPackagingMaterial);
-			if (isPackingMaterial)
+			final Boolean isPackingMaterial = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + de.metas.inout.model.I_M_InOutLine.COLUMNNAME_IsPackagingMaterial);
+			if (isPackingMaterial != null)
 			{
 				inOutLine.setIsPackagingMaterial(isPackingMaterial);
+			}
+
+			final Boolean isManualPackingMaterial = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + de.metas.handlingunits.model.I_M_InOutLine.COLUMNNAME_IsManualPackingMaterial);
+			if (isManualPackingMaterial != null)
+			{
+				inOutLine.setIsManualPackingMaterial(isManualPackingMaterial);
 			}
 
 			InterfaceWrapperHelper.saveRecord(inOutLine);
@@ -261,9 +274,28 @@ public class M_InOut_Line_StepDef
 		final BigDecimal movementqty = DataTableUtil.extractBigDecimalForColumnName(row, "movementqty");
 		final boolean processed = DataTableUtil.extractBooleanForColumnName(row, "processed");
 
+		final String x12de355Code = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_InOutLine.COLUMNNAME_C_UOM_ID + "." + X12DE355.class.getSimpleName());
+
+		if (Check.isNotBlank(x12de355Code))
+		{
+			final UomId uomId = uomDao.getUomIdByX12DE355(X12DE355.ofCode(x12de355Code));
+			assertThat(shipmentLine.getC_UOM_ID()).isEqualTo(uomId.getRepoId());
+		}
+
 		assertThat(shipmentLine.getM_Product_ID()).isEqualTo(expectedProductId);
 		assertThat(shipmentLine.getMovementQty()).isEqualByComparingTo(movementqty);
 		assertThat(shipmentLine.isProcessed()).isEqualTo(processed);
+
+		final String projectIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_InOutLine.COLUMNNAME_C_Project_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+
+		if (Check.isNotBlank(projectIdentifier))
+		{
+			final Integer projectId = projectTable.getOptional(projectIdentifier)
+					.map(I_C_Project::getC_Project_ID)
+					.orElseGet(() -> Integer.parseInt(projectIdentifier));
+
+			assertThat(shipmentLine.getC_Project_ID()).isEqualTo(projectId);
+		}
 
 		final BigDecimal qtyEntered = DataTableUtil.extractBigDecimalOrNullForColumnName(row, "OPT." + I_M_InOutLine.COLUMNNAME_QtyEntered);
 		if (qtyEntered != null)

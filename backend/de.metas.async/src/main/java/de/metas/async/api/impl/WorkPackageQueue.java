@@ -33,7 +33,6 @@ import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.api.IWorkpackageProcessorContextFactory;
 import de.metas.async.model.I_C_Async_Batch;
 import de.metas.async.model.I_C_Queue_Element;
-import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IMutableQueueProcessorStatistics;
 import de.metas.async.processor.IQueueProcessorEventDispatcher;
@@ -44,7 +43,8 @@ import de.metas.async.processor.IWorkpackageProcessorFactory;
 import de.metas.async.processor.NullQueueProcessorListener;
 import de.metas.async.processor.QueuePackageProcessorId;
 import de.metas.async.processor.QueueProcessorId;
-import de.metas.async.processor.impl.QueueProcessorDescriptorIndex;
+import de.metas.async.processor.descriptor.QueueProcessorDescriptorRepository;
+import de.metas.async.processor.descriptor.model.QueuePackageProcessor;
 import de.metas.async.processor.impl.SyncQueueProcessorListener;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 import de.metas.async.spi.NullWorkpackagePrio;
@@ -92,8 +92,8 @@ public class WorkPackageQueue implements IWorkPackageQueue
 	private final transient IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final transient IWorkPackageBL workPackageBL = Services.get(IWorkPackageBL.class);
 	private final transient IWorkpackageProcessorFactory workpackageProcessorFactory = Services.get(IWorkpackageProcessorFactory.class);
-	private final transient QueueProcessorDescriptorIndex queueProcessorDescriptorIndex = QueueProcessorDescriptorIndex.getInstance();
 	private final transient IQueueProcessorFactory queueProcessorFactory = Services.get(IQueueProcessorFactory.class);
+	private final transient QueueProcessorDescriptorRepository queueProcessorDescriptorRepository = QueueProcessorDescriptorRepository.getInstance();
 
 	private final Properties ctx;
 	private final ImmutableSet<QueuePackageProcessorId> packageProcessorIds;
@@ -359,7 +359,9 @@ public class WorkPackageQueue implements IWorkPackageQueue
 
 		//
 		// Statistics
-		final I_C_Queue_PackageProcessor queuePackageProcessor = queueProcessorDescriptorIndex.getPackageProcessor(QueuePackageProcessorId.ofRepoId(workPackage.getC_Queue_PackageProcessor_ID()));
+		final QueuePackageProcessorId packageProcessorId = QueuePackageProcessorId.ofRepoId(workPackage.getC_Queue_PackageProcessor_ID());
+		final QueuePackageProcessor queuePackageProcessor = queueProcessorDescriptorRepository.getPackageProcessor(packageProcessorId);
+
 		final IMutableQueueProcessorStatistics workpackageProcessorStatistics = workpackageProcessorFactory.getWorkpackageProcessorStatistics(queuePackageProcessor);
 		workpackageProcessorStatistics.incrementQueueSize();
 

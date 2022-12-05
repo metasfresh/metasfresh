@@ -1,10 +1,9 @@
 package de.metas.document.engine;
 
-import java.io.File;
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.util.Properties;
-
+import de.metas.logging.LogManager;
+import de.metas.organization.InstantAndOrgId;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.DocTimingType;
 import org.adempiere.ad.wrapper.POJOLookupMap;
 import org.adempiere.ad.wrapper.POJOWrapper;
@@ -14,9 +13,9 @@ import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.slf4j.Logger;
 
-import de.metas.logging.LogManager;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.io.File;
+import java.math.BigDecimal;
+import java.util.Properties;
 
 /*
  * #%L
@@ -220,7 +219,7 @@ public class DocumentWrapper implements IDocument, IModelWrapper
 	}
 
 	@Override
-	public LocalDate getDocumentDate()
+	public InstantAndOrgId getDocumentDate()
 	{
 		return handler.getDocumentDate(model);
 	}

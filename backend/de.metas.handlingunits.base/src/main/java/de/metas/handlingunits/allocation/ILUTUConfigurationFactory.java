@@ -28,6 +28,7 @@ import de.metas.handlingunits.IHUPIItemProductDAO;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
+import de.metas.handlingunits.model.I_M_HU_PackingMaterial;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.uom.IUOMDAO;
@@ -125,6 +126,20 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 			BigDecimal qtyTUsTotal,
 			BigDecimal qtyCUsTotal);
 
+
+	/**
+	 * Calculate how many LUs we would need (using given configuration) for given total TU quantity using  packing material max load weight
+	 *
+	 * @param lutuConfiguration
+	 * @param qtyTUsTotal
+	 * @return
+	 */
+	BigDecimal calculateQtyLUForTotalQtyTUsByMaxWeight(
+			@NonNull I_M_HU_LUTU_Configuration lutuConfiguration,
+			BigDecimal qtyTUsTotal,
+			@NonNull I_M_HU_PackingMaterial packingMaterial);
+
+
 	/**
 	 * Calculate how many LUs we would need (using given configuration) for given total CU quantity
 	 *
@@ -135,6 +150,20 @@ public interface ILUTUConfigurationFactory extends ISingletonService
 	int calculateQtyLUForTotalQtyCUs(
 			I_M_HU_LUTU_Configuration lutuConfiguration,
 			Quantity qtyCUsTotal);
+
+
+	/**
+	 * Calculate how many LUs we would need (using given configuration) for given total CU quantity using  packing material max load weight
+	 *
+	 * @param lutuConfiguration
+	 * @param qtyCUsTotal
+	 * @return
+	 */
+	BigDecimal calculateQtyLUForTotalQtyCUsByLUMaxWeight(
+			@NonNull I_M_HU_LUTU_Configuration lutuConfiguration,
+			Quantity qtyCUsTotal,
+			@NonNull I_M_HU_PackingMaterial packingMaterial);
+
 
 	/**
 	 * Calculates how many CUs (in total).

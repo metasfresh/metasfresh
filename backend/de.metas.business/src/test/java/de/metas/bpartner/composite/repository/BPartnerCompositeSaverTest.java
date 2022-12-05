@@ -27,6 +27,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.composite.BPartnerComposite;
 import de.metas.bpartner.composite.MockedBPartnerCompositeUtil;
 import de.metas.bpartner.service.IBPartnerDAO;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.greeting.GreetingRepository;
 import de.metas.location.ILocationDAO;
@@ -69,6 +70,7 @@ public class BPartnerCompositeSaverTest
 	public static final String HU_CITY = "Szolnok";
 
 	private BPartnerBL bpartnerBL;
+	private BPartnerCreditLimitRepository bPartnerCreditLimitRepository;
 
 	@BeforeEach
 	void init()
@@ -78,6 +80,7 @@ public class BPartnerCompositeSaverTest
 		SpringContextHolder.registerJUnitBean(new GreetingRepository());
 
 		bpartnerBL = new BPartnerBL(new UserRepository());
+		bPartnerCreditLimitRepository = new BPartnerCreditLimitRepository();
 		//Services.registerService(IBPartnerBL.class, bpartnerBL);
 		//Services.registerService(IBPartnerDAO.class, new BPartnerDAO());
 
@@ -123,7 +126,7 @@ public class BPartnerCompositeSaverTest
 		final ExternalId locExternalId = ExternalId.of("loc-123");
 		//Location added with postal code that already exists in C_Postal, but it set to another city&country
 		bpartnerComposite.getLocations().add(MockedBPartnerCompositeUtil.addLocation(locExternalId, HU_CITY, CH_POSTAL_CODE, HU_COUNTRY_CODE));
-		new BPartnerCompositeSaver(bpartnerBL).save(bpartnerComposite, true);
+		new BPartnerCompositeSaver(bpartnerBL, bPartnerCreditLimitRepository).save(bpartnerComposite, true);
 
 		final Optional<BPartnerId> bpId = bPartnerDAO.getBPartnerIdByExternalId(externalId);
 		assertThat(bpId).isPresent();

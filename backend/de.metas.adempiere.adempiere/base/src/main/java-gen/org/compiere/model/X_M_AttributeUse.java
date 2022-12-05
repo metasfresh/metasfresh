@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_M_AttributeUse extends org.compiere.model.PO implements I_M_AttributeUse, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1784190118L;
+	private static final long serialVersionUID = -56901902L;
 
     /** Standard Constructor */
     public X_M_AttributeUse (final Properties ctx, final int M_AttributeUse_ID, @Nullable final String trxName)
@@ -32,6 +32,27 @@ public class X_M_AttributeUse extends org.compiere.model.PO implements I_M_Attri
 	protected org.compiere.model.POInfo initPO(final Properties ctx)
 	{
 		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
+
+	/** 
+	 * MandatoryOnManufacturing AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int MANDATORYONMANUFACTURING_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String MANDATORYONMANUFACTURING_Yes = "Y";
+	/** No = N */
+	public static final String MANDATORYONMANUFACTURING_No = "N";
+	@Override
+	public void setMandatoryOnManufacturing (final @Nullable java.lang.String MandatoryOnManufacturing)
+	{
+		set_Value (COLUMNNAME_MandatoryOnManufacturing, MandatoryOnManufacturing);
+	}
+
+	@Override
+	public java.lang.String getMandatoryOnManufacturing() 
+	{
+		return get_ValueAsString(COLUMNNAME_MandatoryOnManufacturing);
 	}
 
 	/** 

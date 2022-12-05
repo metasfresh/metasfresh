@@ -1,20 +1,10 @@
 package de.metas.banking.process;
 
-import java.util.Collection;
-import java.util.Set;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.SpringContextHolder;
-import org.compiere.model.I_C_BankStatement;
-import org.compiere.model.I_C_BankStatementLine;
-
 import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.payment.IBankStatementPaymentBL;
 import de.metas.banking.service.IBankStatementBL;
 import de.metas.document.engine.DocStatus;
-import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.payment.PaymentId;
 import de.metas.process.IProcessPrecondition;
@@ -29,6 +19,14 @@ import de.metas.ui.web.bankstatement_reconciliation.BanksStatementReconciliation
 import de.metas.ui.web.view.ViewId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_BankStatement;
+import org.compiere.model.I_C_BankStatementLine;
+
+import java.util.Collection;
+import java.util.Set;
 
 /*
  * #%L
@@ -40,12 +38,12 @@ import lombok.NonNull;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -54,9 +52,6 @@ import lombok.NonNull;
 
 abstract class BankStatementBasedProcess extends JavaProcess implements IProcessPrecondition
 {
-	protected static final AdMessageKey MSG_BankStatement_MustBe_Draft_InProgress_Or_Completed = AdMessageKey.of("bankstatement.BankStatement_MustBe_Draft_InProgress_Or_Completed");
-	private static final AdMessageKey MSG_LineIsAlreadyReconciled = AdMessageKey.of("bankstatement.LineIsAlreadyReconciled");
-
 	// services
 	protected final IMsgBL msgBL = Services.get(IMsgBL.class);
 	protected final IBankStatementBL bankStatementBL = Services.get(IBankStatementBL.class);
@@ -80,7 +75,7 @@ abstract class BankStatementBasedProcess extends JavaProcess implements IProcess
 		final DocStatus docStatus = DocStatus.ofCode(bankStatement.getDocStatus());
 		if (!docStatus.isDraftedInProgressOrCompleted())
 		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_BankStatement_MustBe_Draft_InProgress_Or_Completed));
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(IBankStatementBL.MSG_BankStatement_MustBe_Draft_InProgress_Or_Completed));
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -100,7 +95,7 @@ abstract class BankStatementBasedProcess extends JavaProcess implements IProcess
 		final I_C_BankStatementLine line = bankStatementBL.getLineById(bankStatementLineId);
 		if (line.isReconciled())
 		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(MSG_LineIsAlreadyReconciled));
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(IBankStatementBL.MSG_LineIsAlreadyReconciled));
 		}
 
 		return ProcessPreconditionsResolution.accept();
@@ -108,8 +103,14 @@ abstract class BankStatementBasedProcess extends JavaProcess implements IProcess
 
 	protected final I_C_BankStatement getSelectedBankStatement()
 	{
-		final BankStatementId bankStatementId = BankStatementId.ofRepoId(getRecord_ID());
+		final BankStatementId bankStatementId = getSelectedBankStatementId();
 		return bankStatementBL.getById(bankStatementId);
+	}
+
+	@NonNull
+	protected final BankStatementId getSelectedBankStatementId()
+	{
+		return BankStatementId.ofRepoId(getRecord_ID());
 	}
 
 	protected final I_C_BankStatementLine getSingleSelectedBankStatementLine()
@@ -143,14 +144,14 @@ abstract class BankStatementBasedProcess extends JavaProcess implements IProcess
 		}
 
 		final BankStatementReconciliationView view = bankStatementReconciliationViewFactory.createView(BanksStatementReconciliationViewCreateRequest.builder()
-				.bankStatementLineId(getSingleSelectedBankStatementLineId())
-				.paymentIds(paymentIds)
-				.build());
+																											   .bankStatementLineId(getSingleSelectedBankStatementLineId())
+																											   .paymentIds(paymentIds)
+																											   .build());
 		final ViewId viewId = view.getViewId();
 
 		getResult().setWebuiViewToOpen(WebuiViewToOpen.builder()
-				.viewId(viewId.toJson())
-				.target(ViewOpenTarget.ModalOverlay)
-				.build());
+											   .viewId(viewId.toJson())
+											   .target(ViewOpenTarget.ModalOverlay)
+											   .build());
 	}
 }

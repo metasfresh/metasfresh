@@ -194,4 +194,26 @@ public final class TableRecordReferenceSet implements Iterable<TableRecordRefere
 	{
 		return recordRefs.size();
 	}
+
+	@NonNull
+	public AdTableId getSingleTableId()
+	{
+		final ImmutableSet<AdTableId> tableIds = recordRefs.stream()
+				.map(TableRecordReference::getAD_Table_ID)
+				.map(AdTableId::ofRepoId)
+				.collect(ImmutableSet.toImmutableSet());
+
+		if (tableIds.isEmpty())
+		{
+			throw new AdempiereException("No AD_Table_ID");
+		}
+		else if (tableIds.size() == 1)
+		{
+			return tableIds.iterator().next();
+		}
+		else
+		{
+			throw new AdempiereException("More than one AD_Table_ID found: " + tableIds);
+		}
+	}
 }

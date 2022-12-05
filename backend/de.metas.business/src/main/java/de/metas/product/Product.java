@@ -4,6 +4,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.organization.OrgId;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.uom.UomId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -96,4 +97,7 @@ public class Product
 
 	@Nullable
 	CommodityNumberId commodityNumberId;
+
+	@Nullable
+	SectionCodeId sectionCodeId;
 }

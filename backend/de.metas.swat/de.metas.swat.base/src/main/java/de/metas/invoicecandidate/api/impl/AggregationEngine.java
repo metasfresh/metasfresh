@@ -4,8 +4,10 @@ import ch.qos.logback.classic.Level;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.aggregation.api.Aggregation;
 import de.metas.aggregation.api.AggregationId;
 import de.metas.aggregation.api.AggregationKey;
+import de.metas.aggregation.api.IAggregationDAO;
 import de.metas.aggregation.api.IAggregationFactory;
 import de.metas.aggregation.api.IAggregationKeyBuilder;
 import de.metas.aggregation.model.X_C_Aggregation;
@@ -48,6 +50,9 @@ import de.metas.pricing.PriceListId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.PricingSystemId;
 import de.metas.pricing.service.IPriceListDAO;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.user.User;
 import de.metas.util.Check;
 import de.metas.util.GuavaCollectors;
@@ -105,6 +110,7 @@ public final class AggregationEngine
 			OrderEmailPropagationSysConfigRepository.class);
 
 	private final transient IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final transient IAggregationDAO aggregationDAO = Services.get(IAggregationDAO.class);
 
 	private static final AdMessageKey ERR_INVOICE_CAND_PRICE_LIST_MISSING_2P = AdMessageKey.of("InvoiceCand_PriceList_Missing");
 
@@ -285,7 +291,7 @@ public final class AggregationEngine
 			key2headerAndAggregators.put(headerAggregationKey, headerAndAggregators);
 
 			final InvoiceHeaderImplBuilder invoiceHeader = headerAndAggregators.getInvoiceHeader();
-			addToInvoiceHeader(invoiceHeader, icRecord, inoutId);
+			addToInvoiceHeader(invoiceHeader, icRecord, inoutId, headerAggregationKey.getAggregationId());
 
 			// task 08451: log why we create a new invoice header
 			final ILoggable loggable = Loggables.withLogger(logger, Level.DEBUG);
@@ -298,7 +304,7 @@ public final class AggregationEngine
 		else
 		{
 			final InvoiceHeaderImplBuilder invoiceHeader = headerAndAggregators.getInvoiceHeader();
-			addToInvoiceHeader(invoiceHeader, icRecord, inoutId);
+			addToInvoiceHeader(invoiceHeader, icRecord, inoutId, headerAggregationKey.getAggregationId());
 		}
 
 		//
@@ -365,7 +371,8 @@ public final class AggregationEngine
 	private void addToInvoiceHeader(
 			@NonNull final InvoiceHeaderImplBuilder invoiceHeader,
 			@NonNull final I_C_Invoice_Candidate icRecord,
-			@Nullable final InOutId inoutId)
+			@Nullable final InOutId inoutId,
+			@Nullable final AggregationId headerAggregationId)
 	{
 		try
 		{
@@ -380,7 +387,7 @@ public final class AggregationEngine
 			invoiceHeader.setIncotermLocation(icRecord.getIncotermLocation());
 			invoiceHeader.setPOReference(icRecord.getPOReference()); // task 07978
 
-			if(orderEmailPropagationSysConfigRepository.isPropagateToCInvoice(ClientAndOrgId.ofClientAndOrg(icRecord.getAD_Client_ID(), icRecord.getAD_Org_ID())))
+			if (orderEmailPropagationSysConfigRepository.isPropagateToCInvoice(ClientAndOrgId.ofClientAndOrg(icRecord.getAD_Client_ID(), icRecord.getAD_Org_ID())))
 			{
 				invoiceHeader.setEmail(icRecord.getEMail());
 			}
@@ -391,7 +398,9 @@ public final class AggregationEngine
 			{
 				final I_C_Order order = orderDAO.getById(orderId);
 				invoiceHeader.setExternalId(order.getExternalId());
-				invoiceHeader.setSalesRep_ID(order.getSalesRep_ID());
+
+				// task 12953 : prevent SalesRep_ID from being a header aggregation criteria
+				// invoiceHeader.setSalesRep_ID(order.getSalesRep_ID());
 
 			}
 			invoiceHeader.setPaymentRule(icRecord.getPaymentRule());
@@ -457,6 +466,15 @@ public final class AggregationEngine
 
 			// 06630: set shipment id to header
 			invoiceHeader.setM_InOut_ID(InOutId.toRepoId(inoutId));
+
+			getSectionCodeId(icRecord, headerAggregationId)
+					.ifPresent(sectionCodeId -> invoiceHeader.setM_SectionCode_ID(SectionCodeId.toRepoId(sectionCodeId)));
+
+			getProjectId(icRecord, headerAggregationId)
+					.ifPresent(projectId -> invoiceHeader.setC_Project_ID(ProjectId.toRepoId(projectId)));
+
+			getActivityId(icRecord, headerAggregationId)
+					.ifPresent(activityId -> invoiceHeader.setC_Activity_ID(ActivityId.toRepoId(activityId)));
 		}
 		catch (final RuntimeException rte)
 		{
@@ -642,24 +660,34 @@ public final class AggregationEngine
 	private/* static */void setDocBaseType(final InvoiceHeaderImpl invoiceHeader)
 	{
 		final boolean invoiceIsSOTrx = invoiceHeader.isSOTrx();
+		final I_C_DocType invoiceDocType = invoiceHeader.getC_DocTypeInvoice();
+		final Money totalAmt = invoiceHeader.calculateTotalNetAmtFromLines();
+
 		final InvoiceDocBaseType docBaseType;
 
 		//
 		// Case: Invoice DocType was preset
 		if (invoiceHeader.getC_DocTypeInvoice() != null)
 		{
-			final I_C_DocType invoiceDocType = invoiceHeader.getC_DocTypeInvoice();
 			Check.assume(invoiceIsSOTrx == invoiceDocType.isSOTrx(), "InvoiceHeader's IsSOTrx={} shall match document type {}", invoiceIsSOTrx, invoiceDocType);
 
-			docBaseType = InvoiceDocBaseType.ofCode(invoiceDocType.getDocBaseType());
+			final InvoiceDocBaseType invoiceDocBaseType = InvoiceDocBaseType.ofCode(invoiceDocType.getDocBaseType());
+
+			// handle negative amounts: switch the base type to credit memo, based on the IsSOTrx
+			if (totalAmt.signum() < 0)
+			{
+				docBaseType = flipDocBaseType(invoiceDocBaseType, invoiceIsSOTrx);
+			}
+			else
+			{
+				docBaseType = invoiceDocBaseType;
+			}
 		}
 		//
 		// Case: no invoice DocType was set
 		// We need to find out the DocBaseType based on Total Amount and IsSOTrx
 		else
 		{
-			final Money totalAmt = invoiceHeader.calculateTotalNetAmtFromLines();
-
 			if (invoiceIsSOTrx)
 			{
 				if (totalAmt.signum() < 0)
@@ -688,13 +716,35 @@ public final class AggregationEngine
 
 		//
 		// NOTE: in credit memos, amount are positive but the invoice effect is reversed
-		if (docBaseType.isCreditMemo())
+		if (totalAmt.signum() < 0)
 		{
 			invoiceHeader.negateAllLineAmounts();
 		}
 
 		invoiceHeader.setDocBaseType(docBaseType);
 		invoiceHeader.setPaymentTermId(getPaymentTermId(invoiceHeader).orElse(null));
+	}
+
+	private InvoiceDocBaseType flipDocBaseType(final InvoiceDocBaseType docBaseType, final boolean invoiceIsSOTrx)
+	{
+		if (docBaseType.isCreditMemo())
+		{
+			if (invoiceIsSOTrx)
+			{
+				return InvoiceDocBaseType.CustomerInvoice;
+			}
+			else
+			{
+				return InvoiceDocBaseType.VendorInvoice;
+			}
+		}
+
+		if (invoiceIsSOTrx)
+		{
+			return InvoiceDocBaseType.CustomerCreditMemo;
+		}
+
+		return InvoiceDocBaseType.VendorCreditMemo;
 	}
 
 	private Optional<PaymentTermId> getPaymentTermId(final InvoiceHeaderImpl invoiceHeader)
@@ -737,5 +787,49 @@ public final class AggregationEngine
 
 		return invoiceLinesRW.stream()
 				.collect(GuavaCollectors.toImmutableMapByKey(line -> PaymentTermId.optionalOfRepoId(line.getC_PaymentTerm_ID())));
+	}
+
+	@NonNull
+	private Optional<SectionCodeId> getSectionCodeId(
+			@NonNull final I_C_Invoice_Candidate icRecord,
+			@Nullable final AggregationId headerAggregationId)
+	{
+		return retrieveAggregation(icRecord, headerAggregationId)
+				.map(aggregation -> aggregation.hasColumnName(I_C_Invoice_Candidate.COLUMNNAME_M_SectionCode_ID))
+				.map(hasColumnName -> hasColumnName ? SectionCodeId.ofRepoIdOrNull(icRecord.getM_SectionCode_ID()) : null);
+	}
+
+	@NonNull
+	private Optional<ProjectId> getProjectId(
+			@NonNull final I_C_Invoice_Candidate icRecord,
+			@Nullable final AggregationId headerAggregationId)
+	{
+		return retrieveAggregation(icRecord, headerAggregationId)
+				.map(aggregation -> aggregation.hasColumnName(I_C_Invoice_Candidate.COLUMNNAME_C_Project_ID))
+				.map(hasColumnName -> hasColumnName ? ProjectId.ofRepoIdOrNull(icRecord.getC_Project_ID()) : null);
+	}
+
+	@NonNull
+	private Optional<ActivityId> getActivityId(
+			@NonNull final I_C_Invoice_Candidate icRecord,
+			@Nullable final AggregationId headerAggregationId)
+	{
+		return retrieveAggregation(icRecord, headerAggregationId)
+				.map(aggregation -> aggregation.hasColumnName(I_C_Invoice_Candidate.COLUMNNAME_C_Activity_ID))
+				.map(hasColumnName -> hasColumnName ? ActivityId.ofRepoIdOrNull(icRecord.getC_Activity_ID()) : null);
+	}
+
+	@NonNull
+	private Optional<Aggregation> retrieveAggregation(
+			@NonNull final I_C_Invoice_Candidate icRecord,
+			@Nullable final AggregationId headerAggregationId)
+	{
+		if (headerAggregationId == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(aggregationDAO.retrieveAggregation(InterfaceWrapperHelper.getCtx(icRecord),
+															  headerAggregationId.getRepoId()));
 	}
 }

@@ -33,6 +33,7 @@ import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery;
 import de.metas.bpartner.service.IBPartnerDAO.BPartnerLocationQuery.Type;
 import de.metas.common.util.time.SystemTime;
 import de.metas.currency.CurrencyPrecision;
+import de.metas.document.DocBaseType;
 import de.metas.document.DocTypeId;
 import de.metas.document.IDocTypeBL;
 import de.metas.document.IDocTypeDAO;
@@ -56,6 +57,7 @@ import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.order.payment_reservation.OrderPaymentReservationCreateResult;
 import de.metas.order.payment_reservation.OrderPaymentReservationService;
 import de.metas.organization.IOrgDAO;
+import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentRule;
 import de.metas.payment.paymentterm.IPaymentTermRepository;
@@ -87,13 +89,11 @@ import org.adempiere.warehouse.spi.IWarehouseAdvisor;
 import org.compiere.SpringContextHolder;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 
 import java.io.File;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -857,16 +857,6 @@ public class MOrder extends X_C_Order implements IDocument
 	}    // getShipments
 
 	/**
-	 * Get Document Status
-	 *
-	 * @return Document Status Clear Text
-	 */
-	public String getDocStatusName()
-	{
-		return MRefList.getListName(getCtx(), DocStatus.AD_REFERENCE_ID, getDocStatus());
-	}    // getDocStatusName
-
-	/**
 	 * Set Processed.
 	 * Propagate to Lines/Taxes
 	 *
@@ -883,8 +873,8 @@ public class MOrder extends X_C_Order implements IDocument
 		final String set = "SET Processed='"
 				+ (processed ? "Y" : "N")
 				+ "' WHERE C_Order_ID=" + getC_Order_ID();
-		final int noLine = DB.executeUpdateEx("UPDATE C_OrderLine " + set, get_TrxName());
-		final int noTax = DB.executeUpdateEx("UPDATE C_OrderTax " + set, get_TrxName());
+		final int noLine = DB.executeUpdateAndThrowExceptionOnFail("UPDATE C_OrderLine " + set, get_TrxName());
+		final int noTax = DB.executeUpdateAndThrowExceptionOnFail("UPDATE C_OrderTax " + set, get_TrxName());
 		invalidateLines();
 		m_taxes = null;
 		log.debug("setProcessed - " + processed + " - Lines=" + noLine + ", Tax=" + noTax);
@@ -1030,7 +1020,7 @@ public class MOrder extends X_C_Order implements IDocument
 															 + "(SELECT Description,POReference "
 															 + "FROM C_Order o WHERE i.C_Order_ID=o.C_Order_ID) "
 															 + "WHERE DocStatus NOT IN ('RE','CL') AND C_Order_ID=" + getC_Order_ID());
-			final int no = DB.executeUpdateEx(sql, get_TrxName());
+			final int no = DB.executeUpdateAndThrowExceptionOnFail(sql, get_TrxName());
 			log.debug("Description -> #" + no);
 		}
 
@@ -1045,7 +1035,7 @@ public class MOrder extends X_C_Order implements IDocument
 															 + "FROM C_Order o WHERE i.C_Order_ID=o.C_Order_ID)"
 															 + "WHERE DocStatus NOT IN ('RE','CL') AND C_Order_ID=" + getC_Order_ID());
 			// Don't touch Closed/Reversed entries
-			final int no = DB.executeUpdate(sql, get_TrxName());
+			final int no = DB.executeUpdateAndSaveErrorOnFail(sql, get_TrxName());
 			log.debug("Payment -> #" + no);
 		}
 
@@ -1189,7 +1179,7 @@ public class MOrder extends X_C_Order implements IDocument
 		final I_C_DocType dt = Services.get(IDocTypeDAO.class).getById(getC_DocTypeTarget_ID());
 
 		// Std Period open?
-		if (!MPeriod.isOpen(getCtx(), getDateAcct(), dt.getDocBaseType(), getAD_Org_ID()))
+		if (!MPeriod.isOpen(getCtx(), getDateAcct(), DocBaseType.ofCode(dt.getDocBaseType()), getAD_Org_ID()))
 		{
 			m_processMsg = "@PeriodClosed@";
 			return IDocument.STATUS_Invalid;
@@ -1316,8 +1306,15 @@ public class MOrder extends X_C_Order implements IDocument
 	// of stocks before delete.
 	public boolean reserveStock(final I_C_DocType docType, final List<MOrderLine> lines)
 	{
+		int docTypeId = getC_DocType_ID(); // in case of draft, doctype is 0
+		if (docTypeId <= 0 )
+		{
+			// check DocTypeTarget
+			docTypeId= getC_DocTypeTarget_ID();
+		}
+
 		final I_C_DocType dt = docType == null
-				? Services.get(IDocTypeDAO.class).getById(getC_DocType_ID())
+				? Services.get(IDocTypeDAO.class).getById(docTypeId)
 				: docType;
 
 		// Binding
@@ -1377,7 +1374,7 @@ public class MOrder extends X_C_Order implements IDocument
 			final BigDecimal difference = target
 					.subtract(line.getQtyReserved())
 					.subtract(line.getQtyDelivered());
-			if (difference.signum() == 0)
+			if (difference.signum() == 0 && !line.isDeliveryClosed())
 			{
 				final MProduct product = line.getProduct();
 				if (product != null)
@@ -1424,12 +1421,12 @@ public class MOrder extends X_C_Order implements IDocument
 							// product has default locator defined but is not from the order warehouse
 							if (locator.getM_Warehouse_ID() != lineWarehouseId.getRepoId())
 							{
-								M_Locator_ID = warehouseBL.getDefaultLocatorId(lineWarehouseId).getRepoId();
+								M_Locator_ID = warehouseBL.getOrCreateDefaultLocatorId(lineWarehouseId).getRepoId();
 							}
 						}
 						else
 						{
-							M_Locator_ID = warehouseBL.getDefaultLocatorId(lineWarehouseId).getRepoId();
+							M_Locator_ID = warehouseBL.getOrCreateDefaultLocatorId(lineWarehouseId).getRepoId();
 						}
 					}
 					// Update Storage
@@ -1442,7 +1439,7 @@ public class MOrder extends X_C_Order implements IDocument
 							line.getM_AttributeSetInstance_ID(),
 							line.getM_AttributeSetInstance_ID(),
 							BigDecimal.ZERO,
-							reserved,
+							line.isDeliveryClosed() ? line.getQtyDelivered().subtract(line.getQtyOrdered()) : reserved,
 							ordered,
 							get_TrxName());
 				}    // stockec
@@ -1475,7 +1472,7 @@ public class MOrder extends X_C_Order implements IDocument
 		log.debug("");
 
 		// Delete Taxes
-		DB.executeUpdateEx("DELETE FROM C_OrderTax WHERE C_Order_ID=" + getC_Order_ID(), trxName);
+		DB.executeUpdateAndThrowExceptionOnFail("DELETE FROM C_OrderTax WHERE C_Order_ID=" + getC_Order_ID(), trxName);
 		m_taxes = null;
 
 		// Lines
@@ -1821,7 +1818,7 @@ public class MOrder extends X_C_Order implements IDocument
 														MovementQty, get_TrxName());
 			if (M_Locator_ID <= 0)        // Get default Location
 			{
-				M_Locator_ID = Services.get(IWarehouseBL.class).getDefaultLocatorId(warehouseId).getRepoId();
+				M_Locator_ID = Services.get(IWarehouseBL.class).getOrCreateDefaultLocatorId(warehouseId).getRepoId();
 			}
 			//
 			ioLine.setOrderLine(oLine, M_Locator_ID, MovementQty);
@@ -2381,9 +2378,9 @@ public class MOrder extends X_C_Order implements IDocument
 	}    // getSummary
 
 	@Override
-	public LocalDate getDocumentDate()
+	public InstantAndOrgId getDocumentDate()
 	{
-		return TimeUtil.asLocalDate(getDateOrdered());
+		return InstantAndOrgId.ofTimestamp(getDateOrdered(), OrgId.ofRepoId(getAD_Org_ID()));
 	}
 
 	/**

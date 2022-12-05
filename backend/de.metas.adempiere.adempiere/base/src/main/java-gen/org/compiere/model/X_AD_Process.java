@@ -300,6 +300,17 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
+	public void setIsFormatExcelFile (final boolean IsFormatExcelFile)
+	{
+		set_Value (COLUMNNAME_IsFormatExcelFile, IsFormatExcelFile);
+	}
+
+	@Override
+	public boolean isFormatExcelFile()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsFormatExcelFile);
+	}
+	@Override
 	public void setIsNotifyUserAfterExecution (final boolean IsNotifyUserAfterExecution)
 	{
 		set_Value (COLUMNNAME_IsNotifyUserAfterExecution, IsNotifyUserAfterExecution);
@@ -366,7 +377,7 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	}
 
 	@Override
-	public boolean isUpdateExportDate() 
+	public boolean isUpdateExportDate()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsUpdateExportDate);
 	}
@@ -608,4 +619,17 @@ public class X_AD_Process extends org.compiere.model.PO implements I_AD_Process,
 	{
 		return get_ValueAsString(COLUMNNAME_WorkflowValue);
 	}
+
+	@Override
+	public void setIsLogWarning (final boolean IsLogWarning)
+	{
+		set_Value (COLUMNNAME_IsLogWarning, IsLogWarning);
+	}
+
+	@Override
+	public boolean isLogWarning()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsLogWarning);
+	}
+
 }

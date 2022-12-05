@@ -71,9 +71,9 @@ public class BPartnerSimpleFuzzySearchFilterProvider implements DocumentFilterDe
 			.setInlineRenderMode(DocumentFilterInlineRenderMode.INLINE_PARAMETERS)
 			.setSortNo(DocumentFilterDescriptorsConstants.SORT_NO_INLINE_FILTERS)
 			.addParameter(DocumentFilterParamDescriptor.builder()
-					.setFieldName(PARAMETERNAME_SearchText)
-					.setDisplayName(MSG_Caption)
-					.setWidgetType(DocumentFieldWidgetType.Text)
+					.fieldName(PARAMETERNAME_SearchText)
+					.displayName(MSG_Caption)
+					.widgetType(DocumentFieldWidgetType.Text)
 			)
 			.build();
 

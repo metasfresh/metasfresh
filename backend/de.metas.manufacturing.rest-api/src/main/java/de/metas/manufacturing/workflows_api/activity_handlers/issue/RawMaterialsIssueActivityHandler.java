@@ -1,6 +1,7 @@
 package de.metas.manufacturing.workflows_api.activity_handlers.issue;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.handlingunits.picking.QtyRejectedReasonCode;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.RawMaterialsIssueLine;
@@ -13,7 +14,6 @@ import de.metas.manufacturing.workflows_api.activity_handlers.issue.json.JsonSca
 import de.metas.product.ProductId;
 import de.metas.product.allergen.ProductAllergensService;
 import de.metas.product.hazard_symbol.ProductHazardSymbolService;
-import de.metas.util.Services;
 import de.metas.workflow.rest_api.controller.v2.json.JsonOpts;
 import de.metas.workflow.rest_api.model.UIComponent;
 import de.metas.workflow.rest_api.model.UIComponentType;
@@ -24,7 +24,6 @@ import de.metas.workflow.rest_api.model.WFActivityType;
 import de.metas.workflow.rest_api.model.WFProcess;
 import de.metas.workflow.rest_api.service.WFActivityHandler;
 import lombok.NonNull;
-import org.adempiere.ad.service.IADReferenceDAO;
 import org.adempiere.util.api.Params;
 import org.springframework.stereotype.Component;
 
@@ -39,14 +38,16 @@ public class RawMaterialsIssueActivityHandler implements WFActivityHandler
 	private final ManufacturingJobService manufacturingJobService;
 	private final ProductHazardSymbolService productHazardSymbolService;
 	private final ProductAllergensService productAllergensService;
-	private final IADReferenceDAO adReferenceDAO = Services.get(IADReferenceDAO.class);
+	private final ADReferenceService adReferenceService;
 
 	public RawMaterialsIssueActivityHandler(
 			@NonNull final ManufacturingJobService manufacturingJobService,
+			@NonNull final ADReferenceService adReferenceService,
 			@NonNull final ProductHazardSymbolService productHazardSymbolService,
 			@NonNull final ProductAllergensService productAllergensService)
 	{
 		this.manufacturingJobService = manufacturingJobService;
+		this.adReferenceService = adReferenceService;
 		this.productHazardSymbolService = productHazardSymbolService;
 		this.productAllergensService = productAllergensService;
 	}
@@ -117,7 +118,7 @@ public class RawMaterialsIssueActivityHandler implements WFActivityHandler
 
 	private JsonRejectReasonsList getJsonRejectReasonsList(final @NonNull JsonOpts jsonOpts)
 	{
-		return JsonRejectReasonsList.of(adReferenceDAO.getRefListById(QtyRejectedReasonCode.REFERENCE_ID), jsonOpts);
+		return JsonRejectReasonsList.of(adReferenceService.getRefListById(QtyRejectedReasonCode.REFERENCE_ID), jsonOpts);
 	}
 
 	@Override

@@ -24,4 +24,7 @@ public interface IBPBankAccountDAO extends de.metas.bpartner.service.IBPBankAcco
 
 	Optional<BankAccount> getDefaultBankAccount(BPartnerId bPartnerId);
 
+	Optional<BankAccountId> getBankAccountId(@NonNull BankId bankId, @NonNull String accountNo);
+
+	@NonNull Optional<BankAccountId> getBankAccountIdByIBAN(@NonNull String iban);
 }

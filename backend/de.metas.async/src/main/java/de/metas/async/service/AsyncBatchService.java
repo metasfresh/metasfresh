@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableList;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IAsyncBatchDAO;
+import de.metas.async.api.IEnqueueResult;
 import de.metas.async.eventbus.AsyncBatchEventBusService;
 import de.metas.async.eventbus.AsyncBatchNotifyRequest;
 import de.metas.async.model.I_C_Async_Batch;
@@ -114,11 +115,46 @@ public class AsyncBatchService
 	 */
 	public <T> T executeBatch(@NonNull final Supplier<T> supplier, @NonNull final AsyncBatchId asyncBatchId)
 	{
-		asyncBatchObserver.observeOn(asyncBatchId);
+		final T result;
+		try
+		{
+			asyncBatchObserver.observeOn(asyncBatchId);
 
-		final T result = trxManager.callInNewTrx(supplier::get);
+			result = trxManager.callInNewTrx(supplier::get);
 
-		asyncBatchObserver.waitToBeProcessed(asyncBatchId);
+			asyncBatchObserver.waitToBeProcessed(asyncBatchId);
+		}
+		finally
+		{
+			asyncBatchObserver.removeObserver(asyncBatchId);
+		}
+
+		return result;
+	}
+
+	@NonNull
+	public IEnqueueResult executeEnqueuedBatch(@NonNull final Supplier<IEnqueueResult> supplier, @NonNull final AsyncBatchId asyncBatchId)
+	{
+		final IEnqueueResult result;
+		try
+		{
+			asyncBatchObserver.observeOn(asyncBatchId);
+
+			result = trxManager.callInNewTrx(supplier::get);
+
+			if (result.getEnqueuedWorkPackageIds().isEmpty())
+			{
+				asyncBatchObserver.removeObserver(asyncBatchId);
+			}
+			else
+			{
+				asyncBatchObserver.waitToBeProcessed(asyncBatchId);
+			}
+		}
+		finally
+		{
+			asyncBatchObserver.removeObserver(asyncBatchId);
+		}
 
 		return result;
 	}

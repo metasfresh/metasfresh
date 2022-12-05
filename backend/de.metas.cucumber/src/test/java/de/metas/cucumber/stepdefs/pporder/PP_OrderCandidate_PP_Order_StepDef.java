@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.pporder;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
@@ -72,10 +73,10 @@ public class PP_OrderCandidate_PP_Order_StepDef
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
 		{
-			final String orderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_OrderCandidate_PP_Order.COLUMNNAME_PP_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String orderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_OrderCandidate_PP_Order.COLUMNNAME_PP_Order_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			final I_PP_Order orderRecord = ppOrderTable.get(orderIdentifier);
 
-			final String orderCandidateIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_OrderCandidate_PP_Order.COLUMNNAME_PP_Order_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String orderCandidateIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_PP_OrderCandidate_PP_Order.COLUMNNAME_PP_Order_Candidate_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 			final I_PP_Order_Candidate orderCandidateRecord = ppOrderCandidateTable.get(orderCandidateIdentifier);
 
 			final int qtyEntered = DataTableUtil.extractIntForColumnName(tableRow, I_PP_OrderCandidate_PP_Order.COLUMNNAME_QtyEntered);

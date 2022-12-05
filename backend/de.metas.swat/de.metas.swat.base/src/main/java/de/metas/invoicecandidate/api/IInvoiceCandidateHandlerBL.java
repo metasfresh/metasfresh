@@ -98,4 +98,8 @@ public interface IInvoiceCandidateHandlerBL extends ISingletonService
 	void setLineNetAmt(I_C_Invoice_Candidate ic);
 
 	void setPickedData(I_C_Invoice_Candidate ic);
+
+	void setIsInEffect(I_C_Invoice_Candidate ic);
+
+	void postUpdate(I_C_Invoice_Candidate ic);
 }

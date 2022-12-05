@@ -26,9 +26,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.bpartner.v2.common.JsonDeliveryRule;
+import de.metas.common.bpartner.v2.common.JsonDeliveryViaRule;
+import de.metas.common.bpartner.v2.common.JsonPaymentRule;
 import de.metas.common.changelog.JsonChangeInfo;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.common.rest_api.v2.JSONPaymentRule;
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Builder;
@@ -59,15 +61,26 @@ public class JsonResponseBPartner
 	public static final String ACTIVE = "active";
 	public static final String VENDOR = "vendor";
 	public static final String CUSTOMER = "customer";
+	public static final String PRICING_SYSTEM_ID = "pricingSystemId";
 	public static final String SALES_PARTNER_CODE = "salesPartnerCode";
 	public static final String SALES_PARTNER = "salesPartner";
 	public static final String PAYMENT_RULE = "paymentRule";
+	public static final String PAYMENT_RULE_PO = "paymentRulePO";
 	public static final String INTERNAL_NAME = "internalName";
 	public static final String COMPANY = "company";
 	public static final String VAT_ID = "vatId";
 	public static final String METASFRESH_URL = "metasfreshUrl";
 	public static final String CREDITOR_ID = "creditorId";
 	public static final String DEBTOR_ID = "debtorId";
+	public static final String SECTION_CODE_ID = "sectionCodeId";
+	public static final String DESCRIPTION = "description";
+	public static final String DELIVERY_RULE = "deliveryRule";
+	public static final String DELIVERY_VIA_RULE = "deliveryViaRule";
+	public static final String STORAGE_WAREHOUSE = "storageWarehouse";
+	public static final String INCOTERMS_CUSTOMER_ID = "incotermsCustomerId";
+	public static final String INCOTERMS_VENDOR_ID = "incotermsVendorId";
+	public static final String CUSTOMER_PAYMENTTERM_ID = "customerPaymentTermId";
+	public static final String VENDOR_PAYMENTTERM_ID = "vendorPaymentTermId";
 
 	private static final String CHANGE_INFO = "changeInfo";
 
@@ -140,12 +153,12 @@ public class JsonResponseBPartner
 	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.URL2`.")
 	@JsonProperty(URL_2)
 	@JsonInclude(Include.NON_NULL)
-	private String url2;
+	String url2;
 
 	@ApiModelProperty(required = false, value = "This translates to `C_BPartner.URL3`.")
 	@JsonProperty(URL_3)
 	@JsonInclude(Include.NON_NULL)
-	private String url3;
+	String url3;
 
 	@ApiModelProperty( //
 			required = false, //
@@ -167,6 +180,11 @@ public class JsonResponseBPartner
 	@JsonInclude(Include.NON_NULL)
 	String salesPartnerCode;
 
+	@ApiModelProperty(value = "This translates to `C_BPartner.M_PricingSystem_ID`")
+	@JsonProperty(PRICING_SYSTEM_ID)
+	@JsonInclude(Include.NON_NULL)
+	JsonMetasfreshId pricingSystemId;
+
 	@ApiModelProperty(value = "This contains information about the superior sales rep of the respective `C_BPartner` record")
 	@JsonProperty(SALES_PARTNER)
 	@JsonInclude(Include.NON_NULL)
@@ -174,7 +192,11 @@ public class JsonResponseBPartner
 
 	@JsonProperty(PAYMENT_RULE)
 	@JsonInclude(Include.NON_NULL)
-	JSONPaymentRule paymentRule;
+	JsonPaymentRule paymentRule;
+
+	@JsonProperty(PAYMENT_RULE_PO)
+	@JsonInclude(Include.NON_NULL)
+	JsonPaymentRule paymentRulePO;
 
 	@JsonProperty(INTERNAL_NAME)
 	@JsonInclude(Include.NON_NULL)
@@ -203,6 +225,51 @@ public class JsonResponseBPartner
 	@JsonInclude(Include.NON_NULL)
 	Integer debtorId;
 
+	@ApiModelProperty(required = false, value = "Translates to `C_BPartner.M_SectionCode_ID`")
+	@JsonProperty(SECTION_CODE_ID)
+	@JsonInclude(Include.NON_NULL)
+	JsonMetasfreshId sectionCodeId;
+
+	@ApiModelProperty(required = false, value = "Translates to `C_BPartner.Description`")
+	@JsonProperty(DESCRIPTION)
+	@JsonInclude(Include.NON_NULL)
+	String description;
+
+	@ApiModelProperty(required = false, value = "Translates to `C_BPartner.DeliveryRule`")
+	@JsonProperty(DELIVERY_RULE)
+	@JsonInclude(Include.NON_NULL)
+	JsonDeliveryRule deliveryRule;
+
+	@ApiModelProperty(required = false, value = "Translates to `C_BPartner.DeliveryViaRule`")
+	@JsonProperty(DELIVERY_VIA_RULE)
+	@JsonInclude(Include.NON_NULL)
+	JsonDeliveryViaRule deliveryViaRule;
+
+	@ApiModelProperty(required = false, value = "Translates to `C_BPartner.IsStorageWarehouse`")
+	@JsonProperty(STORAGE_WAREHOUSE)
+	@JsonInclude(Include.NON_NULL)
+	Boolean storageWarehouse;
+
+	@ApiModelProperty(required = false, value = "Translates to `C_BPartner.C_Incoterms_Customer_ID`")
+	@JsonProperty(INCOTERMS_CUSTOMER_ID)
+	@JsonInclude(Include.NON_NULL)
+	JsonMetasfreshId incotermsCustomerId;
+
+	@ApiModelProperty(required = false, value = "Translates to `C_BPartner.C_Incoterms_Vendor_ID`")
+	@JsonProperty(INCOTERMS_VENDOR_ID)
+	@JsonInclude(Include.NON_NULL)
+	JsonMetasfreshId incotermsVendorId;
+
+	@ApiModelProperty(required = false, value = "Translates to `C_BPartner.C_PaymentTerm_ID`")
+	@JsonProperty(CUSTOMER_PAYMENTTERM_ID)
+	@JsonInclude(Include.NON_NULL)
+	JsonMetasfreshId customerPaymentTermId;
+
+	@ApiModelProperty(position = 250, value = "Translates to `C_BPartner.PO_PaymentTerm_ID`")
+	@JsonProperty(VENDOR_PAYMENTTERM_ID)
+	@JsonInclude(Include.NON_NULL)
+	JsonMetasfreshId vendorPaymentTermId;
+
 	@ApiModelProperty(position = 9999) // shall be last
 	@JsonProperty(CHANGE_INFO)
 	@JsonInclude(Include.NON_NULL)
@@ -229,17 +296,27 @@ public class JsonResponseBPartner
 			@JsonProperty(VENDOR) @NonNull final Boolean vendor,
 			@JsonProperty(CUSTOMER) @NonNull final Boolean customer,
 			@JsonProperty(SALES_PARTNER_CODE) @Nullable final String salesPartnerCode,
+			@JsonProperty(PRICING_SYSTEM_ID) @Nullable final JsonMetasfreshId pricingSystemId,
 			@JsonProperty(SALES_PARTNER) @Nullable final JsonResponseSalesRep responseSalesRep,
-			@JsonProperty(PAYMENT_RULE) @Nullable final JSONPaymentRule paymentRule,
+			@JsonProperty(PAYMENT_RULE) @Nullable final JsonPaymentRule paymentRule,
+			@JsonProperty(PAYMENT_RULE_PO) @Nullable final JsonPaymentRule paymentRulePO,
 			@JsonProperty(INTERNAL_NAME) @Nullable final String internalName,
 			@JsonProperty(COMPANY) @NonNull final Boolean company,
 			@JsonProperty(VAT_ID) @Nullable final String vatId,
 			@JsonProperty(METASFRESH_URL) @Nullable final String metasfreshUrl,
 			@JsonProperty(CREDITOR_ID) @Nullable final Integer creditorId,
 			@JsonProperty(DEBTOR_ID) @Nullable final Integer debtorId,
-
-			//
+			@JsonProperty(SECTION_CODE_ID) @Nullable final JsonMetasfreshId sectionCodeId,
+			@JsonProperty(DESCRIPTION) @Nullable final String description,
+			@JsonProperty(DELIVERY_RULE) @Nullable final JsonDeliveryRule deliveryRule,
+			@JsonProperty(DELIVERY_VIA_RULE) @Nullable final JsonDeliveryViaRule deliveryViaRule,
+			@JsonProperty(STORAGE_WAREHOUSE) @Nullable final Boolean storageWarehouse,
+			@JsonProperty(INCOTERMS_CUSTOMER_ID) @Nullable final JsonMetasfreshId incotermsCustomerId,
+			@JsonProperty(INCOTERMS_VENDOR_ID) @Nullable final JsonMetasfreshId incotermsVendorId,
+			@JsonProperty(CUSTOMER_PAYMENTTERM_ID) @Nullable final JsonMetasfreshId customerPaymentTermId,
+			@JsonProperty(VENDOR_PAYMENTTERM_ID) @Nullable final JsonMetasfreshId vendorPaymentTermId,
 			@JsonProperty(CHANGE_INFO) @Nullable JsonChangeInfo changeInfo)
+			//
 	{
 		this.metasfreshId = metasfreshId;
 		this.code = code;
@@ -266,8 +343,10 @@ public class JsonResponseBPartner
 		this.vendor = vendor;
 		this.customer = customer;
 		this.salesPartnerCode = salesPartnerCode;
+		this.pricingSystemId = pricingSystemId;
 		this.responseSalesRep = responseSalesRep;
 		this.paymentRule = paymentRule;
+		this.paymentRulePO = paymentRulePO;
 		this.internalName = internalName;
 		this.company = company;
 
@@ -277,6 +356,15 @@ public class JsonResponseBPartner
 
 		this.creditorId = creditorId;
 		this.debtorId = debtorId;
+		this.sectionCodeId = sectionCodeId;
+		this.description = description;
+		this.deliveryRule = deliveryRule;
+		this.deliveryViaRule = deliveryViaRule;
+		this.storageWarehouse = storageWarehouse;
+		this.incotermsCustomerId = incotermsCustomerId;
+		this.incotermsVendorId = incotermsVendorId;
+		this.customerPaymentTermId = customerPaymentTermId;
+		this.vendorPaymentTermId = vendorPaymentTermId;
 
 		this.changeInfo = changeInfo;
 	}

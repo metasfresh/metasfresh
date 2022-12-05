@@ -82,14 +82,13 @@ import static org.adempiere.model.InterfaceWrapperHelper.save;
 
 public class PrintingQueueBL implements IPrintingQueueBL
 {
-	private final static transient Logger logger = LogManager.getLogger(PrintingQueueBL.class);
+	private final static Logger logger = LogManager.getLogger(PrintingQueueBL.class);
 
 	/**
 	 * gh #1081: set up our composite handler to always apply {@link C_Printing_Queue_RecipientHandler} after the other handlers
 	 */
 	private final CompositePrintingQueueHandler printingQueueHandler = new CompositePrintingQueueHandler(C_Printing_Queue_RecipientHandler.INSTANCE);
 	private final IPrintingDAO printingDAO = Services.get(IPrintingDAO.class);
-	private final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
 
 	@Nullable
 	@Override

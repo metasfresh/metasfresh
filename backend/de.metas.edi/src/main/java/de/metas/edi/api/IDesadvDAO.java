@@ -22,14 +22,12 @@
 
 package de.metas.edi.api;
 
-import de.metas.bpartner.BPartnerId;
 import de.metas.edi.model.I_C_Order;
 import de.metas.edi.model.I_C_OrderLine;
 import de.metas.edi.model.I_M_InOut;
 import de.metas.edi.model.I_M_InOutLine;
 import de.metas.esb.edi.model.I_EDI_Desadv;
 import de.metas.esb.edi.model.I_EDI_DesadvLine;
-import de.metas.esb.edi.model.I_EDI_DesadvLine_Pack;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
@@ -110,15 +108,6 @@ public interface IDesadvDAO extends ISingletonService
 	 */
 	List<I_C_Order> retrieveAllOrders(I_EDI_Desadv desadv);
 
-	/**
-	 * @param withInOutLine optional; specifies if only packs with/without an iol shall be selected. If {@code null}, no restriction is added.
-	 */
-	List<I_EDI_DesadvLine_Pack> retrieveDesadvLinePacks(@NonNull I_EDI_DesadvLine desadvLine, @Nullable Boolean withInOutLine);
-
-	List<I_EDI_DesadvLine_Pack> retrieveDesadvLinePackRecords(I_M_InOutLine inOutLineRecord);
-
-	int retrieveDesadvLinePackRecordsCount(I_EDI_DesadvLine desadvLine);
-
 	@Nullable
 	I_M_ShipmentSchedule retrieveM_ShipmentScheduleOrNull(I_EDI_DesadvLine desadvLine);
 
@@ -130,5 +119,5 @@ public interface IDesadvDAO extends ISingletonService
 
 	void save(@NonNull I_EDI_Desadv ediDesadv);
 
-	BPartnerId retrieveBPartnerFromEdiDesadvPackId(int packId);
+	I_EDI_DesadvLine retrieveLineById(@NonNull final EDIDesadvLineId ediDesadvLineId);
 }

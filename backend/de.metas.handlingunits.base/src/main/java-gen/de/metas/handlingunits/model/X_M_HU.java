@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.handlingunits.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for M_HU
  *  @author metasfresh (generated) 
@@ -71,7 +71,7 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 	}
 
 	@Override
-	public java.sql.Timestamp getClearanceDate() 
+	public java.sql.Timestamp getClearanceDate()
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_ClearanceDate);
 	}
@@ -111,6 +111,21 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 	public java.lang.String getClearanceStatus() 
 	{
 		return get_ValueAsString(COLUMNNAME_ClearanceStatus);
+	}
+
+	@Override
+	public void setC_Project_ID (final int C_Project_ID)
+	{
+		if (C_Project_ID < 1)
+			set_Value (COLUMNNAME_C_Project_ID, null);
+		else
+			set_Value (COLUMNNAME_C_Project_ID, C_Project_ID);
+	}
+
+	@Override
+	public int getC_Project_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Project_ID);
 	}
 
 	@Override

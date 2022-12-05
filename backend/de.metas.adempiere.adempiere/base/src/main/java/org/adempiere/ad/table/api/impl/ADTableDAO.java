@@ -25,13 +25,15 @@ package org.adempiere.ad.table.api.impl;
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.ad_reference.ReferenceId;
 import de.metas.adempiere.service.impl.TooltipType;
 import de.metas.cache.CCache;
+import de.metas.cache.CacheMgt;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.common.util.StringUtils;
 import de.metas.document.DocumentConstants;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
-import de.metas.reflist.ReferenceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -408,6 +410,24 @@ public class ADTableDAO implements IADTableDAO
 	}
 
 	@Override
+	public void updateColumnNameByAdElementId(
+			@NonNull final AdElementId adElementId,
+			@Nullable final String newColumnName)
+	{
+
+		// NOTE: accept newColumnName to be null and expect to fail in case there is an AD_Column which is using given AD_Element_ID
+		final int no = DB.executeUpdateAndThrowExceptionOnFail(
+				// Inline parameters because this sql will be logged into the migration script.
+				"UPDATE " + I_AD_Column.Table_Name + " SET ColumnName=" + DB.TO_STRING(newColumnName) + " WHERE AD_Element_ID=" + adElementId.getRepoId(),
+				ITrx.TRXNAME_ThreadInherited);
+
+		if (no > 0)
+		{
+			CacheMgt.get().resetLocalNowAndBroadcastOnTrxCommit(ITrx.TRXNAME_ThreadInherited, CacheInvalidateMultiRequest.allRecordsForTable(I_AD_Column.Table_Name));
+		}
+	}
+
+	@Override
 	public MinimalColumnInfo getMinimalColumnInfo(@NonNull final String tableName, @NonNull final String columnName)
 	{
 		final AdTableId adTableId = retrieveAdTableId(tableName);
@@ -452,7 +472,7 @@ public class ADTableDAO implements IADTableDAO
 						+ "," + I_AD_Column.COLUMNNAME_AD_Val_Rule_ID
 						+ "," + I_AD_Column.COLUMNNAME_EntityType
 						+ "," + I_AD_Column.COLUMNNAME_FieldLength
-						//+ "," + I_AD_Column.COLUMNNAME_IsDLMPartitionBoundary // commented out because available only in master
+						+ "," + I_AD_Column.COLUMNNAME_IsDLMPartitionBoundary
 						+ " FROM " + I_AD_Column.Table_Name
 						+ " ORDER BY "
 						+ " " + I_AD_Column.COLUMNNAME_AD_Table_ID
@@ -480,20 +500,7 @@ public class ADTableDAO implements IADTableDAO
 				.adValRuleId(AdValRuleId.ofRepoIdOrNull(rs.getInt(I_AD_Column.COLUMNNAME_AD_Val_Rule_ID)))
 				.entityType(rs.getString(I_AD_Column.COLUMNNAME_EntityType))
 				.fieldLength(rs.getInt(I_AD_Column.COLUMNNAME_FieldLength))
-				//.isDLMPartitionBoundary(StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsDLMPartitionBoundary))) // commented out because available only in master
+				.isDLMPartitionBoundary(StringUtils.toBoolean(rs.getString(I_AD_Column.COLUMNNAME_IsDLMPartitionBoundary)))
 				.build();
-	}
-
-	@Override
-	public void updateColumnNameByAdElementId(
-			@NonNull final AdElementId adElementId,
-			@Nullable final String newColumnName)
-	{
-
-		// NOTE: accept newColumnName to be null and expect to fail in case there is an AD_Column which is using given AD_Element_ID
-		DB.executeUpdateEx(
-				// Inline parameters because this sql will be logged into the migration script.
-				"UPDATE " + I_AD_Column.Table_Name + " SET ColumnName=" + DB.TO_STRING(newColumnName) + " WHERE AD_Element_ID=" + adElementId.getRepoId(),
-				ITrx.TRXNAME_ThreadInherited);
 	}
 }

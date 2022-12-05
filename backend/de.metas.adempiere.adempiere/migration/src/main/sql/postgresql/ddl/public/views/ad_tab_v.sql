@@ -47,6 +47,7 @@ SELECT
      , t.defaultwhereclause
      , t.issearchcollapsed
      , t.isqueryonload
+     , t.IsQueryIfNoFilters
      , t.isgridmodeonly
      , t.ad_message_id
      , t.ischeckparentschanged

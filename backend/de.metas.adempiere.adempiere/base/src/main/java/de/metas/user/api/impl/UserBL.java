@@ -211,6 +211,8 @@ public class UserBL implements IUserBL
 				true // html
 		);
 
+		email.forceRealEmailRecipients();
+
 		final String message = mailTextBuilder.getFullMailText();
 		if (mailTextBuilder.isHtml())
 		{

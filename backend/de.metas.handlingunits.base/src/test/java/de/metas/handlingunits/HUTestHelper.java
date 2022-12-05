@@ -1,6 +1,7 @@
 package de.metas.handlingunits;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.ad_reference.ADReferenceService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
@@ -43,6 +44,8 @@ import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.allocation.transfer.impl.TUMergeBuilder;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IAttributeValue;
+import de.metas.handlingunits.attribute.impl.HUUniqueAttributesRepository;
+import de.metas.handlingunits.attribute.impl.HUUniqueAttributesService;
 import de.metas.handlingunits.attribute.impl.PlainAttributeValue;
 import de.metas.handlingunits.attribute.propagation.impl.HUAttributePropagationContext;
 import de.metas.handlingunits.attribute.propagation.impl.NoPropagationHUAttributePropagator;
@@ -89,10 +92,13 @@ import de.metas.inoutcandidate.modelvalidator.ReceiptScheduleValidator;
 import de.metas.inoutcandidate.picking_bom.PickingBOMService;
 import de.metas.invoicecandidate.document.dimension.InvoiceCandidateDimensionFactory;
 import de.metas.materialtransaction.MTransactionUtil;
+import de.metas.pricing.tax.ProductTaxCategoryRepository;
+import de.metas.pricing.tax.ProductTaxCategoryService;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
+import de.metas.resource.ResourceService;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.UomId;
 import de.metas.user.UserRepository;
@@ -379,7 +385,7 @@ public class HUTestHelper
 	private DDNetworkBuilder emptiesDDNetworkBuilder;
 
 	public Properties ctx;
-	public String trxName;
+	@Nullable public String trxName;
 	private ZonedDateTime today;
 
 	public final IContextAware contextProvider = new IContextAware()
@@ -417,13 +423,6 @@ public class HUTestHelper
 		}
 	}
 
-	public HUTestHelper setInitAdempiere(final boolean initAdempiere)
-	{
-		Check.assume(!initialized, "helper not initialized");
-		this.initAdempiere = initAdempiere;
-		return this;
-	}
-
 	/**
 	 * Returns this instance, initialized.
 	 * Note: final, because its called by a constructor.
@@ -444,6 +443,7 @@ public class HUTestHelper
 
 		SpringContextHolder.registerJUnitBean(new AllocationStrategyFactory(new AllocationStrategySupportingServicesFacade()));
 		SpringContextHolder.registerJUnitBean(new ShipperTransportationRepository());
+		SpringContextHolder.registerJUnitBean(new ProductTaxCategoryService(new ProductTaxCategoryRepository()));
 
 		final BPartnerBL bpartnerBL = new BPartnerBL(new UserRepository());
 		SpringContextHolder.registerJUnitBean(IBPartnerBL.class, bpartnerBL);
@@ -566,13 +566,16 @@ public class HUTestHelper
 		final DDOrderMoveScheduleService ddOrderMoveScheduleService = new DDOrderMoveScheduleService(
 				ddOrderLowLevelDAO,
 				new DDOrderMoveScheduleRepository(),
+				ADReferenceService.newMocked(),
 				huReservationService);
-		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO);
+		final DDOrderLowLevelService ddOrderLowLevelService = new DDOrderLowLevelService(ddOrderLowLevelDAO, ResourceService.newInstanceForJUnitTesting());
 		final DDOrderService ddOrderService = new DDOrderService(ddOrderLowLevelDAO, ddOrderLowLevelService, ddOrderMoveScheduleService);
+		final HUUniqueAttributesService huUniqueAttributesService = new HUUniqueAttributesService(new HUUniqueAttributesRepository());
 		return new de.metas.handlingunits.model.validator.Main(
 				ddOrderMoveScheduleService,
 				ddOrderService,
-				new PickingBOMService());
+				new PickingBOMService(),
+				huUniqueAttributesService);
 	}
 
 	/**
@@ -738,11 +741,6 @@ public class HUTestHelper
 
 		defaultWarehouse = createWarehouse(NAME_Default_Warehouse, false); // issueWarehouse
 		issueWarehouse = createWarehouse(NAME_Issue_Warehouse, true);
-	}
-
-	protected void customInit()
-	{
-		// nothing
 	}
 
 	public IHandlingUnitsBL handlingUnitsBL() {return Services.get(IHandlingUnitsBL.class);}

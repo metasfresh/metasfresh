@@ -118,7 +118,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 	 * Before enqueuing the candidates, check how many partners they have.
 	 * In case there are more that one partner, ask the user if he really wants to invoice for so many partners.
 	 *
-	 * @task 08961
+	 * task 08961
 	 * @throws ProcessCanceledException if user canceled
 	 */
 	private void checkPerformEnqueuing() throws ProcessCanceledException
@@ -256,6 +256,7 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicing extends JavaProces
 	private IQuery<I_C_Invoice_Candidate> prepareNetAmountsToInvoiceForSelectionQuery(final IQueryFilter<I_C_Invoice_Candidate> selectionFilter)
 	{
 		return createICQueryBuilder(selectionFilter)
+				.addEqualsFilter(I_C_Invoice_Candidate.COLUMNNAME_IsInEffect, true)
 				.addNotNull(I_C_Invoice_Candidate.COLUMNNAME_C_Currency_ID)
 				.create();
 	}
