@@ -12,7 +12,6 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
-  * [#14036](https://github.com/metasfresh/metasfresh/issues/14036) remove remaining oids from tables
   * [#14060](https://github.com/metasfresh/metasfresh/issues/14060) Format Qty based on on the precision defined in SysConfig
   * [#13953](https://github.com/metasfresh/metasfresh/pull/13953) [SAP]: Add mappings for required masterdata
   * [#13980](https://github.com/metasfresh/metasfresh/pull/13980) Introduce C_BPartner_Location.VATaxID
@@ -178,6 +177,8 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#14072](https://github.com/metasfresh/metasfresh/issues/14072) Fix Sales Order - void selected order with related documents
+  * [#14036](https://github.com/metasfresh/metasfresh/issues/14036) remove remaining oids from tables
   * [#14003](https://github.com/metasfresh/metasfresh/pull/14003) Fix NPE that happens if IExportProcessor.process throws an exception
   * [#14027](https://github.com/metasfresh/metasfresh/issues/14027) Display SEPA/REVOLUT Export Details
   * [#13906](https://github.com/metasfresh/metasfresh/pull/13906) Delete chat when deleting documents and implement voiding draft orders
