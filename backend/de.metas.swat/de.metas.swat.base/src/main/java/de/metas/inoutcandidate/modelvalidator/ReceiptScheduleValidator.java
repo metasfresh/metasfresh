@@ -22,6 +22,8 @@ package de.metas.inoutcandidate.modelvalidator;
  * #L%
  */
 
+import de.metas.deliveryplanning.DeliveryPlanningRepository;
+import de.metas.deliveryplanning.DeliveryPlanningService;
 import org.adempiere.ad.modelvalidator.AbstractModuleInterceptor;
 import org.adempiere.ad.modelvalidator.IModelValidationEngine;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceAwareFactoryService;
@@ -56,7 +58,6 @@ public class ReceiptScheduleValidator extends AbstractModuleInterceptor
 	protected void registerInterceptors(@NonNull IModelValidationEngine engine)
 	{
 		engine.addModelValidator(new C_Order_ReceiptSchedule());
-		engine.addModelValidator(new M_ReceiptSchedule());
 		engine.addModelValidator(new M_ReceiptSchedule_Alloc());
 		engine.addModelValidator(new C_OrderLine_ReceiptSchedule());
 	}

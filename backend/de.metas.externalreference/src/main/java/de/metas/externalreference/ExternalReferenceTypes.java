@@ -30,6 +30,7 @@ import de.metas.externalreference.product.ProductExternalReferenceType;
 import de.metas.externalreference.productcategory.ProductCategoryExternalReferenceType;
 import de.metas.externalreference.productprice.ProductPriceExternalReferenceType;
 import de.metas.externalreference.shipper.ShipperExternalReferenceType;
+import de.metas.externalreference.uom.UOMExternalReferenceType;
 import de.metas.externalreference.warehouse.WarehouseExternalReferenceType;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
@@ -57,6 +58,7 @@ public class ExternalReferenceTypes
 		registerType(WarehouseExternalReferenceType.WAREHOUSE);
 		registerType(ProductPriceExternalReferenceType.PRODUCT_PRICE);
 		registerType(ShipperExternalReferenceType.SHIPPER);
+		registerType(UOMExternalReferenceType.UOM);
 	}
 
 	public void registerType(@NonNull final IExternalReferenceType type)

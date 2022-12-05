@@ -167,6 +167,7 @@ final class ChangeLogUtil
 			.put(I_C_BPartner_Location.COLUMNNAME_IsHandOverLocation, BPartnerLocation.HANDOVER_LOCATION)
 			.put(I_C_BPartner_Location.COLUMNNAME_IsRemitTo, BPartnerLocation.REMIT_TO)
 			.put(I_C_BPartner_Location.COLUMNNAME_IsReplicationLookupDefault, BPartnerLocation.REPLICATION_LOOKUP_DEFAULT)
+			.put(I_C_BPartner_Location.COLUMNNAME_VATaxID, BPartnerLocation.VAT_TAX_ID)
 
 			// C_Location is immutable and therefore individual C_Location records don't have a change log.
 			// However, when we load the change log records of C_BPartner_Location,

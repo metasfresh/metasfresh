@@ -211,6 +211,13 @@ public class JsonRequestLocation
 	@ApiModelProperty(hidden = true)
 	private boolean replicationLookupDefaultSet;
 
+	@ApiModelProperty(position = 270, //
+			value = "Translates to C_BPartner_Location.VATaxId")
+	private String vatId;
+
+	@ApiModelProperty(hidden = true)
+	private boolean vatIdSet;
+
 	public void setActive(final Boolean active)
 	{
 		this.active = active;
@@ -359,5 +366,11 @@ public class JsonRequestLocation
 	{
 		this.replicationLookupDefault = replicationLookupDefault;
 		this.replicationLookupDefaultSet = true;
+	}
+
+	public void setVatId(final String vatId)
+	{
+		this.vatId = vatId;
+		this.vatIdSet = true;
 	}
 }
