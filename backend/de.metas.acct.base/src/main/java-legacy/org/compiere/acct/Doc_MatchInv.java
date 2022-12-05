@@ -512,7 +512,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 						.documentRef(CostingDocumentRef.ofMatchInvoiceId(matchInv.getM_MatchInv_ID()))
 						.qty(matchQty)
 						.amt(matchAmt)
-						.date(getDateAcct())
+						.date(getDateAcct().toInstant(services::getTimeZone))
 						.description(getDescription())
 						.build())
 				.getTotalAmountToPost(as);
