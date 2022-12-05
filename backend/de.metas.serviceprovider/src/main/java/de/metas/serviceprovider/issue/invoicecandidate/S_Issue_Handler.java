@@ -462,7 +462,7 @@ public class S_Issue_Handler extends AbstractInvoiceCandidateHandler
 
 		final BPartnerLocationId resolvedBPLocationId = resolveBillingLocation(projectBPartnerId, projectBPartnerLocationId);
 
-		if(resolvedBPLocationId == null)
+		if (resolvedBPLocationId == null)
 		{
 			throw new AdempiereException("Fail to resolve business partner billing location.")
 					.appendParametersToMessage()
@@ -556,7 +556,7 @@ public class S_Issue_Handler extends AbstractInvoiceCandidateHandler
 
 		final BPartnerLocationId resolvedBPLocationId = resolveBillingLocation(contactBPartnerId, contactBPartnerLocationId);
 
-		if(resolvedBPLocationId == null)
+		if (resolvedBPLocationId == null)
 		{
 			throw new AdempiereException("Fail to resolve business partner billing location.")
 					.appendParametersToMessage()
@@ -583,7 +583,7 @@ public class S_Issue_Handler extends AbstractInvoiceCandidateHandler
 	}
 
 	@NonNull
-	private BPartnerLocationId resolveBillingLocation(@NonNull final  BPartnerId bPartnerId, @Nullable final BPartnerLocationId bPartnerLocationId)
+	private BPartnerLocationId resolveBillingLocation(@NonNull final BPartnerId bPartnerId, @Nullable final BPartnerLocationId bPartnerLocationId)
 	{
 		// prefer the configured C_BPartner_Location_ID, but if it's not a billTolocation, then fall back to another bill-location of the bpartner
 		return Optional.ofNullable(bPartnerLocationId)

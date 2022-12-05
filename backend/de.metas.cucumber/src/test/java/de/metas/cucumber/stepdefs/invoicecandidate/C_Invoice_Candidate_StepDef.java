@@ -24,7 +24,6 @@ package de.metas.cucumber.stepdefs.invoicecandidate;
 
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.Check;
 import de.metas.common.util.EmptyUtil;
@@ -70,12 +69,10 @@ import de.metas.order.OrderLineId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
-import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.model.I_S_Issue;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
-import de.metas.util.lang.RepoIdAware;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
@@ -1183,22 +1180,10 @@ public class C_Invoice_Candidate_StepDef
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
-			final Map<RepoIdAware, Object> repoId2Object = mapRepoId2Object(row);
-			final String tableName = DataTableUtil.extractStringForColumnName(row, I_AD_Table.COLUMNNAME_TableName);
-			final int tableId = tableDAO.retrieveTableId(tableName);;
+			final Object icReferencedRecord = getICReferencedRecord(row);
 
-			repoId2Object.entrySet()
-					.forEach(entry -> {
-						final I_C_Invoice_Candidate candidate = queryBL.createQueryBuilder(I_C_Invoice_Candidate.class)
-								.addEqualsFilter(COLUMNNAME_Record_ID, entry.getKey().getRepoId())
-								.addEqualsFilter(COLUMNNAME_AD_Table_ID, tableId)
-								.create()
-								.firstOnlyOrNull(I_C_Invoice_Candidate.class);
-						Assertions.assertThat(candidate).isNull();
-
-						final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandidateHandlerBL.createMissingCandidatesFor(entry.getValue());
-						Assertions.assertThat(invoiceCandidates).isEmpty();
-					});
+			final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandidateHandlerBL.createMissingCandidatesFor(icReferencedRecord);
+			assertThat(invoiceCandidates.isEmpty()).isTrue();
 		}
 	}
 
@@ -1784,7 +1769,7 @@ public class C_Invoice_Candidate_StepDef
 	}
 
 	@NonNull
-	private Map<RepoIdAware, Object> mapRepoId2Object(@NonNull final Map<String, String> row)
+	private Object getICReferencedRecord(@NonNull final Map<String, String> row)
 	{
 		final String tableName = DataTableUtil.extractStringForColumnName(row, I_AD_Table.COLUMNNAME_TableName);
 		final String recordIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Record_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -1793,7 +1778,7 @@ public class C_Invoice_Candidate_StepDef
 		{
 			case I_S_Issue.Table_Name:
 				final I_S_Issue issue = issueTable.get(recordIdentifier);
-				return ImmutableMap.of(IssueId.ofRepoId(issue.getS_Issue_ID()), issue);
+				return issue;
 			default:
 				throw new AdempiereException("Table not supported! TableName:" + tableName);
 		}
