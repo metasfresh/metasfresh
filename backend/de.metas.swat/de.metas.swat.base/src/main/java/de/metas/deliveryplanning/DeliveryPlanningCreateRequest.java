@@ -107,17 +107,19 @@ public class DeliveryPlanningCreateRequest
 	@Nullable
 	Instant actualDeliveryDate;
 
-	@NonNull
-	Quantity qtyOredered;
+	@NonNull Quantity qtyOrdered;
 
-	@NonNull
-	Quantity qtyTotalOpen;
+	@NonNull Quantity qtyTotalOpen;
 
-	@NonNull
-	Quantity actualLoadQty;
+	@NonNull Quantity plannedLoadedQty;
 
-	@NonNull
-	Quantity actualDeliveredQty;
+	@NonNull Quantity actualLoadedQty;
+
+	@NonNull Quantity actualDeliveredQty;
+
+	@NonNull Quantity plannedDischargeQty;
+
+	@NonNull Quantity actualDischargeQty;
 
 	@Nullable
 	CountryId originCountryId;
