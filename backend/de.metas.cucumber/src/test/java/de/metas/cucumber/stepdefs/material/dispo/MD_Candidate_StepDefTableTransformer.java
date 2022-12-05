@@ -84,7 +84,7 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 			if (timeInLocalTimeZone != null)
 			{
 				final LocalDateTime localDateTime = LocalDateTime.parse(timeInLocalTimeZone);
-				time = localDateTime.atZone(ZonedDateTime.now().getZone()).toInstant();
+				time = localDateTime.atZone(SystemTime.zoneId()).toInstant();
 			}
 			else
 			{
