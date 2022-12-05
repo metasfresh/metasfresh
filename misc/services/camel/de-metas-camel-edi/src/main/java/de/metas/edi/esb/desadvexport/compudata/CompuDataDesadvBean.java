@@ -33,22 +33,21 @@ import de.metas.edi.esb.desadvexport.AbstractEDIDesadvCommonBean;
 import de.metas.edi.esb.desadvexport.LineAndPack;
 import de.metas.edi.esb.desadvexport.PackagingCode;
 import de.metas.edi.esb.desadvexport.compudata.join.JP060P100;
-import de.metas.edi.esb.desadvexport.helper.DesadvLines;
-import de.metas.edi.esb.desadvexport.helper.DesadvParser;
-import de.metas.edi.esb.desadvexport.helper.SinglePack;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpCBPartnerLocationType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpCBPartnerType;
+import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvLinePackType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvLineType;
-import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvPackItemType;
 import de.metas.edi.esb.jaxb.metasfresh.EDIExpDesadvType;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.smooks.io.payload.JavaSource;
+import org.springframework.lang.Nullable;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import static de.metas.edi.esb.commons.Util.formatNumber;
@@ -69,6 +68,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		final CompuDataDesadvValidation validation = new CompuDataDesadvValidation();
 
 		final EDIExpDesadvType xmlDesadv = validation.validateExchange(exchange); // throw exceptions if mandatory fields are missing
+		xmlDesadv.getEDIExpDesadvLine().sort(Comparator.comparing(EDIExpDesadvLineType::getLine));
 
 		final DesadvSettings settings = DesadvSettings.forReceiverGLN(exchange.getContext(), xmlDesadv.getCBPartnerID().getEdiRecipientGLN());
 
@@ -80,10 +80,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		exchange.getIn().setBody(source, H000.class);
 	}
 
-	private H000 createEDIDesadvFromXMLBean(
-			@NonNull final EDIExpDesadvType xmlDesadv,
-			@NonNull final DecimalFormat decimalFormat,
-			@NonNull final String testFlag)
+	private H000 createEDIDesadvFromXMLBean(final EDIExpDesadvType xmlDesadv, final DecimalFormat decimalFormat, final String testFlag)
 	{
 		final H000 h000 = new H000();
 		h000.setMessageDate(SystemTime.asDate());
@@ -102,9 +99,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		return h000;
 	}
 
-	protected final List<H100> createH100LinesFromXmlDesadv(
-			@NonNull final EDIExpDesadvType xmlDesadv,
-			@NonNull final DecimalFormat decimalFormat)
+	protected final List<H100> createH100LinesFromXmlDesadv(final EDIExpDesadvType xmlDesadv, final DecimalFormat decimalFormat)
 	{
 		final H100 h100 = new H100();
 
@@ -170,15 +165,10 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		p050.setPartner(xmlDesadv.getCBPartnerID().getEdiRecipientGLN());
 		p050.setMessageNo(formatNumber(xmlDesadv.getSequenceNoAttr(), decimalFormat));
 
-		final DesadvLines desadvLines = DesadvParser.getDesadvLinesEnforcingSinglePacks(xmlDesadv);
-		final List<EDIExpDesadvLineType> lines = desadvLines.getAllSortedByLine();
-
 		final List<P102> p102Lines = new ArrayList<P102>();
-		for (final EDIExpDesadvLineType xmlDesadvLine : lines)
+		for (final EDIExpDesadvLineType xmlDesadvLine : xmlDesadv.getEDIExpDesadvLine())
 		{
-			final List<SinglePack> packs = desadvLines.getPacksForLine(xmlDesadvLine.getEDIDesadvLineID().intValue());
-
-			if (packs.isEmpty())
+			if (xmlDesadvLine.getEDIExpDesadvLinePack().isEmpty())
 			{
 				p102Lines.add(createP102Line(xmlDesadv, xmlDesadvLine, decimalFormat));
 			}
@@ -188,21 +178,18 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		int cpsCounter = 2; // see wiki
 
 		final List<JP060P100> joinP060P100Lines = new ArrayList<JP060P100>();
-		for (final EDIExpDesadvLineType xmlLine : lines)
+		for (final EDIExpDesadvLineType xmlLine : xmlDesadv.getEDIExpDesadvLine())
 		{
-			final List<SinglePack> packs = desadvLines.getPacksForLine(xmlLine.getEDIDesadvLineID().intValue());
-
-			for (final SinglePack singlePack : packs)
+			for (final EDIExpDesadvLinePackType xmlLinePack : xmlLine.getEDIExpDesadvLinePack())
 			{
-				final LineAndPack lineAndPack = new LineAndPack(xmlLine, singlePack);
+				final LineAndPack lineAndPack = new LineAndPack(xmlLine, xmlLinePack);
 				joinP060P100Lines.add(createJoinP060P100Lines(xmlDesadv, lineAndPack, decimalFormat, cpsCounter));
 				cpsCounter++;
 			}
 		}
 		p050.setJoinP060P100Lines(joinP060P100Lines);
 
-		final int orderLineCount = desadvLines.getAllLines().size();
-
+		final int orderLineCount = xmlDesadv.getEDIExpDesadvLine().size();
 		p050.setPackageQty(formatNumber(orderLineCount, decimalFormat));
 
 		p050.setPackageType(voidString);
@@ -213,8 +200,8 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 	private String extractDropShipLocationGLN(@NonNull final EDIExpDesadvType xmlDesadv)
 	{
 		final EDIExpCBPartnerLocationType buyrLocation = xmlDesadv.getCBPartnerLocationID(); // note that at this point we validated that it exists an has a GLN
-		final EDIExpCBPartnerLocationType dropShipLocation = xmlDesadv.getDropShipLocationID() != null && Check.isNotBlank(xmlDesadv.getDropShipLocationID().getGLN())
-				? xmlDesadv.getDropShipLocationID() :
+		final EDIExpCBPartnerLocationType dropShipLocation = xmlDesadv.getDropShipLocationID() != null && Check.isNotBlank(xmlDesadv.getDropShipLocationID().getGLN()) 
+				? xmlDesadv.getDropShipLocationID() : 
 				buyrLocation;
 		return dropShipLocation.getGLN();
 	}
@@ -227,7 +214,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 				buyrLocation;
 		return dropShipLocation.getName();
 	}
-
+	
 	private JP060P100 createJoinP060P100Lines(final EDIExpDesadvType xmlDesadv,
 			@NonNull final LineAndPack lineAndPack,
 			final DecimalFormat decimalFormat,
@@ -235,12 +222,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 	{
 		final JP060P100 join = new JP060P100();
 
-		if (lineAndPack.getSinglePack() == null)
-		{
-			throw new RuntimeException("Pack cannot be missing for EDI_DesadvLine_ID=" + lineAndPack.getLine().getEDIDesadvLineID());
-		}
-
-		join.setP060(createP060(xmlDesadv, lineAndPack.getSinglePack(), decimalFormat, cpsCounter));
+		join.setP060(createP060(xmlDesadv, lineAndPack.getPack(), decimalFormat, cpsCounter));
 		join.setP100(createP100(xmlDesadv, lineAndPack, decimalFormat));
 
 		return join;
@@ -248,7 +230,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 
 	private P060 createP060(
 			@NonNull final EDIExpDesadvType xmlDesadv,
-			@NonNull final SinglePack pack,
+			@Nullable final EDIExpDesadvLinePackType pack,
 			@NonNull final DecimalFormat decimalFormat,
 			final int cpsCounter)
 	{
@@ -262,7 +244,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		// p060.setPalettQTY(xmlInOutLine.getCOrderLineID().getQtyItemCapacity()); // leave empty for now
 		p060.setPalettTyp(voidString); // empty in sample - leave empty for now (see wiki)
 
-		final PackagingCode packagingCode = PackagingCode.ofNullableCode(pack.getPack().getMHUPackagingCodeLUText());
+		final PackagingCode packagingCode = PackagingCode.ofNullableCode(pack.getMHUPackagingCodeLUText());
 		if (packagingCode != null)
 		{
 			final String compudataPackagingCode = switch (packagingCode)
@@ -278,9 +260,9 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 
 		p060.setPartner(xmlDesadv.getCBPartnerID().getEdiRecipientGLN());
 
-		final String sscc18Value = pack.getPack().getIPASSCC18();
+		final String sscc18Value = pack == null ? "" : pack.getIPASSCC18();
 		p060.setNormalSSCC(sscc18Value);
-		p060.setGrainNummer(pack.getPack().getGTINLUPackingMaterial());
+		p060.setGrainNummer(pack.getGTINLUPackingMaterial());
 
 		// p060.setBruttogewicht(xmlInOutLine.getMProductID().getWeight()); // leave empty for now
 		// p060.setVolumen(xmlInOutLine.getMProductID().getVolume()); // leave empty for now
@@ -296,7 +278,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		final P100 p100 = new P100();
 
 		final @NonNull EDIExpDesadvLineType xmlDesadvLine = lineAndPack.getLine();
-		final EDIExpDesadvPackItemType packItem = lineAndPack.getSinglePack().getPackItem();
+		final EDIExpDesadvLinePackType pack = lineAndPack.getPack();
 
 		p100.setArtDescription(xmlDesadvLine.getProductDescription() == null ? voidString : xmlDesadvLine.getProductDescription());
 		p100.setArticleClass(voidString);
@@ -304,16 +286,16 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		p100.setChargenNo(voidString);
 
 		p100.setCUperTU(
-				formatNumber(packItem.getQtyCU(), // might be OK: returning our internal CUperTU-Qty, as we also return or CU-Qtys
-							 decimalFormat));
+				formatNumber(pack.getQtyCU(), // might be OK: returning our internal CUperTU-Qty, as we also return or CU-Qtys
+						decimalFormat));
 
 		// note that validateExchange() made sure there is at least one
 		p100.setCurrency(xmlDesadv.getCCurrencyID().getISOCode());
 
 		p100.setDeliverQTY(formatNumber(
-				packItem.getQtyCUsPerLU(), // OK internal product/CU-UOM.
+				pack.getQtyCUsPerLU(), // OK internal product/CU-UOM.
 				decimalFormat));
-
+		
 		// this is required for the only compudata user that we currently have
 		final String x12DE355 = xmlDesadvLine.getCUOMID().getX12DE355();
 		if(MeasurementUnit.fromMetasfreshUOM(x12DE355).isTuUOM())
@@ -328,7 +310,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		// "12" => Liefermenge
 		// "11" => Teilmenge
 		p100.setDeliverQual("12"); // TODO hardcoded
-		BigDecimal qtyDelivered = packItem.getQtyCUsPerLU(); // OK internal product/CU-UOM
+		BigDecimal qtyDelivered = pack.getQtyCUsPerLU(); // OK internal product/CU-UOM
 		if (qtyDelivered == null)
 		{
 			qtyDelivered = BigDecimal.ZERO;
@@ -366,7 +348,7 @@ public class CompuDataDesadvBean extends AbstractEDIDesadvCommonBean
 		p100.setEanArtNo(xmlDesadvLine.getEANCU());
 		p100.setBuyerArtNo(xmlDesadvLine.getProductNo());
 		p100.setArtDescription(xmlDesadvLine.getProductDescription() == null ? voidString : xmlDesadvLine.getProductDescription());
-		p100.setGrainItemNummer(CoalesceUtil.coalesce(packItem.getGTINTUPackingMaterial(), ""));
+		p100.setGrainItemNummer(CoalesceUtil.coalesce(pack.getGTINTUPackingMaterial(), ""));
 
 		return p100;
 	}
