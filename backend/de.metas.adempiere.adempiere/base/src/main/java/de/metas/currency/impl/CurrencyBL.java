@@ -177,7 +177,8 @@ public class CurrencyBL implements ICurrencyBL
 				.build();
 	}    // convert
 
-	private CurrencyPrecision getStdPrecision(final CurrencyId currencyId)
+	@Override
+	public CurrencyPrecision getStdPrecision(final CurrencyId currencyId)
 	{
 		return currencyDAO.getStdPrecision(currencyId);
 	}
@@ -454,5 +455,4 @@ public class CurrencyBL implements ICurrencyBL
 				.conversionDate(conversionCtx.getConversionDate())
 				.conversionTypeId(conversionCtx.getConversionTypeId());
 	}
-
 }
