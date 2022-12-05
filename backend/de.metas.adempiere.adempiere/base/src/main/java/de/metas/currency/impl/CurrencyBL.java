@@ -88,6 +88,7 @@ public class CurrencyBL implements ICurrencyBL
 	}
 
 	@Override
+	@NonNull
 	public BigDecimal convertBase(
 			final BigDecimal amt,
 			final CurrencyId currencyFromId,
@@ -378,5 +379,4 @@ public class CurrencyBL implements ICurrencyBL
 				.conversionDate(conversionCtx.getConversionDate())
 				.conversionTypeId(conversionCtx.getConversionTypeId());
 	}
-
 }
