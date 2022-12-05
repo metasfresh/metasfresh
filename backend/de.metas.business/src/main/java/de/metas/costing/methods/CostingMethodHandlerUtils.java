@@ -95,24 +95,6 @@ public class CostingMethodHandlerUtils
 	}
 
 	@NonNull
-	public CostPrice convertToUOM(
-			@NonNull final CostPrice costPrice,
-			@NonNull final UomId targetUomId,
-			@NonNull final ProductId productId
-	)
-	{
-		return costPrice.convertAmounts(targetUomId, costAmount -> {
-			final ProductPrice productPrice = ProductPrice.builder()
-					.productId(productId)
-					.uomId(costPrice.getUomId())
-					.money(costAmount.toMoney())
-					.build();
-			final ProductPrice productPriceConv = convertToUOM(productPrice, targetUomId);
-			return CostAmount.ofProductPrice(productPriceConv);
-		});
-	}
-
-	@NonNull
 	public Quantity convertToUOM(
 			@NonNull final Quantity qty,
 			@NonNull final UomId targetUomId,
