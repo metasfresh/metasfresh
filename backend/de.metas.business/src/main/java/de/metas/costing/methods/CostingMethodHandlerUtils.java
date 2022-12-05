@@ -8,7 +8,6 @@ import de.metas.costing.CostDetail;
 import de.metas.costing.CostDetailCreateRequest;
 import de.metas.costing.CostDetailCreateResult;
 import de.metas.costing.CostDetailPreviousAmounts;
-import de.metas.costing.CostPrice;
 import de.metas.costing.CostSegmentAndElement;
 import de.metas.costing.CurrentCost;
 import de.metas.costing.ICostDetailService;
@@ -36,6 +35,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.Optional;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 /*
@@ -165,11 +165,6 @@ public class CostingMethodHandlerUtils
 		return currentCostsRepo.getOrCreate(costSegmentAndElement);
 	}
 
-	public final CostPrice getCurrentCostPrice(final CostDetailCreateRequest request)
-	{
-		return getCurrentCost(request).getCostPrice();
-	}
-
 	public final void saveCurrentCost(final CurrentCost currentCost)
 	{
 		currentCostsRepo.save(currentCost);
@@ -179,14 +174,27 @@ public class CostingMethodHandlerUtils
 			final CostAmount amt,
 			final CostDetailCreateRequest request)
 	{
-		final AcctSchema acctSchema = getAcctSchemaById(request.getAcctSchemaId());
+		final AcctSchemaId acctSchemaId = request.getAcctSchemaId();
+
+		return convertToAcctSchemaCurrency(
+				amt,
+				() -> createCurrencyConversionContext(request),
+				acctSchemaId);
+	}
+
+	public CostAmount convertToAcctSchemaCurrency(
+			@NonNull final CostAmount amt,
+			@NonNull final Supplier<CurrencyConversionContext> conversionCtxSupplier,
+			@NonNull final AcctSchemaId acctSchemaId)
+	{
+		final AcctSchema acctSchema = getAcctSchemaById(acctSchemaId);
 		final CurrencyId acctCurrencyId = acctSchema.getCurrencyId();
 		if (CurrencyId.equals(amt.getCurrencyId(), acctCurrencyId))
 		{
 			return amt;
 		}
 
-		final CurrencyConversionContext conversionCtx = createCurrencyConversionContext(request)
+		final CurrencyConversionContext conversionCtx = conversionCtxSupplier.get()
 				.withPrecision(acctSchema.getCosting().getCostingPrecision());
 
 		final CurrencyConversionResult result = convert(
