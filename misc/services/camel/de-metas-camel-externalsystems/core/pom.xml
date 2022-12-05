@@ -110,9 +110,18 @@
         </dependency>
         <dependency>
             <groupId>com.adekia.exchange</groupId>
-            <artifactId>com-adekia-exchange</artifactId>
+            <artifactId>exchange-routes</artifactId>
             <version>10.0.0</version>
-            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>com.adekia.exchange</groupId>
+            <artifactId>ext-metasfresh</artifactId>
+            <version>10.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.adekia.exchange</groupId>
+            <artifactId>ext-amazon-sp</artifactId>
+            <version>10.0.0</version>
         </dependency>
         <dependency>
             <groupId>de.metas.common.externalreference</groupId>
