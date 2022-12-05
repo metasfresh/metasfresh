@@ -22,6 +22,7 @@ import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.CurrencyPrecision;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutLineId;
+import de.metas.invoice.MatchInvId;
 import de.metas.invoice.service.IMatchInvDAO;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
@@ -107,7 +108,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		final Quantity qty = request.getQty();
 		final UomId qtyUOMId = qty.getUomId();
 
-		final int matchInvId = request.getDocumentRef().getRecordId();
+		final MatchInvId matchInvId = MatchInvId.ofRepoId(request.getDocumentRef().getRecordId());
 		final CostAmount costPrice = getPOCostPriceForMatchInv(matchInvId)
 				.map(price -> utils.convertToUOM(price, qtyUOMId))
 				.orElseThrow(() -> new AdempiereException("Cannot fetch PO cost price for " + request))
@@ -344,7 +345,7 @@ public class AveragePOCostingMethodHandler extends CostingMethodHandlerTemplate
 		utils.saveCurrentCost(currentCosts);
 	}
 
-	private Optional<ProductPrice> getPOCostPriceForMatchInv(final int matchInvId)
+	private Optional<ProductPrice> getPOCostPriceForMatchInv(@NonNull final MatchInvId matchInvId)
 	{
 		final I_M_MatchInv matchInv = matchInvoicesRepo.getById(matchInvId);
 		return Optional.of(matchInv)
