@@ -1014,9 +1014,9 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				.bPartnerLocationId(
 						bPartnerLocationId)
 				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(shipmentScheduleRecord.getM_SectionCode_ID()))
-				.qtyOredered(qtyOrdered)
+				.qtyOrdered(qtyOrdered)
 				.qtyTotalOpen(qtyOrdered.subtract(getQtyDelivered(shipmentScheduleRecord)))
-				.actualLoadQty(Quantity.zero(uomOfProduct))
+				.actualLoadedQty(Quantity.zero(uomOfProduct))
 				.actualDeliveredQty(Quantity.zero(uomOfProduct))
 				.plannedLoadedQty(Quantity.zero(uomOfProduct))
 				.plannedDischargeQty(Quantity.zero(uomOfProduct))

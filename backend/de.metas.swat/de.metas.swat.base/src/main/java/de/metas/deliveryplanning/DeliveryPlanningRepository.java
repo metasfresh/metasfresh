@@ -78,10 +78,10 @@ public class DeliveryPlanningRepository
 		deliveryPlanningRecord.setPlannedLoadingDate(TimeUtil.asTimestamp(request.getPlannedLoadingDate()));
 		deliveryPlanningRecord.setActualLoadingDate(TimeUtil.asTimestamp(request.getActualLoadingDate()));
 
-		final Quantity qtyOrdered = request.getQtyOredered();
+		final Quantity qtyOrdered = request.getQtyOrdered();
 		final Quantity qtyTotalOpen = request.getQtyTotalOpen();
 		final Quantity actualDeliveredQty = request.getActualDeliveredQty();
-		final Quantity actualLoadQty = request.getActualLoadQty();
+		final Quantity actualLoadedQty = request.getActualLoadedQty();
 
 		final Quantity plannedLoadedQty = request.getPlannedLoadedQty();
 		final Quantity plannedDischargeQty = request.getPlannedDischargeQty();
@@ -92,7 +92,7 @@ public class DeliveryPlanningRepository
 		deliveryPlanningRecord.setQtyOrdered(qtyOrdered.toBigDecimal());
 		deliveryPlanningRecord.setQtyTotalOpen(qtyTotalOpen.toBigDecimal());
 		deliveryPlanningRecord.setActualDeliveredQty( actualDeliveredQty.toBigDecimal());
-		deliveryPlanningRecord.setActualLoadQty(actualLoadQty.toBigDecimal());
+		deliveryPlanningRecord.setActualLoadQty(actualLoadedQty.toBigDecimal());
 
 		deliveryPlanningRecord.setPlannedLoadedQuantity(plannedLoadedQty.toBigDecimal());
 		deliveryPlanningRecord.setPlannedDischargeQuantity(plannedDischargeQty.toBigDecimal());
