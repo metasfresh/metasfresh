@@ -22,7 +22,6 @@
 
 package de.metas.camel.externalsystems.core.to_mf;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import de.metas.camel.externalsystems.common.CamelRoutesGroup;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.common.LogMessageRequest;
@@ -44,6 +43,7 @@ import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
 import org.apache.camel.http.base.HttpOperationFailedException;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.ZonedDateTime;
@@ -175,7 +175,7 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 
 			return Optional.ofNullable(JsonMetasfreshId.toValue(apiResponse.getRequestId()));
 		}
-		catch (final JsonProcessingException e)
+		catch (final IOException e)
 		{
 			return Optional.empty();
 		}
