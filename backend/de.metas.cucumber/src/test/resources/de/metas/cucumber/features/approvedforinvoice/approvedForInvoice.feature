@@ -56,7 +56,7 @@ Feature: approved for invoicing
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_SO                    | 10         |
     When the order identified by o_1 is completed
-    Then after not more than 30s, C_Invoice_Candidate are found:
+    Then after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | invoiceCand_1                     | ol_1                      | 10           |
     And update C_Invoice_Candidate:
@@ -79,18 +79,18 @@ Feature: approved for invoicing
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_SO                    | 10         |
     When the order identified by o_1 is completed
-    Then after not more than 30s, M_ShipmentSchedules are found:
+    Then after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_ol_1     | ol_1                      | N             |
 
     When 'generate shipments' process is invoked
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_ol_1                           | D            | true                | false       |
-    Then after not more than 30s, M_InOut is found:
+    Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_ol_1                           | inOut_1               |
 
-    Then after not more than 30s, C_Invoice_Candidate are found:
+    Then after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | invoiceCand_1                     | ol_1                      | 10           |
 
@@ -119,7 +119,7 @@ Feature: approved for invoicing
       | ol_1       | o_1                   | p_PO                    | 10         |
     When the order identified by o_1 is completed
 
-    Then after not more than 30s, C_Invoice_Candidate are found:
+    Then after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | invoiceCand_1                     | ol_1                      | 10           |
 
@@ -144,7 +144,7 @@ Feature: approved for invoicing
       | ol_1       | o_1                   | p_PO                    | 10         |
     When the order identified by o_1 is completed
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_PO              | bpartnerLocation_PO               | p_PO                    | 10         | warehouse                 |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -154,7 +154,7 @@ Feature: approved for invoicing
       | M_HU_ID.Identifier | M_ReceiptSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | processedTopHU     | receiptSchedule_PO              | inOut_1               |
 
-    Then after not more than 30s, C_Invoice_Candidate are found:
+    Then after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | C_OrderLine_ID.Identifier | QtyToInvoice |
       | invoiceCand_1                     | ol_1                      | 5            |
     And update C_Invoice_Candidate:
@@ -176,7 +176,7 @@ Feature: approved for invoicing
 
     When the shipment identified by inOut_1 is completed
 
-    Then after not more than 30s, C_Invoice_Candidate are found:
+    Then after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice |
       | invoiceCand_1                     | inOutLine_1                   | 10               | 10           |
 
@@ -199,7 +199,7 @@ Feature: approved for invoicing
 
     When the shipment identified by inOut_1 is completed
 
-    Then after not more than 30s, C_Invoice_Candidate are found:
+    Then after not more than 60s, C_Invoice_Candidate are found:
       | C_Invoice_Candidate_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.QtyDelivered | QtyToInvoice |
       | invoiceCand_1                     | inOutLine_1                   | 10               | 10           |
 

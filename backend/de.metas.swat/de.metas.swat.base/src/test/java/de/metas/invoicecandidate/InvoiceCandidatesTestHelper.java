@@ -1,16 +1,15 @@
 package de.metas.invoicecandidate;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /*
  * #%L

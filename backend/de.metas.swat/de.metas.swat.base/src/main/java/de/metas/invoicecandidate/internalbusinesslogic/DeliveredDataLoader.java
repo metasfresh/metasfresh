@@ -9,9 +9,6 @@ import de.metas.inout.InOutLineId;
 import de.metas.inout.model.I_M_InOutLine;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
-import de.metas.invoicecandidate.internalbusinesslogic.DeliveredData.DeliveredDataBuilder;
-import de.metas.invoicecandidate.internalbusinesslogic.DeliveredQtyItem.DeliveredQtyItemBuilder;
-import de.metas.invoicecandidate.internalbusinesslogic.ShipmentData.ShipmentDataBuilder;
 import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler;
 import de.metas.lang.SOTrx;
@@ -114,7 +111,7 @@ public class DeliveredDataLoader
 
 	public DeliveredData loadDeliveredQtys()
 	{
-		final DeliveredDataBuilder result = DeliveredData.builder();
+		final DeliveredData.DeliveredDataBuilder result = DeliveredData.builder();
 
 		final List<I_C_InvoiceCandidate_InOutLine> icIolAssociationRecords = loadInvoiceCandidateInOutLines();
 		if (soTrx.isPurchase())
@@ -154,7 +151,7 @@ public class DeliveredDataLoader
 	{
 		final ImmutableList<DeliveredQtyItem> deliveredQtyItems = loadDeliveredQtyItems(icIolAssociationRecords);
 
-		final ShipmentDataBuilder result = ShipmentData.builder()
+		final ShipmentData.ShipmentDataBuilder result = ShipmentData.builder()
 				.productId(productId)
 				.deliveredQtyItems(deliveredQtyItems);
 
@@ -176,7 +173,7 @@ public class DeliveredDataLoader
 		final ArrayList<DeliveredQtyItem> deliveredQtyItemsWithoutCatch = new ArrayList<>();
 		for (final DeliveredQtyItem deliveredQtyItem : deliveredQtyItems)
 		{
-			if(!deliveredQtyItem.isCompletedOrClosed())
+			if (!deliveredQtyItem.isCompletedOrClosed())
 			{
 				continue; // we didn't want to fallback to defaultQtyDelivered, even if all the shipped items are reversed. In that case we want to arrive at zero.
 			}
@@ -243,7 +240,7 @@ public class DeliveredDataLoader
 
 		for (final DeliveredQtyItem deliveredQtyItem : shippedQtyItems)
 		{
-			if(!deliveredQtyItem.isCompletedOrClosed())
+			if (!deliveredQtyItem.isCompletedOrClosed())
 			{
 				continue; // we didn't want to fallback to defaultQtyDelivered, even if all the shipped items are reversed. In that case we want to arrive at zero.
 			}
@@ -296,7 +293,7 @@ public class DeliveredDataLoader
 		{
 			final InOutLineId inoutLineId = InOutLineId.ofRepoIdOrNull(icIolAssociationRecord.getM_InOutLine_ID());
 
-			if(inoutLineId == null)
+			if (inoutLineId == null)
 			{
 				continue;
 			}
@@ -307,7 +304,7 @@ public class DeliveredDataLoader
 
 			final boolean inoutCompletedOrClosed = inOut.isActive() && DocStatus.ofCode(inOut.getDocStatus()).isCompletedOrClosed();
 
-			final DeliveredQtyItemBuilder deliveredQtyItem = DeliveredQtyItem.builder()
+			final DeliveredQtyItem.DeliveredQtyItemBuilder deliveredQtyItem = DeliveredQtyItem.builder()
 					.inDispute(inoutLine.isInDispute())
 					.completedOrClosed(inoutCompletedOrClosed);
 

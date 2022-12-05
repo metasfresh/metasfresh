@@ -16,12 +16,18 @@ const ScanScreen = () => {
     params: { workflowId: wfProcessId, activityId },
   } = useRouteMatch();
 
-  const activityCaption = useSelector((state) => getActivityById(state, wfProcessId, activityId))?.caption;
+  const { activityCaption, userInstructions } = useSelector((state) => {
+    const activity = getActivityById(state, wfProcessId, activityId);
+    return {
+      activityCaption: activity?.caption,
+      userInstructions: activity?.userInstructions,
+    };
+  });
 
   const dispatch = useDispatch();
   useEffect(() => {
-    dispatch(pushHeaderEntry({ location: url, caption: activityCaption }));
-  }, [url, activityCaption]);
+    dispatch(pushHeaderEntry({ location: url, caption: activityCaption, userInstructions }));
+  }, [url, activityCaption, userInstructions]);
 
   const history = useHistory();
   const onBarcodeScanned = ({ scannedBarcode }) => {

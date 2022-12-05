@@ -5,9 +5,6 @@ import org.adempiere.model.ModelColumn;
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-
 /** Generated Interface for C_OrderLine
  *  @author metasfresh (generated) 
  */

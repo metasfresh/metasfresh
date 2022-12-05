@@ -2,11 +2,13 @@ package org.eevolution.api;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.time.SystemTime;
+import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.logging.LogManager;
 import de.metas.material.planning.pporder.PPAlwaysAvailableToUser;
 import de.metas.material.planning.pporder.PPRoutingActivityId;
 import de.metas.material.planning.pporder.PPRoutingActivityTemplateId;
 import de.metas.material.planning.pporder.PPRoutingActivityType;
+import de.metas.material.planning.pporder.UserInstructions;
 import de.metas.product.ResourceId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
@@ -68,6 +70,7 @@ public final class PPOrderRoutingActivity
 
 	private final boolean milestone;
 	@NonNull private final PPAlwaysAvailableToUser alwaysAvailableToUser;
+	@Nullable private final UserInstructions userInstructions;
 
 	@Nullable private PPRoutingActivityTemplateId activityTemplateId;
 
@@ -106,6 +109,10 @@ public final class PPOrderRoutingActivity
 	@NonNull private Quantity qtyRejected;
 	@Nullable private Instant dateStart;
 	@Nullable private Instant dateFinish;
+
+	//
+	// Data needed for PPRoutingActivityType.CallExternalSystem and other steps which are about scanning QR codes
+	@Setter @Nullable private GlobalQRCode scannedQRCode;
 
 	public PPOrderRoutingActivity copy() {return toBuilder().build();}
 
@@ -245,7 +252,7 @@ public final class PPOrderRoutingActivity
 		setDurationRequired(Duration.ZERO);
 	}
 
-	void completeIt()
+	public void completeIt()
 	{
 		changeStatusTo(PPOrderRoutingActivityStatus.COMPLETED);
 

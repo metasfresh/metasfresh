@@ -41,6 +41,7 @@ import de.metas.money.CurrencyId;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.LocalDateAndOrgId;
+import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -432,6 +433,17 @@ public class CurrencyBL implements ICurrencyBL
 	public Currency getByCurrencyCode(@NonNull final CurrencyCode currencyCode)
 	{
 		return currencyDAO.getByCurrencyCode(currencyCode);
+	}
+
+	@Override
+	@NonNull
+	public Money convertToBase(@NonNull final CurrencyConversionContext conversionCtx, @NonNull final Money amt)
+	{
+		final CurrencyId currencyToId = getBaseCurrencyId(conversionCtx.getClientId(), conversionCtx.getOrgId());
+
+		final CurrencyConversionResult currencyConversionResult = convert(conversionCtx, amt, currencyToId);
+
+		return Money.of(currencyConversionResult.getAmount(), currencyToId);
 	}
 
 	private static CurrencyConversionResultBuilder prepareCurrencyConversionResult(@NonNull final CurrencyConversionContext conversionCtx)

@@ -43,8 +43,8 @@ Feature: Mediated commission
       | C_Flatrate_Conditions_ID.Identifier | Name          | Type_Conditions    | OPT.C_MediatedCommissionSettings_ID.Identifier |
       | mediatedConditions_1                | mediated-test | MediatedCommission | mediatedSettings_1                             |
     And metasfresh contains C_Flatrate_Terms:
-      | Identifier         | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | StartDate  | EndDate    | OPT.M_Product_ID.Identifier |
-      | mediatedContract_1 | mediatedConditions_1                | mediated_vendor             | 2021-11-01 | 2022-11-01 | commission_product          |
+      | Identifier         | C_Flatrate_Conditions_ID.Identifier | Bill_BPartner_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.NrOfDaysFromNow |
+      | mediatedContract_1 | mediatedConditions_1                | mediated_vendor             | commission_product          | 365                 |
     When a 'POST' request with the below payload is sent to the metasfresh REST-API '/api/v2/order/purchase/createCandidates' and fulfills with '200' status code
   """
 {
@@ -87,13 +87,13 @@ Feature: Mediated commission
     Then a PurchaseOrder with externalId '99898' is created after not more than 90 seconds and has values
       | ExternalPurchaseOrderURL     | POReference | OPT.C_Order_ID.Identifier |
       | www.ExternalReferenceURL.com | poRef1      | purchaseOrder_1           |
-    And after not more than 30s the order is found
+    And after not more than 60s the order is found
       | C_Order_ID.Identifier | DocStatus |
       | purchaseOrder_1       | CO        |
     And perform document action
       | DocAction | C_Order_ID.Identifier |
       | RE        | purchaseOrder_1       |
-    And after not more than 30s the order is found
+    And after not more than 60s the order is found
       | C_Order_ID.Identifier | DocStatus |
       | purchaseOrder_1       | IP        |
     And update order
@@ -102,7 +102,7 @@ Feature: Mediated commission
     And perform document action
       | DocAction | C_Order_ID.Identifier |
       | CO        | purchaseOrder_1       |
-    And after not more than 30s the order is found
+    And after not more than 60s the order is found
       | C_Order_ID.Identifier | DocStatus |
       | purchaseOrder_1       | CO        |
     And validate created commission instance
@@ -121,7 +121,7 @@ Feature: Mediated commission
     And process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | settlement_1                      |
-    And after not more than 30s, C_Invoice are found:
+    And after not more than 60s, C_Invoice are found:
       | C_Invoice_ID.Identifier | C_Invoice_Candidate_ID.Identifier |
       | invoiceSettled_1        | settlement_1                      |
     And recompute invoice candidates if required

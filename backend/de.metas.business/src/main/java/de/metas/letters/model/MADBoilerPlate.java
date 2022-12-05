@@ -272,7 +272,7 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		{
 			rq.setC_Project_ID(parent_record_id);
 		}
-		else if (parent_table_id == I_A_Asset.Table_ID)
+		else if (parent_table_id == getTableId(I_A_Asset.class))
 		{
 			rq.setA_Asset_ID(parent_record_id);
 		}
@@ -932,6 +932,9 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		return result.toString();
 	}
 
+	/**
+	 * Create record into T_BoilerPlate_Spool table
+	 */
 	public static void createSpoolRecord(final Properties ctx, final int AD_Client_ID, final PInstanceId pinstanceId, final String text, final String trxName)
 	{
 		final String sql = "INSERT INTO " + I_T_BoilerPlate_Spool.Table_Name + "("

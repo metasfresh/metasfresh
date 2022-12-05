@@ -79,7 +79,7 @@ Feature: Packing material invoice candidates: receipts
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -131,7 +131,7 @@ Feature: Packing material invoice candidates: receipts
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -183,7 +183,7 @@ Feature: Packing material invoice candidates: receipts
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -250,7 +250,7 @@ Feature: Packing material invoice candidates: receipts
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -316,7 +316,7 @@ Feature: Packing material invoice candidates: receipts
 
     When the order identified by o_1 is completed
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -391,7 +391,7 @@ Feature: Packing material invoice candidates: receipts
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -444,7 +444,7 @@ Feature: Packing material invoice candidates: receipts
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 1000       | 0           | 1     | 0        | EUR          | true      |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 10000      | warehouseStd              | 1000             |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule:
@@ -505,7 +505,7 @@ Feature: Packing material invoice candidates: receipts
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -572,7 +572,7 @@ Feature: Packing material invoice candidates: receipts
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -638,7 +638,7 @@ Feature: Packing material invoice candidates: receipts
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -720,7 +720,7 @@ Feature: Packing material invoice candidates: receipts
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -799,7 +799,7 @@ Feature: Packing material invoice candidates: receipts
 
     When the order identified by o_1 is completed
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -887,7 +887,7 @@ Feature: Packing material invoice candidates: receipts
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -954,7 +954,7 @@ Feature: Packing material invoice candidates: receipts
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 1000       | 0           | 1     | 0        | EUR          | true      |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 10000      | warehouseStd              | 1000             |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule:
@@ -1029,7 +1029,7 @@ Feature: Packing material invoice candidates: receipts
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -1105,7 +1105,7 @@ Feature: Packing material invoice candidates: receipts
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -1186,7 +1186,7 @@ Feature: Packing material invoice candidates: receipts
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -1266,7 +1266,7 @@ Feature: Packing material invoice candidates: receipts
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -1351,7 +1351,7 @@ Feature: Packing material invoice candidates: receipts
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -1452,7 +1452,7 @@ Feature: Packing material invoice candidates: receipts
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -1548,7 +1548,7 @@ Feature: Packing material invoice candidates: receipts
 
     When the order identified by o_1 is completed
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -1653,7 +1653,7 @@ Feature: Packing material invoice candidates: receipts
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -1739,7 +1739,7 @@ Feature: Packing material invoice candidates: receipts
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 1000       | 0           | 1     | 0        | EUR          | true      |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 10000      | warehouseStd              | 1000             |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule:
@@ -1827,7 +1827,7 @@ Feature: Packing material invoice candidates: receipts
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -1893,7 +1893,7 @@ Feature: Packing material invoice candidates: receipts
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -1959,7 +1959,7 @@ Feature: Packing material invoice candidates: receipts
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -2041,7 +2041,7 @@ Feature: Packing material invoice candidates: receipts
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -2120,7 +2120,7 @@ Feature: Packing material invoice candidates: receipts
 
     When the order identified by o_1 is completed
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -2208,7 +2208,7 @@ Feature: Packing material invoice candidates: receipts
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -2275,7 +2275,7 @@ Feature: Packing material invoice candidates: receipts
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 1000       | 0           | 1     | 0        | EUR          | true      |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 10000      | warehouseStd              | 1000             |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule:
@@ -2347,7 +2347,7 @@ Feature: Packing material invoice candidates: receipts
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -2413,7 +2413,7 @@ Feature: Packing material invoice candidates: receipts
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -2479,7 +2479,7 @@ Feature: Packing material invoice candidates: receipts
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -2561,7 +2561,7 @@ Feature: Packing material invoice candidates: receipts
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -2640,7 +2640,7 @@ Feature: Packing material invoice candidates: receipts
 
     When the order identified by o_1 is completed
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -2728,7 +2728,7 @@ Feature: Packing material invoice candidates: receipts
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -2795,7 +2795,7 @@ Feature: Packing material invoice candidates: receipts
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 1000       | 0           | 1     | 0        | EUR          | true      |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 10000      | warehouseStd              | 1000             |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule:
@@ -2868,7 +2868,7 @@ Feature: Packing material invoice candidates: receipts
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -2937,7 +2937,7 @@ Feature: Packing material invoice candidates: receipts
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -3006,7 +3006,7 @@ Feature: Packing material invoice candidates: receipts
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -3091,7 +3091,7 @@ Feature: Packing material invoice candidates: receipts
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -3173,7 +3173,7 @@ Feature: Packing material invoice candidates: receipts
 
     When the order identified by o_1 is completed
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -3264,7 +3264,7 @@ Feature: Packing material invoice candidates: receipts
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 10         | 0           | 1     | 0        | EUR          | true      |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 100        | warehouseStd              | 10               |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule and generate M_HUs
@@ -3334,7 +3334,7 @@ Feature: Packing material invoice candidates: receipts
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | dateordered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed |
       | ol_2                      | o_1                   | 2022-07-26  | packingProduct          | 0            | 1000       | 0           | 1     | 0        | EUR          | true      |
 
-    And after not more than 30s, M_ReceiptSchedule are found:
+    And after not more than 60s, M_ReceiptSchedule are found:
       | M_ReceiptSchedule_ID.Identifier | C_Order_ID.Identifier | C_OrderLine_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | M_Product_ID.Identifier | QtyOrdered | M_Warehouse_ID.Identifier | OPT.QtyOrderedTU |
       | receiptSchedule_PO              | o_1                   | ol_1                      | bpartner_1               | l_1                               | purchaseProduct         | 10000      | warehouseStd              | 1000             |
     And create M_HU_LUTU_Configuration for M_ReceiptSchedule:

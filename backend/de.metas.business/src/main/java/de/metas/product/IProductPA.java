@@ -28,7 +28,6 @@ import de.metas.organization.OrgId;
 import de.metas.util.ISingletonService;
 import lombok.NonNull;
 import org.adempiere.model.I_M_ProductScalePrice;
-import org.compiere.model.MAttributeSetInstance;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -40,8 +39,6 @@ public interface IProductPA extends ISingletonService
 	I_M_Product retrieveProduct(Properties ctx, String value, boolean throwEx, String trxName);
 
 	I_M_Product retrieveProduct(Properties ctx, int productId, boolean throwEx, String trxName);
-
-	Collection<MAttributeSetInstance> retrieveSerno(int productId, String text, String trxName);
 
 	/**
 	 * throws ProductNotOnPriceListException

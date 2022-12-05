@@ -8,6 +8,8 @@ import org.adempiere.exceptions.AdempiereException;
 
 import java.util.function.Supplier;
 
+import java.util.function.Supplier;
+
 /**
  * Transactions Listeners Mananger.<br>
  * Use {@link ITrxManager#getTrxListenerManager(String)} or {@link ITrxManager#getTrxListenerManagerOrAutoCommit(String)} to get your instance.

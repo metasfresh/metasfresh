@@ -12,7 +12,6 @@ import org.adempiere.ad.table.api.IADTableDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_ImpFormat;
 import org.compiere.model.I_AD_ImpFormat_Row;
-import org.compiere.model.I_I_Product;
 
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -50,6 +49,7 @@ class ImportFormatBuilder
 
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 
+	private final String importTableName;
 	@Getter
 	private final AdTableId importTableId;
 
@@ -61,7 +61,8 @@ class ImportFormatBuilder
 
 	private ImportFormatBuilder(@NonNull final String importTableName)
 	{
-		importTableId = AdTableId.ofRepoId(tableDAO.retrieveTableId(I_I_Product.Table_Name));
+		this.importTableName = importTableName;
+		this.importTableId = AdTableId.ofRepoId(tableDAO.retrieveTableId(importTableName));
 	}
 
 	public ImpFormatId build()
@@ -113,7 +114,7 @@ class ImportFormatBuilder
 
 	public ImportFormatBuilder column(final String columnName, final ImpFormatColumnDataType type)
 	{
-		final AdColumnId adColumnId = tableDAO.retrieveColumnId(importTableId, columnName);
+		final AdColumnId adColumnId = tableDAO.retrieveColumnId(importTableName, columnName);
 
 		final I_AD_ImpFormat_Row colRecord = InterfaceWrapperHelper.newInstance(I_AD_ImpFormat_Row.class);
 		colRecord.setName("Value");

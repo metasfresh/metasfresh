@@ -84,7 +84,7 @@ public class FlatrateTermInterimInvoice_Handler implements ConditionTypeSpecific
 	}
 
 	@Override
-	public Iterator<I_C_Flatrate_Term> retrieveTermsWithMissingCandidates(final QueryLimit limit)
+	public Iterator<I_C_Flatrate_Term> retrieveTermsWithMissingCandidates(@NonNull final QueryLimit limit)
 	{
 		return contractsDAO.createInterimInvoiceSearchCriteria(null)
 				.iterate(I_C_Flatrate_Term.class);
@@ -145,6 +145,7 @@ public class FlatrateTermInterimInvoice_Handler implements ConditionTypeSpecific
 	}
 
 	@Override
+	@NonNull
 	public IInvoiceCandidateHandler.CandidatesAutoCreateMode isMissingInvoiceCandidate(final I_C_Flatrate_Term flatrateTerm)
 	{
 		return contractsDAO.createInterimInvoiceSearchCriteria(flatrateTerm).anyMatch()

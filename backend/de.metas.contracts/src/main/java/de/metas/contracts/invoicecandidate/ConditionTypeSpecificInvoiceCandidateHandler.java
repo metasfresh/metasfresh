@@ -23,7 +23,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 
 import java.sql.Timestamp;

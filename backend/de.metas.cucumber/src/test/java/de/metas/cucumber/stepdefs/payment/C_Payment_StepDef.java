@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.payment;
 
+import de.metas.common.util.CoalesceUtil;
 import de.metas.cucumber.stepdefs.C_BP_BankAccount_StepDefData;
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
@@ -39,6 +40,8 @@ import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.dunning.model.I_C_Dunning_Candidate;
 import de.metas.money.CurrencyId;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.payment.api.IPaymentDAO;
 import de.metas.util.Check;
@@ -65,6 +68,7 @@ import org.compiere.util.TimeUtil;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 
@@ -73,6 +77,8 @@ import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Invoice.COLUMNNAME_C_Payment_ID;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_C_DocType_ID;
+import static org.compiere.model.I_C_Payment.COLUMNNAME_DateAcct;
+import static org.compiere.model.I_C_Payment.COLUMNNAME_DateTrx;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_IsAllocated;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_IsReceipt;
 import static org.compiere.model.I_C_Payment.COLUMNNAME_PayAmt;
@@ -82,6 +88,7 @@ public class C_Payment_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IPaymentDAO paymentDAO = Services.get(IPaymentDAO.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final C_Payment_StepDefData paymentTable;
@@ -182,10 +189,12 @@ public class C_Payment_StepDef
 				softly.assertThat(payment.getC_Invoice_ID()).isEqualTo(invoiceRecord.getC_Invoice_ID());
 			}
 
-			final Timestamp dateTrx = DataTableUtil.extractDateTimestampForColumnNameOrNull(dataTableRow, "OPT." + I_C_Payment.COLUMNNAME_DateTrx);
+			final LocalDate dateTrx = DataTableUtil.extractLocalDateOrNullForColumnName(dataTableRow, "OPT." + I_C_Payment.COLUMNNAME_DateTrx);
 			if (dateTrx != null)
 			{
-				softly.assertThat(payment.getDateTrx()).isEqualTo(dateTrx);
+				final OrgId orgId = OrgId.ofRepoId(payment.getAD_Org_ID());
+				final ZoneId zoneId = orgDAO.getTimeZone(orgId);
+				softly.assertThat(TimeUtil.asLocalDate(payment.getDateTrx(), zoneId)).isEqualTo(dateTrx);
 			}
 
 			final String bPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_Payment.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
@@ -298,11 +307,16 @@ public class C_Payment_StepDef
 		payment.setPayAmt(paymentAmount);
 		payment.setC_Currency_ID(currencyId.getRepoId());
 		payment.setC_DocType_ID(docTypeId.getRepoId());
-		payment.setDateTrx(TimeUtil.asTimestamp(LocalDate.now()));
 		payment.setC_BP_BankAccount_ID(bpBankAccount.getC_BP_BankAccount_ID());
 		payment.setIsReceipt(isReceipt);
 		payment.setIsAutoAllocateAvailableAmt(false);
 
+		final Timestamp dateTrx = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + COLUMNNAME_DateTrx);
+		payment.setDateTrx(CoalesceUtil.coalesceNotNull(dateTrx, TimeUtil.asTimestamp(LocalDate.now())));
+
+		final Timestamp dateAcct = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + COLUMNNAME_DateAcct);
+		payment.setDateAcct(CoalesceUtil.coalesceNotNull(dateAcct, TimeUtil.asTimestamp(LocalDate.now())));
+		
 		paymentDAO.save(payment);
 
 		final String paymentIdentifier = DataTableUtil.extractStringForColumnName(row, TABLECOLUMN_IDENTIFIER);

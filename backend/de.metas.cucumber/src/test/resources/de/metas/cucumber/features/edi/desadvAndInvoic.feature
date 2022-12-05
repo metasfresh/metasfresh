@@ -119,7 +119,7 @@ Feature: desadv and invoic
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_BPartner_ID.X12DE355 | OPT.IsManualPrice | OPT.BPartner_QtyItemCapacity | OPT.QtyEnteredInBPartnerUOM | OPT.QtyEntered | OPT.C_UOM_ID.X12DE355 | OPT.QtyItemCapacity |
       | ol_1                      | o_1                   | 2021-04-15      | p_1                     | 0            | 100        | 0           | 10    | 0        | EUR          | true      | TU                             | false             | 5                            | 10                          | 10             | TU                    | 10                  |
 
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
 
@@ -286,7 +286,7 @@ Feature: desadv and invoic
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_BPartner_ID.X12DE355 | OPT.IsManualPrice | OPT.BPartner_QtyItemCapacity | OPT.QtyEnteredInBPartnerUOM | OPT.QtyEntered | OPT.C_UOM_ID.X12DE355 | OPT.QtyItemCapacity |
       | ol_1                      | o_1                   | 2021-04-15      | p_1                     | 0            | 100        | 0           | 10    | 0        | EUR          | true      | PCE                            | false             | 5                            | 10                          | 10             | TU                    | 10                  |
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
 
@@ -449,7 +449,7 @@ Feature: desadv and invoic
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_BPartner_ID.X12DE355 | OPT.IsManualPrice | OPT.BPartner_QtyItemCapacity | OPT.QtyEnteredInBPartnerUOM | OPT.QtyEntered | OPT.C_UOM_ID.X12DE355 | OPT.QtyItemCapacity |
       | ol_1                      | o_1                   | 2021-04-15      | p_1                     | 0            | 10         | 0           | 10    | 0        | EUR          | true      | PCE                            | true              | 5                            | 10                          | 10             | PCE                   | 10                  |
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
 
@@ -614,7 +614,7 @@ Feature: desadv and invoic
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_BPartner_ID.X12DE355 | OPT.IsManualPrice | OPT.BPartner_QtyItemCapacity | OPT.QtyEnteredInBPartnerUOM | OPT.QtyEntered | OPT.C_UOM_ID.X12DE355 | OPT.QtyItemCapacity |
       | ol_1                      | o_1                   | 2021-04-15      | p_1                     | 0            | 10         | 0           | 10    | 0        | EUR          | true      | PCE                            | false             | 5                            | 10                          | 10             | PCE                   | 5                   |
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
 
@@ -784,7 +784,7 @@ Feature: desadv and invoic
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_BPartner_ID.X12DE355 | OPT.IsManualPrice | OPT.BPartner_QtyItemCapacity | OPT.QtyEnteredInBPartnerUOM | OPT.QtyEntered | OPT.C_UOM_ID.X12DE355 | OPT.QtyItemCapacity |
       | ol_1                      | o_1                   | 2021-04-15      | p_1                     | 0            | 40         | 0           | 50    | 0        | EUR          | true      | KGM                            | true              | 5                            | 10                          | 10             | KGM                   | 10                  |
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
 
@@ -953,7 +953,7 @@ Feature: desadv and invoic
     And validate the created order lines
       | C_OrderLine_ID.Identifier | C_Order_ID.Identifier | OPT.DateOrdered | M_Product_ID.Identifier | qtydelivered | QtyOrdered | qtyinvoiced | price | discount | currencyCode | processed | OPT.C_UOM_BPartner_ID.X12DE355 | OPT.IsManualPrice | OPT.BPartner_QtyItemCapacity | OPT.QtyEnteredInBPartnerUOM | OPT.QtyEntered | OPT.C_UOM_ID.X12DE355 | OPT.QtyItemCapacity |
       | ol_1                      | o_1                   | 2021-04-15      | p_1                     | 0            | 50         | 0           | 10    | 0        | EUR          | true      | TU                             | true              | 5                            | 10                          | 10             | TU                    | 5                   |
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
 

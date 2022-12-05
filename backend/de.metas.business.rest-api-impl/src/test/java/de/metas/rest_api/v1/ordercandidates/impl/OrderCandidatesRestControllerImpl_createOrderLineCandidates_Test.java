@@ -8,6 +8,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.GLN;
 import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.business.BusinessTestHelper;
@@ -251,7 +252,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 		final JsonConverters jsonConverters = new JsonConverters(currencyService, docTypeService);
 
 		// bpartnerRestController
-		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(bpartnerBL, new MockLogEntriesRepository(), new UserRoleRepository());
+		final BPartnerCompositeRepository bpartnerCompositeRepository = new BPartnerCompositeRepository(bpartnerBL, new MockLogEntriesRepository(), new UserRoleRepository(), new BPartnerCreditLimitRepository());
 		final CurrencyRepository currencyRepository = new CurrencyRepository();
 		final JsonServiceFactory jsonServiceFactory = new JsonServiceFactory(
 				new JsonRequestConsolidateService(),
@@ -270,7 +271,7 @@ OrderCandidatesRestControllerImpl_createOrderLineCandidates_Test
 				jsonConverters,
 				new OLCandRepository(),
 				bpartnerRestController,
-				new NoopPerformanceMonitoringService());
+				NoopPerformanceMonitoringService.INSTANCE);
 
 		final PermissionService permissionService = Mockito.mock(PermissionService.class);
 		Mockito.doReturn(OrgId.ofRepoId(defaultOrgRecord.getAD_Org_ID())).when(permissionService).getDefaultOrgId();

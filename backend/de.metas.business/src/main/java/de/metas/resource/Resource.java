@@ -44,6 +44,7 @@ public class Resource
 	@Nullable String description;
 	@Nullable ResourceGroupId resourceGroupId;
 	@NonNull ResourceTypeId resourceTypeId;
+	@Nullable ManufacturingResourceType manufacturingResourceType;
 
 	@Nullable UserId responsibleId;
 	

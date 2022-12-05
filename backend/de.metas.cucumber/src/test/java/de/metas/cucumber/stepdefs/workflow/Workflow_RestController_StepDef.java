@@ -162,7 +162,7 @@ public class Workflow_RestController_StepDef
 		final I_C_Order salesOrder = orderTable.get(salesOrderIdentifier);
 
 		final Map<String, Object> wfParams = new HashMap<>();
-		wfParams.put("applicationId", PickingMobileApplication.HANDLER_ID.getAsString());
+		wfParams.put("applicationId", PickingMobileApplication.APPLICATION_ID.getAsString());
 		wfParams.put("salesOrderId", salesOrder.getC_Order_ID());
 		wfParams.put("customerId", bPartner.getC_BPartner_ID());
 		wfParams.put("customerLocationId", bPartnerLocation.getC_BPartner_Location_ID());
@@ -181,7 +181,7 @@ public class Workflow_RestController_StepDef
 		final I_PP_Order ppOrder = ppOrderTable.get(ppOrderIdentifier);
 
 		final Map<String, Object> wfParams = new HashMap<>();
-		wfParams.put("applicationId", ManufacturingMobileApplication.HANDLER_ID.getAsString());
+		wfParams.put("applicationId", ManufacturingMobileApplication.APPLICATION_ID.getAsString());
 		wfParams.put("ppOrderId", ppOrder.getPP_Order_ID());
 
 		final JsonWFProcessStartRequest request = JsonWFProcessStartRequest.builder().wfParameters(wfParams).build();
@@ -198,7 +198,7 @@ public class Workflow_RestController_StepDef
 		final I_DD_Order ddOrder = ddOrderTable.get(ddOrderIdentifier);
 
 		final Map<String, Object> wfParams = new HashMap<>();
-		wfParams.put("applicationId", DistributionMobileApplication.HANDLER_ID.getAsString());
+		wfParams.put("applicationId", DistributionMobileApplication.APPLICATION_ID.getAsString());
 		wfParams.put("ddOrderId", ddOrder.getDD_Order_ID());
 
 		final JsonWFProcessStartRequest request = JsonWFProcessStartRequest.builder().wfParameters(wfParams).build();

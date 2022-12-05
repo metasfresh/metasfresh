@@ -49,7 +49,7 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | OPT.POReference | processed | docStatus | OPT.PaymentRule |
       | order_1               | bpartner_1               | location_1                        | 2022-03-20  | SOO         | EUR          | F            | P               | SO_DirectDebit  | true      | CO        | D               |
 
-    And enqueue candidate for invoicing and after not more than 30s, the invoice is found
+    And enqueue candidate for invoicing and after not more than 60s, the invoice is found
       | C_Order_ID.Identifier | C_Invoice_ID.Identifier |
       | order_1               | invoice_1               |
 
@@ -82,7 +82,7 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | OPT.POReference | processed | docStatus | OPT.PaymentRule |
       | order_1               | bpartner_1               | location_1                        | 2022-03-20  | SOO         | EUR          | F            | P               | SO_OnCredit     | true      | CO        | P               |
 
-    And enqueue candidate for invoicing and after not more than 30s, the invoice is found
+    And enqueue candidate for invoicing and after not more than 60s, the invoice is found
       | C_Order_ID.Identifier | C_Invoice_ID.Identifier |
       | order_1               | invoice_1               |
 
@@ -115,7 +115,7 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | OPT.POReference | processed | docStatus | OPT.PaymentRule |
       | order_1               | bpartner_1               | location_1                        | 2022-03-20  | SOO         | EUR          | F            | P               | SO_Cash         | true      | CO        | B               |
 
-    And enqueue candidate for invoicing and after not more than 30s, the invoice is found
+    And enqueue candidate for invoicing and after not more than 60s, the invoice is found
       | C_Order_ID.Identifier | C_Invoice_ID.Identifier |
       | order_1               | invoice_1               |
 
@@ -148,7 +148,7 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | OPT.POReference | processed | docStatus | OPT.PaymentRule |
       | order_1               | bpartner_1               | location_1                        | 2022-03-20  | POO         | EUR          | F            | P               | PO_Direct_Debit | true      | CO        | D               |
 
-    And enqueue candidate for invoicing and after not more than 30s, the invoice is found
+    And enqueue candidate for invoicing and after not more than 60s, the invoice is found
       | C_Order_ID.Identifier | C_Invoice_ID.Identifier |
       | order_1               | invoice_1               |
     
@@ -181,7 +181,7 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
       | C_Order_ID.Identifier | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | dateordered | docbasetype | currencyCode | deliveryRule | deliveryViaRule | OPT.POReference | processed | docStatus | OPT.PaymentRule |
       | order_1               | bpartner_1               | location_1                        | 2022-03-20  | POO         | EUR          | F            | P               | PO_On_Credit    | true      | CO        | P               |
 
-    Then enqueue candidate for invoicing and after not more than 30s, the invoice is found
+    Then enqueue candidate for invoicing and after not more than 60s, the invoice is found
       | C_Order_ID.Identifier | C_Invoice_ID.Identifier |
       | order_1               | invoice_1               |
     

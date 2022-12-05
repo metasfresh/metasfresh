@@ -1,7 +1,8 @@
 package de.metas.externalsystem.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for ExternalSystem_Config_SAP
  *  @author metasfresh (generated) 
@@ -74,29 +75,6 @@ public interface I_ExternalSystem_Config_SAP
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
-
-	/**
-	 * Set Errored Directory.
-	 * Defines where files should be moved after attempting to process them with error.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setErroredDirectory (java.lang.String ErroredDirectory);
-
-	/**
-	 * Get Errored Directory.
-	 * Defines where files should be moved after attempting to process them with error.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getErroredDirectory();
-
-	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_ErroredDirectory = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "ErroredDirectory", null);
-	String COLUMNNAME_ErroredDirectory = "ErroredDirectory";
 
 	/**
 	 * Set External System Config.
@@ -187,157 +165,6 @@ public interface I_ExternalSystem_Config_SAP
 
 	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_IsActive = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
-
-	/**
-	 * Set Frequency In Milliseconds.
-	 * Defines how frequently should the process poll for new files.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setPollingFrequencyInMs (int PollingFrequencyInMs);
-
-	/**
-	 * Get Frequency In Milliseconds.
-	 * Defines how frequently should the process poll for new files.
-	 *
-	 * <br>Type: Integer
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getPollingFrequencyInMs();
-
-	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_PollingFrequencyInMs = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "PollingFrequencyInMs", null);
-	String COLUMNNAME_PollingFrequencyInMs = "PollingFrequencyInMs";
-
-	/**
-	 * Set Processed Directory.
-	 * Defines where files should be moved after being successfully processed.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setProcessedDirectory (java.lang.String ProcessedDirectory);
-
-	/**
-	 * Get Processed Directory.
-	 * Defines where files should be moved after being successfully processed.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getProcessedDirectory();
-
-	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_ProcessedDirectory = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "ProcessedDirectory", null);
-	String COLUMNNAME_ProcessedDirectory = "ProcessedDirectory";
-
-	/**
-	 * Set SFTP Hostname.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setSFTP_HostName (java.lang.String SFTP_HostName);
-
-	/**
-	 * Get SFTP Hostname.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getSFTP_HostName();
-
-	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_SFTP_HostName = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "SFTP_HostName", null);
-	String COLUMNNAME_SFTP_HostName = "SFTP_HostName";
-
-	/**
-	 * Set SFTP Password.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setSFTP_Password (java.lang.String SFTP_Password);
-
-	/**
-	 * Get SFTP Password.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getSFTP_Password();
-
-	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_SFTP_Password = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "SFTP_Password", null);
-	String COLUMNNAME_SFTP_Password = "SFTP_Password";
-
-	/**
-	 * Set SFTP Port.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setSFTP_Port (java.lang.String SFTP_Port);
-
-	/**
-	 * Get SFTP Port.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getSFTP_Port();
-
-	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_SFTP_Port = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "SFTP_Port", null);
-	String COLUMNNAME_SFTP_Port = "SFTP_Port";
-
-	/**
-	 * Set SFTP Target Directory.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setSFTP_TargetDirectory (@Nullable java.lang.String SFTP_TargetDirectory);
-
-	/**
-	 * Get SFTP Target Directory.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getSFTP_TargetDirectory();
-
-	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_SFTP_TargetDirectory = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "SFTP_TargetDirectory", null);
-	String COLUMNNAME_SFTP_TargetDirectory = "SFTP_TargetDirectory";
-
-	/**
-	 * Set SFTP Username.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setSFTP_Username (java.lang.String SFTP_Username);
-
-	/**
-	 * Get SFTP Username.
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.lang.String getSFTP_Username();
-
-	ModelColumn<I_ExternalSystem_Config_SAP, Object> COLUMN_SFTP_Username = new ModelColumn<>(I_ExternalSystem_Config_SAP.class, "SFTP_Username", null);
-	String COLUMNNAME_SFTP_Username = "SFTP_Username";
 
 	/**
 	 * Get Updated.

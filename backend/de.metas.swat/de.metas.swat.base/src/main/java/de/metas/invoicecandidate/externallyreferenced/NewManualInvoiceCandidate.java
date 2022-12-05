@@ -11,6 +11,7 @@ import de.metas.product.ProductPrice;
 import de.metas.project.ProjectId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.uom.UomId;
+import de.metas.user.UserId;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.Percent;
 import lombok.Builder;
@@ -90,6 +91,10 @@ public class NewManualInvoiceCandidate
 
 	String lineDescription;
 
+	String descriptionBottom;
+
+	UserId userInChargeId;
+
 	ProjectId projectId;
 
 	TableRecordReference recordReference;
@@ -117,6 +122,8 @@ public class NewManualInvoiceCandidate
 			@Nullable final Percent discountOverride,
 			@Nullable final DocTypeId invoiceDocTypeId,
 			@Nullable final String lineDescription,
+			@Nullable final String descriptionBottom,
+			@Nullable final UserId userInChargeId,
 			@Nullable final ProjectId projectId,
 			@Nullable final TableRecordReference recordReference,
 			@Nullable final List<InvoiceDetailItem> invoiceDetailItems)
@@ -141,6 +148,8 @@ public class NewManualInvoiceCandidate
 		this.invoiceDocTypeId = invoiceDocTypeId;
 		this.lineDescription = lineDescription;
 		this.projectId = projectId;
+		this.descriptionBottom = descriptionBottom;
+		this.userInChargeId = userInChargeId;
 		this.recordReference = recordReference;
 		this.invoiceRule = invoiceRule;
 		this.invoiceDetailItems = invoiceDetailItems;

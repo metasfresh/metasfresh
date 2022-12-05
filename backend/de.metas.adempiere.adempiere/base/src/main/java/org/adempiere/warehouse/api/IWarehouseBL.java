@@ -22,6 +22,7 @@
 
 package org.adempiere.warehouse.api;
 
+import de.metas.bpartner.BPartnerLocationId;
 import de.metas.document.location.DocumentLocation;
 import de.metas.location.CountryId;
 import de.metas.location.LocationId;
@@ -59,6 +60,8 @@ public interface IWarehouseBL extends ISingletonService
 	 * @return default locator's Id; never return null
 	 */
 	LocatorId getOrCreateDefaultLocatorId(WarehouseId warehouse);
+
+	BPartnerLocationId getBPartnerLocationId(@NonNull WarehouseId warehouseId);
 
 	@Nullable
 	CountryId getCountryId(WarehouseId warehouseId);

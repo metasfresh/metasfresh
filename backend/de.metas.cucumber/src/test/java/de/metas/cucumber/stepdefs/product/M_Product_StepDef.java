@@ -69,7 +69,7 @@ import static de.metas.cucumber.stepdefs.StepDefConstants.PRODUCT_CATEGORY_STAND
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstanceOutOfTrx;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 import static org.compiere.model.I_C_Order.COLUMNNAME_C_BPartner_ID;
 import static org.compiere.model.I_C_Order.COLUMNNAME_M_Product_ID;
 import static org.compiere.model.I_M_Product.COLUMNNAME_IsStocked;
@@ -232,12 +232,12 @@ public class M_Product_StepDef
 	}
 
 	@Given("load M_Product:")
-	public void load_product(@NonNull final DataTable dataTable)
+	public void load_M_Product(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
-		for (final Map<String, String> tableRow : tableRows)
+		for (final Map<String, String> row : tableRows)
 		{
-			loadProduct(tableRow);
+			loadProduct(row);
 		}
 	}
 
@@ -405,26 +405,25 @@ public class M_Product_StepDef
 		return productType;
 	}
 
-	private void loadProduct(@NonNull final Map<String, String> tableRow)
+	private void loadProduct(@NonNull final Map<String, String> row)
 	{
-		final int productId = DataTableUtil.extractIntForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID);
+		final String identifier = DataTableUtil.extractStringForColumnName(row, I_M_Product.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
 
-		final I_M_Product product = productDAO.getById(productId);
-		assertThat(product).isNotNull();
+		final String id = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Product.COLUMNNAME_M_Product_ID);
 
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
-		productTable.put(productIdentifier, product);
+		if (de.metas.util.Check.isNotBlank(id))
+		{
+			final I_M_Product productRecord = productDAO.getById(Integer.parseInt(id));
+
+			productTable.putOrReplace(identifier, productRecord);
+		}
 	}
 
 	private void updateMProduct(@NonNull final Map<String, String> tableRow)
 	{
-		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Product.COLUMNNAME_M_Product_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-
-		final Integer productId = productTable.getOptional(productIdentifier)
-				.map(I_M_Product::getM_Product_ID)
-				.orElseGet(() -> Integer.parseInt(productIdentifier));
-
-		final I_M_Product productRecord = InterfaceWrapperHelper.load(productId, I_M_Product.class);
+		final String productIdentifier = DataTableUtil.extractStringForColumnName(tableRow, COLUMNNAME_M_Product_ID + "." + TABLECOLUMN_IDENTIFIER);
+		final I_M_Product productRecord = productTable.get(productIdentifier);
+		assertThat(productRecord).isNotNull();
 
 		final String gtin = DataTableUtil.extractNullableStringForColumnName(tableRow, "OPT." + I_M_Product.COLUMNNAME_GTIN);
 
@@ -433,8 +432,11 @@ public class M_Product_StepDef
 			productRecord.setGTIN(DataTableUtil.nullToken2Null(gtin));
 		}
 
-		final boolean isStocked = DataTableUtil.extractBooleanForColumnNameOr(tableRow, COLUMNNAME_IsStocked, true);
-		productRecord.setIsStocked(isStocked);
+		final Boolean isStocked = DataTableUtil.extractBooleanForColumnNameOrNull(tableRow, COLUMNNAME_IsStocked);
+		if (isStocked != null)
+		{
+			productRecord.setIsStocked(isStocked);
+		}
 
 		saveRecord(productRecord);
 	}

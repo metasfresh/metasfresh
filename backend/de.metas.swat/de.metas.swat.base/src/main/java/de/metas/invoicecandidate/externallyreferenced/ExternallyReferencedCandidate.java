@@ -1,3 +1,25 @@
+/*
+ * #%L
+ * de.metas.swat.base
+ * %%
+ * Copyright (C) 2022 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
 package de.metas.invoicecandidate.externallyreferenced;
 
 import com.google.common.collect.ImmutableList;
@@ -17,6 +39,7 @@ import de.metas.project.ProjectId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
+import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
 import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.Percent;
@@ -30,32 +53,10 @@ import javax.annotation.Nullable;
 import java.time.LocalDate;
 import java.util.List;
 
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2019 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 @Data
 public class ExternallyReferencedCandidate
 {
-	public static ExternallyReferencedCandidateBuilder createBuilder(@NonNull final NewManualInvoiceCandidate newIC)
+	public static ExternallyReferencedCandidate.ExternallyReferencedCandidateBuilder createBuilder(@NonNull final NewManualInvoiceCandidate newIC)
 	{
 		return ExternallyReferencedCandidate
 				.builder()
@@ -132,6 +133,10 @@ public class ExternallyReferencedCandidate
 
 	private String lineDescription;
 
+	private String descriptionBottom;
+
+	private UserId userInChargeId;
+
 	private ProjectId projectId;
 
 	/**
@@ -141,7 +146,6 @@ public class ExternallyReferencedCandidate
 	private final TableRecordReference recordReference;
 
 	private List<InvoiceDetailItem> invoiceDetailItems;
-
 
 	@Builder
 	private ExternallyReferencedCandidate(
@@ -169,8 +173,10 @@ public class ExternallyReferencedCandidate
 			@NonNull final ProductPrice priceActual,
 			@NonNull final TaxId taxId,
 			@Nullable final DocTypeId invoiceDocTypeId,
+			@Nullable final UserId userInChargeId,
 			@Nullable final String lineDescription,
 			@Nullable final ProjectId projectId,
+			@Nullable final String descriptionBottom,
 			@Nullable final TableRecordReference recordReference,
 			@Nullable final List<InvoiceDetailItem> invoiceDetailItems)
 	{
@@ -200,6 +206,8 @@ public class ExternallyReferencedCandidate
 		this.invoiceDocTypeId = invoiceDocTypeId;
 		this.lineDescription = lineDescription;
 		this.projectId = projectId;
+		this.descriptionBottom = descriptionBottom;
+		this.userInChargeId = userInChargeId;
 		this.recordReference = recordReference;
 		this.invoiceDetailItems = invoiceDetailItems != null ? ImmutableList.copyOf(invoiceDetailItems) : ImmutableList.of();
 

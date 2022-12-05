@@ -10,6 +10,7 @@ import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivity;
 import de.metas.manufacturing.job.model.ManufacturingJobReference;
 import de.metas.manufacturing.job.service.ManufacturingJobService;
+import de.metas.manufacturing.workflows_api.activity_handlers.callExternalSystem.CallExternalSystemActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.confirmation.ConfirmationActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.generateHUQRCodes.GenerateHUQRCodesActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.issue.RawMaterialsIssueActivityHandler;
@@ -18,6 +19,7 @@ import de.metas.manufacturing.workflows_api.activity_handlers.receive.MaterialRe
 import de.metas.manufacturing.workflows_api.activity_handlers.scanScaleDevice.ScanScaleDeviceActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.work_report.WorkReportActivityHandler;
 import de.metas.manufacturing.workflows_api.rest_api.json.JsonManufacturingOrderEvent;
+import de.metas.product.ResourceId;
 import de.metas.user.UserId;
 import de.metas.workflow.rest_api.model.WFActivity;
 import de.metas.workflow.rest_api.model.WFActivityAlwaysAvailableToUser;
@@ -31,6 +33,7 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRoutingActivityId;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.util.stream.Stream;
 
@@ -46,10 +49,11 @@ public class ManufacturingRestService
 
 	public Stream<ManufacturingJobReference> streamJobReferencesForUser(
 			final @NonNull UserId responsibleId,
+			final @Nullable ResourceId plantId,
 			final @NonNull Instant now,
 			final @NonNull QueryLimit suggestedLimit)
 	{
-		return manufacturingJobService.streamJobReferencesForUser(responsibleId, now, suggestedLimit);
+		return manufacturingJobService.streamJobReferencesForUser(responsibleId, plantId, now, suggestedLimit);
 	}
 
 	public ManufacturingJob createJob(final PPOrderId ppOrderId, final UserId responsibleId)
@@ -83,7 +87,8 @@ public class ManufacturingRestService
 				.id(WFActivityId.ofId(jobActivity.getId()))
 				.caption(TranslatableStrings.anyLanguage(jobActivity.getName()))
 				.status(jobActivity.getStatus())
-				.alwaysAvailableToUser(WFActivityAlwaysAvailableToUser.ofBoolean(jobActivity.getAlwaysAvailableToUser().toBooleanObject()));
+				.alwaysAvailableToUser(WFActivityAlwaysAvailableToUser.ofBoolean(jobActivity.getAlwaysAvailableToUser().toBooleanObject()))
+				.userInstructions(jobActivity.getUserInstructions() != null ? jobActivity.getUserInstructions().getAsString() : null);
 
 		switch (jobActivity.getType())
 		{
@@ -101,6 +106,8 @@ public class ManufacturingRestService
 				return builder.wfActivityType(GenerateHUQRCodesActivityHandler.HANDLED_ACTIVITY_TYPE).build();
 			case ScanScaleDevice:
 				return builder.wfActivityType(ScanScaleDeviceActivityHandler.HANDLED_ACTIVITY_TYPE).build();
+			case CallExternalSystem:
+				return builder.wfActivityType(CallExternalSystemActivityHandler.HANDLED_ACTIVITY_TYPE).build();
 			default:
 				throw new AdempiereException("Unknown type: " + jobActivity);
 		}
@@ -109,7 +116,7 @@ public class ManufacturingRestService
 	public static WFProcess toWFProcess(final ManufacturingJob job)
 	{
 		return WFProcess.builder()
-				.id(WFProcessId.ofIdPart(ManufacturingMobileApplication.HANDLER_ID, job.getPpOrderId()))
+				.id(WFProcessId.ofIdPart(ManufacturingMobileApplication.APPLICATION_ID, job.getPpOrderId()))
 				.responsibleId(job.getResponsibleId())
 				.caption(TranslatableStrings.anyLanguage("" + job.getPpOrderId().getRepoId())) // TODO
 				.document(job)

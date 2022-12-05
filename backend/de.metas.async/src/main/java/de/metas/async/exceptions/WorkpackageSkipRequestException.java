@@ -22,14 +22,12 @@ package de.metas.async.exceptions;
  * #L%
  */
 
-
-import java.util.Random;
-
-import org.adempiere.exceptions.AdempiereException;
-
 import de.metas.async.Async_Constants;
 import de.metas.async.processor.IWorkpackageSkipRequest;
 import de.metas.async.spi.IWorkpackageProcessor;
+import org.adempiere.exceptions.AdempiereException;
+
+import java.util.Random;
 
 /**
  * Exception to be thrown from {@link IWorkpackageProcessor} implementation if we want current workpackage to be skipped this time.

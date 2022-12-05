@@ -37,6 +37,8 @@ public interface Shopware6Constants
 	String PARAMETERS_GTE = "gte";
 	String PARAMETERS_GT = "gt";
 
+	String FIELD_PRODUCT_ID = "id";
+
 	String SALUTATION_KEY_NOT_SPECIFIED = "not_specified";
 
 	//camel route properties

@@ -2,6 +2,7 @@ package de.metas.ui.web.window.model;
 
 import de.metas.i18n.BooleanWithReason;
 import de.metas.ui.web.window.WindowConstants;
+import de.metas.ui.web.window.descriptor.decorator.ReadOnlyInfo;
 import lombok.Builder;
 import lombok.Value;
 import lombok.experimental.NonFinal;
@@ -49,6 +50,7 @@ public class DocumentReadonly
 				.active(parentDocumentReadonly.active)
 				.processed(parentDocumentReadonly.processed)
 				.processed(parentDocumentReadonly.processing)
+				.parentEnforcingReadOnly(parentDocumentReadonly.computeForceReadOnlyChildDocuments())
 				.fieldsReadonly(null) // unknown (will fallback to not-readonly)
 				.build();
 	}
@@ -57,13 +59,19 @@ public class DocumentReadonly
 	boolean active;
 	boolean processed;
 	boolean processing;
-	ExtendedMemorizingSupplier<BooleanWithReason> fieldsReadonly;
+	boolean parentEnforcingReadOnly;
+	ExtendedMemorizingSupplier<ReadOnlyInfo> fieldsReadonly;
 
 	@NonFinal
 	public BooleanWithReason computeFieldReadonly(final String fieldName, final boolean alwaysUpdateable)
 	{
 		// Case: parent document is not active => fields of this document shall be completely readonly (including the IsActive flag)
 		if (!parentActive)
+		{
+			return BooleanWithReason.TRUE; // readonly
+		}
+
+		if (parentEnforcingReadOnly)
 		{
 			return BooleanWithReason.TRUE; // readonly
 		}
@@ -90,9 +98,23 @@ public class DocumentReadonly
 
 		// If we reached this point, it means the document and parent document are active and not processed
 		// => readonly if fields are readonly.
-		final BooleanWithReason isReadOnly = fieldsReadonly != null ? fieldsReadonly.get() : null;
+		final ReadOnlyInfo isReadOnly = fieldsReadonly != null ? fieldsReadonly.get() : null;
 		return Optional.ofNullable(isReadOnly)
+				.map(ReadOnlyInfo::getIsReadOnlyWithReason)
 				.filter(BooleanWithReason::isTrue)
 				.orElse(BooleanWithReason.FALSE);
+	}
+
+	public boolean computeForceReadOnlyChildDocuments()
+	{
+		if (parentEnforcingReadOnly)
+		{
+			return true;
+		}
+
+		return Optional.ofNullable(fieldsReadonly)
+				.map(ExtendedMemorizingSupplier::get)
+				.map(ReadOnlyInfo::isForceReadOnlySubDocuments)
+				.orElse(false);
 	}
 }

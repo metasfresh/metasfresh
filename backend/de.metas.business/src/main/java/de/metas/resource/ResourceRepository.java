@@ -145,6 +145,7 @@ class ResourceRepository
 				.description(record.getDescription())
 				.resourceGroupId(ResourceGroupId.ofRepoIdOrNull(record.getS_Resource_Group_ID()))
 				.resourceTypeId(ResourceTypeId.ofRepoId(record.getS_ResourceType_ID()))
+				.manufacturingResourceType(ManufacturingResourceType.ofNullableCode(record.getManufacturingResourceType()))
 				.responsibleId(UserId.ofRepoIdOrNull(record.getAD_User_ID()))
 				.internalName(record.getInternalName())
 				.build();

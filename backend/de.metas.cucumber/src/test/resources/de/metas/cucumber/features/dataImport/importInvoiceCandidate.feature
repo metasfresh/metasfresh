@@ -4,7 +4,7 @@ Feature: Import Invoice Candidates via DataImportRestController
   Background:
     Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And set sys config boolean value true for sys config SKIP_WP_PROCESSOR_FOR_AUTOMATION
-    And metasfresh has date and time 2022-09-01T13:30:13+02:00[Europe/Berlin]
+    And metasfresh has current date and time
     And  metasfresh initially has no I_Invoice_Candidate data
     And metasfresh contains M_PricingSystems
       | Identifier | Name              | Value     | OPT.IsActive |
@@ -70,13 +70,13 @@ Feature: Import Invoice Candidates via DataImportRestController
     And update C_Invoice_Candidate:
       | C_Invoice_Candidate_ID.Identifier | OPT.InvoiceRule_Override |
       | invoiceCandidate_1                | I                        |
-    And after not more than 30s C_Invoice_Candidate matches:
+    And after not more than 60s C_Invoice_Candidate matches:
       | C_Invoice_Candidate_ID.Identifier | OPT.QtyToInvoice |
       | invoiceCandidate_1                | 5                |
     When process invoice candidates
       | C_Invoice_Candidate_ID.Identifier |
       | invoiceCandidate_1                |
-    Then after not more than 30s, C_Invoice are found:
+    Then after not more than 60s, C_Invoice are found:
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | invoiceCandidate_1                | invoice_1               |
 
@@ -229,7 +229,7 @@ Feature: Import Invoice Candidates via DataImportRestController
     And validate invoice candidates by record reference:
       | TableName           | I_Invoice_Candidate_ID.Identifier | C_Invoice_Candidate_ID.Identifier | Bill_BPartner_ID.Identifier | Bill_Location_ID.Identifier | AD_Org_ID.Identifier | OPT.Bill_User_ID.Identifier | OPT.M_Product_ID.Identifier | OPT.QtyOrdered | OPT.QtyDelivered | IsSOTrx | OPT.C_DocType_ID.Identifier | OPT.C_UOM_ID.Identifier | InvoiceRule |
       | I_Invoice_Candidate | iInvoiceCandidate_5               | invoiceCandidate_5                | billBpartner_5              | billBPLocation_5            | importFormatOrg      | billBPUser_5                | product_5                   | 4              | 2                | true    | docType                     | UOM_5                   | D           |
-    And after not more than 30s C_Invoice_Candidate matches:
+    And after not more than 60s C_Invoice_Candidate matches:
       | C_Invoice_Candidate_ID.Identifier | OPT.QtyToInvoice |
       | invoiceCandidate_5                | 2                |
 
@@ -237,6 +237,6 @@ Feature: Import Invoice Candidates via DataImportRestController
       | C_Invoice_Candidate_ID.Identifier |
       | invoiceCandidate_5                |
 
-    Then after not more than 30s, C_Invoice are found:
+    Then after not more than 60s, C_Invoice are found:
       | C_Invoice_Candidate_ID.Identifier | C_Invoice_ID.Identifier |
       | invoiceCandidate_5                | invoice_5               |

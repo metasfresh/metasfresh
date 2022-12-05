@@ -13,20 +13,20 @@ Feature: sales order
       | Identifier | Name                  |
       | p_1        | salesProduct_17082021 |
     And metasfresh contains M_PricingSystems
-      | Identifier | Name                | Value                | OPT.Description            | OPT.IsActive |
-      | ps_1       | pricing_system_name | pricing_system_value | pricing_system_description | true         |
+      | Identifier | Name                           | Value                           | OPT.Description                       | OPT.IsActive |
+      | ps_1       | pricing_system_name_15112022_2 | pricing_system_value_15112022_2 | pricing_system_description_15112022_2 | true         |
     And metasfresh contains M_PriceLists
-      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                     | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
-      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name_17082021 | null            | true  | false         | 2              | true         |
+      | Identifier | M_PricingSystem_ID.Identifier | OPT.C_Country.CountryCode | C_Currency.ISO_Code | Name                       | OPT.Description | SOTrx | IsTaxIncluded | PricePrecision | OPT.IsActive |
+      | pl_1       | ps_1                          | DE                        | EUR                 | price_list_name_15112022_2 | null            | true  | false         | 2              | true         |
     And metasfresh contains M_PriceList_Versions
-      | Identifier | M_PriceList_ID.Identifier | Name           | ValidFrom  |
-      | plv_1      | pl_1                      | salesOrder-PLV | 2021-04-01 |
+      | Identifier | M_PriceList_ID.Identifier | Name                      | ValidFrom  |
+      | plv_1      | pl_1                      | salesOrder-PLV_15112022_2 | 2021-04-01 |
     And metasfresh contains M_ProductPrices
       | Identifier | M_PriceList_Version_ID.Identifier | M_Product_ID.Identifier | PriceStd | C_UOM_ID.X12DE355 | C_TaxCategory_ID.InternalName |
       | pp_1       | plv_1                             | p_1                     | 10.0     | PCE               | Normal                        |
     And metasfresh contains C_BPartners:
-      | Identifier    | Name        | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
-      | endcustomer_1 | Endcustomer | N            | Y              | ps_1                          |
+      | Identifier    | Name                   | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier |
+      | endcustomer_1 | Endcustomer_15112022_2 | N            | Y              | ps_1                          |
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered |
       | o_1        | true    | endcustomer_1            | 2021-04-17  |
@@ -34,7 +34,7 @@ Feature: sales order
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered |
       | ol_1       | o_1                   | p_1                     | 10         |
     When the order identified by o_1 is completed
-    Then after not more than 30s, M_ShipmentSchedules are found:
+    Then after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_ol_1     | ol_1                      | N             |
 
@@ -73,7 +73,7 @@ Feature: sales order
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.C_BPartner_ID.Identifier |
       | ol_2       | o_2                   | p_2                     | 10         | shiptopartner_2              |
     And the order identified by o_2 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_ol_2     | ol_2                      | N             |
     When generate PO from SO is invoked with parameters:
@@ -128,7 +128,7 @@ Feature: sales order
       | Identifier | C_Order_ID.Identifier | M_Product_ID.Identifier | QtyEntered | OPT.C_BPartner_ID.Identifier | OPT.C_BPartner_Location_ID.Identifier | OPT.C_BPartner_Location_Value_ID.Identifier |
       | ol_26      | o_26                  | p_26                    | 10         | shiptopartner_26             | bpl_26                                | l_26                                        |
     And the order identified by o_26 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_ol_26    | ol_26                     | N             |
     When generate PO from SO is invoked with parameters:
@@ -203,7 +203,7 @@ Feature: sales order
       | ol_3_1     | o_3                   | p_3                     | 10         |
       | ol_3_2     | o_3                   | p_33                    | 10         |
     And the order identified by o_3 is completed
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_ol_3     | ol_3_1                    | N             |
     When generate PO from SO is invoked with parameters:

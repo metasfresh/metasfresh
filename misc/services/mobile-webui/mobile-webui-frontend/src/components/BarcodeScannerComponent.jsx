@@ -1,10 +1,11 @@
 import PropTypes from 'prop-types';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { BarcodeFormat, BrowserMultiFormatReader } from '@zxing/browser';
 import DecodeHintType from '@zxing/library/cjs/core/DecodeHintType';
 import { toastError, toastErrorFromObj } from '../utils/toast';
 import { trl } from '../utils/translations';
-import { useBooleanSetting, useSetting } from '../reducers/settings';
+import { useBooleanSetting, usePositiveNumberSetting } from '../reducers/settings';
+import { debounce } from 'lodash';
 
 const READER_HINTS = new Map().set(DecodeHintType.POSSIBLE_FORMATS, [
   BarcodeFormat.QR_CODE,
@@ -23,19 +24,14 @@ const BarcodeScannerComponent = ({ resolveScannedBarcode, onResolvedResult }) =>
   const scanningStatusRef = useRef({ running: false, done: false });
 
   const validateScannedBarcodeAndForward = async ({ scannedBarcode, controls = null }) => {
+    inputTextRef?.current?.select();
+
     const scanningStatus = scanningStatusRef.current;
     if (scanningStatus.running || scanningStatus.done) {
       console.log('Ignore scanned barcode because we are already running or done', { scannedBarcode, scanningStatus });
       return;
     }
     scanningStatus.running = true;
-
-    console.log('Resolving scanned barcode', {
-      scannedBarcode,
-      resolveScannedBarcode,
-      onResolvedResult,
-      scanningStatus: { ...scanningStatus },
-    });
 
     try {
       let resolvedResult;
@@ -44,7 +40,6 @@ const BarcodeScannerComponent = ({ resolveScannedBarcode, onResolvedResult }) =>
       } else {
         resolvedResult = { scannedBarcode, error: null };
       }
-      console.log('Got resolvedResult', resolvedResult);
 
       if (resolvedResult.error) {
         toastError({ plainMessage: resolvedResult.error });
@@ -80,10 +75,12 @@ const BarcodeScannerComponent = ({ resolveScannedBarcode, onResolvedResult }) =>
     };
   });
 
-  const triggerOnChangeIfLengthGreaterThan = useSetting('barcodeScanner.inputText.triggerOnChangeIfLengthGreaterThan');
+  const triggerOnChangeIfLengthGreaterThan = usePositiveNumberSetting(
+    'barcodeScanner.inputText.triggerOnChangeIfLengthGreaterThan',
+    0
+  );
   const handleInputTextChanged = (e) => {
-    const inputElement = e.target;
-    const scannedBarcode = inputElement.value;
+    const scannedBarcode = e.target.value;
 
     if (
       scannedBarcode &&
@@ -91,17 +88,22 @@ const BarcodeScannerComponent = ({ resolveScannedBarcode, onResolvedResult }) =>
       triggerOnChangeIfLengthGreaterThan > 0 &&
       scannedBarcode.length >= triggerOnChangeIfLengthGreaterThan
     ) {
-      inputElement.select();
       validateScannedBarcodeAndForward({ scannedBarcode });
     }
   };
 
+  const textChangedDebounceMillis = usePositiveNumberSetting('barcodeScanner.inputText.debounceMillis', 300);
+  const handleInputTextChangedDebounced = useMemo(() => {
+    return debounce(handleInputTextChanged, textChangedDebounceMillis);
+  }, [textChangedDebounceMillis]);
+  useEffect(() => {
+    return () => handleInputTextChangedDebounced.cancel();
+  });
+
   const handleInputTextKeyPress = (e) => {
     if (e.key === 'Enter') {
-      const inputElement = e.target;
-      const scannedBarcode = inputElement.value;
+      const scannedBarcode = e.target.value;
 
-      inputElement.select();
       validateScannedBarcodeAndForward({ scannedBarcode });
     }
   };
@@ -133,8 +135,8 @@ const BarcodeScannerComponent = ({ resolveScannedBarcode, onResolvedResult }) =>
           placeholder={trl('components.BarcodeScannerComponent.scanTextPlaceholder')}
           onFocus={handleInputTextFocus}
           onBlur={handleInputTextBlur}
-          onChange={handleInputTextChanged}
-          onKeyPress={handleInputTextKeyPress}
+          onChange={handleInputTextChangedDebounced}
+          onKeyUp={handleInputTextKeyPress}
         />
       )}
     </div>

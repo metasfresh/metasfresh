@@ -22,21 +22,19 @@ package de.metas.allocation.api;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_C_AllocationHdr;
-import org.compiere.model.I_C_AllocationLine;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.invoice.InvoiceId;
 import de.metas.organization.OrgId;
 import de.metas.payment.PaymentId;
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.compiere.model.I_C_AllocationHdr;
+import org.compiere.model.I_C_AllocationLine;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.function.Supplier;
 
 /**
  * {@link I_C_AllocationLine} builder.

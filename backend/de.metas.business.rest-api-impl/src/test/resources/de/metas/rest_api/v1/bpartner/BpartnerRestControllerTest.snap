@@ -86,6 +86,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
     "name" : "bPartner.name",
     "parentId" : 1,
     "phone" : "bPartner.phone",
+    "storageWarehouse" : false,
     "url" : "bPartner.url",
     "value" : "code",
     "vatId" : "bPartner.vatId",
@@ -162,6 +163,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
     "roles" : [ ],
     "subjectMatterContact" : false
   } ],
+  "creditLimits" : [ ],
   "locations" : [ {
     "active" : true,
     "address1" : "l1_address1",
@@ -196,8 +198,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
       "billTo" : false,
       "billToDefault" : false,
       "shipTo" : false,
-      "shipToDefault" : false,
-      "visitorsAddress" : false
+      "shipToDefault" : false
     },
     "poBox" : "l1_poBox",
     "postal" : "l1_postal",
@@ -239,8 +240,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
       "billTo" : false,
       "billToDefault" : false,
       "shipTo" : false,
-      "shipToDefault" : false,
-      "visitorsAddress" : false
+      "shipToDefault" : false
     },
     "poBox" : "l2_poBox",
     "postal" : "l2_postal",
@@ -302,6 +302,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
     "id" : 20,
     "identifiedByExternalReference" : false,
     "name" : "bpartnerRecord.name",
+    "storageWarehouse" : false,
     "value" : "bpartnerRecord.value",
     "vatId" : "VATaxID",
     "vendor" : true
@@ -380,6 +381,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
     "roles" : [ ],
     "subjectMatterContact" : false
   } ],
+  "creditLimits" : [ ],
   "locations" : [ {
     "active" : true,
     "address1" : "locationRecord.address1",
@@ -415,8 +417,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_c
       "billTo" : false,
       "billToDefault" : false,
       "shipTo" : false,
-      "shipToDefault" : false,
-      "visitorsAddress" : false
+      "shipToDefault" : false
     },
     "poBox" : "locationRecord.poBox",
     "postal" : "locationRecord.postal",
@@ -478,6 +479,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
     "id" : 20,
     "identifiedByExternalReference" : false,
     "name" : "bpartnerRecord.name",
+    "storageWarehouse" : false,
     "value" : "bpartnerRecord.value",
     "vatId" : "VATaxID",
     "vendor" : true
@@ -521,6 +523,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
     "subjectMatterContact" : false,
     "value" : "contactRecord.value"
   } ],
+  "creditLimits" : [ ],
   "locations" : [ {
     "active" : true,
     "address1" : "locationRecord.address1",
@@ -556,8 +559,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
       "billTo" : false,
       "billToDefault" : false,
       "shipTo" : false,
-      "shipToDefault" : false,
-      "visitorsAddress" : false
+      "shipToDefault" : false
     },
     "poBox" : "locationRecord.poBox",
     "postal" : "locationRecord.postal",
@@ -619,6 +621,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
     "id" : 20,
     "identifiedByExternalReference" : false,
     "name" : "bpartnerRecord.name",
+    "storageWarehouse" : false,
     "value" : "bpartnerRecord.value",
     "vatId" : "VATaxID",
     "vendor" : true
@@ -662,6 +665,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
     "subjectMatterContact" : false,
     "value" : "contactRecord.value"
   } ],
+  "creditLimits" : [ ],
   "locations" : [ {
     "active" : true,
     "address1" : "locationRecord.address1",
@@ -697,8 +701,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateContact_u
       "billTo" : false,
       "billToDefault" : false,
       "shipTo" : false,
-      "shipToDefault" : false,
-      "visitorsAddress" : false
+      "shipToDefault" : false
     },
     "poBox" : "locationRecord.poBox",
     "postal" : "locationRecord.postal",
@@ -760,6 +763,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
     "id" : 20,
     "identifiedByExternalReference" : false,
     "name" : "bpartnerRecord.name",
+    "storageWarehouse" : false,
     "value" : "bpartnerRecord.value",
     "vatId" : "VATaxID",
     "vendor" : true
@@ -803,6 +807,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
     "subjectMatterContact" : false,
     "value" : "contactRecord.value"
   } ],
+  "creditLimits" : [ ],
   "locations" : [ {
     "active" : true,
     "address1" : "locationRecord.address1",
@@ -838,8 +843,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
       "billTo" : false,
       "billToDefault" : false,
       "shipTo" : false,
-      "shipToDefault" : false,
-      "visitorsAddress" : false
+      "shipToDefault" : false
     },
     "poBox" : "locationRecord.poBox",
     "postal" : "locationRecord.postal",
@@ -881,8 +885,7 @@ de.metas.rest_api.v1.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
       "billTo" : false,
       "billToDefault" : false,
       "shipTo" : false,
-      "shipToDefault" : false,
-      "visitorsAddress" : false
+      "shipToDefault" : false
     },
     "poBox" : "newLocation-_poBox",
     "postal" : "newLocation-_postal",

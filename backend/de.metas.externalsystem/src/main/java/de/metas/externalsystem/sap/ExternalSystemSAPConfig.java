@@ -24,12 +24,13 @@ package de.metas.externalsystem.sap;
 
 import de.metas.externalsystem.ExternalSystemParentConfigId;
 import de.metas.externalsystem.IExternalSystemChildConfig;
+import de.metas.externalsystem.sap.source.SAPContentSourceLocalFile;
+import de.metas.externalsystem.sap.source.SAPContentSourceSFTP;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.time.Duration;
 
 @Value
 public class ExternalSystemSAPConfig implements IExternalSystemChildConfig
@@ -43,55 +44,25 @@ public class ExternalSystemSAPConfig implements IExternalSystemChildConfig
 	@NonNull
 	String value;
 
-	@NonNull
-	String sftpHostName;
-
-	@NonNull
-	String sftpPort;
-
-	@NonNull
-	String sftpUsername;
-
-	@NonNull
-	String sftpPassword;
+	@Nullable
+	SAPContentSourceSFTP contentSourceSFTP;
 
 	@Nullable
-	String sftpTargetDirectory;
-
-	@NonNull
-	String processedDirectory;
-
-	@NonNull
-	String erroredDirectory;
-
-	@NonNull
-	Duration pollingFrequency;
+	SAPContentSourceLocalFile contentSourceLocalFile;
 
 	@Builder
 	public ExternalSystemSAPConfig(
 			@NonNull final ExternalSystemSAPConfigId id,
 			@NonNull final ExternalSystemParentConfigId parentId,
 			@NonNull final String value,
-			@NonNull final String sftpHostName,
-			@NonNull final String sftpPort,
-			@NonNull final String sftpUsername,
-			@NonNull final String sftpPassword,
-			@Nullable final String sftpTargetDirectory,
-			@NonNull final String processedDirectory,
-			@NonNull final String erroredDirectory,
-			@NonNull final Duration pollingFrequency)
+			@Nullable final SAPContentSourceSFTP contentSourceSFTP,
+			@Nullable final SAPContentSourceLocalFile contentSourceLocalFile)
 	{
 		this.id = id;
 		this.parentId = parentId;
 		this.value = value;
-		this.sftpHostName = sftpHostName;
-		this.sftpPort = sftpPort;
-		this.sftpUsername = sftpUsername;
-		this.sftpPassword = sftpPassword;
-		this.sftpTargetDirectory = sftpTargetDirectory;
-		this.processedDirectory = processedDirectory;
-		this.erroredDirectory = erroredDirectory;
-		this.pollingFrequency = pollingFrequency;
+		this.contentSourceSFTP = contentSourceSFTP;
+		this.contentSourceLocalFile = contentSourceLocalFile;
 	}
 
 	@NonNull

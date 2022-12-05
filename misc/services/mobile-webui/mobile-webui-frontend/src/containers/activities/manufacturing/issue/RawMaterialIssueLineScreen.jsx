@@ -22,8 +22,17 @@ const RawMaterialIssueLineScreen = () => {
     params: { applicationId, workflowId: wfProcessId, activityId, lineId },
   } = useRouteMatch();
 
-  const { caption, productName, uom, qtyToIssue, qtyToIssueTolerancePerc, qtyToIssueRemaining, qtyIssued, steps } =
-    useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }), shallowEqual);
+  const {
+    caption,
+    userInstructions,
+    productName,
+    uom,
+    qtyToIssue,
+    qtyToIssueTolerance,
+    qtyToIssueRemaining,
+    qtyIssued,
+    steps,
+  } = useSelector((state) => getPropsFromState({ state, wfProcessId, activityId, lineId }), shallowEqual);
 
   const dispatch = useDispatch();
   useEffect(() => {
@@ -32,10 +41,11 @@ const RawMaterialIssueLineScreen = () => {
         computeHeaderEntriesFromParams({
           url,
           caption,
+          userInstructions,
           productName,
           uom,
           qtyToIssue,
-          qtyToIssueTolerancePerc,
+          qtyToIssueTolerance,
           qtyToIssueRemaining,
           qtyIssued,
         })
@@ -83,10 +93,11 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
 
   return {
     caption: activity?.caption ?? 'Issue',
+    userInstructions: activity?.userInstructions,
     productName: line?.productName,
     uom: line?.uom,
     qtyToIssue: line?.qtyToIssue,
-    qtyToIssueTolerancePerc: line?.qtyToIssueTolerancePerc,
+    qtyToIssueTolerance: line?.qtyToIssueTolerance,
     // qtyToIssueMin: line?.qtyToIssueMin,
     // qtyToIssueMax: line?.qtyToIssueMax,
     qtyToIssueRemaining: line?.qtyToIssueRemaining,
@@ -98,16 +109,18 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
 const computeHeaderEntriesFromParams = ({
   url,
   caption,
+  userInstructions,
   productName,
   uom,
   qtyToIssue,
-  qtyToIssueTolerancePerc,
+  qtyToIssueTolerance,
   qtyToIssueRemaining,
   qtyIssued,
 }) => {
   return {
     location: url,
     caption: caption,
+    userInstructions,
     values: [
       { caption: trl('general.Product'), value: productName },
       {
@@ -115,7 +128,7 @@ const computeHeaderEntriesFromParams = ({
         value: formatQtyToHumanReadable({
           qty: qtyToIssue,
           uom,
-          tolerancePercent: qtyToIssueTolerancePerc,
+          tolerance: qtyToIssueTolerance,
           precision: 999,
         }),
       },

@@ -29,6 +29,8 @@ import de.metas.cucumber.stepdefs.payment.C_Payment_StepDefData;
 import de.metas.currency.Currency;
 import de.metas.currency.CurrencyCode;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.organization.IOrgDAO;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -42,9 +44,11 @@ import org.compiere.model.I_C_BankStatement;
 import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
+import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 
@@ -55,6 +59,7 @@ public class C_BankStatementLine_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ICurrencyDAO currencyDAO = Services.get(ICurrencyDAO.class);
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 
 	private final C_BankStatement_StepDefData bankStatementTable;
 	private final C_BankStatementLine_StepDefData bankStatementLineTable;
@@ -120,16 +125,18 @@ public class C_BankStatementLine_StepDef
 		softly.assertThat(bankStatementLineRecord).isNotNull();
 		InterfaceWrapperHelper.refresh(bankStatementLineRecord);
 
-		final Timestamp valutaDate = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + I_C_BankStatementLine.COLUMNNAME_ValutaDate);
+		final OrgId orgId = OrgId.ofRepoId(bankStatementLineRecord.getAD_Org_ID());
+		final ZoneId zoneId = orgDAO.getTimeZone(orgId);
+		final LocalDate valutaDate = DataTableUtil.extractLocalDateOrNullForColumnName(row, "OPT." + I_C_BankStatementLine.COLUMNNAME_ValutaDate);
 		if (valutaDate != null)
 		{
-			softly.assertThat(bankStatementLineRecord.getValutaDate()).isEqualTo(valutaDate);
+			softly.assertThat(TimeUtil.asLocalDate(bankStatementLineRecord.getValutaDate(), zoneId)).isEqualTo(valutaDate);
 		}
 
-		final Timestamp dateAcct = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + I_C_BankStatementLine.COLUMNNAME_DateAcct);
+		final LocalDate dateAcct = DataTableUtil.extractLocalDateOrNullForColumnName(row, "OPT." + I_C_BankStatementLine.COLUMNNAME_DateAcct);
 		if (dateAcct != null)
 		{
-			softly.assertThat(bankStatementLineRecord.getDateAcct()).isEqualTo(dateAcct);
+			softly.assertThat(TimeUtil.asLocalDate(bankStatementLineRecord.getDateAcct(), zoneId)).isEqualTo(dateAcct);
 		}
 
 		final String currencyIsoCode = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BankStatementLine.COLUMNNAME_C_Currency_ID + "." + "ISO_Code");
@@ -152,10 +159,10 @@ public class C_BankStatementLine_StepDef
 			softly.assertThat(bankStatementLineRecord.getStmtAmt()).isEqualByComparingTo(stmtAmt);
 		}
 
-		final Timestamp statementLineDate = DataTableUtil.extractDateTimestampForColumnNameOrNull(row, "OPT." + I_C_BankStatementLine.COLUMNNAME_StatementLineDate);
+		final LocalDate statementLineDate = DataTableUtil.extractLocalDateOrNullForColumnName(row, "OPT." + I_C_BankStatementLine.COLUMNNAME_StatementLineDate);
 		if (statementLineDate != null)
 		{
-			softly.assertThat(bankStatementLineRecord.getStatementLineDate()).isEqualTo(statementLineDate);
+			softly.assertThat(TimeUtil.asLocalDate(bankStatementLineRecord.getStatementLineDate(), zoneId)).isEqualTo(statementLineDate);
 		}
 
 		final String bPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_BankStatementLine.COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);

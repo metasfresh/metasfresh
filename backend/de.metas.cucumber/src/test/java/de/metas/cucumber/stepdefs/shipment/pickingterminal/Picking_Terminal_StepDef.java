@@ -69,7 +69,6 @@ public class Picking_Terminal_StepDef
 	private final PickingCandidateService pickingCandidateService = SpringContextHolder.instance.getBean(PickingCandidateService.class);
 	private final IHUPickingSlotBL huPickingSlotBL = Services.get(IHUPickingSlotBL.class);
 
-
 	public Picking_Terminal_StepDef(
 			@NonNull final M_ShipmentSchedule_StepDefData shipmentScheduleTable,
 			@NonNull final M_HU_StepDefData huTable)

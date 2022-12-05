@@ -49,7 +49,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item
 
     When the order identified by o_1 is completed
 
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
 
@@ -57,7 +57,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | true                | false       |
 
-    Then after not more than 30s, M_InOut is found:
+    Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_1                            | s_1                   |
 
@@ -65,19 +65,19 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.C_OrderLine_ID.Identifier |
       | shipmentLine_1            | s_1                   | p_1                     | 10          | true      | ol_1                          |
 
-    And after not more than 30s, EDI_Desadv_Pack records are found:
+    And after not more than 60s, EDI_Desadv_Pack records are found:
       | EDI_Desadv_Pack_ID.Identifier | IsManual_IPA_SSCC18 | OPT.M_HU_ID.Identifier | OPT.M_HU_PackagingCode_LU_ID.Identifier | OPT.GTIN_LU_PackingMaterial |
       | p_1                           | true                | null                   | null                                    | null                        |
 
-    And after not more than 30s, the EDI_Desadv_Pack_Item has only the following records:
+    And after not more than 60s, the EDI_Desadv_Pack_Item has only the following records:
       | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCU | OPT.QtyCUsPerLU | OPT.QtyItemCapacity | OPT.QtyTU | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.BestBeforeDate | OPT.LotNumber | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
       | pi_1                               | p_1                           | 10              | 10        | 10              | 0                   | 1         | s_1                       | shipmentLine_1                | null               | null          | null                                    | null                        |
 
     And the shipment identified by s_1 is reversed
 
-    Then after not more than 30s, there are no records in EDI_Desadv_Pack_Item
+    Then after not more than 60s, there are no records in EDI_Desadv_Pack_Item
 
-    And after not more than 30s, there are no records in EDI_Desadv_Pack
+    And after not more than 60s, there are no records in EDI_Desadv_Pack
 
   Scenario: 1 Pack from 1 line with no HU & 1 packing item
   in:
@@ -162,7 +162,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item
 
     When the order identified by o_1 is completed
 
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
 
@@ -170,7 +170,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | D            | true                | false       |
 
-    Then after not more than 30s, M_InOut is found:
+    Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_1                            | s_1                   |
 
@@ -178,19 +178,19 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.C_OrderLine_ID.Identifier |
       | shipmentLine_1            | s_1                   | p_1                     | 100         | true      | ol_1                          |
 
-    And after not more than 30s, EDI_Desadv_Pack records are found:
+    And after not more than 60s, EDI_Desadv_Pack records are found:
       | EDI_Desadv_Pack_ID.Identifier | IsManual_IPA_SSCC18 | OPT.M_HU_ID.Identifier | OPT.M_HU_PackagingCode_LU_ID.Identifier | OPT.GTIN_LU_PackingMaterial |
       | p_1                           | true                | null                   | huPackagingCode_1                       | gtinPiItemProduct           |
 
-    And after not more than 30s, the EDI_Desadv_Pack_Item has only the following records:
+    And after not more than 60s, the EDI_Desadv_Pack_Item has only the following records:
       | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCU | OPT.QtyCUsPerLU | OPT.QtyItemCapacity | OPT.QtyTU | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.BestBeforeDate | OPT.LotNumber | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
       | pi_1                               | p_1                           | 100             | 10        | 100             | 10                  | 10        | s_1                       | shipmentLine_1                | 2021-04-20         | lotNumber     | huPackagingCode_2                       | bPartnerProductGTIN         |
 
     And the shipment identified by s_1 is reversed
 
-    Then after not more than 30s, there are no records in EDI_Desadv_Pack_Item
+    Then after not more than 60s, there are no records in EDI_Desadv_Pack_Item
 
-    And after not more than 30s, there are no records in EDI_Desadv_Pack
+    And after not more than 60s, there are no records in EDI_Desadv_Pack
 
   Scenario: 1 Pack from 1 line with HU for entire qty
   in:
@@ -257,7 +257,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount |
       | huProduct_inventory       | huProduct_inventoryLine       | p_1                     | 0       | 10       |
     And complete inventory with inventoryIdentifier 'huProduct_inventory'
-    And after not more than 30s, there are added M_HUs for inventory
+    And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | huProduct_inventoryLine       | createdCU          |
 
@@ -265,7 +265,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item
       | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | resultedNewTUs.Identifier | resultedNewCUs.Identifier |
       | createdCU           | 10    | huProductTU                        | createdTU                 | newCreatedCU              |
 
-    And after not more than 30s, M_HUs should have
+    And after not more than 60s, M_HUs should have
       | M_HU_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier |
       | createdTU          | huProductTU                            |
 
@@ -302,7 +302,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item
 
     When the order identified by o_1 is completed
 
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
 
@@ -320,7 +320,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | PD           | true                | false       |
 
-    Then after not more than 30s, M_InOut is found:
+    Then after not more than 60s, M_InOut is found:
       | M_ShipmentSchedule_ID.Identifier | M_InOut_ID.Identifier |
       | s_s_1                            | s_1                   |
 
@@ -328,11 +328,11 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item
       | M_InOutLine_ID.Identifier | M_InOut_ID.Identifier | M_Product_ID.Identifier | movementqty | processed | OPT.C_OrderLine_ID.Identifier |
       | shipmentLine_1            | s_1                   | p_1                     | 10          | true      | ol_1                          |
 
-    Then after not more than 30s, EDI_Desadv_Pack records are found:
+    Then after not more than 60s, EDI_Desadv_Pack records are found:
       | EDI_Desadv_Pack_ID.Identifier | IsManual_IPA_SSCC18 | OPT.M_HU_ID.Identifier | OPT.M_HU_PackagingCode_LU_ID.Identifier | OPT.GTIN_LU_PackingMaterial |
       | p_1                           | true                | createdLU              | huPackagingCode_1                       | bPartnerProductGTIN_LU      |
 
-    And after not more than 30s, the EDI_Desadv_Pack_Item has only the following records:
+    And after not more than 60s, the EDI_Desadv_Pack_Item has only the following records:
       | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCU | OPT.QtyCUsPerLU | OPT.QtyItemCapacity | OPT.QtyTU | OPT.M_InOut_ID.Identifier | OPT.M_InOutLine_ID.Identifier | OPT.BestBeforeDate | OPT.LotNumber | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
       | pi_1                               | p_1                           | 10              | 10        | 10              | 10                  | 1         | s_1                       | shipmentLine_1                | 2021-04-20         | luLotNumber   | huPackagingCode_2                       | bPartnerProductGTIN_TU      |
 
@@ -348,9 +348,9 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item
 
     And the shipment identified by s_1 is reversed
 
-    Then after not more than 30s, there are no records in EDI_Desadv_Pack_Item
+    Then after not more than 60s, there are no records in EDI_Desadv_Pack_Item
 
-    And after not more than 30s, there are no records in EDI_Desadv_Pack
+    And after not more than 60s, there are no records in EDI_Desadv_Pack
 
   Scenario: 2 Packs from 1 line with HU for partial qty & 1 packing item
   in:
@@ -452,7 +452,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item
       | M_Inventory_ID.Identifier | M_InventoryLine_ID.Identifier | M_Product_ID.Identifier | QtyBook | QtyCount |
       | huProduct_inventory       | huProduct_inventoryLine       | p_1                     | 0       | 5        |
     And complete inventory with inventoryIdentifier 'huProduct_inventory'
-    And after not more than 30s, there are added M_HUs for inventory
+    And after not more than 60s, there are added M_HUs for inventory
       | M_InventoryLine_ID.Identifier | M_HU_ID.Identifier |
       | huProduct_inventoryLine       | createdCU          |
 
@@ -460,7 +460,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item
       | sourceCU.Identifier | cuQty | M_HU_PI_Item_Product_ID.Identifier | resultedNewTUs.Identifier | resultedNewCUs.Identifier |
       | createdCU           | 5     | huProductTU                        | createdTU                 | newCreatedCU              |
 
-    And after not more than 30s, M_HUs should have
+    And after not more than 60s, M_HUs should have
       | M_HU_ID.Identifier | OPT.M_HU_PI_Item_Product_ID.Identifier |
       | createdTU          | huProductTU                            |
 
@@ -494,7 +494,7 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item
 
     When the order identified by o_1 is completed
 
-    And after not more than 30s, M_ShipmentSchedules are found:
+    And after not more than 60s, M_ShipmentSchedules are found:
       | Identifier | C_OrderLine_ID.Identifier | IsToRecompute |
       | s_s_1      | ol_1                      | N             |
 
@@ -512,12 +512,12 @@ Feature: EDI_DesadvPack and EDI_DesadvPack_Item
       | M_ShipmentSchedule_ID.Identifier | QuantityType | IsCompleteShipments | IsShipToday |
       | s_s_1                            | PD           | true                | false       |
 
-    Then after not more than 30s, EDI_Desadv_Pack records are found:
+    Then after not more than 60s, EDI_Desadv_Pack records are found:
       | EDI_Desadv_Pack_ID.Identifier | IsManual_IPA_SSCC18 | OPT.M_HU_ID.Identifier | OPT.M_HU_PackagingCode_LU_ID.Identifier | OPT.GTIN_LU_PackingMaterial |
       | p_1                           | true                | null                   | huPackagingCode_1                       | gtinPiItemProduct           |
       | p_2                           | true                | createdLU              | huPackagingCode_1                       | bPartnerProductGTIN_LU      |
 
-    And after not more than 30s, the EDI_Desadv_Pack_Item has only the following records:
+    And after not more than 60s, the EDI_Desadv_Pack_Item has only the following records:
       | EDI_Desadv_Pack_Item_ID.Identifier | EDI_Desadv_Pack_ID.Identifier | OPT.MovementQty | OPT.QtyCU | OPT.QtyCUsPerLU | OPT.QtyItemCapacity | OPT.QtyTU | OPT.BestBeforeDate | OPT.LotNumber | OPT.M_HU_PackagingCode_TU_ID.Identifier | OPT.GTIN_TU_PackingMaterial |
       | pi_1                               | p_1                           | 5               | 10        | 5               | 10                  | 1         | 2021-04-20         | lotNumber     | huPackagingCode_2                       | bPartnerProductGTIN         |
       | pi_2                               | p_2                           | 5               | 5         | 5               | 5                   | 1         | 2021-04-20         | luLotNumber   | huPackagingCode_2                       | bPartnerProductGTIN_TU      |

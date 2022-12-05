@@ -817,7 +817,9 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 
 		try
 		{
-			final HashMap<String, String> params = objectMapper.readValue(rawParams, new TypeReference<HashMap<String, String>>() {});
+			final HashMap<String, String> params = objectMapper.readValue(rawParams, new TypeReference<HashMap<String, String>>()
+			{
+			});
 
 			return externalSystemRequestParams.entrySet().containsAll(params.entrySet());
 		}
@@ -832,7 +834,9 @@ public class MetasfreshToExternalSystemRabbitMQ_StepDef
 			@NonNull final I_ExternalSystem_Config externalSystemConfig,
 			@NonNull final List<JsonExternalSystemRequest> requests) throws JsonProcessingException
 	{
-		final HashMap<String, String> expectedParams = objectMapper.readValue(expectedRawParams, new TypeReference<HashMap<String, String>>() {});
+		final HashMap<String, String> expectedParams = objectMapper.readValue(expectedRawParams, new TypeReference<HashMap<String, String>>()
+		{
+		});
 
 		final JsonExternalSystemRequest jsonExternalSystemRequest = requests.stream()
 				.filter(request -> request.getExternalSystemConfigId().getValue() == externalSystemConfig.getExternalSystem_Config_ID())

@@ -1,15 +1,14 @@
 package de.metas.material.cockpit.stock;
 
-import de.metas.util.Check;
-import org.adempiere.service.ClientId;
-import org.adempiere.warehouse.WarehouseId;
-
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.service.ClientId;
+import org.adempiere.warehouse.WarehouseId;
 
 /*
  * #%L

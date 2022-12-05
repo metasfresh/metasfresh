@@ -23,6 +23,8 @@
 package de.metas.document.sequence.impl;
 
 import com.google.common.base.Suppliers;
+import de.metas.cache.CacheMgt;
+import de.metas.cache.model.CacheInvalidateMultiRequest;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeSequenceMap;
 import de.metas.document.DocumentNoBuilderException;
@@ -49,6 +51,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.IMutable;
 import org.adempiere.util.lang.Mutable;
+import org.compiere.model.I_AD_Sequence;
 import org.compiere.model.I_C_DocType;
 import org.compiere.model.MSequence;
 import org.compiere.util.DB;
@@ -365,6 +368,10 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 												trxName,
 												QUERY_TIME_OUT,
 												rs -> currentSeq.setValue(rs.getInt(1)));
+
+		CacheMgt.get().resetLocalNowAndBroadcastOnTrxCommit(
+				trxName,
+				CacheInvalidateMultiRequest.rootRecord(I_AD_Sequence.Table_Name,docSeqInfo.getAdSequenceId()));
 
 		return currentSeq.getValue();
 	}

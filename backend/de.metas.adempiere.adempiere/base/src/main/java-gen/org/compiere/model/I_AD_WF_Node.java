@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for AD_WF_Node
  *  @author metasfresh (generated) 
@@ -926,6 +925,27 @@ public interface I_AD_WF_Node
 	String COLUMNNAME_PP_AlwaysAvailableToUser = "PP_AlwaysAvailableToUser";
 
 	/**
+	 * Set User Instructions.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setPP_UserInstructions (@Nullable java.lang.String PP_UserInstructions);
+
+	/**
+	 * Get User Instructions.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getPP_UserInstructions();
+
+	ModelColumn<I_AD_WF_Node, Object> COLUMN_PP_UserInstructions = new ModelColumn<>(I_AD_WF_Node.class, "PP_UserInstructions", null);
+	String COLUMNNAME_PP_UserInstructions = "PP_UserInstructions";
+
+	/**
 	 * Set Priority.
 	 * Indicates if this request is of a high, medium or low priority.
 	 *
@@ -1018,11 +1038,6 @@ public interface I_AD_WF_Node
 	 */
 	int getS_Resource_ID();
 
-	@Nullable org.compiere.model.I_S_Resource getS_Resource();
-
-	void setS_Resource(@Nullable org.compiere.model.I_S_Resource S_Resource);
-
-	ModelColumn<I_AD_WF_Node, org.compiere.model.I_S_Resource> COLUMN_S_Resource_ID = new ModelColumn<>(I_AD_WF_Node.class, "S_Resource_ID", org.compiere.model.I_S_Resource.class);
 	String COLUMNNAME_S_Resource_ID = "S_Resource_ID";
 
 	/**

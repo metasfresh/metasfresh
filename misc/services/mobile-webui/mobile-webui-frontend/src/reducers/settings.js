@@ -14,6 +14,11 @@ export const useBooleanSetting = (name) => {
   return value === 'Y' || value === true;
 };
 
+export const usePositiveNumberSetting = (name, defaultValue) => {
+  const value = useSetting(name);
+  return value && value > 0 ? Number(value) : defaultValue;
+};
+
 export const useSetting = (name) => {
   return useSelector((state) => getSettingFromState(state, name));
 };

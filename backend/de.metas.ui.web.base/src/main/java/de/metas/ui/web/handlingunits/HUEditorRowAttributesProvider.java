@@ -54,6 +54,8 @@ public class HUEditorRowAttributesProvider implements IViewRowAttributesProvider
 	private final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
 
 	private final boolean readonly;
+
+	private final boolean serialNoFromSequence;
 	private final AttributeSourceDocument attributeSourceDocument;
 
 	private final ExtendedMemorizingSupplier<IAttributeStorageFactory> _attributeStorageFactory = ExtendedMemorizingSupplier.of(this::createAttributeStorageFactory);
@@ -69,9 +71,11 @@ public class HUEditorRowAttributesProvider implements IViewRowAttributesProvider
 	@Builder
 	private HUEditorRowAttributesProvider(
 			final boolean readonly,
+			final boolean serialNoFromSequence,
 			final AttributeSourceDocument attributeSourceDocument)
 	{
 		this.readonly = readonly;
+		this.serialNoFromSequence = serialNoFromSequence;
 		this.attributeSourceDocument = attributeSourceDocument;
 	}
 
@@ -106,6 +110,7 @@ public class HUEditorRowAttributesProvider implements IViewRowAttributesProvider
 				.hu(hu)
 				.readonly(rowAttributesReadonly)
 				.attributeSourceDocument(attributeSourceDocument)
+				.serialNoFromSequence(serialNoFromSequence)
 				.build();
 	}
 

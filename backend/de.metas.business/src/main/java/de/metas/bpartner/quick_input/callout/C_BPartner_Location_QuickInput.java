@@ -31,7 +31,6 @@ import lombok.NonNull;
 import org.adempiere.ad.callout.annotations.Callout;
 import org.adempiere.ad.callout.annotations.CalloutMethod;
 import org.adempiere.ad.callout.spi.IProgramaticCalloutProvider;
-import org.adempiere.ad.dao.IQueryBL;
 import org.compiere.model.I_C_BPartner_Location_QuickInput;
 import org.compiere.model.I_C_BPartner_QuickInput;
 import org.compiere.model.I_C_Location;
@@ -40,7 +39,6 @@ import org.compiere.model.POInfo;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.util.List;
 
 @Component
 @Callout(I_C_BPartner_Location_QuickInput.class)

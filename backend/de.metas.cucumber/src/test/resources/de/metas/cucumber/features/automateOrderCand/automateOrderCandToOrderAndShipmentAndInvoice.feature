@@ -148,7 +148,7 @@ Feature: Process order candidate and automatically generate shipment and invoice
       | C_InvoiceLine_ID.Identifier | C_Invoice_ID.Identifier | M_Product_ID.Identifier | qtyinvoiced | processed | OPT.C_Project_ID.Identifier |
       | invoiceLine_1_1             | invoice_1               | product_1               | 10          | true      | project_1                   |
 
-    And after not more than 30s, Fact_Acct are found
+    And after not more than 60s, Fact_Acct are found
       | TableName | Record_ID.Identifier | OPT.M_SectionCode_ID.Identifier |
       | C_Invoice | invoice_1            | testSection_S0150_100           |
 

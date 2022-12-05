@@ -1,7 +1,8 @@
 package de.metas.material.cockpit.model;
 
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for MD_AvailableForSales_Config
  *  @author metasfresh (generated) 

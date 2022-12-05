@@ -49,6 +49,7 @@
         <module>de-metas-camel-grssignum</module>
         <module>de-metas-camel-leichundmehl</module>
         <module>de-metas-camel-sap-file-import</module>
+        <module>de-metas-camel-metasfresh</module>
     </modules>
 
     <dependencies>

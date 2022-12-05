@@ -35,17 +35,15 @@ package org.compiere.FA;
  * #L%
  */
 
+import de.metas.process.JavaProcess;
+import de.metas.process.ProcessInfoParameter;
+import org.compiere.util.DB;
 
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-
-import org.compiere.util.DB;
-
-import de.metas.process.ProcessInfoParameter;
-import de.metas.process.JavaProcess;
 
 /**
  *	Import Assets
@@ -174,7 +172,7 @@ public class ImportAsset extends JavaProcess
 			StringBuffer sqlA = new StringBuffer ("INSERT INTO A_Asset (A_Asset_ID,"
 				+ "AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,"
 				+ "Value,Name,Description,Help,"
-				+ "A_Asset_Group_ID,M_Product_ID,SerNo,LOT,VersionNo,GuaranteeDate,"
+				+ "A_Asset_Group_ID,M_Product_ID,VersionNo,"
 				+ "AssetServiceDate,IsOwned,AssetDepreciationDate, UseLifeYears, UseLifeMonths," 
 				+ "LifeUseUnits, UseUnits, Isdisposed, AssetDisposalDate, IsInPosession," 
 				+ "LocationComment, M_Locator_ID, C_BPartner_ID, C_BPartner_Location_ID,"
@@ -184,7 +182,7 @@ public class ImportAsset extends JavaProcess
 				+ "SELECT ?,"
 				+ "AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,"
 				+ "Value,Name,Description,Help,"				
-				+ "A_Asset_Group_ID,M_Product_ID,SerNo,LOT,VersionNo,GuaranteeDate,"
+				+ "A_Asset_Group_ID,M_Product_ID,VersionNo,"
 				+ "AssetServiceDate,IsOwned,AssetDepreciationDate, UseLifeYears, UseLifeMonths," 
 				+ "LifeUseUnits, UseUnits, Isdisposed, AssetDisposalDate, IsInPosession," 
 				+ "LocationComment, M_Locator_ID, C_BPartner_ID, C_BPartner_Location_ID,"
@@ -201,7 +199,7 @@ public class ImportAsset extends JavaProcess
 				+ "SET( A_Asset_ID,"
 				+ "AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,"
 				+ "Value,Name,Description,Help,"
-				+ "A_Asset_Group_ID,M_Product_ID,SerNo,LOT,VersionNo,GuaranteeDate,"
+				+ "A_Asset_Group_ID,M_Product_ID,VersionNo,"
 				+ "AssetServiceDate,IsOwned,AssetDepreciationDate, UseLifeYears, UseLifeMonths," 
 				+ "LifeUseUnits, UseUnits, Isdisposed, AssetDisposalDate, IsInPosession," 
 				+ "LocationComment, M_Locator_ID, C_BPartner_ID, C_BPartner_Location_ID,"
@@ -211,7 +209,7 @@ public class ImportAsset extends JavaProcess
 				+ "(SELECT A_Asset_ID,"
 				+ "AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,"
 				+ "Value,Name,Description,Help,"				
-				+ "A_Asset_Group_ID,M_Product_ID,SerNo,LOT,VersionNo,GuaranteeDate,"
+				+ "A_Asset_Group_ID,M_Product_ID,VersionNo,"
 				+ "AssetServiceDate,IsOwned,AssetDepreciationDate, UseLifeYears, UseLifeMonths," 
 				+ "LifeUseUnits, UseUnits, Isdisposed, AssetDisposalDate, IsInPosession," 
 				+ "LocationComment, M_Locator_ID, C_BPartner_ID, C_BPartner_Location_ID,"
@@ -453,7 +451,6 @@ public class ImportAsset extends JavaProcess
 					
 					try
 					{						
-						//String sqlcall = "UPDATE A_Asset SET(AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,Value,Name,Description,Help,A_Asset_Group_ID,M_Product_ID,SerNo,LOT,VersionNo,GuaranteeDate,AssetServiceDate,IsOwned,AssetDepreciationDate, UseLifeYears, UseLifeMonths,LifeUseUnits, UseUnits, Isdisposed, AssetDisposalDate, IsInPosession,LocationComment, M_Locator_ID, C_BPartner_ID, C_BPartner_Location_ID,C_Location_ID, IsDepreciated, IsFullyDepreciated, AD_User_ID,M_AttributeSetInstance_ID, A_Parent_Asset_ID, A_QTY_Original,A_QTY_Current) = (SELECT AD_Client_ID,AD_Org_ID,IsActive,Created,CreatedBy,Updated,UpdatedBy,Value,Name,Description,Help,A_Asset_Group_ID,M_Product_ID,SerNo,LOT,VersionNo,GuaranteeDate,AssetServiceDate,IsOwned,AssetDepreciationDate, UseLifeYears, UseLifeMonths,LifeUseUnits, UseUnits, Isdisposed, AssetDisposalDate, IsInPosession,LocationComment, M_Locator_ID, C_BPartner_ID, C_BPartner_Location_ID,C_Location_ID, IsDepreciated, IsFullyDepreciated, AD_User_ID,M_AttributeSetInstance_ID, A_Parent_Asset_ID, A_QTY_Original,A_QTY_Current FROM I_Asset WHERE I_Asset_ID=1000000) WHERE A_Asset_ID=2005000";
 						//pstmt_updateProduct =  prepareStatement(sqlB.toString(), ResultSet.TYPE_FORWARD_ONLY,	ResultSet.CONCUR_UPDATABLE, null);
 						pstmt_updateProduct.executeUpdate();
 						noUpdate++;

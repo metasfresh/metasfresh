@@ -22,22 +22,11 @@
 
 package de.metas.order;
 
-import javax.annotation.Nullable;
-
-import de.metas.process.AdProcessId;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ClientId;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_DocType;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.X_C_DocType;
-import org.springframework.stereotype.Component;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.i18n.Language;
+import de.metas.process.AdProcessId;
 import de.metas.report.DocumentPrintOptions;
 import de.metas.report.DocumentReportAdvisor;
 import de.metas.report.DocumentReportAdvisorUtil;
@@ -48,6 +37,16 @@ import de.metas.util.OptionalBoolean;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.service.ClientId;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_C_Order;
+import org.compiere.model.X_C_DocType;
+import org.springframework.stereotype.Component;
+
+import javax.annotation.Nullable;
 
 @Component
 public class OrderDocumentReportAdvisor implements DocumentReportAdvisor

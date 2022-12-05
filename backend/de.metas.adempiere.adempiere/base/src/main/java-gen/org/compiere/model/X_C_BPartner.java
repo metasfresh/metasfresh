@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for C_BPartner
  *  @author metasfresh (generated)
@@ -78,6 +78,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getAddress1()
 	{
 		return get_ValueAsString(COLUMNNAME_Address1);
+	}
+
+	@Override
+	public void setActis_Rating (final @Nullable java.lang.String Actis_Rating)
+	{
+		set_Value (COLUMNNAME_Actis_Rating, Actis_Rating);
+	}
+
+	@Override
+	public java.lang.String getActis_Rating()
+	{
+		return get_ValueAsString(COLUMNNAME_Actis_Rating);
 	}
 
 	/**
@@ -1095,6 +1107,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
+	public void setIsDefaultForwarder (final boolean IsDefaultForwarder)
+	{
+		set_Value (COLUMNNAME_IsDefaultForwarder, IsDefaultForwarder);
+	}
+
+	@Override
+	public boolean isDefaultForwarder()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsDefaultForwarder);
+	}
+
+	@Override
 	public void setIsDiscountPrinted (final boolean IsDiscountPrinted)
 	{
 		set_Value (COLUMNNAME_IsDiscountPrinted, IsDiscountPrinted);
@@ -1128,6 +1152,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public boolean isEmployee()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsEmployee);
+	}
+
+	@Override
+	public void setIsForwarder (final boolean IsForwarder)
+	{
+		set_Value (COLUMNNAME_IsForwarder, IsForwarder);
+	}
+
+	@Override
+	public boolean isForwarder()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsForwarder);
 	}
 
 	@Override
@@ -1191,6 +1227,30 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
+	public void setIsRunningContracts (final boolean IsRunningContracts)
+	{
+		set_Value (COLUMNNAME_IsRunningContracts, IsRunningContracts);
+	}
+
+	@Override
+	public boolean isRunningContracts()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsRunningContracts);
+	}
+
+	@Override
+	public void setIsSalesPartner (final boolean IsSalesPartner)
+	{
+		set_Value (COLUMNNAME_IsSalesPartner, IsSalesPartner);
+	}
+
+	@Override
+	public boolean isSalesPartner()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSalesPartner);
+	}
+
+	@Override
 	public void setIsSalesPartnerRequired (final boolean IsSalesPartnerRequired)
 	{
 		set_Value (COLUMNNAME_IsSalesPartnerRequired, IsSalesPartnerRequired);
@@ -1215,6 +1275,30 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
+	public void setIsSectionGroupPartner (final boolean IsSectionGroupPartner)
+	{
+		set_Value (COLUMNNAME_IsSectionGroupPartner, IsSectionGroupPartner);
+	}
+
+	@Override
+	public boolean isSectionGroupPartner()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSectionGroupPartner);
+	}
+
+	@Override
+	public void setIsSectionPartner (final boolean IsSectionPartner)
+	{
+		set_Value (COLUMNNAME_IsSectionPartner, IsSectionPartner);
+	}
+
+	@Override
+	public boolean isSectionPartner()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsSectionPartner);
+	}
+
+	@Override
 	public void setIsSEPASigned (final boolean IsSEPASigned)
 	{
 		set_Value (COLUMNNAME_IsSEPASigned, IsSEPASigned);
@@ -1236,6 +1320,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public boolean isShippingNotificationEmail()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsShippingNotificationEmail);
+	}
+
+	@Override
+	public void setIsStorageWarehouse (final boolean IsStorageWarehouse)
+	{
+		set_Value (COLUMNNAME_IsStorageWarehouse, IsStorageWarehouse);
+	}
+
+	@Override
+	public boolean isStorageWarehouse()
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsStorageWarehouse);
 	}
 
 	@Override
@@ -1478,6 +1574,21 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	}
 
 	@Override
+	public void setMother_Company_ID (final int Mother_Company_ID)
+	{
+		if (Mother_Company_ID < 1)
+			set_Value (COLUMNNAME_Mother_Company_ID, null);
+		else
+			set_Value (COLUMNNAME_Mother_Company_ID, Mother_Company_ID);
+	}
+
+	@Override
+	public int getMother_Company_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_Mother_Company_ID);
+	}
+
+	@Override
 	public void setM_PriceList_ID (final int M_PriceList_ID)
 	{
 		if (M_PriceList_ID < 1)
@@ -1538,6 +1649,33 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public java.lang.String getMRP_Exclude()
 	{
 		return get_ValueAsString(COLUMNNAME_MRP_Exclude);
+	}
+
+	@Override
+	public org.compiere.model.I_M_SectionCode getM_SectionCode()
+	{
+		return get_ValueAsPO(COLUMNNAME_M_SectionCode_ID, org.compiere.model.I_M_SectionCode.class);
+	}
+
+	@Override
+	public void setM_SectionCode(final org.compiere.model.I_M_SectionCode M_SectionCode)
+	{
+		set_ValueFromPO(COLUMNNAME_M_SectionCode_ID, org.compiere.model.I_M_SectionCode.class, M_SectionCode);
+	}
+
+	@Override
+	public void setM_SectionCode_ID (final int M_SectionCode_ID)
+	{
+		if (M_SectionCode_ID < 1)
+			set_Value (COLUMNNAME_M_SectionCode_ID, null);
+		else
+			set_Value (COLUMNNAME_M_SectionCode_ID, M_SectionCode_ID);
+	}
+
+	@Override
+	public int getM_SectionCode_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_M_SectionCode_ID);
 	}
 
 	@Override
@@ -2120,6 +2258,18 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 		return get_ValueAsTimestamp(COLUMNNAME_ReminderDateIntern);
 	}
 
+	@Override
+	public void setRIM_Category (final @Nullable java.lang.String RIM_Category)
+	{
+		set_Value (COLUMNNAME_RIM_Category, RIM_Category);
+	}
+
+	@Override
+	public java.lang.String getRIM_Category()
+	{
+		return get_ValueAsString(COLUMNNAME_RIM_Category);
+	}
+
 	/**
 	 * Salesgroup AD_Reference_ID=540635
 	 * Reference name: C_BPartner_Salesgroup
@@ -2195,6 +2345,21 @@ public class X_C_BPartner extends org.compiere.model.PO implements I_C_BPartner,
 	public int getSalesVolume()
 	{
 		return get_ValueAsInt(COLUMNNAME_SalesVolume);
+	}
+
+	@Override
+	public void setSection_Group_Partner_ID (final int Section_Group_Partner_ID)
+	{
+		if (Section_Group_Partner_ID < 1)
+			set_Value (COLUMNNAME_Section_Group_Partner_ID, null);
+		else
+			set_Value (COLUMNNAME_Section_Group_Partner_ID, Section_Group_Partner_ID);
+	}
+
+	@Override
+	public int getSection_Group_Partner_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_Section_Group_Partner_ID);
 	}
 
 	@Override

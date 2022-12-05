@@ -2,17 +2,20 @@ package de.metas.manufacturing.job.service;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import de.metas.dao.ValueRestriction;
 import de.metas.device.accessor.DeviceAccessor;
 import de.metas.device.accessor.DeviceAccessorsHubFactory;
 import de.metas.device.accessor.DeviceId;
 import de.metas.device.websocket.DeviceWebsocketNamingStrategy;
+import de.metas.global_qrcodes.GlobalQRCode;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueSchedule;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleProcessRequest;
 import de.metas.handlingunits.pporder.api.issue_schedule.PPOrderIssueScheduleService;
+import de.metas.handlingunits.pporder.source_hu.PPOrderSourceHUService;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.i18n.AdMessageKey;
@@ -47,6 +50,7 @@ import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.ManufacturingOrderQuery;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderRouting;
+import org.eevolution.api.PPOrderRoutingActivity;
 import org.eevolution.api.PPOrderRoutingActivityId;
 import org.eevolution.model.I_PP_Order;
 import org.slf4j.Logger;
@@ -58,6 +62,7 @@ import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
@@ -74,6 +79,7 @@ public class ManufacturingJobService
 	private final IPPOrderBOMBL ppOrderBOMBL;
 	private final PPOrderIssueScheduleService ppOrderIssueScheduleService;
 	private final HUReservationService huReservationService;
+	private final PPOrderSourceHUService ppOrderSourceHUService;
 	private final DeviceAccessorsHubFactory deviceAccessorsHubFactory;
 	private final DeviceWebsocketNamingStrategy deviceWebsocketNamingStrategy;
 	private final ManufacturingJobLoaderAndSaverSupportingServices loadingAndSavingSupportServices;
@@ -86,6 +92,7 @@ public class ManufacturingJobService
 			final @NonNull ResourceService resourceService,
 			final @NonNull PPOrderIssueScheduleService ppOrderIssueScheduleService,
 			final @NonNull HUReservationService huReservationService,
+			final @NonNull PPOrderSourceHUService ppOrderSourceHUService,
 			final @NonNull DeviceAccessorsHubFactory deviceAccessorsHubFactory,
 			final @NonNull DeviceWebsocketNamingStrategy deviceWebsocketNamingStrategy,
 			final @NonNull HUQRCodesService huQRCodeService)
@@ -93,6 +100,7 @@ public class ManufacturingJobService
 		this.resourceService = resourceService;
 		this.ppOrderIssueScheduleService = ppOrderIssueScheduleService;
 		this.huReservationService = huReservationService;
+		this.ppOrderSourceHUService = ppOrderSourceHUService;
 		this.deviceAccessorsHubFactory = deviceAccessorsHubFactory;
 		this.deviceWebsocketNamingStrategy = deviceWebsocketNamingStrategy;
 
@@ -140,6 +148,7 @@ public class ManufacturingJobService
 
 	public Stream<ManufacturingJobReference> streamJobReferencesForUser(
 			final @NonNull UserId responsibleId,
+			final @Nullable ResourceId plantId,
 			final @NonNull Instant now,
 			final @NonNull QueryLimit suggestedLimit)
 	{
@@ -154,7 +163,7 @@ public class ManufacturingJobService
 		// New possible jobs
 		if (!suggestedLimit.isLimitHitOrExceeded(result))
 		{
-			streamJobCandidatesToCreate(responsibleId, now)
+			streamJobCandidatesToCreate(responsibleId, plantId, now)
 					.limit(suggestedLimit.minusSizeOf(result).toIntOr(Integer.MAX_VALUE))
 					.forEach(result::add);
 		}
@@ -176,11 +185,16 @@ public class ManufacturingJobService
 				.build());
 	}
 
-	private Stream<ManufacturingJobReference> streamJobCandidatesToCreate(@NonNull final UserId userId, @Nullable Instant now)
+	private Stream<ManufacturingJobReference> streamJobCandidatesToCreate(
+			@NonNull final UserId userId,
+			@Nullable final ResourceId plantId,
+			@Nullable Instant now)
 	{
 		final ManufacturingOrderQuery.ManufacturingOrderQueryBuilder queryBuilder = ManufacturingOrderQuery.builder()
 				.onlyCompleted(true)
 				.responsibleId(ValueRestriction.isNull());
+
+		Set<ResourceId> onlyPlantIds = plantId != null ? ImmutableSet.of(plantId) : ImmutableSet.of();
 
 		for (ManufacturingJobDefaultFilter defaultFilter : getDefaultFilters())
 		{
@@ -188,8 +202,18 @@ public class ManufacturingJobService
 			{
 				case UserPlant:
 				{
-					final ImmutableSet<ResourceId> resourceIds = resourceService.getResourceIdsByUserId(userId);
-					queryBuilder.onlyPlantIds(resourceIds);
+					final ImmutableSet<ResourceId> userPlantIds = resourceService.getResourceIdsByUserId(userId);
+					if (!userPlantIds.isEmpty())
+					{
+						if (onlyPlantIds.isEmpty())
+						{
+							onlyPlantIds = userPlantIds;
+						}
+						else
+						{
+							onlyPlantIds = Sets.intersection(onlyPlantIds, userPlantIds);
+						}
+					}
 					break;
 				}
 				case TodayDatePromised:
@@ -205,7 +229,10 @@ public class ManufacturingJobService
 			}
 		}
 
-		return ppOrderBL.streamManufacturingOrders(queryBuilder.build())
+		return ppOrderBL.streamManufacturingOrders(
+						queryBuilder
+								.onlyPlantIds(onlyPlantIds)
+								.build())
 				.map(ppOrder -> toManufacturingJobReference(ppOrder, false));
 	}
 
@@ -233,6 +260,7 @@ public class ManufacturingJobService
 				.ppOrderBL(ppOrderBL)
 				.huReservationService(huReservationService)
 				.ppOrderIssueScheduleService(ppOrderIssueScheduleService)
+				.ppOrderSourceHUService(ppOrderSourceHUService)
 				.loadingSupportServices(loadingAndSavingSupportServices)
 				//
 				.ppOrderId(ppOrderId)
@@ -443,5 +471,33 @@ public class ManufacturingJobService
 				.getDeviceAccessors(Weightables.ATTR_WeightGross)
 				.stream(job.getWarehouseId())
 				.map(this::toScaleDevice);
+	}
+
+	public ManufacturingJob withScannedQRCode(
+			@NonNull final ManufacturingJob job,
+			@NonNull final ManufacturingJobActivityId jobActivityId,
+			@Nullable final GlobalQRCode scannedQRCode)
+	{
+		// No change
+		if(GlobalQRCode.equals(job.getActivityById(jobActivityId).getScannedQRCode(), scannedQRCode))
+		{
+			return job;
+		}
+
+		final ManufacturingJobLoaderAndSaver loaderAndSaver = newSaver();
+		final PPOrderId ppOrderId = job.getPpOrderId();
+		final PPOrderRouting orderRouting = loaderAndSaver.getRouting(ppOrderId);
+		final PPOrderRouting orderRoutingBeforeChange = orderRouting.copy();
+
+		final PPOrderRoutingActivity orderRoutingActivity = orderRouting.getActivityById(jobActivityId.toPPOrderRoutingActivityId(ppOrderId));
+		orderRoutingActivity.setScannedQRCode(scannedQRCode);
+		orderRoutingActivity.completeIt();
+
+		if (!PPOrderRouting.equals(orderRouting, orderRoutingBeforeChange))
+		{
+			loaderAndSaver.saveRouting(orderRouting);
+		}
+
+		return loaderAndSaver.load(ppOrderId);
 	}
 }

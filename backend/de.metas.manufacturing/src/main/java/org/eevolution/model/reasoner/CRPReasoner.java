@@ -105,7 +105,7 @@ public class CRPReasoner
 	{
 		return resourceService.getResourceTypeByResourceId(resource.getResourceId()).isAvailable();
 	}
-
+	
 	/**
 	 * Get Next/Previous Available Date
 	 */

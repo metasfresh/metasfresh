@@ -11,7 +11,7 @@ de.metas.rest_api.v2.product.ProductsRestControllerTest.getProducts_standardCase
     "manufacturerName" : null,
     "manufacturerNumber" : null,
     "discontinuedFrom" : null,
-    "sectionCode":"SectionCode",
+    "sectionCode" : "SectionCode",
     "bpartners" : [ {
       "bPartnerId" : 1,
       "productNo" : "productNo1-vendor1",

@@ -317,7 +317,7 @@ public class MProductImportTableSqlUpdater
 		//
 		sql = new StringBuilder("UPDATE ")
 				.append(targetTableName + " i ")
-				.append(" SET C_UOM_ID = (SELECT C_UOM_ID FROM C_UOM u WHERE u.X12DE355=i.X12DE355 AND u.AD_Client_ID IN (0,i.AD_Client_ID) AND u.IsActive='Y' ORDER BY u.AD_Client_ID DESC, u.C_UOM_ID ASC LIMIT 1) ")
+				.append(" SET C_UOM_ID = (SELECT C_UOM_ID FROM C_UOM u WHERE upper(u.X12DE355)=upper(i.X12DE355) AND u.AD_Client_ID IN (0,i.AD_Client_ID) AND u.IsActive='Y' ORDER BY u.AD_Client_ID DESC, u.C_UOM_ID ASC LIMIT 1) ")
 				.append("WHERE C_UOM_ID IS NULL")
 				.append(" AND " + COLUMNNAME_I_IsImported + "<>'Y'")
 				.append(selection.toSqlWhereClause("i"));

@@ -1058,6 +1058,20 @@ public class MHRProcess extends X_HR_Process implements IDocument
 	}  // getDays
 
 	/**
+	 * Helper Method : Concept for a range from-to in periods.
+	 * Periods with values of 0 -1 1, etc. actual previous one period, next period
+	 * 0 corresponds to actual period.
+	 *
+	 * @param conceptValue concept key(value)
+	 * @param periodFrom the search is done by the period value, it helps to search from previous years
+	 * @param periodTo
+	 */
+	public double getConcept(String conceptValue, int periodFrom, int periodTo)
+	{
+		return getConcept(conceptValue, null, periodFrom, periodTo);
+	} // getConcept
+	
+	/**
 	 * Helper Method : Concept by range from-to in periods from a different payroll
 	 * periods with values 0 -1 1, etc. actual previous one period, next period
 	 * 0 corresponds to actual period
