@@ -1072,54 +1072,54 @@ UPDATE AD_Element_Trl SET Name='Sektionskennung', PrintName='Sektionskennung',Up
 ;
 -- Element: ProductValue
 -- 2022-12-05T09:02:31.177Z
-UPDATE AD_Element_Trl SET Name='Produktschlüssel', PrintName='Produktschlüssel',Updated=TO_TIMESTAMP('2022-12-05 11:02:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=1675 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET Name='Produktschlüssel', PrintName='Produktschlüssel',Updated=TO_TIMESTAMP('2022-12-05 11:02:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581739 AND AD_Language='de_CH'
 ;
 
 -- 2022-12-05T09:02:31.258Z
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(1675,'de_CH') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581739,'de_CH') 
 ;
 
 -- Element: ProductValue
 -- 2022-12-05T09:02:43.880Z
-UPDATE AD_Element_Trl SET Name='Produktschlüssel', PrintName='Produktschlüssel',Updated=TO_TIMESTAMP('2022-12-05 11:02:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=1675 AND AD_Language='nl_NL'
+UPDATE AD_Element_Trl SET Name='Produktschlüssel', PrintName='Produktschlüssel',Updated=TO_TIMESTAMP('2022-12-05 11:02:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581739 AND AD_Language='nl_NL'
 ;
 
 -- 2022-12-05T09:02:43.968Z
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(1675,'nl_NL') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581739,'nl_NL') 
 ;
 
 -- Element: ProductValue
 -- 2022-12-05T09:03:10.261Z
-UPDATE AD_Element_Trl SET Name='Produktschlüssel', PrintName='Produktschlüssel',Updated=TO_TIMESTAMP('2022-12-05 11:03:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=1675 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET Name='Produktschlüssel', PrintName='Produktschlüssel',Updated=TO_TIMESTAMP('2022-12-05 11:03:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581739 AND AD_Language='de_DE'
 ;
 
 -- 2022-12-05T09:03:10.342Z
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(1675,'de_DE') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581739,'de_DE') 
 ;
 
 -- Element: ProductName
 -- 2022-12-05T09:03:56.595Z
-UPDATE AD_Element_Trl SET Name='Produktname', PrintName='Produktname',Updated=TO_TIMESTAMP('2022-12-05 11:03:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=2659 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET Name='Produktname', PrintName='Produktname',Updated=TO_TIMESTAMP('2022-12-05 11:03:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581747 AND AD_Language='de_CH'
 ;
 
 -- 2022-12-05T09:03:56.677Z
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(2659,'de_CH') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581747,'de_CH') 
 ;
 
 -- Element: ProductName
 -- 2022-12-05T09:04:01.720Z
-UPDATE AD_Element_Trl SET Name='Produktname', PrintName='Produktname',Updated=TO_TIMESTAMP('2022-12-05 11:04:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=2659 AND AD_Language='nl_NL'
+UPDATE AD_Element_Trl SET Name='Produktname', PrintName='Produktname',Updated=TO_TIMESTAMP('2022-12-05 11:04:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581747 AND AD_Language='nl_NL'
 ;
 
 -- 2022-12-05T09:04:01.803Z
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(2659,'nl_NL') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581747,'nl_NL') 
 ;
 
 -- Element: ProductName
 -- 2022-12-05T09:04:07.719Z
-UPDATE AD_Element_Trl SET Name='Produktname', PrintName='Produktname',Updated=TO_TIMESTAMP('2022-12-05 11:04:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=2659 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET Name='Produktname', PrintName='Produktname',Updated=TO_TIMESTAMP('2022-12-05 11:04:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581747 AND AD_Language='de_DE'
 ;
 
 -- 2022-12-05T09:04:07.801Z
-/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(2659,'de_DE') 
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581747,'de_DE') 
 ;
