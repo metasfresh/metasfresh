@@ -499,17 +499,29 @@ public class MD_Candidate_StepDef
 			{
 				if (item.getMaterialDescriptor().getQuantity().abs().compareTo(tableRow.getQty().abs()) != 0) // using .abs() because MaterialDispoDataItem qty is negated for demand and inventory_down
 				{
-					sb.append("item with id=" + item.getCandidateId().getRepoId() + " does not match tableRow with Identifier " + tableRow.getIdentifier() + " because the qty values are different\n");
+					sb.append("item with id=" + item.getCandidateId().getRepoId()
+									  + " does not match tableRow with Identifier " + tableRow.getIdentifier()
+									  + " because the qty values are different"
+									  + " Expected=" + tableRow.getQty().abs() + " (abs), Actual= " + item.getMaterialDescriptor().getQuantity().abs() + " (abs)"
+									  + "\n");
 					continue;
 				}
 				if (item.getAtp().compareTo(tableRow.getAtp()) != 0)
 				{
-					sb.append("item with id=" + item.getCandidateId().getRepoId() + " does not match tableRow with Identifier " + tableRow.getIdentifier() + " because the atp values are different\n");
+					sb.append("item with id=" + item.getCandidateId().getRepoId()
+									  + " does not match tableRow with Identifier " + tableRow.getIdentifier()
+									  + " because the atp values are different"
+									  + " Expected=" + tableRow.getAtp() + ", Actual= " + item.getAtp()
+									  + "\n");
 					continue;
 				}
 				if (!item.getMaterialDescriptor().getDate().equals(tableRow.getTime()))
 				{
-					sb.append("item with id=" + item.getCandidateId().getRepoId() + " does not match tableRow with Identifier " + tableRow.getIdentifier() + " because the time (resp. materialDecription.date) values are different\n");
+					sb.append("item with id=" + item.getCandidateId().getRepoId()
+									  + " does not match tableRow with Identifier " + tableRow.getIdentifier()
+									  + " because the time (resp. materialDecription.date) values are different"
+							          + " Expected=" + tableRow.getTime() + ", Actual= " + item.getMaterialDescriptor().getDate()
+									  + "\n");
 					continue;
 				}
 				return ProviderResult.resultWasFound(item);
