@@ -724,6 +724,7 @@ public class C_Invoice_Candidate_StepDef
 					softly.assertThat(updatedInvoiceCandidate.getBill_User_ID()).isEqualTo(user.getAD_User_ID());
 				}
 
+
 				final String invoiceRule = DataTableUtil.extractStringOrNullForColumnName(row, "OPT."  + COLUMNNAME_InvoiceRule);
 				if(Check.isNotBlank(invoiceRule))
 				{
@@ -802,6 +803,7 @@ public class C_Invoice_Candidate_StepDef
 			assertThat(invoiceCandidate).isNotNull();
 		}
 	}
+
 
 	@And("invoice candidates are not billable")
 	public void check_not_billable(@NonNull final DataTable dataTable)
@@ -1171,6 +1173,18 @@ public class C_Invoice_Candidate_StepDef
 				.setTaggedWithAnyTag()
 				.setOnlyInvoiceCandidateIds(onlyInvoiceCandidateIds)
 				.update();
+	}
+
+	@And("there is no C_Invoice_Candidate for:")
+	public void validate_no_C_Invoice_Candidate_created_for_record(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final Object icReferencedRecord = getICReferencedRecord(row);
+
+			final List<I_C_Invoice_Candidate> invoiceCandidates = invoiceCandidateHandlerBL.createMissingCandidatesFor(icReferencedRecord);
+			assertThat(invoiceCandidates.isEmpty()).isTrue();
+		}
 	}
 
 	private ItemProvider.ProviderResult<I_C_Invoice_Candidate> retrieveInvoiceCandidate(
@@ -1752,5 +1766,21 @@ public class C_Invoice_Candidate_StepDef
 				.setTaggedWithAnyTag()
 				.setOnlyInvoiceCandidateIds(onlyInvoiceCandidateIds)
 				.update();
+	}
+
+	@NonNull
+	private Object getICReferencedRecord(@NonNull final Map<String, String> row)
+	{
+		final String tableName = DataTableUtil.extractStringForColumnName(row, I_AD_Table.COLUMNNAME_TableName);
+		final String recordIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_Record_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+		switch (tableName)
+		{
+			case I_S_Issue.Table_Name:
+				final I_S_Issue issue = issueTable.get(recordIdentifier);
+				return issue;
+			default:
+				throw new AdempiereException("Table not supported! TableName:" + tableName);
+		}
 	}
 }

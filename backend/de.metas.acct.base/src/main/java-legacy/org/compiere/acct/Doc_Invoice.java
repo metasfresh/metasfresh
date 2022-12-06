@@ -16,18 +16,26 @@
  *****************************************************************************/
 package org.compiere.acct;
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Properties;
-import java.util.Set;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.acct.api.AccountId;
+import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.IFactAcctDAO;
+import de.metas.acct.api.PostingType;
+import de.metas.acct.api.ProductAcctType;
+import de.metas.acct.doc.AcctDocContext;
+import de.metas.acct.doc.DocLine_Invoice;
 import de.metas.document.DocBaseType;
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeBL;
 import de.metas.invoice.InvoiceDocBaseType;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceLineId;
+import de.metas.invoice.MatchInvId;
+import de.metas.invoice.service.IInvoiceDAO;
+import de.metas.invoice.service.IMatchInvDAO;
+import de.metas.tax.api.TaxId;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -41,22 +49,15 @@ import org.compiere.model.MPeriod;
 import org.compiere.util.DB;
 import org.compiere.util.DisplayType;
 
-import com.google.common.collect.ImmutableList;
-
-import de.metas.acct.api.AccountId;
-import de.metas.acct.api.AcctSchema;
-import de.metas.acct.api.IFactAcctDAO;
-import de.metas.acct.api.PostingType;
-import de.metas.acct.api.ProductAcctType;
-import de.metas.acct.doc.AcctDocContext;
-import de.metas.acct.doc.DocLine_Invoice;
-import de.metas.invoice.InvoiceId;
-import de.metas.invoice.InvoiceLineId;
-import de.metas.invoice.MatchInvId;
-import de.metas.invoice.service.IInvoiceDAO;
-import de.metas.invoice.service.IMatchInvDAO;
-import de.metas.tax.api.TaxId;
-import de.metas.util.Services;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * Post Invoice Documents.
@@ -75,6 +76,7 @@ import de.metas.util.Services;
 public class Doc_Invoice extends Doc<DocLine_Invoice>
 {
 	private final IMatchInvDAO matchInvDAO = Services.get(IMatchInvDAO.class);
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 
 	private static final String SYSCONFIG_PostMatchInvs = "org.compiere.acct.Doc_Invoice.PostMatchInvs";
 	private static final boolean DEFAULT_PostMatchInvs = false;
@@ -561,7 +563,7 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 	 */
 	private List<Fact> createFacts_PurchaseInvoice(final AcctSchema as)
 	{
-		final Fact fact = new Fact(this, as, PostingType.Actual)
+		final Fact fact = new Fact(this, as, getPostingType())
 				.setFactTrxLinesStrategy(PerDocumentFactTrxStrategy.instance);
 
 		BigDecimal grossAmt = getAmount(Doc.AMTTYPE_Gross);
@@ -843,5 +845,23 @@ public class Doc_Invoice extends Doc<DocLine_Invoice>
 
 		invoice.setPosted(false);
 		InterfaceWrapperHelper.save(invoice);
+	}
+
+	@NonNull
+	private PostingType getPostingType()
+	{
+		final DocTypeId docTypeId = DocTypeId.ofRepoIdOrNull(getC_DocType_ID());
+
+		if(docTypeId == null)
+		{
+			return PostingType.Actual;
+		}
+
+		if(docTypeBL.isInternalVendorInvoice(docTypeId))
+		{
+			return PostingType.Statistical;
+		}
+
+		return PostingType.Actual;
 	}
 }   // Doc_Invoice

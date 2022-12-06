@@ -24,6 +24,9 @@ package de.metas.serviceprovider.issue.invoicecandidate.interceptor;
 
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.serviceprovider.effortcontrol.EffortControlService;
+import de.metas.serviceprovider.issue.IssueId;
 import de.metas.serviceprovider.issue.Status;
 import de.metas.serviceprovider.model.I_S_Issue;
 import de.metas.util.Services;
@@ -35,6 +38,7 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Set;
 
 @Interceptor(I_S_Issue.class)
@@ -42,6 +46,13 @@ import java.util.Set;
 public class S_Issue
 {
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+
+	private final EffortControlService effortControlService;
+
+	public S_Issue(@NonNull final EffortControlService effortControlService)
+	{
+		this.effortControlService = effortControlService;
+	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE },
 			ifColumnsChanged = {
@@ -85,5 +96,58 @@ public class S_Issue
 				.appendParametersToMessage()
 				.setParameter("S_Issue_ID", record.getS_Issue_ID())
 				.setParameter("InvoiceCandidateIds", existingCandidateIds);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },
+			ifColumnsChanged = { I_S_Issue.COLUMNNAME_Status, I_S_Issue.COLUMNNAME_Processed })
+	public void createOrUpdateInvoiceCandidateForChildIssues(@NonNull final I_S_Issue record)
+	{
+		final Status status = Status.ofCode(record.getStatus());
+
+		if (!status.equals(Status.INVOICED) || !record.isProcessed())
+		{
+			return;
+		}
+
+		final Set<InvoiceCandidateId> existingCandidateIds = invoiceCandDAO.retrieveReferencingIds(TableRecordReference.of(record));
+
+		if (existingCandidateIds.isEmpty())
+		{
+			return;
+		}
+
+		effortControlService.createOrUpdateInvoiceCandidateForLinkedSubIssues(IssueId.ofRepoId(record.getS_Issue_ID()));
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE },
+			ifColumnsChanged = { I_S_Issue.COLUMNNAME_IssueEffort })
+	public void recomputeInvoiceCandidateOnEffortIssueChange(@NonNull final I_S_Issue record)
+	{
+		if (!record.isEffortIssue())
+		{
+			return;
+		}
+
+		final IssueId parentIssue = IssueId.ofRepoIdOrNull(record.getS_Parent_Issue_ID());
+		if (parentIssue == null)
+		{
+			return;
+		}
+
+		final Status status = Status.ofCode(record.getStatus());
+
+		if (!status.equals(Status.INVOICED) || !record.isProcessed())
+		{
+			return;
+		}
+
+		final List<I_C_Invoice_Candidate> existingCandidates = invoiceCandDAO.retrieveReferencing(TableRecordReference.of(record));
+
+		if (existingCandidates.isEmpty())
+		{
+			return;
+		}
+
+		invoiceCandDAO.invalidateCands(existingCandidates);
 	}
 }

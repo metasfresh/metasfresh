@@ -284,6 +284,15 @@ public class IssueRepository
 	}
 
 	@NonNull
+	public I_S_Issue getRecordById(@NonNull final IssueId issueId)
+	{
+		return Optional.ofNullable(getRecordOrNull(issueId))
+				.orElseThrow(()-> new AdempiereException("Missing S_Issue record for id:")
+				.appendParametersToMessage()
+				.setParameter("IssueId", issueId));
+	}
+
+	@NonNull
 	public static IssueEntity ofRecord(@NonNull final I_S_Issue record)
 	{
 		final IssueType issueType = IssueType
