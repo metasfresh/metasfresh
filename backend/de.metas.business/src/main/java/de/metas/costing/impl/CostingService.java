@@ -389,6 +389,12 @@ public class CostingService implements ICostingService
 	@Override
 	public AggregatedCostAmount createReversalCostDetails(@NonNull final CostDetailReverseRequest reversalRequest)
 	{
+		return createReversalCostDetailsOrEmpty(reversalRequest).orElseThrow();
+	}
+
+	@Override
+	public ExplainedOptional<AggregatedCostAmount> createReversalCostDetailsOrEmpty(@NonNull final CostDetailReverseRequest reversalRequest)
+	{
 		final List<CostDetail> initialDocCostDetails = costDetailsService.getAllForDocumentAndAcctSchemaId(reversalRequest.getInitialDocumentRef(), reversalRequest.getAcctSchemaId());
 		if (initialDocCostDetails.isEmpty())
 		{
@@ -422,10 +428,10 @@ public class CostingService implements ICostingService
 
 		if (costDetailCreateResults.isEmpty())
 		{
-			throw new AdempiereException("No costs created for " + reversalRequest);
+			return ExplainedOptional.emptyBecause("No costs created for " + reversalRequest);
 		}
 
-		return toAggregatedCostAmount(costDetailCreateResults);
+		return ExplainedOptional.of(toAggregatedCostAmount(costDetailCreateResults));
 	}
 
 	private ImmutableList<CostDetailCreateResult> createReversalCostDetails(

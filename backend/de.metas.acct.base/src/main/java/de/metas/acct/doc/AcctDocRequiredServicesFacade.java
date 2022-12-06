@@ -315,6 +315,11 @@ public class AcctDocRequiredServicesFacade
 		return costingService.createReversalCostDetails(request);
 	}
 
+	public ExplainedOptional<AggregatedCostAmount> createReversalCostDetailsOrEmpty(@NonNull final CostDetailReverseRequest request)
+	{
+		return costingService.createReversalCostDetailsOrEmpty(request);
+	}
+
 	public Optional<CostPrice> getCurrentCostPrice(
 			@NonNull final CostSegment costSegment,
 			@NonNull final CostingMethod costingMethod)
