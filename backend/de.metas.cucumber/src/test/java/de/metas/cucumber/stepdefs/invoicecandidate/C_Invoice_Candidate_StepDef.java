@@ -1250,6 +1250,8 @@ public class C_Invoice_Candidate_StepDef
 				.append(COLUMNNAME_QtyToInvoice).append(":").append("I_->").append(invoiceCandidate.getQtyToInvoice()).append(" - ResultSet->").append(resultSet.getBigDecimal(COLUMNNAME_QtyToInvoice))
 				.append(", ")
 				.append(COLUMNNAME_QtyDelivered).append(":").append("I_->").append(invoiceCandidate.getQtyDelivered()).append(" - ResultSet->").append(resultSet.getBigDecimal(COLUMNNAME_QtyDelivered))
+				.append(", ")
+				.append(COLUMNNAME_QtyWithIssues_Effective).append(":").append("I_->").append(invoiceCandidate.getQtyWithIssues_Effective()).append(" - ResultSet->").append(resultSet.getBigDecimal(COLUMNNAME_QtyWithIssues_Effective))
 				.append("]");
 
 		return detailsBuilder.toString();
