@@ -167,4 +167,14 @@ public class DeliveryPlanningService
 			deliveryPlanningRepository.generateDeliveryPlanning(request);
 		}
 	}
+
+	public void deleteForReceiptSchedule(@NonNull final ReceiptScheduleId receiptScheduleId)
+	{
+		deliveryPlanningRepository.deleteForReceiptSchedule(receiptScheduleId);
+	}
+
+	public void deleteForShipmentSchedule(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		deliveryPlanningRepository.deleteForShipmentSchedule(shipmentScheduleId);
+	}
 }
