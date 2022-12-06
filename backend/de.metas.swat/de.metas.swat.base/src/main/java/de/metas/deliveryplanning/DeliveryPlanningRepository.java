@@ -131,7 +131,7 @@ public class DeliveryPlanningRepository
 		queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
 				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_M_ReceiptSchedule_ID, receiptScheduleId)
 				.create()
-				.deleteDirectly();
+				.delete();
 	}
 
 	public void deleteForShipmentSchedule(@NonNull final ShipmentScheduleId shipmentScheduleId)
@@ -139,6 +139,6 @@ public class DeliveryPlanningRepository
 		queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
 				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
 				.create()
-				.deleteDirectly();
+				.delete();
 	}
 }
