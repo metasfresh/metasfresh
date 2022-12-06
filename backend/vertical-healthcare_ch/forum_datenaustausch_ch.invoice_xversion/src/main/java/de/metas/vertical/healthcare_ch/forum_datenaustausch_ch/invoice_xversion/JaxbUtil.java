@@ -1,8 +1,6 @@
 package de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_xversion;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
+import lombok.NonNull;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
@@ -10,8 +8,9 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.stream.FactoryConfigurationError;
-
-import lombok.NonNull;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 /*
  * #%L
@@ -46,7 +45,7 @@ public class JaxbUtil
 			final JAXBContext jaxbContext = JAXBContext.newInstance(jaxbType.getPackage().getName());
 			return unmarshal(jaxbContext, xmlInput);
 		}
-		catch (JAXBException e)
+		catch (final JAXBException e)
 		{
 			throw new RuntimeException(e);
 		}
@@ -67,8 +66,10 @@ public class JaxbUtil
 	public static <T> void marshal(
 			@NonNull final JAXBElement<T> jaxbElement,
 			@NonNull final Class<T> jaxbType,
-			@NonNull String xsdName,
-			@NonNull final OutputStream outputStream)
+			@NonNull final String xsdName,
+			@NonNull final OutputStream outputStream,
+			final boolean prettyPrint
+	)
 	{
 		try
 		{
@@ -78,6 +79,10 @@ public class JaxbUtil
 
 			marshaller.setProperty(Marshaller.JAXB_ENCODING, StandardCharsets.UTF_8.name());
 			marshaller.setProperty(Marshaller.JAXB_SCHEMA_LOCATION, xsdName); // important; for us, finding the correct converter depends on the schema location
+			if (prettyPrint)
+			{
+				marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+			}
 
 			// we want the XML header to have " (just like all the rest of the XML) and not '
 			// background: some systems that shall be able to work with our XML have issues with the single quote in the XML header
@@ -87,7 +92,7 @@ public class JaxbUtil
 
 			marshaller.marshal(jaxbElement, outputStream);
 		}
-		catch (JAXBException | FactoryConfigurationError e)
+		catch (final JAXBException | FactoryConfigurationError e)
 		{
 			throw new RuntimeException(e);
 		}

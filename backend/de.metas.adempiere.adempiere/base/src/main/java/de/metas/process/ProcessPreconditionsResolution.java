@@ -252,7 +252,6 @@ public final class ProcessPreconditionsResolution
 	 * Derive this resolution, overriding the caption.
 	 *
 	 * @param captionOverride caption override; null value will be considered as no override
-	 * @return
 	 */
 	public ProcessPreconditionsResolution deriveWithCaptionOverride(@NonNull final String captionOverride)
 	{

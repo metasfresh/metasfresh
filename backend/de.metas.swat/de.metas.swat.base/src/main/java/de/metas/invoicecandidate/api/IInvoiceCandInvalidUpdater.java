@@ -129,7 +129,7 @@ public interface IInvoiceCandInvalidUpdater
 		}
 		if (priceAndTax.getDiscount() != null)
 		{
-			ic.setDiscount(Percent.toBigDecimalOrNull(priceAndTax.getDiscount()));
+			ic.setDiscount(Percent.toBigDecimalOrZero(priceAndTax.getDiscount()));
 		}
 		if (priceAndTax.getInvoicableQtyBasedOn() != null)
 		{
@@ -141,7 +141,11 @@ public interface IInvoiceCandInvalidUpdater
 		{
 			ic.setIsTaxIncluded(priceAndTax.getTaxIncluded());
 		}
-
+		if (priceAndTax.getTaxId() != null)
+		{
+			ic.setC_Tax_ID(priceAndTax.getTaxId().getRepoId());
+		}
+		
 		//
 		// Compensation group
 		if (priceAndTax.getCompensationGroupBaseAmt() != null)

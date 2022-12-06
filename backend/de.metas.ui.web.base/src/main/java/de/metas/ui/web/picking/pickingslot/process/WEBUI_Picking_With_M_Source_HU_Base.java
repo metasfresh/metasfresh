@@ -13,12 +13,12 @@ import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.requests.AddQtyToHURequest;
 import de.metas.handlingunits.picking.requests.RetrieveAvailableHUIdsToPickRequest;
-import de.metas.inoutcandidate.ShipmentScheduleId;
-import de.metas.inoutcandidate.api.IPackagingDAO;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
 import de.metas.order.DeliveryRule;
 import de.metas.organization.OrgId;
+import de.metas.picking.api.IPackagingDAO;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.product.ProductId;
@@ -72,16 +72,6 @@ import java.util.List;
 	private final InventoryService inventoryService = SpringContextHolder.instance.getBean(InventoryService.class);
 	private final IShipmentSchedulePA shipmentSchedulePA =  Services.get(IShipmentSchedulePA.class);
 
-	protected final IShipmentSchedulePA getShipmentSchedulePA()
-	{
-		return this.shipmentSchedulePA;
-	}
-
-	protected final PickingCandidateService getPickingCandidateService()
-	{
-		return this.pickingCandidateService;
-	}
-
 	protected final boolean noSourceHUAvailable()
 	{
 		final List<HuId> sourceHUs = getSourceHUIds();
@@ -99,13 +89,11 @@ import java.util.List;
 				.onlyIfAttributesMatchWithShipmentSchedules(true)
 				.build();
 
-		final ImmutableList<HuId> sourceHUIds = huPickingSlotBL.retrieveAvailableSourceHUs(query)
+		return huPickingSlotBL.retrieveAvailableSourceHUs(query)
 				.stream()
 				.map(I_M_HU::getM_HU_ID)
 				.map(HuId::ofRepoId)
 				.collect(ImmutableList.toImmutableList());
-
-		return sourceHUIds;
 	}
 
 	protected final Quantity retrieveQtyToPick()

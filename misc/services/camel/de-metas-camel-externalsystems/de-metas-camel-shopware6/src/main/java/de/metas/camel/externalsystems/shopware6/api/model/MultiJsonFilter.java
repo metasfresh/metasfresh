@@ -25,7 +25,6 @@ package de.metas.camel.externalsystems.shopware6.api.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -36,7 +35,6 @@ import lombok.Value;
 import java.util.List;
 
 @Value
-@JsonDeserialize(builder = MultiJsonFilter.MultiJsonFilterBuilder.class)
 @JsonPropertyOrder({ "type", "operator", "queries" })
 public class MultiJsonFilter
 {

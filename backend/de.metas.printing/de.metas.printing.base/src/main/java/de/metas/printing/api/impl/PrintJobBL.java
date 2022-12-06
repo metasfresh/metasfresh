@@ -320,12 +320,11 @@ public class PrintJobBL implements IPrintJobBL
 		final Properties ctx = InterfaceWrapperHelper.getCtx(jobInstructions);
 
 		final IWorkPackageQueue queue = Services.get(IWorkPackageQueueFactory.class).getQueueForEnqueuing(ctx, PDFDocPrintingWorkpackageProcessor.class);
-		queue.newBlock()
-				.setContext(ctx)
-				.newWorkpackage()
+		queue
+				.newWorkPackage()
 				.setC_Async_Batch(asyncBatch) // set the async batch in workpackage in order to track it
 				.addElement(jobInstructions)
-				.build();
+				.buildAndEnqueue();
 	}
 
 	/**

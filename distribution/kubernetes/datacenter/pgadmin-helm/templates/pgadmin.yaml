@@ -1,0 +1,75 @@
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: metasfresh-pgadmin
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: metasfresh-pgadmin
+spec:
+  selector:
+    app: metasfresh-pgadmin
+  ports:
+    - protocol: TCP
+      port: {{ .Values.pgadmin.port.pgadmin }}
+      targetPort: {{ .Values.pgadmin.port.pgadmin }}
+
+---
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: metasfresh-pgadmin
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: metasfresh-pgadmin
+spec:
+  selector:
+    matchLabels:
+      app: metasfresh-pgadmin
+  serviceName: metasfresh-pgadmin
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: metasfresh-pgadmin
+    spec:
+      containers:
+      - name: metasfresh-pgadmin
+        image: {{ .Values.pgadmin.image }}
+        ports:
+        - containerPort: {{ .Values.pgadmin.port.pgadmin }}
+        env:
+        - name: PGADMIN_DEFAULT_EMAIL
+          valueFrom:
+            secretKeyRef:
+              name: metasfresh-pgadmin-secret
+              key: default-email
+        - name: PGADMIN_DEFAULT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: metasfresh-pgadmin-secret
+              key: default-password
+        volumeMounts:
+        - mountPath: /var/lib/pgadmin
+          name: data
+      initContainers:
+        - name: take-data-dir-ownership
+          image: busybox
+          command: ['sh', '-c', 'chown -R 5050:5050 /var/lib/pgadmin']
+          volumeMounts:
+          - mountPath: /var/lib/pgadmin
+            name: data
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+      namespace: {{ .Release.Namespace }}
+    spec:
+      accessModes:
+      - ReadWriteOnce
+      resources:
+        requests:
+          storage: {{ .Values.pgadmin.dataStorageSize }}
+      storageClassName: {{ .Values.storageClassName }}
+
+

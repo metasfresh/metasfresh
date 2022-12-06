@@ -25,8 +25,8 @@ package de.metas.common.shipping.v2.shipmentcandidate;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import de.metas.common.rest_api.v2.JsonAttributeSetInstance;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
+import de.metas.common.rest_api.v2.JsonAttributeSetInstance;
 import de.metas.common.rest_api.v2.JsonQuantity;
 import de.metas.common.shipping.v2.JsonProduct;
 import io.swagger.annotations.ApiModel;
@@ -112,6 +112,11 @@ public class JsonResponseShipmentCandidate
 			value = "Delivery information")
 	String deliveryInfo;
 
+	@ApiModelProperty(position = 180,
+			value = "`AD_InputDataSource.InternalName` of the `AD_InputDataSource` record that tells where this candidate's original OLCand came from.\n"
+					+ " In the unlikely case that the shipment candidate has multiple OLCands, this property contains the internal name of the fist `C_OLCand`'s (lowest `C_OLCand_ID`) `AD_InputDataSource` that has a non-empty internal name.")
+	String orderDataSourceInternalName;
+
 	@JsonCreator
 	@Builder
 	private JsonResponseShipmentCandidate(
@@ -131,7 +136,8 @@ public class JsonResponseShipmentCandidate
 			@JsonProperty("deliveredQtyNetPrice") @Nullable final BigDecimal deliveredQtyNetPrice,
 			@JsonProperty("qtyToDeliverNetPrice") @Nullable final BigDecimal qtyToDeliverNetPrice,
 			@JsonProperty("orderedQtyNetPrice") @Nullable final BigDecimal orderedQtyNetPrice,
-			@JsonProperty("deliveryInfo") @Nullable final String deliveryInfo)
+			@JsonProperty("deliveryInfo") @Nullable final String deliveryInfo,
+			@JsonProperty("orderDataSourceInternalName") @Nullable final String orderDataSourceInternalName)
 	{
 		this.id = id;
 		this.orgCode = orgCode;
@@ -150,6 +156,7 @@ public class JsonResponseShipmentCandidate
 		this.qtyToDeliverNetPrice = qtyToDeliverNetPrice;
 		this.orderedQtyNetPrice = orderedQtyNetPrice;
 		this.deliveryInfo = deliveryInfo;
+		this.orderDataSourceInternalName = orderDataSourceInternalName;
 	}
 }
 

@@ -58,7 +58,7 @@ public class C_Async_Batch_DownloadFileFromAttachment extends JavaProcess implem
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
-		final I_C_Async_Batch record = asyncBatchDAO.retrieveAsyncBatchRecord(AsyncBatchId.ofRepoId(context.getSingleSelectedRecordId()));
+		final I_C_Async_Batch record = asyncBatchDAO.retrieveAsyncBatchRecordOutOfTrx(AsyncBatchId.ofRepoId(context.getSingleSelectedRecordId()));
 		if (!hasAttachments(record))
 		{
 			return ProcessPreconditionsResolution.rejectWithInternalReason("No attachments found");
@@ -71,7 +71,7 @@ public class C_Async_Batch_DownloadFileFromAttachment extends JavaProcess implem
 	protected String doIt()
 	{
 
-		final I_C_Async_Batch record = asyncBatchDAO.retrieveAsyncBatchRecord(AsyncBatchId.ofRepoId(getRecord_ID()));
+		final I_C_Async_Batch record = asyncBatchDAO.retrieveAsyncBatchRecordOutOfTrx(AsyncBatchId.ofRepoId(getRecord_ID()));
 
 		final List<AttachmentEntry> attachments = getAttachmentEntries(record);
 		if (!attachments.isEmpty())

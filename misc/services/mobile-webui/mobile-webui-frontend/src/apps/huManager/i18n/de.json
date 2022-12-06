@@ -1,0 +1,26 @@
+{
+  "HU": "HU",
+  "qrCode": "QR code",
+  "locator": "Lagerort",
+  "HUStatus": "Status",
+  "product": "Produkt",
+  "qty": "Menge",
+  "disposePendingStatus": "Entsorgen",
+  "clearanceStatus": "Freigabestatus",
+  "clearanceNote": "Freigabe-Notiz",
+  "action": {
+    "dispose": {
+      "buttonCaption": "Entsorgen"
+    },
+    "move": {
+      "buttonCaption": "Bewegen",
+      "scanTarget": "Lagerort scannen"
+    },
+    "scanAgain": {
+      "buttonCaption": "Erneut scannen"
+    },
+    "setClearance": {
+      "buttonCaption": "HU-Freigabe ändern"
+    }
+  }
+}

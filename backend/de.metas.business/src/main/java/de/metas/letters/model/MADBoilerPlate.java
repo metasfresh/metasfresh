@@ -49,6 +49,7 @@ import org.compiere.model.Lookup;
 import org.compiere.model.MLookupFactory;
 import org.compiere.model.MOrderLine;
 import org.compiere.model.MRequest;
+import org.compiere.model.MTable;
 import org.compiere.model.PO;
 import org.compiere.model.Query;
 import org.compiere.print.ReportEngine;
@@ -130,44 +131,6 @@ public final class MADBoilerPlate extends X_AD_BoilerPlate
 		return bp;
 	}
 
-	public static ReportEngine getReportEngine(final String html, final BoilerPlateContext context)
-	{
-		final Properties ctx = Env.getCtx();
-		String text = parseText(ctx, html, false, context, ITrx.TRXNAME_None);
-		text = text.replace("</", " </"); // we need to leave at least one space before closing tag, else jasper will not apply the effect of that tag
-
-		final ProcessInfo pi = ProcessInfo.builder()
-				.setCtx(ctx)
-				.setAD_ProcessByClassname("de.metas.letters.report.AD_BoilerPlate_Report")
-				.addParameter(I_T_BoilerPlate_Spool.COLUMNNAME_MsgText, text)
-				//
-				.buildAndPrepareExecution()
-				.executeSync()
-				.getProcessInfo();
-
-		final ReportEngine re = ReportEngine.get(ctx, pi);
-		return re;
-	}
-
-	public static File getPDF(final String fileNamePrefix, final String html, final BoilerPlateContext context)
-	{
-		File file = null;
-		if (!Check.isEmpty(fileNamePrefix))
-		{
-			try
-			{
-				file = File.createTempFile(fileNamePrefix.trim(), ".pdf");
-			}
-			catch (final IOException e)
-			{
-				log.error(e.getLocalizedMessage(), e);
-				file = null;
-			}
-		}
-		//
-		final ReportEngine re = getReportEngine(html, context);
-		return re.getPDF(file);
-	}
 
 	public static void sendEMail(final IEMailEditor editor)
 	{

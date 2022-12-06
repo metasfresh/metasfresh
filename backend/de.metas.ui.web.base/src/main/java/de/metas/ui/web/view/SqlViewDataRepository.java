@@ -156,10 +156,7 @@ class SqlViewDataRepository implements IViewDataRepository
 					.build();
 
 			final FilterSql filterSql = filterConverters.getSql(filters, sqlOpts, context);
-			final SqlAndParams rowsMatchingFilter = SqlAndParams.andNullables(
-					filterSql.getWhereClause(),
-					filterSql.getFilterByFTS() != null ? filterSql.getFilterByFTS().buildExistsWhereClause(sqlOpts.getTableNameOrAlias()) : null)
-					.orElse(null);
+			final SqlAndParams rowsMatchingFilter = filterSql.toSqlAndParams(sqlOpts).orElse(null);
 
 			sqlWhereClause = sqlWhereClause.withRowsMatchingFilter(rowsMatchingFilter);
 		}
@@ -309,7 +306,7 @@ class SqlViewDataRepository implements IViewDataRepository
 		}
 
 		return rowBuilders.values().stream()
-				.map(rowBuilder -> rowBuilder.build())
+				.map(ViewRow.Builder::build)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -676,7 +673,7 @@ class SqlViewDataRepository implements IViewDataRepository
 		final SqlAndParams sql = SqlAndParams.builder()
 				.append("SELECT ").append(keyColumnNamesMap.getKeyColumnNamesCommaSeparated())
 				.append("\n FROM " + getTableName())
-				.append("\n WHERE ").append(sqlWhereClause.toSqlAndParams())
+				.append("\n WHERE (\n").append(sqlWhereClause.toSqlAndParams()).append("\n)")
 				.build();
 
 		PreparedStatement pstmt = null;

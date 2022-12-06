@@ -46,6 +46,7 @@ import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.dao.QueryLimit;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BP_Relation;
 import org.compiere.model.I_C_BPartner;
@@ -169,8 +170,9 @@ public interface IBPartnerDAO extends ISingletonService
 	ImmutableSet<BPartnerContactId> getContactIdsByRepoIds(@NonNull Set<Integer> repoIds);
 
 	@Nullable
-	I_AD_User getContactById(BPartnerContactId contactId);
+	I_AD_User getContactById(@NonNull BPartnerContactId contactId);
 
+	String getContactLocationEmail(@Nullable BPartnerContactId contactId);
 	@Nullable
 	I_AD_User getContactByIdInTrx(BPartnerContactId contactId);
 
@@ -235,6 +237,7 @@ public interface IBPartnerDAO extends ISingletonService
 	 * @return {@link I_C_BP_Relation} first encountered which is used for billing
 	 */
 	I_C_BP_Relation retrieveBillBPartnerRelationFirstEncountered(Object contextProvider, I_C_BPartner partner, I_C_BPartner_Location location);
+
 
 	/**
 	 * Retrieve default/first ship to location.
@@ -322,6 +325,8 @@ public interface IBPartnerDAO extends ISingletonService
 			@NonNull OrgId targetOrgId);
 
 	BPartnerId cloneBPartnerRecord(@NonNull CloneBPartnerRequest request);
+
+	List<I_C_BPartner> retrieveVendors(@NonNull QueryLimit limit);
 
 	@Value
 	@Builder

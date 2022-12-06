@@ -34,6 +34,7 @@ import de.metas.bpartner.name.strategy.MembershipContactBPartnerNameAndGreetingS
 import de.metas.bpartner.quick_input.BPartnerQuickInputId;
 import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.bpartner.service.impl.BPartnerBL;
+import de.metas.bpartner.user.role.repository.UserRoleRepository;
 import de.metas.greeting.GreetingRepository;
 import de.metas.greeting.GreetingStandardType;
 import de.metas.user.UserGroupRepository;
@@ -86,7 +87,7 @@ public class BPartnerQuickInputServiceUpdateNameAndGreetingTest
 				new BPartnerQuickInputRelatedRecordsRepository(),
 				new BPartnerContactQuickInputAttributesRepository(),
 				new BPartnerNameAndGreetingStrategies(Optional.of(strategies)),
-				new BPartnerCompositeRepository(new BPartnerBL(new UserRepository()), new MockLogEntriesRepository()),
+				new BPartnerCompositeRepository(new BPartnerBL(new UserRepository()), new MockLogEntriesRepository(), new UserRoleRepository()),
 				new BPartnerAttributesRepository(),
 				new BpartnerRelatedRecordsRepository(),
 				new BPartnerContactAttributesRepository(),

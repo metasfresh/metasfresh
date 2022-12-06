@@ -1,5 +1,6 @@
 package de.metas.handlingunits.attribute.impl;
 
+import com.google.common.collect.ImmutableList;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HUIteratorListenerAdapter;
 import de.metas.handlingunits.HuId;
@@ -15,15 +16,22 @@ import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
 import de.metas.handlingunits.impl.HUIterator;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.storage.IHUStorageFactory;
+import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.AttributeSetId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.mm.attributes.api.IAttributeSet;
+import org.adempiere.mm.attributes.api.IAttributesBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.util.lang.IContextAware;
@@ -44,7 +52,12 @@ public class HUAttributesBL implements IHUAttributesBL
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
 	private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
+	private final IAttributesBL attributesBL = Services.get(IAttributesBL.class);
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+
+	private final AdMessageKey MSG_MandatoryOnPicking = AdMessageKey.of("M_AttributeUse_MandatoryOnPicking");
+	private final AdMessageKey MSG_MandatoryOnShipment = AdMessageKey.of("M_AttributeUse_MandatoryOnShipment");
 
 	@Override
 	@Nullable
@@ -169,6 +182,79 @@ public class HUAttributesBL implements IHUAttributesBL
 	public boolean isAutomaticallySetBestBeforeDate()
 	{
 		return sysConfigBL.getBooleanValue("de.metas.handlingunits.attributes.AutomaticallySetBestBeforeDate", false);
+	}
+
+	@Override
+	public void validateMandatoryShipmentAttributes(@NonNull final HuId huId, @NonNull final ProductId productId)
+	{
+		final AttributeSetId attributeSetId = productBL.getAttributeSetId(productId);
+
+		final ImmutableList<I_M_Attribute> attributesMandatoryOnShipment = attributeDAO.getAttributesByAttributeSetId(attributeSetId).stream()
+				.filter(attribute -> attributesBL
+						.isMandatoryOnShipment(productId,
+											   AttributeId.ofRepoId(attribute.getM_Attribute_ID())))
+				.collect(ImmutableList.toImmutableList());
+
+		validateMandatoryAttributes(huId, productId, attributesMandatoryOnShipment, MSG_MandatoryOnShipment);
+
+	}
+
+	@Override
+	public void validateMandatoryPickingAttributes(@NonNull final HuId huId, @NonNull final ProductId productId)
+	{
+		final ImmutableList<I_M_Attribute> attributesMandatoryOnPicking = attributesBL.getAttributesMandatoryOnPicking(productId);
+
+		validateMandatoryAttributes(huId, productId, attributesMandatoryOnPicking, MSG_MandatoryOnPicking);
+	}
+
+	private void validateMandatoryAttributes(@NonNull final HuId huId,
+			@NonNull final ProductId productId,
+			@NonNull final ImmutableList<I_M_Attribute> mandatoryAttributes,
+			@NonNull final AdMessageKey messageKey)
+	{
+		final I_M_HU huRecord = handlingUnitsDAO.getById(huId);
+
+		final IAttributeStorageFactory attributesFactory = attributeStorageFactoryService.createHUAttributeStorageFactory();
+
+		final IAttributeStorage attributeStorage = attributesFactory.getAttributeStorage(huRecord);
+
+		for (final I_M_Attribute attribute : mandatoryAttributes)
+		{
+			final Object attributeValue = attributeStorage.getValue(attribute);
+			if (Check.isEmpty(attributeValue))
+			{
+				final String productName = productBL.getProductName(productId);
+				throw new AdempiereException(
+						messageKey,
+						attribute.getName(), productName);
+			}
+		}
+	}
+
+	@Override
+	public boolean areMandatoryPickingAttributesFulfilled(
+			@NonNull final HuId huId,
+			@NonNull final ProductId productId)
+	{
+		final ImmutableList<I_M_Attribute> attributesMandatoryOnPicking = attributesBL.getAttributesMandatoryOnPicking(productId);
+
+		final I_M_HU huRecord = handlingUnitsDAO.getById(huId);
+
+		final IAttributeStorageFactory attributesFactory = attributeStorageFactoryService.createHUAttributeStorageFactory();
+
+		final IAttributeStorage attributeStorage = attributesFactory.getAttributeStorage(huRecord);
+
+		for (final I_M_Attribute attribute : attributesMandatoryOnPicking)
+		{
+			final Object attributeValue = attributeStorage.getValue(attribute);
+
+			if (Check.isEmpty(attributeValue))
+			{
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 }

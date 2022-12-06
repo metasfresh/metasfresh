@@ -44,15 +44,13 @@ public class ProcessOLCandsWorkpackageEnqueuer
 	public void enqueue(@NonNull final ProcessOLCandsRequest request, @Nullable final AsyncBatchId processOLCandsBatchId)
 	{
 		workPackageQueueFactory.getQueueForEnqueuing(getCtx(), ProcessOLCandsWorkpackageProcessor.class)
-				.newBlock()
-				.setContext(getCtx())
-				.newWorkpackage()
+				.newWorkPackage()
 				.bindToThreadInheritedTrx()
 				.setC_Async_Batch_ID(processOLCandsBatchId)
 				.parameter(WP_PARAM_VALID_OLCANDIDS_SELECTIONID, request.getPInstanceId())
 				.parameter(WP_PARAM_SHIP, request.isShip())
 				.parameter(WP_PARAM_INVOICE, request.isInvoice())
 				.parameter(WP_PARAM_CLOSE_ORDER, request.isCloseOrder())
-				.build();
+				.buildAndEnqueue();
 	}
 }

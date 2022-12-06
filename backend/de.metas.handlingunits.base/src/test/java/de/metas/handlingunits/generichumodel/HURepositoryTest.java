@@ -89,6 +89,7 @@ class HURepositoryTest
 
 		// setup HU packing instructions
 		uomRecord = newInstance(I_C_UOM.class);
+		uomRecord.setX12DE355("X12DE355");
 		saveRecord(uomRecord);
 
 		final I_M_Product productRecord = newInstance(I_M_Product.class);

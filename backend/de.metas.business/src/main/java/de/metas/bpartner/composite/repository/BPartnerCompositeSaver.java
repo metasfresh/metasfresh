@@ -17,6 +17,7 @@ import de.metas.bpartner.composite.BPartnerLocation;
 import de.metas.bpartner.composite.BPartnerLocationAddressPart;
 import de.metas.bpartner.composite.BPartnerLocationType;
 import de.metas.bpartner.service.IBPartnerBL;
+import de.metas.document.DocTypeId;
 import de.metas.greeting.GreetingId;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.Language;
@@ -32,6 +33,7 @@ import de.metas.logging.TableRecordMDC;
 import de.metas.marketing.base.model.CampaignId;
 import de.metas.organization.OrgId;
 import de.metas.security.permissions2.PermissionServiceFactories;
+import de.metas.title.TitleId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
@@ -191,9 +193,14 @@ final class BPartnerCompositeSaver
 
 		bpartnerRecord.setIsVendor(bpartner.isVendor());
 		bpartnerRecord.setIsCustomer(bpartner.isCustomer());
-		if (bpartner.getInvoiceRule() != null)
+		if (bpartner.getCustomerInvoiceRule() != null)
 		{
-			bpartnerRecord.setInvoiceRule(bpartner.getInvoiceRule().getCode());
+			bpartnerRecord.setInvoiceRule(bpartner.getCustomerInvoiceRule().getCode());
+		}
+
+		if(bpartner.getVendorInvoiceRule() != null)
+		{
+			bpartnerRecord.setPO_InvoiceRule(bpartner.getVendorInvoiceRule().getCode());
 		}
 
 		bpartnerRecord.setVATaxID(bpartner.getVatId());
@@ -227,6 +234,22 @@ final class BPartnerCompositeSaver
 		bpartnerRecord.setReferrer(bpartner.getReferrer());
 		bpartnerRecord.setMKTG_Campaign_ID(CampaignId.toRepoId(bpartner.getCampaignId()));
 
+		if(bpartner.getPaymentRule() != null)
+		{
+			bpartnerRecord.setPaymentRule(bpartner.getPaymentRule().getCode());
+		}
+		if(bpartner.getSoDocTypeTargetId() != null)
+		{
+			bpartnerRecord.setSO_DocTypeTarget_ID(DocTypeId.toRepoId(bpartner.getSoDocTypeTargetId()));
+		}
+		if(bpartner.getFirstName() != null)
+		{
+			bpartnerRecord.setFirstname(bpartner.getFirstName());
+		}
+	if(bpartner.getLastName() != null)
+		{
+			bpartnerRecord.setLastname(bpartner.getLastName());
+		}
 		if (validatePermissions)
 		{
 			assertCanCreateOrUpdate(bpartnerRecord);
@@ -299,6 +322,17 @@ final class BPartnerCompositeSaver
 			bpartnerLocationRecord.setName(partnerLocation.getName());
 			bpartnerLocationRecord.setBPartnerName(partnerLocation.getBpartnerName());
 
+			bpartnerLocationRecord.setPhone(partnerLocation.getPhone());
+			bpartnerLocationRecord.setPhone2(partnerLocation.getMobile());
+			bpartnerLocationRecord.setFax(partnerLocation.getFax());
+			bpartnerLocationRecord.setEMail(partnerLocation.getEmail());
+
+			bpartnerLocationRecord.setSetup_Place_No(partnerLocation.getSetupPlaceNo());
+			bpartnerLocationRecord.setIsHandOverLocation(partnerLocation.isHandOverLocation());
+			bpartnerLocationRecord.setIsRemitTo(partnerLocation.isRemitTo());
+			bpartnerLocationRecord.setVisitorsAddress(partnerLocation.isVisitorsAddress());
+			bpartnerLocationRecord.setIsReplicationLookupDefault(partnerLocation.isReplicationLookupDefault());
+
 			final BPartnerLocationType locationType = partnerLocation.getLocationType();
 			if (locationType != null)
 			{
@@ -306,6 +340,7 @@ final class BPartnerCompositeSaver
 				locationType.getBillToDefault().ifPresent(bpartnerLocationRecord::setIsBillToDefault);
 				locationType.getShipTo().ifPresent(bpartnerLocationRecord::setIsShipTo);
 				locationType.getShipToDefault().ifPresent(bpartnerLocationRecord::setIsShipToDefault);
+				locationType.getVisitorsAddress().ifPresent(bpartnerLocationRecord::setVisitorsAddress);
 			}
 
 			final BPartnerLocationAddressPart address = saveLocationRecord(partnerLocation);
@@ -319,6 +354,9 @@ final class BPartnerCompositeSaver
 			}
 
 			bpartnerLocationRecord.setAD_Org_Mapping_ID(OrgMappingId.toRepoId(partnerLocation.getOrgMappingId()));
+
+			bpartnerLocationRecord.setIsEphemeral(partnerLocation.isEphemeral());
+
 			saveRecord(bpartnerLocationRecord);
 
 			//
@@ -326,6 +364,7 @@ final class BPartnerCompositeSaver
 			partnerLocation.setId(BPartnerLocationId.ofRepoId(bpartnerLocationRecord.getC_BPartner_ID(), bpartnerLocationRecord.getC_BPartner_Location_ID()));
 			partnerLocation.setLocationType(BPartnerCompositesLoader.extractBPartnerLocationType(bpartnerLocationRecord));
 			partnerLocation.setFromAddress(address);
+
 		}
 	}
 
@@ -554,11 +593,14 @@ final class BPartnerCompositeSaver
 			bpartnerContactRecord.setIsInvoiceEmailEnabled(invoiceEmailEnabled);
 
 			bpartnerContactRecord.setC_Greeting_ID(GreetingId.toRepoIdOr(bpartnerContact.getGreetingId(), 0));
+			bpartnerContactRecord.setC_Title_ID(TitleId.toRepoIdOr(bpartnerContact.getTitleId(), 0));
 
 			bpartnerContactRecord.setAD_Org_Mapping_ID(OrgMappingId.toRepoId(bpartnerContact.getOrgMappingId()));
 
 			bpartnerContactRecord.setBirthday(TimeUtil.asTimestamp(bpartnerContact.getBirthday()));
 			bpartnerContactRecord.setC_BPartner_Location_ID(bpartnerContact.getBPartnerLocationId() != null ? bpartnerContact.getBPartnerLocationId().getRepoId() : -1);
+			bpartnerContactRecord.setEMail2(bpartnerContact.getEmail2());
+			bpartnerContactRecord.setEMail3(bpartnerContact.getEmail3());
 
 			if (validatePermissions)
 			{

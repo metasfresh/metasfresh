@@ -22,20 +22,28 @@
 
 package de.metas.ui.web.pickingV2.productsToPick;
 
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.math.BigDecimal;
-import java.time.LocalDate;
-import java.time.Month;
-import java.util.Collection;
-import java.util.Optional;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.ImmutableList;
+import de.metas.bpartner.BPartnerId;
+import de.metas.bpartner.BPartnerLocationId;
+import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.model.I_M_Picking_Candidate;
+import de.metas.handlingunits.picking.PickingCandidateApprovalStatus;
+import de.metas.handlingunits.picking.PickingCandidatePickStatus;
+import de.metas.handlingunits.picking.PickingCandidateStatus;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.order.OrderId;
+import de.metas.organization.OrgId;
+import de.metas.picking.api.Packageable;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.ui.web.pickingV2.packageable.PackageableRow;
+import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRow;
+import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowType;
+import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsData;
+import de.metas.ui.web.pickingV2.productsToPick.rows.factory.ProductsToPickRowsDataFactory;
+import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
+import lombok.Builder;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.LocatorId;
@@ -46,28 +54,19 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
-import com.google.common.collect.ImmutableList;
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.ZoneId;
+import java.util.Collection;
+import java.util.Optional;
 
-import de.metas.bpartner.BPartnerId;
-import de.metas.bpartner.BPartnerLocationId;
-import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.model.I_M_Picking_Candidate;
-import de.metas.handlingunits.picking.PickingCandidateApprovalStatus;
-import de.metas.handlingunits.picking.PickingCandidatePickStatus;
-import de.metas.handlingunits.picking.PickingCandidateStatus;
-import de.metas.inoutcandidate.api.Packageable;
-import de.metas.inoutcandidate.ShipmentScheduleId;
-import de.metas.order.OrderId;
-import de.metas.product.ProductId;
-import de.metas.quantity.Quantity;
-import de.metas.ui.web.pickingV2.packageable.PackageableRow;
-import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRow;
-import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowType;
-import de.metas.ui.web.pickingV2.productsToPick.rows.ProductsToPickRowsData;
-import de.metas.ui.web.pickingV2.productsToPick.rows.factory.ProductsToPickRowsDataFactory;
-import de.metas.ui.web.window.datatypes.LookupValue.IntegerLookupValue;
-import lombok.Builder;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class ProductsToPickRowsDataFactoryTest
 {
@@ -111,7 +110,9 @@ public class ProductsToPickRowsDataFactoryTest
 				.orderId(OrderId.ofRepoId(1))
 				.orderDocumentNo("1234")
 				.customer(IntegerLookupValue.of(customerAndLocationId.getBpartnerId().getRepoId(), "customer"))
+				.timeZone(ZoneId.of("Pacific/Guadalcanal"))
 				.packageable(Packageable.builder()
+						.orgId(OrgId.ofRepoId(1))
 						.shipmentScheduleId(shipmentScheduleId)
 						//
 						.qtyOrdered(Quantity.of(1000000, uomKg))

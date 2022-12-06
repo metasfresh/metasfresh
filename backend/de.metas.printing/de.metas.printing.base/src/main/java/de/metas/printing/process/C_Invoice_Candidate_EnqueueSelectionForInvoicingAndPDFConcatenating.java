@@ -115,12 +115,11 @@ public class C_Invoice_Candidate_EnqueueSelectionForInvoicingAndPDFConcatenating
 		asyncBatchDAO.setPInstance_IDAndSave(asyncBatch, getPinstanceId());
 
 		final IWorkPackageQueue queue = workPackageQueueFactory.getQueueForEnqueuing(getCtx(), InvoiceEnqueueingWorkpackageProcessor.class);
-		queue.newBlock()
-				.setContext(getCtx())
-				.newWorkpackage()
+		queue
+				.newWorkPackage()
 				.setC_Async_Batch(asyncBatchBL.getAsyncBatchById(asyncBatchId))
 				.parameters(invoicingParams.asMap())
-				.build();
+				.buildAndEnqueue();
 
 		return MSG_OK;
 	}

@@ -1,26 +1,14 @@
 package de.metas.dlm.partitioner.async;
 
-import java.sql.Timestamp;
-import java.util.List;
-import java.util.Properties;
-
-import de.metas.common.util.time.SystemTime;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.api.IParams;
-import org.adempiere.util.lang.ITableRecordReference;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.util.Env;
-
 import com.google.common.collect.ImmutableMap;
-
 import de.metas.async.api.IQueueDAO;
-import de.metas.async.api.IWorkPackageBlockBuilder;
 import de.metas.async.api.IWorkPackageBuilder;
+import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.api.IWorkpackageParamDAO;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.async.spi.WorkpackageProcessorAdapter;
+import de.metas.common.util.time.SystemTime;
 import de.metas.dlm.IDLMService;
 import de.metas.dlm.model.I_DLM_Partition_Config;
 import de.metas.dlm.partitioner.IPartitionerService;
@@ -33,6 +21,16 @@ import de.metas.process.PInstanceId;
 import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.Services;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.api.IParams;
+import org.adempiere.util.lang.ITableRecordReference;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.compiere.util.Env;
+
+import java.sql.Timestamp;
+import java.util.List;
+import java.util.Properties;
 
 /*
  * #%L
@@ -80,17 +78,12 @@ public class DLMPartitionerWorkpackageProcessor extends WorkpackageProcessorAdap
 				PARAM_DONT_REENQUEUE_AFTER, request.getDontReEnqueueAfter(),
 				PARAM_DLM_PARTITION_CONFIG_ID, request.getConfig().getDLM_Partition_Config_ID());
 
-		final IWorkPackageBlockBuilder blockBuilder = Services.get(IWorkPackageQueueFactory.class)
-				.getQueueForEnqueuing(ctx, DLMPartitionerWorkpackageProcessor.class)
-				.newBlock()
-				.setContext(ctx);
+		final IWorkPackageQueue queue = Services.get(IWorkPackageQueueFactory.class)
+				.getQueueForEnqueuing(ctx, DLMPartitionerWorkpackageProcessor.class);
 
-		if (adPInstanceId != null)
-		{
-			blockBuilder.setAD_PInstance_Creator_ID(adPInstanceId);
-		}
-
-		final IWorkPackageBuilder wpBuilder = blockBuilder.newWorkpackage()
+		final IWorkPackageBuilder wpBuilder = queue
+				.newWorkPackage()
+				.setAD_PInstance_ID(adPInstanceId)
 				.parameters(parameters);
 
 		// Workpackage element
@@ -100,7 +93,7 @@ public class DLMPartitionerWorkpackageProcessor extends WorkpackageProcessorAdap
 		}
 
 		// Build & enqueue
-		return wpBuilder.build();
+		return wpBuilder.buildAndEnqueue();
 	}
 
 	@Override
@@ -166,7 +159,7 @@ public class DLMPartitionerWorkpackageProcessor extends WorkpackageProcessorAdap
 					.setCount(count - 1)
 					.setDontReEnqueueAfter(dontReEnQueueAfter).build();
 
-			final PInstanceId pinstanceId = PInstanceId.ofRepoId(workPackage.getC_Queue_Block().getAD_PInstance_Creator_ID());
+			final PInstanceId pinstanceId = PInstanceId.ofRepoIdOrNull(workPackage.getAD_PInstance_ID());
 			final I_C_Queue_WorkPackage nextWorkPackage = schedule(newRequest, pinstanceId);
 
 			loggable.addLog("Scheduled C_Queue_WorkPackage={} with CreatePartitionAsyncRequest={}", nextWorkPackage, newRequest);

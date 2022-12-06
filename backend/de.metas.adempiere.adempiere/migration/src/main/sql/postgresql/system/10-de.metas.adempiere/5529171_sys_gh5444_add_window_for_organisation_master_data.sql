@@ -1,4 +1,52 @@
--- clean up corrup widgetsizes with empty string leading to exception when copying windows with those widets
+/*
+2022-01-20 commented out because
+psql:/root/apply_migr_scripts_20220119/dist/sql/10-de.metas.adempiere/5529171_sys_gh5444_add_window_for_organisation_master_data.sql:1: ERROR:  duplicate key value violates unique constraint "ad_element_pkey"
+        DETAIL:  Key (ad_element_id)=(1000283) already exists.
+*/
+INSERT INTO public.ad_element (ad_element_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, columnname, entitytype, name, printname, description, help, po_name, po_printname, po_description, po_help, widgetsize, commitwarning, webui_namebrowse, webui_namenewbreadcrumb, webui_namenew)
+SELECT 1000283, 0, 0, 'Y', '2018-10-15 13:04:04.943585 +00:00', 99, '2018-10-15 13:04:04.943585 +00:00', 99, null, 'D', 'Standort', 'Standort', 'Identifiziert die (Liefer-) Adresse des Geschäftspartners', 'Identifiziert die Adresse des Geschäftspartners', null, null, null, null, null, null, null, null, null
+where not exists (select 1 from ad_element where ad_element_id=1000283);
+
+INSERT INTO public.ad_element_trl (ad_element_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, name, printname, description, help, po_name, po_printname, po_description, po_help, istranslated, commitwarning, webui_namebrowse, webui_namenew, webui_namenewbreadcrumb)
+SELECT 1000283, 'de_CH', 0, 0, 'Y', '2021-07-26 09:18:13.210779 +00:00', -1, '2021-07-26 09:18:13.210779 +00:00', -1, 'Standort', 'Standort', 'Identifiziert die (Liefer-) Adresse des Geschäftspartners', 'Identifiziert die Adresse des Geschäftspartners', null, null, null, null, 'N', null, null, null, null
+where not exists (select 1 from ad_element_trl where ad_element_id=1000283 and ad_language='de_CH');
+
+INSERT INTO public.ad_element_trl (ad_element_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, name, printname, description, help, po_name, po_printname, po_description, po_help, istranslated, commitwarning, webui_namebrowse, webui_namenew, webui_namenewbreadcrumb)
+SELECT 1000283, 'de_DE', 0, 0, 'Y', '2018-11-26 07:57:00.353716 +00:00', 100, '2018-11-26 07:57:00.353716 +00:00', 100, 'Standort', 'Standort', 'Identifiziert die (Liefer-) Adresse des Geschäftspartners', 'Identifiziert die Adresse des Geschäftspartners', null, null, null, null, 'N', null, null, null, null
+where not exists (select 1 from ad_element_trl where ad_element_id=1000283 and ad_language='de_DE');
+
+INSERT INTO public.ad_element_trl (ad_element_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, name, printname, description, help, po_name, po_printname, po_description, po_help, istranslated, commitwarning, webui_namebrowse, webui_namenew, webui_namenewbreadcrumb)
+SELECT 1000283, 'en_US', 0, 0, 'Y', '2018-10-15 13:04:04.943585 +00:00', 99, '2018-10-15 13:04:04.943585 +00:00', 99, 'Partner Location', 'Partner Location', 'Identifies the (ship to) address for this Business Partner', 'The Partner address indicates the location of a Business Partner', null, null, null, null, 'Y', null, null, null, null
+where not exists (select 1 from ad_element_trl where ad_element_id=1000283 and ad_language='en_US');
+
+INSERT INTO public.ad_element_trl (ad_element_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, name, printname, description, help, po_name, po_printname, po_description, po_help, istranslated, commitwarning, webui_namebrowse, webui_namenew, webui_namenewbreadcrumb)
+SELECT 1000283, 'nl_NL', 0, 0, 'Y', '2021-07-26 09:18:17.647262 +00:00', -1, '2021-07-26 09:18:17.647262 +00:00', -1, 'Standort', 'Standort', 'Identifiziert die (Liefer-) Adresse des Geschäftspartners', 'Identifiziert die Adresse des Geschäftspartners', null, null, null, null, 'N', null, null, null, null
+where not exists (select 1 from ad_element_trl where ad_element_id=1000283 and ad_language='nl_NL');
+
+-- ----
+-- 
+INSERT INTO ad_element (ad_element_id, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, columnname, entitytype, name, printname, description, help, po_name, po_printname, po_description, po_help, widgetsize, commitwarning, webui_namebrowse, webui_namenewbreadcrumb, webui_namenew)
+SELECT 1000284, 0, 0, 'Y', '2018-10-15 13:04:04.943585 +00:00', 99, '2018-10-15 13:04:04.943585 +00:00', 99, null, 'D', 'Zielbelegart', 'Zielbelegart', 'Zielbelegart für die Umwandlung von Dokumenten', 'Sie können Dokumente umwandeln (z.B. von Angebot zu Auftrag oder Rechnung). Die Umwandlung zeigt sich in der dann vorliegenden Belegart. Der Prozess wird durch Auswahl der entsprechenden Belegaktion angestossen.', null, null, null, null, null, null, null, null, null
+where not exists (select 1 from ad_element where ad_element_id=1000284);
+-- 
+INSERT INTO public.ad_element_trl (ad_element_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, name, printname, description, help, po_name, po_printname, po_description, po_help, istranslated, commitwarning, webui_namebrowse, webui_namenew, webui_namenewbreadcrumb, isusecustomization, name_customized, description_customized, help_customized)
+SELECT 1000284, 'de_CH', 0, 0, 'Y', '2021-07-26 09:18:13.210779 +00:00', -1, '2021-07-26 09:18:13.210779 +00:00', -1, 'Zielbelegart', 'Zielbelegart', 'Zielbelegart für die Umwandlung von Dokumenten', 'Sie können Dokumente umwandeln (z.B. von Angebot zu Auftrag oder Rechnung). Die Umwandlung zeigt sich in der dann vorliegenden Belegart. Der Prozess wird durch Auswahl der entsprechenden Belegaktion angestossen.', null, null, null, null, 'N', null, null, null, null, 'N', null, null, null
+where not exists (select 1 from ad_element_trl where ad_element_id=1000284 and ad_language='de_CH');
+-- 
+INSERT INTO public.ad_element_trl (ad_element_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, name, printname, description, help, po_name, po_printname, po_description, po_help, istranslated, commitwarning, webui_namebrowse, webui_namenew, webui_namenewbreadcrumb, isusecustomization, name_customized, description_customized, help_customized)
+SELECT 1000284, 'de_DE', 0, 0, 'Y', '2018-11-26 07:57:00.353716 +00:00', 100, '2018-11-26 07:57:00.353716 +00:00', 100, 'Zielbelegart', 'Zielbelegart', 'Zielbelegart für die Umwandlung von Dokumenten', 'Sie können Dokumente umwandeln (z.B. von Angebot zu Auftrag oder Rechnung). Die Umwandlung zeigt sich in der dann vorliegenden Belegart. Der Prozess wird durch Auswahl der entsprechenden Belegaktion angestossen.', null, null, null, null, 'N', null, null, null, null, 'N', null, null, null
+where not exists (select 1 from ad_element_trl where ad_element_id=1000284 and ad_language='de_DE');
+-- 
+INSERT INTO public.ad_element_trl (ad_element_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, name, printname, description, help, po_name, po_printname, po_description, po_help, istranslated, commitwarning, webui_namebrowse, webui_namenew, webui_namenewbreadcrumb, isusecustomization, name_customized, description_customized, help_customized)
+SELECT 1000284, 'en_US', 0, 0, 'Y', '2018-10-15 13:04:04.943585 +00:00', 99, '2018-10-15 13:04:04.943585 +00:00', 99, 'Target Document Type', 'Target Document Type', 'Target document type for conversing documents', 'You can convert document types (e.g. from Offer to Order or Invoice).  The conversion is then reflected in the current type.  This processing is initiated by selecting the appropriate Document Action.', null, null, null, null, 'Y', null, null, null, null, 'N', null, null, null
+where not exists (select 1 from ad_element_trl where ad_element_id=1000284 and ad_language='en_US');
+-- 
+INSERT INTO public.ad_element_trl (ad_element_id, ad_language, ad_client_id, ad_org_id, isactive, created, createdby, updated, updatedby, name, printname, description, help, po_name, po_printname, po_description, po_help, istranslated, commitwarning, webui_namebrowse, webui_namenew, webui_namenewbreadcrumb, isusecustomization, name_customized, description_customized, help_customized)
+ SELECT 1000284, 'nl_NL', 0, 0, 'Y', '2021-07-26 09:18:17.647262 +00:00', -1, '2021-07-26 09:18:17.647262 +00:00', -1, 'Zielbelegart', 'Zielbelegart', 'Zielbelegart für die Umwandlung von Dokumenten', 'Sie können Dokumente umwandeln (z.B. von Angebot zu Auftrag oder Rechnung). Die Umwandlung zeigt sich in der dann vorliegenden Belegart. Der Prozess wird durch Auswahl der entsprechenden Belegaktion angestossen.', null, null, null, null, 'N', null, null, null, null, 'N', null, null, null
+where not exists (select 1 from ad_element_trl where ad_element_id=1000284 and ad_language='nl_NL');
+
+
+-- clean up corrupt widgetsizes with empty string leading to exception when copying windows with those widets
 update ad_ui_element set widgetsize=NULL where widgetsize = '';
 
 -- 2019-08-21T18:51:55.229Z

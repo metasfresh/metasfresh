@@ -1,30 +1,5 @@
 package de.metas.invoicecandidate.spi.impl;
 
-import static java.math.BigDecimal.ONE;
-import static java.math.BigDecimal.ZERO;
-
-import java.math.BigDecimal;
-import java.sql.Timestamp;
-import java.util.Iterator;
-import java.util.Properties;
-
-import de.metas.lang.SOTrx;
-import de.metas.tax.api.TaxId;
-import org.adempiere.ad.dao.QueryLimit;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.mm.attributes.api.IAttributeDAO;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.service.ClientId;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.warehouse.WarehouseId;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_Order;
-import org.compiere.model.I_M_InOut;
-import org.compiere.model.I_M_Inventory;
-import org.compiere.util.Env;
-
 import de.metas.acct.api.IProductAcctDAO;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerDocumentLocationHelper;
@@ -48,6 +23,7 @@ import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
 import de.metas.invoicecandidate.spi.IInventoryLine_HandlerDAO;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
+import de.metas.lang.SOTrx;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
@@ -62,6 +38,7 @@ import de.metas.user.User;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
@@ -75,6 +52,7 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.util.Env;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.Iterator;
@@ -105,6 +83,9 @@ import static java.math.BigDecimal.ZERO;
  * #L%
  */
 
+/**
+ * Creates/handles invoice candidates for completed material disposals
+ */
 public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 {
 	// Services
@@ -128,12 +109,11 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 		//
 		// Retrieve inventory
 		final I_M_InventoryLine inventoryLine = InterfaceWrapperHelper.create(model, I_M_InventoryLine.class);
-		final I_M_Inventory inventory = inventoryLine.getM_Inventory();
-		return inventory;
+		return inventoryLine.getM_Inventory();
 	}
 
 	@Override
-	public Iterator<? extends Object> retrieveAllModelsWithMissingCandidates(@NonNull final QueryLimit limit)
+	public Iterator<?> retrieveAllModelsWithMissingCandidates(@NonNull final QueryLimit limit)
 	{
 		return inventoryLineHandlerDAO.retrieveAllLinesWithoutIC(Env.getCtx(), limit.toInt(), ITrx.TRXNAME_ThreadInherited);
 	}
@@ -147,6 +127,7 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 		return InvoiceCandidateGenerateResult.of(this, invoiceCandidate);
 	}
 
+	@Nullable
 	private I_C_Invoice_Candidate createCandidateForInventoryLine(final I_M_InventoryLine inventoryLine)
 	{
 		// Don't create any invoice candidate if already created
@@ -229,7 +210,6 @@ public class M_InventoryLine_Handler extends AbstractInvoiceCandidateHandler
 				.getBPartnerLocationAndCaptureId();
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
-				ctx,
 				ic,
 				taxCategoryId,
 				productId.getRepoId(),

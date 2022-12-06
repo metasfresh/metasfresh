@@ -32,6 +32,7 @@ import de.metas.contracts.IContractsDAO;
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.commission.commissioninstance.businesslogic.CommissionConfig;
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerType;
+import de.metas.contracts.commission.commissioninstance.services.CommissionConfigPriority;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigProvider;
 import de.metas.contracts.commission.commissioninstance.services.ICommissionConfigFactory;
 import de.metas.contracts.commission.mediated.algorithm.MediatedCommissionConfig;
@@ -122,6 +123,19 @@ public class MediatedCommissionConfigFactory implements ICommissionConfigFactory
 		return CommissionTriggerType.MediatedOrder.equals(contractRequest.getCommissionTriggerType());
 	}
 
+	@Override
+	public boolean isFurtherSearchForConfigTypesAllowed()
+	{
+		return true;
+	}
+
+	@Override
+	@NonNull
+	public CommissionConfigPriority getPriority()
+	{
+		return CommissionConfigPriority.ZERO;
+	}
+
 	private Optional<CommissionConfig> createCommissionConfigs(
 			@NonNull final ProductId transactionProductId,
 			@NonNull final List<I_C_Flatrate_Term> mediatedCommissionContracts)
@@ -179,7 +193,7 @@ public class MediatedCommissionConfigFactory implements ICommissionConfigFactory
 	@NonNull
 	private I_C_Flatrate_Term getContractToEnforce(@NonNull final List<I_C_Flatrate_Term> mediatedCommissionContracts)
 	{
-		//dev-note: see de.metas.contracts.interceptor.C_Flatrate_Term.ensureOneMediatedContract
+		//dev-note: see de.metas.contracts.interceptor.C_Flatrate_Term.ensureOneContract
 		Check.assume(mediatedCommissionContracts.size() == 1, "There should always be only one mediated contract at this point!");
 
 		return mediatedCommissionContracts.get(0);

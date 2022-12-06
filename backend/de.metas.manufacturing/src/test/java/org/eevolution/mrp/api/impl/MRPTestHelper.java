@@ -3,12 +3,15 @@ package org.eevolution.mrp.api.impl;
 import ch.qos.logback.classic.Level;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.common.util.time.SystemTime;
+import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelDAO;
+import de.metas.distribution.ddorder.lowlevel.DDOrderLowLevelService;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.engine.impl.PlainDocumentBL;
 import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
 import de.metas.event.impl.PlainEventBusFactory;
 import de.metas.logging.LogManager;
+import de.metas.material.event.MaterialEventObserver;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.eventbus.MaterialEventConverter;
@@ -22,6 +25,7 @@ import de.metas.material.replenish.ReplenishInfoRepository;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.organization.OrgInfoUpdateRequest;
+import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
 import de.metas.uom.CreateUOMConversionRequest;
 import de.metas.uom.IUOMConversionDAO;
@@ -61,8 +65,11 @@ import org.compiere.util.TimeUtil;
 import org.eevolution.api.IPPOrderBL;
 import org.eevolution.api.IPPOrderDAO;
 import org.eevolution.api.PPOrderDocBaseType;
+import org.eevolution.api.impl.ProductBOMService;
+import org.eevolution.api.impl.ProductBOMVersionsDAO;
 import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Product_BOM;
+import org.eevolution.model.I_PP_Product_BOMVersions;
 import org.eevolution.util.DDNetworkBuilder;
 import org.eevolution.util.PPProductPlanningBuilder;
 import org.eevolution.util.ProductBOMBuilder;
@@ -277,14 +284,18 @@ public class MRPTestHelper
 		final MaterialEventConverter materialEventConverter = new MaterialEventConverter();
 		final MetasfreshEventBusService materialEventService = MetasfreshEventBusService.createLocalServiceThatIsReadyToUse(
 				materialEventConverter,
-				PlainEventBusFactory.newInstance());
+				PlainEventBusFactory.newInstance(),
+				new MaterialEventObserver());
 		final PostMaterialEventService postMaterialEventService = new PostMaterialEventService(materialEventService);
 
 		return new org.eevolution.model.LiberoValidator(
 				ppOrderConverter,
 				postMaterialEventService,
 				new DocumentNoBuilderFactory(Optional.empty()),
-				new PPOrderBOMBL());
+				new PPOrderBOMBL(),
+				new DDOrderLowLevelService(new DDOrderLowLevelDAO()),
+				new ProductBOMVersionsDAO(),
+				new ProductBOMService(new ProductBOMVersionsDAO()));
 	}
 
 	public Timestamp getToday()
@@ -602,6 +613,15 @@ public class MRPTestHelper
 		Services.get(IPPOrderDAO.class).save(ppOrder);
 
 		return ppOrder;
+	}
+
+	public I_PP_Product_BOMVersions createBOMVersions(final ProductId productId)
+	{
+		final I_PP_Product_BOMVersions bomVersions = InterfaceWrapperHelper.newInstance(I_PP_Product_BOMVersions.class, contextProvider);
+		bomVersions.setM_Product_ID(productId.getRepoId());
+		bomVersions.setName("BOM Versions");
+		InterfaceWrapperHelper.save(bomVersions);
+		return bomVersions;
 	}
 
 	private void setCommonProperties(final I_PP_Order ppOrder)

@@ -87,7 +87,7 @@ public class C_Queue_WorkPackage
 	}
 
 	private void processBatchInOwnTrx(@NonNull final AsyncBatchId asyncBatchId)
-			{
+	{
 		trxManager.runInNewTrx(() -> asyncBatchService.checkProcessed(asyncBatchId, ITrx.TRXNAME_ThreadInherited));
 	}
 }

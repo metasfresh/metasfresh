@@ -1,0 +1,117 @@
+de.metas.handlingunits.picking.plan.generator.CreatePickingPlanCommand_UsingCUs_Test.scenario_3HUs_1KgAlreadyReserved=[ {
+  "alternatives" : {
+    "pickFroms" : [ {
+      "availableQty" : "960.000 Kg",
+      "key" : {
+        "huId" : 100237,
+        "locatorId" : "100161_100163",
+        "productId" : 100160
+      }
+    } ]
+  },
+  "lines" : [ {
+    "pickFromHU" : {
+      "alternatives" : {
+        "keys" : [ {
+          "huId" : 100237,
+          "locatorId" : "100161_100163",
+          "productId" : 100160
+        } ]
+      },
+      "huCode" : "100272",
+      "huReservedForThisLine" : true,
+      "locatorId" : "100161_100163",
+      "topLevelHUId" : 100272
+    },
+    "productId" : 100160,
+    "qty" : "1.000 Kg",
+    "sourceDocumentInfo" : {
+      "packToSpec" : {
+        "genericPackingInstructionsId" : 101
+      },
+      "salesOrderLineId" : {
+        "orderId" : 300,
+        "orderLineId" : 301
+      },
+      "shipmentScheduleId" : 2
+    },
+    "type" : "PICK_FROM_HU"
+  }, {
+    "pickFromHU" : {
+      "alternatives" : {
+        "keys" : [ {
+          "huId" : 100237,
+          "locatorId" : "100161_100163",
+          "productId" : 100160
+        } ]
+      },
+      "huCode" : "100165",
+      "huReservedForThisLine" : false,
+      "locatorId" : "100161_100163",
+      "topLevelHUId" : 100165
+    },
+    "productId" : 100160,
+    "qty" : "30.000 Kg",
+    "sourceDocumentInfo" : {
+      "packToSpec" : {
+        "genericPackingInstructionsId" : 101
+      },
+      "salesOrderLineId" : {
+        "orderId" : 300,
+        "orderLineId" : 301
+      },
+      "shipmentScheduleId" : 2
+    },
+    "type" : "PICK_FROM_HU"
+  }, {
+    "pickFromHU" : {
+      "alternatives" : {
+        "keys" : [ {
+          "huId" : 100237,
+          "locatorId" : "100161_100163",
+          "productId" : 100160
+        } ]
+      },
+      "huCode" : "100201",
+      "huReservedForThisLine" : false,
+      "locatorId" : "100161_100163",
+      "topLevelHUId" : 100201
+    },
+    "productId" : 100160,
+    "qty" : "30.000 Kg",
+    "sourceDocumentInfo" : {
+      "packToSpec" : {
+        "genericPackingInstructionsId" : 101
+      },
+      "salesOrderLineId" : {
+        "orderId" : 300,
+        "orderLineId" : 301
+      },
+      "shipmentScheduleId" : 2
+    },
+    "type" : "PICK_FROM_HU"
+  }, {
+    "pickFromHU" : {
+      "alternatives" : {
+        "keys" : [ ]
+      },
+      "huCode" : "100237",
+      "huReservedForThisLine" : false,
+      "locatorId" : "100161_100163",
+      "topLevelHUId" : 100237
+    },
+    "productId" : 100160,
+    "qty" : "39.000 Kg",
+    "sourceDocumentInfo" : {
+      "packToSpec" : {
+        "genericPackingInstructionsId" : 101
+      },
+      "salesOrderLineId" : {
+        "orderId" : 300,
+        "orderLineId" : 301
+      },
+      "shipmentScheduleId" : 2
+    },
+    "type" : "PICK_FROM_HU"
+  } ]
+} ]

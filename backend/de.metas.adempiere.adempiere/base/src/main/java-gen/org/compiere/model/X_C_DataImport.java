@@ -1,46 +1,39 @@
-/** Generated Model - DO NOT CHANGE */
+// Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_DataImport
- *  @author Adempiere (generated) 
+ *  @author metasfresh (generated) 
  */
-@SuppressWarnings("javadoc")
+@SuppressWarnings("unused")
 public class X_C_DataImport extends org.compiere.model.PO implements I_C_DataImport, org.compiere.model.I_Persistent 
 {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -1678943636L;
+	private static final long serialVersionUID = 1991628502L;
 
     /** Standard Constructor */
-    public X_C_DataImport (Properties ctx, int C_DataImport_ID, String trxName)
+    public X_C_DataImport (final Properties ctx, final int C_DataImport_ID, @Nullable final String trxName)
     {
       super (ctx, C_DataImport_ID, trxName);
-      /** if (C_DataImport_ID == 0)
-        {
-			setAD_ImpFormat_ID (0);
-			setC_DataImport_ID (0);
-        } */
     }
 
     /** Load Constructor */
-    public X_C_DataImport (Properties ctx, ResultSet rs, String trxName)
+    public X_C_DataImport (final Properties ctx, final ResultSet rs, @Nullable final String trxName)
     {
       super (ctx, rs, trxName);
     }
 
 
-    /** Load Meta Data */
-    @Override
-    protected org.compiere.model.POInfo initPO (Properties ctx)
-    {
-      org.compiere.model.POInfo poi = org.compiere.model.POInfo.getPOInfo (ctx, Table_Name, get_TrxName());
-      return poi;
-    }
+	/** Load Meta Data */
+	@Override
+	protected org.compiere.model.POInfo initPO(final Properties ctx)
+	{
+		return org.compiere.model.POInfo.getPOInfo(Table_Name);
+	}
 
 	@Override
 	public org.compiere.model.I_AD_ImpFormat getAD_ImpFormat()
@@ -49,71 +42,71 @@ public class X_C_DataImport extends org.compiere.model.PO implements I_C_DataImp
 	}
 
 	@Override
-	public void setAD_ImpFormat(org.compiere.model.I_AD_ImpFormat AD_ImpFormat)
+	public void setAD_ImpFormat(final org.compiere.model.I_AD_ImpFormat AD_ImpFormat)
 	{
 		set_ValueFromPO(COLUMNNAME_AD_ImpFormat_ID, org.compiere.model.I_AD_ImpFormat.class, AD_ImpFormat);
 	}
 
-	/** Set Import-Format.
-		@param AD_ImpFormat_ID Import-Format	  */
 	@Override
-	public void setAD_ImpFormat_ID (int AD_ImpFormat_ID)
+	public void setAD_ImpFormat_ID (final int AD_ImpFormat_ID)
 	{
 		if (AD_ImpFormat_ID < 1) 
 			set_Value (COLUMNNAME_AD_ImpFormat_ID, null);
 		else 
-			set_Value (COLUMNNAME_AD_ImpFormat_ID, Integer.valueOf(AD_ImpFormat_ID));
+			set_Value (COLUMNNAME_AD_ImpFormat_ID, AD_ImpFormat_ID);
 	}
 
-	/** Get Import-Format.
-		@return Import-Format	  */
 	@Override
-	public int getAD_ImpFormat_ID () 
+	public int getAD_ImpFormat_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_AD_ImpFormat_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_AD_ImpFormat_ID);
 	}
 
-	/** Set Daten Import.
-		@param C_DataImport_ID Daten Import	  */
 	@Override
-	public void setC_DataImport_ID (int C_DataImport_ID)
+	public void setC_DataImport_ID (final int C_DataImport_ID)
 	{
 		if (C_DataImport_ID < 1) 
 			set_ValueNoCheck (COLUMNNAME_C_DataImport_ID, null);
 		else 
-			set_ValueNoCheck (COLUMNNAME_C_DataImport_ID, Integer.valueOf(C_DataImport_ID));
+			set_ValueNoCheck (COLUMNNAME_C_DataImport_ID, C_DataImport_ID);
 	}
 
-	/** Get Daten Import.
-		@return Daten Import	  */
 	@Override
-	public int getC_DataImport_ID () 
+	public int getC_DataImport_ID() 
 	{
-		Integer ii = (Integer)get_Value(COLUMNNAME_C_DataImport_ID);
-		if (ii == null)
-			 return 0;
-		return ii.intValue();
+		return get_ValueAsInt(COLUMNNAME_C_DataImport_ID);
 	}
 
-	/** Set Interner Name.
-		@param InternalName 
-		Generally used to give records a name that can be safely referenced from code.
-	  */
+	/** 
+	 * DataImport_ConfigType AD_Reference_ID=541535
+	 * Reference name: C_DataImport_ConfigType
+	 */
+	public static final int DATAIMPORT_CONFIGTYPE_AD_Reference_ID=541535;
+	/** Standard = S */
+	public static final String DATAIMPORT_CONFIGTYPE_Standard = "S";
+	/** Bank Statement Import = BSI */
+	public static final String DATAIMPORT_CONFIGTYPE_BankStatementImport = "BSI";
 	@Override
-	public void setInternalName (java.lang.String InternalName)
+	public void setDataImport_ConfigType (final java.lang.String DataImport_ConfigType)
+	{
+		set_Value (COLUMNNAME_DataImport_ConfigType, DataImport_ConfigType);
+	}
+
+	@Override
+	public java.lang.String getDataImport_ConfigType() 
+	{
+		return get_ValueAsString(COLUMNNAME_DataImport_ConfigType);
+	}
+
+	@Override
+	public void setInternalName (final @Nullable java.lang.String InternalName)
 	{
 		set_Value (COLUMNNAME_InternalName, InternalName);
 	}
 
-	/** Get Interner Name.
-		@return Generally used to give records a name that can be safely referenced from code.
-	  */
 	@Override
-	public java.lang.String getInternalName () 
+	public java.lang.String getInternalName() 
 	{
-		return (java.lang.String)get_Value(COLUMNNAME_InternalName);
+		return get_ValueAsString(COLUMNNAME_InternalName);
 	}
 }

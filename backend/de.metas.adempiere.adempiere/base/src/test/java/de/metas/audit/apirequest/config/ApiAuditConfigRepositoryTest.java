@@ -62,43 +62,45 @@ public class ApiAuditConfigRepositoryTest
 	}
 
 	@Test
-	public void getAllConfigsByOrgId()
+	public void getActiveConfigsByOrgId()
 	{
 		//given
-		final int targetOrgId = 1;
-		final int otherOrgId = 2;
+		final OrgId targetOrgId = OrgId.ofRepoId(1);
+		final OrgId otherOrgId = OrgId.ofRepoId(2);
 
 		createMockAuditConfig(targetOrgId, true);
 		createMockAuditConfig(targetOrgId, false);
 		createMockAuditConfig(otherOrgId, true);
 
 		//when
-		final ImmutableList<ApiAuditConfig> configs = apiAuditConfigRepository.getAllConfigsByOrgId(OrgId.ofRepoId(targetOrgId));
+		final ImmutableList<ApiAuditConfig> configs = apiAuditConfigRepository.getActiveConfigsByOrgId(targetOrgId);
 
 		//then
 		assertThat(configs.size()).isEqualTo(1);
 		expect(configs).toMatchSnapshot();
 	}
 
-	private I_API_Audit_Config createMockAuditConfig(final int orgId, final boolean isActive)
+	private void createMockAuditConfig(final OrgId orgId, final boolean isActive)
 	{
 		final I_API_Audit_Config config = InterfaceWrapperHelper.newInstance(I_API_Audit_Config.class);
 
-		config.setAD_Org_ID(orgId);
+		config.setAD_Org_ID(orgId.getRepoId());
 		config.setAD_UserGroup_InCharge_ID(1);
 		config.setIsActive(isActive);
-		config.setIsInvokerWaitsForResult(true);
+		config.setIsForceProcessedAsync(true);
 		config.setKeepRequestBodyDays(100);
 		config.setKeepRequestDays(101);
 		config.setKeepResponseBodyDays(102);
 		config.setKeepResponseDays(103);
+		config.setKeepErroredRequestDays(104);
 		config.setMethod(HttpMethod.PUT.getCode());
 		config.setNotifyUserInCharge(NotificationTriggerType.ALWAYS.getCode());
 		config.setPathPrefix("pathPrefix");
 		config.setSeqNo(10);
+		config.setIsSynchronousAuditLoggingEnabled(true);
+		config.setIsWrapApiResponse(true);
 
 		InterfaceWrapperHelper.saveRecord(config);
 
-		return config;
 	}
 }

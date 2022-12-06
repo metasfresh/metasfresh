@@ -45,6 +45,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.util.Evaluatee;
 import org.compiere.util.Evaluatees;
 import org.elasticsearch.action.search.SearchRequest;
@@ -142,6 +143,11 @@ public class FTSSearchService
 		}
 	}
 
+	private int getResultMaxSize()
+	{
+		return sysConfigBL.getIntValue(SYSCONFIG_ResultMaxSize, DEFAULT_ResultMaxSize);
+	}
+
 	private Evaluatee createQueryEvalCtx(
 			final @NonNull FTSSearchRequest request,
 			final @NonNull FTSConfig ftsConfig)
@@ -158,7 +164,7 @@ public class FTSSearchService
 		return builder.build();
 	}
 
-	private String buildOrgIdsFilterPart(final UserRolePermissionsKey userRolePermissionsKey)
+	private String buildOrgIdsFilterPart(@Nullable final UserRolePermissionsKey userRolePermissionsKey)
 	{
 		if (userRolePermissionsKey == null)
 		{
@@ -185,11 +191,6 @@ public class FTSSearchService
 
 			return ", \"filter\": { \"terms\": { \"ad_org_id\": [" + orgIdsCommaSeparated + "] } }";
 		}
-	}
-
-	private int getResultMaxSize()
-	{
-		return sysConfigBL.getIntValue(SYSCONFIG_ResultMaxSize, DEFAULT_ResultMaxSize);
 	}
 
 	private static FTSSearchResultItem extractFTSSearchResultItem(

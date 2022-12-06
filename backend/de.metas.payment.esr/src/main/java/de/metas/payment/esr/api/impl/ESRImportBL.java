@@ -891,10 +891,6 @@ public class ESRImportBL implements IESRImportBL
 			Check.assume(payment.getAD_Org_ID() == importLine.getAD_Org_ID(), "Payment has the same org as {}", importLine);
 
 			documentBL.processEx(payment, IDocument.ACTION_Complete, IDocument.STATUS_Completed);
-			final boolean ignoreProcessed = false;
-
-			invoiceBL.testAllocation(invoice, ignoreProcessed);
-			invoiceDAO.save(invoice);
 
 			importLine.setC_Payment_ID(payment.getC_Payment_ID());
 			esrImportDAO.save(importLine);

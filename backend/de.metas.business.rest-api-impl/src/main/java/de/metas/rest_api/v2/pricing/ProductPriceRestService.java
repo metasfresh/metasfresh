@@ -22,23 +22,23 @@
 
 package de.metas.rest_api.v2.pricing;
 
-import de.metas.common.externalreference.JsonExternalReferenceCreateRequest;
-import de.metas.common.externalreference.JsonExternalReferenceItem;
-import de.metas.common.externalreference.JsonExternalReferenceLookupItem;
+import de.metas.common.externalreference.v2.JsonExternalReferenceCreateRequest;
+import de.metas.common.externalreference.v2.JsonExternalReferenceItem;
+import de.metas.common.externalreference.v2.JsonExternalReferenceLookupItem;
 import de.metas.common.externalsystem.JsonExternalSystemName;
 import de.metas.common.pricing.v2.productprice.JsonRequestProductPrice;
 import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceUpsert;
 import de.metas.common.pricing.v2.productprice.JsonRequestProductPriceUpsertItem;
 import de.metas.common.pricing.v2.productprice.TaxCategory;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.rest_api.v2.JsonResponseUpsert;
 import de.metas.common.rest_api.v2.JsonResponseUpsertItem;
+import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.externalreference.ExternalReferenceValueAndSystem;
 import de.metas.externalreference.product.ProductExternalReferenceType;
 import de.metas.externalreference.productprice.ProductPriceExternalReferenceType;
-import de.metas.externalreference.rest.ExternalReferenceRestControllerService;
+import de.metas.externalreference.rest.v2.ExternalReferenceRestControllerService;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListVersionId;
 import de.metas.pricing.ProductPriceId;
@@ -57,6 +57,7 @@ import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -93,6 +94,16 @@ public class ProductPriceRestService
 			@NonNull final JsonRequestProductPriceUpsert request)
 	{
 		return trxManager.callInNewTrx(() -> upsertProductPricesWithinTrx(priceListVersionIdentifier, request));
+	}
+
+	@NonNull
+	public JsonResponseUpsert upsertProductPricesForPriceList(
+			@NonNull final String priceListIdentifier,
+			@NonNull final JsonRequestProductPriceUpsert request)
+	{
+		final PriceListVersionId priceListVersionId = priceListRestService.getNewestVersionId(priceListIdentifier, Env.getOrgId());
+
+		return upsertProductPrices(String.valueOf(priceListVersionId.getRepoId()), request);
 	}
 
 	@NonNull

@@ -1,5 +1,6 @@
 package de.metas.organization.impl;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.cache.CCache;
@@ -45,6 +46,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.Set;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
@@ -91,6 +93,32 @@ public class OrgDAO implements IOrgDAO
 	}
 
 	@Override
+	public List<I_AD_Org> getByIds(final Set<OrgId> orgIds)
+	{
+		if (orgIds.isEmpty())
+		{
+			return ImmutableList.of();
+		}
+		return Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Org.class)
+				.addInArrayFilter(I_AD_Org.COLUMNNAME_AD_Org_ID, orgIds)
+				.create()
+				.listImmutable(I_AD_Org.class);
+	}
+
+	@Override
+	public List<I_AD_Org> getAllActiveOrgs()
+	{
+		return Services.get(IQueryBL.class)
+				.createQueryBuilderOutOfTrx(I_AD_Org.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.list();
+
+	}
+
+	@SuppressWarnings("OptionalAssignedToNull")
+	@Override
 	public OrgInfo createOrUpdateOrgInfo(@NonNull final OrgInfoUpdateRequest request)
 	{
 		I_AD_OrgInfo record = retrieveOrgInfoRecordOrNull(request.getOrgId(), ITrx.TRXNAME_ThreadInherited);
@@ -135,11 +163,13 @@ public class OrgDAO implements IOrgDAO
 	}
 
 	@Override
+	
 	public OrgInfo getOrgInfoByIdInTrx(final OrgId adOrgId)
 	{
 		return retrieveOrgInfo(adOrgId, ITrx.TRXNAME_ThreadInherited);
 	}
-
+	
+	@NonNull
 	private OrgInfo retrieveOrgInfo(@NonNull final OrgId orgId, final String trxName)
 	{
 		final I_AD_OrgInfo record = retrieveOrgInfoRecordOrNull(orgId, trxName);
@@ -339,6 +369,12 @@ public class OrgDAO implements IOrgDAO
 	public UserGroupId getPartnerCreatedFromAnotherOrgNotifyUserGroupID(final OrgId orgId)
 	{
 		return getOrgInfoById(orgId).getPartnerCreatedFromAnotherOrgNotifyUserGroupID();
+	}
+
+	@Override
+	public String getOrgName(@NonNull final OrgId orgId)
+	{
+		return getById(orgId).getName();
 	}
 
 	@Override

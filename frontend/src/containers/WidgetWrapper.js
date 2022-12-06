@@ -11,6 +11,7 @@ import {
   allowShortcut,
   disableShortcut,
 } from '../actions/WindowActions';
+import { setTableNavigation } from '../actions/TableActions';
 import { getCellWidgetData } from '../utils/tableHelpers';
 import { getTable } from '../reducers/tables';
 import {
@@ -183,6 +184,7 @@ WidgetWrapper.propTypes = {
   updatePropertyValue: PropTypes.func.isRequired,
   widgetType: PropTypes.string,
   disconnected: PropTypes.string,
+  setTableNavigation: PropTypes.func,
 };
 
 export default connect(
@@ -194,6 +196,7 @@ export default connect(
     closeModal,
     patch,
     updatePropertyValue,
+    setTableNavigation,
   },
   null,
   { forwardRef: true }

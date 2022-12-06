@@ -33,19 +33,23 @@ import lombok.Singular;
 import lombok.Value;
 
 import java.util.List;
+import java.util.UUID;
 
 @Value
 public class PutRfQChangeRequest extends RequestToMetasfresh
 {
+	String eventId;
 	List<SyncRfQPriceChangeEvent> priceChangeEvents;
 	List<SyncRfQQtyChangeEvent> qtyChangeEvents;
 
 	@Builder
 	@JsonCreator
 	private PutRfQChangeRequest(
+			@JsonProperty("eventId") final String eventId,
 			@JsonProperty("priceChangeEvents") @Singular final List<SyncRfQPriceChangeEvent> priceChangeEvents,
 			@JsonProperty("qtyChangeEvents") @Singular final List<SyncRfQQtyChangeEvent> qtyChangeEvents)
 	{
+		this.eventId = eventId != null ? eventId : UUID.randomUUID().toString();
 		this.priceChangeEvents = priceChangeEvents;
 		this.qtyChangeEvents = qtyChangeEvents;
 	}

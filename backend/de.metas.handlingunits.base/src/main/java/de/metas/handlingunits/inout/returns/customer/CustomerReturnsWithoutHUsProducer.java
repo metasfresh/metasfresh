@@ -344,7 +344,7 @@ public class CustomerReturnsWithoutHUsProducer
 		switch (warehouseType)
 		{
 			case QUARANTINE:
-				targetWarehouseId = huWarehouseDAO.retrieveQuarantineWarehouseId();
+				targetWarehouseId = warehousesRepo.retrieveQuarantineWarehouseId();
 				break;
 			case QUALITY_ISSUE:
 				targetWarehouseId = huWarehouseDAO.retrieveQualityReturnWarehouseIds().iterator().next();
