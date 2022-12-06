@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#13430](https://github.com/metasfresh/metasfresh/issues/13430) github & everhour - Services Invoicing
   * [#14050](https://github.com/metasfresh/metasfresh/issues/14050) Delivery planning: New qty columns
   * [#14011](https://github.com/metasfresh/metasfresh/issues/14011) Sub-Task No 4: Test & Fix Inventory interaction with MD_Cockpit 
   * [#14060](https://github.com/metasfresh/metasfresh/issues/14060) Format Qty based on on the precision defined in SysConfig
