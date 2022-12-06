@@ -229,7 +229,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 		}
 
 		final MAccount credit = docLine.getAccount(ProductAcctType.WorkInProcess, as);
-		final AggregatedCostAmount costResult = docLine.getCreateCosts(as);
+		final AggregatedCostAmount costResult = docLine.getCreateCosts(as).orElseThrow();
 
 		final ArrayList<Fact> facts = new ArrayList<>();
 		for (final CostElement element : costResult.getCostElements())
@@ -280,7 +280,7 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 
 		final MAccount debit = docLine.getAccount(ProductAcctType.WorkInProcess, as);
 		final MAccount credit = docLine.getAccount(isFloorStock ? ProductAcctType.FloorStock : ProductAcctType.Asset, as);
-		final AggregatedCostAmount costResult = docLine.getCreateCosts(as);
+		final AggregatedCostAmount costResult = docLine.getCreateCosts(as).orElseThrow();
 
 		final ArrayList<Fact> facts = new ArrayList<>();
 		for (final CostElement element : costResult.getCostElements())
@@ -307,10 +307,16 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 	private List<Fact> createFacts_ActivityControl(final AcctSchema as)
 	{
 		final DocLine_CostCollector docLine = getLine();
-		final Quantity qtyMoved = getMovementQty();
+		final AggregatedCostAmount costResult = docLine.getCreateCosts(as).orElse(null);
+		if(costResult == null)
+		{
+			// NOTE: there is no need to fail if no cost details were created
+			// because it might be that there are no cost elements defined for resource, which is acceptable
+			return ImmutableList.of();
+		}
 
+		final Quantity qtyMoved = getMovementQty();
 		final MAccount debit = docLine.getAccount(ProductAcctType.WorkInProcess, as);
-		final AggregatedCostAmount costResult = docLine.getCreateCosts(as);
 
 		final ArrayList<Fact> facts = new ArrayList<>();
 		for (final CostElement element : costResult.getCostElements())
@@ -339,10 +345,17 @@ public class Doc_PPCostCollector extends Doc<DocLine_CostCollector>
 			final ProductAcctType varianceAcctType)
 	{
 		final DocLine_CostCollector docLine = getLine();
+		final AggregatedCostAmount costResult = docLine.getCreateCosts(as).orElse(null);
+		if(costResult == null)
+		{
+			// NOTE: there is no need to fail if no cost details were created
+			// because it might be that there are no cost elements defined for resource, which is acceptable
+			return ImmutableList.of();
+		}
+
 		final MAccount debit = docLine.getAccount(varianceAcctType, as);
 		final MAccount credit = docLine.getAccount(ProductAcctType.WorkInProcess, as);
 		final Quantity qty = getMovementQty();
-		final AggregatedCostAmount costResult = docLine.getCreateCosts(as);
 
 		final ArrayList<Fact> facts = new ArrayList<>();
 		for (final CostElement element : costResult.getCostElements())
