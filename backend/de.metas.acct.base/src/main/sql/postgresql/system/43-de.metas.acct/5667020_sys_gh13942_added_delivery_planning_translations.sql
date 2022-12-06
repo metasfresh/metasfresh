@@ -1017,3 +1017,56 @@ UPDATE AD_Element_Trl SET Name='Zielland', PrintName='Zielland',Updated=TO_TIMES
 -- 2022-12-05T13:40:51.481Z
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581749,'nl_NL') 
 ;
+-- Element: ReleaseNo
+-- 2022-12-05T09:15:44.925Z
+UPDATE AD_Element_Trl SET Name='Ausgabenummer', PrintName='Ausgabenummer',Updated=TO_TIMESTAMP('2022-12-05 11:15:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=2122 AND AD_Language='de_CH'
+;
+
+-- 2022-12-05T09:15:45.009Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(2122,'de_CH') 
+;
+
+-- Element: ReleaseNo
+-- 2022-12-05T09:15:49.854Z
+UPDATE AD_Element_Trl SET Name='Ausgabenummer', PrintName='Ausgabenummer',Updated=TO_TIMESTAMP('2022-12-05 11:15:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=2122 AND AD_Language='nl_NL'
+;
+
+-- 2022-12-05T09:15:49.936Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(2122,'nl_NL') 
+;
+
+-- Element: ReleaseNo
+-- 2022-12-05T09:15:56.550Z
+UPDATE AD_Element_Trl SET Name='Ausgabenummer', PrintName='Ausgabenummer',Updated=TO_TIMESTAMP('2022-12-05 11:15:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=2122 AND AD_Language='de_DE'
+;
+
+-- 2022-12-05T09:15:56.633Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(2122,'de_DE') 
+;
+
+-- Element: M_SectionCode_ID
+-- 2022-12-05T08:39:37.928Z
+UPDATE AD_Element_Trl SET Name='Sektionskennung', PrintName='Sektionskennung',Updated=TO_TIMESTAMP('2022-12-05 10:39:37','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581238 AND AD_Language='de_CH'
+;
+
+-- 2022-12-05T08:39:38.012Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581238,'de_CH') 
+;
+
+-- Element: M_SectionCode_ID
+-- 2022-12-05T08:39:43.969Z
+UPDATE AD_Element_Trl SET Name='Sektionskennung', PrintName='Sektionskennung',Updated=TO_TIMESTAMP('2022-12-05 10:39:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581238 AND AD_Language='de_DE'
+;
+
+-- 2022-12-05T08:39:44.051Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581238,'de_DE') 
+;
+
+-- Element: M_SectionCode_ID
+-- 2022-12-05T08:39:53.017Z
+UPDATE AD_Element_Trl SET Name='Sektionskennung', PrintName='Sektionskennung',Updated=TO_TIMESTAMP('2022-12-05 10:39:53','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581238 AND AD_Language='nl_NL'
+;
+
+-- 2022-12-05T08:39:53.099Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581238,'nl_NL') 
+;
