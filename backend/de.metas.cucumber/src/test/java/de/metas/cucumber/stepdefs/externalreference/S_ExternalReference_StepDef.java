@@ -38,6 +38,7 @@ import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.M_Shipper_StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.externalsystem.ExternalSystem_Config_StepDefData;
+import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.externalreference.ExternalReference;
 import de.metas.externalreference.ExternalReferenceRepository;
 import de.metas.externalreference.ExternalReferenceTypes;
@@ -97,6 +98,7 @@ public class S_ExternalReference_StepDef
 	private final M_Product_StepDefData productTable;
 	private final C_BPartner_StepDefData bpartnerTable;
 	private final ExternalSystem_Config_StepDefData externalSystemConfigTable;
+	private final AD_Org_StepDefData orgTable;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
@@ -113,6 +115,7 @@ public class S_ExternalReference_StepDef
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final C_BPartner_StepDefData bpartnerTable,
 			@NonNull final ExternalSystem_Config_StepDefData externalSystemConfigTable,
+			@NonNull final AD_Org_StepDefData orgTable,
 			@NonNull final TestContext testContext)
 	{
 		this.externalSystems = externalSystems;
@@ -122,6 +125,7 @@ public class S_ExternalReference_StepDef
 		this.productTable = productTable;
 		this.bpartnerTable = bpartnerTable;
 		this.externalSystemConfigTable = externalSystemConfigTable;
+		this.orgTable = orgTable;
 		this.testContext = testContext;
 		this.externalReferenceTypes = SpringContextHolder.instance.getBean(ExternalReferenceTypes.class);
 		this.externalReferenceRepository = SpringContextHolder.instance.getBean(ExternalReferenceRepository.class);
@@ -155,9 +159,18 @@ public class S_ExternalReference_StepDef
 
 			final boolean externalRefExists = externalReferenceQueryBuilder
 					.create()
-					.anyMatch();
+					.firstOnlyOrNull(I_S_ExternalReference.class);
 
-			assertThat(externalRefExists).isTrue();
+			assertThat(externalReferenceRecord).isNotNull();
+
+			final String orgCodeIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.AD_Org_ID.Identifier");
+
+			if (Check.isNotBlank(orgCodeIdentifier))
+			{
+				final int orgId = orgTable.get(orgCodeIdentifier).getAD_Org_ID();
+
+				assertThat(externalReferenceRecord.getAD_Org_ID()).isEqualTo(orgId);
+			}
 		}
 	}
 

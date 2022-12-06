@@ -35,6 +35,7 @@ import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.incoterms.C_Incoterms_StepDefData;
 import de.metas.cucumber.stepdefs.paymentterm.C_PaymentTerm_StepDefData;
 import de.metas.cucumber.stepdefs.sectioncode.M_SectionCode_StepDefData;
+import de.metas.cucumber.stepdefs.org.AD_Org_StepDefData;
 import de.metas.externalreference.ExternalIdentifier;
 import de.metas.rest_api.v2.bpartner.BPartnerEndpointService;
 import de.metas.util.Check;
@@ -47,6 +48,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_CreditLimit;
@@ -78,6 +80,7 @@ public class CreateBPartnerV2_StepDef
 	private final C_Incoterms_StepDefData incotermsTable;
 	private final C_PaymentTerm_StepDefData paymentTermTable;
 	private final TestContext testContext;
+	private final AD_Org_StepDefData orgTable;
 
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
@@ -90,7 +93,8 @@ public class CreateBPartnerV2_StepDef
 			@NonNull final M_SectionCode_StepDefData sectionCodeTable,
 			@NonNull final C_Incoterms_StepDefData incotermsTable,
 			@NonNull final C_PaymentTerm_StepDefData paymentTermTable,
-			@NonNull final TestContext testContext)
+			@NonNull final TestContext testContext,
+			@NonNull final AD_Org_StepDefData orgTable)
 	{
 		this.bPartnerTable = bPartnerTable;
 		this.userTable = userTable;
@@ -98,6 +102,7 @@ public class CreateBPartnerV2_StepDef
 		this.incotermsTable = incotermsTable;
 		this.paymentTermTable = paymentTermTable;
 		this.testContext = testContext;
+		this.orgTable = orgTable;
 		this.bpartnerEndpointService = SpringContextHolder.instance.getBean(BPartnerEndpointService.class);
 		this.bPartnerCreditLimitRepository = SpringContextHolder.instance.getBean(BPartnerCreditLimitRepository.class);
 	}
@@ -122,19 +127,53 @@ public class CreateBPartnerV2_StepDef
 			final String vatId = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.VatId");
 			final String pricingSystemId = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_M_PricingSystem_ID);
 			final Boolean storageWarehouse = DataTableUtil.extractBooleanForColumnNameOr(dataTableRow, "OPT." + COLUMNNAME_IsStorageWarehouse, false);
+			final String orgIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_AD_Org.COLUMNNAME_AD_Org_ID + "." + TABLECOLUMN_IDENTIFIER);
+
+			final I_AD_Org org = Optional.ofNullable(orgIdentifier)
+					.map(orgTable::get)
+					.orElse(null);
+
+			final String orgCode = Optional.ofNullable(org)
+					.map(I_AD_Org::getValue)
+					.orElse(null);
 
 			// persisted value
-			final Optional<JsonResponseComposite> persistedResult = bpartnerEndpointService.retrieveBPartner(null, ExternalIdentifier.of(externalIdentifier));
+			final Optional<JsonResponseComposite> persistedResult = bpartnerEndpointService.retrieveBPartner(orgCode, ExternalIdentifier.of(externalIdentifier));
+
 			final JsonResponseBPartner persistedBPartner = persistedResult.get().getBpartner();
 
-			softly.assertThat(persistedBPartner.getCompanyName()).isEqualTo(companyName);
 			softly.assertThat(persistedBPartner.getName()).isEqualTo(name);
-			softly.assertThat(persistedBPartner.getUrl()).isEqualTo(url);
-			softly.assertThat(persistedBPartner.getVatId()).isEqualTo(vatId);
-			softly.assertThat(persistedBPartner.getLanguage()).contains(language);
-			softly.assertThat(persistedBPartner.getCode()).isEqualTo(code);
-			softly.assertThat(persistedBPartner.getPhone()).isEqualTo(phone);
 			softly.assertThat(persistedBPartner.getStorageWarehouse()).isEqualTo(storageWarehouse);
+
+			if (Check.isNotBlank(code))
+			{
+				softly.assertThat(persistedBPartner.getCode()).isEqualTo(code);
+			}
+
+			if (Check.isNotBlank(companyName))
+			{
+				softly.assertThat(persistedBPartner.getCompanyName()).isEqualTo(companyName);
+			}
+
+			if (Check.isNotBlank(url))
+			{
+				softly.assertThat(persistedBPartner.getUrl()).isEqualTo(url);
+			}
+
+			if (Check.isNotBlank(vatId))
+			{
+				softly.assertThat(persistedBPartner.getVatId()).isEqualTo(vatId);
+			}
+
+			if (Check.isNotBlank(phone))
+			{
+				softly.assertThat(persistedBPartner.getPhone()).isEqualTo(phone);
+			}
+
+			if (Check.isNotBlank(language))
+			{
+				softly.assertThat(persistedBPartner.getLanguage()).contains(language);
+			}
 
 			if (Check.isNotBlank(group))
 			{
@@ -234,6 +273,11 @@ public class CreateBPartnerV2_StepDef
 			}
 
 			softly.assertAll();
+
+			if (org != null)
+			{
+				assertThat(bPartnerRecord.getAD_Org_ID()).isEqualTo(org.getAD_Org_ID());
+			}
 
 			final String bpartnerIdentifier = DataTableUtil.extractStringForColumnName(dataTableRow, COLUMNNAME_C_BPartner_ID + "." + TABLECOLUMN_IDENTIFIER);
 			bPartnerTable.putOrReplace(bpartnerIdentifier, bPartnerRecord);

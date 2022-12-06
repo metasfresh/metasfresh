@@ -330,10 +330,11 @@ public class BpartnerRestController
 		{
 			try (final MDCCloseable ignored = MDC.putCloseable("bpartnerIdentifier", requestItem.getBpartnerIdentifier()))
 			{
+				JsonRequestConsolidateService.consolidateWithOrg(requestItem, orgCode);
+
 				jsonRequestConsolidateService.consolidateWithIdentifier(requestItem);
 
 				final JsonResponseBPartnerCompositeUpsertItem persist = persister.persist(
-						orgCode,
 						requestItem,
 						defaultSyncAdvise);
 				response.responseItem(persist);

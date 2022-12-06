@@ -476,3 +476,105 @@ Feature: create or update BPartner v2
       | ExternalSystem | Type   | ExternalReference | OPT.IsReadOnlyInMetasfresh |
       | ALBERTA        | UserID | c11               | false                      |
       | ALBERTA        | UserID | c33               | false                      |
+
+  @from:cucumber
+  Scenario: create BPartner with external reference type of code - orgCode set in path
+
+    Given load AD_Org:
+      | AD_Org_ID.Identifier | Value |
+      | providedOrg          | 001   |
+
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/001' and fulfills with '201' status code
+    """
+{
+   "requestItems":[
+      {
+         "bpartnerIdentifier":"ext-ALBERTA-bPartner1",
+         "bpartnerComposite":{
+            "bpartner":{
+               "code":"ext-ALBERTA-BPartnerTestCode1",
+               "name":"BPartnerTestName1",
+               "companyName":"BPartnerTestCompany1",
+               "language":"de",
+               "group":"test-group"
+            }
+         }
+      }
+   ],
+   "syncAdvise":{
+      "ifNotExists":"CREATE",
+      "ifExists":"UPDATE_MERGE"
+   }
+}
+"""
+    Then set context properties:
+      | Key         | Value  |
+      | #AD_Role_ID | 540024 |
+    And verify that S_ExternalReference was created
+      | ExternalSystem | Type          | ExternalReference | OPT.AD_Org_ID.Identifier |
+      | ALBERTA        | BPartnerValue | BPartnerTestCode1 | providedOrg              |
+      | ALBERTA        | BPartner      | bPartner1         | providedOrg              |
+    And verify that bPartner was created for externalIdentifier
+      | C_BPartner_ID.Identifier | externalIdentifier    | Name              | OPT.CompanyName      | OPT.AD_Org_ID.Identifier |
+      | bpartner                 | ext-ALBERTA-bPartner1 | BPartnerTestName1 | BPartnerTestCompany1 | providedOrg              |
+
+
+  @from:cucumber
+  Scenario: process CreateBPartner requests given:
+  _no orgCode in path
+  _different orgCode set for each request item
+
+    Given metasfresh contains AD_Org:
+      | AD_Org_ID.Identifier | Name                   | Value    |
+      | bPartner2_orgCode    | BPartner2 Organization | orgCode2 |
+      | bPartner3_orgCode    | BPartner3 Organization | orgCode3 |
+
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/bpartner/' and fulfills with '201' status code
+    """
+{
+   "requestItems":[
+      {
+         "bpartnerIdentifier":"ext-ALBERTA-bPartner2",
+         "bpartnerComposite":{
+            "orgCode": "orgCode2",
+            "bpartner":{
+               "code":"ext-ALBERTA-BPartnerTestCode2",
+               "name":"BPartnerTestName2",
+               "companyName":"BPartnerTestCompany2",
+               "group":"test-group"
+            }
+         }
+      },
+      {
+         "bpartnerIdentifier":"ext-ALBERTA-bPartner3",
+         "bpartnerComposite":{
+            "orgCode": "orgCode3",
+            "bpartner":{
+               "code":"ext-ALBERTA-BPartnerTestCode3",
+               "name":"BPartnerTestName3",
+               "companyName":"BPartnerTestCompany3",
+               "language":"de",
+               "group":"test-group"
+            }
+         }
+      }
+   ],
+   "syncAdvise":{
+      "ifNotExists":"CREATE",
+      "ifExists":"UPDATE_MERGE"
+   }
+}
+"""
+    Then set context properties:
+      | Key         | Value  |
+      | #AD_Role_ID | 540024 |
+    And verify that S_ExternalReference was created
+      | ExternalSystem | Type          | ExternalReference | OPT.AD_Org_ID.Identifier |
+      | ALBERTA        | BPartnerValue | BPartnerTestCode2 | bPartner2_orgCode        |
+      | ALBERTA        | BPartner      | bPartner2         | bPartner2_orgCode        |
+      | ALBERTA        | BPartnerValue | BPartnerTestCode3 | bPartner3_orgCode        |
+      | ALBERTA        | BPartner      | bPartner3         | bPartner3_orgCode        |
+    And verify that bPartner was created for externalIdentifier
+      | C_BPartner_ID.Identifier | externalIdentifier    | Name              | OPT.CompanyName      | OPT.AD_Org_ID.Identifier |
+      | bpartner2                | ext-ALBERTA-bPartner2 | BPartnerTestName2 | BPartnerTestCompany2 | bPartner2_orgCode        |
+      | bpartner3                | ext-ALBERTA-bPartner3 | BPartnerTestName3 | BPartnerTestCompany3 | bPartner3_orgCode        |
