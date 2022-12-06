@@ -172,4 +172,9 @@ public class DeliveryPlanningService
 	{
 		deliveryPlanningRepository.deleteForReceiptSchedule(receiptScheduleId);
 	}
+
+	public void deleteForShipmentSchedule(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		deliveryPlanningRepository.deleteForShipmentSchedule(shipmentScheduleId);
+	}
 }

@@ -133,4 +133,12 @@ public class DeliveryPlanningRepository
 				.create()
 				.deleteDirectly();
 	}
+
+	public void deleteForShipmentSchedule(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
+				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
+				.create()
+				.deleteDirectly();
+	}
 }
