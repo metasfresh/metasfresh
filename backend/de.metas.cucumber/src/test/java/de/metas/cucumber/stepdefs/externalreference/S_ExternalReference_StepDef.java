@@ -157,7 +157,7 @@ public class S_ExternalReference_StepDef
 				externalReferenceQueryBuilder.addEqualsFilter(I_S_ExternalReference.COLUMNNAME_ExternalSystem_Config_ID, externalSystemParentConfigId);
 			}
 
-			final boolean externalRefExists = externalReferenceQueryBuilder
+			final I_S_ExternalReference externalReferenceRecord = externalReferenceQueryBuilder
 					.create()
 					.firstOnlyOrNull(I_S_ExternalReference.class);
 
