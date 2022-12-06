@@ -56,7 +56,7 @@ import java.math.BigDecimal;
  */
 public abstract class AbstractInvoiceCandidateHandler implements IInvoiceCandidateHandler
 {
-	protected final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 
 	private I_C_ILCandHandler record;
 

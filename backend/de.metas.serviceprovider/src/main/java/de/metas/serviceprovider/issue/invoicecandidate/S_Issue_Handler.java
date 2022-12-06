@@ -32,6 +32,7 @@ import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
+import de.metas.document.IDocTypeBL;
 import de.metas.document.location.DocumentLocation;
 import de.metas.invoice.InvoiceDocBaseType;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
@@ -106,6 +107,7 @@ public class S_Issue_Handler extends AbstractInvoiceCandidateHandler
 	private final IPricingBL pricingBL = Services.get(IPricingBL.class);
 	private final IUserDAO userDAO = Services.get(IUserDAO.class);
 	private final IBPartnerBL bpartnerBL = Services.get(IBPartnerBL.class);
+	private final IDocTypeBL docTypeBL = Services.get(IDocTypeBL.class);
 
 	private final IssueService issueService = SpringContextHolder.instance.getBean(IssueService.class);
 	private final ProjectRepository projectRepository = SpringContextHolder.instance.getBean(ProjectRepository.class);

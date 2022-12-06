@@ -43,6 +43,7 @@ Feature: Create vendor invoice candidates from effort control
       | testProject             | testProject_24102022 | testProject_24102022 | EUR                    | customer_SO                  | customerLocation_SO                   | customerUser              | invoiceableProduct          |
 
   @from:cucumber
+  @Id:S0227_100
   Scenario: Generate invoice candidate from effort control with one budget issue and two effort issues and invoice the invoice candidates
     Given metasfresh contains C_Activity:
       | C_Activity_ID.Identifier | Name                   | Value                  |
@@ -115,6 +116,7 @@ Feature: Create vendor invoice candidates from effort control
       | C_Invoice | vendorInvoice100     | Statistical     | costCenter100                | testProject                 |
 
   @from:cucumber
+  @Id:S0227_200
   Scenario: Generate invoice candidate from effort control, increase `IssueEffort` on effort issue and validate date `QtyToInvoice` on vendor invoice candidate is updated
     Given metasfresh contains C_Activity:
       | C_Activity_ID.Identifier | Name                   | Value                  |
@@ -173,6 +175,7 @@ Feature: Create vendor invoice candidates from effort control
       | vendorIC200                       | 17           | 17             | 0                | 0               | invoiceableProduct          | vendor_PO                       | vendorLocation_PO               | vendorUser                  | false         | I               | costCenter200                | testProject                 | 2510221\neffortIssue200_24102022 | N           | Internal Vendor Invoice      |
 
   @from:cucumber
+  @Id:S0227_300
   Scenario: Generate invoice candidate from effort control and invoice it, increase `IssueEffort` on effort issue and invoice again. validate that a new invoice is generated for the increased qty
     Given metasfresh contains C_Activity:
       | C_Activity_ID.Identifier | Name                   | Value                  |
@@ -263,6 +266,7 @@ Feature: Create vendor invoice candidates from effort control
       | C_Invoice | vendorInvoice300     | Statistical     | costCenter300                | testProject                 |
 
   @from:cucumber
+  @Id:S0227_400
   Scenario: Generate invoice candidate from effort control and invoice it, decrease `IssueEffort` on effort issue and invoice again. validate that an invoice cannot be generated
     Given metasfresh contains C_Activity:
       | C_Activity_ID.Identifier | Name                   | Value                  |
@@ -340,6 +344,7 @@ Feature: Create vendor invoice candidates from effort control
       | vendorIC400                       |
 
   @from:cucumber
+  @Id:S0227_500
   Scenario: Validate that vendor invoice candidate is not created when effort issue has no assignee
     Given metasfresh contains C_Activity:
       | C_Activity_ID.Identifier | Name                   | Value                  |

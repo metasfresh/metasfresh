@@ -320,6 +320,7 @@ Feature: Create customer invoice candidates from effort control
       | candIssue400                      |
 
   @from:cucumber
+  @Id:S0227_600
   Scenario: Validate that invoice candidate is not created from budget issue when there is no product configured on project
     Given create or update C_Project:
       | C_Project_ID.Identifier | Name                 | Value                | C_Currency_ID.ISO_Code | OPT.M_Product_ID.Identifier |
