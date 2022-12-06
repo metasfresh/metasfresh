@@ -25,6 +25,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
+import de.metas.inout.InOutId;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
@@ -89,6 +90,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 	private final transient ITaxBL taxBL = Services.get(ITaxBL.class);
 	private final transient IProductBL productBL = Services.get(IProductBL.class);
 	private final transient ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
+	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 
 	/** pseudo line */
 	private DocLine_MatchInv docLine = null;
@@ -505,14 +507,10 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 	{
 		Check.assume(!isSOTrx(), "Cannot create cost details for sales match invoice");
 
-		final IInOutBL inOutBL = Services.get(IInOutBL.class);
-
-		final BigDecimal matchAmt = getInvoiceLineMatchedAmt();
-		final CurrencyId currentId = getInvoiceCurrencyId();
-		final CurrencyConversionContext currencyConvCtx = getInvoiceCurrencyConversionCtx();
+		final CostAmount matchAmt = CostAmount.of(getInvoiceLineMatchedAmt(), getInvoiceCurrencyId());
 
 		final I_M_InOutLine receiptLine = getReceiptLine();
-		final I_M_InOut receipt = receiptLine.getM_InOut();
+		final I_M_InOut receipt = inOutBL.getById(InOutId.ofRepoId(receiptLine.getM_InOut_ID()));
 		final boolean isReturnTrx = inOutBL.isReturnMovementType(receipt.getMovementType());
 		final Quantity matchQty = isReturnTrx ? getQty().negate() : getQty();
 
@@ -527,9 +525,8 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 						.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(matchInv.getM_AttributeSetInstance_ID()))
 						.documentRef(CostingDocumentRef.ofMatchInvoiceId(matchInv.getM_MatchInv_ID()))
 						.qty(matchQty)
-						.amt(CostAmount.of(matchAmt, currentId))
-						.currencyConversionTypeId(currencyConvCtx.getConversionTypeId())
-						.date(currencyConvCtx.getConversionDate())
+						.amt(matchAmt)
+						.date(getDateAcct())
 						.description(getDescription())
 						.build())
 				.getTotalAmountToPost(as);
