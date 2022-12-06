@@ -28,6 +28,7 @@ import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.deliveryplanning.M_ShipmentSchedule_Create_M_Delivery_Planning;
 import de.metas.document.engine.DocStatus;
 import de.metas.i18n.AdMessageKey;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
@@ -388,5 +389,11 @@ private final IOrderBL orderBL = Services.get(IOrderBL.class);
 			return;
 		}
 		M_ShipmentSchedule_Create_M_Delivery_Planning.scheduleOnTrxCommit(sched);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
+	public void deleteDeliveryPlannings(@NonNull final I_M_ShipmentSchedule sched)
+	{
+		deliveryPlanningService.deleteForShipmentSchedule(ShipmentScheduleId.ofRepoId(sched.getM_ShipmentSchedule_ID()));
 	}
 }

@@ -30,6 +30,8 @@ import org.compiere.model.I_M_Delivery_Planning;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
+import static org.adempiere.model.InterfaceWrapperHelper.isUIAction;
+
 @Interceptor(I_M_Delivery_Planning.class)
 @Component
 public class M_Delivery_Planning
@@ -44,6 +46,9 @@ public class M_Delivery_Planning
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_DELETE)
 	public void onDelete(@NonNull final I_M_Delivery_Planning deliveryPlanning)
 	{
-		deliveryPlanningService.validateDeletion(deliveryPlanning);
+		if (isUIAction(deliveryPlanning))
+		{
+			deliveryPlanningService.validateDeletion(deliveryPlanning);
+		}
 	}
 }
