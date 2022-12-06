@@ -180,6 +180,7 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#14019](https://github.com/metasfresh/metasfresh/issues/14019) [BUG] BPartnerRestController v2: path orgCode param is not consolidated with the request body
   * [#14072](https://github.com/metasfresh/metasfresh/issues/14072) Fix Sales Order - void selected order with related documents
   * [#14036](https://github.com/metasfresh/metasfresh/issues/14036) remove remaining oids from tables
   * [#14003](https://github.com/metasfresh/metasfresh/pull/14003) Fix NPE that happens if IExportProcessor.process throws an exception
