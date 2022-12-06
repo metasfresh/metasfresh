@@ -125,4 +125,12 @@ public class DeliveryPlanningRepository
 				.create()
 				.anyMatch();
 	}
+
+	public void deleteForReceiptSchedule(@NonNull final ReceiptScheduleId receiptScheduleId)
+	{
+		queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
+				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_M_ReceiptSchedule_ID, receiptScheduleId)
+				.create()
+				.deleteDirectly();
+	}
 }
