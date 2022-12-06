@@ -1072,7 +1072,7 @@ UPDATE AD_Element_Trl SET Name='Sektionskennung', PrintName='Sektionskennung',Up
 ;
 -- Element: ProductValue
 -- 2022-12-05T09:02:31.177Z
-UPDATE AD_Element_Trl SET Name='Produktschlüssel', PrintName='Produktschlüssel',Updated=TO_TIMESTAMP('2022-12-05 11:02:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581739 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET Name='Produktname', PrintName='Produktname',Updated=TO_TIMESTAMP('2022-12-05 11:02:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581739 AND AD_Language='de_CH'
 ;
 
 -- 2022-12-05T09:02:31.258Z
@@ -1081,7 +1081,7 @@ UPDATE AD_Element_Trl SET Name='Produktschlüssel', PrintName='Produktschlüssel
 
 -- Element: ProductValue
 -- 2022-12-05T09:02:43.880Z
-UPDATE AD_Element_Trl SET Name='Produktschlüssel', PrintName='Produktschlüssel',Updated=TO_TIMESTAMP('2022-12-05 11:02:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581739 AND AD_Language='nl_NL'
+UPDATE AD_Element_Trl SET Name='Produktname', PrintName='Produktname',Updated=TO_TIMESTAMP('2022-12-05 11:02:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581739 AND AD_Language='nl_NL'
 ;
 
 -- 2022-12-05T09:02:43.968Z
@@ -1090,7 +1090,7 @@ UPDATE AD_Element_Trl SET Name='Produktschlüssel', PrintName='Produktschlüssel
 
 -- Element: ProductValue
 -- 2022-12-05T09:03:10.261Z
-UPDATE AD_Element_Trl SET Name='Produktschlüssel', PrintName='Produktschlüssel',Updated=TO_TIMESTAMP('2022-12-05 11:03:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581739 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET Name='Produktname', PrintName='Produktname',Updated=TO_TIMESTAMP('2022-12-05 11:03:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581739 AND AD_Language='de_DE'
 ;
 
 -- 2022-12-05T09:03:10.342Z
@@ -1099,7 +1099,7 @@ UPDATE AD_Element_Trl SET Name='Produktschlüssel', PrintName='Produktschlüssel
 
 -- Element: ProductName
 -- 2022-12-05T09:03:56.595Z
-UPDATE AD_Element_Trl SET Name='Produktname', PrintName='Produktname',Updated=TO_TIMESTAMP('2022-12-05 11:03:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581747 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET Name='Produktschlüssel', PrintName='Produktschlüssel',Updated=TO_TIMESTAMP('2022-12-05 11:03:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581747 AND AD_Language='de_CH'
 ;
 
 -- 2022-12-05T09:03:56.677Z
@@ -1108,7 +1108,7 @@ UPDATE AD_Element_Trl SET Name='Produktname', PrintName='Produktname',Updated=TO
 
 -- Element: ProductName
 -- 2022-12-05T09:04:01.720Z
-UPDATE AD_Element_Trl SET Name='Produktname', PrintName='Produktname',Updated=TO_TIMESTAMP('2022-12-05 11:04:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581747 AND AD_Language='nl_NL'
+UPDATE AD_Element_Trl SET Name='Produktschlüssel', PrintName='Produktschlüssel',Updated=TO_TIMESTAMP('2022-12-05 11:04:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581747 AND AD_Language='nl_NL'
 ;
 
 -- 2022-12-05T09:04:01.803Z
@@ -1117,9 +1117,48 @@ UPDATE AD_Element_Trl SET Name='Produktname', PrintName='Produktname',Updated=TO
 
 -- Element: ProductName
 -- 2022-12-05T09:04:07.719Z
-UPDATE AD_Element_Trl SET Name='Produktname', PrintName='Produktname',Updated=TO_TIMESTAMP('2022-12-05 11:04:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581747 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET Name='Produktschlüssel', PrintName='Produktschlüssel',Updated=TO_TIMESTAMP('2022-12-05 11:04:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581747 AND AD_Language='de_DE'
 ;
 
 -- 2022-12-05T09:04:07.801Z
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581747,'de_DE') 
+;
+-- Element: null
+-- 2022-12-06T15:14:44.267Z
+UPDATE AD_Element_Trl SET Name='Incoterm',Updated=TO_TIMESTAMP('2022-12-06 17:14:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581735 AND AD_Language='de_CH'
+;
+
+-- 2022-12-06T15:14:44.295Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581735,'de_CH') 
+;
+
+-- Element: null
+-- 2022-12-06T15:14:46.885Z
+UPDATE AD_Element_Trl SET PrintName='Incoterm',Updated=TO_TIMESTAMP('2022-12-06 17:14:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581735 AND AD_Language='de_CH'
+;
+
+-- 2022-12-06T15:14:46.887Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581735,'de_CH') 
+;
+
+-- Element: null
+-- 2022-12-06T15:14:49.210Z
+UPDATE AD_Element_Trl SET Name='Incoterm', PrintName='Incoterm',Updated=TO_TIMESTAMP('2022-12-06 17:14:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581735 AND AD_Language='de_DE'
+;
+
+-- 2022-12-06T15:14:49.212Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(581735,'de_DE') 
+;
+
+-- 2022-12-06T15:14:49.213Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581735,'de_DE') 
+;
+
+-- Element: null
+-- 2022-12-06T15:14:51.796Z
+UPDATE AD_Element_Trl SET Name='Incoterm', PrintName='Incoterm',Updated=TO_TIMESTAMP('2022-12-06 17:14:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581735 AND AD_Language='nl_NL'
+;
+
+-- 2022-12-06T15:14:51.798Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581735,'nl_NL') 
 ;
