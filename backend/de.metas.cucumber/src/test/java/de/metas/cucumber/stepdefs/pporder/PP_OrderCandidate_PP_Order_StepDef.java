@@ -125,14 +125,15 @@ public class PP_OrderCandidate_PP_Order_StepDef
 		final Supplier<String> getLogContext = () -> {
 			final StringBuilder context = new StringBuilder();
 
-			queryBL.createQueryBuilder(I_PP_Order_BOMLine.class)
-					.addEqualsFilter(I_PP_Order_BOMLine.COLUMNNAME_M_Product_ID, ppOrderCandidate.getM_Product_ID())
+			queryBL.createQueryBuilder(I_PP_Order.class)
+					.addEqualsFilter(I_PP_Order.COLUMNNAME_M_Product_ID, ppOrderCandidate.getM_Product_ID())
 					.create()
 					.stream()
-					.forEach(ppOrderLine -> {
-						context.append("\nPP_Order_ID=").append(ppOrderLine.getPP_Order_ID());
-						context.append("\nM_Product_ID=").append(ppOrderLine.getM_Product_ID());
-						context.append("\nQtyEntered=").append(ppOrderLine.getQtyEntered());
+					.forEach(ppOrder -> {
+						context.append("\nPP_Order_ID=").append(ppOrder.getPP_Order_ID());
+						context.append("\nM_Product_ID=").append(ppOrder.getM_Product_ID());
+						context.append("\nQtyEntered=").append(ppOrder.getQtyEntered());
+						context.append("\nQtyOrdered=").append(ppOrder.getQtyOrdered());
 					});
 
 			return context.toString();
