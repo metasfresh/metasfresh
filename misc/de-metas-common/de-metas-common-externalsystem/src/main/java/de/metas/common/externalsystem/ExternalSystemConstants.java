@@ -69,17 +69,40 @@ public class ExternalSystemConstants
 
 	public static final String PARAM_CAMEL_HTTP_RESOURCE_AUTH_KEY = "CamelHttpResourceAuthKey";
 
+	// SFTP Config
 	public static final String PARAM_SFTP_HOST_NAME = "SFTP_HostName";
 	public static final String PARAM_SFTP_PORT = "SFTP_Port";
 	public static final String PARAM_SFTP_USERNAME = "SFTP_Username";
 	public static final String PARAM_SFTP_PASSWORD = "SFTP_Password";
+
+	public static final String PARAM_SFTP_PROCESSED_DIRECTORY = "SFTPProcessedDirectory";
+	public static final String PARAM_SFTP_ERRORED_DIRECTORY = "SFTPErroredDirectory";
+	public static final String PARAM_SFTP_POLLING_FREQUENCY_MS = "SFTPPollingFrequencyInMs";
+
 	public static final String PARAM_SFTP_PRODUCT_TARGET_DIRECTORY = "SFTP_Product_Target_Directory";
-	public static final String PARAM_SFTP_BPARTNER_TARGET_DIRECTORY = "SFTP_BPartner_Target_Directory";
-	public static final String PARAM_PROCESSED_DIRECTORY = "SFTPProcessedDirectory";
-	public static final String PARAM_ERRORED_DIRECTORY = "SFTPErroredDirectory";
-	public static final String PARAM_POLLING_FREQUENCY_MS = "SFTPPollingFrequencyInMs";
 	public static final String PARAM_SFTP_PRODUCT_FILE_NAME_PATTERN = "SFTPProductFileNamePattern";
+
+	public static final String PARAM_SFTP_BPARTNER_TARGET_DIRECTORY = "SFTP_BPartner_Target_Directory";
 	public static final String PARAM_SFTP_BPARTNER_FILE_NAME_PATTERN = "SFTPBPartnerFileNamePattern";
+
+	public static final String PARAM_SFTP_CREDIT_LIMIT_TARGET_DIRECTORY = "SFTP_CreditLimit_Target_Directory";
+	public static final String PARAM_SFTP_CREDIT_LIMIT_FILENAME_PATTERN = "SFTPCreditLimitFileNamePattern";
+
+	// Local File Config
+	public static final String PARAM_LOCAL_FILE_PRODUCT_TARGET_DIRECTORY = "LocalFile_Product_Target_Directory";
+	public static final String PARAM_LOCAL_FILE_PRODUCT_FILE_NAME_PATTERN = "LocalFileProductFileNamePattern";
+
+	public static final String PARAM_LOCAL_FILE_BPARTNER_FILE_NAME_PATTERN = "LocalFilePartnerFileNamePattern";
+	public static final String PARAM_LOCAL_FILE_BPARTNER_TARGET_DIRECTORY = "LocalFile_BPartner_Target_Directory";
+
+	public static final String PARAM_LOCAL_FILE_CREDIT_LIMIT_FILENAME_PATTERN = "LocalFileCreditLimitFileNamePattern";
+	public static final String PARAM_LOCAL_FILE_CREDIT_LIMIT_TARGET_DIRECTORY = "LocalFile_CreditLimit_Target_Directory";
+
+	public static final String PARAM_LOCAL_FILE_ROOT_LOCATION = "LocalFileRootLocation";
+	public static final String PARAM_LOCAL_FILE_PROCESSED_DIRECTORY = "LocalFileProcessedDirectory";
+	public static final String PARAM_LOCAL_FILE_ERRORED_DIRECTORY = "LocalFileErroredDirectory";
+	public static final String PARAM_LOCAL_FILE_POLLING_FREQUENCY_MS = "LocalFilePollingFrequencyInMs";
+	//
 
 	public static final String QUEUE_NAME_MF_TO_ES = "MF_TO_ExternalSystem";
 
@@ -99,4 +122,7 @@ public class ExternalSystemConstants
 
 	public static final String HEADER_PINSTANCE_ID = "x-adpinstanceid";
 	public static final String HEADER_EXTERNALSYSTEM_CONFIG_ID = "x-externalsystemconfigid";
+
+	public static final String PARAM_PRODUCT_TYPE_MAPPINGS = "ProductTypeMappings";
+	public static final String PARAM_PRODUCT_CATEGORY_MAPPINGS = "ProductCategoryMappings";
 }

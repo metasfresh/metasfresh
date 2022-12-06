@@ -74,6 +74,7 @@ public class BPartnerLocation
 	public static final String HANDOVER_LOCATION = "handoverLocation";
 	public static final String REMIT_TO = "remitTo";
 	public static final String REPLICATION_LOOKUP_DEFAULT = "replicationLookupDefault";
+	public static final String VAT_TAX_ID = "vatTaxId";
 
 	@Nullable
 	private BPartnerLocationId id;
@@ -146,6 +147,9 @@ public class BPartnerLocation
 	@Nullable
 	final String setupPlaceNo;
 
+	@Nullable
+	private String vatTaxId;
+
 	private boolean remitTo;
 	private boolean handOverLocation;
 	private boolean replicationLookupDefault;
@@ -189,6 +193,7 @@ public class BPartnerLocation
 			@Nullable final String mobile,
 			@Nullable final String fax,
 			@Nullable final String setupPlaceNo,
+			@Nullable final String vatTaxId,
 			@Nullable final Boolean remitTo,
 			@Nullable final Boolean handOverLocation,
 			@Nullable final Boolean replicationLookupDefault,
@@ -232,6 +237,7 @@ public class BPartnerLocation
 		this.email = email;
 
 		this.setupPlaceNo = setupPlaceNo;
+		this.vatTaxId = vatTaxId;
 
 		this.handOverLocation = handOverLocation != null ? handOverLocation : false;
 

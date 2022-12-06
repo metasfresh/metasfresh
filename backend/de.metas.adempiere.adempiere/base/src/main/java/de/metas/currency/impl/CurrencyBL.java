@@ -38,6 +38,7 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -87,6 +88,7 @@ public class CurrencyBL implements ICurrencyBL
 	}
 
 	@Override
+	@NonNull
 	public BigDecimal convertBase(
 			final BigDecimal amt,
 			final CurrencyId currencyFromId,
@@ -172,7 +174,8 @@ public class CurrencyBL implements ICurrencyBL
 				.build();
 	}    // convert
 
-	private CurrencyPrecision getStdPrecision(final CurrencyId currencyId)
+	@Override
+	public CurrencyPrecision getStdPrecision(final CurrencyId currencyId)
 	{
 		return currencyDAO.getStdPrecision(currencyId);
 	}
@@ -357,6 +360,17 @@ public class CurrencyBL implements ICurrencyBL
 		return currencyDAO.getCurrencyCodeById(currencyId);
 	}
 
+	@Override
+	@NonNull
+	public Money convertToBase(@NonNull final CurrencyConversionContext conversionCtx, @NonNull final Money amt)
+	{
+		final CurrencyId currencyToId = getBaseCurrencyId(conversionCtx.getClientId(), conversionCtx.getOrgId());
+
+		final CurrencyConversionResult currencyConversionResult = convert(conversionCtx, amt, currencyToId);
+
+		return Money.of(currencyConversionResult.getAmount(), currencyToId);
+	}
+
 	private static CurrencyConversionResultBuilder prepareCurrencyConversionResult(@NonNull final CurrencyConversionContext conversionCtx)
 	{
 		return CurrencyConversionResult.builder()
@@ -365,5 +379,4 @@ public class CurrencyBL implements ICurrencyBL
 				.conversionDate(conversionCtx.getConversionDate())
 				.conversionTypeId(conversionCtx.getConversionTypeId());
 	}
-
 }

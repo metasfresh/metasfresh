@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs.createbpartner;
 
+import de.metas.bpartner.service.BPartnerCreditLimitRepository;
 import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.bpartner.v2.response.JsonResponseBPartner;
 import de.metas.common.bpartner.v2.response.JsonResponseComposite;
@@ -44,15 +45,21 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
 import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_CreditLimit;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_CreditLimit_Type;
 import org.compiere.model.I_C_Incoterms;
 import org.compiere.model.I_C_PaymentTerm;
 import org.compiere.model.I_M_SectionCode;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -74,9 +81,12 @@ public class CreateBPartnerV2_StepDef
 	private final C_PaymentTerm_StepDefData paymentTermTable;
 	private final TestContext testContext;
 
-	final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
 	private final SectionCodeRepository sectionCodeRepository;
 	private final IncotermsRepository incotermsRepository;
+	private final BPartnerCreditLimitRepository bPartnerCreditLimitRepository;
 
 	public CreateBPartnerV2_StepDef(
 			@NonNull final C_BPartner_StepDefData bPartnerTable,
@@ -95,6 +105,7 @@ public class CreateBPartnerV2_StepDef
 		this.bpartnerEndpointService = SpringContextHolder.instance.getBean(BPartnerEndpointService.class);
 		this.sectionCodeRepository = SpringContextHolder.instance.getBean(SectionCodeRepository.class);
 		this.incotermsRepository = SpringContextHolder.instance.getBean(IncotermsRepository.class);
+		this.bPartnerCreditLimitRepository = SpringContextHolder.instance.getBean(BPartnerCreditLimitRepository.class);
 	}
 
 	@Then("^verify that bPartner was (updated|created) for externalIdentifier$")
@@ -250,6 +261,7 @@ public class CreateBPartnerV2_StepDef
 			final boolean handoverLocation = DataTableUtil.extractBooleanForColumnNameOr(dataTableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsHandOverLocation, false);
 			final boolean remitTo = DataTableUtil.extractBooleanForColumnNameOr(dataTableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsRemitTo, false);
 			final boolean replicationLookupDefault = DataTableUtil.extractBooleanForColumnNameOr(dataTableRow, "OPT." + I_C_BPartner_Location.COLUMNNAME_IsReplicationLookupDefault, false);
+			final String vatId = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT.VATaxId");
 
 			// persisted value
 			final Optional<JsonResponseLocation> persistedResult = bpartnerEndpointService.retrieveBPartnerLocation(
@@ -268,6 +280,7 @@ public class CreateBPartnerV2_StepDef
 			softly.assertThat(persistedLocation.isHandoverLocation()).isEqualTo(handoverLocation);
 			softly.assertThat(persistedLocation.isRemitTo()).isEqualTo(remitTo);
 			softly.assertThat(persistedLocation.isReplicationLookupDefault()).isEqualTo(replicationLookupDefault);
+			softly.assertThat(persistedLocation.getVatId()).isEqualTo(vatId);
 
 			softly.assertAll();
 		}
@@ -308,6 +321,46 @@ public class CreateBPartnerV2_StepDef
 			final I_C_BPartner bPartner = bPartnerTable.get(bpartnerIdentifier);
 
 			testContext.setEndpointPath(BPARTNER_ENDPOINT_PATH + "/" + bPartner.getC_BPartner_ID());
+		}
+	}
+
+	@And("^verify that credit limit was created for bpartner: (.*)$")
+	public void verify_credit_limit_is_created_for_bpartner_v2(@NonNull final String bPartnerIdentifier, @NonNull final DataTable dataTable)
+	{
+		final I_C_BPartner bPartner = bPartnerTable.get(bPartnerIdentifier);
+		assertThat(bPartner).isNotNull();
+
+		final List<Map<String, String>> contactsTableList = dataTable.asMaps();
+		for (final Map<String, String> dataTableRow : contactsTableList)
+		{
+			final BigDecimal amount = DataTableUtil.extractBigDecimalForColumnName(dataTableRow, I_C_BPartner_CreditLimit.COLUMNNAME_Amount);
+			final String creditLimitTypeName = DataTableUtil.extractStringForColumnName(dataTableRow, I_C_CreditLimit_Type.Table_Name + "." + I_C_CreditLimit_Type.COLUMNNAME_Name);
+			final Boolean isActive = DataTableUtil.extractBooleanForColumnName(dataTableRow, I_C_BPartner_CreditLimit.COLUMNNAME_IsActive);
+			final Timestamp dateFrom = DataTableUtil.extractDateTimestampForColumnNameOrNull(dataTableRow, "OPT." + I_C_BPartner_CreditLimit.COLUMNNAME_DateFrom);
+			final Boolean processed = DataTableUtil.extractBooleanForColumnName(dataTableRow, I_C_BPartner_CreditLimit.COLUMNNAME_Processed);
+
+			final IQueryBuilder<I_C_BPartner_CreditLimit> queryBuilder = queryBL.createQueryBuilder(I_C_BPartner_CreditLimit.class)
+					.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_C_BPartner_ID, bPartner.getC_BPartner_ID())
+					.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_Amount, amount);
+
+			if (dateFrom != null)
+			{
+				queryBuilder.addEqualsFilter(I_C_BPartner_CreditLimit.COLUMNNAME_DateFrom, dateFrom);
+			}
+
+			final Optional<I_C_BPartner_CreditLimit> creditLimit = queryBuilder.create()
+					.firstOnlyOptional(I_C_BPartner_CreditLimit.class);
+
+			assertThat(creditLimit).isPresent();
+
+			final I_C_CreditLimit_Type creditLimit_type = bPartnerCreditLimitRepository.getCreditLimitTypeByName(creditLimitTypeName);
+
+			final SoftAssertions softly = new SoftAssertions();
+			softly.assertThat(creditLimit.get().getC_CreditLimit_Type_ID()).isEqualTo(creditLimit_type.getC_CreditLimit_Type_ID());
+			softly.assertThat(creditLimit.get().isActive()).isEqualTo(isActive);
+			softly.assertThat(creditLimit.get().isProcessed()).isEqualTo(processed);
+
+			softly.assertAll();
 		}
 	}
 }
