@@ -6,7 +6,6 @@ package de.metas.manufacturing.acct;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
 import de.metas.acct.api.AcctSchemaId;
-import de.metas.acct.api.IAccountDAO;
 import de.metas.acct.api.ProductAcctType;
 import de.metas.costing.AggregatedCostAmount;
 import de.metas.costing.CostAmount;
@@ -15,6 +14,7 @@ import de.metas.costing.CostDetailReverseRequest;
 import de.metas.costing.CostElement;
 import de.metas.costing.CostElementType;
 import de.metas.costing.CostingDocumentRef;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Services;
@@ -114,13 +114,13 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 		}
 	}
 
-	public AggregatedCostAmount getCreateCosts(final AcctSchema as)
+	public ExplainedOptional<AggregatedCostAmount> getCreateCosts(final AcctSchema as)
 	{
 		final AcctSchemaId acctSchemaId = as.getId();
 
 		if (isReversalLine())
 		{
-			return services.createReversalCostDetails(CostDetailReverseRequest.builder()
+			return services.createReversalCostDetailsOrEmpty(CostDetailReverseRequest.builder()
 					.acctSchemaId(acctSchemaId)
 					.reversalDocumentRef(CostingDocumentRef.ofCostCollectorId(get_ID()))
 					.initialDocumentRef(CostingDocumentRef.ofCostCollectorId(getReversalLine_ID()))
@@ -129,7 +129,7 @@ public class DocLine_CostCollector extends DocLine<Doc_PPCostCollector>
 		}
 		else
 		{
-			return services.createCostDetail(
+			return services.createCostDetailOrEmpty(
 					CostDetailCreateRequest.builder()
 							.acctSchemaId(acctSchemaId)
 							.clientId(getClientId())
