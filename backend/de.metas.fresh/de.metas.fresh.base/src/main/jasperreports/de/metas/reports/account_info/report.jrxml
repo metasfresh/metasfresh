@@ -138,7 +138,7 @@
 			<band height="115">
 				<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() == 1 && $F{overallcount} < 150000)]]></printWhenExpression>
 				<textField isBlankWhenNull="true">
-					<reportElement x="7" y="106" width="50" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+					<reportElement x="7" y="106" width="33" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 					<box rightPadding="3"/>
 					<textElement textAlignment="Right">
 						<font size="7" isBold="false"/>
@@ -153,7 +153,7 @@
 					<textFieldExpression><![CDATA[$R{amtcr}]]></textFieldExpression>
 				</textField>
 				<textField pattern="MM.yyyy" isBlankWhenNull="true">
-					<reportElement x="170" y="106" width="60" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+					<reportElement x="130" y="106" width="60" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 					<textElement>
 						<font size="7" isBold="false"/>
 					</textElement>
@@ -167,7 +167,7 @@
 					<textFieldExpression><![CDATA[$V{PAGE_NUMBER}+" " + $R{of}]]></textFieldExpression>
 				</textField>
 				<textField pattern="MM.yyyy" isBlankWhenNull="true">
-					<reportElement x="105" y="106" width="65" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+					<reportElement x="73" y="106" width="57" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 					<textElement>
 						<font size="7" isBold="false"/>
 					</textElement>
@@ -195,7 +195,7 @@
 					<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
-					<reportElement x="57" y="106" width="47" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+					<reportElement x="40" y="106" width="33" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 					<textElement>
 						<font size="7" isBold="false"/>
 					</textElement>
@@ -301,11 +301,25 @@
 					</textElement>
 					<textFieldExpression><![CDATA[$R{docstatus}]]></textFieldExpression>
 				</textField>
+				<textField>
+					<reportElement x="190" y="106" width="40" height="9" uuid="6c4a6a90-b02a-4fba-b553-32fe6b6fde32"/>
+					<textElement>
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{vatcode}]]></textFieldExpression>
+				</textField>
+				<textField>
+					<reportElement x="230" y="106" width="50" height="9" uuid="eab5c09d-6d1e-43dd-983b-d87e84847360"/>
+					<textElement>
+						<font size="7"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$R{tax_rate_name}]]></textFieldExpression>
+				</textField>
 			</band>
 			<band height="74">
 				<printWhenExpression><![CDATA[new Boolean($V{PAGE_NUMBER}.intValue() > 1 && $F{overallcount} < 150000)]]></printWhenExpression>
 				<textField isBlankWhenNull="true">
-					<reportElement x="7" y="60" width="50" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+					<reportElement x="7" y="60" width="33" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 					<box rightPadding="3"/>
 					<textElement textAlignment="Right">
 						<font size="7" isBold="false"/>
@@ -320,14 +334,14 @@
 					<textFieldExpression><![CDATA[$R{amtcr}]]></textFieldExpression>
 				</textField>
 				<textField pattern="MM.yyyy" isBlankWhenNull="true">
-					<reportElement x="170" y="60" width="60" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+					<reportElement x="130" y="60" width="60" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 					<textElement>
 						<font size="7" isBold="false"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{description}]]></textFieldExpression>
 				</textField>
 				<textField pattern="MM.yyyy" isBlankWhenNull="true">
-					<reportElement x="105" y="60" width="65" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+					<reportElement x="73" y="60" width="57" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 					<textElement>
 						<font size="7" isBold="false"/>
 					</textElement>
@@ -341,7 +355,7 @@
 					<textFieldExpression><![CDATA[$R{amtdr}]]></textFieldExpression>
 				</textField>
 				<textField isBlankWhenNull="true">
-					<reportElement x="57" y="60" width="47" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+					<reportElement x="40" y="60" width="33" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 					<textElement>
 						<font size="7" isBold="false"/>
 					</textElement>
@@ -406,14 +420,14 @@
 					<textFieldExpression><![CDATA[$R{docstatus}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="230" y="60" width="20" height="9" uuid="de55145a-f3db-483d-9bd2-87ca9f28a815"/>
+					<reportElement x="190" y="60" width="40" height="9" uuid="de55145a-f3db-483d-9bd2-87ca9f28a815"/>
 					<textElement>
 						<font size="7"/>
 					</textElement>
 					<textFieldExpression><![CDATA[$R{vatcode}]]></textFieldExpression>
 				</textField>
 				<textField>
-					<reportElement x="250" y="60" width="30" height="9" uuid="dc3549fc-eb36-48ed-bfa8-2326daf22334"/>
+					<reportElement x="230" y="60" width="50" height="9" uuid="dc3549fc-eb36-48ed-bfa8-2326daf22334"/>
 					<textElement>
 						<font size="7"/>
 					</textElement>
@@ -441,7 +455,7 @@
 		<band height="9" splitType="Stretch">
 			<printWhenExpression><![CDATA[new Boolean ($F{unionorder}.intValue() != 3 && $F{unionorder}.intValue() != 4 && $F{overallcount} < 150000)]]></printWhenExpression>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="7" y="0" width="50" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+				<reportElement x="7" y="0" width="33" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 				<box rightPadding="3"/>
 				<textElement textAlignment="Right">
 					<font size="7" isBold="false"/>
@@ -456,7 +470,7 @@
 				<textFieldExpression><![CDATA[$F{amtacctcr}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="170" y="0" width="60" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+				<reportElement x="130" y="0" width="60" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 				<textElement>
 					<font size="7" isBold="false"/>
 				</textElement>
@@ -468,7 +482,7 @@
 )]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="105" y="0" width="65" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+				<reportElement x="73" y="0" width="57" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 				<textElement>
 					<font size="7" isBold="false"/>
 				</textElement>
@@ -482,7 +496,7 @@
 				<textFieldExpression><![CDATA[$F{amtacctdr}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0" isBlankWhenNull="true">
-				<reportElement x="57" y="0" width="47" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+				<reportElement x="40" y="0" width="33" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 				<textElement>
 					<font size="7" isBold="false"/>
 				</textElement>
@@ -517,14 +531,14 @@
 				<textFieldExpression><![CDATA[$F{docstatus}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="230" y="0" width="20" height="9" uuid="04382bf8-5b1c-46f1-ac10-cbc12a84993b"/>
+				<reportElement x="190" y="0" width="40" height="9" uuid="04382bf8-5b1c-46f1-ac10-cbc12a84993b"/>
 				<textElement>
 					<font size="7"/>
 				</textElement>
 				<textFieldExpression><![CDATA[$F{vat_code}]]></textFieldExpression>
 			</textField>
 			<textField isBlankWhenNull="true">
-				<reportElement x="250" y="0" width="30" height="9" uuid="81425b72-e3f0-470e-a86b-155041149740"/>
+				<reportElement x="230" y="0" width="50" height="9" uuid="81425b72-e3f0-470e-a86b-155041149740"/>
 				<textElement>
 					<font size="7"/>
 				</textElement>
@@ -534,7 +548,7 @@
 		<band height="10">
 			<printWhenExpression><![CDATA[new Boolean ($F{unionorder}.intValue() == 3 && $F{overallcount} < 150000)]]></printWhenExpression>
 			<textField pattern="dd.MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="7" y="0" width="50" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+				<reportElement x="7" y="0" width="33" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 				<box rightPadding="3"/>
 				<textElement textAlignment="Right">
 					<font fontName="Arial" size="7" isBold="true"/>
@@ -549,7 +563,7 @@
 				<textFieldExpression><![CDATA[$F{amtacctcr}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField isStretchWithOverflow="true" pattern="MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="170" y="0" width="60" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+				<reportElement x="130" y="0" width="60" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 				<textElement>
 					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
@@ -561,7 +575,7 @@
 )]]></textFieldExpression>
 			</textField>
 			<textField pattern="MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="105" y="0" width="65" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+				<reportElement x="73" y="0" width="57" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 				<textElement>
 					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
@@ -575,7 +589,7 @@
 				<textFieldExpression><![CDATA[$F{amtacctdr}.setScale( 2, RoundingMode.HALF_UP )]]></textFieldExpression>
 			</textField>
 			<textField pattern="###0" isBlankWhenNull="true">
-				<reportElement x="57" y="0" width="47" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
+				<reportElement x="40" y="0" width="33" height="9" uuid="d19f9180-4d10-4fff-8863-59b4f655ab2e"/>
 				<textElement>
 					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
@@ -592,7 +606,7 @@
 		<band height="10">
 			<printWhenExpression><![CDATA[new Boolean ($F{unionorder}.intValue() == 4 && $F{eurosaldo} != null && $F{overallcount} < 150000)]]></printWhenExpression>
 			<textField isStretchWithOverflow="true" pattern="MM.yyyy" isBlankWhenNull="true">
-				<reportElement x="170" y="0" width="60" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
+				<reportElement x="130" y="0" width="60" height="9" uuid="563908a3-7488-4625-b0e5-d89de1d56c16"/>
 				<textElement>
 					<font fontName="Arial" size="7" isBold="true"/>
 				</textElement>
