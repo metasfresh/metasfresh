@@ -23,8 +23,8 @@
 package de.metas.camel.externalsystems.core.to_mf.v1;
 
 import com.google.common.annotations.VisibleForTesting;
-import de.metas.camel.externalsystems.common.v1.BPUpsertCamelRequest;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
+import de.metas.camel.externalsystems.common.v1.BPUpsertCamelRequest;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
 import de.metas.camel.externalsystems.core.CoreConstants;
 import de.metas.common.bpartner.v1.request.JsonRequestBPartnerUpsert;
