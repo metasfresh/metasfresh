@@ -5,7 +5,7 @@ package de.metas.dunning.model;
  *  @author Adempiere (generated) 
  */
 @SuppressWarnings("javadoc")
-public interface I_C_Dunning_Candidate 
+public interface I_C_Dunning_Candidate
 {
 
     /** TableName=C_Dunning_Candidate */
