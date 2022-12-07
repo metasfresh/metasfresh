@@ -55,6 +55,9 @@ import org.compiere.model.I_M_Delivery_Planning;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 @Service
 public class DeliveryPlanningService
 {
@@ -107,7 +110,7 @@ public class DeliveryPlanningService
 		}
 	}
 
-	private DeliveryPlanningCreateRequest createRequest(@NonNull final DeliveryPlanningId deliveryPlanningId)
+	private DeliveryPlanningCreateRequest createRequest(@NonNull final DeliveryPlanningId deliveryPlanningId, @NonNull final Quantity plannedLoadedQty)
 	{
 		final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningRepository.getById(deliveryPlanningId);
 		final OrgId orgId = OrgId.ofRepoId(deliveryPlanningRecord.getAD_Org_ID());
@@ -130,7 +133,7 @@ public class DeliveryPlanningService
 				.incotermsId(IncotermsId.ofRepoIdOrNull(deliveryPlanningRecord.getC_Incoterms_ID()))
 				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(deliveryPlanningRecord.getM_SectionCode_ID()))
 				.warehouseId(WarehouseId.ofRepoId(deliveryPlanningRecord.getM_Warehouse_ID()))
-				.deliveryPlanningType(DeliveryPlanningType.ofCode(deliveryPlanningRecord.getM_Delivery_Planning_Type()))
+				.deliveryPlanningType(DeliveryPlanningType.ofNullableCode(deliveryPlanningRecord.getM_Delivery_Planning_Type()))
 				.orderStatus(OrderStatus.ofNullableCode(deliveryPlanningRecord.getOrderStatus()))
 				.meansOfTransportation(MeansOfTransportation.ofNullableCode(deliveryPlanningRecord.getMeansOfTransportation()))
 				.isB2B(deliveryPlanningRecord.isB2B())
@@ -141,7 +144,7 @@ public class DeliveryPlanningService
 				.actualLoadedQty(Quantity.of(deliveryPlanningRecord.getActualLoadQty(), uomToUse))
 				.actualDeliveredQty(Quantity.of(deliveryPlanningRecord.getActualDeliveredQty(), uomToUse))
 
-				.plannedLoadedQty(Quantity.of(deliveryPlanningRecord.getPlannedLoadedQuantity(), uomToUse))
+				.plannedLoadedQty(plannedLoadedQty)
 				.plannedDischargeQty(Quantity.of(deliveryPlanningRecord.getPlannedDischargeQuantity(), uomToUse))
 				.actualDischargeQty(Quantity.of(deliveryPlanningRecord.getActualDischargeQuantity(), uomToUse))
 
@@ -163,11 +166,40 @@ public class DeliveryPlanningService
 	public void createAdditionalDeliveryPlannings(@NonNull final DeliveryPlanningId deliveryPlanningId, final int additionalLines)
 	{
 		Check.assumeGreaterThanZero(additionalLines, PARAM_AdditionalLines);
-		for (int i = 0; i < additionalLines; i++)
+
+		final Quantity openQty = getOpenQty(deliveryPlanningId);
+
+		final Quantity fraction = openQty.divide(BigDecimal.valueOf(additionalLines), 0, RoundingMode.DOWN);
+
+		final Quantity remainder = openQty.subtract(fraction.multiply(additionalLines));
+		final DeliveryPlanningCreateRequest initialRequest = createRequest(deliveryPlanningId, fraction.add(remainder));
+		deliveryPlanningRepository.generateDeliveryPlanning(initialRequest);
+
+		for (int i = 1; i < additionalLines; i++)
 		{
-			final DeliveryPlanningCreateRequest request = createRequest(deliveryPlanningId);
+			final DeliveryPlanningCreateRequest request = createRequest(deliveryPlanningId, fraction.add(remainder));
+
 			deliveryPlanningRepository.generateDeliveryPlanning(request);
 		}
+	}
+
+	private Quantity getOpenQty(final DeliveryPlanningId deliveryPlanningId)
+	{
+		final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningRepository.getById(deliveryPlanningId);
+		final I_C_UOM uom = uomDAO.getById(deliveryPlanningRecord.getC_UOM_ID());
+
+		final Quantity qtyOrdered = Quantity.of(deliveryPlanningRecord.getQtyOrdered(), uom);
+
+		final OrderLineId orderLineId = OrderLineId.ofRepoIdOrNull(deliveryPlanningRecord.getC_OrderLine_ID());
+		if (orderLineId == null)
+		{
+			// the delivery planning has no order line => remaining open qty is 0
+			return Quantity.zero(uom);
+		}
+
+		final Quantity plannedLoadedQtySum = Quantity.of(deliveryPlanningRepository.computePlannedLoadedQtySum(orderLineId), uom);
+
+		return qtyOrdered.subtract(plannedLoadedQtySum);
 	}
 
 	public void deleteForReceiptSchedule(@NonNull final ReceiptScheduleId receiptScheduleId)

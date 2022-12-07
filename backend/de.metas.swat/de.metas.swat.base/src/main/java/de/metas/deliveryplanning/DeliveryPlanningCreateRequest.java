@@ -73,7 +73,8 @@ public class DeliveryPlanningCreateRequest
 
 	boolean isClosed;
 
-	@NonNull DeliveryPlanningType deliveryPlanningType;
+	@Nullable
+	DeliveryPlanningType deliveryPlanningType;
 
 	@Nullable
 	OrderStatus orderStatus;

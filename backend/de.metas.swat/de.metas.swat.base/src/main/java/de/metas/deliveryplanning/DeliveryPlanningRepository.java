@@ -42,6 +42,8 @@ import org.compiere.model.I_M_Delivery_Planning;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
+
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
@@ -144,5 +146,15 @@ public class DeliveryPlanningRepository
 				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
 				.create()
 				.delete();
+	}
+
+	protected BigDecimal computePlannedLoadedQtySum(@NonNull final OrderLineId orderLineId)
+	{
+		return queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
+				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_C_OrderLine_ID, orderLineId)
+				.create()
+				.stream()
+				.map(I_M_Delivery_Planning::getPlannedLoadedQuantity)
+				.reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 }

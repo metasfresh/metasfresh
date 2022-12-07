@@ -48,7 +48,7 @@ public enum MeansOfTransportation implements ReferenceListAwareEnum
 	}
 
 	@Nullable
-	public static MeansOfTransportation ofNullableCode(final String code)
+	public static MeansOfTransportation ofNullableCode(@Nullable final String code)
 	{
 		return ofNullableCode(code, null);
 	}
