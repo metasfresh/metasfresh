@@ -3306,7 +3306,7 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Produktplannungsschema', Print
 ;
 
 -- 2022-12-07T10:38:22.836Z
-UPDATE AD_Element_Trl SET Name='Vermittelte Provisionsbedingungen', PrintName='Vermittelte Provisionsbedingungen',Updated=TO_TIMESTAMP('2022-12-07 11:38:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579665 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET Name='Vermittlungsprovision Einstellungen', PrintName='Vermittlungsprovision Einstellungen',Updated=TO_TIMESTAMP('2022-12-07 11:38:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579665 AND AD_Language='de_CH'
 ;
 
 -- 2022-12-07T10:38:22.837Z
@@ -3314,7 +3314,7 @@ UPDATE AD_Element_Trl SET Name='Vermittelte Provisionsbedingungen', PrintName='V
 ;
 
 -- 2022-12-07T10:38:28.088Z
-UPDATE AD_Element_Trl SET Name='Vermittelte Provisionsbedingungen', PrintName='Vermittelte Provisionsbedingungen',Updated=TO_TIMESTAMP('2022-12-07 11:38:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579665 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET Name='Vermittlungsprovision Einstellungen', PrintName='Vermittlungsprovision Einstellungen',Updated=TO_TIMESTAMP('2022-12-07 11:38:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579665 AND AD_Language='de_DE'
 ;
 
 -- 2022-12-07T10:38:28.089Z
@@ -3326,9 +3326,90 @@ UPDATE AD_Element_Trl SET Name='Vermittelte Provisionsbedingungen', PrintName='V
 ;
 
 -- 2022-12-07T10:38:46.196Z
-UPDATE AD_Element_Trl SET Name='Mediated Commission Terms', PrintName='Mediated Commission Terms',Updated=TO_TIMESTAMP('2022-12-07 11:38:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579665 AND AD_Language='en_US'
+UPDATE AD_Element_Trl SET Name='Intermediation Commission Settings', PrintName='Intermediation Commission Settings',Updated=TO_TIMESTAMP('2022-12-07 11:38:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=579665 AND AD_Language='en_US'
 ;
 
 -- 2022-12-07T10:38:46.197Z
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(579665,'en_US')
+;
+
+
+-- 2022-12-07T11:41:33.490Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Vermögensanlagenneubewertung Verarbeitung', PrintName='Vermögensanlagenneubewertung Verarbeitung',Updated=TO_TIMESTAMP('2022-12-07 12:41:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=575277 AND AD_Language='de_CH'
+;
+
+-- 2022-12-07T11:41:33.514Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(575277,'de_CH')
+;
+
+-- 2022-12-07T11:41:44.552Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Vermögensanlagenneubewertung Verarbeitung', PrintName='Vermögensanlagenneubewertung Verarbeitung',Updated=TO_TIMESTAMP('2022-12-07 12:41:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=575277 AND AD_Language='de_DE'
+;
+
+-- 2022-12-07T11:41:44.554Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(575277,'de_DE')
+;
+
+-- 2022-12-07T11:41:44.556Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(575277,'de_DE')
+;
+
+-- 2022-12-07T11:42:17.188Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Vermögensanlagenneubewertung Verarbeitung', PrintName='Vermögensanlagenneubewertung Verarbeitung',Updated=TO_TIMESTAMP('2022-12-07 12:42:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=574385 AND AD_Language='de_CH'
+;
+
+-- 2022-12-07T11:42:17.190Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(574385,'de_CH')
+;
+
+-- 2022-12-07T11:42:22.378Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Vermögensanlagenneubewertung Verarbeitung', PrintName='Vermögensanlagenneubewertung Verarbeitung',Updated=TO_TIMESTAMP('2022-12-07 12:42:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=574385 AND AD_Language='de_DE'
+;
+
+-- 2022-12-07T11:42:22.379Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(574385,'de_DE')
+;
+
+-- 2022-12-07T11:42:22.379Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(574385,'de_DE')
+;
+
+-- 2022-12-07T11:45:17.369Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Vermögensanlagenneubewertung Index', PrintName='Vermögensanlagenneubewertung Index',Updated=TO_TIMESTAMP('2022-12-07 12:45:17','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=575278 AND AD_Language='de_CH'
+;
+
+-- 2022-12-07T11:45:17.371Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(575278,'de_CH')
+;
+
+-- 2022-12-07T11:45:27.215Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Vermögensanlagenneubewertung Index', PrintName='Vermögensanlagenneubewertung Index',Updated=TO_TIMESTAMP('2022-12-07 12:45:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=575278 AND AD_Language='de_DE'
+;
+
+-- 2022-12-07T11:45:27.216Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(575278,'de_DE')
+;
+
+-- 2022-12-07T11:45:27.216Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(575278,'de_DE')
+;
+
+-- 2022-12-07T11:45:54.190Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Vermögensanlagenneubewertung Index', PrintName='Vermögensanlagenneubewertung Index',Updated=TO_TIMESTAMP('2022-12-07 12:45:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=574387 AND AD_Language='de_CH'
+;
+
+-- 2022-12-07T11:45:54.191Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(574387,'de_CH')
+;
+
+-- 2022-12-07T11:46:01.992Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Vermögensanlagenneubewertung Index', PrintName='Vermögensanlagenneubewertung Index',Updated=TO_TIMESTAMP('2022-12-07 12:46:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=574387 AND AD_Language='de_DE'
+;
+
+-- 2022-12-07T11:46:01.993Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(574387,'de_DE')
+;
+
+-- 2022-12-07T11:46:01.995Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(574387,'de_DE')
 ;
