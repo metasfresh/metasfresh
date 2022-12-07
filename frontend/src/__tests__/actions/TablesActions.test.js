@@ -537,7 +537,7 @@ describe('TableActions tab', () => {
         length: Object.values(masterWindowResponse.includedTabsInfo).length,
         ...initialStateTables,
       },
-    }));
+    });
 
     const store = mockStore(initialState);
     const tabId = rowDataResponse[0].tabId;
