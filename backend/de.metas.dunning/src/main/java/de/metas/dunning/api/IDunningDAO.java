@@ -150,13 +150,6 @@ public interface IDunningDAO extends ISingletonService
 	Iterator<I_C_Dunning_Candidate> retrieveNotProcessedCandidatesIteratorByLevel(IDunningContext dunningContext, final I_C_DunningLevel dunningLevel);
 
 	/**
-	 *
-	 * @param candidate
-	 * @return true if given candidate is staled
-	 */
-	boolean isStaled(I_C_Dunning_Candidate candidate);
-
-	/**
 	 * Retrieves iterator over all {@link I_C_DunningDoc_Line_Source} that require a write-off.
 	 *
 	 * Candidates suitable for write-off are:
