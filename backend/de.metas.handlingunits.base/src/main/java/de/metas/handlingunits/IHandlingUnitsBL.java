@@ -271,6 +271,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 			@Nullable String huUnitType,
 			@Nullable BPartnerId bpartnerId);
 
+	I_M_HU_PI_Item getPackingInstructionItemById(HuPackingInstructionsItemId piItemId);
+
 	@Builder
 	@Value
 	class TopLevelHusQuery

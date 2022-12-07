@@ -37,13 +37,13 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_AD_Message;
 import org.compiere.model.I_AD_Note;
-import org.compiere.model.I_AD_User;
+import org.compiere.model.I_AD_UserGroup_User_Assign;
 import org.compiere.util.DB;
 
 import java.util.Map;
 import java.util.function.Supplier;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 
 public class AD_Note_StepDef
 {
@@ -70,7 +70,7 @@ public class AD_Note_StepDef
 	}
 
 	@And("after not more than (.*)s, validate AD_Note:$")
-	public void valida_AD_Note(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
+	public void validate_AD_Note(final int timeoutSec, @NonNull final DataTable dataTable) throws InterruptedException
 	{
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
@@ -83,13 +83,12 @@ public class AD_Note_StepDef
 				final IQueryBuilder<I_AD_Note> noteQueryBuilder = queryBL.createQueryBuilder(I_AD_Note.class)
 						.addEqualsFilter(I_AD_Note.COLUMNNAME_AD_Message_ID, message.getAD_Message_ID());
 
-				final String userIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_AD_Note.COLUMNNAME_AD_User_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+				final String userIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_AD_UserGroup_User_Assign.COLUMNNAME_AD_User_ID + "." + TABLECOLUMN_IDENTIFIER);
 				if (Check.isNotBlank(userIdentifier))
 				{
-					final I_AD_User user = userTable.get(userIdentifier);
-					assertThat(user).isNotNull();
+					final Integer userId = userTable.get(userIdentifier).getAD_User_ID();
 
-					noteQueryBuilder.addEqualsFilter(I_AD_Note.COLUMNNAME_AD_User_ID, user.getAD_User_ID());
+					noteQueryBuilder.addEqualsFilter(I_AD_Note.COLUMNNAME_AD_User_ID, userId);
 				}
 
 				final I_AD_Note noteRecord = noteQueryBuilder.create().firstOnly(I_AD_Note.class);

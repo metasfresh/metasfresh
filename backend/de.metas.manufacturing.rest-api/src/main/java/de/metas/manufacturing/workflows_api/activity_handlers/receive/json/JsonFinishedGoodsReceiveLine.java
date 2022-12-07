@@ -20,8 +20,8 @@ public class JsonFinishedGoodsReceiveLine
 	@NonNull BigDecimal qtyToReceive;
 	@NonNull BigDecimal qtyReceived;
 
-	@Nullable JsonAggregateToExistingLU currentReceivingHU;
+	@Nullable JsonHUQRCodeTarget currentReceivingHU;
 
-	@NonNull JsonAggregateToNewLUList availableReceivingTargets;
+	@NonNull JsonNewLUTargetsList availableReceivingTargets;
 
 }
