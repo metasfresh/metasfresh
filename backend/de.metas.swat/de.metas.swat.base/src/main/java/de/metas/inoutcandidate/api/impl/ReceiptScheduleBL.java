@@ -802,7 +802,9 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 				.plannedDeliveryDate(TimeUtil.asInstant(receiptScheduleRecord.getMovementDate()))
 				.batch(huBatchNo)
 				.originCountryId(originCountryId)
-				.destinationCountryId(destinationCountryId);
+				.destinationCountryId(destinationCountryId)
+				.isProcessed(false)
+				.isClosed(false);
 
 		if (orderId != null)
 		{

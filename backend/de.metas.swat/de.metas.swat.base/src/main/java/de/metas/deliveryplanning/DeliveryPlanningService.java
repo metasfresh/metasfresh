@@ -134,6 +134,8 @@ public class DeliveryPlanningService
 				.orderStatus(OrderStatus.ofNullableCode(deliveryPlanningRecord.getOrderStatus()))
 				.meansOfTransportation(MeansOfTransportation.ofNullableCode(deliveryPlanningRecord.getMeansOfTransportation()))
 				.isB2B(deliveryPlanningRecord.isB2B())
+				.isProcessed(deliveryPlanningRecord.isProcessed())
+				.isClosed(deliveryPlanningRecord.isClosed())
 				.qtyOrdered(Quantity.of(deliveryPlanningRecord.getQtyOrdered(), uomToUse))
 				.qtyTotalOpen(Quantity.of(deliveryPlanningRecord.getQtyTotalOpen(), uomToUse))
 				.actualLoadedQty(Quantity.of(deliveryPlanningRecord.getActualLoadQty(), uomToUse))
@@ -176,5 +178,11 @@ public class DeliveryPlanningService
 	public void deleteForShipmentSchedule(@NonNull final ShipmentScheduleId shipmentScheduleId)
 	{
 		deliveryPlanningRepository.deleteForShipmentSchedule(shipmentScheduleId);
+	}
+
+	public boolean isProcessed(final DeliveryPlanningId deliveryPlanningId)
+	{
+		final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningRepository.getById(deliveryPlanningId);
+		return deliveryPlanningRecord.isProcessed();
 	}
 }

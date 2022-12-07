@@ -104,7 +104,10 @@ public class DeliveryPlanningRepository
 		deliveryPlanningRecord.setReleaseNo(request.getReleaseNo());
 		deliveryPlanningRecord.setTransportDetails(request.getTransportDetails());
 
-		deliveryPlanningRecord.setIsB2B(request.isB2B);
+		deliveryPlanningRecord.setIsB2B(request.isB2B());
+		deliveryPlanningRecord.setProcessed(request.isProcessed());
+		deliveryPlanningRecord.setIsClosed(request.isClosed());
+
 
 		deliveryPlanningRecord.setMeansOfTransportation(MeansOfTransportation.toCodeOrNull(request.getMeansOfTransportation()));
 		deliveryPlanningRecord.setOrderStatus(OrderStatus.toCodeOrNull(request.getOrderStatus()));
@@ -113,6 +116,7 @@ public class DeliveryPlanningRepository
 		deliveryPlanningRecord.setBatch(request.getBatch());
 		deliveryPlanningRecord.setC_OriginCountry_ID(CountryId.toRepoId(request.getOriginCountryId()));
 		deliveryPlanningRecord.setC_DestinationCountry_ID(CountryId.toRepoId(request.getDestinationCountryId()));
+
 
 		save(deliveryPlanningRecord);
 	}

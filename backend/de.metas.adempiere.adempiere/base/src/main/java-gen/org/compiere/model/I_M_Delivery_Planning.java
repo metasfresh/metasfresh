@@ -486,6 +486,27 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_IsB2B = "IsB2B";
 
 	/**
+	 * Set Closed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsClosed (boolean IsClosed);
+
+	/**
+	 * Get Closed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isClosed();
+
+	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_IsClosed = new ModelColumn<>(I_M_Delivery_Planning.class, "IsClosed", null);
+	String COLUMNNAME_IsClosed = "IsClosed";
+
+	/**
 	 * Set Delivery Planning.
 	 *
 	 * <br>Type: ID
@@ -888,6 +909,27 @@ public interface I_M_Delivery_Planning
 
 	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_POReference = new ModelColumn<>(I_M_Delivery_Planning.class, "POReference", null);
 	String COLUMNNAME_POReference = "POReference";
+
+	/**
+	 * Set Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setProcessed (boolean Processed);
+
+	/**
+	 * Get Processed.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isProcessed();
+
+	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_Processed = new ModelColumn<>(I_M_Delivery_Planning.class, "Processed", null);
+	String COLUMNNAME_Processed = "Processed";
 
 	/**
 	 * Set Product Name.

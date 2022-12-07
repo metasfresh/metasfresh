@@ -1024,7 +1024,9 @@ public class ShipmentScheduleBL implements IShipmentScheduleBL
 				.uom(uomOfProduct)
 				.plannedDeliveryDate(TimeUtil.asInstant(deliveryDate_effective))
 				.batch(huBatchNo)
-				.originCountryId(countryId);
+				.originCountryId(countryId)
+				.isProcessed(false)
+				.isClosed(false);
 
 		if (orderId != null)
 		{

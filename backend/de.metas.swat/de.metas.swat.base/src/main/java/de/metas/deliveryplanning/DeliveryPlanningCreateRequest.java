@@ -69,6 +69,10 @@ public class DeliveryPlanningCreateRequest
 
 	boolean isB2B;
 
+	boolean isProcessed;
+
+	boolean isClosed;
+
 	@NonNull DeliveryPlanningType deliveryPlanningType;
 
 	@Nullable

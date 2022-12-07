@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_Delivery_Planning, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -779562879L;
+	private static final long serialVersionUID = 636531845L;
 
     /** Standard Constructor */
     public X_M_Delivery_Planning (final Properties ctx, final int M_Delivery_Planning_ID, @Nullable final String trxName)
@@ -325,6 +325,18 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	}
 
 	@Override
+	public void setIsClosed (final boolean IsClosed)
+	{
+		set_Value (COLUMNNAME_IsClosed, IsClosed);
+	}
+
+	@Override
+	public boolean isClosed() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_IsClosed);
+	}
+
+	@Override
 	public void setM_Delivery_Planning_ID (final int M_Delivery_Planning_ID)
 	{
 		if (M_Delivery_Planning_ID < 1) 
@@ -618,6 +630,18 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	public java.lang.String getPOReference() 
 	{
 		return get_ValueAsString(COLUMNNAME_POReference);
+	}
+
+	@Override
+	public void setProcessed (final boolean Processed)
+	{
+		set_Value (COLUMNNAME_Processed, Processed);
+	}
+
+	@Override
+	public boolean isProcessed() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_Processed);
 	}
 
 	@Override

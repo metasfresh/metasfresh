@@ -64,6 +64,13 @@ public class M_DeliveryPlanning_CreateAdditionalLines extends JavaProcess implem
 			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
 		}
 
+		final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoId(context.getSingleSelectedRecordId());
+
+		if (deliveryPlanningService.isProcessed(deliveryPlanningId))
+		{
+			return ProcessPreconditionsResolution.rejectWithInternalReason("Delivery Planning is processed");
+		}
+
 		return ProcessPreconditionsResolution.accept();
 	}
 }
