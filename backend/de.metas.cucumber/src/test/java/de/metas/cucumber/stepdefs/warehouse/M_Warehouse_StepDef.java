@@ -35,6 +35,7 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_BankStatementLine;
 import org.compiere.model.I_M_Warehouse;
 
 import java.util.List;
@@ -42,7 +43,8 @@ import java.util.Map;
 import java.util.Optional;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.*;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_M_Warehouse_ID;
 import static org.compiere.model.I_M_Warehouse.COLUMNNAME_Value;
 
@@ -115,16 +117,30 @@ public class M_Warehouse_StepDef
 					.map(I_C_BPartner_Location::getC_BPartner_Location_ID)
 					.orElse(StepDefConstants.METASFRESH_AG_BPARTNER_LOCATION_ID.getRepoId());
 
+			final boolean isInTransit = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + I_M_Warehouse.COLUMNNAME_IsInTransit, false);
+
 			warehouseRecord.setValue(value);
 			warehouseRecord.setName(name);
 			warehouseRecord.setC_BPartner_ID(bPartnerId);
 			warehouseRecord.setC_BPartner_Location_ID(bPartnerLocationId);
 			warehouseRecord.setIsIssueWarehouse(isIssueWarehouse);
+			warehouseRecord.setIsInTransit(isInTransit);
 
-			InterfaceWrapperHelper.saveRecord(warehouseRecord);
+			saveRecord(warehouseRecord);
 
 			final String warehouseIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
 			warehouseTable.put(warehouseIdentifier, warehouseRecord);
 		}
+	}
+
+	@And("there is no in transit M_Warehouse")
+	public void no_inTransit_M_Warehouse()
+	{
+		queryBL.createQueryBuilder(I_M_Warehouse.class)
+				.addEqualsFilter(I_M_Warehouse.COLUMNNAME_IsInTransit, true)
+				.create()
+				.updateDirectly()
+				.addSetColumnValue(I_M_Warehouse.COLUMNNAME_IsInTransit, false)
+				.execute();
 	}
 }

@@ -258,7 +258,8 @@ public class RequestMaterialOrderService
 			ddOrderBuilder
 					.plantId(distributionDetail.getPlantId())
 					.productPlanningId(distributionDetail.getProductPlanningId())
-					.shipperId(distributionDetail.getShipperId());
+					.shipperId(distributionDetail.getShipperId())
+					.materialDispoGroupId(groupMember.getEffectiveGroupId());
 
 			ddOrderLineBuilder
 					.networkDistributionLineId(distributionDetail.getNetworkDistributionLineId());

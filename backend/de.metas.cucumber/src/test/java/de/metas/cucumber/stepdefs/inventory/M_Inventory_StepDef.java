@@ -29,6 +29,7 @@ import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.attribute.M_AttributeSetInstance_StepDefData;
 import de.metas.cucumber.stepdefs.hu.M_HU_StepDefData;
 import de.metas.cucumber.stepdefs.shipmentschedule.M_ShipmentSchedule_StepDefData;
+import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.document.engine.DocStatus;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
@@ -63,6 +64,7 @@ import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Inventory;
 import org.compiere.model.I_M_InventoryLine;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_Warehouse;
 import org.compiere.util.TimeUtil;
 
 import java.math.BigDecimal;
@@ -88,6 +90,7 @@ public class M_Inventory_StepDef
 	private final M_ShipmentSchedule_StepDefData shipmentScheduleTable;
 	private final M_HU_StepDefData huTable;
 	private final M_AttributeSetInstance_StepDefData attributeSetInstanceTable;
+	private final M_Warehouse_StepDefData warehouseTable;
 
 	public M_Inventory_StepDef(
 			@NonNull final M_Inventory_StepDefData inventoryTable,
@@ -95,7 +98,8 @@ public class M_Inventory_StepDef
 			@NonNull final M_Product_StepDefData productTable,
 			@NonNull final M_ShipmentSchedule_StepDefData shipmentScheduleTable,
 			@NonNull final M_HU_StepDefData huTable,
-			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable)
+			@NonNull final M_AttributeSetInstance_StepDefData attributeSetInstanceTable,
+			@NonNull final M_Warehouse_StepDefData warehouseTable)
 	{
 		this.inventoryTable = inventoryTable;
 		this.inventoryLineTable = inventoryLineTable;
@@ -103,6 +107,7 @@ public class M_Inventory_StepDef
 		this.huTable = huTable;
 		this.shipmentScheduleTable = shipmentScheduleTable;
 		this.attributeSetInstanceTable = attributeSetInstanceTable;
+		this.warehouseTable = warehouseTable;
 	}
 
 	@Given("metasfresh contains M_Inventories:")
@@ -204,7 +209,10 @@ public class M_Inventory_StepDef
 
 	private void addNewInventory(@NonNull final Map<String, String> tableRow)
 	{
-		final int warehouseId = DataTableUtil.extractIntForColumnName(tableRow, I_M_Inventory.COLUMNNAME_M_Warehouse_ID);
+		final String warehouseIdOrIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_M_Inventory.COLUMNNAME_M_Warehouse_ID);
+		final int warehouseId = warehouseTable.getOptional(warehouseIdOrIdentifier)
+				.map(I_M_Warehouse::getM_Warehouse_ID)
+				.orElseGet(() -> Integer.parseInt(warehouseIdOrIdentifier));
 
 		final I_M_Inventory inventoryRecord = newInstance(I_M_Inventory.class);
 

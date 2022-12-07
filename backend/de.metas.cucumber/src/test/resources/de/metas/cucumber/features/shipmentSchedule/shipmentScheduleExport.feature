@@ -11,8 +11,8 @@ Feature: Shipment schedule export rest-api
     And set sys config int value 0 for sys config de.metas.inoutcandidate.M_ShipmentSchedule.canBeExportedAfterSeconds
 
     And load M_Shipper:
-      | M_Shipper_ID.Identifier | Name | OPT.InternalName     |
-      | shipper_test            | Siro | shipper_internalName |
+      | M_Shipper_ID.Identifier | OPT.Name | OPT.InternalName     |
+      | shipper_test            | Siro     | shipper_internalName |
 
     And metasfresh contains M_Products:
       | Identifier    | Name          | OPT.Description   |

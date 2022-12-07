@@ -70,6 +70,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -84,6 +85,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
@@ -433,6 +435,12 @@ public class MD_Candidate_StepDef
 				assertThat(mdAttributesKeys).isEqualTo(expectedAttributesKey);
 			}
 
+			final WarehouseId warehouseId = tableRow.getWarehouseId();
+			if (warehouseId != null)
+			{
+				assertThat(materialDispoRecord.getMaterialDescriptor().getWarehouseId()).as("warehouseId of MD_Candidate_ID=%s", materialDispoRecord.getCandidateId().getRepoId()).isEqualTo(tableRow.getWarehouseId());
+			}
+			
 			materialDispoDataItemStepDefData.putOrReplace(tableRow.getIdentifier(), materialDispoRecord);
 		}
 	}
@@ -483,6 +491,11 @@ public class MD_Candidate_StepDef
 				if (!item.getMaterialDescriptor().getDate().equals(tableRow.getTime()))
 				{
 					sb.append("item with id=" + item.getCandidateId().getRepoId() + " does not match tableRow with Identifier " + tableRow.getIdentifier() + " because the time (resp. materialDecription.date) values are different\n");
+					continue;
+				}
+				if (!Objects.equals(item.getBusinessCase(), tableRow.getBusinessCase()))
+				{
+					sb.append("item with id=" + item.getCandidateId().getRepoId() + " does not match tableRow with Identifier " + tableRow.getIdentifier() + " because the business case values are different\n");
 					continue;
 				}
 				return ProviderResult.resultWasFound(item);
