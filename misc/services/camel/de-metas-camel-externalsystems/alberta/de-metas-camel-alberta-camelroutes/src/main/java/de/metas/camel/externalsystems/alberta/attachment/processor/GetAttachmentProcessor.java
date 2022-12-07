@@ -22,11 +22,12 @@
 
 package de.metas.camel.externalsystems.alberta.attachment.processor;
 
-import de.metas.camel.externalsystems.alberta.ProcessorHelper;
 import de.metas.camel.externalsystems.alberta.attachment.GetAttachmentRouteConstants;
 import de.metas.camel.externalsystems.alberta.attachment.GetAttachmentRouteContext;
+import de.metas.camel.externalsystems.common.ProcessorHelper;
 import io.swagger.client.ApiException;
 import io.swagger.client.api.AttachmentApi;
+import io.swagger.client.model.ArrayOfAttachments;
 import io.swagger.client.model.Attachment;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
@@ -52,7 +53,7 @@ public class GetAttachmentProcessor implements Processor
 		final String apiKey = context.getApiKey();
 		final AttachmentApi attachmentApi = context.getAttachmentApi();
 
-		final var attachments = attachmentApi.getAllAttachments(apiKey, context.getCreatedAfterAttachment(), null);
+		final ArrayOfAttachments attachments = attachmentApi.getAllAttachments(apiKey, context.getCreatedAfterAttachment(), null);
 
 		return attachments == null || attachments.isEmpty()
 				? null

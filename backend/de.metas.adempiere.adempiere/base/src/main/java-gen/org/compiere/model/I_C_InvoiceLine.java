@@ -498,6 +498,27 @@ public interface I_C_InvoiceLine
 	String COLUMNNAME_C_UOM_BPartner_ID = "C_UOM_BPartner_ID";
 
 	/**
+	 * Set Shipping Location.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Shipping_Location_ID (int C_Shipping_Location_ID);
+
+	/**
+	 * Get Shipping Location.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Shipping_Location_ID();
+
+	ModelColumn<I_C_InvoiceLine, Object> COLUMN_C_Shipping_Location_ID = new ModelColumn<>(I_C_InvoiceLine.class, "C_Shipping_Location_ID", null);
+	String COLUMNNAME_C_Shipping_Location_ID = "C_Shipping_Location_ID";
+
+	/**
 	 * Set UOM.
 	 * Unit of Measure
 	 *
@@ -1406,4 +1427,26 @@ public interface I_C_InvoiceLine
 
 	ModelColumn<I_C_InvoiceLine, Object> COLUMN_UserElementString7 = new ModelColumn<>(I_C_InvoiceLine.class, "UserElementString7", null);
 	String COLUMNNAME_UserElementString7 = "UserElementString7";
+
+	/**
+	 * Set Flatrate Term.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Flatrate_Term_ID (int C_Flatrate_Term_ID);
+
+	/**
+	 * Get Flatrate Term.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Flatrate_Term_ID();
+
+	ModelColumn<I_C_InvoiceLine, Object> COLUMN_C_Flatrate_Term_ID = new ModelColumn<>(I_C_InvoiceLine.class, "C_Flatrate_Term_ID", null);
+	String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
+
 }

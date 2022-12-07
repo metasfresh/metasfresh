@@ -34,8 +34,9 @@ import de.metas.handlingunits.shipmentschedule.api.IHUShipmentScheduleDAO;
 import de.metas.handlingunits.shipmentschedule.api.IInOutProducerFromShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.api.ShipmentScheduleWithHU;
 import de.metas.handlingunits.shipmentschedule.spi.impl.InOutProducerFromShipmentScheduleWithHU;
-import de.metas.inout.ShipmentScheduleId;
+import de.metas.i18n.AdMessageKey;
 import de.metas.inout.model.I_M_InOut;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IInOutCandidateBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleAllocBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
@@ -107,27 +108,47 @@ import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 {
-	private final transient Logger logger = LogManager.getLogger(getClass());
+	private final Logger logger = LogManager.getLogger(getClass());
+	private final IShipmentSchedulePA shipmentScheduleDAO = Services.get(IShipmentSchedulePA.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
+	private final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
+	private final IHUShipperTransportationBL huShipperTransportationBL = Services.get(IHUShipperTransportationBL.class);
+	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
+	private final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
+	private final IHUShipmentScheduleDAO huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
+	private final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
+	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
+	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
+	private final IInOutCandidateBL inOutCandidateBL = Services.get(IInOutCandidateBL.class);
+	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
+	private final IHUPIItemProductDAO huPIItemProductDAO = Services.get(IHUPIItemProductDAO.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
 
 	private static final String SYSCONFIG_ShipmentConsolidationPeriod = "de.metas.handlingunits.shipmentschedule.api.impl.HUShipmentScheduleBL.ShipmentConsolidationPeriod";
 	private static final String DEFAULT_ShipmentConsolidationPeriod = null;
 
+	public static final AdMessageKey MSG_WEBUI_PICKING_ALREADY_SHIPPED_2P = AdMessageKey.of("WEBUI_Picking_Already_Shipped");
+
 	@Override
 	public I_M_ShipmentSchedule getById(@NonNull final ShipmentScheduleId id)
 	{
-		return Services.get(IShipmentSchedulePA.class).getById(id, I_M_ShipmentSchedule.class);
+		return shipmentScheduleDAO.getById(id, I_M_ShipmentSchedule.class);
 	}
 
 	@Override
 	public BPartnerLocationId getBPartnerLocationId(@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule)
 	{
-		return Services.get(IShipmentScheduleEffectiveBL.class).getBPartnerLocationId(shipmentSchedule);
+		return shipmentScheduleEffectiveBL.getBPartnerLocationId(shipmentSchedule);
 	}
 
 	@Override
 	public LocatorId getDefaultLocatorId(@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule)
 	{
-		return Services.get(IShipmentScheduleEffectiveBL.class).getDefaultLocatorId(shipmentSchedule);
+		return shipmentScheduleEffectiveBL.getDefaultLocatorId(shipmentSchedule);
 	}
 
 	@Override
@@ -139,11 +160,8 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	{
 		Check.assume(qtyPicked.signum() > 0, "qtyPicked needs to be positive; qtyPicked={}", qtyPicked);
 
-		final IShipmentSchedulePA shipmentSchedulesRepo = Services.get(IShipmentSchedulePA.class);
-		final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
-
-		final I_M_ShipmentSchedule shipmentSchedule = shipmentSchedulesRepo.getById(shipmentScheduleId, I_M_ShipmentSchedule.class);
-		final I_M_HU tuOrVHU = handlingUnitsRepo.getById(tuOrVHUId);
+		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleDAO.getById(shipmentScheduleId, I_M_ShipmentSchedule.class);
+		final I_M_HU tuOrVHU = handlingUnitsBL.getById(tuOrVHUId);
 
 		final boolean anonymousHuPickedOnTheFly = false;
 		return addQtyPickedAndUpdateHU(shipmentSchedule, qtyPicked, tuOrVHU, huContext, anonymousHuPickedOnTheFly);
@@ -157,11 +175,6 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			@NonNull final IHUContext huContext,
 			final boolean anonymousHuPickedOnTheFly)
 	{
-		// Services
-		final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
-
 		// Retrieve VHU, TU and LU
 		Check.assume(handlingUnitsBL.isTransportUnitOrVirtual(tuOrVHU), "{} shall be a TU or a VirtualHU", tuOrVHU);
 		final LUTUCUPair husPair = handlingUnitsBL.getTopLevelParentAsLUTUCUPair(tuOrVHU);
@@ -187,7 +200,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		final I_M_HU topLevelHU = husPair.getTopLevelHU();
 		setHUStatusToPicked(topLevelHU);
 		setHUPartnerAndLocationFromSched(topLevelHU, sched);
-		handlingUnitsRepo.saveHU(topLevelHU);
+		handlingUnitsDAO.saveHU(topLevelHU);
 		huContext.flush();
 
 		return ShipmentScheduleWithHU.ofShipmentScheduleQtyPicked(schedQtyPickedHU, huContext);
@@ -202,9 +215,6 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 
 	private void setHUStatusToPicked(@NonNull final I_M_HU hu)
 	{
-		final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
-		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
-
 		// huContext might be needed if the M_HU_Status record has ExChangeGebindeLagerWhenEmpty='Y'
 		final IMutableHUContext huContext = huContextFactory.createMutableHUContext();
 
@@ -219,8 +229,6 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	 * * this method is NOT saving the <code>hu</code>
 	 * * these changes will be propagated to the HU's children by a model interceptor.
 	 *
-	 * @param hu
-	 * @param sched
 	 * @see IShipmentScheduleEffectiveBL
 	 * @see de.metas.handlingunits.model.validator.M_HU#updateChildren(I_M_HU)
 	 */
@@ -228,7 +236,6 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			final I_M_HU hu,
 			final de.metas.inoutcandidate.model.I_M_ShipmentSchedule sched)
 	{
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveBL = Services.get(IShipmentScheduleEffectiveBL.class);
 		final BPartnerId schedEffectiveBPartnerId = shipmentScheduleEffectiveBL.getBPartnerId(sched);
 		final BPartnerLocationId schedEffectiveBPLocationId = shipmentScheduleEffectiveBL.getBPartnerLocationId(sched);
 
@@ -239,12 +246,6 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	@Override
 	public void updateAllocationLUForTU(final I_M_HU tuHU)
 	{
-		// Services
-		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-		final IHUShipmentScheduleDAO huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
-		final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
-		final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
-
 		Check.assume(handlingUnitsBL.isTransportUnitOrVirtual(tuHU), "{} shall be a TU", tuHU);
 
 		final I_M_HU luHU = handlingUnitsBL.getLoadingUnitHU(tuHU);
@@ -274,13 +275,12 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 
 	@Override
 	public void unallocateTU(final de.metas.inoutcandidate.model.I_M_ShipmentSchedule sched,
-			final I_M_HU tuHU,
-			final String trxName)
+							 final I_M_HU tuHU,
+							 final String trxName)
 	{
 		//
 		// Retrieve QtyPicked records.
 		// If there are not QtyPicked records for our TU then do nothing.
-		final IHUShipmentScheduleDAO huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
 		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedList = huShipmentScheduleDAO.retrieveSchedsQtyPickedForTU(sched.getM_ShipmentSchedule_ID(), tuHU.getM_HU_ID(), trxName);
 		if (qtyPickedList.isEmpty())
 		{
@@ -327,14 +327,13 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	@Override
 	public IInOutProducerFromShipmentScheduleWithHU createInOutProducerFromShipmentSchedule()
 	{
-		final InOutGenerateResult result = Services.get(IInOutCandidateBL.class)
-				.createEmptyInOutGenerateResult(true); // storeReceipts = true
+		final InOutGenerateResult result = inOutCandidateBL.createEmptyInOutGenerateResult(true); // storeReceipts = true
 
 		return new InOutProducerFromShipmentScheduleWithHU(result);
 	}
 
 	/**
-	 * NOTE: KEEP IN SYNC WITH {@link de.metas.handlingunits.shipmentschedule.spi.impl.InOutProducerFromShipmentScheduleWithHU#createShipmentHeader(I_M_ShipmentSchedule)}
+	 * NOTE: KEEP IN SYNC WITH {@link InOutProducerFromShipmentScheduleWithHU#createShipmentHeader(I_M_ShipmentSchedule)}
 	 */
 	@Nullable
 	@SuppressWarnings("JavadocReference")
@@ -342,13 +341,6 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	public I_M_InOut getOpenShipmentOrNull(final @NonNull ShipmentScheduleWithHU candidate, final @NonNull LocalDate movementDate)
 	{
 		final I_M_ShipmentSchedule shipmentSchedule = create(candidate.getM_ShipmentSchedule(), I_M_ShipmentSchedule.class);
-
-		//
-		// Services
-		final IQueryBL queryBL = Services.get(IQueryBL.class);
-		final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveValuesBL = Services.get(IShipmentScheduleEffectiveBL.class);
-		final IHUShipperTransportationBL huShipperTransportationBL = Services.get(IHUShipperTransportationBL.class);
 
 		final IContextAware contextProvider = getContextAware(shipmentSchedule);
 		final IQueryBuilder<I_M_InOut> queryBuilder = queryBL.createQueryBuilder(I_M_InOut.class, contextProvider)
@@ -386,9 +378,9 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		//
 		// BPartner, Location & Contact
 		{
-			queryBuilder.addEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_C_BPartner_ID, shipmentScheduleEffectiveValuesBL.getBPartnerId(shipmentSchedule));
-			queryBuilder.addEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_C_BPartner_Location_ID, shipmentScheduleEffectiveValuesBL.getBPartnerLocationId(shipmentSchedule));
-			final BPartnerContactId adUserID = shipmentScheduleEffectiveValuesBL.getBPartnerContactId(shipmentSchedule);
+			queryBuilder.addEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_C_BPartner_ID, shipmentScheduleEffectiveBL.getBPartnerId(shipmentSchedule));
+			queryBuilder.addEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_C_BPartner_Location_ID, shipmentScheduleEffectiveBL.getBPartnerLocationId(shipmentSchedule));
+			final BPartnerContactId adUserID = shipmentScheduleEffectiveBL.getBPartnerContactId(shipmentSchedule);
 			if (adUserID != null)
 			{
 				queryBuilder.addEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_AD_User_ID, BPartnerContactId.toRepoId(adUserID));
@@ -410,7 +402,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		//
 		// Warehouse
 		{
-			queryBuilder.addEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_M_Warehouse_ID, shipmentScheduleEffectiveValuesBL.getWarehouseId(shipmentSchedule));
+			queryBuilder.addEqualsFilter(org.compiere.model.I_M_InOut.COLUMNNAME_M_Warehouse_ID, shipmentScheduleEffectiveBL.getWarehouseId(shipmentSchedule));
 		}
 
 		//
@@ -457,6 +449,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	}
 
 	@Override
+	@Nullable
 	public HUPIItemProductId getEffectivePackingMaterialId(@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule)
 	{
 		final I_M_ShipmentSchedule huShipmentSchedule = create(shipmentSchedule, I_M_ShipmentSchedule.class);
@@ -474,6 +467,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		return extractOrderLinePackingMaterialIdOrNull(shipmentSchedule);
 	}
 
+	@Nullable
 	private HUPIItemProductId extractOrderLinePackingMaterialIdOrNull(@NonNull final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule)
 	{
 		final OrderAndLineId orderLineId = OrderAndLineId.ofRepoIdsOrNull(shipmentSchedule.getC_Order_ID(), shipmentSchedule.getC_OrderLine_ID());
@@ -482,10 +476,8 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			return null;
 		}
 
-		final IOrderDAO ordersRepo = Services.get(IOrderDAO.class);
-		final I_C_OrderLine orderLine = ordersRepo.getOrderLineById(orderLineId, I_C_OrderLine.class);
-		final HUPIItemProductId orderLinePIP = HUPIItemProductId.ofRepoIdOrNull(orderLine.getM_HU_PI_Item_Product_ID());
-		return orderLinePIP;
+		final I_C_OrderLine orderLine = orderDAO.getOrderLineById(orderLineId, I_C_OrderLine.class);
+		return HUPIItemProductId.ofRepoIdOrNull(orderLine.getM_HU_PI_Item_Product_ID());
 	}
 
 	@Override
@@ -498,16 +490,12 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			return null;
 		}
 
-		return Services.get(IHUPIItemProductDAO.class).getById(packingMaterialId);
+		return huPIItemProductDAO.getById(packingMaterialId);
 	}
 
 	@Override
 	public I_M_ShipmentSchedule getShipmentScheduleOrNull(@NonNull final I_M_HU hu)
 	{
-		// Services
-		final IHUShipmentScheduleDAO huShipmentScheduleDAO = Services.get(IHUShipmentScheduleDAO.class);
-		final IShipmentScheduleAllocBL shipmentScheduleAllocBL = Services.get(IShipmentScheduleAllocBL.class);
-
 		//
 		// Retrieve QtyPicked records for given HU
 		final List<I_M_ShipmentSchedule_QtyPicked> ssQtyPickedList = huShipmentScheduleDAO.retrieveSchedsQtyPickedForHU(hu);
@@ -575,17 +563,12 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			throw new HUException("@NotFound@ @M_HU_PI_Item_Product_ID@ (" + schedule + ")");
 		}
 
-		// Services
-		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-		final IShipmentScheduleEffectiveBL shipmentScheduleEffectiveValuesBL = Services.get(IShipmentScheduleEffectiveBL.class);
-		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
-
 		final UomId cuUOMId = shipmentScheduleBL.getUomIdOfProduct(schedule);
 		final ProductId cuProductId = ProductId.ofRepoId(schedule.getM_Product_ID());
 
-		final BPartnerId bpartnerId = shipmentScheduleEffectiveValuesBL.getBPartnerId(schedule);
-		final BPartnerLocationId bpartnerLocationId = shipmentScheduleEffectiveValuesBL.getBPartnerLocationId(schedule);
-		final LocatorId locatorId = shipmentScheduleEffectiveValuesBL.getDefaultLocatorId(schedule);
+		final BPartnerId bpartnerId = shipmentScheduleEffectiveBL.getBPartnerId(schedule);
+		final BPartnerLocationId bpartnerLocationId = shipmentScheduleEffectiveBL.getBPartnerLocationId(schedule);
+		final LocatorId locatorId = shipmentScheduleEffectiveBL.getDefaultLocatorId(schedule);
 
 		// NOTE: we are not checking if tuPIItemProduct is for an PI of Type Transport Unit (TU)
 		// because it can also be a Virtual PI and also because it's enough for us to find out an LU for it
@@ -612,21 +595,14 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 
 	public final String getShipmentConsolidationPeriod()
 	{
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-		final String shipmentConsolidationPeriod = sysConfigBL.getValue(SYSCONFIG_ShipmentConsolidationPeriod, DEFAULT_ShipmentConsolidationPeriod);
-		return shipmentConsolidationPeriod;
+		return sysConfigBL.getValue(SYSCONFIG_ShipmentConsolidationPeriod, DEFAULT_ShipmentConsolidationPeriod);
 	}
 
 	@Override
 	public boolean isHUAllocation(final I_M_ShipmentSchedule_QtyPicked qtyPickedRecord)
 	{
 		Check.assumeNotNull(qtyPickedRecord, "qtyPickedRecord not null");
-		if (qtyPickedRecord.getVHU_ID() > 0)
-		{
-			return true;
-		}
-
-		return false;
+		return qtyPickedRecord.getVHU_ID() > 0;
 	}
 
 	@Override
@@ -672,9 +648,7 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 			description = piItemProduct_Effective.getDescription();
 		}
 
-		final StringBuilder packDescription = new StringBuilder();
-		packDescription.append(Check.isEmpty(description, true) ? "" : description);
-		shipmentScheduleToUse.setPackDescription(packDescription.toString());
+		shipmentScheduleToUse.setPackDescription((Check.isEmpty(description, true) ? "" : description));
 	}
 
 	@Override
@@ -729,7 +703,6 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 		final I_M_HU_LUTU_Configuration lutuConfiguration = //
 				deriveM_HU_LUTU_Configuration(shipmentSchedule);
 
-		final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 		final int qtyOrderedLU = //
 				lutuConfigurationFactory.calculateQtyLUForTotalQtyTUs(lutuConfiguration, qtyTU_Effective);
 		shipmentSchedule.setQtyOrdered_LU(BigDecimal.valueOf(qtyOrderedLU));
@@ -738,7 +711,6 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	private void updatePackingRelatedQtys(@NonNull final I_M_ShipmentSchedule shipmentSchedule)
 	{
 		final ShipmentScheduleHUPackingAware packingAware = new ShipmentScheduleHUPackingAware(shipmentSchedule);
-		final IHUPackingAwareBL huPackingAwareBL = Services.get(IHUPackingAwareBL.class);
 
 		final BigDecimal qtyTUCalculated = shipmentSchedule.getQtyTU_Calculated();
 
@@ -764,6 +736,25 @@ public class HUShipmentScheduleBL implements IHUShipmentScheduleBL
 	@Override
 	public void closeShipmentSchedule(final de.metas.inoutcandidate.model.I_M_ShipmentSchedule shipmentSchedule)
 	{
-		Services.get(IShipmentScheduleBL.class).closeShipmentSchedule(shipmentSchedule);
+		shipmentScheduleBL.closeShipmentSchedule(shipmentSchedule);
+	}
+
+	@Override
+	public void deleteByTopLevelHUAndShipmentScheduleId(@NonNull final HuId topLevelHUId, @NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		final I_M_HU topLevelHU = handlingUnitsBL.getById(topLevelHUId);
+		final List<I_M_ShipmentSchedule_QtyPicked> qtyPickedRecords = huShipmentScheduleDAO.retrieveByTopLevelHUAndShipmentScheduleId(topLevelHU, shipmentScheduleId);
+		for (final I_M_ShipmentSchedule_QtyPicked qtyPickedRecord : qtyPickedRecords)
+		{
+			if (qtyPickedRecord.getM_InOutLine_ID() > 0)
+			{
+				throw new AdempiereException(
+						MSG_WEBUI_PICKING_ALREADY_SHIPPED_2P,
+						topLevelHUId.getRepoId(),
+						qtyPickedRecord.getM_InOutLine().getM_InOut().getDocumentNo());
+			}
+		}
+
+		shipmentScheduleAllocBL.deleteRecords(qtyPickedRecords);
 	}
 }

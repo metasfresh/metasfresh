@@ -8,7 +8,13 @@ WHERE true
 	AND ol.qtyordered <> ol.qtydelivered 
 	AND NOT EXISTS ( SELECT 1 FROM m_shipmentschedule s	WHERE s.c_orderline_id = ol.c_orderline_id)
 	AND dt.docbasetype = 'SOO'
-	AND (dt.docsubtype <> ALL (ARRAY['ON', 'OB', 'WR', 'FA']))
+	AND (dt.docsubtype NOT IN (
+	    'ON', -- Proposal (not binding)
+	    'OB', -- Quotation (binding)
+	    'WR', -- POS Order
+	    'FA', -- Frame Agreement
+	    'CE'  -- Cost Estimate
+	))
 	AND o.issotrx = 'Y'
 	AND o.docstatus = 'CO'
 	AND NOT EXISTS ( 

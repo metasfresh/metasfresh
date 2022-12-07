@@ -77,7 +77,7 @@ public class C_BPartner_QuickInput
 			return;
 		}
 
-		final boolean userHasOrgPermissions = Env.getUserRolePermissions().isOrgAccess(orgInChangeId, Access.WRITE);
+		final boolean userHasOrgPermissions = Env.getUserRolePermissions().isOrgAccess(orgInChangeId, null, Access.WRITE);
 
 		if (userHasOrgPermissions)
 		{

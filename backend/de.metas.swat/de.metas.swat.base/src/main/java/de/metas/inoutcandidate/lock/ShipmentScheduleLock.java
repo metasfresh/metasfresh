@@ -1,13 +1,13 @@
 package de.metas.inoutcandidate.lock;
 
+import java.time.Instant;
+import java.util.Objects;
+
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
-
-import java.time.ZonedDateTime;
-import java.util.Objects;
 
 /*
  * #%L
@@ -42,7 +42,7 @@ public class ShipmentScheduleLock
 	@NonNull
 	ShipmentScheduleLockType lockType;
 	@NonNull
-	ZonedDateTime created;
+	Instant created;
 
 	public boolean isLockedBy(@NonNull final UserId userId)
 	{

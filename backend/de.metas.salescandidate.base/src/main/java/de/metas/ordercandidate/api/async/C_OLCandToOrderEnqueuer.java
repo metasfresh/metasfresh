@@ -30,6 +30,7 @@ import de.metas.async.api.IAsyncBatchDAO;
 import de.metas.async.api.IWorkPackageBlockBuilder;
 import de.metas.async.api.IWorkPackageBuilder;
 import de.metas.async.api.IWorkPackageQueue;
+import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.IWorkPackageQueueFactory;
 import de.metas.lock.api.ILock;
 import de.metas.lock.api.ILockAutoCloseable;
@@ -82,7 +83,6 @@ public class C_OLCandToOrderEnqueuer
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
-	private final IAsyncBatchDAO asyncBatchDAO = Services.get(IAsyncBatchDAO.class);
 
 	private final OLCandProcessorRepository olCandProcessorRepo;
 	private final OLCandProcessingHelper olCandProcessingHelper;
@@ -110,6 +110,18 @@ public class C_OLCandToOrderEnqueuer
 	{
 		final AsyncBatchId asyncBatchId = null;
 		return lockAndEnqueueSelection(selectionId, asyncBatchId);
+	}
+
+	@NonNull
+	public QueueWorkPackageId enqueue(@NonNull final Integer olCandProcessorId, @Nullable final AsyncBatchId asyncBatchId)
+	{
+		final I_C_Queue_WorkPackage result = workPackageQueueFactory.getQueueForEnqueuing(getCtx(), C_OLCandToOrderWorkpackageProcessor.class)
+				.newWorkPackage()
+				.parameter(OLCandProcessor_ID, olCandProcessorId)
+				.setC_Async_Batch_ID(asyncBatchId)
+				.buildAndEnqueue();
+
+		return QueueWorkPackageId.ofRepoId(result.getC_Queue_WorkPackage_ID());
 	}
 
 	@NonNull

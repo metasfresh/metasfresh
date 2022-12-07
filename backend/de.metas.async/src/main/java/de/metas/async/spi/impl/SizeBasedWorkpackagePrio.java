@@ -29,13 +29,15 @@ import com.google.common.annotations.VisibleForTesting;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
 
+import javax.annotation.Nullable;
+
 /**
  * Returns the workpackage priority based on the number of WPs that were already enqueued so far.<br>
  * The configuration is done via <code>AD_SysConfig</code>. See {@link SysconfigBackedSizeBasedWorkpackagePrioConfig} for details.
  * For the case that no size-based priority was configured, <code>medium</code> is returned as the default priority.
  * 
  * @author metas-dev <dev@metasfresh.com>
- * @task http://dewiki908/mediawiki/index.php/09049_Priorit%C3%A4ten_Strategie_asynch_%28105016248827%29
+ * task http://dewiki908/mediawiki/index.php/09049_Priorit%C3%A4ten_Strategie_asynch_%28105016248827%29
  */
 public class SizeBasedWorkpackagePrio implements IWorkpackagePrioStrategy
 {
@@ -59,11 +61,9 @@ public class SizeBasedWorkpackagePrio implements IWorkpackagePrioStrategy
 	/**
 	 * Allow to inject an alternative function. Currently this is intended only for testing purposes, but that might change in future.
 	 * Note that by default this implementation uses {@link SysconfigBackedSizeBasedWorkpackagePrioConfig}.
-	 * 
-	 * @param size2constantPrio
 	 */
 	@VisibleForTesting
-	public void setAlternativeSize2constantPrio(Function<Integer, ConstantWorkpackagePrio> size2constantPrio)
+	public void setAlternativeSize2constantPrio(@Nullable final Function<Integer, ConstantWorkpackagePrio> size2constantPrio)
 	{
 		this.alternativeSize2constantPrio = size2constantPrio;
 	}

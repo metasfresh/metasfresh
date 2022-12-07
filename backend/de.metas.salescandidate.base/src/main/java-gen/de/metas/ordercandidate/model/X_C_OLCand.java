@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1128591430L;
+	private static final long serialVersionUID = 1656813470L;
 
     /** Standard Constructor */
     public X_C_OLCand (final Properties ctx, final int C_OLCand_ID, @Nullable final String trxName)
@@ -68,14 +68,14 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	@Override
 	public void setAD_Issue_ID (final int AD_Issue_ID)
 	{
-		if (AD_Issue_ID < 1) 
+		if (AD_Issue_ID < 1)
 			set_Value (COLUMNNAME_AD_Issue_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_AD_Issue_ID, AD_Issue_ID);
 	}
 
 	@Override
-	public int getAD_Issue_ID() 
+	public int getAD_Issue_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_Issue_ID);
 	}
@@ -250,14 +250,14 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	@Override
 	public void setC_Async_Batch_ID (final int C_Async_Batch_ID)
 	{
-		if (C_Async_Batch_ID < 1) 
+		if (C_Async_Batch_ID < 1)
 			set_Value (COLUMNNAME_C_Async_Batch_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_Async_Batch_ID, C_Async_Batch_ID);
 	}
 
 	@Override
-	public int getC_Async_Batch_ID() 
+	public int getC_Async_Batch_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Async_Batch_ID);
 	}
@@ -1138,7 +1138,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public java.lang.String getHeaderAggregationKey() 
+	public java.lang.String getHeaderAggregationKey()
 	{
 		return get_ValueAsString(COLUMNNAME_HeaderAggregationKey);
 	}
@@ -1255,7 +1255,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public boolean isManualQtyItemCapacity() 
+	public boolean isManualQtyItemCapacity()
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsManualQtyItemCapacity);
 	}
@@ -1739,7 +1739,7 @@ public class X_C_OLCand extends org.compiere.model.PO implements I_C_OLCand, org
 	}
 
 	@Override
-	public BigDecimal getQtyShipped() 
+	public BigDecimal getQtyShipped()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyShipped);
 		return bd != null ? bd : BigDecimal.ZERO;

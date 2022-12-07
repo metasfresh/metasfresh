@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for I_BankStatement
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_I_BankStatement extends org.compiere.model.PO implements I_I_BankStatement, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1058734213L;
+	private static final long serialVersionUID = 232895286L;
 
     /** Standard Constructor */
     public X_I_BankStatement (final Properties ctx, final int I_BankStatement_ID, @Nullable final String trxName)
@@ -83,6 +83,19 @@ public class X_I_BankStatement extends org.compiere.model.PO implements I_I_Bank
 	public java.lang.String getBankAccountNo() 
 	{
 		return get_ValueAsString(COLUMNNAME_BankAccountNo);
+	}
+
+	@Override
+	public void setBankFeeAmt (final BigDecimal BankFeeAmt)
+	{
+		set_Value (COLUMNNAME_BankFeeAmt, BankFeeAmt);
+	}
+
+	@Override
+	public BigDecimal getBankFeeAmt() 
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_BankFeeAmt);
+		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override

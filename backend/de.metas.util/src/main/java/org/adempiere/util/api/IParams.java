@@ -22,6 +22,10 @@ package org.adempiere.util.api;
  * #L%
  */
 
+import de.metas.util.lang.ReferenceListAwareEnums;
+import de.metas.util.lang.RepoIdAware;
+
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -29,11 +33,6 @@ import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Optional;
-
-import javax.annotation.Nullable;
-
-import de.metas.util.lang.ReferenceListAwareEnums;
-import de.metas.util.lang.RepoIdAware;
 
 /**
  * Generic readonly parameters.

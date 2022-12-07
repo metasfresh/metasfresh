@@ -27,6 +27,7 @@ import de.metas.banking.BankStatementId;
 import de.metas.banking.BankStatementLineId;
 import de.metas.banking.BankStatementLineReferenceList;
 import de.metas.i18n.AdMessageKey;
+import de.metas.currency.CurrencyConversionContext;
 import de.metas.invoice.InvoiceId;
 import de.metas.money.CurrencyId;
 import de.metas.payment.PaymentCurrencyContext;

@@ -38,6 +38,7 @@ import de.metas.process.ProcessExecutor;
 import de.metas.process.ProcessInfo;
 import de.metas.process.ProcessInfoParameter;
 import de.metas.scheduler.AdSchedulerId;
+import de.metas.report.ReportResultData;
 import de.metas.security.IUserRolePermissions;
 import de.metas.security.IUserRolePermissionsDAO;
 import de.metas.security.RoleId;
@@ -72,7 +73,6 @@ import org.compiere.model.MNote;
 import org.compiere.model.MScheduler;
 import org.compiere.model.MTask;
 import org.compiere.model.X_AD_Scheduler;
-import org.compiere.print.ReportEngine;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
@@ -355,7 +355,7 @@ public class Scheduler extends AdempiereServer
 							orgId,
 							adUserId,
 							Env.getLocalDate(schedulerCtx))
-					.orNull();
+					.orElse(null);
 
 			// gh #2092: without a role, we won't be able to run the process, because ProcessExecutor.assertPermissions() will fail.
 			Check.errorIf(role == null,
@@ -399,12 +399,12 @@ public class Scheduler extends AdempiereServer
 
 		// Report
 		final Properties ctx = pi.getCtx();
-		final ReportEngine re = ReportEngine.get(ctx, pi);
-		if (re == null)
+		final ReportResultData reportData = pi.getResult().getReportData();
+		if (reportData == null)
 		{
 			return "Cannot create Report AD_Process_ID=" + process.getAD_Process_ID() + " - " + process.getName();
 		}
-		final File report = re.getPDF();
+		final File report = reportData.writeToTemporaryFile("report_");
 		// Notice
 		final int AD_Message_ID = 884;		// HARDCODED SchedulerResult
 		for (final UserId userId : m_model.getRecipientAD_User_IDs())

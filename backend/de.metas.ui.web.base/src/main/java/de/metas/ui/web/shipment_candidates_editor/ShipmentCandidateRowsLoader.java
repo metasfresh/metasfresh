@@ -1,13 +1,27 @@
 package de.metas.ui.web.shipment_candidates_editor;
 
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
+import org.adempiere.warehouse.WarehouseId;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.inoutcandidate.api.IShipmentScheduleEffectiveBL;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.order.IOrderDAO;
 import de.metas.order.OrderAndLineId;
@@ -22,17 +36,6 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
-import org.adempiere.mm.attributes.AttributeSetInstanceId;
-import org.adempiere.warehouse.WarehouseId;
-
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-import java.time.ZonedDateTime;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
 
 /*
  * #%L

@@ -57,7 +57,7 @@ public class JacksonMaterialEventSerializerTest
 				.qty(BigDecimal.TEN)
 				.warehouseId(WarehouseId.ofRepoId(13))
 				.oldStorageAttributes(AttributesKeyWithASI.of(AttributesKey.ofAttributeValueIds(14, 15), AttributeSetInstanceId.ofRepoId(16)))
-				.newStorageAttributes(AttributesKeyWithASI.of(null, AttributeSetInstanceId.ofRepoId(17)))
+				.newStorageAttributes(AttributesKeyWithASI.of(null, AttributeSetInstanceId.NONE))
 				.build();
 		testSerializeUnserialize(event);
 	}

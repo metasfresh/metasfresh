@@ -5,9 +5,9 @@ import de.metas.bpartner.ShipmentAllocationBestBeforePolicy;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.inout.ShipmentScheduleId;
-import de.metas.inoutcandidate.api.IPackagingDAO;
 import de.metas.inoutcandidate.api.IShipmentScheduleBL;
-import de.metas.inoutcandidate.api.Packageable;
+import de.metas.picking.api.IPackagingDAO;
+import de.metas.picking.api.Packageable;
 import de.metas.ui.web.document.filter.DocumentFilter;
 import de.metas.ui.web.document.filter.DocumentFilterList;
 import de.metas.ui.web.document.filter.provider.DocumentFilterDescriptorsProvider;
@@ -175,7 +175,7 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 				.orderBy(DocumentQueryOrderBy.byFieldName(HUEditorRow.FIELDNAME_M_HU_ID));
 	}
 
-	private static DocumentQueryOrderBy createBestBeforeDateOrderBy(final ShipmentAllocationBestBeforePolicy bestBeforePolicy)
+	private static DocumentQueryOrderBy createBestBeforeDateOrderBy(@Nullable final ShipmentAllocationBestBeforePolicy bestBeforePolicy)
 	{
 		final ShipmentAllocationBestBeforePolicy bestBeforePolicyEffective = CoalesceUtil.coalesce(bestBeforePolicy, ShipmentAllocationBestBeforePolicy.Expiring_First);
 		if (bestBeforePolicyEffective == ShipmentAllocationBestBeforePolicy.Expiring_First)
@@ -193,7 +193,7 @@ public class HUsToPickViewFactory extends HUEditorViewFactoryTemplate
 	}
 
 	@Override
-	public IView filterView(final IView view, final JSONFilterViewRequest filterViewRequest, final Supplier<IViewsRepository> viewsRepo)
+	public IView filterView(final @NonNull IView view, final @NonNull JSONFilterViewRequest filterViewRequest, final @NonNull Supplier<IViewsRepository> viewsRepo)
 	{
 		final CreateViewRequest.Builder filterViewBuilder = CreateViewRequest.filterViewBuilder(view, filterViewRequest);
 

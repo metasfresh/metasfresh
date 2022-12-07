@@ -1,6 +1,10 @@
 package de.metas.inoutcandidate.lock;
 
+import java.util.Objects;
+import java.util.Set;
+
 import com.google.common.collect.ImmutableSet;
+
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
@@ -8,9 +12,6 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Singular;
 import lombok.Value;
-
-import java.util.Objects;
-import java.util.Set;
 
 /*
  * #%L

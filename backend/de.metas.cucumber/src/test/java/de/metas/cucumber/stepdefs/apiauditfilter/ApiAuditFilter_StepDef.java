@@ -30,36 +30,20 @@ import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.EmptyUtil;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
-import de.metas.util.Services;
 import de.metas.util.web.audit.ApiRequestReplayService;
-import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
-import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
-import org.compiere.model.I_AD_Issue;
-import org.compiere.model.I_AD_User;
-import org.compiere.model.I_API_Audit_Config;
-import org.compiere.model.I_API_Request_Audit;
-import org.compiere.model.I_API_Request_Audit_Log;
-import org.compiere.model.I_API_Response_Audit;
 import org.compiere.util.DB;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 
 public class ApiAuditFilter_StepDef
 {
 	private final ApiRequestAuditRepository apiRequestAuditRepository = SpringContextHolder.instance.getBean(ApiRequestAuditRepository.class);
 	private final ApiRequestReplayService apiRequestReplayService = SpringContextHolder.instance.getBean(ApiRequestReplayService.class);
-	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final TestContext testContext;
 	private final API_Audit_Config_StepDefData apiAuditConfigTable;
 
@@ -127,7 +111,7 @@ public class ApiAuditFilter_StepDef
 		assertThat(requestAuditRecord).isNotNull();
 		assertThat(method).isEqualTo(requestAuditRecord.getMethod());
 		assertThat(requestAuditRecord.getPath()).contains(path);
-		
+
 		final String[] allowedStatuses = statuses.split(" *OR *");
 		assertThat(requestAuditRecord.getStatus()).isIn((Object[])allowedStatuses);
 

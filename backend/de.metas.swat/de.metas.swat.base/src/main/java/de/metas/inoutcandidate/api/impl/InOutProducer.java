@@ -22,7 +22,9 @@ import de.metas.inoutcandidate.api.IInOutProducer;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
+import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
 import de.metas.order.location.adapter.OrderDocumentLocationAdapterFactory;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.quantity.Quantity;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.uom.IUOMConversionBL;
@@ -101,6 +103,8 @@ public class InOutProducer implements IInOutProducer
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	private final DimensionService dimensionService = SpringContextHolder.instance.getBean(DimensionService.class);
+
+	private final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository = SpringContextHolder.instance.getBean(OrderEmailPropagationSysConfigRepository.class);
 
 	private static final String DYNATTR_HeaderAggregationKey = InOutProducer.class.getName() + "#HeaderAggregationKey";
 
@@ -224,6 +228,8 @@ public class InOutProducer implements IInOutProducer
 	}
 
 	/**
+	 * @param previousReceiptSchedule
+	 * @param receiptSchedule
 	 * @return true if given receipt schedules shall not be part of the same receipt
 	 */
 	// package level because of JUnit tests
@@ -437,6 +443,7 @@ public class InOutProducer implements IInOutProducer
 			receiptHeader.setIsSOTrx(false);
 
 			// this is the doctype of the sched's source record (e.g. "Bestellung")
+			// receiptHeader.setC_DocType_ID(rs.getC_DocType_ID());
 			final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 			final DocTypeQuery query = DocTypeQuery.builder()
 					.docBaseType(X_C_DocType.DOCBASETYPE_MaterialReceipt)
@@ -492,6 +499,16 @@ public class InOutProducer implements IInOutProducer
 		//
 		// DropShip informations (08402)
 		final I_C_Order order = rs.getC_Order();
+		if(order!=null)
+		{
+			final boolean propagateToMInOut = orderEmailPropagationSysConfigRepository.isPropagateToMInOut(ClientAndOrgId.ofClientAndOrg(receiptHeader.getAD_Client_ID(), receiptHeader.getAD_Org_ID()));
+			if(order!=null && propagateToMInOut)
+			{
+				receiptHeader.setEMail(order.getEMail());
+			}
+
+			receiptHeader.setAD_InputDataSource_ID(order.getAD_InputDataSource_ID());
+		}
 		if (order != null && order.isDropShip())
 		{
 			receiptHeader.setIsDropShip(true);
@@ -584,6 +601,10 @@ public class InOutProducer implements IInOutProducer
 		//
 		// Order Line Link
 		line.setC_OrderLine_ID(rs.getC_OrderLine_ID());
+
+		//
+		// Contract
+		line.setC_Flatrate_Term_ID(rs.getC_Flatrate_Term_ID());
 
 		final Dimension receiptScheduleDimension = dimensionService.getFromRecord(rs);
 		dimensionService.updateRecord(line, receiptScheduleDimension);

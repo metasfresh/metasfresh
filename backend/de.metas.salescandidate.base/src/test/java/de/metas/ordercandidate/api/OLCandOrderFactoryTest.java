@@ -186,6 +186,7 @@ class OLCandOrderFactoryTest
 			OLCandDocumentLocationAdapterFactory.bpartnerLocationAdapter(olCandRecord).setFrom(location);
 			olCandRecord.setM_Product_ID(productId.getRepoId());
 			olCandRecord.setC_UOM_ID(uomKg.getC_UOM_ID());
+			olCandRecord.setApplySalesRepFrom(AssignSalesRepRule.CandidateFirst.getCode());
 			InterfaceWrapperHelper.saveRecord(olCandRecord);
 
 			return new OLCandFactory().toOLCand(olCandRecord);

@@ -29,6 +29,7 @@ import java.util.Iterator;
 
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
+import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.AbstractInvoiceCandidateHandler;
@@ -37,26 +38,30 @@ import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateRequest;
 import de.metas.invoicecandidate.spi.InvoiceCandidateGenerateResult;
 import de.metas.util.Check;
 import de.metas.util.Services;
+import org.adempiere.ad.dao.QueryLimit;
 
 public class FlatrateDataEntryHandler extends AbstractInvoiceCandidateHandler
 {
+
+	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically()
+	public CandidatesAutoCreateMode getGeneralCandidatesAutoCreateMode()
 	{
-		return false;
+		return CandidatesAutoCreateMode.DONT;
 	}
 
 	@Override
-	public boolean isCreateMissingCandidatesAutomatically(Object model)
+	public CandidatesAutoCreateMode getSpecificCandidatesAutoCreateMode(final Object model)
 	{
-		return false;
+		return CandidatesAutoCreateMode.DONT;
 	}
 
 	/**
 	 * @return empty iterator
 	 */
 	@Override
-	public Iterator<I_C_Flatrate_DataEntry> retrieveAllModelsWithMissingCandidates(final int limit)
+	public Iterator<I_C_Flatrate_DataEntry> retrieveAllModelsWithMissingCandidates(final QueryLimit limit_IGNORED)
 	{
 		return Collections.emptyIterator();
 	}
@@ -79,11 +84,13 @@ public class FlatrateDataEntryHandler extends AbstractInvoiceCandidateHandler
 		final I_C_Flatrate_DataEntry dataEntry = create(dataEntryObj, I_C_Flatrate_DataEntry.class);
 		if (dataEntry.getC_Invoice_Candidate_ID() > 0)
 		{
-			Services.get(IInvoiceCandDAO.class).invalidateCand(dataEntry.getC_Invoice_Candidate());
+			final InvoiceCandidateId id = InvoiceCandidateId.ofRepoId(dataEntry.getC_Invoice_Candidate_ID());
+			invoiceCandDAO.invalidateCandFor(id);
 		}
 		if (dataEntry.getC_Invoice_Candidate_Corr_ID() > 0)
 		{
-			Services.get(IInvoiceCandDAO.class).invalidateCand(dataEntry.getC_Invoice_Candidate_Corr());
+			final InvoiceCandidateId id = InvoiceCandidateId.ofRepoId(dataEntry.getC_Invoice_Candidate_Corr_ID());
+			invoiceCandDAO.invalidateCandFor(id);
 		}
 	}
 

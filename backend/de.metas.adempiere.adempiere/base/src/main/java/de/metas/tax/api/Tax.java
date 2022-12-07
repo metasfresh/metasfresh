@@ -177,4 +177,10 @@ public class Tax
 
 		return taxAmtFinal;
 	}    // calculateTax
+
+	@NonNull
+	public BigDecimal calculateGross(@NonNull final BigDecimal netAmount, final int scale)
+	{
+		return netAmount.add(calculateTax(netAmount, false, scale));
+	}
 }

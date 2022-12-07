@@ -1,5 +1,6 @@
 package de.metas.ui.web.document.filter.provider;
 
+import de.metas.ui.web.window.descriptor.CreateFiltersProviderContext;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdTabId;
@@ -33,8 +34,7 @@ public interface DocumentFilterDescriptorsProviderFactory
 {
 	@Nullable
 	DocumentFilterDescriptorsProvider createFiltersProvider(
-			@Nullable AdTabId adTabId,
-			@Nullable String tableName,
+			@NonNull CreateFiltersProviderContext context,
 			@NonNull Collection<DocumentFieldDescriptor> fields);
 
 	default boolean isActive()

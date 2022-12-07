@@ -22,6 +22,7 @@
 
 package de.metas.rest_api.v2.ordercandidates.impl;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.metas.common.ordercandidates.v2.response.JsonGenerateOrdersResponse;
@@ -38,8 +39,10 @@ public class JsonProcessCompositeResponse
 {
 	JsonGenerateOrdersResponse orderResponse;
 
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	JsonCreateShipmentResponse shipmentResponse;
 
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	List<JSONInvoiceInfoResponse> invoiceInfoResponse;
 
 	@Builder

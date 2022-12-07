@@ -51,6 +51,8 @@ public class C_Queue_WorkPackage_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 
+	@NonNull
+	private final C_Queue_Processor_StepDefData processorTable;
 	private final C_Queue_WorkPackage_StepDefData workPackageTable;
 	private final C_Queue_Element_StepDefData queueElementTable;
 	private final C_OLCand_StepDefData candidateTable;

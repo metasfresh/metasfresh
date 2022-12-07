@@ -87,9 +87,9 @@ describe('DocumentList helpers', () => {
   describe('formatDateWithZeros', () => {
     it('should format corectly the date when only one char is inputed for month or day', async () => {
       const inputDateOne = '2.2.2020';
-      const outputDateOne = await formatDateWithZeros(inputDateOne);
+      const outputDateOne = formatDateWithZeros(inputDateOne);
       const inputDateTwo = '2/3/2020';
-      const outputDateTwo = await formatDateWithZeros(inputDateTwo);
+      const outputDateTwo = formatDateWithZeros(inputDateTwo);
       expect(outputDateOne).toBe('02.02.2020');
       expect(outputDateTwo).toBe('02/03/2020');
     });

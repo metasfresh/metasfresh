@@ -52,8 +52,6 @@ public class PostMaterialEventService
 
 	/**
 	 * Adds a trx listener to make sure the given {@code event} will be fired via {@link #postEventNow(MaterialEvent, QueueWorkPackageId)} when the given {@code trxName} is committed.
-	 *
-	 * @param event
 	 */
 	public void postEventAfterNextCommit(@NonNull final MaterialEvent event)
 	{
@@ -65,9 +63,9 @@ public class PostMaterialEventService
 	}
 
 	/**
-	 * Fires the given event using our (distributed) event framework. If {@link #subscribeToEventBus()} was not yet invoked, an exception is thrown.
+	 * Fires the given event using our (distributed) event framework.
 	 *
-	 * @deprecated please use {@link #postEventAsync(MaterialEvent)} whenever possible, to avoid blocking the UI
+	 * @deprecated should only be used by the workpackage-processor. Please use {@link #postEventAsync(MaterialEvent)} whenever possible, to avoid blocking the UI
 	 */
 	@Deprecated
 	public void postEventNow(final MaterialEvent event, final QueueWorkPackageId workPackageId)
@@ -83,12 +81,10 @@ public class PostMaterialEventService
 	{
 		final String serializedEvent = JacksonMaterialEventSerializer.instance.toString(event);
 		final IWorkPackageBuilder workPackageBuilder = workPackageQueueFactory.getQueueForEnqueuing(getCtx(), MaterialEventWorkpackageProcessor.class)
-				.newBlock()
-				.setContext(getCtx())
-				.newWorkpackage()
+				.newWorkPackage(getCtx())
 				.parameter(MaterialEventWorkpackageProcessor.PARAM_Event, serializedEvent);
 
-		final I_C_Queue_WorkPackage result = workPackageBuilder.build();
+		final I_C_Queue_WorkPackage result = workPackageBuilder.buildAndEnqueue();
 		return QueueWorkPackageId.ofRepoId(result.getC_Queue_WorkPackage_ID());
 	}
 }

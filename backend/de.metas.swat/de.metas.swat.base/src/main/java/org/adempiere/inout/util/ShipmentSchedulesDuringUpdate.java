@@ -22,20 +22,6 @@ package org.adempiere.inout.util;
  * #L%
  */
 
-import com.google.common.collect.ImmutableList;
-import de.metas.inout.ShipmentScheduleId;
-import de.metas.inoutcandidate.api.ShipmentSchedulesMDC;
-import de.metas.logging.LogManager;
-import de.metas.order.DeliveryRule;
-import de.metas.shipping.ShipperId;
-import lombok.NonNull;
-import lombok.Value;
-import org.adempiere.util.lang.IAutoCloseable;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.warehouse.WarehouseId;
-import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,6 +30,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+
+import org.adempiere.util.lang.IAutoCloseable;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.warehouse.WarehouseId;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
+
+import com.google.common.collect.ImmutableList;
+
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.inoutcandidate.api.ShipmentSchedulesMDC;
+import de.metas.logging.LogManager;
+import de.metas.order.DeliveryRule;
+import de.metas.shipping.ShipperId;
+import lombok.NonNull;
+import lombok.Value;
 
 /**
  * Helper class to manage the shipments (a.k.a {@link DeliveryGroupCandidate}s) that might actually be created in the end.

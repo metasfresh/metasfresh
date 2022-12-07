@@ -35,6 +35,9 @@ public enum JsonInvoiceRule
 	@ApiEnum("Specifies that no invoicing should take place until all quantities belonging to the same invoice have been shipped.\nNote: what belongs to one invoice is determined by the respective business partner's aggregation rule.")
 	OrderCompletelyDelivered,
 
+	@ApiEnum("Specifies that only *picked* quantities will be invoiced")
+	AfterPick,
+
 	@ApiEnum("Any ordered quantities - delivered or not - can be invoiced right away")
 	Immediate;
 }

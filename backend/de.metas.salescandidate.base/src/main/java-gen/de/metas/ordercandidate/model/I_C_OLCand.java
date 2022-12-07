@@ -2585,4 +2585,6 @@ public interface I_C_OLCand
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	
 }

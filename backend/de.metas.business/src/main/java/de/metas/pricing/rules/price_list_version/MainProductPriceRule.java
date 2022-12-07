@@ -42,6 +42,7 @@ import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.uom.UomId;
+import de.metas.util.Loggables;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
@@ -117,7 +118,7 @@ class MainProductPriceRule extends AbstractPriceListBasedRule
 		result.setProductId(productId);
 		result.setProductCategoryId(productCategoryId);
 		result.setPriceEditable(productPrice.isPriceEditable());
-		result.setDiscountEditable(productPrice.isDiscountEditable());
+		result.setDiscountEditable(result.isDiscountEditable() && productPrice.isDiscountEditable());
 		result.setEnforcePriceLimit(extractEnforcePriceLimit(priceList));
 		result.setTaxIncluded(priceList.isTaxIncluded());
 		result.setTaxCategoryId(TaxCategoryId.ofRepoId(productPrice.getC_TaxCategory_ID()));

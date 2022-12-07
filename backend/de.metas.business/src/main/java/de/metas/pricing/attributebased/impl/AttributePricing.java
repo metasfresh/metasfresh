@@ -1,6 +1,7 @@
 package de.metas.pricing.attributebased.impl;
 
 import ch.qos.logback.classic.Level;
+import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.IMsgBL;
@@ -266,7 +267,7 @@ public class AttributePricing implements IPricingRule
 		final I_M_AttributeSetInstance attributeSetInstance = getM_AttributeSetInstance(pricingCtx);
 		if (attributeSetInstance == null)
 		{
-			Loggables.withLogger(logger, Level.DEBUG).addLog("findMatchingProductPriceAttribute - Return empty because no M_AttributeSetInstance_ID found: {}", pricingCtx);
+			logger.debug("No M_AttributeSetInstance_ID found: {}", pricingCtx);
 			return Optional.empty();
 		}
 
@@ -296,12 +297,13 @@ public class AttributePricing implements IPricingRule
 	/**
 	 * Extracts an ASI from the given {@code pricingCtx}.
 	 *
-	 * @return <ul>
-	 * <li>ASI
-	 * <li><code>null</code> if the given <code>pricingCtx</code> has no <code>ReferencedObject</code><br/>
-	 * or if the referenced object can't be converted to an {@link IAttributeSetInstanceAware}<br/>
-	 * or if the referenced object has M_AttributeSetInstance_ID less or equal zero.
-	 * </ul>
+	 * @return
+	 *         <ul>
+	 *         <li>ASI
+	 *         <li><code>null</code> if the given <code>pricingCtx</code> has no <code>ReferencedObject</code><br/>
+	 *         or if the referenced object can't be converted to an {@link IAttributeSetInstanceAware}<br/>
+	 *         or if the referenced object has M_AttributeSetInstance_ID less or equal zero.
+	 *         </ul>
 	 */
 	@Nullable
 	protected static I_M_AttributeSetInstance getM_AttributeSetInstance(final IPricingContext pricingCtx)

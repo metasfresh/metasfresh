@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import de.metas.common.util.Check;
 import de.metas.material.event.commons.AttributesKey;
 import lombok.NonNull;
 import lombok.Value;
@@ -43,8 +44,9 @@ public class AttributesKeyWithASI
 			@JsonProperty("attributesKey") @Nullable final AttributesKey attributesKey,
 			@JsonProperty("attributeSetInstanceId") @NonNull final AttributeSetInstanceId attributeSetInstanceId)
 	{
-		if (attributesKey == null)
+		if (attributesKey == null || attributesKey.isNone())
 		{
+			Check.assume(attributeSetInstanceId == null || attributeSetInstanceId.isNone(), "ASI expected to be NONE but it was {}", attributeSetInstanceId);
 			return NONE;
 		}
 		else

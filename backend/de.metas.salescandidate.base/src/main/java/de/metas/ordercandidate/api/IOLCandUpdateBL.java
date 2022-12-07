@@ -22,14 +22,12 @@ package de.metas.ordercandidate.api;
  * #L%
  */
 
+import de.metas.ordercandidate.model.I_C_OLCand;
+import de.metas.util.ISingletonService;
+import org.adempiere.util.api.IParams;
 
 import java.util.Iterator;
 import java.util.Properties;
-
-import org.adempiere.util.api.IParams;
-
-import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.util.ISingletonService;
 
 /**
  * Updates order line candidates.

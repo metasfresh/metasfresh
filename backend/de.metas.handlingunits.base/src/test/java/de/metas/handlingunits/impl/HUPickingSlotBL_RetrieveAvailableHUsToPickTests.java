@@ -1,6 +1,6 @@
 package de.metas.handlingunits.impl;
 
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableList;
 import de.metas.adempiere.model.I_M_Product;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.attribute.storage.impl.NullAttributeStorage;
@@ -43,10 +43,12 @@ import org.mockito.Mockito;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -466,9 +468,9 @@ public class HUPickingSlotBL_RetrieveAvailableHUsToPickTests
 			final HUStorageRecord_HUPart huPart = new HUStorageRecord_HUPart(vhu, NullAttributeStorage.instance);
 			final HUStorageRecord storageRecord = new HUStorageRecord(huPart, huStorage);
 
-			Mockito.doReturn(ImmutableSet.of(storageRecord))
+			Mockito.doReturn(ImmutableList.of(storageRecord))
 					.when(storageEngine)
-					.retrieveStorageRecords(Matchers.any(IContextAware.class), Matchers.anySetOf(IStorageQuery.class));
+					.retrieveStorageRecords(Matchers.any(IContextAware.class), Matchers.anyListOf(IStorageQuery.class));
 		}
 
 		final List<I_M_HU> result = new HUPickingSlotBL()

@@ -27,7 +27,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.RestUtils;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
-import de.metas.common.rest_api.v2.JsonAttributeSetInstance;
 import de.metas.common.rest_api.v2.warehouse.JsonOutOfStockNoticeRequest;
 import de.metas.common.rest_api.v2.warehouse.JsonOutOfStockResponse;
 import de.metas.common.rest_api.v2.warehouse.JsonOutOfStockResponseItem;
@@ -41,6 +40,7 @@ import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLine;
 import de.metas.handlingunits.inventory.draftlinescreator.HuForInventoryLineFactory;
 import de.metas.handlingunits.inventory.draftlinescreator.LocatorAndProductStrategy;
 import de.metas.handlingunits.inventory.draftlinescreator.ProductHUInventory;
+import de.metas.i18n.TranslatableStrings;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.ShipmentSchedule;
 import de.metas.inoutcandidate.ShipmentScheduleRepository;
@@ -53,6 +53,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
 import de.metas.rest_api.utils.IdentifierString;
+import de.metas.rest_api.v2.attributes.JsonAttributeService;
 import de.metas.rest_api.v2.product.ProductRestService;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UomId;
@@ -61,14 +62,11 @@ import de.metas.util.Services;
 import de.metas.util.web.exception.InvalidIdentifierException;
 import de.metas.util.web.exception.MissingResourceException;
 import lombok.NonNull;
-import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeSetInstanceBL;
-import org.adempiere.mm.attributes.api.ImmutableAttributeSet;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseDAO;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Warehouse;
 import org.springframework.stereotype.Service;
 
@@ -100,17 +98,21 @@ public class WarehouseService
 	private final InventoryService inventoryService;
 	@NonNull
 	private final ShipmentScheduleRepository shipmentScheduleRepository;
+	@NonNull
+	private final JsonAttributeService jsonAttributeService;
 
 	public WarehouseService(
 			@NonNull final ProductRestService productRestService,
 			@NonNull final HuForInventoryLineFactory huForInventoryLineFactory,
 			@NonNull final InventoryService inventoryService,
-			@NonNull final ShipmentScheduleRepository shipmentScheduleRepository)
+			@NonNull final ShipmentScheduleRepository shipmentScheduleRepository,
+			@NonNull final JsonAttributeService jsonAttributeService)
 	{
 		this.productRestService = productRestService;
 		this.huForInventoryLineFactory = huForInventoryLineFactory;
 		this.inventoryService = inventoryService;
 		this.shipmentScheduleRepository = shipmentScheduleRepository;
+		this.jsonAttributeService = jsonAttributeService;
 	}
 
 	@NonNull
@@ -145,7 +147,10 @@ public class WarehouseService
 		}
 		if (result == null)
 		{
-			throw new InvalidIdentifierException(warehouseIdentifier);
+			throw MissingResourceException.builder()
+					.resourceName("WarehouseId")
+					.detail(TranslatableStrings.constant("Did not find warehouseId for AD_Org_ID=" + orgId.getRepoId() + " and identifier=" + warehouseIdentifier))
+					.build();
 		}
 
 		return result;
@@ -166,6 +171,7 @@ public class WarehouseService
 		}
 
 		final OrgId orgId = RestUtils.retrieveOrgIdOrDefault(outOfStockInfoRequest.getOrgCode());
+		Loggables.addLog("WarehouseService.handleOutOfStockRequest: JsonOutOfStockNoticeRequest: orgCode resolved to AD_Org_ID {}!", OrgId.toRepoIdOrAny(orgId));
 
 		final ExternalIdentifier productIdentifier = ExternalIdentifier.of(outOfStockInfoRequest.getProductIdentifier());
 
@@ -175,12 +181,12 @@ public class WarehouseService
 						.resourceName("M_Product")
 						.build());
 
-		Loggables.addLog("WarehouseService.handleOutOfStockRequest: JsonOutOfStockNoticeRequest: productIdentifier resolved to M_Product_ID {}!", productId);
+		Loggables.addLog("WarehouseService.handleOutOfStockRequest: JsonOutOfStockNoticeRequest: productIdentifier resolved to M_Product_ID {}!", ProductId.toRepoId(productId));
 
-		final AttributeSetInstanceId attributeSetInstanceId = computeAttributeSetInstanceFromJson(outOfStockInfoRequest.getAttributeSetInstance())
+		final AttributeSetInstanceId attributeSetInstanceId = jsonAttributeService.computeAttributeSetInstanceFromJson(outOfStockInfoRequest.getAttributeSetInstance())
 				.orElse(null);
 
-		Loggables.addLog("WarehouseService.handleOutOfStockRequest: JsonOutOfStockNoticeRequest: attributeSetInstance emerged to asiId: {}!", attributeSetInstanceId);
+		Loggables.addLog("WarehouseService.handleOutOfStockRequest: JsonOutOfStockNoticeRequest: attributeSetInstance emerged to asiId: {}!", AttributeSetInstanceId.toRepoId(attributeSetInstanceId));
 
 		final Optional<WarehouseId> targetWarehouseId = ALL.equals(warehouseIdentifier)
 				? Optional.empty()
@@ -327,24 +333,6 @@ public class WarehouseService
 		return husFinder.streamHus()
 				.filter(hu -> hu.getProductId().equals(productId))
 				.collect(ImmutableList.toImmutableList());
-	}
-
-	@NonNull
-	private Optional<AttributeSetInstanceId> computeAttributeSetInstanceFromJson(@Nullable final JsonAttributeSetInstance attributeSetInstance)
-	{
-		if (attributeSetInstance == null || attributeSetInstance.getAttributeInstances().isEmpty())
-		{
-			return Optional.empty();
-		}
-
-		final ImmutableAttributeSet.Builder attributeSetBuilder = ImmutableAttributeSet.builder();
-
-		attributeSetInstance.getAttributeInstances()
-				.forEach(jsonAttribute -> attributeSetBuilder.attributeValue(AttributeCode.ofString(jsonAttribute.getAttributeCode()), jsonAttribute.getValue()));
-
-		final I_M_AttributeSetInstance newASI = attributeSetInstanceBL.createASIFromAttributeSet(attributeSetBuilder.build());
-
-		return Optional.of(AttributeSetInstanceId.ofRepoId(newASI.getM_AttributeSetInstance_ID()));
 	}
 
 	private JsonOutOfStockResponse buildOutOfStockNoticeResponse(

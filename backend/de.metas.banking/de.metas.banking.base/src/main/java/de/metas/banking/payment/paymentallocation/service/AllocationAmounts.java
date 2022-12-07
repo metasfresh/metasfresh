@@ -188,7 +188,7 @@ public class AllocationAmounts
 		}
 	}
 
-	public AllocationAmounts add(AllocationAmounts other)
+	public AllocationAmounts add(@NonNull final AllocationAmounts other)
 	{
 		return toBuilder()
 				.payAmt(this.payAmt.add(other.payAmt))
@@ -198,7 +198,7 @@ public class AllocationAmounts
 				.build();
 	}
 
-	public AllocationAmounts subtract(AllocationAmounts other)
+	public AllocationAmounts subtract(@NonNull final AllocationAmounts other)
 	{
 		return toBuilder()
 				.payAmt(this.payAmt.subtract(other.payAmt))

@@ -240,7 +240,7 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 	 *
 	 * @return hash/aggregation key for given <code>item</code>
 	 */
-	private Object createItemHashKey(final ItemType item)
+	private Object createItemHashKey(@NonNull final ItemType item)
 	{
 		final Function<ItemType, Object> itemAggregationKeyBuilder = getItemAggregationKeyBuilder();
 		final Object itemHashKey = itemAggregationKeyBuilder.apply(item);
@@ -254,7 +254,7 @@ public abstract class MapReduceAggregator<GroupType, ItemType>
 	 *
 	 * @param item item to be used for creating the new group
 	 */
-	private GroupType createAndAddGroupToBuffer(final Object itemHashKey, final ItemType item)
+	private GroupType createAndAddGroupToBuffer(@NonNull final Object itemHashKey, @NonNull final ItemType item)
 	{
 		// We put a null value to map (before actually creating the group),
 		// to make sure the previous groups are closed before the new group is actually created

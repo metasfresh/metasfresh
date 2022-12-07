@@ -28,6 +28,7 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.processor.api.FailTrxItemExceptionHandler;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.api.IParams;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.compiere.SpringContextHolder;
 import org.slf4j.Logger;
 
@@ -52,6 +53,14 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 	private final IQueueDAO queueDAO = Services.get(IQueueDAO.class);
 	private final IHUShipmentScheduleBL shipmentScheduleBL = Services.get(IHUShipmentScheduleBL.class);
 	private final ShipmentScheduleWithHUService shipmentScheduleWithHUService = SpringContextHolder.instance.getBean(ShipmentScheduleWithHUService.class);
+
+	@NonNull
+	public static CalculateShippingDateRule computeShippingDateRule(@Nullable final Boolean isShipDateToday)
+	{
+		return Boolean.TRUE.equals(isShipDateToday)
+				? CalculateShippingDateRule.FORCE_SHIPMENT_DATE_TODAY
+				: CalculateShippingDateRule.NONE;
+	}
 
 	@Override
 	public Result processWorkPackage(final I_C_Queue_WorkPackage workpackage_NOTUSED, final String localTrxName_NOTUSED)
@@ -79,9 +88,7 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 
 		final boolean isCreatePackingLines = !onlyUsePicked;
 
-		final CalculateShippingDateRule calculateShippingDateRule = isShipmentDateToday
-				? CalculateShippingDateRule.FORCE_SHIPMENT_DATE_TODAY
-				: CalculateShippingDateRule.NONE;
+		final CalculateShippingDateRule calculateShippingDateRule = computeShippingDateRule(isShipmentDateToday);
 
 		final ImmutableMap<ShipmentScheduleId, ShipmentScheduleExternalInfo> scheduleId2ExternalInfo = extractScheduleId2ExternalInfo(parameters);
 		
@@ -165,7 +172,14 @@ public class GenerateInOutFromShipmentSchedules extends WorkpackageProcessorAdap
 				.getParameterAsEnum(ShipmentScheduleWorkPackageParameters.PARAM_QuantityType, M_ShipmentSchedule_QuantityTypeToUse.class)
 				.orElseThrow(() -> new AdempiereException("Parameter " + ShipmentScheduleWorkPackageParameters.PARAM_QuantityType + " not provided"));
 
-		return shipmentScheduleWithHUService.createShipmentSchedulesWithHU(shipmentSchedules, quantityTypeToUse, scheduleId2QtyToDeliverOverride);
+		final boolean onTheFlyPickToPackingInstructions = getParameters()
+				.getParameterAsBool(ShipmentScheduleWorkPackageParameters.PARAM_IsOnTheFlyPickToPackingInstructions);
+
+		return shipmentScheduleWithHUService.createShipmentSchedulesWithHU(
+				shipmentSchedules,
+				quantityTypeToUse,
+				onTheFlyPickToPackingInstructions,
+				scheduleId2QtyToDeliverOverride);
 	}
 
 	private List<I_M_ShipmentSchedule> retrieveShipmentSchedules()

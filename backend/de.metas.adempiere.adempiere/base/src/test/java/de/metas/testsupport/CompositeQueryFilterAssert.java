@@ -1,14 +1,7 @@
 package de.metas.testsupport;
 
-import static de.metas.testsupport.QueryFilterTestUtil.castOrNull;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.function.Predicate;
-
-import javax.annotation.Nullable;
-
+import com.jgoodies.common.base.Objects;
+import lombok.NonNull;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.impl.ActiveRecordQueryFilter;
@@ -16,6 +9,7 @@ import org.adempiere.ad.dao.impl.CompareQueryFilter;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.EqualsQueryFilter;
 import org.adempiere.ad.dao.impl.InArrayQueryFilter;
+import org.adempiere.ad.dao.impl.NotEqualsQueryFilter;
 import org.adempiere.ad.dao.impl.NotQueryFilter;
 import org.adempiere.model.ModelColumn;
 import org.assertj.core.api.AbstractAssert;
@@ -23,9 +17,14 @@ import org.assertj.core.internal.Failures;
 import org.assertj.core.internal.Iterables;
 import org.springframework.util.ReflectionUtils;
 
-import com.jgoodies.common.base.Objects;
+import javax.annotation.Nullable;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.function.Predicate;
 
-import lombok.NonNull;
+import static de.metas.testsupport.QueryFilterTestUtil.castOrNull;
 
 /*
  * #%L
@@ -102,6 +101,33 @@ public class CompositeQueryFilterAssert extends AbstractAssert<CompositeQueryFil
 			}
 
 			final boolean hasValue = Objects.equals(equalsQueryFilter.getValue(), value);
+			if (!hasValue)
+			{
+				return false;
+			}
+			return true;
+		};
+
+		return anyFilterMatches(p);
+	}
+
+	public CompositeQueryFilterAssert hasNotEqualsFilter(final String columnName, final Object value)
+	{
+		final Predicate<IQueryFilter> p = filter -> {
+
+			final NotEqualsQueryFilter notEqualsQueryFilter = castOrNull(filter, NotEqualsQueryFilter.class);
+			if (notEqualsQueryFilter == null)
+			{
+				return false;
+			}
+
+			final boolean hasColumnName = notEqualsQueryFilter.getColumnName().equals(columnName);
+			if (!hasColumnName)
+			{
+				return false;
+			}
+
+			final boolean hasValue = Objects.equals(notEqualsQueryFilter.getValue(), value);
 			if (!hasValue)
 			{
 				return false;
