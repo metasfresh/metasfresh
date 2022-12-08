@@ -1,3 +1,5 @@
+DROP MATERIALIZED VIEW MV_Fact_Acct_Sum ;
+
 CREATE MATERIALIZED VIEW IF NOT EXISTS MV_Fact_Acct_Sum AS
 select fa.AD_Client_ID
      , fa.AD_Org_ID
@@ -14,6 +16,12 @@ select fa.AD_Client_ID
      , COALESCE(SUM(AmtAcctCr), 0) as AmtAcctCr
      , COALESCE(SUM(Qty), 0)       as Qty
 FROM Fact_Acct fa
+    INNER JOIN (
+    SELECT DISTINCT vc.Account_ID AS C_ElementValue_ID
+    FROM C_Tax_Acct ta
+             INNER JOIN C_ValidCombination vc ON (vc.C_ValidCombination_ID IN
+                                                  (ta.T_Due_Acct, ta.T_Credit_Acct ))
+) AS ev on ev.C_ElementValue_ID=fa.account_id
          left outer join C_Period p on (p.C_Period_ID = fa.C_Period_ID)
 GROUP BY fa.AD_Client_ID
        , fa.AD_Org_ID
