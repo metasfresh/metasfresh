@@ -80,7 +80,7 @@ public class DeliveryPlanningCreateRequest
 	OrderStatus orderStatus;
 
 	@Nullable
-	MeansOfTransportation meansOfTransportation;
+	MeansOfTransportationId meansOfTransportationId;
 
 	@NonNull
 	WarehouseId warehouseId;

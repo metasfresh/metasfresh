@@ -549,27 +549,6 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_M_Delivery_Planning_Type = "M_Delivery_Planning_Type";
 
 	/**
-	 * Set Means of Transportation Type.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setMeansOfTransportation (@Nullable java.lang.String MeansOfTransportation);
-
-	/**
-	 * Get Means of Transportation Type.
-	 *
-	 * <br>Type: List
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getMeansOfTransportation();
-
-	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_MeansOfTransportation = new ModelColumn<>(I_M_Delivery_Planning.class, "MeansOfTransportation", null);
-	String COLUMNNAME_MeansOfTransportation = "MeansOfTransportation";
-
-	/**
 	 * Set Forwarder.
 	 *
 	 * <br>Type: Search
@@ -593,6 +572,31 @@ public interface I_M_Delivery_Planning
 
 	ModelColumn<I_M_Delivery_Planning, org.compiere.model.I_M_Forwarder> COLUMN_M_Forwarder_ID = new ModelColumn<>(I_M_Delivery_Planning.class, "M_Forwarder_ID", org.compiere.model.I_M_Forwarder.class);
 	String COLUMNNAME_M_Forwarder_ID = "M_Forwarder_ID";
+
+	/**
+	 * Set Means of Transportation.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_MeansOfTransportation_ID (int M_MeansOfTransportation_ID);
+
+	/**
+	 * Get Means of Transportation.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_MeansOfTransportation_ID();
+
+	@Nullable org.compiere.model.I_M_MeansOfTransportation getM_MeansOfTransportation();
+
+	void setM_MeansOfTransportation(@Nullable org.compiere.model.I_M_MeansOfTransportation M_MeansOfTransportation);
+
+	ModelColumn<I_M_Delivery_Planning, org.compiere.model.I_M_MeansOfTransportation> COLUMN_M_MeansOfTransportation_ID = new ModelColumn<>(I_M_Delivery_Planning.class, "M_MeansOfTransportation_ID", org.compiere.model.I_M_MeansOfTransportation.class);
+	String COLUMNNAME_M_MeansOfTransportation_ID = "M_MeansOfTransportation_ID";
 
 	/**
 	 * Set Product.

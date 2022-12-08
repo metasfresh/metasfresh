@@ -142,7 +142,7 @@ public class DeliveryPlanningService
 				.warehouseId(WarehouseId.ofRepoId(deliveryPlanningRecord.getM_Warehouse_ID()))
 				.deliveryPlanningType(DeliveryPlanningType.ofNullableCode(deliveryPlanningRecord.getM_Delivery_Planning_Type()))
 				.orderStatus(OrderStatus.ofNullableCode(deliveryPlanningRecord.getOrderStatus()))
-				.meansOfTransportation(MeansOfTransportation.ofNullableCode(deliveryPlanningRecord.getMeansOfTransportation()))
+				.meansOfTransportationId(MeansOfTransportationId.ofRepoIdOrNull(deliveryPlanningRecord.getM_MeansOfTransportation_ID()))
 				.isB2B(deliveryPlanningRecord.isB2B())
 				.isProcessed(deliveryPlanningRecord.isProcessed())
 				.isClosed(deliveryPlanningRecord.isClosed())
