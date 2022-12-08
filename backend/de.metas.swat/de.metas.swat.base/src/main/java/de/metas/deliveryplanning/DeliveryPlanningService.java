@@ -184,7 +184,7 @@ public class DeliveryPlanningService
 
 		for (int i = 1; i < additionalLines; i++)
 		{
-			final DeliveryPlanningCreateRequest request = createRequest(deliveryPlanningId, fraction.add(remainder));
+			final DeliveryPlanningCreateRequest request = createRequest(deliveryPlanningId, fraction);
 
 			deliveryPlanningRepository.generateDeliveryPlanning(request);
 		}
@@ -206,7 +206,7 @@ public class DeliveryPlanningService
 
 		final Quantity plannedLoadedQtySum = Quantity.of(deliveryPlanningRepository.computePlannedLoadedQtySum(orderLineId), uom);
 
-		return qtyOrdered.subtract(plannedLoadedQtySum);
+		return Quantity.zero(uom).max(qtyOrdered.subtract(plannedLoadedQtySum));
 	}
 
 	public void deleteForReceiptSchedule(@NonNull final ReceiptScheduleId receiptScheduleId)
@@ -233,5 +233,15 @@ public class DeliveryPlanningService
 	public void reOpenSelectedDeliveryPlannings(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
 		deliveryPlanningRepository.reOpenSelectedDeliveryPlannings(selectedDeliveryPlanningsFilter);
+	}
+
+	public boolean isExistsClosedDeliveryPlannings(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	{
+		return deliveryPlanningRepository.isExistsClosedDeliveryPlannings(selectedDeliveryPlanningsFilter);
+	}
+
+	public boolean isExistsOpenDeliveryPlannings(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	{
+		return deliveryPlanningRepository.isExistsOpenDeliveryPlannings(selectedDeliveryPlanningsFilter);
 	}
 }

@@ -191,4 +191,22 @@ public class DeliveryPlanningRepository
 			save(deliveryPlanningRecord);
 		}
 	}
+
+	public boolean isExistsClosedDeliveryPlannings(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	{
+		return queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
+				.filter(selectedDeliveryPlanningsFilter)
+				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, true)
+				.create()
+				.anyMatch();
+	}
+
+	public boolean isExistsOpenDeliveryPlannings(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	{
+		return queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
+				.filter(selectedDeliveryPlanningsFilter)
+				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, false)
+				.create()
+				.anyMatch();
+	}
 }

@@ -22,13 +22,11 @@
 
 package de.metas.deliveryplanning.process;
 
-import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.process.RunOutOfTrx;
 import lombok.NonNull;
 import org.adempiere.ad.dao.ConstantQueryFilter;
 import org.adempiere.ad.dao.IQueryFilter;
@@ -39,7 +37,6 @@ public class M_Delivery_Planning_ReOpen extends JavaProcess implements IProcessP
 {
 	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
 
-
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
@@ -48,9 +45,9 @@ public class M_Delivery_Planning_ReOpen extends JavaProcess implements IProcessP
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		final boolean isExistsClosedDeliveryPlannings = context.getSelectedModels(I_M_Delivery_Planning.class).stream()
-				.map(deliveryPlanning -> DeliveryPlanningId.ofRepoId(deliveryPlanning.getM_Delivery_Planning_ID()))
-				.anyMatch(receiptSchedule -> deliveryPlanningService.isClosed(receiptSchedule));
+		final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter = context.getQueryFilter(I_M_Delivery_Planning.class);
+
+		final boolean isExistsClosedDeliveryPlannings = deliveryPlanningService.isExistsClosedDeliveryPlannings(selectedDeliveryPlanningsFilter);
 
 		if (!isExistsClosedDeliveryPlannings)
 		{
@@ -60,13 +57,11 @@ public class M_Delivery_Planning_ReOpen extends JavaProcess implements IProcessP
 		return ProcessPreconditionsResolution.accept();
 	}
 
-	@Override
-	@RunOutOfTrx
 	protected String doIt() throws Exception
 	{
 		final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter = getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false));
 
-		deliveryPlanningService.closeSelectedDeliveryPlannings(selectedDeliveryPlanningsFilter);
+		deliveryPlanningService.reOpenSelectedDeliveryPlannings(selectedDeliveryPlanningsFilter);
 
 		return MSG_OK;
 	}

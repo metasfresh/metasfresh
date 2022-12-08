@@ -47,9 +47,9 @@ public class M_Delivery_Planning_Close extends JavaProcess implements IProcessPr
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		final boolean isExistsOpenDeliveryPlannings = context.getSelectedModels(I_M_Delivery_Planning.class).stream()
-				.map(deliveryPlanning -> DeliveryPlanningId.ofRepoId(deliveryPlanning.getM_Delivery_Planning_ID()))
-				.anyMatch(receiptSchedule -> !deliveryPlanningService.isClosed(receiptSchedule));
+		final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter = context.getQueryFilter(I_M_Delivery_Planning.class);
+
+		final boolean isExistsOpenDeliveryPlannings = deliveryPlanningService.isExistsOpenDeliveryPlannings(selectedDeliveryPlanningsFilter);
 
 		if (!isExistsOpenDeliveryPlannings)
 		{
