@@ -34,6 +34,7 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.compiere.model.ModelValidator;
+import org.eevolution.api.PPOrderDocBaseType;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.api.PPOrderPlanningStatus;
 import org.springframework.stereotype.Component;
@@ -89,6 +90,14 @@ public class PP_Order
 	@DocValidate(timings = { ModelValidator.TIMING_BEFORE_COMPLETE })
 	private void checkHUUniqueAttributes(@NonNull final I_PP_Order ppOrder)
 	{
+		// Don't validate the ASI in case of a repair order because the possible duplicate entry in M_HU_UniqueAttribute is for the same HU as the one from the order.
+		// Note: it would be nice to validate that the M_HU_ID is also the same as in M_HU_UniqueAttribute.
+		final PPOrderDocBaseType docBaseType = PPOrderDocBaseType.ofCode(ppOrder.getDocBaseType());
+		if(docBaseType.isRepairOrder())
+		{
+			return;
+		}
+
 		final AttributeSetInstanceId attributeSetInstanceId = AttributeSetInstanceId.ofRepoIdOrNone(ppOrder.getM_AttributeSetInstance_ID());
 		final ProductId productId = ProductId.ofRepoId(ppOrder.getM_Product_ID());
 
