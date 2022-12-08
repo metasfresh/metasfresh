@@ -40,9 +40,11 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -202,11 +204,24 @@ public class DeliveryPlanningService
 			return Quantity.zero(uom);
 		}
 
-		final Quantity plannedLoadedQtySum = deliveryPlanningRepository.retrieveForOrderLine(orderLineId)
-				.map(deliveryPlanning -> Quantity.of(deliveryPlanning.getPlannedLoadedQuantity(), uom))
-				.reduce(Quantity.zero(uom), Quantity::add);
+		Quantity openQty = qtyOrdered;
 
-		return qtyOrdered.subtract(plannedLoadedQtySum).toZeroIfNegative();
+		final Quantity plannedLoadedQtySum = deliveryPlanningRepository.retrieveForOrderLine(orderLineId)
+				.map(DeliveryPlanningService::extractPlannedLoadedQuantity)
+				.reduce(Quantity::add)
+				.orElse(null);
+		if(plannedLoadedQtySum != null && !plannedLoadedQtySum.isZero())
+		{
+			openQty = openQty.subtract(plannedLoadedQtySum);
+		}
+
+		return openQty.toZeroIfNegative();
+	}
+
+	private static Quantity extractPlannedLoadedQuantity(final I_M_Delivery_Planning deliveryPlanning)
+	{
+		final UomId uomId = UomId.ofRepoId(deliveryPlanning.getC_UOM_ID());
+		return Quantitys.create(deliveryPlanning.getPlannedLoadedQuantity(), uomId);
 	}
 
 	public void deleteForReceiptSchedule(@NonNull final ReceiptScheduleId receiptScheduleId)
