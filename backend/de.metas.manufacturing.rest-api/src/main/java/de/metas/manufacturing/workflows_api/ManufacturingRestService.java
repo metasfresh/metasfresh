@@ -122,7 +122,7 @@ public class ManufacturingRestService
 		else if (event.getReceiveFrom() != null)
 		{
 			final JsonManufacturingOrderEvent.ReceiveFrom receiveFrom = event.getReceiveFrom();
-			return manufacturingJobService.receiveGoodsAndAggregateToLU(
+			return manufacturingJobService.receiveGoods(
 					job,
 					receiveFrom.getFinishedGoodsReceiveLineId(),
 					receiveFrom.getAggregateToLU(),

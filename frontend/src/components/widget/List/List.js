@@ -392,6 +392,7 @@ ListWidget.propTypes = {
   //
   // mapDispatchToProps
   dispatch: PropTypes.func.isRequired,
+  compositeWidgetData: PropTypes.array,
 };
 
 const mapStateToProps = (state) => ({
