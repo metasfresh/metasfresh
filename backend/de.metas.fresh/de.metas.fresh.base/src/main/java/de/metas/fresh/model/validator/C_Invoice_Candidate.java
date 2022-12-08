@@ -25,9 +25,6 @@ package de.metas.fresh.model.validator;
 import de.metas.fresh.api.invoicecandidate.IFreshInvoiceCandBL;
 import de.metas.invoicecandidate.api.IInvoiceCandBL;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.tax.api.ITaxDAO;
-import de.metas.tax.api.Tax;
-import de.metas.tax.api.VatCodeId;
 import de.metas.util.Services;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.modelvalidator.annotations.Validator;
@@ -36,7 +33,6 @@ import org.compiere.model.ModelValidator;
 @Validator(I_C_Invoice_Candidate.class)
 public class C_Invoice_Candidate
 {
-	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void setProduzentenabrechnung(final I_C_Invoice_Candidate candidate)
@@ -55,20 +51,5 @@ public class C_Invoice_Candidate
 
 		// set DocType invoice Produzentenabrechnung based on the flag Produzentenabrechnung from c_BPartner
 		Services.get(IFreshInvoiceCandBL.class).updateC_DocTypeInvoice(candidate);
-	}
-
-	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE, ifColumnsChanged = { I_C_Invoice_Candidate.COLUMNNAME_C_VAT_Code_Override_ID })
-	public void updateTaxOverrideFromVatCodeOverride(final I_C_Invoice_Candidate candidate)
-	{
-		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(candidate.getC_VAT_Code_Override_ID());
-		if (vatCodeId == null)
-		{
-			return;
-		}
-		final Tax tax = taxDAO.getTaxFromVatCodeIfManualOrNull(vatCodeId);
-		if (tax != null)
-		{
-			candidate.setC_Tax_Override_ID(tax.getTaxId().getRepoId());
-		}
 	}
 }

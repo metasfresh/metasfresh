@@ -645,3 +645,182 @@ UPDATE AD_Column SET AD_Val_Rule_ID=NULL,Updated=TO_TIMESTAMP('2022-11-25 17:54:
 UPDATE AD_Field SET Filter_Val_Rule_ID=540610,Updated=TO_TIMESTAMP('2022-11-25 17:55:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=708211
 ;
 
+-- UI Element: Bestellung(181,D) -> Bestellposition(293,D) -> main -> 10 -> main.VAT Code
+-- Column: C_OrderLine.C_VAT_Code_ID
+-- 2022-12-06T12:35:58.545Z
+UPDATE AD_UI_Element SET SeqNo=245,Updated=TO_TIMESTAMP('2022-12-06 14:35:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613569
+;
+
+-- Column: C_OrderLine.C_VAT_Code_ID
+-- 2022-12-06T12:37:19.723Z
+UPDATE AD_Column SET AD_Val_Rule_ID=540611,Updated=TO_TIMESTAMP('2022-12-06 14:37:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585131
+;
+
+-- UI Element: Bestellung(181,D) -> Bestellposition(293,D) -> main -> 10 -> main.Section Code
+-- Column: C_OrderLine.M_SectionCode_ID
+-- 2022-12-06T13:10:21.124Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=240,Updated=TO_TIMESTAMP('2022-12-06 15:10:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=611507
+;
+
+-- UI Element: Bestellung(181,D) -> Bestellposition(293,D) -> main -> 10 -> main.Project
+-- Column: C_OrderLine.C_Project_ID
+-- 2022-12-06T13:10:21.130Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=250,Updated=TO_TIMESTAMP('2022-12-06 15:10:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=573743
+;
+
+-- UI Element: Bestellung(181,D) -> Bestellposition(293,D) -> main -> 10 -> main.VAT Code
+-- Column: C_OrderLine.C_VAT_Code_ID
+-- 2022-12-06T13:10:21.135Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=260,Updated=TO_TIMESTAMP('2022-12-06 15:10:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613569
+;
+
+-- Column: C_OrderLine.C_VAT_Code_ID
+-- 2022-12-06T13:11:28.738Z
+UPDATE AD_Column SET AD_Val_Rule_ID=NULL,Updated=TO_TIMESTAMP('2022-12-06 15:11:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585131
+;
+
+-- Field: Bestellung(181,D) -> Bestellposition(293,D) -> VAT Code
+-- Column: C_OrderLine.C_VAT_Code_ID
+-- 2022-12-06T13:11:50.024Z
+UPDATE AD_Field SET Filter_Val_Rule_ID=540611,Updated=TO_TIMESTAMP('2022-12-06 15:11:50','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=708193
+;
+
+-- UI Element: Bestellung(181,D) -> Bestellposition(293,D) -> main -> 10 -> main.VAT Code
+-- Column: C_OrderLine.C_VAT_Code_ID
+-- 2022-12-06T13:41:25.988Z
+UPDATE AD_UI_Element SET SeqNo=260,Updated=TO_TIMESTAMP('2022-12-06 15:41:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613569
+;
+
+-- UI Element: Bestellung(181,D) -> Bestellposition(293,D) -> main -> 10 -> main.VAT Code
+-- Column: C_OrderLine.C_VAT_Code_ID
+-- 2022-12-06T13:45:07.649Z
+UPDATE AD_UI_Element SET AD_Field_ID=708193,Updated=TO_TIMESTAMP('2022-12-06 15:45:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=613569
+;
+
+-- Column: C_Invoice_Candidate.C_VAT_Code_ID
+-- 2022-12-06T16:46:18.335Z
+UPDATE AD_Column SET IsUpdateable='N',Updated=TO_TIMESTAMP('2022-12-06 18:46:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585132
+;
+
+-- Field: Rechnungsdisposition Einkauf(540983,de.metas.invoicecandidate) -> Rechnungskandidaten(543052,de.metas.invoicecandidate) -> VAT Code abw.
+-- Column: C_Invoice_Candidate.C_VAT_Code_Override_ID
+-- 2022-12-06T16:46:48.725Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,585141,708908,0,543052,0,TO_TIMESTAMP('2022-12-06 18:46:48','YYYY-MM-DD HH24:MI:SS'),100,0,'D',0,'Y','Y','Y','N','N','N','N','N','VAT Code abw.',0,540,0,1,1,TO_TIMESTAMP('2022-12-06 18:46:48','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-12-06T16:46:48.727Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=708908 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-12-06T16:46:48.728Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(581738)
+;
+
+-- 2022-12-06T16:46:48.739Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=708908
+;
+
+-- 2022-12-06T16:46:48.740Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(708908)
+;
+
+-- UI Element: Rechnungsdisposition Einkauf(540983,de.metas.invoicecandidate) -> Rechnungskandidaten(543052,de.metas.invoicecandidate) -> advanced edit -> 10 -> advanced edit.VAT Code abw.
+-- Column: C_Invoice_Candidate.C_VAT_Code_Override_ID
+-- 2022-12-06T16:47:11.723Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,708908,0,543052,544370,613911,'F',TO_TIMESTAMP('2022-12-06 18:47:11','YYYY-MM-DD HH24:MI:SS'),100,'Y','Y','N','Y','N','N','N',0,'VAT Code abw.',1040,0,0,TO_TIMESTAMP('2022-12-06 18:47:11','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- Field: Rechnungsdisposition Einkauf(540983,de.metas.invoicecandidate) -> Rechnungskandidaten(543052,de.metas.invoicecandidate) -> VAT Code
+-- Column: C_Invoice_Candidate.C_VAT_Code_ID
+-- 2022-12-06T16:47:51.913Z
+UPDATE AD_Field SET IsReadOnly='Y',Updated=TO_TIMESTAMP('2022-12-06 18:47:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=708196
+;
+
+-- Field: Rechnungsdisposition Einkauf(540983,de.metas.invoicecandidate) -> Rechnungskandidaten(543052,de.metas.invoicecandidate) -> VAT Code abw.
+-- Column: C_Invoice_Candidate.C_VAT_Code_Override_ID
+-- 2022-12-07T11:13:27.271Z
+UPDATE AD_Field SET Filter_Val_Rule_ID=540611,Updated=TO_TIMESTAMP('2022-12-07 13:13:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=708908
+;
+
+-- Field: Rechnungsdisposition Einkauf(540983,de.metas.invoicecandidate) -> Rechnungskandidaten(543052,de.metas.invoicecandidate) -> VAT Code abw.
+-- Column: C_Invoice_Candidate.C_VAT_Code_Override_ID
+-- 2022-12-07T11:39:02.920Z
+UPDATE AD_Field SET Filter_Val_Rule_ID=540028,Updated=TO_TIMESTAMP('2022-12-07 13:39:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=708908
+;
+
+-- Name: VAT_Code_for_SoTrx
+-- 2022-12-07T11:41:11.569Z
+INSERT INTO AD_Val_Rule (AD_Client_ID,AD_Org_ID,AD_Val_Rule_ID,Code,Created,CreatedBy,EntityType,IsActive,Name,Type,Updated,UpdatedBy) VALUES (0,0,540612,'(C_Vat_Code.IsSoTrx =''@IsSoTrx/Y@'' OR C_Vat_Code.IsSoTrx IS NULL) AND C_Vat_Code.AD_Org_ID IN (@AD_Org_ID/-1@, 0)',TO_TIMESTAMP('2022-12-07 13:41:11','YYYY-MM-DD HH24:MI:SS'),100,'U','Y','VAT_Code_for_SoTrx','S',TO_TIMESTAMP('2022-12-07 13:41:11','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- Column: C_OrderLine.C_VAT_Code_ID
+-- 2022-12-07T11:41:28.530Z
+UPDATE AD_Column SET AD_Val_Rule_ID=540612,Updated=TO_TIMESTAMP('2022-12-07 13:41:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585131
+;
+
+-- Column: C_OrderLine.C_VAT_Code_ID
+-- 2022-12-07T11:42:24.066Z
+UPDATE AD_Column SET AD_Val_Rule_ID=NULL,Updated=TO_TIMESTAMP('2022-12-07 13:42:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585131
+;
+
+-- Column: C_Invoice_Candidate.C_VAT_Code_Override_ID
+-- 2022-12-07T11:42:41.978Z
+UPDATE AD_Column SET AD_Val_Rule_ID=540612,Updated=TO_TIMESTAMP('2022-12-07 13:42:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585141
+;
+
+-- Name: VAT_Code_for_SoTrx
+-- 2022-12-07T11:48:30.087Z
+UPDATE AD_Val_Rule SET Code='(C_Vat_Code.IsSoTrx =''@IsSOTrx/N@'' OR C_Vat_Code.IsSoTrx IS NULL) AND C_Vat_Code.AD_Org_ID IN (@AD_Org_ID/-1@, 0)',Updated=TO_TIMESTAMP('2022-12-07 13:48:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Val_Rule_ID=540612
+;
+
+-- Field: Rechnungsdisposition Einkauf(540983,de.metas.invoicecandidate) -> Rechnungskandidaten(543052,de.metas.invoicecandidate) -> VAT Code abw.
+-- Column: C_Invoice_Candidate.C_VAT_Code_Override_ID
+-- 2022-12-07T11:50:41.127Z
+UPDATE AD_Field SET Filter_Val_Rule_ID=540611,Updated=TO_TIMESTAMP('2022-12-07 13:50:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=708908
+;
+
+-- Column: C_InvoiceLine.C_VAT_Code_ID
+-- 2022-12-07T11:53:21.988Z
+UPDATE AD_Column SET AD_Val_Rule_ID=540611,Updated=TO_TIMESTAMP('2022-12-07 13:53:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585136
+;
+
+-- Column: C_InvoiceLine.C_VAT_Code_ID
+-- 2022-12-07T11:53:40.715Z
+UPDATE AD_Column SET AD_Val_Rule_ID=NULL,Updated=TO_TIMESTAMP('2022-12-07 13:53:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585136
+;
+
+-- Field: Eingangsrechnung(183,D) -> Rechnungsposition(291,D) -> VAT Code
+-- Column: C_InvoiceLine.C_VAT_Code_ID
+-- 2022-12-07T11:53:56.247Z
+UPDATE AD_Field SET Filter_Val_Rule_ID=540611,Updated=TO_TIMESTAMP('2022-12-07 13:53:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=708199
+;
+
+-- Field: Eingangsrechnung(183,D) -> Rechnungsposition(291,D) -> VAT Code
+-- Column: C_InvoiceLine.C_VAT_Code_ID
+-- 2022-12-07T11:57:02.741Z
+UPDATE AD_Field SET ReadOnlyLogic='@DocStatus/''''@!=''DR''',Updated=TO_TIMESTAMP('2022-12-07 13:57:02','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=708199
+;
+
+-- Field: Bestellung(181,D) -> Bestellposition(293,D) -> VAT Code
+-- Column: C_OrderLine.C_VAT_Code_ID
+-- 2022-12-07T16:04:27.186Z
+UPDATE AD_Field SET AD_Reference_ID=30, AD_Reference_Value_ID=541071, AD_Val_Rule_ID=540611,Updated=TO_TIMESTAMP('2022-12-07 18:04:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=708193
+;
+
+-- Field: Auftrag(143,D) -> Auftragsposition(187,D) -> VAT Code
+-- Column: C_OrderLine.C_VAT_Code_ID
+-- 2022-12-07T16:05:33.489Z
+UPDATE AD_Field SET AD_Reference_ID=30, AD_Reference_Value_ID=541071, AD_Val_Rule_ID=540610, Filter_Val_Rule_ID=540610,Updated=TO_TIMESTAMP('2022-12-07 18:05:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=708192
+;
+
+-- Field: Rechnung(167,D) -> Rechnungsposition(270,D) -> Packvorschrift
+-- Column: C_InvoiceLine.M_HU_PI_Item_Product_ID
+-- 2022-12-07T16:06:22.347Z
+UPDATE AD_Field SET AD_Reference_ID=30, AD_Reference_Value_ID=541071, AD_Val_Rule_ID=540610, Filter_Val_Rule_ID=540610,Updated=TO_TIMESTAMP('2022-12-07 18:06:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=556180
+;
+
+-- Field: Eingangsrechnung(183,D) -> Rechnungsposition(291,D) -> VAT Code
+-- Column: C_InvoiceLine.C_VAT_Code_ID
+-- 2022-12-07T16:07:22.127Z
+UPDATE AD_Field SET AD_Reference_ID=30, AD_Reference_Value_ID=541071, AD_Val_Rule_ID=540611,Updated=TO_TIMESTAMP('2022-12-07 18:07:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=708199
+;

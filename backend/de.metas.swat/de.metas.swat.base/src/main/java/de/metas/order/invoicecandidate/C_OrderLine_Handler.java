@@ -456,7 +456,8 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
 
 		final TaxId taxId = TaxId.ofRepoId(orderLine.getC_Tax_ID());
-		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(icRecord.getC_VAT_Code_Override_ID());
+		final VatCodeId vatCodeId = CoalesceUtil.coalesce(VatCodeId.ofRepoIdOrNull(icRecord.getC_VAT_Code_Override_ID()),
+				VatCodeId.ofRepoIdOrNull(icRecord.getC_VAT_Code_ID()));
 		TaxId taxIdFromVatCode = null;
 		if (vatCodeId != null)
 		{
