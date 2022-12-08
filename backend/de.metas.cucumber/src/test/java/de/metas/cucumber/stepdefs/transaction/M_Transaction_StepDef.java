@@ -230,7 +230,7 @@ public class M_Transaction_StepDef
 						.append(I_M_Transaction.COLUMNNAME_MovementType).append(" : ").append(transactionRecord.getMovementType()).append(" ; ")
 						.append("\n"));
 
-		logger.error("*** Error while looking for MD_Cockpit_DDOrder_Detail records, see current context: \n" + message);
+		logger.error("*** Error while looking for M_Transaction records, see current context: \n" + message);
 	}
 
 	@Builder
