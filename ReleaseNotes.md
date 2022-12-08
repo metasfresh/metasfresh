@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#14090](https://github.com/metasfresh/metasfresh/issues/14090) update build to postgres 15.1
   * [#14096](https://github.com/metasfresh/metasfresh/pull/14096) Delete delivery plannings on inout schedule deletion 
   * [#13430](https://github.com/metasfresh/metasfresh/issues/13430) github & everhour - Services Invoicing
   * [#14050](https://github.com/metasfresh/metasfresh/issues/14050) Delivery planning: New qty columns
