@@ -42,7 +42,7 @@ import org.springframework.core.io.Resource;
  */
 public class M_HU_Report_QRCode extends JavaProcess
 {
-	private final HUReportService huReportService = HUReportService.get();
+	private final HUReportService huReportService = SpringContextHolder.instance.getBean(HUReportService.class);
 	private final HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
 
 	@Override

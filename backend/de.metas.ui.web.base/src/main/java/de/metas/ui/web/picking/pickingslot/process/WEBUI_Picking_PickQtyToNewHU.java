@@ -34,6 +34,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_UOM;
 
 import java.math.BigDecimal;
@@ -79,6 +80,8 @@ public class WEBUI_Picking_PickQtyToNewHU
 		implements IProcessPrecondition, IProcessDefaultParametersProvider
 {
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
+	private final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
+	private final HUReportService huReportService = SpringContextHolder.instance.getBean(HUReportService.class);
 
 	private static final String PARAM_M_HU_PI_Item_Product_ID = I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID;
 	@Param(parameterName = PARAM_M_HU_PI_Item_Product_ID, mandatory = true)
@@ -163,9 +166,6 @@ public class WEBUI_Picking_PickQtyToNewHU
 
 	protected void printPickingLabel(@NonNull final HuId huId)
 	{
-		final HUReportService huReportService = HUReportService.get();
-		final IHandlingUnitsDAO handlingUnitsRepo = Services.get(IHandlingUnitsDAO.class);
-
 		final I_M_HU hu = handlingUnitsRepo.getById(huId);
 		final HUToReportWrapper huToReport = HUToReportWrapper.of(hu);
 		final boolean onlyIfAutoPrintIsEnabled = true;
@@ -230,7 +230,7 @@ public class WEBUI_Picking_PickQtyToNewHU
 		}
 	}
 
-	private final LocatorId getPickingSlotLocatorId(final PickingSlotRow pickingSlotRow)
+	private LocatorId getPickingSlotLocatorId(final PickingSlotRow pickingSlotRow)
 	{
 		if (pickingSlotRow.getPickingSlotLocatorId() != null)
 		{
@@ -247,12 +247,8 @@ public class WEBUI_Picking_PickQtyToNewHU
 
 	/**
 	 * Creates a new M_HU within the processe's interited trx.
-	 *
-	 * @param itemProduct
-	 * @param locatorId
-	 * @return
 	 */
-	private static final I_M_HU createTU(
+	private static I_M_HU createTU(
 			@NonNull final I_M_HU_PI_Item_Product itemProduct,
 			@NonNull final LocatorId locatorId)
 	{

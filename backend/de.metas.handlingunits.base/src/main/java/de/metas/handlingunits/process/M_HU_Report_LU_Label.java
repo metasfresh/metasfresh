@@ -55,7 +55,7 @@ import org.springframework.core.io.ByteArrayResource;
 
 public class M_HU_Report_LU_Label extends JavaProcess implements IProcessPrecondition
 {
-	private final HUReportService huReportService = HUReportService.get();
+	private final HUReportService huReportService = SpringContextHolder.instance.getBean(HUReportService.class);
 	private final HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
 	private final IADPInstanceDAO adPInstanceDAO = Services.get(IADPInstanceDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
