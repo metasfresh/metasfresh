@@ -43,8 +43,8 @@ import org.compiere.model.I_M_Delivery_Planning;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
-import java.math.BigDecimal;
 import java.util.Iterator;
+import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -109,8 +109,6 @@ public class DeliveryPlanningRepository
 		deliveryPlanningRecord.setTransportDetails(request.getTransportDetails());
 
 		deliveryPlanningRecord.setIsB2B(request.isB2B());
-		deliveryPlanningRecord.setProcessed(request.isProcessed());
-		deliveryPlanningRecord.setIsClosed(request.isClosed());
 
 		deliveryPlanningRecord.setM_MeansOfTransportation_ID(MeansOfTransportationId.toRepoId(request.getMeansOfTransportationId()));
 		deliveryPlanningRecord.setOrderStatus(OrderStatus.toCodeOrNull(request.getOrderStatus()));
@@ -148,17 +146,16 @@ public class DeliveryPlanningRepository
 				.delete();
 	}
 
-	protected BigDecimal computePlannedLoadedQtySum(@NonNull final OrderLineId orderLineId)
+	public Stream<I_M_Delivery_Planning> retrieveForOrderLine(@NonNull final OrderLineId orderLineId)
 	{
 		return queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
 				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_C_OrderLine_ID, orderLineId)
 				.create()
-				.stream()
-				.map(I_M_Delivery_Planning::getPlannedLoadedQuantity)
-				.reduce(BigDecimal.ZERO, BigDecimal::add);
+				.stream();
+
 	}
 
-	protected void closeSelectedDeliveryPlannings(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	public void closeSelectedDeliveryPlannings(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
 		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
 				.filter(selectedDeliveryPlanningsFilter)
@@ -175,7 +172,7 @@ public class DeliveryPlanningRepository
 		}
 	}
 
-	protected void reOpenSelectedDeliveryPlannings(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	public void reOpenSelectedDeliveryPlannings(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
 	{
 		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
 				.filter(selectedDeliveryPlanningsFilter)

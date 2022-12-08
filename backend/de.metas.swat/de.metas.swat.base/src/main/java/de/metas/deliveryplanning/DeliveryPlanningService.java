@@ -144,8 +144,6 @@ public class DeliveryPlanningService
 				.orderStatus(OrderStatus.ofNullableCode(deliveryPlanningRecord.getOrderStatus()))
 				.meansOfTransportationId(MeansOfTransportationId.ofRepoIdOrNull(deliveryPlanningRecord.getM_MeansOfTransportation_ID()))
 				.isB2B(deliveryPlanningRecord.isB2B())
-				.isProcessed(deliveryPlanningRecord.isProcessed())
-				.isClosed(deliveryPlanningRecord.isClosed())
 				.qtyOrdered(Quantity.of(deliveryPlanningRecord.getQtyOrdered(), uomToUse))
 				.qtyTotalOpen(Quantity.of(deliveryPlanningRecord.getQtyTotalOpen(), uomToUse))
 				.actualLoadedQty(Quantity.of(deliveryPlanningRecord.getActualLoadQty(), uomToUse))
@@ -204,9 +202,11 @@ public class DeliveryPlanningService
 			return Quantity.zero(uom);
 		}
 
-		final Quantity plannedLoadedQtySum = Quantity.of(deliveryPlanningRepository.computePlannedLoadedQtySum(orderLineId), uom);
+		final Quantity plannedLoadedQtySum = deliveryPlanningRepository.retrieveForOrderLine(orderLineId)
+				.map(deliveryPlanning -> Quantity.of(deliveryPlanning.getPlannedLoadedQuantity(), uom))
+				.reduce(Quantity.zero(uom), Quantity::add);
 
-		return Quantity.zero(uom).max(qtyOrdered.subtract(plannedLoadedQtySum));
+		return qtyOrdered.subtract(plannedLoadedQtySum).toZeroIfNegative();
 	}
 
 	public void deleteForReceiptSchedule(@NonNull final ReceiptScheduleId receiptScheduleId)
