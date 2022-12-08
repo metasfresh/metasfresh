@@ -1,12 +1,12 @@
 import PropTypes from 'prop-types';
-import React, { PureComponent, createRef } from 'react';
+import React, { createRef, PureComponent } from 'react';
 import classnames from 'classnames';
 import counterpart from 'counterpart';
 
 import {
+  checkIfDateField,
   getSizeClass,
   getTdTitle,
-  checkIfDateField,
 } from '../../utils/tableHelpers';
 import TableCellWidget from './TableCellWidget';
 import WidgetWrapper from '../../containers/WidgetWrapper';
@@ -29,16 +29,13 @@ class TableCell extends PureComponent {
   }
 
   /**
-   * @method widgetTooltipToggle
-   * @summary Alternative method to open dropdown, in case of disabled opening on focus.
-   *
-   * @param {bool|null} value - boolean value used to toggle the tooltipToggled value
+   * @param {bool|null} tooltipOpen - boolean value used to toggle the tooltipToggled value
    */
-  widgetTooltipToggle = (value) => {
-    const curVal = this.state.tooltipToggled;
-    const newVal = value != null ? value : !curVal;
+  widgetTooltipToggle = (tooltipOpen = null) => {
+    const tooltipOpenEffective =
+      tooltipOpen != null ? tooltipOpen : !this.state.tooltipToggled;
 
-    this.setState({ tooltipToggled: newVal });
+    this.setState({ tooltipToggled: tooltipOpenEffective });
   };
 
   /**
@@ -273,11 +270,12 @@ class TableCell extends PureComponent {
             </div>
             {tooltipWidget && !isEdited && (
               <WidgetTooltip
-                widget={tooltipWidget}
-                data={tooltipData}
-                fieldName={item.field}
+                iconName={tooltipWidget.tooltipIconName}
+                text={tooltipData?.value}
                 isToggled={tooltipToggled}
-                onToggle={this.widgetTooltipToggle}
+                onToggle={(tooltipOpen) =>
+                  this.widgetTooltipToggle(tooltipOpen)
+                }
               />
             )}
           </div>

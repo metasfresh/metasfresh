@@ -1099,6 +1099,12 @@ public class HandlingUnitsBL implements IHandlingUnitsBL
 	}
 
 	@Override
+	public I_M_HU_PI_Item getPackingInstructionItemById(final HuPackingInstructionsItemId piItemId)
+	{
+		return handlingUnitsRepo.getPackingInstructionItemById(piItemId);
+	}
+
+	@Override
 	public void setClearanceStatusRecursively(
 			@NonNull final HuId huId,
 			@NonNull final ClearanceStatusInfo clearanceStatusInfo)

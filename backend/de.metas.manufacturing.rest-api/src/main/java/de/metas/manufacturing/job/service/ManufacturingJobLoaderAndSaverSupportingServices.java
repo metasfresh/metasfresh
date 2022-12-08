@@ -33,6 +33,7 @@ import org.eevolution.model.I_PP_Order;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
 import java.time.ZoneId;
+import java.util.Optional;
 
 @Builder
 public class ManufacturingJobLoaderAndSaverSupportingServices
@@ -85,4 +86,13 @@ public class ManufacturingJobLoaderAndSaverSupportingServices
 		return huQRCodeService.getHuIdByQRCode(HUQRCode.fromGlobalQRCodeJsonString(qrCode.getCode()));
 	}
 
+	public Optional<HuId> getHuIdByQRCodeIfExists(@NonNull final HUQRCode qrCode)
+	{
+		return huQRCodeService.getHuIdByQRCodeIfExists(qrCode);
+	}
+
+	public void assignQRCode(@NonNull HUQRCode qrCode, @NonNull HuId huId)
+	{
+		huQRCodeService.assign(qrCode, huId);
+	}
 }

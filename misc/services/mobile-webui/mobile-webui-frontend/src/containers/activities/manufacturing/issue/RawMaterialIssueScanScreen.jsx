@@ -63,7 +63,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId, stepId }) =
   const line = getLineByIdFromActivity(activity, lineId);
   const step = getStepByIdFromActivity(activity, lineId, stepId);
 
-  console.log('RawMaterialIssueScanScreen.getPropsFromState', { line });
+  console.log('RawMaterialIssueScanScreen.getPropsFromState', { line, step });
 
   return {
     huQRCode: step.huQRCode,

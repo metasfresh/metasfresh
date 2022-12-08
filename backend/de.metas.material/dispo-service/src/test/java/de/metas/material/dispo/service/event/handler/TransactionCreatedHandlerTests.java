@@ -221,7 +221,7 @@ public class TransactionCreatedHandlerTests
 	}
 
 	@Test
-	public void createCandidate_unrelated_transaction_with_shipmentSchedule()
+	public void createCandidate_unrelated_transaction_with_shipmentId()
 	{
 		final TransactionCreatedEvent relatedEvent = createTransactionEventBuilderWithQuantity(TEN.negate(), Instant.now())
 				.shipmentId(InOutAndLineId.ofRepoId(1, SHIPMENT_LINE_ID))
@@ -256,7 +256,7 @@ public class TransactionCreatedHandlerTests
 	}
 
 	@Test
-	public void createCandidate_related_transaction_with_shipmentSchedule()
+	public void createCandidate_related_transaction_with_shipmentId()
 	{
 		final Instant date = SystemTime.asInstant();
 
@@ -317,6 +317,8 @@ public class TransactionCreatedHandlerTests
 	private static void assertDemandDetailQuery(final CandidatesQuery query)
 	{
 		assertThat(query).isNotNull();
+		assertThat(query.getBusinessCase()).isEqualTo(CandidateBusinessCase.SHIPMENT);
+		assertThat(query.getDemandDetailsQuery().getInOutLineId()).isEqualTo(SHIPMENT_LINE_ID);
 
 		assertThat(query.getBusinessCase()).isEqualTo(CandidateBusinessCase.SHIPMENT);
 		assertThat(query.getDemandDetailsQuery().getInOutLineId()).isEqualTo(SHIPMENT_LINE_ID);

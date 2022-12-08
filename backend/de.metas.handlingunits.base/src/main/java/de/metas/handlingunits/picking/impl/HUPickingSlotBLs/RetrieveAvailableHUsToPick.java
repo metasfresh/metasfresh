@@ -101,7 +101,7 @@ public class RetrieveAvailableHUsToPick
 		//
 		// Create storage queries from shipment schedules
 		final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
-		final Set<IStorageQuery> storageQueries = new HashSet<>();
+		final ArrayList<IStorageQuery> storageQueries = new ArrayList<>();
 		for (final I_M_ShipmentSchedule shipmentSchedule : shipmentSchedules)
 		{
 			final IStorageQuery storageQuery = shipmentScheduleBL.createStorageQuery(shipmentSchedule, considerAttributes, isExcludeAllReserved);
