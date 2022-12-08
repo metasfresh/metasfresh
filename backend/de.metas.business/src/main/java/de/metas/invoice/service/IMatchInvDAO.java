@@ -40,7 +40,7 @@ import lombok.NonNull;
 
 public interface IMatchInvDAO extends ISingletonService
 {
-	I_M_MatchInv getById(int matchInvId);
+	I_M_MatchInv getById(@NonNull MatchInvId matchInvId);
 
 	/**
 	 * Retrieves the (active) records that reference the given invoice line.

@@ -24,6 +24,7 @@ package de.metas.inoutcandidate.modelvalidator;
 
 import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.deliveryplanning.M_ReceiptSchedule_Create_M_Delivery_Planning;
+import de.metas.inoutcandidate.ReceiptScheduleId;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
 import de.metas.inoutcandidate.api.IReceiptScheduleQtysBL;
 import de.metas.inoutcandidate.model.I_M_ReceiptSchedule;
@@ -199,5 +200,11 @@ public class M_ReceiptSchedule
 			return;
 		}
 		M_ReceiptSchedule_Create_M_Delivery_Planning.scheduleOnTrxCommit(sched);
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
+	public void deleteDeliveryPlannings(@NonNull final I_M_ReceiptSchedule receiptSchedule)
+	{
+		deliveryPlanningService.deleteForReceiptSchedule(ReceiptScheduleId.ofRepoId(receiptSchedule.getM_ReceiptSchedule_ID()));
 	}
 }

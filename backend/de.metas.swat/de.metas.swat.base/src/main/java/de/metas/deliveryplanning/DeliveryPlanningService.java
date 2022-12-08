@@ -134,10 +134,15 @@ public class DeliveryPlanningService
 				.orderStatus(OrderStatus.ofNullableCode(deliveryPlanningRecord.getOrderStatus()))
 				.meansOfTransportation(MeansOfTransportation.ofNullableCode(deliveryPlanningRecord.getMeansOfTransportation()))
 				.isB2B(deliveryPlanningRecord.isB2B())
-				.qtyOredered(Quantity.of(deliveryPlanningRecord.getQtyOrdered(), uomToUse))
+				.qtyOrdered(Quantity.of(deliveryPlanningRecord.getQtyOrdered(), uomToUse))
 				.qtyTotalOpen(Quantity.of(deliveryPlanningRecord.getQtyTotalOpen(), uomToUse))
-				.actualLoadQty(Quantity.of(deliveryPlanningRecord.getActualLoadQty(), uomToUse))
+				.actualLoadedQty(Quantity.of(deliveryPlanningRecord.getActualLoadQty(), uomToUse))
 				.actualDeliveredQty(Quantity.of(deliveryPlanningRecord.getActualDeliveredQty(), uomToUse))
+
+				.plannedLoadedQty(Quantity.of(deliveryPlanningRecord.getPlannedLoadedQuantity(), uomToUse))
+				.plannedDischargeQty(Quantity.of(deliveryPlanningRecord.getPlannedDischargeQuantity(), uomToUse))
+				.actualDischargeQty(Quantity.of(deliveryPlanningRecord.getActualDischargeQuantity(), uomToUse))
+
 				.uom(uomToUse)
 				.plannedLoadingDate(TimeUtil.asInstant(deliveryPlanningRecord.getPlannedLoadingDate()))
 				.actualLoadingDate(TimeUtil.asInstant(deliveryPlanningRecord.getActualLoadingDate()))
@@ -161,5 +166,15 @@ public class DeliveryPlanningService
 			final DeliveryPlanningCreateRequest request = createRequest(deliveryPlanningId);
 			deliveryPlanningRepository.generateDeliveryPlanning(request);
 		}
+	}
+
+	public void deleteForReceiptSchedule(@NonNull final ReceiptScheduleId receiptScheduleId)
+	{
+		deliveryPlanningRepository.deleteForReceiptSchedule(receiptScheduleId);
+	}
+
+	public void deleteForShipmentSchedule(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		deliveryPlanningRepository.deleteForShipmentSchedule(shipmentScheduleId);
 	}
 }

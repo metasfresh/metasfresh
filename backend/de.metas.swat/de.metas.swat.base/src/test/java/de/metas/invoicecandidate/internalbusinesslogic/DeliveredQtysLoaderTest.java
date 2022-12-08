@@ -1,14 +1,16 @@
 package de.metas.invoicecandidate.internalbusinesslogic;
 
-import static java.math.BigDecimal.TEN;
-import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
-import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
-
-import java.math.BigDecimal;
-import java.util.Optional;
-
+import de.metas.inout.model.I_M_InOut;
+import de.metas.invoicecandidate.InvoiceCandidateIds;
+import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.lang.SOTrx;
+import de.metas.product.ProductId;
+import de.metas.uom.CreateUOMConversionRequest;
+import de.metas.uom.UomId;
+import de.metas.uom.impl.UOMTestHelper;
+import de.metas.util.Services;
 import org.adempiere.test.AdempiereTestHelper;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOutLine;
@@ -18,15 +20,13 @@ import org.compiere.util.Env;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import de.metas.inout.model.I_M_InOut;
-import de.metas.invoicecandidate.InvoiceCandidateIds;
-import de.metas.invoicecandidate.model.I_C_InvoiceCandidate_InOutLine;
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.lang.SOTrx;
-import de.metas.product.ProductId;
-import de.metas.uom.CreateUOMConversionRequest;
-import de.metas.uom.UomId;
-import de.metas.uom.impl.UOMTestHelper;
+import java.math.BigDecimal;
+import java.util.Optional;
+
+import static java.math.BigDecimal.TEN;
+import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -69,6 +69,8 @@ class DeliveredQtysLoaderTest
 	private I_C_InvoiceCandidate_InOutLine icIol1;
 	private I_C_InvoiceCandidate_InOutLine icIol2;
 
+	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
+
 	@BeforeEach
 	void beforeEach()
 	{
@@ -86,6 +88,7 @@ class DeliveredQtysLoaderTest
 		final DeliveredData result = DeliveredDataLoader
 				.builder()
 				.soTrx(SOTrx.SALES)
+				.invoiceCandDAO(invoiceCandDAO)
 				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
 				.invoiceCandidateId(InvoiceCandidateIds.ofRecord(icRecord))
 				.icUomId(UomId.ofRepoId(icUomRecord.getC_UOM_ID()))
@@ -127,6 +130,7 @@ class DeliveredQtysLoaderTest
 		final DeliveredDataLoader deliveredQtysLoader = DeliveredDataLoader.builder()
 				.invoiceCandidateId(InvoiceCandidateIds.ofRecord(icRecord))
 				.soTrx(SOTrx.SALES)
+				.invoiceCandDAO(invoiceCandDAO)
 				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
 				.icUomId(UomId.ofRepoId(icUomRecord.getC_UOM_ID()))
 				.stockUomId(UomId.ofRepoId(stockUomRecord.getC_UOM_ID()))
@@ -168,6 +172,7 @@ class DeliveredQtysLoaderTest
 
 		final DeliveredDataLoader deliveredQtysLoader = DeliveredDataLoader.builder()
 				.invoiceCandidateId(InvoiceCandidateIds.ofRecord(icRecord))
+				.invoiceCandDAO(invoiceCandDAO)
 				.soTrx(SOTrx.SALES)
 				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
 				.icUomId(UomId.ofRepoId(icUomRecord.getC_UOM_ID()))
@@ -204,6 +209,7 @@ class DeliveredQtysLoaderTest
 
 		final DeliveredDataLoader deliveredQtysLoader = DeliveredDataLoader.builder()
 				.invoiceCandidateId(InvoiceCandidateIds.ofRecord(icRecord))
+				.invoiceCandDAO(invoiceCandDAO)
 				.soTrx(SOTrx.SALES)
 				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
 				.icUomId(UomId.ofRepoId(icUomRecord.getC_UOM_ID()))
@@ -242,6 +248,7 @@ class DeliveredQtysLoaderTest
 
 		final DeliveredDataLoader deliveredQtysLoader = DeliveredDataLoader.builder()
 				.invoiceCandidateId(InvoiceCandidateIds.ofRecord(icRecord))
+				.invoiceCandDAO(invoiceCandDAO)
 				.soTrx(SOTrx.SALES)
 				.productId(ProductId.ofRepoId(productRecord.getM_Product_ID()))
 				.icUomId(UomId.ofRepoId(icUomRecord.getC_UOM_ID()))

@@ -53,9 +53,8 @@ public class MatchInvDAO implements IMatchInvDAO
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	@Override
-	public I_M_MatchInv getById(final int matchInvId)
+	public I_M_MatchInv getById(@NonNull final MatchInvId matchInvId)
 	{
-		Check.assumeGreaterThanZero(matchInvId, "matchInvId");
 		return InterfaceWrapperHelper.load(matchInvId, I_M_MatchInv.class);
 	}
 

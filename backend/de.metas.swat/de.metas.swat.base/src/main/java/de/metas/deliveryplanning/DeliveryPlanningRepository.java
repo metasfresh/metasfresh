@@ -78,19 +78,28 @@ public class DeliveryPlanningRepository
 		deliveryPlanningRecord.setPlannedLoadingDate(TimeUtil.asTimestamp(request.getPlannedLoadingDate()));
 		deliveryPlanningRecord.setActualLoadingDate(TimeUtil.asTimestamp(request.getActualLoadingDate()));
 
-		final Quantity qtyOrdered = request.getQtyOredered();
+		final Quantity qtyOrdered = request.getQtyOrdered();
 		final Quantity qtyTotalOpen = request.getQtyTotalOpen();
 		final Quantity actualDeliveredQty = request.getActualDeliveredQty();
-		final Quantity actualLoadQty = request.getActualLoadQty();
+		final Quantity actualLoadedQty = request.getActualLoadedQty();
+
+		final Quantity plannedLoadedQty = request.getPlannedLoadedQty();
+		final Quantity plannedDischargeQty = request.getPlannedDischargeQty();
+		final Quantity actualDischargeQty = request.getActualDischargeQty();
 
 		deliveryPlanningRecord.setC_UOM_ID(request.getUom().getC_UOM_ID());
 
 		deliveryPlanningRecord.setQtyOrdered(qtyOrdered.toBigDecimal());
 		deliveryPlanningRecord.setQtyTotalOpen(qtyTotalOpen.toBigDecimal());
 		deliveryPlanningRecord.setActualDeliveredQty( actualDeliveredQty.toBigDecimal());
-		deliveryPlanningRecord.setActualLoadQty(actualLoadQty.toBigDecimal());
+		deliveryPlanningRecord.setActualLoadQty(actualLoadedQty.toBigDecimal());
+
+		deliveryPlanningRecord.setPlannedLoadedQuantity(plannedLoadedQty.toBigDecimal());
+		deliveryPlanningRecord.setPlannedDischargeQuantity(plannedDischargeQty.toBigDecimal());
+		deliveryPlanningRecord.setActualDischargeQuantity(actualDischargeQty.toBigDecimal());
 
 		deliveryPlanningRecord.setM_Forwarder_ID(ForwarderId.toRepoId(request.getForwarderId()));
+
 		deliveryPlanningRecord.setWayBillNo(request.getWayBillNo());
 		deliveryPlanningRecord.setReleaseNo(request.getReleaseNo());
 		deliveryPlanningRecord.setTransportDetails(request.getTransportDetails());
@@ -115,5 +124,21 @@ public class DeliveryPlanningRepository
 				.addNotEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_M_Delivery_Planning_ID, excludeDeliveryPlanningId)
 				.create()
 				.anyMatch();
+	}
+
+	public void deleteForReceiptSchedule(@NonNull final ReceiptScheduleId receiptScheduleId)
+	{
+		queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
+				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_M_ReceiptSchedule_ID, receiptScheduleId)
+				.create()
+				.delete();
+	}
+
+	public void deleteForShipmentSchedule(@NonNull final ShipmentScheduleId shipmentScheduleId)
+	{
+		queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
+				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
+				.create()
+				.delete();
 	}
 }
