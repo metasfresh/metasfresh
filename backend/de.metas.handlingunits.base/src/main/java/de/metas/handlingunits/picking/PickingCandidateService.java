@@ -51,6 +51,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
+import static org.adempiere.ad.service.IADReferenceDAO.*;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -373,7 +375,7 @@ public class PickingCandidateService
 		pickingCandidateRepository.deletePickingCandidates(draftCandidates);
 	}
 
-	public IADReferenceDAO.ADRefList getQtyRejectedReasons()
+	public ADRefList getQtyRejectedReasons()
 	{
 		return adReferenceDAO.getRefListById(QtyRejectedReasonCode.REFERENCE_ID);
 	}

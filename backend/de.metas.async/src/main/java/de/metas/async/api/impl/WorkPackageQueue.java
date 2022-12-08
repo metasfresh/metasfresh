@@ -28,10 +28,12 @@ import de.metas.async.Async_Constants;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageBL;
+import de.metas.async.api.IWorkPackageBlockBuilder;
 import de.metas.async.api.IWorkPackageBuilder;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.api.IWorkpackageProcessorContextFactory;
 import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_Element;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_WorkPackage;
@@ -309,6 +311,27 @@ public class WorkPackageQueue implements IWorkPackageQueue
 			logger.warn("Got exception while unlocking " + workPackage, e);
 			return false;
 		}
+	}
+
+	@Override
+	public IWorkPackageBlockBuilder newBlock()
+	{
+		if (enquingPackageProcessorId.getRepoId() <= 0)
+		{
+			throw new IllegalStateException("Enquing not allowed");
+		}
+
+		return new WorkPackageBlockBuilder(this, dao)
+				.setC_Queue_PackageProcessor_ID(enquingPackageProcessorId.getRepoId())
+				.setContext(ctx);
+	}
+
+	@Override
+	public I_C_Queue_Block enqueueBlock(final Properties ctx)
+	{
+		return newBlock()
+				.setContext(ctx)
+				.build();
 	}
 
 	@Override
@@ -743,7 +766,7 @@ public class WorkPackageQueue implements IWorkPackageQueue
 			throw new IllegalStateException("Enquing not allowed");
 		}
 
-		return new WorkPackageBuilder(context, this, enquingPackageProcessorId);
+		return new WorkPackageBuilder(context, this, enquingPackageProcessorId, new WorkPackageBlockBuilder(this, dao));
 	}
 
 	@NonNull

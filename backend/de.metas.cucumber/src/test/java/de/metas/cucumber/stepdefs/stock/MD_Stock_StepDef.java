@@ -32,7 +32,9 @@ import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.trx.api.ITrx;
 import org.compiere.model.I_M_Product;
+import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;

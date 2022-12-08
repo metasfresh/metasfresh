@@ -197,9 +197,5 @@ public interface IPricingResult
 
 	void setPackingMaterialId(HUPIItemProductId packingMaterialId);
 
-	Percent getTradedCommissionPercent();
-
-	void setPackingMaterialId(HUPIItemProductId packingMaterialId);
-
 	HUPIItemProductId getPackingMaterialId();
 }

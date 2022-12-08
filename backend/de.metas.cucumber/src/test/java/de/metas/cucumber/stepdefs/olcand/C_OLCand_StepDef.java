@@ -28,6 +28,7 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.ImmutableList;
+import de.metas.common.ordercandidates.v2.request.JsonOLCandProcessRequest;
 import de.metas.common.ordercandidates.v2.response.JsonGenerateOrdersResponse;
 import de.metas.common.ordercandidates.v2.response.JsonOLCand;
 import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
@@ -58,6 +59,7 @@ import de.metas.rest_api.v2.ordercandidates.impl.JsonProcessCompositeResponse;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
+import io.cucumber.java.en.And;
 import io.cucumber.java.en.Then;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -74,6 +76,7 @@ import org.compiere.model.I_M_InOut;
 import org.compiere.model.I_M_Product;
 import org.slf4j.Logger;
 
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -436,11 +439,11 @@ public class C_OLCand_StepDef
 
 		if (orderIdentifier == null)
 		{
-			assertThat(compositeResponse.getOlCandProcessResponse()).isEqualTo(null);
+			assertThat(compositeResponse.getOrderResponse()).isEqualTo(null);
 		}
 		else
 		{
-			processOrderResponse(compositeResponse.getOlCandProcessResponse(), orderIdentifier);
+			processOrderResponse(compositeResponse.getOrderResponse(), orderIdentifier);
 		}
 
 		if (shipmentIdentifier == null)
@@ -485,6 +488,12 @@ public class C_OLCand_StepDef
 						.append("\n"));
 
 		logger.error("*** Error while processing C_OLCand records, see current context: \n" + message);
+	}
+
+	@NonNull
+	private List<String> splitIdentifiers(@NonNull final String identifiers)
+	{
+		return Arrays.asList(identifiers.split(","));
 	}
 
 	@NonNull

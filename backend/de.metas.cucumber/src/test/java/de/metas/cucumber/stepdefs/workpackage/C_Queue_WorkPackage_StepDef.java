@@ -51,8 +51,6 @@ public class C_Queue_WorkPackage_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
 
-	@NonNull
-	private final C_Queue_Processor_StepDefData processorTable;
 	private final C_Queue_WorkPackage_StepDefData workPackageTable;
 	private final C_Queue_Element_StepDefData queueElementTable;
 	private final C_OLCand_StepDefData candidateTable;
@@ -145,7 +143,6 @@ public class C_Queue_WorkPackage_StepDef
 				.addEqualsFilter(I_C_Queue_Element.COLUMNNAME_AD_Table_ID, reference.getAD_Table_ID())
 				.addEqualsFilter(I_C_Queue_Element.COLUMNNAME_Record_ID, reference.getRecord_ID())
 				.andCollect(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID, I_C_Queue_WorkPackage.class)
-				.addInSubQueryFilter(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_Block_ID, I_C_Queue_Block.COLUMNNAME_C_Queue_Block_ID, queueBlockWithGivenPackageProcessorQuery)
 				.orderByDescending(I_C_Queue_WorkPackage.COLUMNNAME_Created)
 				.create()
 				.firstOptional(I_C_Queue_WorkPackage.class)

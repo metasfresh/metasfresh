@@ -410,7 +410,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 			for (final I_C_InvoiceCandidate_InOutLine iciol : iciols)
 			{
 				final InOutLineId inOutLineId = InOutLineId.ofRepoId(iciol.getM_InOutLine_ID());
-				final org.compiere.model.I_M_InOutLine inOutLine = inOutDAO.getLineById(inOutLineId);
+				final org.compiere.model.I_M_InOutLine inOutLine = inOutDAO.getLineByIdInTrx(inOutLineId);
 
 				Services.get(IInvoiceCandBL.class).updateICIOLAssociationFromIOL(iciol, inOutLine);
 			}

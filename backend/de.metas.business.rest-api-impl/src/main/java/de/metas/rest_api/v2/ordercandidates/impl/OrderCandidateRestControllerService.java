@@ -38,7 +38,12 @@ import de.metas.common.ordercandidates.v2.response.JsonOLCandCreateBulkResponse;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.impex.InputDataSourceId;
+import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutId;
+import de.metas.invoice.InvoiceId;
+import de.metas.invoice.InvoiceService;
 import de.metas.monitoring.adapter.PerformanceMonitoringService;
+import de.metas.order.IOrderBL;
 import de.metas.order.OrderId;
 import de.metas.ordercandidate.api.IOLCandDAO;
 import de.metas.ordercandidate.api.OLCand;
@@ -46,9 +51,11 @@ import de.metas.ordercandidate.api.OLCandCreateRequest;
 import de.metas.ordercandidate.api.OLCandId;
 import de.metas.ordercandidate.api.OLCandQuery;
 import de.metas.ordercandidate.api.OLCandRepository;
+import de.metas.ordercandidate.api.OLCandValidatorService;
 import de.metas.organization.OrgId;
 import de.metas.process.PInstanceId;
 import de.metas.rest_api.utils.IdentifierString;
+import de.metas.rest_api.v2.invoice.impl.JSONInvoiceInfoResponse;
 import de.metas.rest_api.v2.invoice.impl.JsonInvoiceService;
 import de.metas.rest_api.v2.shipping.JsonShipmentService;
 import de.metas.salesorder.candidate.ProcessOLCandsRequest;
@@ -61,7 +68,9 @@ import de.metas.vertical.healthcare.alberta.order.AlbertaOrderLineInfo;
 import de.metas.vertical.healthcare.alberta.order.service.AlbertaOrderService;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
+import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.DB;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
@@ -71,7 +80,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_OLCand_Processing;
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_ProcessOLCands;
 import static de.metas.common.util.CoalesceUtil.coalesce;
 
@@ -82,6 +90,8 @@ public class OrderCandidateRestControllerService
 
 	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IInOutDAO shipmentDAO = Services.get(IInOutDAO.class);
 
 	private final JsonConverters jsonConverters;
 	private final OLCandRepository olCandRepo;
@@ -92,6 +102,8 @@ public class OrderCandidateRestControllerService
 	private final JsonShipmentService jsonShipmentService;
 	private final ProcessOLCandsWorkpackageEnqueuer processOLCandsWorkpackageEnqueuer;
 	private final AsyncBatchService asyncBatchService;
+	private final OrderService orderService;
+	private final InvoiceService invoiceService;
 
 	public OrderCandidateRestControllerService(
 			@NonNull final JsonConverters jsonConverters,
@@ -102,7 +114,9 @@ public class OrderCandidateRestControllerService
 			@NonNull final JsonShipmentService jsonShipmentService,
 			@NonNull final JsonInvoiceService jsonInvoiceService,
 			@NonNull final ProcessOLCandsWorkpackageEnqueuer processOLCandsWorkpackageEnqueuer,
-			@NonNull final AsyncBatchService asyncBatchService)
+			@NonNull final AsyncBatchService asyncBatchService,
+			@NonNull final OrderService orderService,
+			@NonNull final InvoiceService invoiceService)
 	{
 		this.jsonConverters = jsonConverters;
 		this.olCandRepo = olCandRepo;
@@ -113,6 +127,8 @@ public class OrderCandidateRestControllerService
 		this.jsonInvoiceService = jsonInvoiceService;
 		this.processOLCandsWorkpackageEnqueuer = processOLCandsWorkpackageEnqueuer;
 		this.asyncBatchService = asyncBatchService;
+		this.orderService = orderService;
+		this.invoiceService = invoiceService;
 	}
 
 	public JsonOLCandCreateBulkResponse creatOrderLineCandidatesBulk(
@@ -213,31 +229,35 @@ public class OrderCandidateRestControllerService
 	}
 
 	@NonNull
-	public JsonOLCandClearingResponse clearOLCandidates(@NonNull final JsonOLCandClearRequest clearRequest)
-	{
-		return clearOLCandidates(clearRequest.getInputDataSourceName(), clearRequest.getExternalHeaderId(), null);
-	}
-
-	@NonNull
 	public JsonProcessCompositeResponse processOLCands(@NonNull final JsonOLCandProcessRequest request)
 	{
 		final Set<OLCandId> olCandIds = getOLCands(IdentifierString.of(request.getInputDataSourceName()), request.getExternalHeaderId());
 
 		final Map<AsyncBatchId, List<OLCandId>> asyncBatchId2OLCandIds = orderService.getAsyncBathId2OLCandIds(olCandIds);
 
-		final Set<OrderId> orderIds = olCandDAO.getOrderIdsByOLCandIds(validOlCandIds);
-
-		if (orderIds.isEmpty())
-		{
-			return responseBuilder.build();
-		}
+		final Set<OrderId> orderIds = orderService.generateOrderSync(asyncBatchId2OLCandIds);
 
 		final JsonProcessCompositeResponse.JsonProcessCompositeResponseBuilder responseBuilder = JsonProcessCompositeResponse.builder()
 				.orderResponse(buildGenerateOrdersResponse(orderIds));
 
-		if (CoalesceUtil.coalesceNotNull(request.getShip(), false))
+		if (request.getShip())
 		{
-			responseBuilder.shipmentResponse(jsonShipmentService.buildCreateShipmentResponseFromOLCands(validOlCandIds));
+			final Set<InOutId> createdShipmentIds = jsonShipmentService.generateShipmentsForOLCands(asyncBatchId2OLCandIds);
+
+			responseBuilder.shipmentResponse(jsonShipmentService.buildCreateShipmentResponse(createdShipmentIds));
+		}
+
+		if (request.getInvoice())
+		{
+			final List<I_M_InOutLine> shipmentLines = shipmentDAO.retrieveShipmentLinesForOrderId(orderIds);
+
+			final Set<InvoiceId> invoiceIds = invoiceService.generateInvoicesFromShipmentLines(shipmentLines);
+
+			final List<JSONInvoiceInfoResponse> invoiceInfoResponses = invoiceIds.stream()
+					.map(invoiceId -> jsonInvoiceService.getInvoiceInfo(invoiceId, Env.getAD_Language()))
+					.collect(ImmutableList.toImmutableList());
+
+			responseBuilder.invoiceInfoResponse(invoiceInfoResponses);
 		}
 
 		asyncBatchId2OLCandIds.keySet().forEach(asyncBatchBL::updateProcessedFromMilestones);
@@ -245,11 +265,6 @@ public class OrderCandidateRestControllerService
 		if (Boolean.TRUE.equals(request.getCloseOrder()))
 		{
 			orderIds.forEach(orderBL::closeOrder);
-		}
-
-		if (CoalesceUtil.coalesceNotNull(request.getInvoice(), false))
-		{
-			responseBuilder.invoiceInfoResponse(jsonInvoiceService.buildInvoiceInfoResponseFromOrderIds(orderIds));
 		}
 
 		return responseBuilder.build();

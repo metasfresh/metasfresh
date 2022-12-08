@@ -25,8 +25,6 @@ package de.metas.camel.externalsystems.shopware6.order;
 import de.metas.camel.externalsystems.common.CamelRouteUtil;
 import de.metas.camel.externalsystems.common.ExternalSystemCamelConstants;
 import de.metas.camel.externalsystems.common.ProcessLogger;
-import de.metas.camel.externalsystems.shopware6.order.processor.ClearOrdersProcessor;
-import de.metas.camel.externalsystems.shopware6.CamelRouteUtil;
 import de.metas.camel.externalsystems.shopware6.order.processor.CreateBPartnerUpsertReqProcessor;
 import de.metas.camel.externalsystems.shopware6.order.processor.GetOrdersProcessor;
 import de.metas.camel.externalsystems.shopware6.order.processor.OLCandRequestProcessor;
@@ -134,7 +132,7 @@ public class GetOrdersRouteBuilder extends RouteBuilder
 					.otherwise()
 						.split(body())
 							.log(LoggingLevel.DEBUG, "Calling metasfresh-api to process OLCand: ${body}")
-							.to(direct(ExternalSystemCamelConstants.MF_PROCESS_OL_CANDIDATES_ROUTE_ID))
+							.to(direct(ExternalSystemCamelConstants.MF_CLEAR_OL_CANDIDATES_ROUTE_ID))
 						.end()
 					.end()
 				.endChoice();

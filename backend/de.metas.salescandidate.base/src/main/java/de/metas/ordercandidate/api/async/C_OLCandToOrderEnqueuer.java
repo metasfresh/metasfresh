@@ -83,6 +83,7 @@ public class C_OLCandToOrderEnqueuer
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ILockManager lockManager = Services.get(ILockManager.class);
 	private final IWorkPackageQueueFactory workPackageQueueFactory = Services.get(IWorkPackageQueueFactory.class);
+	private final IAsyncBatchDAO asyncBatchDAO = Services.get(IAsyncBatchDAO.class);
 
 	private final OLCandProcessorRepository olCandProcessorRepo;
 	private final OLCandProcessingHelper olCandProcessingHelper;
@@ -252,7 +253,7 @@ public class C_OLCandToOrderEnqueuer
 				.parameter(OLCandProcessor_ID, C_OlCandProcessor_ID_Default);
 
 		Optional.ofNullable(asyncBatchId)
-				.map(asyncBatchDAO::retrieveAsyncBatchRecord)
+				.map(asyncBatchDAO::retrieveAsyncBatchRecordOutOfTrx)
 				.ifPresent(workpackageBuilder::setC_Async_Batch);
 
 		workpackageBuilder.setElementsLocker(splitLock(mainLock));

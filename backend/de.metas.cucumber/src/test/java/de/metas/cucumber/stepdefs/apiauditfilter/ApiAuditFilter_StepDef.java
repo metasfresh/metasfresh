@@ -31,13 +31,27 @@ import de.metas.common.util.EmptyUtil;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.util.web.audit.ApiRequestReplayService;
+import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import io.cucumber.java.en.When;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_AD_Issue;
+import org.compiere.model.I_AD_User;
+import org.compiere.model.I_API_Audit_Config;
+import org.compiere.model.I_API_Request_Audit;
+import org.compiere.model.I_API_Request_Audit_Log;
+import org.compiere.model.I_API_Response_Audit;
 import org.compiere.util.DB;
 
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+
+import static de.metas.bpartner.api.impl.BPRelationDAO.queryBL;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
 
 public class ApiAuditFilter_StepDef
@@ -74,14 +88,12 @@ public class ApiAuditFilter_StepDef
 			final int seqNo = DataTableUtil.extractIntForColumnName(tableRow, "SeqNo");
 			final String method = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT.Method");
 			final String pathPrefix = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT.PathPrefix");
-			final boolean isInvokerWaitsForResult = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "IsInvokerWaitsForResult", false);
 
 			final I_API_Audit_Config auditConfig = InterfaceWrapperHelper.newInstance(I_API_Audit_Config.class);
 
 			auditConfig.setSeqNo(seqNo);
 			auditConfig.setMethod(method);
 			auditConfig.setPathPrefix(pathPrefix);
-			auditConfig.setIsInvokerWaitsForResult(isInvokerWaitsForResult);
 
 			saveRecord(auditConfig);
 

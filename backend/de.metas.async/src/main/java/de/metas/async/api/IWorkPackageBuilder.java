@@ -69,6 +69,13 @@ public interface IWorkPackageBuilder
 	void discard();
 
 	/**
+	 * Only return the (parent) block builder. Don't do anything else (no sideeffects)
+	 *
+	 * @return parent builder
+	 */
+	IWorkPackageBlockBuilder end();
+
+	/**
 	 * Creates or returns the existing workpackage parameters builder of this package builder.
 	 * <p>
 	 * NOTE: the {@link IWorkPackageParamsBuilder} will trigger the creation of {@link I_C_Queue_WorkPackage}.

@@ -23,6 +23,7 @@ import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
+import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import lombok.Value;
@@ -80,6 +81,8 @@ public class DeliveredDataLoader
 
 	@NonNull
 	IInvoiceCandDAO invoiceCandDAO;
+	@NonNull
+	IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
 
 	/**
 	 * This can be set from the {@code C_Invoice_Candidate}'s current qtyDelivered and
@@ -112,6 +115,7 @@ public class DeliveredDataLoader
 		this.soTrx = soTrx;
 		this.negateQtys = negateQtys;
 		this.deliveryQualityDiscount = deliveryQualityDiscount;
+		this.invoiceCandDAO = invoiceCandDAO;
 		this.defaultQtyDelivered = coalesce(defaultQtyDelivered, StockQtyAndUOMQtys.createZero(productId, icUomId));
 	}
 
@@ -301,6 +305,56 @@ public class DeliveredDataLoader
 			final DeliveredQtyItemBuilder deliveredQtyItem = DeliveredQtyItem.builder()
 					.inDispute(inoutLine.isInDispute())
 					.completedOrClosed(inoutCompletedOrClosed);
+
+			final Quantity qtyInStockUom = Quantitys
+					.create(
+							icIolAssociationRecord.getQtyDelivered(),
+							stockUomId)
+					.negateIf(negateQtys);
+			deliveredQtyItem.qtyInStockUom(qtyInStockUom);
+
+			final UomId deliveryUomId = UomId.optionalOfRepoId(icIolAssociationRecord.getC_UOM_ID()).orElse(stockUomId);
+			final Quantity qtyNominal = Quantitys
+					.create(
+							icIolAssociationRecord.getQtyDeliveredInUOM_Nominal(),
+							deliveryUomId)
+					.negateIf(negateQtys);
+			deliveredQtyItem.qtyNominal(qtyNominal);
+
+			if (!isNull(icIolAssociationRecord, I_C_InvoiceCandidate_InOutLine.COLUMNNAME_QtyDeliveredInUOM_Catch))
+			{
+				final Quantity qtyCatch = Quantitys
+						.create(
+								icIolAssociationRecord.getQtyDeliveredInUOM_Catch(),
+								deliveryUomId)
+						.negateIf(negateQtys);
+				deliveredQtyItem.qtyCatch(qtyCatch);
+			}
+
+			if (!isNull(icIolAssociationRecord, I_C_InvoiceCandidate_InOutLine.COLUMNNAME_QtyDeliveredInUOM_Override))
+			{
+				final Quantity qtyOverride = Quantitys
+						.create(
+								icIolAssociationRecord.getQtyDeliveredInUOM_Override(),
+								deliveryUomId)
+						.negateIf(negateQtys);
+				deliveredQtyItem.qtyOverride(qtyOverride);
+			}
+			result.add(deliveredQtyItem.build());
+		}
+		return result.build();
+	}
+
+	private ImmutableList<DeliveredQtyItem> loadshippedQtyItems(@NonNull final List<I_C_InvoiceCandidate_InOutLine> icIolAssociationRecords)
+	{
+		final Builder<DeliveredQtyItem> result = ImmutableList.builder();
+
+		for (final I_C_InvoiceCandidate_InOutLine icIolAssociationRecord : icIolAssociationRecords)
+		{
+			final I_M_InOutLine inoutLine = create(icIolAssociationRecord.getM_InOutLine(), I_M_InOutLine.class);
+
+			final DeliveredQtyItemBuilder deliveredQtyItem = DeliveredQtyItem.builder()
+					.inDispute(inoutLine.isInDispute());
 
 			final Quantity qtyInStockUom = Quantitys
 					.create(

@@ -35,6 +35,7 @@ import de.metas.async.api.IAsyncBatchDAO;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.model.I_C_Async_Batch_Milestone;
 import de.metas.async.model.I_C_Async_Batch_Type;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.model.I_C_Queue_WorkPackage_Notified;
@@ -366,6 +367,23 @@ public class AsyncBatchBL implements IAsyncBatchBL
 
 		final Optional<Integer> asyncBatchId = InterfaceWrapperHelper.getValueOptional(modelRecord, I_C_Async_Batch.COLUMNNAME_C_Async_Batch_ID);
 		return asyncBatchId.map(AsyncBatchId::ofRepoIdOrNull);
+	}
+
+	public void updateProcessedFromMilestones(@NonNull final AsyncBatchId asyncBatchId)
+	{
+		final boolean allMilestonesAreProcessed = asyncBatchDAO.retrieveMilestonesForAsyncBatchId(asyncBatchId)
+				.stream()
+				.allMatch(I_C_Async_Batch_Milestone::isProcessed);
+
+		if (allMilestonesAreProcessed)
+		{
+			final I_C_Async_Batch asyncBatch = asyncBatchDAO.retrieveAsyncBatchRecord(asyncBatchId);
+
+			asyncBatch.setProcessed(true);
+			asyncBatch.setIsProcessing(false);
+
+			queueDAO.save(asyncBatch);
+		}
 	}
 
 	@Override

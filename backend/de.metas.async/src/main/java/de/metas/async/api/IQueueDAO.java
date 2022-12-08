@@ -24,6 +24,7 @@ package de.metas.async.api;
 
 import de.metas.async.AsyncBatchId;
 import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_Element;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_Processor;
@@ -49,6 +50,8 @@ import java.util.Set;
 public interface IQueueDAO extends ISingletonService
 {
 	void save(I_C_Async_Batch asyncBatch);
+
+	void save(I_C_Queue_Block block);
 
 	void save(I_C_Queue_WorkPackage workpackage);
 

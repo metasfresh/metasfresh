@@ -137,9 +137,6 @@ final class PricingResult implements IPricingResult
 	@Nullable
 	private HUPIItemProductId packingMaterialId;
 
-	@Nullable
-	private HUPIItemProductId packingMaterialId;
-
 	@Builder
 	private PricingResult(
 			@NonNull final LocalDate priceDate,

@@ -28,6 +28,7 @@ import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IQueueDAO;
 import de.metas.async.exceptions.PackageItemNotAvailableException;
 import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_Element;
 import de.metas.async.model.I_C_Queue_PackageProcessor;
 import de.metas.async.model.I_C_Queue_Processor;
@@ -233,6 +234,12 @@ public abstract class AbstractQueueDAO implements IQueueDAO
 	public void save(final I_C_Async_Batch asyncBatch)
 	{
 		InterfaceWrapperHelper.save(asyncBatch);
+	}
+
+	@Override
+	public void save(final I_C_Queue_Block block)
+	{
+		InterfaceWrapperHelper.save(block);
 	}
 
 	@Override

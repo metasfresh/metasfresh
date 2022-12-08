@@ -1,10 +1,12 @@
 package de.metas.async.api.impl;
 
 import de.metas.async.AsyncBatchId;
+import de.metas.async.api.IWorkPackageBlockBuilder;
 import de.metas.async.api.IWorkPackageBuilder;
 import de.metas.async.api.IWorkPackageParamsBuilder;
 import de.metas.async.api.IWorkPackageQueue;
 import de.metas.async.model.I_C_Async_Batch;
+import de.metas.async.model.I_C_Queue_Block;
 import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.async.processor.QueuePackageProcessorId;
 import de.metas.async.spi.IWorkpackagePrioStrategy;
@@ -57,6 +59,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 /* package */class WorkPackageBuilder implements IWorkPackageBuilder
 {
 	// Parameters
+	private final WorkPackageBlockBuilder _blockBuilder;
 	private final Properties _ctx;
 	@NonNull
 	private final QueuePackageProcessorId _queuePackageProcessorId;
@@ -83,11 +86,19 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 	/* package */ WorkPackageBuilder(
 			final Properties _ctx,
 			final IWorkPackageQueue _workPackageQueue,
-			@NonNull final QueuePackageProcessorId _queuePackageProcessorId)
+			@NonNull final QueuePackageProcessorId _queuePackageProcessorId,
+			@NonNull final WorkPackageBlockBuilder _blockBuilder)
 	{
 		this._ctx = _ctx;
 		this._queuePackageProcessorId = _queuePackageProcessorId;
 		this._workPackageQueue = _workPackageQueue;
+		this._blockBuilder = _blockBuilder;
+	}
+
+	@Override
+	public IWorkPackageBlockBuilder end()
+	{
+		return _blockBuilder;
 	}
 
 	@Override
@@ -118,6 +129,11 @@ import static org.adempiere.model.InterfaceWrapperHelper.setTrxName;
 		{
 			workpackageQueue.enqueueElement(workpackage, element.getAD_Table_ID(), element.getRecord_ID());
 		}
+	}
+
+	private I_C_Queue_Block getC_Queue_Block()
+	{
+		return _blockBuilder.getCreateBlock();
 	}
 
 	@NonNull

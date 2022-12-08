@@ -116,6 +116,8 @@ public interface IAsyncBatchBL extends ISingletonService
 
 	I_C_Async_Batch getAsyncBatchById(AsyncBatchId asyncBatchId);
 
+	void updateProcessedFromMilestones(AsyncBatchId asyncBatchId);
+
 	AsyncBatchId newAsyncBatch(String asyncBatchType);
 
 	Optional<String> getAsyncBatchTypeInternalName(@NonNull final I_C_Async_Batch asyncBatch);

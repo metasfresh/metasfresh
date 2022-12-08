@@ -1,8 +1,8 @@
 /*
  * #%L
- * de-metas-salesorder
+ * de.metas.business.rest-api-impl
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,32 +20,28 @@
  * #L%
  */
 
-package de.metas.salesorder.service;
+package de.metas.rest_api.v2.ordercandidates.impl;
 
-import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
-import de.metas.async.service.AsyncBatchService;
-import de.metas.inout.ShipmentScheduleId;
-import de.metas.inoutcandidate.api.IShipmentSchedulePA;
-import de.metas.inoutcandidate.async.CreateMissingShipmentSchedulesWorkpackageProcessor;
-import de.metas.logging.LogManager;
-import de.metas.order.IOrderDAO;
+import de.metas.async.asyncbatchmilestone.AsyncBatchMilestone;
+import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneId;
+import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneObserver;
+import de.metas.async.asyncbatchmilestone.AsyncBatchMilestoneService;
+import de.metas.async.asyncbatchmilestone.MilestoneName;
 import de.metas.order.OrderId;
 import de.metas.ordercandidate.api.IOLCandDAO;
 import de.metas.ordercandidate.api.OLCandId;
 import de.metas.ordercandidate.api.async.C_OLCandToOrderEnqueuer;
 import de.metas.ordercandidate.api.async.OlCandEnqueueResult;
 import de.metas.ordercandidate.model.I_C_OLCand;
-import de.metas.util.Loggables;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
-import org.adempiere.util.lang.ImmutablePair;
-import org.compiere.model.I_C_Order;
-import org.slf4j.Logger;
+import org.adempiere.ad.trx.api.ITrxManager;
+import org.compiere.util.Env;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -54,32 +50,27 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Supplier;
 
-import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_EnqueueScheduleForOrder;
 import static de.metas.async.Async_Constants.C_Async_Batch_InternalName_OLCand_Processing;
-import static de.metas.async.Async_Constants.C_OlCandProcessor_ID_Default;
-import static org.compiere.model.X_C_Invoice.DOCSTATUS_Completed;
 
 @Service
 public class OrderService
 {
-	private static final Logger logger = LogManager.getLogger(OrderService.class);
-
-	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
-	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 	private final IOLCandDAO olCandDAO = Services.get(IOLCandDAO.class);
-	private final IShipmentSchedulePA shipmentSchedulePA = Services.get(IShipmentSchedulePA.class);
+	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IAsyncBatchBL asyncBatchBL = Services.get(IAsyncBatchBL.class);
 
-	private final AsyncBatchService asyncBatchService;
-
+	private final AsyncBatchMilestoneService asyncBatchMilestoneService;
+	private final AsyncBatchMilestoneObserver asyncBatchMilestoneObserver;
 	private final C_OLCandToOrderEnqueuer olCandToOrderEnqueuer;
 
 	public OrderService(
-			@NonNull final AsyncBatchService asyncBatchService,
+			@NonNull final AsyncBatchMilestoneService asyncBatchMilestoneService,
+			@NonNull final AsyncBatchMilestoneObserver asyncBatchMilestoneObserver,
 			@NonNull final C_OLCandToOrderEnqueuer olCandToOrderEnqueuer)
 	{
-		this.asyncBatchService = asyncBatchService;
+		this.asyncBatchMilestoneService = asyncBatchMilestoneService;
+		this.asyncBatchMilestoneObserver = asyncBatchMilestoneObserver;
 		this.olCandToOrderEnqueuer = olCandToOrderEnqueuer;
 	}
 
@@ -91,10 +82,7 @@ public class OrderService
 			return ImmutableSet.of();
 		}
 
-		for (final AsyncBatchId asyncBatchId : asyncBatchId2OLCandIds.keySet())
-		{
-			generateOrdersForBatch(asyncBatchId);
-		}
+		asyncBatchId2OLCandIds.keySet().forEach(this::generateOrdersForBatch);
 
 		final ImmutableSet<OLCandId> olCandIds = asyncBatchId2OLCandIds.values()
 				.stream()
@@ -104,8 +92,32 @@ public class OrderService
 		return olCandDAO.getOrderIdsByOLCandIds(olCandIds);
 	}
 
+	private void generateOrdersForBatch(@NonNull final AsyncBatchId asyncBatchId)
+	{
+		final AsyncBatchMilestone asyncBatchMilestone = AsyncBatchMilestone.builder()
+				.asyncBatchId(asyncBatchId)
+				.orgId(Env.getOrgId())
+				.milestoneName(MilestoneName.SALES_ORDER_CREATION)
+				.build();
+
+		final AsyncBatchMilestoneId milestoneId = asyncBatchMilestoneService.save(asyncBatchMilestone).getIdNotNull();
+
+		asyncBatchMilestoneObserver.observeOn(milestoneId);
+
+		final OlCandEnqueueResult result = trxManager.callInNewTrx(() -> olCandToOrderEnqueuer.enqueueBatch(asyncBatchId));
+
+		if (result.getEnqueuedWorkPackageIds().isEmpty())
+		{
+			asyncBatchMilestoneObserver.removeObserver(milestoneId);
+		}
+		else
+		{
+			asyncBatchMilestoneObserver.waitToBeProcessed(milestoneId);
+		}
+	}
+
 	@NonNull
-	public ImmutableMap<AsyncBatchId, List<OLCandId>> getAsyncBatchId2OLCandIds(@NonNull final Set<OLCandId> olCandIds)
+	public ImmutableMap<AsyncBatchId, List<OLCandId>> getAsyncBathId2OLCandIds(@NonNull final Set<OLCandId> olCandIds)
 	{
 		if (olCandIds.isEmpty())
 		{
@@ -137,43 +149,5 @@ public class OrderService
 				});
 
 		return ImmutableMap.copyOf(asyncBatchId2OLCands);
-	}
-
-	@NonNull
-	public ImmutableSet<ShipmentScheduleId> generateSchedules(@NonNull final OrderId orderId)
-	{
-		final I_C_Order order = orderDAO.getById(orderId);
-
-		if (!order.getDocStatus().equals(DOCSTATUS_Completed))
-		{
-			Loggables.withLogger(logger, Level.INFO).addLog("Returning! Order not COMPLETED!");
-			return ImmutableSet.of();
-		}
-
-		generateMissingShipmentSchedulesFromOrder(order);
-
-		return shipmentSchedulePA.retrieveScheduleIdsByOrderId(orderId);
-	}
-
-	private void generateOrdersForBatch(@NonNull final AsyncBatchId asyncBatchId)
-	{
-		final Supplier<Void> action = () -> {
-			olCandToOrderEnqueuer.enqueue(C_OlCandProcessor_ID_Default, asyncBatchId);
-			return null;
-		};
-
-		asyncBatchService.executeBatch(action, asyncBatchId);
-	}
-
-	private void generateMissingShipmentSchedulesFromOrder(@NonNull final I_C_Order order)
-	{
-		final ImmutablePair<AsyncBatchId, I_C_Order> batchIdWithOrder = asyncBatchBL.assignPermAsyncBatchToModelIfMissing(order, C_Async_Batch_InternalName_EnqueueScheduleForOrder);
-
-		final Supplier<Void> action = () -> {
-			CreateMissingShipmentSchedulesWorkpackageProcessor.scheduleIfNotPostponed(batchIdWithOrder.getRight());
-			return null;
-		};
-
-		asyncBatchService.executeBatch(action, batchIdWithOrder.getLeft());
 	}
 }
