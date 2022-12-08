@@ -37,12 +37,14 @@ import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Delivery_Planning;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
 
 import java.math.BigDecimal;
+import java.util.Iterator;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -93,7 +95,7 @@ public class DeliveryPlanningRepository
 
 		deliveryPlanningRecord.setQtyOrdered(qtyOrdered.toBigDecimal());
 		deliveryPlanningRecord.setQtyTotalOpen(qtyTotalOpen.toBigDecimal());
-		deliveryPlanningRecord.setActualDeliveredQty( actualDeliveredQty.toBigDecimal());
+		deliveryPlanningRecord.setActualDeliveredQty(actualDeliveredQty.toBigDecimal());
 		deliveryPlanningRecord.setActualLoadQty(actualLoadedQty.toBigDecimal());
 
 		deliveryPlanningRecord.setPlannedLoadedQuantity(plannedLoadedQty.toBigDecimal());
@@ -110,7 +112,6 @@ public class DeliveryPlanningRepository
 		deliveryPlanningRecord.setProcessed(request.isProcessed());
 		deliveryPlanningRecord.setIsClosed(request.isClosed());
 
-
 		deliveryPlanningRecord.setMeansOfTransportation(MeansOfTransportation.toCodeOrNull(request.getMeansOfTransportation()));
 		deliveryPlanningRecord.setOrderStatus(OrderStatus.toCodeOrNull(request.getOrderStatus()));
 		deliveryPlanningRecord.setM_Delivery_Planning_Type(DeliveryPlanningType.toCodeOrNull(request.getDeliveryPlanningType()));
@@ -118,7 +119,6 @@ public class DeliveryPlanningRepository
 		deliveryPlanningRecord.setBatch(request.getBatch());
 		deliveryPlanningRecord.setC_OriginCountry_ID(CountryId.toRepoId(request.getOriginCountryId()));
 		deliveryPlanningRecord.setC_DestinationCountry_ID(CountryId.toRepoId(request.getDestinationCountryId()));
-
 
 		save(deliveryPlanningRecord);
 	}
@@ -156,5 +156,39 @@ public class DeliveryPlanningRepository
 				.stream()
 				.map(I_M_Delivery_Planning::getPlannedLoadedQuantity)
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
+	}
+
+	protected void closeSelectedDeliveryPlannings(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	{
+		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
+				.filter(selectedDeliveryPlanningsFilter)
+				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, false)
+				.create()
+				.iterate(I_M_Delivery_Planning.class);
+
+		while (deliveryPlanningIterator.hasNext())
+		{
+			final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningIterator.next();
+			deliveryPlanningRecord.setIsClosed(true);
+			deliveryPlanningRecord.setProcessed(true);
+			save(deliveryPlanningRecord);
+		}
+	}
+
+	protected void reOpenSelectedDeliveryPlannings(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	{
+		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
+				.filter(selectedDeliveryPlanningsFilter)
+				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, true)
+				.create()
+				.iterate(I_M_Delivery_Planning.class);
+
+		while (deliveryPlanningIterator.hasNext())
+		{
+			final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningIterator.next();
+			deliveryPlanningRecord.setIsClosed(false);
+			deliveryPlanningRecord.setProcessed(false);
+			save(deliveryPlanningRecord);
+		}
 	}
 }

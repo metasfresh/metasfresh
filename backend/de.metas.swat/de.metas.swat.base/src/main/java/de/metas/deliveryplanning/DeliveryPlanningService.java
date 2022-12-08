@@ -46,6 +46,7 @@ import de.metas.uom.IUOMDAO;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.service.ISysConfigBL;
@@ -61,8 +62,14 @@ import java.math.RoundingMode;
 @Service
 public class DeliveryPlanningService
 {
+
+	public static final AdMessageKey MSG_M_Delivery_Planning_AllClosed = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.AllClosed");
+
+	public static final AdMessageKey MSG_M_Delivery_Planning_AllOpen = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.AllOpen");
+
 	private static final String SYSCONFIG_M_Delivery_Planning_CreateAutomatically = "de.metas.deliveryplanning.DeliveryPlanningService.M_Delivery_Planning_CreateAutomatically";
 	private static final AdMessageKey MSG_M_Delivery_Planning_AtLeastOnePerOrderLine = AdMessageKey.of("M_Delivery_Planning_AtLeastOnePerOrderLine");
+
 	public static final String PARAM_AdditionalLines = "AdditionalLines";
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
@@ -212,9 +219,19 @@ public class DeliveryPlanningService
 		deliveryPlanningRepository.deleteForShipmentSchedule(shipmentScheduleId);
 	}
 
-	public boolean isProcessed(final DeliveryPlanningId deliveryPlanningId)
+	public boolean isClosed(final DeliveryPlanningId deliveryPlanningId)
 	{
 		final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningRepository.getById(deliveryPlanningId);
-		return deliveryPlanningRecord.isProcessed();
+		return deliveryPlanningRecord.isClosed();
+	}
+
+	public void closeSelectedDeliveryPlannings(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	{
+		deliveryPlanningRepository.closeSelectedDeliveryPlannings(selectedDeliveryPlanningsFilter);
+	}
+
+	public void reOpenSelectedDeliveryPlannings(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	{
+		deliveryPlanningRepository.reOpenSelectedDeliveryPlannings(selectedDeliveryPlanningsFilter);
 	}
 }

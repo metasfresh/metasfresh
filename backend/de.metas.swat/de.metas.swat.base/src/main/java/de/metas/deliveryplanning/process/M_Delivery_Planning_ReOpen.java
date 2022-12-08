@@ -35,9 +35,10 @@ import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_M_Delivery_Planning;
 
-public class M_Delivery_Planning_Close extends JavaProcess implements IProcessPrecondition
+public class M_Delivery_Planning_ReOpen extends JavaProcess implements IProcessPrecondition
 {
 	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
+
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
@@ -47,13 +48,13 @@ public class M_Delivery_Planning_Close extends JavaProcess implements IProcessPr
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		final boolean isExistsOpenDeliveryPlannings = context.getSelectedModels(I_M_Delivery_Planning.class).stream()
+		final boolean isExistsClosedDeliveryPlannings = context.getSelectedModels(I_M_Delivery_Planning.class).stream()
 				.map(deliveryPlanning -> DeliveryPlanningId.ofRepoId(deliveryPlanning.getM_Delivery_Planning_ID()))
-				.anyMatch(receiptSchedule -> !deliveryPlanningService.isClosed(receiptSchedule));
+				.anyMatch(receiptSchedule -> deliveryPlanningService.isClosed(receiptSchedule));
 
-		if (!isExistsOpenDeliveryPlannings)
+		if (!isExistsClosedDeliveryPlannings)
 		{
-			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(DeliveryPlanningService.MSG_M_Delivery_Planning_AllClosed));
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(DeliveryPlanningService.MSG_M_Delivery_Planning_AllOpen));
 		}
 
 		return ProcessPreconditionsResolution.accept();
