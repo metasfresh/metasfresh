@@ -1380,6 +1380,33 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
+	public org.compiere.model.I_R_MailText getR_MailText()
+	{
+		return get_ValueAsPO(COLUMNNAME_R_MailText_ID, org.compiere.model.I_R_MailText.class);
+	}
+
+	@Override
+	public void setR_MailText(final org.compiere.model.I_R_MailText R_MailText)
+	{
+		set_ValueFromPO(COLUMNNAME_R_MailText_ID, org.compiere.model.I_R_MailText.class, R_MailText);
+	}
+
+	@Override
+	public void setR_MailText_ID (final int R_MailText_ID)
+	{
+		if (R_MailText_ID < 1)
+			set_Value (COLUMNNAME_R_MailText_ID, null);
+		else
+			set_Value (COLUMNNAME_R_MailText_ID, R_MailText_ID);
+	}
+
+	@Override
+	public int getR_MailText_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_R_MailText_ID);
+	}
+	
+	@Override
 	public org.compiere.model.I_S_ExpenseType getS_ExpenseType()
 	{
 		return get_ValueAsPO(COLUMNNAME_S_ExpenseType_ID, org.compiere.model.I_S_ExpenseType.class);

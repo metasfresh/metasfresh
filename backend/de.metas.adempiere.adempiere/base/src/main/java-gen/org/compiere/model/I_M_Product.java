@@ -2045,6 +2045,33 @@ public interface I_M_Product
 	String COLUMNNAME_RequiresSupplierApproval = "RequiresSupplierApproval";
 
 	/**
+	 * Set Mail Template.
+	 * Text templates for mailings
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setR_MailText_ID (int R_MailText_ID);
+
+	/**
+	 * Get Mail Template.
+	 * Text templates for mailings
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getR_MailText_ID();
+
+	@Nullable org.compiere.model.I_R_MailText getR_MailText();
+
+	void setR_MailText(@Nullable org.compiere.model.I_R_MailText R_MailText);
+
+	ModelColumn<I_M_Product, org.compiere.model.I_R_MailText> COLUMN_R_MailText_ID = new ModelColumn<>(I_M_Product.class, "R_MailText_ID", org.compiere.model.I_R_MailText.class);
+	String COLUMNNAME_R_MailText_ID = "R_MailText_ID";
+	
+	/**
 	 * Set Resource Group.
 	 *
 	 * <br>Type: Search

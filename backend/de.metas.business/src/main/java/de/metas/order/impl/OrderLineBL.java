@@ -1001,7 +1001,7 @@ public class OrderLineBL implements IOrderLineBL
 
 	private void setBPartnerLocation(@NonNull final I_C_OrderLine orderLine, @Nullable final I_C_BPartner_Location bpartnerLocation)
 	{
-		BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId = bpartnerLocation != null ? BPartnerLocationAndCaptureId.ofRecord(bpartnerLocation) : null;
+		final BPartnerLocationAndCaptureId bpartnerLocationAndCaptureId = bpartnerLocation != null ? BPartnerLocationAndCaptureId.ofRecord(bpartnerLocation) : null;
 		OrderLineDocumentLocationAdapterFactory.locationAdapter(orderLine).setLocationAndResetRenderedAddress(bpartnerLocationAndCaptureId);
 	}
 
@@ -1010,7 +1010,7 @@ public class OrderLineBL implements IOrderLineBL
 	{
 		final I_C_Order order = orderDAO.getById(OrderId.ofRepoId(orderLine.getC_Order_ID()));
 		return currencyBL.createCurrencyConversionContext(
-				TimeUtil.asLocalDate(order.getDateAcct()),
+				order.getDateAcct().toInstant(),
 				(CurrencyConversionTypeId)null,
 				ClientId.ofRepoId(order.getAD_Client_ID()),
 				OrgId.ofRepoId(order.getAD_Org_ID()));
