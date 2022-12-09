@@ -437,6 +437,17 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	@Override
+	public int countICIOLAssociations(@NonNull final InvoiceCandidateId invoiceCandidateId)
+	{
+		// count all I_C_InvoiceCandidate_InOutLine regardless of I_M_InOut status
+		return queryBL.createQueryBuilder(I_C_InvoiceCandidate_InOutLine.class)
+				.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_Invoice_Candidate_ID, invoiceCandidateId)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.count();
+	}
+
 	private boolean isInOutCompletedOrClosed(@NonNull final I_C_InvoiceCandidate_InOutLine iciol)
 	{
 		final I_M_InOut inOut = iciol.getM_InOutLine().getM_InOut();
@@ -995,6 +1006,19 @@ public class InvoiceCandDAO implements IInvoiceCandDAO
 	public final IInvoiceCandRecomputeTagger tagToRecompute()
 	{
 		return new InvoiceCandRecomputeTagger(this);
+	}
+
+	@NonNull
+	@Override
+	public ImmutableList<I_C_InvoiceCandidate_InOutLine> retrieveICIOLForInvoiceCandidate(@NonNull final I_C_Invoice_Candidate ic)
+	{
+		return queryBL
+				.createQueryBuilder(I_C_InvoiceCandidate_InOutLine.class, ic)
+				.addEqualsFilter(I_C_InvoiceCandidate_InOutLine.COLUMNNAME_C_Invoice_Candidate_ID, ic.getC_Invoice_Candidate_ID())
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.collect(ImmutableList.toImmutableList());
 	}
 
 	private IQueryBuilder<I_C_Invoice_Candidate_Recompute> retrieveInvoiceCandidatesRecomputeFor(

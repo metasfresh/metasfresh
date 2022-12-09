@@ -23,12 +23,15 @@
 package de.metas.cucumber.stepdefs;
 
 import de.metas.common.util.CoalesceUtil;
+import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ISysConfigBL;
+import org.compiere.model.I_AD_SysConfig;
 import org.compiere.model.I_AD_UserGroup;
 
 import java.util.Map;
@@ -40,6 +43,7 @@ import static org.assertj.core.api.Assertions.*;
 public class AD_UserGroup_StepDef
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	private final AD_UserGroup_StepDefData userGroupTable;
 
@@ -54,7 +58,7 @@ public class AD_UserGroup_StepDef
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
 			final String name = DataTableUtil.extractStringForColumnName(row, I_AD_UserGroup.COLUMNNAME_Name);
-			final String description = DataTableUtil.extractStringForColumnName(row, "OPT." + I_AD_UserGroup.COLUMNNAME_Description);
+			final String description = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_AD_UserGroup.COLUMNNAME_Description);
 			final boolean active = DataTableUtil.extractBooleanForColumnName(row, I_AD_UserGroup.COLUMNNAME_IsActive);
 
 			final I_AD_UserGroup userGroup = CoalesceUtil.coalesceSuppliers(
@@ -68,12 +72,34 @@ public class AD_UserGroup_StepDef
 
 			userGroup.setName(name);
 			userGroup.setIsActive(active);
-			userGroup.setDescription(description);
+
+			if (Check.isNotBlank(description))
+			{
+				userGroup.setDescription(description);
+			}
 
 			InterfaceWrapperHelper.saveRecord(userGroup);
 
 			final String userGroupIdentifier = DataTableUtil.extractStringForColumnName(row, I_AD_UserGroup.COLUMNNAME_AD_UserGroup_ID + "." + TABLECOLUMN_IDENTIFIER);
 			userGroupTable.put(userGroupIdentifier, userGroup);
+		}
+	}
+
+	@And("load AD_UserGroup from AD_SysConfig:")
+	public void load_userGroup_from_sysConfig(@NonNull final DataTable dataTable)
+	{
+		for (final Map<String, String> row : dataTable.asMaps())
+		{
+			final String sysConfigName = DataTableUtil.extractStringForColumnName(row, I_AD_SysConfig.Table_Name + "." + I_AD_SysConfig.COLUMNNAME_Name);
+
+			final int userGroupSysConfigValue = sysConfigBL.getIntValue(sysConfigName, -1);
+			assertThat(userGroupSysConfigValue).isGreaterThan(0);
+
+			final I_AD_UserGroup userGroup = InterfaceWrapperHelper.load(userGroupSysConfigValue, I_AD_UserGroup.class);
+			assertThat(userGroup).isNotNull();
+
+			final String userGroupIdentifier = DataTableUtil.extractStringForColumnName(row, I_AD_UserGroup.COLUMNNAME_AD_UserGroup_ID + "." + TABLECOLUMN_IDENTIFIER);
+			userGroupTable.putOrReplace(userGroupIdentifier, userGroup);
 		}
 	}
 }

@@ -1,6 +1,5 @@
 package de.metas.contracts.impl;
 
-import de.metas.adempiere.pricing.spi.impl.rules.ProductScalePrice;
 import de.metas.bpartner.service.impl.BPartnerBL;
 import de.metas.contracts.callorder.CallOrderContractService;
 import de.metas.contracts.inoutcandidate.SubscriptionShipmentScheduleHandler;
@@ -182,7 +181,6 @@ public class FlatrateTermTestHelper
 	{
 		pricingRules.put("PriceListVersion", PriceListVersion.class.getName());
 		pricingRules.put("Discount", Discount.class.getName());
-		pricingRules.put("Product Scale Price", ProductScalePrice.class.getName());
 		pricingRules.put("Attribute pricing rule", AttributePricing.class.getName());
 		pricingRules.put("de.metas.contracts Discount", ContractDiscount.class.getName());
 		pricingRules.put("de.metas.contracts Subscription", SubscriptionPricingRule.class.getName());

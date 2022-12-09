@@ -92,7 +92,7 @@ public class MD_Candidate_StepDefTableTransformer implements TableTransformer<MD
 
 			BigDecimal qty = DataTableUtil.extractBigDecimalForColumnName(dataTableRow, I_MD_Candidate.COLUMNNAME_Qty);
 
-			if (type.equals(CandidateType.DEMAND) || type.equals(CandidateType.INVENTORY_DOWN))
+			if (type.equals(CandidateType.DEMAND) || type.equals(CandidateType.INVENTORY_DOWN) || type.equals(CandidateType.UNEXPECTED_DECREASE))
 			{
 				qty = qty.negate();
 			}

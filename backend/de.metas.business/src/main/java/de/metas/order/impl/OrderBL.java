@@ -1200,21 +1200,10 @@ public class OrderBL implements IOrderBL
 
 		final BPartnerContactId orderContactId = BPartnerContactId.ofRepoIdOrNull(bpartnerId, order.getAD_User_ID());
 
-		if (orderContactId != null)
+		final String contactLocationEmail = bpartnerDAO.getContactLocationEmail(orderContactId);
+		if (!Check.isEmpty(contactLocationEmail))
 		{
-			final I_AD_User contactRecord = bpartnerDAO.getContactById(orderContactId);
-
-			final BPartnerLocationId contactLocationId = BPartnerLocationId.ofRepoIdOrNull(bpartnerId, contactRecord.getC_BPartner_Location_ID());
-			if (contactLocationId != null)
-			{
-				final I_C_BPartner_Location contactLocationRecord = bpartnerDAO.getBPartnerLocationByIdInTrx(contactLocationId);
-				final String contactLocationEmail = contactLocationRecord.getEMail();
-
-				if (!Check.isEmpty(contactLocationEmail))
-				{
-					return contactLocationEmail;
-				}
-			}
+			return contactLocationEmail;
 		}
 
 		final BPartnerLocationId bpartnerLocationId = BPartnerLocationId.ofRepoIdOrNull(order.getBill_BPartner_ID(), order.getBill_Location_ID());

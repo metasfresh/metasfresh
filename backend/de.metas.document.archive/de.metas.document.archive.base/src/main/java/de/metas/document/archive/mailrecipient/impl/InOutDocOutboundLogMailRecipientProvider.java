@@ -32,6 +32,8 @@ import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientProvid
 import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientRequest;
 import de.metas.inout.IInOutBL;
 import de.metas.inout.InOutId;
+import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.user.User;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -46,14 +48,17 @@ public class InOutDocOutboundLogMailRecipientProvider implements DocOutboundLogM
 {
 
 	private final DocOutBoundRecipientRepository recipientRepository;
+	private final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository;
 	private final IBPartnerBL bpartnerBL;
 	private final IInOutBL inoutBL = Services.get(IInOutBL.class);
 
 	public InOutDocOutboundLogMailRecipientProvider(
 			@NonNull final DocOutBoundRecipientRepository recipientRepository,
+			@NonNull final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository,
 			@NonNull final IBPartnerBL bpartnerBL)
 	{
 		this.recipientRepository = recipientRepository;
+		this.orderEmailPropagationSysConfigRepository = orderEmailPropagationSysConfigRepository;
 		this.bpartnerBL = bpartnerBL;
 	}
 
@@ -75,24 +80,27 @@ public class InOutDocOutboundLogMailRecipientProvider implements DocOutboundLogM
 		final I_M_InOut inOutRecord = request.getRecordRef()
 				.getModel(I_M_InOut.class);
 
-		final String inoutEmail = inOutRecord.getEMail();
+		final boolean propagateToDocOutboundLog = orderEmailPropagationSysConfigRepository.isPropagateToDocOutboundLog(
+				ClientAndOrgId.ofClientAndOrg(request.getClientId(), request.getOrgId()));
+
+		final String inoutEmail = propagateToDocOutboundLog ? inOutRecord.getEMail(): null;
 		final String locationEmail = inoutBL.getLocationEmail(InOutId.ofRepoId(inOutRecord.getM_InOut_ID()));
 
 		if (inOutRecord.getAD_User_ID() > 0)
 		{
 			final DocOutBoundRecipient inOutUser = recipientRepository.getById(DocOutBoundRecipientId.ofRepoId(inOutRecord.getAD_User_ID()));
 
-			if (!Check.isBlank(inoutEmail))
+			if (Check.isNotBlank(inoutEmail))
 			{
 				return Optional.of(inOutUser.withEmailAddress(inoutEmail));
 			}
 
-			if (!Check.isBlank(inOutUser.getEmailAddress()))
+			if (Check.isNotBlank(inOutUser.getEmailAddress()))
 			{
 				return Optional.of(inOutUser);
 			}
 
-			if (!Check.isBlank(locationEmail))
+			if (Check.isNotBlank(locationEmail))
 			{
 				return Optional.of(inOutUser.withEmailAddress(locationEmail));
 			}
@@ -114,17 +122,17 @@ public class InOutDocOutboundLogMailRecipientProvider implements DocOutboundLogM
 			final DocOutBoundRecipientId recipientId = DocOutBoundRecipientId.ofRepoId(billContact.getId().getRepoId());
 			final DocOutBoundRecipient docOutBoundRecipient = recipientRepository.getById(recipientId);
 
-			if (!Check.isBlank(inoutEmail))
+			if (Check.isNotBlank(inoutEmail))
 			{
 				return Optional.of(docOutBoundRecipient.withEmailAddress(inoutEmail));
 			}
 
-			if (!Check.isBlank(locationEmail))
+			if (Check.isNotBlank(locationEmail))
 			{
 				return Optional.of(docOutBoundRecipient.withEmailAddress(locationEmail));
 			}
 
-			if (!Check.isBlank(docOutBoundRecipient.getEmailAddress()))
+			if (Check.isNotBlank(docOutBoundRecipient.getEmailAddress()))
 			{
 				return Optional.of(docOutBoundRecipient);
 			}

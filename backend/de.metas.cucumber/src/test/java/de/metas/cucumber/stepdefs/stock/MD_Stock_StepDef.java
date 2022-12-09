@@ -30,13 +30,9 @@ import de.metas.material.cockpit.model.I_MD_Stock;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
-import io.cucumber.java.en.Given;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.DBDeadLockDetectedException;
 import org.compiere.model.I_M_Product;
-import org.compiere.util.DB;
 import org.slf4j.Logger;
 
 import java.math.BigDecimal;
@@ -59,12 +55,6 @@ public class MD_Stock_StepDef
 		this.productTable = productTable;
 	}
 
-	@Given("metasfresh initially has no MD_Stock data")
-	public void setupMD_Stock_Data() throws InterruptedException
-	{
-		truncateMDStockData();
-	}
-
 	@And("after not more than {int} seconds metasfresh has MD_Stock data")
 	public void verify_MD_Stock_Data( final int timeoutSeconds, @NonNull final DataTable dataTable) throws InterruptedException
 	{
@@ -78,36 +68,6 @@ public class MD_Stock_StepDef
 		{
 			validateMD_Stock(row);
 		}
-	}
-
-	/**
-	 * TODO: prepare the initial state without truncating
-	 */
-	private void truncateMDStockData() throws InterruptedException
-	{
-		try
-		{
-			truncateMDStockData0();
-		}
-		catch (final DBDeadLockDetectedException e)
-		{
-			logger.warn("Caught DBDeadLockDetectedException while truncating MDStockData! Will retry in 1second");
-			Thread.sleep(1000);
-			truncateMDStockData0();
-		}
-	}
-
-	private void truncateMDStockData0()
-	{
-		DB.executeUpdateEx("TRUNCATE TABLE M_Transaction cascade", ITrx.TRXNAME_None);
-		DB.executeUpdateEx("TRUNCATE TABLE M_InventoryLine cascade", ITrx.TRXNAME_None);
-		DB.executeUpdateEx("TRUNCATE TABLE M_Inventory cascade", ITrx.TRXNAME_None);
-		DB.executeUpdateEx("TRUNCATE TABLE M_Cost cascade", ITrx.TRXNAME_None);
-		DB.executeUpdateEx("TRUNCATE TABLE MD_Candidate cascade", ITrx.TRXNAME_None);
-		DB.executeUpdateEx("TRUNCATE TABLE MD_Stock", ITrx.TRXNAME_None);
-		DB.executeUpdateEx("TRUNCATE TABLE m_hu_item_storage cascade", ITrx.TRXNAME_None);
-		DB.executeUpdateEx("TRUNCATE TABLE m_hu_storage cascade", ITrx.TRXNAME_None);
-		DB.executeUpdateEx("TRUNCATE TABLE m_hu_trx_line cascade", ITrx.TRXNAME_None);
 	}
 
 	private boolean waitForStock(@NonNull final Map<String, String> row)

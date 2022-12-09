@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import RawChart from '../charts/RawChart';
+import counterpart from 'counterpart';
 
 export class ChartWidget extends Component {
   constructor(props) {
@@ -98,7 +99,7 @@ export class ChartWidget extends Component {
                     this.toggleMenu(false);
                   }}
                 >
-                  Minimize
+                  {counterpart.translate('dashboard.item.minimize')}
                 </span>
               ) : (
                 <span
@@ -107,7 +108,7 @@ export class ChartWidget extends Component {
                     this.toggleMenu(false);
                   }}
                 >
-                  Maximize
+                  {counterpart.translate('dashboard.item.maximize')}
                 </span>
               )}
             </div>

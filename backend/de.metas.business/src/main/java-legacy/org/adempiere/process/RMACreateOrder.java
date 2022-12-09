@@ -97,6 +97,7 @@ public class RMACreateOrder extends JavaProcess
         mOrder.setC_PaymentTerm_ID(originalOrder.getC_PaymentTerm_ID());
         mOrder.setRef_RMA_ID(rmaId);
         mOrder.setEMail(originalOrder.getEMail());
+        mOrder.setAD_InputDataSource_ID(originalOrder.getAD_InputDataSource_ID());
         // end: metas c.ghita@metas.ro
 
         if (!order.save())

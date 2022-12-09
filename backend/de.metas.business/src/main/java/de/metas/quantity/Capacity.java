@@ -66,6 +66,13 @@ public final class Capacity
 		return new Capacity(qty, productId, uom, allowNegativeCapacity);
 	}
 
+	public static Capacity createCapacity(
+			@NonNull final Quantity qty,
+			@NonNull final ProductId productId)
+	{
+		return new Capacity(qty.toBigDecimal(), productId, qty.getUOM(), false);
+	}
+
 	private final ProductId productId;
 	private final UomId uomId;
 	private final I_C_UOM uom;

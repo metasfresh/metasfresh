@@ -7,6 +7,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.ToString;
+import org.adempiere.ad.column.ColumnSql;
 
 import javax.annotation.Nullable;
 import java.util.Objects;

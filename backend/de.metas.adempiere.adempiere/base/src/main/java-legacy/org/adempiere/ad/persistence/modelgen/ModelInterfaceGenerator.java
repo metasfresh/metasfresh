@@ -221,6 +221,10 @@ public class ModelInterfaceGenerator
 		final List<ColumnInfo> columnInfos = tableInfo.getColumnInfos();
 		for (final ColumnInfo columnInfo : columnInfos)
 		{
+			if (columnInfo.isRestAPICustomColumn())
+			{
+				continue;
+			}
 			sb.append(createColumnMethods(columnInfo));
 		}
 

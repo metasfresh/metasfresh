@@ -24,6 +24,8 @@ package de.metas.common.rest_api.common;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import de.metas.common.util.Check;
+import de.metas.common.util.NumberUtils;
 import lombok.NonNull;
 import lombok.Value;
 
@@ -38,9 +40,16 @@ public class JsonMetasfreshId
 	int value;
 
 	@JsonCreator
-	public static JsonMetasfreshId of(@NonNull final Integer value)
+	public static JsonMetasfreshId of(@NonNull final Object value)
 	{
-		return new JsonMetasfreshId(value);
+		try
+		{
+			return new JsonMetasfreshId(NumberUtils.asInt(value));
+		}
+		catch (Exception ex)
+		{
+			throw Check.mkEx("Invalid " + JsonMetasfreshId.class.getSimpleName() + ": `" + value + "` (" + value.getClass() + ")", ex);
+		}
 	}
 
 	@Nullable
@@ -113,7 +122,8 @@ public class JsonMetasfreshId
 	}
 
 	@Nullable
-	public static <T> T mapToOrNull(@Nullable final JsonMetasfreshId externalId, @NonNull final Function<Integer, T> mapper) {
+	public static <T> T mapToOrNull(@Nullable final JsonMetasfreshId externalId, @NonNull final Function<Integer, T> mapper)
+	{
 		return toValueOptional(externalId).map(mapper).orElse(null);
 	}
 

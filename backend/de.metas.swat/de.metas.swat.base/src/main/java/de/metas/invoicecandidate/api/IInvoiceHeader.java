@@ -9,6 +9,7 @@ import de.metas.organization.OrgId;
 import de.metas.payment.paymentterm.PaymentTermId;
 import de.metas.user.UserId;
 import org.compiere.model.I_C_DocType;
+import de.metas.impex.InputDataSourceId;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -79,4 +80,7 @@ public interface IInvoiceHeader
 	String getIncotermLocation();
 
 	String getPaymentRule();
+
+	@Nullable
+	InputDataSourceId getAD_InputDataSource_ID();
 }

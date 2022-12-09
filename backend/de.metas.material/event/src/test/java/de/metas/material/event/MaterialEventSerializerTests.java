@@ -78,7 +78,7 @@ import static de.metas.material.event.EventTestHelper.createProductDescriptorWit
 import static java.math.BigDecimal.ONE;
 import static java.math.BigDecimal.TEN;
 import static java.math.BigDecimal.valueOf;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -702,8 +702,6 @@ public class MaterialEventSerializerTests
 				.transactionId(10)
 				.eventDescriptor(createEventDescriptor())
 				.materialDescriptor(createMaterialDescriptor())
-				.shipmentScheduleIds2Qty(20, TEN)
-				.shipmentScheduleIds2Qty(21, ONE.negate())
 				.minMaxDescriptor(createSampleMinMaxDescriptor())
 				.huOnHandQtyChangeDescriptor(HUDescriptor.builder()
 													 .huId(30)
@@ -722,8 +720,6 @@ public class MaterialEventSerializerTests
 				.eventDescriptor(createEventDescriptor())
 				.materialDescriptor(createMaterialDescriptor())
 				.minMaxDescriptor(createSampleMinMaxDescriptor())
-				.shipmentScheduleIds2Qty(20, TEN)
-				.shipmentScheduleIds2Qty(21, ONE.negate())
 				.build();
 
 		assertEventEqualAfterSerializeDeserialize(evt);

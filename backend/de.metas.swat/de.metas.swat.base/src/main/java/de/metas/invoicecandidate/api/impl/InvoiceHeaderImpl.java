@@ -17,6 +17,7 @@ import de.metas.util.Check;
 import lombok.Getter;
 import lombok.Setter;
 import org.compiere.model.I_C_DocType;
+import de.metas.impex.InputDataSourceId;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -39,6 +40,10 @@ import java.util.List;
 	private String poReference;
 
 	private String eMail;
+
+	@Getter
+	@Setter
+	private InputDataSourceId inputDataSourceId;
 
 	private LocalDate dateInvoiced;
 
@@ -377,5 +382,10 @@ import java.util.List;
 	{
 		this.incotermLocation = incotermLocation;
 	}
+
+	@Override
+	public InputDataSourceId getAD_InputDataSource_ID() {	return inputDataSourceId;}
+
+	public void setAD_InputDataSource_ID(final InputDataSourceId inputDataSourceId){this.inputDataSourceId = inputDataSourceId;}
 
 }

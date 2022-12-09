@@ -24,7 +24,6 @@ package de.metas.camel.externalsystems.core.to_mf.v2;
 
 import de.metas.camel.externalsystems.common.v2.ExternalReferenceLookupCamelRequest;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
-import de.metas.camel.externalsystems.core.CoreConstants;
 import de.metas.common.externalreference.v2.JsonExternalReferenceLookupRequest;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import org.apache.camel.Exchange;
@@ -77,7 +76,6 @@ public class ExternalReferenceRouteBuilderV2 extends RouteBuilder
 				})
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonExternalReferenceLookupRequest.class))
 				.removeHeaders("CamelHttp*")
-				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.PUT))
 				.toD("{{metasfresh.lookup-externalreference-v2.api.uri}}/${header.orgCode}")
 

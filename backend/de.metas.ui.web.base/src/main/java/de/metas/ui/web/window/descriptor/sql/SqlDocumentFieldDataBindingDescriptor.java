@@ -9,6 +9,7 @@ import de.metas.ui.web.window.descriptor.LookupDescriptor;
 import de.metas.util.Check;
 import lombok.Getter;
 import lombok.NonNull;
+import org.adempiere.ad.column.ColumnSql;
 
 import javax.annotation.Nullable;
 import java.time.Instant;

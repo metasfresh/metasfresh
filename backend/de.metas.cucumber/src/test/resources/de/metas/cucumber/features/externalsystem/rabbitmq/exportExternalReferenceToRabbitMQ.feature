@@ -147,6 +147,9 @@ Feature: Validate external reference is sent to RabbitMQ
       | Shopware6      | BPartnerLocation | BPLocation_ER_S2_25032022 | null                 |
       | Shopware6      | UserID           | BPContact_ER_S2_25032022  | null                 |
 
+    # FIXME: temporary fix to make sure the syncExternalReferenceDebouncer is empty before adding a new config (it's a temp fix as the full solution is already in master)
+    And wait for 10s
+
     And add external system parent-child pair
       | ExternalSystem_Config_ID.Identifier | Type     | ExternalSystemValue       | OPT.IsSyncExternalReferencesToRabbitMQ |
       | config_1                            | RabbitMQ | externalReferenceAudit_S2 | true                                   |

@@ -14,6 +14,8 @@ import de.metas.document.archive.mailrecipient.DocOutboundLogMailRecipientReques
 import de.metas.dunning.DunningDocId;
 import de.metas.dunning.invoice.DunningService;
 import de.metas.dunning.model.I_C_DunningDoc;
+import de.metas.order.impl.OrderEmailPropagationSysConfigRepository;
+import de.metas.organization.ClientAndOrgId;
 import de.metas.user.User;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -53,15 +55,18 @@ public class DunningDocOutboundLogMailRecipientProvider
 {
 
 	private final DocOutBoundRecipientRepository recipientRepository;
+	private final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository;
 	private final IBPartnerBL bpartnerBL;
 	private final DunningService dunningService;
 
 	public DunningDocOutboundLogMailRecipientProvider(
 			@NonNull final DocOutBoundRecipientRepository recipientRepository,
+			@NonNull final OrderEmailPropagationSysConfigRepository orderEmailPropagationSysConfigRepository,
 			@NonNull final IBPartnerBL bpartnerBL,
 			@NonNull final DunningService dunningService)
 	{
 		this.recipientRepository = recipientRepository;
+		this.orderEmailPropagationSysConfigRepository = orderEmailPropagationSysConfigRepository;
 		this.bpartnerBL = bpartnerBL;
 		this.dunningService = dunningService;
 	}
@@ -92,9 +97,11 @@ public class DunningDocOutboundLogMailRecipientProvider
 		final List<I_C_Invoice> dunnedInvoices = dunningService.retrieveDunnedInvoices(dunningDocId);
 		final int singleCommonInvoiceContactId = CollectionUtils.extractSingleElementOrDefault(dunnedInvoices, I_C_Invoice::getAD_User_ID, -1);
 
-		final String invoiceEmail = CollectionUtils.extractSingleElementOrDefault(dunnedInvoices,
-																				  invoice -> CoalesceUtil.coalesce(invoice.getEMail(), ""),
-																				  "");
+		final boolean propagateToDocOutboundLog = orderEmailPropagationSysConfigRepository.isPropagateToDocOutboundLog(ClientAndOrgId.ofClientAndOrg(request.getClientId(), request.getOrgId()));
+
+		final String invoiceEmail = propagateToDocOutboundLog ? CollectionUtils.extractSingleElementOrDefault(dunnedInvoices,
+																											  invoice -> CoalesceUtil.coalesce(invoice.getEMail(), ""),
+																											  "") : null;
 
 		final String locationEmail = dunningService.getLocationEmail(dunningDocId);
 
@@ -102,19 +109,19 @@ public class DunningDocOutboundLogMailRecipientProvider
 		{
 			final DocOutBoundRecipient invoiceUser = recipientRepository.getById(DocOutBoundRecipientId.ofRepoId(singleCommonInvoiceContactId));
 
-			if (!Check.isBlank(invoiceEmail))
+			if (Check.isNotBlank(invoiceEmail))
 			{
 				Loggables.addLog("The dunned invoices all have invoiceUser={} and the invoice has the email {} so we take that user as the dunning mail's participant, with this email address", invoiceUser, invoiceEmail);
 				return Optional.of(invoiceUser.withEmailAddress(invoiceEmail));
 			}
 
-			if (!Check.isBlank(invoiceUser.getEmailAddress()))
+			if (Check.isNotBlank(invoiceUser.getEmailAddress()))
 			{
 				Loggables.addLog("The dunned invoices all have invoiceUser={}, so we take that user as the dunning mail's participant", invoiceUser);
 				return Optional.of(invoiceUser);
 			}
 
-			if (!Check.isBlank(locationEmail))
+			if (Check.isNotBlank(locationEmail))
 			{
 				Loggables.addLog("The dunned invoices all have invoiceUser={} and the location has the email {} so we take that user as the dunning mail's participant, with this email address", invoiceUser, locationEmail);
 				return Optional.of(invoiceUser.withEmailAddress(invoiceEmail));
@@ -141,19 +148,19 @@ public class DunningDocOutboundLogMailRecipientProvider
 			final DocOutBoundRecipientId recipientId = DocOutBoundRecipientId.ofRepoId(billContact.getId().getRepoId());
 			final DocOutBoundRecipient docOutBoundRecipient = recipientRepository.getById(recipientId);
 
-			if (!Check.isBlank(invoiceEmail))
+			if (Check.isNotBlank(invoiceEmail))
 			{
 				Loggables.addLog("Use billContact={} as recipient and the invoice email {} as address}", billContact, invoiceEmail);
 				return Optional.of(docOutBoundRecipient.withEmailAddress(invoiceEmail));
 			}
 
-			if (!Check.isBlank(locationEmail))
+			if (Check.isNotBlank(locationEmail))
 			{
 				Loggables.addLog("Use billContact={} as recipient and the location email {} as address}", billContact, locationEmail);
 				return Optional.of(docOutBoundRecipient.withEmailAddress(locationEmail));
 			}
 
-			if (!Check.isBlank(docOutBoundRecipient.getEmailAddress()))
+			if (Check.isNotBlank(docOutBoundRecipient.getEmailAddress()))
 			{
 				return Optional.of(docOutBoundRecipient);
 			}

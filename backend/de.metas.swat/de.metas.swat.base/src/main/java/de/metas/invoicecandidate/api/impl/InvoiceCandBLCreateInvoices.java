@@ -16,6 +16,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IADMessageDAO;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.Language;
+import de.metas.impex.InputDataSourceId;
 import de.metas.inout.IInOutDAO;
 import de.metas.inout.InOutId;
 import de.metas.interfaces.I_C_OrderLine;
@@ -407,6 +408,7 @@ public class InvoiceCandBLCreateInvoices implements IInvoiceGenerator
 			invoice.setC_Incoterms_ID(invoiceHeader.getC_Incoterms_ID());
 			invoice.setIncotermLocation(invoiceHeader.getIncotermLocation());
 			invoice.setC_Async_Batch_ID(invoiceHeader.getC_Async_Batch_ID());
+			invoice.setAD_InputDataSource_ID(InputDataSourceId.toRepoId(invoiceHeader.getAD_InputDataSource_ID()));
 
 			if (invoiceHeader.getM_InOut_ID() > 0)
 			{
