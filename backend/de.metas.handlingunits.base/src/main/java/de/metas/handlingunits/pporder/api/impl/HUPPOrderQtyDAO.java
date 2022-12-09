@@ -65,7 +65,7 @@ public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 	}
 
 	@Override
-	public List<I_PP_Order_Qty> saveAll(@NonNull final Collection<CreateReceiptCandidateRequest> requests)
+	public ImmutableList<I_PP_Order_Qty> saveAll(@NonNull final Collection<CreateReceiptCandidateRequest> requests)
 	{
 		return requests.stream()
 				.map(this::save)
