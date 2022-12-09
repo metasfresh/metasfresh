@@ -69,13 +69,14 @@ public class DeliveryPlanningCreateRequest
 
 	boolean isB2B;
 
-	@NonNull DeliveryPlanningType deliveryPlanningType;
+	@Nullable
+	DeliveryPlanningType deliveryPlanningType;
 
 	@Nullable
 	OrderStatus orderStatus;
 
 	@Nullable
-	MeansOfTransportation meansOfTransportation;
+	MeansOfTransportationId meansOfTransportationId;
 
 	@NonNull
 	WarehouseId warehouseId;

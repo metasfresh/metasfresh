@@ -47,7 +47,7 @@ public enum OrderStatus implements ReferenceListAwareEnum
 	}
 
 	@Nullable
-	public static OrderStatus ofNullableCode(final String code)
+	public static OrderStatus ofNullableCode(@Nullable final String code)
 	{
 		return ofNullableCode(code, null);
 	}
