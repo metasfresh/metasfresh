@@ -30,7 +30,7 @@ import {
 import { connect } from 'react-redux';
 import {
   getSettingFromStateAsBoolean,
-  getSettingFromStateAsPositiveInt
+  getSettingFromStateAsPositiveInt,
 } from '../../utils/settings';
 import {
   DeliveryPlanningViewHeader,
