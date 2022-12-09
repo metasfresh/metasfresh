@@ -5,13 +5,12 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <artifactId>de.metas.parent.general</artifactId>
-        <groupId>de.metas</groupId>
+        <groupId>de.metas.camel</groupId>
+        <artifactId>de-metas-camel</artifactId>
         <version>10.0.0</version>
-        <relativePath>../../../parent-pom/pom.xml</relativePath>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
-    <groupId>de.metas.camel</groupId>
     <artifactId>de-metas-camel-edi</artifactId>
     <version>10.0.0</version>
     <properties>
@@ -380,7 +379,7 @@
                     is present) -->
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <version>1.8</version>
+                <version>3.3.0</version>
                 <executions>
                     <execution>
                         <id>add-sources-java-xjc</id>
@@ -412,17 +411,6 @@
             </plugin>
 
             <!-- Create tests JAR -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>test-jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
