@@ -1,29 +1,8 @@
 package org.adempiere.exceptions;
 
-import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
-
-import java.lang.reflect.InvocationTargetException;
-import java.sql.SQLException;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.function.Supplier;
-
-import javax.annotation.Nullable;
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
-import org.adempiere.ad.service.IDeveloperModeBL;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.adempiere.util.logging.LoggingHelper;
-import org.compiere.model.Null;
-import org.compiere.util.Env;
-import org.slf4j.Logger;
-import org.slf4j.MDC;
-
+import ch.qos.logback.classic.Level;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
-
-import ch.qos.logback.classic.Level;
 import de.metas.error.AdIssueId;
 import de.metas.error.IssueCategory;
 import de.metas.i18n.AdMessageKey;
@@ -34,6 +13,24 @@ import de.metas.i18n.TranslatableStringBuilder;
 import de.metas.i18n.TranslatableStrings;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.service.IDeveloperModeBL;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.adempiere.util.logging.LoggingHelper;
+import org.compiere.model.Null;
+import org.compiere.util.Env;
+import org.slf4j.Logger;
+import org.slf4j.MDC;
+
+import javax.annotation.Nullable;
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+import java.lang.reflect.InvocationTargetException;
+import java.sql.SQLException;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Supplier;
+
+import static de.metas.common.util.CoalesceUtil.coalesceSuppliers;
 
 /**
  * Any exception that occurs inside the Adempiere core
@@ -226,7 +223,9 @@ public class AdempiereException extends RuntimeException
 	private static boolean captureLanguageOnConstructionTime = false;
 
 	private final ITranslatableString messageTrl;
-	/** Build message but not translated */
+	/**
+	 * Build message but not translated
+	 */
 	@Nullable
 	private ITranslatableString _messageBuilt = null;
 	private final String adLanguage;
@@ -296,7 +295,7 @@ public class AdempiereException extends RuntimeException
 		this.mdcContextMap = captureMDCContextMap();
 	}
 
-	public AdempiereException(@NonNull final ITranslatableString message, final Throwable cause)
+	public AdempiereException(@NonNull final ITranslatableString message, @Nullable final Throwable cause)
 	{
 		super(cause);
 		this.adLanguage = captureLanguageOnConstructionTime ? Env.getAD_Language() : null;
@@ -561,6 +560,15 @@ public class AdempiereException extends RuntimeException
 		return setParameter(parameterName, enumValue);
 	}
 
+	public AdempiereException setParameters(@Nullable final Map<String, ?> params)
+	{
+		if (params != null && !params.isEmpty())
+		{
+			params.forEach(this::setParameter);
+		}
+		return this;
+	}
+
 	@OverridingMethodsMustInvokeSuper
 	public <T extends Enum<?>> boolean hasParameter(@NonNull final T enumValue)
 	{
@@ -581,7 +589,7 @@ public class AdempiereException extends RuntimeException
 	@Nullable
 	public final Object getParameter(@NonNull final String name)
 	{
-		return parameters != null ? parameters.get(name) : null;
+		return parameters != null ? Null.unbox(parameters.get(name)) : null;
 	}
 
 	public final Map<String, Object> getParameters()

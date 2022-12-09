@@ -84,9 +84,7 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 		final Properties ctx = Env.getCtx();
 		return Services.get(IWorkPackageQueueFactory.class)
 				.getQueueForEnqueuing(ctx, GenerateInOutFromHU.class)
-				.newBlock()
-				.setContext(ctx)
-				.newWorkpackage()
+				.newWorkPackage()
 				.bindToThreadInheritedTrx()
 				.setUserInChargeId(Env.getLoggedUserIdIfExists(ctx).orElse(null)) // invoker
 				.parameters()
@@ -95,7 +93,7 @@ public class GenerateInOutFromHU extends WorkpackageProcessorAdapter
 				.setParameter(PARAMETERNAME_IsCompleteShipments, completeShipments)
 				.end()
 				.addElements(hus)
-				.build();
+				.buildAndEnqueue();
 	}
 
 	@Override

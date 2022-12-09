@@ -6,6 +6,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
@@ -14,6 +15,8 @@ import de.metas.util.lang.RepoIdAware;
 import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
+
+import javax.annotation.Nullable;
 
 /*
  * #%L
@@ -118,6 +121,13 @@ public class RangeAwareParams implements IRangeAwareParams
 		return values.getParameterAsBool(parameterName);
 	}
 
+	@Nullable
+	@Override
+	public Boolean getParameterAsBoolean(final String parameterName, @Nullable final Boolean defaultValue)
+	{
+		return values.getParameterAsBoolean(parameterName, defaultValue);
+	}
+
 	@Override
 	public Timestamp getParameterAsTimestamp(final String parameterName)
 	{
@@ -184,6 +194,7 @@ public class RangeAwareParams implements IRangeAwareParams
 		return values.getParameterAsZonedDateTime(parameterName);
 	}
 
+	@Nullable
 	@Override
 	public Instant getParameterAsInstant(final String parameterName)
 	{
@@ -196,4 +207,9 @@ public class RangeAwareParams implements IRangeAwareParams
 		return valuesTo.getParameterAsZonedDateTime(parameterName);
 	}
 
+	@Override
+	public <T extends Enum<T>> Optional<T> getParameterAsEnum(final String parameterName, final Class<T> enumType)
+	{
+		return values.getParameterAsEnum(parameterName, enumType);
+	}
 }

@@ -43,6 +43,8 @@ public class JsonExternalSystemRequest
 {
 	JsonMetasfreshId externalSystemConfigId;
 
+	String externalSystemChildConfigValue;
+
 	String orgCode;
 
 	JsonExternalSystemName externalSystemName;
@@ -73,7 +75,8 @@ public class JsonExternalSystemRequest
 			@JsonProperty("externalSystemConfigId") @NonNull final JsonMetasfreshId externalSystemConfigId,
 			@JsonProperty("parameters") @Singular final Map<String, String> parameters,
 			@JsonProperty("traceId") @NonNull final String traceId,
-			@JsonProperty("writeAuditEndpoint") @Nullable final String writeAuditEndpoint)
+			@JsonProperty("writeAuditEndpoint") @Nullable final String writeAuditEndpoint,
+			@JsonProperty("externalSystemChildConfigValue") @NonNull final String externalSystemChildConfigValue)
 	{
 		this.externalSystemConfigId = externalSystemConfigId;
 		this.orgCode = orgCode;
@@ -83,5 +86,6 @@ public class JsonExternalSystemRequest
 		this.parameters = parameters;
 		this.traceId = traceId;
 		this.writeAuditEndpoint = writeAuditEndpoint;
+		this.externalSystemChildConfigValue = externalSystemChildConfigValue;
 	}
 }

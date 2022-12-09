@@ -6,7 +6,6 @@ import de.metas.handlingunits.picking.job.repository.PickingJobRepository;
 import de.metas.handlingunits.picking.job.service.PickingJobHUReservationService;
 import de.metas.handlingunits.picking.job.service.PickingJobLockService;
 import de.metas.handlingunits.picking.job.service.PickingJobSlotService;
-import de.metas.inoutcandidate.api.IShipmentScheduleBL;
 import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
@@ -16,7 +15,6 @@ import org.adempiere.exceptions.AdempiereException;
 public class PickingJobCompleteCommand
 {
 	@NonNull private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	@NonNull private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 	@NonNull private final PickingJobRepository pickingJobRepository;
 	@NonNull private final PickingJobLockService pickingJobLockService;
 	@NonNull private final PickingJobSlotService pickingSlotService;
@@ -66,9 +64,6 @@ public class PickingJobCompleteCommand
 				.ifPresent(pickingSlotId -> pickingSlotService.release(pickingSlotId, initialPickingJob.getId()));
 
 		pickingJobHUReservationService.releaseAllReservations(pickingJob);
-
-		// TODO: instead of closing it, introduce M_ShipmentSchedule.QtyRejected
-		shipmentScheduleBL.closeShipmentSchedules(pickingJob.getShipmentScheduleIds());
 
 		pickingJobLockService.unlockShipmentSchedules(pickingJob);
 

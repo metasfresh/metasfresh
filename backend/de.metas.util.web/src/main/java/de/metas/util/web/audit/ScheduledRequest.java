@@ -22,6 +22,7 @@
 
 package de.metas.util.web.audit;
 
+import de.metas.util.web.audit.dto.ApiResponse;
 import lombok.NonNull;
 import lombok.Value;
 

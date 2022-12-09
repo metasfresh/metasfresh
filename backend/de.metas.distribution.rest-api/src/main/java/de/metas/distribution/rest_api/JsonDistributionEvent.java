@@ -8,7 +8,6 @@ import lombok.extern.jackson.Jacksonized;
 import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
-import java.math.BigDecimal;
 
 @Value
 public class JsonDistributionEvent
@@ -24,8 +23,7 @@ public class JsonDistributionEvent
 	@Jacksonized
 	public static class PickFrom
 	{
-		@NonNull BigDecimal qtyPicked;
-		@Nullable String qtyRejectedReasonCode;
+		@Nullable String qrCode;
 	}
 
 	@Nullable PickFrom pickFrom;

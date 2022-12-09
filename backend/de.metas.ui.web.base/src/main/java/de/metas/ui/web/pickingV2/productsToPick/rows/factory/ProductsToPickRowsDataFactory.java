@@ -25,8 +25,8 @@ package de.metas.ui.web.pickingV2.productsToPick.rows.factory;
 import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.plan.generator.CreatePickingPlanRequest;
-import de.metas.handlingunits.picking.plan.model.IssueToBOMLine;
 import de.metas.handlingunits.picking.plan.generator.pickFromHUs.PickFromHU;
+import de.metas.handlingunits.picking.plan.model.IssueToBOMLine;
 import de.metas.handlingunits.picking.plan.model.PickFromPickingOrder;
 import de.metas.handlingunits.picking.plan.model.PickingPlan;
 import de.metas.handlingunits.picking.plan.model.PickingPlanLine;
@@ -84,9 +84,9 @@ public class ProductsToPickRowsDataFactory
 	public ProductsToPickRowsData create(final PackageableRow packageableRow)
 	{
 		final PickingPlan plan = pickingCandidateService.createPlan(CreatePickingPlanRequest.builder()
-				.packageables(packageableRow.getPackageables())
-				.considerAttributes(considerAttributes)
-				.build());
+																			.packageables(packageableRow.getPackageables())
+																			.considerAttributes(considerAttributes)
+																			.build());
 		final ImmutableList<ProductsToPickRow> rows = plan.getLines()
 				.stream()
 				.map(this::toRow)
@@ -126,7 +126,7 @@ public class ProductsToPickRowsDataFactory
 		final ProductsToPickRowId rowId = ProductsToPickRowId.builder()
 				.productId(productInfo.getProductId())
 				.shipmentScheduleId(sourceDocumentInfo.getShipmentScheduleId())
-				.pickFromHUId(pickFromHU.getHuId())
+				.pickFromHUId(pickFromHU.getTopLevelHUId())
 				.build();
 
 		return ProductsToPickRow.builder()
@@ -173,10 +173,9 @@ public class ProductsToPickRowsDataFactory
 				.qty(planLine.getQty())
 				//
 				.includedRows(pickFromPickingOrder.getIssueToBOMLines()
-						.stream()
-						.map(this::toRow)
-						.collect(ImmutableList.toImmutableList()))
-				//
+									  .stream()
+									  .map(this::toRow)
+									  .collect(ImmutableList.toImmutableList()))
 				.build()
 				.withUpdatesFromPickingCandidateIfNotNull(sourceDocumentInfo.getExistingPickingCandidate());
 	}

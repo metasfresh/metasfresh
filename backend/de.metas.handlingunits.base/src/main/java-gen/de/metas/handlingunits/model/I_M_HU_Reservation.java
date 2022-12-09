@@ -1,8 +1,9 @@
 package de.metas.handlingunits.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for M_HU_Reservation
  *  @author metasfresh (generated) 
@@ -56,7 +57,7 @@ public interface I_M_HU_Reservation
 	 * Identifies a Business Partner
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	void setC_BPartner_Customer_ID (int C_BPartner_Customer_ID);
@@ -66,7 +67,7 @@ public interface I_M_HU_Reservation
 	 * Identifies a Business Partner
 	 *
 	 * <br>Type: Search
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
 	int getC_BPartner_Customer_ID();
@@ -168,6 +169,31 @@ public interface I_M_HU_Reservation
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Distribution Order Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDD_OrderLine_ID (int DD_OrderLine_ID);
+
+	/**
+	 * Get Distribution Order Line.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getDD_OrderLine_ID();
+
+	@Nullable org.eevolution.model.I_DD_OrderLine getDD_OrderLine();
+
+	void setDD_OrderLine(@Nullable org.eevolution.model.I_DD_OrderLine DD_OrderLine);
+
+	ModelColumn<I_M_HU_Reservation, org.eevolution.model.I_DD_OrderLine> COLUMN_DD_OrderLine_ID = new ModelColumn<>(I_M_HU_Reservation.class, "DD_OrderLine_ID", org.eevolution.model.I_DD_OrderLine.class);
+	String COLUMNNAME_DD_OrderLine_ID = "DD_OrderLine_ID";
 
 	/**
 	 * Set Active.

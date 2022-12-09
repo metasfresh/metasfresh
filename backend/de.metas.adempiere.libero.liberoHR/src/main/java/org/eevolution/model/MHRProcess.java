@@ -15,20 +15,12 @@
  *****************************************************************************/
 package org.eevolution.model;
 
-import java.io.File;
-import java.math.BigDecimal;
-import java.sql.ResultSet;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
+import de.metas.document.engine.IDocument;
+import de.metas.document.engine.IDocumentBL;
+import de.metas.logging.LogManager;
+import de.metas.script.IADRuleDAO;
+import de.metas.script.ScriptEngineFactory;
+import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_AD_Rule;
 import org.compiere.model.MBPartner;
@@ -37,18 +29,22 @@ import org.compiere.model.MPeriod;
 import org.compiere.model.ModelValidationEngine;
 import org.compiere.model.ModelValidator;
 import org.compiere.model.Query;
-import org.compiere.print.ReportEngine;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.slf4j.Logger;
 
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
-import de.metas.logging.LogManager;
-import de.metas.script.IADRuleDAO;
-import de.metas.script.ScriptEngineFactory;
-import de.metas.util.Services;
+import java.io.File;
+import java.math.BigDecimal;
+import java.sql.ResultSet;
+import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * HR Process Model
@@ -57,7 +53,7 @@ import de.metas.util.Services;
  *         <li>Original contributor of Payroll Functionality
  * @author victor.perez@e-evolution.com, e-Evolution http://www.e-evolution.com
  *         <li>FR [ 2520591 ] Support multiples calendar for Org
- * @see http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
+ * @implNote  http://sourceforge.net/tracker2/?func=detail&atid=879335&aid=2520591&group_id=176962
  * @author Cristina Ghita, www.arhipac.ro
  */
 public class MHRProcess extends X_HR_Process implements IDocument
@@ -1034,145 +1030,6 @@ public class MHRProcess extends X_HR_Process implements IDocument
 	} // getConceptGroup
 
 	/**
-	 * Helper Method : Get Concept [get concept to search key ]
-	 *
-	 * @param pList Value List
-	 * @param amount Amount to search
-	 * @param column Number of column to return (1.......8)
-	 * @return The amount corresponding to the designated column 'column'
-	 */
-	public double getList(String pList, double amount, String columnParam)
-	{
-		BigDecimal value = Env.ZERO;
-		String column = columnParam;
-		if (m_columnType.equals(MHRConcept.COLUMNTYPE_Amount))
-		{
-			column = column.toString().length() == 1 ? "Col_" + column : "Amount" + column;
-			ArrayList<Object> params = new ArrayList<>();
-			String sqlList = "SELECT " + column +
-					" FROM HR_List l " +
-					"INNER JOIN HR_ListVersion lv ON (lv.HR_List_ID=l.HR_List_ID) " +
-					"INNER JOIN HR_ListLine ll ON (ll.HR_ListVersion_ID=lv.HR_ListVersion_ID) " +
-					"WHERE l.IsActive='Y' AND lv.IsActive='Y' AND ll.IsActive='Y' AND l.Value = ? AND " +
-					"l.AD_Client_ID = ? AND " +
-					"(? BETWEEN lv.ValidFrom AND lv.ValidTo ) AND " +
-					"(? BETWEEN ll.MinValue AND	ll.MaxValue)";
-			params.add(pList);
-			params.add(getAD_Client_ID());
-			params.add(m_dateFrom);
-			params.add(BigDecimal.valueOf(amount));
-
-			value = DB.getSQLValueBDEx(get_TrxName(), sqlList, params);
-		}
-		//
-		if (value == null)
-		{
-			throw new IllegalStateException("getList Out of Range");
-		}
-		return value.doubleValue();
-	} // getList
-
-	/**
-	 * Helper Method : Get Attribute [get Attribute to search key concept ]
-	 *
-	 * @param pConcept - Value to Concept
-	 * @return Amount of concept, applying to employee
-	 */
-	public double getAttribute(String pConcept)
-	{
-		MHRConcept concept = MHRConcept.forValue(getCtx(), pConcept);
-		if (concept == null)
-		{
-			return 0;
-		}
-
-		ArrayList<Object> params = new ArrayList<>();
-		StringBuffer whereClause = new StringBuffer();
-		// check ValidFrom:
-		whereClause.append(MHRAttribute.COLUMNNAME_ValidFrom + "<=?");
-		params.add(m_dateFrom);
-		// check client
-		whereClause.append(" AND AD_Client_ID = ?");
-		params.add(getAD_Client_ID());
-		// check concept
-		whereClause.append(" AND EXISTS (SELECT 1 FROM HR_Concept c WHERE c.HR_Concept_ID=HR_Attribute.HR_Concept_ID"
-				+ " AND c.Value = ?)");
-		params.add(pConcept);
-		//
-		if (!concept.getType().equals(MHRConcept.TYPE_Information))
-		{
-			whereClause.append(" AND " + MHRAttribute.COLUMNNAME_C_BPartner_ID + " = ?");
-			params.add(m_C_BPartner_ID);
-		}
-
-		MHRAttribute attribute = new Query(getCtx(), MHRAttribute.Table_Name, whereClause.toString(), get_TrxName())
-				.setParameters(params)
-				.setOrderBy(MHRAttribute.COLUMNNAME_ValidFrom + " DESC")
-				.first();
-		if (attribute == null)
-		{
-			return 0.0;
-		}
-
-		// if column type is Quantity return quantity
-		if (concept.getColumnType().equals(MHRConcept.COLUMNTYPE_Quantity))
-		{
-			return attribute.getQty().doubleValue();
-		}
-
-		// if column type is Amount return amount
-		if (concept.getColumnType().equals(MHRConcept.COLUMNTYPE_Amount))
-		{
-			return attribute.getAmount().doubleValue();
-		}
-
-		// something else
-		return 0.0; // TODO throw exception ??
-	} // getAttribute
-
-	/**
-	 * Helper Method : Get Attribute [get Attribute to search key concept ]
-	 *
-	 * @param conceptValue
-	 * @return ServiceDate
-	 */
-	public Timestamp getAttributeDate(String conceptValue)
-	{
-		MHRConcept concept = MHRConcept.forValue(getCtx(), conceptValue);
-		if (concept == null)
-		{
-			return null;
-		}
-
-		ArrayList<Object> params = new ArrayList<>();
-		StringBuffer whereClause = new StringBuffer();
-		// check client
-		whereClause.append("AD_Client_ID = ?");
-		params.add(getAD_Client_ID());
-		// check concept
-		whereClause.append(" AND EXISTS (SELECT 1 FROM HR_Concept c WHERE c.HR_Concept_ID=HR_Attribute.HR_Concept_ID"
-				+ " AND c.Value = ?)");
-		params.add(conceptValue);
-		//
-		if (!concept.getType().equals(MHRConcept.TYPE_Information))
-		{
-			whereClause.append(" AND " + MHRAttribute.COLUMNNAME_C_BPartner_ID + " = ?");
-			params.add(m_C_BPartner_ID);
-		}
-
-		MHRAttribute attribute = new Query(getCtx(), MHRAttribute.Table_Name, whereClause.toString(), get_TrxName())
-				.setParameters(params)
-				.setOrderBy(MHRAttribute.COLUMNNAME_ValidFrom + " DESC")
-				.first();
-		if (attribute == null)
-		{
-			return null;
-		}
-
-		return attribute.getServiceDate();
-	} // getAttributeDate
-
-	/**
 	 * Helper Method : Get the number of days between start and end, in Timestamp format
 	 *
 	 * @param date1
@@ -1200,63 +1057,6 @@ public class MHRProcess extends X_HR_Process implements IDocument
 	}  // getDays
 
 	/**
-	 * Helper Method : Get Months, Date in Format Timestamp
-	 *
-	 * @param start
-	 * @param end
-	 * @return no. of month between two dates
-	 */
-	public int getMonths(Timestamp startParam, Timestamp endParam)
-	{
-		boolean negative = false;
-		Timestamp start = startParam;
-		Timestamp end = endParam;
-		if (end.before(start))
-		{
-			negative = true;
-			Timestamp temp = start;
-			start = end;
-			end = temp;
-		}
-
-		GregorianCalendar cal = new GregorianCalendar();
-		cal.setTime(start);
-		cal.set(Calendar.HOUR_OF_DAY, 0);
-		cal.set(Calendar.MINUTE, 0);
-		cal.set(Calendar.SECOND, 0);
-		cal.set(Calendar.MILLISECOND, 0);
-		GregorianCalendar calEnd = new GregorianCalendar();
-
-		calEnd.setTime(end);
-		calEnd.set(Calendar.HOUR_OF_DAY, 0);
-		calEnd.set(Calendar.MINUTE, 0);
-		calEnd.set(Calendar.SECOND, 0);
-		calEnd.set(Calendar.MILLISECOND, 0);
-
-		if (cal.get(Calendar.YEAR) == calEnd.get(Calendar.YEAR))
-		{
-			if (negative)
-			{
-				return (calEnd.get(Calendar.MONTH) - cal.get(Calendar.MONTH)) * -1;
-			}
-			return calEnd.get(Calendar.MONTH) - cal.get(Calendar.MONTH);
-		}
-
-		// not very efficient, but correct
-		int counter = 0;
-		while (calEnd.after(cal))
-		{
-			cal.add(Calendar.MONTH, 1);
-			counter++;
-		}
-		if (negative)
-		{
-			return counter * -1;
-		}
-		return counter;
-	} // getMonths
-
-	/**
 	 * Helper Method : Concept for a range from-to in periods.
 	 * Periods with values of 0 -1 1, etc. actual previous one period, next period
 	 * 0 corresponds to actual period.
@@ -1274,11 +1074,6 @@ public class MHRProcess extends X_HR_Process implements IDocument
 	 * Helper Method : Concept by range from-to in periods from a different payroll
 	 * periods with values 0 -1 1, etc. actual previous one period, next period
 	 * 0 corresponds to actual period
-	 *
-	 * @param conceptValue
-	 * @param pFrom
-	 * @param pTo the search is done by the period value, it helps to search from previous years
-	 * @param payrollValue is the value of the payroll.
 	 */
 	public double getConcept(String conceptValue, String payrollValue, int periodFrom, int periodTo)
 	{
@@ -1354,11 +1149,6 @@ public class MHRProcess extends X_HR_Process implements IDocument
 
 	/**
 	 * Helper Method: gets Concept value of a payrroll between 2 dates
-	 *
-	 * @param pConcept
-	 * @param pPayrroll
-	 * @param from
-	 * @param to
 	 */
 	public double getConcept(String conceptValue, String payrollValue, Timestamp from, Timestamp to)
 	{

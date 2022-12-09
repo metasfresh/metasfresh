@@ -43,6 +43,7 @@ import de.metas.workflow.rest_api.model.WFProcessId;
 import de.metas.workflow.rest_api.model.WorkflowLaunchersList;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ISysConfigBL;
 import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
@@ -53,6 +54,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiFunction;
 import java.util.function.UnaryOperator;
+import java.util.stream.Stream;
 
 @Service
 public class WorkflowRestAPIService
@@ -66,7 +68,7 @@ public class WorkflowRestAPIService
 	private final MobileApplicationsMap applications;
 	private final WFActivityHandlersRegistry wfActivityHandlersRegistry;
 
-	WorkflowRestAPIService(
+	public WorkflowRestAPIService(
 			@NonNull final Optional<List<MobileApplication>> applications,
 			@NonNull final WFActivityHandlersRegistry wfActivityHandlersRegistry)
 	{
@@ -86,8 +88,28 @@ public class WorkflowRestAPIService
 			@NonNull final UserId userId,
 			@NonNull final Duration maxStaleAccepted)
 	{
-		return applications.getById(applicationId)
+		return getWorkflowBasedMobileApplication(applicationId)
 				.provideLaunchers(userId, getLaunchersLimit(), maxStaleAccepted);
+	}
+
+	private WorkflowBasedMobileApplication getWorkflowBasedMobileApplication(@NonNull final MobileApplicationId applicationId)
+	{
+		final MobileApplication mobileApplication = applications.getById(applicationId);
+		if (mobileApplication instanceof WorkflowBasedMobileApplication)
+		{
+			return (WorkflowBasedMobileApplication)mobileApplication;
+		}
+		else
+		{
+			throw new AdempiereException("Application '" + applicationId + "' is not a workflow based application");
+		}
+	}
+
+	private Stream<WorkflowBasedMobileApplication> streamWorkflowBasedMobileApplications()
+	{
+		return applications.stream()
+				.filter(app -> app instanceof WorkflowBasedMobileApplication)
+				.map(app -> (WorkflowBasedMobileApplication)app);
 	}
 
 	@Deprecated
@@ -97,14 +119,14 @@ public class WorkflowRestAPIService
 	{
 		final QueryLimit suggestedLimit = getLaunchersLimit();
 
-		return applications.stream()
+		return streamWorkflowBasedMobileApplications()
 				.map(application -> provideLaunchersNoFail(application, userId, suggestedLimit, maxStaleAccepted))
 				.reduce(WorkflowLaunchersList::mergeWith)
 				.orElseGet(WorkflowLaunchersList::emptyNow);
 	}
 
 	private static WorkflowLaunchersList provideLaunchersNoFail(
-			@NonNull final MobileApplication application,
+			@NonNull final WorkflowBasedMobileApplication application,
 			@NonNull final UserId userId,
 			@NonNull final QueryLimit suggestedLimit,
 			@NonNull final Duration maxStaleAccepted)
@@ -131,8 +153,7 @@ public class WorkflowRestAPIService
 
 	public WFProcess getWFProcessById(@NonNull final WFProcessId wfProcessId)
 	{
-		return applications
-				.getById(wfProcessId.getApplicationId())
+		return getWorkflowBasedMobileApplication(wfProcessId.getApplicationId())
 				.getWFProcessById(wfProcessId);
 	}
 
@@ -140,33 +161,29 @@ public class WorkflowRestAPIService
 			@NonNull final WFProcessId wfProcessId,
 			@NonNull final UnaryOperator<WFProcess> remappingFunction)
 	{
-		return applications
-				.getById(wfProcessId.getApplicationId())
+		return getWorkflowBasedMobileApplication(wfProcessId.getApplicationId())
 				.changeWFProcessById(wfProcessId, remappingFunction);
 	}
 
 	public WFProcess startWorkflow(@NonNull final WorkflowStartRequest request)
 	{
-		return applications
-				.getById(request.getApplicationId())
+		return getWorkflowBasedMobileApplication(request.getApplicationId())
 				.startWorkflow(request);
 	}
 
 	public void abortWFProcess(@NonNull final WFProcessId wfProcessId, @NonNull final UserId callerId)
 	{
-		applications
-				.getById(wfProcessId.getApplicationId())
+		getWorkflowBasedMobileApplication(wfProcessId.getApplicationId())
 				.abort(wfProcessId, callerId);
 	}
 
 	public void abortAllWFProcesses(@NonNull final UserId callerId)
 	{
-		applications
-				.stream()
+		streamWorkflowBasedMobileApplications()
 				.forEach(application -> abortAllNoFail(application, callerId));
 	}
 
-	private static void abortAllNoFail(@NonNull final MobileApplication application, final @NonNull UserId callerId)
+	private static void abortAllNoFail(@NonNull final WorkflowBasedMobileApplication application, final @NonNull UserId callerId)
 	{
 		try
 		{
@@ -180,8 +197,7 @@ public class WorkflowRestAPIService
 
 	public WFProcessHeaderProperties getHeaderProperties(@NonNull final WFProcess wfProcess)
 	{
-		return applications
-				.getById(wfProcess.getId().getApplicationId())
+		return getWorkflowBasedMobileApplication(wfProcess.getId().getApplicationId())
 				.getHeaderProperties(wfProcess);
 	}
 

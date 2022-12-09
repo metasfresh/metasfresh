@@ -1,29 +1,17 @@
 package de.metas.invoice.export;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.util.lang.impl.TableRecordReference;
-import org.slf4j.Logger;
-import org.slf4j.MDC.MDCCloseable;
-import org.springframework.stereotype.Service;
-
+import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.io.ByteStreams;
-
-import ch.qos.logback.classic.Level;
 import de.metas.adempiere.model.I_C_Invoice;
 import de.metas.attachments.AttachmentEntryCreateRequest;
 import de.metas.attachments.AttachmentEntryService;
 import de.metas.attachments.AttachmentTags;
+import de.metas.invoice.InvoiceId;
 import de.metas.invoice_gateway.api.InvoiceExportServiceRegistry;
 import de.metas.invoice_gateway.spi.InvoiceExportClient;
 import de.metas.invoice_gateway.spi.InvoiceExportClientFactory;
 import de.metas.invoice_gateway.spi.model.InvoiceExportResult;
-import de.metas.invoice_gateway.spi.model.InvoiceId;
 import de.metas.invoice_gateway.spi.model.export.InvoiceToExport;
 import de.metas.logging.LogManager;
 import de.metas.logging.TableRecordMDC;
@@ -31,6 +19,16 @@ import de.metas.util.ILoggable;
 import de.metas.util.Loggables;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.util.lang.impl.TableRecordReference;
+import org.slf4j.Logger;
+import org.slf4j.MDC.MDCCloseable;
+import org.springframework.stereotype.Service;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -126,7 +124,7 @@ public class InvoiceExportService
 
 	private AttachmentEntryCreateRequest createAttachmentRequest(@NonNull final InvoiceExportResult exportResult)
 	{
-		byte[] byteArrayData;
+		final byte[] byteArrayData;
 		try
 		{
 			byteArrayData = ByteStreams.toByteArray(exportResult.getData());

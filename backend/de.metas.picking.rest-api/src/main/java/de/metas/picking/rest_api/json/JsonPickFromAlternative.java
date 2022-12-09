@@ -1,6 +1,7 @@
 package de.metas.picking.rest_api.json;
 
 import de.metas.handlingunits.picking.job.model.PickingJobPickFromAlternative;
+import de.metas.handlingunits.qrcodes.model.json.JsonRenderedHUQRCode;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -15,7 +16,7 @@ public class JsonPickFromAlternative
 {
 	@NonNull String id;
 	@NonNull String locatorName;
-	@NonNull String huBarcode;
+	@NonNull JsonRenderedHUQRCode huQRCode;
 	@NonNull String uom;
 	@NonNull BigDecimal qtyAvailable;
 
@@ -24,7 +25,7 @@ public class JsonPickFromAlternative
 		return builder()
 				.id(from.getId().getAsString())
 				.locatorName(from.getLocatorInfo().getCaption())
-				.huBarcode(from.getPickFromHU().getBarcode().getAsString())
+				.huQRCode(from.getPickFromHU().getQrCode().toRenderedJson())
 				.uom(from.getQtyAvailable().getUOMSymbol())
 				.qtyAvailable(from.getQtyAvailable().toBigDecimal())
 				.build();

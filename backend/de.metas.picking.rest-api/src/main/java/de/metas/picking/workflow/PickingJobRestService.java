@@ -27,10 +27,10 @@ import de.metas.handlingunits.picking.job.model.PickingJobCandidate;
 import de.metas.handlingunits.picking.job.model.PickingJobId;
 import de.metas.handlingunits.picking.job.model.PickingJobReference;
 import de.metas.handlingunits.picking.job.model.PickingJobStepEvent;
-import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
 import de.metas.handlingunits.picking.job.service.PickingJobService;
-import de.metas.inoutcandidate.ShipmentScheduleId;
-import de.metas.picking.api.PickingSlotBarcode;
+import de.metas.handlingunits.picking.job.service.commands.PickingJobCreateRequest;
+import de.metas.inout.ShipmentScheduleId;
+import de.metas.picking.qrcode.PickingSlotQRCode;
 import de.metas.user.UserId;
 import lombok.NonNull;
 import org.adempiere.ad.service.IADReferenceDAO;
@@ -87,9 +87,9 @@ public class PickingJobRestService
 
 	public PickingJob allocateAndSetPickingSlot(
 			@NonNull final PickingJob pickingJob,
-			@NonNull final PickingSlotBarcode pickingSlotBarcode)
+			@NonNull final PickingSlotQRCode pickingSlotQRCode)
 	{
-		return pickingJobService.allocateAndSetPickingSlot(pickingJob, pickingSlotBarcode);
+		return pickingJobService.allocateAndSetPickingSlot(pickingJob, pickingSlotQRCode);
 	}
 
 	public PickingJob processStepEvents(

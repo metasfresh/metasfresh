@@ -22,12 +22,14 @@ package de.metas.location.impl;
  * #L%
  */
 
-
-import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
-
+import de.metas.cache.annotation.CacheCtx;
+import de.metas.cache.annotation.CacheTrx;
+import de.metas.location.CountryAreaId;
+import de.metas.location.CountryId;
+import de.metas.location.ICountryAreaBL;
+import de.metas.location.ICountryDAO;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.exceptions.AdempiereException;
@@ -35,19 +37,17 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.proxy.Cached;
 import org.compiere.model.I_C_CountryArea;
 import org.compiere.model.I_C_CountryArea_Assign;
+import org.compiere.util.Env;
 
-import de.metas.cache.annotation.CacheCtx;
-import de.metas.cache.annotation.CacheTrx;
-import de.metas.location.CountryId;
-import de.metas.location.ICountryAreaBL;
-import de.metas.location.ICountryDAO;
-import de.metas.util.Services;
-import lombok.NonNull;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Properties;
 
 public class CountryAreaBL implements ICountryAreaBL
 {
 	@Override
-	public boolean isMemberOf(Properties ctx,
+	public boolean isMemberOf(final Properties ctx,
 			@NonNull final String countryAreaKey,
 			@NonNull final String countryCode,
 			@NonNull final Timestamp date)
@@ -64,7 +64,7 @@ public class CountryAreaBL implements ICountryAreaBL
 		for (final I_C_CountryArea_Assign assignment : retrieveCountryAreaAssignments(ctx, countryArea.getC_CountryArea_ID(), trxName))
 		{
 			final CountryId assignmentCountryId = CountryId.ofRepoId(assignment.getC_Country_ID());
-			if(!CountryId.equals(assignmentCountryId, countryId))
+			if (!CountryId.equals(assignmentCountryId, countryId))
 			{
 				continue;
 			}
@@ -89,7 +89,7 @@ public class CountryAreaBL implements ICountryAreaBL
 	 * @return country area based on a search key
 	 */
 	@Cached(cacheName = I_C_CountryArea.Table_Name)
-	public I_C_CountryArea retrieveCountryAreaByValue(@CacheCtx Properties ctx, String countryAreaKey, @CacheTrx String trxName)
+	public I_C_CountryArea retrieveCountryAreaByValue(@CacheCtx final Properties ctx, final String countryAreaKey, @CacheTrx final String trxName)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_CountryArea.class, ctx, ITrx.TRXNAME_None)
@@ -104,7 +104,7 @@ public class CountryAreaBL implements ICountryAreaBL
 	}
 
 	@Cached(cacheName = I_C_CountryArea_Assign.Table_Name + "_ByCountryArea")
-	/* package */ List<I_C_CountryArea_Assign> retrieveCountryAreaAssignments(@CacheCtx final Properties ctx, final int countryAreaId, @CacheTrx final String trxName)
+		/* package */ List<I_C_CountryArea_Assign> retrieveCountryAreaAssignments(@CacheCtx final Properties ctx, final int countryAreaId, @CacheTrx final String trxName)
 	{
 		return Services.get(IQueryBL.class)
 				.createQueryBuilder(I_C_CountryArea_Assign.class, ctx, ITrx.TRXNAME_None)
@@ -114,14 +114,14 @@ public class CountryAreaBL implements ICountryAreaBL
 				.list(I_C_CountryArea_Assign.class);
 	}
 
-	private List<I_C_CountryArea_Assign> retrieveCountryAreaAssignments(I_C_CountryArea countryArea, int countryId)
+	private List<I_C_CountryArea_Assign> retrieveCountryAreaAssignments(final I_C_CountryArea countryArea, final int countryId)
 	{
 		final Properties ctx = InterfaceWrapperHelper.getCtx(countryArea);
 		final String trxName = InterfaceWrapperHelper.getTrxName(countryArea);
 		final int countryAreaId = countryArea.getC_CountryArea_ID();
 
 		final List<I_C_CountryArea_Assign> result = new ArrayList<>();
-		for (I_C_CountryArea_Assign assignment : retrieveCountryAreaAssignments(ctx, countryAreaId, trxName))
+		for (final I_C_CountryArea_Assign assignment : retrieveCountryAreaAssignments(ctx, countryAreaId, trxName))
 		{
 			if (assignment.getC_Country_ID() == countryId)
 			{
@@ -133,10 +133,10 @@ public class CountryAreaBL implements ICountryAreaBL
 	}
 
 	@Override
-	public void validate(I_C_CountryArea_Assign assignment)
+	public void validate(final I_C_CountryArea_Assign assignment)
 	{
 		final I_C_CountryArea countryArea = assignment.getC_CountryArea();
-		for (I_C_CountryArea_Assign instance : retrieveCountryAreaAssignments(countryArea, assignment.getC_Country_ID()))
+		for (final I_C_CountryArea_Assign instance : retrieveCountryAreaAssignments(countryArea, assignment.getC_Country_ID()))
 		{
 			if (isTimeConflict(assignment, instance))
 			{
@@ -148,12 +148,11 @@ public class CountryAreaBL implements ICountryAreaBL
 	}
 
 	/**
-	 *
 	 * @param newEntry
 	 * @param oldEntry
 	 * @return true if <code>newEntry</code>'s and <code>oldEntry</code>'s date/time intervals are overlapping
 	 */
-	protected boolean isTimeConflict(I_C_CountryArea_Assign newEntry, I_C_CountryArea_Assign oldEntry)
+	protected boolean isTimeConflict(final I_C_CountryArea_Assign newEntry, final I_C_CountryArea_Assign oldEntry)
 	{
 		if (newEntry.equals(oldEntry))
 		{
@@ -161,27 +160,22 @@ public class CountryAreaBL implements ICountryAreaBL
 		}
 		if (newEntry.getValidFrom().compareTo(oldEntry.getValidFrom()) <= 0)
 		{
-			if ((newEntry.getValidTo() == null) || (newEntry.getValidTo().compareTo(oldEntry.getValidFrom()) > 0))
-			{
-				return true;
-			}
-			else
-			{
-				return false;
-			}
+			return (newEntry.getValidTo() == null) || (newEntry.getValidTo().compareTo(oldEntry.getValidFrom()) > 0);
 		}
 		else
 		{
-			if ((oldEntry.getValidTo() == null) || (oldEntry.getValidTo().compareTo(newEntry.getValidFrom()) > 0))
-			{
-				return true;
-			}
-			else
-			{
-				return false;
-			}
+			return (oldEntry.getValidTo() == null) || (oldEntry.getValidTo().compareTo(newEntry.getValidFrom()) > 0);
 		}
 
+	}
+
+	public boolean isMemberOf(@NonNull final CountryAreaId countryAreaId, @NonNull final CountryId countryId)
+	{
+		return retrieveCountryAreaAssignments(Env.getCtx(), countryAreaId.getRepoId(), ITrx.TRXNAME_None)
+				.stream()
+				.map(I_C_CountryArea_Assign::getC_Country_ID)
+				.map(CountryId::ofRepoId)
+				.anyMatch(countryId::equals);
 	}
 
 }

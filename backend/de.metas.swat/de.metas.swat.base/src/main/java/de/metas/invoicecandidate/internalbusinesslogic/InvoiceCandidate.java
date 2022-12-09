@@ -29,7 +29,6 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
-import java.util.Optional;
 
 import static de.metas.common.util.CoalesceUtil.coalesce;
 import static java.math.BigDecimal.ZERO;
@@ -345,10 +344,23 @@ public class InvoiceCandidate
 		if (invoicedData != null)
 		{
 			// subtract the qty that was already invoiced
-			return new ToInvoiceExclOverride(
-					ToInvoiceExclOverride.InvoicedQtys.SUBTRACTED,
-					qtyToInvoice.getQtysRaw().subtract(invoicedData.getQtys()),
-					qtyToInvoice.getQtysCalc().subtract(invoicedData.getQtys()));
+			final boolean expectingPositiveValues = orderedData.getQty().signum() >= 0;
+
+			final StockQtyAndUOMQty qtysRaw;
+			final StockQtyAndUOMQty qtyCalc;
+
+			if (expectingPositiveValues)
+			{
+				qtysRaw = StockQtyAndUOMQty.toZeroIfNegative(qtyToInvoice.getQtysRaw().subtract(invoicedData.getQtys()));
+				qtyCalc = StockQtyAndUOMQty.toZeroIfNegative(qtyToInvoice.getQtysCalc().subtract(invoicedData.getQtys()));
+			}
+			else
+			{
+				qtysRaw = StockQtyAndUOMQty.toZeroIfPositive(qtyToInvoice.getQtysRaw().subtract(invoicedData.getQtys()));
+				qtyCalc = StockQtyAndUOMQty.toZeroIfPositive(qtyToInvoice.getQtysCalc().subtract(invoicedData.getQtys()));
+			}
+
+			return new ToInvoiceExclOverride(ToInvoiceExclOverride.InvoicedQtys.SUBTRACTED, qtysRaw, qtyCalc);
 		}
 		else
 		{

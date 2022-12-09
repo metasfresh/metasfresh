@@ -6,6 +6,8 @@ import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
 import lombok.Value;
 
+import javax.annotation.Nullable;
+
 @Value
 public class MovementId implements RepoIdAware
 {
@@ -33,4 +35,6 @@ public class MovementId implements RepoIdAware
 	{
 		return repoId;
 	}
+
+	public static int toRepoId(@Nullable final MovementId id) {return id != null ? id.getRepoId() : -1;}
 }

@@ -25,6 +25,7 @@ package de.metas.attachments.listener;
 import com.google.common.collect.ImmutableList;
 import de.metas.CreatedUpdatedInfo;
 import de.metas.attachments.AttachmentEntry;
+import de.metas.attachments.AttachmentEntryType;
 import de.metas.javaclasses.model.I_AD_JavaClass;
 import de.metas.javaclasses.model.I_AD_JavaClass_Type;
 import de.metas.user.UserId;
@@ -74,7 +75,7 @@ public class AttachmentListenerServiceTest
 	{
 		final TableRecordReference tableRecordReferenceMock = TableRecordReference.of(MOCK_AD_TABLE_ID, MOCK_RECORD_ID);
 		final AttachmentEntry attachmentEntryMock = AttachmentEntry.builder()
-				.type(AttachmentEntry.Type.Data)
+				.type(AttachmentEntryType.Data)
 				.linkedRecord(tableRecordReferenceMock)
 				.createdUpdatedInfo(CreatedUpdatedInfo.createNew(UserId.ofRepoId(10), ZonedDateTime.now()))
 				.build();

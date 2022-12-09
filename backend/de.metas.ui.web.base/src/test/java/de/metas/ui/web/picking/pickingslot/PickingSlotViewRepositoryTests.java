@@ -7,6 +7,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 import java.util.function.Consumer;
 
+import com.google.common.collect.ImmutableSet;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.warehouse.WarehouseId;
 import org.junit.jupiter.api.BeforeEach;
@@ -20,7 +21,7 @@ import com.google.common.collect.ListMultimap;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.PickingCandidatesQuery;
-import de.metas.inoutcandidate.ShipmentScheduleId;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.model.I_M_PickingSlot;
 import de.metas.ui.web.handlingunits.HUEditorRow;
@@ -77,7 +78,7 @@ public class PickingSlotViewRepositoryTests
 	{
 		final ShipmentScheduleId shipmentScheduleId = createShipmentSchedule();
 
-		createPickingSlot(pickingSlot -> {
+		final PickingSlotId pickingSlotId = createPickingSlot(pickingSlot -> {
 			pickingSlot.setIsPickingRackSystem(true);
 		});
 
@@ -85,6 +86,7 @@ public class PickingSlotViewRepositoryTests
 				PickingCandidatesQuery.builder()
 						.shipmentScheduleId(shipmentScheduleId)
 						.onlyNotClosedOrNotRackSystem(true)
+						.onlyPickingSlotIds(ImmutableSet.of(pickingSlotId))
 						.build()))
 				.thenReturn(ImmutableListMultimap.of());
 
@@ -130,6 +132,7 @@ public class PickingSlotViewRepositoryTests
 					PickingCandidatesQuery.builder()
 							.shipmentScheduleId(shipmentScheduleId)
 							.onlyNotClosedOrNotRackSystem(true)
+							.onlyPickingSlotIds(ImmutableSet.of(pickingSlotId))
 							.build()))
 					.thenReturn(husIndexedByPickingSlotId);
 		}

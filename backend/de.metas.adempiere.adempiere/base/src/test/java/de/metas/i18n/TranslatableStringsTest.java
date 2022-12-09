@@ -76,4 +76,26 @@ public class TranslatableStringsTest
 			assertThat(ConstantTranslatableString.EMPTY.isEmpty()).isTrue();
 		}
 	}
+
+	@Nested
+	public class parse
+	{
+		@Test
+		void test()
+		{
+			final ITranslatableString result = TranslatableStrings.parse("we use @var1@ and @var2@ bla bla.");
+			assertThat(result)
+					.usingRecursiveComparison()
+					.isEqualTo(new CompositeTranslatableString(
+							ImmutableList.of(
+									ConstantTranslatableString.of("we use "),
+									TranslatableStrings.adElementOrMessage("var1"),
+									ConstantTranslatableString.of(" and "),
+									TranslatableStrings.adElementOrMessage("var2"),
+									ConstantTranslatableString.of(" bla bla.")
+							),
+							""));
+
+		}
+	}
 }

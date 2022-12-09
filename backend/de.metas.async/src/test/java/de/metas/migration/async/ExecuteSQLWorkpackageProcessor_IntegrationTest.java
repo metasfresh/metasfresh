@@ -1,10 +1,5 @@
 package de.metas.migration.async;
 
-import java.util.Properties;
-
-import org.compiere.util.Env;
-import org.junit.Test;
-
 import ch.qos.logback.classic.Level;
 import de.metas.async.QueueProcessorTestBase;
 import de.metas.async.model.I_C_Queue_Processor;
@@ -14,6 +9,10 @@ import de.metas.async.processor.impl.QueueProcessorsExecutor;
 import de.metas.logging.LogManager;
 import de.metas.migration.async.MockedExecuteSQLWorkpackageProcessor.ExecuteSQLWorkpackageExpectation;
 import de.metas.util.Services;
+import org.compiere.util.Env;
+import org.junit.Test;
+
+import java.util.Properties;
 
 /*
  * #%L
@@ -68,9 +67,7 @@ public class ExecuteSQLWorkpackageProcessor_IntegrationTest extends QueueProcess
 		final Properties ctx = Env.getCtx();
 		return Services.get(IWorkPackageQueueFactory.class)
 				.getQueueForEnqueuing(ctx, MockedExecuteSQLWorkpackageProcessor.class)
-				.newBlock()
-				.setContext(ctx)
-				.newWorkpackage()
+				.newWorkPackage()
 				//
 				// Workpackage Parameters
 				.parameters()
@@ -78,7 +75,7 @@ public class ExecuteSQLWorkpackageProcessor_IntegrationTest extends QueueProcess
 				.end()
 				//
 				// Build & enqueue
-				.build();
+				.buildAndEnqueue();
 	}
 
 	@Test

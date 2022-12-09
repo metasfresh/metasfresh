@@ -23,6 +23,7 @@ import de.metas.material.dispo.service.event.handler.receiptschedule.ReceiptsSch
 import de.metas.material.dispo.service.event.handler.receiptschedule.ReceiptsScheduleUpdatedHandler;
 import de.metas.material.dispo.service.integration.OnePurchase_SeveralReceipts_Test.AfterTest;
 import de.metas.material.event.MaterialEventHandlerRegistry;
+import de.metas.material.event.MaterialEventObserver;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.material.event.commons.AttributesKeyPart;
@@ -144,7 +145,8 @@ public class OnePurchase_SeveralReceipts_Test
 
 		materialEventHandlerRegistry = new MaterialEventHandlerRegistry(
 				Optional.of(ImmutableList.of(receiptsScheduleCreatedHandler, receiptsScheduleUpdatedHandler, transactionEventHandler)),
-				eventLogUserService);
+				eventLogUserService,
+				new MaterialEventObserver());
 	}
 
 	private EventLogUserService createEventLogUserService()

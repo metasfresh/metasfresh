@@ -20,6 +20,8 @@ import de.metas.util.GuavaCollectors;
 import lombok.NonNull;
 import lombok.ToString;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * metasfresh-webui-api
@@ -163,7 +165,7 @@ public final class PickingSlotRowsCollection
 					.collect(GuavaCollectors.toImmutableMap());
 		}
 
-		private static final Stream<Map.Entry<PickingSlotRowId, PickingSlotRowId>> streamChild2RootRowIdsRecursivelly(final PickingSlotRow row)
+		private static Stream<Map.Entry<PickingSlotRowId, PickingSlotRowId>> streamChild2RootRowIdsRecursivelly(final PickingSlotRow row)
 		{
 			final PickingSlotRowId rootRowId = row.getPickingSlotRowId();
 			return row.streamThisRowAndIncludedRowsRecursivelly()
@@ -176,6 +178,7 @@ public final class PickingSlotRowsCollection
 			return rowsById.get(rowId);
 		}
 
+		@Nullable
 		public PickingSlotRow getRootRow(final PickingSlotRowId rowId)
 		{
 			final PickingSlotRowId rootRowId = getRootRowId(rowId);

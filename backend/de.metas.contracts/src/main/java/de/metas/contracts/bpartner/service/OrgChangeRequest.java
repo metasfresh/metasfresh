@@ -48,4 +48,6 @@ public class OrgChangeRequest
 
 	@Nullable
 	GroupCategoryId groupCategoryId;
+
+	boolean isCloseInvoiceCandidate;
 }

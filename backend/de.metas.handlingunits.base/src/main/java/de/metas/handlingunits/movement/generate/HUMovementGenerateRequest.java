@@ -4,8 +4,6 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.distribution.ddorder.DDOrderAndLineId;
-import de.metas.distribution.ddorder.DDOrderId;
-import de.metas.distribution.ddorder.DDOrderLineId;
 import de.metas.document.dimension.Dimension;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.handlingunits.HuId;
@@ -28,7 +26,7 @@ import java.time.Instant;
 @Builder
 public class HUMovementGenerateRequest
 {
-	@NonNull LocatorId fromLocatorId;
+	@Nullable LocatorId fromLocatorId;
 	@NonNull LocatorId toLocatorId;
 
 	@Singular("huIdToMove")

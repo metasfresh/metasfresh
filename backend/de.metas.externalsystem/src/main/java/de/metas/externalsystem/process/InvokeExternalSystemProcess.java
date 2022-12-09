@@ -111,6 +111,7 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 				.adPInstanceId(JsonMetasfreshId.of(PInstanceId.toRepoId(getPinstanceId())))
 				.traceId(externalSystemConfigService.getTraceId())
 				.writeAuditEndpoint(config.getAuditEndpointIfEnabled())
+				.externalSystemChildConfigValue(config.getChildConfig().getValue())
 				.build();
 	}
 
@@ -152,12 +153,13 @@ public abstract class InvokeExternalSystemProcess extends JavaProcess implements
 	}
 
 	/**
-	 * Needed so we also have a "since" when the process is run via AD_Scheduler
+	 * Needed so we also have a "since" when the process is run via AD_Scheduler.
+	 * This might be the process's last invocation time. Note that oftentimes, there is also a runtime-parameter with the actual value used by the external system.
 	 */
 	@NonNull
 	protected Timestamp extractEffectiveSinceTimestamp()
 	{
-		return CoalesceUtil.coalesceSuppliers(() -> since, () -> retrieveSinceValue(), () -> Timestamp.from(Instant.ofEpochSecond(0)));
+		return CoalesceUtil.coalesceSuppliers(() -> since, this::retrieveSinceValue, () -> Timestamp.from(Instant.ofEpochSecond(0)));
 	}
 
 	private Timestamp retrieveSinceValue()

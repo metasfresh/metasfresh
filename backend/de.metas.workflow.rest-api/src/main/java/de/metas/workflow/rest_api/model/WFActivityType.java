@@ -30,6 +30,9 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
+import java.util.Objects;
+
 @EqualsAndHashCode(doNotUseGetters = true)
 public class WFActivityType
 {
@@ -80,4 +83,6 @@ public class WFActivityType
 			throw new AdempiereException("WFActivityType expected to be `" + expected + "` but it was `" + actual + "`");
 		}
 	}
+
+	public static boolean equals(@Nullable WFActivityType o1, @Nullable WFActivityType o2) {return Objects.equals(o1, o2);}
 }

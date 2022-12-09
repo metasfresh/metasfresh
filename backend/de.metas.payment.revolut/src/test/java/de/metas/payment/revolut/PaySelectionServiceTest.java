@@ -88,7 +88,7 @@ public class PaySelectionServiceTest
 		assertThat(export.getRecipientType()).isEqualTo(RecipientType.COMPANY);
 
 		assertThat(export.getIBAN()).isEqualTo(bp_bankAccount.getIBAN());
-		assertThat(export.getBIC()).isEqualTo(bp_bankAccount.getRoutingNo());
+		assertThat(export.getSwiftCode()).isEqualTo(bp_bankAccount.getRoutingNo());
 
 		assertThat(export.getAmount()).isEqualTo(Amount.of(BigDecimal.TEN, CurrencyCode.EUR));
 
