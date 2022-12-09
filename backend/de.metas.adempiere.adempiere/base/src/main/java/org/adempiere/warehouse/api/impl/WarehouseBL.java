@@ -167,6 +167,13 @@ public class WarehouseBL implements IWarehouseBL
 		return LocationId.ofRepoId(bpLocation.getC_Location_ID());
 	}
 
+	@Override
+	public BPartnerLocationId getBPartnerLocationId(@NonNull final WarehouseId warehouseId)
+	{
+		final I_M_Warehouse warehouse = warehouseDAO.getById(warehouseId);
+		return extractBPartnerLocationId(warehouse);
+	}
+
 	@Nullable
 	@Override
 	public CountryId getCountryId(@NonNull final WarehouseId warehouseId)

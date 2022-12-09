@@ -28,7 +28,14 @@ import {
   PPOrderCandidateViewHeader,
 } from '../ppOrderCandidate/PPOrderCandidateViewHeader';
 import { connect } from 'react-redux';
-import { getSettingFromStateAsBoolean } from '../../utils/settings';
+import {
+  getSettingFromStateAsBoolean,
+  getSettingFromStateAsPositiveInt
+} from '../../utils/settings';
+import {
+  DeliveryPlanningViewHeader,
+  getDeliveryPlanningViewHeaderWindowId,
+} from '../deliveryPlanning/DeliveryPlanningViewHeader';
 
 /**
  * @file Class based component.
@@ -132,6 +139,8 @@ class DocumentList extends Component {
       filterId,
       featureType,
       isPPOrderCandidateViewHeaderEnabled,
+      deliveryPlanningViewHeaderWindowId,
+      defaultQtyPrecision,
     } = this.props;
     const {
       staticFilters,
@@ -199,6 +208,18 @@ class DocumentList extends Component {
               viewId={viewId}
               selectedRowIds={selected}
               pageLength={pageLength}
+            />
+          )}
+
+        {deliveryPlanningViewHeaderWindowId &&
+          String(windowId) === deliveryPlanningViewHeaderWindowId &&
+          viewId && (
+            <DeliveryPlanningViewHeader
+              windowId={windowId}
+              viewId={viewId}
+              selectedRowIds={selected}
+              pageLength={pageLength}
+              precision={defaultQtyPrecision}
             />
           )}
 
@@ -430,6 +451,13 @@ const mapStateToProps = (state) => {
       'PPOrderCandidateViewHeader.enabled',
       true
     ),
+    defaultQtyPrecision: getSettingFromStateAsPositiveInt(
+      state,
+      'widget.Quantity.defaultPrecision',
+      2
+    ),
+    deliveryPlanningViewHeaderWindowId:
+      getDeliveryPlanningViewHeaderWindowId(state),
   };
 };
 

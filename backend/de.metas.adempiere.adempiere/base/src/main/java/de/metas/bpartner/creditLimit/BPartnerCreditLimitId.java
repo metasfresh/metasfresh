@@ -56,6 +56,12 @@ public class BPartnerCreditLimitId implements RepoIdAware
 		return repoId > 0 ? ofRepoId(repoId) : null;
 	}
 
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
+	}
+
 	private BPartnerCreditLimitId(final int bpCreditLimitId)
 	{
 		this.repoId = Check.assumeGreaterThanZero(bpCreditLimitId, "C_BPartner_CreditLimit_ID");

@@ -31,6 +31,7 @@ import de.metas.currency.CurrencyConversionContext;
 import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocBaseType;
 import de.metas.inout.IInOutBL;
+import de.metas.inout.InOutId;
 import de.metas.invoice.service.IInvoiceBL;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
@@ -86,6 +87,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 	private final transient ITaxBL taxBL = Services.get(ITaxBL.class);
 	private final transient IProductBL productBL = Services.get(IProductBL.class);
 	private final transient ICurrencyBL currencyConversionBL = Services.get(ICurrencyBL.class);
+	private final IInOutBL inOutBL = Services.get(IInOutBL.class);
 
 	/** pseudo line */
 	private DocLine_MatchInv docLine = null;
@@ -463,7 +465,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		fl.setUser2_ID(invoiceLine.getUser2_ID());
 	}
 
-	private void updateFromReceiptLine(@Nullable FactLine fl)
+	private void updateFromReceiptLine(@Nullable final FactLine fl)
 	{
 		if (fl == null)
 		{
@@ -491,14 +493,10 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 	{
 		Check.assume(!isSOTrx(), "Cannot create cost details for sales match invoice");
 
-		final IInOutBL inOutBL = Services.get(IInOutBL.class);
-
-		final BigDecimal matchAmt = getInvoiceLineMatchedAmt();
-		final CurrencyId currentId = getInvoiceCurrencyId();
-		final CurrencyConversionContext currencyConvCtx = getInvoiceCurrencyConversionCtx();
+		final CostAmount matchAmt = CostAmount.of(getInvoiceLineMatchedAmt(), getInvoiceCurrencyId());
 
 		final I_M_InOutLine receiptLine = getReceiptLine();
-		final I_M_InOut receipt = receiptLine.getM_InOut();
+		final I_M_InOut receipt = inOutBL.getById(InOutId.ofRepoId(receiptLine.getM_InOut_ID()));
 		final boolean isReturnTrx = inOutBL.isReturnMovementType(receipt.getMovementType());
 		final Quantity matchQty = isReturnTrx ? getQty().negate() : getQty();
 
@@ -513,9 +511,8 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 						.attributeSetInstanceId(AttributeSetInstanceId.ofRepoIdOrNone(matchInv.getM_AttributeSetInstance_ID()))
 						.documentRef(CostingDocumentRef.ofMatchInvoiceId(matchInv.getM_MatchInv_ID()))
 						.qty(matchQty)
-						.amt(CostAmount.of(matchAmt, currentId))
-						.currencyConversionTypeId(currencyConvCtx.getConversionTypeId())
-						.date(currencyConvCtx.getConversionDate())
+						.amt(matchAmt)
+						.date(getDateAcct().toInstant(services::getTimeZone))
 						.description(getDescription())
 						.build())
 				.getTotalAmountToPost(as);

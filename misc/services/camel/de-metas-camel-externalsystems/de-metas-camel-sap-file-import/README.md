@@ -10,23 +10,44 @@
 
 ## Values computed in metasfresh
 
+### SFTP
+
 * `JsonExternalSystemRequest.parameters.SFTP_HostName`
 * `JsonExternalSystemRequest.parameters.SFTP_Port`
 * `JsonExternalSystemRequest.parameters.SFTP_Username`
 * `JsonExternalSystemRequest.parameters.SFTP_Password`
 * `JsonExternalSystemRequest.parameters.SFTP_Product_Target_Directory`
+* `JsonExternalSystemRequest.parameters.SFTPProductFileNamePattern`
 * `JsonExternalSystemRequest.parameters.SFTP_BPartner_Target_Directory`
+* `JsonExternalSystemRequest.parameters.SFTPBPartnerFileNamePattern`
+* `JsonExternalSystemRequest.parameters.SFTP_CreditLimit_Target_Directory`
+* `JsonExternalSystemRequest.parameters.SFTPCreditLimitFileNamePattern`
 * `JsonExternalSystemRequest.parameters.SFTPProcessedDirectory`
 * `JsonExternalSystemRequest.parameters.SFTPErroredDirectory`
 * `JsonExternalSystemRequest.parameters.SFTPPollingFrequencyInMs`
+
+### Local File
+
+* `JsonExternalSystemRequest.parameters.LocalFileRootLocation`
+* `JsonExternalSystemRequest.parameters.LocalFile_Product_Target_Directory`
+* `JsonExternalSystemRequest.parameters.LocalFileProductFileNamePattern`
+* `JsonExternalSystemRequest.parameters.LocalFile_BPartner_Target_Directory`
+* `JsonExternalSystemRequest.parameters.LocalFileBPartnerFileNamePattern`
+* `JsonExternalSystemRequest.parameters.LocalFile_CreditLimit_Target_Directory`
+* `JsonExternalSystemRequest.parameters.LocalFileCreditLimitFileNamePattern`
+* `JsonExternalSystemRequest.parameters.LocalFileProcessedDirectory`
+* `JsonExternalSystemRequest.parameters.LocalFileErroredDirectory`
+* `JsonExternalSystemRequest.parameters.LocalFilePollingFrequencyInMs`
 
 ## **SAP => metasfresh product**
 
 * `Product` - pulled via an SFTP camel route
 
-First, the SFTP consumer must be configured using `Externalsystem_Config_SAP` and started by invoking the `SAP-startProductsSync` dedicated route. In order to stop the consumer, the `SAP-stopProductSync` route must be invoked.
+First, the SFTP consumer must be configured using `Externalsystem_Config_SAP_SFTP` and started by invoking the `SAP-startProductsSyncSFTP` dedicated route. In order to stop the consumer, the `SAP-stopProductSyncSFTP` route must be invoked.
 
-Configs available in `Externalsystem_Config_SAP`:
+In order to update the consumer configuration, you have to firstly stop the consumer, then reconfigure it and then restart the consumer. (You can't reconfigure the consumer while it's running.)
+
+Configs available in `Externalsystem_Config_SAP_SFTP`:
 
 | Column name                       | Accepted values | Description                                                                                                                 |
 |-----------------------------------|-----------------|-----------------------------------------------------------------------------------------------------------------------------|
@@ -36,13 +57,26 @@ Configs available in `Externalsystem_Config_SAP`:
 | Password                          | string          | sftp server authentication password                                                                                         | 
 | Product Target Directory          | string          | the location used to pull products from the sftp server                                                                     |
 | Product Filename Pattern          | string          | regex used to identify product-containing files (useful if multiple type of files are placed in the same source folder)     |
-| BPartner Target Directory         | string          | the location used to pull partner files from the sftp server                                                                |
-| BPartner Filename Pattern         | string          | regex used to identify partner-containing files (useful if multiple type of files are placed in the same source folder)     |
-| Credit-Limit Target Directory     | string          | the location used to pull cedit-limit files from the sftp server                                                            |
-| Credit-Limit Filename Pattern     | string          | regex used to identify CreditLimit-containing files (useful if multiple type of files are placed in the same source folder) |
 | Processed Directory               | string          | the location where the processed files will be moved                                                                        | 
 | Errored Directory                 | string          | the location where the files will be moved in case of error while processing                                                |
 | Polling Frequency In Milliseconds | number          | the frequency used to poll files from the sftp server (in milliseconds)                                                     |
+
+* `Product` - pulled via a local file camel route
+
+First, the local file consumer must be configured using `Externalsystem_Config_SAP_LocalFile` and started by invoking the `SAP-startProductsSyncLocalFile` dedicated route. In order to stop the consumer, the `SAP-stopProductSyncLocalFile` route must be invoked.
+
+In order to update the consumer configuration, you have to firstly stop the consumer, then reconfigure it and then restart the consumer. (You can't reconfigure the consumer while it's running.)
+
+Configs available in `Externalsystem_Config_SAP_LocalFile`:
+
+| Column name                       | Accepted values | Description                                                                                                                 |
+|-----------------------------------|-----------------|-----------------------------------------------------------------------------------------------------------------------------|
+| Local Root Location               | string          | the local root location (equivalent to the SFTP server root location)                                                       |
+| Credit-Limit Target Directory     | string          | the location used to pull credit-limit files from the local machine                                                         |
+| Credit-Limit Filename Pattern     | string          | regex used to identify CreditLimit-containing files (useful if multiple type of files are placed in the same source folder) |
+| Processed Directory               | string          | the location where the processed files will be moved                                                                        | 
+| Errored Directory                 | string          | the location where the files will be moved in case of error while processing                                                |
+| Polling Frequency In Milliseconds | number          | the frequency used to poll files from the local machine (in milliseconds)                                                   |
 
 1. Product - all `metasfresh-column` values refer to `M_Product` columns
 
@@ -55,7 +89,7 @@ ProductRow.sectionCode | `m_sectioncode_id`                    | N              
 ---- | `isstocked`                           | Y               | JsonRequestProduct.stocked                     | always set to `true`                                               |
 ---- | `discontinued`                        | N               | JsonRequestProduct.discontinued                | always set to `false`                                              |
 ProductRow.materialGroup | `producttype`                         | Y               | JsonRequestProduct.type                        | always set to JsonRequestProduct.Type.ITEM                         |
-ProductRow.materialCategory | `m_product_category_id`               | Y               | JsonRequestProduct.productCategoryIdentifier   | never set, but will be STANDARD due to default value in metasfresh |
+ProductRow.materialType | `m_product_category_id`               | Y               | JsonRequestProduct.productCategoryIdentifier   | never set, but will be STANDARD due to default value in metasfresh |
 --- | ----                                  | N               | JsonRequestProductUpsert.syncAdvise            | default value CREATE_OR_MERGE                                      |
 ProductRow.materialCode | `S_ExternalReference.externalReference` | Y               | JsonRequestProductUpsertItem.productIdentifier | ext-SAP-MaterialCode                                               |
 --- | `S_ExternalReference.isreadonlyinmetasfresh` | Y               | JsonRequestBPartnerUpsertItem.isReadOnlyInMetasfresh                                                                        | always set to `true`                                               |
@@ -65,20 +99,40 @@ ProductRow.materialCode | `S_ExternalReference.externalReference` | Y           
 
 * `BPartner` - pulled via an SFTP camel route
 
-First, the SFTP consumer must be configured using `Externalsystem_Config_SAP` and started by invoking the `SAP-startBPartnerSync` dedicated route. In order to stop the consumer, the `SAP-stopBPartnerSync` route must be invoked.
+First, the SFTP consumer must be configured using `Externalsystem_Config_SAP_SFTP` and started by invoking the `SAP-startBPartnerSyncSFTP` dedicated route. In order to stop the consumer, the `SAP-stopBPartnerSyncSFTP` route must be invoked.
 
-Configs available in `Externalsystem_Config_SAP`:
+In order to update the consumer configuration, you have to firstly stop the consumer, then reconfigure it and then restart the consumer. (You can't reconfigure the consumer while it's running.)
 
-| Column name                       | Accepted values | Description                                                                  |
-|-----------------------------------|-----------------|------------------------------------------------------------------------------|
-| Hostname                          | string          | sftp server hostname                                                         |
-| Port                              | number          | sftp server port                                                             |
-| Username                          | string          | sftp server authentication username                                          |
-| Password                          | string          | sftp server authentication password                                          |
-| BPartner Target Directory         | string          | the location used to pull business partners from the sftp server             | 
-| Processed Directory               | string          | the location where the processed files will be moved                         | 
-| Errored Directory                 | string          | the location where the files will be moved in case of error while processing |
-| Polling Frequency In Milliseconds | number          | the frequency with which the files are polled from the sftp server (in milliseconds)          |
+Configs available in `Externalsystem_Config_SAP_SFTP`:
+
+| Column name                       | Accepted values | Description                                                                                                             |
+|-----------------------------------|-----------------|-------------------------------------------------------------------------------------------------------------------------|
+| Hostname                          | string          | sftp server hostname                                                                                                    |
+| Port                              | number          | sftp server port                                                                                                        |
+| Username                          | string          | sftp server authentication username                                                                                     |
+| Password                          | string          | sftp server authentication password                                                                                     |
+| BPartner Target Directory         | string          | the location used to pull business partners from the sftp server                                                        |
+| BPartner Filename Pattern         | string          | regex used to identify partner-containing files (useful if multiple type of files are placed in the same source folder) |
+| Processed Directory               | string          | the location where the processed files will be moved                                                                    | 
+| Errored Directory                 | string          | the location where the files will be moved in case of error while processing                                            |
+| Polling Frequency In Milliseconds | number          | the frequency with which the files are polled from the sftp server (in milliseconds)                                    |
+
+* `BPartner` - pulled via a local file camel route
+
+First, the local file consumer must be configured using `Externalsystem_Config_SAP_LocalFile` and started by invoking the `SAP-startBPartnerSyncLocalFile` dedicated route. In order to stop the consumer, the `SAP-stopBPartnerSyncLocalFile` route must be invoked.
+
+In order to update the consumer configuration, you have to firstly stop the consumer, then reconfigure it and then restart the consumer. (You can't reconfigure the consumer while it's running.)
+
+Configs available in `Externalsystem_Config_SAP_LocalFile`:
+
+| Column name                       | Accepted values | Description                                                                                                             |
+|-----------------------------------|-----------------|-------------------------------------------------------------------------------------------------------------------------|
+| Local Root Location               | string          | the local root location (equivalent to the SFTP server root location)                                                   |
+| BPartner Target Directory         | string          | the location used to pull business partners from the local machine                                                      |
+| BPartner Filename Pattern         | string          | regex used to identify partner-containing files (useful if multiple type of files are placed in the same source folder) |
+| Processed Directory               | string          | the location where the processed files will be moved                                                                    | 
+| Errored Directory                 | string          | the location where the files will be moved in case of error while processing                                            |
+| Polling Frequency In Milliseconds | number          | the frequency with which the files are polled from the local machine (in milliseconds)                                  |
 
 1. Section Group Partner - all `metasfresh-column` values refer to `C_BPartner` columns
 
@@ -153,9 +207,43 @@ BPartnerRow.partnerCode + "_" + BPartnerRow.section  | `S_ExternalReference.exte
 
 * `CreditLimit` - pulled via an SFTP camel route
 
-First, the SFTP consumer must be configured using `Externalsystem_Config_SAP` and started by invoking the `SAP-startCreditLimitsSync` dedicated route.
+First, the SFTP consumer must be configured using `Externalsystem_Config_SAP_SFTP` and started by invoking the `SAP-startCreditLimitsSyncSFTP` dedicated route. In order to stop the consumer, the `SAP-stopCreditLimitsSyncSFTP` route must be invoked.
 
-### CreditLimit - all `metasfresh-column` values refer to `C_BPartner_CreditLimit` columns
+In order to update the consumer configuration, you have to firstly stop the consumer, then reconfigure it and then restart the consumer. (You can't reconfigure the consumer while it's running.)
+
+Configs available in `Externalsystem_Config_SAP_SFTP`:
+
+| Column name                       | Accepted values | Description                                                                                                                 |
+|-----------------------------------|-----------------|-----------------------------------------------------------------------------------------------------------------------------|
+| Hostname                          | string          | sftp server hostname                                                                                                        |
+| Port                              | number          | sftp server port                                                                                                            |
+| Username                          | string          | sftp server authentication username                                                                                         |
+| Password                          | string          | sftp server authentication password                                                                                         | 
+| Credit-Limit Target Directory     | string          | the location used to pull cedit-limit files from the sftp server                                                            |
+| Credit-Limit Filename Pattern     | string          | regex used to identify CreditLimit-containing files (useful if multiple type of files are placed in the same source folder) |
+| Processed Directory               | string          | the location where the processed files will be moved                                                                        | 
+| Errored Directory                 | string          | the location where the files will be moved in case of error while processing                                                |
+| Polling Frequency In Milliseconds | number          | the frequency used to poll files from the sftp server (in milliseconds)                                                     |
+
+* `CreditLimit` - pulled via a local file camel route
+
+First, the local file consumer must be configured using `Externalsystem_Config_SAP_LocalFile` and started by invoking the `SAP-startCreditLimitsSyncLocalFile` dedicated route. In order to stop the consumer, the `SAP-stopCreditLimitsSyncLocalFile` route must be invoked.
+
+In order to update the consumer configuration, you have to firstly stop the consumer, then reconfigure it and then restart the consumer. (You can't reconfigure the consumer while it's running.)
+
+Configs available in `Externalsystem_Config_SAP_LocalFile`:
+
+| Column name                       | Accepted values | Description                                                                                                                 |
+|-----------------------------------|-----------------|-----------------------------------------------------------------------------------------------------------------------------|
+| Local Root Location               | string          | the local root location (equivalent to the SFTP server root location)                                                       |
+| Credit-Limit Target Directory     | string          | the location used to pull credit-limit files from the local machine                                                         |
+| Credit-Limit Filename Pattern     | string          | regex used to identify CreditLimit-containing files (useful if multiple type of files are placed in the same source folder) |
+| Processed Directory               | string          | the location where the processed files will be moved                                                                        | 
+| Errored Directory                 | string          | the location where the files will be moved in case of error while processing                                                |
+| Polling Frequency In Milliseconds | number          | the frequency used to poll files from the local machine (in milliseconds)                                                   |
+
+
+1. CreditLimit - all `metasfresh-column` values refer to `C_BPartner_CreditLimit` columns
 
 | SAP                              | metasfresh-column                       | mandatory in mf   | metasfresh-json                                        | note                                                                                                                                                                                                              |
 | ----                             | ------------------------                | ----------------- | --------------------------------------------------     | --------------------------------------------------------------------                                                                                                                                              |

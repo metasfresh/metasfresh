@@ -24,8 +24,8 @@ package de.metas.camel.externalsystems.sap.creditlimit;
 
 import com.google.common.annotations.VisibleForTesting;
 import de.metas.camel.externalsystems.common.ProcessLogger;
+import de.metas.camel.externalsystems.sap.SAPConfigUtil;
 import de.metas.camel.externalsystems.sap.service.OnDemandRoutesController;
-import de.metas.camel.externalsystems.sap.sftp.SFTPConfigUtil;
 import de.metas.common.externalsystem.IExternalSystemService;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
 import lombok.NonNull;
@@ -43,13 +43,13 @@ import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
 @Component
 public class SFTPCreditLimitSyncServiceRouteBuilder extends RouteBuilder implements IExternalSystemService
 {
-	private static final String START_CREDIT_LIMIT_SYNC_ROUTE = "startCreditLimitsSync";
-	private static final String STOP_CREDIT_LIMIT_SYNC_ROUTE = "stopCreditLimitsSync";
+	private static final String START_CREDIT_LIMIT_SYNC_SFTP_ROUTE = "startCreditLimitSyncSFTP";
+	private static final String STOP_CREDIT_LIMIT_SYNC_SFTP_ROUTE = "stopCreditLimitSyncSFTP";
 
 	@VisibleForTesting
-	public static final String START_CREDIT_LIMIT_SYNC_ROUTE_ID = SAP_SYSTEM_NAME + "-" + START_CREDIT_LIMIT_SYNC_ROUTE;
+	public static final String START_CREDIT_LIMIT_SYNC_SFTP_ROUTE_ID = SAP_SYSTEM_NAME + "-" + START_CREDIT_LIMIT_SYNC_SFTP_ROUTE;
 	@VisibleForTesting
-	public static final String STOP_CREDIT_LIMIT_SYNC_ROUTE_ID = SAP_SYSTEM_NAME + "-" + STOP_CREDIT_LIMIT_SYNC_ROUTE;
+	public static final String STOP_CREDIT_LIMIT_SYNC_SFTP_ROUTE_ID = SAP_SYSTEM_NAME + "-" + STOP_CREDIT_LIMIT_SYNC_SFTP_ROUTE;
 
 	@NonNull
 	private final ProcessLogger processLogger;
@@ -66,15 +66,15 @@ public class SFTPCreditLimitSyncServiceRouteBuilder extends RouteBuilder impleme
 		onException(Exception.class)
 				.to(direct(MF_ERROR_ROUTE_ID));
 
-		from(direct(START_CREDIT_LIMIT_SYNC_ROUTE_ID))
-				.routeId(START_CREDIT_LIMIT_SYNC_ROUTE_ID)
+		from(direct(START_CREDIT_LIMIT_SYNC_SFTP_ROUTE_ID))
+				.routeId(START_CREDIT_LIMIT_SYNC_SFTP_ROUTE_ID)
 				.log("Route invoked")
 				.process(this::getStartOnDemandRequest)
 				.to(direct(START_HANDLE_ON_DEMAND_ROUTE_ID))
 				.end();
 
-		from(direct(STOP_CREDIT_LIMIT_SYNC_ROUTE_ID))
-				.routeId(STOP_CREDIT_LIMIT_SYNC_ROUTE_ID)
+		from(direct(STOP_CREDIT_LIMIT_SYNC_SFTP_ROUTE_ID))
+				.routeId(STOP_CREDIT_LIMIT_SYNC_SFTP_ROUTE_ID)
 				.log("Route invoked")
 				.process(this::getStopOnDemandRequest)
 				.to(direct(STOP_HANDLE_ON_DEMAND_ROUTE_ID))
@@ -99,7 +99,7 @@ public class SFTPCreditLimitSyncServiceRouteBuilder extends RouteBuilder impleme
 		final JsonExternalSystemRequest request = exchange.getIn().getBody(JsonExternalSystemRequest.class);
 
 		final OnDemandRoutesController.StopOnDemandRouteRequest stopOnDemandRouteRequest = OnDemandRoutesController.StopOnDemandRouteRequest.builder()
-				.routeId(GetCreditLimitsSFTPRouteBuilder.buildRouteId(request.getExternalSystemChildConfigValue()))
+				.routeId(getCreditLimitFromSFTPRouteId(request))
 				.externalSystemRequest(request)
 				.externalSystemService(this)
 				.build();
@@ -108,16 +108,23 @@ public class SFTPCreditLimitSyncServiceRouteBuilder extends RouteBuilder impleme
 	}
 
 	@NonNull
-	private GetCreditLimitsSFTPRouteBuilder getSFTPRouteBuilder(@NonNull final JsonExternalSystemRequest request, @NonNull final CamelContext camelContext)
+	private GetCreditLimitFromFileRouteBuilder getSFTPRouteBuilder(@NonNull final JsonExternalSystemRequest request, @NonNull final CamelContext camelContext)
 	{
-		return GetCreditLimitsSFTPRouteBuilder
+		return GetCreditLimitFromFileRouteBuilder
 				.builder()
-				.sftpConfig(SFTPConfigUtil.extractSFTPConfig(request, camelContext))
+				.fileEndpointConfig(SAPConfigUtil.extractSFTPConfig(request, camelContext))
 				.camelContext(camelContext)
 				.enabledByExternalSystemRequest(request)
 				.processLogger(processLogger)
-				.routeId(GetCreditLimitsSFTPRouteBuilder.buildRouteId(request.getExternalSystemChildConfigValue()))
+				.routeId(getCreditLimitFromSFTPRouteId(request))
 				.build();
+	}
+
+	@NonNull
+	@VisibleForTesting
+	public static String getCreditLimitFromSFTPRouteId(@NonNull final JsonExternalSystemRequest externalSystemRequest)
+	{
+		return "GetCreditLimitFromSTPServer#" + externalSystemRequest.getExternalSystemChildConfigValue();
 	}
 
 	@Override
@@ -135,12 +142,12 @@ public class SFTPCreditLimitSyncServiceRouteBuilder extends RouteBuilder impleme
 	@Override
 	public String getEnableCommand()
 	{
-		return START_CREDIT_LIMIT_SYNC_ROUTE;
+		return START_CREDIT_LIMIT_SYNC_SFTP_ROUTE;
 	}
 
 	@Override
 	public String getDisableCommand()
 	{
-		return STOP_CREDIT_LIMIT_SYNC_ROUTE;
+		return STOP_CREDIT_LIMIT_SYNC_SFTP_ROUTE;
 	}
 }

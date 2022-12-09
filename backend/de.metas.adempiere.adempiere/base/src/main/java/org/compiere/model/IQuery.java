@@ -408,7 +408,7 @@ public interface IQuery<T>
 	/**
 	 * Directly execute DELETE FROM database.
 	 * <p>
-	 * Models, won't be loaded so no model interceptor will be triggered.
+	 * WARNING: Models, won't be loaded so no model interceptor will be triggered!
 	 * <p>
 	 * Also, models will be deleted even if they were marked as Processed=Y.
 	 * <p>

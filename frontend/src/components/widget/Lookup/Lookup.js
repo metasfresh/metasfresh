@@ -495,7 +495,7 @@ class Lookup extends Component {
           advSearchCaption,
           advSearchWindowId,
           updateItems,
-          typeaheadSupplier,
+                    typeaheadSupplier,
         }}
       />
     );

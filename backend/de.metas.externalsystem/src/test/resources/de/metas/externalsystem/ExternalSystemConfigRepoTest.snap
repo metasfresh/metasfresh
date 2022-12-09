@@ -289,8 +289,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "isSyncBPartnerToRabbitMQ" : true,
       "isAutoSendWhenCreatedByUserGroup" : false,
       "isSyncExternalReferencesToRabbitMQ" : false,
-      "syncBPartnerToRabbitMQ" : true,
       "syncExternalReferencesToRabbitMQ" : false,
+      "syncBPartnerToRabbitMQ" : true,
       "autoSendSubjectWhenCreatedByUserGroup" : false
     },
     "writeAudit" : true,
@@ -310,8 +310,8 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
     "isSyncBPartnerToRabbitMQ" : true,
     "isAutoSendWhenCreatedByUserGroup" : false,
     "isSyncExternalReferencesToRabbitMQ" : false,
-    "syncBPartnerToRabbitMQ" : true,
     "syncExternalReferencesToRabbitMQ" : false,
+    "syncBPartnerToRabbitMQ" : true,
     "autoSendSubjectWhenCreatedByUserGroup" : false
   }
 ]
@@ -335,9 +335,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "isAutoSendWhenCreatedByUserGroup" : true,
       "userGroupId" : 1,
       "isSyncExternalReferencesToRabbitMQ" : false,
-      "autoSendSubjectWhenCreatedByUserGroup" : true,
       "syncExternalReferencesToRabbitMQ" : false,
-      "syncBPartnerToRabbitMQ" : true
+      "syncBPartnerToRabbitMQ" : true,
+      "autoSendSubjectWhenCreatedByUserGroup" : true
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -356,22 +356,43 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_g
       "id" : 100002,
       "parentId" : 100001,
       "value" : "testSAPValue",
-      "sftpHostName" : "testSAPSFTPHostName",
-      "sftpPort" : "testSAPSFTPPort",
-      "sftpUsername" : "testSAPUsername",
-      "sftpPassword" : "testSAPPassword",
-      "processedDirectory" : "testSAPProcessedDirectory",
-      "erroredDirectory" : "testSAPErroredDirectory",
-      "pollingFrequency" : {
-        "seconds" : 1,
-        "nanos" : 0,
-        "negative" : false,
-        "zero" : false
+      "contentSourceSFTP" : {
+        "hostName" : "testSAPSFTPHostName",
+        "port" : "testSAPSFTPPort",
+        "username" : "testSAPSFTPUsername",
+        "password" : "testSAPSFTPPassword",
+        "processedDirectory" : "testSAPSFTPProcessedDirectory",
+        "erroredDirectory" : "testSAPSFTPErroredDirectory",
+        "pollingFrequency" : {
+          "seconds" : 1,
+          "nanos" : 0,
+          "negative" : false,
+          "zero" : false
+        },
+        "targetDirectoryProduct" : "testSAPSFTPProductDirectory",
+        "fileNamePatternProduct" : "ProductSFTP*",
+        "targetDirectoryBPartner" : "testSAPSFTPBPartnerDirectory",
+        "fileNamePatternBPartner" : "BPartnerSFTP*",
+        "targetDirectoryCreditLimit" : "testSAPSFTPCreditLimitDirectory",
+        "fileNamePatternCreditLimit" : "CreditLimitSFTP*"
       },
-      "sftpTargetDirectoryProduct" : "testSAPProductDirectory",
-      "sftpFileNamePatternProduct" : "Pattern*",
-      "sftpTargetDirectoryBPartner" : "testSAPBPartnerDirectory",
-      "sftpFileNamePatternBPartner" : "BPartner*"
+      "contentSourceLocalFile" : {
+        "rootLocation" : "testLocalFileRootLocation",
+        "processedDirectory" : "testSAPLocalFileProcessedDirectory",
+        "erroredDirectory" : "testSAPLocalFileErroredDirectory",
+        "pollingFrequency" : {
+          "seconds" : 1,
+          "nanos" : 0,
+          "negative" : false,
+          "zero" : false
+        },
+        "targetDirectoryProduct" : "testSAPLocalFileProductDirectory",
+        "fileNamePatternProduct" : "ProductLocalFile*",
+        "targetDirectoryBPartner" : "testSAPLocalFileBPartnerDirectory",
+        "fileNamePatternBPartner" : "BPartnerLocalFile*",
+        "targetDirectoryCreditLimit" : "testSAPLocalFileCreditLimitDirectory",
+        "fileNamePatternCreditLimit" : "CreditLimitLocalFile*"
+      }
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -384,22 +405,43 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_g
     "id" : 100002,
     "parentId" : 100001,
     "value" : "testSAPValue",
-    "sftpHostName" : "testSAPSFTPHostName",
-    "sftpPort" : "testSAPSFTPPort",
-    "sftpUsername" : "testSAPUsername",
-    "sftpPassword" : "testSAPPassword",
-    "processedDirectory" : "testSAPProcessedDirectory",
-    "erroredDirectory" : "testSAPErroredDirectory",
-    "pollingFrequency" : {
-      "seconds" : 1,
-      "nanos" : 0,
-      "negative" : false,
-      "zero" : false
+    "contentSourceSFTP" : {
+      "hostName" : "testSAPSFTPHostName",
+      "port" : "testSAPSFTPPort",
+      "username" : "testSAPSFTPUsername",
+      "password" : "testSAPSFTPPassword",
+      "processedDirectory" : "testSAPSFTPProcessedDirectory",
+      "erroredDirectory" : "testSAPSFTPErroredDirectory",
+      "pollingFrequency" : {
+        "seconds" : 1,
+        "nanos" : 0,
+        "negative" : false,
+        "zero" : false
+      },
+      "targetDirectoryProduct" : "testSAPSFTPProductDirectory",
+      "fileNamePatternProduct" : "ProductSFTP*",
+      "targetDirectoryBPartner" : "testSAPSFTPBPartnerDirectory",
+      "fileNamePatternBPartner" : "BPartnerSFTP*",
+      "targetDirectoryCreditLimit" : "testSAPSFTPCreditLimitDirectory",
+      "fileNamePatternCreditLimit" : "CreditLimitSFTP*"
     },
-    "sftpTargetDirectoryProduct" : "testSAPProductDirectory",
-    "sftpFileNamePatternProduct" : "Pattern*",
-    "sftpTargetDirectoryBPartner" : "testSAPBPartnerDirectory",
-    "sftpFileNamePatternBPartner" : "BPartner*"
+    "contentSourceLocalFile" : {
+      "rootLocation" : "testLocalFileRootLocation",
+      "processedDirectory" : "testSAPLocalFileProcessedDirectory",
+      "erroredDirectory" : "testSAPLocalFileErroredDirectory",
+      "pollingFrequency" : {
+        "seconds" : 1,
+        "nanos" : 0,
+        "negative" : false,
+        "zero" : false
+      },
+      "targetDirectoryProduct" : "testSAPLocalFileProductDirectory",
+      "fileNamePatternProduct" : "ProductLocalFile*",
+      "targetDirectoryBPartner" : "testSAPLocalFileBPartnerDirectory",
+      "fileNamePatternBPartner" : "BPartnerLocalFile*",
+      "targetDirectoryCreditLimit" : "testSAPLocalFileCreditLimitDirectory",
+      "fileNamePatternCreditLimit" : "CreditLimitLocalFile*"
+    }
   }
 ]
 
@@ -415,22 +457,43 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_SAP_g
       "id" : 100002,
       "parentId" : 100001,
       "value" : "testSAPValue",
-      "sftpHostName" : "testSAPSFTPHostName",
-      "sftpPort" : "testSAPSFTPPort",
-      "sftpUsername" : "testSAPUsername",
-      "sftpPassword" : "testSAPPassword",
-      "processedDirectory" : "testSAPProcessedDirectory",
-      "erroredDirectory" : "testSAPErroredDirectory",
-      "pollingFrequency" : {
-        "seconds" : 1,
-        "nanos" : 0,
-        "negative" : false,
-        "zero" : false
+      "contentSourceSFTP" : {
+        "hostName" : "testSAPSFTPHostName",
+        "port" : "testSAPSFTPPort",
+        "username" : "testSAPSFTPUsername",
+        "password" : "testSAPSFTPPassword",
+        "processedDirectory" : "testSAPSFTPProcessedDirectory",
+        "erroredDirectory" : "testSAPSFTPErroredDirectory",
+        "pollingFrequency" : {
+          "seconds" : 1,
+          "nanos" : 0,
+          "negative" : false,
+          "zero" : false
+        },
+        "targetDirectoryProduct" : "testSAPSFTPProductDirectory",
+        "fileNamePatternProduct" : "ProductSFTP*",
+        "targetDirectoryBPartner" : "testSAPSFTPBPartnerDirectory",
+        "fileNamePatternBPartner" : "BPartnerSFTP*",
+        "targetDirectoryCreditLimit" : "testSAPSFTPCreditLimitDirectory",
+        "fileNamePatternCreditLimit" : "CreditLimitSFTP*"
       },
-      "sftpTargetDirectoryProduct" : "testSAPProductDirectory",
-      "sftpFileNamePatternProduct" : "Pattern*",
-      "sftpTargetDirectoryBPartner" : "testSAPBPartnerDirectory",
-      "sftpFileNamePatternBPartner" : "BPartner*"
+      "contentSourceLocalFile" : {
+        "rootLocation" : "testLocalFileRootLocation",
+        "processedDirectory" : "testSAPLocalFileProcessedDirectory",
+        "erroredDirectory" : "testSAPLocalFileErroredDirectory",
+        "pollingFrequency" : {
+          "seconds" : 1,
+          "nanos" : 0,
+          "negative" : false,
+          "zero" : false
+        },
+        "targetDirectoryProduct" : "testSAPLocalFileProductDirectory",
+        "fileNamePatternProduct" : "ProductLocalFile*",
+        "targetDirectoryBPartner" : "testSAPLocalFileBPartnerDirectory",
+        "fileNamePatternBPartner" : "BPartnerLocalFile*",
+        "targetDirectoryCreditLimit" : "testSAPLocalFileCreditLimitDirectory",
+        "fileNamePatternCreditLimit" : "CreditLimitLocalFile*"
+      }
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -703,22 +766,43 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getAc
         "id" : 100002,
         "parentId" : 100001,
         "value" : "notImportant",
-        "sftpHostName" : "testSAPSFTPHostName",
-        "sftpPort" : "testSAPSFTPPort",
-        "sftpUsername" : "testSAPUsername",
-        "sftpPassword" : "testSAPPassword",
-        "processedDirectory" : "testSAPProcessedDirectory",
-        "erroredDirectory" : "testSAPErroredDirectory",
-        "pollingFrequency" : {
-          "seconds" : 1,
-          "nanos" : 0,
-          "negative" : false,
-          "zero" : false
+        "contentSourceSFTP" : {
+          "hostName" : "testSAPSFTPHostName",
+          "port" : "testSAPSFTPPort",
+          "username" : "testSAPSFTPUsername",
+          "password" : "testSAPSFTPPassword",
+          "processedDirectory" : "testSAPSFTPProcessedDirectory",
+          "erroredDirectory" : "testSAPSFTPErroredDirectory",
+          "pollingFrequency" : {
+            "seconds" : 1,
+            "nanos" : 0,
+            "negative" : false,
+            "zero" : false
+          },
+          "targetDirectoryProduct" : "testSAPSFTPProductDirectory",
+          "fileNamePatternProduct" : "ProductSFTP*",
+          "targetDirectoryBPartner" : "testSAPSFTPBPartnerDirectory",
+          "fileNamePatternBPartner" : "BPartnerSFTP*",
+          "targetDirectoryCreditLimit" : "testSAPSFTPCreditLimitDirectory",
+          "fileNamePatternCreditLimit" : "CreditLimitSFTP*"
         },
-        "sftpTargetDirectoryProduct" : "testSAPProductDirectory",
-        "sftpFileNamePatternProduct" : "Pattern*",
-        "sftpTargetDirectoryBPartner" : "testSAPBPartnerDirectory",
-        "sftpFileNamePatternBPartner" : "BPartner*"
+        "contentSourceLocalFile" : {
+          "rootLocation" : "testLocalFileRootLocation",
+          "processedDirectory" : "testSAPLocalFileProcessedDirectory",
+          "erroredDirectory" : "testSAPLocalFileErroredDirectory",
+          "pollingFrequency" : {
+            "seconds" : 1,
+            "nanos" : 0,
+            "negative" : false,
+            "zero" : false
+          },
+          "targetDirectoryProduct" : "testSAPLocalFileProductDirectory",
+          "fileNamePatternProduct" : "ProductLocalFile*",
+          "targetDirectoryBPartner" : "testSAPLocalFileBPartnerDirectory",
+          "fileNamePatternBPartner" : "BPartnerLocalFile*",
+          "targetDirectoryCreditLimit" : "testSAPLocalFileCreditLimitDirectory",
+          "fileNamePatternCreditLimit" : "CreditLimitLocalFile*"
+        }
       },
       "writeAudit" : true,
       "auditFileFolder" : "auditFileFolder"

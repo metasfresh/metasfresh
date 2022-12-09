@@ -52,4 +52,11 @@ public class CreditLimitTypeId implements RepoIdAware
 	{
 		this.repoId = Check.assumeGreaterThanZero(repoId, "C_CreditLimit_Type_ID");
 	}
+
+	@Override
+	@JsonValue
+	public int getRepoId()
+	{
+		return repoId;
+	}
 }

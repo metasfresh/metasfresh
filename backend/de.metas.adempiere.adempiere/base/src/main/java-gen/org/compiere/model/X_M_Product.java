@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for M_Product
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Product extends org.compiere.model.PO implements I_M_Product, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -176285754L;
+	private static final long serialVersionUID = 1987738200L;
 
     /** Standard Constructor */
     public X_M_Product (final Properties ctx, final int M_Product_ID, @Nullable final String trxName)
@@ -398,6 +398,18 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
+	public void setGrade (final @Nullable java.lang.String Grade)
+	{
+		set_Value (COLUMNNAME_Grade, Grade);
+	}
+
+	@Override
+	public java.lang.String getGrade()
+	{
+		return get_ValueAsString(COLUMNNAME_Grade);
+	}
+
+	@Override
 	public void setGroup1 (final @Nullable java.lang.String Group1)
 	{
 		set_Value (COLUMNNAME_Group1, Group1);
@@ -559,6 +571,8 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public static final String HUCLEARANCESTATUS_Locked = "L";
 	/** Quarantined = Q */
 	public static final String HUCLEARANCESTATUS_Quarantined = "Q";
+	/** Test Pending = P */
+	public static final String HUCLEARANCESTATUS_TestPending = "P";
 	@Override
 	public void setHUClearanceStatus (final @Nullable java.lang.String HUClearanceStatus)
 	{
@@ -823,6 +837,64 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
+	public void setManufacturerArticleNumber (final @Nullable java.lang.String ManufacturerArticleNumber)
+	{
+		set_Value (COLUMNNAME_ManufacturerArticleNumber, ManufacturerArticleNumber);
+	}
+
+	@Override
+	public java.lang.String getManufacturerArticleNumber() 
+	{
+		return get_ValueAsString(COLUMNNAME_ManufacturerArticleNumber);
+	}
+
+	@Override
+	public void setManufacturer_ID (final int Manufacturer_ID)
+	{
+		if (Manufacturer_ID < 1) 
+			set_Value (COLUMNNAME_Manufacturer_ID, null);
+		else 
+			set_Value (COLUMNNAME_Manufacturer_ID, Manufacturer_ID);
+	}
+
+	@Override
+	public int getManufacturer_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Manufacturer_ID);
+	}
+
+	@Override
+	public void setManufacturerProductDescription (final @Nullable java.lang.String ManufacturerProductDescription)
+	{
+		set_Value (COLUMNNAME_ManufacturerProductDescription, ManufacturerProductDescription);
+	}
+
+	@Override
+	public java.lang.String getManufacturerProductDescription() 
+	{
+		return get_ValueAsString(COLUMNNAME_ManufacturerProductDescription);
+	}
+
+	/** 
+	 * ManufacturingMethod AD_Reference_ID=541515
+	 * Reference name: ManufacturingMethod_Reference
+	 */
+	public static final int MANUFACTURINGMETHOD_AD_Reference_ID=541515;
+	/** Presslingherstellung = PR */
+	public static final String MANUFACTURINGMETHOD_Presslingherstellung = "PR";
+	@Override
+	public void setManufacturingMethod (final @Nullable java.lang.String ManufacturingMethod)
+	{
+		set_Value (COLUMNNAME_ManufacturingMethod, ManufacturingMethod);
+	}
+
+	@Override
+	public java.lang.String getManufacturingMethod() 
+	{
+		return get_ValueAsString(COLUMNNAME_ManufacturingMethod);
+	}
+
+	@Override
 	public org.compiere.model.I_M_AttributeSet getM_AttributeSet()
 	{
 		return get_ValueAsPO(COLUMNNAME_M_AttributeSet_ID, org.compiere.model.I_M_AttributeSet.class);
@@ -1011,6 +1083,27 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 		return get_ValueAsString(COLUMNNAME_M_ProductPlanningSchema_Selector);
 	}
 
+	/** 
+	 * MRP_Exclude AD_Reference_ID=319
+	 * Reference name: _YesNo
+	 */
+	public static final int MRP_EXCLUDE_AD_Reference_ID=319;
+	/** Yes = Y */
+	public static final String MRP_EXCLUDE_Yes = "Y";
+	/** No = N */
+	public static final String MRP_EXCLUDE_No = "N";
+	@Override
+	public void setMRP_Exclude (final @Nullable java.lang.String MRP_Exclude)
+	{
+		set_Value (COLUMNNAME_MRP_Exclude, MRP_Exclude);
+	}
+
+	@Override
+	public java.lang.String getMRP_Exclude() 
+	{
+		return get_ValueAsString(COLUMNNAME_MRP_Exclude);
+	}
+
 	@Override
 	public org.compiere.model.I_M_SectionCode getM_SectionCode()
 	{
@@ -1036,85 +1129,6 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public int getM_SectionCode_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_M_SectionCode_ID);
-	}
-
-	@Override
-	public void setManufacturer_ID (final int Manufacturer_ID)
-	{
-		if (Manufacturer_ID < 1)
-			set_Value (COLUMNNAME_Manufacturer_ID, null);
-		else
-			set_Value (COLUMNNAME_Manufacturer_ID, Manufacturer_ID);
-	}
-
-	@Override
-	public int getManufacturer_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_Manufacturer_ID);
-	}
-
-	@Override
-	public void setManufacturerArticleNumber (final @Nullable java.lang.String ManufacturerArticleNumber)
-	{
-		set_Value (COLUMNNAME_ManufacturerArticleNumber, ManufacturerArticleNumber);
-	}
-
-	@Override
-	public java.lang.String getManufacturerArticleNumber()
-	{
-		return get_ValueAsString(COLUMNNAME_ManufacturerArticleNumber);
-	}
-
-	@Override
-	public void setManufacturerProductDescription (final @Nullable java.lang.String ManufacturerProductDescription)
-	{
-		set_Value (COLUMNNAME_ManufacturerProductDescription, ManufacturerProductDescription);
-	}
-
-	@Override
-	public java.lang.String getManufacturerProductDescription()
-	{
-		return get_ValueAsString(COLUMNNAME_ManufacturerProductDescription);
-	}
-
-	/**
-	 * ManufacturingMethod AD_Reference_ID=541515
-	 * Reference name: ManufacturingMethod_Reference
-	 */
-	public static final int MANUFACTURINGMETHOD_AD_Reference_ID=541515;
-	/** Presslingherstellung = PR */
-	public static final String MANUFACTURINGMETHOD_Presslingherstellung = "PR";
-	@Override
-	public void setManufacturingMethod (final @Nullable java.lang.String ManufacturingMethod)
-	{
-		set_Value (COLUMNNAME_ManufacturingMethod, ManufacturingMethod);
-	}
-
-	@Override
-	public java.lang.String getManufacturingMethod()
-	{
-		return get_ValueAsString(COLUMNNAME_ManufacturingMethod);
-	}
-
-	/**
-	 * MRP_Exclude AD_Reference_ID=319
-	 * Reference name: _YesNo
-	 */
-	public static final int MRP_EXCLUDE_AD_Reference_ID=319;
-	/** Yes = Y */
-	public static final String MRP_EXCLUDE_Yes = "Y";
-	/** No = N */
-	public static final String MRP_EXCLUDE_No = "N";
-	@Override
-	public void setMRP_Exclude (final @Nullable java.lang.String MRP_Exclude)
-	{
-		set_Value (COLUMNNAME_MRP_Exclude, MRP_Exclude);
-	}
-
-	@Override
-	public java.lang.String getMRP_Exclude() 
-	{
-		return get_ValueAsString(COLUMNNAME_MRP_Exclude);
 	}
 
 	@Override
@@ -1158,6 +1172,18 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
+	public void setPackageSize (final @Nullable java.lang.String PackageSize)
+	{
+		set_Value (COLUMNNAME_PackageSize, PackageSize);
+	}
+
+	@Override
+	public java.lang.String getPackageSize() 
+	{
+		return get_ValueAsString(COLUMNNAME_PackageSize);
+	}
+
+	@Override
 	public void setPackage_UOM_ID (final int Package_UOM_ID)
 	{
 		if (Package_UOM_ID < 1) 
@@ -1170,18 +1196,6 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public int getPackage_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_Package_UOM_ID);
-	}
-
-	@Override
-	public void setPackageSize (final @Nullable java.lang.String PackageSize)
-	{
-		set_Value (COLUMNNAME_PackageSize, PackageSize);
-	}
-
-	@Override
-	public java.lang.String getPackageSize()
-	{
-		return get_ValueAsString(COLUMNNAME_PackageSize);
 	}
 
 	@Override
@@ -1308,33 +1322,6 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	}
 
 	@Override
-	public org.compiere.model.I_R_MailText getR_MailText()
-	{
-		return get_ValueAsPO(COLUMNNAME_R_MailText_ID, org.compiere.model.I_R_MailText.class);
-	}
-
-	@Override
-	public void setR_MailText(final org.compiere.model.I_R_MailText R_MailText)
-	{
-		set_ValueFromPO(COLUMNNAME_R_MailText_ID, org.compiere.model.I_R_MailText.class, R_MailText);
-	}
-
-	@Override
-	public void setR_MailText_ID (final int R_MailText_ID)
-	{
-		if (R_MailText_ID < 1)
-			set_Value (COLUMNNAME_R_MailText_ID, null);
-		else
-			set_Value (COLUMNNAME_R_MailText_ID, R_MailText_ID);
-	}
-
-	@Override
-	public int getR_MailText_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_R_MailText_ID);
-	}
-
-	@Override
 	public org.compiere.model.I_C_Country getRawMaterialOrigin()
 	{
 		return get_ValueAsPO(COLUMNNAME_RawMaterialOrigin_ID, org.compiere.model.I_C_Country.class);
@@ -1409,7 +1396,7 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	{
 		if (S_ExpenseType_ID < 1)
 			set_ValueNoCheck (COLUMNNAME_S_ExpenseType_ID, null);
-		else 
+		else
 			set_ValueNoCheck (COLUMNNAME_S_ExpenseType_ID, S_ExpenseType_ID);
 	}
 
