@@ -35,6 +35,8 @@ import de.metas.util.Services;
 import de.metas.util.lang.SpringResourceUtils;
 import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
+import org.adempiere.archive.AdArchive;
+import org.adempiere.archive.ArchiveId;
 import org.adempiere.archive.api.ArchiveInfo;
 import org.adempiere.archive.api.ArchiveRequest;
 import org.adempiere.archive.api.ArchiveResult;
@@ -53,7 +55,6 @@ import org.compiere.model.I_AD_Client;
 import org.compiere.model.I_AD_Process;
 import org.compiere.model.X_AD_Client;
 import org.compiere.util.Env;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 
 import javax.annotation.Nullable;
@@ -64,13 +65,28 @@ import java.util.Properties;
 
 public class ArchiveBL implements IArchiveBL
 {
+	private final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
+	private final IArchiveStorageFactory archiveStorageFactory = Services.get(IArchiveStorageFactory.class);
+
+	@Override
+	public I_AD_Archive getArchiveRecordById(@NonNull final ArchiveId id)
+	{
+		return archiveDAO.getArchiveRecordById(id);
+	}
+
+	@Override
+	public AdArchive getById(@NonNull final ArchiveId id)
+	{
+		return toAdArchive(archiveDAO.getArchiveRecordById(id));
+	}
+
 	@Override
 	@Nullable
 	public I_AD_Archive archive(final Resource data,
-			final ArchiveInfo archiveInfo,
-			final boolean force,
-			final boolean save,
-			final String trxName)
+								final ArchiveInfo archiveInfo,
+								final boolean force,
+								final boolean save,
+								final String trxName)
 	{
 		final ArchiveRequest request = createArchiveRequest(data, archiveInfo, force, save, trxName);
 		return archive(request).getArchiveRecord();
@@ -123,7 +139,7 @@ public class ArchiveBL implements IArchiveBL
 		// t.schoemeberg@metas.de, 03787: using the client/org of the archived PO, if possible
 		final Properties ctxToUse = createContext(request);
 
-		final IArchiveStorage storage = Services.get(IArchiveStorageFactory.class).getArchiveStorage(ctxToUse);
+		final IArchiveStorage storage = archiveStorageFactory.getArchiveStorage(ctxToUse);
 		final I_AD_Archive archive = storage.newArchive(ctxToUse, request.getTrxName());
 		archive.setDocumentFlavor(DocumentReportFlavor.toCode(request.getFlavor()));
 
@@ -341,26 +357,31 @@ public class ArchiveBL implements IArchiveBL
 	@Override
 	public byte[] getBinaryData(final I_AD_Archive archive)
 	{
-		return Services.get(IArchiveStorageFactory.class).getArchiveStorage(archive).getBinaryData(archive);
+		return archiveStorageFactory.getArchiveStorage(archive).getBinaryData(archive);
 	}
 
 	@Override
 	public void setBinaryData(final I_AD_Archive archive, final byte[] data)
 	{
-		Services.get(IArchiveStorageFactory.class).getArchiveStorage(archive).setBinaryData(archive, data);
+		archiveStorageFactory.getArchiveStorage(archive).setBinaryData(archive, data);
 	}
 
 	@Override
 	public InputStream getBinaryDataAsStream(final I_AD_Archive archive)
 	{
-		return Services.get(IArchiveStorageFactory.class).getArchiveStorage(archive).getBinaryDataAsStream(archive);
+		return archiveStorageFactory.getArchiveStorage(archive).getBinaryDataAsStream(archive);
 	}
 
 	@Override
-	public Optional<I_AD_Archive> getLastArchive(
+	public Optional<AdArchive> getLastArchive(
 			@NonNull final TableRecordReference reference)
 	{
-		final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
+		return getLastArchiveRecord(reference).map(this::toAdArchive);
+	}
+
+	@Override
+	public Optional<I_AD_Archive> getLastArchiveRecord(@NonNull final TableRecordReference reference)
+	{
 		final List<I_AD_Archive> lastArchives = archiveDAO.retrieveLastArchives(Env.getCtx(), reference, QueryLimit.ONE);
 
 		if (lastArchives.isEmpty())
@@ -377,8 +398,16 @@ public class ArchiveBL implements IArchiveBL
 	public Optional<Resource> getLastArchiveBinaryData(
 			@NonNull final TableRecordReference reference)
 	{
-		return getLastArchive(reference)
-				.map(this::getBinaryData)
-				.map(ByteArrayResource::new);
+		return getLastArchive(reference).map(AdArchive::getArchiveDataAsResource);
 	}
+
+	private AdArchive toAdArchive(final I_AD_Archive record)
+	{
+		return AdArchive.builder()
+				.id(ArchiveId.ofRepoId(record.getAD_Archive_ID()))
+				.archiveData(getBinaryData(record))
+				.contentType(getContentType(record))
+				.build();
+	}
+
 }
