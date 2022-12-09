@@ -172,9 +172,15 @@ public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 	{
 		return retrieveOrderQtys(ppOrderId)
 				.stream()
-				.filter(cand -> cand.getPP_Order_BOMLine_ID() <= 0)
+				.filter(HUPPOrderQtyDAO::isFinishedGoodsReceipt)
 				.collect(ImmutableList.toImmutableList());
 	}
+
+	public static boolean isFinishedGoodsReceipt(@NonNull final I_PP_Order_Qty ppOrderQty)
+	{
+		return ppOrderQty.getPP_Order_BOMLine_ID() <= 0;
+	}
+
 
 	@Override
 	public Optional<I_PP_Order_Qty> retrieveOrderQtyForHu(

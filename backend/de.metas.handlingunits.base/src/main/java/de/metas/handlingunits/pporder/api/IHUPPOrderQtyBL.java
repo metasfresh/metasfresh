@@ -45,5 +45,5 @@ public interface IHUPPOrderQtyBL extends ISingletonService
 
 	void updateDraftReceiptCandidate(@NonNull UpdateDraftReceiptCandidateRequest request);
 
-	boolean isReceipt(@NonNull final I_PP_Order_Qty ppOrderQty);
+	boolean isFinishedGoodsReceipt(@NonNull final I_PP_Order_Qty ppOrderQty);
 }
