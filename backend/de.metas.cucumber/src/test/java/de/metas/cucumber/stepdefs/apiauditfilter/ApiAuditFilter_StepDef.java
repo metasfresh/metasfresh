@@ -102,41 +102,6 @@ public class ApiAuditFilter_StepDef
 		}
 	}
 
-	@And("there are added records in API_Request_Audit")
-	public void API_Request_Audit_validation(@NonNull final DataTable table)
-	{
-		final JsonMetasfreshId requestId = testContext.getApiResponse().getRequestId();
-		assertThat(requestId).isNotNull();
-
-		final Map<String, String> row = table.asMaps().get(0);
-
-		final String method = DataTableUtil.extractStringForColumnName(row, "Method");
-		final String path = DataTableUtil.extractStringForColumnName(row, "Path");
-		final String name = DataTableUtil.extractStringForColumnName(row, "AD_User.Name");
-		final String statuses = DataTableUtil.extractStringForColumnName(row, "Status");
-		final I_API_Request_Audit requestAuditRecord = queryBL
-				.createQueryBuilder(I_API_Request_Audit.class)
-				.addEqualsFilter(I_API_Request_Audit.COLUMN_API_Request_Audit_ID, requestId.getValue())
-				.create()
-				.firstOnly(I_API_Request_Audit.class);
-
-		assertThat(requestAuditRecord).isNotNull();
-		assertThat(method).isEqualTo(requestAuditRecord.getMethod());
-		assertThat(requestAuditRecord.getPath()).contains(path);
-
-		final String[] allowedStatuses = statuses.split(" *OR *");
-		assertThat(requestAuditRecord.getStatus()).isIn((Object[])allowedStatuses);
-
-		final I_AD_User adUserRecord = queryBL
-				.createQueryBuilder(I_AD_User.class)
-				.addEqualsFilter(I_AD_User.COLUMN_AD_User_ID, requestAuditRecord.getAD_User_ID())
-				.create()
-				.firstOnly(I_AD_User.class);
-
-		assertThat(adUserRecord).isNotNull();
-		assertThat(name).isEqualTo(adUserRecord.getLogin());
-	}
-
 	@And("^there are (added|no) records in API_Request_Audit_Log$")
 	public void API_Request_Audit_Log_validation(
 			@NonNull final String action,
@@ -222,31 +187,6 @@ public class ApiAuditFilter_StepDef
 		{
 			assertThat(responseAuditRecords.size()).isEqualTo(0);
 		}
-	}
-
-	@And("on API_Request_Audit record we update the statusCode value from path")
-	public void API_Request_Audit_update(@NonNull final DataTable table)
-	{
-		final JsonMetasfreshId requestId = testContext.getApiResponse().getRequestId();
-		assertThat(requestId).isNotNull();
-
-		final Map<String, String> row = table.asMaps().get(0);
-
-		final String statusCode = DataTableUtil.extractStringForColumnName(row, "statusCode");
-
-		final ApiRequestAudit existingApiRequestAudit = apiRequestAuditRepository.getById(ApiRequestAuditId.ofRepoId(requestId.getValue()));
-
-		final String existingPath = existingApiRequestAudit.getPath();
-
-		assertThat(existingPath).isNotNull();
-
-		final String updatedPath = existingPath.replace("404", statusCode);
-
-		final ApiRequestAudit updatedApiRequestAudit = existingApiRequestAudit.toBuilder()
-				.path(updatedPath)
-				.build();
-
-		apiRequestAuditRepository.save(updatedApiRequestAudit);
 	}
 
 	@When("invoke replay audit")
