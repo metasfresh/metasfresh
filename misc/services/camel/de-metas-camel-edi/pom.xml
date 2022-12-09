@@ -305,8 +305,7 @@
                         <configuration>
                             <schemaDirectory>src/main/xsd/metasfresh</schemaDirectory>
                             <generatePackage>${jaxb.packageName}</generatePackage>
-                            <generateDirectory>${project.build.directory}/generated-sources/xjc_metasfresh
-                            </generateDirectory>
+                            <generateDirectory>${project.basedir}/src/main/java-xjc_metasfresh</generateDirectory>
                         </configuration>
                     </execution>
                     <execution>
@@ -318,7 +317,7 @@
                         <configuration>
                             <schemaDirectory>src/main/xsd/stepcom/orders</schemaDirectory>
                             <generatePackage>${jaxb.orders.packageName}</generatePackage>
-                            <generateDirectory>${project.build.directory}/generated-sources/xjc_stepcom_orders</generateDirectory>
+                            <generateDirectory>${project.basedir}/src/main/java-xjc_stepcom_orders</generateDirectory>
                         </configuration>
                     </execution>
                     <execution>
@@ -330,7 +329,7 @@
                         <configuration>
                             <schemaDirectory>src/main/xsd/stepcom/desadv</schemaDirectory>
                             <generatePackage>${jaxb.desadv.packageName}</generatePackage>
-                            <generateDirectory>${project.build.directory}/generated-sources/xjc_stepcom_desadv</generateDirectory>
+                            <generateDirectory>${project.basedir}/src/main/java-xjc_stepcom_desadv</generateDirectory>
                         </configuration>
                     </execution>
                     <execution>
@@ -342,7 +341,7 @@
                         <configuration>
                             <schemaDirectory>src/main/xsd/stepcom/invoic</schemaDirectory>
                             <generatePackage>${jaxb.invoic.packageName}</generatePackage>
-                            <generateDirectory>${project.build.directory}/generated-sources/xjc_stepcom_invoic</generateDirectory>
+                            <generateDirectory>${project.basedir}/src/main/java-xjc_stepcom_invoic</generateDirectory>
                         </configuration>
                     </execution>
                     <execution>
@@ -358,7 +357,7 @@
                             
                             because it will end with "Two declarations cause a collision in the ObjectFactory class."
                             -->
-                            <generateDirectory>${project.build.directory}/generated-sources/xjc_ecosio_remadv</generateDirectory>
+                            <generateDirectory>${project.basedir}/src/main/java-xjc_ecosio_remadv</generateDirectory>
                         </configuration>
                     </execution>
                 </executions>
@@ -376,6 +375,31 @@
                 </dependencies>
             </plugin>
 
+            <plugin>
+                <!-- Adds src/main/java-xsd as additional source folder (if the directory
+                    is present) -->
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>add-sources-java-xjc</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>src/main/java-xjc_metasfresh</source>
+                                <source>src/main/java-xjc_stepcom_orders</source>
+                                <source>src/main/java-xjc_stepcom_desadv</source>
+                                <source>src/main/java-xjc_stepcom_invoic</source>
+                                <source>src/main/java-xjc_ecosio_remadv</source>
+                            </sources>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>

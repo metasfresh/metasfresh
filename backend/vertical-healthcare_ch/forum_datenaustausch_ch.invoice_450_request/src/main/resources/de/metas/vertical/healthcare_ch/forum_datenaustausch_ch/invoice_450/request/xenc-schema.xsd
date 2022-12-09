@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Commenting out this dtd declaration lest our unit tests fail with https-code 429 when we try to validate some XMLs
 <!DOCTYPE schema  PUBLIC "-//W3C//DTD XMLSchema 200102//EN"
  "https://www.w3.org/2001/XMLSchema.dtd"
  [
@@ -9,7 +10,7 @@
    <!ENTITY % p ''>
    <!ENTITY % s ''>
   ]>
-
+-->
 <schema xmlns='http://www.w3.org/2001/XMLSchema' version='1.0'
         xmlns:xenc='http://www.w3.org/2001/04/xmlenc#'
         xmlns:ds='http://www.w3.org/2000/09/xmldsig#'
