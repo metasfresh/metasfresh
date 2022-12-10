@@ -49,6 +49,7 @@ public class PrintReceivedHUQRCodesActivityHandler implements WFActivityHandler,
 {
 	public static final WFActivityType HANDLED_ACTIVITY_TYPE = WFActivityType.ofString("manufacturing.printReceivedHUQRCodes");
 	private static final AdMessageKey MSG_DoYouWantToPrint = AdMessageKey.of("manufacturing.printReceivedHUQRCodes.DoYouWantToPrint?");
+	private static final AdMessageKey MSG_NoFinishedGoodsAvailableForLabeling = AdMessageKey.of("manufacturing.printReceivedHUQRCodes.NoFinishedGoodsAvailableForLabeling");
 
 	private final ManufacturingJobService manufacturingJobService;
 	private final HULabelService huLabelService;
@@ -119,7 +120,8 @@ public class PrintReceivedHUQRCodesActivityHandler implements WFActivityHandler,
 		final Set<HuId> huIds = huPPOrderQtyBL.getFinishedGoodsReceivedHUIds(ppOrderId);
 		if (huIds.isEmpty())
 		{
-			throw new AdempiereException("No Finished Goods Received yet");
+			throw new AdempiereException(MSG_NoFinishedGoodsAvailableForLabeling)
+					.markAsUserValidationError();
 		}
 
 		return handlingUnitsBL.getByIds(huIds)
@@ -143,8 +145,8 @@ public class PrintReceivedHUQRCodesActivityHandler implements WFActivityHandler,
 
 		for (final HUToReport hu : batchToPrint.getHus())
 		{
-			// IMPORTANT: call the report with one parameter only because label reports are working only if we provide M_HU_ID parameter.
-			// We changed HUReportExecutor to provide the M_HU_ID parameter in case only one hu is provided.
+			// IMPORTANT: call the report with one HU only because label reports are working only if we provide M_HU_ID parameter.
+			// We changed HUReportExecutor to provide the M_HU_ID parameter and as AD_Table_ID/Record_ID in case only one HU is provided.
 			HUReportExecutor.newInstance()
 					.printPreview(false)
 					.executeNow(printFormatProcessId, ImmutableList.of(hu));
