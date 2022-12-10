@@ -14,25 +14,29 @@ import org.slf4j.Logger;
 import javax.annotation.Nullable;
 import java.util.Properties;
 
+/**
+ * Legacy HULabelConfig provider based on AD_SysConfig(s)
+ */
 class HULabelConfigFromSysConfigProvider
 {
 	private static final Logger logger = LogManager.getLogger(HULabelConfigFromSysConfigProvider.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	//
+	// Material Receipt
 	private static final String SYSCONFIG_RECEIPT_LABEL_PROCESS_ID = "de.metas.handlingunits.MaterialReceiptLabel.AD_Process_ID";
 	private static final String SYSCONFIG_RECEIPT_LABEL_AUTO_PRINT_ENABLED = "de.metas.handlingunits.MaterialReceiptLabel.AutoPrint.Enabled";
 	private static final String SYSCONFIG_RECEIPT_LABEL_AUTO_PRINT_ENABLED_C_BPARTNER_ID = SYSCONFIG_RECEIPT_LABEL_AUTO_PRINT_ENABLED + ".C_BPartner_ID_";
 	private static final String SYSCONFIG_RECEIPT_LABEL_AUTO_PRINT_COPIES = "de.metas.handlingunits.MaterialReceiptLabel.AutoPrint.Copies";
 
 	//
-
+	// Picking
 	private static final String SYSCONFIG_PICKING_LABEL_AUTO_PRINT_ENABLED = "de.metas.ui.web.picking.PickingLabel.AutoPrint.Enabled";
 	private static final String SYSCONFIG_PICKING_LABEL_PROCESS_ID = "de.metas.ui.web.picking.PickingLabel.AD_Process_ID";
 	private static final String SYSCONFIG_PICKING_LABEL_AUTO_PRINT_COPIES = "de.metas.ui.web.picking.PickingLabel.AutoPrint.Copies";
 
 	//
-
+	// Manufacturing
 	public static final String SYSCONFIG_FINISHEDGOODS_LABEL_PROCESS_ID = "de.metas.handlingunits.FinishedGoodsLabel.AD_Process_ID";
 
 	//
@@ -44,11 +48,11 @@ class HULabelConfigFromSysConfigProvider
 		{
 			return getReceiptLabelFromSysConfig(query.getBpartnerId());
 		}
-		else if(sourceDocType == HULabelSourceDocType.Picking)
+		else if (sourceDocType == HULabelSourceDocType.Picking)
 		{
 			return getPickingLabelFromSysConfig();
 		}
-		else if(sourceDocType == HULabelSourceDocType.Manufacturing)
+		else if (sourceDocType == HULabelSourceDocType.Manufacturing)
 		{
 			return getManufacturingFinishedGoodsLabelFromSysConfig();
 		}
@@ -89,16 +93,15 @@ class HULabelConfigFromSysConfigProvider
 		final int adClientId = Env.getAD_Client_ID(ctx);
 		final int adOrgId = Env.getAD_Org_ID(ctx);
 
-		if (vendorBPartnerId != null)
-		{
-			final String vendorSysconfigName = SYSCONFIG_RECEIPT_LABEL_AUTO_PRINT_ENABLED_C_BPARTNER_ID + vendorBPartnerId.getRepoId();
-			final String valueForBPartner = sysConfigBL.getValue(vendorSysconfigName, "NOT_SET", adClientId, adOrgId);
-			logger.debug("SysConfig {}={};", vendorSysconfigName, valueForBPartner);
+		// NOTE: we have to check for C_BPartner_ID "-1" in case there is no vendor because production systems have a sysconfig like that defined
+		final String vendorSysconfigName = SYSCONFIG_RECEIPT_LABEL_AUTO_PRINT_ENABLED_C_BPARTNER_ID
+				+ (vendorBPartnerId != null ? vendorBPartnerId.getRepoId() : -1);
+		final String valueForBPartner = sysConfigBL.getValue(vendorSysconfigName, "NOT_SET", adClientId, adOrgId);
+		logger.debug("SysConfig {}={};", vendorSysconfigName, valueForBPartner);
 
-			if (!"NOT_SET".equals(valueForBPartner))
-			{
-				return StringUtils.toBoolean(valueForBPartner);
-			}
+		if (!"NOT_SET".equals(valueForBPartner))
+		{
+			return StringUtils.toBoolean(valueForBPartner);
 		}
 
 		final String genericValue = sysConfigBL.getValue(SYSCONFIG_RECEIPT_LABEL_AUTO_PRINT_ENABLED, "N", adClientId, adOrgId);
@@ -148,7 +151,6 @@ class HULabelConfigFromSysConfigProvider
 
 	private AdProcessId retrieveProcessIdBySysConfig(final String sysConfigName)
 	{
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		final Properties ctx = Env.getCtx();
 		final int reportProcessId = sysConfigBL.getIntValue(sysConfigName, -1, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
 		return AdProcessId.ofRepoIdOrNull(reportProcessId);
@@ -156,7 +158,6 @@ class HULabelConfigFromSysConfigProvider
 
 	private int getAutoPrintCopyCountForSysConfig(final String sysConfigName)
 	{
-		final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 		final Properties ctx = Env.getCtx();
 		return sysConfigBL.getIntValue(sysConfigName, 1, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
 	}
