@@ -48,7 +48,7 @@ public class HULabelConfigRepository
 		return new HULabelConfigMap(list);
 	}
 
-	private static HULabelConfigRoute fromRecord(final I_M_HU_Label_Config record)
+	public static HULabelConfigRoute fromRecord(final I_M_HU_Label_Config record)
 	{
 		return HULabelConfigRoute.builder()
 				.seqNo(SeqNo.ofInt(record.getSeqNo()))
@@ -63,7 +63,7 @@ public class HULabelConfigRepository
 				.build();
 	}
 
-	private static ImmutableSet<HuUnitType> extractAcceptedHuUnitTypes(final I_M_HU_Label_Config record)
+	public static ImmutableSet<HuUnitType> extractAcceptedHuUnitTypes(final I_M_HU_Label_Config record)
 	{
 		final ImmutableSet.Builder<HuUnitType> builder = ImmutableSet.builder();
 		if (record.isApplyToLUs())
