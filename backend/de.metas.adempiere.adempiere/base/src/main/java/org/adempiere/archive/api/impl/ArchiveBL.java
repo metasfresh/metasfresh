@@ -28,7 +28,6 @@ import de.metas.i18n.Language;
 import de.metas.process.AdProcessId;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.PInstanceId;
-import de.metas.process.ProcessInfo;
 import de.metas.report.DocumentReportFlavor;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
@@ -37,7 +36,6 @@ import lombok.NonNull;
 import org.adempiere.ad.dao.QueryLimit;
 import org.adempiere.archive.AdArchive;
 import org.adempiere.archive.ArchiveId;
-import org.adempiere.archive.api.ArchiveInfo;
 import org.adempiere.archive.api.ArchiveRequest;
 import org.adempiere.archive.api.ArchiveResult;
 import org.adempiere.archive.api.IArchiveBL;
@@ -57,7 +55,6 @@ import org.compiere.model.X_AD_Client;
 import org.compiere.util.Env;
 import org.springframework.core.io.Resource;
 
-import javax.annotation.Nullable;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Optional;
@@ -69,27 +66,9 @@ public class ArchiveBL implements IArchiveBL
 	private final IArchiveStorageFactory archiveStorageFactory = Services.get(IArchiveStorageFactory.class);
 
 	@Override
-	public I_AD_Archive getArchiveRecordById(@NonNull final ArchiveId id)
-	{
-		return archiveDAO.getArchiveRecordById(id);
-	}
-
-	@Override
 	public AdArchive getById(@NonNull final ArchiveId id)
 	{
 		return toAdArchive(archiveDAO.getArchiveRecordById(id));
-	}
-
-	@Override
-	@Nullable
-	public I_AD_Archive archive(final Resource data,
-								final ArchiveInfo archiveInfo,
-								final boolean force,
-								final boolean save,
-								final String trxName)
-	{
-		final ArchiveRequest request = createArchiveRequest(data, archiveInfo, force, save, trxName);
-		return archive(request).getArchiveRecord();
 	}
 
 	@Override
@@ -104,34 +83,6 @@ public class ArchiveBL implements IArchiveBL
 			return ArchiveResult.EMPTY;
 		}
 
-	}
-
-	private static ArchiveRequest createArchiveRequest(
-			final Resource data,
-			final ArchiveInfo archiveInfo,
-			final boolean force,
-			final boolean save,
-			final String trxName)
-	{
-		final ArchiveRequest.ArchiveRequestBuilder requestBuilder = ArchiveRequest.builder()
-				.ctx(Env.getCtx())
-				.data(data)
-				.force(force)
-				.save(save)
-				.trxName(trxName);
-
-		if (archiveInfo != null)
-		{
-			requestBuilder
-					.isReport(archiveInfo.isReport())
-					.recordRef(archiveInfo.getRecordRef())
-					.processId(archiveInfo.getProcessId())
-					.pinstanceId(archiveInfo.getPInstanceId())
-					.archiveName(archiveInfo.getName())
-					.bpartnerId(archiveInfo.getBpartnerId());
-		}
-
-		return requestBuilder.build();
 	}
 
 	private ArchiveResult archive0(@NonNull final ArchiveRequest request)
@@ -166,6 +117,19 @@ public class ArchiveBL implements IArchiveBL
 		//FRESH-349: Set ad_pinstance
 		archive.setAD_PInstance_ID(PInstanceId.toRepoId(request.getPinstanceId()));
 
+		//
+		// Printing:
+		{
+			archive.setIsDirectEnqueue(request.isDirectEnqueue());
+			archive.setIsDirectProcessQueueItem(request.isDirectProcessQueueItem()); // create the print job or store PDF; not only enqueue to printing queue
+
+			// NOTE: It doesn't make sense to persist this value, but it needs to be available in case the system has to create a printing queue item for this archive
+			// (task https://github.com/metasfresh/metasfresh/issues/1240)
+			COPIES_PER_ARCHIVE.setValue(archive, request.getCopies());
+		}
+
+		//
+		// Save
 		if (request.isSave())
 		{
 			InterfaceWrapperHelper.save(archive);
@@ -195,7 +159,7 @@ public class ArchiveBL implements IArchiveBL
 	 * Return the BPartner's language, in case the request has a jasper report set and this jasper report is a process that uses the BPartner language. If it was not found, fall back to the language set
 	 * in the given context
 	 * <p>
-	 * Task https://metasfresh.atlassian.net/browse/FRESH-218
+	 * Task <a href="https://metasfresh.atlassian.net/browse/FRESH-218">FRESH-218</a>
 	 */
 	private String getLanguageFromReport(
 			@NonNull final Properties ctx,
@@ -286,34 +250,6 @@ public class ArchiveBL implements IArchiveBL
 		if (autoArchive.equals(X_AD_Client.AUTOARCHIVE_Documents))
 		{
 			if (request.isReport())
-			{
-				return false;
-			}
-		}
-		return true;
-	}
-
-	public boolean isToArchive(final Properties ctx, final ProcessInfo processInfo)
-	{
-		final String autoArchive = getAutoArchiveType(ctx);
-
-		// Nothing to Archive
-		if (autoArchive.equals(X_AD_Client.AUTOARCHIVE_None))
-		{
-			return false;
-		}
-		// Archive External only
-		if (autoArchive.equals(X_AD_Client.AUTOARCHIVE_ExternalDocuments))
-		{
-			if (processInfo.isReportingProcess())
-			{
-				return false;
-			}
-		}
-		// Archive Documents only
-		if (autoArchive.equals(X_AD_Client.AUTOARCHIVE_Documents))
-		{
-			if (processInfo.isReportingProcess())
 			{
 				return false;
 			}

@@ -21,7 +21,10 @@ public class HULabelConfigRepository
 {
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
-	private final CCache<Integer, HULabelConfigMap> cache = CCache.newCache(I_M_HU_Label_Config.Table_Name, 1, CCache.EXPIREMINUTES_Never);
+	private final CCache<Integer, HULabelConfigMap> cache = CCache.<Integer, HULabelConfigMap>builder()
+			.tableName(I_M_HU_Label_Config.Table_Name)
+			.initialCapacity(1)
+			.build();
 
 	public Optional<HULabelConfig> getFirstMatching(HULabelConfigQuery query)
 	{

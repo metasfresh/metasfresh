@@ -548,7 +548,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 
 		final int copies = labelConfig.getAutoPrintCopies();
 
-		HUReportExecutor.newInstance(Env.getCtx())
+		HUReportExecutor.newInstance()
 				.numberOfCopies(copies)
 				.executeHUReportAfterCommit(printFormatProcessId, husToProcess);
 	}

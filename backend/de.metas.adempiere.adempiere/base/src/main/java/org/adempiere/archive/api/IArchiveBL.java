@@ -32,7 +32,6 @@ import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.model.I_AD_Archive;
 import org.springframework.core.io.Resource;
 
-import javax.annotation.Nullable;
 import java.io.InputStream;
 import java.util.Optional;
 
@@ -48,22 +47,11 @@ public interface IArchiveBL extends ISingletonService
 	 * Allow to store the required number of copies per archive. Storing it inside the AD_Archive record (i.e. DB) makes no sense, because one AD_Archive can be printed multiple times.
 	 * The value that is set here will be used in the respective printing queue item
 	 *
-	 * @implSpec Task https://github.com/metasfresh/metasfresh/issues/1240
+	 * @implSpec Task <a href="https://github.com/metasfresh/metasfresh/issues/1240">1240</a>
 	 */
 	ModelDynAttributeAccessor<I_AD_Archive, PrintCopies> COPIES_PER_ARCHIVE = new ModelDynAttributeAccessor<>(PrintCopies.class);
 
-	I_AD_Archive getArchiveRecordById(ArchiveId id);
-
 	AdArchive getById(@NonNull ArchiveId id);
-
-	/**
-	 * @implSpec Task http://dewiki908/mediawiki/index.php/09752_For_Umsatzreport_and_Mengenstatistiken%2C_two_printing_queue..._%28107420055849%29
-	 *
-	 * @deprecated Please use {@link #archive(ArchiveRequest)}
-	 */
-	@Nullable
-	@Deprecated
-	I_AD_Archive archive(Resource data, ArchiveInfo archiveInfo, boolean force, boolean save, String trxName);
 
 	@NonNull
 	ArchiveResult archive(@NonNull ArchiveRequest request);

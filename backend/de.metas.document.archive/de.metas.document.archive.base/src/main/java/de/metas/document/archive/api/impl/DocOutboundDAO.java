@@ -209,4 +209,10 @@ public class DocOutboundDAO implements IDocOutboundDAO
 				.create()
 				.list();
 	}
+
+	@Override
+	public I_C_Doc_Outbound_Config getConfigById(final int docOutboundConfigId)
+	{
+		return InterfaceWrapperHelper.load(docOutboundConfigId, I_C_Doc_Outbound_Config.class);
+	}
 }

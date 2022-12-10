@@ -1,17 +1,15 @@
 package de.metas.handlingunits.process;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import de.metas.global_qrcodes.service.QRCodePDFResource;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.qrcodes.model.HUQRCode;
-import de.metas.handlingunits.qrcodes.service.HUQRCodeGenerateForExistingHUsRequest;
+import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
-import de.metas.handlingunits.report.HUReportService;
 import de.metas.process.JavaProcess;
-import de.metas.report.server.OutputType;
-import lombok.NonNull;
+import de.metas.process.RunOutOfTrx;
+import de.metas.util.Services;
 import org.compiere.SpringContextHolder;
-import org.springframework.core.io.Resource;
+
+import java.util.Set;
 
 /*
  * #%L
@@ -42,24 +40,25 @@ import org.springframework.core.io.Resource;
  */
 public class M_HU_Report_QRCode extends JavaProcess
 {
-	private final HUReportService huReportService = SpringContextHolder.instance.getBean(HUReportService.class);
 	private final HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	@Override
+	@RunOutOfTrx
 	protected String doIt()
 	{
-		final ImmutableSet<HuId> huIds = huReportService.getHuIdsFromSelection(getPinstanceId());
-		final ImmutableList<HUQRCode> qrCodes = generateQrCodes(huIds);
+		final Set<HuId> huIds = handlingUnitsBL.getHuIdsBySelectionId(getPinstanceId());
 
-		final Resource pdf = huQRCodesService.createPDF(qrCodes);
-		getResult().setReportData(pdf, pdf.getFilename(), OutputType.PDF.getContentType());
+		if (getProcessInfo().isPrintPreview())
+		{
+			final QRCodePDFResource pdf = huQRCodesService.createPdfForHUIds(huIds);
+			getResult().setReportData(pdf, pdf.getFilename(), pdf.getContentType());
+		}
+		else
+		{
+			huQRCodesService.printForHUIds(huIds);
+		}
 
 		return MSG_OK;
-	}
-
-	private ImmutableList<HUQRCode> generateQrCodes(@NonNull final ImmutableSet<HuId> huIds)
-	{
-		return huQRCodesService.generateForExistingHUs(HUQRCodeGenerateForExistingHUsRequest.ofHuIds(huIds))
-				.toList();
 	}
 }

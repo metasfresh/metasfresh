@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class HUQRCodesService
@@ -50,12 +51,26 @@ public class HUQRCodesService
 				.execute();
 	}
 
+	public QRCodePDFResource createPdfForHUIds(@NonNull final Set<HuId> huIds)
+	{
+		// Make sure all HUs have QR Codes assigned
+		final ImmutableList<HUQRCode> qrCodes = generateForExistingHUs(HUQRCodeGenerateForExistingHUsRequest.ofHuIds(huIds))
+				.toList();
+
+		return createPDF(qrCodes);
+	}
+
 	public QRCodePDFResource createPDF(@NonNull final List<HUQRCode> qrCodes)
 	{
 		return globalQRCodeService.createPDF(
 				qrCodes.stream()
 						.map(HUQRCode::toPrintableQRCode)
 						.collect(ImmutableList.toImmutableList()));
+	}
+
+	public void printForHUIds(@NonNull final Set<HuId> huIds)
+	{
+		print(createPdfForHUIds(huIds));
 	}
 
 	public void print(@NonNull final List<HUQRCode> qrCodes)
@@ -104,15 +119,6 @@ public class HUQRCodesService
 		{
 			throw new AdempiereException("No QR Code attached to HU " + huId.getRepoId());
 		}
-	}
-
-	public List<HUQRCode> getQRCodesByHuId(@NonNull final HuId huId)
-	{
-		return generateForExistingHUs(
-				HUQRCodeGenerateForExistingHUsRequest.builder()
-						.huIds(ImmutableSet.of(huId))
-						.build())
-				.toList();
 	}
 
 	public Optional<HUQRCode> getFirstQRCodeByHuIdIfExists(@NonNull final HuId huId)

@@ -6,11 +6,11 @@ import de.metas.bpartner.service.IBPartnerBL;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.i18n.Language;
+import de.metas.logging.LogManager;
 import de.metas.notification.INotificationBL;
 import de.metas.notification.Recipient;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.printing.IMassPrintingService;
-import de.metas.process.ADProcessService;
 import de.metas.process.AdProcessId;
 import de.metas.process.ProcessExecutionResult;
 import de.metas.process.ProcessExecutor;
@@ -22,12 +22,14 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
+import lombok.ToString;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxListenerManager.TrxEventTiming;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.ad.trx.api.OnTrxMissingPolicy;
 import org.compiere.util.DB;
 import org.compiere.util.Env;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
@@ -63,14 +65,21 @@ import java.util.Set;
  * This little class is specialized on executing HU report processes.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
+@ToString(doNotUseGetters = true, exclude = "ctx")
 public class HUReportExecutor
 {
 	public static HUReportExecutor newInstance(final Properties ctx)
 	{
 		return new HUReportExecutor(ctx);
 	}
+
+	public static HUReportExecutor newInstance()
+	{
+		return new HUReportExecutor(Env.getCtx());
+	}
+
+	private static final Logger logger = LogManager.getLogger(HUReportExecutor.class);
 
 	private static final String REPORT_LANG_NONE = "NO-COMMON-LANGUAGE-FOUND";
 	private static final String REPORT_AD_PROCESS_ID = "AD_Process_ID";
@@ -119,7 +128,6 @@ public class HUReportExecutor
 		return this;
 	}
 
-
 	public HUReportExecutor printPreview(final boolean printPreview)
 	{
 		this.printPreview = printPreview;
@@ -129,7 +137,7 @@ public class HUReportExecutor
 	/**
 	 * Prepares everything and creates a trx-listener to run the report after the current trx is committed (or right now, if there is no currently open trx).
 	 *
-	 * @param adProcessId the (jasper-)process to be executed
+	 * @param adProcessId  the (jasper-)process to be executed
 	 * @param husToProcess the HUs to be processed/shown in the report. These HUs' IDs are added to the {@code T_Select} table and can be accessed by the jasper file.
 	 */
 	public void executeHUReportAfterCommit(final AdProcessId adProcessId, @NonNull final List<HUToReport> husToProcess)
@@ -194,10 +202,15 @@ public class HUReportExecutor
 
 	private HUReportTrxListener newHUReportTrxListener(final AdProcessId adProcessId)
 	{
+		if (printPreview != null)
+		{
+			logger.warn("printPreview option cannot be used when running the report async: this={} adProcessId={}", this, adProcessId);
+		}
+
 		return new HUReportTrxListener(ctx, adProcessId, windowNo, numberOfCopies, adJasperProcessId);
 	}
 
-	private ImmutableSet<HuId> extractHUIds(final Collection<HUToReport> hus)
+	private static ImmutableSet<HuId> extractHUIds(final Collection<HUToReport> hus)
 	{
 		return hus.stream()
 				.map(HUToReport::getHUId)
@@ -245,12 +258,25 @@ public class HUReportExecutor
 				.addParameter(ReportConstants.REPORT_PARAM_BARCODE_URL, DocumentReportService.getBarcodeServlet(Env.getClientId(ctx), Env.getOrgId(ctx)))
 				.addParameter(IMassPrintingService.PARAM_PrintCopies, request.getCopies().toInt());
 
-		if (request.getAdJasperProcessId()!=null)
+		if (huIdsToProcess.size() == 1)
+		{
+			final HuId huId = huIdsToProcess.iterator().next();
+
+			// IMPORTANT: In case there is only one HU provided, also set M_HU_ID parameter.
+			// Most of the HU label reports are relying on this.
+			builder.addParameter("M_HU_ID", huId.getRepoId());
+
+			// Also set TableName/Record_ID
+			// this will land to AD_Archive.AD_Table_ID/Record_ID.
+			builder.setRecord(I_M_HU.Table_Name, huId.getRepoId());
+		}
+
+		if (request.getAdJasperProcessId() != null)
 		{
 			builder.addParameter(REPORT_AD_PROCESS_ID, request.getAdJasperProcessId().getRepoId());
 		}
 
-		final ProcessExecutor processExecutor =	builder.setPrintPreview(request.getPrintPreview())
+		final ProcessExecutor processExecutor = builder.setPrintPreview(request.getPrintPreview())
 				//
 				// Execute report in a new transaction
 				.buildAndPrepareExecution()
@@ -278,11 +304,10 @@ public class HUReportExecutor
 
 		/**
 		 * It turned out that afterCommit() is called twice and also, on the first time some things were not ready.
-		 * Therefore (and because right now there is not time to get to the root of the problem),
+		 * Therefore, (and because right now there is no time to get to the root of the problem),
 		 * we are now doing the job on afterClose(). This flag is set to true on a commit and will tell the afterClose implementation if it shall proceed.
 		 *
-		 * task https://github.com/metasfresh/metasfresh/issues/1263
-		 *
+		 * @implSpec task <a href="https://github.com/metasfresh/metasfresh/issues/1263">1263</a>
 		 */
 		private boolean commitWasDone = false;
 
@@ -293,7 +318,7 @@ public class HUReportExecutor
 				final AdProcessId adProcessId,
 				final int windowNo,
 				final PrintCopies copies,
-		        @Nullable final AdProcessId adJasperProcessId)
+				@Nullable final AdProcessId adJasperProcessId)
 		{
 			this.ctx = ctx;
 			this.adProcessId = adProcessId;
