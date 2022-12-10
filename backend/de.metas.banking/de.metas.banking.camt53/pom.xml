@@ -72,6 +72,7 @@
                         <configuration>
                             <schemaDirectory>src/main/resources/de/metas/banking/camt53/schema</schemaDirectory>
                             <generatePackage>de.metas.banking.camt53.jaxb.camt053_001_02</generatePackage>
+                            <generateDirectory>${project.basedir}/src/main/java-xjc</generateDirectory>
                         </configuration>
                     </execution>
                 </executions>
