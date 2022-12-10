@@ -90,6 +90,7 @@
 							</args>
 							<schemaDirectory>${project.basedir}/src/main/resources/de/metas/vertical/healthcare_ch/forum_datenaustausch_ch/invoice_440/response</schemaDirectory>
 							<generatePackage>de.metas.vertical.healthcare_ch.forum_datenaustausch_ch.invoice_440.response</generatePackage>
+                            <generateDirectory>${project.basedir}/src/main/java-xjc</generateDirectory>
 						</configuration>
 					</execution>
 				</executions>

@@ -109,6 +109,7 @@
                     <!-- <generatePackage>de.metas.shipper.gateway.dhl.schematbp</generatePackage> -->
                     <schemaIncludes>*.wsdl</schemaIncludes>
                     <schemaDirectory>${project.basedir}/src/main/resources/de/metas/shipper/gateway/dhl/schema/</schemaDirectory>
+                    <generateDirectory>${project.basedir}/src/main/java-xjc</generateDirectory>
                 </configuration>
             </plugin>
         </plugins>
