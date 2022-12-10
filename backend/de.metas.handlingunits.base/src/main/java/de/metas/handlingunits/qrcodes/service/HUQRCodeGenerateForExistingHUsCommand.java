@@ -18,7 +18,6 @@ import de.metas.handlingunits.qrcodes.model.HUQRCodeUniqueId;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
-import de.metas.util.Services;
 import lombok.Builder;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -30,17 +29,21 @@ import java.util.UUID;
 
 public class HUQRCodeGenerateForExistingHUsCommand
 {
-	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IHandlingUnitsBL handlingUnitsBL;
+	@NonNull private final IProductBL productBL;
 	@NonNull private final HUQRCodesRepository huQRCodesRepository;
 
 	@NonNull private final HUQRCodeGenerateForExistingHUsRequest request;
 
 	@Builder
 	private HUQRCodeGenerateForExistingHUsCommand(
+			final @NonNull IHandlingUnitsBL handlingUnitsBL,
+			final @NonNull IProductBL productBL,
 			final @NonNull HUQRCodesRepository huQRCodesRepository,
 			final @NonNull HUQRCodeGenerateForExistingHUsRequest request)
 	{
+		this.handlingUnitsBL = handlingUnitsBL;
+		this.productBL = productBL;
 		this.huQRCodesRepository = huQRCodesRepository;
 		this.request = request;
 	}

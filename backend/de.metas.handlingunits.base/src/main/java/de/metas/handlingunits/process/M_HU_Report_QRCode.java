@@ -1,15 +1,11 @@
 package de.metas.handlingunits.process;
 
 import de.metas.global_qrcodes.service.QRCodePDFResource;
-import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.process.JavaProcess;
+import de.metas.process.PInstanceId;
 import de.metas.process.RunOutOfTrx;
-import de.metas.util.Services;
 import org.compiere.SpringContextHolder;
-
-import java.util.Set;
 
 /*
  * #%L
@@ -41,22 +37,20 @@ import java.util.Set;
 public class M_HU_Report_QRCode extends JavaProcess
 {
 	private final HUQRCodesService huQRCodesService = SpringContextHolder.instance.getBean(HUQRCodesService.class);
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	@Override
 	@RunOutOfTrx
 	protected String doIt()
 	{
-		final Set<HuId> huIds = handlingUnitsBL.getHuIdsBySelectionId(getPinstanceId());
-
+		final PInstanceId selectionId = getPinstanceId();
 		if (getProcessInfo().isPrintPreview())
 		{
-			final QRCodePDFResource pdf = huQRCodesService.createPdfForHUIds(huIds);
+			final QRCodePDFResource pdf = huQRCodesService.createPdfForSelectionOfHUIds(selectionId);
 			getResult().setReportData(pdf, pdf.getFilename(), pdf.getContentType());
 		}
 		else
 		{
-			huQRCodesService.printForHUIds(huIds);
+			huQRCodesService.printForSelectionOfHUIds(selectionId);
 		}
 
 		return MSG_OK;
