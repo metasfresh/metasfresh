@@ -26,6 +26,10 @@ import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -167,4 +171,41 @@ public class HUPPOrderQtyBL implements IHUPPOrderQtyBL
 					huPPOrderQtyDAO.save(candidate);
 				});
 	}
+
+	@Override
+	public Set<HuId> getFinishedGoodsReceivedHUIds(@NonNull final PPOrderId ppOrderId)
+	{
+		final HashSet<HuId> receivedHUIds = new HashSet<>();
+		streamFinishedGoodsReceived(ppOrderId)
+				.forEach(processedCandidate -> {
+					final HuId newLUId = HuId.ofRepoIdOrNull(processedCandidate.getNew_LU_ID());
+					if (newLUId != null)
+					{
+						receivedHUIds.add(newLUId);
+					}
+
+					final HuId huId = HuId.ofRepoId(processedCandidate.getM_HU_ID());
+					receivedHUIds.add(huId);
+				});
+
+		return receivedHUIds;
+	}
+
+	@NonNull
+	private Stream<I_PP_Order_Qty> streamFinishedGoodsReceived(final @NonNull PPOrderId ppOrderId)
+	{
+		return huPPOrderQtyDAO.retrieveOrderQtys(ppOrderId)
+				.stream()
+				.filter(I_PP_Order_Qty::isProcessed);
+	}
+
+	@Override
+	public void setNewLUAndSave(
+			@NonNull final List<I_PP_Order_Qty> candidates,
+			@NonNull final HuId newLUId)
+	{
+		candidates.forEach(candidate -> candidate.setNew_LU_ID(newLUId.getRepoId()));
+		huPPOrderQtyDAO.saveAll(candidates);
+	}
+
 }
