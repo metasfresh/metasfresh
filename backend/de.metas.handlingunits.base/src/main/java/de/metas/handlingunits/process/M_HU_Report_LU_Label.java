@@ -34,6 +34,10 @@ import lombok.NonNull;
 
 public class M_HU_Report_LU_Label extends M_HU_Report_Print_Template
 {
+	/**
+	 * Process Value: LU_Label_QRCode
+	 * JasperReport: @PREFIX@de/metas/docs/label/label_lu.jasper
+	 */
 	private static final AdProcessId LU_QR_LABEL_PROCESS_ID = AdProcessId.ofRepoId(584998); // FIXME hard coded process id
 
 	@Override
