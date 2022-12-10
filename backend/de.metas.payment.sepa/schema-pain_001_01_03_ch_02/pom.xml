@@ -33,6 +33,7 @@
 						<configuration>
 							<schemaDirectory>src/main/xsd</schemaDirectory>
 							<generatePackage>de.metas.payment.sepa.jaxb.sct.pain_001_001_03_ch_02</generatePackage>
+							<generateDirectory>${project.basedir}/src/main/java-xjc</generateDirectory>
 						</configuration>
 					</execution>
 				</executions>
