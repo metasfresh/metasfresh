@@ -31,6 +31,7 @@
 							<generatePackage>de.metas.vertical.pharma.vendor.gateway.msv3.schema.v2</generatePackage>
 							<schemaIncludes>*.wsdl</schemaIncludes>
 							<schemaDirectory>${project.basedir}/src/main/resources/de/metas/vertical/pharma/vendor/gateway/msv3/schema/v2</schemaDirectory>
+							<generateDirectory>${project.basedir}/src/main/java-xjc</generateDirectory>
 						</configuration>
 					</execution>
 				</executions>

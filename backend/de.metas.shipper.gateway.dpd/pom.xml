@@ -78,6 +78,7 @@
                         <configuration>
                             <schemaIncludes>*.wsdl</schemaIncludes>
                             <schemaDirectory>${project.basedir}/src/main/resources/de/metas/shipper/gateway/dpd/schema</schemaDirectory>
+                            <generateDirectory>${project.basedir}/src/main/java-xjc</generateDirectory>
                         </configuration>
                     </execution>
                 </executions>

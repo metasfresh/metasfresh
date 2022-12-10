@@ -88,6 +88,7 @@
 					<generatePackage>de.metas.shipper.gateway.go.schema</generatePackage>
 					<schemaIncludes>*.wsdl</schemaIncludes>
 					<schemaDirectory>${project.basedir}/src/main/resources/de/metas/shipper/gateway/go/schema/</schemaDirectory>
+					<generateDirectory>${project.basedir}/src/main/java-xjc</generateDirectory>
 				</configuration>
 			</plugin>
 		</plugins>

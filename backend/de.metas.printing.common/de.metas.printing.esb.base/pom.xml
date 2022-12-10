@@ -54,6 +54,7 @@
                         <configuration>
                             <schemaDirectory>${project.basedir}/src/main/xsd</schemaDirectory>
                             <generatePackage>${jaxb.packageName}</generatePackage>
+                            <generateDirectory>${project.basedir}/src/main/java-xjc</generateDirectory>
                         </configuration>
                     </execution>
                 </executions>
