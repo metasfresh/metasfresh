@@ -67,12 +67,10 @@ import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_
  */
 
 /**
- *
  * Note: this process is declared in the {@code AD_Process} table, but <b>not</b> added to it's respective window or table via application dictionary.<br>
  * Instead it is assigned to it's place by {@link PickingSlotViewFactory}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class WEBUI_Picking_PickQtyToNewHU
 		extends WEBUI_Picking_With_M_Source_HU_Base
@@ -80,7 +78,7 @@ public class WEBUI_Picking_PickQtyToNewHU
 {
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
-	private static final String PARAM_M_HU_PI_Item_Product_ID = I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID;
+	protected static final String PARAM_M_HU_PI_Item_Product_ID = I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID;
 	@Param(parameterName = PARAM_M_HU_PI_Item_Product_ID, mandatory = true)
 	protected I_M_HU_PI_Item_Product huPIItemProduct;
 
@@ -100,7 +98,7 @@ public class WEBUI_Picking_PickQtyToNewHU
 
 		if (isForceDelivery())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason(" Use 'WEBUI_Picking_ForcePickToNewHU' in case of force shipping! ");
+			return ProcessPreconditionsResolution.rejectWithInternalReason(" Use 'WEBUI_Picking_ForcePickToNewIndividualHU' in case of force shipping! ");
 		}
 
 		if (noSourceHUAvailable())
@@ -159,6 +157,16 @@ public class WEBUI_Picking_PickQtyToNewHU
 		invalidatePickingSlotsView(); // right side view
 
 		return MSG_OK;
+	}
+
+	protected void pickHu(@NonNull final Quantity qtyToPack)
+	{
+		final HuId packToHuId = createNewHuId();
+		final ImmutableList<HuId> sourceHUIds = getSourceHUIds();
+
+		pickHUsAndPackTo(sourceHUIds, qtyToPack, packToHuId);
+
+		printPickingLabel(packToHuId);
 	}
 
 	protected void printPickingLabel(@NonNull final HuId huId)
