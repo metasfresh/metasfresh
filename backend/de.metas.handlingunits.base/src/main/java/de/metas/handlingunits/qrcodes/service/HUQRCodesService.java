@@ -13,6 +13,7 @@ import de.metas.product.IProductBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +26,7 @@ public class HUQRCodesService
 {
 	@NonNull private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	@NonNull private final IProductBL productBL = Services.get(IProductBL.class);
+	@NonNull private final IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 	@NonNull private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	@NonNull private final HUQRCodesRepository huQRCodesRepository;
 	@NonNull private final GlobalQRCodeService globalQRCodeService;
@@ -42,6 +44,9 @@ public class HUQRCodesService
 	public List<HUQRCode> generate(HUQRCodeGenerateRequest request)
 	{
 		return HUQRCodeGenerateCommand.builder()
+				.handlingUnitsBL(handlingUnitsBL)
+				.productBL(productBL)
+				.attributeDAO(attributeDAO)
 				.request(request)
 				.build()
 				.execute();
@@ -52,6 +57,7 @@ public class HUQRCodesService
 		return HUQRCodeGenerateForExistingHUsCommand.builder()
 				.handlingUnitsBL(handlingUnitsBL)
 				.productBL(productBL)
+				.attributeDAO(attributeDAO)
 				.huQRCodesRepository(huQRCodesRepository)
 				.request(request)
 				.build()
