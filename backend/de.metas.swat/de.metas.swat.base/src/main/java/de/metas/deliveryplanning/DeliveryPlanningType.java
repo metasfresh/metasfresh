@@ -51,6 +51,18 @@ public enum DeliveryPlanningType implements ReferenceListAwareEnum
 	}
 
 	@Nullable
+	public static DeliveryPlanningType ofNullableCode(@Nullable final String code)
+	{
+		return ofNullableCode(code, null);
+	}
+
+	@Nullable
+	public static DeliveryPlanningType ofNullableCode(@Nullable final String code, @Nullable final DeliveryPlanningType fallbackValue)
+	{
+		return code != null ? ofCode(code) : fallbackValue;
+	}
+
+	@Nullable
 	public static String toCodeOrNull(@Nullable final DeliveryPlanningType type)
 	{
 		return type != null ? type.getCode() : null;

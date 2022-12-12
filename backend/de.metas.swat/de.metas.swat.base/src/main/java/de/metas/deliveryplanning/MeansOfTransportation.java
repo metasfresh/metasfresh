@@ -26,16 +26,16 @@ import de.metas.util.lang.ReferenceListAwareEnum;
 import de.metas.util.lang.ReferenceListAwareEnums;
 import lombok.Getter;
 import lombok.NonNull;
-import org.compiere.model.X_M_Delivery_Planning;
+import org.compiere.model.X_M_MeansOfTransportation;
 
 import javax.annotation.Nullable;
 
 public enum MeansOfTransportation implements ReferenceListAwareEnum
 {
-	Plane(X_M_Delivery_Planning.MEANSOFTRANSPORTATION_Plane),
-	Train(X_M_Delivery_Planning.MEANSOFTRANSPORTATION_Train),
-	Truck(X_M_Delivery_Planning.MEANSOFTRANSPORTATION_Truck),
-	Vessel(X_M_Delivery_Planning.MEANSOFTRANSPORTATION_Vessel);
+	Plane(X_M_MeansOfTransportation.TYPE_MOT_Plane),
+	Train(X_M_MeansOfTransportation.TYPE_MOT_Train),
+	Truck(X_M_MeansOfTransportation.TYPE_MOT_Truck),
+	Vessel(X_M_MeansOfTransportation.TYPE_MOT_Vessel);
 
 	private static final ReferenceListAwareEnums.ValuesIndex<MeansOfTransportation> typesByCode = ReferenceListAwareEnums.index(values());
 
@@ -48,7 +48,7 @@ public enum MeansOfTransportation implements ReferenceListAwareEnum
 	}
 
 	@Nullable
-	public static MeansOfTransportation ofNullableCode(final String code)
+	public static MeansOfTransportation ofNullableCode(@Nullable final String code)
 	{
 		return ofNullableCode(code, null);
 	}

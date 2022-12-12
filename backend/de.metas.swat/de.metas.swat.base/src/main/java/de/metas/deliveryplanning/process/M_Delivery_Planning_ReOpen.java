@@ -22,55 +22,47 @@
 
 package de.metas.deliveryplanning.process;
 
-import de.metas.deliveryplanning.DeliveryPlanningId;
 import de.metas.deliveryplanning.DeliveryPlanningService;
 import de.metas.process.IProcessPrecondition;
 import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
-import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
-import de.metas.util.Check;
 import lombok.NonNull;
+import org.adempiere.ad.dao.ConstantQueryFilter;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.compiere.SpringContextHolder;
+import org.compiere.model.I_M_Delivery_Planning;
 
-public class M_DeliveryPlanning_CreateAdditionalLines extends JavaProcess implements IProcessPrecondition
+public class M_Delivery_Planning_ReOpen extends JavaProcess implements IProcessPrecondition
 {
 	private final DeliveryPlanningService deliveryPlanningService = SpringContextHolder.instance.getBean(DeliveryPlanningService.class);
-	@Param(parameterName = DeliveryPlanningService.PARAM_AdditionalLines)
-	private int additionalLines;
 
 	@Override
-	protected String doIt() throws Exception
-	{
-		Check.assumeGreaterThanZero(additionalLines, DeliveryPlanningService.PARAM_AdditionalLines);
-
-		final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoId(getRecord_ID());
-
-		deliveryPlanningService.createAdditionalDeliveryPlannings(deliveryPlanningId, additionalLines);
-
-		return MSG_OK;
-	}
-
-	@Override
-	public ProcessPreconditionsResolution checkPreconditionsApplicable(final @NonNull IProcessPreconditionsContext context)
+	public ProcessPreconditionsResolution checkPreconditionsApplicable(@NonNull final IProcessPreconditionsContext context)
 	{
 		if (context.isNoSelection())
 		{
 			return ProcessPreconditionsResolution.rejectBecauseNoSelection();
 		}
 
-		if (context.isMoreThanOneSelected())
-		{
-			return ProcessPreconditionsResolution.rejectBecauseNotSingleSelection();
-		}
+		final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter = context.getQueryFilter(I_M_Delivery_Planning.class);
 
-		final DeliveryPlanningId deliveryPlanningId = DeliveryPlanningId.ofRepoId(context.getSingleSelectedRecordId());
+		final boolean isExistsClosedDeliveryPlannings = deliveryPlanningService.isExistsClosedDeliveryPlannings(selectedDeliveryPlanningsFilter);
 
-		if (deliveryPlanningService.isClosed(deliveryPlanningId))
+		if (!isExistsClosedDeliveryPlannings)
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason(msgBL.getTranslatableMsgText(DeliveryPlanningService.MSG_M_Delivery_Planning_AllClosed));
+			return ProcessPreconditionsResolution.reject(msgBL.getTranslatableMsgText(DeliveryPlanningService.MSG_M_Delivery_Planning_AllOpen));
 		}
 
 		return ProcessPreconditionsResolution.accept();
+	}
+
+	protected String doIt() throws Exception
+	{
+		final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter = getProcessInfo().getQueryFilterOrElse(ConstantQueryFilter.of(false));
+
+		deliveryPlanningService.reOpenSelectedDeliveryPlannings(selectedDeliveryPlanningsFilter);
+
+		return MSG_OK;
 	}
 }
