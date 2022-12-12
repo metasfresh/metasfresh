@@ -220,10 +220,10 @@ Update AD_Element_TRL set name='Prix',printname='Prix', istranslated='Y' where a
 Update AD_Element_TRL set name='Qté entrée',printname='Qté entrée', istranslated='Y' where ad_element_id=2589 and ad_language ilike 'fr_%';
 Update AD_Element_TRL set name='symbole',printname='symbole', istranslated='Y' where ad_element_id=541142 and ad_language ilike 'fr_%';
 Update AD_Element_TRL set name='Paquet',printname='Paquet', istranslated='Y' where ad_element_id=542132 and ad_language ilike 'fr_%';
-Update AD_Element_TRL set name='Est Matériau d'emballage',printname='Est Matériau d'emballage', istranslated='Y' where ad_element_id=542246 and ad_language ilike 'fr_%';
+Update AD_Element_TRL set name='Est Matériau d''emballage',printname='Est Matériau d''emballage', istranslated='Y' where ad_element_id=542246 and ad_language ilike 'fr_%';
 Update AD_Element_TRL set name='Quantité tu',printname='Quantité tu', istranslated='Y' where ad_element_id=542397 and ad_language ilike 'fr_%';
-Update AD_Element_TRL set name='Prix ​​à l'unité',printname='Prix ​​à l'unité', istranslated='Y' where ad_element_id=542464 and ad_language ilike 'fr_%';
-Update AD_Element_TRL set name='TVA sur Matériel d'emballage',printname='TVA sur Matériel d'emballage', istranslated='Y' where ad_element_id=543076 and ad_language ilike 'fr_%';
+Update AD_Element_TRL set name='Prix ​​à l''unité',printname='Prix ​​à l''unité', istranslated='Y' where ad_element_id=542464 and ad_language ilike 'fr_%';
+Update AD_Element_TRL set name='TVA sur Matériel d''emballage',printname='TVA sur Matériel d''emballage', istranslated='Y' where ad_element_id=543076 and ad_language ilike 'fr_%';
 Update AD_Element_TRL set name='Système de prix',printname='Système de prix', istranslated='Y' where ad_element_id=543951 and ad_language ilike 'fr_%';
 Update AD_Element_TRL set name='Étiquette',printname='Étiquette', istranslated='Y' where ad_element_id=576005 and ad_language ilike 'fr_%';
 Update AD_Element_TRL set name='Date',printname='Date', istranslated='Y' where ad_element_id=577762 and ad_language ilike 'fr_%';
