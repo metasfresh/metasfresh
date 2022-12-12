@@ -26,5 +26,3 @@ GROUP BY fa.AD_Client_ID
        , fa.Account_ID
        , fa.C_Tax_ID
        , fa.vatcode;
-
-REFRESH MATERIALIZED VIEW MV_Fact_Acct_Sum
