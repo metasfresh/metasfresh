@@ -623,6 +623,7 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#14117](https://github.com/metasfresh/metasfresh/issues/14117) fix after migration failure
   * [#13174](https://github.com/metasfresh/metasfresh/pull/13174) wrap DateAcct with TRUNC while looking for a C_Period
   * [#13100](https://github.com/metasfresh/metasfresh/issues/13100) Overhaul Shipments interaction with Material Schedule 
   * [#11931](https://github.com/metasfresh/metasfresh/issues/11931) Address is not saved when focus is on other tab
