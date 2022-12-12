@@ -36,6 +36,8 @@ public class SqlLookupDescriptorProviderBuilder
 	private final ArrayList<IValidationRule> additionalValidationRules = new ArrayList<>();
 	private Access requiredAccess = null;
 
+	@Nullable private Integer pageLength = null;
+
 	public SqlLookupDescriptorProviderBuilder(@NonNull final ADReferenceService adReferenceService)
 	{
 		this.adReferenceService = adReferenceService;
@@ -67,6 +69,7 @@ public class SqlLookupDescriptorProviderBuilder
 					.setAD_Reference_Value_ID(AD_Reference_Value_ID)
 					.setAdValRuleIds(adValRuleIdByScope)
 					.addValidationRules(additionalValidationRules)
+					.setPageLength(pageLength)
 					.build();
 			return LookupDescriptorProviders.fromMemoizingFunction(scope -> {
 				if (scope == LookupDescriptorProvider.LookupScope.DocumentFilter)
@@ -146,6 +149,12 @@ public class SqlLookupDescriptorProviderBuilder
 	public SqlLookupDescriptorProviderBuilder setReadOnlyAccess()
 	{
 		this.requiredAccess = Access.READ;
+		return this;
+	}
+
+	public SqlLookupDescriptorProviderBuilder setPageLength(final Integer pageLength)
+	{
+		this.pageLength = pageLength;
 		return this;
 	}
 }

@@ -17,9 +17,9 @@ import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
-import de.metas.ui.web.window.descriptor.LookupDescriptorProvider;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
+import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptorProviderBuilder;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
@@ -126,30 +126,25 @@ public class InvoiceLineQuickInputDescriptorFactory implements IQuickInputDescri
 
 	private DocumentFieldDescriptor.Builder createVatCodeField(final @NonNull Optional<SOTrx> soTrx)
 	{
-		final LookupDescriptorProvider lookupDescriptorProvider;
+		final SqlLookupDescriptorProviderBuilder sqlLookupDescriptorProviderBuilder = lookupDescriptorProviders.sql()
+				.setCtxTableName(null) // ctxTableName
+				.setCtxColumnName(IOrderLineQuickInput.COLUMNNAME_C_VAT_Code_ID)
+				.setDisplayType(DisplayType.TableDir)
+				.setPageLength(QuickInputConstants.BIG_ENOUGH_PAGE_LENGTH);
 		if (soTrx.orElse(SOTrx.PURCHASE).isSales())
 		{
-			lookupDescriptorProvider = lookupDescriptorProviders.sql()
-					.setCtxTableName(null) // ctxTableName
-					.setCtxColumnName(IOrderLineQuickInput.COLUMNNAME_C_VAT_Code_ID)
-					.setDisplayType(DisplayType.TableDir)
-					.setAD_Val_Rule_ID(AdValRuleId.ofRepoId(540610))// FIXME: hardcoded "VAT_Code_for_SO"
-					.build();
+			sqlLookupDescriptorProviderBuilder.setAD_Val_Rule_ID(AdValRuleId.ofRepoId(540610));// FIXME: hardcoded "VAT_Code_for_SO"
 		}
 		else
 		{
-			lookupDescriptorProvider = lookupDescriptorProviders.sql()
-					.setCtxTableName(null) // ctxTableName
-					.setCtxColumnName(IOrderLineQuickInput.COLUMNNAME_C_VAT_Code_ID)
-					.setDisplayType(DisplayType.TableDir)
-					.setAD_Val_Rule_ID(AdValRuleId.ofRepoId(540611))// FIXME: hardcoded "VAT_Code_for_PO"
-					.build();
+			sqlLookupDescriptorProviderBuilder.setAD_Val_Rule_ID(AdValRuleId.ofRepoId(540611));// FIXME: hardcoded "VAT_Code_for_PO"
 		}
+
 		return DocumentFieldDescriptor.builder(IOrderLineQuickInput.COLUMNNAME_C_VAT_Code_ID)
 				.setCaption(msgBL.translatable(IOrderLineQuickInput.COLUMNNAME_C_VAT_Code_ID))
 				//
 				.setWidgetType(DocumentFieldWidgetType.Lookup)
-				.setLookupDescriptorProvider(lookupDescriptorProvider)
+				.setLookupDescriptorProvider(sqlLookupDescriptorProviderBuilder.build())
 				.setValueClass(LookupValue.IntegerLookupValue.class)
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)
 				.setAlwaysUpdateable(true)
