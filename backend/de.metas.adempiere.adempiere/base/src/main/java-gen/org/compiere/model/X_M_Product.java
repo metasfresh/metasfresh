@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
-import javax.annotation.Nullable;
 
 /** Generated Model for M_Product
  *  @author metasfresh (generated) 
@@ -1636,19 +1636,6 @@ public class X_M_Product extends org.compiere.model.PO implements I_M_Product, o
 	public java.lang.String getSKU() 
 	{
 		return get_ValueAsString(COLUMNNAME_SKU);
-	}
-
-	@Override
-	public void setth173_WeightGross (final @Nullable BigDecimal th173_WeightGross)
-	{
-		set_Value (COLUMNNAME_th173_WeightGross, th173_WeightGross);
-	}
-
-	@Override
-	public BigDecimal getth173_WeightGross()
-	{
-		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_th173_WeightGross);
-		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
 	@Override

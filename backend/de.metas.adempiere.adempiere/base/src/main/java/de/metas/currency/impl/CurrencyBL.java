@@ -38,10 +38,10 @@ import de.metas.currency.ICurrencyDAO;
 import de.metas.currency.exceptions.NoCurrencyRateFoundException;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.LocalDateAndOrgId;
-import de.metas.money.Money;
 import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -92,7 +92,8 @@ public class CurrencyBL implements ICurrencyBL
 	}
 
 	@Override
-	public @NonNull BigDecimal convertBase(
+	@NonNull
+	public BigDecimal convertBase(
 			final BigDecimal amt,
 			final CurrencyId currencyFromId,
 			@NonNull final Instant convDate,
@@ -228,9 +229,9 @@ public class CurrencyBL implements ICurrencyBL
 	@Override
 	@NonNull
 	public CurrencyConversionContext createCurrencyConversionContext(
-			@NonNull LocalDateAndOrgId conversionDate,
-			@Nullable CurrencyConversionTypeId conversionTypeId,
-			@NonNull ClientId clientId)
+			@NonNull final LocalDateAndOrgId conversionDate,
+			@Nullable final CurrencyConversionTypeId conversionTypeId,
+			@NonNull final ClientId clientId)
 	{
 		final Instant conversionDateEffective = conversionDate.toInstant(orgDAO::getTimeZone);
 		final OrgId orgId = conversionDate.getOrgId();

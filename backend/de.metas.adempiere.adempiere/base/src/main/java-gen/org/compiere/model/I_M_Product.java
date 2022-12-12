@@ -1,8 +1,9 @@
 package org.compiere.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for M_Product
  *  @author metasfresh (generated) 
@@ -2421,27 +2422,6 @@ public interface I_M_Product
 
 	ModelColumn<I_M_Product, Object> COLUMN_SKU = new ModelColumn<>(I_M_Product.class, "SKU", null);
 	String COLUMNNAME_SKU = "SKU";
-
-	/**
-	 * Set Gross Weight.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setth173_WeightGross (@Nullable BigDecimal th173_WeightGross);
-
-	/**
-	 * Get Gross Weight.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getth173_WeightGross();
-
-	ModelColumn<I_M_Product, Object> COLUMN_th173_WeightGross = new ModelColumn<>(I_M_Product.class, "th173_WeightGross", null);
-	String COLUMNNAME_th173_WeightGross = "th173_WeightGross";
 
 	/**
 	 * Set Trademark.

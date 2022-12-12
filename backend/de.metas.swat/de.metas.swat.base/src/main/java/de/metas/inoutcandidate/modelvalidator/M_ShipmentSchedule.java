@@ -87,6 +87,9 @@ public class M_ShipmentSchedule
 
 	private final IShipmentScheduleBL shipmentScheduleBL = Services.get(IShipmentScheduleBL.class);
 
+	private final IOrderBL orderBL = Services.get(IOrderBL.class);
+	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+	
 	public M_ShipmentSchedule(@NonNull final DeliveryPlanningService deliveryPlanningService,
 			@NonNull final IShipmentScheduleInvalidateBL shipmentScheduleInvalidateBL,
 			@NonNull final IShipmentScheduleUpdater shipmentScheduleUpdater)
@@ -95,8 +98,7 @@ public class M_ShipmentSchedule
 		this.invalidSchedulesService = shipmentScheduleInvalidateBL;
 		this.shipmentScheduleUpdater = shipmentScheduleUpdater;
 	}
-private final IOrderBL orderBL = Services.get(IOrderBL.class);
-	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
+
 	/**
 	 * Does some sanity checks on the given <code>schedule</code>
 	 */

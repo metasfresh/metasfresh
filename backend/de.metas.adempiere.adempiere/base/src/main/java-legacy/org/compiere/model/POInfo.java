@@ -189,7 +189,8 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 	{
 		final Stopwatch stopwatch = Stopwatch.createStarted();
 
-		final String sql = "SELECT "
+		final StringBuilder sql = new StringBuilder();
+		sql.append("SELECT "
 				+ "t.TableName, " // 1
 				+ "c.ColumnName, " // 2
 				+ "c.AD_Reference_ID, "        // 3
@@ -220,21 +221,23 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 				+ ", rt_table.TableName AS AD_Reference_Value_TableName"
 				+ ", rt_keyColumn.AD_Reference_ID AS AD_Reference_Value_KeyColumn_DisplayType"
 				+ ", t." + I_AD_Table.COLUMNNAME_WEBUI_View_PageLength
-				+ " FROM AD_Table t "
+		);
+		sql.append(" FROM AD_Table t "
 				+ " INNER JOIN AD_Column c ON (t.AD_Table_ID=c.AD_Table_ID) "
 				+ " LEFT OUTER JOIN AD_Val_Rule vr ON (c.AD_Val_Rule_ID=vr.AD_Val_Rule_ID) "
 				+ " INNER JOIN AD_Element e ON (c.AD_Element_ID=e.AD_Element_ID) "
 				+ " LEFT OUTER JOIN AD_Ref_Table rt ON (rt.AD_Reference_ID=c.AD_Reference_Value_ID)"
 				+ " LEFT OUTER JOIN AD_Table rt_table on (rt_table.AD_Table_ID=rt.AD_Table_ID)"
 				+ " LEFT OUTER JOIN AD_Column rt_keyColumn on (rt_keyColumn.AD_Column_ID=rt.AD_Key)"
-				+ " WHERE t.IsActive='Y' AND c.IsActive='Y'"
-				+ " ORDER BY t.TableName, c.ColumnName";
+		);
+		sql.append(" WHERE t.IsActive='Y' AND c.IsActive='Y'");
+		sql.append(" ORDER BY t.TableName, c.ColumnName");
 
 		PreparedStatement pstmt = null;
 		ResultSet rs = null;
 		try
 		{
-			pstmt = DB.prepareStatement(sql, ITrx.TRXNAME_None);
+			pstmt = DB.prepareStatement(sql.toString(), ITrx.TRXNAME_None);
 			rs = pstmt.executeQuery();
 
 			final ArrayList<POInfo> poInfos = new ArrayList<>();

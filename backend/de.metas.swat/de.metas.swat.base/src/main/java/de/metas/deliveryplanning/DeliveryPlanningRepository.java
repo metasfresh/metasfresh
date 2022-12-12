@@ -37,10 +37,14 @@ import de.metas.shipping.model.ShipperTransportationId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.model.I_M_Delivery_Planning;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Repository;
+
+import java.util.Iterator;
+import java.util.stream.Stream;
 
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -91,7 +95,7 @@ public class DeliveryPlanningRepository
 
 		deliveryPlanningRecord.setQtyOrdered(qtyOrdered.toBigDecimal());
 		deliveryPlanningRecord.setQtyTotalOpen(qtyTotalOpen.toBigDecimal());
-		deliveryPlanningRecord.setActualDeliveredQty( actualDeliveredQty.toBigDecimal());
+		deliveryPlanningRecord.setActualDeliveredQty(actualDeliveredQty.toBigDecimal());
 		deliveryPlanningRecord.setActualLoadQty(actualLoadedQty.toBigDecimal());
 
 		deliveryPlanningRecord.setPlannedLoadedQuantity(plannedLoadedQty.toBigDecimal());
@@ -104,9 +108,9 @@ public class DeliveryPlanningRepository
 		deliveryPlanningRecord.setReleaseNo(request.getReleaseNo());
 		deliveryPlanningRecord.setTransportDetails(request.getTransportDetails());
 
-		deliveryPlanningRecord.setIsB2B(request.isB2B);
+		deliveryPlanningRecord.setIsB2B(request.isB2B());
 
-		deliveryPlanningRecord.setMeansOfTransportation(MeansOfTransportation.toCodeOrNull(request.getMeansOfTransportation()));
+		deliveryPlanningRecord.setM_MeansOfTransportation_ID(MeansOfTransportationId.toRepoId(request.getMeansOfTransportationId()));
 		deliveryPlanningRecord.setOrderStatus(OrderStatus.toCodeOrNull(request.getOrderStatus()));
 		deliveryPlanningRecord.setM_Delivery_Planning_Type(DeliveryPlanningType.toCodeOrNull(request.getDeliveryPlanningType()));
 
@@ -140,5 +144,66 @@ public class DeliveryPlanningRepository
 				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_M_ShipmentSchedule_ID, shipmentScheduleId)
 				.create()
 				.delete();
+	}
+
+	public Stream<I_M_Delivery_Planning> retrieveForOrderLine(@NonNull final OrderLineId orderLineId)
+	{
+		return queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
+				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_C_OrderLine_ID, orderLineId)
+				.create()
+				.stream();
+
+	}
+
+	public void closeSelectedDeliveryPlannings(final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	{
+		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
+				.filter(selectedDeliveryPlanningsFilter)
+				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, false)
+				.create()
+				.iterate(I_M_Delivery_Planning.class);
+
+		while (deliveryPlanningIterator.hasNext())
+		{
+			final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningIterator.next();
+			deliveryPlanningRecord.setIsClosed(true);
+			deliveryPlanningRecord.setProcessed(true);
+			save(deliveryPlanningRecord);
+		}
+	}
+
+	public void reOpenSelectedDeliveryPlannings(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	{
+		final Iterator<I_M_Delivery_Planning> deliveryPlanningIterator = queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
+				.filter(selectedDeliveryPlanningsFilter)
+				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, true)
+				.create()
+				.iterate(I_M_Delivery_Planning.class);
+
+		while (deliveryPlanningIterator.hasNext())
+		{
+			final I_M_Delivery_Planning deliveryPlanningRecord = deliveryPlanningIterator.next();
+			deliveryPlanningRecord.setIsClosed(false);
+			deliveryPlanningRecord.setProcessed(false);
+			save(deliveryPlanningRecord);
+		}
+	}
+
+	public boolean isExistsClosedDeliveryPlannings(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	{
+		return queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
+				.filter(selectedDeliveryPlanningsFilter)
+				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, true)
+				.create()
+				.anyMatch();
+	}
+
+	public boolean isExistsOpenDeliveryPlannings(@NonNull final IQueryFilter<I_M_Delivery_Planning> selectedDeliveryPlanningsFilter)
+	{
+		return queryBL.createQueryBuilder(I_M_Delivery_Planning.class)
+				.filter(selectedDeliveryPlanningsFilter)
+				.addEqualsFilter(I_M_Delivery_Planning.COLUMNNAME_IsClosed, false)
+				.create()
+				.anyMatch();
 	}
 }

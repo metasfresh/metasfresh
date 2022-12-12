@@ -465,7 +465,7 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		fl.setUser2_ID(invoiceLine.getUser2_ID());
 	}
 
-	private void updateFromReceiptLine(@Nullable FactLine fl)
+	private void updateFromReceiptLine(@Nullable final FactLine fl)
 	{
 		if (fl == null)
 		{

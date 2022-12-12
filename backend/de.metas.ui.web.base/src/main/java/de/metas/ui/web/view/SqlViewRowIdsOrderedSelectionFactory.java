@@ -344,7 +344,7 @@ public class SqlViewRowIdsOrderedSelectionFactory implements ViewRowIdsOrderedSe
 	}
 
 	public static Set<DocumentId> retrieveRowIdsForLineIds(
-			@NonNull SqlViewKeyColumnNamesMap keyColumnNamesMap,
+			@NonNull final SqlViewKeyColumnNamesMap keyColumnNamesMap,
 			final ViewId viewId,
 			final Set<Integer> lineIds)
 	{

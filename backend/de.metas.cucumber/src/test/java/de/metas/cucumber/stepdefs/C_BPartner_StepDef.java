@@ -95,8 +95,8 @@ public class C_BPartner_StepDef
 	private final M_PricingSystem_StepDefData pricingSystemTable;
 	private final M_Product_StepDefData productTable;
 	private final M_DiscountSchema_StepDefData discountSchemaTable;
-	private final AD_Org_StepDefData orgTable;
 	private final C_Dunning_StepDefData dunningTable;
+	private final AD_Org_StepDefData orgTable;
 
 	private final IBPartnerDAO bpartnerDAO = Services.get(IBPartnerDAO.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
@@ -118,8 +118,8 @@ public class C_BPartner_StepDef
 		this.pricingSystemTable = pricingSystemTable;
 		this.productTable = productTable;
 		this.discountSchemaTable = discountSchemaTable;
-		this.orgTable = orgTable;
 		this.dunningTable = dunningTable;
+		this.orgTable = orgTable;
 	}
 
 	@Given("metasfresh contains C_BPartners:")
