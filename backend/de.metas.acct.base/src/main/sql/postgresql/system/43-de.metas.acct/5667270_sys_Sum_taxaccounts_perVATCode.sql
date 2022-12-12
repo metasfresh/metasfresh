@@ -17,11 +17,19 @@ CREATE OR REPLACE FUNCTION de_metas_acct.taxaccounts_perVATCode(p_AD_Org_ID nume
 AS
 $BODY$
 SELECT SUM(t.balance) AS balance, SUM(t.balanceyear) AS balanceyear, t.taxname, t.vatcode
-FROM de_metas_acct.taxaccounts_details(p_AD_Org_ID,
-                                       NULL,
-                                       NULL,
-                                       p_DateFrom,
-                                       p_DateTo) AS t
+FROM (
+         SELECT DISTINCT vc.Account_ID AS C_ElementValue_ID
+         FROM C_Tax_Acct ta
+                  INNER JOIN C_ValidCombination vc ON (vc.C_ValidCombination_ID IN
+                                                       (ta.T_Due_Acct, ta.T_Credit_Acct))
+             AND vc.isActive = 'Y'
+         WHERE ta.isActive = 'Y'
+     ) AS ev
+         INNER JOIN de_metas_acct.taxaccounts_details(p_AD_Org_ID,
+                                                      ev.C_ElementValue_ID,
+                                                      NULL,
+                                                      p_DateFrom,
+                                                      p_DateTo) AS t ON TRUE
 WHERE t.taxname IS NOT NULL
 GROUP BY t.vatcode, t.taxname
 ORDER BY vatcode
