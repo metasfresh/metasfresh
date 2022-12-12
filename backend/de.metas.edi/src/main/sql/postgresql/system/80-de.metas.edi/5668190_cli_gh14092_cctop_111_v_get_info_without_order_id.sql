@@ -113,7 +113,3 @@ FROM c_invoice i
     GROUP BY i.c_invoice_id HAVING count(DISTINCT o.isactive)=1
     ) oia ON oia.c_invoice_id = i.c_invoice_id
 ;
-
--- 2022-12-12T10:20:24.340Z
-UPDATE EXP_FormatLine SET Description='EDI_cctop_111_v via C_Invoice.C_Invoice_ID',Updated=TO_TIMESTAMP('2022-12-12 11:20:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE EXP_FormatLine_ID=545182
-;
