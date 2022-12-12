@@ -1,15 +1,5 @@
 package de.metas.contracts.spi;
 
-import java.util.List;
-
-import javax.annotation.OverridingMethodsMustInvokeSuper;
-
-import de.metas.i18n.ITranslatableString;
-import de.metas.uom.IUOMDAO;
-import de.metas.uom.UomId;
-import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.model.InterfaceWrapperHelper;
-
 import de.metas.contracts.IFlatrateDAO;
 import de.metas.contracts.IFlatrateTermEventService;
 import de.metas.contracts.model.I_C_Flatrate_DataEntry;
@@ -17,9 +7,17 @@ import de.metas.contracts.model.I_C_Flatrate_Term;
 import de.metas.contracts.model.I_C_Invoice_Clearing_Alloc;
 import de.metas.contracts.model.X_C_Flatrate_DataEntry;
 import de.metas.i18n.AdMessageKey;
+import de.metas.i18n.ITranslatableString;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UomId;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import javax.annotation.OverridingMethodsMustInvokeSuper;
+import java.util.List;
 
 /*
  * #%L

@@ -1,9 +1,6 @@
 package de.metas.notification;
 
-import java.util.List;
-
 import com.google.common.collect.ImmutableList;
-
 import de.metas.security.RoleId;
 import lombok.Builder;
 import lombok.NonNull;

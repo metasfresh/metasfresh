@@ -26,6 +26,7 @@ import de.metas.bpartner.BPartnerContactId;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
 import de.metas.bpartner.service.BPartnerInfo;
+import de.metas.currency.ICurrencyBL;
 import de.metas.document.DocTypeId;
 import de.metas.invoicecandidate.InvoiceCandidateId;
 import de.metas.invoicecandidate.externallyreferenced.ExternallyReferencedCandidateRepository;
@@ -33,17 +34,23 @@ import de.metas.invoicecandidate.externallyreferenced.ManualCandidateService;
 import de.metas.invoicecandidate.externallyreferenced.NewManualInvoiceCandidate;
 import de.metas.invoicecandidate.model.I_I_Invoice_Candidate;
 import de.metas.lang.SOTrx;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
 import de.metas.order.InvoiceRule;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
+import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
 import de.metas.uom.UomId;
+import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.lang.ExternalId;
+import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
@@ -54,12 +61,14 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.function.Function;
 
 @Service
 public class ImportInvoiceCandidatesService
 {
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
+	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
 
 	private final ManualCandidateService manualCandidateService;
 	private final ExternallyReferencedCandidateRepository externallyReferencedCandidateRepository;
@@ -125,6 +134,11 @@ public class ImportInvoiceCandidatesService
 				.qtyOrdered(qtyOrdered)
 				.qtyDelivered(qtyDelivered)
 
+				.priceEnteredOverride(getPriceEnteredOverride(record).orElse(null))
+				.discountOverride(Percent.ofNullable(record.getDiscount()))
+
+				.descriptionBottom(record.getDescriptionBottom())
+				.userInChargeId(UserId.ofRepoIdOrNull(record.getAD_User_InCharge_ID()))
 				.recordReference(recordReference)
 				.soTrx(SOTrx.ofBoolean(record.isSOTrx()))
 				.build();
@@ -160,5 +174,24 @@ public class ImportInvoiceCandidatesService
 		}
 
 		return today;
+	}
+
+	@NonNull
+	private Optional<ProductPrice> getPriceEnteredOverride(@NonNull final I_I_Invoice_Candidate record)
+	{
+		if (record.getPrice() == null || record.getPrice().signum() == 0)
+		{
+			return Optional.empty();
+		}
+
+		final Properties ctx = InterfaceWrapperHelper.getCtx(record);
+		final CurrencyId baseCurrencyId = currencyBL.getBaseCurrency(ctx).getId(); //we're assuming that uses the same currency as the current one product price
+		final ProductPrice priceEnteredOverride = ProductPrice.builder()
+				.money(Money.ofOrNull(record.getPrice(), baseCurrencyId))
+				.productId(ProductId.ofRepoId(record.getM_Product_ID()))
+				.uomId(UomId.ofRepoId(record.getC_UOM_ID()))
+				.build();
+
+		return Optional.of(priceEnteredOverride);
 	}
 }

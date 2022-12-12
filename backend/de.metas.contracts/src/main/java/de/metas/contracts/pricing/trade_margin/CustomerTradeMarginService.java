@@ -156,9 +156,9 @@ public class CustomerTradeMarginService
 		updatePricingResultToMatchUOM(salesRepPriceResult, request.getQty().getUomId());
 
 		final Money salesRepNetUnitPriceWithoutTax = deductTaxes(salesRepOrgId,
-				salesRepShipToLocation,
-				request,
-				salesRepPriceResult);
+													   salesRepShipToLocation,
+													   request,
+													   salesRepPriceResult);
 
 		final Money salesRepNetUnitPrice = convertToCustomerCurrency(salesRepOrgId, request, salesRepNetUnitPriceWithoutTax);
 

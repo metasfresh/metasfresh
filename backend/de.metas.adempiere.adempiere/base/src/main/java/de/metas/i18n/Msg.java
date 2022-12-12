@@ -175,6 +175,8 @@ public final class Msg
 		finally
 		{
 			DB.close(rs, pstmt);
+			rs = null;
+			pstmt = null;
 		}
 
 		//
@@ -725,6 +727,8 @@ public final class Msg
 		finally
 		{
 			DB.close(rs, pstmt);
+			rs = null;
+			pstmt = null;
 		}
 	}
 

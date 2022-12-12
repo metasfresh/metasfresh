@@ -88,6 +88,7 @@ public class PPOrderLinesViewFactory implements IViewFactory
 		final ViewId viewId = request.getViewId();
 		final PPOrderId ppOrderId = PPOrderId.ofRepoId(request.getSingleFilterOnlyId());
 		final I_PP_Order ppOrder = ppOrderBL.getById(ppOrderId);
+		final boolean hasSerialNumberSequence = ppOrderBL.hasSerialNumberSequence(ppOrderId);
 		final PPOrderDocBaseType ppOrderDocBaseType = PPOrderDocBaseType.ofCode(ppOrder.getDocBaseType());
 
 		final PPOrderLinesViewDataSupplier dataSupplier = PPOrderLinesViewDataSupplier
@@ -95,6 +96,7 @@ public class PPOrderLinesViewFactory implements IViewFactory
 				.viewWindowId(viewId.getWindowId())
 				.ppOrderId(ppOrderId)
 				.asiAttributesProvider(ASIViewRowAttributesProvider.newInstance(asiRepository))
+				.serialNoFromSequence(hasSerialNumberSequence)
 				.huSQLViewBinding(huEditorViewFactory.getSqlViewBinding())
 				.huReservationService(huReservationService)
 				.adReferenceService(adReferenceService)

@@ -272,6 +272,60 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Leich
 ]
 
 
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Metasfresh_getById=[
+  {
+    "id" : 100001,
+    "type" : "Metasfresh",
+    "name" : "name",
+    "active" : true,
+    "orgId" : 0,
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "value" : "externalSystemValue",
+      "camelHttpResourceAuthKey" : "authKey",
+      "feedbackResourceURL" : "feedbackURL",
+      "feedbackResourceAuthToken" : "feedbackAuthToke"
+    },
+    "writeAudit" : true,
+    "auditFileFolder" : "auditFileFolder"
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Metasfresh_getByTypeAndParent=[
+  {
+    "id" : 100002,
+    "parentId" : 100001,
+    "value" : "externalSystemValue",
+    "camelHttpResourceAuthKey" : "authKey",
+    "feedbackResourceURL" : "feedbackURL",
+    "feedbackResourceAuthToken" : "feedbackAuthToke"
+  }
+]
+
+
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Metasfresh_getTypeAndValue=[
+  {
+    "id" : 100001,
+    "type" : "Metasfresh",
+    "name" : "name",
+    "active" : true,
+    "orgId" : 0,
+    "childConfig" : {
+      "id" : 100002,
+      "parentId" : 100001,
+      "value" : "externalSystemValue",
+      "camelHttpResourceAuthKey" : "authKey",
+      "feedbackResourceURL" : "feedbackURL",
+      "feedbackResourceAuthToken" : "feedbackAuthToke"
+    },
+    "writeAudit" : true,
+    "auditFileFolder" : "auditFileFolder"
+  }
+]
+
+
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_RabbitMQ_getById=[
   {
     "id" : 100001,
@@ -289,9 +343,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "isSyncBPartnerToRabbitMQ" : true,
       "isAutoSendWhenCreatedByUserGroup" : false,
       "isSyncExternalReferencesToRabbitMQ" : false,
-      "syncExternalReferencesToRabbitMQ" : false,
+      "autoSendSubjectWhenCreatedByUserGroup" : false,
       "syncBPartnerToRabbitMQ" : true,
-      "autoSendSubjectWhenCreatedByUserGroup" : false
+      "syncExternalReferencesToRabbitMQ" : false
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -310,9 +364,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
     "isSyncBPartnerToRabbitMQ" : true,
     "isAutoSendWhenCreatedByUserGroup" : false,
     "isSyncExternalReferencesToRabbitMQ" : false,
-    "syncExternalReferencesToRabbitMQ" : false,
+    "autoSendSubjectWhenCreatedByUserGroup" : false,
     "syncBPartnerToRabbitMQ" : true,
-    "autoSendSubjectWhenCreatedByUserGroup" : false
+    "syncExternalReferencesToRabbitMQ" : false
   }
 ]
 
@@ -335,9 +389,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Rabbi
       "isAutoSendWhenCreatedByUserGroup" : true,
       "userGroupId" : 1,
       "isSyncExternalReferencesToRabbitMQ" : false,
-      "syncExternalReferencesToRabbitMQ" : false,
+      "autoSendSubjectWhenCreatedByUserGroup" : true,
       "syncBPartnerToRabbitMQ" : true,
-      "autoSendSubjectWhenCreatedByUserGroup" : true
+      "syncExternalReferencesToRabbitMQ" : false
     },
     "writeAudit" : true,
     "auditFileFolder" : "auditFileFolder"
@@ -725,6 +779,29 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_Wooco
 ]
 
 
+de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getActiveByType_Metasfresh=[
+  [
+    {
+      "id" : 100001,
+      "type" : "Metasfresh",
+      "name" : "name",
+      "active" : true,
+      "orgId" : 0,
+      "childConfig" : {
+        "id" : 100002,
+        "parentId" : 100001,
+        "value" : "value",
+        "camelHttpResourceAuthKey" : "authKey",
+        "feedbackResourceURL" : "feedbackResourceURL",
+        "feedbackResourceAuthToken" : "feedbackResourceAuthToken"
+      },
+      "writeAudit" : true,
+      "auditFileFolder" : "auditFileFolder"
+    }
+  ]
+]
+
+
 de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getActiveByType_RabbitMQ=[
   [
     {
@@ -743,9 +820,9 @@ de.metas.externalsystem.ExternalSystemConfigRepoTest.externalSystem_Config_getAc
         "isSyncBPartnerToRabbitMQ" : false,
         "isAutoSendWhenCreatedByUserGroup" : false,
         "isSyncExternalReferencesToRabbitMQ" : false,
+        "autoSendSubjectWhenCreatedByUserGroup" : false,
         "syncBPartnerToRabbitMQ" : false,
-        "syncExternalReferencesToRabbitMQ" : false,
-        "autoSendSubjectWhenCreatedByUserGroup" : false
+        "syncExternalReferencesToRabbitMQ" : false
       },
       "writeAudit" : true,
       "auditFileFolder" : "auditFileFolder"

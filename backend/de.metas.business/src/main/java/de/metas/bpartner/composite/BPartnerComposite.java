@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
@@ -340,5 +341,16 @@ public final class BPartnerComposite
 	public Stream<BPartnerLocationId> streamBPartnerLocationIds()
 	{
 		return this.getLocations().stream().map(BPartnerLocation::getId);
+	}
+
+	@Nullable
+	public String getOrgCode(@NonNull final Function<@NonNull OrgId,@NonNull String> orgId2String)
+	{
+		if (orgId == null)
+		{
+			return null;
+		}
+
+		return orgId2String.apply(orgId);
 	}
 }

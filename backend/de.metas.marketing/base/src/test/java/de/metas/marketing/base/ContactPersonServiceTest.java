@@ -29,7 +29,7 @@ import static de.metas.i18n.Language.asLanguage;
 import static de.metas.i18n.Language.asLanguageStringOrNull;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L

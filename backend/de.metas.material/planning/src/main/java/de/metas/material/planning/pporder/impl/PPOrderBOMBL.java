@@ -24,6 +24,7 @@ package de.metas.material.planning.pporder.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.document.sequence.DocSequenceId;
 import de.metas.i18n.IMsgBL;
 import de.metas.material.planning.exception.MrpException;
@@ -35,8 +36,11 @@ import de.metas.material.planning.pporder.OrderBOMLineQtyChangeRequest;
 import de.metas.material.planning.pporder.OrderBOMLineQuantities;
 import de.metas.material.planning.pporder.PPOrderQuantities;
 import de.metas.material.planning.pporder.PPOrderUtil;
+import de.metas.product.IssuingToleranceSpec;
+import de.metas.product.IssuingToleranceValueType;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.Quantitys;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UOMConversionContext;
@@ -46,6 +50,7 @@ import de.metas.util.Services;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.exceptions.FillMandatoryException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_UOM;
@@ -71,6 +76,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.UnaryOperator;
 
 @Service
@@ -167,8 +173,6 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		// orderBOMLine.setM_AttributeSetInstance_ID(bomLine.getM_AttributeSetInstance_ID()); // see below
 		orderBOMLine.setM_Product_ID(bomLine.getM_Product_ID());
 		orderBOMLine.setScrap(bomLine.getScrap());
-		orderBOMLine.setIsEnforceTolerance(bomLine.isEnforceTolerance());
-		orderBOMLine.setTolerance_Perc(bomLine.getTolerance_Perc());
 		orderBOMLine.setIsManualQtyInput(bomLine.isManualQtyInput());
 		orderBOMLine.setValidFrom(bomLine.getValidFrom());
 		orderBOMLine.setValidTo(bomLine.getValidTo());
@@ -185,8 +189,87 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 			orderBOMLine.setM_AttributeSetInstance_ID(asiCopy.getM_AttributeSetInstance_ID());
 		}
 
+		//
+		// Issuing Tolerance
+		updateOrderBOMLine_from_IssuingToleranceSpec(
+				orderBOMLine,
+				bomBL.getEffectiveIssuingToleranceSpec(bomLine).orElse(null));
+
 		orderBOMLine.setCULabelQuanitity(bomLine.getCULabelQuanitity());
 		orderBOMLine.setShowSubBOMIngredients(bomLine.isShowSubBOMIngredients());
+	}
+
+	public static Optional<IssuingToleranceSpec> extractIssuingToleranceSpec(@NonNull final I_PP_Order_BOMLine record)
+	{
+		if (!record.isEnforceIssuingTolerance())
+		{
+			return Optional.empty();
+		}
+
+		final IssuingToleranceValueType valueType = IssuingToleranceValueType.ofNullableCode(record.getIssuingTolerance_ValueType());
+		if (valueType == null)
+		{
+			throw new FillMandatoryException(I_PP_Order_BOMLine.COLUMNNAME_IssuingTolerance_ValueType);
+		}
+		else if (valueType == IssuingToleranceValueType.PERCENTAGE)
+		{
+			final Percent percent = Percent.of(record.getIssuingTolerance_Perc());
+			return Optional.of(IssuingToleranceSpec.ofPercent(percent));
+		}
+		else if (valueType == IssuingToleranceValueType.QUANTITY)
+		{
+			final UomId uomId = UomId.ofRepoId(record.getIssuingTolerance_UOM_ID());
+			final Quantity qty = Quantitys.create(record.getIssuingTolerance_Qty(), uomId);
+			return Optional.of(IssuingToleranceSpec.ofQuantity(qty));
+		}
+		else
+		{
+			throw new AdempiereException("Unknown valueType: " + valueType);
+		}
+	}
+
+	private static void updateOrderBOMLine_from_IssuingToleranceSpec(
+			@NonNull final I_PP_Order_BOMLine orderBOMLine,
+			@Nullable final IssuingToleranceSpec toleranceSpec)
+	{
+		final IssuingToleranceValueType valueType = toleranceSpec != null ? toleranceSpec.getValueType() : null;
+		final boolean isEnforceTolerance;
+		final BigDecimal tolerancePerc;
+		final BigDecimal toleranceQty;
+		final UomId toleranceUomId;
+
+		if (toleranceSpec == null)
+		{
+			isEnforceTolerance = false;
+			tolerancePerc = null;
+			toleranceQty = null;
+			toleranceUomId = null;
+		}
+		else if (valueType == IssuingToleranceValueType.PERCENTAGE)
+		{
+			isEnforceTolerance = true;
+			tolerancePerc = toleranceSpec.getPercent().toBigDecimal();
+			toleranceQty = null;
+			toleranceUomId = null;
+		}
+		else if (valueType == IssuingToleranceValueType.QUANTITY)
+		{
+			isEnforceTolerance = true;
+			tolerancePerc = null;
+			toleranceQty = toleranceSpec.getQty().toBigDecimal();
+			toleranceUomId = toleranceSpec.getQty().getUomId();
+		}
+		else
+		{
+			// TODO handle Qty value type
+			throw new AdempiereException("Unknown valueType: " + toleranceSpec);
+		}
+
+		orderBOMLine.setIsEnforceIssuingTolerance(isEnforceTolerance);
+		orderBOMLine.setIssuingTolerance_ValueType(IssuingToleranceValueType.toCode(valueType));
+		orderBOMLine.setIssuingTolerance_Perc(tolerancePerc);
+		orderBOMLine.setIssuingTolerance_Qty(toleranceQty);
+		orderBOMLine.setIssuingTolerance_UOM_ID(UomId.toRepoId(toleranceUomId));
 	}
 
 	@Override
@@ -408,24 +491,26 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	public OrderBOMLineQuantities getQuantities(@NonNull final I_PP_Order_BOMLine orderBOMLine)
 	{
 		final I_C_UOM uom = getBOMLineUOM(orderBOMLine);
+
+		IssuingToleranceSpec issuingToleranceSpec = extractIssuingToleranceSpec(orderBOMLine).orElse(null);
+		if (issuingToleranceSpec != null)
+		{
+			final UOMConversionContext uomConversionContext = extractUOMConversionContext(orderBOMLine);
+			issuingToleranceSpec = issuingToleranceSpec.convertQty(qty -> uomConversionService.convertQuantityTo(qty, uomConversionContext, uom));
+		}
+
 		return OrderBOMLineQuantities.builder()
 				.qtyRequired(Quantity.of(orderBOMLine.getQtyRequiered(), uom))
 				.qtyRequiredBeforeClose(Quantity.of(orderBOMLine.getQtyBeforeClose(), uom))
 				.qtyIssuedOrReceived(Quantity.of(orderBOMLine.getQtyDelivered(), uom))
 				.qtyIssuedOrReceivedActual(Quantity.of(orderBOMLine.getQtyDeliveredActual(), uom))
-				.qtyToIssueTolerance(extractQtyToIssueTolerance(orderBOMLine))
+				.issuingToleranceSpec(issuingToleranceSpec)
 				.qtyReject(Quantity.of(orderBOMLine.getQtyReject(), uom))
 				.qtyScrap(Quantity.of(orderBOMLine.getQtyScrap(), uom))
 				.qtyUsageVariance(Quantity.of(orderBOMLine.getQtyUsageVariance(), uom))
 				.qtyPost(Quantity.of(orderBOMLine.getQtyPost(), uom))
 				.qtyReserved(Quantity.of(orderBOMLine.getQtyReserved(), uom))
 				.build();
-	}
-
-	@Nullable
-	public static Percent extractQtyToIssueTolerance(@NonNull final I_PP_Order_BOMLine record)
-	{
-		return record.isEnforceTolerance() ? Percent.of(record.getTolerance_Perc()) : null;
 	}
 
 	static void updateRecord(
@@ -613,5 +698,15 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	public void save(final I_PP_Order_BOMLine orderBOMLine)
 	{
 		orderBOMsRepo.save(orderBOMLine);
+	}
+
+	@Override
+	public Set<ProductId> getProductIdsToIssue(final PPOrderId ppOrderId)
+	{
+		return retrieveOrderBOMLines(ppOrderId, I_PP_Order_BOMLine.class)
+				.stream()
+				.filter(bomLine -> BOMComponentType.ofNullableCodeOrComponent(bomLine.getComponentType()).isIssue())
+				.map(bomLine -> ProductId.ofRepoId(bomLine.getM_Product_ID()))
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }

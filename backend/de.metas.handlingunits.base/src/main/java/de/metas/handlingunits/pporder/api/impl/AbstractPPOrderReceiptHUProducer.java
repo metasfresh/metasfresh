@@ -401,10 +401,10 @@ import java.util.Map;
 		}
 
 		return AllocationUtils.createQtyRequest(huContext,
-												productId, // product
-												qtyToReceive, // the quantity to receive
-												date, // transaction date
-												referencedModel, // referenced model
+				productId, // product
+				qtyToReceive, // the quantity to receive
+				date, // transaction date
+				referencedModel, // referenced model
 				true, // forceQtyAllocation: make sure we will transfer the given qty, no matter what
 				clearanceStatusInfo // clearance status
 		);

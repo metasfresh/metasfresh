@@ -208,23 +208,20 @@ public class JsonPersisterService
 	}
 
 	public JsonResponseBPartnerCompositeUpsertItem persist(
-			@Nullable final String orgCode,
 			@NonNull final JsonRequestBPartnerUpsertItem requestItem,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
-		return trxManager.callInNewTrx(() -> persistWithinTrx(orgCode, requestItem, parentSyncAdvise));
+		return trxManager.callInNewTrx(() -> persistWithinTrx(requestItem, parentSyncAdvise));
 	}
 
-	/**
-	 * @param orgCode @{@code AD_Org.Value} of the bpartner in question. If {@code null}, the system will fall back to the current context-OrgId.
-	 */
 	private JsonResponseBPartnerCompositeUpsertItem persistWithinTrx(
-			@Nullable final String orgCode,
 			@NonNull final JsonRequestBPartnerUpsertItem requestItem,
 			@NonNull final SyncAdvise parentSyncAdvise)
 	{
 		// TODO: add support to retrieve without changelog; we don't need changelog here;
 		// but! make sure we don't screw up caching
+
+		final String orgCode = requestItem.getBpartnerComposite().getOrgCode();
 
 		final OrgId orgId = retrieveOrgIdOrDefault(orgCode);
 		final String rawBpartnerIdentifier = requestItem.getBpartnerIdentifier();
@@ -434,13 +431,11 @@ public class JsonPersisterService
 			final OrgId orgId = bpartnerComposite.getOrgId();
 			Check.assumeNotNull(orgId, "BPartner was just saved! OrgId will for sure be there!");
 
-			final String orgCode = orgDAO.getById(bpartnerComposite.getOrgId()).getValue();
-
 			JsonExternalReferenceHelper.getExternalReferenceItem(contactRequestUpsertItem)
 					.filter(referenceItem -> referenceItem.getExternalReference() != null)
 					.flatMap(referenceItem -> mapToJsonRequestExternalReferenceUpsert(responseUpsertItem,
 																					  ImmutableMap.of(referenceItem.getExternalReference(), referenceItem)))
-					.ifPresent(upsertReferenceReq -> externalReferenceRestControllerService.performUpsert(upsertReferenceReq, orgCode));
+					.ifPresent(upsertReferenceReq -> externalReferenceRestControllerService.performUpsert(upsertReferenceReq, bpartnerComposite.getOrgCode(orgDAO::getOrgCode)));
 		}
 
 		return responseUpsertItem;
@@ -542,7 +537,7 @@ public class JsonPersisterService
 						.filter(referenceItem -> referenceItem.getExternalReference() != null)
 						.flatMap(referenceItem -> mapToJsonRequestExternalReferenceUpsert(responseItem,
 																						  ImmutableMap.of(referenceItem.getExternalReference(), referenceItem)))
-						.ifPresent(upsertReferenceReq -> externalReferenceRestControllerService.performUpsert(upsertReferenceReq, orgCode));
+						.ifPresent(upsertReferenceReq -> externalReferenceRestControllerService.performUpsert(upsertReferenceReq, bpartnerComposite.getOrgCode(orgDAO::getOrgCode)));
 			}
 
 		}
@@ -612,7 +607,7 @@ public class JsonPersisterService
 					.filter(referenceItem -> referenceItem.getExternalReference() != null)
 					.flatMap(referenceItem -> mapToJsonRequestExternalReferenceUpsert(responseItem,
 																					  ImmutableMap.of(referenceItem.getExternalReference(), referenceItem)))
-					.ifPresent(upsertReferenceReq -> externalReferenceRestControllerService.performUpsert(upsertReferenceReq, orgCode));
+					.ifPresent(upsertReferenceReq -> externalReferenceRestControllerService.performUpsert(upsertReferenceReq, bpartnerComposite.getOrgCode(orgDAO::getOrgCode)));
 		}
 
 		return Optional.of(response.build());

@@ -12,6 +12,27 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#14108](https://github.com/metasfresh/metasfresh/pull/14108) Don't validate ASI for unique attributes in service repair PP_Orders
+  * [#14090](https://github.com/metasfresh/metasfresh/issues/14090) update build to postgres 15.1
+  * [#14096](https://github.com/metasfresh/metasfresh/pull/14096) Delete delivery plannings on inout schedule deletion 
+  * [#13430](https://github.com/metasfresh/metasfresh/issues/13430) github & everhour - Services Invoicing
+  * [#14050](https://github.com/metasfresh/metasfresh/issues/14050) Delivery planning: New qty columns
+  * [#14011](https://github.com/metasfresh/metasfresh/issues/14011) Sub-Task No 4: Test & Fix Inventory interaction with MD_Cockpit 
+  * [#14060](https://github.com/metasfresh/metasfresh/issues/14060) Format Qty based on on the precision defined in SysConfig
+  * [#13953](https://github.com/metasfresh/metasfresh/pull/13953) [SAP]: Add mappings for required masterdata
+  * [#13980](https://github.com/metasfresh/metasfresh/pull/13980) Introduce C_BPartner_Location.VATaxID
+  * [#14032](https://github.com/metasfresh/metasfresh/pull/14032) webui: (refreshViewOnChangeEvents) notify FE also when we have pure rows removal
+  * [#14023](https://github.com/metasfresh/metasfresh/pull/14023) webui: Make sure all views are notified on view addition changes
+  * [#14017](https://github.com/metasfresh/metasfresh/pull/14017) webui: When rows are changed consider also adding new ones to the view if it's matching the filter
+  * [#13604](https://github.com/metasfresh/metasfresh/issues/13604) Add ExternalHeaderId to invoiceCand header aggregation key
+  * [#13561](https://github.com/metasfresh/metasfresh/issues/13561) Approval for invoicing: add description to field and process
+  * [#13631](https://github.com/metasfresh/metasfresh/issues/13631) InEffect invoice candidates testId
+  * [#13942](https://github.com/metasfresh/metasfresh/issues/13942) Delivery Planning
+  * [#13998](https://github.com/metasfresh/metasfresh/issues/13998) Sub-Task No 3: Test & Fix Purchase candidate interaction with MD_Cockpit
+  * [#13937](https://github.com/metasfresh/metasfresh/issues/13937) Add source sub configs for ExternalSystem_Config_SAP 
+  * [#13979](https://github.com/metasfresh/metasfresh/pull/13979) External system config metasfresh improvement 
+  * [#13955](https://github.com/metasfresh/metasfresh/pull/13955) ExternalSystem component for batched bpartner-upserts via REST follow up 
+  * [#13929](https://github.com/metasfresh/metasfresh/issues/13929) ExternalSystem component for batched bpartner-upserts via REST
   * [#13251](https://github.com/metasfresh/metasfresh/pull/13251) Resolve importing of product variants from Shopware
   * [#13970](https://github.com/metasfresh/metasfresh/issues/13970) Externally referenced records: further improvements 
   * [#13968](https://github.com/metasfresh/metasfresh/issues/13968) Include in MD_Stock inactive HUs
@@ -162,6 +183,11 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#14019](https://github.com/metasfresh/metasfresh/issues/14019) [BUG] BPartnerRestController v2: path orgCode param is not consolidated with the request body
+  * [#14072](https://github.com/metasfresh/metasfresh/issues/14072) Fix Sales Order - void selected order with related documents
+  * [#14036](https://github.com/metasfresh/metasfresh/issues/14036) remove remaining oids from tables
+  * [#14003](https://github.com/metasfresh/metasfresh/pull/14003) Fix NPE that happens if IExportProcessor.process throws an exception
+  * [#14027](https://github.com/metasfresh/metasfresh/issues/14027) Display SEPA/REVOLUT Export Details
   * [#13906](https://github.com/metasfresh/metasfresh/pull/13906) Delete chat when deleting documents and implement voiding draft orders
   * [#13884](https://github.com/metasfresh/metasfresh/pull/13884) fix jenkins - also allow skipping cucumber tests
   * [#13723](https://github.com/metasfresh/metasfresh/pull/13723) Fix Other tag

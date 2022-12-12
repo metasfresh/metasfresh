@@ -103,6 +103,7 @@ import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
@@ -436,7 +437,7 @@ public class PPOrderBL implements IPPOrderBL
 	{
 		final I_PP_Order orderRecord = ppOrdersRepo.getById(orderId);
 		final PPOrderDocBaseType docBaseType = PPOrderDocBaseType.ofCode(orderRecord.getDocBaseType());
-		if(docBaseType.isRepairOrder())
+		if (docBaseType.isRepairOrder())
 		{
 			return;
 		}
@@ -631,4 +632,18 @@ public class PPOrderBL implements IPPOrderBL
 				"Completed ppOrder; PP_Order_ID={}; DocumentNo={}",
 				ppOrder.getPP_Order_ID(), ppOrder.getDocumentNo());
 	}
+
+	@Override
+	public boolean hasSerialNumberSequence(@NonNull final PPOrderId ppOrderId)
+	{
+		return orderBOMService.getSerialNoSequenceId(ppOrderId).isPresent();
+	}
+
+
+	@Override
+	public Set<ProductId> getProductIdsToIssue(@NonNull final PPOrderId ppOrderId)
+	{
+		return orderBOMService.getProductIdsToIssue(ppOrderId);
+	}
+
 }

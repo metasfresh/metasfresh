@@ -1,43 +1,20 @@
-/*
- * #%L
- * de.metas.swat.base
- * %%
- * Copyright (C) 2022 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
-
 package de.metas.invoicecandidate.model;
 
+import java.math.BigDecimal;
+import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
 
-import javax.annotation.Nullable;
-import java.math.BigDecimal;
-
 /** Generated Interface for I_Invoice_Candidate
- *  @author metasfresh (generated) 
+ *  @author metasfresh (generated)
  */
 @SuppressWarnings("unused")
-public interface I_I_Invoice_Candidate 
+public interface I_I_Invoice_Candidate
 {
 
 	String Table_Name = "I_Invoice_Candidate";
 
-//	/** AD_Table_ID=542207 */
-//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
+	//	/** AD_Table_ID=542207 */
+	//	int Table_ID = org.compiere.model.MTable.getTable_ID(Table_Name);
 
 
 	/**
@@ -73,6 +50,26 @@ public interface I_I_Invoice_Candidate
 	int getAD_Org_ID();
 
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
+
+	/**
+	 * Set Responsible.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_User_InCharge_ID (int AD_User_InCharge_ID);
+
+	/**
+	 * Get Responsible.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_User_InCharge_ID();
+
+	String COLUMNNAME_AD_User_InCharge_ID = "AD_User_InCharge_ID";
 
 	/**
 	 * Set Bill Business Partner.
@@ -228,28 +225,6 @@ public interface I_I_Invoice_Candidate
 	String COLUMNNAME_C_DocType_ID = "C_DocType_ID";
 
 	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
-
-	/**
 	 * Get Created.
 	 * Date this record was created
 	 *
@@ -275,6 +250,28 @@ public interface I_I_Invoice_Candidate
 	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
 	 * Set Date.
 	 * Date of Order
 	 *
@@ -297,9 +294,9 @@ public interface I_I_Invoice_Candidate
 	ModelColumn<I_I_Invoice_Candidate, Object> COLUMN_DateOrdered = new ModelColumn<>(I_I_Invoice_Candidate.class, "DateOrdered", null);
 	String COLUMNNAME_DateOrdered = "DateOrdered";
 
-
 	/**
 	 * Set Default Org Code.
+	 * Fallback org value used for importing invoice candidates when there is no org-code set in the file. Its value is set from a constant configured in the import format.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -309,6 +306,7 @@ public interface I_I_Invoice_Candidate
 
 	/**
 	 * Get Default Org Code.
+	 * Fallback org value used for importing invoice candidates when there is no org-code set in the file. Its value is set from a constant configured in the import format.
 	 *
 	 * <br>Type: String
 	 * <br>Mandatory: true
@@ -339,6 +337,50 @@ public interface I_I_Invoice_Candidate
 
 	ModelColumn<I_I_Invoice_Candidate, Object> COLUMN_Description = new ModelColumn<>(I_I_Invoice_Candidate.class, "Description", null);
 	String COLUMNNAME_Description = "Description";
+
+	/**
+	 * Set End note.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDescriptionBottom (@Nullable java.lang.String DescriptionBottom);
+
+	/**
+	 * Get End note.
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDescriptionBottom();
+
+	ModelColumn<I_I_Invoice_Candidate, Object> COLUMN_DescriptionBottom = new ModelColumn<>(I_I_Invoice_Candidate.class, "DescriptionBottom", null);
+	String COLUMNNAME_DescriptionBottom = "DescriptionBottom";
+
+	/**
+	 * Set Discount %.
+	 * Discount in percent
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setDiscount (BigDecimal Discount);
+
+	/**
+	 * Get Discount %.
+	 * Discount in percent
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getDiscount();
+
+	ModelColumn<I_I_Invoice_Candidate, Object> COLUMN_Discount = new ModelColumn<>(I_I_Invoice_Candidate.class, "Discount", null);
+	String COLUMNNAME_Discount = "Discount";
 
 	/**
 	 * Set Document Base Type.
@@ -653,19 +695,19 @@ public interface I_I_Invoice_Candidate
 	 * Set Org Code.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setOrgCode (java.lang.String OrgCode);
+	void setOrgCode (@Nullable java.lang.String OrgCode);
 
 	/**
 	 * Get Org Code.
 	 *
 	 * <br>Type: String
-	 * <br>Mandatory: true
+	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	java.lang.String getOrgCode();
+	@Nullable java.lang.String getOrgCode();
 
 	ModelColumn<I_I_Invoice_Candidate, Object> COLUMN_OrgCode = new ModelColumn<>(I_I_Invoice_Candidate.class, "OrgCode", null);
 	String COLUMNNAME_OrgCode = "OrgCode";
@@ -713,6 +755,29 @@ public interface I_I_Invoice_Candidate
 
 	ModelColumn<I_I_Invoice_Candidate, Object> COLUMN_PresetDateInvoiced = new ModelColumn<>(I_I_Invoice_Candidate.class, "PresetDateInvoiced", null);
 	String COLUMNNAME_PresetDateInvoiced = "PresetDateInvoiced";
+
+	/**
+	 * Set Price.
+	 * Price
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setPrice (BigDecimal Price);
+
+	/**
+	 * Get Price.
+	 * Price
+	 *
+	 * <br>Type: CostPrice
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getPrice();
+
+	ModelColumn<I_I_Invoice_Candidate, Object> COLUMN_Price = new ModelColumn<>(I_I_Invoice_Candidate.class, "Price", null);
+	String COLUMNNAME_Price = "Price";
 
 	/**
 	 * Set Processed.
@@ -824,6 +889,27 @@ public interface I_I_Invoice_Candidate
 	int getUpdatedBy();
 
 	String COLUMNNAME_UpdatedBy = "UpdatedBy";
+
+	/**
+	 * Set User In Charge.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setUser_InCharge (@Nullable java.lang.String User_InCharge);
+
+	/**
+	 * Get User In Charge.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getUser_InCharge();
+
+	ModelColumn<I_I_Invoice_Candidate, Object> COLUMN_User_InCharge = new ModelColumn<>(I_I_Invoice_Candidate.class, "User_InCharge", null);
+	String COLUMNNAME_User_InCharge = "User_InCharge";
 
 	/**
 	 * Set UOM Code.

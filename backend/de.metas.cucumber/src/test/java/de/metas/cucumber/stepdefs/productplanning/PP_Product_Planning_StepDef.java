@@ -171,7 +171,7 @@ public class PP_Product_Planning_StepDef
 		}
 
 		final boolean isPurchased = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_PP_Product_Planning.COLUMNNAME_IsPurchased, false);
-		if(isPurchased)
+		if (isPurchased)
 		{
 			productPlanningRecord.setIsPurchased(X_PP_Product_Planning.ISPURCHASED_Yes);
 			productPlanningRecord.setIsManufactured(X_PP_Product_Planning.ISMANUFACTURED_No);

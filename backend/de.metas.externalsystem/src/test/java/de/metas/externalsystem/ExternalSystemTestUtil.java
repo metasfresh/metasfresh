@@ -27,6 +27,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl_ProductMapping;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_Metasfresh;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP_LocalFile;
@@ -129,6 +130,23 @@ public class ExternalSystemTestUtil
 			childRecord.setExternalSystem_Config_RabbitMQ_HTTP_ID(customChildConfigId);
 		}
 
+		saveRecord(childRecord);
+
+		return childRecord;
+	}
+
+	@NonNull
+	@Builder(builderMethodName = "createMetasfreshConfigBuilder", builderClassName = "metasfreshConfigBuilder")
+	private I_ExternalSystem_Config_Metasfresh createMetasfreshConfig(
+			final int externalSystemConfigId,
+			@NonNull final String value)
+	{
+		final I_ExternalSystem_Config_Metasfresh childRecord = newInstance(I_ExternalSystem_Config_Metasfresh.class);
+		childRecord.setExternalSystem_Config_ID(externalSystemConfigId);
+		childRecord.setExternalSystemValue(value);
+		childRecord.setCamelHttpResourceAuthKey("authKey");
+		childRecord.setFeedbackResourceURL("feedbackResourceURL");
+		childRecord.setFeedbackResourceAuthToken("feedbackResourceAuthToken");
 		saveRecord(childRecord);
 
 		return childRecord;

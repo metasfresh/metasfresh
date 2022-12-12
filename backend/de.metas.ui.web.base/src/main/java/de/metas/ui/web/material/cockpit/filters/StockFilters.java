@@ -1,17 +1,16 @@
 package de.metas.ui.web.material.cockpit.filters;
 
-import static java.math.BigDecimal.ZERO;
-
+import de.metas.material.cockpit.model.I_MD_Stock;
+import de.metas.ui.web.document.filter.DocumentFilterList;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_Product;
 
-import de.metas.material.cockpit.model.I_MD_Stock;
-import de.metas.ui.web.document.filter.DocumentFilterList;
-import de.metas.util.Services;
-import lombok.NonNull;
+import static java.math.BigDecimal.ZERO;
 
 /*
  * #%L

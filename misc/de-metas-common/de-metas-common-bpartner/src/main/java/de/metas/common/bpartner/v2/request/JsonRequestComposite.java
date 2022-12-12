@@ -35,7 +35,9 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.Value;
+import lombok.experimental.NonFinal;
 
 import javax.annotation.Nullable;
 
@@ -49,6 +51,8 @@ public class JsonRequestComposite
 	// TODO if an org is given, then verify whether the current user has access to the given org
 	@ApiModelProperty(position = 10)
 	@JsonInclude(Include.NON_NULL)
+	@Setter
+	@NonFinal
 	String orgCode;
 
 	@ApiModelProperty(position = 20)
