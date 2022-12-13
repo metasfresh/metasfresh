@@ -29,10 +29,12 @@
 	</parameter>
 	<queryString>
 		<![CDATA[SELECT t.*
-FROM de_metas_acct.taxaccounts_details($P{AD_Org_ID},$P{account_id}, $P{C_VAT_Code_ID}, $P{DateFrom},  $P{DateTo}) AS t 
+FROM de_metas_acct.taxaccountsonly_details($P{AD_Org_ID},$P{account_id}, $P{C_VAT_Code_ID}, $P{DateFrom},  $P{DateTo}) AS t 
 WHERE t.taxname IS NOT NULL
 order by vatcode, accountno
-;]]>
+;
+
+]]>
 	</queryString>
 	<field name="balance" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="balance"/>
@@ -551,7 +553,7 @@ order by vatcode, accountno
 					<subreportParameterExpression><![CDATA[$P{DateTo}]]></subreportParameterExpression>
 				</subreportParameter>
 				<connectionExpression><![CDATA[$P{REPORT_CONNECTION}]]></connectionExpression>
-				<subreportExpression><![CDATA["de/metas/reports/tax_accounting_new/report_recap.jasper"]]></subreportExpression>
+				<subreportExpression><![CDATA["de/metas/reports/tax_accounting_v3/report_recap.jasper"]]></subreportExpression>
 			</subreport>
 		</band>
 	</summary>
