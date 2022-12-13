@@ -1,43 +1,3 @@
-DROP FUNCTION IF EXISTS de_metas_acct.taxaccounts_perVATCode(p_AD_Org_ID numeric(10, 0),
-                                                             p_DateFrom  date,
-                                                             p_DateTo    date)
-;
-
-
-CREATE OR REPLACE FUNCTION de_metas_acct.taxaccounts_perVATCode(p_AD_Org_ID numeric(10, 0),
-                                                                p_DateFrom  date,
-                                                                p_DateTo    date)
-    RETURNS TABLE
-            (
-                Balance     numeric,
-                BalanceYear numeric,
-                taxName     varchar,
-                vatcode     varchar
-            )
-AS
-$BODY$
-SELECT SUM(t.balance) AS balance, SUM(t.balanceyear) AS balanceyear, t.taxname, t.vatcode
-FROM (
-         SELECT DISTINCT vc.Account_ID AS C_ElementValue_ID
-         FROM C_Tax_Acct ta
-                  INNER JOIN C_ValidCombination vc ON (vc.C_ValidCombination_ID IN
-                                                       (ta.T_Due_Acct, ta.T_Credit_Acct))
-             AND vc.isActive = 'Y'
-         WHERE ta.isActive = 'Y'
-     ) AS ev
-         INNER JOIN de_metas_acct.taxaccounts_details(p_AD_Org_ID,
-                                                      ev.C_ElementValue_ID,
-                                                      NULL,
-                                                      p_DateFrom,
-                                                      p_DateTo) AS t ON TRUE
-WHERE t.taxname IS NOT NULL
-GROUP BY t.vatcode, t.taxname
-ORDER BY vatcode
-$BODY$
-    LANGUAGE sql STABLE
-;
-
-
 DROP FUNCTION IF EXISTS de_metas_acct.taxaccounts_details(p_AD_Org_ID     numeric(10, 0),
                                                           p_Account_ID    numeric,
                                                           p_C_Vat_Code_ID numeric,
@@ -142,7 +102,7 @@ SELECT Balance,
                 ELSE (SELECT value || ' - ' || name
                       FROM C_ElementValue
                       WHERE C_ElementValue_ID = p_Account_ID
-                        AND isActive = 'Y')
+                )
         END)      AS param_konto,
        (CASE
             WHEN p_C_Vat_Code_ID IS NULL
@@ -150,7 +110,7 @@ SELECT Balance,
                 ELSE (SELECT vatcode
                       FROM C_Vat_Code
                       WHERE C_Vat_Code_ID = p_C_Vat_Code_ID
-                        AND isActive = 'Y')
+                )
         END)      AS param_vatcode,
        (CASE
             WHEN p_AD_Org_ID IS NULL
@@ -158,7 +118,7 @@ SELECT Balance,
                 ELSE (SELECT name
                       FROM ad_org
                       WHERE ad_org_id = p_AD_Org_ID
-                        AND isActive = 'Y')
+                )
         END)      AS param_org
 
 FROM balance AS b
@@ -167,7 +127,6 @@ ORDER BY vatcode, accountno
 $BODY$
     LANGUAGE sql STABLE
 ;
-
 
 
 

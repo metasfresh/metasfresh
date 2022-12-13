@@ -102,7 +102,7 @@ SELECT Balance,
                 ELSE (SELECT value || ' - ' || name
                       FROM C_ElementValue
                       WHERE C_ElementValue_ID = p_Account_ID
-                        AND isActive = 'Y')
+                )
         END)      AS param_konto,
        (CASE
             WHEN p_C_Vat_Code_ID IS NULL
@@ -110,7 +110,7 @@ SELECT Balance,
                 ELSE (SELECT vatcode
                       FROM C_Vat_Code
                       WHERE C_Vat_Code_ID = p_C_Vat_Code_ID
-                        AND isActive = 'Y')
+                )
         END)      AS param_vatcode,
        (CASE
             WHEN p_AD_Org_ID IS NULL
@@ -118,7 +118,7 @@ SELECT Balance,
                 ELSE (SELECT name
                       FROM ad_org
                       WHERE ad_org_id = p_AD_Org_ID
-                        AND isActive = 'Y')
+                )
         END)      AS param_org
 
 FROM balance AS b

@@ -22,8 +22,6 @@ FROM (
          FROM C_Tax_Acct ta
                   INNER JOIN C_ValidCombination vc ON (vc.C_ValidCombination_ID IN
                                                        (ta.T_Due_Acct, ta.T_Credit_Acct))
-             AND vc.isActive = 'Y'
-         WHERE ta.isActive = 'Y'
      ) AS ev
          INNER JOIN de_metas_acct.taxaccounts_details(p_AD_Org_ID,
                                                       ev.C_ElementValue_ID,
