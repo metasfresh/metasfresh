@@ -120,6 +120,7 @@ DELETE FROM EXP_FormatLine WHERE EXP_FormatLine_ID=545099
 
 -- 2022-12-13T09:34:47.304Z
 UPDATE EXP_FormatLine SET Description='EDI_cctop_111_v via C_Invoice.C_Invoice_ID',Updated=TO_TIMESTAMP('2022-12-13 10:34:47','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE EXP_FormatLine_ID=545182
+;
 
 -- 2022-12-13T09:51:09.276Z
 UPDATE EXP_FormatLine SET AD_Column_ID=548325, Name='C_Invoice_ID', Value='C_Invoice_ID',Updated=TO_TIMESTAMP('2022-12-13 10:51:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE EXP_FormatLine_ID=545182
