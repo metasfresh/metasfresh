@@ -58,6 +58,7 @@ import de.metas.organization.OrgId;
 import de.metas.picking.api.PickingConfigRepository;
 import de.metas.picking.api.PickingSlotId;
 import de.metas.picking.model.I_M_Picking_Config_V2;
+import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -156,7 +157,9 @@ public class PickingJobTestHelper
 				new DefaultPickingJobLoaderSupportingServicesFactory(
 						pickingJobSlotService,
 						bpartnerBL,
-						new HUQRCodesService(huQRCodesRepository, new GlobalQRCodeService())
+						new HUQRCodesService(
+								huQRCodesRepository,
+								new GlobalQRCodeService(DoNothingMassPrintingService.instance))
 				)
 		);
 

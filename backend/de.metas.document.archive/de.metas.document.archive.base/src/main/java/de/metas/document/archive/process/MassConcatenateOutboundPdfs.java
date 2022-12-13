@@ -33,10 +33,13 @@ import de.metas.process.IProcessPreconditionsContext;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.ConstantQueryFilter;
+import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.archive.AdArchive;
 import org.adempiere.archive.ArchiveId;
+import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.archive.api.IArchiveDAO;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
@@ -45,13 +48,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.stream.Stream;
 
 public class MassConcatenateOutboundPdfs extends JavaProcess implements IProcessPrecondition
 {
-	final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+	private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
+	private final IArchiveDAO archiveDAO = Services.get(IArchiveDAO.class);
 
 	@Override
 	public ProcessPreconditionsResolution checkPreconditionsApplicable(final IProcessPreconditionsContext context)
@@ -68,7 +73,7 @@ public class MassConcatenateOutboundPdfs extends JavaProcess implements IProcess
 	{
 		final IQueryFilter<I_C_Doc_Outbound_Log> queryFilter = getProcessInfo()
 				.getQueryFilterOrElse(ConstantQueryFilter.of(false));
-		final Stream<AdArchive> pdfStreams = archiveDAO.streamArchivesForFilter(queryFilter, I_C_Doc_Outbound_Log.class);
+		final Stream<AdArchive> pdfStreams = streamArchivesForFilter(queryFilter);
 		final File reportFile = File.createTempFile("MassConcatenateOutboundPdfs_" + getPinstanceId().getRepoId(), ".pdf");
 		reportFile.deleteOnExit();
 		final Document document = new Document();
@@ -88,6 +93,24 @@ public class MassConcatenateOutboundPdfs extends JavaProcess implements IProcess
 		return "OK/Error # " + printedIds.size() + "/" + errorCount.get();
 	}
 
+	private Stream<AdArchive> streamArchivesForFilter(@NonNull final IQueryFilter<I_C_Doc_Outbound_Log> outboundLogFilter)
+	{
+		return queryBL.createQueryBuilder(I_C_Doc_Outbound_Log.class)
+				.addOnlyActiveRecordsFilter()
+				.filter(outboundLogFilter)
+				.create()
+				.iterateAndStream()
+				.map(this::getLastArchive)
+				.filter(Optional::isPresent)
+				.map(Optional::get);
+	}
+
+	@NonNull
+	private Optional<AdArchive> getLastArchive(final I_C_Doc_Outbound_Log log)
+	{
+		return archiveBL.getLastArchive(TableRecordReference.ofReferenced(log));
+	}
+
 	private void appendCurrentPdf(final PdfCopy targetPdf, final AdArchive currentLog, final Collection<ArchiveId> printedIds, final AtomicInteger errorCount)
 	{
 		PdfReader pdfReaderToAdd = null;
@@ -103,7 +126,7 @@ public class MassConcatenateOutboundPdfs extends JavaProcess implements IProcess
 			targetPdf.freeReader(pdfReaderToAdd);
 		}
 		catch (final BadPdfFormatException |
-				IOException e)
+					 IOException e)
 		{
 			errorCount.incrementAndGet();
 		}

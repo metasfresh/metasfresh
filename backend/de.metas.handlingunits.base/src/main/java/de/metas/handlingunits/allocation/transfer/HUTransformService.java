@@ -29,6 +29,7 @@ import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
 import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.HuPackingInstructionsItemId;
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
@@ -587,10 +588,10 @@ public class HUTransformService
 	 * Creates one or more TUs (depending on the given quantity and the TU capacity) and joins, splits and/or distributes the source CU to them.<br>
 	 * If the user goes with the full quantity of the source CU and if the source CU fits into one TU, then it remains unchanged.
 	 *
-	 * @param cuHU            the currently selected source CU line
+	 * @param cuHU                  the currently selected source CU line
 	 * @param qtyCU                 optional; the CU-quantity to join or split. If {@code null}, then the whole CU is consumed.
-	 * @param tuPIItemProduct the PI item product to specify both the PI and capacity of the target TU
-	 * @param isOwnPackingMaterials indicates if the packaging material (e.g. palox boxes) are owned by to us (true) or by respective bPartner (false).   
+	 * @param tuPIItemProduct       the PI item product to specify both the PI and capacity of the target TU
+	 * @param isOwnPackingMaterials indicates if the packaging material (e.g. palox boxes) are owned by to us (true) or by respective bPartner (false).
 	 */
 	public List<I_M_HU> cuToNewTUs(
 			@NonNull final I_M_HU cuHU,
@@ -613,9 +614,9 @@ public class HUTransformService
 		final List<IHUProductStorage> storages = huContext.getHUStorageFactory().getStorage(cuHU).getProductStorages();
 		Check.errorUnless(storages.size() == 1, "Param' cuHU' needs to have *one* storage; storages={}; cuHU={};", storages, cuHU);
 		final IHUProductStorage singleCUStorage = storages.get(0);
-		
+
 		final Quantity qtyCUToUse = CoalesceUtil.coalesceSuppliersNotNull(() -> qtyCU, singleCUStorage::getQty);
-		
+
 		HUSplitBuilderCoreEngine.builder()
 				.huContextInitital(huContext)
 				.huToSplit(cuHU)
@@ -1174,8 +1175,8 @@ public class HUTransformService
 	}
 
 	/**
-	  * If the given HU is aggregated, split out one TU and assign the given QR-code to it. Otherwise do nothing and jsut return the given {@code huId}.
-	  */
+	 * If the given HU is aggregated, split out one TU and assign the given QR-code to it. Otherwise do nothing and jsut return the given {@code huId}.
+	 */
 	@NonNull
 	public HuId extractIfAggregatedByQRCode(@NonNull final HuId huId, @NonNull final HUQRCode huQRCode)
 	{
@@ -1422,8 +1423,59 @@ public class HUTransformService
 	@NonNull
 	private HuId splitOutTUFromAggregated(@NonNull final I_M_HU hu)
 	{
-			final List<I_M_HU> extractedTUs = HUTransformService.newInstance().tuToNewTUs(hu, QtyTU.ONE.toBigDecimal());
-			final I_M_HU extractedTU = CollectionUtils.singleElement(extractedTUs);
-			return HuId.ofRepoId(extractedTU.getM_HU_ID());
+		final List<I_M_HU> extractedTUs = HUTransformService.newInstance().tuToNewTUs(hu, QtyTU.ONE.toBigDecimal());
+		final I_M_HU extractedTU = CollectionUtils.singleElement(extractedTUs);
+		return HuId.ofRepoId(extractedTU.getM_HU_ID());
 	}
+
+	public HuId tusToNewLU(
+			@NonNull final List<I_M_HU> tusOrVhus,
+			@Nullable final HuPackingInstructionsItemId newLUPIItemId)
+	{
+		return tusToLU(tusOrVhus, null, newLUPIItemId);
+	}
+
+	public HuId tusToExistingLU(
+			@NonNull final List<I_M_HU> tusOrVhus,
+			@Nullable final I_M_HU existingLU)
+	{
+		return tusToLU(tusOrVhus, existingLU, null);
+	}
+
+	private HuId tusToLU(
+			@NonNull final List<I_M_HU> tusOrVhus,
+			@Nullable final I_M_HU existingLU,
+			@Nullable final HuPackingInstructionsItemId newLUPIItemId)
+	{
+		I_M_HU lu = existingLU;
+
+		for (final I_M_HU tu : tusOrVhus)
+		{
+
+			if (lu == null)
+			{
+				final I_M_HU_PI_Item newLUPIItem = handlingUnitsBL.getPackingInstructionItemById(Objects.requireNonNull(newLUPIItemId));
+
+				final List<I_M_HU> createdLUs = tuToNewLUs(
+						tu,
+						QtyTU.ONE.toBigDecimal(),
+						newLUPIItem,
+						false);
+				lu = CollectionUtils.singleElement(createdLUs);
+			}
+			else
+			{
+				tuToExistingLU(tu, QtyTU.ONE.toBigDecimal(), lu);
+			}
+		}
+
+		if (lu == null)
+		{
+			// shall not happen
+			throw new AdempiereException("No LU was created");
+		}
+
+		return HuId.ofRepoId(lu.getM_HU_ID());
+	}
+
 }

@@ -57,6 +57,7 @@ import de.metas.handlingunits.model.X_M_HU_PI_Item;
 import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.organization.ClientAndOrgId;
 import de.metas.organization.OrgId;
+import de.metas.process.PInstanceId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -127,6 +128,25 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 	public I_M_HU getById(@NonNull final HuId huId)
 	{
 		return load(huId, I_M_HU.class);
+	}
+
+	@Override
+	public List<I_M_HU> getBySelectionId(@NonNull final PInstanceId selectionId)
+	{
+		return queryBL.createQueryBuilder(I_M_HU.class)
+				.setOnlySelection(selectionId)
+				.create()
+				.list();
+	}
+
+	@Override
+	public Set<HuId> getHuIdsBySelectionId(@NonNull final PInstanceId selectionId)
+	{
+		return queryBL.createQueryBuilder(I_M_HU.class)
+				.setOnlySelection(selectionId)
+				.orderBy(I_M_HU.COLUMNNAME_M_HU_ID)
+				.create()
+				.listIds(HuId::ofRepoId);
 	}
 
 	@Override
@@ -438,7 +458,7 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 
 	@Override
 	public List<I_M_HU_PI_Item> retrievePIItems(
-			@NonNull final I_M_HU_PI handlingUnit, 
+			@NonNull final I_M_HU_PI handlingUnit,
 			@Nullable final BPartnerId bpartnerId)
 	{
 		final I_M_HU_PI_Version version = retrievePICurrentVersion(handlingUnit);
@@ -609,7 +629,6 @@ public class HandlingUnitsDAO implements IHandlingUnitsDAO
 		}
 		return piVersion;
 	}
-
 
 	@Override
 	public I_M_HU_PI_Version retrievePICurrentVersionOrNull(@NonNull final I_M_HU_PI pi)

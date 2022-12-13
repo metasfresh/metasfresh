@@ -36,6 +36,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.SpringContextHolder;
 
 import java.util.Collection;
 import java.util.List;
@@ -188,7 +189,8 @@ final class HUReportProcessInstance implements IProcessInstanceController
 				.filter(Objects::nonNull)
 				.collect(ImmutableSet.toImmutableSet());
 
-		return HUReportService.get().getHUsToProcess(husToCheck);
+		final HUReportService huReportService = SpringContextHolder.instance.getBean(HUReportService.class);
+		return huReportService.getHUsToProcess(husToCheck);
 	}
 
 	@Override

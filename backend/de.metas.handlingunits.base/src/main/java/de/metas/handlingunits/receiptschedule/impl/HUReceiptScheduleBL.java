@@ -3,6 +3,7 @@ package de.metas.handlingunits.receiptschedule.impl;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.CompositeDocumentLUTUConfigurationHandler;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IDocumentLUTUConfigurationHandler;
@@ -40,6 +41,9 @@ import de.metas.handlingunits.report.HUReportExecutor;
 import de.metas.handlingunits.report.HUReportService;
 import de.metas.handlingunits.report.HUToReport;
 import de.metas.handlingunits.report.HUToReportWrapper;
+import de.metas.handlingunits.report.labels.HULabelConfig;
+import de.metas.handlingunits.report.labels.HULabelConfigQuery;
+import de.metas.handlingunits.report.labels.HULabelSourceDocType;
 import de.metas.handlingunits.storage.IProductStorage;
 import de.metas.inout.IInOutDAO;
 import de.metas.inoutcandidate.api.IInOutCandidateBL;
@@ -78,7 +82,6 @@ import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
-import org.compiere.util.TrxRunnable;
 import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
@@ -133,7 +136,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
 
-	private static final transient Logger logger = LogManager.getLogger(HUReceiptScheduleBL.class);
+	private static final Logger logger = LogManager.getLogger(HUReceiptScheduleBL.class);
 
 	@Override
 	public BigDecimal getQtyOrderedTUOrNull(final I_M_ReceiptSchedule receiptSchedule)
@@ -189,13 +192,13 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 			return;
 		}
 
-		Services.get(ITrxManager.class).run(trxName, (TrxRunnable)localTrxName -> {
+		Services.get(ITrxManager.class).run(trxName, localTrxName -> {
 			final IContextAware context = Services.get(ITrxManager.class).createThreadContextAware(allocs.get(0));
 			final IHUContext huContext = huContextFactory.createMutableHUContextForProcessing(context);
 
 			Services.get(IHUTrxBL.class)
 					.createHUContextProcessorExecutor(huContext)
-					.run((IHUContextProcessor)huContext1 -> {
+					.run(huContext1 -> {
 						destroyHandlingUnits(huContext1, allocs);
 						return IHUContextProcessor.NULL_RESULT;
 					});
@@ -366,7 +369,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		if (selectedHuIds != null && !selectedHuIds.isEmpty())
 		{
 			validateHuIds(selectedHuIds);
-			
+
 			final HUReceiptScheduleWeightNetAdjuster huWeightNetAdjuster = new HUReceiptScheduleWeightNetAdjuster(parameters.getCtx(), ITrx.TRXNAME_ThreadInherited);
 			huWeightNetAdjuster.setInScopeHU_IDs(selectedHuIds);
 			for (final I_M_ReceiptSchedule receiptSchedule : receiptSchedules)
@@ -458,7 +461,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	 * being called multiple times in a row, from different transactions.
 	 * This happens if there are >1 inout lines sharing the same LU.
 	 *
-	 * @task https://github.com/metasfresh/metasfresh/issues/1905
+	 * task https://github.com/metasfresh/metasfresh/issues/1905
 	 */
 	private void printReceiptLabels(final InOutGenerateResult result)
 	{
@@ -470,7 +473,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		final List<I_M_InOut> inouts = createList(result.getInOuts(), I_M_InOut.class);
 		for (final I_M_InOut inout : inouts)
 		{
-			final int vendorBPartnerId = inout.getC_BPartner_ID();
+			final BPartnerId vendorBPartnerId = BPartnerId.ofRepoId(inout.getC_BPartner_ID());
 
 			final List<I_M_InOutLine> inoutLines = inOutDAO.retrieveLines(inout);
 			for (final I_M_InOutLine inoutLine : inoutLines)
@@ -503,20 +506,26 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	}
 
 	/**
-	 * @task https://github.com/metasfresh/metasfresh-webui/issues/209
+	 * task https://github.com/metasfresh/metasfresh-webui/issues/209
 	 */
-	private void printReceiptLabel(@Nullable final HUToReport hu, final int vendorBPartnerId)
+	private void printReceiptLabel(@NonNull final HUToReport hu, @NonNull final BPartnerId vendorBPartnerId)
 	{
-		if (hu == null)
+		final HUReportService huReportService = SpringContextHolder.instance.getBean(HUReportService.class);
+
+		final HULabelConfig labelConfig = //huLabelService.getReceiptLabelFromSysConfig(vendorBPartnerId)
+				huReportService.getLabelConfig(HULabelConfigQuery.builder()
+								.sourceDocType(HULabelSourceDocType.MaterialReceipt)
+								.huUnitType(hu.getHUUnitType())
+								.build())
+				.ifAbsent(msg -> logger.debug(msg.getDefaultValue()))
+				.orElse(null);
+		if (labelConfig == null)
 		{
-			logger.debug("Param 'hu'==null; nothing to do");
 			return;
 		}
-
-		final HUReportService huReportService = HUReportService.get();
-		if (!huReportService.isReceiptLabelAutoPrintEnabled(vendorBPartnerId))
+		if (!labelConfig.isAutoPrint())
 		{
-			logger.debug("Auto printing receipt labels is not enabled via SysConfig; nothing to do");
+			logger.debug("Auto printing receipt labels is not enabled; nothing to do");
 			return;
 		}
 
@@ -526,33 +535,27 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 			return;
 		}
 
-		final AdProcessId adProcessId = huReportService.retrievePrintReceiptLabelProcessIdOrNull();
-		if (adProcessId == null)
-		{
-			logger.debug("No process configured via SysConfig {}; nothing to do", HUReportService.SYSCONFIG_RECEIPT_LABEL_PROCESS_ID);
-			return;
-		}
-
+		final AdProcessId printFormatProcessId = labelConfig.getPrintFormatProcessId();
 		final List<HUToReport> husToProcess = huReportService
-				.getHUsToProcess(hu, adProcessId)
+				.getHUsToProcess(hu, printFormatProcessId)
 				.stream()
 				.collect(ImmutableList.toImmutableList());
 		if (husToProcess.isEmpty())
 		{
-			logger.debug("The selected hu does not match process {}; nothing to do; hu={}", adProcessId, hu);
+			logger.debug("The selected hu does not match process {}; nothing to do; hu={}", printFormatProcessId, hu);
 			return;
 		}
 
-		final int copies = huReportService.getReceiptLabelAutoPrintCopyCount();
+		final int copies = labelConfig.getAutoPrintCopies();
 
-		HUReportExecutor.newInstance(Env.getCtx())
+		HUReportExecutor.newInstance()
 				.numberOfCopies(copies)
-				.executeHUReportAfterCommit(adProcessId, husToProcess);
+				.executeHUReportAfterCommit(printFormatProcessId, husToProcess);
 	}
 
 	@Override
 	public IAllocationRequest setInitialAttributeValueDefaults(final IAllocationRequest request,
-			final Collection<? extends de.metas.inoutcandidate.model.I_M_ReceiptSchedule> receiptSchedules)
+															   final Collection<? extends de.metas.inoutcandidate.model.I_M_ReceiptSchedule> receiptSchedules)
 	{
 		Check.assumeNotNull(request, "request not null");
 		Check.assumeNotEmpty(receiptSchedules, "receiptSchedule not empty");
@@ -578,8 +581,8 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 			else if (priceActual.compareTo(receiptSchedule_priceActual) != 0)
 			{
 				throw new HUException("Got different PriceActual."
-											  + "\n @PriceActual@: " + priceActual + ", " + receiptSchedule_priceActual
-											  + "\n @M_ReceiptSchedule_ID@: " + receiptSchedules);
+						+ "\n @PriceActual@: " + priceActual + ", " + receiptSchedule_priceActual
+						+ "\n @M_ReceiptSchedule_ID@: " + receiptSchedules);
 			}
 
 			final int orderLineId = receiptSchedule.getC_OrderLine_ID();

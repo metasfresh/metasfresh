@@ -345,7 +345,7 @@ public class ADTableDAO implements IADTableDAO
 	{
 		final I_AD_Table table = retrieveTable(tableName);
 		final int typeaheadMinLength = table.getACTriggerLength();
-		return typeaheadMinLength > 0 ? typeaheadMinLength : 0;
+		return Math.max(typeaheadMinLength, 0);
 	}
 
 	@Override
@@ -452,6 +452,13 @@ public class ADTableDAO implements IADTableDAO
 	{
 		return getMinimalColumnInfoMap().getByIds(adColumnIds);
 	}
+
+	@Override
+	public ImmutableList<MinimalColumnInfo> getMinimalColumnInfosByColumnName(@NonNull final String columnName)
+	{
+		return getMinimalColumnInfoMap().getByColumnName(columnName);
+	}
+
 
 	private MinimalColumnInfoMap getMinimalColumnInfoMap()
 	{

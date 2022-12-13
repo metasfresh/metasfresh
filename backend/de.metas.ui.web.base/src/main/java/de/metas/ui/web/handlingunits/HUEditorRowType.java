@@ -1,5 +1,6 @@
 package de.metas.ui.web.handlingunits;
 
+import de.metas.handlingunits.HuUnitType;
 import org.adempiere.exceptions.AdempiereException;
 
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -43,7 +44,7 @@ public enum HUEditorRowType implements IViewRowType
 	private final String name;
 	private final boolean pureHU;
 
-	private HUEditorRowType(final String name, final boolean pureHU)
+	HUEditorRowType(final String name, final boolean pureHU)
 	{
 		this.name = name;
 		this.pureHU = pureHU;
@@ -67,7 +68,7 @@ public enum HUEditorRowType implements IViewRowType
 		return this == VHU || this == HUStorage;
 	}
 
-	public static final HUEditorRowType ofHU_UnitType(final String huUnitType)
+	public static HUEditorRowType ofHU_UnitType(final String huUnitType)
 	{
 		final HUEditorRowType type = huUnitType2type.get(huUnitType);
 		if (type == null)
@@ -77,19 +78,19 @@ public enum HUEditorRowType implements IViewRowType
 		return type;
 	}
 
-	public String toHUUnitTypeOrNull()
+	public HuUnitType toHUUnitTypeOrNull()
 	{
 		if (this == HUStorage)
 		{
-			return X_M_HU_PI_Version.HU_UNITTYPE_VirtualPI;
+			return HuUnitType.VHU;
 		}
-		return huUnitType2type.inverse().get(this);
+		return HuUnitType.ofNullableCode(huUnitType2type.inverse().get(this));
 
 	}
 
-	public String toHUUnitType()
+	public HuUnitType toHUUnitType()
 	{
-		final String unitType = toHUUnitTypeOrNull();
+		final HuUnitType unitType = toHUUnitTypeOrNull();
 		if (unitType == null)
 		{
 			throw new AdempiereException("Cannot convert " + this + " to HU_UnitType");
