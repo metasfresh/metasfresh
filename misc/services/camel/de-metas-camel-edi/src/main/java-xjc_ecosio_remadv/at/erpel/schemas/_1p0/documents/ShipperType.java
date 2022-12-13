@@ -3,10 +3,13 @@
 // See <a href="https://javaee.github.io/jaxb-v2/">https://javaee.github.io/jaxb-v2/</a> 
 // Any modifications to this file will be lost upon recompilation of the source schema. 
 // Generated on: 2022.12.12 at 10:38:39 AM CET 
+// Generated on: 2022.12.09 at 05:19:20 PM CET
 //
 
 
 package at.erpel.schemas._1p0.documents;
+
+import at.erpel.schemas._1p0.documents.ext.ShipperExtensionType;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
