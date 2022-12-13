@@ -355,7 +355,7 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 		return get_ValueAsString(COLUMNNAME_PP_Activity_Type);
 	}
 
-	/**
+	/** 
 	 * PP_AlwaysAvailableToUser AD_Reference_ID=319
 	 * Reference name: _YesNo
 	 */
@@ -371,7 +371,7 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 	}
 
 	@Override
-	public java.lang.String getPP_AlwaysAvailableToUser()
+	public java.lang.String getPP_AlwaysAvailableToUser() 
 	{
 		return get_ValueAsString(COLUMNNAME_PP_AlwaysAvailableToUser);
 	}
@@ -452,7 +452,7 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 	}
 
 	@Override
-	public java.lang.String getPP_UserInstructions()
+	public java.lang.String getPP_UserInstructions() 
 	{
 		return get_ValueAsString(COLUMNNAME_PP_UserInstructions);
 	}
@@ -524,14 +524,14 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 	@Override
 	public void setS_Resource_ID (final int S_Resource_ID)
 	{
-		if (S_Resource_ID < 1)
+		if (S_Resource_ID < 1) 
 			set_Value (COLUMNNAME_S_Resource_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_S_Resource_ID, S_Resource_ID);
 	}
 
 	@Override
-	public int getS_Resource_ID()
+	public int getS_Resource_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_S_Resource_ID);
 	}
@@ -543,7 +543,7 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 	}
 
 	@Override
-	public java.lang.String getScannedQRCode()
+	public java.lang.String getScannedQRCode() 
 	{
 		return get_ValueAsString(COLUMNNAME_ScannedQRCode);
 	}

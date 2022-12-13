@@ -653,7 +653,7 @@ public interface I_PP_Order_Node
 	/**
 	 * Set User Instructions.
 	 *
-	 * <br>Type: String
+	 * <br>Type: TextLong
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
@@ -662,7 +662,7 @@ public interface I_PP_Order_Node
 	/**
 	 * Get User Instructions.
 	 *
-	 * <br>Type: String
+	 * <br>Type: TextLong
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
