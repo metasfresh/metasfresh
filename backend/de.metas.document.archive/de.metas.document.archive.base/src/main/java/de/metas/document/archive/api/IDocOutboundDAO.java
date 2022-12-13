@@ -27,7 +27,6 @@ import de.metas.document.archive.model.I_C_Doc_Outbound_Log;
 import de.metas.document.archive.model.I_C_Doc_Outbound_Log_Line;
 import de.metas.util.ISingletonService;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.archive.ArchiveId;
 import org.adempiere.util.lang.IContextAware;
 import org.adempiere.util.lang.impl.TableRecordReference;
 
@@ -57,13 +56,6 @@ public interface IDocOutboundDAO extends ISingletonService
 	I_C_Doc_Outbound_Config retrieveConfigForModel(Object model);
 
 	I_C_Doc_Outbound_Config getConfigById(int docOutboundConfigId);
-
-	/**
-	 * Retrieve {@link I_C_Doc_Outbound_Log} for give archive (AD_Table_ID and Record_ID fields will be used for matching)
-	 *
-	 * @return {@link I_C_Doc_Outbound_Log} record or null if not found
-	 */
-	I_C_Doc_Outbound_Log retrieveLog(ArchiveId archiveId);
 
 	I_C_Doc_Outbound_Log retrieveLog(TableRecordReference tableRecordReference);
 
