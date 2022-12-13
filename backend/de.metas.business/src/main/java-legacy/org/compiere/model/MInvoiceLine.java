@@ -43,6 +43,7 @@ import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxNotFoundException;
 import de.metas.tax.api.TaxQuery;
+import de.metas.tax.api.VatCodeId;
 import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -543,19 +544,19 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		final CountryId countryId = getC_Invoice().getC_BPartner_Location_ID() > 0
 				? Services.get(IBPartnerDAO.class).getCountryId(BPartnerLocationId.ofRepoId(getC_Invoice().getC_BPartner_ID(), getC_Invoice().getC_BPartner_Location_ID()))
 				: null;
-		
+
 		m_productPricing = new MProductPricing(
 				OrgId.ofRepoId(getAD_Org_ID()),
-				getM_Product_ID(), 
+				getM_Product_ID(),
 				C_BPartner_ID,
-				countryId,						   
-				getQtyInvoiced(), 
+				countryId,
+				getQtyInvoiced(),
 				m_IsSOTrx);
 		m_productPricing.setM_PriceList_ID(M_PriceList_ID);
 		m_productPricing.setPriceDate(m_DateInvoiced);
 
 		final I_C_InvoiceLine il = create(this, I_C_InvoiceLine.class);
-		
+
 		// Set the IsManualPrice in the pricing engine based on the value in the invoice Line
 		m_productPricing.setManualPrice(il.isManualPrice());
 
@@ -690,6 +691,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 				: InvoiceDocumentLocationAdapterFactory.locationAdapter(invoice).getBPartnerLocationAndCaptureId();
 
 		final boolean isSOTrx = io != null ? io.isSOTrx() : invoice.isSOTrx();
+		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(getC_VAT_Code_ID());
 
 		final Tax tax = Services.get(ITaxDAO.class).getBy(TaxQuery.builder()
 				.fromCountryId(fromCountryId)
@@ -698,6 +700,7 @@ public class MInvoiceLine extends X_C_InvoiceLine
 				.dateOfInterest(taxDate)
 				.taxCategoryId(taxCategoryId)
 				.soTrx(SOTrx.ofBoolean(isSOTrx))
+				.vatCodeId(vatCodeId)
 				.build());
 
 		if (tax == null)

@@ -28,6 +28,7 @@ import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor.Characteristic;
 import de.metas.ui.web.window.descriptor.DocumentFieldWidgetType;
 import de.metas.ui.web.window.descriptor.LookupDescriptorProviders;
 import de.metas.ui.web.window.descriptor.sql.ProductLookupDescriptor;
+import de.metas.ui.web.window.descriptor.sql.SqlLookupDescriptorProviderBuilder;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -69,6 +70,11 @@ import java.util.Set;
 @Component
 /* package */ final class OrderLineQuickInputDescriptorFactory implements IQuickInputDescriptorFactory
 {
+	// FIXME: hardcoded "VAT_Code_for_SO"
+	public static final AdValRuleId AD_VAL_RULE_VAT_Code_for_SO = AdValRuleId.ofRepoId(540610);
+	
+	// FIXME: hardcoded "VAT_Code_for_PO"
+	public static final AdValRuleId AD_VAL_RULE_VAT_Code_for_PO = AdValRuleId.ofRepoId(540611);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final AvailableToPromiseAdapter availableToPromiseAdapter;
 	private final AvailableForSaleAdapter availableForSaleAdapter;
@@ -138,6 +144,7 @@ import java.util.Set;
 				//
 				.addField(createProductField(soTrx))
 				.addFieldIf(QuickInputConstants.isEnablePackingInstructionsField(), this::createPackingInstructionField)
+				.addFieldIf(QuickInputConstants.isEnableVatCodeField(), () -> this.createVatCodeField(soTrx))
 				.addField(createCompensationGroupSchemaField())
 				.addField(createContractConditionsField())
 				.addField(createQuantityField())
@@ -209,6 +216,35 @@ import java.util.Set;
 				.setReadonlyLogic(ConstantLogicExpression.FALSE)
 				.setAlwaysUpdateable(true)
 				.setMandatoryLogic(ConstantLogicExpression.FALSE)
+				.setDisplayLogic(ConstantLogicExpression.TRUE)
+				.addCharacteristic(Characteristic.PublicField);
+	}
+
+	private DocumentFieldDescriptor.Builder createVatCodeField(@NonNull final Optional<SOTrx> soTrx)
+	{
+		final SqlLookupDescriptorProviderBuilder descriptorProviderBuilder = lookupDescriptorProviders.sql()
+				.setCtxTableName(null) // ctxTableName
+				.setCtxColumnName(IOrderLineQuickInput.COLUMNNAME_C_VAT_Code_ID)
+				.setDisplayType(DisplayType.TableDir)
+				.setPageLength(QuickInputConstants.BIG_ENOUGH_PAGE_LENGTH);
+		if (soTrx.orElse(SOTrx.PURCHASE).isSales())
+		{
+			descriptorProviderBuilder.setAD_Val_Rule_ID(AD_VAL_RULE_VAT_Code_for_SO);
+		}
+		else
+		{
+			descriptorProviderBuilder.setAD_Val_Rule_ID(AD_VAL_RULE_VAT_Code_for_PO);
+		}
+
+		return DocumentFieldDescriptor.builder(IOrderLineQuickInput.COLUMNNAME_C_VAT_Code_ID)
+				.setCaption(msgBL.translatable(IOrderLineQuickInput.COLUMNNAME_C_VAT_Code_ID))
+				//
+				.setWidgetType(DocumentFieldWidgetType.Lookup)
+				.setLookupDescriptorProvider(descriptorProviderBuilder.build())
+				.setValueClass(IntegerLookupValue.class)
+				.setReadonlyLogic(ConstantLogicExpression.FALSE)
+				.setAlwaysUpdateable(true)
+				.setMandatoryLogic(ConstantLogicExpression.TRUE)
 				.setDisplayLogic(ConstantLogicExpression.TRUE)
 				.addCharacteristic(Characteristic.PublicField);
 	}
@@ -300,10 +336,11 @@ import java.util.Set;
 	{
 		// IMPORTANT: if Qty is not the last field then frontend will not react on pressing "ENTER" to complete the entry
 		return QuickInputLayoutDescriptor.build(entityDescriptor, new String[][] {
-				{ "M_Product_ID", "M_HU_PI_Item_Product_ID" },
-				{ "ShipmentAllocation_BestBefore_Policy" },
-				{ "C_Flatrate_Conditions_ID" },
-				{ "Qty" },
+				{ IOrderLineQuickInput.COLUMNNAME_M_Product_ID, IOrderLineQuickInput.COLUMNNAME_M_HU_PI_Item_Product_ID },
+				{ IOrderLineQuickInput.COLUMNNAME_ShipmentAllocation_BestBefore_Policy },
+				{ IOrderLineQuickInput.COLUMNNAME_C_Flatrate_Conditions_ID },
+				{ IOrderLineQuickInput.COLUMNNAME_C_VAT_Code_ID },
+				{ IOrderLineQuickInput.COLUMNNAME_Qty },
 		});
 	}
 }

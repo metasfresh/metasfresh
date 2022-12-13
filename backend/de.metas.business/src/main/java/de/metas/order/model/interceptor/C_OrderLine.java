@@ -1,6 +1,7 @@
 package de.metas.order.model.interceptor;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.adempiere.model.I_C_InvoiceLine;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerSupplierApprovalService;
 import de.metas.bpartner_product.IBPartnerProductBL;
@@ -23,6 +24,9 @@ import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
+import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.Tax;
+import de.metas.tax.api.VatCodeId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -82,6 +86,7 @@ public class C_OrderLine
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 	private final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 	private final IOrderLinePricingConditions orderLinePricingConditions = Services.get(IOrderLinePricingConditions.class);
+	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final OrderGroupCompensationChangesHandler groupChangesHandler;
 	private final OrderLineDetailRepository orderLineDetailRepository;
@@ -420,5 +425,25 @@ public class C_OrderLine
 		}
 
 		groupChangesHandler.renumberOrderLinesForOrderId(OrderId.ofRepoId(orderLine.getC_Order_ID()));
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_CHANGE }, //
+			ifColumnsChanged = { I_C_InvoiceLine.COLUMNNAME_C_VAT_Code_ID })
+	public void updateTaxFromVatCodeId(final I_C_OrderLine orderLine)
+	{
+		if (orderLine.isProcessed())
+		{
+			return;
+		}
+		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(orderLine.getC_VAT_Code_ID());
+		if (vatCodeId == null)
+		{
+			return;
+		}
+		final Tax tax = taxDAO.getTaxFromVatCodeIfManualOrNull(vatCodeId);
+		if (tax != null)
+		{
+			orderLine.setC_Tax_ID(tax.getTaxId().getRepoId());
+		}
 	}
 }

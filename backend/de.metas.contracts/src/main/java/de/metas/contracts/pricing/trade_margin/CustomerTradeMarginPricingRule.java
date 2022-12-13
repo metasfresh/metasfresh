@@ -52,6 +52,7 @@ import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
+import de.metas.tax.api.VatCodeId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -312,7 +313,7 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 	@NonNull
 	private Tax getCustomerPriceTax(@NonNull final CustomerPricingContext customerPricingContext)
 	{
-
+		final VatCodeId vatCodeId = null;
 		final TaxId taxId = taxBL.getTaxNotNull(
 				null,
 				customerPricingContext.getResultTaxCategory(),
@@ -321,7 +322,8 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 				customerPricingContext.getOrgId(),
 				null /*WarehouseId*/,
 				customerPricingContext.getBPartnerLocationAndCaptureId(),
-				SOTrx.SALES);
+				SOTrx.SALES,
+				vatCodeId);
 
 		return taxDAO.getTaxById(taxId);
 	}

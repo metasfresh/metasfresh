@@ -1,14 +1,14 @@
 package de.metas.acct.vatcode.impl;
 
-import java.util.List;
-import java.util.Properties;
-
-import lombok.NonNull;
-import org.slf4j.Logger;
+import com.google.common.base.Joiner;
+import de.metas.acct.model.I_C_VAT_Code;
+import de.metas.acct.vatcode.IVATCodeDAO;
+import de.metas.acct.vatcode.VATCode;
+import de.metas.acct.vatcode.VATCodeMatchingRequest;
+import de.metas.cache.annotation.CacheCtx;
 import de.metas.logging.LogManager;
-import de.metas.util.Check;
 import de.metas.util.Services;
-
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
@@ -17,14 +17,10 @@ import org.adempiere.util.proxy.Cached;
 import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
+import org.slf4j.Logger;
 
-import com.google.common.base.Joiner;
-
-import de.metas.acct.model.I_C_VAT_Code;
-import de.metas.acct.vatcode.IVATCodeDAO;
-import de.metas.acct.vatcode.VATCode;
-import de.metas.acct.vatcode.VATCodeMatchingRequest;
-import de.metas.cache.annotation.CacheCtx;
+import java.util.List;
+import java.util.Properties;
 
 /*
  * #%L
@@ -132,7 +128,7 @@ public class VATCodeDAO implements IVATCodeDAO
 				.addEqualsFilter(I_C_VAT_Code.COLUMN_C_AcctSchema_ID, acctSchemaId)
 				//
 				.orderBy()
-				.addColumn(I_C_VAT_Code.COLUMN_C_Tax_ID)
+				.addColumn(I_C_VAT_Code.COLUMNNAME_C_Tax_ID)
 				.addColumn(I_C_VAT_Code.COLUMN_ValidFrom, Direction.Descending, Nulls.Last)
 				.addColumn(I_C_VAT_Code.COLUMN_ValidTo, Direction.Descending, Nulls.Last)
 				.addColumn(I_C_VAT_Code.COLUMN_IsSOTrx, Direction.Ascending, Nulls.Last)
