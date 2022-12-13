@@ -166,7 +166,7 @@ public final class RelationTypeRelatedDocumentsProvidersFactory implements IRela
 		}
 		catch (Exception ex)
 		{
-			logger.warn("Failed retrieving candidates from {} for {}/{}", provider, fromDocument, targetWindowId);
+			logger.warn("Failed retrieving candidates from {} for {}/{}", provider, fromDocument, targetWindowId, ex);
 			return Stream.empty();
 		}
 	}

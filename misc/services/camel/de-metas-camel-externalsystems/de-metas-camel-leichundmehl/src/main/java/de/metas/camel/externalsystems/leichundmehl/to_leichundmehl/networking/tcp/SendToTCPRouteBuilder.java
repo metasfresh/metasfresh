@@ -20,10 +20,13 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.tcp;
+package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.networking.tcp;
 
+import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.networking.ConnectionDetails;
+import de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.networking.DispatchMessageRequest;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.springframework.stereotype.Component;
 
@@ -31,6 +34,7 @@ import java.io.ByteArrayInputStream;
 import java.io.DataOutputStream;
 import java.io.InputStream;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 
 import static de.metas.camel.externalsystems.common.ExternalSystemCamelConstants.MF_ERROR_ROUTE_ID;
 import static org.apache.camel.builder.endpoint.StaticEndpointBuilders.direct;
@@ -51,6 +55,7 @@ public class SendToTCPRouteBuilder extends RouteBuilder
 		from(direct(SEND_TO_TCP_ROUTE_ID))
 				.routeId(SEND_TO_TCP_ROUTE_ID)
 				.log("Route invoked!")
+				.log(LoggingLevel.DEBUG, "exchange body: ${body}")
 				.process(this::sendToTcpSocket);
 		//@formatter:on
 	}
@@ -72,13 +77,13 @@ public class SendToTCPRouteBuilder extends RouteBuilder
 			@NonNull final String payload,
 			@NonNull final DataOutputStream dataOutputStream) throws Exception
 	{
-		try (final InputStream fileInputStream = new ByteArrayInputStream(payload.getBytes()))
+		try (final InputStream inputStream = new ByteArrayInputStream(payload.getBytes(StandardCharsets.ISO_8859_1)))
 		{
 			// break payload into chunks
 			final byte[] buffer = new byte[4 * 1024];
 
 			int bytes;
-			while ((bytes = fileInputStream.read(buffer)) != -1)
+			while ((bytes = inputStream.read(buffer)) != -1)
 			{
 				dataOutputStream.write(buffer, 0, bytes);
 				dataOutputStream.flush();

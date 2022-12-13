@@ -1,46 +1,3 @@
--- Function: report.fresh_account_info_report_sub(numeric, date, date, numeric, character varying, character varying, character varying, numeric)
-
--- DROP FUNCTION report.fresh_account_info_report_sub(numeric, date, date, numeric, character varying, character varying, character varying, numeric);
--- DROP FUNCTION IF EXISTS report.fresh_account_info_report_sub(numeric,date, date, numeric, character varying, character varying, character varying, numeric);
-
-DROP FUNCTION IF EXISTS report.fresh_account_info_report_sub(numeric,
-                                                             numeric,
-                                                             numeric,
-                                                             numeric,
-                                                             numeric,
-                                                             character varying,
-                                                             character varying,
-                                                             character varying,
-                                                             numeric)
-;
-
-DROP FUNCTION IF EXISTS report.fresh_account_info_report_sub(numeric,
-                                                             numeric,
-                                                             date,
-                                                             date,
-                                                             numeric,
-                                                             numeric,
-                                                             numeric,
-                                                             character varying,
-                                                             character varying,
-                                                             character varying,
-                                                             numeric)
-;
-
-DROP FUNCTION IF EXISTS report.fresh_account_info_report_sub(numeric,
-                                                             numeric,
-                                                             date,
-                                                             date,
-                                                             numeric,
-                                                             numeric,
-                                                             numeric,
-                                                             character varying,
-                                                             character varying,
-                                                             character varying,
-                                                             numeric)
-;
-
-
 DROP FUNCTION IF EXISTS report.fresh_account_info_report_sub(
     IN account_start_id      numeric, --$1
     IN account_end_id        numeric, --$2
@@ -229,10 +186,10 @@ FROM (SELECT fa.Account_ID,
 
 WHERE CASE
           WHEN ($8 = 'Y') THEN
-              1 = 1
+                  1 = 1
                           ELSE
               (
-                  fa.DocStatus NOT IN ('CL', 'VO', 'RE')
+                      fa.DocStatus NOT IN ('CL', 'VO', 'RE')
                   )
       END
 
@@ -240,7 +197,7 @@ WHERE CASE
 
   AND CASE
           WHEN ($10 = 'N') THEN
-              1 = 1
+                  1 = 1
                            ELSE
               (
                   fa.C_Activity_ID IS NULL
@@ -253,30 +210,6 @@ ORDER BY fa.Param_Acct_Value,
          fa.Fact_Acct_ID
 $$
     LANGUAGE sql STABLE
-;
-
-
--- Function: report.fresh_account_info_report(numeric, date, date, numeric, character varying, character varying, character varying, numeric)
-
-DROP FUNCTION IF EXISTS report.fresh_account_info_report(numeric,
-                                                         date,
-                                                         date,
-                                                         numeric,
-                                                         character varying,
-                                                         character varying,
-                                                         character varying,
-                                                         numeric)
-;
-
-DROP FUNCTION IF EXISTS report.fresh_account_info_report(numeric,
-                                                         numeric,
-                                                         numeric,
-                                                         numeric,
-                                                         numeric,
-                                                         character varying,
-                                                         character varying,
-                                                         character varying,
-                                                         numeric)
 ;
 
 DROP FUNCTION IF EXISTS  report.fresh_account_info_report(

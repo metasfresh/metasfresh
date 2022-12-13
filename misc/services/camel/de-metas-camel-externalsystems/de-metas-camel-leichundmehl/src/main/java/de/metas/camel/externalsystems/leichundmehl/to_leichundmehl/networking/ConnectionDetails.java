@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.tcp;
+package de.metas.camel.externalsystems.leichundmehl.to_leichundmehl.networking;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;

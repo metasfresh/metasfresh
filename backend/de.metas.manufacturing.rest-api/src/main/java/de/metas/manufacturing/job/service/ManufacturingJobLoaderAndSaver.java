@@ -171,7 +171,6 @@ public class ManufacturingJobLoaderAndSaver
 				.alwaysAvailableToUser(from.getAlwaysAvailableToUser())
 				.userInstructions(from.getUserInstructions())
 				.scannedQRCode(from.getScannedQRCode());
-
 	}
 
 	private RawMaterialsIssue toRawMaterialsIssue(final @NonNull PPOrderRoutingActivity from)
