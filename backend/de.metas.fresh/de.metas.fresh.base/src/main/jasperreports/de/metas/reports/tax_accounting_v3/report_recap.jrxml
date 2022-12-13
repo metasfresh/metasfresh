@@ -33,15 +33,11 @@
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
 	</parameter>
 	<queryString>
-		<![CDATA[select sum(balance) as balance, sum(balanceyear) as balanceyear, vatcode, taxname
-from de_metas_acct.taxaccounts_details($P{AD_Org_ID},
-	                                                                                       $P{account_id}, 
-	                                                                                       $P{C_VAT_Code_ID},
-	                                                                                       $P{DateFrom},
-	                                                                                        $P{DateTo})
-where vatcode is not null
-  and taxname is not null
-group by vatcode, taxname;]]>
+		<![CDATA[select *
+from de_metas_acct.taxaccounts_perVATCode($P{AD_Org_ID},
+	                                                                                        $P{DateFrom},
+	                                                                                         $P{DateTo})
+;]]>
 	</queryString>
 	<field name="balance" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="balance"/>
@@ -49,11 +45,11 @@ group by vatcode, taxname;]]>
 	<field name="balanceyear" class="java.math.BigDecimal">
 		<property name="com.jaspersoft.studio.field.label" value="balanceyear"/>
 	</field>
-	<field name="vatcode" class="java.lang.String">
-		<property name="com.jaspersoft.studio.field.label" value="vatcode"/>
-	</field>
 	<field name="taxname" class="java.lang.String">
 		<property name="com.jaspersoft.studio.field.label" value="taxname"/>
+	</field>
+	<field name="vatcode" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="vatcode"/>
 	</field>
 	<background>
 		<band splitType="Stretch"/>
