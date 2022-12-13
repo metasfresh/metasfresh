@@ -32,6 +32,7 @@ import org.adempiere.warehouse.WarehouseId;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 
 /*
  * #%L
@@ -191,7 +192,7 @@ public abstract class DDOrderAdvisedOrCreatedHandler<T extends AbstractDDOrderEv
 				.materialDescriptor(demandMaterialDescriptor)
 				.minMaxDescriptor(ddOrderLine.getFromWarehouseMinMaxDescriptor())
 				.businessCaseDetail(distributionDetail)
-				.additionalDemandDetail(demanddetail.withTraceId(ddOrderEvent.getEventDescriptor().getTraceId()))
+				.additionalDemandDetail(Optional.ofNullable(demanddetail).map(detail -> detail.withTraceId(ddOrderEvent.getEventDescriptor().getTraceId())).orElse(null))
 				.seqNo(expectedSeqNoForDemandCandidate)
 				.simulated(ddOrder.isSimulated())
 				.build();

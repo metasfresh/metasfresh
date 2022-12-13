@@ -20,8 +20,10 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs;
+package de.metas.cucumber.stepdefs.shipper;
 
+import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Shipper_StepDefData;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -31,11 +33,11 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_M_Shipper;
 
+import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.*;
-import static org.compiere.model.I_M_Shipper.COLUMNNAME_M_Shipper_ID;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 public class M_Shipper_StepDef
 {
@@ -51,27 +53,47 @@ public class M_Shipper_StepDef
 	@And("load M_Shipper:")
 	public void load_M_Shipper(@NonNull final DataTable dataTable)
 	{
-		for (final Map<String, String> row : dataTable.asMaps())
+		final List<Map<String, String>> rows = dataTable.asMaps();
+		for (final Map<String, String> row : rows)
 		{
-			final String name = DataTableUtil.extractStringForColumnName(row, I_M_Shipper.COLUMNNAME_Name);
+			loadM_Shipper(row);
+		}
+	}
 
-			final I_M_Shipper shipperRecord = queryBL.createQueryBuilder(I_M_Shipper.class)
+	private void loadM_Shipper(@NonNull final Map<String, String> row)
+	{
+		final I_M_Shipper shipperRecord;
+
+		final Integer id = DataTableUtil.extractIntegerOrNullForColumnName(row, "OPT." + I_M_Shipper.COLUMNNAME_M_Shipper_ID);
+		final String name = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Shipper.COLUMNNAME_Name);
+		if (id != null)
+		{
+			shipperRecord = InterfaceWrapperHelper.load(id, I_M_Shipper.class);
+			assertThat(shipperRecord).isNotNull();
+		}
+		else if (Check.isNotBlank(name))
+		{
+			shipperRecord = queryBL.createQueryBuilder(I_M_Shipper.class)
 					.addEqualsFilter(I_M_Shipper.COLUMNNAME_Name, name)
 					.create()
 					.firstOnlyNotNull(I_M_Shipper.class);
 
 			assertThat(shipperRecord).isNotNull();
-
-			final String internalName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Shipper.COLUMNNAME_InternalName);
-			if (Check.isNotBlank(internalName))
-			{
-				shipperRecord.setInternalName(internalName);
-			}
-
-			InterfaceWrapperHelper.saveRecord(shipperRecord);
-
-			final String shipperIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Shipper_ID + "." + TABLECOLUMN_IDENTIFIER);
-			shipperTable.put(shipperIdentifier, shipperRecord);
 		}
+		else
+		{
+			throw new RuntimeException("Neither " + I_M_Shipper.COLUMNNAME_M_Shipper_ID + " nor the " + I_M_Shipper.COLUMNNAME_Name + " are specified in the feature file!");
+		}
+
+		final String internalName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_M_Shipper.COLUMNNAME_InternalName);
+		if (Check.isNotBlank(internalName))
+		{
+			shipperRecord.setInternalName(internalName);
+		}
+
+		InterfaceWrapperHelper.saveRecord(shipperRecord);
+
+		final String shipperIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_Shipper.COLUMNNAME_M_Shipper_ID + "." + TABLECOLUMN_IDENTIFIER);
+		shipperTable.put(shipperIdentifier, shipperRecord);
 	}
 }
