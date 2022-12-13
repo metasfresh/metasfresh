@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#14105](https://github.com/metasfresh/metasfresh/issues/14105) Sub-Task No 5: Test & Fix Sales order (w/ ship ) - Product Planning - Distribution 
   * [#14103](https://github.com/metasfresh/metasfresh/issues/14103) Delivery Planning: Open and Close processes 
   * [#14108](https://github.com/metasfresh/metasfresh/pull/14108) Don't validate ASI for unique attributes in service repair PP_Orders
   * [#14090](https://github.com/metasfresh/metasfresh/issues/14090) update build to postgres 15.1
