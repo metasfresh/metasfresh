@@ -1,30 +1,26 @@
 package org.adempiere.ad.migration.logger;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-
+import com.google.common.base.MoreObjects;
+import de.metas.logging.LogManager;
+import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.spi.TrxOnCommitCollectorFactory;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.I_AD_MigrationScript;
 import org.compiere.model.MSequence;
 import org.compiere.util.Ini;
 import org.slf4j.Logger;
 
-import com.google.common.base.MoreObjects;
-
-import de.metas.logging.LogManager;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import lombok.NonNull;
+import javax.annotation.Nullable;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 
 /*
  * #%L
@@ -56,22 +52,22 @@ import lombok.NonNull;
  */
 public class MigrationScriptFileLogger
 {
-	public static final MigrationScriptFileLogger of(final String dbType)
+	public static MigrationScriptFileLogger of(final String dbType)
 	{
 		return new MigrationScriptFileLogger(dbType);
 	}
 
 	private static final Logger logger = LogManager.getLogger(MigrationScriptFileLogger.class);
 
-	private static final Charset CHARSET = Charset.forName("UTF8");
+	private static final Charset CHARSET = StandardCharsets.UTF_8;
 	private static final DateTimeFormatter FORMATTER_ScriptFilenameTimestamp = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
 	private final String dbType;
-	private Path _path;
-	private static Path _migrationScriptsDirectory;
+	@Nullable private Path _path;
+	@Nullable private static Path _migrationScriptsDirectory;
 
 	private static final String COLLECTOR_TRXPROPERTYNAME = MigrationScriptFileLogger.class.getName() + ".collectorFactory";
-	private final TrxOnCommitCollectorFactory<StringBuilder, String> collectorFactory = new TrxOnCommitCollectorFactory<StringBuilder, String>()
+	private final TrxOnCommitCollectorFactory<StringBuilder, Sql> collectorFactory = new TrxOnCommitCollectorFactory<StringBuilder, Sql>()
 	{
 
 		@Override
@@ -81,35 +77,24 @@ public class MigrationScriptFileLogger
 		}
 
 		@Override
-		protected String extractTrxNameFromItem(final String sqlStatement)
+		protected String extractTrxNameFromItem(final Sql sqlStatement)
 		{
 			return ITrx.TRXNAME_ThreadInherited;
 		}
 
 		@Override
-		protected StringBuilder newCollector(final String sqlStatement)
+		protected StringBuilder newCollector(final Sql sqlStatement)
 		{
 			return new StringBuilder();
 		}
 
 		@Override
-		protected void collectItem(final StringBuilder collector, final String sqlStatement)
+		protected void collectItem(final StringBuilder collector, final Sql sqlStatement)
 		{
-			if (Check.isEmpty(sqlStatement))
+			if (sqlStatement != null)
 			{
-				return;
+				collector.append(sqlStatement.toSql());
 			}
-
-			final String prm_COMMENT = Services.get(ISysConfigBL.class).getValue("DICTIONARY_ID_COMMENTS");
-
-			// log time and date
-			collector.append("-- ").append(Instant.now()).append("\n");
-			// log sysconfig comment
-			collector.append("-- ").append(prm_COMMENT).append("\n");
-			// log statement
-			collector.append(sqlStatement);
-			// close statement
-			collector.append("\n;\n\n");
 		}
 
 		@Override
@@ -135,7 +120,7 @@ public class MigrationScriptFileLogger
 			System.out.println("---------------------------------------------------------------------------");
 			System.out.println("\n");
 			System.out.flush();
-		};
+		}
 	};
 
 	private MigrationScriptFileLogger(@NonNull final String dbType)
@@ -158,7 +143,7 @@ public class MigrationScriptFileLogger
 		close();
 	}
 
-	private static final Path createPath(@NonNull final String dbType)
+	private static Path createPath(@NonNull final String dbType)
 	{
 		final int adClientId = 0;
 		final int scriptId = MSequence.getNextID(adClientId, I_AD_MigrationScript.Table_Name) * 10;
@@ -168,7 +153,7 @@ public class MigrationScriptFileLogger
 		return getMigrationScriptDirectory().resolve(filename);
 	}
 
-	private final synchronized Path getCreateFilePath()
+	private synchronized Path getCreateFilePath()
 	{
 		if (_path == null || !Files.exists(_path))
 		{
@@ -181,7 +166,7 @@ public class MigrationScriptFileLogger
 			{
 				Files.createDirectories(path.getParent());
 			}
-			catch (IOException ex)
+			catch (final IOException ex)
 			{
 				throw AdempiereException.wrapIfNeeded(ex);
 			}
@@ -191,23 +176,24 @@ public class MigrationScriptFileLogger
 		return _path;
 	}
 
+	@Nullable
 	public final synchronized Path getFilePathOrNull()
 	{
 		return _path;
 	}
 
-	public static final Path getMigrationScriptDirectory()
+	public static Path getMigrationScriptDirectory()
 	{
 		final Path migrationScriptsDirectory = _migrationScriptsDirectory;
 		return migrationScriptsDirectory != null ? migrationScriptsDirectory : getDefaultMigrationScriptDirectory();
 	}
 
-	private static final Path getDefaultMigrationScriptDirectory()
+	private static Path getDefaultMigrationScriptDirectory()
 	{
 		return Paths.get(Ini.getMetasfreshHome(), "migration_scripts");
 	}
 
-	public static final void setMigrationScriptDirectory(@NonNull final Path path)
+	public static void setMigrationScriptDirectory(@NonNull final Path path)
 	{
 		_migrationScriptsDirectory = path;
 		logger.info("Set migration scripts directory: {}", path);
@@ -215,13 +201,11 @@ public class MigrationScriptFileLogger
 
 	/**
 	 * Appends given SQL statement.
-	 *
+	 * <p>
 	 * If this method is called within a database transaction then the SQL statement will not be written to file directly,
 	 * but it will be collected and written when the transaction is committed.
-	 *
-	 * @param sqlStatement
 	 */
-	public synchronized void appendSqlStatement(final String sqlStatement)
+	public synchronized void appendSqlStatement(@NonNull final Sql sqlStatement)
 	{
 		collectorFactory.collect(sqlStatement);
 	}
@@ -248,8 +232,8 @@ public class MigrationScriptFileLogger
 
 	/**
 	 * Close underling file.
-	 *
-	 * Next time, {@link #appendSqlStatement(String)} will be called, a new file will be created, so it's safe to call this method as many times as needed.
+	 * <p>
+	 * Next time, {@link #appendSqlStatement(Sql)} will be called, a new file will be created, so it's safe to call this method as many times as needed.
 	 */
 	public synchronized void close()
 	{
