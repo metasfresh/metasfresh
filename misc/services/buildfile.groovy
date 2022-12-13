@@ -7,12 +7,12 @@
 @Library('misc')
 import de.metas.jenkins.MvnConf
 
-def build(final MvnConf mvnConf, 
-          final Map scmVars, 
+def build(final MvnConf mvnConf,
+          final Map scmVars,
           final boolean forceBuild = false,
           final boolean forceSkipMobileWebui = false,
           final boolean forceSkipProcurementWebui = false) {
-    
+
     stage('Build misc services') {
         currentBuild.description = """${currentBuild.description}<p/>
 			<h2>misc services</h2>"""
