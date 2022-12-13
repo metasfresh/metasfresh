@@ -2,7 +2,7 @@
 
 DROP VIEW IF EXISTS edi_cctop_111_v;
 CREATE OR REPLACE VIEW edi_cctop_111_v AS
-SELECT i.c_invoice_id AS edi_cctop_111_v_id, i.c_invoice_id,
+SELECT i.c_invoice_id AS edi_cctop_111_v_id, ol.c_order_id,
        CASE
            WHEN REGEXP_REPLACE(opo.poreference::text, '\s+$', '') <> ''::text AND opo.poreference IS NOT NULL AND odo.dateordered IS NOT NULL THEN REGEXP_REPLACE(opo.poreference, '\s+$', '')
                                                                                                                                               ELSE NULL::character varying
@@ -22,6 +22,13 @@ SELECT i.c_invoice_id AS edi_cctop_111_v_id, i.c_invoice_id,
        oub.updatedby,
        oia.isactive
 FROM c_invoice i
+         LEFT JOIN LATERAL (
+    SELECT i.c_invoice_id, min(ol.c_order_id) AS c_order_id
+    FROM c_invoice i
+             INNER JOIN c_invoiceline il ON i.c_invoice_id = il.c_invoice_id
+             INNER JOIN c_orderline ol ON il.c_orderline_id = ol.c_orderline_id
+    GROUP BY i.c_invoice_id HAVING count(DISTINCT ol.c_order_id)=1
+    ) ol ON ol.c_invoice_id = i.c_invoice_id
          LEFT JOIN LATERAL (
     SELECT i.c_invoice_id, min(o.dateordered) AS dateordered
     FROM c_invoice i
@@ -112,8 +119,4 @@ FROM c_invoice i
              INNER JOIN c_order o ON ol.c_order_id = o.c_order_id
     GROUP BY i.c_invoice_id HAVING count(DISTINCT o.isactive)=1
     ) oia ON oia.c_invoice_id = i.c_invoice_id
-;
-
--- 2022-12-12T10:20:24.340Z
-UPDATE EXP_FormatLine SET Description='EDI_cctop_111_v via C_Invoice.C_Invoice_ID',Updated=TO_TIMESTAMP('2022-12-12 11:20:24','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE EXP_FormatLine_ID=545182
 ;
