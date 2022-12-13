@@ -60,6 +60,7 @@ import de.metas.product.IProductBL;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
 import de.metas.security.permissions.Access;
+import de.metas.tax.api.VatCodeId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.LegacyUOMConversionUtils;
@@ -651,10 +652,10 @@ public class CalloutOrder extends CalloutEngine
 
 		final DocTypeId defaultDocTypeId = docTypesRepo.getDocTypeIdOrNull(DocTypeQuery.builder()
 																				   .docBaseType(DocBaseType.SalesOrder)
-																				   .defaultDocType(true)
-																				   .adClientId(adClientId)
-																				   .adOrgId(adOrgId)
-																				   .build());
+				.defaultDocType(true)
+				.adClientId(adClientId)
+				.adOrgId(adOrgId)
+				.build());
 		if (defaultDocTypeId != null)
 		{
 			return defaultDocTypeId;
@@ -662,10 +663,10 @@ public class CalloutOrder extends CalloutEngine
 
 		final DocTypeId standardOrderDocTypeId = docTypesRepo.getDocTypeIdOrNull(DocTypeQuery.builder()
 																						 .docBaseType(DocBaseType.SalesOrder)
-																						 .docSubType(X_C_DocType.DOCSUBTYPE_StandardOrder)
-																						 .adClientId(adClientId)
-																						 .adOrgId(adOrgId)
-																						 .build());
+				.docSubType(X_C_DocType.DOCSUBTYPE_StandardOrder)
+				.adClientId(adClientId)
+				.adOrgId(adOrgId)
+				.build());
 
 		return standardOrderDocTypeId;
 	}
@@ -1055,11 +1056,11 @@ public class CalloutOrder extends CalloutEngine
 		final IOrderLineBL orderLineBL = Services.get(IOrderLineBL.class);
 
 		orderLineBL.updatePrices(OrderLinePriceUpdateRequest.builder()
-										 .orderLine(ol)
-										 .resultUOM(ResultUOM.CONTEXT_UOM)
-										 .updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
-										 .updateLineNetAmt(true)
-										 .build());
+				.orderLine(ol)
+				.resultUOM(ResultUOM.CONTEXT_UOM)
+				.updatePriceEnteredAndDiscountOnlyIfNotAlreadySet(true)
+				.updateLineNetAmt(true)
+				.build());
 
 		final Object value = calloutField.getValue();
 		if (value == null)
@@ -1121,12 +1122,15 @@ public class CalloutOrder extends CalloutEngine
 		}
 		log.debug("Bill BP_Location={}", billBPLocationId);
 
+		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(ol.getC_VAT_Code_ID());
+
 		//
 		final int C_Tax_ID = Tax.get(ctx, M_Product_ID, C_Charge_ID, billDate,
-									 shipDate, AD_Org_ID, M_Warehouse_ID,
-									 billBPLocationId,
-									 shipBPLocationId,
-									 order.isSOTrx());
+				shipDate, AD_Org_ID, M_Warehouse_ID,
+				billBPLocationId,
+				shipBPLocationId,
+				order.isSOTrx(),
+				vatCodeId);
 		log.trace("Tax ID={}", C_Tax_ID);
 		//
 		if (C_Tax_ID <= 0)
@@ -1167,8 +1171,8 @@ public class CalloutOrder extends CalloutEngine
 		if (I_C_OrderLine.COLUMNNAME_QtyOrdered.equals(changedColumnName))
 		{
 			orderLineBL.updatePrices(OrderLinePriceUpdateRequest.prepare(orderLine)
-											 .applyPriceLimitRestrictions(false)
-											 .build());
+					.applyPriceLimitRestrictions(false)
+					.build());
 
 			priceAndDiscount = OrderLinePriceAndDiscount.of(orderLine, pricePrecision);
 		}
@@ -1394,8 +1398,8 @@ public class CalloutOrder extends CalloutEngine
 						C_OrderLine_ID = 0;
 					}
 					BigDecimal notReserved = MOrderLine.getNotReserved(calloutField.getCtx(),
-																	   M_Warehouse_ID, M_Product_ID,
-																	   M_AttributeSetInstance_ID, C_OrderLine_ID);
+							M_Warehouse_ID, M_Product_ID,
+							M_AttributeSetInstance_ID, C_OrderLine_ID);
 					if (notReserved == null)
 					{
 						notReserved = BigDecimal.ZERO;
@@ -1469,11 +1473,9 @@ public class CalloutOrder extends CalloutEngine
 	private static class CreditLimitRequest
 	{
 		final int bpartnerId;
-		@NonNull
-		final String creditStatus;
+		@NonNull final String creditStatus;
 		final boolean evalCreditstatus;
-		@NonNull
-		final Timestamp evaluationDate;
+		@NonNull final Timestamp evaluationDate;
 	}
 
 	/**
@@ -1614,8 +1616,8 @@ public class CalloutOrder extends CalloutEngine
 				OrderDocumentLocationAdapterFactory
 						.deliveryLocationAdapter(order)
 						.setFrom(OrderDocumentLocationAdapterFactory
-										 .locationAdapter(order)
-										 .toDocumentLocation());
+								.locationAdapter(order)
+								.toDocumentLocation());
 			}
 			else
 			{
@@ -1645,10 +1647,10 @@ public class CalloutOrder extends CalloutEngine
 					OrderDocumentLocationAdapterFactory
 							.deliveryLocationAdapter(order)
 							.setFrom(DocumentLocation.builder()
-											 .bpartnerId(warehouseBPartnerId)
-											 .bpartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(warehouseBPartnerId, warehouse.getC_BPartner_Location_ID()))
-											 .locationId(LocationId.ofRepoIdOrNull(warehouse.getC_Location_ID()))
-											 .build());
+									.bpartnerId(warehouseBPartnerId)
+									.bpartnerLocationId(BPartnerLocationId.ofRepoIdOrNull(warehouseBPartnerId, warehouse.getC_BPartner_Location_ID()))
+									.locationId(LocationId.ofRepoIdOrNull(warehouse.getC_Location_ID()))
+									.build());
 				}
 				order.setDropShip_User_ID(-1);
 

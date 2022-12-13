@@ -29,6 +29,7 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
+import de.metas.tax.api.VatCodeId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -57,7 +58,7 @@ import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 public class FlatrateTermHandlerTest extends ContractsTestBase
 {
@@ -147,7 +148,8 @@ public class FlatrateTermHandlerTest extends ContractsTestBase
 						CoalesceUtil.coalesceSuppliersNotNull(
 								() -> ContractLocationHelper.extractDropshipLocationId(term1),
 								() -> ContractLocationHelper.extractBillToLocationId(term1)),
-						SOTrx.SALES))
+						SOTrx.SALES,
+						(VatCodeId)null))
 				.thenReturn(TaxId.ofRepoId(3));
 
 		final FlatrateTerm_Handler flatrateTermHandler = new FlatrateTerm_Handler();

@@ -52,30 +52,7 @@ public interface I_C_TaxCategory
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
-	 * Set Tax Category.
-	 * Tax Category
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_TaxCategory_ID (int C_TaxCategory_ID);
-
-	/**
-	 * Get Tax Category.
-	 * Tax Category
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_TaxCategory_ID();
-
-	ModelColumn<I_C_TaxCategory, Object> COLUMN_C_TaxCategory_ID = new ModelColumn<>(I_C_TaxCategory.class, "C_TaxCategory_ID", null);
-	String COLUMNNAME_C_TaxCategory_ID = "C_TaxCategory_ID";
-
-	/**
-	 * Set Statistische Warennummer.
+	 * Set Commodity Code.
 	 * Commodity code used for tax calculation
 	 *
 	 * <br>Type: String
@@ -85,7 +62,7 @@ public interface I_C_TaxCategory
 	void setCommodityCode (@Nullable java.lang.String CommodityCode);
 
 	/**
-	 * Get Statistische Warennummer.
+	 * Get Commodity Code.
 	 * Commodity code used for tax calculation
 	 *
 	 * <br>Type: String
@@ -121,6 +98,29 @@ public interface I_C_TaxCategory
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
+
+	/**
+	 * Set Tax Category.
+	 * Tax Category
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_TaxCategory_ID (int C_TaxCategory_ID);
+
+	/**
+	 * Get Tax Category.
+	 * Tax Category
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_TaxCategory_ID();
+
+	ModelColumn<I_C_TaxCategory, Object> COLUMN_C_TaxCategory_ID = new ModelColumn<>(I_C_TaxCategory.class, "C_TaxCategory_ID", null);
+	String COLUMNNAME_C_TaxCategory_ID = "C_TaxCategory_ID";
 
 	/**
 	 * Set Description.
@@ -188,6 +188,27 @@ public interface I_C_TaxCategory
 
 	ModelColumn<I_C_TaxCategory, Object> COLUMN_IsActive = new ModelColumn<>(I_C_TaxCategory.class, "IsActive", null);
 	String COLUMNNAME_IsActive = "IsActive";
+
+	/**
+	 * Set Manual Tax.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsManualTax (boolean IsManualTax);
+
+	/**
+	 * Get Manual Tax.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isManualTax();
+
+	ModelColumn<I_C_TaxCategory, Object> COLUMN_IsManualTax = new ModelColumn<>(I_C_TaxCategory.class, "IsManualTax", null);
+	String COLUMNNAME_IsManualTax = "IsManualTax";
 
 	/**
 	 * Set Name.

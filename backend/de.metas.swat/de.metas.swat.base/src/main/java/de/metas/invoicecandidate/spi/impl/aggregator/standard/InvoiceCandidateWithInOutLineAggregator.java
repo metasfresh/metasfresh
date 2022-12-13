@@ -44,10 +44,9 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
  * Aggregates {@link InvoiceCandidateWithInOutLine}s and creates one {@link IInvoiceCandAggregate}.
  *
  * @author tsa
- *
  */
 @ToString
-/* package */class InvoiceCandidateWithInOutLineAggregator
+		/* package */class InvoiceCandidateWithInOutLineAggregator
 {
 	// Services
 	private final transient IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
@@ -60,7 +59,9 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 	@ToStringBuilder(skip = true)
 	private HashMap<InvoiceCandidateId, StockQtyAndUOMQty> _ic2QtyInvoiceable;
 
-	/** This can be different from {@link #_ic2QtyInvoiceable} because it contains the final result from {@link #addInvoiceCandidateWithInOutLine(InvoiceCandidateWithInOutLine)} */
+	/**
+	 * This can be different from {@link #_ic2QtyInvoiceable} because it contains the final result from {@link #addInvoiceCandidateWithInOutLine(InvoiceCandidateWithInOutLine)}
+	 */
 	@ToStringBuilder(skip = true)
 	private final Map<InvoiceCandidateId, StockQtyAndUOMQty> _ics2QtyInvoiced = new HashMap<>();
 
@@ -77,6 +78,8 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 	private int _orderLineId = -1; // -1 means "didn't yet try to set", -2 means "cannot set"
 	private boolean _printed = false;
 	private int _invoiceLineNo = 0;
+
+	private int _vatCodeId;
 	private final IInvoiceLineAttributeAggregator invoiceLineAttributesAggregator = new CommonInvoiceLineAttributeAggregator();
 
 	//
@@ -149,6 +152,7 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 		invoiceLine.setC_Tax(getC_Tax());
 
 		invoiceLine.setC_PaymentTerm_ID(getC_PaymentTerm_ID());
+		invoiceLine.setC_VAT_Code_ID(getC_VAT_Code_ID());
 		return invoiceLine;
 	}
 
@@ -363,6 +367,7 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 		setC_OrderLine_ID(cand.getC_OrderLine_ID()); // overall C_OrderLine_ID
 		setPrinted(cand.isPrinted());
 		setInvoiceLineNo(cand.getLine());
+		setC_VAT_Code_ID(firstGreaterThanZero(cand.getC_VAT_Code_Override_ID(), cand.getC_VAT_Code_ID()));
 
 		//
 		// Collect invoice line product attributes
@@ -373,6 +378,7 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 		addQtyToInvoice(candQtyToInvoiceFinal, ics, forcedAdditionalQty);
 
 		addLineNetAmount(candNetAmtToInvoice);
+
 	}
 
 	private final void initializeIfNeeded(final InvoiceCandidateWithInOutLine ics)
@@ -409,6 +415,7 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 		_qtysToInvoice = StockQtyAndUOMQtys.createZero(ics.getProductId(), ics.getIcUomId());
 		_netLineAmt = Money.zero(ics.getCurrencyId());
+		_vatCodeId = firstGreaterThanZero(_firstCand.getC_VAT_Code_Override_ID(), _firstCand.getC_VAT_Code_ID());
 
 		// Flag it as initialized
 		_initialized = true;
@@ -547,7 +554,9 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 		return _qtysToInvoice;
 	}
 
-	/** @return line net amount to invoice */
+	/**
+	 * @return line net amount to invoice
+	 */
 	private final Money getLineNetAmt()
 	{
 		return _netLineAmt;
@@ -572,11 +581,23 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 	}
 
-	/** @return effective tax to use in invoice line */
+	/**
+	 * @return effective tax to use in invoice line
+	 */
 	private final Tax getC_Tax()
 	{
 		final I_C_Invoice_Candidate firstCand = getFirstInvoiceCandidate();
 		return invoiceCandBL.getTaxEffective(firstCand);
+	}
+
+	private void setC_VAT_Code_ID(int vatCodeId)
+	{
+		Check.assume(_vatCodeId == vatCodeId, "All invoice candidates shall have the same VAT Code={}", _vatCodeId);
+	}
+
+	private int getC_VAT_Code_ID()
+	{
+		return _vatCodeId;
 	}
 
 	public List<InvoiceCandidateInOutLineToUpdate> getInvoiceCandidateInOutLinesToUpdate()
@@ -647,9 +668,9 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 
 	/**
 	 * Checks if given invoice candidate is amount based invoicing (i.e. NOT quantity based invoicing).
-	 *
+	 * <p>
 	 * TODO: find a better way to track this. Consider having a field in C_Invoice_Candidate.
-	 *
+	 * <p>
 	 * To track where it's used, search also for {@link InvalidQtyForPartialAmtToInvoiceException}.
 	 */
 	private boolean isAmountBasedInvoicing(final I_C_Invoice_Candidate cand)

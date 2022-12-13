@@ -1031,6 +1031,48 @@ public interface I_C_Invoice_Candidate
 	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
+	 * Set VAT Code.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_VAT_Code_ID (int C_VAT_Code_ID);
+
+	/**
+	 * Get VAT Code.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_VAT_Code_ID();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_C_VAT_Code_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_VAT_Code_ID", null);
+	String COLUMNNAME_C_VAT_Code_ID = "C_VAT_Code_ID";
+
+	/**
+	 * Set VAT Code override.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_VAT_Code_Override_ID (int C_VAT_Code_Override_ID);
+
+	/**
+	 * Get VAT Code override.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_VAT_Code_Override_ID();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_C_VAT_Code_Override_ID = new ModelColumn<>(I_C_Invoice_Candidate.class, "C_VAT_Code_Override_ID", null);
+	String COLUMNNAME_C_VAT_Code_Override_ID = "C_VAT_Code_Override_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *

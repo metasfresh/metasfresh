@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_InvoiceLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 954930110L;
+	private static final long serialVersionUID = -1927356624L;
 
     /** Standard Constructor */
     public X_C_InvoiceLine (final Properties ctx, final int C_InvoiceLine_ID, @Nullable final String trxName)
@@ -123,18 +123,6 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	}
 
 	@Override
-	public void setA_Processed (final boolean A_Processed)
-	{
-		set_Value (COLUMNNAME_A_Processed, A_Processed);
-	}
-
-	@Override
-	public boolean isA_Processed() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_A_Processed);
-	}
-
-	@Override
 	public void setAD_OrgTrx_ID (final int AD_OrgTrx_ID)
 	{
 		if (AD_OrgTrx_ID < 1) 
@@ -147,6 +135,18 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	public int getAD_OrgTrx_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_OrgTrx_ID);
+	}
+
+	@Override
+	public void setA_Processed (final boolean A_Processed)
+	{
+		set_Value (COLUMNNAME_A_Processed, A_Processed);
+	}
+
+	@Override
+	public boolean isA_Processed() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_A_Processed);
 	}
 
 	@Override
@@ -219,6 +219,21 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	public int getC_Charge_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Charge_ID);
+	}
+
+	@Override
+	public void setC_Flatrate_Term_ID (final int C_Flatrate_Term_ID)
+	{
+		if (C_Flatrate_Term_ID < 1) 
+			set_Value (COLUMNNAME_C_Flatrate_Term_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Flatrate_Term_ID, C_Flatrate_Term_ID);
+	}
+
+	@Override
+	public int getC_Flatrate_Term_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Flatrate_Term_ID);
 	}
 
 	@Override
@@ -362,16 +377,31 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	@Override
 	public void setC_Shipping_Location_ID (final int C_Shipping_Location_ID)
 	{
-		if (C_Shipping_Location_ID < 1)
+		if (C_Shipping_Location_ID < 1) 
 			set_Value (COLUMNNAME_C_Shipping_Location_ID, null);
-		else
+		else 
 			set_Value (COLUMNNAME_C_Shipping_Location_ID, C_Shipping_Location_ID);
 	}
 
 	@Override
-	public int getC_Shipping_Location_ID()
+	public int getC_Shipping_Location_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Shipping_Location_ID);
+	}
+
+	@Override
+	public void setC_TaxCategory_ID (final int C_TaxCategory_ID)
+	{
+		if (C_TaxCategory_ID < 1) 
+			set_Value (COLUMNNAME_C_TaxCategory_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_TaxCategory_ID, C_TaxCategory_ID);
+	}
+
+	@Override
+	public int getC_TaxCategory_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_TaxCategory_ID);
 	}
 
 	@Override
@@ -387,21 +417,6 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	public int getC_Tax_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Tax_ID);
-	}
-
-	@Override
-	public void setC_TaxCategory_ID (final int C_TaxCategory_ID)
-	{
-		if (C_TaxCategory_ID < 1)
-			set_Value (COLUMNNAME_C_TaxCategory_ID, null);
-		else
-			set_Value (COLUMNNAME_C_TaxCategory_ID, C_TaxCategory_ID);
-	}
-
-	@Override
-	public int getC_TaxCategory_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_C_TaxCategory_ID);
 	}
 
 	@Override
@@ -432,6 +447,21 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	public int getC_UOM_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_ID);
+	}
+
+	@Override
+	public void setC_VAT_Code_ID (final int C_VAT_Code_ID)
+	{
+		if (C_VAT_Code_ID < 1) 
+			set_Value (COLUMNNAME_C_VAT_Code_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_VAT_Code_ID, C_VAT_Code_ID);
+	}
+
+	@Override
+	public int getC_VAT_Code_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_VAT_Code_ID);
 	}
 
 	@Override
@@ -995,20 +1025,5 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	public java.lang.String getUserElementString7() 
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString7);
-	}
-
-	@Override
-	public void setC_Flatrate_Term_ID (final int C_Flatrate_Term_ID)
-	{
-		if (C_Flatrate_Term_ID < 1)
-			set_Value (COLUMNNAME_C_Flatrate_Term_ID, null);
-		else
-			set_Value (COLUMNNAME_C_Flatrate_Term_ID, C_Flatrate_Term_ID);
-	}
-
-	@Override
-	public int getC_Flatrate_Term_ID()
-	{
-		return get_ValueAsInt(COLUMNNAME_C_Flatrate_Term_ID);
 	}
 }

@@ -27,6 +27,7 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
+import de.metas.tax.api.VatCodeId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import org.adempiere.exceptions.AdempiereException;
@@ -238,7 +239,8 @@ public class FlatrateBLTest extends ContractsTestBase
 						any(OrgId.class),
 						any(WarehouseId.class),
 						any(BPartnerLocationAndCaptureId.class),
-						any(SOTrx.class)))
+						any(SOTrx.class),
+						any(VatCodeId.class)))
 				.thenReturn(TaxId.ofRepoId(3));
 	}
 

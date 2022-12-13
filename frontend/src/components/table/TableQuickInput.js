@@ -197,13 +197,13 @@ class TableQuickInput extends PureComponent {
       this.props;
 
     const layoutFieldsAmt = layout ? layout.length : 2;
-    const stylingLayout = [
+    const stylingLayoutsArray = [
       {
         formGroup: cx(`col-12`, {
           'col-lg-5': layoutFieldsAmt === 2,
           'col-xl-6': layoutFieldsAmt === 2,
-          'col-lg-4': layoutFieldsAmt === 3,
-          'col-xl-5': layoutFieldsAmt === 3,
+          'col-lg-4': layoutFieldsAmt >= 3,
+          'col-xl-5': layoutFieldsAmt >= 3,
         }),
         label: `col-12 col-lg-3 quickInput-label`,
         field: `col-12 col-lg-9`,
@@ -225,13 +225,18 @@ class TableQuickInput extends PureComponent {
         const widgetData = item.fields.map((elem) => data[elem.field] || -1);
         const lastFormField = idx === layout.length - 1;
 
+        let widgetStyle =
+          idx < stylingLayoutsArray.length
+            ? stylingLayoutsArray[idx]
+            : stylingLayoutsArray[stylingLayoutsArray.length - 1];
+
         return (
           <WidgetWrapper
             ref={this.setWidgetsRef}
             dataSource="quick-input"
-            fieldFormGroupClass={stylingLayout[idx].formGroup}
-            fieldLabelClass={stylingLayout[idx].label}
-            fieldInputClass={stylingLayout[idx].field}
+            fieldFormGroupClass={widgetStyle.formGroup}
+            fieldLabelClass={widgetStyle.label}
+            fieldInputClass={widgetStyle.field}
             inProgress={inProgress}
             entity={'window'}
             subentity="quickInput"
