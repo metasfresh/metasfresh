@@ -438,7 +438,7 @@ public class MD_Candidate_StepDef
 			{
 				assertThat(materialDispoRecord.getMaterialDescriptor().getWarehouseId()).as("warehouseId of MD_Candidate_ID=%s", materialDispoRecord.getCandidateId().getRepoId()).isEqualTo(tableRow.getWarehouseId());
 			}
-			
+
 			materialDispoDataItemStepDefData.putOrReplace(tableRow.getIdentifier(), materialDispoRecord);
 		}
 	}
@@ -499,7 +499,7 @@ public class MD_Candidate_StepDef
 					sb.append("item with id=" + item.getCandidateId().getRepoId()
 									  + " does not match tableRow with Identifier " + tableRow.getIdentifier()
 									  + " because the time (resp. materialDecription.date) values are different"
-							          + " Expected=" + tableRow.getTime() + ", Actual= " + item.getMaterialDescriptor().getDate()
+									  + " Expected=" + tableRow.getTime() + ", Actual= " + item.getMaterialDescriptor().getDate()
 									  + "\n");
 					continue;
 				}

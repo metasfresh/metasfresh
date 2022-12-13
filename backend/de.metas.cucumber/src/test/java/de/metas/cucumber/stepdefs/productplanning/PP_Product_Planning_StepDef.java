@@ -31,10 +31,10 @@ import de.metas.cucumber.stepdefs.distribution.DD_NetworkDistribution_StepDefDat
 import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
 import de.metas.cucumber.stepdefs.workflow.AD_Workflow_StepDefData;
 import de.metas.material.event.commons.AttributesKey;
-import de.metas.uom.IUOMDAO;
-import de.metas.uom.X12DE355;
 import de.metas.product.ProductId;
 import de.metas.product.ResourceId;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.X12DE355;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -47,7 +47,6 @@ import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_AD_Workflow;
 import org.compiere.model.I_M_AttributeSetInstance;
 import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Warehouse;
@@ -147,14 +146,6 @@ public class PP_Product_Planning_StepDef
 			productPlanningRecord.setPP_Product_BOMVersions_ID(bomVersions.getPP_Product_BOMVersions_ID());
 		}
 
-		final boolean isPurchased = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_PP_Product_Planning.COLUMNNAME_IsPurchased, false);
-
-		if (isPurchased)
-		{
-			productPlanningRecord.setIsPurchased(X_PP_Product_Planning.ISPURCHASED_Yes);
-			productPlanningRecord.setIsManufactured(X_PP_Product_Planning.ISMANUFACTURED_No);
-		}
-
 		final String attributeSetInstanceIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + COLUMNNAME_M_AttributeSetInstance_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(attributeSetInstanceIdentifier))
 		{
@@ -193,7 +184,7 @@ public class PP_Product_Planning_StepDef
 			productPlanningRecord.setIsPurchased(X_PP_Product_Planning.ISPURCHASED_Yes);
 			productPlanningRecord.setIsManufactured(X_PP_Product_Planning.ISMANUFACTURED_No);
 		}
-		
+
 		final String warehouseIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, "OPT." + I_PP_Product_Planning.COLUMNNAME_M_Warehouse_ID + "." + TABLECOLUMN_IDENTIFIER);
 		if (Check.isNotBlank(warehouseIdentifier))
 		{
@@ -212,7 +203,7 @@ public class PP_Product_Planning_StepDef
 			productPlanningRecord.setMaxManufacturedQtyPerOrderDispo(maxManufacturedQtyPerOrderDispo);
 			productPlanningRecord.setMaxManufacturedQtyPerOrderDispo_UOM_ID(expectedUOM.getC_UOM_ID());
 		}
-		
+
 		final Integer seqNo = DataTableUtil.extractIntegerOrNullForColumnName(tableRow, "OPT." + I_PP_Product_Planning.COLUMNNAME_SeqNo);
 		if (seqNo != null)
 		{

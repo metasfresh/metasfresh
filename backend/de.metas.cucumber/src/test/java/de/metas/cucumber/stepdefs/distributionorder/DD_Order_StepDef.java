@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.distributionorder;
 
 import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Shipper_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefDocAction;
 import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
@@ -33,12 +34,6 @@ import de.metas.document.DocTypeId;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.product.ResourceId;
-import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.M_Shipper_StepDefData;
-import de.metas.cucumber.stepdefs.StepDefDocAction;
-import de.metas.cucumber.stepdefs.warehouse.M_Warehouse_StepDefData;
-import de.metas.document.engine.IDocument;
-import de.metas.document.engine.IDocumentBL;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -48,26 +43,22 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.Assertions;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_DocType;
+import org.compiere.model.I_M_Shipper;
 import org.compiere.model.I_M_Warehouse;
 import org.compiere.model.I_S_Resource;
 import org.eevolution.model.I_DD_Order;
-import org.eevolution.model.X_DD_Order;
-import org.assertj.core.api.SoftAssertions;
-import org.compiere.model.I_M_Shipper;
-import org.compiere.model.I_M_Warehouse;
-import org.eevolution.model.I_DD_Order;
 import org.eevolution.model.I_DD_OrderLine;
+import org.eevolution.model.X_DD_Order;
 
 import java.util.List;
 import java.util.Map;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
-import static org.assertj.core.api.Assertions.*;
 
 public class DD_Order_StepDef
 {
@@ -108,7 +99,7 @@ public class DD_Order_StepDef
 			findDDOrder(tableRow);
 		}
 	}
-	
+
 	@And("metasfresh contains DD_Orders:")
 	public void metasfresh_contains_dd_orders(@NonNull final DataTable dataTable)
 	{
@@ -262,7 +253,7 @@ public class DD_Order_StepDef
 		final String ddOrderLineIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_DD_OrderLine.COLUMNNAME_DD_OrderLine_ID + "." + TABLECOLUMN_IDENTIFIER);
 		final I_DD_OrderLine ddOrderLineRecord = ddOrderLineTable.get(ddOrderLineIdentifier);
 		assertThat(ddOrderLineRecord).isNotNull();
-		
+
 		final I_DD_Order ddOrderRecord = InterfaceWrapperHelper.load(ddOrderLineRecord.getDD_Order_ID(), I_DD_Order.class);
 
 		final String ddOrderIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_DD_Order.COLUMNNAME_DD_Order_ID + "." + TABLECOLUMN_IDENTIFIER);
