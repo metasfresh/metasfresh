@@ -16,9 +16,9 @@ import de.metas.pricing.service.IPricingBL;
 import de.metas.product.ProductPrice;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxId;
+import de.metas.tax.api.VatCodeId;
 import de.metas.util.Services;
 import lombok.NonNull;
-import org.compiere.util.Env;
 import org.compiere.util.TimeUtil;
 import org.springframework.stereotype.Service;
 
@@ -110,6 +110,7 @@ public class ManualCandidateService
 		candidate.priceActual(priceActual);
 
 		final ZoneId timeZone = orgDAO.getTimeZone(newIC.getOrgId());
+		final VatCodeId vatCodeId = null;
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				newIC,
@@ -119,7 +120,8 @@ public class ManualCandidateService
 				newIC.getOrgId(),
 				newIC.getSoTrx().isSales() ? orgDAO.getOrgWarehouseId(newIC.getOrgId()) : orgDAO.getOrgPOWarehouseId(newIC.getOrgId()),
 				newIC.getBillPartnerInfo().toBPartnerLocationAndCaptureId(), // ship location id
-				newIC.getSoTrx());
+				newIC.getSoTrx(),
+				vatCodeId);
 		candidate.taxId(taxId);
 
 		final BPartner bpartner = bpartnerComp.getBpartner();

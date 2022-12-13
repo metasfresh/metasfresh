@@ -52,6 +52,7 @@ import de.metas.tax.api.ITaxDAO;
 import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
+import de.metas.tax.api.VatCodeId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -64,7 +65,6 @@ import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_InvoiceLine;
@@ -313,7 +313,7 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 	@NonNull
 	private Tax getCustomerPriceTax(@NonNull final CustomerPricingContext customerPricingContext)
 	{
-
+		final VatCodeId vatCodeId = null;
 		final TaxId taxId = taxBL.getTaxNotNull(
 				null,
 				customerPricingContext.getResultTaxCategory(),
@@ -322,7 +322,8 @@ public class CustomerTradeMarginPricingRule implements IPricingRule
 				customerPricingContext.getOrgId(),
 				null /*WarehouseId*/,
 				customerPricingContext.getBPartnerLocationAndCaptureId(),
-				SOTrx.SALES);
+				SOTrx.SALES,
+				vatCodeId);
 
 		return taxDAO.getTaxById(taxId);
 	}

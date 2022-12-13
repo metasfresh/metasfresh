@@ -56,6 +56,8 @@ final class SqlLookupDescriptorFactory
 	@Nullable private AdWindowId zoomIntoAdWindowId = null;
 	@NonNull private TooltipType tooltipType = TooltipType.DEFAULT;
 
+	@Nullable private Integer pageLength;
+
 	private SqlLookupDescriptorFactory()
 	{
 	}
@@ -103,8 +105,8 @@ final class SqlLookupDescriptorFactory
 				.sqlForFetchingExpression(sqlForFetchingExpression)
 				.tooltipType(this.tooltipType)
 				.zoomIntoWindowId(WindowId.ofNullable(zoomIntoAdWindowId))
+				.pageLength(pageLength)
 				.build();
-
 	}
 
 	private void setSqlExpressions(final MLookupInfo.SqlQuery lookupInfoSqlQuery)
@@ -261,6 +263,12 @@ final class SqlLookupDescriptorFactory
 	SqlLookupDescriptorFactory addValidationRules(final Collection<IValidationRule> validationRules)
 	{
 		this.filtersBuilder.addFilter(validationRules, null);
+		return this;
+	}
+
+	SqlLookupDescriptorFactory setPageLength(final Integer pageLength)
+	{
+		this.pageLength = pageLength;
 		return this;
 	}
 }

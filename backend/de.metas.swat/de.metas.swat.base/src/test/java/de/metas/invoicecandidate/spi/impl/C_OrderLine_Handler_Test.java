@@ -29,6 +29,7 @@ import de.metas.organization.OrgId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
+import de.metas.tax.api.VatCodeId;
 import de.metas.user.UserRepository;
 import de.metas.util.Services;
 import org.adempiere.ad.dao.QueryLimit;
@@ -247,7 +248,8 @@ public class C_OrderLine_Handler_Test extends AbstractICTestSupport
 						OrgId.ofRepoId(order1.getAD_Org_ID()),
 						WarehouseId.ofRepoId(order1.getM_Warehouse_ID()),
 						BPartnerLocationAndCaptureId.ofRepoId(order1.getC_BPartner_ID(), order1.getC_BPartner_Location_ID(), order1.getC_BPartner_Location_Value_ID()),
-						SOTrx.ofBoolean(order1.isSOTrx())))
+						SOTrx.ofBoolean(order1.isSOTrx()),
+								(VatCodeId)null))
 				.thenReturn(TaxId.ofRepoId(3));
 	}
 

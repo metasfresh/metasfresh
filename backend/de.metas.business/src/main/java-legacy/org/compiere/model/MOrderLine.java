@@ -34,6 +34,7 @@ import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxNotFoundException;
 import de.metas.tax.api.TaxQuery;
+import de.metas.tax.api.VatCodeId;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrx;
@@ -329,6 +330,7 @@ public class MOrderLine extends X_C_OrderLine
 
 		final boolean isSOTrx = getParent().isSOTrx();
 		final Timestamp taxDate = getDateOrdered();
+		final VatCodeId vatCodeId = VatCodeId.ofRepoIdOrNull(getC_VAT_Code_ID());
 		final Tax tax = Services.get(ITaxDAO.class).getBy(TaxQuery.builder()
 				.fromCountryId(countryFromId)
 				.orgId(OrgId.ofRepoId(getAD_Org_ID()))
@@ -337,6 +339,7 @@ public class MOrderLine extends X_C_OrderLine
 				.dateOfInterest(taxDate)
 				.taxCategoryId(taxCategoryId)
 				.soTrx(SOTrx.ofBoolean(isSOTrx))
+				.vatCodeId(vatCodeId)
 				.build());
 
 		if (tax == null)
