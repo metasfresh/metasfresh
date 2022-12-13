@@ -19,6 +19,7 @@ Feature: Physical inventory and disposal are correctly considered in Material Di
 
   @from:cucumber
   @Id:S0124_100
+  @Id:S0223_100
   Scenario: Physical inventory is correctly considered in Material Dispo when the product is both Sold and Purchased
     Given metasfresh contains M_Products:
       | Identifier | Name               | OPT.M_Product_Category_ID.Identifier | OPT.IsSold | OPT.IsPurchased |
@@ -126,6 +127,7 @@ Feature: Physical inventory and disposal are correctly considered in Material Di
       | cp_2       | p_2                     | 2021-04-16  |                              | 10                           | 10                 | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 20                             | 20                         | 0                                  |
 
   @from:cucumber
+  @Id:S0223_400
   Scenario: Physical inventory with two lines (same product, no ASI) is correctly considered in Material Dispo and in MD_Cockpit
     Given metasfresh contains M_Products:
       | Identifier | Name               |
@@ -147,6 +149,7 @@ Feature: Physical inventory and disposal are correctly considered in Material Di
       | cp_2       | p_1                     | 2021-04-16  |                              | 22                           | 22                 | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 22                             | 22                         | 0                                  |
 
   @from:cucumber
+  @Id:S0223_500
   Scenario: Physical inventory with two lines (same product, one with ASI, one without) is correctly considered in Material Dispo and in MD_Cockpit
     Given metasfresh contains M_Products:
       | Identifier | Name               |
@@ -180,6 +183,7 @@ Feature: Physical inventory and disposal are correctly considered in Material Di
       | cp_2       | p_1                     | 2021-04-16  | ilASI                        | 12                           | 12                 | 0                               | 0                       | 0                       | 0                            | 0                             | 0                              | 12                             | 12                         | 0                                  |
 
   @from:cucumber
+  @Id:S0223_600
   Scenario: Physical inventory with two lines (same product, one with ASI, one without). Dispose HU for the first line. Verify MD_Candidate and MD_Cockpit
     Given metasfresh contains M_Products:
       | Identifier | Name               |
