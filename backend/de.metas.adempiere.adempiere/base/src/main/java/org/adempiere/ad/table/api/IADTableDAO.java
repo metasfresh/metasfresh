@@ -201,6 +201,8 @@ public interface IADTableDAO extends ISingletonService
 	MinimalColumnInfo getMinimalColumnInfo(@NonNull AdColumnId adColumnId);
 	ImmutableList<MinimalColumnInfo> getMinimalColumnInfosByIds(@NonNull Collection<AdColumnId> adColumnIds);
 
+	ImmutableList<MinimalColumnInfo> getMinimalColumnInfosByColumnName(@NonNull String columnName);
+
 	void updateColumnNameByAdElementId(
 			@NonNull AdElementId adElementId,
 			@Nullable String newColumnName);

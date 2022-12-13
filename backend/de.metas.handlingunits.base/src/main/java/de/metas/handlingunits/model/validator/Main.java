@@ -144,6 +144,7 @@ public final class Main extends AbstractModuleInterceptor
 		engine.addModelValidator(de.metas.handlingunits.model.validator.M_Movement.instance);
 		engine.addModelValidator(de.metas.handlingunits.model.validator.M_HU.INSTANCE);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_Attribute());
+		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_Label_Config());
 		engine.addModelValidator(de.metas.handlingunits.model.validator.M_HU_Storage.INSTANCE);
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_Assignment());
 		engine.addModelValidator(new de.metas.handlingunits.model.validator.M_HU_LUTU_Configuration());

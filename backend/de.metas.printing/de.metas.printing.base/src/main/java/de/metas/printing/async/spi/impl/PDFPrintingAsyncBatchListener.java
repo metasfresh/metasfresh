@@ -127,7 +127,7 @@ public class PDFPrintingAsyncBatchListener implements IAsyncBatchListener
 		for (final int printPackageId : seenPrintPackages.getPrintPackageIds())
 		{
 			final TableRecordReference printPackageRef = TableRecordReference.of(I_C_Print_Package.Table_Name, printPackageId);
-			final I_AD_Archive lastArchive = archiveBL.getLastArchive(printPackageRef).orElse(null);
+			final I_AD_Archive lastArchive = archiveBL.getLastArchiveRecord(printPackageRef).orElse(null);
 			if(lastArchive == null)
 			{
 				continue;

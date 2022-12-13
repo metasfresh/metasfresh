@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order_Node, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1712971244L;
+	private static final long serialVersionUID = 47666157L;
 
     /** Standard Constructor */
     public X_PP_Order_Node (final Properties ctx, final int PP_Order_Node_ID, @Nullable final String trxName)
@@ -341,6 +341,8 @@ public class X_PP_Order_Node extends org.compiere.model.PO implements I_PP_Order
 	public static final String PP_ACTIVITY_TYPE_ScanScaleDevice = "ScanScaleDevice";
 	/** RawMaterialsIssueAdjustment = MIA */
 	public static final String PP_ACTIVITY_TYPE_RawMaterialsIssueAdjustment = "MIA";
+	/** PrintReceivedHUQRCodes = PrintReceivedHUQRCodes */
+	public static final String PP_ACTIVITY_TYPE_PrintReceivedHUQRCodes = "PrintReceivedHUQRCodes";
 	@Override
 	public void setPP_Activity_Type (final java.lang.String PP_Activity_Type)
 	{

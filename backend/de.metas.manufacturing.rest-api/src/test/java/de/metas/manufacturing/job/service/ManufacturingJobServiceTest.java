@@ -16,6 +16,7 @@ import de.metas.handlingunits.reservation.HUReservationRepository;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.util.Services;
 import org.adempiere.service.ISysConfigDAO;
 import org.adempiere.test.AdempiereTestHelper;
@@ -45,7 +46,9 @@ class ManufacturingJobServiceTest
 				new PPOrderSourceHUService(new PPOrderSourceHURepository(), ppOrderIssueScheduleService),
 				new DeviceAccessorsHubFactory(new DeviceConfigPoolFactory()),
 				new DeviceWebsocketNamingStrategy("/test/"),
-				new HUQRCodesService(new HUQRCodesRepository(), new GlobalQRCodeService())
+				new HUQRCodesService(
+						new HUQRCodesRepository(),
+						new GlobalQRCodeService(DoNothingMassPrintingService.instance))
 		);
 
 		this.sysConfigDAO = Services.get(ISysConfigDAO.class);

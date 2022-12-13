@@ -7,7 +7,6 @@ import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.model.X_M_HU;
-import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.pporder.api.UpdateDraftReceiptCandidateRequest;
@@ -26,8 +25,11 @@ import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
 import org.eevolution.model.I_PP_Order_BOMLine;
 
-import javax.annotation.Nullable;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Stream;
 
 /*
  * #%L
@@ -57,7 +59,6 @@ public class HUPPOrderQtyBL implements IHUPPOrderQtyBL
 	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 	private final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
-	private final IHUPPOrderBL ppOrderBL = Services.get(IHUPPOrderBL.class);
 
 	@Override
 	public void reverseDraftCandidate(final I_PP_Order_Qty candidate)
@@ -150,16 +151,10 @@ public class HUPPOrderQtyBL implements IHUPPOrderQtyBL
 				.build();
 	}
 
-	private DraftPPOrderBOMLineQuantities addToNullable(
-			@Nullable final DraftPPOrderBOMLineQuantities line,
-			@NonNull final DraftPPOrderBOMLineQuantities lineToAdd)
+	@Override
+	public boolean isFinishedGoodsReceipt(@NonNull final I_PP_Order_Qty ppOrderQty)
 	{
-		return line != null ? line.add(lineToAdd, uomConversionBL) : lineToAdd;
-	}
-
-	public boolean isReceipt(@NonNull final I_PP_Order_Qty ppOrderQty)
-	{
-		return ppOrderQty.getPP_Order_BOMLine_ID() <= 0;
+		return HUPPOrderQtyDAO.isFinishedGoodsReceipt(ppOrderQty);
 	}
 
 	@Override
@@ -170,11 +165,47 @@ public class HUPPOrderQtyBL implements IHUPPOrderQtyBL
 		final Quantity qtyToUpdate = request.getQtyReceived();
 
 		huPPOrderQtyDAO.retrieveOrderQtyForHu(pickingOrderId, huId)
-				.filter(candidate -> !candidate.isProcessed() && isReceipt(candidate))
+				.filter(candidate -> !candidate.isProcessed() && isFinishedGoodsReceipt(candidate))
 				.ifPresent(candidate -> {
-					I_M_HU hu = candidate.getM_HU();
 					candidate.setQty(qtyToUpdate.toBigDecimal());
 					huPPOrderQtyDAO.save(candidate);
 				});
 	}
+
+	@Override
+	public Set<HuId> getFinishedGoodsReceivedHUIds(@NonNull final PPOrderId ppOrderId)
+	{
+		final HashSet<HuId> receivedHUIds = new HashSet<>();
+		streamFinishedGoodsReceived(ppOrderId)
+				.forEach(processedCandidate -> {
+					final HuId newLUId = HuId.ofRepoIdOrNull(processedCandidate.getNew_LU_ID());
+					if (newLUId != null)
+					{
+						receivedHUIds.add(newLUId);
+					}
+
+					final HuId huId = HuId.ofRepoId(processedCandidate.getM_HU_ID());
+					receivedHUIds.add(huId);
+				});
+
+		return receivedHUIds;
+	}
+
+	@NonNull
+	private Stream<I_PP_Order_Qty> streamFinishedGoodsReceived(final @NonNull PPOrderId ppOrderId)
+	{
+		return huPPOrderQtyDAO.retrieveOrderQtys(ppOrderId)
+				.stream()
+				.filter(I_PP_Order_Qty::isProcessed);
+	}
+
+	@Override
+	public void setNewLUAndSave(
+			@NonNull final List<I_PP_Order_Qty> candidates,
+			@NonNull final HuId newLUId)
+	{
+		candidates.forEach(candidate -> candidate.setNew_LU_ID(newLUId.getRepoId()));
+		huPPOrderQtyDAO.saveAll(candidates);
+	}
+
 }

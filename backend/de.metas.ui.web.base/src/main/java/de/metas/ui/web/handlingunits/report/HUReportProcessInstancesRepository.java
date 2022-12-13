@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.cache.CCache;
+import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.model.I_M_HU_Process;
 import de.metas.handlingunits.process.api.HUProcessDescriptor;
 import de.metas.handlingunits.process.api.IMHUProcessDAO;
@@ -46,7 +47,6 @@ import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Process;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
@@ -225,7 +225,7 @@ public class HUReportProcessInstancesRepository implements IProcessInstancesRepo
 
 	private static boolean checkApplies(final HUEditorRow row, final WebuiHUProcessDescriptor descriptor)
 	{
-		final String huUnitType = row.getType().toHUUnitTypeOrNull();
+		final HuUnitType huUnitType = row.getType().toHUUnitTypeOrNull();
 		return huUnitType != null && descriptor.appliesToHUUnitType(huUnitType);
 	}
 
