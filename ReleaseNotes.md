@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#14135] (https://github.com/metasfresh/metasfresh/issues/14135) Support 4 parent levels in Balance Sheet 
   * [#14105](https://github.com/metasfresh/metasfresh/issues/14105) Sub-Task No 5: Test & Fix Sales order (w/ ship ) - Product Planning - Distribution 
   * [#14103](https://github.com/metasfresh/metasfresh/issues/14103) Delivery Planning: Open and Close processes 
   * [#14108](https://github.com/metasfresh/metasfresh/pull/14108) Don't validate ASI for unique attributes in service repair PP_Orders
@@ -185,6 +186,7 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#14095] (https://github.com/metasfresh/metasfresh/pull/14095#pullrequestreview-1215114428) Sum amounts per vatcode
   * [#14019](https://github.com/metasfresh/metasfresh/issues/14019) [BUG] BPartnerRestController v2: path orgCode param is not consolidated with the request body
   * [#14072](https://github.com/metasfresh/metasfresh/issues/14072) Fix Sales Order - void selected order with related documents
   * [#14036](https://github.com/metasfresh/metasfresh/issues/14036) remove remaining oids from tables
