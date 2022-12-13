@@ -7,6 +7,7 @@ Feature: Stock shortage solved via distribution
     And there is no in transit M_Warehouse 
 
   @from:cucumber
+  @Id:S0229_100
   Scenario:
   Create Sales Order for a product of which a stock shortage is solved via distribution, complete it
   Distribution Order is created, validate DD_Order, DD_OrderLine, MD_Candidate, MD_Cockpit, MD_Cockpit_DocumentDetail and MD_Cockpit_DDOrder_Detail
@@ -237,6 +238,7 @@ Feature: Stock shortage solved via distribution
       | dd_d_2                                  | dd_ol_1                    | warehouse_2               | cp_2                     | 16             | DEMAND                |
 
   @from:cucumber
+  @Id:S0229_200
   Scenario:
   Set `DDOrder_isCreateMovementOnComplete` SysConfig to true
   Create Inventory for a product of which a stock shortage is solved via distribution and complete it
