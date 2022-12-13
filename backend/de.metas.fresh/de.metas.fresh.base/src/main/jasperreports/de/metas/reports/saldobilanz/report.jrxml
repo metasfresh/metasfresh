@@ -4,7 +4,7 @@
 	<property name="ireport.zoom" value="1.5"/>
 	<property name="ireport.x" value="0"/>
 	<property name="ireport.y" value="0"/>
-	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="mf15"/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="jasperreports\uat.xml"/>
 	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
 	<parameter name="Date" class="java.util.Date">
 		<defaultValueExpression><![CDATA[]]></defaultValueExpression>
@@ -35,28 +35,84 @@ $P{IncludePostingTypeStatistical},
 $P{ExcludeYearEndBooking}
 );]]>
 	</queryString>
-	<field name="parentname1" class="java.lang.String"/>
-	<field name="parentvalue1" class="java.lang.String"/>
-	<field name="parentname2" class="java.lang.String"/>
-	<field name="parentvalue2" class="java.lang.String"/>
-	<field name="parentname3" class="java.lang.String"/>
-	<field name="parentvalue3" class="java.lang.String"/>
-	<field name="name" class="java.lang.String"/>
-	<field name="namevalue" class="java.lang.String"/>
-	<field name="accounttype" class="java.lang.String"/>
-	<field name="sameyearsum" class="java.math.BigDecimal"/>
-	<field name="lastyearsum" class="java.math.BigDecimal"/>
-	<field name="eurosaldo" class="java.math.BigDecimal"/>
-	<field name="l3_sameyearsum" class="java.math.BigDecimal"/>
-	<field name="l3_lastyearsum" class="java.math.BigDecimal"/>
-	<field name="l2_sameyearsum" class="java.math.BigDecimal"/>
-	<field name="l2_lastyearsum" class="java.math.BigDecimal"/>
-	<field name="l1_sameyearsum" class="java.math.BigDecimal"/>
-	<field name="l1_lastyearsum" class="java.math.BigDecimal"/>
-	<field name="c_calendar_id" class="java.math.BigDecimal"/>
-	<field name="c_elementvalue_id" class="java.math.BigDecimal"/>
-	<field name="ad_org_id" class="java.math.BigDecimal"/>
-	<field name="currency" class="java.lang.String"/>
+	<field name="parentname1" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="parentname1"/>
+	</field>
+	<field name="parentvalue1" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="parentvalue1"/>
+	</field>
+	<field name="parentname2" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="parentname2"/>
+	</field>
+	<field name="parentvalue2" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="parentvalue2"/>
+	</field>
+	<field name="parentname3" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="parentname3"/>
+	</field>
+	<field name="parentvalue3" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="parentvalue3"/>
+	</field>
+	<field name="parentname4" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="parentname4"/>
+	</field>
+	<field name="parentvalue4" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="parentvalue4"/>
+	</field>
+	<field name="name" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="name"/>
+	</field>
+	<field name="namevalue" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="namevalue"/>
+	</field>
+	<field name="accounttype" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="accounttype"/>
+	</field>
+	<field name="sameyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="sameyearsum"/>
+	</field>
+	<field name="lastyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="lastyearsum"/>
+	</field>
+	<field name="eurosaldo" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="eurosaldo"/>
+	</field>
+	<field name="l4_sameyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="l4_sameyearsum"/>
+	</field>
+	<field name="l4_lastyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="l4_lastyearsum"/>
+	</field>
+	<field name="l3_sameyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="l3_sameyearsum"/>
+	</field>
+	<field name="l3_lastyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="l3_lastyearsum"/>
+	</field>
+	<field name="l2_sameyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="l2_sameyearsum"/>
+	</field>
+	<field name="l2_lastyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="l2_lastyearsum"/>
+	</field>
+	<field name="l1_sameyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="l1_sameyearsum"/>
+	</field>
+	<field name="l1_lastyearsum" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="l1_lastyearsum"/>
+	</field>
+	<field name="c_calendar_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="c_calendar_id"/>
+	</field>
+	<field name="c_elementvalue_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="c_elementvalue_id"/>
+	</field>
+	<field name="ad_org_id" class="java.math.BigDecimal">
+		<property name="com.jaspersoft.studio.field.label" value="ad_org_id"/>
+	</field>
+	<field name="currency" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.label" value="currency"/>
+	</field>
 	<group name="lvl1">
 		<groupExpression><![CDATA[$F{parentvalue1}]]></groupExpression>
 		<groupHeader>
@@ -179,6 +235,42 @@ $P{ExcludeYearEndBooking}
 				<printWhenExpression><![CDATA[$F{parentname3}!=null]]></printWhenExpression>
 			</band>
 		</groupFooter>
+	</group>
+	<group name="lvl4">
+		<groupExpression><![CDATA[$F{parentvalue4}]]></groupExpression>
+		<groupHeader>
+			<band height="15">
+				<printWhenExpression><![CDATA[$F{parentname4} !=null && !$F{parentvalue4}.equals($F{namevalue})]]></printWhenExpression>
+				<textField isBlankWhenNull="true">
+					<reportElement x="37" y="0" width="50" height="12" uuid="321fdb14-4211-4505-84d5-666c08dd77f8"/>
+					<textElement>
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{parentvalue4}]]></textFieldExpression>
+				</textField>
+				<textField isBlankWhenNull="true">
+					<reportElement x="87" y="0" width="259" height="12" uuid="d813c35b-c720-4be2-8754-cec15bb25f6f"/>
+					<textElement>
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{parentname4}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="353" y="0" width="102" height="12" uuid="9dede801-8988-467c-b0f7-1af6f577e4fc"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l4_sameyearsum}]]></textFieldExpression>
+				</textField>
+				<textField pattern="#,##0.00" isBlankWhenNull="true">
+					<reportElement x="455" y="0" width="102" height="12" uuid="d65c2267-a3fe-4406-a127-987d26a3e3d0"/>
+					<textElement textAlignment="Right">
+						<font fontName="Arial" size="9" isBold="true"/>
+					</textElement>
+					<textFieldExpression><![CDATA[$F{l4_lastyearsum}]]></textFieldExpression>
+				</textField>
+			</band>
+		</groupHeader>
 	</group>
 	<background>
 		<band splitType="Stretch"/>
