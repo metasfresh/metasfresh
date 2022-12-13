@@ -69,6 +69,11 @@ import java.util.Set;
 @Component
 /* package */ final class OrderLineQuickInputDescriptorFactory implements IQuickInputDescriptorFactory
 {
+	// FIXME: hardcoded "VAT_Code_for_SO"
+	public static final AdValRuleId AD_VAL_RULE_VAT_Code_for_SO = AdValRuleId.ofRepoId(540610);
+	
+	// FIXME: hardcoded "VAT_Code_for_PO"
+	public static final AdValRuleId AD_VAL_RULE_VAT_Code_for_PO = AdValRuleId.ofRepoId(540611);
 	private final IMsgBL msgBL = Services.get(IMsgBL.class);
 	private final AvailableToPromiseAdapter availableToPromiseAdapter;
 	private final AvailableForSaleAdapter availableForSaleAdapter;
@@ -221,11 +226,11 @@ import java.util.Set;
 				.setPageLength(QuickInputConstants.BIG_ENOUGH_PAGE_LENGTH);
 		if (soTrx.orElse(SOTrx.PURCHASE).isSales())
 		{
-			descriptorProviderBuilder.setAD_Val_Rule_ID(AdValRuleId.ofRepoId(540610));// FIXME: hardcoded "VAT_Code_for_SO"
+			descriptorProviderBuilder.setAD_Val_Rule_ID(AD_VAL_RULE_VAT_Code_for_SO);
 		}
 		else
 		{
-			descriptorProviderBuilder.setAD_Val_Rule_ID(AdValRuleId.ofRepoId(540611));// FIXME: hardcoded "VAT_Code_for_PO"
+			descriptorProviderBuilder.setAD_Val_Rule_ID(AD_VAL_RULE_VAT_Code_for_PO);
 		}
 
 		return DocumentFieldDescriptor.builder(IOrderLineQuickInput.COLUMNNAME_C_VAT_Code_ID)

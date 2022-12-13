@@ -60,6 +60,7 @@ import static de.metas.common.util.CoalesceUtil.firstGreaterThanZero;
 public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetcher
 {
 	private static final Logger logger = LogManager.getLogger(GenericSqlLookupDataSourceFetcher.class);
+	public static final int DEFAULT_PAGE_SIZE = 1000;
 
 	@NonNull private final String lookupTableName;
 	@Getter private final boolean numericKey;
@@ -170,7 +171,7 @@ public class GenericSqlLookupDataSourceFetcher implements LookupDataSourceFetche
 	public LookupValuesPage retrieveEntities(final LookupDataSourceContext evalCtxParam)
 	{
 		final int offset = evalCtxParam.getOffset(0);
-		final int pageLength = firstGreaterThanZero(this.pageLength, evalCtxParam.getLimit(1000));
+		final int pageLength = firstGreaterThanZero(this.pageLength, evalCtxParam.getLimit(DEFAULT_PAGE_SIZE));
 
 		final LookupDataSourceContext evalCtxEffective = evalCtxParam
 				.withOffset(offset)
