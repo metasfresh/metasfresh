@@ -64,6 +64,7 @@ import de.metas.ordercandidate.api.IOLCandEffectiveValuesBL;
 import de.metas.ordercandidate.api.OLCandId;
 import de.metas.ordercandidate.model.I_C_OLCand;
 import de.metas.picking.api.PickingConfigRepository;
+import de.metas.printing.DoNothingMassPrintingService;
 import de.metas.process.IADPInstanceDAO;
 import de.metas.product.ProductId;
 import de.metas.quantity.Quantity;
@@ -144,7 +145,9 @@ public class ShipmentService implements IShipmentService
 					new DefaultPickingJobLoaderSupportingServicesFactory(
 							pickingJobSlotService,
 							bpartnerBL,
-							new HUQRCodesService(huQRCodesRepository, new GlobalQRCodeService())
+							new HUQRCodesService(
+									huQRCodesRepository,
+									new GlobalQRCodeService(DoNothingMassPrintingService.instance))
 					)
 			);
 			return new ShipmentServiceTestImpl(new ShipmentScheduleWithHUService(new HUReservationService(new HUReservationRepository()), pickingJobService));

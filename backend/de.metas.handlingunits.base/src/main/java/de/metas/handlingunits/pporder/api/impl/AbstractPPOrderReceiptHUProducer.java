@@ -46,6 +46,7 @@ import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
 import de.metas.handlingunits.allocation.impl.AllocationUtils;
 import de.metas.handlingunits.allocation.impl.HULoader;
 import de.metas.handlingunits.allocation.impl.HUProducerDestination;
+import de.metas.handlingunits.allocation.transfer.HUTransformService;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
@@ -65,8 +66,10 @@ import de.metas.handlingunits.picking.PickingCandidateId;
 import de.metas.handlingunits.pporder.api.CreateReceiptCandidateRequest;
 import de.metas.handlingunits.pporder.api.CreateReceiptCandidateRequest.CreateReceiptCandidateRequestBuilder;
 import de.metas.handlingunits.pporder.api.HUPPOrderIssueReceiptCandidatesProcessor;
+import de.metas.handlingunits.pporder.api.IHUPPOrderQtyBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderQtyDAO;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
+import de.metas.handlingunits.pporder.api.ReceiveTUsToLUResult;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
 import de.metas.organization.InstantAndOrgId;
@@ -79,6 +82,8 @@ import de.metas.util.Check;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import de.metas.util.collections.CollectionUtils;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -92,7 +97,6 @@ import org.compiere.model.IClientOrgAware;
 import org.compiere.model.I_C_UOM;
 import org.compiere.model.I_M_Product;
 import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
 import org.eevolution.api.PPCostCollectorId;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
@@ -119,9 +123,10 @@ import java.util.Map;
 	private final IHUCapacityBL huCapacityBL = Services.get(IHUCapacityBL.class);
 	private final ILUTUConfigurationFactory lutuConfigurationFactory = Services.get(ILUTUConfigurationFactory.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
-	private final transient IMsgBL msgBL = Services.get(IMsgBL.class);
-	private final transient IBPartnerOrgBL partnerOrgBL = Services.get(IBPartnerOrgBL.class);
-	private final transient IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final IMsgBL msgBL = Services.get(IMsgBL.class);
+	private final IBPartnerOrgBL partnerOrgBL = Services.get(IBPartnerOrgBL.class);
+	private final IProductDAO productDAO = Services.get(IProductDAO.class);
+	private final IHUPPOrderQtyBL ppOrderQtyBL = Services.get(IHUPPOrderQtyBL.class);
 
 	// Parameters
 	private final PPOrderId ppOrderId;
@@ -163,7 +168,7 @@ import java.util.Map;
 	@Override
 	public final List<I_M_HU> createDraftReceiptCandidatesAndPlanningHUs()
 	{
-		return trxManager.callInNewTrx(() -> {
+		final ReceiptCandidatesAndHUs result = trxManager.callInNewTrx(() -> {
 			final I_M_HU_LUTU_Configuration lutuConfig = getCreateLUTUConfiguration();
 			final Quantity qtyCUsTotal = lutuConfigurationFactory.calculateQtyCUsTotal(lutuConfig);
 			if (qtyCUsTotal.isZero())
@@ -177,13 +182,15 @@ import java.util.Map;
 
 			return createReceiptCandidatesAndHUs(qtyCUsTotal);
 		});
+
+		return result.getHus();
 	}
 
 	@Override
 	public I_M_HU receiveVHU(@NonNull final Quantity qtyToReceive)
 	{
 		this.receiveUsingTUSpec = HUPIItemProductTUSpec.VIRTUAL;
-		final List<I_M_HU> vhus = receiveHUs(qtyToReceive);
+		final List<I_M_HU> vhus = receiveHUs(qtyToReceive).getHus();
 
 		if (vhus.isEmpty())
 		{
@@ -200,9 +207,43 @@ import java.util.Map;
 	}
 
 	@Override
-	public List<I_M_HU> receiveTUs(@NonNull final Quantity qtyToReceive, @NonNull final HUPIItemProductId tuPIItemProductId)
+	public ReceiveTUsToLUResult receiveTUsToNewLU(
+			@NonNull final Quantity qtyToReceive,
+			@NonNull final HUPIItemProductId tuPIItemProductId,
+			@NonNull HuPackingInstructionsItemId luPIItemId)
 	{
-		this.receiveUsingTUSpec = tuPIItemProductId.isVirtualHU() ? HUPIItemProductTUSpec.VIRTUAL : HUPIItemProductTUSpec.of(tuPIItemProductId);
+		final ReceiptCandidatesAndHUs tusResult = receiveTUs(qtyToReceive, tuPIItemProductId);
+		final ImmutableList<I_M_HU> tusOrVhus = tusResult.getHus();
+		final HuId luId = HUTransformService.newInstance().tusToNewLU(tusOrVhus, luPIItemId);
+
+		final ImmutableList<I_PP_Order_Qty> receiptCandidates = tusResult.getReceiptCandidates();
+		ppOrderQtyBL.setNewLUAndSave(receiptCandidates, luId);
+
+		return ReceiveTUsToLUResult.builder()
+				.luId(luId)
+				.tusOrVhus(tusOrVhus)
+				.build();
+	}
+
+	@Override
+	public ReceiveTUsToLUResult receiveTUsToExistingLU(
+			@NonNull final Quantity qtyToReceive,
+			@NonNull final HUPIItemProductId tuPIItemProductId,
+			@NonNull final I_M_HU existingLU)
+	{
+		final ReceiptCandidatesAndHUs tusResult = receiveTUs(qtyToReceive, tuPIItemProductId);
+		final ImmutableList<I_M_HU> tusOrVhus = tusResult.getHus();
+		final HuId luId = HUTransformService.newInstance().tusToExistingLU(tusOrVhus, existingLU);
+
+		return ReceiveTUsToLUResult.builder()
+				.luId(luId)
+				.tusOrVhus(tusOrVhus)
+				.build();
+	}
+
+	private ReceiptCandidatesAndHUs receiveTUs(@NonNull final Quantity qtyToReceive, @NonNull final HUPIItemProductId tuPIItemProductId)
+	{
+		this.receiveUsingTUSpec = HUPIItemProductTUSpec.of(tuPIItemProductId);
 		return receiveHUs(qtyToReceive);
 	}
 
@@ -210,17 +251,18 @@ import java.util.Map;
 	public I_M_HU receiveSingleTU(@NonNull final Quantity qtyToReceive, final @NonNull HuPackingInstructionsId tuPackingInstructionsId)
 	{
 		this.receiveUsingTUSpec = PreciseTUSpec.of(tuPackingInstructionsId, qtyToReceive);
-		final List<I_M_HU> tus = receiveHUs(qtyToReceive);
+		final ReceiptCandidatesAndHUs result = receiveHUs(qtyToReceive);
+		final List<I_M_HU> tus = result.getHus();
 		return CollectionUtils.singleElement(tus);
 	}
 
-	private List<I_M_HU> receiveHUs(@NonNull final Quantity qtyToReceive)
+	private ReceiptCandidatesAndHUs receiveHUs(@NonNull final Quantity qtyToReceive)
 	{
 		this.processReceiptCandidates = true;
 		return trxManager.callInThreadInheritedTrx(() -> createReceiptCandidatesAndHUs(qtyToReceive));
 	}
 
-	private List<I_M_HU> createReceiptCandidatesAndHUs(@NonNull final Quantity qtyToReceive)
+	private ReceiptCandidatesAndHUs createReceiptCandidatesAndHUs(@NonNull final Quantity qtyToReceive)
 	{
 		//
 		// Create HU Context
@@ -254,7 +296,7 @@ import java.util.Map;
 
 		//
 		// Generate the HUs
-		final List<I_M_HU> planningHUs = huProducerDestination.getCreatedHUs();
+		final ImmutableList<I_M_HU> planningHUs = huProducerDestination.getCreatedHUs();
 
 		//
 		// Update received HUs
@@ -263,7 +305,7 @@ import java.util.Map;
 
 		//
 		// Create receipt candidates
-		createAndProcessReceiptCandidatesIfRequested(ppOrderReceiptCandidateCollector.getRequests());
+		final ImmutableList<I_PP_Order_Qty> receiptCandidates = createAndProcessReceiptCandidatesIfRequested(ppOrderReceiptCandidateCollector.getRequests());
 
 		// Refresh the planning HUs if neeed.
 		// e.g. if processed those  "planning" HUs, will no longer have HUStatus=P but HUStatus=A
@@ -274,17 +316,20 @@ import java.util.Map;
 
 		//
 		// Return created HUs
-		return planningHUs;
+		return ReceiptCandidatesAndHUs.builder()
+				.hus(planningHUs)
+				.receiptCandidates(receiptCandidates)
+				.build();
 	}
 
-	private void createAndProcessReceiptCandidatesIfRequested(final ImmutableList<CreateReceiptCandidateRequest> requests)
+	private ImmutableList<I_PP_Order_Qty> createAndProcessReceiptCandidatesIfRequested(final ImmutableList<CreateReceiptCandidateRequest> requests)
 	{
 		if (requests.isEmpty())
 		{
-			return;
+			return ImmutableList.of();
 		}
 
-		final List<I_PP_Order_Qty> receiptCandidates = huPPOrderQtyDAO.saveAll(requests);
+		final ImmutableList<I_PP_Order_Qty> receiptCandidates = huPPOrderQtyDAO.saveAll(requests);
 
 		if (processReceiptCandidates && !receiptCandidates.isEmpty())
 		{
@@ -298,6 +343,8 @@ import java.util.Map;
 					.map(costCollector -> PPCostCollectorId.ofRepoId(costCollector.getPP_Cost_Collector_ID()))
 					.forEach(createdCostCollectorIds::add);
 		}
+
+		return receiptCandidates;
 	}
 
 	protected abstract ReceiptCandidateRequestProducer newReceiptCandidateRequestProducer();
@@ -391,7 +438,7 @@ import java.util.Map;
 			clearanceStatusInfo = ClearanceStatusInfo.builder()
 					.clearanceStatus(clearanceStatus)
 					.clearanceNote(msgBL.getMsg(language, MESSAGE_ClearanceStatusInfo_Manufactured))
-					.clearanceDate(InstantAndOrgId.ofInstant(TimeUtil.asInstant(date), OrgId.ofRepoId(product.getAD_Org_ID())))
+					.clearanceDate(InstantAndOrgId.ofInstant(date.toInstant(), OrgId.ofRepoId(product.getAD_Org_ID())))
 					.build();
 
 		}
@@ -655,12 +702,25 @@ import java.util.Map;
 	{
 	}
 
-	@Value(staticConstructor = "of")
+	@Value
+	@AllArgsConstructor(access = AccessLevel.PRIVATE)
 	private static class HUPIItemProductTUSpec implements TUSpec
 	{
-		public static final HUPIItemProductTUSpec VIRTUAL = of(HUPIItemProductId.VIRTUAL_HU);
+		public static final HUPIItemProductTUSpec VIRTUAL = new HUPIItemProductTUSpec(HUPIItemProductId.VIRTUAL_HU);
 
 		@NonNull HUPIItemProductId huPIItemProductId;
+
+		public static HUPIItemProductTUSpec of(@NonNull HUPIItemProductId huPIItemProductId)
+		{
+			if (huPIItemProductId.isVirtualHU())
+			{
+				return VIRTUAL;
+			}
+			else
+			{
+				return new HUPIItemProductTUSpec(huPIItemProductId);
+			}
+		}
 	}
 
 	@Value(staticConstructor = "of")
@@ -669,4 +729,19 @@ import java.util.Map;
 		@NonNull HuPackingInstructionsId tuPackingInstructionsId;
 		@NonNull Quantity qtyCUsPerTU;
 	}
+
+	//
+	//
+	//
+	//
+	//
+
+	@Value
+	@Builder
+	private static class ReceiptCandidatesAndHUs
+	{
+		@NonNull ImmutableList<I_M_HU> hus;
+		@NonNull ImmutableList<I_PP_Order_Qty> receiptCandidates;
+	}
+
 }

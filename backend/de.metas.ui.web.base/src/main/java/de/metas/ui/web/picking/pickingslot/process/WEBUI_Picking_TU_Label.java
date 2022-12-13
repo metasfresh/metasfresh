@@ -1,15 +1,16 @@
 package de.metas.ui.web.picking.pickingslot.process;
 
-import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_PICK_SOMETHING;
-import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_PICKED_HU;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
-
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.report.HUReportService;
 import de.metas.handlingunits.report.HUToReportWrapper;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
 import lombok.NonNull;
+import org.compiere.SpringContextHolder;
+
+import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_PICK_SOMETHING;
+import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_PICKED_HU;
+import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -35,6 +36,7 @@ import lombok.NonNull;
 
 public class WEBUI_Picking_TU_Label extends PickingSlotViewBasedProcess
 {
+	private final HUReportService huReportService = SpringContextHolder.instance.getBean(HUReportService.class);
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -78,7 +80,6 @@ public class WEBUI_Picking_TU_Label extends PickingSlotViewBasedProcess
 
 	private void printPickingLabel(@NonNull final HUToReportWrapper huToReport)
 	{
-		final HUReportService huReportService = HUReportService.get();
 		huReportService.printPickingLabel(huToReport, false);
 	}
 }

@@ -15,6 +15,7 @@ import de.metas.manufacturing.workflows_api.activity_handlers.confirmation.Confi
 import de.metas.manufacturing.workflows_api.activity_handlers.generateHUQRCodes.GenerateHUQRCodesActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.issue.RawMaterialsIssueActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.issue.RawMaterialsIssueAdjustmentActivityHandler;
+import de.metas.manufacturing.workflows_api.activity_handlers.printReceivedHUQRCodes.PrintReceivedHUQRCodesActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.receive.MaterialReceiptActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.scanScaleDevice.ScanScaleDeviceActivityHandler;
 import de.metas.manufacturing.workflows_api.activity_handlers.work_report.WorkReportActivityHandler;
@@ -104,6 +105,8 @@ public class ManufacturingRestService
 				return builder.wfActivityType(ConfirmationActivityHandler.HANDLED_ACTIVITY_TYPE).build();
 			case GenerateHUQRCodes:
 				return builder.wfActivityType(GenerateHUQRCodesActivityHandler.HANDLED_ACTIVITY_TYPE).build();
+			case PrintReceivedHUQRCodes:
+				return builder.wfActivityType(PrintReceivedHUQRCodesActivityHandler.HANDLED_ACTIVITY_TYPE).build();
 			case ScanScaleDevice:
 				return builder.wfActivityType(ScanScaleDeviceActivityHandler.HANDLED_ACTIVITY_TYPE).build();
 			case CallExternalSystem:
