@@ -3542,7 +3542,7 @@ UPDATE AD_Element_Trl SET WEBUI_NameNew='New Request',Updated=TO_TIMESTAMP('2022
 ;
 
 -- 2022-12-12T10:47:20.229Z
-UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Web POS Rolen Menü', PrintName='Web POS Rolen Menü',Updated=TO_TIMESTAMP('2022-12-12 11:47:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=575819 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Web POS Rollen Menü', PrintName='Web POS Rollen Menü',Updated=TO_TIMESTAMP('2022-12-12 11:47:20','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=575819 AND AD_Language='de_CH'
 ;
 
 -- 2022-12-12T10:47:20.231Z
@@ -3550,7 +3550,7 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Web POS Rolen Menü', PrintNam
 ;
 
 -- 2022-12-12T10:47:26.455Z
-UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Web POS Rolen Menü', PrintName='Web POS Rolen Menü',Updated=TO_TIMESTAMP('2022-12-12 11:47:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=575819 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Web POS Rollen Menü', PrintName='Web POS Rollen Menü',Updated=TO_TIMESTAMP('2022-12-12 11:47:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=575819 AND AD_Language='de_DE'
 ;
 
 -- 2022-12-12T10:47:26.457Z
@@ -3562,7 +3562,7 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Web POS Rolen Menü', PrintNam
 ;
 
 -- 2022-12-12T10:47:43.994Z
-UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Web POS Rolen Menü', PrintName='Web POS Rolen Menü',Updated=TO_TIMESTAMP('2022-12-12 11:47:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=574274 AND AD_Language='de_CH'
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Web POS Rollen Menü', PrintName='Web POS Rollen Menü',Updated=TO_TIMESTAMP('2022-12-12 11:47:43','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=574274 AND AD_Language='de_CH'
 ;
 
 -- 2022-12-12T10:47:43.997Z
@@ -3570,7 +3570,7 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Web POS Rolen Menü', PrintNam
 ;
 
 -- 2022-12-12T10:47:48.696Z
-UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Web POS Rolen Menü', PrintName='Web POS Rolen Menü',Updated=TO_TIMESTAMP('2022-12-12 11:47:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=574274 AND AD_Language='de_DE'
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Web POS Rollen Menü', PrintName='Web POS Rollen Menü',Updated=TO_TIMESTAMP('2022-12-12 11:47:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=574274 AND AD_Language='de_DE'
 ;
 
 -- 2022-12-12T10:47:48.698Z
