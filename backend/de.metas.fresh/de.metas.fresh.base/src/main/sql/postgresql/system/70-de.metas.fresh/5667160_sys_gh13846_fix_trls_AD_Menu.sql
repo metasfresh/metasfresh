@@ -4120,6 +4120,28 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Distributionsnetzwerk', PrintN
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(574328,'de_DE')
 ;
 
+
+
+-- 2022-12-12T11:08:36.106Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Migrationsskripte', PrintName='Migrationsskripte',Updated=TO_TIMESTAMP('2022-12-12 12:08:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=573919 AND AD_Language='de_CH'
+;
+
+-- 2022-12-12T11:08:36.109Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(573919,'de_CH')
+;
+
+-- 2022-12-12T11:08:40.118Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Migrationsskripte', PrintName='Migrationsskripte',Updated=TO_TIMESTAMP('2022-12-12 12:08:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=573919 AND AD_Language='de_DE'
+;
+
+-- 2022-12-12T11:08:40.120Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(573919,'de_DE')
+;
+
+-- 2022-12-12T11:08:40.121Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(573919,'de_DE')
+;
+
 -- 2022-12-12T11:08:44.106Z
 UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Migrationsskripte', PrintName='Migrationsskripte',Updated=TO_TIMESTAMP('2022-12-12 12:08:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=575238 AND AD_Language='de_CH'
 ;
@@ -4552,6 +4574,29 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Abschreibungsberechnungsmethod
 -- 2022-12-12T13:41:30.263Z
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(573961,'de_DE')
 ;
+
+
+
+-- 2022-12-12T13:42:15.499Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Abschreibung Erstes Jahr Konventionen', PrintName='Abschreibung Erstes Jahr Konventionen',Updated=TO_TIMESTAMP('2022-12-12 14:42:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=575243 AND AD_Language='de_CH'
+;
+
+-- 2022-12-12T13:42:15.501Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(575243,'de_CH')
+;
+
+-- 2022-12-12T13:42:30.958Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Abschreibung Erstes Jahr Konventionen', PrintName='Abschreibung Erstes Jahr Konventionen',Updated=TO_TIMESTAMP('2022-12-12 14:42:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=575243 AND AD_Language='de_DE'
+;
+
+-- 2022-12-12T13:42:30.960Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(575243,'de_DE')
+;
+
+-- 2022-12-12T13:42:30.962Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(575243,'de_DE')
+;
+
 
 -- 2022-12-12T13:43:01.499Z
 UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Abschreibung Erstes Jahr Konventionen', PrintName='Abschreibung Erstes Jahr Konventionen',Updated=TO_TIMESTAMP('2022-12-12 14:43:01','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=575243 AND AD_Language='de_CH'
