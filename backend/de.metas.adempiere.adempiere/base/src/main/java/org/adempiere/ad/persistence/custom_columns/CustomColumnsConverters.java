@@ -2,6 +2,7 @@ package org.adempiere.ad.persistence.custom_columns;
 
 import com.google.common.collect.ImmutableMap;
 import de.metas.i18n.AdMessageKey;
+import de.metas.util.Check;
 import de.metas.util.StringUtils;
 import de.metas.util.converter.DateTimeConverters;
 import de.metas.util.lang.RepoIdAware;
@@ -26,6 +27,8 @@ public class CustomColumnsConverters
 {
 	private static final AdMessageKey MSG_CUSTOM_REST_API_COLUMN = AdMessageKey.of("CUSTOM_REST_API_COLUMN");
 
+	private static final String NULL_STRING = "null";
+
 	@NonNull
 	public static CustomColumnsPOValues convertToPOValues(
 			@NonNull final Map<String, Object> valuesByColumnName,
@@ -41,7 +44,6 @@ public class CustomColumnsConverters
 
 		return CustomColumnsPOValues.ofPOValues(poValues.build());
 	}
-
 
 	@NonNull
 	public static CustomColumnsJsonValues convertToJsonValues(final @NonNull PO record, final ZoneId zoneId)
@@ -118,7 +120,7 @@ public class CustomColumnsConverters
 	}
 
 	@Nullable
-	private static Object convertToPOValue(@Nullable final Object value, @NonNull final Class<?> targetClass, final int displayType,@NonNull final ZoneId zoneId)
+	private static Object convertToPOValue(@Nullable final Object value, @NonNull final Class<?> targetClass, final int displayType, @NonNull final ZoneId zoneId)
 	{
 		if (value == null)
 		{
@@ -126,6 +128,21 @@ public class CustomColumnsConverters
 		}
 
 		final Class<?> valueClass = value.getClass();
+
+		if (String.class.equals(valueClass))
+		{
+			final String valueStr = (String)value;
+
+			if (String.class.equals(targetClass))
+			{
+				return valueStr;
+			}
+			// for all the other targetClass variants, an empty string or the "null" string are considered null values
+			else if (Check.isBlank(valueStr) || NULL_STRING.equalsIgnoreCase(valueStr))
+			{
+				return null;
+			}
+		}
 
 		if (targetClass.isAssignableFrom(valueClass))
 		{
