@@ -22,7 +22,7 @@ SELECT i.c_invoice_id AS edi_cctop_111_v_id, ol.c_order_id,
        oub.updatedby,
        oia.isactive
 FROM c_invoice i
-         LEFT JOIN LATERAL (
+         LEFT JOIN LATERAL ( --only add values if there is only one unique value
     SELECT i.c_invoice_id, min(ol.c_order_id) AS c_order_id
     FROM c_invoice i
              INNER JOIN c_invoiceline il ON i.c_invoice_id = il.c_invoice_id

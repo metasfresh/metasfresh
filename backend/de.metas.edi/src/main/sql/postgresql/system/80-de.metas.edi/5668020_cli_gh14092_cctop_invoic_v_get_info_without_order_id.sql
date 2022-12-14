@@ -100,7 +100,7 @@ FROM C_Invoice i
     GROUP BY C_InvoiceTax.C_Invoice_ID
 ) t ON t.C_Invoice_ID = i.C_Invoice_ID
          LEFT JOIN C_BPartner sp ON sp.AD_OrgBP_ID = i.AD_Org_ID
-         LEFT JOIN LATERAL (
+         LEFT JOIN LATERAL ( --only add values if there is only one unique value
     SELECT i.c_invoice_id, min(o.dateordered) AS dateordered
     FROM c_invoice i
              INNER JOIN c_invoiceline il ON i.c_invoice_id = il.c_invoice_id

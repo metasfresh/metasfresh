@@ -22,7 +22,7 @@ SELECT i.c_invoice_id AS edi_cctop_111_v_id, ol.c_order_id,
        oub.updatedby,
        oia.isactive
 FROM c_invoice i
-         LEFT JOIN LATERAL (
+         LEFT JOIN LATERAL ( --only add values if there is only one unique value
     SELECT i.c_invoice_id, min(ol.c_order_id) AS c_order_id
     FROM c_invoice i
              INNER JOIN c_invoiceline il ON i.c_invoice_id = il.c_invoice_id
@@ -136,3 +136,16 @@ UPDATE EXP_FormatLine SET AD_Column_ID=548325, Name='C_Invoice_ID', Value='C_Inv
 -- 2022-12-13T09:51:28.234Z
 UPDATE EXP_FormatLine SET Name='EDI_cctop_111_v', Value='EDI_cctop_111_v',Updated=TO_TIMESTAMP('2022-12-13 10:51:28','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE EXP_FormatLine_ID=545182
 ;
+
+-- 2022-12-14T13:21:47.771Z
+INSERT INTO EXP_FormatLine (AD_Client_ID,AD_Column_ID,AD_Org_ID,Created,CreatedBy,Description,EntityType,EXP_Format_ID,EXP_FormatLine_ID,Help,IsActive,IsMandatory,IsPartUniqueIndex,Name,Position,Type,Updated,UpdatedBy,Value) VALUES (0,548338,0,TO_TIMESTAMP('2022-12-14 14:21:47','YYYY-MM-DD HH24:MI:SS'),100,'','U',540220,1000011,'','Y','N','N','C_Invoice_ID',20,'E',TO_TIMESTAMP('2022-12-14 14:21:47','YYYY-MM-DD HH24:MI:SS'),100,'C_Invoice_ID')
+;
+
+-- 2022-12-14T13:23:09.215Z
+UPDATE EXP_FormatLine SET AD_Column_ID=548325,Updated=TO_TIMESTAMP('2022-12-14 14:23:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE EXP_FormatLine_ID=1000011
+;
+
+-- 2022-12-14T13:26:07.298Z
+UPDATE EXP_FormatLine SET EntityType='de.metas.esb.edi',Updated=TO_TIMESTAMP('2022-12-14 14:26:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE EXP_FormatLine_ID=1000011
+;
+
