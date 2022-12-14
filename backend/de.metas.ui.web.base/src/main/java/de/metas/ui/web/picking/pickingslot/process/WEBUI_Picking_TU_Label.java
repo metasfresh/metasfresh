@@ -1,16 +1,19 @@
 package de.metas.ui.web.picking.pickingslot.process;
 
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.report.HUReportService;
+import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.report.HUToReportWrapper;
+import de.metas.handlingunits.report.labels.HULabelPrintRequest;
+import de.metas.handlingunits.report.labels.HULabelService;
+import de.metas.handlingunits.report.labels.HULabelSourceDocType;
 import de.metas.process.ProcessPreconditionsResolution;
 import de.metas.ui.web.picking.pickingslot.PickingSlotRow;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.compiere.SpringContextHolder;
 
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_PICK_SOMETHING;
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_PICKED_HU;
-import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 /*
  * #%L
@@ -36,7 +39,8 @@ import static org.adempiere.model.InterfaceWrapperHelper.load;
 
 public class WEBUI_Picking_TU_Label extends PickingSlotViewBasedProcess
 {
-	private final HUReportService huReportService = SpringContextHolder.instance.getBean(HUReportService.class);
+	private final HULabelService huLabelService = SpringContextHolder.instance.getBean(HULabelService.class);
+	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -65,21 +69,22 @@ public class WEBUI_Picking_TU_Label extends PickingSlotViewBasedProcess
 	}
 
 	@Override
-	protected String doIt() throws Exception
+	protected String doIt()
 	{
 		final PickingSlotRow rowToProcess = getSingleSelectedRow();
-
-		final I_M_HU hu = load(rowToProcess.getHuId(), I_M_HU.class);
-		final HUToReportWrapper huToReport = HUToReportWrapper.of(hu);
-
-		printPickingLabel(huToReport);
+		printPickingLabel(rowToProcess.getHuId());
 
 		return MSG_OK;
 
 	}
 
-	private void printPickingLabel(@NonNull final HUToReportWrapper huToReport)
+	protected void printPickingLabel(@NonNull final HuId huId)
 	{
-		huReportService.printPickingLabel(huToReport, false);
+		huLabelService.print(HULabelPrintRequest.builder()
+				.sourceDocType(HULabelSourceDocType.Picking)
+				.hu(HUToReportWrapper.of(handlingUnitsDAO.getById(huId)))
+				.onlyIfAutoPrint(false)
+				.failOnMissingLabelConfig(true)
+				.build());
 	}
 }

@@ -1,29 +1,35 @@
 package de.metas.handlingunits.report.labels;
 
+import de.metas.handlingunits.process.api.IMHUProcessDAO;
 import de.metas.i18n.ExplainedOptional;
+import de.metas.util.Services;
+import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
 @Service
 public class HULabelService
 {
-	private final HULabelConfigFromSysConfigProvider sysconfigLabelConfigProvider = new HULabelConfigFromSysConfigProvider();
-	private final HULabelConfigRepository huLabelConfigRepository;
+	private final HULabelConfigService huLabelConfigService;
+	private final IMHUProcessDAO huProcessDAO = Services.get(IMHUProcessDAO.class);
 
 	public HULabelService(
-			final HULabelConfigRepository huLabelConfigRepository)
+			@NonNull final HULabelConfigService huLabelConfigService)
 	{
-		this.huLabelConfigRepository = huLabelConfigRepository;
+		this.huLabelConfigService = huLabelConfigService;
 	}
 
 	public ExplainedOptional<HULabelConfig> getFirstMatching(final HULabelConfigQuery query)
 	{
-		final HULabelConfig labelConfig = huLabelConfigRepository.getFirstMatching(query).orElse(null);
-		if (labelConfig != null)
-		{
-			return ExplainedOptional.of(labelConfig);
-		}
+		return huLabelConfigService.getFirstMatching(query);
+	}
 
-		// Fallback to legacy sysconfig based labels
-		return sysconfigLabelConfigProvider.getFirstMatching(query);
+	public void print(@NonNull final HULabelPrintRequest request)
+	{
+		HULabelPrintCommand.builder()
+				.huLabelConfigService(huLabelConfigService)
+				.huProcessDAO(huProcessDAO)
+				.request(request)
+				.build()
+				.executeAfterCommit();
 	}
 }

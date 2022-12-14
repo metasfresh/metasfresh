@@ -3,6 +3,7 @@ package de.metas.handlingunits.process.api;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.HuUnitType;
+import de.metas.handlingunits.report.HUToReport;
 import de.metas.process.AdProcessId;
 import de.metas.util.Check;
 import lombok.AccessLevel;
@@ -70,4 +71,11 @@ public class HUProcessDescriptor
 	{
 		return acceptHUUnitTypes.contains(huUnitType);
 	}
+
+	public boolean isMatching(@NonNull final HUToReport huToReport)
+	{
+		return (!acceptOnlyTopLevelHUs || huToReport.isTopLevel())
+				&& appliesToHUUnitType(huToReport.getHUUnitType());
+	}
+
 }

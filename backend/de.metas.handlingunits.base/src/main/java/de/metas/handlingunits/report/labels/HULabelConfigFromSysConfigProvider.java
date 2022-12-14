@@ -4,6 +4,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.ExplainedOptional;
 import de.metas.logging.LogManager;
 import de.metas.process.AdProcessId;
+import de.metas.report.PrintCopies;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
@@ -71,9 +72,9 @@ class HULabelConfigFromSysConfigProvider
 		}
 
 		final boolean autoPrint = isReceiptLabelAutoPrintEnabled(vendorId);
-		final int autoPrintCopies = autoPrint
+		final PrintCopies autoPrintCopies = autoPrint
 				? getAutoPrintCopyCountForSysConfig(SYSCONFIG_RECEIPT_LABEL_AUTO_PRINT_COPIES)
-				: 0;
+				: PrintCopies.ZERO;
 
 		return ExplainedOptional.of(HULabelConfig.builder()
 				.printFormatProcessId(printFormatProcessId)
@@ -145,7 +146,7 @@ class HULabelConfigFromSysConfigProvider
 		return ExplainedOptional.of(HULabelConfig.builder()
 				.printFormatProcessId(printFormatProcessId)
 				.autoPrint(false)
-				.autoPrintCopies(0)
+				.autoPrintCopies(PrintCopies.ZERO)
 				.build());
 	}
 
@@ -156,10 +157,10 @@ class HULabelConfigFromSysConfigProvider
 		return AdProcessId.ofRepoIdOrNull(reportProcessId);
 	}
 
-	private int getAutoPrintCopyCountForSysConfig(final String sysConfigName)
+	private PrintCopies getAutoPrintCopyCountForSysConfig(final String sysConfigName)
 	{
 		final Properties ctx = Env.getCtx();
-		return sysConfigBL.getIntValue(sysConfigName, 1, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx));
+		return PrintCopies.ofIntOrOne(sysConfigBL.getIntValue(sysConfigName, 1, Env.getAD_Client_ID(ctx), Env.getAD_Org_ID(ctx)));
 	}
 
 }
