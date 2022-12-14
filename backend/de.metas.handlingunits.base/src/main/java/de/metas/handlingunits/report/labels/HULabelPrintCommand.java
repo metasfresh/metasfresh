@@ -1,10 +1,12 @@
 package de.metas.handlingunits.report.labels;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.process.api.HUProcessDescriptor;
 import de.metas.handlingunits.process.api.IMHUProcessDAO;
+import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.report.HUReportExecutor;
 import de.metas.handlingunits.report.HUToReport;
 import de.metas.i18n.ExplainedOptional;
@@ -30,32 +32,37 @@ class HULabelPrintCommand
 {
 	private final HULabelConfigService huLabelConfigService;
 	private final IMHUProcessDAO huProcessDAO;
+	private final HUQRCodesService huQRCodesService;
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 
 	@NonNull final HULabelPrintRequest request;
 
 	@Builder
 	private HULabelPrintCommand(
-			@NonNull final HULabelConfigService huLabelConfigService,
-			@NonNull final IMHUProcessDAO huProcessDAO,
+			final @NonNull HULabelConfigService huLabelConfigService,
+			final @NonNull IMHUProcessDAO huProcessDAO,
+			final @NonNull HUQRCodesService huQRCodesService,
 			final @NonNull HULabelPrintRequest request)
 	{
 		this.huLabelConfigService = huLabelConfigService;
 		this.huProcessDAO = huProcessDAO;
+		this.huQRCodesService = huQRCodesService;
 
 		this.request = request;
 	}
 
-	public void executeAfterCommit()
-	{
-		trxManager.runAfterCommit(this::executeNow);
-	}
-
-	private void executeNow()
+	public void execute()
 	{
 		final BatchToPrintCollector batchToPrintCollector = newBatchesToPrintCollector();
 		batchToPrintCollector.explodeAndAddAll(request.getHus());
-		batchToPrintCollector.forEach(this::printBatchNow);
+		if (batchToPrintCollector.isEmpty())
+		{
+			return;
+		}
+
+		huQRCodesService.generateForExistingHUs(batchToPrintCollector.getHuIds());
+
+		trxManager.runAfterCommit(() -> batchToPrintCollector.forEach(this::printBatchNow));
 	}
 
 	private BatchToPrintCollector newBatchesToPrintCollector()
@@ -287,6 +294,10 @@ class HULabelPrintCommand
 
 			batch.addHU(hu);
 		}
+
+		public boolean isEmpty() {return huIdsCollected.isEmpty();}
+
+		public ImmutableSet<HuId> getHuIds() {return ImmutableSet.copyOf(huIdsCollected);}
 
 		public void forEach(@NonNull final Consumer<BatchToPrint> action)
 		{

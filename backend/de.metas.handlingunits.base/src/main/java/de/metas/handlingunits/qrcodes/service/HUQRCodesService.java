@@ -52,7 +52,12 @@ public class HUQRCodesService
 				.execute();
 	}
 
-	public HUQRCodeGenerateForExistingHUsResult generateForExistingHUs(HUQRCodeGenerateForExistingHUsRequest request)
+	public HUQRCodeGenerateForExistingHUsResult generateForExistingHUs(@NonNull final Set<HuId> huIds)
+	{
+		return generateForExistingHUs(HUQRCodeGenerateForExistingHUsRequest.ofHuIds(huIds));
+	}
+
+	public HUQRCodeGenerateForExistingHUsResult generateForExistingHUs(@NonNull final HUQRCodeGenerateForExistingHUsRequest request)
 	{
 		return HUQRCodeGenerateForExistingHUsCommand.builder()
 				.handlingUnitsBL(handlingUnitsBL)
