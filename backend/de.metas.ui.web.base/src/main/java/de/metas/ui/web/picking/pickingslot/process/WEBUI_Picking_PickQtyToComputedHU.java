@@ -22,14 +22,21 @@
 
 package de.metas.ui.web.picking.pickingslot.process;
 
-import de.metas.handlingunits.picking.PickingService;
+import de.metas.handlingunits.IHUCapacityBL;
+import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.process.IProcessParametersCallout;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
+import de.metas.product.IProductBL;
+import de.metas.product.ProductId;
 import de.metas.quantity.Capacity;
 import de.metas.quantity.Quantity;
+import de.metas.quantity.QuantityTU;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.SpringContextHolder;
+import org.compiere.model.I_C_UOM;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -37,13 +44,24 @@ import java.util.function.Consumer;
 
 import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_MISSING_SOURCE_HU;
 
-public class WEBUI_Picking_PickQtyToComputedHU extends WEBUI_Picking_PickQtyToNewHU
+public class WEBUI_Picking_PickQtyToComputedHU extends WEBUI_Picking_PickQtyToNewHU implements IProcessParametersCallout
 {
-	private final PickingService pickingService = SpringContextHolder.instance.getBean(PickingService.class);
+	private final IHUCapacityBL huCapacityBL = Services.get(IHUCapacityBL.class);
+	private final IProductBL productBL = Services.get(IProductBL.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
 
 	private static final String PARAM_NO_HUs = "HUQty";
 	@Param(parameterName = PARAM_NO_HUs, mandatory = true)
 	protected BigDecimal noOfHUs;
+
+	@Override
+	public void onParameterChanged(final String parameterName)
+	{
+		if (parameterName.equals(PARAM_M_HU_PI_Item_Product_ID) || parameterName.equals(PARAM_QTY_CU))
+		{
+			noOfHUs = getQtyTU().toBigDecimal();
+		}
+	}
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -57,7 +75,7 @@ public class WEBUI_Picking_PickQtyToComputedHU extends WEBUI_Picking_PickQtyToNe
 
 		if (isForceDelivery())
 		{
-			return ProcessPreconditionsResolution.rejectWithInternalReason(" Use 'WEBUI_Picking_ForcePickToNewHU' in case of force shipping! ");
+			return ProcessPreconditionsResolution.rejectWithInternalReason(" Use 'WEBUI_Picking_ForcePickToComputedHU' in case of force shipping! ");
 		}
 
 		if (noSourceHUAvailable())
@@ -71,9 +89,7 @@ public class WEBUI_Picking_PickQtyToComputedHU extends WEBUI_Picking_PickQtyToNe
 	@Override
 	protected String doIt()
 	{
-		final Consumer<Quantity> pickHU = this::pickHu;
-
-		pickQtyToComputedHUs(pickHU);
+		pickQtyToNewHUs(this::pickQtyToNewHU);
 
 		invalidatePackablesView(); // left side view
 		invalidatePickingSlotsView(); // right side view
@@ -81,34 +97,52 @@ public class WEBUI_Picking_PickQtyToComputedHU extends WEBUI_Picking_PickQtyToNe
 		return MSG_OK;
 	}
 
-	protected void pickQtyToComputedHUs(@NonNull final Consumer<Quantity> pickHUConsumer)
+	protected void pickQtyToNewHUs(@NonNull final Consumer<Quantity> pickQtyConsumer)
 	{
-		final Quantity qtyToPack = getQtyToPack();
+		Quantity qtyToPack = getQtyToPack();
 		if (qtyToPack.signum() <= 0)
 		{
 			throw new AdempiereException("@QtyCU@ > 0");
 		}
 
-		final Quantity actualCapacity = getActualCapacityAsQty();
+		final Capacity piipCapacity = getPIIPCapacity();
 
-		Quantity qtyCULeftToBeProcess = Quantity.of(qtyCU, getCurrentShipmentScheuduleUOM());
-
-		while (qtyCULeftToBeProcess.signum() > 0)
+		if (piipCapacity.isInfiniteCapacity())
 		{
-			final Quantity qtyCUToProcess = actualCapacity.min(qtyCULeftToBeProcess);
+			pickQtyConsumer.accept(qtyToPack);
+			return;
+		}
 
-			pickHUConsumer.accept(qtyCUToProcess);
+		final Quantity piipQtyCapacity = piipCapacity.toQuantity();
 
-			qtyCULeftToBeProcess = qtyCULeftToBeProcess.subtract(qtyCUToProcess.toBigDecimal());
+		while (qtyToPack.toBigDecimal().signum() >= 0)
+		{
+			final Quantity qtyToProcess = piipQtyCapacity.min(qtyToPack);
+
+			pickQtyConsumer.accept(qtyToProcess);
+
+			qtyToPack = qtyToPack.subtract(qtyToProcess);
 		}
 	}
 
 	@NonNull
-	protected Quantity getActualCapacityAsQty()
+	private QuantityTU getQtyTU()
 	{
-		final Capacity piipCapacity = pickingService.calculatePIIPCapacity(getCalculatePIIPCapacityRequest(qtyCU, huPIItemProduct));
-		return piipCapacity.isInfiniteCapacity()
-				? Quantity.of(qtyCU, getCurrentShipmentScheuduleUOM())
-				: piipCapacity.toQuantity();
+		return getPIIPCapacity().calculateQtyTU(qtyCU, getCurrentShipmentScheuduleUOM(), uomConversionBL)
+				.orElseThrow(() -> new AdempiereException("QtyTU cannot be obtained for the current request!")
+						.appendParametersToMessage()
+						.setParameter("QtyCU", qtyCU)
+						.setParameter("ShipmentScheduleId", getCurrentShipmentScheduleId()));
+	}
+
+	@NonNull
+	protected Capacity getPIIPCapacity()
+	{
+		final I_M_ShipmentSchedule currentShipmentSchedule = getCurrentShipmentSchedule();
+
+		final ProductId productId = ProductId.ofRepoId(currentShipmentSchedule.getM_Product_ID());
+		final I_C_UOM stockUOM = productBL.getStockUOM(productId);
+
+		return huCapacityBL.getCapacity(huPIItemProduct, productId, stockUOM);
 	}
 }

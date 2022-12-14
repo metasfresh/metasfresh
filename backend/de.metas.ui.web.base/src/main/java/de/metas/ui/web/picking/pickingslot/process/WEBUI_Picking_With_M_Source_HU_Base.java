@@ -7,13 +7,11 @@ import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.inventory.CreateVirtualInventoryWithQtyReq;
 import de.metas.handlingunits.inventory.InventoryService;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_PI_Item_Product;
 import de.metas.handlingunits.model.I_M_ShipmentSchedule;
 import de.metas.handlingunits.picking.IHUPickingSlotBL;
 import de.metas.handlingunits.picking.IHUPickingSlotBL.PickingHUsQuery;
 import de.metas.handlingunits.picking.PickingCandidateService;
 import de.metas.handlingunits.picking.requests.AddQtyToHURequest;
-import de.metas.handlingunits.picking.requests.CalculatePIIPCapacityRequest;
 import de.metas.handlingunits.picking.requests.RetrieveAvailableHUIdsToPickRequest;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IPackagingDAO;
@@ -35,7 +33,6 @@ import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 /*
@@ -235,15 +232,5 @@ import java.util.List;
 				.build();
 
 		return inventoryService.createInventoryForMissingQty(req);
-	}
-
-	@NonNull
-	protected CalculatePIIPCapacityRequest getCalculatePIIPCapacityRequest(@NonNull final BigDecimal qtyCU, @NonNull final I_M_HU_PI_Item_Product huPIItemProduct)
-	{
-		return CalculatePIIPCapacityRequest.builder()
-				.qtyCu(qtyCU)
-				.shipmentSchedule(getCurrentShipmentSchedule())
-				.piip(huPIItemProduct)
-				.build();
 	}
 }
