@@ -3861,4 +3861,27 @@ public interface I_C_Invoice_Candidate
 
 	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_UserElementString7 = new ModelColumn<>(I_C_Invoice_Candidate.class, "UserElementString7", null);
 	String COLUMNNAME_UserElementString7 = "UserElementString7";
+
+	/**
+	 * Set Product Description.
+	 * Product Description
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setProductDescription (@Nullable java.lang.String ProductDescription);
+
+	/**
+	 * Get Product Description.
+	 * Product Description
+	 *
+	 * <br>Type: Text
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getProductDescription();
+
+	ModelColumn<I_C_Invoice_Candidate, Object> COLUMN_ProductDescription = new ModelColumn<>(I_C_Invoice_Candidate.class, "ProductDescription", null);
+	String COLUMNNAME_ProductDescription = "ProductDescription";
 }
