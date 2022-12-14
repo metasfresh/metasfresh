@@ -150,14 +150,7 @@ public abstract class ReportStarter extends JavaProcess
 				}
 				else if (IMassPrintingService.PARAM_PrintCopies.equals(parameterName))
 				{
-					numberOfPrintouts = param.getParameterAsInt() > 0
-							? PrintCopies.ofInt(param.getParameterAsInt())
-							: PrintCopies.ZERO;
-					if (numberOfPrintouts.isZero())
-					{
-						logger.debug("Setting numberOfPrintouts from 0 (specified by " + IMassPrintingService.PARAM_PrintCopies + ") to 1");
-						numberOfPrintouts = PrintCopies.ONE;
-					}
+					numberOfPrintouts = PrintCopies.ofIntOrOne(param.getParameterAsInt());
 				}
 			}
 		}
