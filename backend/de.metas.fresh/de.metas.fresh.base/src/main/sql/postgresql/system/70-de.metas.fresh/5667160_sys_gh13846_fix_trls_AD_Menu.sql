@@ -3417,6 +3417,249 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Vermögensanlagenneubewertung 
 
 
 
+-- 2022-12-07T11:57:05.104Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Anlagenumbuchung Eintrag', PrintName='Anlagenumbuchung Eintrag',Updated=TO_TIMESTAMP('2022-12-07 12:57:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=575280 AND AD_Language='de_CH'
+;
+
+-- 2022-12-07T11:57:05.106Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(575280,'de_CH')
+;
+
+-- 2022-12-07T11:57:10.856Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Anlagenumbuchung Eintrag', PrintName='Anlagenumbuchung Eintrag',Updated=TO_TIMESTAMP('2022-12-07 12:57:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=575280 AND AD_Language='de_DE'
+;
+
+-- 2022-12-07T11:57:10.857Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(575280,'de_DE')
+;
+
+-- 2022-12-07T11:57:10.858Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(575280,'de_DE')
+;
+
+-- 2022-12-07T11:57:35.606Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Anlagenumbuchung Eintrag', PrintName='Anlagenumbuchung Eintrag',Updated=TO_TIMESTAMP('2022-12-07 12:57:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=574388 AND AD_Language='de_CH'
+;
+
+-- 2022-12-07T11:57:35.607Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(574388,'de_CH')
+;
+
+-- 2022-12-07T11:57:41.087Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Anlagenumbuchung Eintrag', PrintName='Anlagenumbuchung Eintrag',Updated=TO_TIMESTAMP('2022-12-07 12:57:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=574388 AND AD_Language='de_DE'
+;
+
+-- 2022-12-07T11:57:41.088Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(574388,'de_DE')
+;
+
+-- 2022-12-07T11:57:41.088Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(574388,'de_DE')
+;
+
+-- 2022-12-07T11:59:26.504Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Anlagenveräußerung Eintrag', PrintName='Anlagenveräußerung Eintrag',Updated=TO_TIMESTAMP('2022-12-07 12:59:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=575281 AND AD_Language='de_CH'
+;
+
+-- 2022-12-07T11:59:26.505Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(575281,'de_CH')
+;
+
+-- 2022-12-07T11:59:31.328Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Anlagenveräußerung Eintrag', PrintName='Anlagenveräußerung Eintrag',Updated=TO_TIMESTAMP('2022-12-07 12:59:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=575281 AND AD_Language='de_DE'
+;
+
+-- 2022-12-07T11:59:31.330Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(575281,'de_DE')
+;
+
+-- 2022-12-07T11:59:31.330Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(575281,'de_DE')
+;
+
+-- 2022-12-07T11:59:48.876Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Anlagenveräußerung Eintrag', PrintName='Anlagenveräußerung Eintrag',Updated=TO_TIMESTAMP('2022-12-07 12:59:48','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=574389 AND AD_Language='de_CH'
+;
+
+-- 2022-12-07T11:59:48.877Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(574389,'de_CH')
+;
+
+-- 2022-12-07T11:59:54.666Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Anlagenveräußerung Eintrag', PrintName='Anlagenveräußerung Eintrag',Updated=TO_TIMESTAMP('2022-12-07 12:59:54','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=574389 AND AD_Language='de_DE'
+;
+
+-- 2022-12-07T11:59:54.666Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(574389,'de_DE')
+;
+
+-- 2022-12-07T11:59:54.667Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(574389,'de_DE')
+;
+
+-- 2022-12-07T12:22:36.167Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Anlagenvermögensaufteilung', PrintName='Anlagenvermögensaufteilung',Updated=TO_TIMESTAMP('2022-12-07 13:22:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=575284 AND AD_Language='de_CH'
+;
+
+-- 2022-12-07T12:22:36.169Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(575284,'de_CH')
+;
+
+-- 2022-12-07T12:22:41.546Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Anlagenvermögensaufteilung', PrintName='Anlagenvermögensaufteilung',Updated=TO_TIMESTAMP('2022-12-07 13:22:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=575284 AND AD_Language='de_DE'
+;
+
+-- 2022-12-07T12:22:41.547Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(575284,'de_DE')
+;
+
+-- 2022-12-07T12:22:41.548Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(575284,'de_DE')
+;
+
+-- 2022-12-07T12:23:04.023Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Anlagenvermögensaufteilung', PrintName='Anlagenvermögensaufteilung',Updated=TO_TIMESTAMP('2022-12-07 13:23:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=574053 AND AD_Language='de_CH'
+;
+
+-- 2022-12-07T12:23:04.024Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(574053,'de_CH')
+;
+
+-- 2022-12-07T12:23:09.339Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Anlagenvermögensaufteilung', PrintName='Anlagenvermögensaufteilung',Updated=TO_TIMESTAMP('2022-12-07 13:23:09','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=574053 AND AD_Language='de_DE'
+;
+
+-- 2022-12-07T12:23:09.341Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(574053,'de_DE')
+;
+
+-- 2022-12-07T12:23:09.342Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(574053,'de_DE')
+;
+
+-- 2022-12-07T12:24:14.378Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Anlagenveräußerung', PrintName='Anlagenveräußerung',Updated=TO_TIMESTAMP('2022-12-07 13:24:14','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=575287 AND AD_Language='de_CH'
+;
+
+-- 2022-12-07T12:24:14.380Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(575287,'de_CH')
+;
+
+-- 2022-12-07T12:24:19.397Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Anlagenveräußerung', PrintName='Anlagenveräußerung',Updated=TO_TIMESTAMP('2022-12-07 13:24:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=575287 AND AD_Language='de_DE'
+;
+
+-- 2022-12-07T12:24:19.398Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(575287,'de_DE')
+;
+
+-- 2022-12-07T12:24:19.399Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(575287,'de_DE')
+;
+
+-- 2022-12-07T12:24:36.647Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Anlagenveräußerung', PrintName='Anlagenveräußerung',Updated=TO_TIMESTAMP('2022-12-07 13:24:36','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=574386 AND AD_Language='de_CH'
+;
+
+-- 2022-12-07T12:24:36.648Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(574386,'de_CH')
+;
+
+-- 2022-12-07T12:24:44.324Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Anlagenveräußerung', PrintName='Anlagenveräußerung',Updated=TO_TIMESTAMP('2022-12-07 13:24:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=574386 AND AD_Language='de_DE'
+;
+
+-- 2022-12-07T12:24:44.325Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(574386,'de_DE')
+;
+
+-- 2022-12-07T12:24:44.326Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(574386,'de_DE')
+;
+
+-- 2022-12-07T12:30:15.033Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Vermögensübertragung', PrintName='Vermögensübertragung',Updated=TO_TIMESTAMP('2022-12-07 13:30:15','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=575241 AND AD_Language='de_CH'
+;
+
+-- 2022-12-07T12:30:15.034Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(575241,'de_CH')
+;
+
+-- 2022-12-07T12:30:22.452Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Vermögensübertragung', PrintName='Vermögensübertragung',Updated=TO_TIMESTAMP('2022-12-07 13:30:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=575241 AND AD_Language='de_DE'
+;
+
+-- 2022-12-07T12:30:22.453Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(575241,'de_DE')
+;
+
+-- 2022-12-07T12:30:22.454Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(575241,'de_DE')
+;
+
+-- 2022-12-07T12:30:41.590Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Vermögensübertragung', PrintName='Vermögensübertragung',Updated=TO_TIMESTAMP('2022-12-07 13:30:41','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=574353 AND AD_Language='de_CH'
+;
+
+-- 2022-12-07T12:30:41.591Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(574353,'de_CH')
+;
+
+-- 2022-12-07T12:30:49.008Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Vermögensübertragung', PrintName='Vermögensübertragung',Updated=TO_TIMESTAMP('2022-12-07 13:30:49','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=574353 AND AD_Language='de_DE'
+;
+
+-- 2022-12-07T12:30:49.009Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(574353,'de_DE')
+;
+
+-- 2022-12-07T12:30:49.010Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(574353,'de_DE')
+;
+
+-- 2022-12-07T12:32:31.696Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Anlagenvermögensaufteilung Eintrag', PrintName='Anlagenvermögensaufteilung Eintrag',Updated=TO_TIMESTAMP('2022-12-07 13:32:31','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=575289 AND AD_Language='de_CH'
+;
+
+-- 2022-12-07T12:32:31.697Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(575289,'de_CH')
+;
+
+-- 2022-12-07T12:32:35.768Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Anlagenvermögensaufteilung Eintrag', PrintName='Anlagenvermögensaufteilung Eintrag',Updated=TO_TIMESTAMP('2022-12-07 13:32:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=575289 AND AD_Language='de_DE'
+;
+
+-- 2022-12-07T12:32:35.769Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(575289,'de_DE')
+;
+
+-- 2022-12-07T12:32:35.770Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(575289,'de_DE')
+;
+
+-- 2022-12-07T12:32:55.467Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Anlagenvermögensaufteilung Eintrag', PrintName='Anlagenvermögensaufteilung Eintrag',Updated=TO_TIMESTAMP('2022-12-07 13:32:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=574054 AND AD_Language='de_CH'
+;
+
+-- 2022-12-07T12:32:55.468Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(574054,'de_CH')
+;
+
+-- 2022-12-07T12:33:00.789Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Anlagenvermögensaufteilung Eintrag', PrintName='Anlagenvermögensaufteilung Eintrag',Updated=TO_TIMESTAMP('2022-12-07 13:33:00','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=574054 AND AD_Language='de_DE'
+;
+
+-- 2022-12-07T12:33:00.790Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(574054,'de_DE')
+;
+
+-- 2022-12-07T12:33:00.791Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(574054,'de_DE')
+;
+
+
+
+
 -- 2022-12-12T10:34:08.789Z
 UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Kostensammler', PrintName='Kostensammler',Updated=TO_TIMESTAMP('2022-12-12 11:34:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=575236 AND AD_Language='de_CH'
 ;
