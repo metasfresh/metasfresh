@@ -2354,4 +2354,16 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	{
 		return get_ValueAsString(COLUMNNAME_UserElementString7);
 	}
+
+	@Override
+	public void setProductDescription (final @Nullable java.lang.String ProductDescription)
+	{
+		set_Value (COLUMNNAME_ProductDescription, ProductDescription);
+	}
+
+	@Override
+	public java.lang.String getProductDescription()
+	{
+		return get_ValueAsString(COLUMNNAME_ProductDescription);
+	}
 }
