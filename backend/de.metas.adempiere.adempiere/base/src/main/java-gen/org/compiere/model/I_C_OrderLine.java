@@ -97,6 +97,29 @@ public interface I_C_OrderLine
 	String COLUMNNAME_AD_User_ID = "AD_User_ID";
 
 	/**
+	 * Set Base Commission Points Per Price UOM.
+	 * Specifies how many commission points are calculated per 1 quantity of the product in the price UOM.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setBase_Commission_Points_Per_Price_UOM (@Nullable BigDecimal Base_Commission_Points_Per_Price_UOM);
+
+	/**
+	 * Get Base Commission Points Per Price UOM.
+	 * Specifies how many commission points are calculated per 1 quantity of the product in the price UOM.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getBase_Commission_Points_Per_Price_UOM();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_Base_Commission_Points_Per_Price_UOM = new ModelColumn<>(I_C_OrderLine.class, "Base_Commission_Points_Per_Price_UOM", null);
+	String COLUMNNAME_Base_Commission_Points_Per_Price_UOM = "Base_Commission_Points_Per_Price_UOM";
+
+	/**
 	 * Set Pricing system.
 	 *
 	 * <br>Type: Search
@@ -2615,6 +2638,27 @@ public interface I_C_OrderLine
 
 	ModelColumn<I_C_OrderLine, Object> COLUMN_TaxAmtInfo = new ModelColumn<>(I_C_OrderLine.class, "TaxAmtInfo", null);
 	String COLUMNNAME_TaxAmtInfo = "TaxAmtInfo";
+
+	/**
+	 * Set Traded Commission Percent.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setTraded_Commission_Percent (@Nullable BigDecimal Traded_Commission_Percent);
+
+	/**
+	 * Get Traded Commission Percent.
+	 *
+	 * <br>Type: Number
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getTraded_Commission_Percent();
+
+	ModelColumn<I_C_OrderLine, Object> COLUMN_Traded_Commission_Percent = new ModelColumn<>(I_C_OrderLine.class, "Traded_Commission_Percent", null);
+	String COLUMNNAME_Traded_Commission_Percent = "Traded_Commission_Percent";
 
 	/**
 	 * Get Updated.

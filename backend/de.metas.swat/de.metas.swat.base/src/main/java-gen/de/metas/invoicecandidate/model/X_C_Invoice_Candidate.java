@@ -108,6 +108,19 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	}
 
 	@Override
+	public void setBase_Commission_Points_Per_Price_UOM (final @Nullable BigDecimal Base_Commission_Points_Per_Price_UOM)
+	{
+		set_Value (COLUMNNAME_Base_Commission_Points_Per_Price_UOM, Base_Commission_Points_Per_Price_UOM);
+	}
+
+	@Override
+	public BigDecimal getBase_Commission_Points_Per_Price_UOM()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Base_Commission_Points_Per_Price_UOM);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setBill_BPartner_ID (final int Bill_BPartner_ID)
 	{
 		if (Bill_BPartner_ID < 1) 
@@ -2507,6 +2520,19 @@ public class X_C_Invoice_Candidate extends org.compiere.model.PO implements I_C_
 	public BigDecimal getTotalOfOrderExcludingDiscount() 
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_TotalOfOrderExcludingDiscount);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
+	public void setTraded_Commission_Percent (final @Nullable BigDecimal Traded_Commission_Percent)
+	{
+		set_Value (COLUMNNAME_Traded_Commission_Percent, Traded_Commission_Percent);
+	}
+
+	@Override
+	public BigDecimal getTraded_Commission_Percent()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Traded_Commission_Percent);
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 

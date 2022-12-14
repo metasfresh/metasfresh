@@ -66,6 +66,19 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 	}
 
 	@Override
+	public void setBase_Commission_Points_Per_Price_UOM (final @Nullable BigDecimal Base_Commission_Points_Per_Price_UOM)
+	{
+		set_Value (COLUMNNAME_Base_Commission_Points_Per_Price_UOM, Base_Commission_Points_Per_Price_UOM);
+	}
+
+	@Override
+	public BigDecimal getBase_Commission_Points_Per_Price_UOM()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Base_Commission_Points_Per_Price_UOM);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
+
+	@Override
 	public void setBase_PricingSystem_ID (final int Base_PricingSystem_ID)
 	{
 		if (Base_PricingSystem_ID < 1) 
@@ -1805,6 +1818,18 @@ public class X_C_OrderLine extends org.compiere.model.PO implements I_C_OrderLin
 		return bd != null ? bd : BigDecimal.ZERO;
 	}
 
+	@Override
+	public void setTraded_Commission_Percent (final @Nullable BigDecimal Traded_Commission_Percent)
+	{
+		set_Value (COLUMNNAME_Traded_Commission_Percent, Traded_Commission_Percent);
+	}
+
+	@Override
+	public BigDecimal getTraded_Commission_Percent()
+	{
+		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_Traded_Commission_Percent);
+		return bd != null ? bd : BigDecimal.ZERO;
+	}
 	@Override
 	public org.compiere.model.I_C_ElementValue getUser1()
 	{
