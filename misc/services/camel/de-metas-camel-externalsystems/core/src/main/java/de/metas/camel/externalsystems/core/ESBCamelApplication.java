@@ -25,7 +25,7 @@ package de.metas.camel.externalsystems.core;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication(scanBasePackages = { "de.metas.camel.externalsystems" })
+@SpringBootApplication(scanBasePackages = { "de.metas.camel.externalsystems", "com.adekia.exchange" })
 public class ESBCamelApplication
 {
 	/**
