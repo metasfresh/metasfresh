@@ -28,6 +28,7 @@ import com.adekia.exchange.metasfresh.util.MetasfreshOrderBPartnerContact;
 import com.adekia.exchange.metasfresh.util.MetasfreshOrderBPartnerLocation;
 import com.adekia.exchange.model.BPartnerIdentifier;
 import com.adekia.exchange.transformer.OrderBPTransformer;
+import de.metas.camel.externalsystems.common.v2.BPUpsertCamelRequest;
 import de.metas.common.bpartner.v2.request.*;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import oasis.names.specification.ubl.schema.xsd.order_23.OrderType;
@@ -38,7 +39,7 @@ import java.util.Arrays;
 @Component
 public class OrderBPTransformerImpl implements OrderBPTransformer {
     @Override
-    public JsonRequestBPartnerUpsert transform(final OrderType order) throws Exception {
+    public BPUpsertCamelRequest transform(final OrderType order) throws Exception {
 
         if (order == null || order.getBuyerCustomerParty() == null || order.getBuyerCustomerParty().getParty() == null)
             throw new IllegalStateException("customer Party is required !");
@@ -80,10 +81,14 @@ public class OrderBPTransformerImpl implements OrderBPTransformer {
                 .bpartnerIdentifier(partnerIdentifier.getPartnerIdentifier())
                 .build();
 
-        return JsonRequestBPartnerUpsert.builder()
+        JsonRequestBPartnerUpsert jsonRequestBPartnerUpsert = JsonRequestBPartnerUpsert.builder()
                 .requestItems(Arrays.asList(jsonRequestBPartnerUpsertItem))
                 .syncAdvise(SyncAdvise.JUST_CREATE_IF_NOT_EXISTS)
                 .build();
 
+        return BPUpsertCamelRequest.builder()
+                .jsonRequestBPartnerUpsert(jsonRequestBPartnerUpsert)
+                .orgCode(MetasfreshOrderConstants.MF_ORG_CODE)        // todo
+                .build();
     }
 }
