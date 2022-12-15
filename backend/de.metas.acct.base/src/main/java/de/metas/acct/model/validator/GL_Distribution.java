@@ -41,11 +41,19 @@ public class GL_Distribution
 		}
 		if (glDistribution.isAnyActivity() && glDistribution.getC_Activity_ID() > 0)
 		{
-			glDistribution.setC_Activity(null);
+			glDistribution.setC_Activity_ID(-1);
+		}
+		if (glDistribution.isAnyOrder() && glDistribution.getC_Order_ID() > 0)
+		{
+			glDistribution.setC_Order_ID(-1);
+		}
+		if (glDistribution.isAnySectionCode() && glDistribution.getM_SectionCode_ID() > 0)
+		{
+			glDistribution.setM_SectionCode_ID(-1);
 		}
 		if (glDistribution.isAnyBPartner() && glDistribution.getC_BPartner_ID() > 0)
 		{
-			glDistribution.setC_BPartner(null);
+			glDistribution.setC_BPartner_ID(-1);
 		}
 		if (glDistribution.isAnyCampaign() && glDistribution.getC_Campaign_ID() > 0)
 		{
@@ -61,19 +69,19 @@ public class GL_Distribution
 		}
 		if (glDistribution.isAnyOrg() && glDistribution.getOrg_ID() > 0)
 		{
-			glDistribution.setOrg(null);
+			glDistribution.setOrg_ID(-1);
 		}
 		if (glDistribution.isAnyOrgTrx() && glDistribution.getAD_OrgTrx_ID() > 0)
 		{
-			glDistribution.setAD_OrgTrx(null);
+			glDistribution.setAD_OrgTrx_ID(-1);
 		}
 		if (glDistribution.isAnyProduct() && glDistribution.getM_Product_ID() > 0)
 		{
-			glDistribution.setM_Product(null);
+			glDistribution.setM_Product_ID(-1);
 		}
 		if (glDistribution.isAnyProject() && glDistribution.getC_Project_ID() > 0)
 		{
-			glDistribution.setC_Project(null);
+			glDistribution.setC_Project_ID(-1);
 		}
 		if (glDistribution.isAnySalesRegion() && glDistribution.getC_SalesRegion_ID() > 0)
 		{
