@@ -51,8 +51,6 @@ function createAuthObject() {
   const dispatch = useDispatch();
 
   const loginByToken = async ({ token, language }) => {
-    console.log('auth.loginByToken: token=', { token, language });
-
     if (language) {
       setLanguage(language);
       Cookies.set('Language', language, { expires: COOKIE_EXPIRATION });

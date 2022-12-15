@@ -36,7 +36,6 @@ import org.adempiere.ad.dao.IQueryOrderBy;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
-import org.adempiere.archive.ArchiveId;
 import org.adempiere.archive.api.ArchiveAction;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -182,12 +181,6 @@ public class DocOutboundDAO implements IDocOutboundDAO
 	}
 
 	@Override
-	public final I_C_Doc_Outbound_Log retrieveLog(@NonNull final ArchiveId archiveId)
-	{
-		return retrieveLog(TableRecordReference.of(I_AD_Archive.Table_Name, archiveId));
-	}
-
-	@Override
 	public I_C_Doc_Outbound_Log retrieveLog(@NonNull final TableRecordReference tableRecordReference)
 	{
 		return Services.get(IQueryBL.class)
@@ -197,6 +190,11 @@ public class DocOutboundDAO implements IDocOutboundDAO
 				.addEqualsFilter(I_C_Doc_Outbound_Log.COLUMN_Record_ID, tableRecordReference.getRecord_ID())
 				.create()
 				.firstOnly(I_C_Doc_Outbound_Log.class);
+	}
+
+	public static TableRecordReference extractRecordRef(@NonNull final I_AD_Archive archive)
+	{
+		return TableRecordReference.of(archive.getAD_Table_ID(), archive.getRecord_ID());
 	}
 
 	@Override

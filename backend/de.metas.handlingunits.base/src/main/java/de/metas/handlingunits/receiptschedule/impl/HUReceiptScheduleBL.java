@@ -3,7 +3,6 @@ package de.metas.handlingunits.receiptschedule.impl;
 import ch.qos.logback.classic.Level;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import de.metas.bpartner.BPartnerId;
 import de.metas.handlingunits.CompositeDocumentLUTUConfigurationHandler;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IDocumentLUTUConfigurationHandler;
@@ -25,10 +24,10 @@ import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.hutransaction.IHUTrxBL;
 import de.metas.handlingunits.impl.DocumentLUTUConfigurationManager;
 import de.metas.handlingunits.impl.IDocumentLUTUConfigurationManager;
+import de.metas.handlingunits.inout.IHUInOutBL;
 import de.metas.handlingunits.inout.impl.DistributeAndMoveReceiptCreator;
 import de.metas.handlingunits.model.I_C_OrderLine;
 import de.metas.handlingunits.model.I_M_HU;
-import de.metas.handlingunits.model.I_M_HU_Assignment;
 import de.metas.handlingunits.model.I_M_HU_LUTU_Configuration;
 import de.metas.handlingunits.model.I_M_InOut;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
@@ -37,15 +36,13 @@ import de.metas.handlingunits.model.X_M_HU;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleBL;
 import de.metas.handlingunits.receiptschedule.IHUReceiptScheduleDAO;
 import de.metas.handlingunits.receiptschedule.IHUToReceiveValidator;
-import de.metas.handlingunits.report.HUReportExecutor;
-import de.metas.handlingunits.report.HUReportService;
 import de.metas.handlingunits.report.HUToReport;
 import de.metas.handlingunits.report.HUToReportWrapper;
-import de.metas.handlingunits.report.labels.HULabelConfig;
-import de.metas.handlingunits.report.labels.HULabelConfigQuery;
+import de.metas.handlingunits.report.labels.HULabelPrintRequest;
+import de.metas.handlingunits.report.labels.HULabelService;
 import de.metas.handlingunits.report.labels.HULabelSourceDocType;
 import de.metas.handlingunits.storage.IProductStorage;
-import de.metas.inout.IInOutDAO;
+import de.metas.inout.InOutId;
 import de.metas.inoutcandidate.api.IInOutCandidateBL;
 import de.metas.inoutcandidate.api.IInOutProducer;
 import de.metas.inoutcandidate.api.IReceiptScheduleBL;
@@ -53,7 +50,6 @@ import de.metas.inoutcandidate.api.InOutGenerateResult;
 import de.metas.inoutcandidate.spi.impl.InOutProducerFromReceiptScheduleHU;
 import de.metas.logging.LogManager;
 import de.metas.organization.ClientAndOrgId;
-import de.metas.process.AdProcessId;
 import de.metas.quantity.Quantity;
 import de.metas.util.Check;
 import de.metas.util.ILoggable;
@@ -80,7 +76,6 @@ import org.compiere.Adempiere;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_C_UOM;
-import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -135,6 +130,7 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	private final IReceiptScheduleBL receiptScheduleBL = Services.get(IReceiptScheduleBL.class);
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
+	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	private static final Logger logger = LogManager.getLogger(HUReceiptScheduleBL.class);
 
@@ -460,36 +456,48 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 	 * We used to create it in ReceiptInOutLineHUAssignmentListener, but there we could not detect the code
 	 * being called multiple times in a row, from different transactions.
 	 * This happens if there are >1 inout lines sharing the same LU.
-	 *
-	 * task https://github.com/metasfresh/metasfresh/issues/1905
+	 * <p>
+	 * task <a href="https://github.com/metasfresh/metasfresh/issues/1905">1905</a>
 	 */
 	private void printReceiptLabels(final InOutGenerateResult result)
 	{
-		final IInOutDAO inOutDAO = Services.get(IInOutDAO.class);
-		final IHUAssignmentDAO huAssignmentDAO = Services.get(IHUAssignmentDAO.class);
-
-		final Set<Integer> seenHUIds = new HashSet<>();
-
-		final List<I_M_InOut> inouts = createList(result.getInOuts(), I_M_InOut.class);
-		for (final I_M_InOut inout : inouts)
+		final Set<HuId> huIds = getAssignedHUIds(result.getInOuts());
+		if (huIds.isEmpty())
 		{
-			final BPartnerId vendorBPartnerId = BPartnerId.ofRepoId(inout.getC_BPartner_ID());
-
-			final List<I_M_InOutLine> inoutLines = inOutDAO.retrieveLines(inout);
-			for (final I_M_InOutLine inoutLine : inoutLines)
-			{
-				final List<I_M_HU_Assignment> huAssignments = huAssignmentDAO.retrieveTopLevelHUAssignmentsForModel(inoutLine);
-				for (final I_M_HU_Assignment huAssignment : huAssignments)
-				{
-					final int huId = huAssignment.getM_HU_ID();
-					if (huId > 0 && seenHUIds.add(huId))
-					{
-						final HUToReportWrapper hu = HUToReportWrapper.of(huAssignment.getM_HU());
-						printReceiptLabel(hu, vendorBPartnerId);
-					}
-				}
-			}
+			return;
 		}
+
+		final HULabelService huLabelService = SpringContextHolder.instance.getBean(HULabelService.class);
+
+		final ImmutableList<HUToReport> husToReport = handlingUnitsBL.getByIds(huIds)
+				.stream()
+				.map(HUToReportWrapper::of)
+				.filter(HUToReport::isTopLevel) // We only print top level HUs
+				.collect(ImmutableList.toImmutableList());
+		if (husToReport.isEmpty())
+		{
+			return;
+		}
+
+		huLabelService.print(HULabelPrintRequest.builder()
+				.sourceDocType(HULabelSourceDocType.MaterialReceipt)
+				.hus(husToReport)
+				.onlyIfAutoPrint(true)
+				.failOnMissingLabelConfig(false)
+				.build());
+	}
+
+	private Set<HuId> getAssignedHUIds(List<? extends org.compiere.model.I_M_InOut> inouts)
+	{
+		if (inouts.isEmpty())
+		{
+			return ImmutableSet.of();
+		}
+
+		final ImmutableSet<InOutId> inoutIds = inouts.stream().map(inout -> InOutId.ofRepoId(inout.getM_InOut_ID())).collect(ImmutableSet.toImmutableSet());
+
+		final IHUInOutBL huInOutBL = Services.get(IHUInOutBL.class);
+		return huInOutBL.getHUIdsByInOutIds(inoutIds);
 	}
 
 	private void createMovementsOrDistributionOrders(
@@ -503,54 +511,6 @@ public class HUReceiptScheduleBL implements IHUReceiptScheduleBL
 		{
 			distributeAndMoveReceiptCreator.createDocumentsFor(receipt, destinationLocatorId);
 		}
-	}
-
-	/**
-	 * task https://github.com/metasfresh/metasfresh-webui/issues/209
-	 */
-	private void printReceiptLabel(@NonNull final HUToReport hu, @NonNull final BPartnerId vendorBPartnerId)
-	{
-		final HUReportService huReportService = SpringContextHolder.instance.getBean(HUReportService.class);
-
-		final HULabelConfig labelConfig = //huLabelService.getReceiptLabelFromSysConfig(vendorBPartnerId)
-				huReportService.getLabelConfig(HULabelConfigQuery.builder()
-								.sourceDocType(HULabelSourceDocType.MaterialReceipt)
-								.huUnitType(hu.getHUUnitType())
-								.build())
-				.ifAbsent(msg -> logger.debug(msg.getDefaultValue()))
-				.orElse(null);
-		if (labelConfig == null)
-		{
-			return;
-		}
-		if (!labelConfig.isAutoPrint())
-		{
-			logger.debug("Auto printing receipt labels is not enabled; nothing to do");
-			return;
-		}
-
-		if (!hu.isTopLevel())
-		{
-			logger.debug("We only print top level HUs; nothing to do; hu={}", hu);
-			return;
-		}
-
-		final AdProcessId printFormatProcessId = labelConfig.getPrintFormatProcessId();
-		final List<HUToReport> husToProcess = huReportService
-				.getHUsToProcess(hu, printFormatProcessId)
-				.stream()
-				.collect(ImmutableList.toImmutableList());
-		if (husToProcess.isEmpty())
-		{
-			logger.debug("The selected hu does not match process {}; nothing to do; hu={}", printFormatProcessId, hu);
-			return;
-		}
-
-		final int copies = labelConfig.getAutoPrintCopies();
-
-		HUReportExecutor.newInstance()
-				.numberOfCopies(copies)
-				.executeHUReportAfterCommit(printFormatProcessId, husToProcess);
 	}
 
 	@Override
