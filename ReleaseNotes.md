@@ -12,7 +12,8 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
-  * [#14135] (https://github.com/metasfresh/metasfresh/issues/14135) Support 4 parent levels in Balance Sheet 
+  * [#14038](https://github.com/metasfresh/metasfresh/issues/14038) Get WorkOrder Projects from API  
+  * [#14135](https://github.com/metasfresh/metasfresh/issues/14135) Support 4 parent levels in Balance Sheet 
   * [#14105](https://github.com/metasfresh/metasfresh/issues/14105) Sub-Task No 5: Test & Fix Sales order (w/ ship ) - Product Planning - Distribution 
   * [#14103](https://github.com/metasfresh/metasfresh/issues/14103) Delivery Planning: Open and Close processes 
   * [#14108](https://github.com/metasfresh/metasfresh/pull/14108) Don't validate ASI for unique attributes in service repair PP_Orders
