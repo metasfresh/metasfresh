@@ -19,7 +19,7 @@ class ResourceAllocation
 	@Nullable SimulationPlanId appliedSimulationId;
 	@NonNull CalendarDateRange dateRange;
 
-	public boolean isInConflictWith(@NonNull ResourceAllocation other)
+	public boolean isInConflictWith(@NonNull final ResourceAllocation other)
 	{
 		return ResourceId.equals(this.resourceId, other.resourceId)
 				&& this.dateRange.isOverlappingWith(other.dateRange);

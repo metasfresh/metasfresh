@@ -27,6 +27,7 @@ import javax.annotation.Nullable;
 import javax.validation.constraints.Null;
 import java.time.Instant;
 import java.util.HashSet;
+import java.util.Optional;
 
 public final class WOProjectsCalendarQueryExecutor
 {
@@ -79,12 +80,15 @@ public final class WOProjectsCalendarQueryExecutor
 		this.endDate = endDate;
 	}
 
+	@NonNull
 	public ImmutableList<CalendarEntry> execute()
 	{
 		return getProjectResources()
 				.stream()
 				.filter(this::isActiveProject)
 				.map(this::toCalendarEntry)
+				.filter(Optional::isPresent)
+				.map(Optional::get)
 				.collect(ImmutableList.toImmutableList());
 	}
 
@@ -153,7 +157,8 @@ public final class WOProjectsCalendarQueryExecutor
 		return getActiveProjects().get(projectResource.getProjectId());
 	}
 
-	private CalendarEntry toCalendarEntry(@NonNull final WOProjectResource projectResource)
+	@NonNull
+	private Optional<CalendarEntry> toCalendarEntry(@NonNull final WOProjectResource projectResource)
 	{
 		final SimulationHeaderAndPlan simulationHeaderAndPlan = getSimulationHeaderAndPlan();
 

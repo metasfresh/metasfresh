@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.ui.web.base
+ * de.metas.business
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,32 +20,11 @@
  * #L%
  */
 
-package de.metas.ui.web.calendar.json;
+package de.metas.project;
 
-import de.metas.calendar.CalendarGlobalId;
-import de.metas.calendar.CalendarResourceId;
-import de.metas.calendar.simulation.SimulationPlanId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
+import java.time.Duration;
 
-import javax.annotation.Nullable;
-
-@Value
-@Builder
-@Jacksonized
-public class JsonCalendarEntryAddRequest
+public interface ProjectConstants
 {
-	@Nullable SimulationPlanId simulationId;
-
-	@NonNull CalendarGlobalId calendarId;
-	@NonNull CalendarResourceId resourceId;
-
-	@NonNull String title;
-	@Nullable String description;
-
-	@NonNull JsonDateTime startDate;
-	@Nullable JsonDateTime endDate;
-	boolean isAllDay;
+	Duration DEFAULT_DURATION = Duration.ofHours(1);
 }

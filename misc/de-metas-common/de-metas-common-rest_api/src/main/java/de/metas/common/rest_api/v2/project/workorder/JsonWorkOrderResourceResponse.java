@@ -44,11 +44,11 @@ public class JsonWorkOrderResourceResponse
 	@NonNull
 	JsonMetasfreshId stepId;
 
-	@NonNull
+	@Nullable
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	LocalDate assignDateFrom;
 
-	@NonNull
+	@Nullable
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
 	LocalDate assignDateTo;
 

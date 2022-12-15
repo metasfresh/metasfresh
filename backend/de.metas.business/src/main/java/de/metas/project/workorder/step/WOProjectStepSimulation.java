@@ -40,6 +40,7 @@ public class WOProjectStepSimulation
 		}
 	}
 
+	@NonNull
 	public WOProjectStep applyOn(@NonNull final WOProjectStep step)
 	{
 		Check.assumeEquals(step.getProjectId(), projectId, "expected same projectId: {}, {}", step, this);

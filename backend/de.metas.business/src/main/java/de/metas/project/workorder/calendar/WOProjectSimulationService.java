@@ -2,11 +2,21 @@ package de.metas.project.workorder.calendar;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.calendar.simulation.SimulationPlanId;
+import de.metas.calendar.simulation.SimulationPlanRef;
+import de.metas.calendar.util.CalendarDateRange;
+import de.metas.common.util.time.SystemTime;
 import de.metas.product.ResourceId;
 import de.metas.project.workorder.conflicts.WOProjectConflictService;
+import de.metas.project.workorder.project.WOProject;
 import de.metas.project.workorder.project.WOProjectService;
+import de.metas.project.workorder.resource.WOProjectResource;
+import de.metas.project.workorder.resource.WOProjectResourceId;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+
+import static de.metas.project.ProjectConstants.DEFAULT_DURATION;
 
 @Service
 public class WOProjectSimulationService
@@ -24,6 +34,34 @@ public class WOProjectSimulationService
 		this.woProjectService = woProjectService;
 		this.woProjectSimulationRepository = woProjectSimulationRepository;
 		this.woProjectConflictService = woProjectConflictService;
+	}
+
+	public void initializeSimulationForResource(
+			@NonNull final WOProjectResource woProjectResource,
+			@NonNull final SimulationPlanRef masterSimulationPlan)
+	{
+		final WOProjectSimulationPlan woProjectSimulationPlan = getSimulationPlanById(masterSimulationPlan.getId());
+		if (woProjectSimulationPlan.getProjectResourceByIdOrNull(woProjectResource.getWoProjectResourceId()) != null)
+		{
+			return;
+		}
+		
+		final WOProjectResourceId projectResourceId = woProjectResource.getWoProjectResourceId();
+		final WOProjectSimulationPlanEditor simulationPlanEditor = WOProjectSimulationPlanEditor.builder()
+				.project(woProjectService.getById(projectResourceId.getProjectId()))
+				.steps(woProjectService.getStepsByProjectId(projectResourceId.getProjectId()))
+				.projectResources(woProjectService.getResourcesByProjectId(projectResourceId.getProjectId()))
+				.currentSimulationPlan(woProjectSimulationPlan)
+				.build();
+
+		simulationPlanEditor.changeResourceDateRangeAndShiftSteps(projectResourceId,
+																  getProjectDateRangeOrDefault(simulationPlanEditor.getProject()),
+																  woProjectResource.getWoProjectStepId());
+
+		final WOProjectSimulationPlan changedSimulation = simulationPlanEditor.toNewSimulationPlan();
+		savePlan(changedSimulation);
+
+		woProjectConflictService.checkSimulationConflicts(changedSimulation, simulationPlanEditor.getAffectedResourceIds());
 	}
 
 	public WOProjectSimulationPlan getSimulationPlanById(@NonNull final SimulationPlanId simulationId)
@@ -63,5 +101,20 @@ public class WOProjectSimulationService
 		}
 
 		woProjectConflictService.checkSimulationConflicts(simulationPlan, resourceIds);
+	}
+
+	@NonNull
+	private CalendarDateRange getProjectDateRangeOrDefault(@NonNull final WOProject woProject)
+	{
+		return woProject.getCalendarDateRange()
+				.orElseGet(() -> {
+					final Instant defaultStartDate = SystemTime.asInstant();
+
+					return CalendarDateRange.builder()
+							.startDate(defaultStartDate)
+							.endDate(defaultStartDate.plus(DEFAULT_DURATION))
+							.allDay(false)
+							.build();
+				});
 	}
 }

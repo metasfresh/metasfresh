@@ -217,7 +217,7 @@ public class WOProjectSimulationRepository
 		record.setIsAllDay_Prev(from.getDateRangeBeforeApplying() != null && from.getDateRangeBeforeApplying().isAllDay());
 	}
 
-	public void savePlan(@NonNull WOProjectSimulationPlan plan)
+	public void savePlan(@NonNull final WOProjectSimulationPlan plan)
 	{
 		final HashMap<WOProjectStepId, I_C_Project_WO_Step_Simulation> existingStepRecordsById = queryBL
 				.createQueryBuilder(I_C_Project_WO_Step_Simulation.class)

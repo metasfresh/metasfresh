@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.ui.web.base
+ * de.metas.business
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,32 +20,15 @@
  * #L%
  */
 
-package de.metas.ui.web.calendar.json;
+-- 2022-12-14T14:55:31.987Z
+INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,583490,541291,540716,0,TO_TIMESTAMP('2022-12-14 16:55:30','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',40,TO_TIMESTAMP('2022-12-14 16:55:30','YYYY-MM-DD HH24:MI:SS'),100)
+;
 
-import de.metas.calendar.CalendarGlobalId;
-import de.metas.calendar.CalendarResourceId;
-import de.metas.calendar.simulation.SimulationPlanId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
+-- 2022-12-14T14:55:40.481Z
+DROP INDEX IF EXISTS idx_c_simulationplan_unique_mainsimulation
+;
 
-import javax.annotation.Nullable;
+-- 2022-12-14T14:55:40.496Z
+CREATE UNIQUE INDEX IDX_C_SimulationPlan_Unique_MainSimulation ON C_SimulationPlan (IsMainSimulation,IsActive,Processed,AD_Org_ID) WHERE IsMainSimulation='Y' AND IsActive='Y' AND Processed='N'
+;
 
-@Value
-@Builder
-@Jacksonized
-public class JsonCalendarEntryAddRequest
-{
-	@Nullable SimulationPlanId simulationId;
-
-	@NonNull CalendarGlobalId calendarId;
-	@NonNull CalendarResourceId resourceId;
-
-	@NonNull String title;
-	@Nullable String description;
-
-	@NonNull JsonDateTime startDate;
-	@Nullable JsonDateTime endDate;
-	boolean isAllDay;
-}

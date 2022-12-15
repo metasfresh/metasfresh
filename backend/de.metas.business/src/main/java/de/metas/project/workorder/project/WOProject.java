@@ -23,6 +23,7 @@
 package de.metas.project.workorder.project;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.calendar.util.CalendarDateRange;
 import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListVersionId;
@@ -36,6 +37,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
+import java.util.Optional;
 
 @Value
 @Builder(toBuilder = true)
@@ -106,4 +108,18 @@ public class WOProject
 
 	@Nullable
 	Instant woProjectCreatedDate;
+	
+	@NonNull
+	public Optional<CalendarDateRange> getCalendarDateRange()
+	{
+		if (dateContract == null || dateFinish == null)
+		{
+			return Optional.empty();
+		}
+
+		return Optional.of(CalendarDateRange.builder()
+								   .startDate(dateContract)
+								   .endDate(dateFinish)
+								   .build());
+	}
 }
