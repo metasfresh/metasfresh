@@ -28,21 +28,17 @@ import de.metas.calendar.simulation.SimulationPlanRepository;
 import de.metas.calendar.simulation.SimulationPlanService;
 import de.metas.cucumber.stepdefs.AD_User_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.logging.LogManager;
-import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
-import lombok.Builder;
 import lombok.NonNull;
-import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.assertj.core.api.SoftAssertions;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_AD_Org;
 import org.compiere.model.I_AD_User;
@@ -51,6 +47,7 @@ import org.slf4j.Logger;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 import static org.assertj.core.api.Assertions.*;
@@ -75,15 +72,13 @@ public class C_SimulationPlan_StepDef
 		this.simulationPlanTable = simulationPlanTable;
 	}
 
-	@And("^after not more than (.*)s, master C_SimulationPlan is found$")
-	public void lookup_master_C_SimulationPlan(
-			final int timeoutSec,
-			@NonNull final DataTable dataTable) throws InterruptedException
+	@And("master C_SimulationPlan is found")
+	public void lookup_master_C_SimulationPlan(@NonNull final DataTable dataTable) throws InterruptedException
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
 		{
-			findMasterSimulationPlan(timeoutSec, tableRow);
+			findMasterSimulationPlan(tableRow);
 		}
 	}
 
@@ -97,15 +92,13 @@ public class C_SimulationPlan_StepDef
 		}
 	}
 
-	@And("^after not more than (.*)s, C_SimulationPlan is found$")
-	public void lookup_C_SimulationPlan(
-			final int timeoutSec,
-			@NonNull final DataTable dataTable) throws InterruptedException
+	@And("validate C_SimulationPlan")
+	public void lookup_C_SimulationPlan(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
 		{
-			findSimulationPlan(timeoutSec, tableRow);
+			findSimulationPlan(tableRow);
 		}
 	}
 
@@ -140,9 +133,7 @@ public class C_SimulationPlan_StepDef
 				.addSetColumnValue(I_C_SimulationPlan.COLUMNNAME_IsActive, false);
 	}
 
-	private void findMasterSimulationPlan(
-			final int timeoutSec,
-			@NonNull final Map<String, String> tableRow) throws InterruptedException
+	private void findMasterSimulationPlan(@NonNull final Map<String, String> tableRow)
 	{
 		final String orgCode = DataTableUtil.extractStringForColumnName(tableRow, "OrgCode");
 		final OrgId orgId = queryBL.createQueryBuilder(I_AD_Org.class)
@@ -153,8 +144,10 @@ public class C_SimulationPlan_StepDef
 
 		assertThat(orgId).isNotNull();
 
-		final SimulationPlanRef simulationPlanRef = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> simulationPlanRepository.getCurrentMainSimulationPlan(orgId));
-		final I_C_SimulationPlan simulationPlanRecord = InterfaceWrapperHelper.load(simulationPlanRef.getId().getRepoId(), I_C_SimulationPlan.class);
+		final Optional<SimulationPlanRef> simulationPlanRef = simulationPlanRepository.getCurrentMainSimulationPlan(orgId);
+		assertThat(simulationPlanRef).isPresent();
+
+		final I_C_SimulationPlan simulationPlanRecord = InterfaceWrapperHelper.load(simulationPlanRef.get().getId().getRepoId(), I_C_SimulationPlan.class);
 		final String simulationPlanIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_SimulationPlan.COLUMNNAME_C_SimulationPlan_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		simulationPlanTable.putOrReplace(simulationPlanIdentifier, simulationPlanRecord);
 	}
@@ -195,51 +188,28 @@ public class C_SimulationPlan_StepDef
 		simulationPlanTable.putOrReplace(simulationPlanIdentifier, simulationPlanRecord);
 	}
 
-	private void findSimulationPlan(
-			final int timeoutSec,
-			@NonNull final Map<String, String> tableRow) throws InterruptedException
+	private void findSimulationPlan(@NonNull final Map<String, String> tableRow)
 	{
+		final String simulationPlanIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_SimulationPlan.COLUMNNAME_C_SimulationPlan_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		final I_C_SimulationPlan simulationPlanRecord = simulationPlanTable.get(simulationPlanIdentifier);
+		assertThat(simulationPlanRecord).isNotNull();
+
+		InterfaceWrapperHelper.refresh(simulationPlanRecord);
+
+		final SoftAssertions softly = new SoftAssertions();
+
 		final String responsibleUserIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_SimulationPlan.COLUMNNAME_AD_User_Responsible_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final I_AD_User userRecord = userTable.get(responsibleUserIdentifier);
-		assertThat(userRecord).isNotNull();
-		final UserId userId = UserId.ofRepoId(userRecord.getAD_User_ID());
+		softly.assertThat(userRecord).isNotNull();
 
 		final boolean isMainSimulation = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_SimulationPlan.COLUMNNAME_IsMainSimulation, true);
-		final boolean processed = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_SimulationPlan.COLUMNNAME_Processed, false);
+		final boolean isProcessed = DataTableUtil.extractBooleanForColumnNameOr(tableRow, "OPT." + I_C_SimulationPlan.COLUMNNAME_Processed, false);
 
-		final SimulationPlanQuery simulationPlanQuery = SimulationPlanQuery.builder()
-				.userId(userId)
-				.isMainSimulation(isMainSimulation)
-				.processed(processed)
-				.build();
+		softly.assertThat(simulationPlanRecord.getAD_User_Responsible_ID()).isEqualTo(userRecord.getAD_User_ID());
+		softly.assertThat(simulationPlanRecord.isMainSimulation()).isEqualTo(isMainSimulation);
+		softly.assertThat(simulationPlanRecord.isProcessed()).isEqualTo(isProcessed);
 
-		final I_C_SimulationPlan simulationPlanRecord = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> getSimulationPlan(simulationPlanQuery), () -> logCurrentContext(simulationPlanQuery));
-		final String simulationPlanIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_SimulationPlan.COLUMNNAME_C_SimulationPlan_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		simulationPlanTable.putOrReplace(simulationPlanIdentifier, simulationPlanRecord);
-	}
-
-	private void logCurrentContext(@NonNull final SimulationPlanQuery simulationPlanQuery)
-	{
-		final StringBuilder message = new StringBuilder();
-
-		message.append("Looking for instance with:").append("\n")
-				.append(I_C_SimulationPlan.COLUMNNAME_AD_User_Responsible_ID).append(" : ").append(simulationPlanQuery.getUserId().getRepoId()).append("\n")
-				.append(I_C_SimulationPlan.COLUMNNAME_IsMainSimulation).append(" : ").append(simulationPlanQuery.isMainSimulation()).append("\n")
-				.append(I_C_SimulationPlan.COLUMNNAME_Processed).append(" : ").append(simulationPlanQuery.isProcessed()).append("\n");
-
-		message.append("C_SimulationPlan records:").append("\n");
-
-		queryBL.createQueryBuilder(I_C_SimulationPlan.class)
-				.create()
-				.stream(I_C_SimulationPlan.class)
-				.forEach(simulationPlanEntry -> message
-						.append(I_C_SimulationPlan.COLUMNNAME_AD_User_Responsible_ID).append(" : ").append(simulationPlanEntry.getAD_User_Responsible_ID()).append(" ; ")
-						.append(I_C_SimulationPlan.COLUMNNAME_IsMainSimulation).append(" : ").append(simulationPlanEntry.isMainSimulation()).append(" ; ")
-						.append(I_C_SimulationPlan.COLUMNNAME_Processed).append(" : ").append(simulationPlanEntry.isProcessed()).append(" ; ")
-						.append(I_C_SimulationPlan.COLUMNNAME_IsActive).append(" : ").append(simulationPlanEntry.isActive()).append(" ; ")
-						.append("\n"));
-
-		logger.error("*** Error while looking for C_SimulationPlan records, see current context: \n" + message);
+		softly.assertAll();
 	}
 
 	private void processSimulationPlan(@NonNull final Map<String, String> tableRow)
@@ -249,34 +219,5 @@ public class C_SimulationPlan_StepDef
 		assertThat(simulationPlanRecord).isNotNull();
 
 		simulationPlanService.complete(SimulationPlanId.ofRepoId(simulationPlanRecord.getC_SimulationPlan_ID()));
-	}
-
-	@NonNull
-	private ItemProvider.ProviderResult<I_C_SimulationPlan> getSimulationPlan(
-			@NonNull final SimulationPlanQuery simulationPlanQuery)
-	{
-		return queryBL.createQueryBuilder(I_C_SimulationPlan.class)
-				.addOnlyActiveRecordsFilter()
-				.addEqualsFilter(I_C_SimulationPlan.COLUMNNAME_AD_User_Responsible_ID, simulationPlanQuery.getUserId())
-				.addEqualsFilter(I_C_SimulationPlan.COLUMNNAME_IsMainSimulation, simulationPlanQuery.isMainSimulation())
-				.addEqualsFilter(I_C_SimulationPlan.COLUMNNAME_Processed, simulationPlanQuery.isProcessed())
-				.create()
-				.firstOnlyOptional(I_C_SimulationPlan.class)
-				.map(ItemProvider.ProviderResult::resultWasFound)
-				.orElseGet(() -> ItemProvider.ProviderResult.resultWasNotFound("Couldn't find any C_SimulationPlan querying by"
-																					   + " AD_User_Responsible_ID=" + simulationPlanQuery.getUserId().getRepoId()
-																					   + " IsMainSimulation=" + simulationPlanQuery.isMainSimulation()
-																					   + " Processed=" + simulationPlanQuery.isProcessed()));
-	}
-
-	@Builder
-	@Value
-	private static class SimulationPlanQuery
-	{
-		UserId userId;
-
-		boolean isMainSimulation;
-
-		boolean processed;
 	}
 }

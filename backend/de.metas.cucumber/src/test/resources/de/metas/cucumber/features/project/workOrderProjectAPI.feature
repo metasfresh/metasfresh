@@ -1029,7 +1029,9 @@ Feature: WorkOrder Project API Test
   Scenario: Persist WorkOrder Project with associated step and resource using API
   There's no master C_SimulationPlan existing when workOrder is persisted
   Resource's assignDateFrom and assignDateTo are not specified => we add it to a C_SimulationPlan created just in time
+  Step's dateStart and dateTo are specified => C_Project_WO_Resource_Simulation's dates are step's dates
   Process C_SimulationPlan
+  Validate C_Project_WO_Step and C_Project_WO_Resource
 
     Given a 'PUT' request with the below payload is sent to the metasfresh REST-API 'api/v2/project/workorder' and fulfills with '200' status code
     """
@@ -1048,8 +1050,8 @@ Feature: WorkOrder Project API Test
       "identifier": "ext-120922",
       "name": "stepNameTest_12_09_2022",
       "externalId": "120922",
-      "dateStart": "2022-06-02",
-      "dateEnd": "2022-08-20",
+      "dateStart": "2022-01-02",
+      "dateEnd": "2022-01-04",
       "resources":[
         {
           "resourceIdentifier": "int-test"
@@ -1105,8 +1107,8 @@ Feature: WorkOrder Project API Test
                 "projectId": 1000003,
                 "description": null,
                 "seqNo": 10,
-                "dateStart": "2022-06-02",
-                "dateEnd": "2022-08-20",
+                "dateStart": "2022-01-02",
+                "dateEnd": "2022-01-04",
                 "externalId": "120922",
                 "woPartialReportDate": null,
                 "woPlannedResourceDurationHours": 0,
@@ -1143,7 +1145,7 @@ Feature: WorkOrder Project API Test
       | C_Project_WO_Resource_ID.Identifier | C_Project_WO_Step_ID.Identifier |
       | wo_r_1                              | wo_s_1                          |
 
-    And after not more than 60s, master C_SimulationPlan is found
+    And master C_SimulationPlan is found
       | C_SimulationPlan_ID.Identifier | OrgCode |
       | sp_1                           | 001     |
 
@@ -1153,7 +1155,7 @@ Feature: WorkOrder Project API Test
 
     And validate C_Project_WO_Step_Simulation
       | C_Project_WO_Step_Simulation_ID.Identifier | OPT.DateStart | OPT.DateEnd |
-      | wo_s_s_1                                   | 2022-01-02    | 2022-01-02  |
+      | wo_s_s_1                                   | 2022-01-02    | 2022-01-04  |
 
     And load C_Project_WO_Resource_Simulation
       | C_Project_WO_Resource_Simulation_ID.Identifier | C_Project_ID.Identifier | C_Project_WO_Resource_ID.Identifier | C_SimulationPlan_ID.Identifier |
@@ -1161,7 +1163,7 @@ Feature: WorkOrder Project API Test
 
     And validate C_Project_WO_Resource_Simulation
       | C_Project_WO_Resource_Simulation_ID.Identifier | OPT.AssignDateTo | OPT.AssignDateFrom |
-      | wo_r_s_1                                       | 2022-01-02       | 2022-01-02         |
+      | wo_r_s_1                                       | 2022-01-04       | 2022-01-02         |
 
     And C_SimulationPlan is processed
       | C_SimulationPlan_ID.Identifier |
@@ -1171,25 +1173,17 @@ Feature: WorkOrder Project API Test
       | AD_User_ID.Identifier | Login      |
       | loginUser             | metasfresh |
 
-    And after not more than 60s, C_SimulationPlan is found
+    And validate C_SimulationPlan
       | C_SimulationPlan_ID.Identifier | AD_User_Responsible_ID.Identifier | OPT.IsMainSimulation | OPT.Processed |
       | sp_1                           | loginUser                         | true                 | true          |
 
-    And refresh C_Project_WO_Steps
-      | C_Project_WO_Step_ID.Identifier |
-      | wo_s_1                          |
-
     And validate C_Project_WO_Step
       | C_Project_WO_Step_ID.Identifier | OPT.DateStart | OPT.DateEnd |
-      | wo_s_1                          | 2022-01-02    | 2022-01-02  |
-
-    And refresh C_Project_WO_Resources
-      | C_Project_WO_Resource_ID.Identifier |
-      | wo_r_1                              |
+      | wo_s_1                          | 2022-01-02    | 2022-01-04  |
 
     And validate C_Project_WO_Resource
       | C_Project_WO_Resource_ID.Identifier | OPT.AssignDateTo | OPT.AssignDateFrom |
-      | wo_r_1                              | 2022-01-02       | 2022-01-02         |
+      | wo_r_1                              | 2022-01-04       | 2022-01-02         |
 
     And C_SimulationPlan is deactivated
       | C_SimulationPlan_ID.Identifier |
@@ -1199,14 +1193,17 @@ Feature: WorkOrder Project API Test
   Scenario: Persist WorkOrder Project with associated step and resource using API
   There's one master C_SimulationPlan existing when workOrder is persisted
   Resource's assignDateFrom and assignDateTo are not specified => we add it to the existing C_SimulationPlan
+  Step's dateStart and dateTo are specified => C_Project_WO_Resource_Simulation's dates are step's dates
+  C_Project_WO_Resource_Conflict is found because the same resource (with the same dates) is also used in the above scenario
+  C_Project_WO_Resource_Conflict is approved
   Process C_SimulationPlan
-  C_Project_WO_Resource_Conflict is found and approved
+  Validate C_Project_WO_Step and C_Project_WO_Resource
+
+    And deactivate all master C_SimulationPlan
 
     Given load AD_User:
       | AD_User_ID.Identifier | Login      |
       | loginUser             | metasfresh |
-
-    And deactivate all master C_SimulationPlan
 
     And metasfresh contains C_SimulationPlan
       | C_SimulationPlan_ID.Identifier | AD_User_Responsible_ID.Identifier | OPT.IsMainSimulation | OPT.IsProcessed |
@@ -1229,8 +1226,8 @@ Feature: WorkOrder Project API Test
       "identifier": "ext-121222",
       "name": "stepNameTest_12_12_2022",
       "externalId": "121222",
-      "dateStart": "2022-06-02",
-      "dateEnd": "2022-08-20",
+      "dateStart": "2022-01-02",
+      "dateEnd": "2022-01-04",
       "resources":[
         {
           "resourceIdentifier": "int-test"
@@ -1286,8 +1283,8 @@ Feature: WorkOrder Project API Test
                 "projectId": 1000003,
                 "description": null,
                 "seqNo": 10,
-                "dateStart": "2022-06-02",
-                "dateEnd": "2022-08-20",
+                "dateStart": "2022-01-02",
+                "dateEnd": "2022-01-04",
                 "externalId": "121222",
                 "woPartialReportDate": null,
                 "woPlannedResourceDurationHours": 0,
@@ -1329,7 +1326,7 @@ Feature: WorkOrder Project API Test
 
     And validate C_Project_WO_Step_Simulation
       | C_Project_WO_Step_Simulation_ID.Identifier | OPT.DateStart | OPT.DateEnd |
-      | wo_s_s_1                                   | 2022-01-02    | 2022-01-02  |
+      | wo_s_s_1                                   | 2022-01-02    | 2022-01-04  |
 
     And load C_Project_WO_Resource_Simulation
       | C_Project_WO_Resource_Simulation_ID.Identifier | C_Project_ID.Identifier | C_Project_WO_Resource_ID.Identifier | C_SimulationPlan_ID.Identifier |
@@ -1337,9 +1334,10 @@ Feature: WorkOrder Project API Test
 
     And validate C_Project_WO_Resource_Simulation
       | C_Project_WO_Resource_Simulation_ID.Identifier | OPT.AssignDateTo | OPT.AssignDateFrom |
-      | wo_r_s_1                                       | 2022-01-02       | 2022-01-02         |
-    
-    And after not more than 60s, C_Project_WO_Resource_Conflict is found
+      | wo_r_s_1                                       | 2022-01-04       | 2022-01-02         |
+
+    # found if and only if the above scenario is successfully passed, otherwise it is not found and this scenario FAILS as well 
+    And C_Project_WO_Resource_Conflict is found
       | C_Project_WO_Resource_Conflict_ID.Identifier | C_Project2_ID.Identifier | C_Project_WO_Resource2_ID.Identifier | C_SimulationPlan_ID.Identifier |
       | wo_r_c_1                                     | wo_4                     | wo_r_1                               | sp_1                           |
 
@@ -1355,25 +1353,17 @@ Feature: WorkOrder Project API Test
       | C_SimulationPlan_ID.Identifier |
       | sp_1                           |
 
-    And after not more than 60s, C_SimulationPlan is found
+    And validate C_SimulationPlan
       | C_SimulationPlan_ID.Identifier | AD_User_Responsible_ID.Identifier | OPT.IsMainSimulation | OPT.Processed |
       | sp_1                           | loginUser                         | true                 | true          |
 
-    And refresh C_Project_WO_Steps
-      | C_Project_WO_Step_ID.Identifier |
-      | wo_s_1                          |
-
     And validate C_Project_WO_Step
       | C_Project_WO_Step_ID.Identifier | OPT.DateStart | OPT.DateEnd |
-      | wo_s_1                          | 2022-01-02    | 2022-01-02  |
-
-    And refresh C_Project_WO_Resources
-      | C_Project_WO_Resource_ID.Identifier |
-      | wo_r_1                              |
+      | wo_s_1                          | 2022-01-02    | 2022-01-04  |
 
     And validate C_Project_WO_Resource
       | C_Project_WO_Resource_ID.Identifier | OPT.AssignDateTo | OPT.AssignDateFrom |
-      | wo_r_1                              | 2022-01-02       | 2022-01-02         |
+      | wo_r_1                              | 2022-01-04       | 2022-01-02         |
 
     And C_SimulationPlan is deactivated
       | C_SimulationPlan_ID.Identifier |

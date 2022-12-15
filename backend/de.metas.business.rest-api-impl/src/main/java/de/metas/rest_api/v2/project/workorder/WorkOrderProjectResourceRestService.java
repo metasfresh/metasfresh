@@ -528,7 +528,7 @@ public class WorkOrderProjectResourceRestService
 				: existingResource.getStartDate().orElse(null);
 		
 		final Instant actualDateTo = request.isAssignDateToSet()
-				? TimeUtil.asInstant(request.getAssignDateTo(), zoneId)
+				? TimeUtil.asEndOfDayInstant(request.getAssignDateTo(), zoneId)
 				: existingResource.getEndDate().orElse(null);
 		
 		final boolean actualIsAllDay = request.isAllDaySet()

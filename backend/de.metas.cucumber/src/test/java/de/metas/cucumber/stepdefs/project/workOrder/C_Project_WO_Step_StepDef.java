@@ -22,10 +22,8 @@
 
 package de.metas.cucumber.stepdefs.project.workOrder;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.organization.IOrgDAO;
 import de.metas.organization.OrgId;
 import de.metas.util.Services;
@@ -45,7 +43,7 @@ import static org.assertj.core.api.Assertions.*;
 public class C_Project_WO_Step_StepDef
 {
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
-	
+
 	private final C_Project_WO_Step_StepDefData projectWOStepTable;
 
 	public C_Project_WO_Step_StepDef(@NonNull final C_Project_WO_Step_StepDefData projectWOStepTable)
@@ -53,15 +51,6 @@ public class C_Project_WO_Step_StepDef
 		this.projectWOStepTable = projectWOStepTable;
 	}
 
-	@And("refresh C_Project_WO_Steps")
-	public void refresh_C_Project_WO_Steps(@NonNull final DataTable dataTable)
-	{
-		for (final Map<String, String> tableRow : dataTable.asMaps())
-		{
-			refreshProjectWoSteps(tableRow);
-		}
-	}
-	
 	@And("validate C_Project_WO_Step")
 	public void validate_C_Project_WO_Step(@NonNull final DataTable dataTable)
 	{
@@ -77,6 +66,8 @@ public class C_Project_WO_Step_StepDef
 		final I_C_Project_WO_Step woStepRecord = projectWOStepTable.get(woStepIdentifier);
 		assertThat(woStepRecord).isNotNull();
 
+		InterfaceWrapperHelper.refresh(woStepRecord);
+
 		final ZoneId zoneId = orgDAO.getTimeZone(OrgId.ofRepoId(woStepRecord.getAD_Org_ID()));
 
 		final LocalDate dateStart = DataTableUtil.extractLocalDateOrNullForColumnName(tableRow, "OPT." + I_C_Project_WO_Step.COLUMNNAME_DateStart);
@@ -90,20 +81,5 @@ public class C_Project_WO_Step_StepDef
 		{
 			assertThat(TimeUtil.asLocalDate(woStepRecord.getDateEnd(), zoneId)).isEqualTo(dateEnd);
 		}
-	}
-	
-	private void refreshProjectWoSteps(@NonNull final Map<String, String> tableRow)
-	{
-		final String stepIdentifiers = DataTableUtil.extractStringForColumnName(tableRow, I_C_Project_WO_Step.COLUMNNAME_C_Project_WO_Step_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final ImmutableList<String> stepIdentifierList = StepDefUtil.extractIdentifiers(stepIdentifiers);
-		assertThat(stepIdentifierList).isNotEmpty();
-
-		stepIdentifierList.forEach(identifier -> {
-			final I_C_Project_WO_Step projectWoStepRecord = projectWOStepTable.get(identifier);
-			assertThat(projectWoStepRecord).isNotNull();
-			InterfaceWrapperHelper.refresh(projectWoStepRecord);
-
-			projectWOStepTable.putOrReplace(identifier, projectWoStepRecord);
-		});
 	}
 }

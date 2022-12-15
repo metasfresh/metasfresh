@@ -11,10 +11,13 @@ import de.metas.project.workorder.project.WOProject;
 import de.metas.project.workorder.project.WOProjectService;
 import de.metas.project.workorder.resource.WOProjectResource;
 import de.metas.project.workorder.resource.WOProjectResourceId;
+import de.metas.project.workorder.step.WOProjectStep;
+import de.metas.project.workorder.step.WOProjectSteps;
 import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.Optional;
 
 import static de.metas.project.ProjectConstants.DEFAULT_DURATION;
 
@@ -45,17 +48,20 @@ public class WOProjectSimulationService
 		{
 			return;
 		}
-		
+
 		final WOProjectResourceId projectResourceId = woProjectResource.getWoProjectResourceId();
+		final WOProjectSteps woProjectSteps = woProjectService.getStepsByProjectId(projectResourceId.getProjectId());
+		
 		final WOProjectSimulationPlanEditor simulationPlanEditor = WOProjectSimulationPlanEditor.builder()
 				.project(woProjectService.getById(projectResourceId.getProjectId()))
-				.steps(woProjectService.getStepsByProjectId(projectResourceId.getProjectId()))
+				.steps(woProjectSteps)
 				.projectResources(woProjectService.getResourcesByProjectId(projectResourceId.getProjectId()))
 				.currentSimulationPlan(woProjectSimulationPlan)
 				.build();
 
 		simulationPlanEditor.changeResourceDateRangeAndShiftSteps(projectResourceId,
-																  getProjectDateRangeOrDefault(simulationPlanEditor.getProject()),
+																  getSimulationDateRange(woProjectSteps.getById(woProjectResource.getWoProjectStepId()),
+																						 simulationPlanEditor.getProject()),
 																  woProjectResource.getWoProjectStepId());
 
 		final WOProjectSimulationPlan changedSimulation = simulationPlanEditor.toNewSimulationPlan();
@@ -104,17 +110,20 @@ public class WOProjectSimulationService
 	}
 
 	@NonNull
-	private CalendarDateRange getProjectDateRangeOrDefault(@NonNull final WOProject woProject)
+	private CalendarDateRange getSimulationDateRange(
+			@NonNull final WOProjectStep woProjectStep,
+			@NonNull final WOProject woProject)
 	{
-		return woProject.getCalendarDateRange()
-				.orElseGet(() -> {
-					final Instant defaultStartDate = SystemTime.asInstant();
+		return Optional.ofNullable(woProjectStep.getDateRange())
+				.orElseGet(() -> woProject.getCalendarDateRange()
+						.orElseGet(() -> {
+							final Instant defaultStartDate = SystemTime.asInstant();
 
-					return CalendarDateRange.builder()
-							.startDate(defaultStartDate)
-							.endDate(defaultStartDate.plus(DEFAULT_DURATION))
-							.allDay(false)
-							.build();
-				});
+							return CalendarDateRange.builder()
+									.startDate(defaultStartDate)
+									.endDate(defaultStartDate.plus(DEFAULT_DURATION))
+									.allDay(false)
+									.build();
+						}));
 	}
 }

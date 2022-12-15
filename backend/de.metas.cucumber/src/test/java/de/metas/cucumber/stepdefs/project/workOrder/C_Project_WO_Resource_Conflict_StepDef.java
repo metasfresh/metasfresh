@@ -24,9 +24,7 @@ package de.metas.cucumber.stepdefs.project.workOrder;
 
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.ItemProvider;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.project.ProjectId_StepDefData;
 import de.metas.cucumber.stepdefs.simulationplan.C_SimulationPlan_StepDefData;
 import de.metas.project.ProjectId;
@@ -38,6 +36,7 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_Project_WO_Resource;
 import org.compiere.model.I_C_Project_WO_Resource_Conflict;
 import org.compiere.model.I_C_SimulationPlan;
@@ -69,15 +68,13 @@ public class C_Project_WO_Resource_Conflict_StepDef
 		this.resourceConflictTable = resourceConflictTable;
 	}
 
-	@And("^after not more than (.*)s, C_Project_WO_Resource_Conflict is found$")
-	public void lookup_C_Project_WO_Resource_Conflict(
-			final int timeoutSec,
-			@NonNull final DataTable dataTable) throws InterruptedException
+	@And("C_Project_WO_Resource_Conflict is found")
+	public void lookup_C_Project_WO_Resource_Conflict(@NonNull final DataTable dataTable)
 	{
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
 		{
-			findProjectWoResourceConflict(timeoutSec, tableRow);
+			findProjectWoResourceConflict(tableRow);
 		}
 	}
 
@@ -123,9 +120,7 @@ public class C_Project_WO_Resource_Conflict_StepDef
 		assertThat(projectWoResourceConflictRecord.isApproved()).isEqualTo(isApproved);
 	}
 
-	private void findProjectWoResourceConflict(
-			final int timeoutSec,
-			@NonNull final Map<String, String> tableRow) throws InterruptedException
+	private void findProjectWoResourceConflict(@NonNull final Map<String, String> tableRow)
 	{
 		final String project2Identifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_Project_WO_Resource_Conflict.COLUMNNAME_C_Project2_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		final ProjectId projectId = projectIdTable.get(project2Identifier);
@@ -145,13 +140,13 @@ public class C_Project_WO_Resource_Conflict_StepDef
 				.simulationPlanId(SimulationPlanId.ofRepoId(simulationPlanRecord.getC_SimulationPlan_ID()))
 				.build();
 
-		final I_C_Project_WO_Resource_Conflict projectWoResourceConflictRecord = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> getResourceConflict(projectWoResourceConflictQuery));
+		final I_C_Project_WO_Resource_Conflict projectWoResourceConflictRecord = getResourceConflict(projectWoResourceConflictQuery);
 		final String projectWoResourceConflictIdentifier = DataTableUtil.extractStringForColumnName(tableRow, I_C_Project_WO_Resource_Conflict.COLUMNNAME_C_Project_WO_Resource_Conflict_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
 		resourceConflictTable.putOrReplace(projectWoResourceConflictIdentifier, projectWoResourceConflictRecord);
 	}
 
 	@NonNull
-	private ItemProvider.ProviderResult<I_C_Project_WO_Resource_Conflict> getResourceConflict(
+	private I_C_Project_WO_Resource_Conflict getResourceConflict(
 			@NonNull final C_Project_WO_Resource_Conflict_StepDef.C_Project_WO_Resource_Conflict_Query projectWoResourceConflictQuery)
 	{
 		return queryBL.createQueryBuilder(I_C_Project_WO_Resource_Conflict.class)
@@ -161,11 +156,10 @@ public class C_Project_WO_Resource_Conflict_StepDef
 				.addEqualsFilter(I_C_Project_WO_Resource_Conflict.COLUMNNAME_C_SimulationPlan_ID, projectWoResourceConflictQuery.getSimulationPlanId())
 				.create()
 				.firstOnlyOptional(I_C_Project_WO_Resource_Conflict.class)
-				.map(ItemProvider.ProviderResult::resultWasFound)
-				.orElseGet(() -> ItemProvider.ProviderResult.resultWasNotFound("Couldn't find any C_Project_WO_Resource_Conflict querying by"
-																					   + " C_Project2_ID=" + projectWoResourceConflictQuery.getProject2Id().getRepoId()
-																					   + " C_Project_WO_Resource2_ID=" + projectWoResourceConflictQuery.getWoProjectResource2Id().getRepoId()
-																					   + " C_SimulationPlan_ID=" + projectWoResourceConflictQuery.getSimulationPlanId().getRepoId()));
+				.orElseThrow(() -> new AdempiereException("Couldn't find any C_Project_WO_Resource_Conflict querying by"
+																  + " C_Project2_ID=" + projectWoResourceConflictQuery.getProject2Id().getRepoId()
+																  + " C_Project_WO_Resource2_ID=" + projectWoResourceConflictQuery.getWoProjectResource2Id().getRepoId()
+																  + " C_SimulationPlan_ID=" + projectWoResourceConflictQuery.getSimulationPlanId().getRepoId()));
 	}
 
 	@Builder

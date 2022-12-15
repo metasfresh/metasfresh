@@ -70,15 +70,6 @@ public class C_Project_WO_Resource_StepDef
 		}
 	}
 
-	@And("refresh C_Project_WO_Resources")
-	public void refresh_C_Project_WO_Steps(@NonNull final DataTable dataTable)
-	{
-		for (final Map<String, String> tableRow : dataTable.asMaps())
-		{
-			refreshProjectWoResources(tableRow);
-		}
-	}
-
 	@And("validate C_Project_WO_Resource")
 	public void validate_C_Project_WO_Resource(@NonNull final DataTable dataTable)
 	{
@@ -94,6 +85,8 @@ public class C_Project_WO_Resource_StepDef
 		final I_C_Project_WO_Resource projectWoResourceRecord = projectWOResourceTable.get(resourceIdentifier);
 		assertThat(projectWoResourceRecord).isNotNull();
 
+		InterfaceWrapperHelper.refresh(projectWoResourceRecord);
+		
 		final ZoneId zoneId = orgDAO.getTimeZone(OrgId.ofRepoId(projectWoResourceRecord.getAD_Org_ID()));
 		
 		final LocalDate assignDateFrom = DataTableUtil.extractLocalDateOrNullForColumnName(tableRow, "OPT." + I_C_Project_WO_Resource.COLUMNNAME_AssignDateFrom);
@@ -107,21 +100,6 @@ public class C_Project_WO_Resource_StepDef
 		{
 			assertThat(TimeUtil.asLocalDate(projectWoResourceRecord.getAssignDateTo(), zoneId)).isEqualTo(assignDateTo);
 		}
-	}
-
-	private void refreshProjectWoResources(@NonNull final Map<String, String> tableRow)
-	{
-		final String resourceIdentifiers = DataTableUtil.extractStringForColumnName(tableRow, I_C_Project_WO_Resource.COLUMNNAME_C_Project_WO_Resource_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
-		final ImmutableList<String> resourceIdentifierList = StepDefUtil.extractIdentifiers(resourceIdentifiers);
-		assertThat(resourceIdentifierList).isNotEmpty();
-
-		resourceIdentifierList.forEach(identifier -> {
-			final I_C_Project_WO_Resource projectWoResourceRecord = projectWOResourceTable.get(identifier);
-			assertThat(projectWoResourceRecord).isNotNull();
-			InterfaceWrapperHelper.refresh(projectWoResourceRecord);
-
-			projectWOResourceTable.putOrReplace(identifier, projectWoResourceRecord);
-		});
 	}
 
 	private void loadProjectResources(@NonNull final Map<String, String> tableRow)
