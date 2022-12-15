@@ -41,7 +41,7 @@ public class MetasfreshOrderBPSenderImpl implements OrderBPSender
 	@Override
 	public String send(final Object orderBP) throws Exception
 	{
-		producerTemplate.sendBody("direct:" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI , orderBP);
+		producerTemplate.sendBody("{{" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI + "}}" , orderBP);
 		return "    --> Sent to Metasfresh route direct:" + ExternalSystemCamelConstants.MF_UPSERT_BPARTNER_V2_CAMEL_URI;
 
 	}
