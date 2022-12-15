@@ -10,6 +10,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryInsertExecutor.QueryInsertExecutorResult;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
 import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
+import org.adempiere.service.ISysConfigBL;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_C_Conversion_Rate;
 import org.compiere.util.Env;
@@ -46,6 +47,9 @@ import de.metas.util.Services;
 @Component
 public class DATEVExportLinesRepository
 {
+	private static final String SYS_CONFIG_ONE_LINE_PER_INVOICETAX = "DATEVExportLines_OneLinePerInvoiceTax";
+	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL .class);
+
 	public int deleteAllByExportId(final int datevExportId)
 	{
 		return Services.get(IQueryBL.class)
@@ -101,9 +105,13 @@ public class DATEVExportLinesRepository
 		}
 
 		// we gonna show one line per tax
-		final String wc = I_RV_DATEV_Export_Fact_Acct_Invoice.COLUMNNAME_TaxAmt+ " <> " + I_RV_DATEV_Export_Fact_Acct_Invoice.COLUMNNAME_Amt;
-		queryBuilder.filter(TypedSqlQueryFilter.of(wc));
-
+		boolean isOneLinePerInvoiceTax = sysConfigBL.getBooleanValue(SYS_CONFIG_ONE_LINE_PER_INVOICETAX, false);
+		if (isOneLinePerInvoiceTax)
+		{
+			final String wc = I_RV_DATEV_Export_Fact_Acct_Invoice.COLUMNNAME_TaxAmt + " <> " + I_RV_DATEV_Export_Fact_Acct_Invoice.COLUMNNAME_Amt;
+			queryBuilder.filter(TypedSqlQueryFilter.of(wc));
+		}
+		
 		return queryBuilder.create();
 	}
 

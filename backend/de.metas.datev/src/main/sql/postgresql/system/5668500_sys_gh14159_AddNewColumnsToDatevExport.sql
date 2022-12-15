@@ -173,4 +173,9 @@ UPDATE AD_Column SET DefaultValue='', IsMandatory='N',Updated=TO_TIMESTAMP('2022
 ;
 
 
+-- sys config
+
+-- 2022-12-15T11:27:25.090Z
+INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLevel,Created,CreatedBy,EntityType,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,0,541583,'S',TO_TIMESTAMP('2022-12-15 13:27:24.88','YYYY-MM-DD HH24:MI:SS.US'),100,'de.metas.datev','Y','DATEVExportLines_OneLinePerInvoiceTax',TO_TIMESTAMP('2022-12-15 13:27:24.88','YYYY-MM-DD HH24:MI:SS.US'),100,'N')
+;
 
