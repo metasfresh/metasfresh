@@ -169,6 +169,16 @@ public final class AccountDimension
 		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Activity),0);
 	}
 
+	public int getC_Order_ID()
+	{
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.Order),0);
+	}
+
+	public int getM_SectionCode_ID()
+	{
+		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.SectionCode),0);
+	}
+
 	public int getUser1_ID()
 	{
 		return NumberUtils.asInt(getSegmentValue(AcctSegmentType.UserList1),0);
@@ -392,6 +402,18 @@ public final class AccountDimension
 		public Builder setC_Activity_ID(final int C_Activity_ID)
 		{
 			setSegmentValue(AcctSegmentType.Activity, C_Activity_ID);
+			return this;
+		}
+
+		public Builder setC_Order_ID(final int C_Order_ID)
+		{
+			setSegmentValue(AcctSegmentType.Order, C_Order_ID);
+			return this;
+		}
+
+		public Builder setM_SectionCode_ID(final int C_SectionCode_ID)
+		{
+			setSegmentValue(AcctSegmentType.SectionCode, C_SectionCode_ID);
 			return this;
 		}
 

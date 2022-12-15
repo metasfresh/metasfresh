@@ -55,7 +55,9 @@ public enum AcctSegmentType
 	UserElementString4(AcctSchemaElementType.UserElementString4),
 	UserElementString5(AcctSchemaElementType.UserElementString5),
 	UserElementString6(AcctSchemaElementType.UserElementString6),
-	UserElementString7(AcctSchemaElementType.UserElementString7)
+	UserElementString7(AcctSchemaElementType.UserElementString7),
+	Order(AcctSchemaElementType.Order),
+	SectionCode(AcctSchemaElementType.SectionCode)
 	;
 
 	// private final AcctSchemaElementType elementType;

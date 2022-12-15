@@ -6,6 +6,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 
+import de.metas.order.OrderId;
+import de.metas.sectionCode.SectionCodeId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
@@ -641,6 +643,27 @@ public final class FactLine extends X_Fact_Acct
 		{
 			setC_Activity_ID(m_doc.getActivityId());
 		}
+
+		// Order
+		if (m_docLine != null)
+		{
+			setC_Order_ID(m_docLine.getOrderId());
+		}
+		if (getC_Order_ID() <= 0)
+		{
+			setC_Order_ID(m_doc.getOrderId());
+		}
+
+		// SectionCode
+		if (m_docLine != null)
+		{
+			setM_SectionCode_ID(m_docLine.getSectionCodeId());
+		}
+		if (getM_SectionCode_ID() <= 0)
+		{
+			setM_SectionCode_ID(m_doc.getSectionCodeId());
+		}
+
 
 		// User List 1
 		if (m_docLine != null)
@@ -1316,6 +1339,14 @@ public final class FactLine extends X_Fact_Acct
 			{
 				setC_Activity_ID(m_acct.getC_Activity_ID());
 			}
+			if (getC_Order_ID() == 0)
+			{
+				setC_Order_ID(m_acct.getC_Order_ID());
+			}
+			if (getM_SectionCode_ID() == 0)
+			{
+				setM_SectionCode_ID(m_acct.getM_SectionCode_ID());
+			}
 			if (getUser1_ID() == 0)
 			{
 				setUser1_ID(m_acct.getUser1_ID());
@@ -1370,6 +1401,8 @@ public final class FactLine extends X_Fact_Acct
 				.setUserElementString5(getUserElementString5())
 				.setUserElementString6(getUserElementString6())
 				.setUserElementString7(getUserElementString7())
+				.setC_Order_ID(getC_Order_ID())
+				.setM_SectionCode_ID(getM_SectionCode_ID())
 				.build();
 	}
 
@@ -1520,6 +1553,8 @@ public final class FactLine extends X_Fact_Acct
 			setC_Tax_ID(fact.getC_Tax_ID());
 			// Org for cross charge
 			setAD_Org_ID(fact.getAD_Org_ID());
+			setC_Order_ID(fact.getC_Order_ID());
+			setM_SectionCode_ID(fact.getM_SectionCode_ID());
 
 			return true; // success
 		}
@@ -1604,8 +1639,18 @@ public final class FactLine extends X_Fact_Acct
 	}
 
 	public void setC_Activity_ID(final ActivityId activityId)
+{
+	super.setC_Activity_ID(ActivityId.toRepoId(activityId));
+}
+
+	public void setC_Order_ID(final OrderId orderId)
 	{
-		super.setC_Activity_ID(ActivityId.toRepoId(activityId));
+		super.setC_Order_ID(OrderId.toRepoId(orderId));
+	}
+
+	public void setM_SectionCode_ID(final SectionCodeId sectionCodeId)
+	{
+		super.setM_SectionCode_ID(SectionCodeId.toRepoId(sectionCodeId));
 	}
 
 	public CurrencyId getCurrencyId()

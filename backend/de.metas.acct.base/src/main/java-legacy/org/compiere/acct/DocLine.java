@@ -24,6 +24,8 @@ import java.util.function.IntFunction;
 import javax.annotation.Nullable;
 import javax.annotation.OverridingMethodsMustInvokeSuper;
 
+import de.metas.order.OrderId;
+import de.metas.sectionCode.SectionCodeId;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -800,6 +802,16 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	public ActivityId getActivityId()
 	{
 		return ActivityId.ofRepoIdOrNull(getValue("C_Activity_ID"));
+	}
+
+	public OrderId getOrderId()
+	{
+		return OrderId.ofRepoIdOrNull(getValue("C_Order_ID"));
+	}
+
+	public SectionCodeId getSectionCodeId()
+	{
+		return SectionCodeId.ofRepoIdOrNull(getValue("M_SectionCode_ID"));
 	}
 
 	public final int getUser1_ID()
