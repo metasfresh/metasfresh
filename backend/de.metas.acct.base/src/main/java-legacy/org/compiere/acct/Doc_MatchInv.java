@@ -472,6 +472,8 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 
 		final I_C_InvoiceLine invoiceLine = getInvoiceLine();
 		fl.setC_Activity_ID(invoiceLine.getC_Activity_ID());
+		fl.setC_Order_ID(invoiceLine.getC_Order_ID());
+		fl.setM_SectionCode_ID(invoiceLine.getM_SectionCode_ID());
 		fl.setC_Campaign_ID(invoiceLine.getC_Campaign_ID());
 		fl.setC_Project_ID(invoiceLine.getC_Project_ID());
 		fl.setC_UOM_ID(firstGreaterThanZero(invoiceLine.getPrice_UOM_ID(), invoiceLine.getC_UOM_ID()));

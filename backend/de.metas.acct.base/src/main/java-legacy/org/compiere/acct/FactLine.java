@@ -1540,6 +1540,8 @@ public final class FactLine extends X_Fact_Acct
 			setAD_OrgTrx_ID(fact.getAD_OrgTrx_ID());
 			setC_Project_ID(fact.getC_Project_ID());
 			setC_Activity_ID(fact.getC_Activity_ID());
+			setC_Order_ID(fact.getC_Order_ID());
+			setM_SectionCode_ID(fact.getM_SectionCode_ID());
 			setC_Campaign_ID(fact.getC_Campaign_ID());
 			setC_SalesRegion_ID(fact.getC_SalesRegion_ID());
 			setC_LocFrom_ID(fact.getC_LocFrom_ID());
