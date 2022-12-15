@@ -9,7 +9,9 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.IQueryInsertExecutor.QueryInsertExecutorResult;
 import org.adempiere.ad.dao.impl.CompareQueryFilter.Operator;
+import org.adempiere.ad.dao.impl.TypedSqlQueryFilter;
 import org.compiere.model.IQuery;
+import org.compiere.model.I_C_Conversion_Rate;
 import org.compiere.util.Env;
 import org.springframework.stereotype.Component;
 
@@ -99,8 +101,8 @@ public class DATEVExportLinesRepository
 		}
 
 		// we gonna show one line per tax
-		queryBuilder.addNotEqualsFilter(I_RV_DATEV_Export_Fact_Acct_Invoice.COLUMN_TaxAmt,I_RV_DATEV_Export_Fact_Acct_Invoice.COLUMN_Amt);
-
+		final String wc = I_RV_DATEV_Export_Fact_Acct_Invoice.COLUMNNAME_TaxAmt+ " <> " + I_RV_DATEV_Export_Fact_Acct_Invoice.COLUMNNAME_Amt;
+		queryBuilder.filter(TypedSqlQueryFilter.of(wc));
 
 		return queryBuilder.create();
 	}

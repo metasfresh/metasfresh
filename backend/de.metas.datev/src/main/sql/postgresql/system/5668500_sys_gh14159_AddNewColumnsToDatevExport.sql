@@ -158,3 +158,19 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,709967,0,541037,541479,614518,'F',TO_TIMESTAMP('2022-12-15 10:34:17.309','YYYY-MM-DD HH24:MI:SS.US'),100,'Summe über Alles zu diesem Beleg','Die Summe Gesamt zeigt die Summe über Alles inklusive Steuern und Fracht in Belegwährung an.','Y','N','N','Y','Y','N','N','Summe Gesamt',32,40,0,TO_TIMESTAMP('2022-12-15 10:34:17.309','YYYY-MM-DD HH24:MI:SS.US'),100)
 ;
 
+
+
+-- Column: RV_DATEV_Export_Fact_Acct_Invoice.TaxAmt
+-- Column: RV_DATEV_Export_Fact_Acct_Invoice.TaxAmt
+-- 2022-12-15T09:21:29.555Z
+UPDATE AD_Column SET DefaultValue='', IsMandatory='N',Updated=TO_TIMESTAMP('2022-12-15 11:21:29.555','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=585324
+;
+
+-- Column: RV_DATEV_Export_Fact_Acct_Invoice.GrandTotal
+-- Column: RV_DATEV_Export_Fact_Acct_Invoice.GrandTotal
+-- 2022-12-15T09:21:41.698Z
+UPDATE AD_Column SET DefaultValue='', IsMandatory='N',Updated=TO_TIMESTAMP('2022-12-15 11:21:41.698','YYYY-MM-DD HH24:MI:SS.US'),UpdatedBy=100 WHERE AD_Column_ID=585325
+;
+
+
+
