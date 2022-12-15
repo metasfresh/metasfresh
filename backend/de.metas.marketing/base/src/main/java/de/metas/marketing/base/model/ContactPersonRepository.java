@@ -11,6 +11,7 @@ import de.metas.i18n.Language;
 import de.metas.letter.BoilerPlateId;
 import de.metas.location.LocationId;
 import de.metas.marketing.base.model.ContactPerson.ContactPersonBuilder;
+import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -110,6 +111,7 @@ public class ContactPersonRepository
 
 		contactPersonRecord.setEMail(contactPerson.getEmailAddressStringOrNull());
 		contactPersonRecord.setDeactivatedOnRemotePlatform(contactPerson.getDeactivatedOnRemotePlatform().getCode());
+		contactPersonRecord.setAD_Org_ID(contactPerson.getOrgId().getRepoId());
 
 		return contactPersonRecord;
 	}
@@ -140,6 +142,7 @@ public class ContactPersonRepository
 			contactPersonRecord = queryBL.createQueryBuilder(I_MKTG_ContactPerson.class)
 					.filter(baseQueryFilter)
 					.addEqualsFilter(I_MKTG_ContactPerson.COLUMN_RemoteRecordId, contactPerson.getRemoteId())
+					.addEqualsFilter(I_MKTG_ContactPerson.COLUMNNAME_AD_Org_ID, contactPerson.getOrgId().getRepoId())
 					.create()
 					.firstOnly(I_MKTG_ContactPerson.class); // might be null, that's ok
 		}
@@ -163,6 +166,7 @@ public class ContactPersonRepository
 			contactPersonRecord = queryBL.createQueryBuilder(I_MKTG_ContactPerson.class)
 					.filter(baseQueryFilter)
 					.addEqualsFilter(I_MKTG_ContactPerson.COLUMN_EMail, emailAddress)
+					.addEqualsFilter(I_MKTG_ContactPerson.COLUMNNAME_AD_Org_ID, contactPerson.getOrgId().getRepoId())
 					.orderBy()
 					.addColumn(I_MKTG_ContactPerson.COLUMN_MKTG_ContactPerson_ID).endOrderBy()
 					.create()
@@ -222,7 +226,7 @@ public class ContactPersonRepository
 		return queryBL
 				.createQueryBuilder(I_MKTG_ContactPerson.class)
 				.addOnlyActiveRecordsFilter()
-				.addCompareFilter(I_MKTG_ContactPerson.COLUMN_EMail, STRING_LIKE_IGNORECASE ,email)
+				.addCompareFilter(I_MKTG_ContactPerson.COLUMN_EMail, STRING_LIKE_IGNORECASE, email)
 				.create()
 				.anyMatch();
 	}
@@ -288,6 +292,7 @@ public class ContactPersonRepository
 				.bpLocationId(bpartnerlocationId)
 				.locationId(locationId)
 				.language(Language.getLanguage(contactPersonRecord.getAD_Language()))
+				.orgId(OrgId.ofRepoId(contactPersonRecord.getAD_Org_ID()))
 				.build();
 	}
 

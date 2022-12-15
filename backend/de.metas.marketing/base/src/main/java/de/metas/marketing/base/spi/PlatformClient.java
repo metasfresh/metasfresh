@@ -1,12 +1,13 @@
 package de.metas.marketing.base.spi;
 
-import java.util.List;
-
 import de.metas.marketing.base.model.Campaign;
 import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.LocalToRemoteSyncResult;
 import de.metas.marketing.base.model.RemoteToLocalSyncResult;
+import de.metas.marketing.base.model.interceptor.CampaignConfig;
 import lombok.NonNull;
+
+import java.util.List;
 
 /*
  * #%L
@@ -32,15 +33,28 @@ import lombok.NonNull;
 
 public interface PlatformClient
 {
-	List<LocalToRemoteSyncResult> syncCampaignsLocalToRemote(List<Campaign> campaigns);
+	default List<LocalToRemoteSyncResult> syncCampaignsLocalToRemote(List<Campaign> campaigns)
+	{
+		throw new UnsupportedOperationException();
+	}
 
-	List<LocalToRemoteSyncResult> syncContactPersonsLocalToRemote(Campaign campaign, List<ContactPerson> contactPersons);
+	default List<LocalToRemoteSyncResult> syncContactPersonsLocalToRemote(Campaign campaign, List<ContactPerson> contactPersons)
+	{
+		throw new UnsupportedOperationException();
+	}
 
-	List<RemoteToLocalSyncResult> syncContactPersonsRemoteToLocal(Campaign campaign, List<ContactPerson> contactPersons);
+	default List<RemoteToLocalSyncResult> syncContactPersonsRemoteToLocal(Campaign campaign, List<ContactPerson> contactPersons)
+	{
+		throw new UnsupportedOperationException();
+	}
 
-	List<RemoteToLocalSyncResult> syncCampaignsRemoteToLocal(List<Campaign> campaigns);
+	default List<RemoteToLocalSyncResult> syncCampaignsRemoteToLocal(List<Campaign> campaigns)
+	{
+		throw new UnsupportedOperationException();
+	}
 
-	void sendEmailActivationForm(
-			@NonNull String formId,
-			@NonNull String email);
+	default void sendEmailActivationForm(@NonNull String formId, @NonNull String email)
+	{
+		throw new UnsupportedOperationException();
+	}
 }

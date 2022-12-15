@@ -1,5 +1,6 @@
 package de.metas.marketing.base.model;
 
+import de.metas.marketing.base.model.interceptor.CampaignConfig;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -38,10 +39,11 @@ public class CampaignRemoteUpdate
 	/** the remote system's ID which we can use to sync with the campaign on the remote marketing tool */
 	String remoteId;
 
-	public Campaign toCampaign(@NonNull final PlatformId platformId)
+	public Campaign toCampaign(@NonNull final CampaignConfig campaignConfig)
 	{
 		return Campaign.builder()
-				.platformId(platformId)
+				.platformId(campaignConfig.getPlatformId())
+				.orgId(campaignConfig.getOrgId())
 				.name(name)
 				.remoteId(remoteId)
 				.build();

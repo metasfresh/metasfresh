@@ -146,7 +146,7 @@ public class CampaignService
 			return;
 		}
 
-		final ContactPerson savedContactPerson = contactPersonRepository.save(ContactPerson.newForUserPlatformAndLocation(user, campaign.getPlatformId(), addressToUse));
+		final ContactPerson savedContactPerson = contactPersonRepository.save(ContactPerson.newForUserPlatformAndLocation(user, campaign, addressToUse));
 		final ContactPersonId contactPersonId = Check.assumeNotNull(savedContactPerson.getContactPersonId(), "contact shall be saved: {}", savedContactPerson);
 
 		campaignRepository.addContactPersonToCampaign(contactPersonId, campaign.getCampaignId());
@@ -181,7 +181,7 @@ public class CampaignService
 		{
 			billToDefaultLocationId = bpartnerDAO.getBilltoDefaultLocationIdByBpartnerId(user.getBpartnerId());
 		}
-		final ContactPerson contactPerson = ContactPerson.newForUserPlatformAndLocation(user, campaign.getPlatformId(), billToDefaultLocationId);
+		final ContactPerson contactPerson = ContactPerson.newForUserPlatformAndLocation(user, campaign, billToDefaultLocationId);
 		final ContactPerson savedContactPerson = contactPersonRepository.save(contactPerson);
 
 		contactPersonRepository.revokeConsent(savedContactPerson);

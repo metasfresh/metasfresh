@@ -5,6 +5,7 @@ import de.metas.bpartner.BPartnerLocationId;
 import de.metas.i18n.Language;
 import de.metas.letter.BoilerPlateId;
 import de.metas.location.LocationId;
+import de.metas.organization.OrgId;
 import de.metas.user.User;
 import de.metas.user.UserId;
 import de.metas.util.StringUtils;
@@ -43,7 +44,7 @@ public class ContactPerson implements DataRecord
 {
 	public static ContactPerson newForUserPlatformAndLocation(
 			@NonNull final User user,
-			@NonNull final PlatformId platformId,
+			@NonNull final Campaign campaign,
 			@Nullable final BPartnerLocationId bpLocationId)
 	{
 		final EmailAddress emailaddress = StringUtils.trimBlankToOptional(user.getEmailAddress())
@@ -51,7 +52,8 @@ public class ContactPerson implements DataRecord
 				.orElse(null);
 
 		return ContactPerson.builder()
-				.platformId(platformId)
+				.platformId(campaign.getPlatformId())
+				.orgId(campaign.getOrgId())
 				.name(user.getName())
 				.userId(user.getId())
 				.bPartnerId(user.getBpartnerId())
@@ -108,6 +110,9 @@ public class ContactPerson implements DataRecord
 
 	@Nullable
 	Language language;
+
+	@NonNull
+	OrgId orgId;
 
 	public String getEmailAddressStringOrNull()
 	{

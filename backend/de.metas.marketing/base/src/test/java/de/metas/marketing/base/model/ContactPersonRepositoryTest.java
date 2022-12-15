@@ -24,6 +24,7 @@ package de.metas.marketing.base.model;
 
 import de.metas.bpartner.BPartnerId;
 import de.metas.i18n.Language;
+import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import org.adempiere.test.AdempiereTestHelper;
 import org.adempiere.test.AdempiereTestWatcher;
@@ -64,6 +65,7 @@ class ContactPersonRepositoryTest
 				// .boilerPlateId(BoilerPlateId.ofRepoId(6)) // not persisted
 				//
 				.language(Language.getLanguage("de_DE"))
+				.orgId(OrgId.MAIN)
 				.build());
 		System.out.println("saved: " + contactPerson);
 		final ContactPersonId contactPersonId = Objects.requireNonNull(contactPerson.getContactPersonId());

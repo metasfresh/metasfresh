@@ -2,18 +2,16 @@ package de.metas.marketing.gateway.cleverreach;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimaps;
 import de.metas.logging.TableRecordMDC;
+import de.metas.marketing.base.RemoteToLocalCampaignSync;
+import de.metas.marketing.base.RemoteToLocalContactPersonSync;
+import de.metas.marketing.base.SyncUtil;
 import de.metas.marketing.base.model.Campaign;
 import de.metas.marketing.base.model.CampaignRemoteUpdate;
 import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.ContactPersonRemoteUpdate;
-import de.metas.marketing.base.model.DataRecord;
-import de.metas.marketing.base.model.DeactivatedOnRemotePlatform;
-import de.metas.marketing.base.model.EmailAddress;
 import de.metas.marketing.base.model.I_MKTG_Campaign;
 import de.metas.marketing.base.model.LocalToRemoteSyncResult;
 import de.metas.marketing.base.model.PlatformId;
@@ -26,7 +24,6 @@ import de.metas.marketing.gateway.cleverreach.restapi.models.ReceiverUpsert;
 import de.metas.marketing.gateway.cleverreach.restapi.models.SendEmailActivationFormRequest;
 import de.metas.marketing.gateway.cleverreach.restapi.models.UpdateGroupRequest;
 import de.metas.util.Check;
-import de.metas.util.StringUtils;
 import de.metas.util.collections.PagedIterator;
 import de.metas.util.collections.PagedIterator.Page;
 import de.metas.util.collections.PagedIterator.PageFetcher;
@@ -34,7 +31,6 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Value;
-import org.adempiere.util.email.EmailValidator;
 import org.slf4j.MDC.MDCCloseable;
 import org.springframework.core.ParameterizedTypeReference;
 
@@ -43,13 +39,11 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -193,47 +187,6 @@ public class CleverReachClient implements PlatformClient
 		};
 	}
 
-	/**
-	 * Note: if something is sorted out by this method, then that's probably some bug.
-	 */
-	private <T extends DataRecord> List<T> filterForRecordsWithCorrectPlatformId(
-			@NonNull final List<T> records,
-			@NonNull final ImmutableList.Builder<LocalToRemoteSyncResult> resultToAddErrorsTo)
-	{
-		final String errorMessage = StringUtils.formatMessage("Data record's platformId={} does not match this client's platFormId={}", platformId);
-
-		final Map<Boolean, List<T>> okAndNotOkDataRecords = records
-				.stream()
-				.collect(Collectors.partitioningBy(record -> PlatformId.equals(record.getPlatformId(), platformId)));
-
-		okAndNotOkDataRecords.get(false)
-				.stream()
-				.map(record -> LocalToRemoteSyncResult.error(record, errorMessage))
-				.forEach(resultToAddErrorsTo::add);
-
-		return okAndNotOkDataRecords.get(true);
-	}
-
-	/**
-	 * @param resultToAddErrorsTo to each contactPerson without an email, and error result is added to this list builder.
-	 * @return the persons that do have a non-empty email
-	 */
-	private static List<ContactPerson> filterForPersonsWithEmail(
-			@NonNull final List<ContactPerson> contactPersons,
-			@NonNull final ImmutableList.Builder<LocalToRemoteSyncResult> resultToAddErrorsTo)
-	{
-		final Map<Boolean, List<ContactPerson>> personsWithAndWithoutEmail = contactPersons
-				.stream()
-				.collect(Collectors.partitioningBy(contactPerson -> EmailValidator.isValid(contactPerson.getEmailAddressStringOrNull())));
-
-		personsWithAndWithoutEmail.get(false)
-				.stream()
-				.map(contactPerson -> LocalToRemoteSyncResult.error(contactPerson, "Contact person has no (valid) email address"))
-				.forEach(resultToAddErrorsTo::add);
-
-		return personsWithAndWithoutEmail.get(true);
-	}
-
 	@Override
 	public List<LocalToRemoteSyncResult> syncContactPersonsLocalToRemote(
 			@NonNull final Campaign campaign,
@@ -241,14 +194,15 @@ public class CleverReachClient implements PlatformClient
 	{
 		final ImmutableList.Builder<LocalToRemoteSyncResult> syncResults = ImmutableList.builder();
 
-		if (filterForRecordsWithCorrectPlatformId(ImmutableList.of(campaign), syncResults).isEmpty())
+		if (SyncUtil.filterForRecordsWithCorrectPlatformId(platformId, ImmutableList.of(campaign), syncResults).isEmpty())
 		{
 			return syncResults.build();
 		}
 
 		// make sure that we only send records that have a syntactically valid email and that have the correct platform-id
-		final List<ContactPerson> personsWithEmail = filterForRecordsWithCorrectPlatformId(
-				filterForPersonsWithEmail(
+		final List<ContactPerson> personsWithEmail = SyncUtil.filterForRecordsWithCorrectPlatformId(
+				platformId,
+				SyncUtil.filterForPersonsWithEmail(
 						contactPersons,
 						syncResults),
 				syncResults);
@@ -333,7 +287,7 @@ public class CleverReachClient implements PlatformClient
 	{
 		final ImmutableList.Builder<LocalToRemoteSyncResult> syncResults = ImmutableList.builder();
 
-		final List<Campaign> campaignsWithCorrectPlatformId = filterForRecordsWithCorrectPlatformId(campaigns, syncResults);
+		final List<Campaign> campaignsWithCorrectPlatformId = SyncUtil.filterForRecordsWithCorrectPlatformId(platformId, campaigns, syncResults);
 
 		for (final Campaign campaign : campaignsWithCorrectPlatformId)
 		{
@@ -348,52 +302,18 @@ public class CleverReachClient implements PlatformClient
 	@Override
 	public List<RemoteToLocalSyncResult> syncCampaignsRemoteToLocal(@NonNull final List<Campaign> campaigns)
 	{
-		final ImmutableList.Builder<RemoteToLocalSyncResult> syncResults = ImmutableList.builder();
-
-		final ImmutableListMultimap<String, Campaign> remoteId2campaigns = Multimaps.index(campaigns, Campaign::getRemoteId);
-
-		final HashMap<String, Collection<Campaign>> remoteId2campaignsNotYetFound = new HashMap<>(remoteId2campaigns.asMap());
-
 		final List<CampaignRemoteUpdate> campaignUpdates = retrieveAllGroups()
 				.stream()
 				.map(Group::toCampaignUpdate)
 				.collect(ImmutableList.toImmutableList());
 
-		for (final CampaignRemoteUpdate campaignUpdate : campaignUpdates)
-		{
-			remoteId2campaignsNotYetFound.remove(campaignUpdate.getRemoteId());
+		final RemoteToLocalCampaignSync.Request request = RemoteToLocalCampaignSync.Request.builder()
+				.campaignConfig(cleverReachConfig)
+				.existingCampaigns(campaigns)
+				.remoteCampaigns(campaignUpdates)
+				.build();
 
-			final ImmutableList<Campaign> campaignsToUpdate = remoteId2campaigns.get(campaignUpdate.getRemoteId());
-			if (campaignsToUpdate.isEmpty())
-			{
-				final DataRecord newCampaign = campaignUpdate.toCampaign(platformId);
-				syncResults.add(RemoteToLocalSyncResult.obtainedNewDataRecord(newCampaign));
-			}
-			else
-			{
-				for (final Campaign campaignToUpdate : campaignsToUpdate)
-				{
-					final Campaign updatedCampaign = campaignUpdate.update(campaignToUpdate);
-					if (Objects.equals(updatedCampaign, campaignToUpdate))
-					{
-						syncResults.add(RemoteToLocalSyncResult.noChanges(updatedCampaign));
-					}
-					else
-					{
-						syncResults.add(RemoteToLocalSyncResult.obtainedOtherRemoteData(updatedCampaign));
-					}
-				}
-			}
-		}
-
-		remoteId2campaignsNotYetFound.entrySet()
-				.stream()
-				.flatMap(e -> e.getValue().stream())
-				.map(p -> p.toBuilder().remoteId(null).build())
-				.map(RemoteToLocalSyncResult::deletedOnRemotePlatform)
-				.forEach(syncResults::add);
-
-		return syncResults.build();
+		return RemoteToLocalCampaignSync.syncRemoteCampaigns(request);
 	}
 
 	@Override
@@ -401,119 +321,17 @@ public class CleverReachClient implements PlatformClient
 			@NonNull final Campaign campaign,
 			@NonNull final List<ContactPerson> contactPersons)
 	{
-		final ImmutableList.Builder<RemoteToLocalSyncResult> syncResults = ImmutableList.builder();
-
-		final List<ContactPerson> personsWithEmailOrRemoteId = filterForPersonsWithEmailOrRemoteId(contactPersons, syncResults);
-		final ImmutableList<ContactPerson> contactPersonsWithEmail = personsWithEmailOrRemoteId
-				.stream()
-				.filter(ContactPerson::hasEmailAddress)
-				.collect(ImmutableList.toImmutableList());
-
-		final ImmutableListMultimap<String, ContactPerson> email2contactPersons = Multimaps.index(
-				contactPersonsWithEmail,
-				ContactPerson::getEmailAddressStringOrNull);
-
-		final Map<Boolean, List<ContactPerson>> contactPersonsWithAndWithoutRemoteId = personsWithEmailOrRemoteId
-				.stream()
-				.collect(Collectors.partitioningBy(c -> !Check.isBlank(c.getRemoteId())));
-
-		final ImmutableSet<ContactPerson> contactPersonsWithRemoteId = ImmutableSet.copyOf(contactPersonsWithAndWithoutRemoteId.get(true));
-
-		final ImmutableSet<ContactPerson> contactPersonsWithoutRemoteId = ImmutableSet.copyOf(contactPersonsWithAndWithoutRemoteId.get(false));
-
-		final ImmutableListMultimap<String, ContactPerson> remoteId2contactPersons = Multimaps.index(
-				contactPersonsWithRemoteId,
-				ContactPerson::getRemoteId);
-
-		final HashMap<String, Collection<ContactPerson>> remoteId2contactPersonsNotYetFound = new HashMap<>(remoteId2contactPersons.asMap());
-		final HashMap<String, Collection<ContactPerson>> email2contactPersonsWithoutIdNotYetFound = new HashMap<>(Multimaps
-				.index(contactPersonsWithoutRemoteId, ContactPerson::getEmailAddressStringOrNull)
-				.asMap());
-
 		final ImmutableList<ContactPersonRemoteUpdate> contactPersonUpdates = streamAllReceivers(campaign)
 				.map(Receiver::toContactPersonUpdate)
 				.collect(ImmutableList.toImmutableList());
 
-		for (final ContactPersonRemoteUpdate contactPersonUpdate : contactPersonUpdates)
-		{
-			final String receivedEmailAddress = Check.assumeNotEmpty(
-					EmailAddress.getEmailAddressStringOrNull(contactPersonUpdate.getAddress()),
-					"A contactPersonUpdate received from the remote API has an email address; contactPersonUpdate={}", contactPersonUpdate);
+		final RemoteToLocalContactPersonSync.Request request = RemoteToLocalContactPersonSync.Request.builder()
+				.campaignConfig(cleverReachConfig)
+				.existingContactPersons(contactPersons)
+				.remoteContactPersons(contactPersonUpdates)
+				.build();
 
-			remoteId2contactPersonsNotYetFound.remove(contactPersonUpdate.getRemoteId());
-			email2contactPersonsWithoutIdNotYetFound.remove(receivedEmailAddress);
-
-			final ImmutableList<ContactPerson> contactPersonsByEmail = email2contactPersons.get(receivedEmailAddress);
-			for (final ContactPerson contactPerson : contactPersonsByEmail)
-			{
-				final ContactPerson updatedContactPerson = contactPersonUpdate.updateContactPerson(contactPerson);
-				if (Check.isEmpty(contactPerson.getRemoteId()))
-				{
-					syncResults.add(RemoteToLocalSyncResult.obtainedRemoteId(updatedContactPerson));
-				}
-			}
-
-			final ImmutableList<ContactPerson> contactPersonsByRemoteId = remoteId2contactPersons.get(contactPersonUpdate.getRemoteId());
-			for (final ContactPerson contactPerson : contactPersonsByRemoteId)
-			{
-				final ContactPerson updatedContactPerson = contactPersonUpdate.updateContactPerson(contactPerson);
-
-				final boolean existingContactHasDifferentEmail = !Objects.equals(
-						contactPerson.getEmailAddressStringOrNull(),
-						receivedEmailAddress);
-				if (existingContactHasDifferentEmail)
-				{
-					syncResults.add(RemoteToLocalSyncResult.obtainedRemoteEmail(updatedContactPerson));
-				}
-
-				final DeactivatedOnRemotePlatform deactivatedOnRemotePlatform = EmailAddress.getDeactivatedOnRemotePlatform(contactPersonUpdate.getAddress());
-
-				final boolean existingContactHasDifferentActiveStatus = !DeactivatedOnRemotePlatform.equals(
-						contactPerson.getDeactivatedOnRemotePlatform(),
-						deactivatedOnRemotePlatform);
-				if (existingContactHasDifferentActiveStatus)
-				{
-					syncResults.add(RemoteToLocalSyncResult.obtainedEmailBounceInfo(updatedContactPerson));
-				}
-			}
-
-			if (!email2contactPersons.containsKey(receivedEmailAddress))
-			{
-				syncResults.add(RemoteToLocalSyncResult.obtainedNewDataRecord(contactPersonUpdate.toContactPerson(platformId)));
-			}
-		}
-
-		remoteId2contactPersonsNotYetFound.entrySet()
-				.stream()
-				.flatMap(e -> e.getValue().stream())
-				.map(p -> p.toBuilder().remoteId(null).build())
-				.map(RemoteToLocalSyncResult::deletedOnRemotePlatform)
-				.forEach(syncResults::add);
-
-		email2contactPersonsWithoutIdNotYetFound.entrySet()
-				.stream()
-				.flatMap(e -> e.getValue().stream())
-				.map(p -> p.toBuilder().remoteId(null).build())
-				.map(RemoteToLocalSyncResult::notYetAddedToRemotePlatform)
-				.forEach(syncResults::add);
-
-		return syncResults.build();
-	}
-
-	private static List<ContactPerson> filterForPersonsWithEmailOrRemoteId(
-			@NonNull final List<ContactPerson> contactPersons,
-			@NonNull final Builder<RemoteToLocalSyncResult> syncResultsToAddErrorsTo)
-	{
-		final Map<Boolean, List<ContactPerson>> personsWithAndWithoutEmailOrRemoteId = contactPersons
-				.stream()
-				.collect(Collectors.partitioningBy(ContactPerson::hasEmailAddress));
-
-		personsWithAndWithoutEmailOrRemoteId.get(false)
-				.stream()
-				.map(contactPerson -> RemoteToLocalSyncResult.error(contactPerson, "contact person has no email address"))
-				.forEach(syncResultsToAddErrorsTo::add);
-
-		return personsWithAndWithoutEmailOrRemoteId.get(true);
+		return RemoteToLocalContactPersonSync.syncRemoteContacts(request);
 	}
 
 	private static ImmutableList<LocalToRemoteSyncResult> createErrorResults(
