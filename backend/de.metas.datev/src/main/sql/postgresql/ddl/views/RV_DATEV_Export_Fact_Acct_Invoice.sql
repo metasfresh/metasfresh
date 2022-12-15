@@ -60,7 +60,7 @@ FROM fact_acct fa
          JOIN c_bpartner bp ON bp.c_bpartner_id = fa.c_bpartner_id
          LEFT JOIN c_activity a ON a.c_activity_id = COALESCE(fa.c_activity_id, fa2.c_activity_id)
          JOIN c_invoice i ON i.c_invoice_id = fa.record_id
-         JOIN c_invoicetax it ON i.c_invoice_id = it.c_invoice_id
+         JOIN c_invoicetax it ON i.c_invoice_id = it.c_invoice_id and it.c_tax_id = fa.c_tax_id
          JOIN c_tax t ON t.c_tax_id = fa.c_tax_id
          JOIN c_doctype dt ON dt.c_doctype_id = fa.c_doctype_id
 
