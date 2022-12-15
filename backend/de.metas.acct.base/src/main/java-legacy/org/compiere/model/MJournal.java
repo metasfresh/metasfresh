@@ -67,17 +67,10 @@ public class MJournal extends X_GL_Journal implements IDocument
 	 */
 	private static final long serialVersionUID = -364132249042527640L;
 
-	/**
-	 * Standard Constructor
-	 *
-	 * @param ctx context
-	 * @param GL_Journal_ID id
-	 * @param trxName transaction
-	 */
 	public MJournal(final Properties ctx, final int GL_Journal_ID, final String trxName)
 	{
 		super(ctx, GL_Journal_ID, trxName);
-		if (GL_Journal_ID == 0)
+		if (is_new())
 		{
 			// setGL_Journal_ID (0); // PK
 			// setC_AcctSchema_ID (0);
@@ -103,13 +96,6 @@ public class MJournal extends X_GL_Journal implements IDocument
 		}
 	}	// MJournal
 
-	/**
-	 * Load Constructor
-	 *
-	 * @param ctx context
-	 * @param rs result set
-	 * @param trxName transaction
-	 */
 	public MJournal(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		super(ctx, rs, trxName);
