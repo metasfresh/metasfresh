@@ -99,13 +99,11 @@ import java.util.List;
 				.onlyIfAttributesMatchWithShipmentSchedules(true)
 				.build();
 
-		final ImmutableList<HuId> sourceHUIds = huPickingSlotBL.retrieveAvailableSourceHUs(query)
+		return  huPickingSlotBL.retrieveAvailableSourceHUs(query)
 				.stream()
 				.map(I_M_HU::getM_HU_ID)
 				.map(HuId::ofRepoId)
 				.collect(ImmutableList.toImmutableList());
-
-		return sourceHUIds;
 	}
 
 	protected final Quantity retrieveQtyToPick()

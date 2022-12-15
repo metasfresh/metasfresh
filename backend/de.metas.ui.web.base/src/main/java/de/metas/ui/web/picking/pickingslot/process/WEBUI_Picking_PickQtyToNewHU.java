@@ -67,12 +67,10 @@ import static de.metas.ui.web.picking.PickingConstants.MSG_WEBUI_PICKING_SELECT_
  */
 
 /**
- *
  * Note: this process is declared in the {@code AD_Process} table, but <b>not</b> added to it's respective window or table via application dictionary.<br>
  * Instead it is assigned to it's place by {@link PickingSlotViewFactory}.
  *
  * @author metas-dev <dev@metasfresh.com>
- *
  */
 public class WEBUI_Picking_PickQtyToNewHU
 		extends WEBUI_Picking_With_M_Source_HU_Base
@@ -80,11 +78,11 @@ public class WEBUI_Picking_PickQtyToNewHU
 {
 	private final IWarehouseBL warehouseBL = Services.get(IWarehouseBL.class);
 
-	private static final String PARAM_M_HU_PI_Item_Product_ID = I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID;
+	protected static final String PARAM_M_HU_PI_Item_Product_ID = I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID;
 	@Param(parameterName = PARAM_M_HU_PI_Item_Product_ID, mandatory = true)
 	protected I_M_HU_PI_Item_Product huPIItemProduct;
 
-	private static final String PARAM_QTY_CU = "QtyCU";
+	protected static final String PARAM_QTY_CU = "QtyCU";
 	@Param(parameterName = PARAM_QTY_CU, mandatory = true)
 	protected BigDecimal qtyCU;
 
@@ -148,17 +146,22 @@ public class WEBUI_Picking_PickQtyToNewHU
 			throw new AdempiereException("@QtyCU@ > 0");
 		}
 
+		pickQtyToNewHU(qtyToPack);
+
+		invalidatePackablesView(); // left side view
+		invalidatePickingSlotsView(); // right side view
+
+		return MSG_OK;
+	}
+
+	protected void pickQtyToNewHU(@NonNull final Quantity qtyToPack)
+	{
 		final HuId packToHuId = createNewHuId();
 		final ImmutableList<HuId> sourceHUIds = getSourceHUIds();
 
 		pickHUsAndPackTo(sourceHUIds, qtyToPack, packToHuId);
 
 		printPickingLabel(packToHuId);
-
-		invalidatePackablesView(); // left side view
-		invalidatePickingSlotsView(); // right side view
-
-		return MSG_OK;
 	}
 
 	protected void printPickingLabel(@NonNull final HuId huId)
