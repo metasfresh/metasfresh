@@ -664,7 +664,6 @@ public final class FactLine extends X_Fact_Acct
 			setM_SectionCode_ID(m_doc.getSectionCodeId());
 		}
 
-
 		// User List 1
 		if (m_docLine != null)
 		{

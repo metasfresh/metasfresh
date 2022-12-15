@@ -139,6 +139,14 @@ public class FactAcctBL implements IFactAcctBL
 		{
 			fa.setC_Activity_ID(dim.getC_Activity_ID());
 		}
+		if (dim.isSegmentValueSet(AcctSegmentType.Order))
+		{
+			fa.setC_Order_ID(dim.getC_Order_ID());
+		}
+		if (dim.isSegmentValueSet(AcctSegmentType.SectionCode))
+		{
+			fa.setM_SectionCode_ID(dim.getM_SectionCode_ID());
+		}
 		if (dim.isSegmentValueSet(AcctSegmentType.UserList1))
 		{
 			fa.setUser1_ID(dim.getUser1_ID());
