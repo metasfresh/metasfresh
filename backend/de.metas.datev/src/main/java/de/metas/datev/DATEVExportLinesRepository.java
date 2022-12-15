@@ -98,6 +98,10 @@ public class DATEVExportLinesRepository
 					exportLinesQuery);
 		}
 
+		// we gonna show one line per tax
+		queryBuilder.addNotEqualsFilter(I_RV_DATEV_Export_Fact_Acct_Invoice.COLUMN_TaxAmt,I_RV_DATEV_Export_Fact_Acct_Invoice.COLUMN_Amt);
+
+
 		return queryBuilder.create();
 	}
 
