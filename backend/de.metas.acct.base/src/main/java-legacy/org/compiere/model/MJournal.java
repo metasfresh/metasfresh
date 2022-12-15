@@ -102,24 +102,6 @@ public class MJournal extends X_GL_Journal implements IDocument
 	}	// MJournal
 
 	/**
-	 * Parent Constructor.
-	 *
-	 * @param parent batch
-	 */
-	public MJournal(final MJournalBatch parent)
-	{
-		this(parent.getCtx(), 0, parent.get_TrxName());
-		setClientOrg(parent);
-		setGL_JournalBatch_ID(parent.getGL_JournalBatch_ID());
-		setC_DocType_ID(parent.getC_DocType_ID());
-		setPostingType(parent.getPostingType());
-		//
-		setDateDoc(parent.getDateDoc());
-		setDateAcct(parent.getDateAcct());
-		setC_Currency_ID(parent.getC_Currency_ID());
-	}	// MJournal
-
-	/**
 	 * Copy Constructor. Dos not copy: Dates/Period
 	 *
 	 * @param original original
