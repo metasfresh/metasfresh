@@ -42,9 +42,6 @@
         <developerConnection>scm:git:git@github.com:swagger-api/swagger-codegen.git</developerConnection>
         <url>https://github.com/swagger-api/swagger-codegen</url>
     </scm>
-    <prerequisites>
-        <maven>2.2.0</maven>
-    </prerequisites>
 
     <licenses>
         <license>
@@ -116,7 +113,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <version>1.10</version>
+                <version>3.3.0</version>
                 <executions>
                     <execution>
                         <id>add_sources</id>
