@@ -1,9 +1,8 @@
 package org.compiere.model;
 
-import org.adempiere.model.ModelColumn;
-
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import javax.annotation.Nullable;
+import org.adempiere.model.ModelColumn;
 
 /** Generated Interface for M_InOutLine
  *  @author metasfresh (generated) 
@@ -146,8 +145,7 @@ public interface I_M_InOutLine
 	String COLUMNNAME_C_Campaign_ID = "C_Campaign_ID";
 
 	/**
-	 * Set Kosten.
-	 * Additional document charges
+	 * Set Costs.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -156,8 +154,7 @@ public interface I_M_InOutLine
 	void setC_Charge_ID (int C_Charge_ID);
 
 	/**
-	 * Get Kosten.
-	 * Additional document charges
+	 * Get Costs.
 	 *
 	 * <br>Type: TableDir
 	 * <br>Mandatory: false
@@ -168,8 +165,28 @@ public interface I_M_InOutLine
 	String COLUMNNAME_C_Charge_ID = "C_Charge_ID";
 
 	/**
-	 * Set Bestätigte Menge.
-	 * Confirmation of a received quantity
+	 * Set Flatrate Term.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Flatrate_Term_ID (int C_Flatrate_Term_ID);
+
+	/**
+	 * Get Flatrate Term.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Flatrate_Term_ID();
+
+	ModelColumn<I_M_InOutLine, Object> COLUMN_C_Flatrate_Term_ID = new ModelColumn<>(I_M_InOutLine.class, "C_Flatrate_Term_ID", null);
+	String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
+
+	/**
+	 * Set Qty Confirmed.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -178,8 +195,7 @@ public interface I_M_InOutLine
 	void setConfirmedQty (@Nullable BigDecimal ConfirmedQty);
 
 	/**
-	 * Get Bestätigte Menge.
-	 * Confirmation of a received quantity
+	 * Get Qty Confirmed.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -189,6 +205,33 @@ public interface I_M_InOutLine
 
 	ModelColumn<I_M_InOutLine, Object> COLUMN_ConfirmedQty = new ModelColumn<>(I_M_InOutLine.class, "ConfirmedQty", null);
 	String COLUMNNAME_ConfirmedQty = "ConfirmedQty";
+
+	/**
+	 * Set Sales order.
+	 * Order
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Order_ID (int C_Order_ID);
+
+	/**
+	 * Get Sales order.
+	 * Order
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Order_ID();
+
+	@Nullable org.compiere.model.I_C_Order getC_Order();
+
+	void setC_Order(@Nullable org.compiere.model.I_C_Order C_Order);
+
+	ModelColumn<I_M_InOutLine, org.compiere.model.I_C_Order> COLUMN_C_Order_ID = new ModelColumn<>(I_M_InOutLine.class, "C_Order_ID", org.compiere.model.I_C_Order.class);
+	String COLUMNNAME_C_Order_ID = "C_Order_ID";
 
 	/**
 	 * Set Orderline.
@@ -406,7 +449,7 @@ public interface I_M_InOutLine
 	String COLUMNNAME_IsDescription = "IsDescription";
 
 	/**
-	 * Set Berechnete Menge.
+	 * Set Invoiced.
 	 * Is this invoiced?
 	 *
 	 * <br>Type: YesNo
@@ -416,7 +459,7 @@ public interface I_M_InOutLine
 	void setIsInvoiced (boolean IsInvoiced);
 
 	/**
-	 * Get Berechnete Menge.
+	 * Get Invoiced.
 	 * Is this invoiced?
 	 *
 	 * <br>Type: YesNo
@@ -613,7 +656,7 @@ public interface I_M_InOutLine
 	String COLUMNNAME_M_Product_ID = "M_Product_ID";
 
 	/**
-	 * Set RMA-Position.
+	 * Set RMA Line.
 	 * Return Material Authorization Line
 	 *
 	 * <br>Type: TableDir
@@ -623,7 +666,7 @@ public interface I_M_InOutLine
 	void setM_RMALine_ID (int M_RMALine_ID);
 
 	/**
-	 * Get RMA-Position.
+	 * Get RMA Line.
 	 * Return Material Authorization Line
 	 *
 	 * <br>Type: TableDir
@@ -707,8 +750,8 @@ public interface I_M_InOutLine
 	String COLUMNNAME_Processed = "Processed";
 
 	/**
-	 * Set Produktbeschreibung.
-	 * Produktbeschreibung
+	 * Set Product Description.
+	 * Product Description
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -717,8 +760,8 @@ public interface I_M_InOutLine
 	void setProductDescription (@Nullable java.lang.String ProductDescription);
 
 	/**
-	 * Get Produktbeschreibung.
-	 * Produktbeschreibung
+	 * Get Product Description.
+	 * Product Description
 	 *
 	 * <br>Type: Text
 	 * <br>Mandatory: false
@@ -795,7 +838,7 @@ public interface I_M_InOutLine
 	String COLUMNNAME_Ref_InOutLine_ID = "Ref_InOutLine_ID";
 
 	/**
-	 * Set Storno-Zeile.
+	 * Set Reverse Line.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -804,7 +847,7 @@ public interface I_M_InOutLine
 	void setReversalLine_ID (int ReversalLine_ID);
 
 	/**
-	 * Get Storno-Zeile.
+	 * Get Reverse Line.
 	 *
 	 * <br>Type: Table
 	 * <br>Mandatory: false
@@ -820,8 +863,7 @@ public interface I_M_InOutLine
 	String COLUMNNAME_ReversalLine_ID = "ReversalLine_ID";
 
 	/**
-	 * Set Verworfene Menge.
-	 * The Quantity scrapped due to QA issues
+	 * Set Qty Scrapped.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -830,8 +872,7 @@ public interface I_M_InOutLine
 	void setScrappedQty (@Nullable BigDecimal ScrappedQty);
 
 	/**
-	 * Get Verworfene Menge.
-	 * The Quantity scrapped due to QA issues
+	 * Get Qty Scrapped.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -843,8 +884,7 @@ public interface I_M_InOutLine
 	String COLUMNNAME_ScrappedQty = "ScrappedQty";
 
 	/**
-	 * Set Zielmenge.
-	 * Target Movement Quantity
+	 * Set Target Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -853,8 +893,7 @@ public interface I_M_InOutLine
 	void setTargetQty (@Nullable BigDecimal TargetQty);
 
 	/**
-	 * Get Zielmenge.
-	 * Target Movement Quantity
+	 * Get Target Qty.
 	 *
 	 * <br>Type: Quantity
 	 * <br>Mandatory: false
@@ -1088,25 +1127,4 @@ public interface I_M_InOutLine
 
 	ModelColumn<I_M_InOutLine, Object> COLUMN_UserElementString7 = new ModelColumn<>(I_M_InOutLine.class, "UserElementString7", null);
 	String COLUMNNAME_UserElementString7 = "UserElementString7";
-
-	/**
-	 * Set Flatrate Term.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setC_Flatrate_Term_ID (int C_Flatrate_Term_ID);
-
-	/**
-	 * Get Flatrate Term.
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	int getC_Flatrate_Term_ID();
-
-	ModelColumn<I_M_InOutLine, Object> COLUMN_C_Flatrate_Term_ID = new ModelColumn<>(I_M_InOutLine.class, "C_Flatrate_Term_ID", null);
-	String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
 }

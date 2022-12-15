@@ -490,6 +490,8 @@ public class Doc_MatchInv extends Doc<DocLine_MatchInv>
 		fl.setAD_OrgTrx_ID(receiptLine.getAD_OrgTrx_ID());
 		fl.setC_Project_ID(receiptLine.getC_Project_ID());
 		fl.setC_Activity_ID(receiptLine.getC_Activity_ID());
+		fl.setC_Order_ID(receiptLine.getC_Order_ID());
+		fl.setM_SectionCode_ID(receiptLine.getM_SectionCode_ID());
 		fl.setC_Campaign_ID(receiptLine.getC_Campaign_ID());
 		// fl.setC_SalesRegion_ID(receiptLine.getC_SalesRegion_ID());
 		// fl.setC_LocFrom_ID(receiptLine.getC_LocFrom_ID());
