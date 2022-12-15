@@ -57,6 +57,11 @@ public class WEBUI_Picking_PickQtyToComputedHU extends WEBUI_Picking_PickQtyToNe
 	@Override
 	public void onParameterChanged(final String parameterName)
 	{
+		if (qtyCU == null || huPIItemProduct == null)
+		{
+			return;
+		}
+
 		if (parameterName.equals(PARAM_M_HU_PI_Item_Product_ID) || parameterName.equals(PARAM_QTY_CU))
 		{
 			noOfHUs = getQtyTU().toBigDecimal();
@@ -115,7 +120,7 @@ public class WEBUI_Picking_PickQtyToComputedHU extends WEBUI_Picking_PickQtyToNe
 
 		final Quantity piipQtyCapacity = piipCapacity.toQuantity();
 
-		while (qtyToPack.toBigDecimal().signum() >= 0)
+		while (qtyToPack.toBigDecimal().signum() > 0)
 		{
 			final Quantity qtyToProcess = piipQtyCapacity.min(qtyToPack);
 
