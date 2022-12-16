@@ -23,4 +23,8 @@ public enum PostingSign implements ReferenceListAwareEnum
 	{
 		return index.ofCode(code);
 	}
+
+	public boolean isDebit() {return DEBIT.equals(this);}
+
+	public boolean isCredit() {return CREDIT.equals(this);}
 }

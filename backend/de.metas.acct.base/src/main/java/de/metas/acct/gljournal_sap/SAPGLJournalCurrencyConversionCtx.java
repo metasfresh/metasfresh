@@ -10,6 +10,7 @@ import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.time.Instant;
+import java.util.Objects;
 
 @Value
 @Builder
@@ -21,4 +22,9 @@ public class SAPGLJournalCurrencyConversionCtx
 	@NonNull Instant date;
 	@Nullable FixedConversionRate fixedConversionRate;
 	@NonNull ClientAndOrgId clientAndOrgId;
+
+	public static boolean equals(@Nullable SAPGLJournalCurrencyConversionCtx ctx1, @Nullable SAPGLJournalCurrencyConversionCtx ctx2)
+	{
+		return Objects.equals(ctx1, ctx2);
+	}
 }

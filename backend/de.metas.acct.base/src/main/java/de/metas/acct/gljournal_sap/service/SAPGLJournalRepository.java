@@ -1,0 +1,46 @@
+package de.metas.acct.gljournal_sap.service;
+
+import de.metas.acct.gljournal_sap.SAPGLJournal;
+import de.metas.acct.gljournal_sap.SAPGLJournalId;
+import de.metas.acct.model.I_SAP_GLJournal;
+import de.metas.util.lang.SeqNo;
+import lombok.NonNull;
+import org.springframework.stereotype.Repository;
+
+import java.util.function.Consumer;
+
+@Repository
+public class SAPGLJournalRepository
+{
+	public SAPGLJournal getById(@NonNull final SAPGLJournalId id)
+	{
+		final SAPGLJournalLoaderAndSaver loader = new SAPGLJournalLoaderAndSaver();
+		return loader.getById(id);
+	}
+
+	public SeqNo getNextSeqNo(@NonNull final SAPGLJournalId glJournalId)
+	{
+		final SAPGLJournalLoaderAndSaver loader = new SAPGLJournalLoaderAndSaver();
+		return loader.getNextSeqNo(glJournalId);
+	}
+
+	public void updateWhileSaving(
+			@NonNull final I_SAP_GLJournal record,
+			@NonNull final Consumer<SAPGLJournal> consumer)
+	{
+		final SAPGLJournalId glJournalId = SAPGLJournalLoaderAndSaver.extractId(record);
+
+		final SAPGLJournalLoaderAndSaver loaderAndSaver = new SAPGLJournalLoaderAndSaver();
+		loaderAndSaver.addToCacheAndAvoidSaving(record);
+		loaderAndSaver.updateById(glJournalId, consumer);
+	}
+
+	public void updateById(
+			@NonNull final SAPGLJournalId glJournalId,
+			@NonNull final Consumer<SAPGLJournal> consumer)
+	{
+		final SAPGLJournalLoaderAndSaver loaderAndSaver = new SAPGLJournalLoaderAndSaver();
+		loaderAndSaver.updateById(glJournalId, consumer);
+	}
+
+}

@@ -4,11 +4,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import de.metas.util.Check;
 import de.metas.util.lang.RepoIdAware;
-import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
-import java.util.Optional;
+import java.util.Objects;
 
 @Value
 public class SAPGLJournalId implements RepoIdAware
@@ -22,12 +21,6 @@ public class SAPGLJournalId implements RepoIdAware
 	public static SAPGLJournalId ofRepoIdOrNull(final int repoId)
 	{
 		return repoId > 0 ? new SAPGLJournalId(repoId) : null;
-	}
-
-	@NonNull
-	public static Optional<SAPGLJournalId> ofRepoIdOptional(final int repoId)
-	{
-		return Optional.ofNullable(ofRepoIdOrNull(repoId));
 	}
 
 	int repoId;
@@ -44,8 +37,13 @@ public class SAPGLJournalId implements RepoIdAware
 		return repoId;
 	}
 
-	public static int toRepoId(@Nullable final SAPGLJournalId SAPGLJournalId)
+	public static int toRepoId(@Nullable final SAPGLJournalId id)
 	{
-		return SAPGLJournalId != null ? SAPGLJournalId.getRepoId() : -1;
+		return id != null ? id.getRepoId() : -1;
+	}
+
+	public static boolean equals(@Nullable final SAPGLJournalId id1, @Nullable final SAPGLJournalId id2)
+	{
+		return Objects.equals(id1, id2);
 	}
 }

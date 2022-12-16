@@ -1,0 +1,267 @@
+package de.metas.acct.gljournal_sap.service;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import de.metas.acct.api.AccountId;
+import de.metas.acct.api.PostingType;
+import de.metas.acct.gljournal_sap.PostingSign;
+import de.metas.acct.gljournal_sap.SAPGLJournal;
+import de.metas.acct.gljournal_sap.SAPGLJournalCurrencyConversionCtx;
+import de.metas.acct.gljournal_sap.SAPGLJournalId;
+import de.metas.acct.gljournal_sap.SAPGLJournalLine;
+import de.metas.acct.gljournal_sap.SAPGLJournalLineId;
+import de.metas.acct.model.I_SAP_GLJournal;
+import de.metas.acct.model.I_SAP_GLJournalLine;
+import de.metas.currency.FixedConversionRate;
+import de.metas.money.CurrencyConversionTypeId;
+import de.metas.money.CurrencyId;
+import de.metas.money.Money;
+import de.metas.order.OrderId;
+import de.metas.organization.ClientAndOrgId;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.sectionCode.SectionCodeId;
+import de.metas.tax.api.TaxId;
+import de.metas.util.Services;
+import de.metas.util.lang.SeqNo;
+import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+
+public class SAPGLJournalLoaderAndSaver
+{
+	private final IQueryBL queryBL = Services.get(IQueryBL.class);
+
+	private final HashMap<SAPGLJournalId, I_SAP_GLJournal> headersById = new HashMap<>();
+	private final HashSet<SAPGLJournalId> headerIdsToAvoidSaving = new HashSet<>();
+
+	private final HashMap<SAPGLJournalId, ArrayList<I_SAP_GLJournalLine>> linesByHeaderId = new HashMap<>();
+
+	public void addToCacheAndAvoidSaving(@NonNull final I_SAP_GLJournal record)
+	{
+		@NonNull final SAPGLJournalId glJournalId = extractId(record);
+		headersById.put(glJournalId, record);
+		headerIdsToAvoidSaving.add(glJournalId);
+	}
+
+	public SAPGLJournal getById(@NonNull final SAPGLJournalId id)
+	{
+		final I_SAP_GLJournal headerRecord = getHeaderRecordById(id);
+		final List<I_SAP_GLJournalLine> lineRecords = getLineRecords(id);
+		return fromRecord(headerRecord, lineRecords);
+	}
+
+	private I_SAP_GLJournal getHeaderRecordById(@NonNull final SAPGLJournalId id)
+	{
+		return headersById.computeIfAbsent(id, this::retrieveHeaderRecordById);
+	}
+
+	private I_SAP_GLJournal retrieveHeaderRecordById(@NonNull final SAPGLJournalId id)
+	{
+		final I_SAP_GLJournal glJournal = InterfaceWrapperHelper.load(id, I_SAP_GLJournal.class);
+		if (glJournal == null)
+		{
+			throw new AdempiereException("No SAP GL Journal found for " + id);
+		}
+		return glJournal;
+	}
+
+	public static SAPGLJournalCurrencyConversionCtx extractConversionCtx(@NonNull final I_SAP_GLJournal glJournal)
+	{
+		final CurrencyId currencyId = CurrencyId.ofRepoId(glJournal.getC_Currency_ID());
+		final CurrencyId acctCurrencyId = CurrencyId.ofRepoId(glJournal.getAcct_Currency_ID());
+
+		final FixedConversionRate fixedConversionRate;
+		final BigDecimal currencyRateBD = glJournal.getCurrencyRate();
+		if (currencyRateBD.signum() != 0)
+		{
+			fixedConversionRate = FixedConversionRate.builder()
+					.fromCurrencyId(currencyId)
+					.toCurrencyId(acctCurrencyId)
+					.multiplyRate(currencyRateBD)
+					.build();
+		}
+		else
+		{
+			fixedConversionRate = null;
+		}
+
+		return SAPGLJournalCurrencyConversionCtx.builder()
+				.acctCurrencyId(acctCurrencyId)
+				.currencyId(currencyId)
+				.conversionTypeId(CurrencyConversionTypeId.ofRepoIdOrNull(glJournal.getC_ConversionType_ID()))
+				.date(glJournal.getDateAcct().toInstant())
+				.fixedConversionRate(fixedConversionRate)
+				.clientAndOrgId(ClientAndOrgId.ofClientAndOrg(glJournal.getAD_Client_ID(), glJournal.getAD_Org_ID()))
+				.build();
+	}
+
+	public ArrayList<I_SAP_GLJournalLine> getLineRecords(@NonNull final SAPGLJournalId glJournalId)
+	{
+		return linesByHeaderId.computeIfAbsent(glJournalId, this::retrieveLineRecords);
+	}
+
+	private ArrayList<I_SAP_GLJournalLine> retrieveLineRecords(final @NonNull SAPGLJournalId glJournalId)
+	{
+		return queryLinesByHeaderId(glJournalId)
+				.create()
+				.stream()
+				.collect(Collectors.toCollection(ArrayList::new));
+
+	}
+
+	private IQueryBuilder<I_SAP_GLJournalLine> queryLinesByHeaderId(final @NonNull SAPGLJournalId glJournalId)
+	{
+		return queryBL.createQueryBuilder(I_SAP_GLJournalLine.class)
+				.addInArrayFilter(I_SAP_GLJournalLine.COLUMNNAME_SAP_GLJournal_ID, glJournalId);
+	}
+
+	SeqNo getNextSeqNo(@NonNull final SAPGLJournalId glJournalId)
+	{
+		final int lastLineInt = queryLinesByHeaderId(glJournalId)
+				.create()
+				.maxInt(I_SAP_GLJournalLine.COLUMNNAME_Line);
+
+		final SeqNo lastLineNo = SeqNo.ofInt(Math.max(lastLineInt, 0));
+		return lastLineNo.next();
+	}
+
+	private static SAPGLJournal fromRecord(
+			@NonNull final I_SAP_GLJournal headerRecord,
+			@NonNull final List<I_SAP_GLJournalLine> lineRecords)
+	{
+		final SAPGLJournalCurrencyConversionCtx conversionCtx = extractConversionCtx(headerRecord);
+
+		return SAPGLJournal.builder()
+				.id(extractId(headerRecord))
+				.conversionCtx(conversionCtx)
+				.postingType(PostingType.ofCode(headerRecord.getPostingType()))
+				.lines(lineRecords.stream()
+						.map(lineRecord -> fromRecord(lineRecord, conversionCtx))
+						.collect(Collectors.toCollection(ArrayList::new)))
+				.totalAcctDR(Money.of(headerRecord.getTotalDr(), conversionCtx.getAcctCurrencyId()))
+				.totalAcctCR(Money.of(headerRecord.getTotalCr(), conversionCtx.getAcctCurrencyId()))
+				.build();
+	}
+
+	private static SAPGLJournalLine fromRecord(
+			@NonNull final I_SAP_GLJournalLine record,
+			@NonNull final SAPGLJournalCurrencyConversionCtx conversionCtx)
+	{
+		return SAPGLJournalLine.builder()
+				.id(extractId(record))
+				//
+				.line(SeqNo.ofInt(record.getLine()))
+				//
+				.accountId(AccountId.ofRepoId(record.getC_ValidCombination_ID()))
+				.postingSign(PostingSign.ofCode(record.getPostingSign()))
+				.amount(Money.of(record.getAmount(), conversionCtx.getCurrencyId()))
+				.amountAcct(Money.of(record.getAmtAcct(), conversionCtx.getAcctCurrencyId()))
+				//
+				.taxId(TaxId.ofRepoIdOrNull(record.getC_Tax_ID()))
+				//
+				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(record.getM_SectionCode_ID()))
+				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
+				.orderId(OrderId.ofRepoIdOrNull(record.getC_Order_ID()))
+				.activityId(ActivityId.ofRepoIdOrNull(record.getC_Activity_ID()))
+				//
+				.build();
+	}
+
+	@NonNull
+	public static SAPGLJournalId extractId(final @NonNull I_SAP_GLJournal header)
+	{
+		return SAPGLJournalId.ofRepoId(header.getSAP_GLJournal_ID());
+	}
+
+	@NonNull
+	private static SAPGLJournalLineId extractId(final @NonNull I_SAP_GLJournalLine line)
+	{
+		return SAPGLJournalLineId.ofRepoId(line.getSAP_GLJournal_ID(), line.getSAP_GLJournalLine_ID());
+	}
+
+	public void save(final SAPGLJournal glJournal)
+	{
+		final I_SAP_GLJournal headerRecord = getHeaderRecordById(glJournal.getId());
+		updateHeaderRecord(headerRecord, glJournal);
+		saveRecordIfAllowed(headerRecord);
+
+		final ArrayList<I_SAP_GLJournalLine> lineRecords = getLineRecords(glJournal.getId());
+		final ImmutableMap<SAPGLJournalLineId, I_SAP_GLJournalLine> lineRecordsById = Maps.uniqueIndex(lineRecords, SAPGLJournalLoaderAndSaver::extractId);
+
+		//
+		// UPDATE
+		final HashSet<SAPGLJournalLineId> savedIds = new HashSet<>();
+		for (SAPGLJournalLine line : glJournal.getLines())
+		{
+			final I_SAP_GLJournalLine lineRecord = lineRecordsById.get(line.getId());
+			if (lineRecord == null)
+			{
+				throw new AdempiereException("@NotFound@ " + line.getId()); // shall not happen
+			}
+
+			updateLineRecord(lineRecord, line);
+			InterfaceWrapperHelper.save(lineRecord);
+			savedIds.add(line.getId());
+		}
+
+		//
+		// DELETE
+		if (lineRecords.size() != savedIds.size())
+		{
+			for (Iterator<I_SAP_GLJournalLine> it = lineRecords.iterator(); it.hasNext(); )
+			{
+				final I_SAP_GLJournalLine lineRecord = it.next();
+				final SAPGLJournalLineId id = extractId(lineRecord);
+				if (!savedIds.contains(id))
+				{
+					it.remove();
+					InterfaceWrapperHelper.delete(lineRecord);
+				}
+			}
+		}
+
+	}
+
+	private static void updateHeaderRecord(final I_SAP_GLJournal headerRecord, final SAPGLJournal glJournal)
+	{
+		headerRecord.setTotalDr(glJournal.getTotalAcctDR().toBigDecimal());
+		headerRecord.setTotalCr(glJournal.getTotalAcctCR().toBigDecimal());
+	}
+
+	private static void updateLineRecord(final I_SAP_GLJournalLine lineRecord, final SAPGLJournalLine line)
+	{
+		lineRecord.setAmtAcct(line.getAmountAcct().toBigDecimal());
+	}
+
+	private void saveRecordIfAllowed(final I_SAP_GLJournal headerRecord)
+	{
+		if (headerIdsToAvoidSaving.contains(extractId(headerRecord)))
+		{
+			return;
+		}
+
+		InterfaceWrapperHelper.save(headerRecord);
+	}
+
+	public void updateById(
+			@NonNull final SAPGLJournalId id,
+			@NonNull Consumer<SAPGLJournal> consumer)
+	{
+		final SAPGLJournal glJournal = getById(id);
+		consumer.accept(glJournal);
+		save(glJournal);
+	}
+
+}
