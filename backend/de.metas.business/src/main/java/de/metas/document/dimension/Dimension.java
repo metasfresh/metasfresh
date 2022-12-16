@@ -22,8 +22,11 @@
 
 package de.metas.document.dimension;
 
+import de.metas.order.OrderId;
+import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
+import de.metas.sectionCode.SectionCodeId;
 import lombok.Builder;
 import lombok.Value;
 import lombok.With;
@@ -36,12 +39,27 @@ import java.util.Objects;
 public class Dimension implements Comparable<Dimension>
 {
 	@With
-	@Nullable ProjectId projectId;
+	@Nullable
+	ProjectId projectId;
 
 	int campaignId;
 
 	@With
-	@Nullable ActivityId activityId;
+	@Nullable
+	ActivityId activityId;
+
+	@With
+	@Nullable
+	OrderId orderId;
+
+	@With
+	@Nullable
+	SectionCodeId sectionCodeId;
+
+	@With
+	@Nullable
+	ProductId productId;
+
 
 	// todo propagation for these 2
 	int user1_ID;
