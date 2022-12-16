@@ -14,6 +14,7 @@ import de.metas.acct.gljournal_sap.SAPGLJournalLineId;
 import de.metas.acct.model.I_SAP_GLJournal;
 import de.metas.acct.model.I_SAP_GLJournalLine;
 import de.metas.currency.FixedConversionRate;
+import de.metas.document.dimension.Dimension;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -167,6 +168,7 @@ public class SAPGLJournalLoaderAndSaver
 	{
 		return SAPGLJournalLine.builder()
 				.id(extractId(record))
+				.parentId(SAPGLJournalLineId.ofRepoIdOrNull(record.getSAP_GLJournal_ID(), record.getParent_ID()))
 				//
 				.line(SeqNo.ofInt(record.getLine()))
 				.description(StringUtils.trimBlankToNull(record.getDescription()))
@@ -178,11 +180,18 @@ public class SAPGLJournalLoaderAndSaver
 				//
 				.taxId(TaxId.ofRepoIdOrNull(record.getC_Tax_ID()))
 				//
+				.dimension(extractDimension(record))
+				//
+				.build();
+	}
+
+	private static Dimension extractDimension(final @NonNull I_SAP_GLJournalLine record)
+	{
+		return Dimension.builder()
 				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(record.getM_SectionCode_ID()))
 				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
 				.orderId(OrderId.ofRepoIdOrNull(record.getC_Order_ID()))
 				.activityId(ActivityId.ofRepoIdOrNull(record.getC_Activity_ID()))
-				//
 				.build();
 	}
 
@@ -239,17 +248,14 @@ public class SAPGLJournalLoaderAndSaver
 
 		//
 		// DELETE
-		if (lineRecords.size() != savedLineIds.size())
+		for (Iterator<I_SAP_GLJournalLine> it = lineRecords.iterator(); it.hasNext(); )
 		{
-			for (Iterator<I_SAP_GLJournalLine> it = lineRecords.iterator(); it.hasNext(); )
+			final I_SAP_GLJournalLine lineRecord = it.next();
+			final SAPGLJournalLineId id = extractId(lineRecord);
+			if (!savedLineIds.contains(id))
 			{
-				final I_SAP_GLJournalLine lineRecord = it.next();
-				final SAPGLJournalLineId id = extractId(lineRecord);
-				if (!savedLineIds.contains(id))
-				{
-					it.remove();
-					InterfaceWrapperHelper.delete(lineRecord);
-				}
+				it.remove();
+				InterfaceWrapperHelper.delete(lineRecord);
 			}
 		}
 	}
@@ -262,6 +268,7 @@ public class SAPGLJournalLoaderAndSaver
 
 	private static void updateLineRecord(final I_SAP_GLJournalLine lineRecord, final SAPGLJournalLine line)
 	{
+		lineRecord.setParent_ID(SAPGLJournalLineId.toRepoId(line.getParentId()));
 		lineRecord.setLine(line.getLine().toInt());
 		lineRecord.setDescription(StringUtils.trimBlankToNull(line.getDescription()));
 		lineRecord.setC_ValidCombination_ID(line.getAccountId().getRepoId());
@@ -269,10 +276,16 @@ public class SAPGLJournalLoaderAndSaver
 		lineRecord.setAmount(line.getAmount().toBigDecimal());
 		lineRecord.setAmtAcct(line.getAmountAcct().toBigDecimal());
 		lineRecord.setC_Tax_ID(TaxId.toRepoId(line.getTaxId()));
-		lineRecord.setM_SectionCode_ID(SectionCodeId.toRepoId(line.getSectionCodeId()));
-		lineRecord.setM_Product_ID(ProductId.toRepoId(line.getProductId()));
-		lineRecord.setC_Order_ID(OrderId.toRepoId(line.getOrderId()));
-		lineRecord.setC_Activity_ID(ActivityId.toRepoId(line.getActivityId()));
+
+		updateLineRecordFromDimension(lineRecord, line.getDimension());
+	}
+
+	private static void updateLineRecordFromDimension(final I_SAP_GLJournalLine lineRecord, final Dimension dimension)
+	{
+		lineRecord.setM_SectionCode_ID(SectionCodeId.toRepoId(dimension.getSectionCodeId()));
+		lineRecord.setM_Product_ID(ProductId.toRepoId(dimension.getProductId()));
+		lineRecord.setC_Order_ID(OrderId.toRepoId(dimension.getOrderId()));
+		lineRecord.setC_Activity_ID(ActivityId.toRepoId(dimension.getActivityId()));
 	}
 
 	private void saveRecordIfAllowed(final I_SAP_GLJournal headerRecord)

@@ -333,6 +333,33 @@ public interface I_SAP_GLJournalLine
 	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
 
 	/**
+	 * Set Parent.
+	 * Parent of Entity
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setParent_ID (int Parent_ID);
+
+	/**
+	 * Get Parent.
+	 * Parent of Entity
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getParent_ID();
+
+	@Nullable de.metas.acct.model.I_SAP_GLJournalLine getParent();
+
+	void setParent(@Nullable de.metas.acct.model.I_SAP_GLJournalLine Parent);
+
+	ModelColumn<I_SAP_GLJournalLine, de.metas.acct.model.I_SAP_GLJournalLine> COLUMN_Parent_ID = new ModelColumn<>(I_SAP_GLJournalLine.class, "Parent_ID", de.metas.acct.model.I_SAP_GLJournalLine.class);
+	String COLUMNNAME_Parent_ID = "Parent_ID";
+
+	/**
 	 * Set DR/CR.
 	 *
 	 * <br>Type: List

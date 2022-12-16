@@ -6,6 +6,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 
+import de.metas.document.dimension.Dimension;
+import de.metas.project.ProjectId;
+import de.metas.sectionCode.SectionCodeId;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.trx.api.ITrx;
@@ -1623,4 +1626,13 @@ public final class FactLine extends X_Fact_Acct
 		super.setPostingType(postingType.getCode());
 	}
 
+	public void setFromDimension(@NonNull final Dimension dimension)
+	{
+		setC_Project_ID(ProjectId.toRepoId(dimension.getProjectId()));
+		setC_Campaign_ID(dimension.getCampaignId());
+		setC_Activity_ID(ActivityId.toRepoId(dimension.getActivityId()));
+		// TODO setC_Order_ID(OrderId.toRepoId(line.getOrderId()));
+		setM_SectionCode_ID(SectionCodeId.toRepoId(dimension.getSectionCodeId()));
+		// TODO setM_Product_ID(ProductId.toRepoId(dimension.getProductId()));
+	}
 }    // FactLine

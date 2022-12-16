@@ -2,6 +2,7 @@ package de.metas.acct.gljournal_sap.interceptor;
 
 import de.metas.acct.gljournal_sap.SAPGLJournal;
 import de.metas.acct.gljournal_sap.SAPGLJournalId;
+import de.metas.acct.gljournal_sap.SAPGLJournalLineId;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalService;
 import de.metas.acct.model.I_SAP_GLJournalLine;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -31,8 +32,21 @@ public class SAP_GLJournalLine
 		}
 	}
 
-	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })
+	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_DELETE })
 	public void beforeDelete(final I_SAP_GLJournalLine record)
+	{
+		if (InterfaceWrapperHelper.isUIAction(record))
+		{
+			final SAPGLJournalId glJournalId = SAPGLJournalId.ofRepoId(record.getSAP_GLJournal_ID());
+			final SAPGLJournalLineId glJournalLineId = SAPGLJournalLineId.ofRepoId(glJournalId, record.getSAP_GLJournalLine_ID());
+			glJournalService.updateById(
+					glJournalId,
+					glJournal -> glJournal.removeLinesIf(line -> SAPGLJournalLineId.equals(line.getParentId(), glJournalLineId)));
+		}
+	}
+
+	@ModelChange(timings = { ModelValidator.TYPE_AFTER_DELETE })
+	public void afterDelete(final I_SAP_GLJournalLine record)
 	{
 		if (InterfaceWrapperHelper.isUIAction(record))
 		{

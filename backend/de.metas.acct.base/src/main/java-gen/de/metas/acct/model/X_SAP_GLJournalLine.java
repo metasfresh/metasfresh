@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_SAP_GLJournalLine extends org.compiere.model.PO implements I_SAP_GLJournalLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 1267809071L;
+	private static final long serialVersionUID = 2011207627L;
 
     /** Standard Constructor */
     public X_SAP_GLJournalLine (final Properties ctx, final int SAP_GLJournalLine_ID, @Nullable final String trxName)
@@ -209,6 +209,33 @@ public class X_SAP_GLJournalLine extends org.compiere.model.PO implements I_SAP_
 	public int getM_SectionCode_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_SectionCode_ID);
+	}
+
+	@Override
+	public de.metas.acct.model.I_SAP_GLJournalLine getParent()
+	{
+		return get_ValueAsPO(COLUMNNAME_Parent_ID, de.metas.acct.model.I_SAP_GLJournalLine.class);
+	}
+
+	@Override
+	public void setParent(final de.metas.acct.model.I_SAP_GLJournalLine Parent)
+	{
+		set_ValueFromPO(COLUMNNAME_Parent_ID, de.metas.acct.model.I_SAP_GLJournalLine.class, Parent);
+	}
+
+	@Override
+	public void setParent_ID (final int Parent_ID)
+	{
+		if (Parent_ID < 1) 
+			set_Value (COLUMNNAME_Parent_ID, null);
+		else 
+			set_Value (COLUMNNAME_Parent_ID, Parent_ID);
+	}
+
+	@Override
+	public int getParent_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_Parent_ID);
 	}
 
 	/** 

@@ -16,16 +16,18 @@ import java.util.function.Supplier;
 @Service
 public class SAPGLJournalService
 {
-	@Getter
-	private final SAPGLJournalCurrencyConverter currencyConverter;
 	private final SAPGLJournalRepository glJournalRepository;
+	@Getter private final SAPGLJournalCurrencyConverter currencyConverter;
+	@Getter private final SAPGLJournalTaxProvider taxProvider;
 
 	public SAPGLJournalService(
+			@NonNull final SAPGLJournalRepository glJournalRepository,
 			@NonNull final SAPGLJournalCurrencyConverter currencyConverter,
-			@NonNull final SAPGLJournalRepository glJournalRepository)
+			@NonNull final SAPGLJournalTaxProvider taxProvider)
 	{
-		this.currencyConverter = currencyConverter;
 		this.glJournalRepository = glJournalRepository;
+		this.currencyConverter = currencyConverter;
+		this.taxProvider = taxProvider;
 	}
 
 	public SeqNo getNextSeqNo(@NonNull final SAPGLJournalId glJournalId)
@@ -70,5 +72,11 @@ public class SAPGLJournalService
 		}
 
 		return lineId;
+	}
+
+	public void regenerateTaxLines(final SAPGLJournalId glJournalId)
+	{
+		// TODO make sure the document is drafted
+		updateById(glJournalId, glJournal -> glJournal.regenerateTaxLines(taxProvider, currencyConverter));
 	}
 }

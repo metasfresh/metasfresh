@@ -14,9 +14,6 @@ import de.metas.acct.gljournal_sap.service.SAPGLJournalService;
 import de.metas.acct.model.I_SAP_GLJournal;
 import de.metas.currency.CurrencyConversionContext;
 import de.metas.money.CurrencyId;
-import de.metas.product.ProductId;
-import de.metas.product.acct.api.ActivityId;
-import de.metas.sectionCode.SectionCodeId;
 import de.metas.util.Check;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
@@ -120,14 +117,12 @@ public class Doc_SAPGLJournal extends Doc<DocLine_SAPGLJournal>
 			factLine.setAmtAcctDr(amtAcctDr);
 			factLine.setAmtAcctCr(amtAcctCr);
 
-			// TODO: check/decide when we set C_Tax_ID !
+			if(line.isTaxLine())
+			{
+				factLine.setC_Tax_ID(line.getTaxId().getRepoId());
+			}
 
-			factLine.setM_SectionCode_ID(SectionCodeId.toRepoId(line.getSectionCodeId()));
-			factLine.setM_Product_ID(ProductId.toRepoId(line.getProductId()));
-			// TODO factLine.setC_Order_ID(OrderId.toRepoId(line.getOrderId()));
-			factLine.setC_Activity_ID(ActivityId.toRepoId(line.getActivityId()));
-
-			factLine.setDescription(line.getDescription());
+			factLine.setFromDimension(line.getDimension());
 		}
 
 		return ImmutableList.of(fact);

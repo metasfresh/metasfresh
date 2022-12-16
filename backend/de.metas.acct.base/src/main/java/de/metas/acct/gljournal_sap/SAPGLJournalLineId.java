@@ -32,6 +32,12 @@ public class SAPGLJournalLineId implements RepoIdAware
 		return glJournalId != null && repoId > 0 ? new SAPGLJournalLineId(glJournalId, repoId) : null;
 	}
 
+	public static SAPGLJournalLineId ofRepoIdOrNull(final int glJournalRepoId, final int repoId)
+	{
+		final SAPGLJournalId glJournalId = SAPGLJournalId.ofRepoIdOrNull(glJournalRepoId);
+		return ofRepoIdOrNull(glJournalId, repoId);
+	}
+
 	@NonNull SAPGLJournalId glJournalId;
 	int repoId;
 

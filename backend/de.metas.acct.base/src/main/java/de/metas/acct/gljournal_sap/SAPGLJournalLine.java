@@ -1,11 +1,8 @@
 package de.metas.acct.gljournal_sap;
 
 import de.metas.acct.api.AccountId;
+import de.metas.document.dimension.Dimension;
 import de.metas.money.Money;
-import de.metas.order.OrderId;
-import de.metas.product.ProductId;
-import de.metas.product.acct.api.ActivityId;
-import de.metas.sectionCode.SectionCodeId;
 import de.metas.tax.api.TaxId;
 import de.metas.util.lang.SeqNo;
 import lombok.Builder;
@@ -25,7 +22,9 @@ public class SAPGLJournalLine
 {
 	@Nullable private SAPGLJournalLineId id;
 
-	@NonNull @Getter private final SeqNo line;
+	@Nullable @Getter private final SAPGLJournalLineId parentId;
+
+	@NonNull @Getter @Setter private SeqNo line;
 	@Nullable @Getter private final String description;
 
 	@NonNull @Getter private final AccountId accountId;
@@ -35,10 +34,7 @@ public class SAPGLJournalLine
 
 	@Nullable @Getter private final TaxId taxId;
 
-	@Nullable @Getter private final SectionCodeId sectionCodeId;
-	@Nullable @Getter private final ProductId productId;
-	@Nullable @Getter private final OrderId orderId;
-	@Nullable @Getter private final ActivityId activityId;
+	@NonNull @Getter private final Dimension dimension;
 
 	public SAPGLJournalLineId getIdNotNull()
 	{
@@ -63,6 +59,16 @@ public class SAPGLJournalLine
 		}
 
 		this.id = id;
+	}
+
+	public boolean isTaxLine()
+	{
+		return parentId != null && taxId != null;
+	}
+
+	public boolean isBaseTaxLine()
+	{
+		return parentId == null && taxId != null;
 	}
 
 }

@@ -5,9 +5,12 @@ import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalCurrencyConverter;
+import de.metas.acct.gljournal_sap.service.SAPGLJournalTaxProvider;
+import de.metas.document.dimension.Dimension;
 import de.metas.money.Money;
 import de.metas.tax.api.TaxId;
 import de.metas.util.lang.SeqNo;
+import de.metas.util.lang.SeqNoProvider;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -19,6 +22,8 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.ListIterator;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 
 @EqualsAndHashCode
@@ -108,6 +113,7 @@ public class SAPGLJournal
 				.amount(amount)
 				.amountAcct(amountAcct)
 				.taxId(taxId)
+				.dimension(Dimension.builder().build())
 				.build();
 		lines.add(line);
 
@@ -124,5 +130,72 @@ public class SAPGLJournal
 				.orElse(SeqNo.ofInt(0));
 
 		return lastSeqNo.next();
+	}
+
+	private void renumberLines()
+	{
+		SeqNoProvider lineNoProvider = SeqNoProvider.ofInt(10);
+		for (SAPGLJournalLine line : lines)
+		{
+			line.setLine(lineNoProvider.getAndIncrement());
+		}
+	}
+
+	public void regenerateTaxLines(
+			@NonNull final SAPGLJournalTaxProvider taxProvider,
+			@NonNull final SAPGLJournalCurrencyConverter currencyConverter)
+	{
+		boolean hasChanges = false;
+		for (ListIterator<SAPGLJournalLine> it = lines.listIterator(); it.hasNext(); )
+		{
+			final SAPGLJournalLine line = it.next();
+			if (line.isTaxLine())
+			{
+				// remove old tax lines, we will generate them if needed
+				it.remove();
+				hasChanges = true;
+			}
+			else if (line.isBaseTaxLine())
+			{
+				final SAPGLJournalLine taxLine = createTaxLine(line, taxProvider, currencyConverter);
+				it.add(taxLine);
+				hasChanges = true;
+			}
+		}
+
+		if (hasChanges)
+		{
+			renumberLines();
+			updateTotals();
+		}
+	}
+
+	private SAPGLJournalLine createTaxLine(
+			@NonNull final SAPGLJournalLine baseLine,
+			@NonNull final SAPGLJournalTaxProvider taxProvider,
+			@NonNull final SAPGLJournalCurrencyConverter currencyConverter)
+	{
+		final TaxId taxId = baseLine.getTaxId();
+		final PostingSign taxPostingSign = baseLine.getPostingSign();
+		final AccountId taxAccountId = taxProvider.getTaxAccountId(taxId, acctSchemaId, taxPostingSign);
+		final Money taxAmt = taxProvider.calculateTaxAmt(baseLine.getAmount(), taxId);
+		final Money taxAmtAcct = currencyConverter.convertToAcctCurrency(taxAmt, conversionCtx);
+
+		return SAPGLJournalLine.builder()
+				.parentId(baseLine.getIdNotNull())
+				.line(baseLine.getLine()) // will be updated later
+				.accountId(taxAccountId)
+				.postingSign(taxPostingSign)
+				.amount(taxAmt)
+				.amountAcct(taxAmtAcct)
+				.taxId(taxId)
+				.dimension(baseLine.getDimension())
+				.build();
+	}
+
+	public void removeLinesIf(final Predicate<SAPGLJournalLine> predicate)
+	{
+		lines.removeIf(predicate);
+		updateTotals();
 	}
 }
