@@ -160,6 +160,13 @@ public class ADTableDAO implements IADTableDAO
 		return TableIdsCache.instance.getTableName(adTableId);
 	}
 
+	@Override
+	public Optional<String> getTableNameIfPresent(@NonNull final AdTableId adTableId)
+	{
+		return TableIdsCache.instance.getTableNameIfPresent(adTableId);
+	}
+
+
 	// IMPORTANT: make sure we are returning -1 in case tableName was not found (and NOT throw exception),
 	// because there is business logic which depends on this
 	@Override
