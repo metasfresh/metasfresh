@@ -24,7 +24,6 @@ package de.metas.handlingunits.hutransaction.impl;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.model.impl.TableRecordCacheLocal;
-import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
@@ -186,11 +185,10 @@ public class HUTrxBL implements IHUTrxBL
 	}
 	
 	@Override
-	public void setParentHU(@NonNull ChangeParentHURequest request)
+	public void setParentHU(@NonNull final ChangeParentHURequest request)
 	{
 		final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 		final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
-
 
 		//
 		// Important: force pre-set HU in current transaction; all future assignments and data retrieval shall be done in current Trx
@@ -326,10 +324,10 @@ public class HUTrxBL implements IHUTrxBL
 		InterfaceWrapperHelper.setTrxName(hu, ITrx.TRXNAME_ThreadInherited);
 
 		setParentHU(ChangeParentHURequest.builder()
-				.huContext(huContext)
-				.parentHUItem(null)
-				.hu(hu)
-				.build());
+							.huContext(huContext)
+							.parentHUItem(null)
+							.hu(hu)
+							.build());
 
 	}
 

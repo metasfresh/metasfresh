@@ -25,6 +25,7 @@ package de.metas.handlingunits.pporder.api.impl;
 import com.google.common.collect.ImmutableList;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheTrx;
+import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.exceptions.HUException;
 import de.metas.handlingunits.model.I_PP_Order_Qty;
 import de.metas.handlingunits.picking.PickingCandidateId;
@@ -50,6 +51,7 @@ import org.eevolution.api.PPOrderId;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
@@ -96,7 +98,7 @@ public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 		final I_PP_Order_Qty record = newInstance(I_PP_Order_Qty.class);
 
 		record.setPP_Order_ID(request.getOrderId().getRepoId());
-		record.setPP_Order_BOMLine_ID(request.getOrderBOMLineId().getRepoId());
+		record.setPP_Order_BOMLine_ID(PPOrderBOMLineId.toRepoId(request.getOrderBOMLineId()));
 
 		record.setM_Locator_ID(LocatorId.toRepoId(request.getLocatorId()));
 		record.setM_HU_ID(request.getIssueFromHUId().getRepoId());
@@ -172,5 +174,18 @@ public class HUPPOrderQtyDAO implements IHUPPOrderQtyDAO
 				.stream()
 				.filter(cand -> cand.getPP_Order_BOMLine_ID() <= 0)
 				.collect(ImmutableList.toImmutableList());
+	}
+
+	@Override
+	public Optional<I_PP_Order_Qty> retrieveOrderQtyForHu(
+			@NonNull final PPOrderId ppOrderId,
+			@NonNull final HuId huId)
+	{
+		return retrieveOrderQtys(ppOrderId)
+				.stream()
+				.filter(cand -> cand.getM_HU_ID() == huId.getRepoId())
+				.reduce((cand1, cand2) -> {
+					throw new HUException("Expected only one candidate but got: " + cand1 + ", " + cand2);
+				});
 	}
 }

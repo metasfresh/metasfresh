@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package de.metas.material.cockpit.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for MD_Cockpit_DocumentDetail
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_MD_Cockpit_DocumentDetail extends org.compiere.model.PO implements I_MD_Cockpit_DocumentDetail, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 2138668506L;
+	private static final long serialVersionUID = -1545024038L;
 
     /** Standard Constructor */
     public X_MD_Cockpit_DocumentDetail (final Properties ctx, final int MD_Cockpit_DocumentDetail_ID, @Nullable final String trxName)
@@ -150,6 +150,48 @@ public class X_MD_Cockpit_DocumentDetail extends org.compiere.model.PO implement
 	}
 
 	@Override
+	public void setMD_Cockpit_DocumentDetail_ID (final int MD_Cockpit_DocumentDetail_ID)
+	{
+		if (MD_Cockpit_DocumentDetail_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_MD_Cockpit_DocumentDetail_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_MD_Cockpit_DocumentDetail_ID, MD_Cockpit_DocumentDetail_ID);
+	}
+
+	@Override
+	public int getMD_Cockpit_DocumentDetail_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_MD_Cockpit_DocumentDetail_ID);
+	}
+
+	@Override
+	public de.metas.material.cockpit.model.I_MD_Cockpit getMD_Cockpit()
+	{
+		return get_ValueAsPO(COLUMNNAME_MD_Cockpit_ID, de.metas.material.cockpit.model.I_MD_Cockpit.class);
+	}
+
+	@Override
+	public void setMD_Cockpit(final de.metas.material.cockpit.model.I_MD_Cockpit MD_Cockpit)
+	{
+		set_ValueFromPO(COLUMNNAME_MD_Cockpit_ID, de.metas.material.cockpit.model.I_MD_Cockpit.class, MD_Cockpit);
+	}
+
+	@Override
+	public void setMD_Cockpit_ID (final int MD_Cockpit_ID)
+	{
+		if (MD_Cockpit_ID < 1) 
+			set_ValueNoCheck (COLUMNNAME_MD_Cockpit_ID, null);
+		else 
+			set_ValueNoCheck (COLUMNNAME_MD_Cockpit_ID, MD_Cockpit_ID);
+	}
+
+	@Override
+	public int getMD_Cockpit_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_MD_Cockpit_ID);
+	}
+
+	@Override
 	public void setM_ReceiptSchedule_ID (final int M_ReceiptSchedule_ID)
 	{
 		if (M_ReceiptSchedule_ID < 1) 
@@ -177,48 +219,6 @@ public class X_MD_Cockpit_DocumentDetail extends org.compiere.model.PO implement
 	public int getM_ShipmentSchedule_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_M_ShipmentSchedule_ID);
-	}
-
-	@Override
-	public void setMD_Cockpit_DocumentDetail_ID (final int MD_Cockpit_DocumentDetail_ID)
-	{
-		if (MD_Cockpit_DocumentDetail_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_MD_Cockpit_DocumentDetail_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_MD_Cockpit_DocumentDetail_ID, MD_Cockpit_DocumentDetail_ID);
-	}
-
-	@Override
-	public int getMD_Cockpit_DocumentDetail_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_MD_Cockpit_DocumentDetail_ID);
-	}
-
-	@Override
-	public I_MD_Cockpit getMD_Cockpit()
-	{
-		return get_ValueAsPO(COLUMNNAME_MD_Cockpit_ID, I_MD_Cockpit.class);
-	}
-
-	@Override
-	public void setMD_Cockpit(final I_MD_Cockpit MD_Cockpit)
-	{
-		set_ValueFromPO(COLUMNNAME_MD_Cockpit_ID, I_MD_Cockpit.class, MD_Cockpit);
-	}
-
-	@Override
-	public void setMD_Cockpit_ID (final int MD_Cockpit_ID)
-	{
-		if (MD_Cockpit_ID < 1) 
-			set_ValueNoCheck (COLUMNNAME_MD_Cockpit_ID, null);
-		else 
-			set_ValueNoCheck (COLUMNNAME_MD_Cockpit_ID, MD_Cockpit_ID);
-	}
-
-	@Override
-	public int getMD_Cockpit_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_MD_Cockpit_ID);
 	}
 
 	@Override

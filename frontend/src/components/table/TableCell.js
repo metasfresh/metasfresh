@@ -1,12 +1,12 @@
 import PropTypes from 'prop-types';
-import React, { PureComponent, createRef } from 'react';
+import React, { createRef, PureComponent } from 'react';
 import classnames from 'classnames';
 import counterpart from 'counterpart';
 
 import {
+  checkIfDateField,
   getSizeClass,
   getTdTitle,
-  checkIfDateField,
 } from '../../utils/tableHelpers';
 import TableCellWidget from './TableCellWidget';
 import WidgetWrapper from '../../containers/WidgetWrapper';
@@ -29,16 +29,13 @@ class TableCell extends PureComponent {
   }
 
   /**
-   * @method widgetTooltipToggle
-   * @summary Alternative method to open dropdown, in case of disabled opening on focus.
-   *
-   * @param {bool|null} value - boolean value used to toggle the tooltipToggled value
+   * @param {bool|null} tooltipOpen - boolean value used to toggle the tooltipToggled value
    */
-  widgetTooltipToggle = (value) => {
-    const curVal = this.state.tooltipToggled;
-    const newVal = value != null ? value : !curVal;
+  widgetTooltipToggle = (tooltipOpen = null) => {
+    const tooltipOpenEffective =
+      tooltipOpen != null ? tooltipOpen : !this.state.tooltipToggled;
 
-    this.setState({ tooltipToggled: newVal });
+    this.setState({ tooltipToggled: tooltipOpenEffective });
   };
 
   /**
@@ -61,18 +58,22 @@ class TableCell extends PureComponent {
    * @method handleKeyDown
    * @summary Key down function handler
    *
-   * @param {object} e - this is the corresponding event from a text input for example
+   * @param {object} event - this is the corresponding event from a text input for example
    * when you change a value within a table cell by typing something in that specific cell.
    */
-  handleKeyDown = (e) => {
-    const { onKeyDown, property, isReadonly, tableCellData } = this.props;
-    const isAttributeWidget = tableCellData.widgetType === 'ProductAttributes';
-
-    if (e.keyCode === 67 && (e.ctrlKey || e.metaKey)) {
+  handleKeyDown = (event) => {
+    if (event.keyCode === 67 && (event.ctrlKey || event.metaKey)) {
       return false; // CMD + C on Mac has to just copy
     }
 
-    onKeyDown(e, property, isReadonly, isAttributeWidget);
+    const { onKeyDown, property, isReadonly, tableCellData } = this.props;
+    onKeyDown &&
+      onKeyDown({
+        event,
+        property,
+        readonly: isReadonly,
+        isAttributeWidget: tableCellData.widgetType === 'ProductAttributes',
+      });
   };
 
   /**
@@ -140,7 +141,7 @@ class TableCell extends PureComponent {
    * have a strict comparison below) it will be true
    */
   clearValue = (reset) => {
-    this.clearWidgetValue = reset == null ? true : false;
+    this.clearWidgetValue = reset == null;
   };
 
   render() {
@@ -244,6 +245,7 @@ class TableCell extends PureComponent {
               updateHeight,
               updateRow,
             }}
+            suppressChange={isEdited}
             clearValue={this.clearWidgetValue}
             dateFormat={isDateField}
             dataId={mainTable ? null : docId}
@@ -268,11 +270,12 @@ class TableCell extends PureComponent {
             </div>
             {tooltipWidget && !isEdited && (
               <WidgetTooltip
-                widget={tooltipWidget}
-                data={tooltipData}
-                fieldName={item.field}
+                iconName={tooltipWidget.tooltipIconName}
+                text={tooltipData?.value}
                 isToggled={tooltipToggled}
-                onToggle={this.widgetTooltipToggle}
+                onToggle={(tooltipOpen) =>
+                  this.widgetTooltipToggle(tooltipOpen)
+                }
               />
             )}
           </div>

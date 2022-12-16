@@ -7,6 +7,7 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.document.dimension.Dimension;
 import de.metas.material.event.MaterialEventHandler;
 import de.metas.material.event.PostMaterialEventService;
+import de.metas.material.event.commons.EventDescriptor;
 import de.metas.material.event.commons.MaterialDescriptor;
 import de.metas.material.event.purchase.PurchaseCandidateCreatedEvent;
 import de.metas.material.event.purchase.PurchaseCandidateRequestedEvent;
@@ -144,6 +145,7 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 				.source(PurchaseCandidateSource.MaterialDisposition)
 				.warehouseId(materialDescriptor.getWarehouseId())
 				.forecastLineId(ForecastLineId.ofRepoIdOrNull(event.getForecastId(), event.getForecastLineId()))
+				.simulated(event.isSimulated())
 				.build();
 
 		purchaseCandidateBL.updateCandidatePricingDiscount(newPurchaseCandidate);
@@ -178,7 +180,7 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 			@NonNull final PurchaseCandidateId newPurchaseCandidateId)
 	{
 		final PurchaseCandidateCreatedEvent purchaseCandidateCreatedEvent = PurchaseCandidateCreatedEvent.builder()
-				.eventDescriptor(requestedEvent.getEventDescriptor())
+				.eventDescriptor(EventDescriptor.ofEventDescriptor(requestedEvent.getEventDescriptor()))
 				.purchaseCandidateRepoId(newPurchaseCandidateId.getRepoId())
 				.vendorId(vendorId.getRepoId())
 				.purchaseMaterialDescriptor(requestedEvent.getPurchaseMaterialDescriptor())

@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public class X_C_BPartner_Attribute4 extends org.compiere.model.PO implements I_C_BPartner_Attribute4, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 795133873L;
+	private static final long serialVersionUID = 576738530L;
 
     /** Standard Constructor */
     public X_C_BPartner_Attribute4 (final Properties ctx, final int C_BPartner_Attribute4_ID, @Nullable final String trxName)
@@ -39,6 +39,20 @@ public class X_C_BPartner_Attribute4 extends org.compiere.model.PO implements I_
 	 * Reference name: Attributes4
 	 */
 	public static final int ATTRIBUTES4_AD_Reference_ID=541335;
+	/** Internet = Internet */
+	public static final String ATTRIBUTES4_Internet = "Internet";
+	/** Persönlich = Persönlich */
+	public static final String ATTRIBUTES4_Persoenlich = "Persönlich";
+	/** Anlass = Anlass */
+	public static final String ATTRIBUTES4_Anlass = "Anlass";
+	/** Zeitung = Zeitung */
+	public static final String ATTRIBUTES4_Zeitung = "Zeitung";
+	/** TV = TV */
+	public static final String ATTRIBUTES4_TV = "TV";
+	/** Empfehlung = Empfehlung */
+	public static final String ATTRIBUTES4_Empfehlung = "Empfehlung";
+	/** Inserate = Inserate */
+	public static final String ATTRIBUTES4_Inserate = "Inserate";
 	@Override
 	public void setAttributes4 (final java.lang.String Attributes4)
 	{

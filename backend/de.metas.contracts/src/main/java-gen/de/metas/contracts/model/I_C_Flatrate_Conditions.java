@@ -53,6 +53,27 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Customer Margin Settings.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Customer_Trade_Margin_ID (int C_Customer_Trade_Margin_ID);
+
+	/**
+	 * Get Customer Margin Settings.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Customer_Trade_Margin_ID();
+
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_C_Customer_Trade_Margin_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_Customer_Trade_Margin_ID", null);
+	String COLUMNNAME_C_Customer_Trade_Margin_ID = "C_Customer_Trade_Margin_ID";
+
+	/**
 	 * Set Contract Terms.
 	 *
 	 * <br>Type: ID
@@ -124,6 +145,117 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_C_Flatrate_Transition_ID = "C_Flatrate_Transition_ID";
 
 	/**
+	 * Set Hierarchy commission settings.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_HierarchyCommissionSettings_ID (int C_HierarchyCommissionSettings_ID);
+
+	/**
+	 * Get Hierarchy commission settings.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_HierarchyCommissionSettings_ID();
+
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_C_HierarchyCommissionSettings_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_HierarchyCommissionSettings_ID", null);
+	String COLUMNNAME_C_HierarchyCommissionSettings_ID = "C_HierarchyCommissionSettings_ID";
+
+	/**
+	 * Set License fee settings.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_LicenseFeeSettings_ID (int C_LicenseFeeSettings_ID);
+
+	/**
+	 * Get License fee settings.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_LicenseFeeSettings_ID();
+
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_C_LicenseFeeSettings_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_LicenseFeeSettings_ID", null);
+	String COLUMNNAME_C_LicenseFeeSettings_ID = "C_LicenseFeeSettings_ID";
+
+	/**
+	 * Set Brokerage commission settings.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_MediatedCommissionSettings_ID (int C_MediatedCommissionSettings_ID);
+
+	/**
+	 * Get Brokerage commission settings.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_MediatedCommissionSettings_ID();
+
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_C_MediatedCommissionSettings_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_MediatedCommissionSettings_ID", null);
+	String COLUMNNAME_C_MediatedCommissionSettings_ID = "C_MediatedCommissionSettings_ID";
+
+	/**
+	 * Set UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_UOM_ID (int C_UOM_ID);
+
+	/**
+	 * Get UOM.
+	 * Unit of Measure
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_UOM_ID();
+
+	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+
+	/**
+	 * Set Abo-Rabatt.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_SubscrDiscount_ID (int C_SubscrDiscount_ID);
+
+	/**
+	 * Get Abo-Rabatt.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_SubscrDiscount_ID();
+
+	@Nullable de.metas.contracts.model.I_C_SubscrDiscount getC_SubscrDiscount();
+
+	void setC_SubscrDiscount(@Nullable de.metas.contracts.model.I_C_SubscrDiscount C_SubscrDiscount);
+
+	ModelColumn<I_C_Flatrate_Conditions, de.metas.contracts.model.I_C_SubscrDiscount> COLUMN_C_SubscrDiscount_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_SubscrDiscount_ID", de.metas.contracts.model.I_C_SubscrDiscount.class);
+	String COLUMNNAME_C_SubscrDiscount_ID = "C_SubscrDiscount_ID";
+
+
+	/**
 	 * Set Basis für Verrechnungs-Zahlbetrag.
 	 * Entscheidet, ob der Verrechnungsbetrag auf Basis der Produktpreise (tats. erbrachte Leistungen) oder als prozentualer Aufschlag/Abschlag ermittelt wird.
 	 *
@@ -170,53 +302,27 @@ public interface I_C_Flatrate_Conditions
 	int getCreatedBy();
 
 	String COLUMNNAME_CreatedBy = "CreatedBy";
-
+	
 	/**
-	 * Set Subscription discount.
+	 * Set Description.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	void setC_SubscrDiscount_ID (int C_SubscrDiscount_ID);
+	void setDescription (@Nullable java.lang.String Description);
 
 	/**
-	 * Get Subscription discount.
+	 * Get Description.
 	 *
-	 * <br>Type: TableDir
+	 * <br>Type: Text
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	int getC_SubscrDiscount_ID();
+	@Nullable java.lang.String getDescription();
 
-	@Nullable de.metas.contracts.model.I_C_SubscrDiscount getC_SubscrDiscount();
-
-	void setC_SubscrDiscount(@Nullable de.metas.contracts.model.I_C_SubscrDiscount C_SubscrDiscount);
-
-	ModelColumn<I_C_Flatrate_Conditions, de.metas.contracts.model.I_C_SubscrDiscount> COLUMN_C_SubscrDiscount_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "C_SubscrDiscount_ID", de.metas.contracts.model.I_C_SubscrDiscount.class);
-	String COLUMNNAME_C_SubscrDiscount_ID = "C_SubscrDiscount_ID";
-
-	/**
-	 * Set UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_UOM_ID (int C_UOM_ID);
-
-	/**
-	 * Get UOM.
-	 * Unit of Measure
-	 *
-	 * <br>Type: TableDir
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_UOM_ID();
-
-	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Description = new ModelColumn<>(I_C_Flatrate_Conditions.class, "Description", null);
+	String COLUMNNAME_Description = "Description";
 
 	/**
 	 * Set Process Batch.
@@ -464,48 +570,6 @@ public interface I_C_Flatrate_Conditions
 	String COLUMNNAME_IsSimulation = "IsSimulation";
 
 	/**
-	 * Set Korridor - Überschreitung.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setMargin_Max (BigDecimal Margin_Max);
-
-	/**
-	 * Get Korridor - Überschreitung.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getMargin_Max();
-
-	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Margin_Max = new ModelColumn<>(I_C_Flatrate_Conditions.class, "Margin_Max", null);
-	String COLUMNNAME_Margin_Max = "Margin_Max";
-
-	/**
-	 * Set Korridor - Unterschreitung.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setMargin_Min (BigDecimal Margin_Min);
-
-	/**
-	 * Get Korridor - Unterschreitung.
-	 *
-	 * <br>Type: Amount
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	BigDecimal getMargin_Min();
-
-	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Margin_Min = new ModelColumn<>(I_C_Flatrate_Conditions.class, "Margin_Min", null);
-	String COLUMNNAME_Margin_Min = "Margin_Min";
-
-	/**
 	 * Set Pricing System.
 	 *
 	 * <br>Type: Search
@@ -590,6 +654,69 @@ public interface I_C_Flatrate_Conditions
 	int getM_Product_Flatrate_ID();
 
 	String COLUMNNAME_M_Product_Flatrate_ID = "M_Product_Flatrate_ID";
+
+	/**
+	 * Set Lagerkonferenz.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setM_QualityInsp_LagerKonf_ID (int M_QualityInsp_LagerKonf_ID);
+
+	/**
+	 * Get Lagerkonferenz.
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getM_QualityInsp_LagerKonf_ID();
+
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_M_QualityInsp_LagerKonf_ID = new ModelColumn<>(I_C_Flatrate_Conditions.class, "M_QualityInsp_LagerKonf_ID", null);
+	String COLUMNNAME_M_QualityInsp_LagerKonf_ID = "M_QualityInsp_LagerKonf_ID";
+
+	/**
+	 * Set Korridor - Überschreitung.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setMargin_Max (BigDecimal Margin_Max);
+
+	/**
+	 * Get Korridor - Überschreitung.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getMargin_Max();
+
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Margin_Max = new ModelColumn<>(I_C_Flatrate_Conditions.class, "Margin_Max", null);
+	String COLUMNNAME_Margin_Max = "Margin_Max";
+
+	/**
+	 * Set Korridor - Unterschreitung.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setMargin_Min (BigDecimal Margin_Min);
+
+	/**
+	 * Get Korridor - Unterschreitung.
+	 *
+	 * <br>Type: Amount
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	BigDecimal getMargin_Min();
+
+	ModelColumn<I_C_Flatrate_Conditions, Object> COLUMN_Margin_Min = new ModelColumn<>(I_C_Flatrate_Conditions.class, "Margin_Min", null);
+	String COLUMNNAME_Margin_Min = "Margin_Min";
 
 	/**
 	 * Set Name.

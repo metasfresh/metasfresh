@@ -43,6 +43,7 @@ public class ShipperTransportationRepository
 		shipperTransportation.setShipper_BPartner_ID(request.getShipperBPartnerAndLocationId().getBpartnerId().getRepoId());
 		shipperTransportation.setShipper_Location_ID(request.getShipperBPartnerAndLocationId().getRepoId());
 		shipperTransportation.setDateDoc(TimeUtil.asTimestamp(request.getShipDate()));
+		shipperTransportation.setAssignAnonymouslyPickedHUs(request.isAssignAnonymouslyPickedHUs());
 
 		saveRecord(shipperTransportation);
 

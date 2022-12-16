@@ -22,7 +22,6 @@
 
 package de.metas.camel.externalsystems.grssignum.from_grs.hu;
 
-import de.metas.camel.externalsystems.common.v2.ClearHUCamelRequest;
 import de.metas.camel.externalsystems.grssignum.to_grs.api.model.JsonHUClear;
 import de.metas.common.handlingunits.JsonClearanceStatus;
 import de.metas.common.handlingunits.JsonSetClearanceStatusRequest;
@@ -56,25 +55,23 @@ public class ClearHURouteBuilder extends RouteBuilder
 				.routeId(CLEAR_HU_ROUTE_ID)
 				.log("Route invoked!")
 				.unmarshal(setupJacksonDataFormatFor(getContext(), JsonHUClear.class))
-				.process(this::getClearHUCamelRequest).id(CLEAR_HU_PROCESSOR_ID)
+				.process(this::getAndAttachClearanceStatusRequest).id(CLEAR_HU_PROCESSOR_ID)
 				.to(direct(MF_CLEAR_HU_V2_CAMEL_ROUTE_ID));
 	}
 
-	private void getClearHUCamelRequest(@NonNull final Exchange exchange)
+	private void getAndAttachClearanceStatusRequest(@NonNull final Exchange exchange)
 	{
 		final JsonHUClear requestBody = exchange.getIn().getBody(JsonHUClear.class);
 
+		final JsonMetasfreshId metasfreshId = JsonMetasfreshId.of(Integer.parseInt(requestBody.getMetasfreshId()));
+
 		final JsonSetClearanceStatusRequest clearanceStatusRequest = JsonSetClearanceStatusRequest.builder()
+				.huIdentifier(JsonSetClearanceStatusRequest.JsonHUIdentifier.ofJsonMetasfreshId(metasfreshId))
 				.clearanceStatus(toJsonClearanceStatus(requestBody.getClearanceStatus()))
 				.clearanceNote(requestBody.getClearanceNote())
 				.build();
 
-		final ClearHUCamelRequest huClearCamelRequest = ClearHUCamelRequest.builder()
-				.metasfreshId(JsonMetasfreshId.of(Integer.parseInt(requestBody.getMetasfreshId())))
-				.clearanceStatusRequest(clearanceStatusRequest)
-				.build();
-
-		exchange.getIn().setBody(huClearCamelRequest, ClearHUCamelRequest.class);
+		exchange.getIn().setBody(clearanceStatusRequest, JsonSetClearanceStatusRequest.class);
 	}
 
 	@NonNull

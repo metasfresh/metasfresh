@@ -122,6 +122,15 @@ public class JsonRequestBPartner
 	@ApiModelProperty(hidden = true)
 	private boolean invoiceRuleSet;
 
+	@ApiModelProperty(position = 105, //
+			value = "Optional; if specified, it will be used, e.g. when a purchase order is created for this business partner.")
+	private JsonInvoiceRule poInvoiceRule;
+
+	@ApiModelProperty(hidden = true)
+	private boolean poInvoiceRuleSet;
+
+
+
 	@ApiModelProperty(position = 110)
 	private String url;
 
@@ -245,6 +254,12 @@ public class JsonRequestBPartner
 	{
 		this.invoiceRule = invoiceRule;
 		this.invoiceRuleSet = true;
+	}
+
+	public void setPOInvoiceRule(final JsonInvoiceRule invoiceRule)
+	{
+		this.poInvoiceRule = invoiceRule;
+		this.poInvoiceRuleSet = true;
 	}
 
 	public void setUrl(final String url)

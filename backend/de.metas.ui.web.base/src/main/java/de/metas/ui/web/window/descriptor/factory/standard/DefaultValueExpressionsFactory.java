@@ -54,14 +54,14 @@ import lombok.NonNull;
 public class DefaultValueExpressionsFactory
 {
 	/** @return new default instance */
-	public static final DefaultValueExpressionsFactory newInstance()
+	public static DefaultValueExpressionsFactory newInstance()
 	{
 		final String tableName = null; // N/A
 		final boolean isDetailTab = false;
 		return new DefaultValueExpressionsFactory(tableName, isDetailTab);
 	}
 
-	public static final DefaultValueExpressionsFactory newInstance(@NonNull final String tableName, final boolean isDetailTab)
+	public static DefaultValueExpressionsFactory newInstance(@NonNull final String tableName, final boolean isDetailTab)
 	{
 		return new DefaultValueExpressionsFactory(tableName, isDetailTab);
 	}
@@ -105,7 +105,7 @@ public class DefaultValueExpressionsFactory
 	private final String _tableName;
 	private final boolean _isDetailTab;
 
-	private DefaultValueExpressionsFactory(final String tableName, final boolean isDetailTab)
+	private DefaultValueExpressionsFactory(@Nullable final String tableName, final boolean isDetailTab)
 	{
 		_tableName = tableName;
 		_isDetailTab = isDetailTab;
@@ -286,10 +286,10 @@ public class DefaultValueExpressionsFactory
 	 * <li>we have some cases where a Table's reference default value is something like 'de.metas.swat'
 	 * </ul>
 	 *
-	 * @param expressionStr
 	 * @return fixed expression or same expression if does not apply
 	 */
-	private static final String stripDefaultValueQuotes(final String expressionStr)
+	@Nullable
+	private static String stripDefaultValueQuotes(final String expressionStr)
 	{
 		if (expressionStr == null || expressionStr.isEmpty())
 		{

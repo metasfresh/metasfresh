@@ -1,5 +1,6 @@
 package de.metas.pricing.service;
 
+import com.google.common.base.Function;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -17,6 +18,7 @@ import org.adempiere.ad.dao.IQueryBuilderOrderByClause;
 import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.ad.dao.IQueryOrderBy.Direction;
 import org.adempiere.ad.dao.IQueryOrderBy.Nulls;
+import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.compiere.model.IQuery;
 import org.compiere.model.I_M_AttributeInstance;
@@ -27,6 +29,7 @@ import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -77,6 +80,8 @@ public class ProductPriceQuery
 	}
 
 	private static final Logger logger = LogManager.getLogger(ProductPriceQuery.class);
+
+	private final transient IAttributeDAO attributeDAO = Services.get(IAttributeDAO.class);
 
 	private PriceListVersionId _priceListVersionId;
 	private ProductId _productId;
@@ -144,10 +149,50 @@ public class ProductPriceQuery
 				.addColumn(I_M_ProductPrice.COLUMN_MatchSeqNo, Direction.Ascending, Nulls.Last)
 				.addColumn(I_M_ProductPrice.COLUMN_M_ProductPrice_ID, Direction.Ascending, Nulls.Last); // just to have a predictable order
 
+		if (_attributePricing_asiToMatch != null && (AttributePricing.NOT_STRICT == _attributePricing || AttributePricing.STRICT == _attributePricing))
+		{
+			return filterProductPriceToAsiMatch(queryBuilder.create().list(type));
+		}
+
 		return queryBuilder.create().first(type);
 	}
 
-	/** @return true if there is at least one product price that matches */
+	<T extends I_M_ProductPrice> T filterProductPriceToAsiMatch(final List<T> matchingProductPrices)
+	{
+		if (matchingProductPrices.isEmpty())
+		{
+			return null;
+		}
+
+		if (matchingProductPrices.size() == 1)
+		{
+			return matchingProductPrices.get(0);
+		}
+
+		final Function<T, Integer> orderByNumberOfMatchedAttributes = productPrice -> {
+			final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNull(productPrice.getM_AttributeSetInstance_ID());
+
+			if (asiId == null)
+			{
+				return 1;
+			}
+
+			return -1 * attributeDAO.retrieveAttributeInstances(asiId).size();
+		};
+
+		final Comparator<T> orderByNumberOfMatchingAttributes = Comparator.comparing(orderByNumberOfMatchedAttributes)
+				.thenComparing(I_M_ProductPrice::getMatchSeqNo)
+				.thenComparing(I_M_ProductPrice::getM_ProductPrice_ID);
+
+		return matchingProductPrices
+				.stream()
+				.min(orderByNumberOfMatchingAttributes)
+				.orElse(null);
+	}
+
+	/**
+	 * @return true if there is at least one product price that matches
+	 */
 	boolean matches()
 	{
 		return toQuery().anyMatch();

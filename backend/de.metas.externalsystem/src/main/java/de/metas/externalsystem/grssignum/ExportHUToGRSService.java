@@ -38,6 +38,7 @@ import de.metas.externalsystem.export.hu.ExportHUCandidate;
 import de.metas.externalsystem.export.hu.ExportHUToExternalSystemService;
 import de.metas.externalsystem.rabbitmq.ExternalSystemMessageSender;
 import de.metas.handlingunits.ClearanceStatus;
+import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.model.I_M_HU;
@@ -155,7 +156,9 @@ public class ExportHUToGRSService extends ExportHUToExternalSystemService
 			return;
 		}
 
-		handlingUnitsBL.setClearanceStatus(huId, ClearanceStatus.Locked, huClearanceNote);
+		final ClearanceStatusInfo clearanceStatusInfo = ClearanceStatusInfo.of(ClearanceStatus.Locked, huClearanceNote);
+
+		handlingUnitsBL.setClearanceStatusRecursively(huId, clearanceStatusInfo);
 	}
 
 	private void exportIfAlreadyExportedOnce(@NonNull final I_M_HU_Trace huTrace)

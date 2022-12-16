@@ -28,9 +28,10 @@ import de.metas.common.product.v2.response.JsonGetProductsResponse;
 import de.metas.common.product.v2.response.JsonProduct;
 import de.metas.common.product.v2.response.JsonProductBPartner;
 import de.metas.common.util.Check;
+import de.metas.cucumber.stepdefs.C_BPartner_StepDefData;
 import de.metas.cucumber.stepdefs.DataTableUtil;
+import de.metas.cucumber.stepdefs.M_Product_StepDefData;
 import de.metas.cucumber.stepdefs.StepDefConstants;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.Then;
@@ -50,13 +51,13 @@ public class ProductRestController_StepDef
 	private static final String BPARTNER_PRODUCT_RESPONSE_PATH = "bpartners.";
 
 	private final TestContext testContext;
-	private final StepDefData<I_M_Product> productTable;
-	private final StepDefData<I_C_BPartner> bPartnerTable;
+	private final M_Product_StepDefData productTable;
+	private final C_BPartner_StepDefData bPartnerTable;
 
 	public ProductRestController_StepDef(
 			@NonNull final TestContext testContext,
-			@NonNull final StepDefData<I_M_Product> productTable,
-			@NonNull final StepDefData<I_C_BPartner> bPartnerTable)
+			@NonNull final M_Product_StepDefData productTable,
+			@NonNull final C_BPartner_StepDefData bPartnerTable)
 	{
 		this.testContext = testContext;
 		this.productTable = productTable;

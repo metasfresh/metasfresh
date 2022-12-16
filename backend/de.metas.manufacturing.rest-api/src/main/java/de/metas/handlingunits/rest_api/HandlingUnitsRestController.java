@@ -139,7 +139,7 @@ public class HandlingUnitsRestController
 			{
 				return HuId.ofHUValue(request.getQrCode());
 			}
-		});
+		}, request.isIncludeAllowedClearanceStatuses());
 	}
 
 	@GetMapping("/byId/{M_HU_ID}")
@@ -150,30 +150,11 @@ public class HandlingUnitsRestController
 		return getByIdSupplier(() -> HuId.ofRepoId(huRepoId));
 	}
 
+	@NonNull
 	private ResponseEntity<JsonGetSingleHUResponse> getByIdSupplier(@NonNull final Supplier<HuId> huIdSupplier)
 	{
-		final String adLanguage = Env.getADLanguageOrBaseLanguage();
-
-		try
-		{
-			final HuId huId = huIdSupplier.get();
-			if (huId == null)
-			{
-				return ResponseEntity.notFound().build();
-			}
-
-			return ResponseEntity.ok(JsonGetSingleHUResponse.builder()
-					.result(handlingUnitsService
-							.getFullHU(huId, adLanguage)
-							.withIsDisposalPending(inventoryCandidateService.isDisposalPending(huId)))
-					.build());
-		}
-		catch (final Exception e)
-		{
-			return ResponseEntity.badRequest().body(JsonGetSingleHUResponse.builder()
-					.error(JsonErrors.ofThrowable(e, adLanguage))
-					.build());
-		}
+		final boolean getAllowedClearanceStatuses = false;
+		return getByIdSupplier(huIdSupplier, getAllowedClearanceStatuses);
 	}
 
 	private ResponseEntity<JsonGetSingleHUResponse> toSingleHUResponseEntity(@NonNull final Supplier<I_M_HU> huSupplier)
@@ -189,8 +170,8 @@ public class HandlingUnitsRestController
 			}
 
 			return ResponseEntity.ok(JsonGetSingleHUResponse.builder()
-					.result(handlingUnitsService.toJson(hu, adLanguage))
-					.build());
+											 .result(handlingUnitsService.toJson(LoadJsonHURequest.ofHUAndLanguage(hu, adLanguage)))
+											 .build());
 		}
 		catch (final Exception ex)
 		{
@@ -277,14 +258,11 @@ public class HandlingUnitsRestController
 		}
 	}
 
-	@PutMapping("/byId/{M_HU_ID}/clearance")
+	@PutMapping("/clearance")
 	public ResponseEntity<?> setHUClearanceStatus(
-			@PathVariable("M_HU_ID") final int huRepoId,
 			@RequestBody @NonNull final JsonSetClearanceStatusRequest request)
 	{
-		final HuId huId = HuId.ofRepoId(huRepoId);
-
-		handlingUnitsService.setClearanceStatus(huId, request);
+		handlingUnitsService.setClearanceStatus(request);
 
 		return ResponseEntity.ok().body(null);
 	}
@@ -292,7 +270,7 @@ public class HandlingUnitsRestController
 	@GetMapping("/byId/{M_HU_ID}/allowedClearanceStatuses")
 	public ResponseEntity<JsonAllowedHUClearanceStatuses> getAllowedClearanceStatuses(@PathVariable("M_HU_ID") final int huId)
 	{
-		return ResponseEntity.ok().body(handlingUnitsService.getAllowedStatusesForHUId(HuId.ofRepoId(huId)));
+		return ResponseEntity.ok().body(handlingUnitsService.getAllowedClearanceStatusesForHUId(HuId.ofRepoId(huId)));
 	}
 
 	@PostMapping("/move")
@@ -311,5 +289,32 @@ public class HandlingUnitsRestController
 		// (e.g. we extracted one TU from an aggregated TU),
 		// but the QR Code is always the same.
 		return getByIdSupplier(() -> huQRCodesService.getHuIdByQRCode(huQRCode));
+	}
+
+	@NonNull
+	private ResponseEntity<JsonGetSingleHUResponse> getByIdSupplier(@NonNull final Supplier<HuId> huIdSupplier, final boolean getAllowedClearanceStatuses)
+	{
+		final String adLanguage = Env.getADLanguageOrBaseLanguage();
+
+		try
+		{
+			final HuId huId = huIdSupplier.get();
+			if (huId == null)
+			{
+				return ResponseEntity.notFound().build();
+			}
+
+			return ResponseEntity.ok(JsonGetSingleHUResponse.builder()
+											 .result(handlingUnitsService
+															 .getFullHU(huId, adLanguage, getAllowedClearanceStatuses)
+															 .withIsDisposalPending(inventoryCandidateService.isDisposalPending(huId)))
+											 .build());
+		}
+		catch (final Exception e)
+		{
+			return ResponseEntity.badRequest().body(JsonGetSingleHUResponse.builder()
+															.error(JsonErrors.ofThrowable(e, adLanguage))
+															.build());
+		}
 	}
 }

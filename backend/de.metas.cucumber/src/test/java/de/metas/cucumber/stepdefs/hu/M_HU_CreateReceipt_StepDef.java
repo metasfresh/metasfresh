@@ -24,7 +24,8 @@ package de.metas.cucumber.stepdefs.hu;
 
 import com.google.common.collect.ImmutableSet;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.M_ReceiptSchedule_StepDefData;
+import de.metas.cucumber.stepdefs.shipment.M_InOut_StepDefData;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_InOut;
@@ -42,6 +43,7 @@ import org.testcontainers.shaded.com.google.common.collect.ImmutableList;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
@@ -51,18 +53,21 @@ public class M_HU_CreateReceipt_StepDef
 {
 	private final IHUReceiptScheduleBL huReceiptScheduleBL = Services.get(IHUReceiptScheduleBL.class);
 
-	private final StepDefData<I_M_HU> huTable;
-	private final StepDefData<I_M_ReceiptSchedule> receiptScheduleTable;
-	private final StepDefData<I_M_InOut> inOutTable;
+	private final M_HU_StepDefData huTable;
+	private final M_HU_List_StepDefData huListTable;
+	private final M_ReceiptSchedule_StepDefData receiptScheduleTable;
+	private final M_InOut_StepDefData inOutTable;
 
 	public M_HU_CreateReceipt_StepDef(
-			@NonNull final StepDefData<I_M_HU> huTable,
-			@NonNull final StepDefData<I_M_ReceiptSchedule> receiptScheduleTable,
-			@NonNull final StepDefData<I_M_InOut> inOutTable)
+			@NonNull final M_HU_StepDefData huTable,
+			@NonNull final M_ReceiptSchedule_StepDefData receiptScheduleTable,
+			@NonNull final M_InOut_StepDefData inOutTable,
+			@NonNull final M_HU_List_StepDefData huListTable)
 	{
 		this.huTable = huTable;
 		this.receiptScheduleTable = receiptScheduleTable;
 		this.inOutTable = inOutTable;
+		this.huListTable = huListTable;
 	}
 
 	@And("create material receipt")
@@ -71,9 +76,26 @@ public class M_HU_CreateReceipt_StepDef
 		final List<Map<String, String>> rows = dataTable.asMaps();
 		for (final Map<String, String> row : rows)
 		{
-			final String huIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_HU.COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
-			final I_M_HU hu = huTable.get(huIdentifier);
-			final HuId selectedHuId = HuId.ofRepoId(hu.getM_HU_ID());
+			final String huIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, I_M_HU.COLUMNNAME_M_HU_ID + "." + TABLECOLUMN_IDENTIFIER);
+			final String huListIdentifier = DataTableUtil.extractStringOrNullForColumnName(row, "OPT.HUList." + TABLECOLUMN_IDENTIFIER);
+
+			assertThat(huIdentifier != null /*XOR*/ ^ huListIdentifier != null).isEqualTo(true);
+
+			final Set<HuId> huIdSet;
+			if (huIdentifier != null)
+			{
+				huIdSet = ImmutableSet.of(HuId.ofRepoId(huTable.get(huIdentifier).getM_HU_ID()));
+			}
+			else
+			{
+				assertThat(huListIdentifier).isNotBlank();
+
+				huIdSet = huListTable.get(huListIdentifier)
+						.stream()
+						.map(I_M_HU::getM_HU_ID)
+						.map(HuId::ofRepoId)
+						.collect(ImmutableSet.toImmutableSet());
+			}
 
 			final String receiptScheduleIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_ReceiptSchedule.COLUMNNAME_M_ReceiptSchedule_ID + "." + TABLECOLUMN_IDENTIFIER);
 			final I_M_ReceiptSchedule receiptSchedule = receiptScheduleTable.get(receiptScheduleIdentifier);
@@ -83,7 +105,7 @@ public class M_HU_CreateReceipt_StepDef
 					.movementDateRule(ReceiptMovementDateRule.CURRENT_DATE)
 					.ctx(Env.getCtx())
 					.receiptSchedules(ImmutableList.of(receiptSchedule))
-					.selectedHuIds(ImmutableSet.of(selectedHuId))
+					.selectedHuIds(huIdSet)
 					.build();
 
 			final InOutGenerateResult inOutGenerateResult = huReceiptScheduleBL.processReceiptSchedules(parameters);
@@ -97,7 +119,7 @@ public class M_HU_CreateReceipt_StepDef
 			assertThat(huInOut).isNotNull();
 
 			final String inoutIdentifier = DataTableUtil.extractStringForColumnName(row, I_M_InOut.COLUMNNAME_M_InOut_ID + "." + TABLECOLUMN_IDENTIFIER);
-			inOutTable.put(inoutIdentifier, huInOut);
+			inOutTable.putOrReplace(inoutIdentifier, huInOut);
 		}
 	}
 }

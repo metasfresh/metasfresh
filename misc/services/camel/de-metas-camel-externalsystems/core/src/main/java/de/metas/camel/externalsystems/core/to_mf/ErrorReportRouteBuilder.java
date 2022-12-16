@@ -23,11 +23,11 @@
 package de.metas.camel.externalsystems.core.to_mf;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import de.metas.camel.externalsystems.common.CamelRoutesGroup;
 import de.metas.camel.externalsystems.common.JsonObjectMapperHolder;
 import de.metas.camel.externalsystems.common.LogMessageRequest;
 import de.metas.camel.externalsystems.common.error.ErrorProcessor;
 import de.metas.camel.externalsystems.core.CamelRouteHelper;
-import de.metas.camel.externalsystems.core.CoreConstants;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonApiResponse;
 import de.metas.common.rest_api.v2.JsonError;
@@ -36,6 +36,7 @@ import de.metas.common.util.Check;
 import de.metas.common.util.StringUtils;
 import lombok.NonNull;
 import org.apache.camel.Exchange;
+import org.apache.camel.LoggingLevel;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.builder.endpoint.dsl.HttpEndpointBuilderFactory;
 import org.apache.camel.http.base.HttpOperationFailedException;
@@ -73,13 +74,19 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 		from(direct(MF_ERROR_ROUTE_ID))
 				.routeId(MF_ERROR_ROUTE_ID)
 				.streamCaching()
+				.group(CamelRoutesGroup.ALWAYS_ON.getCode())
 				.multicast()
 					.parallelProcessing(true)
-					.to(direct(ERROR_WRITE_TO_FILE), direct(ERROR_SEND_LOG_MESSAGE))
+					.doTry()
+						.to(direct(ERROR_WRITE_TO_FILE), direct(ERROR_SEND_LOG_MESSAGE))
+					.endDoTry()
+					.doCatch(Exception.class)
+						.log(LoggingLevel.ERROR, "Failed to handle error!")
 				.end();
 
 		from(direct(ERROR_WRITE_TO_FILE))
 				.routeId(ERROR_WRITE_TO_FILE)
+				.group(CamelRoutesGroup.ALWAYS_ON.getCode())
 				.log("Route invoked")
 				.process(this::prepareErrorFile)
 				.to("{{metasfresh.error-report.folder}}");
@@ -90,7 +97,6 @@ public class ErrorReportRouteBuilder extends RouteBuilder
 				.process(this::prepareJsonErrorRequest)
 				.marshal(CamelRouteHelper.setupJacksonDataFormatFor(getContext(), JsonError.class))
 				.removeHeaders("CamelHttp*")
-				.setHeader(CoreConstants.AUTHORIZATION, simple(CoreConstants.AUTHORIZATION_TOKEN))
 				.setHeader(Exchange.HTTP_METHOD, constant(HttpEndpointBuilderFactory.HttpMethods.POST))
 				.toD("{{" + MF_EXTERNAL_SYSTEM_V2_URI + "}}/externalstatus/${header." + HEADER_PINSTANCE_ID + "}/error");
 

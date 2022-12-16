@@ -446,6 +446,13 @@ public class PickingCandidateRepository
 		}
 
 		//
+		// Only Picking Slots
+		if(!pickingCandidatesQuery.getOnlyPickingSlotIds().isEmpty())
+		{
+			queryBuilder.addInArrayFilter(I_M_Picking_Candidate.COLUMN_M_PickingSlot_ID, pickingCandidatesQuery.getOnlyPickingSlotIds());
+		}
+
+		//
 		// Picking slot Barcode filter
 		final PickingSlotQRCode pickingSlotQRCode = pickingCandidatesQuery.getPickingSlotQRCode();
 		if (pickingSlotQRCode != null)

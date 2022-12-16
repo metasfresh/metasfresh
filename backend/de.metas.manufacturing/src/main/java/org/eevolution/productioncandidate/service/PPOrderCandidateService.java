@@ -104,8 +104,14 @@ public class PPOrderCandidateService
 	public OrderGenerateResult processCandidates(@NonNull final Stream<I_PP_Order_Candidate> orderCandidates)
 	{
 		final ImmutableList<I_PP_Order_Candidate> sortedCandidates = orderCandidates
+				.filter(orderCandidate -> !orderCandidate.isProcessed())
 				.sorted(Comparator.comparing(this::generateHeaderAggregationKey))
 				.collect(ImmutableList.toImmutableList());
+
+		if (sortedCandidates.isEmpty())
+		{
+			return new OrderGenerateResult();
+		}
 
 		return createPPOrderProducerFromCandidate()
 				.setTrxItemExceptionHandler(FailTrxItemExceptionHandler.instance)

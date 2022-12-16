@@ -2,6 +2,7 @@ package de.metas.common.product.v2.response;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonAutoDetect.Visibility;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -15,6 +16,7 @@ import lombok.Singular;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
 import java.util.List;
 
 /*
@@ -103,7 +105,7 @@ public class JsonProduct
 	@Nullable
 	@JsonProperty("manufacturerName")
 	String manufacturerName;
-	
+
 	@ApiModelProperty( //
 			allowEmptyValue = true, //
 			dataType = "java.lang.String", //
@@ -111,7 +113,15 @@ public class JsonProduct
 	@Nullable
 	@JsonProperty("manufacturerNumber")
 	String manufacturerNumber;
-	
+
+	@ApiModelProperty( //
+			dataType = "java.time.LocalDate", //
+			value = "This translates to `M_Product.DiscontinuedFrom`.")
+	@Nullable
+	@JsonProperty("discontinuedFrom")
+	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+	LocalDate discontinuedFrom;
+
 	@NonNull
 	@Singular
 	@JsonProperty("bpartners")

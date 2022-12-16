@@ -205,6 +205,7 @@ public class DocumentPrintingQueueHandler extends PrintingQueueHandlerAdapter
 	private void handleInvoices(final I_C_Printing_Queue queueItem, final I_C_Invoice invoice)
 	{
 		queueItem.setBill_BPartner_ID(invoice.getC_BPartner_ID());
+		queueItem.setBill_User_ID(invoice.getAD_User_ID());
 		queueItem.setBill_Location_ID(invoice.getC_BPartner_Location_ID());
 		queueItem.setC_BPartner_ID(invoice.getC_BPartner_ID());
 		queueItem.setC_BPartner_Location_ID(invoice.getC_BPartner_Location_ID());

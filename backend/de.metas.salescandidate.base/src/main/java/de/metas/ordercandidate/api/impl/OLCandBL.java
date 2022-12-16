@@ -8,13 +8,11 @@ import de.metas.attachments.AttachmentEntryService;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.IBPartnerBL;
-import de.metas.bpartner.service.IBPartnerDAO;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.document.DocTypeId;
 import de.metas.freighcost.FreightCostRule;
 import de.metas.lang.SOTrx;
 import de.metas.location.CountryId;
-import de.metas.location.ILocationDAO;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.BPartnerOrderParams;
@@ -115,6 +113,7 @@ public class OLCandBL implements IOLCandBL
 	}
 
 	@Override
+	@Nullable
 	public PricingSystemId getPricingSystemId(
 			@NonNull final I_C_OLCand olCand,
 			@Nullable final BPartnerOrderParams bPartnerOrderParams,

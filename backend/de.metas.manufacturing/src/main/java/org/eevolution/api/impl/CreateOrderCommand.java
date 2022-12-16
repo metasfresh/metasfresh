@@ -2,12 +2,12 @@
 package org.eevolution.api.impl;
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.inout.ShipmentScheduleId;
 import de.metas.document.DocTypeId;
 import de.metas.document.DocTypeQuery;
 import de.metas.document.IDocTypeDAO;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
+import de.metas.inout.ShipmentScheduleId;
 import de.metas.interfaces.I_C_OrderLine;
 import de.metas.material.planning.IProductPlanningDAO;
 import de.metas.material.planning.ProductPlanningId;
@@ -159,6 +159,7 @@ final class CreateOrderCommand
 
 		ppOrderRecord.setIsPickingOrder(productPlanning != null && productPlanning.isPickingOrder());
 
+
 		//
 		// Save the manufacturing order
 		// I_PP_Order_BOM and I_PP_Order_BOMLines are created via a model interceptor
@@ -264,7 +265,7 @@ final class CreateOrderCommand
 	}
 
 	@Nullable
-	private BPartnerId getCustomerIdOrNull(final PPOrderCreateRequest request)
+	private BPartnerId getCustomerIdOrNull(@NonNull final PPOrderCreateRequest request)
 	{
 		if (request.getCustomerId() != null)
 		{

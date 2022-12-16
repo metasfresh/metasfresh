@@ -64,6 +64,9 @@ public class PPOrderCandidatePojoConverter
 	private static final ModelDynAttributeAccessor<I_PP_Order_Candidate, MaterialDispoGroupId> //
 			ATTR_PPORDER_CANDIDATE_REQUESTED_EVENT_GROUP_ID = new ModelDynAttributeAccessor<>(I_PP_Order_Candidate.class.getName(), "PPOrderCandidateRequestedEvent_GroupId", MaterialDispoGroupId.class);
 
+	private static final ModelDynAttributeAccessor<I_PP_Order_Candidate, String> //
+			ATTR_PPORDER_CANDIDATE_REQUESTED_EVENT_TRACE_ID = new ModelDynAttributeAccessor<>(I_PP_Order_Candidate.class.getName(), "PPOrderCandidateRequestedEvent_TraceId", String.class);
+
 	@Nullable
 	public static MaterialDispoGroupId getMaterialDispoGroupIdOrNull(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
 	{
@@ -75,6 +78,19 @@ public class PPOrderCandidatePojoConverter
 			@Nullable final MaterialDispoGroupId materialDispoGroupId)
 	{
 		ATTR_PPORDER_CANDIDATE_REQUESTED_EVENT_GROUP_ID.setValue(ppOrderCandidateRecord, materialDispoGroupId);
+	}
+
+	@Nullable
+	public static String getMaterialDispoTraceId(@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord)
+	{
+		return ATTR_PPORDER_CANDIDATE_REQUESTED_EVENT_TRACE_ID.getValue(ppOrderCandidateRecord);
+	}
+
+	public static void setMaterialDispoTraceId(
+			@NonNull final I_PP_Order_Candidate ppOrderCandidateRecord,
+			@Nullable final String traceId)
+	{
+		ATTR_PPORDER_CANDIDATE_REQUESTED_EVENT_TRACE_ID.setValue(ppOrderCandidateRecord, traceId);
 	}
 
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
@@ -106,6 +122,7 @@ public class PPOrderCandidatePojoConverter
 
 		return PPOrderCandidate.builder()
 				.ppOrderCandidateId(ppOrderCandidateRecord.getPP_Order_Candidate_ID())
+				.simulated(ppOrderCandidateRecord.isSimulated())
 				.ppOrderData(PPOrderData.builder()
 									 .clientAndOrgId(ClientAndOrgId.ofClientAndOrg(ppOrderCandidateRecord.getAD_Client_ID(), ppOrderCandidateRecord.getAD_Org_ID()))
 									 .warehouseId(WarehouseId.ofRepoId(ppOrderCandidateRecord.getM_Warehouse_ID()))

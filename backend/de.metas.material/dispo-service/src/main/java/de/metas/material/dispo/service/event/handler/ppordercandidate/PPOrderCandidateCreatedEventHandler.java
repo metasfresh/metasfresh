@@ -29,6 +29,7 @@ import de.metas.material.dispo.commons.candidate.CandidateBusinessCase;
 import de.metas.material.dispo.commons.candidate.CandidateType;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
+import de.metas.material.dispo.commons.repository.query.SimulatedQueryQualifier;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.event.handler.pporder.PPOrderHandlerUtils;
 import de.metas.material.event.MaterialEventHandler;
@@ -67,11 +68,16 @@ public class PPOrderCandidateCreatedEventHandler extends PPOrderCandidateEventHa
 	{
 		final MaterialDispoGroupId groupId = event.getPpOrderCandidate().getPpOrderData().getMaterialDispoGroupId();
 
+		final SimulatedQueryQualifier simulatedQueryQualifier = event.getPpOrderCandidate().isSimulated()
+				? SimulatedQueryQualifier.ONLY_SIMULATED
+				: SimulatedQueryQualifier.EXCLUDE_SIMULATED;
+
 		final CandidatesQuery query = CandidatesQuery.builder()
 				.type(CandidateType.SUPPLY)
 				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.groupId(groupId)
 				.materialDescriptorQuery(PPOrderHandlerUtils.createMaterialDescriptorQuery(event.getPpOrderCandidate().getPpOrderData().getProductDescriptor()))
+				.simulatedQueryQualifier(simulatedQueryQualifier)
 				.build();
 
 		final Candidate headerCandidate = createHeaderCandidate(event, query);

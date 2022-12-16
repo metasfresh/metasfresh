@@ -23,7 +23,7 @@ package de.metas.handlingunits.impl;
  */
 
 import de.metas.bpartner.BPartnerId;
-import de.metas.handlingunits.ClearanceStatus;
+import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHUIterator;
@@ -96,10 +96,7 @@ import java.util.stream.Collectors;
 	private String _huStatus = X_M_HU.HUSTATUS_Planning;
 
 	@Nullable
-	private ClearanceStatus _huClearanceStatus;
-
-	@Nullable
-	private String _huClearanceNote;
+	private ClearanceStatusInfo _huClearanceStatusInfo;
 
 	@Nullable private I_M_HU_LUTU_Configuration _lutuConfiguration = null;
 
@@ -229,21 +226,15 @@ import java.util.stream.Collectors;
 	}
 
 	@Override
-	public IHUBuilder setHUClearanceStatus(@Nullable final ClearanceStatus huClearanceStatus, @Nullable final String huClearanceNote)
+	public IHUBuilder setHUClearanceStatusInfo(@Nullable final ClearanceStatusInfo huClearanceStatusInfo)
 	{
-		_huClearanceStatus = huClearanceStatus;
-		_huClearanceNote = huClearanceNote;
+		_huClearanceStatusInfo = huClearanceStatusInfo;
 		return this;
 	}
 
-	public ClearanceStatus getHUClearanceStatus()
+	public ClearanceStatusInfo getHUClearanceStatusInfo()
 	{
-		return _huClearanceStatus;
-	}
-
-	public String getHUClearanceNote()
-	{
-		return _huClearanceNote;
+		return _huClearanceStatusInfo;
 	}
 
 	@Nullable
@@ -447,7 +438,7 @@ import java.util.stream.Collectors;
 		final boolean huPlanningReceiptOwnerPM = isHUPlanningReceiptOwnerPM();
 		hu.setHUPlanningReceiptOwnerPM(huPlanningReceiptOwnerPM);
 
-		setClearanceStatus(hu, parentHU, getHUClearanceStatus(), getHUClearanceNote());
+		setClearanceStatus(hu, parentHU, getHUClearanceStatusInfo());
 
 		//
 		// Notify Storage and Attributes DAO that a new HU was created
@@ -495,8 +486,7 @@ import java.util.stream.Collectors;
 	private static void setClearanceStatus(
 			@NonNull final I_M_HU hu,
 			@Nullable final I_M_HU parentHU,
-			@Nullable final ClearanceStatus configuredStatus,
-			@Nullable final String configuredNote)
+			@Nullable final ClearanceStatusInfo configuredStatusInfo)
 	{
 		// Copy HUClearanceStatus and HUClearanceNote from parent or use the configured one if no parent
 		if (parentHU != null)
@@ -506,8 +496,8 @@ import java.util.stream.Collectors;
 		}
 		else
 		{
-			hu.setClearanceStatus(configuredStatus != null ? configuredStatus.getCode() : null);
-			hu.setClearanceNote(configuredNote);
+			hu.setClearanceStatus(configuredStatusInfo != null ? configuredStatusInfo.getClearanceStatus().getCode() : null);
+			hu.setClearanceNote(configuredStatusInfo != null ? configuredStatusInfo.getClearanceNote() : null);
 		}
 	}
 

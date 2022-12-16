@@ -271,6 +271,8 @@ public interface IHandlingUnitsBL extends ISingletonService
 			@Nullable String huUnitType,
 			@Nullable BPartnerId bpartnerId);
 
+	I_M_HU_PI_Item getPackingInstructionItemById(HuPackingInstructionsItemId piItemId);
+
 	@Builder
 	@Value
 	class TopLevelHusQuery
@@ -571,7 +573,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 	}
 
 	@Nullable
-	static I_M_HU_PI_Item_Product extractPIItemProductOrNull(final I_M_HU hu)
+	static I_M_HU_PI_Item_Product extractPIItemProductOrNull(@NonNull final I_M_HU hu)
 	{
 		final HUPIItemProductId piItemProductId = HUPIItemProductId.ofRepoIdOrNull(hu.getM_HU_PI_Item_Product_ID());
 		return piItemProductId != null
@@ -585,7 +587,7 @@ public interface IHandlingUnitsBL extends ISingletonService
 
 	boolean isEmptyStorage(I_M_HU hu);
 
-	void setClearanceStatus(final HuId huId,final ClearanceStatus status, final String clearanceNote);
+	void setClearanceStatusRecursively(final HuId huId, final ClearanceStatusInfo statusInfo);
 
 	ITranslatableString getClearanceStatusCaption(ClearanceStatus clearanceStatus);
 

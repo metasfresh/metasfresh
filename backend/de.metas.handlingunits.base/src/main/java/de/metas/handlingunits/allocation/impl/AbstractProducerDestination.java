@@ -3,7 +3,7 @@ package de.metas.handlingunits.allocation.impl;
 import com.google.common.collect.ImmutableList;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.BPartnerLocationId;
-import de.metas.handlingunits.ClearanceStatus;
+import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.HuId;
 import de.metas.handlingunits.IHUBuilder;
 import de.metas.handlingunits.IHUContext;
@@ -72,8 +72,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	// Parameters
 	private LocatorId _locatorId = null;
 	private String _huStatus = null;
-	private ClearanceStatus _huClearanceStatus = null;
-	private String _huClearanceNote = null;
+	private ClearanceStatusInfo _huClearanceStatusInfo = null;
 	private BPartnerId _bpartnerId = null;
 	private int _bpartnerLocationId = -1;
 	private I_M_HU_LUTU_Configuration _lutuConfiguration = null;
@@ -268,7 +267,7 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 
 		huBuilder.setHUPlanningReceiptOwnerPM(isHUPlanningReceiptOwnerPM());
 
-		huBuilder.setHUClearanceStatus(getHUClearanceStatus(), getHUClearanceNote());
+		huBuilder.setHUClearanceStatusInfo(getHUClearanceStatusInfo());
 
 		return huBuilder;
 	}
@@ -722,21 +721,15 @@ public abstract class AbstractProducerDestination implements IHUProducerAllocati
 	}
 
 	@Override
-	public final IHUProducerAllocationDestination setHUClearanceStatus(final ClearanceStatus huClearanceStatus, final String huClearanceNote)
+	public final IHUProducerAllocationDestination setHUClearanceStatusInfo(final ClearanceStatusInfo huClearanceStatusInfo)
 	{
 		assertConfigurable();
-		_huClearanceStatus = huClearanceStatus;
-		_huClearanceNote = huClearanceNote;
+		_huClearanceStatusInfo = huClearanceStatusInfo;
 		return this;
 	}
 
-	public final ClearanceStatus getHUClearanceStatus()
+	public final ClearanceStatusInfo getHUClearanceStatusInfo()
 	{
-		return _huClearanceStatus;
-	}
-
-	public final String getHUClearanceNote()
-	{
-		return _huClearanceNote;
+		return _huClearanceStatusInfo;
 	}
 }

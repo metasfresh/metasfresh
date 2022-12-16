@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 233045497L;
+	private static final long serialVersionUID = 2110603265L;
 
     /** Standard Constructor */
     public X_M_HU (final Properties ctx, final int M_HU_ID, @Nullable final String trxName)
@@ -81,12 +81,12 @@ public class X_M_HU extends org.compiere.model.PO implements I_M_HU, org.compier
 	 * Reference name: Clearance
 	 */
 	public static final int CLEARANCESTATUS_AD_Reference_ID=541540;
-	/** Cleared = Cleared */
-	public static final String CLEARANCESTATUS_Cleared = "Cleared";
-	/** Locked = Locked */
-	public static final String CLEARANCESTATUS_Locked = "Locked";
-	/** Quarantined = Quarantined */
-	public static final String CLEARANCESTATUS_Quarantined = "Quarantined";
+	/** Cleared = C */
+	public static final String CLEARANCESTATUS_Cleared = "C";
+	/** Locked = L */
+	public static final String CLEARANCESTATUS_Locked = "L";
+	/** Quarantined = Q */
+	public static final String CLEARANCESTATUS_Quarantined = "Q";
 	@Override
 	public void setClearanceStatus (final @Nullable java.lang.String ClearanceStatus)
 	{

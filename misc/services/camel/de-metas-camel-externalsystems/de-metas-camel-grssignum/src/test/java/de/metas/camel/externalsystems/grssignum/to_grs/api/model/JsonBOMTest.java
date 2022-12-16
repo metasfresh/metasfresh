@@ -53,6 +53,7 @@ public class JsonBOMTest
 				+ "        {\n"
 				+ "				\"ARTNR\": \"productValue1\",\n"
 				+ "				\"ARTNRID\": \"productId1\",\n"
+				+ "				\"HERKUNFTSLAND\": \"countryCode\",\n"
 				+ "				\"POS\": 1,\n"
 				+ "				\"ANTEIL\": 20,\n"
 				+ "				\"UOM\": \"KGM\" \n"
@@ -68,6 +69,7 @@ public class JsonBOMTest
 				.line(1)
 				.productId("productId1")
 				.productValue("productValue1")
+				.countryCode("countryCode")
 				.uom("KGM")
 				.qtyBOM(BigDecimal.valueOf(20))
 				.build();

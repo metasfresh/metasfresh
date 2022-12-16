@@ -53,7 +53,7 @@ ARTNRID  | `S_ExternalReference`.`externalReference` -> `M_Product_ID` | Y |  Js
 KRED  | ----- | ---- |  JsonRequestProduct.bpartnerProductItem List | see details below |
 ---- | ---- | ---- | syncAdvise | manually set as `CREATE_OR_MERGE` | 
 
-2. `JsonVendorProduct` - all `metasfresh-column` values refer to `C_BPartner_Product` columns
+2. `JsonBPartnerProduct` - all `metasfresh-column` values refer to `C_BPartner_Product` columns
 
 * if provided, then upserts a `C_BPartner_Product` for the given `M_Product_Id` following the below mappings:
 
@@ -65,7 +65,32 @@ KRED.METASFRESHID | `C_BPartner_ID` | Y | JsonRequestBPartnerProductUpsert.bpart
 KRED.STDKRED | `IsCurrentVendor` | Y | JsonRequestBPartnerProductUpsert.currentVendor | `KRED.STDKRED` == `1` => `true`; `KRED.STDKRED` == `0` => `false` | 
 KRED.LIEFERANTENFREIGABE | `IsExcludedFromPurchase` | N | JsonRequestBPartnerProductUpsert.excludedFromPurchase | `KRED.LIEFERANTENFREIGABE` == `1` => `excludedFromPurchase = false`; `KRED.LIEFERANTENFREIGABE` == `0` => `excludedFromPurchase = true`, default value `KRED.LIEFERANTENFREIGABE` == `0`| 
 ---- | `ExclusionFromPurchaseReason` | N | JsonRequestBPartnerProductUpsert.exclusionFromPurchaseReason | `JsonRequestBPartnerProductUpsert.excludedFromPurchase` == `true` => `exclusionFromPurchaseReason` has value `Imported setting`, otherwise is `null`| 
+KRED.ROHKREDDATA | - | N | - | refers to `JsonBPartnerProductAdditionalInfo` - see details below | 
 KRED.INAKTIV | `IsActive` | N | JsonRequestBPartnerProductUpsert.active | `KRED.INAKTIV` == `1` => `IsActive = false`; `KRED.INAKTIV` == `0` => `IsActive = true`; default value is `KRED.INAKTIV` == `0` => `IsActive = true`| 
+
+3. `JsonBPartnerProductAdditionalInfo` 
+
+* if provided, then upsert additional infos for `JsonProduct.ARTNRID` following the below mappings:
+
+GRSSignum | metasfresh-column | mandatory in mf | metasfresh-json | note | 
+---- | ---- | ---- | ---- | ---- |
+ROHKREDDATA.ATTACHMENT | - | N | `JsonAttachmentRequest.JsonAttachment` | see details below |
+
+4. `JsonAttachment` - all `metasfresh-column` values refer to `AD_AttachmentEntry` columns
+
+* metasfresh-json => `JsonAttachmentRequest`
+
+* if provided, then creates an `AD_AttachmentEntry` linked to `JsonProduct.ARTNRID` and `JsonBPartnerProduct.METASFRESHID` following the below mappings:
+
+GRSSignum | metasfresh-column | mandatory in mf | metasfresh-json | note | 
+---- | ---- | ---- | ---- | ---- |
+ATTACHMENT.ID | `AD_AttachmentEntry.Tags` | N | `JsonAttachment.JsonTag.value` | translate to `id` tag |
+ATTACHMENT.FileName | `AD_AttachmentEntry.FileName` | Y | `JsonAttachment.fileName` | `FileName` = `relative path to the working directory` => `JsonAttachment.fileName` = `path.getFileName()` `path` - computed from `FileName` |
+ATTACHMENT.FileName | `AD_AttachmentEntry.Data` | N | `JsonAttachment.data` | `FileName` = `relative path to the working directory` => `JsonAttachment.data` = `path.toUri()`, `path` - computed from `FileName` |
+ATTACHMENT.ValidUntil | `AD_AttachmentEntry.Tags` | N | `JsonAttachment.JsonTag.value` | translate to `validto` tag | 
+ATTACHMENT.DocumentType | `AD_AttachmentEntry.Tags` | N | `JsonAttachment.JsonTag.value` | translate to `documenttype` tag |
+ATTACHMENT.DocumentGroup | `AD_AttachmentEntry.Tags` | N | `JsonAttachment.JsonTag.value` | translate to `documentgroup` tag |
+ ---- | `AD_AttachmentMultiref.Record_ID` | N | `JsonExternalReferenceTarget.externalReferenceIdentifier` | computed for both `JsonProduct.ARTNRID` and `JsonBPartnerProduct.METASFRESHID`|
 
 **GRSSignum => metasfresh BOMs**
 ---

@@ -79,6 +79,7 @@ import de.metas.util.Services;
 import de.metas.util.StringUtils;
 import lombok.NonNull;
 import lombok.Value;
+import org.adempiere.ad.column.ColumnSql;
 import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.ad.dao.ISqlQueryFilter;
 import org.adempiere.ad.dao.impl.InArrayQueryFilter;
@@ -237,11 +238,13 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		//
 		// View field: BestBeforeDate
 		{
-			final String sqlBestBeforeDate = HUAttributeConstants.sqlBestBeforeDate(sqlViewBinding.getTableAlias() + "." + I_M_HU.COLUMNNAME_M_HU_ID);
+			final ColumnSql sqlBestBeforeDate = ColumnSql.ofSql(
+					HUAttributeConstants.sqlBestBeforeDate(sqlViewBinding.getTableAlias() + "." + I_M_HU.COLUMNNAME_M_HU_ID),
+					sqlViewBinding.getTableAlias());
+
 			sqlViewBinding.field(SqlViewRowFieldBinding.builder()
 					.fieldName(HUEditorRow.FIELDNAME_BestBeforeDate)
 					.widgetType(DocumentFieldWidgetType.LocalDate)
-					// .columnSql(sqlBestBeforeDate)
 					.sqlSelectValue(SqlSelectValue.builder()
 							.virtualColumnSql(sqlBestBeforeDate)
 							.columnNameAlias(HUEditorRow.FIELDNAME_BestBeforeDate)
@@ -323,6 +326,8 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 		return viewLayoutBuilder.build();
 	}
 
+	protected boolean isMaterialReceipt() { return false; }
+
 	@Override
 	public final HUEditorView createView(final @NonNull CreateViewRequest request)
 	{
@@ -346,6 +351,7 @@ public abstract class HUEditorViewFactoryTemplate implements IViewFactory
 					.rowProcessedPredicate(getRowProcessedPredicate(referencingTableName))
 					.attributesProvider(HUEditorRowAttributesProvider.builder()
 							.readonly(attributesAlwaysReadonly)
+							.isMaterialReceipt(isMaterialReceipt())
 							.build())
 					.sqlViewBinding(sqlViewBinding)
 					.huReservationService(huReservationService);

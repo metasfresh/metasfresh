@@ -109,7 +109,7 @@ public class ViewRowAttributesRestController
 		return viewsRepo.getView(viewId)
 				.getById(rowId)
 				.getAttributes()
-				.toJson(newJSONOptions(), rowId);
+				.toJson(newJSONOptions());
 	}
 
 	@PatchMapping

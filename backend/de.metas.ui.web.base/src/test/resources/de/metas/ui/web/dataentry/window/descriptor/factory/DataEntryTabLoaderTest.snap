@@ -1793,6 +1793,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
       "readonlyLogic" : "1=0",
       "displayLogic" : "1=1",
       "allowQuickInput" : false,
+      "autodetectDefaultDateFilter" : true,
       "fields" : { },
       "idFields" : [ ],
       "includedEntitiesByDetailId" : {
@@ -1815,6 +1816,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           "readonlyLogic" : "1=0",
           "displayLogic" : "1=1",
           "allowQuickInput" : false,
+          "autodetectDefaultDateFilter" : true,
           "fields" : {
             "1111" : {
               "fieldName" : "1111",
@@ -2762,6 +2764,7 @@ de.metas.ui.web.dataentry.window.descriptor.factory.DataEntryTabLoaderTest.creat
           "readonlyLogic" : "1=0",
           "displayLogic" : "1=1",
           "allowQuickInput" : false,
+          "autodetectDefaultDateFilter" : true,
           "fields" : {
             "1211" : {
               "fieldName" : "1211",

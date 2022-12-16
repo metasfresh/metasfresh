@@ -112,6 +112,7 @@ const reducer = produce((draftState, action) => {
 
     case types.UPDATE_TABLE: {
       const { id, data } = action.payload;
+      const { pending } = data;
 
       const prevTableStruct = draftState[id]
         ? draftState[id]
@@ -119,7 +120,7 @@ const reducer = produce((draftState, action) => {
       let updatedSelected = {};
       let selectionValid = false;
 
-      if (data.rows && data.rows.length) {
+      if (!pending && data.rows && data.rows.length) {
         const currentSelected = original(prevTableStruct.selected);
 
         if (currentSelected.length) {
@@ -320,8 +321,13 @@ const reducer = produce((draftState, action) => {
 
     case types.SET_TABLE_NAVIGATION: {
       const { id, active } = action.payload;
-
-      draftState[id].navigationActive = active;
+      if (draftState[id]) {
+        draftState[id].navigationActive = active;
+      } else {
+        console.error(
+          `Table with ID ${id} is not present in state. Skip setting navigationActive=${active}`
+        );
+      }
 
       return;
     }

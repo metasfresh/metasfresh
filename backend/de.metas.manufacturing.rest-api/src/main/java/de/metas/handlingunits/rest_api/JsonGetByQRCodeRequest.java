@@ -11,4 +11,6 @@ import lombok.extern.jackson.Jacksonized;
 public class JsonGetByQRCodeRequest
 {
 	@NonNull String qrCode;
+
+	boolean includeAllowedClearanceStatuses;
 }

@@ -31,6 +31,7 @@ import de.metas.material.dispo.commons.candidate.businesscase.ProductionDetail;
 import de.metas.material.dispo.commons.repository.CandidateRepositoryRetrieval;
 import de.metas.material.dispo.commons.repository.query.CandidatesQuery;
 import de.metas.material.dispo.commons.repository.query.ProductionDetailsQuery;
+import de.metas.material.dispo.commons.repository.query.SimulatedQueryQualifier;
 import de.metas.material.dispo.service.candidatechange.CandidateChangeService;
 import de.metas.material.dispo.service.candidatechange.handler.CandidateHandler;
 import de.metas.material.dispo.service.event.handler.pporder.PPOrderHandlerUtils;
@@ -51,8 +52,8 @@ import java.util.Optional;
 
 public abstract class PPOrderCandidateEventHandler
 {
-	private final CandidateChangeService candidateChangeService;
-	private final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
+	protected final CandidateChangeService candidateChangeService;
+	protected final CandidateRepositoryRetrieval candidateRepositoryRetrieval;
 
 	public PPOrderCandidateEventHandler(
 			@NonNull final CandidateChangeService candidateChangeService,
@@ -106,10 +107,11 @@ public abstract class PPOrderCandidateEventHandler
 			@NonNull final Candidate headerCandidate)
 	{
 		final List<PPOrderLineCandidate> ppOrderLineCandidates = event.getPpOrderCandidate().getLines();
+		final boolean simulated = headerCandidate.isSimulated();
 
 		for (final PPOrderLineCandidate ppOrderLineCandidate : ppOrderLineCandidates)
 		{
-			final Candidate existingLineCandidate = retrieveExistingLineCandidateOrNull(ppOrderLineCandidate);
+			final Candidate existingLineCandidate = retrieveExistingLineCandidateOrNull(ppOrderLineCandidate, simulated);
 
 			final Candidate.CandidateBuilder candidateBuilder = existingLineCandidate != null
 					? existingLineCandidate.toBuilder()
@@ -125,8 +127,9 @@ public abstract class PPOrderCandidateEventHandler
 					.businessCase(CandidateBusinessCase.PRODUCTION)
 					.seqNo(headerCandidate.getSeqNo() + 1)
 					.businessCaseDetail(lineCandidateProductionDetail)
-					.additionalDemandDetail(headerDemandDetail)
-					.materialDescriptor(materialDescriptor);
+					.additionalDemandDetail(headerDemandDetail.withTraceId(event.getEventDescriptor().getTraceId()))
+					.materialDescriptor(materialDescriptor)
+					.simulated(simulated);
 
 			if (groupId != null)
 			{
@@ -178,8 +181,12 @@ public abstract class PPOrderCandidateEventHandler
 	}
 
 	@Nullable
-	private Candidate retrieveExistingLineCandidateOrNull(@NonNull final PPOrderLineCandidate ppOrderLineCandidate)
+	private Candidate retrieveExistingLineCandidateOrNull(@NonNull final PPOrderLineCandidate ppOrderLineCandidate, final boolean simulated)
 	{
+		final SimulatedQueryQualifier simulatedQueryQualifier = simulated
+				? SimulatedQueryQualifier.ONLY_SIMULATED
+				: SimulatedQueryQualifier.EXCLUDE_SIMULATED;
+
 		final ProductionDetailsQuery productionDetailsQuery = ProductionDetailsQuery.builder()
 				.ppOrderCandidateLineId(ppOrderLineCandidate.getPpOrderLineCandidateId())
 				.build();
@@ -188,6 +195,7 @@ public abstract class PPOrderCandidateEventHandler
 				.type(CandidateType.DEMAND)
 				.businessCase(CandidateBusinessCase.PRODUCTION)
 				.productionDetailsQuery(productionDetailsQuery)
+				.simulatedQueryQualifier(simulatedQueryQualifier)
 				.build();
 
 		return candidateRepositoryRetrieval.retrieveLatestMatchOrNull(lineCandidateQuery);

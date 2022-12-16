@@ -41,7 +41,7 @@ public class PPOrderIssueScheduleService
 		return issueScheduleRepository.createSchedule(request);
 	}
 
-	public PPOrderIssueSchedule issue(@NonNull PPOrderIssueScheduleProcessRequest request)
+	public PPOrderIssueSchedule issue(@NonNull final PPOrderIssueScheduleProcessRequest request)
 	{
 		final PPOrderIssueScheduleId issueScheduleId = request.getIssueScheduleId();
 		PPOrderIssueSchedule issueSchedule = issueScheduleRepository.getById(issueScheduleId);

@@ -25,6 +25,7 @@ import de.metas.contracts.commission.commissioninstance.businesslogic.sales.comm
 import de.metas.contracts.commission.commissioninstance.businesslogic.sales.commissiontrigger.CommissionTriggerType;
 import de.metas.contracts.commission.commissioninstance.services.CommissionConfigProvider;
 import de.metas.contracts.commission.commissioninstance.services.repos.CommissionRecordStagingService.CommissionStagingRecords;
+import de.metas.contracts.commission.licensefee.algorithm.LicenseFeeConfig;
 import de.metas.contracts.commission.mediated.algorithm.MediatedCommissionConfig;
 import de.metas.contracts.commission.model.I_C_Commission_Fact;
 import de.metas.contracts.commission.model.I_C_Commission_Instance;
@@ -415,6 +416,9 @@ public class CommissionInstanceRepository
 
 		MarginConfig.castOrEmpty(share.getConfig())
 				.ifPresent(marginConfig -> shareRecordToUse.setC_Customer_Trade_Margin_Line_ID(marginConfig.getCustomerTradeMarginLineId().getRepoId()));
+
+		LicenseFeeConfig.castOrEmpty(share.getConfig())
+				.ifPresent(licenseFeeConfig -> shareRecordToUse.setC_LicenseFeeSettingsLine_ID(licenseFeeConfig.getLicenseFeeSettingsLineId().getRepoId()));
 
 		HierarchyContract.castOrEmpty(share.getContract())
 				.ifPresent(hierarchyContract -> shareRecordToUse.setC_CommissionSettingsLine_ID(CommissionSettingsLineId.toRepoId(hierarchyContract.getCommissionSettingsLineId())));

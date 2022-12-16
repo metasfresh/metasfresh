@@ -87,6 +87,8 @@ import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.MetasfreshId;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.OrgAndBPartnerCompositeLookupKeyList;
+import de.metas.title.Title;
+import de.metas.title.TitleRepository;
 import de.metas.user.UserId;
 import de.metas.util.Services;
 import de.metas.util.collections.CollectionUtils;
@@ -166,12 +168,16 @@ public class JsonRetrieverService
 			.put(BPartnerContact.BPARTNER_ID, JsonResponseContact.METASFRESH_BPARTNER_ID)
 			.put(BPartnerContact.NAME, JsonResponseContact.NAME)
 			.put(BPartnerContact.GREETING_ID, JsonResponseContact.GREETING)
+			.put(BPartnerContact.TITLE_ID, JsonResponseContact.TITLE)
 			.put(BPartnerContact.PHONE, JsonResponseContact.PHONE)
 			.put(BPartnerContact.MOBILE_PHONE, JsonResponseContact.MOBILE_PHONE)
 			.put(BPartnerContact.FAX, JsonResponseContact.FAX)
 			.put(BPartnerContact.DESCRIPTION, JsonResponseContact.DESCRIPTION)
 			.put(BPartnerContact.NEWSLETTER, JsonResponseContact.NEWSLETTER)
 			.put(BPartnerContact.SUBJECT_MATTER, JsonResponseContact.SUBJECT_MATTER)
+			.put(BPartnerContact.BPARTNER_LOCATION_ID, JsonResponseContact.METASFRESH_LOCATION_ID)
+			.put(BPartnerContact.EMAIL2, JsonResponseContact.EMAIL2)
+			.put(BPartnerContact.EMAIL3, JsonResponseContact.EMAIL3)
 			.put(BPartnerContact.TITLE, JsonResponseContact.TITLE)
 			.put(BPartnerContact.PHONE2, JsonResponseContact.PHONE2)
 			.put(BPartnerContact.JOB_ID, JsonResponseContact.POSITION)
@@ -207,10 +213,13 @@ public class JsonRetrieverService
 			.put(BPartnerLocation.REGION, JsonResponseLocation.REGION)
 			.put(BPartnerLocation.DISTRICT, JsonResponseLocation.DISTRICT)
 			.put(BPartnerLocation.COUNTRYCODE, JsonResponseLocation.COUNTRY_CODE)
+			.put(BPartnerLocation.PHONE, JsonResponseLocation.PHONE)
+			.put(BPartnerLocation.EMAIL, JsonResponseLocation.EMAIL)
 			.put(BPartnerLocationType.BILL_TO, JsonResponseLocation.BILL_TO)
 			.put(BPartnerLocationType.BILL_TO_DEFAULT, JsonResponseLocation.BILL_TO_DEFAULT)
 			.put(BPartnerLocationType.SHIP_TO, JsonResponseLocation.SHIP_TO)
 			.put(BPartnerLocationType.SHIP_TO_DEFAULT, JsonResponseLocation.SHIP_TO_DEFAULT)
+			.put(BPartnerLocation.EPHEMERAL, JsonResponseLocation.EPHEMERAL)
 			.put(BPartnerLocationType.VISITORS_ADDRESS, JsonResponseLocation.VISITORS_ADDRESS)
 			.build();
 
@@ -223,6 +232,7 @@ public class JsonRetrieverService
 
 	private final transient GreetingRepository greetingRepository;
 	private final JobRepository jobRepository;
+	private final transient TitleRepository titleRepository;
 	private final ExternalReferenceRestControllerService externalReferenceService;
 
 	private final transient BPartnerCompositeCacheByLookupKey cache;
@@ -235,6 +245,7 @@ public class JsonRetrieverService
 			@NonNull final BPartnerCompositeRepository bpartnerCompositeRepository,
 			@NonNull final BPGroupRepository bpGroupRepository,
 			@NonNull final GreetingRepository greetingRepository,
+			@NonNull final TitleRepository titleRepository,
 			@NonNull final JobRepository jobRepository,
 			final ExternalReferenceRestControllerService externalReferenceService,
 			@NonNull final String identifier)
@@ -243,6 +254,7 @@ public class JsonRetrieverService
 		this.bpartnerCompositeRepository = bpartnerCompositeRepository;
 		this.bpGroupRepository = bpGroupRepository;
 		this.greetingRepository = greetingRepository;
+		this.titleRepository = titleRepository;
 		this.jobRepository = jobRepository;
 		this.externalReferenceService = externalReferenceService;
 		this.identifier = identifier;
@@ -404,6 +416,7 @@ public class JsonRetrieverService
 		{
 			final JsonMetasfreshId metasfreshId = JsonMetasfreshId.of(BPartnerContactId.toRepoId(contact.getId()));
 			final JsonMetasfreshId metasfreshBPartnerId = JsonMetasfreshId.of(BPartnerId.toRepoId(contact.getId().getBpartnerId()));
+			final JsonMetasfreshId metasfreshLocationId = JsonMetasfreshId.ofOrNull(BPartnerLocationId.toRepoIdOrNull(contact.getBPartnerLocationId()));
 
 			final JsonChangeInfo jsonChangeInfo = createJsonChangeInfo(contact.getChangeLog(), CONTACT_FIELD_MAP);
 
@@ -416,6 +429,14 @@ public class JsonRetrieverService
 				final String ad_language = language != null ? language.getAD_Language() : Env.getAD_Language();
 				greetingTrl = greeting.getGreeting(ad_language);
 			}
+
+			String titleTrl = null;
+			if (contact.getTitleId() != null)
+			{
+				final Title title = titleRepository.getByIdAndLang(contact.getTitleId(),language);
+				titleTrl = title.getTitle();
+			}
+
 
 			Job job = null;
 			if (contact.getJobId() != null)
@@ -441,6 +462,7 @@ public class JsonRetrieverService
 					.metasfreshId(metasfreshId)
 					.name(contact.getName())
 					.greeting(greetingTrl)
+					.title(titleTrl)
 					.newsletter(contact.isNewsletter())
 					.invoiceEmailEnabled(contact.getInvoiceEmailEnabled())
 					.phone(contact.getPhone())
@@ -457,6 +479,9 @@ public class JsonRetrieverService
 					.subjectMatter(contact.isSubjectMatterContact())
 					.roles(roles)
 					.changeInfo(jsonChangeInfo)
+					.metasfreshLocationId(metasfreshLocationId)
+					.email2(contact.getEmail2())
+					.email3(contact.getEmail3())
 					.title(contact.getTitle())
 					.phone2(contact.getPhone2())
 					.position(toJson(job))
@@ -497,7 +522,15 @@ public class JsonRetrieverService
 					.shipToDefault(locationType.getIsShipToDefaultOr(false))
 					.billTo(locationType.getIsBillToOr(false))
 					.billToDefault(locationType.getIsBillToDefaultOr(false))
+					.setupPlaceNo(location.getSetupPlaceNo())
+					.remitTo(location.isRemitTo())
+					.replicationLookupDefault(location.isReplicationLookupDefault())
+					.handoverLocation(location.isHandOverLocation())
+					.visitorsAddress(location.isVisitorsAddress())
 					.changeInfo(jsonChangeInfo)
+					.ephemeral(location.isEphemeral())
+					.phone(location.getPhone())
+					.email(location.getEmail())
 					.visitorsAddress(locationType.getIsVisitorsAddressOr(false))
 					.build();
 		}

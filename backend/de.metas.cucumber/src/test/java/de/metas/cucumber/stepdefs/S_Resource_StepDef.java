@@ -22,6 +22,7 @@
 
 package de.metas.cucumber.stepdefs;
 
+import de.metas.cucumber.stepdefs.resource.S_Resource_StepDefData;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
@@ -37,9 +38,9 @@ import static org.compiere.model.I_S_Resource.COLUMNNAME_S_Resource_ID;
 
 public class S_Resource_StepDef
 {
-	private final StepDefData<I_S_Resource> resourceTable;
+	private final S_Resource_StepDefData resourceTable;
 
-	public S_Resource_StepDef(@NonNull final StepDefData<I_S_Resource> resourceTable)
+	public S_Resource_StepDef(@NonNull final S_Resource_StepDefData resourceTable)
 	{
 		this.resourceTable = resourceTable;
 	}

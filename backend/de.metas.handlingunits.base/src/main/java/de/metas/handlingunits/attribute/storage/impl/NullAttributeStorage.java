@@ -22,22 +22,6 @@ package de.metas.handlingunits.attribute.storage.impl;
  * #L%
  */
 
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-
-import org.adempiere.mm.attributes.AttributeCode;
-import org.adempiere.mm.attributes.AttributeId;
-import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
-import org.adempiere.mm.attributes.spi.IAttributeValueContext;
-import org.compiere.model.I_M_Attribute;
-import org.compiere.util.NamePair;
-
-import com.google.common.collect.ImmutableSet;
-
 import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.exceptions.AttributeNotFoundException;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
@@ -51,6 +35,21 @@ import de.metas.handlingunits.hutransaction.MutableHUTransactionAttribute;
 import de.metas.product.ProductId;
 import de.metas.uom.UOMType;
 import lombok.NonNull;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.AttributeId;
+import org.adempiere.mm.attributes.spi.IAttributeValueCallout;
+import org.adempiere.mm.attributes.spi.IAttributeValueContext;
+import org.compiere.model.I_M_Attribute;
+import org.compiere.util.NamePair;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Null implementation. Has no children, not attributes, is never disposed nor virtual.
@@ -118,9 +117,6 @@ public final class NullAttributeStorage implements IAttributeStorage
 		// do nothing
 	}
 
-	/**
-	 * @throws UnsupportedOperationException
-	 */
 	@Override
 	public void updateHUTrxAttribute(final MutableHUTransactionAttribute huTrxAttribute, final IAttributeValue fromAttributeValue)
 	{
@@ -158,6 +154,7 @@ public final class NullAttributeStorage implements IAttributeStorage
 		return false;
 	}
 
+	@Nullable
 	@Override
 	public I_M_Attribute getAttributeByIdIfExists(final int attributeId)
 	{
@@ -171,6 +168,7 @@ public final class NullAttributeStorage implements IAttributeStorage
 		return Collections.emptyList();
 	}
 
+	@Nullable
 	@Override
 	public I_M_Attribute getAttributeByValueKeyOrNull(final AttributeCode attributeCode)
 	{
@@ -232,81 +230,54 @@ public final class NullAttributeStorage implements IAttributeStorage
 		throw new AttributeNotFoundException(attribute, this);
 	}
 
-	/**
-	 * @throws AttributeNotFoundException
-	 */
 	@Override
 	public Object getValue(final AttributeCode attributeCode)
 	{
 		throw new AttributeNotFoundException(attributeCode, this);
 	}
 
-	/**
-	 * @throws AttributeNotFoundException
-	 */
 	@Override
 	public String getValueAsString(@NonNull final AttributeCode attributeCode)
 	{
 		throw new AttributeNotFoundException(attributeCode, this);
 	}
 
-	/**
-	 * @throws AttributeNotFoundException
-	 */
 	@Override
 	public BigDecimal getValueAsBigDecimal(final @NonNull AttributeCode attributeCode)
 	{
 		throw new AttributeNotFoundException(attributeCode, this);
 	}
 
-	/**
-	 * @throws AttributeNotFoundException
-	 */
 	@Override
 	public int getValueAsInt(final AttributeCode attributeCode)
 	{
 		throw new AttributeNotFoundException(attributeCode, this);
 	}
 
-	/**
-	 * @throws AttributeNotFoundException
-	 */
 	@Override
 	public Date getValueAsDate(final AttributeCode attributeCode)
 	{
 		throw new AttributeNotFoundException(attributeCode, this);
 	}
 
-	/**
-	 * @throws AttributeNotFoundException
-	 */
 	@Override
 	public String getValueName(final I_M_Attribute attribute)
 	{
 		throw new AttributeNotFoundException(attribute, this);
 	}
 
-	/**
-	 * @throws AttributeNotFoundException
-	 */
 	@Override
 	public Object getValueInitial(final I_M_Attribute attribute)
 	{
 		throw new AttributeNotFoundException(attribute, this);
 	}
 
-	/**
-	 * @throws AttributeNotFoundException
-	 */
 	@Override
 	public BigDecimal getValueInitialAsBigDecimal(final AttributeCode attributeCode)
 	{
 		throw new AttributeNotFoundException(attributeCode, this);
 	}
 
-	/**
-	 * @throws AttributeNotFoundException
-	 */
 	@Override
 	public IAttributeValueCallout getAttributeValueCallout(final I_M_Attribute attribute)
 	{
@@ -332,7 +303,13 @@ public final class NullAttributeStorage implements IAttributeStorage
 	}
 
 	@Override
-	public boolean isDisplayedUI(final ImmutableSet<ProductId> productIDs, final I_M_Attribute attribute)
+	public boolean isDisplayedUI(final I_M_Attribute attribute, final Set<ProductId> productIds)
+	{
+		return false;
+	}
+
+	@Override
+	public boolean isMandatory(final @NonNull I_M_Attribute attribute, final Set<ProductId> productIds, final boolean isMaterialReceipt)
 	{
 		return false;
 	}
@@ -369,15 +346,13 @@ public final class NullAttributeStorage implements IAttributeStorage
 		// NOTE: not throwing UnsupportedOperationException because this storage contains no attributes so it will never have something to change
 	}
 
-	/**
-	 * @throws UnsupportedOperationException
-	 */
 	@Override
 	public IAttributeStorageFactory getAttributeStorageFactory()
 	{
 		throw new UnsupportedOperationException();
 	}
 
+	@Nullable
 	@Override
 	public UOMType getQtyUOMTypeOrNull()
 	{

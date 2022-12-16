@@ -58,6 +58,7 @@ class AllocableHUsMap
 						.asiId(AttributeSetInstanceId.NONE) // TODO match attributes
 						.bestBeforePolicy(ShipmentAllocationBestBeforePolicy.Expiring_First)
 						.reservationRef(Optional.empty()) // TODO introduce some PP Order reservation
+						.enforceMandatoryAttributesOnPicking(false)
 						.build());
 
 		final ImmutableList<AllocableHU> hus = CollectionUtils.map(husEligibleToPick, hu -> toAllocableHU(hu.getTopLevelHUId(), productId));

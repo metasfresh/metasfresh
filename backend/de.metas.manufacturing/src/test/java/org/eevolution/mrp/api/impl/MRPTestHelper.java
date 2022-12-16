@@ -11,6 +11,7 @@ import de.metas.document.engine.impl.PlainDocumentBL;
 import de.metas.document.sequence.impl.DocumentNoBuilderFactory;
 import de.metas.event.impl.PlainEventBusFactory;
 import de.metas.logging.LogManager;
+import de.metas.material.event.MaterialEventObserver;
 import de.metas.material.event.ModelProductDescriptorExtractor;
 import de.metas.material.event.PostMaterialEventService;
 import de.metas.material.event.eventbus.MaterialEventConverter;
@@ -283,7 +284,8 @@ public class MRPTestHelper
 		final MaterialEventConverter materialEventConverter = new MaterialEventConverter();
 		final MetasfreshEventBusService materialEventService = MetasfreshEventBusService.createLocalServiceThatIsReadyToUse(
 				materialEventConverter,
-				PlainEventBusFactory.newInstance());
+				PlainEventBusFactory.newInstance(),
+				new MaterialEventObserver());
 		final PostMaterialEventService postMaterialEventService = new PostMaterialEventService(materialEventService);
 
 		return new org.eevolution.model.LiberoValidator(

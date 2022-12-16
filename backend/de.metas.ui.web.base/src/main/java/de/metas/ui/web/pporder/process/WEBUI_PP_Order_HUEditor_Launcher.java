@@ -22,13 +22,8 @@
 
 package de.metas.ui.web.pporder.process;
 
-import com.google.common.collect.ImmutableList;
 import de.metas.handlingunits.HuId;
-import de.metas.handlingunits.IHUQueryBuilder;
-import de.metas.handlingunits.IHUStatusBL;
-import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
-import de.metas.handlingunits.sourcehu.SourceHUsService;
 import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.process.IADProcessDAO;
 import de.metas.process.IProcessPrecondition;
@@ -50,6 +45,7 @@ import de.metas.ui.web.view.ViewId;
 import de.metas.ui.web.view.json.JSONViewDataType;
 import de.metas.util.Services;
 import de.metas.util.StringUtils;
+import lombok.NonNull;
 import org.eevolution.api.BOMComponentIssueMethod;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.model.I_PP_Order_BOMLine;
@@ -65,12 +61,10 @@ public class WEBUI_PP_Order_HUEditor_Launcher
 		extends ViewBasedProcessTemplate
 		implements IProcessPrecondition
 {
-	private final IHUStatusBL huStatusBL = Services.get(IHUStatusBL.class);
 	private final IHUPPOrderBL huppOrderBL = Services.get(IHUPPOrderBL.class);
 	private final IPPOrderBOMDAO orderBOMsRepo = Services.get(IPPOrderBOMDAO.class);
 	private final IADProcessDAO adProcessDAO = Services.get(IADProcessDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
-	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 
 	@Override
 	protected ProcessPreconditionsResolution checkPreconditionsApplicable()
@@ -152,28 +146,12 @@ public class WEBUI_PP_Order_HUEditor_Launcher
 		return MSG_OK;
 	}
 
+	@NonNull
 	private List<HuId> retrieveHuIdsToShowInEditor(final PPOrderBOMLineId ppOrderBomLineId)
 	{
 		final I_PP_Order_BOMLine ppOrderBomLine = orderBOMsRepo.getOrderBOMLineById(ppOrderBomLineId);
 
-		final IHUQueryBuilder huIdsToAvailableToIssueQuery = huppOrderBL.createHUsAvailableToIssueQuery(ppOrderBomLine);
-
-		return huIdsToAvailableToIssueQuery.createQuery()
-				.listIds()
-				.stream()
-				.map(HuId::ofRepoId)
-				.filter(this::isEligibleHuToIssue)
-				.collect(ImmutableList.toImmutableList());
-	}
-
-	private boolean isEligibleHuToIssue(final HuId huId)
-	{
-		if (SourceHUsService.get().isHuOrAnyParentSourceHu(huId) || !handlingUnitsBL.isHUHierarchyCleared(huId))
-		{
-			return false;
-		}
-
-		return !huStatusBL.isStatusIssued(huId);
+		return huppOrderBL.retrieveAvailableToIssue(ppOrderBomLine);
 	}
 
 	private RelatedProcessDescriptor createIssueTopLevelHusDescriptor()

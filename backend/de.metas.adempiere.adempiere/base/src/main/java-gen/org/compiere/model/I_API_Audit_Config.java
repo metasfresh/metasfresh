@@ -211,6 +211,27 @@ public interface I_API_Audit_Config
 	String COLUMNNAME_IsWrapApiResponse = "IsWrapApiResponse";
 
 	/**
+	 * Set Days keep errored request audit.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setKeepErroredRequestDays (int KeepErroredRequestDays);
+
+	/**
+	 * Get Days keep errored request audit.
+	 *
+	 * <br>Type: Integer
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getKeepErroredRequestDays();
+
+	ModelColumn<I_API_Audit_Config, Object> COLUMN_KeepErroredRequestDays = new ModelColumn<>(I_API_Audit_Config.class, "KeepErroredRequestDays", null);
+	String COLUMNNAME_KeepErroredRequestDays = "KeepErroredRequestDays";
+
+	/**
 	 * Set Days keep request body.
 	 *
 	 * <br>Type: Integer

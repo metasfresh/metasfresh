@@ -54,8 +54,8 @@ public class JsonBPartnerProduct
 	String bPartnerMetasfreshId;
 
 	@Nullable
-	@JsonProperty("ANHANGDATEI")
-	String attachmentFilePath;
+	@JsonProperty("ROHKREDDATA")
+	JsonBPartnerProductAdditionalInfo attachmentAdditionalInfos;
 
 	@Builder
 	public JsonBPartnerProduct(
@@ -64,14 +64,14 @@ public class JsonBPartnerProduct
 			@JsonProperty("LIEFERANTENFREIGABE") final int approvedForPurchase,
 			@JsonProperty("INAKTIV") final int inactive,
 			@JsonProperty("METASFRESHID") final @Nullable String bPartnerMetasfreshId,
-			@JsonProperty("ANHANGDATEI") final @Nullable String attachmentFilePath)
+			@JsonProperty("ROHKREDDATA") final @Nullable JsonBPartnerProductAdditionalInfo attachmentAdditionalInfos)
 	{
 		this.bpartnerId = bpartnerId;
 		this.currentVendor = currentVendor == 1;
 		this.isExcludedFromPurchase = approvedForPurchase != 1;
 		this.isActive = inactive != 1;
 		this.bPartnerMetasfreshId = bPartnerMetasfreshId;
-		this.attachmentFilePath = attachmentFilePath;
+		this.attachmentAdditionalInfos = attachmentAdditionalInfos;
 	}
 
 	@JsonIgnoreProperties(ignoreUnknown = true)

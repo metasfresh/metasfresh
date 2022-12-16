@@ -93,7 +93,7 @@ import lombok.NonNull;
 		}
 	}
 
-	private final PricingConditionsDiscountType getDiscountType()
+	private PricingConditionsDiscountType getDiscountType()
 	{
 		if (request.getForcePricingConditionsBreak() != null)
 		{
@@ -220,9 +220,7 @@ import lombok.NonNull;
 		Check.assumeNotNull(pricingCtx, "pricingCtx shall not be null for {}", request);
 
 		final IPricingContext basePricingSystemPricingCtx = createBasePricingSystemPricingCtx(pricingCtx, basePricingSystemId);
-		final IPricingResult pricingResult = pricingBL.calculatePrice(basePricingSystemPricingCtx);
-
-		return pricingResult;
+		return pricingBL.calculatePrice(basePricingSystemPricingCtx);
 	}
 
 	private static IPricingContext createBasePricingSystemPricingCtx(@NonNull final IPricingContext pricingCtx, @NonNull final PricingSystemId basePricingSystemId)

@@ -1,8 +1,9 @@
 package de.metas.contracts.commission.model;
 
-import java.math.BigDecimal;
-import javax.annotation.Nullable;
 import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 
 /** Generated Interface for C_Commission_Share
  *  @author metasfresh (generated) 
@@ -117,6 +118,27 @@ public interface I_C_Commission_Share
 	String COLUMNNAME_C_Commission_Instance_ID = "C_Commission_Instance_ID";
 
 	/**
+	 * Set Commission share.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setC_Commission_Share_ID (int C_Commission_Share_ID);
+
+	/**
+	 * Get Commission share.
+	 *
+	 * <br>Type: ID
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getC_Commission_Share_ID();
+
+	ModelColumn<I_C_Commission_Share, Object> COLUMN_C_Commission_Share_ID = new ModelColumn<>(I_C_Commission_Share.class, "C_Commission_Share_ID", null);
+	String COLUMNNAME_C_Commission_Share_ID = "C_Commission_Share_ID";
+
+	/**
 	 * Set Sales commission detail.
 	 *
 	 * <br>Type: Search
@@ -140,27 +162,6 @@ public interface I_C_Commission_Share
 
 	ModelColumn<I_C_Commission_Share, de.metas.contracts.commission.model.I_C_CommissionSettingsLine> COLUMN_C_CommissionSettingsLine_ID = new ModelColumn<>(I_C_Commission_Share.class, "C_CommissionSettingsLine_ID", de.metas.contracts.commission.model.I_C_CommissionSettingsLine.class);
 	String COLUMNNAME_C_CommissionSettingsLine_ID = "C_CommissionSettingsLine_ID";
-
-	/**
-	 * Set Commission share.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	void setC_Commission_Share_ID (int C_Commission_Share_ID);
-
-	/**
-	 * Get Commission share.
-	 *
-	 * <br>Type: ID
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getC_Commission_Share_ID();
-
-	ModelColumn<I_C_Commission_Share, Object> COLUMN_C_Commission_Share_ID = new ModelColumn<>(I_C_Commission_Share.class, "C_Commission_Share_ID", null);
-	String COLUMNNAME_C_Commission_Share_ID = "C_Commission_Share_ID";
 
 	/**
 	 * Set Line.
@@ -207,6 +208,31 @@ public interface I_C_Commission_Share
 
 	ModelColumn<I_C_Commission_Share, Object> COLUMN_C_Flatrate_Term_ID = new ModelColumn<>(I_C_Commission_Share.class, "C_Flatrate_Term_ID", null);
 	String COLUMNNAME_C_Flatrate_Term_ID = "C_Flatrate_Term_ID";
+
+	/**
+	 * Set License fee detail.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_LicenseFeeSettingsLine_ID (int C_LicenseFeeSettingsLine_ID);
+
+	/**
+	 * Get License fee detail.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_LicenseFeeSettingsLine_ID();
+
+	@Nullable de.metas.contracts.commission.model.I_C_LicenseFeeSettingsLine getC_LicenseFeeSettingsLine();
+
+	void setC_LicenseFeeSettingsLine(@Nullable de.metas.contracts.commission.model.I_C_LicenseFeeSettingsLine C_LicenseFeeSettingsLine);
+
+	ModelColumn<I_C_Commission_Share, de.metas.contracts.commission.model.I_C_LicenseFeeSettingsLine> COLUMN_C_LicenseFeeSettingsLine_ID = new ModelColumn<>(I_C_Commission_Share.class, "C_LicenseFeeSettingsLine_ID", de.metas.contracts.commission.model.I_C_LicenseFeeSettingsLine.class);
+	String COLUMNNAME_C_LicenseFeeSettingsLine_ID = "C_LicenseFeeSettingsLine_ID";
 
 	/**
 	 * Set Brokerage commission detail.

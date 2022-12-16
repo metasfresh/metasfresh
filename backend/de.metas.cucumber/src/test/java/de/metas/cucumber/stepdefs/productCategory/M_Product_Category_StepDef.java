@@ -23,7 +23,7 @@
 package de.metas.cucumber.stepdefs.productCategory;
 
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefData;
+import de.metas.cucumber.stepdefs.attribute.M_AttributeSet_StepDefData;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import io.cucumber.datatable.DataTable;
@@ -44,14 +44,14 @@ import static org.compiere.model.I_M_Product_Category.COLUMNNAME_M_Product_Categ
 
 public class M_Product_Category_StepDef
 {
-	private final StepDefData<I_M_Product_Category> productCategoryTable;
-	private final StepDefData<I_M_AttributeSet> attributeSetTable;
+	private final M_Product_Category_StepDefData productCategoryTable;
+	private final M_AttributeSet_StepDefData attributeSetTable;
 
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 
 	public M_Product_Category_StepDef(
-			@NonNull final StepDefData<I_M_Product_Category> productCategoryTable,
-			@NonNull final StepDefData<I_M_AttributeSet> attributeSetTable)
+			@NonNull final M_Product_Category_StepDefData productCategoryTable,
+			@NonNull final M_AttributeSet_StepDefData attributeSetTable)
 	{
 		this.productCategoryTable = productCategoryTable;
 		this.attributeSetTable = attributeSetTable;

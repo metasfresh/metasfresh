@@ -29,6 +29,7 @@ import lombok.Getter;
 import lombok.NonNull;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 public enum ClearanceStatus implements ReferenceListAwareEnum
 {
@@ -48,6 +49,12 @@ public enum ClearanceStatus implements ReferenceListAwareEnum
 	public static ClearanceStatus ofNullableCode(@Nullable final String code)
 	{
 		return code != null ? ofCode(code) : null;
+	}
+
+	@NonNull
+	public static Optional<ClearanceStatus> ofCodeOptional(@Nullable final String code)
+	{
+		return Optional.ofNullable(ofNullableCode(code));
 	}
 
 	public static ClearanceStatus ofCode(@NonNull final String code)

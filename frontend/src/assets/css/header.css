@@ -653,6 +653,23 @@
 }
 
 .menu-overlay-search-item-focused {
-    text-decoration: underline;
     text-underline-position: under;
+    span.query-menu-item {
+        text-decoration: underline;
+    }
+    span.query-menu-item:hover {
+        text-decoration: none;
+    }
+}
+
+.menu-overlay-spinner {
+  >.spinner {
+      background-color: transparent;
+  }
+  >.screen-freeze {
+      top: 0px;
+      left: 280px;
+      width: 43%;
+      height: 40%;
+  }
 }

@@ -33,7 +33,6 @@ import de.metas.common.rest_api.v2.attachment.JsonAttachmentResponse;
 import de.metas.common.rest_api.v2.attachment.JsonAttachmentSourceType;
 import de.metas.common.rest_api.v2.attachment.JsonExternalReferenceTarget;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefData;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -61,13 +60,13 @@ public class AD_AttachmentEntry_StepDef
 	private final IQueryBL queryBL = Services.get(IQueryBL.class);
 	private final ObjectMapper mapper = JsonObjectMapperHolder.newJsonObjectMapper();
 
-	private final StepDefData<I_AD_AttachmentEntry> attachmentEntryTable;
-	private final StepDefData<File> fileTable;
+	private final AD_Attachment_Entry_StepDefData attachmentEntryTable;
+	private final File_StepDefData fileTable;
 
 	public AD_AttachmentEntry_StepDef(
 			@NonNull final TestContext testContext,
-			@NonNull final StepDefData<I_AD_AttachmentEntry> attachmentEntryTable,
-			@NonNull final StepDefData<File> fileTable)
+			@NonNull final AD_Attachment_Entry_StepDefData attachmentEntryTable,
+			@NonNull final File_StepDefData fileTable)
 	{
 		this.testContext = testContext;
 		this.attachmentEntryTable = attachmentEntryTable;
