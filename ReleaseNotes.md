@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#14092](https://github.com/metasfresh/metasfresh/issues/14092) Allow EDI-Invoice without order-id
   * [#14159](https://github.com/metasfresh/metasfresh/issues/14159) Extend Export Accounting
   * [#14122](https://github.com/metasfresh/metasfresh/issues/14122) Add new picking-process 
   * [#14038](https://github.com/metasfresh/metasfresh/issues/14038) Get WorkOrder Projects from API  
