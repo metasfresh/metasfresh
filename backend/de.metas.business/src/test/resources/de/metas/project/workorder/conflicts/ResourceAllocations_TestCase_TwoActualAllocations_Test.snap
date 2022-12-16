@@ -6,7 +6,7 @@ de.metas.project.workorder.conflicts.ResourceAllocations_TestCase_TwoActualAlloc
 de.metas.project.workorder.conflicts.ResourceAllocations_TestCase_TwoActualAllocations_Test.included=[ {
   "byIds" : {
     "ProjectResourceIdsPair(projectResourceId1=WOProjectResourceId(repoId=1, projectId=ProjectId(repoId=1)), projectResourceId2=WOProjectResourceId(repoId=2, projectId=ProjectId(repoId=1)))" : {
-      "approved" : "UNKNOWN",
+      "approved" : null,
       "projectResourceIdsPair" : {
         "projectResourceId1" : 1,
         "projectResourceId2" : 2
@@ -20,7 +20,7 @@ de.metas.project.workorder.conflicts.ResourceAllocations_TestCase_TwoActualAlloc
 de.metas.project.workorder.conflicts.ResourceAllocations_TestCase_TwoActualAllocations_Test.including=[ {
   "byIds" : {
     "ProjectResourceIdsPair(projectResourceId1=WOProjectResourceId(repoId=1, projectId=ProjectId(repoId=1)), projectResourceId2=WOProjectResourceId(repoId=2, projectId=ProjectId(repoId=1)))" : {
-      "approved" : "UNKNOWN",
+      "approved" : null,
       "projectResourceIdsPair" : {
         "projectResourceId1" : 1,
         "projectResourceId2" : 2
@@ -34,7 +34,7 @@ de.metas.project.workorder.conflicts.ResourceAllocations_TestCase_TwoActualAlloc
 de.metas.project.workorder.conflicts.ResourceAllocations_TestCase_TwoActualAllocations_Test.intersecting=[ {
   "byIds" : {
     "ProjectResourceIdsPair(projectResourceId1=WOProjectResourceId(repoId=1, projectId=ProjectId(repoId=1)), projectResourceId2=WOProjectResourceId(repoId=2, projectId=ProjectId(repoId=1)))" : {
-      "approved" : "UNKNOWN",
+      "approved" : null,
       "projectResourceIdsPair" : {
         "projectResourceId1" : 1,
         "projectResourceId2" : 2
