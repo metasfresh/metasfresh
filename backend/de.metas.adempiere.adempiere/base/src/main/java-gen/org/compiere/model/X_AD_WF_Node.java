@@ -683,6 +683,8 @@ public class X_AD_WF_Node extends org.compiere.model.PO implements I_AD_WF_Node,
 	public static final String PP_ACTIVITY_TYPE_RawMaterialsIssueAdjustment = "MIA";
 	/** PrintReceivedHUQRCodes = PrintReceivedHUQRCodes */
 	public static final String PP_ACTIVITY_TYPE_PrintReceivedHUQRCodes = "PrintReceivedHUQRCodes";
+	/** CallExternalSystem = CallExternalSystem */
+	public static final String PP_ACTIVITY_TYPE_CallExternalSystem = "CallExternalSystem";
 	@Override
 	public void setPP_Activity_Type (final @Nullable java.lang.String PP_Activity_Type)
 	{

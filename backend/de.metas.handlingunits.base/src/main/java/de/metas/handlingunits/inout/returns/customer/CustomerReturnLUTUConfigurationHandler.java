@@ -23,6 +23,7 @@
 package de.metas.handlingunits.inout.returns.customer;
 
 import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.IHUPIItemProductBL;
 import de.metas.handlingunits.allocation.ILUTUConfigurationFactory;
@@ -39,6 +40,7 @@ import lombok.NonNull;
 import org.adempiere.warehouse.LocatorId;
 import org.adempiere.warehouse.WarehouseId;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.apache.lucene.util.NumericUtils;
 import org.compiere.model.I_M_InOut;
 
 import java.math.BigDecimal;
@@ -86,7 +88,7 @@ public class CustomerReturnLUTUConfigurationHandler
 
 		//
 		// Update LU/TU configuration
-		updateLUTUConfigurationFromPPOrder(lutuConfiguration, documentLine);
+		updateLUTUConfigurationFromDocumentLine(lutuConfiguration, documentLine);
 
 		// NOTE: don't save it
 
@@ -94,7 +96,7 @@ public class CustomerReturnLUTUConfigurationHandler
 	}
 
 	@Override
-	public void updateLUTUConfigurationFromPPOrder(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration, @NonNull final I_M_InOutLine documentLine)
+	public void updateLUTUConfigurationFromDocumentLine(@NonNull final I_M_HU_LUTU_Configuration lutuConfiguration, @NonNull final I_M_InOutLine documentLine)
 	{
 		final I_M_InOut customerReturn = documentLine.getM_InOut();
 		//
@@ -114,9 +116,14 @@ public class CustomerReturnLUTUConfigurationHandler
 		// Set HUStatus=Planning because receipt schedules are always about planning
 		lutuConfiguration.setHUStatus(X_M_HU.HUSTATUS_Planning);
 
-		lutuConfiguration.setQtyTU(documentLine.getQtyEnteredTU());
 		lutuConfiguration.setQtyLU(BigDecimal.ONE);
 		lutuConfiguration.setIsInfiniteQtyLU(false);
+
+		lutuConfiguration.setQtyTU(documentLine.getQtyEnteredTU().signum() == 0 ? BigDecimal.ONE: documentLine.getQtyEnteredTU());
+		lutuConfiguration.setIsInfiniteQtyTU(false);
+
+		lutuConfiguration.setQtyCU(documentLine.getMovementQty());
+		lutuConfiguration.setIsInfiniteQtyCU(false);
 	}
 
 	@Override

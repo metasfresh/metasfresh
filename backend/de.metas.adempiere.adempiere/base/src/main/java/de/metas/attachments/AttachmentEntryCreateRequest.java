@@ -64,7 +64,7 @@ public class AttachmentEntryCreateRequest
 		return request;
 	}
 
-	public static AttachmentEntryCreateRequestBuilder builderFromByteArray(
+	public static AttachmentEntryCreateRequest.AttachmentEntryCreateRequestBuilder builderFromByteArray(
 			@NonNull final String fileName,
 			final byte[] data)
 	{

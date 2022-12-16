@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import onClickOutside from 'react-onclickoutside';
+import onClickOutsideHOC from 'react-onclickoutside';
 import TetherComponent from 'react-tether';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
@@ -319,6 +319,8 @@ export class RawList extends PureComponent {
       field,
       listHash,
       wrapperElement,
+      enableOnClickOutside,
+      disableOnClickOutside,
     } = this.props;
 
     let value = '';
@@ -468,6 +470,8 @@ export class RawList extends PureComponent {
               onChange={this.handleTemporarySelection}
               onSelect={this.handleSelect}
               onCancel={this.handleCancel}
+              onMount={() => disableOnClickOutside && disableOnClickOutside()}
+              onUnmount={() => enableOnClickOutside && enableOnClickOutside()}
             />
           )
         }
@@ -534,6 +538,8 @@ export class RawList extends PureComponent {
  * @prop {func} onSelect
  * @prop {func} onOpenDropdown
  * @prop {func} onCloseDropdown
+ * @prop {func} enableOnClickOutside - callback to be used to enable click outside for parent component
+ * @prop {func} disableOnClickOutside - callback to be used to disable click outside for parent component
  */
 RawList.propTypes = {
   filter: PropTypes.object,
@@ -572,6 +578,8 @@ RawList.propTypes = {
   compositeWidgetData: PropTypes.array,
   field: PropTypes.string,
   wrapperElement: PropTypes.object,
+  enableOnClickOutside: PropTypes.func, // wired by onClickOutsideHOC
+  disableOnClickOutside: PropTypes.func, // wired by onClickOutsideHOC
 };
 
 RawList.defaultProps = {
@@ -579,4 +587,4 @@ RawList.defaultProps = {
   clearable: true,
 };
 
-export default onClickOutside(RawList);
+export default onClickOutsideHOC(RawList);

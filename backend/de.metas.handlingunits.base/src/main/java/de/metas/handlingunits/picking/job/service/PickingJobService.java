@@ -164,17 +164,17 @@ public class PickingJobService
 	{
 		return packagingDAO
 				.stream(PackageableQuery.builder()
-								.onlyFromSalesOrder(true)
-								.lockedBy(userId)
-								.includeNotLocked(true)
-								.excludeShipmentScheduleIds(excludeShipmentScheduleIds)
-								.orderBys(ImmutableSet.of(
-										PackageableQuery.OrderBy.PriorityRule,
-										PackageableQuery.OrderBy.PreparationDate,
-										PackageableQuery.OrderBy.SalesOrderId,
-										PackageableQuery.OrderBy.DeliveryBPLocationId,
-										PackageableQuery.OrderBy.WarehouseTypeId))
-								.build())
+						.onlyFromSalesOrder(true)
+						.lockedBy(userId)
+						.includeNotLocked(true)
+						.excludeShipmentScheduleIds(excludeShipmentScheduleIds)
+						.orderBys(ImmutableSet.of(
+								PackageableQuery.OrderBy.PriorityRule,
+								PackageableQuery.OrderBy.PreparationDate,
+								PackageableQuery.OrderBy.SalesOrderId,
+								PackageableQuery.OrderBy.DeliveryBPLocationId,
+								PackageableQuery.OrderBy.WarehouseTypeId))
+						.build())
 				.map(PickingJobService::extractPickingJobCandidate)
 				.distinct();
 	}

@@ -98,6 +98,11 @@ public class PPOrderRouting
 				.build();
 	}
 
+	public static boolean equals(@Nullable PPOrderRouting o1, @Nullable PPOrderRouting o2)
+	{
+		return Objects.equals(o1, o2);
+	}
+
 	public ImmutableCollection<PPOrderRoutingActivity> getActivities()
 	{
 		return activitiesByCode.values();

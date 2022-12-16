@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_DesadvLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -667143698L;
+	private static final long serialVersionUID = -1729503778L;
 
     /** Standard Constructor */
     public X_EDI_DesadvLine (final Properties ctx, final int EDI_DesadvLine_ID, @Nullable final String trxName)
@@ -42,7 +42,7 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	}
 
 	@Override
-	public BigDecimal getBPartner_QtyItemCapacity() 
+	public BigDecimal getBPartner_QtyItemCapacity()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_BPartner_QtyItemCapacity);
 		return bd != null ? bd : BigDecimal.ZERO;
@@ -51,14 +51,14 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	@Override
 	public void setC_UOM_BPartner_ID (final int C_UOM_BPartner_ID)
 	{
-		if (C_UOM_BPartner_ID < 1) 
+		if (C_UOM_BPartner_ID < 1)
 			set_Value (COLUMNNAME_C_UOM_BPartner_ID, null);
-		else 
+		else
 			set_Value (COLUMNNAME_C_UOM_BPartner_ID, C_UOM_BPartner_ID);
 	}
 
 	@Override
-	public int getC_UOM_BPartner_ID() 
+	public int getC_UOM_BPartner_ID()
 	{
 		return get_ValueAsInt(COLUMNNAME_C_UOM_BPartner_ID);
 	}
@@ -177,7 +177,7 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	}
 
 	@Override
-	public int getExternalSeqNo() 
+	public int getExternalSeqNo()
 	{
 		return get_ValueAsInt(COLUMNNAME_ExternalSeqNo);
 	}
@@ -374,7 +374,7 @@ public class X_EDI_DesadvLine extends org.compiere.model.PO implements I_EDI_Des
 	}
 
 	@Override
-	public BigDecimal getQtyEnteredInBPartnerUOM() 
+	public BigDecimal getQtyEnteredInBPartnerUOM()
 	{
 		final BigDecimal bd = get_ValueAsBigDecimal(COLUMNNAME_QtyEnteredInBPartnerUOM);
 		return bd != null ? bd : BigDecimal.ZERO;

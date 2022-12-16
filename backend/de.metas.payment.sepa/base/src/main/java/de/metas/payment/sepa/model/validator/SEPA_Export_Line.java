@@ -48,9 +48,17 @@ public class SEPA_Export_Line
 	public void updateOtherAccountIdentification(I_SEPA_Export_Line esrImport)
 	{
 		final I_C_BP_BankAccount bpBankAccount = InterfaceWrapperHelper.create(esrImport.getC_BP_BankAccount(), I_C_BP_BankAccount.class);
+		final  String QR_IBAN = bpBankAccount.getQR_IBAN();
+
 		if (!bpBankAccount.isEsrAccount())
 		{
-			return; // nothing to do
+			return; // nothing to do if is not ESR or if is a QR account
+		}
+
+		if (QR_IBAN != null && QR_IBAN.length() > 0)
+		{
+			esrImport.setOtherAccountIdentification(""); // set nothing, but we need to make sure that tag is closed
+			return;
 		}
 
 		final IESRBPBankAccountBL esrBankAccountBL = Services.get(IESRBPBankAccountBL.class);

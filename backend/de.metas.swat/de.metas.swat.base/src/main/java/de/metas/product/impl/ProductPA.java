@@ -27,10 +27,13 @@ import de.metas.adempiere.util.cache.annotations.CacheAllowMutable;
 import de.metas.cache.annotation.CacheCtx;
 import de.metas.cache.annotation.CacheIgnore;
 import de.metas.cache.annotation.CacheTrx;
+import de.metas.location.CountryId;
 import de.metas.logging.LogManager;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductBL;
 import de.metas.product.IProductPA;
 import de.metas.util.Services;
+import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.exceptions.DBException;
 import org.adempiere.mm.attributes.AttributeSetId;
@@ -48,6 +51,7 @@ import org.compiere.util.DB;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -192,11 +196,22 @@ public class ProductPA implements IProductPA
 	}
 
 	@Override
-	public BigDecimal retrievePriceStd(final int productId,
-			final int partnerId, final int priceListId, final BigDecimal qty,
+	public BigDecimal retrievePriceStd(
+			final @NonNull OrgId orgId,
+			final int productId,
+			final int partnerId, 
+			final int priceListId, 
+			@Nullable final CountryId countryId,
+			final BigDecimal qty,
 			final boolean soTrx)
 	{
-		final MProductPricing pricing = new MProductPricing(productId, partnerId, qty, soTrx);
+		final MProductPricing pricing = new MProductPricing(
+				orgId,
+				productId, 
+				partnerId,
+				countryId,
+				qty, 
+				soTrx);
 		pricing.setM_PriceList_ID(priceListId);
 
 		final BigDecimal priceStd = pricing.getPriceStd();
@@ -211,18 +226,12 @@ public class ProductPA implements IProductPA
 	public Collection<I_M_ProductScalePrice> retrieveScalePrices(final int productPriceId, final String trxName)
 	{
 		return new Query(Env.getCtx(), I_M_ProductScalePrice.Table_Name, WHERE_PRODUCT_SCALE_PRICE, trxName)
-				.setParameters(new Object[] { productPriceId })
+				.setParameters(productPriceId)
 				.setClient_ID()
 				.setOnlyActiveRecords(true)
 				.list(I_M_ProductScalePrice.class);
 	}
 
-	/**
-	 * Invokes {@link MProductScalePrice#MProductScalePrice(java.util.Properties, int, String)} .
-	 *
-	 * @param trxName
-	 * @return
-	 */
 	private I_M_ProductScalePrice createScalePrice(final String trxName)
 	{
 		return InterfaceWrapperHelper.newInstance(I_M_ProductScalePrice.class, PlainContextAware.newWithTrxName(Env.getCtx(), trxName));
@@ -230,13 +239,8 @@ public class ProductPA implements IProductPA
 
 	/**
 	 * Returns an existing scale price or (if <code>createNew</code> is true) creates a new one.
-	 *
-	 * @param productPriceId
-	 * @param qty
-	 * @param createNew
-	 * @param trxName
-	 * @return
 	 */
+	@Nullable
 	@Override
 	public I_M_ProductScalePrice retrieveOrCreateScalePrices(
 			final int productPriceId, final BigDecimal qty,
@@ -274,7 +278,7 @@ public class ProductPA implements IProductPA
 			return null;
 
 		}
-		catch (SQLException e)
+		catch (final SQLException e)
 		{
 			throw new DBException(e, SQL_SCALEPRICE_FOR_QTY);
 		}
