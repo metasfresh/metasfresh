@@ -268,4 +268,5 @@ public class OrderBOMLineQuantities
 				.qtyReserved(converter.apply(qtyReserved))
 				.build();
 	}
+
 }

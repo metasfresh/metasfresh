@@ -194,8 +194,7 @@ public class C_PurchaseCandidate_StepDef
 		purchaseCandidateTable.putOrReplace(DataTableUtil.extractRecordIdentifier(row, I_C_PurchaseCandidate.COLUMNNAME_C_PurchaseCandidate_ID), purchaseCandidateRecord);
 	}
 
-	@NonNull
-	private String logCurrentContext(@NonNull final Map<String, String> row)
+	private void logCurrentContext(@NonNull final Map<String, String> row)
 	{
 		final String productIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_M_Product_ID + ".Identifier");
 		final String orderIdentifier = DataTableUtil.extractStringForColumnName(row, COLUMNNAME_C_OrderSO_ID + ".Identifier");
@@ -223,7 +222,7 @@ public class C_PurchaseCandidate_StepDef
 						.append(COLUMNNAME_M_Product_ID).append(" : ").append(purchaseCandidateRecord.getM_Product_ID()).append(" ; ")
 						.append("\n"));
 
-		return "see current context: \n" + message;
+		logger.error("*** Error while looking for purchase candidate records, see current context: \n" + message);
 	}
 
 	@NonNull
