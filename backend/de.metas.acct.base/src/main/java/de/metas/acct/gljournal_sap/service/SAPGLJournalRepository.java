@@ -8,6 +8,7 @@ import lombok.NonNull;
 import org.springframework.stereotype.Repository;
 
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 @Repository
 public class SAPGLJournalRepository
@@ -41,6 +42,14 @@ public class SAPGLJournalRepository
 	{
 		final SAPGLJournalLoaderAndSaver loaderAndSaver = new SAPGLJournalLoaderAndSaver();
 		loaderAndSaver.updateById(glJournalId, consumer);
+	}
+
+	public <R> R updateById(
+			@NonNull final SAPGLJournalId glJournalId,
+			@NonNull final Function<SAPGLJournal, R> processor)
+	{
+		final SAPGLJournalLoaderAndSaver loaderAndSaver = new SAPGLJournalLoaderAndSaver();
+		return loaderAndSaver.updateById(glJournalId, processor);
 	}
 
 }

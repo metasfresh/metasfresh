@@ -14,27 +14,54 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
+import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 
-@EqualsAndHashCode
-@ToString
+@EqualsAndHashCode(doNotUseGetters = true)
+@ToString(doNotUseGetters = true)
 @Builder
 public class SAPGLJournalLine
 {
-	@NonNull @Getter private final SAPGLJournalLineId id;
+	@Nullable private SAPGLJournalLineId id;
 
-	@NonNull private final SeqNo line;
+	@NonNull @Getter private final SeqNo line;
 
-	@NonNull private final AccountId accountId;
+	@NonNull @Getter private final AccountId accountId;
 	@NonNull @Getter private final PostingSign postingSign;
 	@NonNull @Getter private final Money amount;
 	@NonNull @Getter @Setter private Money amountAcct;
 
-	@Nullable private final TaxId taxId;
+	@Nullable @Getter private final TaxId taxId;
 
-	@Nullable private final SectionCodeId sectionCodeId;
-	@Nullable private final ProductId productId;
-	@Nullable private final OrderId orderId;
-	@Nullable private final ActivityId activityId;
+	@Nullable @Getter private final SectionCodeId sectionCodeId;
+	@Nullable @Getter private final ProductId productId;
+	@Nullable @Getter private final OrderId orderId;
+	@Nullable @Getter private final ActivityId activityId;
+
+	public SAPGLJournalLineId getIdNotNull()
+	{
+		if (id == null)
+		{
+			throw new AdempiereException("Line not saved: " + this);
+		}
+		return id;
+	}
+
+	@Nullable
+	public SAPGLJournalLineId getIdOrNull()
+	{
+		return id;
+	}
+
+	public void markAsSaved(@NonNull final SAPGLJournalLineId id)
+	{
+		if (this.id != null && !SAPGLJournalLineId.equals(this.id, id))
+		{
+			throw new AdempiereException("Line already saved: " + this);
+		}
+
+		this.id = id;
+	}
+
 }

@@ -1,9 +1,12 @@
 package de.metas.acct.gljournal_sap;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.api.AccountId;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalCurrencyConverter;
 import de.metas.money.Money;
+import de.metas.tax.api.TaxId;
+import de.metas.util.lang.SeqNo;
 import lombok.Builder;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -11,7 +14,11 @@ import lombok.NonNull;
 import lombok.ToString;
 import org.adempiere.exceptions.AdempiereException;
 
+import javax.annotation.Nullable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.function.Supplier;
 
 @EqualsAndHashCode
 @ToString
@@ -80,5 +87,40 @@ public class SAPGLJournal
 	public void removeAllLines()
 	{
 		lines.clear();
+	}
+
+	public Supplier<SAPGLJournalLineId> addLine(
+			@NonNull PostingSign postingSign,
+			@NonNull AccountId accountId,
+			@NonNull BigDecimal amountBD,
+			@Nullable TaxId taxId,
+			@NonNull SAPGLJournalCurrencyConverter currencyConverter)
+	{
+		final Money amount = Money.of(amountBD, conversionCtx.getCurrencyId());
+		final Money amountAcct = currencyConverter.convertToAcctCurrency(amount, conversionCtx);
+
+		final SAPGLJournalLine line = SAPGLJournalLine.builder()
+				.line(getNextLineNo())
+				.accountId(accountId)
+				.postingSign(postingSign)
+				.amount(amount)
+				.amountAcct(amountAcct)
+				.taxId(taxId)
+				.build();
+		lines.add(line);
+
+		updateTotals();
+
+		return line::getIdNotNull;
+	}
+
+	private SeqNo getNextLineNo()
+	{
+		final SeqNo lastSeqNo = lines.stream()
+				.map(SAPGLJournalLine::getLine)
+				.max(Comparator.naturalOrder())
+				.orElse(SeqNo.ofInt(0));
+
+		return lastSeqNo.next();
 	}
 }

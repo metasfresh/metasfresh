@@ -37,6 +37,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class SAPGLJournalLoaderAndSaver
@@ -201,37 +202,50 @@ public class SAPGLJournalLoaderAndSaver
 		final ImmutableMap<SAPGLJournalLineId, I_SAP_GLJournalLine> lineRecordsById = Maps.uniqueIndex(lineRecords, SAPGLJournalLoaderAndSaver::extractId);
 
 		//
-		// UPDATE
-		final HashSet<SAPGLJournalLineId> savedIds = new HashSet<>();
+		// NEW/UPDATE
+		final HashSet<SAPGLJournalLineId> savedLineIds = new HashSet<>();
 		for (SAPGLJournalLine line : glJournal.getLines())
 		{
-			final I_SAP_GLJournalLine lineRecord = lineRecordsById.get(line.getId());
-			if (lineRecord == null)
+			SAPGLJournalLineId lineId = line.getIdOrNull();
+			final I_SAP_GLJournalLine lineRecord;
+			if (lineId != null)
 			{
-				throw new AdempiereException("@NotFound@ " + line.getId()); // shall not happen
+				lineRecord = lineRecordsById.get(lineId);
+				if (lineRecord == null)
+				{
+					throw new AdempiereException("@NotFound@ " + lineId); // shall not happen
+				}
+			}
+			else
+			{
+				lineRecord = InterfaceWrapperHelper.newInstance(I_SAP_GLJournalLine.class);
+				lineRecord.setSAP_GLJournal_ID(headerRecord.getSAP_GLJournal_ID());
+				lineRecord.setAD_Org_ID(headerRecord.getAD_Org_ID());
 			}
 
 			updateLineRecord(lineRecord, line);
 			InterfaceWrapperHelper.save(lineRecord);
-			savedIds.add(line.getId());
+			lineId = extractId(lineRecord);
+			line.markAsSaved(lineId);
+
+			savedLineIds.add(lineId);
 		}
 
 		//
 		// DELETE
-		if (lineRecords.size() != savedIds.size())
+		if (lineRecords.size() != savedLineIds.size())
 		{
 			for (Iterator<I_SAP_GLJournalLine> it = lineRecords.iterator(); it.hasNext(); )
 			{
 				final I_SAP_GLJournalLine lineRecord = it.next();
 				final SAPGLJournalLineId id = extractId(lineRecord);
-				if (!savedIds.contains(id))
+				if (!savedLineIds.contains(id))
 				{
 					it.remove();
 					InterfaceWrapperHelper.delete(lineRecord);
 				}
 			}
 		}
-
 	}
 
 	private static void updateHeaderRecord(final I_SAP_GLJournal headerRecord, final SAPGLJournal glJournal)
@@ -242,7 +256,16 @@ public class SAPGLJournalLoaderAndSaver
 
 	private static void updateLineRecord(final I_SAP_GLJournalLine lineRecord, final SAPGLJournalLine line)
 	{
+		lineRecord.setLine(line.getLine().toInt());
+		lineRecord.setC_ValidCombination_ID(line.getAccountId().getRepoId());
+		lineRecord.setPostingSign(line.getPostingSign().getCode());
+		lineRecord.setAmount(line.getAmount().toBigDecimal());
 		lineRecord.setAmtAcct(line.getAmountAcct().toBigDecimal());
+		lineRecord.setC_Tax_ID(TaxId.toRepoId(line.getTaxId()));
+		lineRecord.setM_SectionCode_ID(SectionCodeId.toRepoId(line.getSectionCodeId()));
+		lineRecord.setM_Product_ID(ProductId.toRepoId(line.getProductId()));
+		lineRecord.setC_Order_ID(OrderId.toRepoId(line.getOrderId()));
+		lineRecord.setC_Activity_ID(ActivityId.toRepoId(line.getActivityId()));
 	}
 
 	private void saveRecordIfAllowed(final I_SAP_GLJournal headerRecord)
@@ -259,9 +282,23 @@ public class SAPGLJournalLoaderAndSaver
 			@NonNull final SAPGLJournalId id,
 			@NonNull Consumer<SAPGLJournal> consumer)
 	{
+		updateById(
+				id,
+				glJournal -> {
+					consumer.accept(glJournal);
+					return null; // N/A
+				});
+	}
+
+	public <R> R updateById(
+			@NonNull final SAPGLJournalId id,
+			@NonNull Function<SAPGLJournal, R> processor)
+	{
 		final SAPGLJournal glJournal = getById(id);
-		consumer.accept(glJournal);
+		final R result = processor.apply(glJournal);
 		save(glJournal);
+
+		return result;
 	}
 
 }
