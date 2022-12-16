@@ -167,8 +167,6 @@
       </plugin>
     </plugins>
   </build>
-        </plugins>
-    </build>
 
   <profiles>
     <profile>
