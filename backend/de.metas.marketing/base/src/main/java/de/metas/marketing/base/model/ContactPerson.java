@@ -44,7 +44,8 @@ public class ContactPerson implements DataRecord
 {
 	public static ContactPerson newForUserPlatformAndLocation(
 			@NonNull final User user,
-			@NonNull final Campaign campaign,
+			@NonNull final PlatformId platformId,
+			@NonNull final OrgId orgId,
 			@Nullable final BPartnerLocationId bpLocationId)
 	{
 		final EmailAddress emailaddress = StringUtils.trimBlankToOptional(user.getEmailAddress())
@@ -52,8 +53,8 @@ public class ContactPerson implements DataRecord
 				.orElse(null);
 
 		return ContactPerson.builder()
-				.platformId(campaign.getPlatformId())
-				.orgId(campaign.getOrgId())
+				.platformId(platformId)
+				.orgId(orgId)
 				.name(user.getName())
 				.userId(user.getId())
 				.bPartnerId(user.getBpartnerId())

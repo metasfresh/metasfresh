@@ -30,7 +30,6 @@ import de.metas.marketing.base.model.LocalToRemoteSyncResult;
 import de.metas.marketing.base.model.PlatformId;
 import de.metas.marketing.base.model.SyncDirection;
 import de.metas.marketing.base.model.SyncResult;
-import de.metas.marketing.base.model.interceptor.CampaignConfig;
 import de.metas.marketing.base.spi.PlatformClient;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
@@ -38,7 +37,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Objects;
 
 @Service
 public class CampaignSyncService

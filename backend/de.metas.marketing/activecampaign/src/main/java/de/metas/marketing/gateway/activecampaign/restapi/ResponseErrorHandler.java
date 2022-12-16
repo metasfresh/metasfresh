@@ -22,6 +22,8 @@
 
 package de.metas.marketing.gateway.activecampaign.restapi;
 
+import de.metas.marketing.gateway.activecampaign.restapi.exception.RateLimitExceededException;
+import de.metas.marketing.gateway.activecampaign.restapi.exception.RateLimitService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.ClientHttpResponse;
 import org.springframework.stereotype.Component;
@@ -31,7 +33,7 @@ import java.io.IOException;
 import java.time.Duration;
 import java.util.Optional;
 
-import static de.metas.marketing.gateway.activecampaign.ActiveCampaignConstants.ACTIVE_CAMPAIGN_API_RATE_LIMIT_ERROR_CODE;
+import static org.springframework.http.HttpStatus.TOO_MANY_REQUESTS;
 
 @Component
 public class ResponseErrorHandler extends DefaultResponseErrorHandler
@@ -49,7 +51,7 @@ public class ResponseErrorHandler extends DefaultResponseErrorHandler
 	{
 		final HttpStatus statusCode = response.getStatusCode();
 
-		if (statusCode.is4xxClientError() && statusCode.value() == ACTIVE_CAMPAIGN_API_RATE_LIMIT_ERROR_CODE)
+		if (statusCode.value() == TOO_MANY_REQUESTS.value())
 		{
 			final Optional<Duration> retryAfter = rateLimitService.extractRetryAfterDuration(response.getHeaders());
 
@@ -57,8 +59,6 @@ public class ResponseErrorHandler extends DefaultResponseErrorHandler
 			{
 				throw new RateLimitExceededException(response.getBody().toString(), retryAfter.get());
 			}
-
-			super.handleError(response);
 		}
 
 		super.handleError(response);

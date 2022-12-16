@@ -29,7 +29,7 @@ public interface ActiveCampaignConstants
 {
 	@Getter
 	@AllArgsConstructor
-	enum Endpoint
+	enum ResourcePath
 	{
 		LISTS("lists"),
 		CONTACTS("contacts"),
@@ -41,12 +41,21 @@ public interface ActiveCampaignConstants
 		private final String value;
 	}
 
+	@Getter
+	@AllArgsConstructor
+	enum QueryParam
+	{
+		LIST_ID("listid"),
+		;
+
+		private final String value;
+	}
+
 	String ACTIVE_CAMPAIGN_API = "api";
 	String ACTIVE_CAMPAIGN_API_VERSION = "3";
 	String ACTIVE_CAMPAIGN_API_TOKEN_HEADER = "Api-Token";
 
-	int ACTIVE_CAMPAIGN_API_RATE_LIMIT_ERROR_CODE = 429;
 	String ACTIVE_CAMPAIGN_API_RATE_LIMIT_RETRY_HEADER = "Retry-After";
 
-	String MAX_TIME_TO_WAIT_FOR_ACTIVE_CAMPAIGN_LIMIT_RESET = "de.metas.marketing.gateway.activecampaign.rest.maxSecondsToWaitForLimitReset";
+	String MAX_SECONDS_TO_WAIT_FOR_ACTIVE_CAMPAIGN_LIMIT_RESET = "de.metas.marketing.gateway.activecampaign.rest.maxSecondsToWaitForLimitReset";
 }

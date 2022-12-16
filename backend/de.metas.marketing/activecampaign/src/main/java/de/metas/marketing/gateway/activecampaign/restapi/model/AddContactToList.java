@@ -20,23 +20,33 @@
  * #L%
  */
 
-package de.metas.marketing.gateway.activecampaign.restapi.request;
+package de.metas.marketing.gateway.activecampaign.restapi.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.metas.marketing.gateway.activecampaign.restapi.model.Contact;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
+/**
+ * JSON used when adding a 'contact' to a 'list' in ActiveCampaign.
+ */
 @Value
 @Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonDeserialize(builder = CreateContactResponse.CreateContactResponseBuilder.class)
-public class CreateContactResponse
+@JsonDeserialize(builder = AddContactToList.AddContactToListBuilder.class)
+public class AddContactToList
 {
 	@NonNull
-	@JsonProperty("contact")
-	Contact contact;
+	@JsonProperty(value = "list")
+	String list;
+
+	@NonNull
+	@JsonProperty(value = "contact")
+	String contact;
+
+	@NonNull
+	@JsonProperty(value = "status")
+	String status;
 }

@@ -31,6 +31,9 @@ import lombok.Value;
 
 import java.util.List;
 
+/**
+ * JSON wrapper used when retrieving 'contacts' from ActiveCampaign.
+ */
 @Value
 @Builder
 @JsonIgnoreProperties(ignoreUnknown = true)

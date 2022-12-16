@@ -22,16 +22,15 @@
 
 package de.metas.marketing.gateway.activecampaign.interceptor;
 
-import de.metas.marketing.gateway.activecampaign.model.I_MKTG_ActiveCampaign_Config;
 import de.metas.marketing.base.model.Platform;
 import de.metas.marketing.base.model.PlatformGatewayId;
 import de.metas.marketing.base.model.PlatformId;
 import de.metas.marketing.base.model.PlatformRepository;
+import de.metas.marketing.gateway.activecampaign.model.I_MKTG_ActiveCampaign_Config;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.exceptions.AdempiereException;
-import org.compiere.SpringContextHolder;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
@@ -39,7 +38,13 @@ import org.springframework.stereotype.Component;
 @Interceptor(I_MKTG_ActiveCampaign_Config.class)
 public class MKTG_ActiveCampaign_Config
 {
-	private final PlatformRepository platformRepository = SpringContextHolder.instance.getBean(PlatformRepository.class);
+	@NonNull
+	private final PlatformRepository platformRepository;
+
+	public MKTG_ActiveCampaign_Config(final @NonNull PlatformRepository platformRepository)
+	{
+		this.platformRepository = platformRepository;
+	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_BEFORE_NEW, ModelValidator.TYPE_BEFORE_CHANGE })
 	public void validatePlatformGatewayId(@NonNull final I_MKTG_ActiveCampaign_Config config)
@@ -48,7 +53,7 @@ public class MKTG_ActiveCampaign_Config
 
 		final Platform platform = platformRepository.getById(platformId);
 
-		if (platform.getPlatformGatewayId().equals(PlatformGatewayId.ActiveCampaign))
+		if (PlatformGatewayId.ActiveCampaign.equals(platform.getPlatformGatewayId()))
 		{
 			return;
 		}

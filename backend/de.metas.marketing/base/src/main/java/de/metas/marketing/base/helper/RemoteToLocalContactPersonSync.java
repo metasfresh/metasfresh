@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.marketing.base;
+package de.metas.marketing.base.helper;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
@@ -30,8 +30,9 @@ import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.ContactPersonRemoteUpdate;
 import de.metas.marketing.base.model.DeactivatedOnRemotePlatform;
 import de.metas.marketing.base.model.EmailAddress;
+import de.metas.marketing.base.model.PlatformId;
 import de.metas.marketing.base.model.RemoteToLocalSyncResult;
-import de.metas.marketing.base.model.interceptor.CampaignConfig;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -124,7 +125,7 @@ public class RemoteToLocalContactPersonSync
 
 			if (!email2contactPersons.containsKey(receivedEmailAddress))
 			{
-				syncResults.add(RemoteToLocalSyncResult.obtainedNewDataRecord(contactPersonUpdate.toContactPerson(request.getCampaignConfig())));
+				syncResults.add(RemoteToLocalSyncResult.obtainedNewDataRecord(contactPersonUpdate.toContactPerson(request.getPlatformId(), request.getOrgId())));
 			}
 		}
 
@@ -150,7 +151,10 @@ public class RemoteToLocalContactPersonSync
 	public class Request
 	{
 		@NonNull
-		CampaignConfig campaignConfig;
+		PlatformId platformId;
+
+		@NonNull
+		OrgId orgId;
 
 		@NonNull
 		List<ContactPerson> existingContactPersons;

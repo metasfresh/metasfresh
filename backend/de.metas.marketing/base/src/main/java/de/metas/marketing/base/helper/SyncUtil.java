@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.marketing.base;
+package de.metas.marketing.base.helper;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.marketing.base.model.ContactPerson;

@@ -23,7 +23,6 @@
 package de.metas.marketing.gateway.activecampaign;
 
 import de.metas.marketing.base.model.PlatformId;
-import de.metas.marketing.base.model.interceptor.CampaignConfig;
 import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
@@ -31,7 +30,7 @@ import lombok.Value;
 
 @Value
 @Builder
-public class ActiveCampaignConfig implements CampaignConfig
+public class ActiveCampaignConfig
 {
 	@NonNull
 	PlatformId platformId;

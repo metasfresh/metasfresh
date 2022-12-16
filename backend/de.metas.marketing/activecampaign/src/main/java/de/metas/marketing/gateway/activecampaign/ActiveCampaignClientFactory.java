@@ -53,7 +53,7 @@ public class ActiveCampaignClientFactory implements PlatformClientFactory
 
 	@NonNull
 	@Override
-	public PlatformClient newClientForPlatformId(final PlatformId platformId)
+	public PlatformClient newClientForPlatformId(@NonNull final PlatformId platformId)
 	{
 		final ActiveCampaignConfig config = activeCampaignConfigRepository.getByPlatformId(platformId);
 

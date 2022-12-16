@@ -25,16 +25,15 @@ package de.metas.marketing.gateway.activecampaign.restapi.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import de.metas.marketing.base.model.ContactPerson;
-import de.metas.marketing.base.model.ContactPersonRemoteUpdate;
-import de.metas.marketing.base.model.DeactivatedOnRemotePlatform;
-import de.metas.marketing.base.model.EmailAddress;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
 
+/**
+ * JSON used when retrieving and posting 'contact' information from/to ActiveCampaign API.
+ */
 @Value
 @Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -56,21 +55,4 @@ public class Contact
 	@Nullable
 	@JsonProperty("lastName")
 	String lastName;
-
-	@NonNull
-	public ContactPersonRemoteUpdate toContactPersonUpdate()
-	{
-		return ContactPersonRemoteUpdate.builder()
-				.remoteId(String.valueOf(id))
-				.address(EmailAddress.of(email, DeactivatedOnRemotePlatform.NO))
-				.build();
-	}
-
-	@NonNull
-	public static Contact of(@NonNull final ContactPerson contactPerson)
-	{
-		return Contact.builder()
-				.email(contactPerson.getEmailAddressStringOrNull())
-				.build();
-	}
 }

@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.marketing.gateway.activecampaign.restapi;
+package de.metas.marketing.gateway.activecampaign.restapi.exception;
 
 import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
@@ -40,7 +40,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static de.metas.marketing.gateway.activecampaign.ActiveCampaignConstants.ACTIVE_CAMPAIGN_API_RATE_LIMIT_RETRY_HEADER;
-import static de.metas.marketing.gateway.activecampaign.ActiveCampaignConstants.MAX_TIME_TO_WAIT_FOR_ACTIVE_CAMPAIGN_LIMIT_RESET;
+import static de.metas.marketing.gateway.activecampaign.ActiveCampaignConstants.MAX_SECONDS_TO_WAIT_FOR_ACTIVE_CAMPAIGN_LIMIT_RESET;
 
 @Service
 public class RateLimitService
@@ -68,14 +68,14 @@ public class RateLimitService
 	{
 		Loggables.withLogger(log, Level.DEBUG).addLog("RateLimitService.waitForLimitReset() with retryAfter seconds: {}", retryAfterDuration.getSeconds());
 
-		final int maxTimeToWait = sysConfigBL.getIntValue(MAX_TIME_TO_WAIT_FOR_ACTIVE_CAMPAIGN_LIMIT_RESET, 3600);
+		final int maxSecondsToWait = sysConfigBL.getIntValue(MAX_SECONDS_TO_WAIT_FOR_ACTIVE_CAMPAIGN_LIMIT_RESET, 3600);
 
-		if (retryAfterDuration.getSeconds() > maxTimeToWait)
+		if (retryAfterDuration.getSeconds() > maxSecondsToWait)
 		{
 			throw new AdempiereException("Retry After duration is too far in the future! aborting!")
 					.appendParametersToMessage()
 					.setParameter("RetryAfterSeconds", retryAfterDuration.getSeconds())
-					.setParameter("MaxSecondsToWaitForLimitReset", maxTimeToWait);
+					.setParameter("MaxSecondsToWaitForLimitReset", maxSecondsToWait);
 		}
 
 		try

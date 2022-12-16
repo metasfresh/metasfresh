@@ -142,7 +142,6 @@ public class ContactPersonRepository
 			contactPersonRecord = queryBL.createQueryBuilder(I_MKTG_ContactPerson.class)
 					.filter(baseQueryFilter)
 					.addEqualsFilter(I_MKTG_ContactPerson.COLUMN_RemoteRecordId, contactPerson.getRemoteId())
-					.addEqualsFilter(I_MKTG_ContactPerson.COLUMNNAME_AD_Org_ID, contactPerson.getOrgId().getRepoId())
 					.create()
 					.firstOnly(I_MKTG_ContactPerson.class); // might be null, that's ok
 		}
@@ -166,7 +165,6 @@ public class ContactPersonRepository
 			contactPersonRecord = queryBL.createQueryBuilder(I_MKTG_ContactPerson.class)
 					.filter(baseQueryFilter)
 					.addEqualsFilter(I_MKTG_ContactPerson.COLUMN_EMail, emailAddress)
-					.addEqualsFilter(I_MKTG_ContactPerson.COLUMNNAME_AD_Org_ID, contactPerson.getOrgId().getRepoId())
 					.orderBy()
 					.addColumn(I_MKTG_ContactPerson.COLUMN_MKTG_ContactPerson_ID).endOrderBy()
 					.create()

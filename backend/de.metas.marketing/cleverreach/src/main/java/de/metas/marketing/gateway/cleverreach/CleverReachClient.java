@@ -5,9 +5,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Multimaps;
 import de.metas.logging.TableRecordMDC;
-import de.metas.marketing.base.RemoteToLocalCampaignSync;
-import de.metas.marketing.base.RemoteToLocalContactPersonSync;
-import de.metas.marketing.base.SyncUtil;
+import de.metas.marketing.base.helper.RemoteToLocalCampaignSync;
+import de.metas.marketing.base.helper.RemoteToLocalContactPersonSync;
+import de.metas.marketing.base.helper.SyncUtil;
 import de.metas.marketing.base.model.Campaign;
 import de.metas.marketing.base.model.CampaignRemoteUpdate;
 import de.metas.marketing.base.model.ContactPerson;
@@ -308,7 +308,8 @@ public class CleverReachClient implements PlatformClient
 				.collect(ImmutableList.toImmutableList());
 
 		final RemoteToLocalCampaignSync.Request request = RemoteToLocalCampaignSync.Request.builder()
-				.campaignConfig(cleverReachConfig)
+				.platformId(platformId)
+				.orgId(cleverReachConfig.getOrgId())
 				.existingCampaigns(campaigns)
 				.remoteCampaigns(campaignUpdates)
 				.build();
@@ -326,7 +327,8 @@ public class CleverReachClient implements PlatformClient
 				.collect(ImmutableList.toImmutableList());
 
 		final RemoteToLocalContactPersonSync.Request request = RemoteToLocalContactPersonSync.Request.builder()
-				.campaignConfig(cleverReachConfig)
+				.platformId(platformId)
+				.orgId(cleverReachConfig.getOrgId())
 				.existingContactPersons(contactPersons)
 				.remoteContactPersons(contactPersonUpdates)
 				.build();

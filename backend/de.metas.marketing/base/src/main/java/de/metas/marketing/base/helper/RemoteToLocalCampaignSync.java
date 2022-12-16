@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.marketing.base;
+package de.metas.marketing.base.helper;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
@@ -28,8 +28,9 @@ import com.google.common.collect.Multimaps;
 import de.metas.marketing.base.model.Campaign;
 import de.metas.marketing.base.model.CampaignRemoteUpdate;
 import de.metas.marketing.base.model.DataRecord;
+import de.metas.marketing.base.model.PlatformId;
 import de.metas.marketing.base.model.RemoteToLocalSyncResult;
-import de.metas.marketing.base.model.interceptor.CampaignConfig;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -59,7 +60,7 @@ public class RemoteToLocalCampaignSync
 			final ImmutableList<Campaign> campaignsToUpdate = remoteId2campaigns.get(campaignUpdate.getRemoteId());
 			if (campaignsToUpdate.isEmpty())
 			{
-				final DataRecord newCampaign = campaignUpdate.toCampaign(request.getCampaignConfig());
+				final DataRecord newCampaign = campaignUpdate.toCampaign(request.getPlatformId(), request.getOrgId());
 				syncResults.add(RemoteToLocalSyncResult.obtainedNewDataRecord(newCampaign));
 			}
 			else
@@ -94,7 +95,10 @@ public class RemoteToLocalCampaignSync
 	public class Request
 	{
 		@NonNull
-		CampaignConfig campaignConfig;
+		PlatformId platformId;
+
+		@NonNull
+		OrgId orgId;
 
 		@NonNull
 		List<Campaign> existingCampaigns;

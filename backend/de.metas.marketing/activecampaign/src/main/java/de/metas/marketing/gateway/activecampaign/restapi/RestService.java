@@ -24,6 +24,8 @@ package de.metas.marketing.gateway.activecampaign.restapi;
 
 import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
+import de.metas.marketing.gateway.activecampaign.restapi.exception.RateLimitExceededException;
+import de.metas.marketing.gateway.activecampaign.restapi.exception.RateLimitService;
 import de.metas.marketing.gateway.activecampaign.restapi.request.ApiRequest;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
@@ -75,7 +77,7 @@ public class RestService
 			uriBuilder.queryParams(getRequest.getQueryParameters());
 		}
 
-		final HttpEntity<String> request = new HttpEntity<>(buildHttpHeaders(getRequest.getApiKey()));
+		final HttpEntity<String> request = new HttpEntity<>(getHttpHeaders(getRequest.getApiKey()));
 
 		resourceURI = uriBuilder.build().encode().toUri();
 
@@ -100,7 +102,7 @@ public class RestService
 
 		final String requestBody = postRequest.getRequestBody();
 
-		final HttpHeaders httpHeaders = buildHttpHeaders(postRequest.getApiKey());
+		final HttpHeaders httpHeaders = getHttpHeaders(postRequest.getApiKey());
 
 		final HttpEntity<String> request = Check.isBlank(requestBody)
 				? new HttpEntity<>(httpHeaders)
@@ -146,7 +148,7 @@ public class RestService
 	}
 
 	@NonNull
-	private HttpHeaders buildHttpHeaders(final String apiToken)
+	private static HttpHeaders getHttpHeaders(@NonNull final String apiToken)
 	{
 		final HttpHeaders headers = new HttpHeaders();
 		headers.add(ACTIVE_CAMPAIGN_API_TOKEN_HEADER, apiToken);

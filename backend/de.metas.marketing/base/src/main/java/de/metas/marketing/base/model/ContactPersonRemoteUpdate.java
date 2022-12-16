@@ -1,7 +1,7 @@
 package de.metas.marketing.base.model;
 
 import de.metas.marketing.base.model.ContactPerson.ContactPersonBuilder;
-import de.metas.marketing.base.model.interceptor.CampaignConfig;
+import de.metas.organization.OrgId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -47,11 +47,11 @@ public class ContactPersonRemoteUpdate
 		return applyAndBuild(contactPerson.toBuilder());
 	}
 
-	public ContactPerson toContactPerson(@NonNull final CampaignConfig campaignConfig)
+	public ContactPerson toContactPerson(@NonNull final PlatformId platformId, @NonNull final OrgId orgId)
 	{
 		return applyAndBuild(ContactPerson.builder()
-									 .orgId(campaignConfig.getOrgId())
-									 .platformId(campaignConfig.getPlatformId()));
+									 .orgId(orgId)
+									 .platformId(platformId));
 	}
 
 	private ContactPerson applyAndBuild(@NonNull final ContactPersonBuilder builder)

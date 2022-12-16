@@ -40,37 +40,3 @@ INSERT INTO AD_EntityType (AD_Client_ID,AD_EntityType_ID,AD_Org_ID,Created,Creat
 ;
 
 
--- 2022-12-12T11:58:18.219Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,560086,541290,540434,0,TO_TIMESTAMP('2022-12-12 13:58:18','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.marketing.base','Y',30,TO_TIMESTAMP('2022-12-12 13:58:18','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 2022-12-12T11:58:27.873Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-DROP INDEX IF EXISTS mktg_campaign_uc_name_ad_org_id
-;
-
-
--- 2022-12-12T11:58:27.894Z
--- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-CREATE UNIQUE INDEX MKTG_Campaign_UC_Name_AD_Org_ID ON MKTG_Campaign (Name,AD_Org_ID,RemoteRecordId) WHERE IsActive='Y'
-;
-
-
--- 2022-12-15T14:56:11.604Z
-INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,559921,541293,540435,0,TO_TIMESTAMP('2022-12-15 16:56:11','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.marketing.base','Y',30,TO_TIMESTAMP('2022-12-15 16:56:11','YYYY-MM-DD HH24:MI:SS'),100)
-;
-
--- 2022-12-15T14:56:13.478Z
-DROP INDEX IF EXISTS mktg_contactperson_platform_remoteid
-;
-
--- 2022-12-15T14:56:13.500Z
-CREATE UNIQUE INDEX MKTG_ContactPerson_Platform_RemoteId ON MKTG_ContactPerson (RemoteRecordId,MKTG_Platform_ID,AD_Org_ID) WHERE IsActive='Y'
-;
-
-
--- 2022-12-15T14:53:15.330Z
-INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLevel,Created,CreatedBy,Description,EntityType,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,0,541585,'S',TO_TIMESTAMP('2022-12-15 16:53:14','YYYY-MM-DD HH24:MI:SS'),100,'Max time to wait when API rate limit is exceeded.','D','Y','de.metas.marketing.gateway.activecampaign.restapi.maxSecondsToWaitForLimitReset',TO_TIMESTAMP('2022-12-15 16:53:14','YYYY-MM-DD HH24:MI:SS'),100,'3600')
-;
-

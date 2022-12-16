@@ -20,7 +20,7 @@
  * #L%
  */
 
-package de.metas.marketing.gateway.activecampaign.restapi;
+package de.metas.marketing.gateway.activecampaign.restapi.exception;
 
 import lombok.Getter;
 import lombok.NonNull;
