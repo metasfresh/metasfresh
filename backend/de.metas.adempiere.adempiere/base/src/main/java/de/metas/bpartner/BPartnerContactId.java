@@ -3,6 +3,7 @@ package de.metas.bpartner;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.base.Splitter;
+import de.metas.location.LocationId;
 import de.metas.user.UserId;
 import de.metas.util.lang.RepoIdAware;
 import lombok.NonNull;
