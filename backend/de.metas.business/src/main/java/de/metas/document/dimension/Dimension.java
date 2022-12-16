@@ -23,6 +23,7 @@
 package de.metas.document.dimension;
 
 import de.metas.order.OrderId;
+import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
 import de.metas.sectionCode.SectionCodeId;
@@ -54,6 +55,11 @@ public class Dimension implements Comparable<Dimension>
 	@With
 	@Nullable
 	SectionCodeId sectionCodeId;
+
+	@With
+	@Nullable
+	ProductId productId;
+
 
 	// todo propagation for these 2
 	int user1_ID;
