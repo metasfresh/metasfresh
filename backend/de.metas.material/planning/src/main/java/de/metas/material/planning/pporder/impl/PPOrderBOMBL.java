@@ -24,6 +24,7 @@ package de.metas.material.planning.pporder.impl;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import de.metas.document.sequence.DocSequenceId;
 import de.metas.i18n.IMsgBL;
 import de.metas.material.planning.exception.MrpException;
@@ -75,6 +76,7 @@ import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.UnaryOperator;
 
 @Service
@@ -696,5 +698,15 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 	public void save(final I_PP_Order_BOMLine orderBOMLine)
 	{
 		orderBOMsRepo.save(orderBOMLine);
+	}
+
+	@Override
+	public Set<ProductId> getProductIdsToIssue(final PPOrderId ppOrderId)
+	{
+		return retrieveOrderBOMLines(ppOrderId, I_PP_Order_BOMLine.class)
+				.stream()
+				.filter(bomLine -> BOMComponentType.ofNullableCodeOrComponent(bomLine.getComponentType()).isIssue())
+				.map(bomLine -> ProductId.ofRepoId(bomLine.getM_Product_ID()))
+				.collect(ImmutableSet.toImmutableSet());
 	}
 }
