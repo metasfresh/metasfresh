@@ -7,6 +7,7 @@ import de.metas.acct.api.PostingType;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalCurrencyConverter;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalTaxProvider;
 import de.metas.document.dimension.Dimension;
+import de.metas.document.engine.DocStatus;
 import de.metas.money.Money;
 import de.metas.tax.api.TaxId;
 import de.metas.util.lang.SeqNo;
@@ -40,6 +41,7 @@ public class SAPGLJournal
 
 	@NonNull @Getter private Money totalAcctDR;
 	@NonNull @Getter private Money totalAcctCR;
+	@NonNull @Getter private final DocStatus docStatus;
 
 	public void updateLineAcctAmounts(@NonNull final SAPGLJournalCurrencyConverter currencyConverter)
 	{
@@ -145,6 +147,11 @@ public class SAPGLJournal
 			@NonNull final SAPGLJournalTaxProvider taxProvider,
 			@NonNull final SAPGLJournalCurrencyConverter currencyConverter)
 	{
+		if (!docStatus.isDraftedOrInProgress())
+		{
+			throw new AdempiereException("GL Journal cannot  be changed");
+		}
+
 		boolean hasChanges = false;
 		for (ListIterator<SAPGLJournalLine> it = lines.listIterator(); it.hasNext(); )
 		{

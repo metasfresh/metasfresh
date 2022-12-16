@@ -4,6 +4,7 @@ import de.metas.acct.gljournal_sap.SAPGLJournal;
 import de.metas.acct.gljournal_sap.SAPGLJournalId;
 import de.metas.acct.gljournal_sap.SAPGLJournalLineId;
 import de.metas.acct.model.I_SAP_GLJournal;
+import de.metas.document.engine.DocStatus;
 import de.metas.util.lang.SeqNo;
 import lombok.Getter;
 import lombok.NonNull;
@@ -76,7 +77,11 @@ public class SAPGLJournalService
 
 	public void regenerateTaxLines(final SAPGLJournalId glJournalId)
 	{
-		// TODO make sure the document is drafted
 		updateById(glJournalId, glJournal -> glJournal.regenerateTaxLines(taxProvider, currencyConverter));
+	}
+
+	public DocStatus getDocStatus(final SAPGLJournalId glJournalId)
+	{
+		return glJournalRepository.getDocStatus(glJournalId);
 	}
 }

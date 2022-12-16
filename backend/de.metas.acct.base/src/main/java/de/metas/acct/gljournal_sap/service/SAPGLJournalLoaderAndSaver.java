@@ -15,6 +15,7 @@ import de.metas.acct.model.I_SAP_GLJournal;
 import de.metas.acct.model.I_SAP_GLJournalLine;
 import de.metas.currency.FixedConversionRate;
 import de.metas.document.dimension.Dimension;
+import de.metas.document.engine.DocStatus;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
@@ -33,6 +34,7 @@ import org.adempiere.ad.dao.IQueryBuilder;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -40,6 +42,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -69,17 +72,22 @@ public class SAPGLJournalLoaderAndSaver
 
 	private I_SAP_GLJournal getHeaderRecordById(@NonNull final SAPGLJournalId id)
 	{
-		return headersById.computeIfAbsent(id, this::retrieveHeaderRecordById);
+		return getHeaderRecordByIdIfExists(id)
+				.orElseThrow(() -> new AdempiereException("No SAP GL Journal found for " + id));
 	}
 
+	private Optional<I_SAP_GLJournal> getHeaderRecordByIdIfExists(@NonNull final SAPGLJournalId id)
+	{
+		return Optional.ofNullable(headersById.computeIfAbsent(id, this::retrieveHeaderRecordById));
+	}
+
+	@Nullable
 	private I_SAP_GLJournal retrieveHeaderRecordById(@NonNull final SAPGLJournalId id)
 	{
-		final I_SAP_GLJournal glJournal = InterfaceWrapperHelper.load(id, I_SAP_GLJournal.class);
-		if (glJournal == null)
-		{
-			throw new AdempiereException("No SAP GL Journal found for " + id);
-		}
-		return glJournal;
+		return queryBL.createQueryBuilder(I_SAP_GLJournal.class)
+				.addEqualsFilter(I_SAP_GLJournal.COLUMNNAME_SAP_GLJournal_ID, id)
+				.create()
+				.firstOnly(I_SAP_GLJournal.class);
 	}
 
 	public static SAPGLJournalCurrencyConversionCtx extractConversionCtx(@NonNull final I_SAP_GLJournal glJournal)
@@ -159,6 +167,7 @@ public class SAPGLJournalLoaderAndSaver
 						.collect(Collectors.toCollection(ArrayList::new)))
 				.totalAcctDR(Money.of(headerRecord.getTotalDr(), conversionCtx.getAcctCurrencyId()))
 				.totalAcctCR(Money.of(headerRecord.getTotalCr(), conversionCtx.getAcctCurrencyId()))
+				.docStatus(DocStatus.ofCode(headerRecord.getDocStatus()))
 				.build();
 	}
 
@@ -321,4 +330,10 @@ public class SAPGLJournalLoaderAndSaver
 		return result;
 	}
 
+	public DocStatus getDocStatus(final SAPGLJournalId glJournalId)
+	{
+		return getHeaderRecordByIdIfExists(glJournalId)
+				.map(headerRecord -> DocStatus.ofNullableCodeOrUnknown(headerRecord.getDocStatus()))
+				.orElse(DocStatus.Unknown);
+	}
 }

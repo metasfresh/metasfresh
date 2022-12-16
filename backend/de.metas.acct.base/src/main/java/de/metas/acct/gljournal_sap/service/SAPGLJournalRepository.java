@@ -3,6 +3,7 @@ package de.metas.acct.gljournal_sap.service;
 import de.metas.acct.gljournal_sap.SAPGLJournal;
 import de.metas.acct.gljournal_sap.SAPGLJournalId;
 import de.metas.acct.model.I_SAP_GLJournal;
+import de.metas.document.engine.DocStatus;
 import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import org.springframework.stereotype.Repository;
@@ -52,4 +53,9 @@ public class SAPGLJournalRepository
 		return loaderAndSaver.updateById(glJournalId, processor);
 	}
 
+	public DocStatus getDocStatus(final SAPGLJournalId glJournalId)
+	{
+		final SAPGLJournalLoaderAndSaver loader = new SAPGLJournalLoaderAndSaver();
+		return loader.getDocStatus(glJournalId);
+	}
 }
