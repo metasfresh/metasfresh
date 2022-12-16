@@ -45,7 +45,6 @@ import lombok.Value;
 import org.adempiere.ad.dao.ICompositeQueryFilter;
 import org.adempiere.ad.dao.IQueryBL;
 import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.dao.IQueryFilter;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
@@ -68,6 +67,7 @@ import static org.adempiere.model.InterfaceWrapperHelper.isNew;
 import static org.adempiere.model.InterfaceWrapperHelper.load;
 import static org.adempiere.model.InterfaceWrapperHelper.newInstance;
 import static org.adempiere.model.InterfaceWrapperHelper.save;
+import static org.adempiere.model.InterfaceWrapperHelper.saveRecord;
 
 /*
  * #%L
@@ -817,6 +817,7 @@ public class CandidateRepositoryWriteService
 		}
 
 		queryBuilder
+				.orderByDescending(I_MD_Candidate.COLUMNNAME_MD_Candidate_Parent_ID)
 				.create()
 				.iterateAndStreamIds(CandidateId::ofRepoId)
 				.filter(candidateId -> !alreadyDeletedIds.contains(candidateId))
@@ -851,29 +852,22 @@ public class CandidateRepositoryWriteService
 			@NonNull final I_MD_Candidate candidate,
 			@NonNull final Set<CandidateId> alreadySeenIds)
 	{
-		final IQueryFilter<I_MD_Candidate> stockQueryFilter;
+		final CandidateId parentCandidateId = CandidateId.ofRepoIdOrNull(candidate.getMD_Candidate_Parent_ID());
 
-		if (candidate.getMD_Candidate_Parent_ID() > 0)
+		if (parentCandidateId != null
+				&& parentCandidateId.getRepoId() != candidate.getMD_Candidate_ID()
+				&& !alreadySeenIds.contains(parentCandidateId))
 		{
-			stockQueryFilter = queryBL.createCompositeQueryFilter(I_MD_Candidate.class)
-					.setJoinOr()
-					.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Parent_ID, candidate.getMD_Candidate_ID())
-					.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_ID, candidate.getMD_Candidate_Parent_ID());
-		}
-		else
-		{
-			stockQueryFilter = queryBL.createCompositeQueryFilter(I_MD_Candidate.class)
-					.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Parent_ID, candidate.getMD_Candidate_ID());
-		}
+			// remove parent link
+			candidate.setMD_Candidate_Parent_ID(-1);
+			saveRecord(candidate);
 
-		queryBL.createQueryBuilder(I_MD_Candidate.class)
-				.filter(stockQueryFilter)
-				.create()
-				.iterateAndStreamIds(CandidateId::ofRepoId)
-				.filter(childCandidateId -> !alreadySeenIds.contains(childCandidateId))
-				.forEach(childCandidateId -> deleteCandidateById(childCandidateId, alreadySeenIds));
+			deleteCandidateById(parentCandidateId, alreadySeenIds);
+		}
 
 		final CandidateId candidateId = CandidateId.ofRepoId(candidate.getMD_Candidate_ID());
+
+		deleteChildCandidates(candidateId, alreadySeenIds);
 
 		deleteDemandDetailsRecords(candidateId);
 		deleteDistDetailsRecords(candidateId);
@@ -929,6 +923,16 @@ public class CandidateRepositoryWriteService
 				.addEqualsFilter(I_MD_Candidate_Transaction_Detail.COLUMN_MD_Candidate_ID, candidateId.getRepoId())
 				.create()
 				.delete();
+	}
+
+	private void deleteChildCandidates(@NonNull final CandidateId candidateId, @NonNull final Set<CandidateId> alreadySeenIds)
+	{
+		queryBL.createQueryBuilder(I_MD_Candidate.class)
+				.addEqualsFilter(I_MD_Candidate.COLUMNNAME_MD_Candidate_Parent_ID, candidateId.getRepoId())
+				.create()
+				.iterateAndStreamIds(CandidateId::ofRepoId)
+				.filter(childCandidateId -> !alreadySeenIds.contains(childCandidateId))
+				.forEach(childCandidateId -> deleteCandidateById(childCandidateId, alreadySeenIds));
 	}
 
 	public void deactivateSimulatedCandidates()
