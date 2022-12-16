@@ -24,10 +24,9 @@ package de.metas.cucumber.stepdefs.pporder;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.cucumber.stepdefs.DataTableUtil;
-import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.ItemProvider;
+import de.metas.cucumber.stepdefs.StepDefConstants;
 import de.metas.cucumber.stepdefs.StepDefUtil;
-import de.metas.materialtracking.model.I_PP_Order_BOMLine;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.uom.X12DE355;
