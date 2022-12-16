@@ -67,7 +67,6 @@ public class OrderLineDimensionFactory implements DimensionFactory<I_C_OrderLine
 		record.setC_Project_ID(ProjectId.toRepoId(from.getProjectId()));
 		record.setC_Campaign_ID(from.getCampaignId());
 		record.setC_Activity_ID(ActivityId.toRepoId(from.getActivityId()));
-		record.setC_Order_ID(OrderId.toRepoId(from.getOrderId()));
 		record.setM_SectionCode_ID(SectionCodeId.toRepoId(from.getSectionCodeId()));
 		record.setUserElementString1(from.getUserElementString1());
 		record.setUserElementString2(from.getUserElementString2());
