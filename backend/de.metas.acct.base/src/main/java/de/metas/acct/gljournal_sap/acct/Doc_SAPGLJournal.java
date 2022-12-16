@@ -1,16 +1,38 @@
 package de.metas.acct.gljournal_sap.acct;
 
 import com.google.common.collect.ImmutableList;
+import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.doc.AcctDocContext;
+import de.metas.acct.gljournal_sap.PostingSign;
+import de.metas.acct.gljournal_sap.SAPGLJournal;
+import de.metas.acct.gljournal_sap.SAPGLJournalCurrencyConversionCtx;
+import de.metas.acct.gljournal_sap.SAPGLJournalLine;
+import de.metas.acct.gljournal_sap.service.SAPGLJournalLoaderAndSaver;
+import de.metas.acct.gljournal_sap.service.SAPGLJournalService;
+import de.metas.acct.model.I_SAP_GLJournal;
+import de.metas.currency.CurrencyConversionContext;
+import de.metas.money.CurrencyId;
+import de.metas.product.ProductId;
+import de.metas.product.acct.api.ActivityId;
+import de.metas.sectionCode.SectionCodeId;
+import de.metas.util.Check;
+import org.adempiere.exceptions.AdempiereException;
+import org.compiere.SpringContextHolder;
 import org.compiere.acct.Doc;
 import org.compiere.acct.Fact;
+import org.compiere.acct.FactLine;
+import org.compiere.model.MAccount;
 
 import java.math.BigDecimal;
 import java.util.List;
 
 public class Doc_SAPGLJournal extends Doc<DocLine_SAPGLJournal>
 {
+	private final SAPGLJournalService glJournalService = SpringContextHolder.instance.getBean(SAPGLJournalService.class);
+	private SAPGLJournal glJournal;
+
 	public Doc_SAPGLJournal(final AcctDocContext ctx)
 	{
 		super(ctx);
@@ -19,7 +41,12 @@ public class Doc_SAPGLJournal extends Doc<DocLine_SAPGLJournal>
 	@Override
 	protected void loadDocumentDetails()
 	{
-		// TODO
+		final SAPGLJournalLoaderAndSaver loader = new SAPGLJournalLoaderAndSaver();
+
+		final I_SAP_GLJournal model = getModel(I_SAP_GLJournal.class);
+		loader.addToCacheAndAvoidSaving(model);
+
+		glJournal = loader.getById(SAPGLJournalLoaderAndSaver.extractId(model));
 	}
 
 	@Override
@@ -32,7 +59,82 @@ public class Doc_SAPGLJournal extends Doc<DocLine_SAPGLJournal>
 	@Override
 	protected List<Fact> createFacts(final AcctSchema as)
 	{
-		// TODO
-		return ImmutableList.of();
+		if (!AcctSchemaId.equals(as.getId(), glJournal.getAcctSchemaId()))
+		{
+			return ImmutableList.of();
+		}
+
+		final SAPGLJournalCurrencyConversionCtx glJournalCurrencyConversionCtx = glJournal.getConversionCtx();
+		final CurrencyConversionContext currencyConversionCtx = glJournalService.getCurrencyConverter().toCurrencyConversionContext(glJournalCurrencyConversionCtx);
+		if (!CurrencyId.equals(as.getCurrencyId(), glJournalCurrencyConversionCtx.getAcctCurrencyId()))
+		{
+			throw new AdempiereException("The Accounting Currency is no longer the one from document");
+		}
+
+		final Fact fact = new Fact(this, as, glJournal.getPostingType());
+
+		// IMPORTANT: we shall not enforce trx lines strategy
+		// => Fact_Acct.Counterpart_Fact_Acct_ID won't be set!
+		fact.setFactTrxLinesStrategy(null);
+
+		for (final SAPGLJournalLine line : glJournal.getLines())
+		{
+			final BigDecimal amtSourceDr;
+			final BigDecimal amtAcctDr;
+			final BigDecimal amtSourceCr;
+			final BigDecimal amtAcctCr;
+			final PostingSign postingSign = line.getPostingSign();
+			if (postingSign.isDebit())
+			{
+				amtSourceDr = line.getAmount().toBigDecimal();
+				amtSourceCr = BigDecimal.ZERO;
+
+				amtAcctDr = line.getAmountAcct().toBigDecimal();
+				amtAcctCr = BigDecimal.ZERO;
+			}
+			else
+			{
+				Check.assume(postingSign.isCredit(), "PostingType shall be Debit or Credit");
+
+				amtSourceDr = BigDecimal.ZERO;
+				amtSourceCr = line.getAmount().toBigDecimal();
+
+				amtAcctDr = BigDecimal.ZERO;
+				amtAcctCr = line.getAmountAcct().toBigDecimal();
+			}
+
+			final FactLine factLine = fact.createLine(
+					null,
+					getAccountById(line.getAccountId()),
+					glJournalCurrencyConversionCtx.getCurrencyId(),
+					amtSourceDr,
+					amtSourceCr);
+			if (factLine == null)
+			{
+				continue;
+			}
+
+			factLine.setLine_ID(line.getIdNotNull().getRepoId());
+			factLine.setCurrencyConversionCtx(currencyConversionCtx);
+			factLine.convert();
+			factLine.setAmtAcctDr(amtAcctDr);
+			factLine.setAmtAcctCr(amtAcctCr);
+
+			// TODO: check/decide when we set C_Tax_ID !
+
+			factLine.setM_SectionCode_ID(SectionCodeId.toRepoId(line.getSectionCodeId()));
+			factLine.setM_Product_ID(ProductId.toRepoId(line.getProductId()));
+			// TODO factLine.setC_Order_ID(OrderId.toRepoId(line.getOrderId()));
+			factLine.setC_Activity_ID(ActivityId.toRepoId(line.getActivityId()));
+
+			factLine.setDescription(line.getDescription());
+		}
+
+		return ImmutableList.of(fact);
+	}
+
+	private MAccount getAccountById(final AccountId accountId)
+	{
+		return getServices().getAccountById(accountId);
 	}
 }

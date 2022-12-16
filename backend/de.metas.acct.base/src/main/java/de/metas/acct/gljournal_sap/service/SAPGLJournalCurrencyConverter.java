@@ -39,7 +39,7 @@ public class SAPGLJournalCurrencyConverter
 		return result.getAmountAsMoney();
 	}
 
-	private CurrencyConversionContext toCurrencyConversionContext(@NonNull final SAPGLJournalCurrencyConversionCtx ctx)
+	public CurrencyConversionContext toCurrencyConversionContext(@NonNull final SAPGLJournalCurrencyConversionCtx ctx)
 	{
 		CurrencyConversionContext currencyConversionContext = currencyBL.createCurrencyConversionContext(
 				TimeUtil.asLocalDate(ctx.getDate()),

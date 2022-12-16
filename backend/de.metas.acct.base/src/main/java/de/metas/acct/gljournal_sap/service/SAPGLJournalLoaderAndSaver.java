@@ -3,6 +3,7 @@ package de.metas.acct.gljournal_sap.service;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import de.metas.acct.api.AccountId;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.gljournal_sap.PostingSign;
 import de.metas.acct.gljournal_sap.SAPGLJournal;
@@ -23,6 +24,7 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.sectionCode.SectionCodeId;
 import de.metas.tax.api.TaxId;
 import de.metas.util.Services;
+import de.metas.util.StringUtils;
 import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
 import org.adempiere.ad.dao.IQueryBL;
@@ -32,6 +34,7 @@ import org.adempiere.model.InterfaceWrapperHelper;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -147,9 +150,11 @@ public class SAPGLJournalLoaderAndSaver
 		return SAPGLJournal.builder()
 				.id(extractId(headerRecord))
 				.conversionCtx(conversionCtx)
+				.acctSchemaId(AcctSchemaId.ofRepoId(headerRecord.getC_AcctSchema_ID()))
 				.postingType(PostingType.ofCode(headerRecord.getPostingType()))
 				.lines(lineRecords.stream()
 						.map(lineRecord -> fromRecord(lineRecord, conversionCtx))
+						.sorted(Comparator.comparing(SAPGLJournalLine::getLine).thenComparing(SAPGLJournalLine::getIdNotNull))
 						.collect(Collectors.toCollection(ArrayList::new)))
 				.totalAcctDR(Money.of(headerRecord.getTotalDr(), conversionCtx.getAcctCurrencyId()))
 				.totalAcctCR(Money.of(headerRecord.getTotalCr(), conversionCtx.getAcctCurrencyId()))
@@ -164,6 +169,7 @@ public class SAPGLJournalLoaderAndSaver
 				.id(extractId(record))
 				//
 				.line(SeqNo.ofInt(record.getLine()))
+				.description(StringUtils.trimBlankToNull(record.getDescription()))
 				//
 				.accountId(AccountId.ofRepoId(record.getC_ValidCombination_ID()))
 				.postingSign(PostingSign.ofCode(record.getPostingSign()))
@@ -257,6 +263,7 @@ public class SAPGLJournalLoaderAndSaver
 	private static void updateLineRecord(final I_SAP_GLJournalLine lineRecord, final SAPGLJournalLine line)
 	{
 		lineRecord.setLine(line.getLine().toInt());
+		lineRecord.setDescription(StringUtils.trimBlankToNull(line.getDescription()));
 		lineRecord.setC_ValidCombination_ID(line.getAccountId().getRepoId());
 		lineRecord.setPostingSign(line.getPostingSign().getCode());
 		lineRecord.setAmount(line.getAmount().toBigDecimal());

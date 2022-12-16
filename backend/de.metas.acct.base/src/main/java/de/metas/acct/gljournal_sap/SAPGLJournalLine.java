@@ -26,6 +26,7 @@ public class SAPGLJournalLine
 	@Nullable private SAPGLJournalLineId id;
 
 	@NonNull @Getter private final SeqNo line;
+	@Nullable @Getter private final String description;
 
 	@NonNull @Getter private final AccountId accountId;
 	@NonNull @Getter private final PostingSign postingSign;

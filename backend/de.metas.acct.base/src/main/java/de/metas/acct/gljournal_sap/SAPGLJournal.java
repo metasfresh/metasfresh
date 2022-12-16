@@ -2,6 +2,7 @@ package de.metas.acct.gljournal_sap;
 
 import com.google.common.collect.ImmutableList;
 import de.metas.acct.api.AccountId;
+import de.metas.acct.api.AcctSchemaId;
 import de.metas.acct.api.PostingType;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalCurrencyConverter;
 import de.metas.money.Money;
@@ -26,9 +27,10 @@ import java.util.function.Supplier;
 public class SAPGLJournal
 {
 	@NonNull @Getter private final SAPGLJournalId id;
-	@NonNull private final SAPGLJournalCurrencyConversionCtx conversionCtx;
+	@NonNull @Getter private final SAPGLJournalCurrencyConversionCtx conversionCtx;
 
-	@NonNull private final PostingType postingType;
+	@NonNull @Getter private final AcctSchemaId acctSchemaId;
+	@NonNull @Getter private final PostingType postingType;
 	@NonNull private final ArrayList<SAPGLJournalLine> lines;
 
 	@NonNull @Getter private Money totalAcctDR;
