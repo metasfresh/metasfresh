@@ -9,7 +9,9 @@ import de.metas.acct.gljournal_sap.service.SAPGLJournalTaxProvider;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.engine.DocStatus;
 import de.metas.money.Money;
+import de.metas.organization.OrgId;
 import de.metas.tax.api.TaxId;
+import de.metas.util.Check;
 import de.metas.util.lang.SeqNo;
 import de.metas.util.lang.SeqNoProvider;
 import lombok.Builder;
@@ -42,6 +44,9 @@ public class SAPGLJournal
 	@NonNull @Getter private Money totalAcctDR;
 	@NonNull @Getter private Money totalAcctCR;
 	@NonNull @Getter private final DocStatus docStatus;
+
+	@NonNull @Getter private final OrgId orgId;
+	@NonNull @Getter private final Dimension dimension;
 
 	public void updateLineAcctAmounts(@NonNull final SAPGLJournalCurrencyConverter currencyConverter)
 	{
@@ -115,7 +120,8 @@ public class SAPGLJournal
 				.amount(amount)
 				.amountAcct(amountAcct)
 				.taxId(taxId)
-				.dimension(Dimension.builder().build())
+				.orgId(orgId)
+				.dimension(dimension)
 				.build();
 		lines.add(line);
 
@@ -182,7 +188,7 @@ public class SAPGLJournal
 			@NonNull final SAPGLJournalTaxProvider taxProvider,
 			@NonNull final SAPGLJournalCurrencyConverter currencyConverter)
 	{
-		final TaxId taxId = baseLine.getTaxId();
+		final TaxId taxId = Check.assumeNotNull(baseLine.getTaxId(), "line shall have the tax set: {}", baseLine);
 		final PostingSign taxPostingSign = baseLine.getPostingSign();
 		final AccountId taxAccountId = taxProvider.getTaxAccountId(taxId, acctSchemaId, taxPostingSign);
 		final Money taxAmt = taxProvider.calculateTaxAmt(baseLine.getAmount(), taxId);
@@ -196,6 +202,7 @@ public class SAPGLJournal
 				.amount(taxAmt)
 				.amountAcct(taxAmtAcct)
 				.taxId(taxId)
+				.orgId(baseLine.getOrgId())
 				.dimension(baseLine.getDimension())
 				.build();
 	}

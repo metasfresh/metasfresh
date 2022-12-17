@@ -3,6 +3,7 @@ package de.metas.acct.gljournal_sap;
 import de.metas.acct.api.AccountId;
 import de.metas.document.dimension.Dimension;
 import de.metas.money.Money;
+import de.metas.organization.OrgId;
 import de.metas.tax.api.TaxId;
 import de.metas.util.lang.SeqNo;
 import lombok.Builder;
@@ -34,6 +35,7 @@ public class SAPGLJournalLine
 
 	@Nullable @Getter private final TaxId taxId;
 
+	@NonNull @Getter private final OrgId orgId;
 	@NonNull @Getter private final Dimension dimension;
 
 	public SAPGLJournalLineId getIdNotNull()

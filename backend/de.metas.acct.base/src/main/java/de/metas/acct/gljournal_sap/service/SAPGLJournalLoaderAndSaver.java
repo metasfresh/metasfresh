@@ -21,6 +21,7 @@ import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.order.OrderId;
 import de.metas.organization.ClientAndOrgId;
+import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.sectionCode.SectionCodeId;
@@ -168,6 +169,17 @@ public class SAPGLJournalLoaderAndSaver
 				.totalAcctDR(Money.of(headerRecord.getTotalDr(), conversionCtx.getAcctCurrencyId()))
 				.totalAcctCR(Money.of(headerRecord.getTotalCr(), conversionCtx.getAcctCurrencyId()))
 				.docStatus(DocStatus.ofCode(headerRecord.getDocStatus()))
+				//
+				.orgId(OrgId.ofRepoId(headerRecord.getAD_Org_ID()))
+				.dimension(extractDimension(headerRecord))
+				//
+				.build();
+	}
+
+	private static Dimension extractDimension(final I_SAP_GLJournal headerRecord)
+	{
+		return Dimension.builder()
+				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(headerRecord.getM_SectionCode_ID()))
 				.build();
 	}
 
@@ -189,6 +201,7 @@ public class SAPGLJournalLoaderAndSaver
 				//
 				.taxId(TaxId.ofRepoIdOrNull(record.getC_Tax_ID()))
 				//
+				.orgId(OrgId.ofRepoId(record.getAD_Org_ID()))
 				.dimension(extractDimension(record))
 				//
 				.build();
@@ -286,6 +299,7 @@ public class SAPGLJournalLoaderAndSaver
 		lineRecord.setAmtAcct(line.getAmountAcct().toBigDecimal());
 		lineRecord.setC_Tax_ID(TaxId.toRepoId(line.getTaxId()));
 
+		lineRecord.setAD_Org_ID(line.getOrgId().getRepoId());
 		updateLineRecordFromDimension(lineRecord, line.getDimension());
 	}
 

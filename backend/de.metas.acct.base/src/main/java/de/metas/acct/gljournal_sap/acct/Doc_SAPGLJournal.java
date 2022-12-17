@@ -118,12 +118,13 @@ public class Doc_SAPGLJournal extends Doc<DocLine<?>>
 			factLine.setAmtAcctDr(amtAcctDr);
 			factLine.setAmtAcctCr(amtAcctCr);
 
-			if(line.isTaxLine())
+			if (line.isTaxLine())
 			{
 				factLine.setC_Tax_ID(line.getTaxId());
 			}
 
-			factLine.setFromDimension(line.getDimension());
+			factLine.setAD_Org_ID(line.getOrgId());
+			factLine.setFromDimension(line.getDimension().fallbackTo(glJournal.getDimension()));
 		}
 
 		return ImmutableList.of(fact);
