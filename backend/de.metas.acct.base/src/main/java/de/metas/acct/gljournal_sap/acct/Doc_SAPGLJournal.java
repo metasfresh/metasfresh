@@ -18,6 +18,7 @@ import de.metas.util.Check;
 import org.adempiere.exceptions.AdempiereException;
 import org.compiere.SpringContextHolder;
 import org.compiere.acct.Doc;
+import org.compiere.acct.DocLine;
 import org.compiere.acct.Fact;
 import org.compiere.acct.FactLine;
 import org.compiere.model.MAccount;
@@ -25,7 +26,7 @@ import org.compiere.model.MAccount;
 import java.math.BigDecimal;
 import java.util.List;
 
-public class Doc_SAPGLJournal extends Doc<DocLine_SAPGLJournal>
+public class Doc_SAPGLJournal extends Doc<DocLine<?>>
 {
 	private final SAPGLJournalService glJournalService = SpringContextHolder.instance.getBean(SAPGLJournalService.class);
 	private SAPGLJournal glJournal;
@@ -119,7 +120,7 @@ public class Doc_SAPGLJournal extends Doc<DocLine_SAPGLJournal>
 
 			if(line.isTaxLine())
 			{
-				factLine.setC_Tax_ID(line.getTaxId().getRepoId());
+				factLine.setC_Tax_ID(line.getTaxId());
 			}
 
 			factLine.setFromDimension(line.getDimension());

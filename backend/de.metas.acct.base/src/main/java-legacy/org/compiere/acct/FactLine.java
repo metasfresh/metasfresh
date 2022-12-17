@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 
 import de.metas.document.dimension.Dimension;
+import de.metas.order.OrderId;
 import de.metas.project.ProjectId;
 import de.metas.sectionCode.SectionCodeId;
 import org.adempiere.ad.dao.IQueryBL;
@@ -1596,17 +1597,17 @@ public final class FactLine extends X_Fact_Acct
 		super.setAD_Org_ID(OrgId.toRepoId(orgId));
 	}
 
-	public void setAD_OrgTrx_ID(final OrgId orgTrxId)
+	public void setAD_OrgTrx_ID(@Nullable final OrgId orgTrxId)
 	{
 		super.setAD_OrgTrx_ID(OrgId.toRepoId(orgTrxId));
 	}
 
-	public void setM_Product_ID(final ProductId productId)
+	public void setM_Product_ID(@Nullable final ProductId productId)
 	{
 		super.setM_Product_ID(ProductId.toRepoId(productId));
 	}
 
-	public void setC_Activity_ID(final ActivityId activityId)
+	public void setC_Activity_ID(@Nullable final ActivityId activityId)
 	{
 		super.setC_Activity_ID(ActivityId.toRepoId(activityId));
 	}
@@ -1616,23 +1617,34 @@ public final class FactLine extends X_Fact_Acct
 		return CurrencyId.ofRepoId(getC_Currency_ID());
 	}
 
-	public void setC_BPartner_ID(final BPartnerId bpartnerId)
+	public void setC_BPartner_ID(@Nullable final BPartnerId bpartnerId)
 	{
 		super.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
 	}
+
+	public void setC_Project_ID(@Nullable final ProjectId projectId) {super.setC_Project_ID(ProjectId.toRepoId(projectId));}
 
 	public void setPostingType(@NonNull final PostingType postingType)
 	{
 		super.setPostingType(postingType.getCode());
 	}
 
+	public void setC_Tax_ID(@Nullable final TaxId taxId) {super.setC_Tax_ID(TaxId.toRepoId(taxId));}
+
+	public void setM_SectionCode_ID(@Nullable final SectionCodeId sectionCodeId) {super.setM_SectionCode_ID(SectionCodeId.toRepoId(sectionCodeId));}
+
+	public void setC_Order_ID(@Nullable OrderId orderId)
+	{
+		// TODO implement
+	}
+
 	public void setFromDimension(@NonNull final Dimension dimension)
 	{
-		setC_Project_ID(ProjectId.toRepoId(dimension.getProjectId()));
+		setC_Project_ID(dimension.getProjectId());
 		setC_Campaign_ID(dimension.getCampaignId());
-		setC_Activity_ID(ActivityId.toRepoId(dimension.getActivityId()));
-		// TODO setC_Order_ID(OrderId.toRepoId(line.getOrderId()));
-		setM_SectionCode_ID(SectionCodeId.toRepoId(dimension.getSectionCodeId()));
-		// TODO setM_Product_ID(ProductId.toRepoId(dimension.getProductId()));
+		setC_Activity_ID(dimension.getActivityId());
+		setC_Order_ID(dimension.getOrderId());
+		setM_SectionCode_ID(dimension.getSectionCodeId());
+		setM_Product_ID(dimension.getProductId());
 	}
 }    // FactLine
