@@ -116,7 +116,9 @@ public class AcctSchemaDAO implements IAcctSchemaDAO
 		return acctSchemaId;
 	}
 
-	protected AcctSchemaId getAcctSchemaIdByClientAndOrgOrNull(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
+	@Override
+	@Nullable
+	public AcctSchemaId getAcctSchemaIdByClientAndOrgOrNull(@NonNull final ClientId clientId, @NonNull final OrgId orgId)
 	{
 		return AcctSchemaId.ofRepoIdOrNull(DB.getSQLValueEx(ITrx.TRXNAME_None, "SELECT getC_AcctSchema_ID(?,?)", clientId, orgId));
 	}

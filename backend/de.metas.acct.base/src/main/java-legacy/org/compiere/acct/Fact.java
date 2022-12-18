@@ -100,9 +100,9 @@ public final class Fact
 	 */
 	private List<FactLine> m_lines = new ArrayList<>();
 
-	private FactTrxStrategy factTrxLinesStrategy = PerDocumentLineFactTrxStrategy.instance;
+	@Nullable private FactTrxStrategy factTrxLinesStrategy = PerDocumentLineFactTrxStrategy.instance;
 
-	public Fact setFactTrxLinesStrategy(@NonNull final FactTrxStrategy factTrxLinesStrategy)
+	public Fact setFactTrxLinesStrategy(@Nullable final FactTrxStrategy factTrxLinesStrategy)
 	{
 		this.factTrxLinesStrategy = factTrxLinesStrategy;
 		return this;
@@ -797,9 +797,16 @@ public final class Fact
 
 	public void save()
 	{
-		factTrxLinesStrategy
-				.createFactTrxLines(m_lines)
-				.forEach(this::save);
+		if (factTrxLinesStrategy != null)
+		{
+			factTrxLinesStrategy
+					.createFactTrxLines(m_lines)
+					.forEach(this::save);
+		}
+		else
+		{
+			m_lines.forEach(line -> InterfaceWrapperHelper.save(line, ITrx.TRXNAME_ThreadInherited));
+		}
 	}
 
 	private void save(final FactTrxLines factTrxLines)

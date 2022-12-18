@@ -61,17 +61,10 @@ public class MJournal extends X_GL_Journal implements IDocument
 	 */
 	private static final long serialVersionUID = -364132249042527640L;
 
-	/**
-	 * Standard Constructor
-	 *
-	 * @param ctx           context
-	 * @param GL_Journal_ID id
-	 * @param trxName       transaction
-	 */
 	public MJournal(final Properties ctx, final int GL_Journal_ID, final String trxName)
 	{
 		super(ctx, GL_Journal_ID, trxName);
-		if (GL_Journal_ID == 0)
+		if (is_new())
 		{
 			// setGL_Journal_ID (0); // PK
 			// setC_AcctSchema_ID (0);
@@ -97,35 +90,12 @@ public class MJournal extends X_GL_Journal implements IDocument
 		}
 	}    // MJournal
 
-	/**
-	 * Load Constructor
-	 *
-	 * @param ctx     context
-	 * @param rs      result set
-	 * @param trxName transaction
-	 */
 	public MJournal(final Properties ctx, final ResultSet rs, final String trxName)
 	{
 		super(ctx, rs, trxName);
 	}    // MJournal
 
-	/**
-	 * Parent Constructor.
-	 *
-	 * @param parent batch
-	 */
-	public MJournal(final MJournalBatch parent)
-	{
-		this(parent.getCtx(), 0, parent.get_TrxName());
-		setClientOrg(parent);
-		setGL_JournalBatch_ID(parent.getGL_JournalBatch_ID());
-		setC_DocType_ID(parent.getC_DocType_ID());
-		setPostingType(parent.getPostingType());
-		//
-		setDateDoc(parent.getDateDoc());
-		setDateAcct(parent.getDateAcct());
-		setC_Currency_ID(parent.getC_Currency_ID());
-	}    // MJournal
+
 
 	/**
 	 * Copy Constructor. Dos not copy: Dates/Period

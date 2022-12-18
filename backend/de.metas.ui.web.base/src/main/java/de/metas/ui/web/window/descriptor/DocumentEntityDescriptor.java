@@ -459,9 +459,9 @@ public class DocumentEntityDescriptor
 		private ITranslatableString _caption = TranslatableStrings.empty();
 		private ITranslatableString _description = TranslatableStrings.empty();
 
-		private final Map<String, DocumentFieldDescriptor.Builder> _fieldBuilders = new LinkedHashMap<>();
-		private Map<String, DocumentFieldDescriptor> _fields = null; // will be built
-		private final Map<DetailId, DocumentEntityDescriptor> _includedEntitiesByDetailId = new LinkedHashMap<>();
+		private final LinkedHashMap<String, DocumentFieldDescriptor.Builder> _fieldBuilders = new LinkedHashMap<>();
+		private ImmutableMap<String, DocumentFieldDescriptor> _fields = null; // will be built
+		private final LinkedHashMap<DetailId, DocumentEntityDescriptor> _includedEntitiesByDetailId = new LinkedHashMap<>();
 		private DocumentEntityDataBindingDescriptorBuilder _dataBinding = DocumentEntityDataBindingDescriptorBuilder.NULL;
 		private boolean _highVolume;
 
