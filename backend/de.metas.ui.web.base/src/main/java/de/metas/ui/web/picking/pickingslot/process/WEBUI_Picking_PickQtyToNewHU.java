@@ -83,11 +83,11 @@ public class WEBUI_Picking_PickQtyToNewHU
 	private final IHandlingUnitsDAO handlingUnitsDAO = Services.get(IHandlingUnitsDAO.class);
 	private final HULabelService huLabelService = SpringContextHolder.instance.getBean(HULabelService.class);
 
-	private static final String PARAM_M_HU_PI_Item_Product_ID = I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID;
+	protected static final String PARAM_M_HU_PI_Item_Product_ID = I_M_HU_PI_Item_Product.COLUMNNAME_M_HU_PI_Item_Product_ID;
 	@Param(parameterName = PARAM_M_HU_PI_Item_Product_ID, mandatory = true)
 	protected I_M_HU_PI_Item_Product huPIItemProduct;
 
-	private static final String PARAM_QTY_CU = "QtyCU";
+	protected static final String PARAM_QTY_CU = "QtyCU";
 	@Param(parameterName = PARAM_QTY_CU, mandatory = true)
 	protected BigDecimal qtyCU;
 
@@ -151,17 +151,22 @@ public class WEBUI_Picking_PickQtyToNewHU
 			throw new AdempiereException("@QtyCU@ > 0");
 		}
 
+		pickQtyToNewHU(qtyToPack);
+
+		invalidatePackablesView(); // left side view
+		invalidatePickingSlotsView(); // right side view
+
+		return MSG_OK;
+	}
+
+	protected void pickQtyToNewHU(@NonNull final Quantity qtyToPack)
+	{
 		final HuId packToHuId = createNewHuId();
 		final ImmutableList<HuId> sourceHUIds = getSourceHUIds();
 
 		pickHUsAndPackTo(sourceHUIds, qtyToPack, packToHuId);
 
 		printPickingLabelIfAutoPrint(packToHuId);
-
-		invalidatePackablesView(); // left side view
-		invalidatePickingSlotsView(); // right side view
-
-		return MSG_OK;
 	}
 
 	protected final void printPickingLabelIfAutoPrint(@NonNull final HuId huId)
