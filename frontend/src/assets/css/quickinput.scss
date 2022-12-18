@@ -1,0 +1,44 @@
+@import './variables.css';
+
+.quick-input-container {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  flex:1;
+  width: 100%;
+  border: 1px solid $brand-border-color;
+  padding: 15px;
+  margin: 0;
+  margin-right: 40px; // workaround to avoid overlapping with the expand/collapse button
+
+  > * {
+    margin:0;
+  }
+
+  /* NOTE: hint is the "Press 'Enter' to add" text */
+  .hint {
+    margin-bottom: 10px;
+  }
+
+  /* It's the group of label + field(s) */
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    margin-right: 5px;
+
+    /* Label */
+    .form-control-label {
+      padding: 0;
+      width: 100% !important;
+    }
+
+    /* Actual field */
+    .input-body-container {
+      .input-dropdown-container {
+        width: 100% !important;
+        padding-top: 0;
+        padding-bottom: 0;
+      }
+    }
+  }
+}

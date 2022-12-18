@@ -20,6 +20,7 @@
 @import './sitemap.css';
 @import './table.css';
 @import './tabs.css';
+@import './quickinput.scss';
 @import './tag.css';
 @import './tooltip.css';
 @import './image.css';

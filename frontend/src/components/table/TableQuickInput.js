@@ -1,6 +1,5 @@
 import PropTypes from 'prop-types';
 import React, { PureComponent } from 'react';
-import cx from 'classnames';
 import { connect } from 'react-redux';
 import onClickOutside from 'react-onclickoutside';
 import { completeRequest } from '../../api';
@@ -196,47 +195,15 @@ class TableQuickInput extends PureComponent {
     const { tabId, docType, forceHeight, data, layout, id, inProgress, docId } =
       this.props;
 
-    const layoutFieldsAmt = layout ? layout.length : 2;
-    const stylingLayoutsArray = [
-      {
-        formGroup: cx(`col-12`, {
-          'col-lg-5': layoutFieldsAmt === 2,
-          'col-xl-6': layoutFieldsAmt === 2,
-          'col-lg-4': layoutFieldsAmt >= 3,
-          'col-xl-5': layoutFieldsAmt >= 3,
-        }),
-        label: `col-12 col-lg-3 quickInput-label`,
-        field: `col-12 col-lg-9`,
-      },
-      {
-        formGroup: `col-12 col-lg-3 col-xl-3`,
-        label: `col-12 col-sm-4 col-lg-5 col-xl-4`,
-        field: `col-12 col-sm-8 col-lg-7 col-xl-8`,
-      },
-      {
-        formGroup: `col-12 col-lg-3 col-xl-2`,
-        label: `col-12 col-sm-9 col-lg-7`,
-        field: `col-12 col-sm-3 col-lg-5`,
-      },
-    ];
-
     if (data && layout) {
       return layout.map((item, idx) => {
         const widgetData = item.fields.map((elem) => data[elem.field] || -1);
         const lastFormField = idx === layout.length - 1;
 
-        let widgetStyle =
-          idx < stylingLayoutsArray.length
-            ? stylingLayoutsArray[idx]
-            : stylingLayoutsArray[stylingLayoutsArray.length - 1];
-
         return (
           <WidgetWrapper
             ref={this.setWidgetsRef}
             dataSource="quick-input"
-            fieldFormGroupClass={widgetStyle.formGroup}
-            fieldLabelClass={widgetStyle.label}
-            fieldInputClass={widgetStyle.field}
             inProgress={inProgress}
             entity={'window'}
             subentity="quickInput"
