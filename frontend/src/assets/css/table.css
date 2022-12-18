@@ -507,57 +507,7 @@
     }
 }
 
-/* Quick inputs */
-
-.quick-input-container {
-    display: flex;
-    align-items: center;
-    flex-direction: row;
-    flex:1;
-    width: 100%;
-    border: 1px solid $brand-border-color;
-    margin-left: 0;
-    margin-right: 0;
-    padding-top: 15px;
-
-     > * {
-        margin:0;
-    }
-
-    .form-group {
-        > .row {
-            margin-bottom: 15px;
-        }
-    }
-
-    .hint {
-        margin-bottom: 10px;
-    }
-
-    @media (min-width: $breakpoint-sm){
-        margin-top: 15px !important;
-    }
-
-    @media (min-width: $breakpoint-md){
-        > .row {
-            margin-bottom: 0;
-        }
-
-        .input-dropdown-container {
-            min-width: auto;
-        }
-    }
-
-    @media (min-width: $breakpoint-lg){
-        .hint {
-            text-align: right;
-        }
-    }
-}
-
-
 /* Pagination */
-
 .page-item {
     display: inline-block;
 
