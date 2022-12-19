@@ -377,26 +377,26 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 ALTER TABLE GL_JournalLine ADD CONSTRAINT CRMSectionCode_GLJournalLine FOREIGN KEY (CR_M_SectionCode_ID) REFERENCES public.M_SectionCode DEFERRABLE INITIALLY DEFERRED
 ;
 
--- Field: GL Journal(540356,D) -> Journal(540854,D) -> Reversal ID
--- Column: GL_Journal.Reversal_ID
--- 2022-12-15T14:21:53.439Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,55306,710000,0,540854,TO_TIMESTAMP('2022-12-15 16:21:52','YYYY-MM-DD HH24:MI:SS'),100,'ID of document reversal',22,'D','Y','Y','N','N','N','N','N','Reversal ID',TO_TIMESTAMP('2022-12-15 16:21:52','YYYY-MM-DD HH24:MI:SS'),100)
-;
+-- -- Field: GL Journal(540356,D) -> Journal(540854,D) -> Reversal ID
+-- -- Column: GL_Journal.Reversal_ID
+-- -- 2022-12-15T14:21:53.439Z
+-- INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,Description,DisplayLength,EntityType,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,55306,710000,0,540854,TO_TIMESTAMP('2022-12-15 16:21:52','YYYY-MM-DD HH24:MI:SS'),100,'ID of document reversal',22,'D','Y','Y','N','N','N','N','N','Reversal ID',TO_TIMESTAMP('2022-12-15 16:21:52','YYYY-MM-DD HH24:MI:SS'),100)
+-- ;
 
--- 2022-12-15T14:21:53.467Z
-INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=710000 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
-;
+-- -- 2022-12-15T14:21:53.467Z
+-- INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=710000 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+-- ;
 
--- 2022-12-15T14:21:53.497Z
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(53457) 
-;
+-- -- 2022-12-15T14:21:53.497Z
+-- /* DDL */  select update_FieldTranslation_From_AD_Name_Element(53457) 
+-- ;
 
--- 2022-12-15T14:21:53.539Z
-DELETE FROM AD_Element_Link WHERE AD_Field_ID=710000
-;
+-- -- 2022-12-15T14:21:53.539Z
+-- DELETE FROM AD_Element_Link WHERE AD_Field_ID=710000
+-- ;
 
--- 2022-12-15T14:21:53.567Z
-/* DDL */ select AD_Element_Link_Create_Missing_Field(710000)
+-- -- 2022-12-15T14:21:53.567Z
+-- /* DDL */ select AD_Element_Link_Create_Missing_Field(710000)
 ;
 
 -- Field: GL Journal(540356,D) -> Journal(540854,D) -> Posting Error
