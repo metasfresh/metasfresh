@@ -1,10 +1,10 @@
 -- 2022-12-15T14:53:15.330Z
-INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLevel,Created,CreatedBy,Description,EntityType,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,0,541585,'S',TO_TIMESTAMP('2022-12-15 16:53:14','YYYY-MM-DD HH24:MI:SS'),100,'Max time to wait when API rate limit is exceeded.','D','Y','de.metas.marketing.gateway.activecampaign.restapi.maxSecondsToWaitForLimitReset',TO_TIMESTAMP('2022-12-15 16:53:14','YYYY-MM-DD HH24:MI:SS'),100,'3600')
+INSERT INTO AD_SysConfig (AD_Client_ID,AD_Org_ID,AD_SysConfig_ID,ConfigurationLevel,Created,CreatedBy,Description,EntityType,IsActive,Name,Updated,UpdatedBy,Value) VALUES (0,0,541585,'S',TO_TIMESTAMP('2022-12-15 16:53:14','YYYY-MM-DD HH24:MI:SS'),100,'Max time to wait when API rate limit is exceeded.','D','Y','de.metas.marketing.activecampaign.restapi.maxSecondsToWaitForLimitReset',TO_TIMESTAMP('2022-12-15 16:53:14','YYYY-MM-DD HH24:MI:SS'),100,'3600')
 ;
 
 
 -- 2022-12-16T06:35:21.417Z
-INSERT INTO AD_Index_Table (AD_Client_ID,AD_Index_Table_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsUnique,Name,Processing,Updated,UpdatedBy,WhereClause) VALUES (0,540717,0,542274,TO_TIMESTAMP('2022-12-16 08:35:21','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.marketing.gateway.activecampaign','Y','Y','UC_MKTG_ActiveCampaign_Config','N',TO_TIMESTAMP('2022-12-16 08:35:21','YYYY-MM-DD HH24:MI:SS'),100,'IsActive=''Y''')
+INSERT INTO AD_Index_Table (AD_Client_ID,AD_Index_Table_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsUnique,Name,Processing,Updated,UpdatedBy,WhereClause) VALUES (0,540717,0,542274,TO_TIMESTAMP('2022-12-16 08:35:21','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.marketing.activecampaign','Y','Y','UC_MKTG_ActiveCampaign_Config','N',TO_TIMESTAMP('2022-12-16 08:35:21','YYYY-MM-DD HH24:MI:SS'),100,'IsActive=''Y''')
 ;
 
 -- 2022-12-16T06:35:21.426Z
@@ -12,7 +12,7 @@ INSERT INTO AD_Index_Table_Trl (AD_Language,AD_Index_Table_ID, ErrorMsg, IsTrans
 ;
 
 -- 2022-12-16T06:35:37.780Z
-INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,585318,541294,540717,0,TO_TIMESTAMP('2022-12-16 08:35:37','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.marketing.gateway.activecampaign','Y',10,TO_TIMESTAMP('2022-12-16 08:35:37','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,585318,541294,540717,0,TO_TIMESTAMP('2022-12-16 08:35:37','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.marketing.activecampaign','Y',10,TO_TIMESTAMP('2022-12-16 08:35:37','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2022-12-16T06:35:43.717Z
@@ -20,7 +20,7 @@ CREATE UNIQUE INDEX UC_MKTG_ActiveCampaign_Config ON MKTG_ActiveCampaign_Config 
 ;
 
 -- 2022-12-16T06:36:46.303Z
-INSERT INTO AD_Index_Table (AD_Client_ID,AD_Index_Table_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsUnique,Name,Processing,Updated,UpdatedBy,WhereClause) VALUES (0,540718,0,542274,TO_TIMESTAMP('2022-12-16 08:36:46','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.marketing.gateway.activecampaign','Y','N','UC_MKTG_ActiveCampaign_Config_API','N',TO_TIMESTAMP('2022-12-16 08:36:46','YYYY-MM-DD HH24:MI:SS'),100,'IsActive=''Y''')
+INSERT INTO AD_Index_Table (AD_Client_ID,AD_Index_Table_ID,AD_Org_ID,AD_Table_ID,Created,CreatedBy,EntityType,IsActive,IsUnique,Name,Processing,Updated,UpdatedBy,WhereClause) VALUES (0,540718,0,542274,TO_TIMESTAMP('2022-12-16 08:36:46','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.marketing.activecampaign','Y','N','UC_MKTG_ActiveCampaign_Config_API','N',TO_TIMESTAMP('2022-12-16 08:36:46','YYYY-MM-DD HH24:MI:SS'),100,'IsActive=''Y''')
 ;
 
 -- 2022-12-16T06:36:46.304Z
@@ -28,15 +28,15 @@ INSERT INTO AD_Index_Table_Trl (AD_Language,AD_Index_Table_ID, ErrorMsg, IsTrans
 ;
 
 -- 2022-12-16T06:36:57.481Z
-INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,585321,541295,540718,0,TO_TIMESTAMP('2022-12-16 08:36:57','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.marketing.gateway.activecampaign','Y',10,TO_TIMESTAMP('2022-12-16 08:36:57','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,585321,541295,540718,0,TO_TIMESTAMP('2022-12-16 08:36:57','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.marketing.activecampaign','Y',10,TO_TIMESTAMP('2022-12-16 08:36:57','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2022-12-16T06:37:06.014Z
-INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,585320,541296,540718,0,TO_TIMESTAMP('2022-12-16 08:37:05','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.marketing.gateway.activecampaign','Y',20,TO_TIMESTAMP('2022-12-16 08:37:05','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,585320,541296,540718,0,TO_TIMESTAMP('2022-12-16 08:37:05','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.marketing.activecampaign','Y',20,TO_TIMESTAMP('2022-12-16 08:37:05','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2022-12-16T06:37:17.628Z
-INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,585312,541297,540718,0,TO_TIMESTAMP('2022-12-16 08:37:17','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.marketing.gateway.activecampaign','Y',30,TO_TIMESTAMP('2022-12-16 08:37:17','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,585312,541297,540718,0,TO_TIMESTAMP('2022-12-16 08:37:17','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.marketing.activecampaign','Y',30,TO_TIMESTAMP('2022-12-16 08:37:17','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 -- 2022-12-16T06:37:18.461Z

@@ -36,7 +36,7 @@ UPDATE AD_Ref_List_Trl SET Description='https://www.activecampaign.com/',Updated
 
 -- 2022-12-08T13:42:10.382Z
 -- I forgot to set the DICTIONARY_ID_COMMENTS System Configurator
-INSERT INTO AD_EntityType (AD_Client_ID,AD_EntityType_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,IsDisplayed,ModelPackage,Name,Processing,Updated,UpdatedBy) VALUES (0,540295,0,TO_TIMESTAMP('2022-12-08 15:42:10','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.marketing.gateway.activecampaign','Y','Y','de.metas.marketing.gateway.activecampaign.model','de.metas.marketing.gateway.activecampaign','N',TO_TIMESTAMP('2022-12-08 15:42:10','YYYY-MM-DD HH24:MI:SS'),100)
+INSERT INTO AD_EntityType (AD_Client_ID,AD_EntityType_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,IsDisplayed,ModelPackage,Name,Processing,Updated,UpdatedBy) VALUES (0,540295,0,TO_TIMESTAMP('2022-12-08 15:42:10','YYYY-MM-DD HH24:MI:SS'),100,'de.metas.marketing.activecampaign','Y','Y','de.metas.marketing.activecampaign.model','de.metas.marketing.activecampaign','N',TO_TIMESTAMP('2022-12-08 15:42:10','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
 
