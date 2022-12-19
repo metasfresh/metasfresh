@@ -5,6 +5,7 @@ import de.metas.acct.gljournal_sap.SAPGLJournalId;
 import de.metas.acct.gljournal_sap.SAPGLJournalLineId;
 import de.metas.acct.gljournal_sap.service.SAPGLJournalService;
 import de.metas.acct.model.I_SAP_GLJournalLine;
+import org.adempiere.ad.modelvalidator.ModelChangeType;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.model.InterfaceWrapperHelper;
@@ -20,11 +21,11 @@ public class SAP_GLJournalLine
 	public SAP_GLJournalLine(final SAPGLJournalService glJournalService) {this.glJournalService = glJournalService;}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
-	public void afterSave(final I_SAP_GLJournalLine record)
+	public void afterSave(final I_SAP_GLJournalLine record, ModelChangeType timing)
 	{
 		if (InterfaceWrapperHelper.isUIAction(record))
 		{
-			if (InterfaceWrapperHelper.isValueChanged(record, I_SAP_GLJournalLine.COLUMNNAME_PostingSign, I_SAP_GLJournalLine.COLUMNNAME_AmtAcct))
+			if (timing.isNew() || InterfaceWrapperHelper.isValueChanged(record, I_SAP_GLJournalLine.COLUMNNAME_PostingSign, I_SAP_GLJournalLine.COLUMNNAME_AmtAcct))
 			{
 				final SAPGLJournalId glJournalId = SAPGLJournalId.ofRepoId(record.getSAP_GLJournal_ID());
 				glJournalService.updateTotalsFromLines(glJournalId);
