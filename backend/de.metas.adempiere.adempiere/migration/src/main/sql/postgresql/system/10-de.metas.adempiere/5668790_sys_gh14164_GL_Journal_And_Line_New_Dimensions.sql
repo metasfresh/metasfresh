@@ -402,24 +402,24 @@ ALTER TABLE GL_JournalLine ADD CONSTRAINT CRMSectionCode_GLJournalLine FOREIGN K
 -- Field: GL Journal(540356,D) -> Journal(540854,D) -> Posting Error
 -- Column: GL_Journal.PostingError_Issue_ID
 -- 2022-12-15T14:21:54.068Z
-INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,570869,710001,0,540854,TO_TIMESTAMP('2022-12-15 16:21:53','YYYY-MM-DD HH24:MI:SS'),100,10,'D','Y','Y','N','N','N','N','N','Posting Error',TO_TIMESTAMP('2022-12-15 16:21:53','YYYY-MM-DD HH24:MI:SS'),100)
-;
+-- INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,Created,CreatedBy,DisplayLength,EntityType,IsActive,IsDisplayed,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,Updated,UpdatedBy) VALUES (0,570869,710001,0,540854,TO_TIMESTAMP('2022-12-15 16:21:53','YYYY-MM-DD HH24:MI:SS'),100,10,'D','Y','Y','N','N','N','N','N','Posting Error',TO_TIMESTAMP('2022-12-15 16:21:53','YYYY-MM-DD HH24:MI:SS'),100)
+-- ;
 
--- 2022-12-15T14:21:54.096Z
-INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=710001 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
-;
+-- -- 2022-12-15T14:21:54.096Z
+-- INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y' OR l.IsBaseLanguage='Y') AND t.AD_Field_ID=710001 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+-- ;
 
--- 2022-12-15T14:21:54.124Z
-/* DDL */  select update_FieldTranslation_From_AD_Name_Element(577755) 
-;
+-- -- 2022-12-15T14:21:54.124Z
+-- /* DDL */  select update_FieldTranslation_From_AD_Name_Element(577755) 
+-- ;
 
--- 2022-12-15T14:21:54.155Z
-DELETE FROM AD_Element_Link WHERE AD_Field_ID=710001
-;
+-- -- 2022-12-15T14:21:54.155Z
+-- DELETE FROM AD_Element_Link WHERE AD_Field_ID=710001
+-- ;
 
--- 2022-12-15T14:21:54.183Z
-/* DDL */ select AD_Element_Link_Create_Missing_Field(710001)
-;
+-- -- 2022-12-15T14:21:54.183Z
+-- /* DDL */ select AD_Element_Link_Create_Missing_Field(710001)
+-- ;
 
 -- Field: GL Journal(540356,D) -> Journal(540854,D) -> Sales order
 -- Column: GL_Journal.C_Order_ID
