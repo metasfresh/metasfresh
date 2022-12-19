@@ -5,6 +5,9 @@ UPDATE ad_element_trl SET updated = now(), updatedby = 99, name = 'Finanzprojekt
 UPDATE ad_element_trl SET updated = now(), updatedby = 99, name = 'Finanzprojekt - nl_NL' WHERE ad_element_id = 208 AND ad_language = 'nl_NL';
 UPDATE ad_element_trl SET updated = now(), updatedby = 99, name = 'Finanzprojekt' WHERE ad_element_id = 208 AND ad_language = 'de_DE';
 
-UPDATE ad_element_trl SET updated = now(), updatedby = 99, name = 'Projekt Definition' WHERE ad_element_id = 572687 AND ad_language = 'de_CH';
-UPDATE ad_element_trl SET updated = now(), updatedby = 99, name = 'Projekt Definition' WHERE ad_element_id = 572687 AND ad_language = 'nl_NL';
+UPDATE ad_element_trl SET updated = now(), updatedby = 99, name = 'Projekt Definition - de_CH' WHERE ad_element_id = 572687 AND ad_language = 'de_CH';
+UPDATE ad_element_trl SET updated = now(), updatedby = 99, name = 'Projekt Definition - nl_NL' WHERE ad_element_id = 572687 AND ad_language = 'nl_NL';
 UPDATE ad_element_trl SET updated = now(), updatedby = 99, name = 'Projekt Definition' WHERE ad_element_id = 572687 AND ad_language = 'de_DE';
+
+UPDATE ad_element_trl SET updated = now(), updatedby = 99, name = 'Projekt - LEGACY - de_CH' WHERE ad_element_id = 573947 AND ad_language = 'de_CH';
+UPDATE ad_element_trl SET updated = now(), updatedby = 99, name = 'Projekt - LEGACY - nl_NL' WHERE ad_element_id = 573947 AND ad_language = 'nl_NL';
