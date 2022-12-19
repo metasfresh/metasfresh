@@ -63,6 +63,11 @@ public class ManufacturingJob
 		this.activities = activities;
 	}
 
+	public static boolean equals(@Nullable ManufacturingJob job1, @Nullable ManufacturingJob job2)
+	{
+		return Objects.equals(job1, job2);
+	}
+
 	public void assertUserReporting()
 	{
 		if (!allowUserReporting)

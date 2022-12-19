@@ -14,7 +14,6 @@ import de.metas.i18n.IADMessageDAO;
 import de.metas.logging.LogManager;
 import de.metas.notification.INotificationRepository;
 import de.metas.notification.UserNotification;
-import de.metas.notification.UserNotification.UserNotificationBuilder;
 import de.metas.notification.UserNotificationRequest;
 import de.metas.notification.UserNotificationRequest.TargetAction;
 import de.metas.notification.UserNotificationRequest.TargetRecordAction;
@@ -184,7 +183,7 @@ public class NotificationRepository implements INotificationRepository
 
 	private UserNotification toUserNotification(@NonNull final I_AD_Note notificationPO)
 	{
-		final UserNotificationBuilder builder = UserNotification.builder()
+		final UserNotification.UserNotificationBuilder builder = UserNotification.builder()
 				.id(notificationPO.getAD_Note_ID())
 				.timestamp(TimeUtil.asInstant(notificationPO.getCreated()))
 				.important(notificationPO.isImportant())

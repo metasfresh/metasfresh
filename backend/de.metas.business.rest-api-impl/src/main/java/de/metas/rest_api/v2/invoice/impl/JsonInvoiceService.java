@@ -27,7 +27,6 @@ import de.metas.invoice.InvoiceService;
 import de.metas.invoice.service.IInvoiceDAO;
 import de.metas.invoicecandidate.api.IInvoiceCandDAO;
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.logging.LogManager;
 import de.metas.money.CurrencyId;
 import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
@@ -50,16 +49,15 @@ import de.metas.util.lang.ExternalId;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
 import org.adempiere.ad.trx.api.ITrxManager;
+import org.adempiere.archive.AdArchive;
 import org.adempiere.archive.api.IArchiveBL;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.impl.TableRecordReference;
-import org.compiere.model.I_AD_Archive;
 import org.compiere.model.I_C_Invoice;
 import org.compiere.model.I_C_Payment;
 import org.compiere.model.I_M_InOutLine;
 import org.compiere.util.Env;
-import org.slf4j.Logger;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
@@ -94,8 +92,6 @@ import java.util.Set;
 @Service
 public class JsonInvoiceService
 {
-	private final static transient Logger logger = LogManager.getLogger(InvoiceService.class);
-
 	private final IArchiveBL archiveBL = Services.get(IArchiveBL.class);
 	private final IDocumentBL documentBL = Services.get(IDocumentBL.class);
 	private final IInvoiceCandDAO invoiceCandDAO = Services.get(IInvoiceCandDAO.class);
@@ -126,7 +122,7 @@ public class JsonInvoiceService
 
 	public Optional<byte[]> getInvoicePDF(@NonNull final InvoiceId invoiceId)
 	{
-		return getLastArchive(invoiceId).map(archiveBL::getBinaryData);
+		return getLastArchive(invoiceId).map(AdArchive::getArchiveData);
 	}
 
 	@NonNull
@@ -343,7 +339,7 @@ public class JsonInvoiceService
 		return invoiceQueryBuilder.build();
 	}
 
-	private Optional<I_AD_Archive> getLastArchive(@NonNull final InvoiceId invoiceId)
+	private Optional<AdArchive> getLastArchive(@NonNull final InvoiceId invoiceId)
 	{
 		return archiveBL.getLastArchive(TableRecordReference.of(I_C_Invoice.Table_Name, invoiceId));
 	}

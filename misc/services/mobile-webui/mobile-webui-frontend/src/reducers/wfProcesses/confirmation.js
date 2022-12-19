@@ -9,7 +9,6 @@ const COMPONENT_TYPE = 'common/confirmButton';
 export const activityUserConfirmationReducer = ({ draftState, action }) => {
   switch (action.type) {
     case types.SET_ACTIVITY_USER_CONFIRMED: {
-      console.log('SET_ACTIVITY_USER_CONFIRMED: ', action);
       const { wfProcessId, activityId } = action.payload;
 
       const draftWFProcess = draftState[wfProcessId];

@@ -158,6 +158,13 @@ public class ADTableDAO implements IADTableDAO
 		return TableIdsCache.instance.getTableName(adTableId);
 	}
 
+	@Override
+	public Optional<String> getTableNameIfPresent(@NonNull final AdTableId adTableId)
+	{
+		return TableIdsCache.instance.getTableNameIfPresent(adTableId);
+	}
+
+
 	// IMPORTANT: make sure we are returning -1 in case tableName was not found (and NOT throw exception),
 	// because there is business logic which depends on this
 	@Override
@@ -336,7 +343,7 @@ public class ADTableDAO implements IADTableDAO
 	{
 		final I_AD_Table table = retrieveTable(tableName);
 		final int typeaheadMinLength = table.getACTriggerLength();
-		return typeaheadMinLength > 0 ? typeaheadMinLength : 0;
+		return Math.max(typeaheadMinLength, 0);
 	}
 
 	@Override
@@ -425,6 +432,13 @@ public class ADTableDAO implements IADTableDAO
 	{
 		return getMinimalColumnInfoMap().getByIds(adColumnIds);
 	}
+
+	@Override
+	public ImmutableList<MinimalColumnInfo> getMinimalColumnInfosByColumnName(@NonNull final String columnName)
+	{
+		return getMinimalColumnInfoMap().getByColumnName(columnName);
+	}
+
 
 	private MinimalColumnInfoMap getMinimalColumnInfoMap()
 	{

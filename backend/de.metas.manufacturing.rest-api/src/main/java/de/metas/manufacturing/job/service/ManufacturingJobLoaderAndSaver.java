@@ -30,7 +30,6 @@ import de.metas.quantity.Quantity;
 import de.metas.user.UserId;
 import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.warehouse.WarehouseId;
@@ -145,15 +144,9 @@ public class ManufacturingJobLoaderAndSaver
 				return prepareJobActivity(from)
 						.finishedGoodsReceive(toFinishedGoodsReceive(from))
 						.build();
-			case WorkReport:
-			case ActivityConfirmation:
-			case GenerateHUQRCodes:
-			case ScanScaleDevice:
-			case RawMaterialsIssueAdjustment:
+			default:
 				return prepareJobActivity(from)
 						.build();
-			default:
-				throw new AdempiereException("Unknown type: " + from);
 		}
 	}
 
@@ -168,7 +161,8 @@ public class ManufacturingJobLoaderAndSaver
 				.orderRoutingActivityId(from.getId())
 				.routingActivityStatus(from.getStatus())
 				.alwaysAvailableToUser(from.getAlwaysAvailableToUser())
-				.userInstructions(from.getUserInstructions());
+				.userInstructions(from.getUserInstructions())
+				.scannedQRCode(from.getScannedQRCode());
 	}
 
 	private RawMaterialsIssue toRawMaterialsIssue(final @NonNull PPOrderRoutingActivity from)

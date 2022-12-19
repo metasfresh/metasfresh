@@ -13,6 +13,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
 import org.xmlunit.validation.Languages;
 import org.xmlunit.validation.ValidationResult;
 import org.xmlunit.validation.Validator;
@@ -49,6 +50,7 @@ import static org.xmlunit.assertj.XmlAssert.assertThat;
  * #L%
  */
 
+@Disabled("waiting for the fix of: Server returned HTTP response code: 429 for URL: https://www.w3.org/2001/XMLSchema.dtd")
 public class Invoice440RequestConversionServiceTest
 {
 

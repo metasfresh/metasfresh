@@ -30,14 +30,25 @@ import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfig;
 import de.metas.externalsystem.alberta.ExternalSystemAlbertaConfigId;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfig;
 import de.metas.externalsystem.grssignum.ExternalSystemGRSSignumConfigId;
+import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfig;
+import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigId;
+import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigProductMapping;
+import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlConfigProductMappingId;
+import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlPluFileConfig;
+import de.metas.externalsystem.leichmehl.ExternalSystemLeichMehlPluFileConfigId;
+import de.metas.externalsystem.leichmehl.ReplacementSource;
+import de.metas.externalsystem.leichmehl.TargetFieldType;
 import de.metas.externalsystem.model.I_ExternalSystem_Config;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Alberta;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_GRSSignum;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl;
+import de.metas.externalsystem.model.I_ExternalSystem_Config_LeichMehl_ProductMapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_RabbitMQ_HTTP;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6Mapping;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_Shopware6_UOM;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_WooCommerce;
+import de.metas.externalsystem.model.I_LeichMehl_PluFile_Config;
 import de.metas.externalsystem.other.ExternalSystemOtherConfig;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigId;
 import de.metas.externalsystem.other.ExternalSystemOtherConfigRepository;
@@ -52,6 +63,7 @@ import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfig;
 import de.metas.externalsystem.woocommerce.ExternalSystemWooCommerceConfigId;
 import de.metas.organization.OrgId;
 import de.metas.pricing.PriceListId;
+import de.metas.product.ProductCategoryId;
 import de.metas.product.ProductId;
 import de.metas.uom.UomId;
 import de.metas.user.UserGroupId;
@@ -103,6 +115,8 @@ public class ExternalSystemConfigRepo
 				return getById(ExternalSystemWooCommerceConfigId.cast(id));
 			case GRSSignum:
 				return getById(ExternalSystemGRSSignumConfigId.cast(id));
+			case LeichUndMehl:
+				return getById(ExternalSystemLeichMehlConfigId.cast(id));
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", id.getType());
 		}
@@ -128,6 +142,9 @@ public class ExternalSystemConfigRepo
 			case RabbitMQ:
 				return getRabbitMQConfigByValue(value)
 						.map(this::getExternalSystemParentConfig);
+			case LeichUndMehl:
+				return getLeichMehlConfigByValue(value)
+						.map(this::getExternalSystemParentConfig);
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", type);
 		}
@@ -152,6 +169,8 @@ public class ExternalSystemConfigRepo
 				return getWooCommerceConfigByParentId(id);
 			case GRSSignum:
 				return getGRSSignumConfigByParentId(id);
+			case LeichUndMehl:
+				return getLeichMehlConfigByParentId(id);
 			default:
 				throw Check.fail("Unsupported IExternalSystemChildConfigId.type={}", externalSystemType);
 		}
@@ -186,6 +205,9 @@ public class ExternalSystemConfigRepo
 				break;
 			case GRSSignum:
 				result = getAllByTypeGRS();
+				break;
+			case LeichUndMehl:
+				result = getAllByTypeLeichMehl();
 				break;
 			case Shopware6:
 			case Other:
@@ -775,6 +797,129 @@ public class ExternalSystemConfigRepo
 				.externalSystemShopware6ConfigId(ExternalSystemShopware6ConfigId.ofRepoId(record.getExternalSystem_Config_Shopware6_ID()))
 				.uomId(UomId.ofRepoId(record.getC_UOM_ID()))
 				.shopwareCode(record.getShopwareCode())
+				.build();
+	}
+
+	@NonNull
+	private ExternalSystemParentConfig getById(@NonNull final ExternalSystemLeichMehlConfigId id)
+	{
+		final I_ExternalSystem_Config_LeichMehl config = InterfaceWrapperHelper.load(id, I_ExternalSystem_Config_LeichMehl.class);
+
+		return getExternalSystemParentConfig(config);
+	}
+
+	@NonNull
+	private Optional<I_ExternalSystem_Config_LeichMehl> getLeichMehlConfigByValue(@NonNull final String value)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_LeichMehl.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_LeichMehl.COLUMNNAME_ExternalSystemValue, value)
+				.create()
+				.firstOnlyOptional(I_ExternalSystem_Config_LeichMehl.class);
+	}
+
+	@NonNull
+	private Optional<IExternalSystemChildConfig> getLeichMehlConfigByParentId(@NonNull final ExternalSystemParentConfigId id)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_LeichMehl.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_LeichMehl.COLUMNNAME_ExternalSystem_Config_ID, id.getRepoId())
+				.create()
+				.firstOnlyOptional(I_ExternalSystem_Config_LeichMehl.class)
+				.map(this::buildExternalSystemLeichMehlConfig);
+	}
+
+	@NonNull
+	private ImmutableList<ExternalSystemParentConfig> getAllByTypeLeichMehl()
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_LeichMehl.class)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.stream()
+				.map(this::getExternalSystemParentConfig)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private ExternalSystemParentConfig getExternalSystemParentConfig(@NonNull final I_ExternalSystem_Config_LeichMehl config)
+	{
+		final ExternalSystemLeichMehlConfig child = buildExternalSystemLeichMehlConfig(config);
+
+		return getById(child.getParentId())
+				.childConfig(child)
+				.build();
+	}
+
+	@NonNull
+	private ExternalSystemLeichMehlConfig buildExternalSystemLeichMehlConfig(@NonNull final I_ExternalSystem_Config_LeichMehl config)
+	{
+		final ExternalSystemLeichMehlConfigId id = ExternalSystemLeichMehlConfigId.ofRepoId(config.getExternalSystem_Config_LeichMehl_ID());
+
+		return ExternalSystemLeichMehlConfig.builder()
+				.id(id)
+				.parentId(ExternalSystemParentConfigId.ofRepoId(config.getExternalSystem_Config_ID()))
+				.value(config.getExternalSystemValue())
+				.productBaseFolderName(config.getProduct_BaseFolderName())
+				.tcpPort(config.getTCP_PortNumber())
+				.tcpHost(config.getTCP_Host())
+				.pluFileExportAuditEnabled(config.isPluFileExportAuditEnabled())
+				.productMappings(getExternalSystemLeichMehlConfigProductMappings(id))
+				.pluFileConfigs(getExternalSystemLeichMehlPluFileConfigs(id))
+				.build();
+	}
+
+	@NonNull
+	private List<ExternalSystemLeichMehlConfigProductMapping> getExternalSystemLeichMehlConfigProductMappings(@NonNull final ExternalSystemLeichMehlConfigId externalSystemLeichMehlConfigId)
+	{
+		return queryBL.createQueryBuilder(I_ExternalSystem_Config_LeichMehl_ProductMapping.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_ExternalSystem_Config_LeichMehl_ProductMapping.COLUMNNAME_ExternalSystem_Config_LeichMehl_ID, externalSystemLeichMehlConfigId.getRepoId())
+				.create()
+				.stream()
+				.map(ExternalSystemConfigRepo::toExternalSystemLeichMehlConfigProductMapping)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private static ExternalSystemLeichMehlConfigProductMapping toExternalSystemLeichMehlConfigProductMapping(@NonNull final I_ExternalSystem_Config_LeichMehl_ProductMapping record)
+	{
+		final ExternalSystemLeichMehlConfigId configId = ExternalSystemLeichMehlConfigId.ofRepoId(record.getExternalSystem_Config_LeichMehl_ID());
+
+		final ExternalSystemLeichMehlConfigProductMappingId productMappingId = ExternalSystemLeichMehlConfigProductMappingId.ofRepoId(configId, record.getExternalSystem_Config_LeichMehl_ProductMapping_ID());
+
+		return ExternalSystemLeichMehlConfigProductMapping.builder()
+				.id(productMappingId)
+				.seqNo(record.getSeqNo())
+				.pluFile(record.getPLU_File())
+				.productCategoryId(ProductCategoryId.ofRepoIdOrNull(record.getM_Product_Category_ID()))
+				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
+				.bPartnerId(BPartnerId.ofRepoIdOrNull(record.getC_BPartner_ID()))
+				.build();
+	}
+
+	@NonNull
+	private List<ExternalSystemLeichMehlPluFileConfig> getExternalSystemLeichMehlPluFileConfigs(@NonNull final ExternalSystemLeichMehlConfigId leichMehlConfigId)
+	{
+		return queryBL.createQueryBuilder(I_LeichMehl_PluFile_Config.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_LeichMehl_PluFile_Config.COLUMN_ExternalSystem_Config_LeichMehl_ID, leichMehlConfigId)
+				.create()
+				.stream()
+				.map(ExternalSystemConfigRepo::toExternalSystemLeichMehlPluFileConfig)
+				.collect(ImmutableList.toImmutableList());
+	}
+
+	@NonNull
+	private static ExternalSystemLeichMehlPluFileConfig toExternalSystemLeichMehlPluFileConfig(@NonNull final I_LeichMehl_PluFile_Config record)
+	{
+		return ExternalSystemLeichMehlPluFileConfig.builder()
+				.id(ExternalSystemLeichMehlPluFileConfigId.ofRepoId(record.getLeichMehl_PluFile_Config_ID()))
+				.leichMehlConfigId(ExternalSystemLeichMehlConfigId.ofRepoId(record.getExternalSystem_Config_LeichMehl_ID()))
+				.targetFieldName(record.getTargetFieldName())
+				.targetFieldType(TargetFieldType.ofCode(record.getTargetFieldType()))
+				.replacement(record.getReplacement())
+				.replaceRegExp(record.getReplaceRegExp())
+				.replacementSource(ReplacementSource.ofCode(record.getReplacementSource()))
 				.build();
 	}
 }

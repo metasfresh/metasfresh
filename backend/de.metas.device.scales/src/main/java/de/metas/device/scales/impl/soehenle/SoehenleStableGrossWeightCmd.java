@@ -37,7 +37,7 @@ public final class SoehenleStableGrossWeightCmd implements ISoehenleCmd
 	@Override
 	public String getCmd()
 	{
-		return "<H>";
+		return "<H>" + CMD_TERMINATOR;
 	}
 
 	public static SoehenleStableGrossWeightCmd getInstance()
