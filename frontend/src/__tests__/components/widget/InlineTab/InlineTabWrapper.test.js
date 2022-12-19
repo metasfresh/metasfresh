@@ -227,7 +227,7 @@ describe('InlineTabWrapper component', () => {
     const htmlOutput = wrapper.html();
 
     expect(htmlOutput).toContain(
-      `<div class="form-group row form-field-BPartnerName">`
+      `<div class="form-group row widgetType-Text form-field-BPartnerName">`
     );
     expect(htmlOutput).toContain(`<i class="meta-icon-close-alt">`);
   });
