@@ -25,6 +25,7 @@ package de.metas.purchasecandidate.document.dimension;
 import de.metas.document.dimension.Dimension;
 import de.metas.document.dimension.DimensionFactory;
 import de.metas.order.OrderId;
+import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
 import de.metas.purchasecandidate.model.I_C_PurchaseCandidate;
@@ -47,6 +48,7 @@ public class PurchaseCandidateDimensionFactory implements DimensionFactory<I_C_P
 		record.setC_Campaign_ID(from.getCampaignId());
 		record.setC_Activity_ID(ActivityId.toRepoId(from.getActivityId()));
 		record.setC_OrderSO_ID(OrderId.toRepoId(from.getOrderId()));
+		record.setM_Product_ID(ProductId.toRepoId(from.getProductId()));
 		record.setUserElementString1(from.getUserElementString1());
 		record.setUserElementString2(from.getUserElementString2());
 		record.setUserElementString3(from.getUserElementString3());
@@ -65,6 +67,7 @@ public class PurchaseCandidateDimensionFactory implements DimensionFactory<I_C_P
 				.campaignId(record.getC_Campaign_ID())
 				.activityId(ActivityId.ofRepoIdOrNull(record.getC_Activity_ID()))
 				.orderId(OrderId.ofRepoIdOrNull(record.getC_OrderSO_ID()))
+				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
 				.userElementString1(record.getUserElementString1())
 				.userElementString2(record.getUserElementString2())
 				.userElementString3(record.getUserElementString3())

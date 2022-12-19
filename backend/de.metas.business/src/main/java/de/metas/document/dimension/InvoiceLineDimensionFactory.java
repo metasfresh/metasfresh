@@ -23,6 +23,7 @@
 package de.metas.document.dimension;
 
 import de.metas.order.OrderId;
+import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
 import de.metas.sectionCode.SectionCodeId;
@@ -50,6 +51,7 @@ public class InvoiceLineDimensionFactory implements DimensionFactory<I_C_Invoice
 				.activityId(ActivityId.ofRepoIdOrNull(record.getC_Activity_ID()))
 				.orderId(OrderId.ofRepoIdOrNull(record.getC_Order_ID()))
 				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(record.getM_SectionCode_ID()))
+				.productId(ProductId.ofRepoIdOrNull(record.getM_Product_ID()))
 				.userElementString1(record.getUserElementString1())
 				.userElementString2(record.getUserElementString2())
 				.userElementString3(record.getUserElementString3())
@@ -70,6 +72,7 @@ public class InvoiceLineDimensionFactory implements DimensionFactory<I_C_Invoice
 		record.setC_Activity_ID(ActivityId.toRepoId(from.getActivityId()));
 		record.setC_Order_ID(OrderId.toRepoId(from.getOrderId()));
 		record.setM_SectionCode_ID(SectionCodeId.toRepoId(from.getSectionCodeId()));
+		record.setM_Product_ID(ProductId.toRepoId(from.getProductId()));
 		record.setUserElementString1(from.getUserElementString1());
 		record.setUserElementString2(from.getUserElementString2());
 		record.setUserElementString3(from.getUserElementString3());
