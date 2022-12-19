@@ -45,7 +45,7 @@
         <!-- mockito 2.7.22 doesn't work with java-17-->
         <mockito.version>4.3.1</mockito.version>
     </properties>
-    
+
     <modules>
         <module>de-metas-camel-edi</module>
         <module>de-metas-camel-externalsystems</module>
