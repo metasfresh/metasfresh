@@ -7,3 +7,6 @@ UPDATE ad_element_trl SET updated = now(), updatedby = 99, name = 'Finanzprojekt
 
 UPDATE ad_element_trl SET updated = now(), updatedby = 99, name = 'Projekt - de_CH' WHERE ad_element_id = 572687 AND ad_language = 'de_CH';
 UPDATE ad_element_trl SET updated = now(), updatedby = 99, name = 'Projekt - nl_NL' WHERE ad_element_id = 572687 AND ad_language = 'nl_NL';
+
+UPDATE ad_element_trl SET updated = now(), updatedby = 99, name = 'Projekt - de_CH' WHERE ad_element_id = 573947 AND ad_language = 'de_CH';
+UPDATE ad_element_trl SET updated = now(), updatedby = 99, name = 'Projekt - nl_NL' WHERE ad_element_id = 573947 AND ad_language = 'nl_NL';
