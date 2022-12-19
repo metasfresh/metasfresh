@@ -1,8 +1,8 @@
 import React from 'react';
-import { mount, shallow } from 'enzyme';
+import { mount } from 'enzyme';
 import { v4 as uuidv4 } from 'uuid';
 
-import { RawList as RawListBare } from '../../../../components/widget/List/RawList';
+import { RawList0 as RawListBare } from '../../../../components/widget/List/RawList';
 import SelectionDropdown from '../../../../components/widget/SelectionDropdown';
 import fixtures from '../../../../../test_setup/fixtures/raw_list.json';
 

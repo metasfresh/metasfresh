@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import onClickOutside from 'react-onclickoutside';
+import onClickOutsideHOC from 'react-onclickoutside';
 import TetherComponent from 'react-tether';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
@@ -56,12 +56,8 @@ const setSelectedValue = function (dropdownList, selected, defaultValue) {
   return changedValues;
 };
 
-/**
- * @file Class based component.
- * @module RawList
- * @extends Component
- */
-export class RawList extends PureComponent {
+// NOTE: exporting it (without wrapping with onClickOutsideHOC) for testing purposes
+export class RawList0 extends PureComponent {
   constructor(props) {
     super(props);
 
@@ -70,8 +66,8 @@ export class RawList extends PureComponent {
       dropdownList: [...props.list],
     };
 
+    // NOTE: we use this approach to be able to jest.spyOn
     this.requestFocus = this.requestFocus.bind(this);
-    this.handleSelect = this.handleSelect.bind(this);
   }
 
   componentDidMount() {
@@ -83,15 +79,20 @@ export class RawList extends PureComponent {
   }
 
   componentDidUpdate(prevProps) {
-    const { list, mandatory, defaultValue, selected, emptyText, listHash } =
-      this.props;
-    let dropdownList = this.state.dropdownList;
+    const { listHash, list = [] } = this.props;
     let changedValues = {};
 
-    // If data in the list changed, we either opened or closed the selection dropdown.
-    // If we're closing it (bluring), then we don't care about the whole thing.
-    if (listHash && !prevProps.listHash) {
-      dropdownList = [...list];
+    const { listHash: prevListHash, list: prevList = [] } = prevProps;
+
+    // dev-note: compare the listHashes in order to be able to update the list on the fly (but only when the dropdown is closed)
+    // OR when the dropdown was not rendered and the list is empty (display only `none` value); avoid an infinite loop call
+    const loadDropdown =
+      (listHash !== prevListHash && (list.length > 0 || prevList.length > 0)) ||
+      (listHash && !prevListHash);
+
+    if (loadDropdown) {
+      const { mandatory, defaultValue, selected, emptyText } = this.props;
+      let dropdownList = [...list];
       if (!mandatory && emptyText) {
         dropdownList.push({
           caption: this.props.properties.clearValueText,
@@ -132,14 +133,10 @@ export class RawList extends PureComponent {
     }
 
     if (Object.keys(changedValues).length) {
-      this.setState(
-        {
-          ...changedValues,
-        },
-        () => {
-          this.requestFocus();
-        }
-      );
+      this.setState({ ...changedValues }, () => {
+        // NOTE: don't request focus here because we will get a weird behaviour when multiple fields will open their dropdown at once
+        //this.requestFocus();
+      });
     }
 
     //
@@ -174,19 +171,14 @@ export class RawList extends PureComponent {
         return;
       }
 
-      this.setState(
-        {
-          selected: selected || null,
-        },
-        () => {
-          onCloseDropdown();
-          onBlur();
-        }
-      );
+      this.setState({ selected: selected || null }, () => {
+        onCloseDropdown();
+        onBlur();
+      });
     }
   }
 
-  handleSelect(selected) {
+  handleSelect = (selected) => {
     const { onSelect, onCloseDropdown } = this.props;
     const { dropdownList } = this.state;
     const changedValues = {
@@ -204,12 +196,10 @@ export class RawList extends PureComponent {
         }
         onCloseDropdown();
 
-        setTimeout(() => {
-          this.requestFocus();
-        }, 0);
+        setTimeout(() => this.requestFocus(), 0);
       });
     }
-  }
+  };
 
   handleClear = (event) => {
     event.stopPropagation();
@@ -352,7 +342,7 @@ export class RawList extends PureComponent {
         ]}
         renderTarget={(ref) => {
           return (
-            <div ref={ref}>
+            <div ref={ref} className={this.props.className}>
               <div
                 ref={(ref) => (this.inputContainerElement = ref)}
                 className={classnames('input-dropdown-container', {
@@ -372,7 +362,7 @@ export class RawList extends PureComponent {
                       !emptyCompositeLookup),
                 })}
                 tabIndex={tabIndex}
-                onFocus={readonly ? null : this.requestFocus}
+                //onFocus={readonly ? null : this.requestFocus} // not needed because cancels the effect of handleClick
                 onClick={readonly ? null : this.handleClick}
                 onKeyDown={this.handleKeyDown}
                 onKeyUp={this.handleKeyUp}
@@ -508,8 +498,11 @@ export class RawList extends PureComponent {
  * @prop {func} onSelect
  * @prop {func} onOpenDropdown
  * @prop {func} onCloseDropdown
+ * @prop {func} enableOnClickOutside - callback to be used to enable click outside for parent component
+ * @prop {func} disableOnClickOutside - callback to be used to disable click outside for parent component
  */
-RawList.propTypes = {
+RawList0.propTypes = {
+  className: PropTypes.string,
   filter: PropTypes.object,
   readonly: PropTypes.bool,
   clearable: PropTypes.bool,
@@ -546,11 +539,13 @@ RawList.propTypes = {
   compositeWidgetData: PropTypes.array,
   field: PropTypes.string,
   wrapperElement: PropTypes.object,
+  enableOnClickOutside: PropTypes.func, // wired by onClickOutsideHOC
+  disableOnClickOutside: PropTypes.func, // wired by onClickOutsideHOC
 };
 
-RawList.defaultProps = {
+RawList0.defaultProps = {
   tabIndex: -1,
   clearable: true,
 };
 
-export default onClickOutside(RawList);
+export default onClickOutsideHOC(RawList0);
