@@ -1054,7 +1054,7 @@ Feature: WorkOrder Project API Test
       "dateEnd": "2022-01-04",
       "resources":[
         {
-          "resourceIdentifier": "int-test"
+          "resourceIdentifier": "val-test"
         }
       ]
     }
@@ -1230,7 +1230,7 @@ Feature: WorkOrder Project API Test
       "dateEnd": "2022-01-04",
       "resources":[
         {
-          "resourceIdentifier": "int-test"
+          "resourceIdentifier": "val-test"
         }
       ]
     }
