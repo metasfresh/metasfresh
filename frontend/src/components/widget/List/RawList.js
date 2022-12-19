@@ -141,6 +141,12 @@ export class RawList extends PureComponent {
         }
       );
     }
+
+    //
+    // On focus gained (via props)
+    if (this.props.isFocused && this.props.isFocused !== prevProps.isFocused) {
+      this?.dropdown?.focus?.();
+    }
   }
 
   /*
