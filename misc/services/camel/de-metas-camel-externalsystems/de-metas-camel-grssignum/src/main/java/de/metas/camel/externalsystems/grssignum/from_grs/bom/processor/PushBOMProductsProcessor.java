@@ -96,7 +96,7 @@ public class PushBOMProductsProcessor implements Processor
 				.line(jsonBOMLine.getLine())
 				.isQtyPercentage(Boolean.TRUE)
 				.qtyBom(JsonQuantity.builder()
-								.qty(jsonBOMLine.getQtyBOM())
+								.qty(jsonBOMLine.getQtyBatch())
 								.uomCode(jsonBOMLine.getUom())
 								.build())
 				.scrap(scrap);
