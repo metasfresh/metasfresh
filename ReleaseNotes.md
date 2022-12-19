@@ -190,6 +190,7 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#13546](https://github.com/metasfresh/metasfresh/issues/13546) DATEV Export Performance Problem 
   * [#14095] (https://github.com/metasfresh/metasfresh/pull/14095#pullrequestreview-1215114428) Sum amounts per vatcode
   * [#14019](https://github.com/metasfresh/metasfresh/issues/14019) [BUG] BPartnerRestController v2: path orgCode param is not consolidated with the request body
   * [#14072](https://github.com/metasfresh/metasfresh/issues/14072) Fix Sales Order - void selected order with related documents
