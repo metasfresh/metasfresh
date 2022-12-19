@@ -70,7 +70,7 @@ export class RawList extends PureComponent {
       dropdownList: [...props.list],
     };
 
-    this.focusDropdown = this.focusDropdown.bind(this);
+    this.requestFocus = this.requestFocus.bind(this);
     this.handleSelect = this.handleSelect.bind(this);
   }
 
@@ -137,7 +137,7 @@ export class RawList extends PureComponent {
           ...changedValues,
         },
         () => {
-          this.focusDropdown();
+          this.requestFocus();
         }
       );
     }
@@ -145,23 +145,15 @@ export class RawList extends PureComponent {
     //
     // On focus gained (via props)
     if (this.props.isFocused && this.props.isFocused !== prevProps.isFocused) {
-      this?.dropdown?.focus?.();
+      this?.inputContainerElement?.focus?.();
     }
   }
 
-  /*
-   * Alternative method to open dropdown, in case of disabled opening
-   * on focus.
-   */
-  /**
-   * @method handleClick
-   * @summary ToDo: Describe the method.
-   */
   handleClick = () => {
     const { onOpenDropdown, isToggled, onCloseDropdown } = this.props;
 
     if (!isToggled) {
-      this.focusDropdown();
+      this.requestFocus();
       onOpenDropdown();
     } else {
       onCloseDropdown();
@@ -194,11 +186,6 @@ export class RawList extends PureComponent {
     }
   }
 
-  /**
-   * @method handleSelect
-   * @summary ToDo: Describe the method.
-   * @param {*} selected
-   */
   handleSelect(selected) {
     const { onSelect, onCloseDropdown } = this.props;
     const { dropdownList } = this.state;
@@ -218,38 +205,24 @@ export class RawList extends PureComponent {
         onCloseDropdown();
 
         setTimeout(() => {
-          this.focusDropdown();
+          this.requestFocus();
         }, 0);
       });
     }
   }
 
-  /**
-   * @method handleClear
-   * @summary ToDo: Describe the method.
-   * @param {object} event
-   */
   handleClear = (event) => {
     event.stopPropagation();
 
     this.props.onSelect(null);
   };
 
-  /**
-   * @method handleTemporarySelection
-   * @summary ToDo: Describe the method.
-   * @param {*} selected
-   */
   handleTemporarySelection = (selected) => {
     this.setState({
       selected,
     });
   };
 
-  /**
-   * @method handleCancel
-   * @summary ToDo: Describe the method.
-   */
   handleCancel = () => {
     const { disableAutofocus, onCloseDropdown } = this.props;
     disableAutofocus && disableAutofocus();
@@ -290,15 +263,11 @@ export class RawList extends PureComponent {
   handleBlur = () => {
     const { onBlur } = this.props;
 
-    this.dropdown.blur();
+    this.inputContainerElement.blur();
     onBlur();
   };
 
-  /**
-   * @method focusDropdown
-   * @summary ToDo: Describe the method.
-   */
-  focusDropdown() {
+  requestFocus() {
     this.props.onFocus();
   }
 
@@ -360,10 +329,10 @@ export class RawList extends PureComponent {
       ? this.props.properties.emptyText
       : placeholder;
 
-    let width = this.dropdown ? this.dropdown.offsetWidth : 0;
+    let width = this.inputContainerElement?.offsetWidth ?? 0;
     if (wrapperElement) {
       const wrapperWidth = wrapperElement.offsetWidth;
-      const offset = this.dropdown.offsetLeft;
+      const offset = this.inputContainerElement?.offsetLeft ?? 0;
 
       width = wrapperWidth - offset;
     }
@@ -385,7 +354,7 @@ export class RawList extends PureComponent {
           return (
             <div ref={ref}>
               <div
-                ref={(ref) => (this.dropdown = ref)}
+                ref={(ref) => (this.inputContainerElement = ref)}
                 className={classnames('input-dropdown-container', {
                   'input-disabled': readonly,
                   'input-dropdown-container-static': rowId,
@@ -403,7 +372,7 @@ export class RawList extends PureComponent {
                       !emptyCompositeLookup),
                 })}
                 tabIndex={tabIndex}
-                onFocus={readonly ? null : this.focusDropdown}
+                onFocus={readonly ? null : this.requestFocus}
                 onClick={readonly ? null : this.handleClick}
                 onKeyDown={this.handleKeyDown}
                 onKeyUp={this.handleKeyUp}
@@ -419,7 +388,6 @@ export class RawList extends PureComponent {
                       !validStatus.initialValue &&
                       !isToggled,
                   })}
-                  ref={(c) => (this.inputContainer = c)}
                 >
                   <div
                     className={classnames(
