@@ -50,6 +50,7 @@ input {
 .form-control-label {
     padding-top:.3rem;
     padding-bottom: .3125rem;
+    padding-right: 0;
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
@@ -57,15 +58,6 @@ input {
 
     &.instruction-sent {
         white-space: normal;
-    }
-
-    &.input-zoom {
-        display: flex;
-        align-items: center;
-
-        @media (min-width: $breakpoint-md){
-            /*margin: 0 15px;*/
-        }       
     }
 
     &.zoom-into:hover, .zoom-into:hover {

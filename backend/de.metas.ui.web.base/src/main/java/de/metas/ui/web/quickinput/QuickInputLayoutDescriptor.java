@@ -7,6 +7,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
 import de.metas.ui.web.window.descriptor.DocumentEntityDescriptor;
+import de.metas.ui.web.window.descriptor.DocumentFieldDescriptor;
 import de.metas.ui.web.window.descriptor.DocumentLayoutElementDescriptor;
 import de.metas.util.Check;
 import lombok.NonNull;
@@ -35,12 +36,12 @@ import lombok.NonNull;
 
 public class QuickInputLayoutDescriptor
 {
-	public static final Builder builder()
+	public static Builder builder()
 	{
 		return new Builder();
 	}
 
-	public static final QuickInputLayoutDescriptor build(
+	public static QuickInputLayoutDescriptor build(
 			@NonNull final DocumentEntityDescriptor entityDescriptor,
 			@NonNull final String[][] fieldNames)
 	{
@@ -61,6 +62,20 @@ public class QuickInputLayoutDescriptor
 		}
 		return layoutBuilder.build();
 	}
+
+	public static QuickInputLayoutDescriptor allFields(@NonNull final DocumentEntityDescriptor entityDescriptor)
+	{
+		final Builder layoutBuilder = builder();
+
+		for(final DocumentFieldDescriptor field : entityDescriptor.getFields())
+		{
+			final DocumentLayoutElementDescriptor.Builder element = DocumentLayoutElementDescriptor.builder(field);
+			layoutBuilder.element(element);
+		}
+
+		return layoutBuilder.build();
+	}
+
 
 	private final List<DocumentLayoutElementDescriptor> elements;
 

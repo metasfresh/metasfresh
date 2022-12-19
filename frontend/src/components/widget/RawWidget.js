@@ -508,9 +508,6 @@ export class RawWidget extends PureComponent {
       handleZoomInto,
       dataEntry,
       subentity,
-      fieldFormGroupClass,
-      fieldLabelClass,
-      fieldInputClass,
     } = this.props;
 
     const fieldColSize = this.getAdaptedFieldColSize();
@@ -551,39 +548,30 @@ export class RawWidget extends PureComponent {
       .map((field) => 'form-field-' + field.field)
       .join(' ');
 
-    let labelClass;
-    let fieldClass;
-    let formGroupClass = '';
-
+    let labelClass = '';
+    let fieldClass = '';
     if (quickInput) {
-      labelClass = fieldLabelClass;
-      fieldClass = fieldInputClass;
-      formGroupClass = fieldFormGroupClass;
+      labelClass = '';
+      fieldClass = '';
+    } else if (dataEntry) {
+      labelClass = 'col-sm-5';
+      fieldClass = 'col-sm-7';
+    } else if ((type === 'primary' || noLabel) && !oneLineException) {
+      labelClass = !noLabel ? 'col-sm-12 panel-title' : '';
+      fieldClass = 'col-sm-12';
+    } else if (type === 'primaryLongLabels') {
+      labelClass = 'col-sm-6';
+      fieldClass = 'col-sm-6';
     } else {
-      labelClass = dataEntry ? 'col-sm-5' : '';
-      if (!labelClass) {
-        labelClass =
-          type === 'primary' && !oneLineException
-            ? 'col-sm-12 panel-title'
-            : type === 'primaryLongLabels'
-            ? 'col-sm-6'
-            : 'col-sm-3';
-      }
+      labelClass = 'col-sm-3';
+      fieldClass = fieldColSize;
+    }
 
-      fieldClass = dataEntry ? 'col-sm-7' : '';
-      if (!fieldClass) {
-        fieldClass =
-          ((type === 'primary' || noLabel) && !oneLineException
-            ? 'col-sm-12 '
-            : type === 'primaryLongLabels'
-            ? 'col-sm-6'
-            : fieldColSize + ' ') +
-          (fields[0].devices ? 'form-group-flex' : '');
-      }
+    if (fields[0].devices) {
+      fieldClass += ' form-group-flex';
     }
 
     const labelProps = {};
-
     if (!noLabel && caption && fields[0].supportZoomInto) {
       labelProps.onClick = () => handleZoomInto(fields[0].field);
     }
@@ -592,92 +580,87 @@ export class RawWidget extends PureComponent {
       <div
         className={classnames(
           'form-group',
-          formGroupClass,
           {
+            row: !quickInput,
             'form-group-table': rowId && !isModal,
           },
           widgetFieldsName
         )}
       >
-        <div className="row">
-          {captionElement || null}
-          {!noLabel && caption && (
-            <label
-              className={classnames('form-control-label', labelClass, {
-                'input-zoom': quickInput && fields[0].supportZoomInto,
-                'zoom-into': fields[0].supportZoomInto,
-              })}
-              title={description || caption}
-              {...labelProps}
-            >
-              {caption}
-            </label>
-          )}
-          <div
-            className={fieldClass}
-            onMouseEnter={
-              validStatus && !validStatus.valid
-                ? this.showErrorPopup
-                : undefined
-            }
-            onMouseLeave={this.hideErrorPopup}
+        {captionElement || null}
+        {!noLabel && caption && (
+          <label
+            className={classnames('form-control-label', labelClass, {
+              'zoom-into': fields[0].supportZoomInto,
+            })}
+            title={description || caption}
+            {...labelProps}
           >
-            {!clearedFieldWarning && warning && (
-              <div
-                className={classnames('field-warning', {
-                  'field-warning-message': warning,
-                  'field-error-message': warning && warning.error,
-                })}
-                onMouseEnter={() => this.toggleTooltip(true)}
-                onMouseLeave={() => this.toggleTooltip(false)}
-              >
-                <span>{warning.caption}</span>
-                <i
-                  className="meta-icon-close-alt"
-                  onClick={() => this.clearFieldWarning(warning)}
-                />
-                {warning.message && tooltipToggled && (
-                  <Tooltips action={warning.message} type="" />
-                )}
-              </div>
-            )}
-
+            {caption}
+          </label>
+        )}
+        <div
+          className={fieldClass}
+          onMouseEnter={
+            validStatus && !validStatus.valid ? this.showErrorPopup : undefined
+          }
+          onMouseLeave={this.hideErrorPopup}
+        >
+          {!clearedFieldWarning && warning && (
             <div
-              className={classnames('input-body-container', {
-                focused: isFocused,
+              className={classnames('field-warning', {
+                'field-warning-message': warning,
+                'field-error-message': warning && warning.error,
               })}
-              title={valueDescription}
+              onMouseEnter={() => this.toggleTooltip(true)}
+              onMouseLeave={() => this.toggleTooltip(false)}
             >
-              <CSSTransition
-                key={`trans_${fields[0].fieldName}`}
-                className="fade"
-                timeout={{ enter: 200, exit: 200 }}
-              >
-                <div>
-                  {errorPopup &&
-                    validStatus &&
-                    !validStatus.valid &&
-                    !validStatus.initialValue &&
-                    this.renderErrorPopup(validStatus.reason)}
-                </div>
-              </CSSTransition>
-              {widgetBody}
-            </div>
-            {fields[0].devices && !widgetData[0].readonly && (
-              <DevicesWidget
-                devices={fields[0].devices}
-                tabIndex={1}
-                handleChange={(value) =>
-                  handlePatch && handlePatch(fields[0].field, value)
-                }
+              <span>{warning.caption}</span>
+              <i
+                className="meta-icon-close-alt"
+                onClick={() => this.clearFieldWarning(warning)}
               />
-            )}
+              {warning.message && tooltipToggled && (
+                <Tooltips action={warning.message} type="" />
+              )}
+            </div>
+          )}
+
+          <div
+            className={classnames('input-body-container', {
+              focused: isFocused,
+            })}
+            title={valueDescription}
+          >
+            <CSSTransition
+              key={`trans_${fields[0].fieldName}`}
+              className="fade"
+              timeout={{ enter: 200, exit: 200 }}
+            >
+              <div>
+                {errorPopup &&
+                  validStatus &&
+                  !validStatus.valid &&
+                  !validStatus.initialValue &&
+                  this.renderErrorPopup(validStatus.reason)}
+              </div>
+            </CSSTransition>
+            {widgetBody}
           </div>
-          {/* this is a special case for displaying the scan button on the right side of the field */}
-          {this.isScanQRbuttonPanel() && (
-            <BarcodeScannerBtn postDetectionExec={this.onDetectedQR} />
+          {fields[0].devices && !widgetData[0].readonly && (
+            <DevicesWidget
+              devices={fields[0].devices}
+              tabIndex={1}
+              handleChange={(value) =>
+                handlePatch && handlePatch(fields[0].field, value)
+              }
+            />
           )}
         </div>
+        {/* this is a special case for displaying the scan button on the right side of the field */}
+        {this.isScanQRbuttonPanel() && (
+          <BarcodeScannerBtn postDetectionExec={this.onDetectedQR} />
+        )}
       </div>
     );
   }
@@ -731,10 +714,6 @@ RawWidget.propTypes = {
   layoutType: PropTypes.string,
   description: PropTypes.string,
   captionElement: PropTypes.string,
-  fieldFormGroupClass: PropTypes.string,
-  fieldLabelClass: PropTypes.string,
-  fieldInputClass: PropTypes.string,
-
   //
   // Callbacks and other functions:
   allowShortcut: PropTypes.func.isRequired,

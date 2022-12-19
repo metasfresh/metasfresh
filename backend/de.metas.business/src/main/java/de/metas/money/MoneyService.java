@@ -83,6 +83,11 @@ public class MoneyService
 		return currencyRepository.getStdPrecision(currencyCode);
 	}
 
+	public CurrencyPrecision getStdPrecision(@NonNull final CurrencyId currencyId)
+	{
+		return currencyRepository.getStdPrecision(currencyId);
+	}
+
 	@NonNull
 	public CurrencyConversionContext createConversionContext(
 			@Nullable final LocalDate convDate,

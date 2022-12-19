@@ -654,6 +654,12 @@ public final class DocumentFieldDescriptor
 			return _widgetType;
 		}
 
+		public Builder setWidgetSize(final WidgetSize widgetSize)
+		{
+			this._widgetSize = widgetSize;
+			return this;
+		}
+
 		public WidgetSize getWidgetSize()
 		{
 			return _widgetSize;
