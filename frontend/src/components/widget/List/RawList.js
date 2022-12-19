@@ -3,7 +3,7 @@ import onClickOutsideHOC from 'react-onclickoutside';
 import TetherComponent from 'react-tether';
 import PropTypes from 'prop-types';
 import classnames from 'classnames';
-import { isEqual, findIndex, pullAt } from 'lodash';
+import { findIndex, isEqual, pullAt } from 'lodash';
 import counterpart from 'counterpart';
 import SelectionDropdown from '../SelectionDropdown';
 import MultiSelect from '../MultiSelect';
@@ -72,6 +72,12 @@ export class RawList0 extends PureComponent {
 
   componentDidMount() {
     window.addEventListener('keydown', this.handleTab);
+
+    //
+    // On initial focus gained when component was created first time
+    if (this.props.isFocused) {
+      this.focus();
+    }
   }
 
   componentWillUnmount() {
@@ -142,7 +148,7 @@ export class RawList0 extends PureComponent {
     //
     // On focus gained (via props)
     if (this.props.isFocused && this.props.isFocused !== prevProps.isFocused) {
-      this?.inputContainerElement?.focus?.();
+      this.focus();
     }
   }
 
@@ -260,6 +266,10 @@ export class RawList0 extends PureComponent {
   requestFocus() {
     this.props.onFocus();
   }
+
+  focus = () => {
+    this.inputContainerElement?.focus?.();
+  };
 
   renderSingleSelect = () => {
     const {

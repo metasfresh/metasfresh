@@ -44,13 +44,7 @@ class LoginForm extends Component {
     const { path } = this.props;
 
     if (!path) {
-      this.login.focus();
-    }
-  }
-
-  UNSAFE_componentWillUpdate(nextProps, nextState) {
-    if (this.roleSelector && nextState.roleSelect) {
-      this.roleSelector.instanceRef.dropdown.focus();
+      this.login?.focus?.();
     }
   }
 
@@ -160,6 +154,7 @@ class LoginForm extends Component {
   showRoleSelectPanel = (roles) => {
     this.setState({
       roleSelect: true,
+      dropdownFocused: true, // directly focus the role dropdown
       roles,
       role: roles?.[0],
     });
