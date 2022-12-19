@@ -656,3 +656,16 @@ INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_El
 UPDATE AD_UI_Element SET IsDisplayed='N',Updated=TO_TIMESTAMP('2022-12-15 16:36:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=611512
 ;
 
+
+
+-- 2022-12-16T10:02:17.109Z
+/* DDL */ SELECT public.db_alter_table('GL_JournalLine','ALTER TABLE public.GL_JournalLine ADD COLUMN CR_C_Order_ID NUMERIC(10)')
+;
+
+-- 2022-12-16T10:02:17.186Z
+ALTER TABLE GL_JournalLine ADD CONSTRAINT CRCOrder_GLJournalLine FOREIGN KEY (CR_C_Order_ID) REFERENCES public.C_Order DEFERRABLE INITIALLY DEFERRED
+;
+
+
+
+

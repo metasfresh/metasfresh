@@ -284,3 +284,12 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=710030
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,Help,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,710030,0,242,549951,614551,'F',TO_TIMESTAMP('2022-12-15 17:21:45','YYYY-MM-DD HH24:MI:SS'),100,'Order','The Order is a control document.  The  Order is complete when the quantity ordered is the same as the quantity shipped and invoiced.  When you close an order, unshipped (backordered) quantities are cancelled.','Y','N','N','Y','N','N','N',0,'Sales order',20,0,0,TO_TIMESTAMP('2022-12-15 17:21:45','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+
+
+-- Column: Fact_Acct_Transactions_View.C_Order_ID
+-- 2022-12-16T09:21:32.602Z
+UPDATE AD_Column SET FilterOperator='E', IsSelectionColumn='Y',Updated=TO_TIMESTAMP('2022-12-16 11:21:32','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585382
+;
+
+
+
