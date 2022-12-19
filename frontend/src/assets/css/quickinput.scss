@@ -37,6 +37,7 @@
     .input-body-container {
       .input-dropdown-container {
         width: 100% !important;
+        min-width: 7em !important;
         padding-top: 0;
         padding-bottom: 0;
       }
@@ -52,6 +53,10 @@
 
     &.widgetType-List {
       max-width: 20em;
+
+      &.widgetSize-S {
+        max-width: 7em;
+      }
     }
 
     &.widgetType-Integer,
