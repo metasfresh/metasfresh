@@ -1676,7 +1676,7 @@ public final class FactLine extends X_Fact_Acct
 
 	public void setC_Order_ID(@Nullable OrderId orderId)
 	{
-		// TODO implement
+		super.setC_Order_ID(OrderId.toRepoId(orderId));
 	}
 
 	public void setFromDimension(@NonNull final Dimension dimension)
