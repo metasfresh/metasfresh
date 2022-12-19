@@ -530,7 +530,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return OrgId.ofRepoId(getPO().getAD_Org_ID());
 	}
 
-	public final ProductId getProductId()
+	public ProductId getProductId()
 	{
 		return ProductId.ofRepoIdOrNull(getValue("M_Product_ID"));
 	}
