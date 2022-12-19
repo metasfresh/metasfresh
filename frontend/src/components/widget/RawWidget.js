@@ -584,6 +584,7 @@ export class RawWidget extends PureComponent {
             row: !quickInput,
             'form-group-table': rowId && !isModal,
           },
+          'widgetType-' + widgetType,
           widgetFieldsName
         )}
       >
