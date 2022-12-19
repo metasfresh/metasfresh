@@ -77,7 +77,7 @@ describe('EntryTable', () => {
     );
     expect(html).toContain(`Tab1-Section2-Line1-Field2`);
     expect(html).toContain(
-      `form-group row form-group-table widgetType-List form-field-100006 form-field-100006_Info`
+      `form-group row form-group-table widgetType-Composed widgetType-Composed-2 form-field-100006 form-field-100006_Info`
     );
   });
 });
