@@ -211,6 +211,7 @@ class TableQuickInput extends PureComponent {
             tabId={tabId}
             windowType={docType}
             widgetType={item.widgetType}
+            widgetSize={item.size}
             fields={item.fields}
             dataId={docId}
             widgetData={widgetData}
