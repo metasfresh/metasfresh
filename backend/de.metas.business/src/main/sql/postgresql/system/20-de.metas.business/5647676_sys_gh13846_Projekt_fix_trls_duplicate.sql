@@ -8,3 +8,5 @@ UPDATE ad_element_trl SET updated = now(), updatedby = 99, name = 'Configuration
 UPDATE ad_element_trl SET updated = now(), updatedby = 99, name = 'Période de contrat 01' WHERE ad_element_id = 574261 AND ad_language = 'fr_CH';
 UPDATE ad_element_trl SET updated = now(), updatedby = 99, name = 'Commission 01' WHERE ad_element_id = 574241 AND ad_language = 'fr_CH';
 UPDATE ad_element_trl SET updated = now(), updatedby = 99, name = 'Affectation CU-TU 01' WHERE ad_element_id = 573713 AND ad_language = 'fr_CH';
+
+select update_Window_Translation_From_AD_Element(573947,null);
