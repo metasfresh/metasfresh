@@ -110,6 +110,8 @@ public class X_ExternalSystem_Config extends org.compiere.model.PO implements I_
 	public static final String TYPE_SAP = "SAP";
 	/** Metasfresh = metasfresh */
 	public static final String TYPE_Metasfresh = "metasfresh";
+	/** Amazon = AMZ */
+	public static final String TYPE_Amazon = "AMZ";
 	@Override
 	public void setType (final String Type)
 	{

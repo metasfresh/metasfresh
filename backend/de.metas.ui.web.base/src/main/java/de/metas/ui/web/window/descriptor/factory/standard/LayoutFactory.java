@@ -4,7 +4,9 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.common.util.CoalesceUtil;
+import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IModelTranslationMap;
+import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
 import de.metas.i18n.ImmutableTranslatableString;
 import de.metas.i18n.TranslatableStrings;
@@ -36,6 +38,7 @@ import de.metas.ui.web.window.descriptor.WidgetSize;
 import de.metas.ui.web.window.descriptor.decorator.IDocumentDecorator;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.util.Check;
+import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.element.api.AdFieldId;
 import org.adempiere.ad.element.api.AdTabId;
@@ -102,21 +105,12 @@ public class LayoutFactory
 
 	private final ImmutableList<IDocumentDecorator> documentDecorators = ImmutableList.copyOf(SpringContextHolder.instance.getBeansOfType(IDocumentDecorator.class));
 	private final QuickInputDescriptorFactoryService quickInputDescriptors = SpringContextHolder.instance.getBean(QuickInputDescriptorFactoryService.class);
+
+	private final IMsgBL msgBL = SpringContextHolder.instance.getBean(IMsgBL.class);
 	private final LookupDataSourceFactory lookupDataSourceFactory;
 
-	// FIXME TRL HARDCODED_TAB_EMPTY_RESULT_TEXT
-	public static final ITranslatableString HARDCODED_TAB_EMPTY_RESULT_TEXT = ImmutableTranslatableString.builder()
-			.defaultValue("There are no detail rows")
-			.trl("de_DE", "Es sind noch keine Detailzeilen vorhanden.")
-			.trl("de_CH", "Es sind noch keine Detailzeilen vorhanden.")
-			.build();
-
-	// FIXME TRL HARDCODED_TAB_EMPTY_RESULT_TEXT
-	public static final ITranslatableString HARDCODED_TAB_EMPTY_RESULT_HINT = ImmutableTranslatableString.builder()
-			.defaultValue("You can create them in this window.")
-			.trl("de_DE", "Du kannst sie im jeweiligen Fenster erfassen.")
-			.trl("de_CH", "Du kannst sie im jeweiligen Fenster erfassen.")
-			.build();
+	public static final AdMessageKey TAB_EMPTY_RESULT_HINT = AdMessageKey.of("de.metas.ui.web.TAB_EMPTY_RESULT_HINT");
+	public static final AdMessageKey TAB_EMPTY_RESULT_TEXT = AdMessageKey.of("de.metas.ui.web.TAB_EMPTY_RESULT_TEXT");
 
 	private static final int DEFAULT_MultiLine_LinesCount = 3;
 
@@ -638,8 +632,8 @@ public class LayoutFactory
 				.setDetailId(entityDescriptor.getDetailId())
 				.setCaption(entityDescriptor.getCaption())
 				.setDescription(entityDescriptor.getDescription())
-				.setEmptyResultText(HARDCODED_TAB_EMPTY_RESULT_TEXT)
-				.setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT)
+				.setEmptyResultText(msgBL.getTranslatableMsgText(TAB_EMPTY_RESULT_TEXT))
+				.setEmptyResultHint(msgBL.getTranslatableMsgText(TAB_EMPTY_RESULT_HINT))
 				.setPageLength(entityDescriptor.getViewPageLength())
 				.setIdFieldName(entityDescriptor.getSingleIdFieldNameOrNull())
 				.setDefaultOrderBys(entityDescriptor.getDefaultOrderBys());
@@ -767,8 +761,8 @@ public class LayoutFactory
 	{
 		final ViewLayout.Builder layoutBuilder = ViewLayout.builder()
 				.setWindowId(WindowId.of(getAdWindowId()))
-				.setEmptyResultText(HARDCODED_TAB_EMPTY_RESULT_TEXT)
-				.setEmptyResultHint(HARDCODED_TAB_EMPTY_RESULT_HINT);
+				.setEmptyResultText(msgBL.getTranslatableMsgText(TAB_EMPTY_RESULT_TEXT))
+				.setEmptyResultHint(msgBL.getTranslatableMsgText(TAB_EMPTY_RESULT_HINT));
 
 		//
 		// Create UI elements from AD_UI_Elements which were marked as DisplayedGrid
