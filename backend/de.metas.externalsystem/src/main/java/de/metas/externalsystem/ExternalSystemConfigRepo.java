@@ -269,6 +269,7 @@ public class ExternalSystemConfigRepo
 				break;
 			case Metasfresh:
 				result = getAllByTypeMetasfresh();
+				break;
 			case Amazon:
 				result=null;
 				break;
