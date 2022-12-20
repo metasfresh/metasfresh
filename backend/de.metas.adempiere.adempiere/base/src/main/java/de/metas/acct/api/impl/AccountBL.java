@@ -41,18 +41,19 @@ import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_C_Campaign;
 import org.compiere.model.I_C_ElementValue;
 import org.compiere.model.I_C_Location;
+import org.compiere.model.I_C_Order;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_SalesRegion;
 import org.compiere.model.I_C_SubAcct;
 import org.compiere.model.I_C_ValidCombination;
 import org.compiere.model.I_M_Product;
+import org.compiere.model.I_M_SectionCode;
 import org.slf4j.Logger;
 
 public class AccountBL implements IAccountBL
 {
 	private static final Logger log = LogManager.getLogger(AccountBL.class);
 	private final IAcctSchemaDAO acctSchemaDAO = Services.get(IAcctSchemaDAO.class);
-
 	private static final String SEGMENT_COMBINATION_NA = "_";
 	private static final String SEGMENT_DESCRIPTION_NA = "_";
 
@@ -249,6 +250,33 @@ public class AccountBL implements IAccountBL
 				else if (element.isMandatory())
 				{
 					log.warn("Mandatory Element missing: Campaign");
+					fullyQualified = false;
+				}
+			}
+			else if (AcctSchemaElementType.Order.equals(elementType))
+			{
+				if (account.getC_Order_ID() > 0)
+				{
+					final I_C_Order order = account.getC_Order();
+					segmentCombination = order.getDocumentNo();
+				}
+				else if (element.isMandatory())
+				{
+					log.warn("Mandatory Element missing: C_Order_ID");
+					fullyQualified = false;
+				}
+			}
+			else if (AcctSchemaElementType.SectionCode.equals(elementType))
+			{
+				if (account.getM_SectionCode_ID() > 0)
+				{
+					final I_M_SectionCode sectionCode = account.getM_SectionCode();
+					segmentCombination = sectionCode.getValue();
+					segmentDescription = sectionCode.getName();
+				}
+				else if (element.isMandatory())
+				{
+					log.warn("Mandatory Element missing: C_Order_ID");
 					fullyQualified = false;
 				}
 			}

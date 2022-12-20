@@ -137,3 +137,19 @@ FROM fact_acct fact
 ALTER TABLE Fact_Acct_Transactions_View
     OWNER TO metasfresh
 ;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

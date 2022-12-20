@@ -26,6 +26,7 @@ import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
@@ -1655,6 +1656,11 @@ public abstract class Doc<DocLineType extends DocLine<?>>
 		return ActivityId.ofRepoIdOrNull(getValueAsIntOrZero("C_Activity_ID"));
 	}
 
+	@Nullable
+	protected final OrderId getOrderId()
+	{
+		return OrderId.ofRepoIdOrNull(getValueAsIntOrZero("C_Order_ID"));
+	}
 	protected final int getC_Campaign_ID()
 	{
 		return getValueAsIntOrZero("C_Campaign_ID");

@@ -1,31 +1,5 @@
 package org.compiere.acct;
 
-import java.math.BigDecimal;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.LocalDate;
-
-import de.metas.document.dimension.Dimension;
-import de.metas.order.OrderId;
-import de.metas.project.ProjectId;
-import de.metas.sectionCode.SectionCodeId;
-import org.adempiere.ad.dao.IQueryBL;
-import org.adempiere.ad.dao.IQueryBuilder;
-import org.adempiere.ad.trx.api.ITrx;
-import org.adempiere.exceptions.DBException;
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.warehouse.api.IWarehouseDAO;
-import org.compiere.model.I_C_BPartner_Location;
-import org.compiere.model.I_C_RevenueRecognition_Plan;
-import org.compiere.model.I_Fact_Acct;
-import org.compiere.model.I_M_Movement;
-import org.compiere.model.MAccount;
-import org.compiere.model.X_Fact_Acct;
-import org.compiere.util.DB;
-import org.compiere.util.Env;
-import org.compiere.util.TimeUtil;
-
 import de.metas.acct.api.AccountDimension;
 import de.metas.acct.api.AccountId;
 import de.metas.acct.api.AcctSchema;
@@ -44,21 +18,45 @@ import de.metas.currency.CurrencyPrecision;
 import de.metas.currency.CurrencyRate;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
+import de.metas.document.dimension.Dimension;
 import de.metas.location.LocationId;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.order.OrderId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.tax.api.TaxId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.NumberUtils;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.adempiere.ad.dao.IQueryBL;
+import org.adempiere.ad.dao.IQueryBuilder;
+import org.adempiere.ad.trx.api.ITrx;
+import org.adempiere.exceptions.DBException;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.warehouse.api.IWarehouseDAO;
+import org.compiere.model.I_C_BPartner_Location;
+import org.compiere.model.I_C_RevenueRecognition_Plan;
+import org.compiere.model.I_Fact_Acct;
+import org.compiere.model.I_M_Movement;
+import org.compiere.model.MAccount;
+import org.compiere.model.X_Fact_Acct;
+import org.compiere.util.DB;
+import org.compiere.util.Env;
+import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
+import java.math.BigDecimal;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.time.LocalDate;
 
 /**
  * Accounting Fact Entry.
@@ -280,7 +278,7 @@ public final class FactLine extends X_Fact_Acct
 				}
 				if (userElementString != null)
 				{
-					set_Value (userElementStringColumnname, userElementString);
+					set_Value(userElementStringColumnname, userElementString);
 				}
 			}
 		}
@@ -644,6 +642,26 @@ public final class FactLine extends X_Fact_Acct
 		if (getC_Activity_ID() <= 0)
 		{
 			setC_Activity_ID(m_doc.getActivityId());
+		}
+
+		// Order
+		if (m_docLine != null)
+		{
+			setC_Order_ID(m_docLine.getOrderId());
+		}
+		if (getC_Order_ID() <= 0)
+		{
+			setC_Order_ID(m_doc.getOrderId());
+		}
+
+		// SectionCode
+		if (m_docLine != null)
+		{
+			setM_SectionCode_ID(m_docLine.getSectionCodeId());
+		}
+		if (getM_SectionCode_ID() <= 0)
+		{
+			setM_SectionCode_ID(m_doc.getSectionCodeId());
 		}
 
 		// User List 1
@@ -1320,6 +1338,14 @@ public final class FactLine extends X_Fact_Acct
 			{
 				setC_Activity_ID(m_acct.getC_Activity_ID());
 			}
+			if (getC_Order_ID() == 0)
+			{
+				setC_Order_ID(m_acct.getC_Order_ID());
+			}
+			if (getM_SectionCode_ID() == 0)
+			{
+				setM_SectionCode_ID(m_acct.getM_SectionCode_ID());
+			}
 			if (getUser1_ID() == 0)
 			{
 				setUser1_ID(m_acct.getUser1_ID());
@@ -1374,6 +1400,8 @@ public final class FactLine extends X_Fact_Acct
 				.setUserElementString5(getUserElementString5())
 				.setUserElementString6(getUserElementString6())
 				.setUserElementString7(getUserElementString7())
+				.setC_Order_ID(getC_Order_ID())
+				.setM_SectionCode_ID(getM_SectionCode_ID())
 				.build();
 	}
 
@@ -1512,6 +1540,8 @@ public final class FactLine extends X_Fact_Acct
 			setAD_OrgTrx_ID(fact.getAD_OrgTrx_ID());
 			setC_Project_ID(fact.getC_Project_ID());
 			setC_Activity_ID(fact.getC_Activity_ID());
+			setC_Order_ID(fact.getC_Order_ID());
+			setM_SectionCode_ID(fact.getM_SectionCode_ID());
 			setC_Campaign_ID(fact.getC_Campaign_ID());
 			setC_SalesRegion_ID(fact.getC_SalesRegion_ID());
 			setC_LocFrom_ID(fact.getC_LocFrom_ID());
@@ -1524,6 +1554,8 @@ public final class FactLine extends X_Fact_Acct
 			setC_Tax_ID(fact.getC_Tax_ID());
 			// Org for cross charge
 			setAD_Org_ID(fact.getAD_Org_ID());
+			setC_Order_ID(fact.getC_Order_ID());
+			setM_SectionCode_ID(fact.getM_SectionCode_ID());
 
 			return true; // success
 		}
@@ -1622,20 +1654,29 @@ public final class FactLine extends X_Fact_Acct
 		super.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
 	}
 
-	public void setC_Project_ID(@Nullable final ProjectId projectId) {super.setC_Project_ID(ProjectId.toRepoId(projectId));}
+	public void setC_Project_ID(@Nullable final ProjectId projectId)
+	{
+		super.setC_Project_ID(ProjectId.toRepoId(projectId));
+	}
 
 	public void setPostingType(@NonNull final PostingType postingType)
 	{
 		super.setPostingType(postingType.getCode());
 	}
 
-	public void setC_Tax_ID(@Nullable final TaxId taxId) {super.setC_Tax_ID(TaxId.toRepoId(taxId));}
+	public void setC_Tax_ID(@Nullable final TaxId taxId)
+	{
+		super.setC_Tax_ID(TaxId.toRepoId(taxId));
+	}
 
-	public void setM_SectionCode_ID(@Nullable final SectionCodeId sectionCodeId) {super.setM_SectionCode_ID(SectionCodeId.toRepoId(sectionCodeId));}
+	public void setM_SectionCode_ID(@Nullable final SectionCodeId sectionCodeId)
+	{
+		super.setM_SectionCode_ID(SectionCodeId.toRepoId(sectionCodeId));
+	}
 
 	public void setC_Order_ID(@Nullable OrderId orderId)
 	{
-		// TODO implement
+		super.setC_Order_ID(OrderId.toRepoId(orderId));
 	}
 
 	public void setFromDimension(@NonNull final Dimension dimension)

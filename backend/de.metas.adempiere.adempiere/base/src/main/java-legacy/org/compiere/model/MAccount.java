@@ -79,7 +79,9 @@ public class MAccount extends X_C_ValidCombination
 			int User1_ID,
 			int User2_ID,
 			int UserElement1_ID,
-			int UserElement2_ID)
+			int UserElement2_ID,
+			int C_Order_ID,
+			int M_SectionCode_ID)
 	{
 		final AccountDimension dim = AccountDimension.builder()
 				.setAcctSchemaId(acctSchemaId)
@@ -100,6 +102,8 @@ public class MAccount extends X_C_ValidCombination
 				.setUser2_ID(User2_ID)
 				.setUserElement1_ID(UserElement1_ID)
 				.setUserElement2_ID(UserElement2_ID)
+				.setC_Order_ID(C_Order_ID)
+				.setM_SectionCode_ID(M_SectionCode_ID)
 
 				.build();
 		return get(ctx, dim);

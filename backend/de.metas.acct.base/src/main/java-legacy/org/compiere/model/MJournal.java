@@ -231,6 +231,10 @@ public class MJournal extends X_GL_Journal implements IDocument
 				toLine.setDR_TaxBaseAmt(fromLine.getDR_TaxBaseAmt().negate());
 				toLine.setDR_TaxAmt(fromLine.getDR_TaxAmt().negate());
 				toLine.setDR_TaxTotalAmt(fromLine.getDR_TaxTotalAmt().negate());
+
+				toLine.setDR_C_Order_ID(fromLine.getDR_C_Order_ID());
+				toLine.setDR_M_Product_ID(fromLine.getDR_M_Product_ID());
+				toLine.setDR_M_SectionCode_ID(fromLine.getDR_M_SectionCode_ID());
 				//
 				toLine.setCR_AutoTaxAccount(fromLine.isCR_AutoTaxAccount());
 				toLine.setCR_Tax_ID(fromLine.getCR_Tax_ID());
@@ -238,6 +242,10 @@ public class MJournal extends X_GL_Journal implements IDocument
 				toLine.setCR_TaxBaseAmt(fromLine.getCR_TaxBaseAmt().negate());
 				toLine.setCR_TaxAmt(fromLine.getCR_TaxAmt().negate());
 				toLine.setCR_TaxTotalAmt(fromLine.getCR_TaxTotalAmt().negate());
+
+				toLine.setCR_C_Order_ID(fromLine.getCR_C_Order_ID());
+				toLine.setCR_M_Product_ID(fromLine.getCR_M_Product_ID());
+				toLine.setCR_M_SectionCode_ID(fromLine.getCR_M_SectionCode_ID());
 			}
 			else if (typeCR == 'R')		// reverse
 			{

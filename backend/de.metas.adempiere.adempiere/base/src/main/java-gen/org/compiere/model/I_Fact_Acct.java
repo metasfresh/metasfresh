@@ -1596,4 +1596,32 @@ public interface I_Fact_Acct
 
 	ModelColumn<I_Fact_Acct, org.compiere.model.I_M_SectionCode> COLUMN_M_SectionCode_ID = new ModelColumn<>(I_Fact_Acct.class, "M_SectionCode_ID", org.compiere.model.I_M_SectionCode.class);
 	String COLUMNNAME_M_SectionCode_ID = "M_SectionCode_ID";
+
+	/**
+	 * Set Sales order.
+	 * Order
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setC_Order_ID(int C_Order_ID);
+
+	/**
+	 * Get Sales order.
+	 * Order
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getC_Order_ID();
+
+	@Nullable
+	org.compiere.model.I_C_Order getC_Order();
+
+	void setC_Order(@Nullable org.compiere.model.I_C_Order C_Order);
+
+	ModelColumn<org.compiere.model.I_Fact_Acct, org.compiere.model.I_C_Order> COLUMN_C_Order_ID = new ModelColumn<>(org.compiere.model.I_Fact_Acct.class, "C_Order_ID", org.compiere.model.I_C_Order.class);
+	String COLUMNNAME_C_Order_ID = "C_Order_ID";
 }

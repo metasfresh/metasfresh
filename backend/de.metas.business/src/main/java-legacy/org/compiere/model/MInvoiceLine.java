@@ -457,6 +457,9 @@ public class MInvoiceLine extends X_C_InvoiceLine
 		{
 			setC_Activity_ID(sLine.getC_Activity_ID());
 		}
+		setC_Order_ID(sLine.getC_Order_ID());
+		setM_SectionCode_ID(sLine.getM_SectionCode_ID());
+
 		setC_Campaign_ID(sLine.getC_Campaign_ID());
 		setAD_OrgTrx_ID(sLine.getAD_OrgTrx_ID());
 		setUser1_ID(sLine.getUser1_ID());

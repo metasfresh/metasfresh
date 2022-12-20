@@ -61,11 +61,19 @@ public class GL_DistributionLine
 		}
 		if (!line.isOverwriteActivity() && line.getC_Activity_ID() > 0)
 		{
-			line.setC_Activity(null);
+			line.setC_Activity_ID(-1);
+		}
+		if (!line.isOverwriteOrder() && line.getC_Order_ID() > 0)
+		{
+			line.setC_Order_ID(-1);
+		}
+		if (!line.isOverwriteSectionCode() && line.getM_SectionCode_ID() > 0)
+		{
+			line.setM_SectionCode_ID(-1);
 		}
 		if (!line.isOverwriteBPartner() && line.getC_BPartner_ID() > 0)
 		{
-			line.setC_BPartner(null);
+			line.setC_BPartner_ID(-1);
 		}
 		if (!line.isOverwriteCampaign() && line.getC_Campaign_ID() > 0)
 		{
@@ -81,19 +89,19 @@ public class GL_DistributionLine
 		}
 		if (!line.isOverwriteOrg() && line.getOrg_ID() > 0)
 		{
-			line.setOrg(null);
+			line.setOrg_ID(-1);
 		}
 		if (!line.isOverwriteOrgTrx() && line.getAD_OrgTrx_ID() > 0)
 		{
-			line.setAD_OrgTrx(null);
+			line.setAD_OrgTrx_ID(-1);
 		}
 		if (!line.isOverwriteProduct() && line.getM_Product_ID() > 0)
 		{
-			line.setM_Product(null);
+			line.setM_Product_ID(-1);
 		}
 		if (!line.isOverwriteProject() && line.getC_Project_ID() > 0)
 		{
-			line.setC_Project(null);
+			line.setC_Project_ID(-1);
 		}
 		if (!line.isOverwriteSalesRegion() && line.getC_SalesRegion_ID() > 0)
 		{

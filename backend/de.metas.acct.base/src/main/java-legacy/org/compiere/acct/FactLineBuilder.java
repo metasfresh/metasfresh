@@ -10,7 +10,6 @@ import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
-import de.metas.sectionCode.SectionCodeId;
 import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -34,12 +33,12 @@ import java.math.BigDecimal;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 2 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program. If not, see
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
@@ -219,8 +218,6 @@ public final class FactLineBuilder
 			line.setC_Activity_ID(activityId.getRepoId());
 		}
 
-		//
-		line.setM_SectionCode_ID(SectionCodeId.toRepoId(getSectionCodeId()));
 		//
 		Fact.log.debug("Built: {}", line);
 		return line;
@@ -488,9 +485,4 @@ public final class FactLineBuilder
 		return activityId;
 	}
 
-	@Nullable
-	private SectionCodeId getSectionCodeId()
-	{
-		return getDoc().getSectionCodeId();
-	}
 }

@@ -99,16 +99,6 @@ public interface I_C_InvoiceLine extends org.compiere.model.I_C_InvoiceLine
 	I_C_InvoiceLine getRef_InvoiceLine();
 
 	// @formatter:off
-	String COLUMNNAME_C_Order_ID = "C_Order_ID";
-	void setC_Order_ID(int C_Order_ID);
-	int getC_Order_ID();
-	void setC_Order(I_C_Order order);
-	I_C_Order getC_Order();
-	// @formatter:on
-
-
-
-	// @formatter:off
 	String COLUMNNAME_IsPackagingMaterial = "IsPackagingMaterial";
 	boolean IsPackagingMaterial();
 	void setIsPackagingMaterial(boolean IsPackagingMaterial);
