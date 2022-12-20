@@ -42,7 +42,7 @@ import java.util.Vector;
 public class Charge
 {
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 2478440763968206819L;
 
@@ -99,10 +99,10 @@ public class Charge
 		{
 			log.error(sql, e);
 		}
-		
+
 		return data;
 	}
-	
+
 	/**
      * Finds the Element Identifier for the current charge.
      *
@@ -114,10 +114,10 @@ public class Charge
     	{
     		return;
     	}
-    	
+
     	acctSchema = Services.get(IAcctSchemaDAO.class).getById(acctSchemaId);
     }
-	
+
 	public Vector<String> getColumnNames()
 	{
 		//  Header Info
@@ -126,10 +126,10 @@ public class Charge
 		columnNames.add(Msg.translate(Env.getCtx(), "Value"));
 		columnNames.add(Msg.translate(Env.getCtx(), "Name"));
 		columnNames.add(Msg.getMsg(Env.getCtx(), "Expense"));
-		
+
 		return columnNames;
 	}
-	
+
 	public void setColumnClass(IMiniTable dataTable)
 	{
 		dataTable.setColumnClass(0, Boolean.class, false);      //  0-Selection
@@ -139,7 +139,7 @@ public class Charge
 		//  Table UI
 		dataTable.autoSize();
 	}
-	
+
 	/**
      * Finds the identifier for the tax category for the client.
      */
@@ -171,7 +171,7 @@ public class Charge
 			log.error(sql, e);
 		}
 	}   //  dynInit
-	
+
 	/**************************************************************************
 	 *  Create ElementValue for primary AcctSchema
 	 *  @param value value
@@ -235,7 +235,7 @@ public class Charge
 
         return charge.getC_Charge_ID();
     }   //  createCharge
-    
+
     /**
      * Updates the charge account details.
      * @param charge    the charge
@@ -313,7 +313,9 @@ public class Charge
             defaultAccount.getUser1_ID(),
             defaultAccount.getUser2_ID(),
             defaultAccount.getUserElement1_ID(),
-            defaultAccount.getUserElement2_ID());
+            defaultAccount.getUserElement2_ID(),
+			defaultAccount.getC_Order_ID(),
+			defaultAccount.getM_SectionCode_ID());
 
         return account;
     }

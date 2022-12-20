@@ -199,6 +199,8 @@ public class Doc_MatchPO extends Doc<DocLine_MatchPO>
 		final I_C_OrderLine orderLine = docLine.getOrderLine();
 		factLine.setC_BPartner_ID(orderLine.getC_BPartner_ID());
 		factLine.setC_Activity_ID(orderLine.getC_Activity_ID());
+		factLine.setC_Order_ID(orderLine.getC_Order_ID());
+		factLine.setM_SectionCode_ID(orderLine.getM_SectionCode_ID());
 		factLine.setC_Campaign_ID(orderLine.getC_Campaign_ID());
 		factLine.setC_Project_ID(orderLine.getC_Project_ID());
 		factLine.setUser1_ID(orderLine.getUser1_ID());

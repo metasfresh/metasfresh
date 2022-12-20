@@ -19,10 +19,12 @@ import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_C_BPartner_ID
 import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_C_Campaign_ID;
 import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_C_ElementValue_ID;
 import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_C_Location_ID;
+import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_C_Order_ID;
 import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_C_Project_ID;
 import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_C_SalesRegion_ID;
 import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_IsMandatory;
 import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_M_Product_ID;
+import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_M_SectionCode_ID;
 import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_Org_ID;
 import static org.compiere.model.I_C_AcctSchema_Element.COLUMNNAME_SeqNo;
 
@@ -115,6 +117,14 @@ public class C_AcctSchema_Element
 			{
 				errorField = COLUMNNAME_C_SalesRegion_ID;
 			}
+			else if(AcctSchemaElementType.Order.equals(elementType) && record.getC_Order_ID() <= 0)
+			{
+				errorField = COLUMNNAME_C_Order_ID;
+			}
+			else if(AcctSchemaElementType.SectionCode.equals(elementType) && record.getM_SectionCode_ID() <= 0)
+			{
+				errorField = COLUMNNAME_M_SectionCode_ID;
+			}
 			if (errorField != null)
 			{
 				throw new FillMandatoryException(errorField);
@@ -156,6 +166,14 @@ public class C_AcctSchema_Element
 			else if (AcctSchemaElementType.Project.equals(elementType))
 			{
 				updateData(COLUMNNAME_C_Project_ID, element.getC_Project_ID(), element);
+			}
+			else if (AcctSchemaElementType.Order.equals(elementType))
+			{
+				updateData(COLUMNNAME_C_Order_ID, element.getC_Order_ID(), element);
+			}
+			else if (AcctSchemaElementType.SectionCode.equals(elementType))
+			{
+				updateData(COLUMNNAME_M_SectionCode_ID, element.getM_SectionCode_ID(), element);
 			}
 		}
 

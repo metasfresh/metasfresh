@@ -12,7 +12,6 @@ import Tooltips from '../tooltips/Tooltips';
 import PropTypes from 'prop-types';
 
 const computeWidgetTypeClass = (widgetType, fieldsCount) => {
-  console.log('computeWidgetTypeClass', { widgetType, fieldsCount });
   if (fieldsCount > 1) {
     return 'widgetType-Composed widgetType-Composed-' + fieldsCount;
   } else {

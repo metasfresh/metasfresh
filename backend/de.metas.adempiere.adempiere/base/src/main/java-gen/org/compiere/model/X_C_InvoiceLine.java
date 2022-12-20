@@ -1,10 +1,10 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_InvoiceLine
  *  @author metasfresh (generated) 
@@ -13,7 +13,7 @@ import java.util.Properties;
 public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_InvoiceLine, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1927356624L;
+	private static final long serialVersionUID = 667171894L;
 
     /** Standard Constructor */
     public X_C_InvoiceLine (final Properties ctx, final int C_InvoiceLine_ID, @Nullable final String trxName)
@@ -123,6 +123,18 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	}
 
 	@Override
+	public void setA_Processed (final boolean A_Processed)
+	{
+		set_Value (COLUMNNAME_A_Processed, A_Processed);
+	}
+
+	@Override
+	public boolean isA_Processed() 
+	{
+		return get_ValueAsBoolean(COLUMNNAME_A_Processed);
+	}
+
+	@Override
 	public void setAD_OrgTrx_ID (final int AD_OrgTrx_ID)
 	{
 		if (AD_OrgTrx_ID < 1) 
@@ -135,18 +147,6 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	public int getAD_OrgTrx_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_AD_OrgTrx_ID);
-	}
-
-	@Override
-	public void setA_Processed (final boolean A_Processed)
-	{
-		set_Value (COLUMNNAME_A_Processed, A_Processed);
-	}
-
-	@Override
-	public boolean isA_Processed() 
-	{
-		return get_ValueAsBoolean(COLUMNNAME_A_Processed);
 	}
 
 	@Override
@@ -279,6 +279,33 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	}
 
 	@Override
+	public org.compiere.model.I_C_Order getC_Order()
+	{
+		return get_ValueAsPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class);
+	}
+
+	@Override
+	public void setC_Order(final org.compiere.model.I_C_Order C_Order)
+	{
+		set_ValueFromPO(COLUMNNAME_C_Order_ID, org.compiere.model.I_C_Order.class, C_Order);
+	}
+
+	@Override
+	public void setC_Order_ID (final int C_Order_ID)
+	{
+		if (C_Order_ID < 1) 
+			set_Value (COLUMNNAME_C_Order_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_Order_ID, C_Order_ID);
+	}
+
+	@Override
+	public int getC_Order_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_Order_ID);
+	}
+
+	@Override
 	public org.compiere.model.I_C_OrderLine getC_OrderLine()
 	{
 		return get_ValueAsPO(COLUMNNAME_C_OrderLine_ID, org.compiere.model.I_C_OrderLine.class);
@@ -390,21 +417,6 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	}
 
 	@Override
-	public void setC_TaxCategory_ID (final int C_TaxCategory_ID)
-	{
-		if (C_TaxCategory_ID < 1) 
-			set_Value (COLUMNNAME_C_TaxCategory_ID, null);
-		else 
-			set_Value (COLUMNNAME_C_TaxCategory_ID, C_TaxCategory_ID);
-	}
-
-	@Override
-	public int getC_TaxCategory_ID() 
-	{
-		return get_ValueAsInt(COLUMNNAME_C_TaxCategory_ID);
-	}
-
-	@Override
 	public void setC_Tax_ID (final int C_Tax_ID)
 	{
 		if (C_Tax_ID < 1) 
@@ -417,6 +429,21 @@ public class X_C_InvoiceLine extends org.compiere.model.PO implements I_C_Invoic
 	public int getC_Tax_ID() 
 	{
 		return get_ValueAsInt(COLUMNNAME_C_Tax_ID);
+	}
+
+	@Override
+	public void setC_TaxCategory_ID (final int C_TaxCategory_ID)
+	{
+		if (C_TaxCategory_ID < 1) 
+			set_Value (COLUMNNAME_C_TaxCategory_ID, null);
+		else 
+			set_Value (COLUMNNAME_C_TaxCategory_ID, C_TaxCategory_ID);
+	}
+
+	@Override
+	public int getC_TaxCategory_ID() 
+	{
+		return get_ValueAsInt(COLUMNNAME_C_TaxCategory_ID);
 	}
 
 	@Override

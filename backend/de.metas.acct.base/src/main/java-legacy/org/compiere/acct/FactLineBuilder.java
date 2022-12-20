@@ -11,7 +11,6 @@ import de.metas.money.CurrencyId;
 import de.metas.organization.OrgId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
-import de.metas.sectionCode.SectionCodeId;
 import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
@@ -220,8 +219,6 @@ public final class FactLineBuilder
 			line.setC_Activity_ID(activityId.getRepoId());
 		}
 
-		//
-		line.setM_SectionCode_ID(SectionCodeId.toRepoId(getSectionCodeId()));
 		//
 		Fact.log.debug("Built: {}", line);
 		return line;
@@ -499,9 +496,4 @@ public final class FactLineBuilder
 		return activityId;
 	}
 
-	@Nullable
-	private SectionCodeId getSectionCodeId()
-	{
-		return getDoc().getSectionCodeId();
-	}
 }
