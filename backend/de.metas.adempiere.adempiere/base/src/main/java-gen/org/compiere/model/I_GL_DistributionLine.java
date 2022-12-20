@@ -247,7 +247,7 @@ public interface I_GL_DistributionLine
 	String COLUMNNAME_C_Order_ID = "C_Order_ID";
 
 	/**
-	 * Set Project.
+	 * Set Project en_US 208.
 	 * Financial Project
 	 *
 	 * <br>Type: TableDir
@@ -257,7 +257,7 @@ public interface I_GL_DistributionLine
 	void setC_Project_ID (int C_Project_ID);
 
 	/**
-	 * Get Project.
+	 * Get Project en_US 208.
 	 * Financial Project
 	 *
 	 * <br>Type: TableDir
@@ -267,31 +267,6 @@ public interface I_GL_DistributionLine
 	int getC_Project_ID();
 
 	String COLUMNNAME_C_Project_ID = "C_Project_ID";
-
-	/**
-	 * Get Created.
-	 * Date this record was created
-	 *
-	 * <br>Type: DateTime
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	java.sql.Timestamp getCreated();
-
-	ModelColumn<I_GL_DistributionLine, Object> COLUMN_Created = new ModelColumn<>(I_GL_DistributionLine.class, "Created", null);
-	String COLUMNNAME_Created = "Created";
-
-	/**
-	 * Get Created By.
-	 * User who created this records
-	 *
-	 * <br>Type: Table
-	 * <br>Mandatory: true
-	 * <br>Virtual Column: false
-	 */
-	int getCreatedBy();
-
-	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Sales Region.
@@ -319,6 +294,31 @@ public interface I_GL_DistributionLine
 
 	ModelColumn<I_GL_DistributionLine, org.compiere.model.I_C_SalesRegion> COLUMN_C_SalesRegion_ID = new ModelColumn<>(I_GL_DistributionLine.class, "C_SalesRegion_ID", org.compiere.model.I_C_SalesRegion.class);
 	String COLUMNNAME_C_SalesRegion_ID = "C_SalesRegion_ID";
+
+	/**
+	 * Get Created.
+	 * Date this record was created
+	 *
+	 * <br>Type: DateTime
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	java.sql.Timestamp getCreated();
+
+	ModelColumn<I_GL_DistributionLine, Object> COLUMN_Created = new ModelColumn<>(I_GL_DistributionLine.class, "Created", null);
+	String COLUMNNAME_Created = "Created";
+
+	/**
+	 * Get Created By.
+	 * User who created this records
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	int getCreatedBy();
+
+	String COLUMNNAME_CreatedBy = "CreatedBy";
 
 	/**
 	 * Set Description.
