@@ -47,15 +47,17 @@
       max-width: 44em;
     }
 
-    &.widgetType-Lookup {
-      max-width: 20em;
-    }
-
+    &.widgetType-Lookup,
     &.widgetType-List {
       max-width: 20em;
 
       &.widgetSize-S {
         max-width: 7em;
+      }
+
+      &.widgetSize-L {
+        min-width: 30em;
+        max-width: 40em;
       }
     }
 
@@ -64,7 +66,11 @@
     &.widgetType-Amount,
     &.widgetType-Quantity,
     &.widgetType-CostPrice {
-      max-width: 7em;
+      max-width: 10em;
+
+      &.widgetSize-S {
+        max-width: 7em;
+      }
     }
   }
 }

@@ -32,12 +32,14 @@ import de.metas.location.LocationId;
 import de.metas.logging.LogManager;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.order.OrderId;
 import de.metas.order.OrderLineId;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.Quantity;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.tax.api.TaxId;
 import de.metas.uom.UomId;
 import de.metas.util.NumberUtils;
@@ -547,7 +549,7 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 		return OrgId.ofRepoId(getPO().getAD_Org_ID());
 	}
 
-	public final ProductId getProductId()
+	public ProductId getProductId()
 	{
 		return ProductId.ofRepoIdOrNull(getValue("M_Product_ID"));
 	}
@@ -816,6 +818,16 @@ public class DocLine<DT extends Doc<? extends DocLine<?>>>
 	public ActivityId getActivityId()
 	{
 		return ActivityId.ofRepoIdOrNull(getValue("C_Activity_ID"));
+	}
+
+	public OrderId getOrderId()
+	{
+		return OrderId.ofRepoIdOrNull(getValue("C_Order_ID"));
+	}
+
+	public SectionCodeId getSectionCodeId()
+	{
+		return SectionCodeId.ofRepoIdOrNull(getValue("M_SectionCode_ID"));
 	}
 
 	public final int getUser1_ID()

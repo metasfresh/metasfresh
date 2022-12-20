@@ -242,6 +242,14 @@ public class GLDistributionBuilder
 		{
 			builder.setC_Activity_ID(line.getC_Activity_ID());
 		}
+		if (line.isOverwriteOrder())
+		{
+			builder.setC_Order_ID(line.getC_Order_ID());
+		}
+		if (line.isOverwriteSectionCode())
+		{
+			builder.setM_SectionCode_ID(line.getM_SectionCode_ID());
+		}
 		if (line.isOverwriteUser1())
 		{
 			builder.setUser1_ID(line.getUser1_ID());

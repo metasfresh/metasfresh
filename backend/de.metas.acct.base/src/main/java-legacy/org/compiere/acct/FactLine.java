@@ -651,6 +651,26 @@ public final class FactLine extends X_Fact_Acct
 			setC_Activity_ID(m_doc.getActivityId());
 		}
 
+		// Order
+		if (m_docLine != null)
+		{
+			setC_Order_ID(m_docLine.getOrderId());
+		}
+		if (getC_Order_ID() <= 0)
+		{
+			setC_Order_ID(m_doc.getOrderId());
+		}
+
+		// SectionCode
+		if (m_docLine != null)
+		{
+			setM_SectionCode_ID(m_docLine.getSectionCodeId());
+		}
+		if (getM_SectionCode_ID() <= 0)
+		{
+			setM_SectionCode_ID(m_doc.getSectionCodeId());
+		}
+
 		// User List 1
 		if (m_docLine != null)
 		{
@@ -1314,6 +1334,14 @@ public final class FactLine extends X_Fact_Acct
 			{
 				setC_Activity_ID(m_acct.getC_Activity_ID());
 			}
+			if (getC_Order_ID() == 0)
+			{
+				setC_Order_ID(m_acct.getC_Order_ID());
+			}
+			if (getM_SectionCode_ID() == 0)
+			{
+				setM_SectionCode_ID(m_acct.getM_SectionCode_ID());
+			}
 			if (getUser1_ID() == 0)
 			{
 				setUser1_ID(m_acct.getUser1_ID());
@@ -1368,6 +1396,8 @@ public final class FactLine extends X_Fact_Acct
 				.setUserElementString5(getUserElementString5())
 				.setUserElementString6(getUserElementString6())
 				.setUserElementString7(getUserElementString7())
+				.setC_Order_ID(getC_Order_ID())
+				.setM_SectionCode_ID(getM_SectionCode_ID())
 				.build();
 	}
 
@@ -1506,6 +1536,8 @@ public final class FactLine extends X_Fact_Acct
 			setAD_OrgTrx_ID(fact.getAD_OrgTrx_ID());
 			setC_Project_ID(fact.getC_Project_ID());
 			setC_Activity_ID(fact.getC_Activity_ID());
+			setC_Order_ID(fact.getC_Order_ID());
+			setM_SectionCode_ID(fact.getM_SectionCode_ID());
 			setC_Campaign_ID(fact.getC_Campaign_ID());
 			setC_SalesRegion_ID(fact.getC_SalesRegion_ID());
 			setC_LocFrom_ID(fact.getC_LocFrom_ID());
@@ -1518,6 +1550,8 @@ public final class FactLine extends X_Fact_Acct
 			setC_Tax_ID(fact.getC_Tax_ID());
 			// Org for cross charge
 			setAD_Org_ID(fact.getAD_Org_ID());
+			setC_Order_ID(fact.getC_Order_ID());
+			setM_SectionCode_ID(fact.getM_SectionCode_ID());
 
 			return true; // success
 		}
@@ -1616,20 +1650,29 @@ public final class FactLine extends X_Fact_Acct
 		super.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
 	}
 
-	public void setC_Project_ID(@Nullable final ProjectId projectId) {super.setC_Project_ID(ProjectId.toRepoId(projectId));}
+	public void setC_Project_ID(@Nullable final ProjectId projectId)
+	{
+		super.setC_Project_ID(ProjectId.toRepoId(projectId));
+	}
 
 	public void setPostingType(@NonNull final PostingType postingType)
 	{
 		super.setPostingType(postingType.getCode());
 	}
 
-	public void setC_Tax_ID(@Nullable final TaxId taxId) {super.setC_Tax_ID(TaxId.toRepoId(taxId));}
+	public void setC_Tax_ID(@Nullable final TaxId taxId)
+	{
+		super.setC_Tax_ID(TaxId.toRepoId(taxId));
+	}
 
-	public void setM_SectionCode_ID(@Nullable final SectionCodeId sectionCodeId) {super.setM_SectionCode_ID(SectionCodeId.toRepoId(sectionCodeId));}
+	public void setM_SectionCode_ID(@Nullable final SectionCodeId sectionCodeId)
+	{
+		super.setM_SectionCode_ID(SectionCodeId.toRepoId(sectionCodeId));
+	}
 
 	public void setC_Order_ID(@Nullable OrderId orderId)
 	{
-		// TODO implement
+		super.setC_Order_ID(OrderId.toRepoId(orderId));
 	}
 
 	public void setFromDimension(@NonNull final Dimension dimension)
