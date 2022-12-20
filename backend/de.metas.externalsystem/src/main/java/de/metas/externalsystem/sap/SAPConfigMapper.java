@@ -26,6 +26,7 @@ import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP_LocalFile;
 import de.metas.externalsystem.model.I_ExternalSystem_Config_SAP_SFTP;
 import de.metas.externalsystem.sap.source.SAPContentSourceLocalFile;
 import de.metas.externalsystem.sap.source.SAPContentSourceSFTP;
+import de.metas.user.UserId;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 
@@ -55,6 +56,9 @@ public class SAPConfigMapper
 				.processedDirectory(externalSystemConfigSapSftp.getProcessedDirectory())
 				.erroredDirectory(externalSystemConfigSapSftp.getErroredDirectory())
 				.pollingFrequency(Duration.ofMillis(externalSystemConfigSapSftp.getPollingFrequencyInMs()))
+
+				.approvedBy(UserId.ofRepoIdOrNull(externalSystemConfigSapSftp.getApprovedBy_ID()))
+
 				.build();
 	}
 
@@ -76,6 +80,9 @@ public class SAPConfigMapper
 				.processedDirectory(externalSystemConfigSapLocalFile.getProcessedDirectory())
 				.erroredDirectory(externalSystemConfigSapLocalFile.getErroredDirectory())
 				.pollingFrequency(Duration.ofMillis(externalSystemConfigSapLocalFile.getPollingFrequencyInMs()))
+
+				.approvedBy(UserId.ofRepoIdOrNull(externalSystemConfigSapLocalFile.getApprovedBy_ID()))
+
 				.build();
 	}
 }

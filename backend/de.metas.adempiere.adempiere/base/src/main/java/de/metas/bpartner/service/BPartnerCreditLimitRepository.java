@@ -39,6 +39,7 @@ import de.metas.currency.ICurrencyBL;
 import de.metas.money.CurrencyId;
 import de.metas.money.Money;
 import de.metas.organization.OrgId;
+import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.Builder;
@@ -217,6 +218,8 @@ public class BPartnerCreditLimitRepository
 		creditLimitRecord.setIsActive(creditLimit.isActive());
 		creditLimitRecord.setProcessed(creditLimit.isProcessed());
 
+		creditLimitRecord.setApprovedBy_ID(UserId.toRepoId(creditLimit.getApprovedBy()));
+
 		creditLimitRecord.setAD_Org_Mapping_ID(OrgMappingId.toRepoId(creditLimit.getOrgMappingId()));
 
 		Optional.ofNullable(request.getValidatePermissions())
@@ -243,6 +246,7 @@ public class BPartnerCreditLimitRepository
 				.orgMappingId(OrgMappingId.ofRepoIdOrNull(creditLimit.getAD_Org_Mapping_ID()))
 				.active(creditLimit.isActive())
 				.processed(creditLimit.isProcessed())
+				.approvedBy(UserId.ofRepoIdOrNull(creditLimit.getApprovedBy_ID()))
 				.build();
 	}
 

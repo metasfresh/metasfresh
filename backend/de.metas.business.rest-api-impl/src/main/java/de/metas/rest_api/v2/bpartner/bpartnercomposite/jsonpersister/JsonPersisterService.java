@@ -49,6 +49,7 @@ import de.metas.bpartner.creditLimit.CreditLimitTypeId;
 import de.metas.bpartner.service.BPartnerContactQuery;
 import de.metas.bpartner.service.BPartnerContactQuery.BPartnerContactQueryBuilder;
 import de.metas.bpartner.service.BPartnerCreditLimitRepository;
+import de.metas.bpartner.service.IBPartnerStatsDAO;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartner;
 import de.metas.common.bpartner.v2.request.JsonRequestBPartnerUpsertItem;
 import de.metas.common.bpartner.v2.request.JsonRequestBankAccountUpsertItem;
@@ -159,6 +160,7 @@ public class JsonPersisterService
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
 	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final ICurrencyBL currencyBL = Services.get(ICurrencyBL.class);
+	private final IBPartnerStatsDAO bPartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
 
 	private final transient JsonRetrieverService jsonRetrieverService;
 	private final transient JsonRequestConsolidateService jsonRequestConsolidateService;
@@ -2268,6 +2270,14 @@ public class JsonPersisterService
 			{
 				creditLimitBuilder.processed(jsonBPartnerCreditLimit.getProcessed());
 			}
+		}
+
+		// approvedBy
+		if (jsonBPartnerCreditLimit.isApprovedBySet())
+		{
+			final UserId approvedById = UserId.ofRepoIdOrNull(JsonMetasfreshId.toValueInt(jsonBPartnerCreditLimit.getApprovedBy()));
+
+			creditLimitBuilder.approvedBy(approvedById);
 		}
 	}
 

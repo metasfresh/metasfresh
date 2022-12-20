@@ -52,6 +52,26 @@ public interface I_ExternalSystem_Config_SAP_LocalFile
 	String COLUMNNAME_AD_Org_ID = "AD_Org_ID";
 
 	/**
+	 * Set Approved By.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setApprovedBy_ID (int ApprovedBy_ID);
+
+	/**
+	 * Get Approved By.
+	 *
+	 * <br>Type: Table
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getApprovedBy_ID();
+
+	String COLUMNNAME_ApprovedBy_ID = "ApprovedBy_ID";
+
+	/**
 	 * Get Created.
 	 * Date this record was created
 	 *

@@ -16,6 +16,7 @@
     "SFTPProcessedDirectory": "doesntmatter",
     "SFTPErroredDirectory": "doesntmatter",
     "SFTPPollingFrequencyInMs": 1000,
-    "SFTPCreditLimitFileNamePattern": "doesntmatter"
+    "SFTPCreditLimitFileNamePattern": "doesntmatter",
+    "SFTP_ApprovedBy" : "100"
   }
 }
