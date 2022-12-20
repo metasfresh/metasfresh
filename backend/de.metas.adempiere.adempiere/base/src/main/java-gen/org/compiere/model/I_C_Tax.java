@@ -610,6 +610,27 @@ public interface I_C_Tax
 	String COLUMNNAME_SOPOType = "SOPOType";
 
 	/**
+	 * Set Tax Code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setTaxCode (@Nullable java.lang.String TaxCode);
+
+	/**
+	 * Get Tax Code.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getTaxCode();
+
+	ModelColumn<I_C_Tax, Object> COLUMN_TaxCode = new ModelColumn<>(I_C_Tax.class, "TaxCode", null);
+	String COLUMNNAME_TaxCode = "TaxCode";
+
+	/**
 	 * Set Tax Indicator.
 	 * Short form for Tax to be printed on documents
 	 *
@@ -775,27 +796,4 @@ public interface I_C_Tax
 
 	ModelColumn<I_C_Tax, Object> COLUMN_ValidTo = new ModelColumn<>(I_C_Tax.class, "ValidTo", null);
 	String COLUMNNAME_ValidTo = "ValidTo";
-
-	/**
-	 * Set Search Key.
-	 * Search key for the record in the format required - must be unique
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	void setValue (@Nullable java.lang.String Value);
-
-	/**
-	 * Get Search Key.
-	 * Search key for the record in the format required - must be unique
-	 *
-	 * <br>Type: String
-	 * <br>Mandatory: false
-	 * <br>Virtual Column: false
-	 */
-	@Nullable java.lang.String getValue();
-
-	ModelColumn<I_C_Tax, Object> COLUMN_Value = new ModelColumn<>(I_C_Tax.class, "Value", null);
-	String COLUMNNAME_Value = "Value";
 }

@@ -207,3 +207,59 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=160,Updated=TO_TIMESTAMP
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=170,Updated=TO_TIMESTAMP('2022-12-20 13:25:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=544930
 ;
 
+-- Column: C_Tax.Value
+-- 2022-12-20T11:58:07.963Z
+UPDATE AD_Column SET IsUseDocSequence='N',Updated=TO_TIMESTAMP('2022-12-20 13:58:07','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585418
+;
+
+-- 2022-12-20T12:43:25.782Z
+UPDATE AD_Element SET ColumnName='TaxCode',Updated=TO_TIMESTAMP('2022-12-20 14:43:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581888
+;
+
+-- 2022-12-20T12:43:25.820Z
+UPDATE AD_Column SET ColumnName='TaxCode' WHERE AD_Element_ID=581888
+;
+
+-- 2022-12-20T12:43:25.859Z
+UPDATE AD_Process_Para SET ColumnName='TaxCode' WHERE AD_Element_ID=581888
+;
+
+-- 2022-12-20T12:43:26.008Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581888,'en_US') 
+;
+
+-- Column: C_Tax.TaxCode
+-- 2022-12-20T12:43:57.447Z
+UPDATE AD_Column SET AD_Element_ID=581888, ColumnName='TaxCode', Description=NULL, Help=NULL, IsCalculated='N', Name='Tax Code',Updated=TO_TIMESTAMP('2022-12-20 14:43:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585418
+;
+
+-- 2022-12-20T12:43:57.485Z
+UPDATE AD_Field SET Name='Tax Code', Description=NULL, Help=NULL WHERE AD_Column_ID=585418
+;
+
+-- 2022-12-20T12:43:57.523Z
+/* DDL */  select update_Column_Translation_From_AD_Element(581888) 
+;
+
+-- Field: Tax Rate(137,D) -> Tax(174,D) -> Tax Code
+-- Column: C_Tax.TaxCode
+-- 2022-12-20T12:45:35.176Z
+UPDATE AD_Field SET AD_Name_ID=NULL, Description=NULL, Help=NULL, Name='Tax Code',Updated=TO_TIMESTAMP('2022-12-20 14:45:35','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=710049
+;
+
+-- 2022-12-20T12:45:35.214Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(581888) 
+;
+
+-- 2022-12-20T12:45:35.258Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=710049
+;
+
+-- 2022-12-20T12:45:35.296Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(710049)
+;
+
+
+ALTER TABLE C_Tax RENAME COLUMN Value TO TaxCode;
+
+

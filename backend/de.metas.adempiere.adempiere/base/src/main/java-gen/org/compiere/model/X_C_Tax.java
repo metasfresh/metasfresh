@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = 908243352L;
+	private static final long serialVersionUID = -1100201472L;
 
     /** Standard Constructor */
     public X_C_Tax (final Properties ctx, final int C_Tax_ID, @Nullable final String trxName)
@@ -396,6 +396,18 @@ public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compi
 	}
 
 	@Override
+	public void setTaxCode (final @Nullable java.lang.String TaxCode)
+	{
+		set_Value (COLUMNNAME_TaxCode, TaxCode);
+	}
+
+	@Override
+	public java.lang.String getTaxCode() 
+	{
+		return get_ValueAsString(COLUMNNAME_TaxCode);
+	}
+
+	@Override
 	public void setTaxIndicator (final @Nullable java.lang.String TaxIndicator)
 	{
 		set_Value (COLUMNNAME_TaxIndicator, TaxIndicator);
@@ -506,17 +518,5 @@ public class X_C_Tax extends org.compiere.model.PO implements I_C_Tax, org.compi
 	public java.sql.Timestamp getValidTo() 
 	{
 		return get_ValueAsTimestamp(COLUMNNAME_ValidTo);
-	}
-
-	@Override
-	public void setValue (final @Nullable java.lang.String Value)
-	{
-		set_Value (COLUMNNAME_Value, Value);
-	}
-
-	@Override
-	public java.lang.String getValue() 
-	{
-		return get_ValueAsString(COLUMNNAME_Value);
 	}
 }
