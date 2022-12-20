@@ -140,12 +140,4 @@ public class InvokeAmazonAction extends InvokeExternalSystemProcess
 	{
 		return ExternalSystemType.Amazon;
 	}
-
-	@Override
-	protected String getOrgCode()
-	{
-		final ExternalSystemParentConfig config = externalSystemConfigDAO.getById(getExternalChildConfigId());
-
-		return orgDAO.getById(config.getOrgId()).getValue();
-	}
 }
