@@ -11,6 +11,15 @@ import DevicesWidget from './Devices/DevicesWidget';
 import Tooltips from '../tooltips/Tooltips';
 import PropTypes from 'prop-types';
 
+const computeWidgetTypeClass = (widgetType, fieldsCount) => {
+  console.log('computeWidgetTypeClass', { widgetType, fieldsCount });
+  if (fieldsCount > 1) {
+    return 'widgetType-Composed widgetType-Composed-' + fieldsCount;
+  } else {
+    return 'widgetType-' + widgetType;
+  }
+};
+
 /**
  * @file Class based component.
  * @module RawWidget
@@ -505,6 +514,7 @@ export class RawWidget extends PureComponent {
       isModal,
       handlePatch,
       widgetType,
+      widgetSize,
       handleZoomInto,
       dataEntry,
       subentity,
@@ -584,7 +594,8 @@ export class RawWidget extends PureComponent {
             row: !quickInput,
             'form-group-table': rowId && !isModal,
           },
-          'widgetType-' + widgetType,
+          computeWidgetTypeClass(widgetType, fields.length),
+          widgetSize ? 'widgetSize-' + widgetSize : '',
           widgetFieldsName
         )}
       >
@@ -695,6 +706,7 @@ RawWidget.propTypes = {
   tabIndex: PropTypes.number,
   fullScreen: PropTypes.bool,
   widgetType: PropTypes.string,
+  widgetSize: PropTypes.string,
   fields: PropTypes.array,
   icon: PropTypes.string,
   entity: PropTypes.string,

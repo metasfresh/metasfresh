@@ -25,6 +25,7 @@
     display: flex;
     flex-direction: column;
     margin-right: 5px;
+    max-width: 20em; /* will be refined per widgetType */
 
     /* Label */
     .form-control-label {
@@ -36,8 +37,25 @@
     .input-body-container {
       .input-dropdown-container {
         width: 100% !important;
+        min-width: 7em !important;
         padding-top: 0;
         padding-bottom: 0;
+      }
+    }
+
+    &.widgetType-Composed {
+      max-width: 44em;
+    }
+
+    &.widgetType-Lookup {
+      max-width: 20em;
+    }
+
+    &.widgetType-List {
+      max-width: 20em;
+
+      &.widgetSize-S {
+        max-width: 7em;
       }
     }
 
