@@ -1,6 +1,6 @@
 UPDATE ad_language
 SET issystemlanguage = 'N', isactive='N', updated = NOW()
-WHERE ad_language_id = 'nl_NL'
+WHERE ad_language = 'nl_NL'
 ;
 
 DO
