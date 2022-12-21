@@ -11,6 +11,7 @@ import de.metas.i18n.Language;
 import de.metas.letter.BoilerPlateId;
 import de.metas.location.LocationId;
 import de.metas.marketing.base.model.ContactPerson.ContactPersonBuilder;
+import de.metas.organization.OrgId;
 import de.metas.user.UserId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -110,6 +111,7 @@ public class ContactPersonRepository
 
 		contactPersonRecord.setEMail(contactPerson.getEmailAddressStringOrNull());
 		contactPersonRecord.setDeactivatedOnRemotePlatform(contactPerson.getDeactivatedOnRemotePlatform().getCode());
+		contactPersonRecord.setAD_Org_ID(contactPerson.getOrgId().getRepoId());
 
 		return contactPersonRecord;
 	}
@@ -222,7 +224,7 @@ public class ContactPersonRepository
 		return queryBL
 				.createQueryBuilder(I_MKTG_ContactPerson.class)
 				.addOnlyActiveRecordsFilter()
-				.addCompareFilter(I_MKTG_ContactPerson.COLUMN_EMail, STRING_LIKE_IGNORECASE ,email)
+				.addCompareFilter(I_MKTG_ContactPerson.COLUMN_EMail, STRING_LIKE_IGNORECASE, email)
 				.create()
 				.anyMatch();
 	}
@@ -288,6 +290,7 @@ public class ContactPersonRepository
 				.bpLocationId(bpartnerlocationId)
 				.locationId(locationId)
 				.language(Language.getLanguage(contactPersonRecord.getAD_Language()))
+				.orgId(OrgId.ofRepoId(contactPersonRecord.getAD_Org_ID()))
 				.build();
 	}
 
