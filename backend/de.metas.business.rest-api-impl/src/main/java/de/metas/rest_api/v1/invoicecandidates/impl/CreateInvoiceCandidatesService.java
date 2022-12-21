@@ -1,4 +1,26 @@
-package de.metas.rest_api.invoicecandidates.impl;
+/*
+ * #%L
+ * de.metas.business.rest-api-impl
+ * %%
+ * Copyright (C) 2022 metas GmbH
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 2 of the
+ * License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public
+ * License along with this program. If not, see
+ * <http://www.gnu.org/licenses/gpl-2.0.html>.
+ * #L%
+ */
+
+package de.metas.rest_api.v1.invoicecandidates.impl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -10,8 +32,8 @@ import de.metas.bpartner.composite.repository.BPartnerCompositeRepository;
 import de.metas.bpartner.service.BPartnerInfo;
 import de.metas.bpartner.service.BPartnerInfo.BPartnerInfoBuilder;
 import de.metas.bpartner.service.BPartnerQuery;
-import de.metas.common.rest_api.v1.JsonDocTypeInfo;
 import de.metas.common.rest_api.common.JsonExternalId;
+import de.metas.common.rest_api.v1.JsonDocTypeInfo;
 import de.metas.common.rest_api.v1.JsonInvoiceRule;
 import de.metas.common.rest_api.v1.JsonPrice;
 import de.metas.i18n.TranslatableStrings;
@@ -39,11 +61,11 @@ import de.metas.product.ProductPrice;
 import de.metas.quantity.Quantitys;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
-import de.metas.rest_api.invoicecandidates.request.JsonCreateInvoiceCandidatesRequest;
-import de.metas.rest_api.invoicecandidates.request.JsonCreateInvoiceCandidatesRequestItem;
 import de.metas.rest_api.invoicecandidates.response.JsonCreateInvoiceCandidatesResponse;
 import de.metas.rest_api.invoicecandidates.response.JsonCreateInvoiceCandidatesResponse.JsonCreateInvoiceCandidatesResponseBuilder;
 import de.metas.rest_api.invoicecandidates.response.JsonInvoiceCandidatesResponseItem;
+import de.metas.rest_api.invoicecandidates.v1.request.JsonCreateInvoiceCandidatesRequest;
+import de.metas.rest_api.invoicecandidates.v1.request.JsonCreateInvoiceCandidatesRequestItem;
 import de.metas.rest_api.utils.BPartnerCompositeLookupKey;
 import de.metas.rest_api.utils.BPartnerQueryService;
 import de.metas.rest_api.utils.CurrencyService;
@@ -77,28 +99,6 @@ import java.util.stream.Collectors;
 import static de.metas.common.util.CoalesceUtil.coalesce;
 import static de.metas.util.Check.isEmpty;
 import static java.math.BigDecimal.ZERO;
-
-/*
- * #%L
- * de.metas.business.rest-api-impl
- * %%
- * Copyright (C) 2019 metas GmbH
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
- * published by the Free Software Foundation, either version 2 of the
- * License, or (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public
- * License along with this program. If not, see
- * <http://www.gnu.org/licenses/gpl-2.0.html>.
- * #L%
- */
 
 @Service
 public class CreateInvoiceCandidatesService

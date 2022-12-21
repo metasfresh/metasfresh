@@ -1,26 +1,8 @@
-package de.metas.rest_api.invoicecandidates.impl;
-
-import java.util.List;
-
-import org.springframework.stereotype.Service;
-
-import de.metas.i18n.TranslatableStrings;
-import de.metas.invoicecandidate.api.IInvoiceCandBL;
-import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
-import de.metas.process.IADPInstanceDAO;
-import de.metas.process.PInstanceId;
-import de.metas.util.web.exception.InvalidEntityException;
-import de.metas.rest_api.invoicecandidates.request.JsonEnqueueForInvoicingRequest;
-import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
-import de.metas.util.Services;
-import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
-import lombok.NonNull;
-
 /*
  * #%L
  * de.metas.business.rest-api-impl
  * %%
- * Copyright (C) 2019 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -37,6 +19,23 @@ import lombok.NonNull;
  * <http://www.gnu.org/licenses/gpl-2.0.html>.
  * #L%
  */
+
+package de.metas.rest_api.v1.invoicecandidates.impl;
+
+import de.metas.i18n.TranslatableStrings;
+import de.metas.invoicecandidate.api.IInvoiceCandBL;
+import de.metas.invoicecandidate.api.IInvoiceCandidateEnqueueResult;
+import de.metas.process.IADPInstanceDAO;
+import de.metas.process.PInstanceId;
+import de.metas.rest_api.invoicecandidates.response.JsonEnqueueForInvoicingResponse;
+import de.metas.rest_api.invoicecandidates.v1.request.JsonEnqueueForInvoicingRequest;
+import de.metas.util.Services;
+import de.metas.util.lang.ExternalHeaderIdWithExternalLineIds;
+import de.metas.util.web.exception.InvalidEntityException;
+import lombok.NonNull;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class EnqueueForInvoicingService
