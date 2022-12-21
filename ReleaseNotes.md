@@ -12,6 +12,7 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#14165](https://github.com/metasfresh/metasfresh/issues/14165) Gantt: New Prüfaufträge shall always be simulation initially 
   * [#14164](https://github.com/metasfresh/metasfresh/issues/14164) New Accounting Dimensions: Section Code and Order
   * [#14092](https://github.com/metasfresh/metasfresh/issues/14092) Allow EDI-Invoice without order-id
   * [#14159](https://github.com/metasfresh/metasfresh/issues/14159) Extend Export Accounting
