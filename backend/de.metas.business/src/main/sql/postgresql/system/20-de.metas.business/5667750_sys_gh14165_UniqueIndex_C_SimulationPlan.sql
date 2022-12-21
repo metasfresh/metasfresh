@@ -40,6 +40,9 @@ INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Ind
 INSERT INTO AD_Index_Column (AD_Client_ID,AD_Column_ID,AD_Index_Column_ID,AD_Index_Table_ID,AD_Org_ID,Created,CreatedBy,EntityType,IsActive,SeqNo,Updated,UpdatedBy) VALUES (0,583498,541289,540716,0,TO_TIMESTAMP('2022-12-08 17:48:32','YYYY-MM-DD HH24:MI:SS'),100,'D','Y',30,TO_TIMESTAMP('2022-12-08 17:48:32','YYYY-MM-DD HH24:MI:SS'),100)
 ;
 
+DROP INDEX IF EXISTS IDX_C_SimulationPlan_Unique_MainSimulation
+;
+
 -- 2022-12-08T15:48:41.765Z
 CREATE UNIQUE INDEX IDX_C_SimulationPlan_Unique_MainSimulation ON C_SimulationPlan (IsMainSimulation,IsActive,Processed) WHERE IsMainSimulation='Y' AND IsActive='Y' AND Processed='N'
 ;
