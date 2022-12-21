@@ -73,7 +73,7 @@ public class LocalFileConfig implements BPartnerFileEndpointConfig, ProductFileE
 	String fileNamePatternCreditLimit;
 
 	@Nullable
-	JsonMetasfreshId approvedBy;
+	JsonMetasfreshId creditLimitResponsibleUser;
 
 	@Override
 	@NonNull

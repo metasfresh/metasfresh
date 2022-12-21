@@ -63,19 +63,19 @@ public class UpsertCreditLimitRequestBuilder
 	ImmutableList.Builder<JsonRequestCreditLimitUpsertItem> creditLimitUpsertGroupBuilder = new ImmutableList.Builder<>();
 
 	@Nullable
-	JsonMetasfreshId approvedBy;
+	JsonMetasfreshId creditLimitResponsibleUser;
 
 	@NonNull
 	public static UpsertCreditLimitRequestBuilder of(
 			@NonNull final CreditLimitRow creditLimitRow,
 			@NonNull final String orgCode,
-			@Nullable final JsonMetasfreshId approvedBy)
+			@Nullable final JsonMetasfreshId creditLimitResponsibleUser)
 	{
 		final UpsertCreditLimitRequestBuilder requestBuilder = new UpsertCreditLimitRequestBuilder(
 				creditLimitRow.getCreditAccount(),
 				creditLimitRow.getCreditControlArea(),
 				orgCode,
-				approvedBy);
+				creditLimitResponsibleUser);
 
 		requestBuilder.addCreditLimitRow(creditLimitRow);
 
@@ -86,12 +86,12 @@ public class UpsertCreditLimitRequestBuilder
 			@NonNull final PartnerCode partnerCode,
 			@NonNull final String sectionCode,
 			@NonNull final String orgCode,
-			@Nullable final JsonMetasfreshId approvedBy)
+			@Nullable final JsonMetasfreshId creditLimitResponsibleUser)
 	{
 		this.partnerCode = partnerCode;
 		this.orgCode = orgCode;
 		this.sectionCode = sectionCode;
-		this.approvedBy = approvedBy;
+		this.creditLimitResponsibleUser = creditLimitResponsibleUser;
 	}
 
 	public boolean addCreditLimitRow(@NonNull final CreditLimitRow creditLimitRow)
@@ -127,7 +127,7 @@ public class UpsertCreditLimitRequestBuilder
 		jsonRequestCreditLimitUpsertItem.setAmount(getCreditLimitAmount(creditLimitRow));
 		jsonRequestCreditLimitUpsertItem.setDateFrom(creditLimitRow.getEffectiveDateFrom(DEFAULT_DATE_FORMAT).orElse(null));
 		jsonRequestCreditLimitUpsertItem.setProcessed(true);
-		jsonRequestCreditLimitUpsertItem.setApprovedBy(approvedBy);
+		jsonRequestCreditLimitUpsertItem.setApprovedBy(creditLimitResponsibleUser);
 		jsonRequestCreditLimitUpsertItem.setActive(computeIsActiveCreditLimit(creditLimitRow));
 
 		return jsonRequestCreditLimitUpsertItem;

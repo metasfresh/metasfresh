@@ -31,10 +31,8 @@ import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.apache.camel.CamelContext;
 
-import javax.annotation.Nullable;
 import java.time.Duration;
 import java.util.Map;
-import java.util.Optional;
 
 import static de.metas.camel.externalsystems.sap.SAPConstants.DEFAULT_RENAME_PATTERN;
 import static de.metas.camel.externalsystems.sap.SAPConstants.SEEN_FILE_RENAME_PATTERN_PROPERTY_NAME;
@@ -70,7 +68,7 @@ public class SAPConfigUtil
 				.targetDirectoryCreditLimit(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_CREDIT_LIMIT_TARGET_DIRECTORY))
 				.fileNamePatternCreditLimit(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_CREDIT_LIMIT_FILENAME_PATTERN))
 
-				.approvedBy(getApprovedBy(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_APPROVED_BY)))
+				.creditLimitResponsibleUser(JsonMetasfreshId.ofOrNull(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_APPROVED_BY)))
 
 				.build();
 	}
@@ -100,17 +98,8 @@ public class SAPConfigUtil
 				.targetDirectoryCreditLimit(requestParameters.get(ExternalSystemConstants.PARAM_LOCAL_FILE_CREDIT_LIMIT_TARGET_DIRECTORY))
 				.fileNamePatternCreditLimit(requestParameters.get(ExternalSystemConstants.PARAM_LOCAL_FILE_CREDIT_LIMIT_FILENAME_PATTERN))
 
-				.approvedBy(getApprovedBy(requestParameters.get(ExternalSystemConstants.PARAM_LOCAL_FILE_APPROVED_BY)))
+				.creditLimitResponsibleUser(JsonMetasfreshId.ofOrNull(requestParameters.get(ExternalSystemConstants.PARAM_LOCAL_FILE_APPROVED_BY)))
 
 				.build();
-	}
-
-	@Nullable
-	private static JsonMetasfreshId getApprovedBy(@Nullable final String paramValue)
-	{
-		return Optional.ofNullable(paramValue)
-				.map(Integer::parseInt)
-				.map(JsonMetasfreshId::of)
-				.orElse(null);
 	}
 }

@@ -28,5 +28,5 @@ public interface CreditLimitFileEndpointConfig
 {
 	String getCreditLimitFileEndpoint();
 
-	JsonMetasfreshId getApprovedBy();
+	JsonMetasfreshId getCreditLimitResponsibleUser();
 }

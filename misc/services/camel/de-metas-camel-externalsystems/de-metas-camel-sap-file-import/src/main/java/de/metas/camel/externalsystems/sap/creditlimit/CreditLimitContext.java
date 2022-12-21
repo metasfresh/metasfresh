@@ -38,13 +38,13 @@ public class CreditLimitContext
 	private final String orgCode;
 
 	@Nullable
-	private final JsonMetasfreshId approvedBy;
+	private final JsonMetasfreshId creditLimitResponsibleUser;
 
 	@Nullable
 	private UpsertCreditLimitRequestBuilder upsertCreditLimitRequestBuilder;
 
 	public void initCreditLimitRequestBuilderFor(@NonNull final CreditLimitRow creditLimitRow)
 	{
-		this.upsertCreditLimitRequestBuilder = UpsertCreditLimitRequestBuilder.of(creditLimitRow, orgCode, approvedBy);
+		this.upsertCreditLimitRequestBuilder = UpsertCreditLimitRequestBuilder.of(creditLimitRow, orgCode, creditLimitResponsibleUser);
 	}
 }

@@ -113,7 +113,7 @@ public class GetCreditLimitFromFileRouteBuilder extends IdAwareRouteBuilder
 	{
 		final CreditLimitContext context = CreditLimitContext.builder()
 				.orgCode(enabledByExternalSystemRequest.getOrgCode())
-				.approvedBy(fileEndpointConfig.getApprovedBy())
+				.creditLimitResponsibleUser(fileEndpointConfig.getCreditLimitResponsibleUser())
 				.build();
 
 		exchange.setProperty(ROUTE_PROPERTY_CREDIT_LIMIT_ROUTE_CONTEXT, context);

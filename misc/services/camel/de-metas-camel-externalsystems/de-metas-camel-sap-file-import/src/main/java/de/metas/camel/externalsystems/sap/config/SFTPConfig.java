@@ -82,7 +82,7 @@ public class SFTPConfig implements BPartnerFileEndpointConfig, ProductFileEndpoi
 	String fileNamePatternCreditLimit;
 
 	@Nullable
-	JsonMetasfreshId approvedBy;
+	JsonMetasfreshId creditLimitResponsibleUser;
 
 	@Override
 	@NonNull
