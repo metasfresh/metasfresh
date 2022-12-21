@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.ui.web.base
+ * de.metas.cucumber
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,32 +20,15 @@
  * #L%
  */
 
-package de.metas.ui.web.calendar.json;
+package de.metas.cucumber.stepdefs.project.workOrder;
 
-import de.metas.calendar.CalendarGlobalId;
-import de.metas.calendar.CalendarResourceId;
-import de.metas.calendar.simulation.SimulationPlanId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
+import de.metas.cucumber.stepdefs.StepDefData;
+import org.compiere.model.I_C_Project_WO_Resource_Conflict;
 
-import javax.annotation.Nullable;
-
-@Value
-@Builder
-@Jacksonized
-public class JsonCalendarEntryAddRequest
+public class C_Project_WO_Resource_Conflict_StepDefData extends StepDefData<I_C_Project_WO_Resource_Conflict>
 {
-	@Nullable SimulationPlanId simulationId;
-
-	@NonNull CalendarGlobalId calendarId;
-	@NonNull CalendarResourceId resourceId;
-
-	@NonNull String title;
-	@Nullable String description;
-
-	@NonNull JsonDateTime startDate;
-	@Nullable JsonDateTime endDate;
-	boolean isAllDay;
+	public C_Project_WO_Resource_Conflict_StepDefData()
+	{
+		super(I_C_Project_WO_Resource_Conflict.class);
+	}
 }

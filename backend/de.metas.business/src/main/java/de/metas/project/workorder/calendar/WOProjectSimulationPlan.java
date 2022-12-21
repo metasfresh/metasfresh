@@ -37,7 +37,7 @@ public final class WOProjectSimulationPlan
 	@Builder(toBuilder = true)
 	private WOProjectSimulationPlan(
 			@NonNull final SimulationPlanId simulationPlanId,
-			@Nullable Map<WOProjectStepId, WOProjectStepSimulation> stepsById,
+			@Nullable final Map<WOProjectStepId, WOProjectStepSimulation> stepsById,
 			@Nullable final Map<WOProjectResourceId, WOProjectResourceSimulation> projectResourcesById)
 	{
 		this.simulationPlanId = simulationPlanId;

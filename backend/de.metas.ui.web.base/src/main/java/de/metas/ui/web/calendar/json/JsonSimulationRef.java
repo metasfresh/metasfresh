@@ -15,6 +15,7 @@ public class JsonSimulationRef
 	@NonNull SimulationPlanId id;
 	@NonNull String name;
 	boolean processed;
+	boolean isMainSimulation;
 
 	public static JsonSimulationRef of(@NonNull final SimulationPlanRef simulationRef)
 	{
@@ -22,6 +23,7 @@ public class JsonSimulationRef
 				.id(simulationRef.getId())
 				.name(simulationRef.getName())
 				.processed(simulationRef.isProcessed())
+				.isMainSimulation(simulationRef.isMainSimulation())
 				.build();
 	}
 }

@@ -44,6 +44,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 
@@ -133,6 +134,7 @@ public class WOProjectService
 					.getByProjectId(projectStepId.getProjectId())
 					.streamByStepId(projectStepId)
 					.map(WOProjectResource::getDateRange)
+					.filter(Objects::nonNull)
 					.distinct()
 					.collect(ImmutableList.toImmutableList());
 

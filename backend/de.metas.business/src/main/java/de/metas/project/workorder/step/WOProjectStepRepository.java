@@ -194,8 +194,12 @@ public class WOProjectStepRepository
 			record.setDescription(step.getDescription());
 			record.setExternalId(ExternalId.toValue(step.getExternalId()));
 
-			record.setDateEnd(TimeUtil.asTimestamp(step.getDateRange().getEndDate()));
-			record.setDateStart(TimeUtil.asTimestamp(step.getDateRange().getStartDate()));
+			record.setDateEnd(step.getEndDate()
+									  .map(TimeUtil::asTimestamp)
+									  .orElse(null));
+			record.setDateStart(step.getStartDate()
+										.map(TimeUtil::asTimestamp)
+										.orElse(null));
 
 			record.setWOPartialReportDate(TimeUtil.asTimestamp(step.getWoPartialReportDate()));
 			record.setWOPlannedResourceDurationHours(NumberUtils.asInt(step.getWoPlannedResourceDurationHours(), -1));
@@ -320,13 +324,21 @@ public class WOProjectStepRepository
 	@NonNull
 	public static WOProjectStep ofRecord(@NonNull final I_C_Project_WO_Step stepRecord)
 	{
-		final Instant startDate = TimeUtil.asInstantNonNull(stepRecord.getDateStart());
-		final Instant endDate = TimeUtil.asInstantNonNull(stepRecord.getDateEnd());
+		final Instant startDate = TimeUtil.asInstant(stepRecord.getDateStart());
+		final Instant endDate = TimeUtil.asInstant(stepRecord.getDateEnd());
 
-		final CalendarDateRange dateRange = CalendarDateRange.builder()
-				.startDate(startDate)
-				.endDate(endDate)
-				.build();
+		final CalendarDateRange dateRange;
+		if (startDate == null || endDate == null)
+		{
+			dateRange = null;
+		}
+		else
+		{
+			dateRange = CalendarDateRange.builder()
+					.startDate(startDate)
+					.endDate(endDate)
+					.build();	
+		}
 
 		return WOProjectStep.builder()
 				.woProjectStepId(extractWOProjectStepId(stepRecord))
@@ -347,7 +359,7 @@ public class WOProjectStepRepository
 				.woFindingsCreatedDate(TimeUtil.asInstant(stepRecord.getWOFindingsCreatedDate()))
 				.build();
 	}
-
+	
 	private static void updateRecordFromDateRange(@NonNull final I_C_Project_WO_Step record, @NonNull final CalendarDateRange from)
 	{
 		record.setDateStart(TimeUtil.asTimestamp(from.getStartDate()));

@@ -1,9 +1,9 @@
 // Generated Model - DO NOT CHANGE
 package org.compiere.model;
 
-import javax.annotation.Nullable;
 import java.sql.ResultSet;
 import java.util.Properties;
+import javax.annotation.Nullable;
 
 /** Generated Model for C_Project_WO_Step
  *  @author metasfresh (generated) 
@@ -12,7 +12,7 @@ import java.util.Properties;
 public class X_C_Project_WO_Step extends org.compiere.model.PO implements I_C_Project_WO_Step, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1884120826L;
+	private static final long serialVersionUID = -1348106134L;
 
     /** Standard Constructor */
     public X_C_Project_WO_Step (final Properties ctx, final int C_Project_WO_Step_ID, @Nullable final String trxName)
@@ -65,7 +65,7 @@ public class X_C_Project_WO_Step extends org.compiere.model.PO implements I_C_Pr
 	}
 
 	@Override
-	public void setDateEnd (final java.sql.Timestamp DateEnd)
+	public void setDateEnd (final @Nullable java.sql.Timestamp DateEnd)
 	{
 		set_Value (COLUMNNAME_DateEnd, DateEnd);
 	}
@@ -77,7 +77,7 @@ public class X_C_Project_WO_Step extends org.compiere.model.PO implements I_C_Pr
 	}
 
 	@Override
-	public void setDateStart (final java.sql.Timestamp DateStart)
+	public void setDateStart (final @Nullable java.sql.Timestamp DateStart)
 	{
 		set_Value (COLUMNNAME_DateStart, DateStart);
 	}
@@ -134,6 +134,30 @@ public class X_C_Project_WO_Step extends org.compiere.model.PO implements I_C_Pr
 	public int getSeqNo() 
 	{
 		return get_ValueAsInt(COLUMNNAME_SeqNo);
+	}
+
+	@Override
+	public void setWOActualFacilityHours (final int WOActualFacilityHours)
+	{
+		set_Value (COLUMNNAME_WOActualFacilityHours, WOActualFacilityHours);
+	}
+
+	@Override
+	public int getWOActualFacilityHours() 
+	{
+		return get_ValueAsInt(COLUMNNAME_WOActualFacilityHours);
+	}
+
+	@Override
+	public void setWOActualManHours (final int WOActualManHours)
+	{
+		set_Value (COLUMNNAME_WOActualManHours, WOActualManHours);
+	}
+
+	@Override
+	public int getWOActualManHours() 
+	{
+		return get_ValueAsInt(COLUMNNAME_WOActualManHours);
 	}
 
 	@Override

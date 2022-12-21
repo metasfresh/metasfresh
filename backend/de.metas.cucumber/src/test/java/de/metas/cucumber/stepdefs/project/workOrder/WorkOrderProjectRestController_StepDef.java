@@ -24,6 +24,7 @@ package de.metas.cucumber.stepdefs.project.workOrder;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.JsonApiResponse;
@@ -33,12 +34,15 @@ import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectRespons
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderProjectUpsertResponse;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderResourceResponse;
 import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderStepResponse;
+import de.metas.common.rest_api.v2.project.workorder.JsonWorkOrderStepUpsertResponse;
 import de.metas.cucumber.stepdefs.DataTableUtil;
 import de.metas.cucumber.stepdefs.StepDefConstants;
+import de.metas.cucumber.stepdefs.StepDefUtil;
 import de.metas.cucumber.stepdefs.context.TestContext;
 import de.metas.cucumber.stepdefs.project.ProjectId_StepDefData;
 import de.metas.project.ProjectId;
 import de.metas.project.ProjectTypeId;
+import de.metas.util.Check;
 import io.cucumber.datatable.DataTable;
 import io.cucumber.java.en.And;
 import lombok.NonNull;
@@ -46,6 +50,8 @@ import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_AD_Sequence;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.I_C_ProjectType;
+import org.compiere.model.I_C_Project_WO_Resource;
+import org.compiere.model.I_C_Project_WO_Step;
 
 import java.util.List;
 import java.util.Map;
@@ -58,15 +64,18 @@ public class WorkOrderProjectRestController_StepDef
 	private static final String NEXT_DOC_SEQ_NO_PLACEHOLDER = "nextDocNo";
 
 	private final ProjectId_StepDefData projectIdTable;
+	private final C_Project_WO_Step_StepDefData projectWOStepTable;
 	private final TestContext testContext;
 
 	private final ObjectMapper mapper = JsonObjectMapperHolder.sharedJsonObjectMapper();
 
 	public WorkOrderProjectRestController_StepDef(
 			@NonNull final ProjectId_StepDefData projectIdTable,
+			@NonNull final C_Project_WO_Step_StepDefData projectWOStepTable,
 			@NonNull final TestContext testContext)
 	{
 		this.projectIdTable = projectIdTable;
+		this.projectWOStepTable = projectWOStepTable;
 		this.testContext = testContext;
 	}
 
@@ -83,6 +92,23 @@ public class WorkOrderProjectRestController_StepDef
 		assertThat(projectId).isNotNull();
 
 		projectIdTable.putOrReplace(projectIdentifier, projectId);
+
+		final String stepIdentifiers = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Project_WO_Resource.COLUMNNAME_C_Project_WO_Step_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+		if (Check.isNotBlank(stepIdentifiers))
+		{
+			final ImmutableList<String> stepIdentifiersList = StepDefUtil.extractIdentifiers(stepIdentifiers);
+			assertThat(workOrderProjectUpsertResponse.getSteps()).isNotNull();
+			final List<JsonWorkOrderStepUpsertResponse> steps = workOrderProjectUpsertResponse.getSteps(); 
+			assertThat(steps).isNotNull();
+			assertThat(stepIdentifiersList.size()).isEqualTo(steps.size());
+
+			for (int index = 0; index < stepIdentifiersList.size(); index++)
+			{
+				final I_C_Project_WO_Step stepRecord = InterfaceWrapperHelper.load(steps.get(index).getMetasfreshId().getValue(), I_C_Project_WO_Step.class);
+				
+				projectWOStepTable.putOrReplace(stepIdentifiersList.get(index), stepRecord);
+			}
+		}
 	}
 
 	@And("validate the following exception message was thrown by the work order project upsert endpoint")
@@ -197,15 +223,22 @@ public class WorkOrderProjectRestController_StepDef
 		final List<JsonWorkOrderResourceResponse> projectStepResources = jsonWorkOrderStepResponse.getResources();
 		final List<JsonWorkOrderResourceResponse> expectedStepResources = expectedJsonWorkOrderStepResponse.getResources();
 
-		assertThat(projectStepResources).isNotNull();
-		assertThat(expectedStepResources).isNotNull();
-
-		final int projectStepResourcesSize = projectStepResources.size();
-		assertThat(projectStepResourcesSize).isEqualByComparingTo(expectedStepResources.size());
-
-		for (int i = 0; i < projectStepResourcesSize; i++)
+		if (projectStepResources == null)
 		{
-			validateJsonWorkOrderResourceResponse(projectStepResources.get(i), expectedStepResources.get(i));
+			assertThat(expectedStepResources).isNull();	
+		}
+		else
+		{
+			assertThat(projectStepResources).isNotNull();
+			assertThat(expectedStepResources).isNotNull();
+
+			final int projectStepResourcesSize = projectStepResources.size();
+			assertThat(projectStepResourcesSize).isEqualByComparingTo(expectedStepResources.size());
+
+			for (int i = 0; i < projectStepResourcesSize; i++)
+			{
+				validateJsonWorkOrderResourceResponse(projectStepResources.get(i), expectedStepResources.get(i));
+			}
 		}
 	}
 

@@ -32,11 +32,12 @@ import de.metas.calendar.CalendarEntryUpdateResult;
 import de.metas.calendar.CalendarQuery;
 import de.metas.calendar.CalendarResourceId;
 import de.metas.calendar.MultiCalendarService;
+import de.metas.calendar.simulation.SimulationPlanCreateRequest;
 import de.metas.calendar.simulation.SimulationPlanId;
 import de.metas.calendar.simulation.SimulationPlanRef;
 import de.metas.calendar.simulation.SimulationPlanService;
 import de.metas.calendar.util.CalendarDateRange;
-import de.metas.common.util.CoalesceUtil;
+import de.metas.organization.IOrgDAO;
 import de.metas.product.ResourceId;
 import de.metas.resource.ResourceGroupId;
 import de.metas.ui.web.calendar.json.JsonCalendarConflict;
@@ -59,7 +60,9 @@ import de.metas.ui.web.window.datatypes.json.JSONLookupValue;
 import de.metas.ui.web.window.model.lookup.LookupDataSource;
 import de.metas.ui.web.window.model.lookup.LookupDataSourceFactory;
 import de.metas.user.UserId;
+import de.metas.util.Check;
 import de.metas.util.InSetPredicate;
+import de.metas.util.Services;
 import io.swagger.annotations.Api;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
@@ -67,6 +70,7 @@ import org.compiere.model.I_AD_User;
 import org.compiere.model.I_C_BPartner;
 import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_Resource_Group;
+import org.compiere.util.TimeUtil;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -77,6 +81,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Nullable;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.util.Comparator;
 import java.util.List;
@@ -88,6 +93,7 @@ import java.util.Set;
 @RequestMapping(WebConfig.ENDPOINT_ROOT + "/calendars")
 public class CalendarRestController
 {
+	private final IOrgDAO orgDAO = Services.get(IOrgDAO.class);
 	private final UserSession userSession;
 	private final MultiCalendarService calendarService;
 	private final SimulationPlanService simulationService;
@@ -172,8 +178,8 @@ public class CalendarRestController
 
 			final Set<CalendarResourceId> onlyResourceIds = query.getOnlyResourceIds();
 			result.resourceIds(onlyResourceIds != null && !onlyResourceIds.isEmpty()
-					? InSetPredicate.only(onlyResourceIds)
-					: InSetPredicate.any());
+									   ? InSetPredicate.only(onlyResourceIds)
+									   : InSetPredicate.any());
 
 			result.onlyProjectId(query.getOnlyProjectId());
 
@@ -233,18 +239,16 @@ public class CalendarRestController
 		userSession.assertLoggedIn();
 
 		final CalendarEntry calendarEntry = calendarService.addEntry(CalendarEntryAddRequest.builder()
-				.userId(userSession.getLoggedUserId())
-				.simulationId(request.getSimulationId())
-				.calendarId(request.getCalendarId())
-				.resourceId(request.getResourceId())
-				.title(request.getTitle())
-				.description(request.getDescription())
-				.dateRange(CalendarDateRange.builder()
-						.startDate(request.getStartDate().toInstant())
-						.endDate(request.getEndDate().toInstant())
-						.allDay(request.isAllDay())
-						.build())
-				.build());
+																			 .userId(userSession.getLoggedUserId())
+																			 .simulationId(request.getSimulationId())
+																			 .calendarId(request.getCalendarId())
+																			 .resourceId(request.getResourceId())
+																			 .title(request.getTitle())
+																			 .description(request.getDescription())
+																			 .dateRange(extractCalendarDateRange(request.getStartDate(),
+																												 request.getEndDate(),
+																												 request.isAllDay()))
+																			 .build());
 
 		return JsonCalendarEntryUpdateResult.ofChangedEntry(calendarEntry, userSession.getTimeZone(), userSession.getAD_Language());
 	}
@@ -257,39 +261,18 @@ public class CalendarRestController
 		userSession.assertLoggedIn();
 
 		final CalendarEntryUpdateResult result = calendarService.updateEntry(CalendarEntryUpdateRequest.builder()
-				.entryId(CalendarEntryId.ofString(entryIdStr))
-				.simulationId(request.getSimulationId())
-				.updatedByUserId(userSession.getLoggedUserId())
-				.resourceId(request.getResourceId())
-				.title(request.getTitle())
-				.description(request.getDescription())
-				.dateRange(extractDateRange(request))
-				.build());
+																					 .entryId(CalendarEntryId.ofString(entryIdStr))
+																					 .simulationId(request.getSimulationId())
+																					 .updatedByUserId(userSession.getLoggedUserId())
+																					 .resourceId(request.getResourceId())
+																					 .title(request.getTitle())
+																					 .description(request.getDescription())
+																					 .dateRange(extractCalendarDateRange(request.getStartDate(),
+																														 request.getEndDate(),
+																														 request.getIsAllDay()))
+																					 .build());
 
 		return JsonCalendarEntryUpdateResult.of(result, userSession.getTimeZone(), userSession.getAD_Language());
-	}
-
-	private static CalendarDateRange extractDateRange(final JsonCalendarEntryUpdateRequest request)
-	{
-		final JsonDateTime startDate = request.getStartDate();
-		final JsonDateTime endDate = request.getEndDate();
-		final Boolean isAllDay = request.getIsAllDay();
-		if (startDate != null && endDate != null && isAllDay != null)
-		{
-			return CalendarDateRange.builder()
-					.startDate(startDate.toInstant())
-					.endDate(endDate.toInstant())
-					.allDay(isAllDay)
-					.build();
-		}
-		else if (CoalesceUtil.countNotNulls(startDate, endDate, isAllDay) > 0)
-		{
-			throw new AdempiereException("Please specify startDate, endDate and isAllDay or don't specify any of those");
-		}
-		else
-		{
-			return null;
-		}
 	}
 
 	@DeleteMapping("/entries/{entryId}")
@@ -309,9 +292,12 @@ public class CalendarRestController
 		userSession.assertLoggedIn();
 
 		final SimulationPlanRef simulationRef = simulationService.createNewSimulation(
-				request.getName(),
-				request.getCopyFromSimulationId(),
-				userSession.getLoggedUserId());
+				SimulationPlanCreateRequest.builder()
+						.orgId(userSession.getOrgId())
+						.name(request.getName())
+						.copyFromSimulationId(request.getCopyFromSimulationId())
+						.responsibleUserId(userSession.getLoggedUserId())
+						.build());
 
 		return JsonSimulationRef.of(simulationRef);
 	}
@@ -346,8 +332,8 @@ public class CalendarRestController
 		final CalendarConflictsQuery query = CalendarConflictsQuery.builder()
 				.simulationId(SimulationPlanId.ofNullableObject(simulationIdStr))
 				.resourceIds(CalendarResourceId.ofCommaSeparatedString(onlyResourceIdsStr)
-						.map(InSetPredicate::only)
-						.orElse(InSetPredicate.any()))
+									 .map(InSetPredicate::only)
+									 .orElse(InSetPredicate.any()))
 				.build();
 
 		final ImmutableList<JsonCalendarConflict> jsonConflicts = calendarService.getConflicts(query)
@@ -357,6 +343,36 @@ public class CalendarRestController
 
 		return JsonCalendarConflictsQueryResponse.builder()
 				.conflicts(jsonConflicts)
+				.build();
+	}
+
+	@NonNull
+	private CalendarDateRange extractCalendarDateRange(
+			@NonNull final JsonDateTime startDate,
+			@Nullable final JsonDateTime endDate,
+			final boolean isAllDay)
+	{
+		final Instant endDateToBeUsed;
+		
+		if (endDate != null)
+		{
+			endDateToBeUsed = endDate.toInstant();
+		}
+		else if (isAllDay)
+		{
+			final ZoneId zoneId = orgDAO.getTimeZone(userSession.getOrgId());
+			endDateToBeUsed = TimeUtil.asEndOfDayInstant(startDate.toInstant().atZone(zoneId).toLocalDate(), zoneId);
+			Check.assumeNotNull(endDateToBeUsed, "Computed EndDate should not be missing!");
+		}
+		else
+		{
+			throw new AdempiereException("Missing mandatory endDate!");
+		}
+		
+		return CalendarDateRange.builder()
+				.startDate(startDate.toInstant())
+				.endDate(endDateToBeUsed)
+				.allDay(isAllDay)
 				.build();
 	}
 

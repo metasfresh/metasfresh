@@ -1,7 +1,7 @@
 package de.metas.calendar.continuous_query;
 
 import com.google.common.collect.ImmutableList;
-import de.metas.calendar.CalendarEntry;
+import de.metas.calendar.CalendarEntryAndSimulationId;
 import de.metas.calendar.CalendarEntryId;
 import de.metas.calendar.CalendarService;
 import de.metas.calendar.CalendarServicesMap;
@@ -45,8 +45,10 @@ class EventsResolver
 		{
 			final CalendarEntryId entryId = ((EntryIdChangedEvent)event).getEntryId();
 			final CalendarService calendarService = calendarServices.getById(entryId.getCalendarServiceId());
-			final CalendarEntry entry = calendarService.getEntryById(entryId, simulationId);
-			return EntryChangedEvent.of(entry);
+			return calendarService.getEntryById(entryId, simulationId)
+					.map(EntryChangedEvent::of)
+					.map(changedEvent -> (Event)changedEvent)
+					.orElseGet(() -> EntryDeletedEvent.of(CalendarEntryAndSimulationId.of(entryId, simulationId)));
 		}
 		else if (event instanceof EntryDeletedEvent)
 		{

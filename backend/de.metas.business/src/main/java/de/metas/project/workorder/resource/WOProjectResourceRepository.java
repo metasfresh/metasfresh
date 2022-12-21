@@ -203,7 +203,6 @@ public class WOProjectResourceRepository
 				});
 	}
 
-
 	@NonNull
 	public List<WOProjectResource> listByStepIds(@NonNull final Set<WOProjectStepId> woProjectStepIds)
 	{
@@ -251,7 +250,7 @@ public class WOProjectResourceRepository
 
 		resourceRecord.setAssignDateFrom(TimeUtil.asTimestamp(createWOProjectResourceRequest.getAssignDateFrom()));
 		resourceRecord.setAssignDateTo(TimeUtil.asTimestamp(createWOProjectResourceRequest.getAssignDateTo()));
-
+		
 		resourceRecord.setC_Project_WO_Step_ID(WOProjectStepId.toRepoId(createWOProjectResourceRequest.getWoProjectStepId()));
 		resourceRecord.setS_Resource_ID(ResourceId.toRepoId(createWOProjectResourceRequest.getResourceId()));
 		resourceRecord.setC_Project_ID(ProjectId.toRepoId(createWOProjectResourceRequest.getWoProjectStepId().getProjectId()));
@@ -291,15 +290,19 @@ public class WOProjectResourceRepository
 		final Instant assignDateFrom = TimeUtil.asInstant(resourceRecord.getAssignDateFrom());
 		final Instant assignDateTo = TimeUtil.asInstant(resourceRecord.getAssignDateTo());
 
+		final CalendarDateRange dateRange;
 		if (assignDateTo == null || assignDateFrom == null)
 		{
-			throw new AdempiereException("I_C_Project_WO_Resource.assignDateFrom and I_C_Project_WO_Resource.assignDateTo should be set on the record at this point!");
+			dateRange = null;
 		}
-		final CalendarDateRange dateRange = CalendarDateRange.builder()
-				.startDate(assignDateFrom)
-				.endDate(assignDateTo)
-				.allDay(resourceRecord.isAllDay())
-				.build();
+		else
+		{
+			dateRange = CalendarDateRange.builder()
+					.startDate(assignDateFrom)
+					.endDate(assignDateTo)
+					.allDay(resourceRecord.isAllDay())
+					.build();
+		}
 
 		final ProjectId projectId = ProjectId.ofRepoId(resourceRecord.getC_Project_ID());
 		final WFDurationUnit durationUnit = WFDurationUnit.ofCode(resourceRecord.getDurationUnit());
@@ -371,10 +374,15 @@ public class WOProjectResourceRepository
 		}
 
 		resourceRecord.setIsActive(Boolean.TRUE.equals(projectResource.getIsActive()));
-		resourceRecord.setIsAllDay(projectResource.getDateRange().isAllDay());
+		resourceRecord.setIsAllDay(projectResource.isAllDay());
 
-		resourceRecord.setAssignDateFrom(TimeUtil.asTimestamp(projectResource.getDateRange().getStartDate()));
-		resourceRecord.setAssignDateTo(TimeUtil.asTimestamp(projectResource.getDateRange().getEndDate()));
+		resourceRecord.setAssignDateFrom(projectResource.getStartDate()
+												 .map(TimeUtil::asTimestamp)
+												 .orElse(null));
+
+		resourceRecord.setAssignDateTo(projectResource.getEndDate()
+											   .map(TimeUtil::asTimestamp)
+											   .orElse(null));
 
 		resourceRecord.setWOTestFacilityGroupName(projectResource.getTestFacilityGroupName());
 
