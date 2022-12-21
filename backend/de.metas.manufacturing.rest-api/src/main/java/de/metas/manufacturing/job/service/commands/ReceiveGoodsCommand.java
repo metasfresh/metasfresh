@@ -2,7 +2,9 @@ package de.metas.manufacturing.job.service.commands;
 
 import de.metas.handlingunits.HUPIItemProductId;
 import de.metas.handlingunits.HuId;
+import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
+import de.metas.handlingunits.IMutableHUContext;
 import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
 import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
@@ -10,6 +12,7 @@ import de.metas.handlingunits.pporder.api.ReceiveTUsToLUResult;
 import de.metas.handlingunits.qrcodes.model.HUQRCode;
 import de.metas.handlingunits.qrcodes.model.HUQRCodePackingInfo;
 import de.metas.handlingunits.qrcodes.model.HUQRCodeUnitType;
+import de.metas.manufacturing.generatedcomponents.ManufacturingComponentGeneratorService;
 import de.metas.manufacturing.job.model.ReceivingTarget;
 import de.metas.manufacturing.job.service.ManufacturingJobLoaderAndSaver;
 import de.metas.manufacturing.job.service.ManufacturingJobLoaderAndSaverSupportingServices;
@@ -35,12 +38,15 @@ import java.time.ZonedDateTime;
 
 public class ReceiveGoodsCommand
 {
+
 	//
 	// Services
 	private final IHandlingUnitsBL handlingUnitsBL;
 	private final IHUPPOrderBL ppOrderBL;
 	private final IPPOrderBOMBL ppOrderBOMBL;
+	private final IHUContextFactory huContextFactory;
 	private final ManufacturingJobLoaderAndSaverSupportingServices loadingAndSavingSupportServices;
+	private final ManufacturingComponentGeneratorService manufacturingComponentGeneratorService;
 
 	//
 	// Parameters
@@ -54,13 +60,16 @@ public class ReceiveGoodsCommand
 	// State
 	private I_PP_Order _ppOrder; // lazy
 	private I_PP_Order_BOMLine _coProductLine;
+	private IMutableHUContext huContext;
 
 	@Builder
 	private ReceiveGoodsCommand(
 			@NonNull final IHandlingUnitsBL handlingUnitsBL,
 			@NonNull final IHUPPOrderBL ppOrderBL,
 			@NonNull final IPPOrderBOMBL ppOrderBOMBL,
+			@NonNull final IHUContextFactory huContextFactory,
 			@NonNull final ManufacturingJobLoaderAndSaverSupportingServices loadingAndSavingSupportServices,
+			@NonNull final ManufacturingComponentGeneratorService manufacturingComponentGeneratorService,
 			//
 			@NonNull final PPOrderId ppOrderId,
 			@Nullable final PPOrderBOMLineId coProductBOMLineId,
@@ -71,7 +80,9 @@ public class ReceiveGoodsCommand
 		this.handlingUnitsBL = handlingUnitsBL;
 		this.ppOrderBL = ppOrderBL;
 		this.ppOrderBOMBL = ppOrderBOMBL;
+		this.huContextFactory = huContextFactory;
 		this.loadingAndSavingSupportServices = loadingAndSavingSupportServices;
+		this.manufacturingComponentGeneratorService = manufacturingComponentGeneratorService;
 
 		this.ppOrderId = ppOrderId;
 		this.coProductBOMLineId = coProductBOMLineId;
@@ -83,6 +94,7 @@ public class ReceiveGoodsCommand
 	@Nullable
 	public ReceivingTarget execute()
 	{
+		huContext = huContextFactory.createMutableHUContextForProcessing();
 		@Nullable ReceivingTarget receivingTarget;
 		if (this.receivingTarget.getNewLU() != null)
 		{

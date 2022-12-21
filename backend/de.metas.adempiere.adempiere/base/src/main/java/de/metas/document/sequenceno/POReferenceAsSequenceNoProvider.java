@@ -1,11 +1,10 @@
 package de.metas.document.sequenceno;
 
-import org.compiere.util.Evaluatee;
-import org.slf4j.Logger;
-
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import lombok.NonNull;
+import org.compiere.util.Evaluatee;
+import org.slf4j.Logger;
 
 /*
  * #%L
@@ -69,10 +68,4 @@ public class POReferenceAsSequenceNoProvider implements CustomSequenceNoProvider
 		return !poReference.isEmpty() ? poReference : null;
 	}
 
-	/** @return true */
-	@Override
-	public boolean isUseIncrementSeqNoAsPrefix()
-	{
-		return true;
-	}
 }

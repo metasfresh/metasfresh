@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.bpartner.service.IBPartnerOrgBL;
 import de.metas.common.util.CoalesceUtil;
 import de.metas.common.util.time.SystemTime;
+import de.metas.document.sequence.DocSequenceId;
 import de.metas.handlingunits.ClearanceStatus;
 import de.metas.handlingunits.ClearanceStatusInfo;
 import de.metas.handlingunits.HUPIItemProductId;
@@ -72,6 +73,7 @@ import de.metas.handlingunits.pporder.api.IPPOrderReceiptHUProducer;
 import de.metas.handlingunits.pporder.api.ReceiveTUsToLUResult;
 import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.IMsgBL;
+import de.metas.material.planning.pporder.IPPOrderBOMDAO;
 import de.metas.organization.InstantAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
@@ -91,7 +93,10 @@ import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.ILotNumberBL;
+import org.adempiere.mm.attributes.api.LotNoContext;
 import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.service.ClientId;
 import org.adempiere.warehouse.LocatorId;
 import org.compiere.model.IClientOrgAware;
 import org.compiere.model.I_C_UOM;
@@ -100,6 +105,7 @@ import org.compiere.util.Env;
 import org.eevolution.api.PPCostCollectorId;
 import org.eevolution.api.PPOrderBOMLineId;
 import org.eevolution.api.PPOrderId;
+import org.eevolution.model.I_PP_Order_BOM;
 
 import javax.annotation.Nullable;
 import java.time.LocalDate;
@@ -109,6 +115,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /* package */abstract class AbstractPPOrderReceiptHUProducer implements IPPOrderReceiptHUProducer
 {
@@ -117,6 +124,7 @@ import java.util.Map;
 	// Services
 	private final IHUPPOrderQtyDAO huPPOrderQtyDAO = Services.get(IHUPPOrderQtyDAO.class);
 	private final IPPOrderProductAttributeBL ppOrderProductAttributeBL = Services.get(IPPOrderProductAttributeBL.class);
+	private final IPPOrderBOMDAO ppOrderBOMDAO = Services.get(IPPOrderBOMDAO.class);
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final IHUPIItemProductBL huPIItemProductBL = Services.get(IHUPIItemProductBL.class);
@@ -127,6 +135,7 @@ import java.util.Map;
 	private final IBPartnerOrgBL partnerOrgBL = Services.get(IBPartnerOrgBL.class);
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IHUPPOrderQtyBL ppOrderQtyBL = Services.get(IHUPPOrderQtyBL.class);
+	private final ILotNumberBL lotNumberBL = Services.get(ILotNumberBL.class);
 
 	// Parameters
 	private final PPOrderId ppOrderId;
@@ -373,6 +382,21 @@ import java.util.Map;
 					&& huAttributes.hasAttribute(AttributeConstants.ATTR_LotNumber))
 			{
 				huAttributes.setValue(AttributeConstants.ATTR_LotNumber, lotNumber);
+			}
+			else
+			{
+				final I_PP_Order_BOM ppOrderBom = ppOrderBOMDAO.getByOrderIdOrNull(ppOrderId);
+				final DocSequenceId sequenceId = DocSequenceId.ofRepoIdOrNull(ppOrderBom.getLotNo_Sequence_ID());
+				if (sequenceId != null)
+				{
+					final String finishedGoodsProductValue = productDAO.retrieveProductValueByProductId(getProductId());
+					final Optional<String> lotNumber = lotNumberBL.getAndIncrementLotNo(LotNoContext.builder()
+							.sequenceId(sequenceId)
+							.clientId(ClientId.ofRepoId(ppOrderBom.getAD_Client_ID()))
+							.productNo(finishedGoodsProductValue)
+							.build());
+					lotNumber.ifPresent(s -> huAttributes.setValue(AttributeConstants.ATTR_LotNumber, s));
+				}
 			}
 
 			if (bestBeforeDate != null

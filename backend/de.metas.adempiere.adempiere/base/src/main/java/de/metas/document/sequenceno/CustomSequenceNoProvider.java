@@ -26,6 +26,9 @@ import org.compiere.util.Evaluatee;
 
 public interface CustomSequenceNoProvider
 {
+
+	String DEFAULT_SEQUENCE_PREFIX = "-";
+
 	boolean isApplicable(Evaluatee context);
 
 	String provideSequenceNo(Evaluatee context);
@@ -34,5 +37,13 @@ public interface CustomSequenceNoProvider
 	 * Indicate to metasfresh if this implementation wants its sequence number to be "standalone" or, be the prefix for a "normal", incremental number.
 	 * Note that if the incremental number is appended, that is <i>without</i> applying the {@code AD_Sequence}'s decimal pattern.
 	 */
-	boolean isUseIncrementSeqNoAsPrefix();
+	default boolean isUseIncrementSeqNoAsPrefix()
+	{
+		return true;
+	}
+
+	default String getSequenceSeparatorPrefix()
+	{
+		return DEFAULT_SEQUENCE_PREFIX;
+	}
 }

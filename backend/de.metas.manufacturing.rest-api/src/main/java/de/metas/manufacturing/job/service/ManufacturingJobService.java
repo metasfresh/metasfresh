@@ -9,6 +9,7 @@ import de.metas.device.accessor.DeviceAccessorsHubFactory;
 import de.metas.device.accessor.DeviceId;
 import de.metas.device.websocket.DeviceWebsocketNamingStrategy;
 import de.metas.global_qrcodes.GlobalQRCode;
+import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
@@ -20,6 +21,7 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
+import de.metas.manufacturing.generatedcomponents.ManufacturingComponentGeneratorService;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLineId;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivity;
@@ -46,6 +48,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.api.IWarehouseBL;
+import org.compiere.SpringContextHolder;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.ManufacturingOrderQuery;
 import org.eevolution.api.PPOrderId;
@@ -75,6 +78,8 @@ public class ManufacturingJobService
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IResourceDAO resourceDAO = Services.get(IResourceDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final ManufacturingComponentGeneratorService manufacturingComponentGeneratorService = SpringContextHolder.instance.getBean(ManufacturingComponentGeneratorService.class);
+	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final IHUPPOrderBL ppOrderBL;
 	private final IPPOrderBOMBL ppOrderBOMBL;
 	private final PPOrderIssueScheduleService ppOrderIssueScheduleService;
@@ -400,6 +405,8 @@ public class ManufacturingJobService
 					.ppOrderBL(ppOrderBL)
 					.ppOrderBOMBL(ppOrderBOMBL)
 					.loadingAndSavingSupportServices(loadingAndSavingSupportServices)
+					.manufacturingComponentGeneratorService(manufacturingComponentGeneratorService)
+					.huContextFactory(huContextFactory)
 					//
 					.ppOrderId(job.getPpOrderId())
 					.coProductBOMLineId(line.getCoProductBOMLineId())
