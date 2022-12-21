@@ -13,7 +13,7 @@ and the variable `response.soehenle.get-stableGrossWeight` represents the respon
 As an example, one can run the Docker image with the following comand:
 
 `docker run -e response.soehenle.get-instantGrossWeight="001001N 11 kg" -e response.soehenle.get-stableGrossWeight="A1234567001001N 12,095 kg" -p 8090:8090  dockerImage`, 
-where `dockerImage` represents the name of the image specified when it was built.
+where `dockerImage` represents the tag of the image specified when it was built.
 
 Following the command: 
 - the application is running on port 8090
