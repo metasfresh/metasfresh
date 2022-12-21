@@ -15,6 +15,7 @@ import de.metas.project.workorder.step.WOProjectStep;
 import de.metas.project.workorder.step.WOProjectStepId;
 import de.metas.project.workorder.step.WOProjectStepSimulation;
 import de.metas.project.workorder.step.WOProjectSteps;
+import de.metas.util.Check;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NonNull;
@@ -28,7 +29,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-class WOProjectSimulationPlanEditor
+public class WOProjectSimulationPlanEditor
 {
 	@NonNull private final WOProject _originalProject;
 	@NonNull private final WOProjectSteps _originalSteps;
@@ -137,6 +138,7 @@ class WOProjectSimulationPlanEditor
 				.collect(ImmutableList.toImmutableList());
 	}
 
+	@NonNull
 	public OldAndNewValues<WOProjectResource> getProjectResourceInitialAndNow(final @NonNull WOProjectResourceId projectResourceId)
 	{
 		final WOProjectResource original = this._originalProjectResources.getById(projectResourceId);
@@ -146,6 +148,7 @@ class WOProjectSimulationPlanEditor
 		return OldAndNewValues.ofOldAndNewValues(initial, now);
 	}
 
+	@NonNull
 	public <T> OldAndNewValues<T> mapProjectResourceInitialAndNow(
 			final @NonNull WOProjectResourceId projectResourceId,
 			final @NonNull Function<WOProjectResource, T> mapper)
@@ -224,10 +227,16 @@ class WOProjectSimulationPlanEditor
 	private void shiftLeftAllStepsBefore(@NonNull final WOProjectStepId stepId)
 	{
 		CalendarDateRange prevDateRange = getStepById(stepId).getDateRange();
+		Check.assumeNotNull(prevDateRange, "DateRange cannot be null as simulation is taken into account!");
 
 		for (final WOProjectStep step : getStepsBeforeFromLastToFirst(stepId))
 		{
 			CalendarDateRange currentDateRange = step.getDateRange();
+			if (currentDateRange == null)
+			{
+				continue;
+			}
+
 			if (currentDateRange.getEndDate().isAfter(prevDateRange.getStartDate()))
 			{
 				final Duration offset = Duration.between(prevDateRange.getStartDate(), currentDateRange.getEndDate()).negated();
@@ -244,10 +253,16 @@ class WOProjectSimulationPlanEditor
 	private void shiftRightAllStepsAfter(@NonNull final WOProjectStepId stepId)
 	{
 		CalendarDateRange prevDateRange = getStepById(stepId).getDateRange();
+		Check.assumeNotNull(prevDateRange, "DateRange cannot be null as simulation is taken into account!");
 
 		for (final WOProjectStep step : getStepsAfterInOrder(stepId))
 		{
 			CalendarDateRange currentDateRange = step.getDateRange();
+			if (currentDateRange == null)
+			{
+				continue;
+			}
+
 			if (currentDateRange.getStartDate().isBefore(prevDateRange.getEndDate()))
 			{
 				final Duration offset = Duration.between(currentDateRange.getStartDate(), prevDateRange.getEndDate());
@@ -261,7 +276,7 @@ class WOProjectSimulationPlanEditor
 		}
 	}
 
-	private void shiftStepResources(@NonNull final WOProjectStepId stepId, @NonNull Duration offset)
+	private void shiftStepResources(@NonNull final WOProjectStepId stepId, @NonNull final Duration offset)
 	{
 		if (offset.isZero())
 		{
@@ -270,7 +285,13 @@ class WOProjectSimulationPlanEditor
 
 		for (final WOProjectResource projectResource : getProjectResourcesByStepId(stepId))
 		{
-			final CalendarDateRange newDateRange = projectResource.getDateRange().plus(offset);
+			final CalendarDateRange dateRange = projectResource.getDateRange();
+			if (dateRange == null)
+			{
+				continue;
+			}
+
+			final CalendarDateRange newDateRange = dateRange.plus(offset);
 			changeResource(projectResource.getWoProjectResourceId(), newDateRange);
 		}
 	}

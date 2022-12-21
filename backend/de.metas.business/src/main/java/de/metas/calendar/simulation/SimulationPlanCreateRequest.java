@@ -1,6 +1,6 @@
 /*
  * #%L
- * de.metas.adempiere.adempiere.base
+ * de.metas.business
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,33 +20,40 @@
  * #L%
  */
 
-package de.metas.calendar;
+package de.metas.calendar.simulation;
 
-import de.metas.calendar.simulation.SimulationPlanId;
+import de.metas.organization.OrgId;
 import de.metas.user.UserId;
+import de.metas.util.StringUtils;
+import lombok.Builder;
 import lombok.NonNull;
+import lombok.Value;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
-import java.util.stream.Stream;
 
-public interface CalendarService
+@Value
+@Builder
+public class SimulationPlanCreateRequest
 {
-	CalendarServiceId getCalendarServiceId();
+	@NonNull
+	UserId responsibleUserId;
 
-	Stream<CalendarRef> streamAvailableCalendars(UserId userId);
+	@NonNull
+	OrgId orgId;
 
-	Stream<CalendarEntry> query(CalendarQuery query);
+	@Builder.Default
+	boolean isMainSimulationPlan = false;
 
-	CalendarEntry addEntry(CalendarEntryAddRequest request);
+	@Nullable
+	String name;
 
-	CalendarEntryUpdateResult updateEntry(CalendarEntryUpdateRequest request);
+	@Nullable
+	SimulationPlanId copyFromSimulationId;
 
-	void deleteEntryById(
-			@NonNull CalendarEntryId entryId,
-			@Nullable SimulationPlanId simulationId);
-
-	Optional<CalendarEntry> getEntryById(
-			@NonNull CalendarEntryId entryId,
-			@Nullable SimulationPlanId simulationId);
+	@NonNull
+	public Optional<String> getName()
+	{
+		return StringUtils.trimBlankToOptional(name);
+	}
 }

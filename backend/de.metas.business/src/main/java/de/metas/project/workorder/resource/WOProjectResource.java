@@ -38,7 +38,10 @@ import org.adempiere.exceptions.AdempiereException;
 
 import javax.annotation.Nullable;
 import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Value
 public class WOProjectResource
@@ -52,7 +55,8 @@ public class WOProjectResource
 	@NonNull
 	WOProjectStepId woProjectStepId;
 
-	@NonNull CalendarDateRange dateRange;
+	@Nullable
+	CalendarDateRange dateRange;
 
 	@NonNull
 	ResourceId resourceId;
@@ -86,7 +90,7 @@ public class WOProjectResource
 			@NonNull final OrgId orgId,
 			@NonNull final WOProjectResourceId woProjectResourceId,
 			@NonNull final WOProjectStepId woProjectStepId,
-			@NonNull final CalendarDateRange dateRange,
+			@Nullable final CalendarDateRange dateRange,
 			@NonNull final ResourceId resourceId,
 			@NonNull final Duration duration,
 			@NonNull final WFDurationUnit durationUnit,
@@ -117,6 +121,7 @@ public class WOProjectResource
 		this.description = description;
 	}
 
+	@NonNull
 	public static CalendarDateRange computeDateRangeToEncloseAll(@NonNull final List<WOProjectResource> projectResources)
 	{
 		if (projectResources.isEmpty())
@@ -126,6 +131,7 @@ public class WOProjectResource
 
 		final ImmutableList<CalendarDateRange> dateRanges = projectResources.stream()
 				.map(WOProjectResource::getDateRange)
+				.filter(Objects::nonNull)
 				.distinct()
 				.collect(ImmutableList.toImmutableList());
 
@@ -135,5 +141,26 @@ public class WOProjectResource
 	public ProjectId getProjectId()
 	{
 		return woProjectResourceId.getProjectId();
+	}
+	
+	@NonNull
+	public Optional<Instant> getStartDate()
+	{
+		return Optional.ofNullable(dateRange)
+				.map(CalendarDateRange::getStartDate);
+	}
+	
+	@NonNull
+	public Optional<Instant> getEndDate()
+	{
+		return Optional.ofNullable(dateRange)
+				.map(CalendarDateRange::getEndDate);
+	}
+	
+	public boolean isAllDay()
+	{
+		return Optional.ofNullable(dateRange)
+				.map(CalendarDateRange::isAllDay)
+				.orElse(false);
 	}
 }

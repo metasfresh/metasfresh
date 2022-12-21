@@ -160,6 +160,27 @@ public interface I_C_SimulationPlan
 	String COLUMNNAME_IsActive = "IsActive";
 
 	/**
+	 * Set Main simulation.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	void setIsMainSimulation (boolean IsMainSimulation);
+
+	/**
+	 * Get Main simulation.
+	 *
+	 * <br>Type: YesNo
+	 * <br>Mandatory: true
+	 * <br>Virtual Column: false
+	 */
+	boolean isMainSimulation();
+
+	ModelColumn<I_C_SimulationPlan, Object> COLUMN_IsMainSimulation = new ModelColumn<>(I_C_SimulationPlan.class, "IsMainSimulation", null);
+	String COLUMNNAME_IsMainSimulation = "IsMainSimulation";
+
+	/**
 	 * Set Name.
 	 *
 	 * <br>Type: String

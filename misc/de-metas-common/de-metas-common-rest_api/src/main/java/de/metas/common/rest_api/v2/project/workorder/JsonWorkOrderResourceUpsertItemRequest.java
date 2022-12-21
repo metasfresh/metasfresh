@@ -50,13 +50,15 @@ public class JsonWorkOrderResourceUpsertItemRequest
 	@Setter
 	String resourceIdentifier;
 
-	@ApiModelProperty(required = true)
-	@Setter
 	LocalDate assignDateFrom;
 
-	@ApiModelProperty(required = true)
-	@Setter
+	@ApiModelProperty(hidden = true)
+	boolean assignDateFromSet;
+
 	LocalDate assignDateTo;
+
+	@ApiModelProperty(hidden = true)
+	boolean assignDateToSet;
 
 	@ApiModelProperty(value = "If not specified but required (e.g. because a new resource is created), then `true` is assumed")
 	Boolean isActive;
@@ -89,6 +91,18 @@ public class JsonWorkOrderResourceUpsertItemRequest
 	@ApiModelProperty(hidden = true)
 	boolean externalIdSet;
 
+	public void setAssignDateFrom(final LocalDate assignDateFrom)
+	{
+		this.assignDateFrom = assignDateFrom;
+		this.assignDateFromSet = true;
+	}
+
+	public void setAssignDateTo(final LocalDate assignDateTo)
+	{
+		this.assignDateTo = assignDateTo;
+		this.assignDateToSet = true;
+	}
+	
 	public void setActive(final Boolean active)
 	{
 		isActive = active;
