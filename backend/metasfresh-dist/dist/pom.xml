@@ -340,6 +340,13 @@
             <classifier>migration-postgres-sql</classifier>
             <type>zip</type>
         </dependency>
+        <dependency>
+            <groupId>de.metas.marketing</groupId>
+            <artifactId>marketing-activecampaign</artifactId>
+            <version>${metasfresh.version}</version>
+            <classifier>migration-postgres-sql</classifier>
+            <type>zip</type>
+        </dependency>
 
         <dependency>
             <groupId>de.metas.vertical.creditscore</groupId>

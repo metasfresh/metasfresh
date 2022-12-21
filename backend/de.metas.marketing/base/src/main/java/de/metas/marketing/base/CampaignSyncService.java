@@ -104,7 +104,7 @@ public class CampaignSyncService
 	public void syncContacts(
 			@NonNull final CampaignId campaignId,
 			@NonNull final List<ContactPerson> contactsToSync,
-			@NonNull SyncDirection syncDirection)
+			@NonNull final SyncDirection syncDirection)
 	{
 		final Campaign campaign = syncCampaignLocalToRemoteIfRemoteIdMissing(campaignService.getById(campaignId));
 

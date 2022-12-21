@@ -40,7 +40,8 @@ public interface PlatformClient
 
 	List<RemoteToLocalSyncResult> syncCampaignsRemoteToLocal(List<Campaign> campaigns);
 
-	void sendEmailActivationForm(
-			@NonNull String formId,
-			@NonNull String email);
+	default void sendEmailActivationForm(@NonNull String formId, @NonNull String email)
+	{
+		throw new UnsupportedOperationException();
+	}
 }

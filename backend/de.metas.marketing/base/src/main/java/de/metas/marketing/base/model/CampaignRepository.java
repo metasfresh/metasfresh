@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import de.metas.cache.CCache;
 import de.metas.common.util.time.SystemTime;
+import de.metas.organization.OrgId;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
@@ -100,6 +101,7 @@ public class CampaignRepository
 				.remoteId(campaignRecord.getRemoteRecordId())
 				.platformId(PlatformId.ofRepoId(campaignRecord.getMKTG_Platform_ID()))
 				.campaignId(CampaignId.ofRepoId(campaignRecord.getMKTG_Campaign_ID()))
+				.orgId(OrgId.ofRepoId(campaignRecord.getAD_Org_ID()))
 				.build();
 	}
 
@@ -109,6 +111,8 @@ public class CampaignRepository
 		{
 			return;
 		}
+
+		final Campaign campaign = getById(campaignId);
 
 		final ImmutableSet<ContactPersonId> alreadyAddedContactPersonIds = queryBL.createQueryBuilder(I_MKTG_Campaign_ContactPerson.class)
 				.addOnlyActiveRecordsFilter()
@@ -123,8 +127,9 @@ public class CampaignRepository
 		for(final ContactPersonId contactPersonId : contactPersonIdsToAdd)
 		{
 			final I_MKTG_Campaign_ContactPerson newAssociation = newInstance(I_MKTG_Campaign_ContactPerson.class);
-			newAssociation.setMKTG_Campaign_ID(campaignId.getRepoId());
+			newAssociation.setMKTG_Campaign_ID(campaign.getCampaignId().getRepoId());
 			newAssociation.setMKTG_ContactPerson_ID(contactPersonId.getRepoId());
+			newAssociation.setAD_Org_ID(campaign.getOrgId().getRepoId());
 			saveRecord(newAssociation);
 		}
 	}
@@ -191,6 +196,8 @@ public class CampaignRepository
 		campaignRecord.setName(campaign.getName());
 		campaignRecord.setRemoteRecordId(campaign.getRemoteId());
 		campaignRecord.setMKTG_Platform_ID(campaign.getPlatformId().getRepoId());
+		campaignRecord.setAD_Org_ID(campaign.getOrgId().getRepoId());
+
 		return campaignRecord;
 	}
 
