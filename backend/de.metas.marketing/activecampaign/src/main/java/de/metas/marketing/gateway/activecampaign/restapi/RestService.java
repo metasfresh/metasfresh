@@ -132,7 +132,7 @@ public class RestService
 			}
 			catch (final RateLimitExceededException rateLimitEx)
 			{
-				Loggables.withLogger(log, Level.ERROR)
+				Loggables.withLogger(log, Level.INFO)
 						.addLog("*** ERROR: RateLimit reached on ActiveCampaign side! ErrorMsg: {}, rateLimitInfo: {}", rateLimitEx.getErrorMessage(), rateLimitEx);
 				rateLimitService.waitForLimitReset(rateLimitEx.getRetryAfterDuration());
 				retry = true;

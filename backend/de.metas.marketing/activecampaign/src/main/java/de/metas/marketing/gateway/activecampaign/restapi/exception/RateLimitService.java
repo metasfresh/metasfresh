@@ -72,10 +72,9 @@ public class RateLimitService
 
 		if (retryAfterDuration.getSeconds() > maxSecondsToWait)
 		{
-			throw new AdempiereException("Retry After duration is too far in the future! aborting!")
+			throw new AdempiereException("API Rate limit exceeded! Please wait before syncing again.")
 					.appendParametersToMessage()
-					.setParameter("RetryAfterSeconds", retryAfterDuration.getSeconds())
-					.setParameter("MaxSecondsToWaitForLimitReset", maxSecondsToWait);
+					.setParameter("seconds to wait:", retryAfterDuration.getSeconds());
 		}
 
 		try
