@@ -174,6 +174,7 @@ WidgetWrapper.propTypes = {
   renderMaster: PropTypes.bool,
   dataSource: PropTypes.string.isRequired,
   widgetType: PropTypes.string,
+  widgetSize: PropTypes.string,
   disconnected: PropTypes.string,
   fields: PropTypes.array.isRequired,
   tableId: PropTypes.string,

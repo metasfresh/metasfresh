@@ -27,6 +27,32 @@ CREATE OR REPLACE VIEW rv_unposted AS
 --
 UNION ALL
 --
+(SELECT j.ad_client_id,
+           j.ad_org_id,
+           j.created,
+           j.createdby,
+           j.updated,
+           j.updatedby,
+           j.isactive,
+           j.documentno,
+           j.datedoc,
+           j.dateacct,
+           542275             AS ad_table_id,
+           j.sap_gljournal_id AS record_id,
+           'N'::char(1)    AS issotrx,
+           j.posted,
+           j.PostingError_Issue_ID,
+           j.processing,
+           j.processed,
+           j.docstatus
+    FROM sap_gljournal j
+    WHERE j.posted <> 'Y'
+      AND j.docstatus <> 'VO'
+      AND j.processed = 'Y'
+)
+--
+UNION ALL
+--
 (SELECT pi.ad_client_id,
         pi.ad_org_id,
         pi.created,

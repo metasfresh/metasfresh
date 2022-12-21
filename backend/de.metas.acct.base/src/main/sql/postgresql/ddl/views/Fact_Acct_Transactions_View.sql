@@ -1,4 +1,5 @@
-DROP VIEW IF EXISTS Fact_Acct_Transactions_View;
+DROP VIEW IF EXISTS Fact_Acct_Transactions_View
+;
 
 CREATE VIEW Fact_Acct_Transactions_View
             (fact_acct_id,
@@ -63,6 +64,7 @@ CREATE VIEW Fact_Acct_Transactions_View
              userelementstring6,
              userelementstring7,
              m_sectioncode_id,
+             c_order_id,
              balance)
 AS
 SELECT fact.fact_acct_id,
@@ -127,6 +129,7 @@ SELECT fact.fact_acct_id,
        fact.userelementstring6,
        fact.userelementstring7,
        fact.m_sectioncode_id,
+       fact.c_order_id,
        acctbalance(fact.account_id, fact.amtacctdr, fact.amtacctcr) AS balance
 FROM fact_acct fact
 ;

@@ -19,15 +19,19 @@ import de.metas.currency.CurrencyRate;
 import de.metas.currency.ICurrencyBL;
 import de.metas.currency.ICurrencyDAO;
 import de.metas.document.DocBaseType;
+import de.metas.document.dimension.Dimension;
 import de.metas.document.engine.DocStatus;
 import de.metas.location.LocationId;
 import de.metas.money.CurrencyConversionTypeId;
 import de.metas.money.CurrencyId;
+import de.metas.order.OrderId;
 import de.metas.organization.LocalDateAndOrgId;
 import de.metas.organization.OrgId;
 import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
+import de.metas.project.ProjectId;
 import de.metas.quantity.Quantity;
+import de.metas.sectionCode.SectionCodeId;
 import de.metas.tax.api.TaxId;
 import de.metas.user.UserId;
 import de.metas.util.NumberUtils;
@@ -645,6 +649,26 @@ public final class FactLine extends X_Fact_Acct
 		if (getC_Activity_ID() <= 0)
 		{
 			setC_Activity_ID(m_doc.getActivityId());
+		}
+
+		// Order
+		if (m_docLine != null)
+		{
+			setC_Order_ID(m_docLine.getOrderId());
+		}
+		if (getC_Order_ID() <= 0)
+		{
+			setC_Order_ID(m_doc.getOrderId());
+		}
+
+		// SectionCode
+		if (m_docLine != null)
+		{
+			setM_SectionCode_ID(m_docLine.getSectionCodeId());
+		}
+		if (getM_SectionCode_ID() <= 0)
+		{
+			setM_SectionCode_ID(m_doc.getSectionCodeId());
 		}
 
 		// User List 1
@@ -1310,6 +1334,14 @@ public final class FactLine extends X_Fact_Acct
 			{
 				setC_Activity_ID(m_acct.getC_Activity_ID());
 			}
+			if (getC_Order_ID() == 0)
+			{
+				setC_Order_ID(m_acct.getC_Order_ID());
+			}
+			if (getM_SectionCode_ID() == 0)
+			{
+				setM_SectionCode_ID(m_acct.getM_SectionCode_ID());
+			}
 			if (getUser1_ID() == 0)
 			{
 				setUser1_ID(m_acct.getUser1_ID());
@@ -1364,6 +1396,8 @@ public final class FactLine extends X_Fact_Acct
 				.setUserElementString5(getUserElementString5())
 				.setUserElementString6(getUserElementString6())
 				.setUserElementString7(getUserElementString7())
+				.setC_Order_ID(getC_Order_ID())
+				.setM_SectionCode_ID(getM_SectionCode_ID())
 				.build();
 	}
 
@@ -1502,6 +1536,8 @@ public final class FactLine extends X_Fact_Acct
 			setAD_OrgTrx_ID(fact.getAD_OrgTrx_ID());
 			setC_Project_ID(fact.getC_Project_ID());
 			setC_Activity_ID(fact.getC_Activity_ID());
+			setC_Order_ID(fact.getC_Order_ID());
+			setM_SectionCode_ID(fact.getM_SectionCode_ID());
 			setC_Campaign_ID(fact.getC_Campaign_ID());
 			setC_SalesRegion_ID(fact.getC_SalesRegion_ID());
 			setC_LocFrom_ID(fact.getC_LocFrom_ID());
@@ -1514,6 +1550,8 @@ public final class FactLine extends X_Fact_Acct
 			setC_Tax_ID(fact.getC_Tax_ID());
 			// Org for cross charge
 			setAD_Org_ID(fact.getAD_Org_ID());
+			setC_Order_ID(fact.getC_Order_ID());
+			setM_SectionCode_ID(fact.getM_SectionCode_ID());
 
 			return true; // success
 		}
@@ -1587,17 +1625,17 @@ public final class FactLine extends X_Fact_Acct
 		super.setAD_Org_ID(OrgId.toRepoId(orgId));
 	}
 
-	public void setAD_OrgTrx_ID(final OrgId orgTrxId)
+	public void setAD_OrgTrx_ID(@Nullable final OrgId orgTrxId)
 	{
 		super.setAD_OrgTrx_ID(OrgId.toRepoId(orgTrxId));
 	}
 
-	public void setM_Product_ID(final ProductId productId)
+	public void setM_Product_ID(@Nullable final ProductId productId)
 	{
 		super.setM_Product_ID(ProductId.toRepoId(productId));
 	}
 
-	public void setC_Activity_ID(final ActivityId activityId)
+	public void setC_Activity_ID(@Nullable final ActivityId activityId)
 	{
 		super.setC_Activity_ID(ActivityId.toRepoId(activityId));
 	}
@@ -1607,9 +1645,14 @@ public final class FactLine extends X_Fact_Acct
 		return CurrencyId.ofRepoId(getC_Currency_ID());
 	}
 
-	public void setC_BPartner_ID(final BPartnerId bpartnerId)
+	public void setC_BPartner_ID(@Nullable final BPartnerId bpartnerId)
 	{
 		super.setC_BPartner_ID(BPartnerId.toRepoId(bpartnerId));
+	}
+
+	public void setC_Project_ID(@Nullable final ProjectId projectId)
+	{
+		super.setC_Project_ID(ProjectId.toRepoId(projectId));
 	}
 
 	public void setPostingType(@NonNull final PostingType postingType)
@@ -1617,4 +1660,28 @@ public final class FactLine extends X_Fact_Acct
 		super.setPostingType(postingType.getCode());
 	}
 
+	public void setC_Tax_ID(@Nullable final TaxId taxId)
+	{
+		super.setC_Tax_ID(TaxId.toRepoId(taxId));
+	}
+
+	public void setM_SectionCode_ID(@Nullable final SectionCodeId sectionCodeId)
+	{
+		super.setM_SectionCode_ID(SectionCodeId.toRepoId(sectionCodeId));
+	}
+
+	public void setC_Order_ID(@Nullable OrderId orderId)
+	{
+		super.setC_Order_ID(OrderId.toRepoId(orderId));
+	}
+
+	public void setFromDimension(@NonNull final Dimension dimension)
+	{
+		setC_Project_ID(dimension.getProjectId());
+		setC_Campaign_ID(dimension.getCampaignId());
+		setC_Activity_ID(dimension.getActivityId());
+		setC_Order_ID(dimension.getOrderId());
+		setM_SectionCode_ID(dimension.getSectionCodeId());
+		setM_Product_ID(dimension.getProductId());
+	}
 }    // FactLine

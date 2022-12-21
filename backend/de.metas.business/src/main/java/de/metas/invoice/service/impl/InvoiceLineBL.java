@@ -47,6 +47,7 @@ import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
 import de.metas.tax.api.TaxNotFoundException;
 import de.metas.tax.api.TaxQuery;
+import de.metas.tax.api.VatCodeId;
 import de.metas.uom.IUOMConversionBL;
 import de.metas.uom.UOMConversionContext;
 import de.metas.uom.UomId;
@@ -205,13 +206,14 @@ public class InvoiceLineBL implements IInvoiceLineBL
 			}
 
 			final Tax tax = taxDAO.getBy(TaxQuery.builder()
-												 .fromCountryId(countryFromId)
-												 .orgId(orgId)
-												 .bPartnerLocationId(partnerLocationId)
-												 .dateOfInterest(taxDate)
-												 .taxCategoryId(taxCategoryId)
-												 .soTrx(SOTrx.ofBoolean(isSOTrx))
-												 .build());
+					.fromCountryId(countryFromId)
+					.orgId(orgId)
+					.bPartnerLocationId(partnerLocationId)
+					.dateOfInterest(taxDate)
+					.taxCategoryId(taxCategoryId)
+					.soTrx(SOTrx.ofBoolean(isSOTrx))
+					.vatCodeId(VatCodeId.ofRepoIdOrNull(il.getC_VAT_Code_ID()))
+					.build());
 
 			if (tax == null)
 			{

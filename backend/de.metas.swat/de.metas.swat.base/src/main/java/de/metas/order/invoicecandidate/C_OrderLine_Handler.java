@@ -50,7 +50,10 @@ import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.quantity.StockQtyAndUOMQty;
 import de.metas.quantity.StockQtyAndUOMQtys;
+import de.metas.tax.api.ITaxDAO;
+import de.metas.tax.api.Tax;
 import de.metas.tax.api.TaxId;
+import de.metas.tax.api.VatCodeId;
 import de.metas.uom.UomId;
 import de.metas.util.Check;
 import de.metas.util.Services;
@@ -75,6 +78,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
+import static de.metas.common.util.CoalesceUtil.coalesce;
+
 /**
  * Converts {@link I_C_OrderLine} to {@link I_C_Invoice_Candidate}.
  */
@@ -88,6 +93,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 	private final IInvoiceCandBL invoiceCandBL = Services.get(IInvoiceCandBL.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
 	private final IADTableDAO tableDAO = Services.get(IADTableDAO.class);
+	private final ITaxDAO taxDAO = Services.get(ITaxDAO.class);
 	private final IOrderDAO orderDAO = Services.get(IOrderDAO.class);
 	private final IOrderBL orderBL = Services.get(IOrderBL.class);
 
@@ -174,6 +180,14 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 
 		icRecord.setDescription(orderLine.getDescription()); // 03439
 
+		icRecord.setProductDescription(orderLine.getProductDescription());
+
+		if (orderLine.getPriceEntered().compareTo(orderLine.getPriceStd()) == 0)
+		{
+			icRecord.setBase_Commission_Points_Per_Price_UOM(orderLine.getBase_Commission_Points_Per_Price_UOM());
+			icRecord.setTraded_Commission_Percent(orderLine.getTraded_Commission_Percent());
+		}
+
 		final I_C_Order order = InterfaceWrapperHelper.create(orderLine.getC_Order(), I_C_Order.class);
 
 		setBPartnerData(icRecord, orderLine);
@@ -189,6 +203,8 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		{
 			icRecord.setInvoiceRule_Override(X_C_Invoice_Candidate.INVOICERULE_OVERRIDE_Immediate); // immediate
 		}
+
+		icRecord.setC_VAT_Code_ID(orderLine.getC_VAT_Code_ID());
 
 		// 05265
 		icRecord.setIsSOTrx(order.isSOTrx());
@@ -453,6 +469,14 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 		final org.compiere.model.I_C_Order order = orderLine.getC_Order();
 
 		final TaxId taxId = TaxId.ofRepoId(orderLine.getC_Tax_ID());
+		final VatCodeId vatCodeId = CoalesceUtil.coalesce(VatCodeId.ofRepoIdOrNull(icRecord.getC_VAT_Code_Override_ID()),
+				VatCodeId.ofRepoIdOrNull(icRecord.getC_VAT_Code_ID()));
+		TaxId taxIdFromVatCode = null;
+		if (vatCodeId != null)
+		{
+			final Tax tax = taxDAO.getTaxFromVatCodeIfManualOrNull(vatCodeId);
+			taxIdFromVatCode = tax != null ? tax.getTaxId() : null;
+		}
 
 		// ts: we *must* use the order line's data
 		final PriceAndTax.PriceAndTaxBuilder priceAndTax = PriceAndTax.builder()
@@ -461,7 +485,7 @@ public class C_OrderLine_Handler extends AbstractInvoiceCandidateHandler
 				.priceEntered(orderLine.getPriceEntered())
 				.priceActual(orderLine.getPriceActual())
 				.priceUOMId(UomId.ofRepoIdOrNull(orderLine.getPrice_UOM_ID()))
-				.taxId(taxId)
+				.taxId(coalesce(taxIdFromVatCode, taxId))
 				.taxIncluded(order.isTaxIncluded())
 				.currencyId(CurrencyId.ofRepoId(order.getC_Currency_ID()));
 

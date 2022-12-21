@@ -6,7 +6,9 @@ import de.metas.bpartner.BPartnerId;
 import de.metas.cache.CCache;
 import de.metas.handlingunits.HuUnitType;
 import de.metas.handlingunits.model.I_M_HU_Label_Config;
+import de.metas.i18n.ExplainedOptional;
 import de.metas.process.AdProcessId;
+import de.metas.report.PrintCopies;
 import de.metas.util.Services;
 import de.metas.util.lang.SeqNo;
 import lombok.NonNull;
@@ -14,7 +16,6 @@ import org.adempiere.ad.dao.IQueryBL;
 import org.springframework.stereotype.Repository;
 
 import java.util.Comparator;
-import java.util.Optional;
 
 @Repository
 public class HULabelConfigRepository
@@ -26,7 +27,7 @@ public class HULabelConfigRepository
 			.initialCapacity(1)
 			.build();
 
-	public Optional<HULabelConfig> getFirstMatching(HULabelConfigQuery query)
+	public ExplainedOptional<HULabelConfig> getFirstMatching(HULabelConfigQuery query)
 	{
 		return getMap().getFirstMatching(query);
 	}
@@ -58,7 +59,7 @@ public class HULabelConfigRepository
 				.config(HULabelConfig.builder()
 						.printFormatProcessId(AdProcessId.ofRepoId(record.getLabelReport_Process_ID()))
 						.autoPrint(record.isAutoPrint())
-						.autoPrintCopies(Math.max(record.getAutoPrintCopies(), 0))
+						.autoPrintCopies(PrintCopies.ofIntOrOne(record.getAutoPrintCopies()))
 						.build())
 				.build();
 	}
@@ -99,12 +100,14 @@ public class HULabelConfigRepository
 					.collect(ImmutableList.toImmutableList());
 		}
 
-		public Optional<HULabelConfig> getFirstMatching(@NonNull final HULabelConfigQuery query)
+		public ExplainedOptional<HULabelConfig> getFirstMatching(@NonNull final HULabelConfigQuery query)
 		{
 			return orderedList.stream()
 					.filter(route -> route.isMatching(query))
 					.map(HULabelConfigRoute::getConfig)
-					.findFirst();
+					.findFirst()
+					.map(ExplainedOptional::of)
+					.orElseGet(() -> ExplainedOptional.emptyBecause("No HU Label Config found for " + query));
 		}
 	}
 }

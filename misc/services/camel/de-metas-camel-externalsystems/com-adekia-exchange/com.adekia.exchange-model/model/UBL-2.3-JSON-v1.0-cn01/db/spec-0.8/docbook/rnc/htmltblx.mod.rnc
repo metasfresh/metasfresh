@@ -1,0 +1,225 @@
+# ......................................................................
+
+# DocBook XML HTML Table Module V4.5 ...................................
+
+# File htmltblx.mod ....................................................
+
+# Copyright 2003-2006 ArborText, Inc., Norman Walsh, Sun Microsystems,
+# Inc., and the Organization for the Advancement of Structured Information
+# Standards (OASIS).
+# 
+# $Id: htmltblx.mod 6340 2006-10-03 13:23:24Z nwalsh $
+# 
+# Permission to use, copy, modify and distribute the DocBook XML DTD
+# and its accompanying documentation for any purpose and without fee
+# is hereby granted in perpetuity, provided that the above copyright
+# notice and this paragraph appear in all copies.  The copyright
+# holders make no representation about the suitability of the DTD for
+# any purpose.  It is provided "as is" without expressed or implied
+# warranty.
+# 
+# If you modify the DocBook XML DTD in any way, except for declaring and
+# referencing additional sets of general entities and declaring
+# additional notations, label your DTD as a variant of DocBook.  See
+# the maintenance documentation for more information.
+# 
+# Please direct all questions, bug reports, or suggestions for
+# changes to the docbook@lists.oasis-open.org mailing list. For more
+# information, see http://www.oasis-open.org/docbook/.
+
+# ......................................................................
+
+# This module contains the definitions for elements that are
+# isomorphic to the HTML elements. One could argue we should
+# instead have based ourselves on the XHTML Table Module, but the
+# HTML one is more like what browsers are likely to accept today
+# and users are likely to use.
+# 
+# This module has been developed for use with the DocBook V4.5
+# "union table model" in which elements and attlists common to both
+# models are defined (as the union) in the CALS table module by
+# setting various parameter entities appropriately in this file.
+# 
+# In DTD driver files referring to this module, please use an entity
+# declaration that uses the public identifier shown below:
+# 
+# <!ENTITY % htmltbl PUBLIC
+# "-//OASIS//ELEMENTS DocBook XML HTML Tables V4.5//EN"
+# "htmltblx.mod">
+# %htmltbl;
+# 
+# See the documentation for detailed information on the parameter
+# entity and module scheme used in DocBook, customizing DocBook and
+# planning for interchange, and changes made since the last release
+# of DocBook.
+
+# ======================= XHTML Tables =======================================
+
+namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
+
+html.coreattrs =
+  common.attrib,
+  attribute class { text }?,
+  attribute style { text }?,
+  attribute title { text }?
+# Does not contain lang or dir because they are in %common.attribs
+i18n = attribute xml:lang { xsd:NMTOKEN }?
+events =
+  attribute onclick { text }?,
+  attribute ondblclick { text }?,
+  attribute onmousedown { text }?,
+  attribute onmouseup { text }?,
+  attribute onmouseover { text }?,
+  attribute onmousemove { text }?,
+  attribute onmouseout { text }?,
+  attribute onkeypress { text }?,
+  attribute onkeydown { text }?,
+  attribute onkeyup { text }?
+attrs = html.coreattrs, i18n, events
+cellhalign =
+  attribute align { "left" | "center" | "right" | "justify" | "char" }?,
+  attribute char { text }?,
+  attribute charoff { text }?
+cellvalign =
+  attribute valign { "top" | "middle" | "bottom" | "baseline" }?
+# doc:A group of columns in an HTML table.
+colgroup = element colgroup { colgroup.attlist, col* }
+# doc:Specifications for a column in an HTML table.
+col = element col { col.attlist, empty }
+# doc:A row in an HTML table.
+tr = element tr { tr.attlist, (th | td)+ }
+# doc:A table header entry in an HTML table.
+th =
+  element th {
+    th.attlist, (para.char.mix | tabentry.mix | table | informaltable)*
+  }
+# doc:A table ntry in an HTML table.
+td =
+  element td {
+    td.attlist, (para.char.mix | tabentry.mix | table | informaltable)*
+  }
+colgroup.attlist &=
+  attrs,
+  [ a:defaultValue = "1" ] attribute span { text }?,
+  attribute width { text }?,
+  cellhalign,
+  cellvalign
+col.attlist &=
+  attrs,
+  [ a:defaultValue = "1" ] attribute span { text }?,
+  attribute width { text }?,
+  cellhalign,
+  cellvalign
+tr.attlist &=
+  attrs,
+  cellhalign,
+  cellvalign,
+  attribute bgcolor { text }?
+th.attlist &=
+  attrs,
+  attribute abbr { text }?,
+  attribute axis { text }?,
+  attribute headers { xsd:IDREFS }?,
+  attribute scope { "row" | "col" | "rowgroup" | "colgroup" }?,
+  [ a:defaultValue = "1" ] attribute rowspan { text }?,
+  [ a:defaultValue = "1" ] attribute colspan { text }?,
+  cellhalign,
+  cellvalign,
+  attribute nowrap { "nowrap" }?,
+  attribute bgcolor { text }?,
+  attribute width { text }?,
+  attribute height { text }?
+td.attlist &=
+  attrs,
+  attribute abbr { text }?,
+  attribute axis { text }?,
+  attribute headers { xsd:IDREFS }?,
+  attribute scope { "row" | "col" | "rowgroup" | "colgroup" }?,
+  [ a:defaultValue = "1" ] attribute rowspan { text }?,
+  [ a:defaultValue = "1" ] attribute colspan { text }?,
+  cellhalign,
+  cellvalign,
+  attribute nowrap { "nowrap" }?,
+  attribute bgcolor { text }?,
+  attribute width { text }?,
+  attribute height { text }?
+# ======================================================
+
+# Set up to read in the CALS model configured to
+# merge with the XHTML table model
+
+# ======================================================
+tables.role.attrib = role.attrib
+# Add label and role attributes to table and informaltable
+bodyatt =
+  attribute floatstyle { text }?,
+  attribute rowheader { "firstcol" | "norowheader" }?,
+  label.attrib
+# Add common attributes to Table, TGroup, TBody, THead, TFoot, Row, 
+# EntryTbl, and Entry (and InformalTable element).
+secur =
+  common.attrib,
+  attribute class { text }?,
+  attribute style { text }?,
+  attribute title { text }?,
+  i18n,
+  events,
+  tables.role.attrib
+common.table.attribs = bodyatt, secur
+# Content model for Table (that also allows HTML tables)
+tbl.table.mdl =
+  (blockinfo?,
+   formalobject.title.content,
+   ndxterm.class*,
+   textobject*,
+   (graphic+ | mediaobject+ | tgroup+))
+  | (caption, (col* | colgroup*), thead?, tfoot?, (tbody+ | tr+))
+informal.tbl.table.mdl =
+  (textobject*, (graphic+ | mediaobject+ | tgroup+))
+  | ((col* | colgroup*), thead?, tfoot?, (tbody+ | tr+))
+# Attributes for Table (including HTML ones)
+
+# N.B. rules = (none | groups | rows | cols | all) but it can't be spec'd
+
+# that way because 'all' already occurs in a different enumeration in
+
+# CALS tables (frame).
+tbl.table.att =
+  attribute tabstyle { text }?,
+  attribute tocentry { yesorno.attvals }?,
+  attribute shortentry { yesorno.attvals }?,
+  attribute orient { "port" | "land" }?,
+  attribute pgwide { yesorno.attvals }?,
+  attribute summary { text }?,
+  attribute width { text }?,
+  attribute border { text }?,
+  attribute rules { text }?,
+  attribute cellspacing { text }?,
+  attribute cellpadding { text }?,
+  attribute align { "left" | "center" | "right" }?,
+  attribute bgcolor { text }?
+tbl.frame.attval =
+  "void"
+  | "above"
+  | "below"
+  | "hsides"
+  | "lhs"
+  | "rhs"
+  | "vsides"
+  | "box"
+  | "border"
+  | "top"
+  | "bottom"
+  | "topbot"
+  | "all"
+  | "sides"
+  | "none"
+# Allow either objects or inlines; beware of REs between elements.
+tbl.entry.mdl = para.char.mix | tabentry.mix
+# thead, tfoot, and tbody are defined in both table models,
+# so we set up parameter entities to define union models for them
+tbl.hdft.mdl = tr+ | (colspec*, row+)
+tbl.tbody.mdl = tr+ | row+
+# End of DocBook XML HTML Table Module V4.5 ............................
+
+# ......................................................................

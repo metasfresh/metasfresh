@@ -1,0 +1,2 @@
+UPDATE ad_element_trl SET updated = now(), updatedby = 99, name = 'Fenêtre de test' WHERE ad_element_id = 574836 AND ad_language = 'fr_CH';
+UPDATE ad_element_trl SET updated = now(), updatedby = 99, name = 'Test_nl_NL' WHERE ad_element_id = 574836 AND ad_language = 'nl_NL';

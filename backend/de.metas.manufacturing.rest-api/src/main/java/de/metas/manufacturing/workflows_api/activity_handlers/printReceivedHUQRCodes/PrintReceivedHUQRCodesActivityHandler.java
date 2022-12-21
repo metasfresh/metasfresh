@@ -40,6 +40,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -189,6 +190,7 @@ public class PrintReceivedHUQRCodesActivityHandler implements WFActivityHandler,
 		private final HULabelConfigProvider labelConfigProvider;
 		@Getter
 		private final ArrayList<BatchToPrint> batches = new ArrayList<>();
+		private final HashSet<HuId> huIdsCollected = new HashSet<>();
 
 		private BatchToPrintCollector(final HULabelConfigProvider huLabelConfigProvider) {this.labelConfigProvider = huLabelConfigProvider;}
 
@@ -211,6 +213,12 @@ public class PrintReceivedHUQRCodesActivityHandler implements WFActivityHandler,
 
 		public void add(@NonNull final HUToReport hu, @NonNull final HULabelConfig labelConfig)
 		{
+			// Don't add it if we already considered it
+			if (!huIdsCollected.add(hu.getHUId()))
+			{
+				return;
+			}
+
 			final BatchToPrint lastBatch = !batches.isEmpty() ? batches.get(batches.size() - 1) : null;
 
 			final BatchToPrint batch;

@@ -75,6 +75,7 @@ import org.adempiere.mm.attributes.AttributeSetInstanceId;
 import org.adempiere.mm.attributes.api.AttributesKeys;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.service.ClientId;
+import org.adempiere.warehouse.WarehouseId;
 import org.compiere.SpringContextHolder;
 import org.compiere.model.I_C_OrderLine;
 import org.compiere.model.I_M_AttributeSetInstance;
@@ -432,6 +433,12 @@ public class MD_Candidate_StepDef
 				assertThat(mdAttributesKeys).isEqualTo(expectedAttributesKey);
 			}
 
+			final WarehouseId warehouseId = tableRow.getWarehouseId();
+			if (warehouseId != null)
+			{
+				assertThat(materialDispoRecord.getMaterialDescriptor().getWarehouseId()).as("warehouseId of MD_Candidate_ID=%s", materialDispoRecord.getCandidateId().getRepoId()).isEqualTo(tableRow.getWarehouseId());
+			}
+
 			materialDispoDataItemStepDefData.putOrReplace(tableRow.getIdentifier(), materialDispoRecord);
 		}
 	}
@@ -492,7 +499,7 @@ public class MD_Candidate_StepDef
 					sb.append("item with id=" + item.getCandidateId().getRepoId()
 									  + " does not match tableRow with Identifier " + tableRow.getIdentifier()
 									  + " because the time (resp. materialDecription.date) values are different"
-							          + " Expected=" + tableRow.getTime() + ", Actual= " + item.getMaterialDescriptor().getDate()
+									  + " Expected=" + tableRow.getTime() + ", Actual= " + item.getMaterialDescriptor().getDate()
 									  + "\n");
 					continue;
 				}
@@ -507,19 +514,21 @@ public class MD_Candidate_StepDef
 			return ProviderResult.resultWasNotFound(sb.toString());
 		};
 
-		final Runnable logContext = () -> logger.error("MD_Candidate not found\n"
-															   + "**tableRow:**\n{}\n" + "**candidatesQuery:**\n{}\n"
-															   + "**query result candidates:**\n{}\n"
-															   + "**all product related candidates:**\n{}",
-													   tableRow,
-													   candidatesQuery,
-													   materialDispoRecordRepository.getAllByQueryAsString(candidatesQuery),
-													   materialDispoRecordRepository.getAllAsString(tableRow.getProductId()));
+		final Supplier<String> contextSupplier = () -> {
+
+			final StringBuilder context = new StringBuilder("MD_Candidate not found\n");
+			context.append("**tableRow:** \n").append(tableRow).append("\n");
+			context.append("**candidatesQuery:** \n").append(candidatesQuery).append("\n");
+			context.append("**query result candidates:** \n").append(materialDispoRecordRepository.getAllByQueryAsString(candidatesQuery)).append("\n");
+			context.append("**all product related candidates:** \n").append(materialDispoRecordRepository.getAllAsString(tableRow.getProductId()));
+
+			return context.toString();
+		};
 
 		return StepDefUtil
 				.tryAndWaitForItem(timeoutSec, 1000,
 								   itemProvider,
-								   logContext);
+								   contextSupplier);
 	}
 
 	@And("post DeactivateAllSimulatedCandidatesEvent and wait for processing")

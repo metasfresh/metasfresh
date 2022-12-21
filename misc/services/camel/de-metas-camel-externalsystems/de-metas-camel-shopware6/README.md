@@ -209,7 +209,7 @@ Based on `PaymentMethodType`, order transaction must be:
 * `pre_payment` - `Vorkasse` -> `open`
 * `invoice_payment` - `Rechnung` -> `open`
 * `pay_pal_payment_handler` - `PayPal` -> `paid`
-* `a_c_d_c_handler` - `Kredit- oder Debitkarte` -> `open` or in `progress`
+* `a_c_d_c_handler` - `Kredit- oder Debitkarte` -> `paid`
 * the following types will always result in skipping the order
   * `pay_pal_pui_payment_handler` - `Rechnungskauf Paypal`
   * `cash_payment` - `Nachnahme`

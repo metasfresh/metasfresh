@@ -22,9 +22,14 @@
 
 package de.metas.document.dimension;
 
+import de.metas.common.util.CoalesceUtil;
+import de.metas.order.OrderId;
+import de.metas.product.ProductId;
 import de.metas.product.acct.api.ActivityId;
 import de.metas.project.ProjectId;
+import de.metas.sectionCode.SectionCodeId;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.Value;
 import lombok.With;
 
@@ -36,12 +41,27 @@ import java.util.Objects;
 public class Dimension implements Comparable<Dimension>
 {
 	@With
-	@Nullable ProjectId projectId;
+	@Nullable
+	ProjectId projectId;
 
 	int campaignId;
 
 	@With
-	@Nullable ActivityId activityId;
+	@Nullable
+	ActivityId activityId;
+
+	@With
+	@Nullable
+	OrderId orderId;
+
+	@With
+	@Nullable
+	SectionCodeId sectionCodeId;
+
+	@With
+	@Nullable
+	ProductId productId;
+
 
 	// todo propagation for these 2
 	int user1_ID;
@@ -75,5 +95,28 @@ public class Dimension implements Comparable<Dimension>
 	public int compareTo(@Nullable final Dimension o)
 	{
 		return this.equals(o) ? 0 : -1;
+	}
+
+	public Dimension fallbackTo(@NonNull final Dimension other)
+	{
+		return builder()
+				.projectId(CoalesceUtil.coalesce(this.projectId, other.projectId))
+				.campaignId(CoalesceUtil.firstGreaterThanZero(this.campaignId, other.campaignId))
+				.activityId(CoalesceUtil.coalesce(this.activityId, other.activityId))
+				.orderId(CoalesceUtil.coalesce(this.orderId, other.orderId))
+				.sectionCodeId(CoalesceUtil.coalesce(this.sectionCodeId, other.sectionCodeId))
+				.productId(CoalesceUtil.coalesce(this.productId, other.productId))
+				.user1_ID(CoalesceUtil.firstGreaterThanZero(this.user1_ID, other.user1_ID))
+				.user2_ID(CoalesceUtil.firstGreaterThanZero(this.user2_ID, other.user2_ID))
+				.userElement1Id(CoalesceUtil.firstGreaterThanZero(this.userElement1Id, other.userElement1Id))
+				.userElement2Id(CoalesceUtil.firstGreaterThanZero(this.userElement2Id, other.userElement2Id))
+				.userElementString1(CoalesceUtil.coalesce(this.userElementString1, other.userElementString1))
+				.userElementString2(CoalesceUtil.coalesce(this.userElementString2, other.userElementString2))
+				.userElementString3(CoalesceUtil.coalesce(this.userElementString3, other.userElementString3))
+				.userElementString4(CoalesceUtil.coalesce(this.userElementString4, other.userElementString4))
+				.userElementString5(CoalesceUtil.coalesce(this.userElementString5, other.userElementString5))
+				.userElementString6(CoalesceUtil.coalesce(this.userElementString6, other.userElementString6))
+				.userElementString7(CoalesceUtil.coalesce(this.userElementString7, other.userElementString7))
+				.build();
 	}
 }

@@ -97,6 +97,7 @@ import de.metas.product.acct.api.ActivityId;
 import de.metas.tax.api.ITaxBL;
 import de.metas.tax.api.TaxCategoryId;
 import de.metas.tax.api.TaxId;
+import de.metas.tax.api.VatCodeId;
 import de.metas.uom.IUOMDAO;
 import de.metas.uom.UomId;
 import de.metas.user.UserId;
@@ -482,6 +483,7 @@ public class FlatrateBL implements IFlatrateBL
 		final BPartnerLocationAndCaptureId shipToLocationId = CoalesceUtil.coalesceSuppliers(
 				() -> ContractLocationHelper.extractDropshipLocationId(term),
 				() -> ContractLocationHelper.extractBillToLocationId(term));
+		final VatCodeId vatCodeId = null;
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				term,
@@ -491,7 +493,8 @@ public class FlatrateBL implements IFlatrateBL
 				orgId,
 				null,
 				shipToLocationId,
-				SOTrx.SALES);
+				SOTrx.SALES,
+				vatCodeId);
 
 		newCand.setC_Tax_ID(taxId.getRepoId());
 
@@ -615,6 +618,7 @@ public class FlatrateBL implements IFlatrateBL
 		final BPartnerLocationAndCaptureId shipToLocationId = CoalesceUtil.coalesceSuppliers(
 				() -> ContractLocationHelper.extractDropshipLocationId(term),
 				() -> ContractLocationHelper.extractBillToLocationId(term));
+		final VatCodeId vatCodeId = null;
 
 		final TaxId taxId = Services.get(ITaxBL.class).getTaxNotNull(
 				term,
@@ -624,7 +628,8 @@ public class FlatrateBL implements IFlatrateBL
 				OrgId.ofRepoId(dataEntry.getAD_Org_ID()),
 				null,
 				shipToLocationId,
-				SOTrx.SALES);
+				SOTrx.SALES,
+				vatCodeId);
 
 		newCand.setC_Tax_ID(TaxId.toRepoId(taxId)); // guard against NPEs in unit tests
 

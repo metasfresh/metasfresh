@@ -36,12 +36,12 @@ Feature: create distribution simulation
       | M_Warehouse_ID.Identifier | Name             | Value            | C_BPartner_ID.Identifier | C_BPartner_Location_ID.Identifier | OPT.IsInTransit |
       | warehouse_1               | WarehouseTransit | WarehouseTransit | bpartner_1               | location_1                        | true            |
       | warehouse_2               | WarehouseSource  | WarehouseSource  | bpartner_1               | location_1                        | false           |
-    And metasfresh contains M_Locator
+    And metasfresh contains M_Locator:
       | M_Locator_ID.Identifier | Value    | M_Warehouse_ID.Identifier |
       | locator_1               | Standard | warehouse_2               |
-    And load M_Shipper
-      | M_Shipper_ID.Identifier | M_Shipper_ID |
-      | shipper_1               | 540006       |
+    And load M_Shipper:
+      | M_Shipper_ID.Identifier | OPT.M_Shipper_ID |
+      | shipper_1               | 540006           |
     And metasfresh contains DD_NetworkDistribution
       | DD_NetworkDistribution_ID.Identifier | Name          | Value          | DocumentNo |
       | ddNetwork_1                          | DDNetworkName | DDNetworkValue | docNo1     |

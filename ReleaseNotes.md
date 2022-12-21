@@ -12,6 +12,13 @@ Here come the actual release notes:
 # metasfresh 5.176 (upcoming RC)
 ## Features
 * metasfresh
+  * [#14164](https://github.com/metasfresh/metasfresh/issues/14164) New Accounting Dimensions: Section Code and Order
+  * [#14092](https://github.com/metasfresh/metasfresh/issues/14092) Allow EDI-Invoice without order-id
+  * [#14159](https://github.com/metasfresh/metasfresh/issues/14159) Extend Export Accounting
+  * [#14122](https://github.com/metasfresh/metasfresh/issues/14122) Add new picking-process 
+  * [#14038](https://github.com/metasfresh/metasfresh/issues/14038) Get WorkOrder Projects from API  
+  * [#14135](https://github.com/metasfresh/metasfresh/issues/14135) Support 4 parent levels in Balance Sheet 
+  * [#14105](https://github.com/metasfresh/metasfresh/issues/14105) Sub-Task No 5: Test & Fix Sales order (w/ ship ) - Product Planning - Distribution 
   * [#14103](https://github.com/metasfresh/metasfresh/issues/14103) Delivery Planning: Open and Close processes 
   * [#14108](https://github.com/metasfresh/metasfresh/pull/14108) Don't validate ASI for unique attributes in service repair PP_Orders
   * [#14090](https://github.com/metasfresh/metasfresh/issues/14090) update build to postgres 15.1
@@ -184,6 +191,9 @@ Here come the actual release notes:
 
 ## Fixes
 * metasfresh
+  * [#14187](https://github.com/metasfresh/metasfresh/issues/14187) update infrastructure db dockerfile to work with new images
+  * [#13546](https://github.com/metasfresh/metasfresh/issues/13546) DATEV Export Performance Problem 
+  * [#14095](https://github.com/metasfresh/metasfresh/pull/14095#pullrequestreview-1215114428) Sum amounts per vatcode
   * [#14019](https://github.com/metasfresh/metasfresh/issues/14019) [BUG] BPartnerRestController v2: path orgCode param is not consolidated with the request body
   * [#14072](https://github.com/metasfresh/metasfresh/issues/14072) Fix Sales Order - void selected order with related documents
   * [#14036](https://github.com/metasfresh/metasfresh/issues/14036) remove remaining oids from tables

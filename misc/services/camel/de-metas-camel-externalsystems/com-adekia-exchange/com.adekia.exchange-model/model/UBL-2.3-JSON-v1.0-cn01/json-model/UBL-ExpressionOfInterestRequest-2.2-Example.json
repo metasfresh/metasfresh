@@ -1,0 +1,78 @@
+{"_D":"urn:oasis:names:specification:ubl:schema:xsd:ExpressionOfInterestRequest-2",
+ "_A":"urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2",
+ "_B":"urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2",
+ "ExpressionOfInterestRequest":{
+ "UBLVersionID":{"_":"2.2"},
+ "CustomizationID":{"_":"urn:www.cenbii.eu:transaction:BiiTrns081:ver2.0"},
+ "ProfileID":{"_":"urn:www.cenbii.eu:profile:bii46:ver2.0"},
+ "ID":{"_":"234486-2017"},
+ "UUID":{"_":"x2344vghjjrhhfhrrrgd4567"},
+ "ContractFolderID":{"_":"2017/S 214-3792289"},
+ "IssueDate":{"_":"2017-10-16"},
+ "IssueTime":{"_":"17:30:00+01:00"},
+ "Note":[{"_":"We are very interested please send us all information possible"}],
+ "EconomicOperatorParty":{
+  "Party":{
+   "WebsiteURI":{"_":"http://super.company.dk"},
+   "EndpointID":{"_":"01842222222222",
+    "schemeAgencyID":"9",
+    "schemeID":"FI:OVT"},
+   "PartyIdentification":[{
+    "ID":{"_":"5790000127777",
+     "schemeAgencyID":"9",
+     "schemeID":"GLN"}
+   }],
+   "PartyName":[{
+    "Name":{"_":"SuperCompany"}
+   }],
+   "PostalAddress":{
+    "AddressFormatCode":{"_":"Structured",
+     "listAgencyID":"700",
+     "listID":"CENBII3"},
+    "StreetName":{"_":"Korsbygade 34"},
+    "CityName":{"_":"Aalborg"},
+    "PostalZone":{"_":"9000"},
+    "Country":{
+     "IdentificationCode":{"_":"DK"}
+    }
+   },
+   "PartyLegalEntity":[{
+    "RegistrationName":{"_":"SuperCompany"},
+    "CompanyID":{"_":"DK59873677",
+     "schemeID":"DK:CVR"}
+   }],
+   "Contact":{
+    "ID":{"_":"7778"},
+    "Name":{"_":"Ole Hansen"},
+    "Telephone":{"_":"4526532147"},
+    "Telefax":{"_":"4526532146"},
+    "ElectronicMail":{"_":"Ole@super.company.dk"}
+   }
+  }
+ },
+ "ContractingParty":[{
+  "Party":{
+   "EndpointID":{"_":"01841111111111",
+    "schemeID":"FI:OVT"},
+   "PartyIdentification":[{
+    "ID":{"_":"5398000392577",
+     "schemeAgencyID":"9",
+     "schemeID":"GLN"}
+   }],
+   "PartyName":[{
+    "Name":{"_":"FirstAgency"}
+   }],
+   "Contact":{
+    "Name":{"_":"Ole Ellerbæk Madsen"}
+   }
+  }
+ }],
+ "ProcurementProject":{
+  "ID":{"_":"DP"},
+  "Name":[{"_":"DigitalPost"}],
+  "Description":[{"_":"Only Lot2"}]
+ },
+ "ProcurementProjectLotReference":[{
+  "ID":{"_":"Lot2"}
+ }]
+}}
