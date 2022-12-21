@@ -7202,3 +7202,305 @@ UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Abschreibung Erstes Jahr Konve
 -- 2022-12-21T10:28:47.702Z
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(575243,'de_CH')
 ;
+
+
+-- 2022-12-21T10:54:25.370Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Email-Ausgangsserver (SMTP)', PrintName='Email-Ausgangsserver (SMTP)',Updated=TO_TIMESTAMP('2022-12-21 11:54:25','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=575474 AND AD_Language='de_CH'
+;
+
+-- 2022-12-21T10:54:25.372Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(575474,'de_CH')
+;
+
+-- 2022-12-21T10:54:30.846Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Email-Ausgangsserver (SMTP)', PrintName='Email-Ausgangsserver (SMTP)',Updated=TO_TIMESTAMP('2022-12-21 11:54:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=575474 AND AD_Language='de_DE'
+;
+
+-- 2022-12-21T10:54:30.847Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(575474,'de_DE')
+;
+
+-- 2022-12-21T10:54:30.848Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(575474,'de_DE')
+;
+
+-- 2022-12-21T11:02:40.202Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Fehlender/Unvollständiger Gegenbeleg', PrintName='Fehlender/Unvollständiger Gegenbeleg',Updated=TO_TIMESTAMP('2022-12-21 12:02:40','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=573817 AND AD_Language='de_CH'
+;
+
+-- 2022-12-21T11:02:40.204Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(573817,'de_CH')
+;
+
+-- 2022-12-21T11:02:55.660Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Missing Counter Documents', PrintName='Missing Counter Documents',Updated=TO_TIMESTAMP('2022-12-21 12:02:55','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=573817 AND AD_Language='en_US'
+;
+
+-- 2022-12-21T11:02:55.661Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(573817,'en_US')
+;
+
+-- 2022-12-21T11:02:59.983Z
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2022-12-21 12:02:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=573817 AND AD_Language='de_DE'
+;
+
+-- 2022-12-21T11:02:59.983Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(573817,'de_DE')
+;
+
+-- 2022-12-21T11:02:59.984Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(573817,'de_DE')
+;
+
+-- 2022-12-21T11:03:39.969Z
+UPDATE AD_Element_Trl SET Name='Missing Counter Documents', PrintName='Missing Counter Documents',Updated=TO_TIMESTAMP('2022-12-21 12:03:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=574702 AND AD_Language='en_US'
+;
+
+-- 2022-12-21T11:03:39.970Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(574702,'en_US')
+;
+
+-- 2022-12-21T11:03:42.441Z
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2022-12-21 12:03:42','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=574702 AND AD_Language='en_US'
+;
+
+-- 2022-12-21T11:03:42.443Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(574702,'en_US')
+;
+
+-- 2022-12-21T11:03:45.554Z
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2022-12-21 12:03:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=574702 AND AD_Language='de_DE'
+;
+
+-- 2022-12-21T11:03:45.555Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(574702,'de_DE')
+;
+
+-- 2022-12-21T11:03:45.556Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(574702,'de_DE')
+;
+
+-- 2022-12-21T11:03:51.741Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Fehlender/Unvollständiger Gegenbeleg', PrintName='Fehlender/Unvollständiger Gegenbeleg',Updated=TO_TIMESTAMP('2022-12-21 12:03:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=574702 AND AD_Language='de_CH'
+;
+
+-- 2022-12-21T11:03:51.742Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(574702,'de_CH')
+;
+
+-- 2022-12-21T11:06:21.225Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Qualitäts Notiz', PrintName='Qualitäts Notiz',Updated=TO_TIMESTAMP('2022-12-21 12:06:21','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=575658 AND AD_Language='de_CH'
+;
+
+-- 2022-12-21T11:06:21.226Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(575658,'de_CH')
+;
+
+-- 2022-12-21T11:08:58.817Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Import Nutzer', PrintName='Import Nutzer',Updated=TO_TIMESTAMP('2022-12-21 12:08:58','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=573900 AND AD_Language='de_DE'
+;
+
+-- 2022-12-21T11:08:58.819Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(573900,'de_DE')
+;
+
+-- 2022-12-21T11:08:58.821Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(573900,'de_DE')
+;
+
+-- 2022-12-21T11:09:06.138Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Import Nutzer', PrintName='Import Nutzer',Updated=TO_TIMESTAMP('2022-12-21 12:09:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=573900 AND AD_Language='de_CH'
+;
+
+-- 2022-12-21T11:09:06.140Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(573900,'de_CH')
+;
+
+-- 2022-12-21T11:09:19.710Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Import Nutzer', PrintName='Import Nutzer',Updated=TO_TIMESTAMP('2022-12-21 12:09:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=574641 AND AD_Language='de_CH'
+;
+
+-- 2022-12-21T11:09:19.711Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(574641,'de_CH')
+;
+
+-- 2022-12-21T11:09:27.337Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Import Nutzer', PrintName='Import Nutzer',Updated=TO_TIMESTAMP('2022-12-21 12:09:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=574641 AND AD_Language='de_DE'
+;
+
+-- 2022-12-21T11:09:27.338Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(574641,'de_DE')
+;
+
+-- 2022-12-21T11:09:27.339Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(574641,'de_DE')
+;
+
+-- 2022-12-21T11:10:23.127Z
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2022-12-21 12:10:23','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=573763 AND AD_Language='de_DE'
+;
+
+-- 2022-12-21T11:10:23.129Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(573763,'de_DE')
+;
+
+-- 2022-12-21T11:10:23.129Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(573763,'de_DE')
+;
+
+-- 2022-12-21T11:10:30.781Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Lieferung Einschränkung', PrintName='Lieferung Einschränkung',Updated=TO_TIMESTAMP('2022-12-21 12:10:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=573763 AND AD_Language='de_CH'
+;
+
+-- 2022-12-21T11:10:30.782Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(573763,'de_CH')
+;
+
+-- 2022-12-21T11:10:39.641Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Lieferung Einschränkung', PrintName='Lieferung Einschränkung',Updated=TO_TIMESTAMP('2022-12-21 12:10:39','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=574517 AND AD_Language='de_CH'
+;
+
+-- 2022-12-21T11:10:39.642Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(574517,'de_CH')
+;
+
+-- 2022-12-21T11:10:44.388Z
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2022-12-21 12:10:44','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=574517 AND AD_Language='de_DE'
+;
+
+-- 2022-12-21T11:10:44.389Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(574517,'de_DE')
+;
+
+-- 2022-12-21T11:10:44.390Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(574517,'de_DE')
+;
+
+-- 2022-12-21T11:10:56.002Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Lieferung Einschränkung', PrintName='Lieferung Einschränkung',Updated=TO_TIMESTAMP('2022-12-21 12:10:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=574561 AND AD_Language='de_CH'
+;
+
+-- 2022-12-21T11:10:56.003Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(574561,'de_CH')
+;
+
+-- 2022-12-21T11:11:06.101Z
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2022-12-21 12:11:06','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=574561 AND AD_Language='de_DE'
+;
+
+-- 2022-12-21T11:11:06.102Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(574561,'de_DE')
+;
+
+-- 2022-12-21T11:11:06.103Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(574561,'de_DE')
+;
+
+-- 2022-12-21T11:15:30.679Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Liefer Statistik', PrintName='Liefer Statistik',Updated=TO_TIMESTAMP('2022-12-21 12:15:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=574356 AND AD_Language='de_CH'
+;
+
+-- 2022-12-21T11:15:30.680Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(574356,'de_CH')
+;
+
+-- 2022-12-21T11:15:34.982Z
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2022-12-21 12:15:34','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=574356 AND AD_Language='de_DE'
+;
+
+-- 2022-12-21T11:15:34.983Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(574356,'de_DE')
+;
+
+-- 2022-12-21T11:15:34.984Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(574356,'de_DE')
+;
+
+-- 2022-12-21T11:15:45.144Z
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2022-12-21 12:15:45','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=573812 AND AD_Language='de_DE'
+;
+
+-- 2022-12-21T11:15:45.145Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(573812,'de_DE')
+;
+
+-- 2022-12-21T11:15:45.146Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(573812,'de_DE')
+;
+
+-- 2022-12-21T11:15:51.221Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Liefer Statistik', PrintName='Liefer Statistik',Updated=TO_TIMESTAMP('2022-12-21 12:15:51','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=573812 AND AD_Language='de_CH'
+;
+
+-- 2022-12-21T11:15:51.222Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(573812,'de_CH')
+;
+
+-- 2022-12-21T11:16:05.584Z
+UPDATE AD_Element_Trl SET IsTranslated='Y',Updated=TO_TIMESTAMP('2022-12-21 12:16:05','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=575727 AND AD_Language='de_DE'
+;
+
+-- 2022-12-21T11:16:05.585Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(575727,'de_DE')
+;
+
+-- 2022-12-21T11:16:05.585Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(575727,'de_DE')
+;
+
+-- 2022-12-21T11:16:11.705Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='Liefer Statistik', PrintName='Liefer Statistik',Updated=TO_TIMESTAMP('2022-12-21 12:16:11','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=575727 AND AD_Language='de_CH'
+;
+
+-- 2022-12-21T11:16:11.706Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(575727,'de_CH')
+;
+
+-- 2022-12-21T11:17:46.305Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='MSV3 Kunden', PrintName='MSV3 Kunden',Updated=TO_TIMESTAMP('2022-12-21 12:17:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=572524 AND AD_Language='de_DE'
+;
+
+-- 2022-12-21T11:17:46.306Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(572524,'de_DE')
+;
+
+-- 2022-12-21T11:17:46.306Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(572524,'de_DE')
+;
+
+-- 2022-12-21T11:17:57.342Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='MSV3 Kunden', PrintName='MSV3 Kunden',Updated=TO_TIMESTAMP('2022-12-21 12:17:57','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=572524 AND AD_Language='de_CH'
+;
+
+-- 2022-12-21T11:17:57.343Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(572524,'de_CH')
+;
+
+-- 2022-12-21T11:18:16.842Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='MSV3 Kunden Konfiguration', PrintName='MSV3 Kunden Konfiguration',Updated=TO_TIMESTAMP('2022-12-21 12:18:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=543936 AND AD_Language='de_CH'
+;
+
+-- 2022-12-21T11:18:16.843Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(543936,'de_CH')
+;
+
+-- 2022-12-21T11:18:26.425Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='MSV3 Customer Configuration', PrintName='MSV3 Customer Configuration',Updated=TO_TIMESTAMP('2022-12-21 12:18:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=543936 AND AD_Language='en_US'
+;
+
+-- 2022-12-21T11:18:26.426Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(543936,'en_US')
+;
+
+-- 2022-12-21T11:18:33.472Z
+UPDATE AD_Element_Trl SET IsTranslated='Y', Name='MSV3 Kunden Konfiguration', PrintName='MSV3 Kunden Konfiguration',Updated=TO_TIMESTAMP('2022-12-21 12:18:33','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=543936 AND AD_Language='de_DE'
+;
+
+-- 2022-12-21T11:18:33.473Z
+/* DDL */  select update_ad_element_on_ad_element_trl_update(543936,'de_DE')
+;
+
+-- 2022-12-21T11:18:33.474Z
+/* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(543936,'de_DE')
+;
+
