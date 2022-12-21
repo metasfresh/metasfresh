@@ -138,7 +138,8 @@ Feature: create or update BPartner v2
                     "currencyCode": "EUR"
                   },
                   "active": true,
-                  "processed": false
+                  "processed": false,
+                  "approvedBy": 100
                 },
                 {
                   "type": "Insurance",
@@ -179,15 +180,18 @@ Feature: create or update BPartner v2
       | ext-ALBERTA-001    | ext-ALBERTA-c11   | test_name_c11 | test_email | fax      | c11  | false                   |
       | ext-ALBERTA-001    | ext-ALBERTA-c22   | test_name_c22 | null       | test_fax | c22  | true                    |
     And verify that credit limit was created for bpartner: created_bpartner
-      | Amount | IsActive | C_CreditLimit_Type.Name | OPT.DateFrom | Processed |
-      | 23.17  | true     | Insurance               | 2022-10-31   | false     |
-      | 10     | false    | Insurance               | 2022-10-30   | true      |
+      | Amount | IsActive | C_CreditLimit_Type.Name | OPT.DateFrom | Processed | OPT.ApprovedBy_ID |
+      | 23.17  | true     | Insurance               | 2022-10-31   | false     | 100               |
+      | 10     | false    | Insurance               | 2022-10-30   | true      | null              |
     And verify that S_ExternalReference was created
       | ExternalSystem | Type             | ExternalReference | ExternalReferenceURL         | OPT.ExternalSystem_Config_ID | OPT.IsReadOnlyInMetasfresh |
       | ALBERTA        | BPartner         | 001               | www.ExternalReferenceURL.com | 540000                       | false                      |
       | ALBERTA        | BPartnerLocation | l22               |                              | 540000                       | true                       |
       | ALBERTA        | UserID           | c11               |                              | 540000                       | true                       |
       | ALBERTA        | UserID           | c22               |                              | 540000                       | true                       |
+    And validate C_BPartner_Stats
+      | C_BPartner_ID.Identifier | OPT.SOCreditStatus | OPT.SO_CreditUsed |
+      | created_bpartner         | W                  | 0                 |
 
     And build BPartner Endpoint Path and store it in context
       | C_BPartner_ID.Identifier |
