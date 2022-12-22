@@ -816,6 +816,23 @@ public class ProductRestService
 			builder.sectionCodeId(existingProduct.getSectionCodeId());
 		}
 
+		// purchased
+		if (jsonRequestProductUpsertItem.isPurchasedSet())
+		{
+			if (jsonRequestProductUpsertItem.getPurchased() == null)
+			{
+				logger.debug("Ignoring boolean property \"purchased\" : null ");
+			}
+			else
+			{
+				builder.purchased(jsonRequestProductUpsertItem.getPurchased());
+			}
+		}
+		else
+		{
+			builder.purchased(existingProduct.isPurchased());
+		}
+
 		builder.id(existingProduct.getId())
 				.orgId(orgId)
 				.productNo(existingProduct.getProductNo())
@@ -841,6 +858,9 @@ public class ProductRestService
 				.map(code -> sectionCodeService.getSectionCodeIdByValue(orgId, code))
 				.orElse(null);
 
+		final boolean purchased = Optional.ofNullable(jsonRequestProductUpsertItem.getPurchased())
+				.orElse(false);
+
 		return CreateProductRequest.builder()
 				.orgId(orgId)
 				.productName(jsonRequestProductUpsertItem.getName())
@@ -856,6 +876,7 @@ public class ProductRestService
 				.ean(jsonRequestProductUpsertItem.getEan())
 				.productValue(jsonRequestProductUpsertItem.getCode())
 				.sectionCodeId(sectionCodeId)
+				.purchased(purchased)
 				.build();
 	}
 

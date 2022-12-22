@@ -165,6 +165,7 @@ public class JsonRetrieverService
 			.put(BPartner.INCOTERMS_VENDOR_ID, JsonResponseBPartner.INCOTERMS_VENDOR_ID)
 			.put(BPartner.CUSTOMER_PAYMENTTERM_ID, JsonResponseBPartner.CUSTOMER_PAYMENTTERM_ID)
 			.put(BPartner.VENDOR_PAYMENTTERM_ID, JsonResponseBPartner.VENDOR_PAYMENTTERM_ID)
+			.put(BPartner.SECTION_GROUP_PARTNER_ID, JsonResponseBPartner.SECTION_GROUP_PARTNER_ID)
 			.build();
 
 	/**
@@ -394,6 +395,7 @@ public class JsonRetrieverService
 
 				.customerPaymentTermId(JsonMetasfreshId.ofOrNull(PaymentTermId.toRepoId(bpartner.getCustomerPaymentTermId())))
 				.vendorPaymentTermId(JsonMetasfreshId.ofOrNull(PaymentTermId.toRepoId(bpartner.getVendorPaymentTermId())))
+				.sectionGroupPartnerId(JsonMetasfreshId.ofOrNull(BPartnerId.toRepoId(bpartner.getSectionGroupPartnerId())))
 				.build();
 	}
 

@@ -267,6 +267,13 @@ public class JsonRequestBPartner
 	@ApiModelProperty(hidden = true)
 	private boolean syncAdviseSet;
 
+	@ApiModelProperty(position = 260, //
+			value = "Mapped to `C_BPartner.Section_Group_Partner_ID`. " + BPARTNER_IDENTIFIER_DOC)
+	private String sectionGroupPartnerIdentifier;
+
+	@ApiModelProperty(hidden = true)
+	private boolean sectionGroupPartnerIdentifierSet;
+
 	public void setCode(final String code)
 	{
 		this.code = code;
@@ -472,5 +479,11 @@ public class JsonRequestBPartner
 	{
 		this.paymentRulePO = paymentRulePO;
 		this.paymentRulePOSet = true;
+	}
+
+	public void setSectionGroupPartnerIdentifier(final String sectionGroupPartnerIdentifier)
+	{
+		this.sectionGroupPartnerIdentifier = sectionGroupPartnerIdentifier;
+		this.sectionGroupPartnerIdentifierSet = true;
 	}
 }

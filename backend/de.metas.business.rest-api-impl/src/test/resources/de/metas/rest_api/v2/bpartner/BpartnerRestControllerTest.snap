@@ -234,6 +234,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
     "region" : "l1_region",
     "remitTo" : true,
     "replicationLookupDefault" : true,
+    "vatTaxId" : "l1_vatID",
     "visitorsAddress" : true
   }, {
     "active" : true,
@@ -275,6 +276,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateBPartner_
     "region" : "l2_region",
     "remitTo" : true,
     "replicationLookupDefault" : true,
+    "vatTaxId" : "l2_vatID",
     "visitorsAddress" : true
   } ],
   "orgId" : 10
@@ -1079,6 +1081,7 @@ de.metas.rest_api.v2.bpartner.BpartnerRestControllerTest.createOrUpdateLocation_
     "region" : "newLocation_region",
     "remitTo" : true,
     "replicationLookupDefault" : true,
+    "vatTaxId" : "newLocation_vatID",
     "visitorsAddress" : true
   } ],
   "orgId" : 10

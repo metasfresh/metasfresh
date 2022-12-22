@@ -231,7 +231,7 @@ public class DataTableUtil
 					.setParameter("dataTableRow", dataTableRow);
 		}
 	}
-	
+
 	public Instant extractInstantForIndex(final List<String> dataTableRow, final int index)
 	{
 		final String string = extractStringForIndex(dataTableRow, index);
@@ -279,7 +279,7 @@ public class DataTableUtil
 					.setParameter("dataTableRow", dataTableRow);
 		}
 	}
-	
+
 	@Nullable
 	public static ZonedDateTime extractZonedDateTimeOrNullForColumnName(final Map<String, String> dataTableRow, final String columnName)
 	{
