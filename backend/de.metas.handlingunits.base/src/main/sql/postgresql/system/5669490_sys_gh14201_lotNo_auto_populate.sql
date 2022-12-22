@@ -258,3 +258,82 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(581892) 
 ;
 
+-- Field: Stücklistenkonfiguration Version -> Stücklistenartikel -> Nummernfolge für Lotnummer
+-- Column: PP_Product_BOM.LotNo_Sequence_ID
+-- Field: Stücklistenkonfiguration Version(53006,EE01) -> Stücklistenartikel(53028,EE01) -> Nummernfolge für Lotnummer
+-- Column: PP_Product_BOM.LotNo_Sequence_ID
+-- 2022-12-22T09:08:54.368Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,585424,710054,0,53028,0,TO_TIMESTAMP('2022-12-22 11:08:54','YYYY-MM-DD HH24:MI:SS'),100,0,'D',0,'Y','Y','Y','N','N','N','N','N','Nummernfolge für Lotnummer',0,200,0,1,1,TO_TIMESTAMP('2022-12-22 11:08:54','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-12-22T09:08:54.372Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=710054 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-12-22T09:08:54.397Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(581892)
+;
+
+-- 2022-12-22T09:08:54.408Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=710054
+;
+
+-- 2022-12-22T09:08:54.409Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(710054)
+;
+
+-- UI Element: Stücklistenkonfiguration Version -> Stücklistenartikel.Nummernfolge für Lotnummer
+-- Column: PP_Product_BOM.LotNo_Sequence_ID
+-- UI Element: Stücklistenkonfiguration Version(53006,EE01) -> Stücklistenartikel(53028,EE01) -> main -> 20 -> attributes.Nummernfolge für Lotnummer
+-- Column: PP_Product_BOM.LotNo_Sequence_ID
+-- 2022-12-22T09:09:40.438Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,710054,0,53028,542424,614572,'F',TO_TIMESTAMP('2022-12-22 11:09:40','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Nummernfolge für Lotnummer',20,0,0,TO_TIMESTAMP('2022-12-22 11:09:40','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- Field: Produktionsauftrag -> Produkt -> Nummernfolge für Lotnummer
+-- Column: PP_Order_BOM.LotNo_Sequence_ID
+-- Field: Produktionsauftrag(53009,EE01) -> Produkt(53040,EE01) -> Nummernfolge für Lotnummer
+-- Column: PP_Order_BOM.LotNo_Sequence_ID
+-- 2022-12-22T09:13:22.889Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,585425,710055,0,53040,0,TO_TIMESTAMP('2022-12-22 11:13:22','YYYY-MM-DD HH24:MI:SS'),100,0,'D',0,'Y','Y','Y','N','N','N','N','N','Nummernfolge für Lotnummer',0,190,0,1,1,TO_TIMESTAMP('2022-12-22 11:13:22','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-12-22T09:13:22.890Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=710055 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-12-22T09:13:22.891Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(581892)
+;
+
+-- 2022-12-22T09:13:22.893Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=710055
+;
+
+-- 2022-12-22T09:13:22.893Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(710055)
+;
+
+-- UI Element: Produktionsauftrag -> Produkt.Nummernfolge für Lotnummer
+-- Column: PP_Order_BOM.LotNo_Sequence_ID
+-- UI Element: Produktionsauftrag(53009,EE01) -> Produkt(53040,EE01) -> main -> 10 -> default.Nummernfolge für Lotnummer
+-- Column: PP_Order_BOM.LotNo_Sequence_ID
+-- 2022-12-22T09:14:18.736Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,710055,0,53040,540839,614573,'F',TO_TIMESTAMP('2022-12-22 11:14:18','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Nummernfolge für Lotnummer',168,0,0,TO_TIMESTAMP('2022-12-22 11:14:18','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- UI Element: Produktionsauftrag -> Produkt.Nummernfolge für Lotnummer
+-- Column: PP_Order_BOM.LotNo_Sequence_ID
+-- UI Element: Produktionsauftrag(53009,EE01) -> Produkt(53040,EE01) -> main -> 10 -> default.Nummernfolge für Lotnummer
+-- Column: PP_Order_BOM.LotNo_Sequence_ID
+-- 2022-12-22T09:14:26.997Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=110,Updated=TO_TIMESTAMP('2022-12-22 11:14:26','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614573
+;
+
+-- UI Element: Produktionsauftrag -> Produkt.Sektion
+-- Column: PP_Order_BOM.AD_Org_ID
+-- UI Element: Produktionsauftrag(53009,EE01) -> Produkt(53040,EE01) -> main -> 10 -> default.Sektion
+-- Column: PP_Order_BOM.AD_Org_ID
+-- 2022-12-22T09:14:27.011Z
+UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=120,Updated=TO_TIMESTAMP('2022-12-22 11:14:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546582
+;
