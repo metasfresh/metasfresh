@@ -23,21 +23,24 @@
 package de.metas.project.workorder.interceptor;
 
 import de.metas.project.ProjectCategory;
-import de.metas.util.Loggables;
+import de.metas.project.workorder.project.WOProjectService;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
-import org.adempiere.model.InterfaceWrapperHelper;
 import org.compiere.model.I_C_Project;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
 
 @Interceptor(I_C_Project.class)
 @Component
 public class C_Project
 {
+	private final WOProjectService woProjectService;
+	public C_Project( @NonNull final WOProjectService woProjectService)
+	{
+		this.woProjectService = woProjectService;
+	}
+
 	/**
 	 * If the given work order project has no values for certain columns, then take them from the parent-project
 	 */
@@ -54,26 +57,6 @@ public class C_Project
 			return; // nothing for us to do
 		}
 
-		final ArrayList<String> updatedColumns = new ArrayList<>();
-		final I_C_Project parentProjectRecord = InterfaceWrapperHelper.load(project.getC_Project_Parent_ID(), I_C_Project.class);
-		if (project.getC_BPartner_ID() <= 0)
-		{
-			project.setC_BPartner_ID(parentProjectRecord.getC_BPartner_ID());
-			updatedColumns.add(I_C_Project.COLUMNNAME_C_BPartner_ID);
-		}
-		if (project.getSalesRep_ID() <= 0)
-		{
-			project.setSalesRep_ID(parentProjectRecord.getSalesRep_ID());
-			updatedColumns.add(I_C_Project.COLUMNNAME_SalesRep_ID);
-		}
-		if (project.getSpecialist_Consultant_ID() <= 0)
-		{
-			project.setSpecialist_Consultant_ID(parentProjectRecord.getSpecialist_Consultant_ID());
-			updatedColumns.add(I_C_Project.COLUMNNAME_Specialist_Consultant_ID);
-		}
-		if (updatedColumns.size() > 0) // log this, particularly in case the change is done via API 
-		{
-			Loggables.get().addLog("Set the following columns from C_Project_Parent_ID={}: {}", project.getC_Project_Parent_ID(), updatedColumns);
-		}
+		woProjectService.updateWOProjectFromParent(project);
 	}
 }

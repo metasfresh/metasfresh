@@ -23,9 +23,11 @@
 package de.metas.project.budget.interceptor;
 
 import de.metas.project.ProjectCategory;
+import de.metas.project.ProjectId;
 import de.metas.project.budget.BudgetProject;
 import de.metas.project.budget.BudgetProjectRepository;
 import de.metas.project.budget.BudgetProjectResourceRepository;
+import de.metas.project.budget.BudgetProjectService;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
@@ -42,10 +44,14 @@ import java.util.Optional;
 public class C_Project
 {
 	private final BudgetProjectResourceRepository budgetProjectResourceRepository;
+	private final BudgetProjectService budgetProjectService;
 
-	public C_Project(@NonNull final BudgetProjectResourceRepository budgetProjectResourceRepository)
+	public C_Project(
+			@NonNull final BudgetProjectResourceRepository budgetProjectResourceRepository,
+			@NonNull final BudgetProjectService budgetProjectService)
 	{
 		this.budgetProjectResourceRepository = budgetProjectResourceRepository;
+		this.budgetProjectService = budgetProjectService;
 	}
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_NEW, ModelValidator.TYPE_AFTER_CHANGE })
@@ -65,4 +71,19 @@ public class C_Project
 		}
 	}
 
+	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE, ifColumnsChanged =
+			{ I_C_Project.COLUMNNAME_BPartnerDepartment,
+					I_C_Project.COLUMNNAME_SalesRep_ID,
+					I_C_Project.COLUMNNAME_Specialist_Consultant_ID,
+					I_C_Project.COLUMNNAME_C_Project_Reference_Ext,
+					I_C_Project.COLUMNNAME_InternalPriority })
+	public void propagateValuesToWOChildProjects(final I_C_Project record)
+	{
+		if (!ProjectCategory.ofNullableCodeOrGeneral(record.getProjectCategory()).isBudget())
+		{
+			return;
+		}
+
+		budgetProjectService.updateWOChildProjects(ProjectId.ofRepoId(record.getC_Project_ID()));
+	}
 }

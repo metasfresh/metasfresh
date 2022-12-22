@@ -3652,6 +3652,17 @@ public abstract class PO
 				}
 			}
 		}
+		// handle empty columns
+		{
+			p_info.getColumnNames()
+					.forEach(columnName ->
+							 {
+								 final int columnIndex = p_info.getColumnIndex(columnName);
+
+								 p_info.computeColumnValueBasedOnSequenceIdIfProvided(columnName, getAD_Client_ID())
+										 .ifPresent((computedValue) -> set_ValueNoCheck(columnIndex, computedValue));
+							 });
+		}
 
 		lobReset();
 

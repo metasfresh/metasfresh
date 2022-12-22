@@ -102,4 +102,8 @@ public class ExternalSystemConstants
 	public static final int DEFAULT_SW6_ORDER_PAGE_SIZE = 100;
 
 	public static final String API_REQUEST_AUDIT_TABLE_NAME = "API_Request_Audit";
+
+	public static final String PARAM_PROJECT_ID = "C_Project_ID";
+
+	public static final String PARAM_EXPORT_BUDGET_PROJECT = "ExportBudgetProject";
 }

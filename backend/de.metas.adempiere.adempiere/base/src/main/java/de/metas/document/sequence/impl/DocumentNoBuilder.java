@@ -272,18 +272,21 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 			final String customSequenceNumber = customSequenceNoProvider.provideSequenceNo(evalContext);
 			logger.debug("getSequenceNoToUse - The customSequenceNoProvider returned customSequenceNumber={}" + customSequenceNumber);
 
-			if (customSequenceNoProvider.isUseIncrementSeqNoAsPrefix())
+			if (customSequenceNoProvider.isUseIncrementSeqNoAsSuffix())
 			{
 				logger.debug("getSequenceNoToUse - The customSequenceNoProvider.isUseIncrementSeqNoAsPrefix()=true; -> going to prepend an incremental sequence number to it");
 				if (!docSeqInfo.isAutoSequence())
 				{
-
 					throw new AdempiereException("The current customSequenceNoProvider requires this sequence to be configured as auto-sequence")
 							.appendParametersToMessage()
 							.setParameter("customSequenceNoProvider", customSequenceNoProvider)
 							.setParameter("docSeqInfo", docSeqInfo);
 				}
-				result = customSequenceNumber + "-" + retrieveAndIncrementSeqNo(docSeqInfo);
+
+				final String actualSequenceNumber = retrieveAndIncrementSeqNo(docSeqInfo);
+				final String decimalPattern = docSeqInfo.getDecimalPattern();
+
+				return customSequenceNoProvider.appendIncrementSeqNoAsSuffix(customSequenceNumber, actualSequenceNumber, decimalPattern);
 			}
 			else
 			{

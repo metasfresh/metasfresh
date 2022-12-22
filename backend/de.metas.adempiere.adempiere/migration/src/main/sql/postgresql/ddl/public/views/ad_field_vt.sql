@@ -1,7 +1,7 @@
 -- NOTE: keep in sync with ad_field_v
 
 drop view if exists ad_field_vt;
-CREATE OR REPLACE VIEW ad_field_vt AS 
+CREATE OR REPLACE VIEW ad_field_vt AS
 SELECT
 c_trl.ad_language
 , t.ad_window_id
@@ -24,6 +24,7 @@ c_trl.ad_language
 , f.seqno
 , f.seqnogrid
 , f.sortno
+, f.ad_sequence_id AS AD_Sequence_ID
 , COALESCE(f.issameline, 'N'::bpchar) AS issameline
 , COALESCE(f.isheading, 'N'::bpchar) AS isheading
 , COALESCE(f.isfieldonly, 'N'::bpchar) AS isfieldonly
@@ -90,7 +91,7 @@ JOIN ad_column c ON c.ad_table_id = t.ad_table_id
 				LEFT JOIN ad_fieldgroup fg ON fg.ad_fieldgroup_id = f.ad_fieldgroup_id
 					LEFT JOIN ad_fieldgroup_trl fg_trl ON fg_trl.ad_fieldgroup_id = f.ad_fieldgroup_id AND fg_trl.ad_language::text = c_trl.ad_language::text
 			LEFT JOIN ad_val_rule vr ON vr.ad_val_rule_id = COALESCE(f.ad_val_rule_id, c.ad_val_rule_id)
-WHERE 
+WHERE
 (f.isactive = 'Y' or f.AD_Field_ID is null)
 AND c.isactive = 'Y'
 ;
