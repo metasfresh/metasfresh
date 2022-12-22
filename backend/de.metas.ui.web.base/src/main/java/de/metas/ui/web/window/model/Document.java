@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableSet;
 import de.metas.document.engine.IDocument;
 import de.metas.document.engine.IDocumentBL;
 import de.metas.document.exceptions.DocumentProcessingException;
+import de.metas.document.sequence.IDocumentNoBuilderFactory;
 import de.metas.lang.SOTrx;
 import de.metas.letters.model.Letters;
 import de.metas.logging.LogManager;
@@ -54,6 +55,7 @@ import org.adempiere.ad.ui.spi.ITabCallout;
 import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.IAutoCloseable;
+import org.compiere.SpringContextHolder;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
@@ -98,6 +100,8 @@ import java.util.function.Supplier;
 
 public final class Document
 {
+	private static final IDocumentNoBuilderFactory documentNoBuilder = SpringContextHolder.instance.getBean(IDocumentNoBuilderFactory.class);
+
 	public static Builder builder(final DocumentEntityDescriptor entityDescriptor)
 	{
 		return new Builder(entityDescriptor);
@@ -732,6 +736,16 @@ public final class Document
 				}
 
 				return value;
+			}
+
+			if (fieldDescriptor.getDocSequenceId() != null)
+			{
+				return Optional.ofNullable(documentNoBuilder.forSequenceId(fieldDescriptor.getDocSequenceId())
+																	 .setClientId(Env.getClientId(Env.getCtx()))
+																	 .build())
+						.orElseThrow(() -> new AdempiereException("Failed to compute sequenceId")
+								.appendParametersToMessage()
+								.setParameter("adSequenceId", fieldDescriptor.getDocSequenceId()));
 			}
 
 			//

@@ -1,8 +1,11 @@
 package org.compiere.model;
 
+import org.adempiere.model.ModelColumn;
+
+import javax.annotation.Nullable;
 
 /** Generated Interface for AD_Field
- *  @author Adempiere (generated) 
+ *  @author Adempiere (generated)
  */
 @SuppressWarnings("javadoc")
 public interface I_AD_Field 
@@ -225,16 +228,42 @@ public interface I_AD_Field
 	 * <br>Mandatory: false
 	 * <br>Virtual Column: false
 	 */
-	public int getAD_Reference_Value_ID();
+	int getAD_Reference_Value_ID();
 
-	public org.compiere.model.I_AD_Reference getAD_Reference_Value();
+	@Nullable
+	org.compiere.model.I_AD_Reference getAD_Reference_Value();
 
-	public void setAD_Reference_Value(org.compiere.model.I_AD_Reference AD_Reference_Value);
+	void setAD_Reference_Value(@Nullable org.compiere.model.I_AD_Reference AD_Reference_Value);
 
-    /** Column definition for AD_Reference_Value_ID */
-    public static final org.adempiere.model.ModelColumn<I_AD_Field, org.compiere.model.I_AD_Reference> COLUMN_AD_Reference_Value_ID = new org.adempiere.model.ModelColumn<I_AD_Field, org.compiere.model.I_AD_Reference>(I_AD_Field.class, "AD_Reference_Value_ID", org.compiere.model.I_AD_Reference.class);
-    /** Column name AD_Reference_Value_ID */
-    public static final String COLUMNNAME_AD_Reference_Value_ID = "AD_Reference_Value_ID";
+	ModelColumn<I_AD_Field, I_AD_Reference> COLUMN_AD_Reference_Value_ID = new ModelColumn<>(I_AD_Field.class, "AD_Reference_Value_ID", org.compiere.model.I_AD_Reference.class);
+	String COLUMNNAME_AD_Reference_Value_ID = "AD_Reference_Value_ID";
+
+	/**
+	 * Set Sequence.
+	 * Document Sequence
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setAD_Sequence_ID (int AD_Sequence_ID);
+
+	/**
+	 * Get Sequence.
+	 * Document Sequence
+	 *
+	 * <br>Type: TableDir
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getAD_Sequence_ID();
+
+	@Nullable org.compiere.model.I_AD_Sequence getAD_Sequence();
+
+	void setAD_Sequence(@Nullable org.compiere.model.I_AD_Sequence AD_Sequence);
+
+	ModelColumn<I_AD_Field, org.compiere.model.I_AD_Sequence> COLUMN_AD_Sequence_ID = new ModelColumn<>(I_AD_Field.class, "AD_Sequence_ID", org.compiere.model.I_AD_Sequence.class);
+	String COLUMNNAME_AD_Sequence_ID = "AD_Sequence_ID";
 
 	/**
 	 * Set Register.

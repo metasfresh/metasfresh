@@ -18,18 +18,15 @@
  *****************************************************************************/
 package org.compiere.model;
 
-import java.io.Serializable;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import javax.annotation.Nullable;
-
+import com.google.common.base.MoreObjects;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.i18n.Language;
+import de.metas.logging.LogManager;
+import de.metas.security.permissions.UIDisplayedEntityTypes;
+import de.metas.util.Check;
+import de.metas.util.Services;
+import de.metas.util.StringUtils;
+import lombok.Getter;
 import org.adempiere.ad.element.api.AdWindowId;
 import org.adempiere.ad.expression.api.ConstantLogicExpression;
 import org.adempiere.ad.expression.api.IExpressionFactory;
@@ -42,16 +39,16 @@ import org.compiere.util.DisplayType;
 import org.compiere.util.Env;
 import org.slf4j.Logger;
 
-import com.google.common.base.MoreObjects;
-
-import de.metas.i18n.Language;
-import de.metas.logging.LogManager;
-import de.metas.security.permissions.UIDisplayedEntityTypes;
-import de.metas.util.Check;
-import de.metas.util.Services;
-import de.metas.util.StringUtils;
-import de.metas.common.util.CoalesceUtil;
-import lombok.Getter;
+import javax.annotation.Nullable;
+import java.io.Serializable;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * Field Model Value Object
@@ -410,6 +407,14 @@ public class GridFieldVO implements Serializable
 				{
 					vo.useDocSequence = DisplayType.toBoolean(rs.getString(i));
 				}
+				else if (columnName.equalsIgnoreCase("Column" + I_AD_Column.COLUMNNAME_AD_Sequence_ID))
+				{
+					vo.column_AD_Sequence_ID = rs.getInt(i);
+				}
+				else if (columnName.equalsIgnoreCase("Field" + I_AD_Column.COLUMNNAME_AD_Sequence_ID))
+				{
+					vo.field_AD_Sequence_ID = rs.getInt(i);
+				}
 			}
 
 			//
@@ -529,6 +534,9 @@ public class GridFieldVO implements Serializable
 			vo.DisplayLogic = rs.getString("DisplayLogic");
 
 			vo.fieldEntityType = rs.getString("FieldEntityType");
+
+			vo.column_AD_Sequence_ID = rs.getInt("Column" + I_AD_Column.COLUMNNAME_AD_Sequence_ID);
+			vo.field_AD_Sequence_ID = rs.getInt("Field" + I_AD_Column.COLUMNNAME_AD_Sequence_ID);
 		}
 		catch (SQLException e)
 		{
@@ -584,6 +592,8 @@ public class GridFieldVO implements Serializable
 		voTo.fieldEntityType = vo.fieldEntityType;
 		voTo.useDocSequence = vo.useDocSequence;
 		voTo.isHiddenFromUI = vo.isHiddenFromUI;
+		voTo.column_AD_Sequence_ID = vo.column_AD_Sequence_ID;
+		voTo.field_AD_Sequence_ID = vo.field_AD_Sequence_ID;
 
 		voTo.initFinish();
 		return voTo;
@@ -805,6 +815,10 @@ public class GridFieldVO implements Serializable
 
 	private final boolean applyRolePermissions;
 
+	private int column_AD_Sequence_ID = 0;
+
+	private int field_AD_Sequence_ID = 0;
+
 	/**
 	 * Set Context including contained elements
 	 * 
@@ -1010,6 +1024,9 @@ public class GridFieldVO implements Serializable
 		clone.fieldEntityType = fieldEntityType;
 		clone.useDocSequence = useDocSequence;
 		clone.isHiddenFromUI = isHiddenFromUI;
+
+		clone.column_AD_Sequence_ID = column_AD_Sequence_ID;
+		clone.field_AD_Sequence_ID = field_AD_Sequence_ID;
 
 		return clone;
 	}	// clone
@@ -1545,5 +1562,10 @@ public class GridFieldVO implements Serializable
 	public boolean isUseDocSequence()
 	{
 		return useDocSequence;
+	}
+
+	public int getAD_Sequence_ID()
+	{
+		return CoalesceUtil.firstGreaterThanZero(field_AD_Sequence_ID, column_AD_Sequence_ID);
 	}
 }

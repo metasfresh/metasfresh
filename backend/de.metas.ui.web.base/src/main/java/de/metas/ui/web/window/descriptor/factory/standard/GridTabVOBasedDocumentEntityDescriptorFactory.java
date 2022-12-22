@@ -2,6 +2,7 @@ package de.metas.ui.web.window.descriptor.factory.standard;
 
 import com.google.common.collect.ImmutableMap;
 import de.metas.adempiere.service.IColumnBL;
+import de.metas.document.sequence.DocSequenceId;
 import de.metas.elasticsearch.IESSystem;
 import de.metas.i18n.IModelTranslationMap;
 import de.metas.i18n.ITranslatableString;
@@ -472,7 +473,8 @@ import static de.metas.common.util.CoalesceUtil.coalesce;
 				//
 				.setDefaultFilterInfo(createDefaultFilterDescriptor(gridFieldVO.getDefaultFilterDescriptor(), sqlColumnName, widgetType, fieldBinding.getValueClass(), lookupDescriptorProvider))
 				//
-				.setDataBinding(fieldBinding);
+				.setDataBinding(fieldBinding)
+				.setDocSequenceId(DocSequenceId.ofRepoIdOrNull(gridFieldVO.getAD_Sequence_ID()));
 
 		//
 		// Add Field builder to document entity
