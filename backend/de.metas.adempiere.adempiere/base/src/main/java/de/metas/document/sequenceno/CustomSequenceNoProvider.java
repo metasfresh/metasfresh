@@ -46,4 +46,12 @@ public interface CustomSequenceNoProvider
 	{
 		return DEFAULT_SEQUENCE_PREFIX;
 	}
+
+	/**
+	 * If true, returned
+	 */
+	default boolean isFormatSequence()
+	{
+		return false;
+	}
 }

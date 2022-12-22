@@ -258,6 +258,15 @@ INSERT INTO AD_Column_Trl (AD_Language,AD_Column_ID, Name, IsTranslated,AD_Clien
 /* DDL */  select update_Column_Translation_From_AD_Element(581892) 
 ;
 
+-- 2022-12-21T17:42:31.830Z
+/* DDL */ SELECT public.db_alter_table('C_DocType','ALTER TABLE public.C_DocType ADD COLUMN LotNo_Sequence_ID NUMERIC(10)')
+;
+
+-- 2022-12-21T17:42:32.345Z
+ALTER TABLE C_DocType ADD CONSTRAINT LotNoSequence_CDocType FOREIGN KEY (LotNo_Sequence_ID) REFERENCES public.AD_Sequence DEFERRABLE INITIALLY DEFERRED
+;
+
+
 -- Field: Stücklistenkonfiguration Version -> Stücklistenartikel -> Nummernfolge für Lotnummer
 -- Column: PP_Product_BOM.LotNo_Sequence_ID
 -- Field: Stücklistenkonfiguration Version(53006,EE01) -> Stücklistenartikel(53028,EE01) -> Nummernfolge für Lotnummer

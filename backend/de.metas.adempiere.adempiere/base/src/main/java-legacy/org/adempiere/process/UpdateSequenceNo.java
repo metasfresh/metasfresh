@@ -51,7 +51,7 @@ public class UpdateSequenceNo extends JavaProcess
 		{
 			insertStmt = DB
 					.prepareStatement(
-							"INSERT INTO AD_Sequence_No(AD_SEQUENCE_ID, CALENDARYEAR,CALENDARMONTH "
+							"INSERT INTO AD_Sequence_No(AD_SEQUENCE_ID, CALENDARYEAR,CALENDARMONTH, "
 									+ "AD_CLIENT_ID, AD_ORG_ID, ISACTIVE, CREATED, CREATEDBY, "
 									+ "UPDATED, UPDATEDBY, CURRENTNEXT) "
 									+ "(SELECT AD_Sequence_ID, '?', '?', "

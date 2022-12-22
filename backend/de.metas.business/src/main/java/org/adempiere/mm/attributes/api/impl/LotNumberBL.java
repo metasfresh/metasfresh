@@ -12,6 +12,7 @@ import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
 import org.adempiere.mm.attributes.api.LotNoContext;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
+import org.compiere.util.Env;
 import org.compiere.util.Evaluatees;
 import org.compiere.util.TimeUtil;
 
@@ -51,7 +52,7 @@ public class LotNumberBL implements ILotNumberBL
 
 		final int weekNumber = TimeUtil.getWeekNumber(date);
 
-		if(weekNumber < 10)
+		if (weekNumber < 10)
 		{
 			lotNumber.append(0);
 		}
@@ -62,7 +63,7 @@ public class LotNumberBL implements ILotNumberBL
 
 		lotNumber.append(dayOfWeek);
 
-		return  lotNumber.toString();
+		return lotNumber.toString();
 	}
 
 	@Override
@@ -75,6 +76,7 @@ public class LotNumberBL implements ILotNumberBL
 				.setClientId(context.getClientId())
 				.setEvaluationContext(Evaluatees.mapBuilder()
 						.put("ProductNo", context.getProductNo())
+						.put("Date", Env.getZonedDateTime())
 						.build())
 				.build();
 
@@ -97,7 +99,7 @@ public class LotNumberBL implements ILotNumberBL
 		final AttributeSetInstanceId asiId = AttributeSetInstanceId.ofRepoIdOrNone(asi.getM_AttributeSetInstance_ID());
 		final I_M_AttributeInstance lotNumberAI = attributeDAO.retrieveAttributeInstance(asiId, lotNumberAttrId);
 
-		if(lotNumberAI == null)
+		if (lotNumberAI == null)
 		{
 			return null;
 		}

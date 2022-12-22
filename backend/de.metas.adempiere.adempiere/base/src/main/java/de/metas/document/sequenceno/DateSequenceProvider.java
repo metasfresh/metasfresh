@@ -85,4 +85,9 @@ public class DateSequenceProvider implements CustomSequenceNoProvider
 		return "";
 	}
 
+	@Override
+	public boolean isFormatSequence()
+	{
+		return true;
+	}
 }

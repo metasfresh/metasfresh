@@ -304,8 +304,8 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 							.setParameter("customSequenceNoProvider", customSequenceNoProvider)
 							.setParameter("docSeqInfo", docSeqInfo);
 				}
-
-				result = customSequenceNumber + customSequenceNoProvider.getSequenceSeparatorPrefix() + retrieveAndIncrementSeqNo(docSeqInfo);
+				final String seqNo = getAndIncrementSeqNo(docSeqInfo, customSequenceNoProvider);
+				result = customSequenceNumber + customSequenceNoProvider.getSequenceSeparatorPrefix() + seqNo;
 			}
 			else
 			{
@@ -331,6 +331,19 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 
 		logger.debug("getSequenceNoToUse - returning result={}", result);
 		return result;
+	}
+
+	@NonNull
+	private String getAndIncrementSeqNo(final DocumentSequenceInfo docSeqInfo, final CustomSequenceNoProvider customSequenceNoProvider)
+	{
+		final String seqNo = retrieveAndIncrementSeqNo(docSeqInfo);
+		final String decimalPattern = docSeqInfo.getDecimalPattern();
+		if (customSequenceNoProvider.isFormatSequence() && !Check.isEmpty(decimalPattern) && stringCanBeParsedAsInt(seqNo))
+		{
+			final int seqNoAsInt = Integer.parseInt(seqNo);
+			return new DecimalFormat(decimalPattern).format(seqNoAsInt);
+		}
+		return seqNo;
 	}
 
 	/**

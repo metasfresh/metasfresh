@@ -120,6 +120,7 @@ public class DocumentSequenceDAO implements IDocumentSequenceDAO
 				.decimalPattern(record.getDecimalPattern())
 				.autoSequence(record.isAutoSequence())
 				.startNewYear(record.isStartNewYear())
+				.startNewMonth(record.isStartNewMonth())
 				.dateColumn(record.getDateColumn())
 				//
 				.customSequenceNoProvider(createCustomSequenceNoProviderOrNull(record))
