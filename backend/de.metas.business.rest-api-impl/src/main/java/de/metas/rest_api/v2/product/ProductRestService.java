@@ -373,6 +373,13 @@ public class ProductRestService
 			if (effectiveSyncAdvise.getIfExists().isUpdate())
 			{
 				final BPartnerProduct bPartnerProduct = syncBPartnerProductWithJson(jsonRequestBPartnerProductUpsert, existingBPartnerProduct, bPartnerId);
+
+				if (!Boolean.TRUE.equals(existingBPartnerProduct.getCurrentVendor())
+						&& Boolean.TRUE.equals(bPartnerProduct.getCurrentVendor()))
+				{
+					productRepository.resetCurrentVendorFor(productId);
+				}
+
 				productRepository.updateBPartnerProduct(bPartnerProduct);
 			}
 		}
@@ -387,6 +394,12 @@ public class ProductRestService
 		else
 		{
 			final CreateBPartnerProductRequest createBPartnerProductRequest = getCreateBPartnerProductRequest(jsonRequestBPartnerProductUpsert, productId, bPartnerId);
+
+			if (Boolean.TRUE.equals(createBPartnerProductRequest.getCurrentVendor()))
+			{
+				productRepository.resetCurrentVendorFor(productId);
+			}
+
 			productRepository.createBPartnerProduct(createBPartnerProductRequest);
 		}
 	}

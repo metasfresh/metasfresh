@@ -288,6 +288,19 @@ public class ProductRepository
 				.usedForVendor(record.isUsedForVendor())
 				.build();
 	}
+
+	public void resetCurrentVendorFor(@NonNull final ProductId productId)
+	{
+		queryBL.createQueryBuilder(I_C_BPartner_Product.class)
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_IsCurrentVendor, true)
+				.addOnlyActiveRecordsFilter()
+				.create()
+				.updateDirectly()
+				.addSetColumnValue(I_C_BPartner_Product.COLUMNNAME_IsCurrentVendor, false)
+				.execute();
+	}
+
 	@NonNull
 	private I_M_Product getRecordById(@NonNull final ProductId id)
 	{

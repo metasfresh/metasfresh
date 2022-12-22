@@ -79,8 +79,8 @@ Feature:product get/create/update using metasfresh api
             "customerLabelNameSet": true,
             "ingredients": "test",
             "ingredientsSet": true,
-            "currentVendor": null,
-            "currentVendorSet": false,
+            "currentVendor": true,
+            "currentVendorSet": true,
             "excludedFromSales": true,
             "excludedFromSalesSet": true,
             "exclusionFromSalesReason": "Test",
@@ -153,12 +153,55 @@ Feature:product get/create/update using metasfresh api
       | bp_1                             | p_1                     | bpartner_1               |
       | bp_2                             | p_1                     | bpartner_2               |
     And verify bpartner product info
-      | C_BPartner_Product_ID.Identifier | IsActive | SeqNo | ProductNo | Description | EAN_CU   | GTIN      | CustomerLabelName | Ingredients | IsExcludedFromSale | ExclusionFromSaleReason | IsExcludedFromPurchase | ExclusionFromPurchaseReason |
-      | bp_1                             | true     | 10    | test      | test        | ean_test | gtin_test | test              | test        | true               | Test                    | false                  | null                        |
-      | bp_2                             | true     | 10    | test      | test        | ean_test | gtin_test | test              | test        | false              | null                    | true                   | test                        |
+      | C_BPartner_Product_ID.Identifier | IsActive | SeqNo | ProductNo | Description | EAN_CU   | GTIN      | CustomerLabelName | Ingredients | IsExcludedFromSale | ExclusionFromSaleReason | IsExcludedFromPurchase | ExclusionFromPurchaseReason | OPT.IsCurrentVendor |
+      | bp_1                             | true     | 10    | test      | test        | ean_test | gtin_test | test              | test        | true               | Test                    | false                  | null                        | true                |
+      | bp_2                             | true     | 10    | test      | test        | ean_test | gtin_test | test              | test        | false              | null                    | true                   | test                        | false               |
     And verify that S_ExternalReference was created
       | ExternalSystem | Type    | ExternalReference | ExternalReferenceURL         | OPT.ExternalSystem_Config_ID | OPT.IsReadOnlyInMetasfresh |
       | ALBERTA        | Product | 345               | www.ExternalReferenceURL.com | 540000                       | false                      |
+
+    When a 'PUT' request with the below payload is sent to the metasfresh REST-API '/api/v2/products/001' and fulfills with '200' status code
+"""
+{
+  "requestItems": [
+    {
+      "productIdentifier": "ext-ALBERTA-345",
+      "requestProduct": {
+        "code": "code345",
+        "codeSet": true,
+        "bpartnerProductItems": [
+          {
+            "bpartnerIdentifier": "ext-ALBERTA-345",
+            "bpartnerSet": true,
+            "currentVendor": true,
+            "currentVendorSet": true
+          },
+          {
+            "bpartnerIdentifier": "ext-ALBERTA-456",
+            "bpartnerSet": true,
+            "currentVendor": true,
+            "currentVendorSet": true
+          }
+        ]
+      }
+    }
+  ],
+  "syncAdvise": {
+    "ifNotExists": "CREATE",
+    "ifExists": "UPDATE_MERGE"
+  }
+}
+"""
+
+    Then locate bpartner product by product and bpartner
+      | C_BPartner_Product_ID.Identifier | M_Product_ID.Identifier | C_BPartner_ID.Identifier |
+      | bp_1                             | p_1                     | bpartner_1               |
+      | bp_2                             | p_1                     | bpartner_2               |
+
+    And verify bpartner product info
+      | C_BPartner_Product_ID.Identifier | IsActive | SeqNo | ProductNo | Description | EAN_CU   | GTIN      | CustomerLabelName | Ingredients | IsExcludedFromSale | ExclusionFromSaleReason | IsExcludedFromPurchase | ExclusionFromPurchaseReason | OPT.IsCurrentVendor |
+      | bp_1                             | true     | 10    | test      | test        | ean_test | gtin_test | test              | test        | true               | Test                    | false                  | null                        | false               |
+      | bp_2                             | true     | 10    | test      | test        | ean_test | gtin_test | test              | test        | false              | null                    | true                   | test                        | true                |
 
   @from:cucumber
   Scenario: get Product, as a REST-API invoker
