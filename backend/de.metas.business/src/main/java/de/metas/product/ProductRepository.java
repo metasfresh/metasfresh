@@ -311,6 +311,7 @@ public class ProductRepository
 				.ean(productRecord.getUPC())
 				.orgId(OrgId.ofRepoId(productRecord.getAD_Org_ID()))
 				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(productRecord.getM_SectionCode_ID()))
+				.purchased(productRecord.isPurchased())
 				.build();
 	}
 
@@ -351,6 +352,7 @@ public class ProductRepository
 		record.setAD_Org_ID(product.getOrgId().getRepoId());
 		record.setM_Product_Category_ID(product.getProductCategoryId() != null ? product.getProductCategoryId().getRepoId() : record.getM_Product_Category_ID());
 		record.setM_SectionCode_ID(SectionCodeId.toRepoId(product.getSectionCodeId()));
+		record.setIsPurchased(product.isPurchased());
 
 		return record;
 	}

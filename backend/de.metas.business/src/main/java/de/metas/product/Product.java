@@ -100,4 +100,6 @@ public class Product
 
 	@Nullable
 	SectionCodeId sectionCodeId;
+
+	boolean purchased;
 }

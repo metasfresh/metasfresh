@@ -98,6 +98,7 @@ public class BPartner
 	public static final String STORAGE_WAREHOUSE = "storageWarehouse";
 	public static final String INCOTERMS_CUSTOMER_ID = "incotermsCustomerId";
 	public static final String INCOTERMS_VENDOR_ID = "incotermsVendorId";
+	public static final String SECTION_GROUP_PARTNER_ID = "sectionGroupPartnerId";
 
 	/**
 	 * May be null if the bpartner was not yet saved.
@@ -207,6 +208,9 @@ public class BPartner
 	@Nullable
 	private IncotermsId incotermsVendorId;
 
+	@Nullable
+	private BPartnerId sectionGroupPartnerId;
+
 	/**
 	 * They are all nullable because we can create a completely empty instance which we then fill.
 	 */
@@ -263,7 +267,8 @@ public class BPartner
 			@Nullable final DeliveryViaRule deliveryViaRule,
 			@Nullable final Boolean storageWarehouse,
 			@Nullable final IncotermsId incotermsCustomerId,
-			@Nullable final IncotermsId incotermsVendorId)
+			@Nullable final IncotermsId incotermsVendorId,
+			@Nullable final BPartnerId sectionGroupPartnerId)
 	{
 		this.id = id;
 		this.externalId = externalId;
@@ -322,6 +327,7 @@ public class BPartner
 		this.storageWarehouse = coalesce(storageWarehouse, false);
 		this.incotermsCustomerId = incotermsCustomerId;
 		this.incotermsVendorId = incotermsVendorId;
+		this.sectionGroupPartnerId = sectionGroupPartnerId;
 	}
 
 	/**
