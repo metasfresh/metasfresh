@@ -89,13 +89,17 @@ public class MetasfreshAuthorizationTokenNotifier extends EventNotifierSupport
 		}
 	}
 
+	/**
+	 * Inject the metasfresh auth token into the exchange, of this event is about invocing the metasfresh API
+	 */
 	private void handleSendingEvent(@NonNull final CamelEvent.ExchangeSendingEvent event)
 	{
 		final Endpoint endpoint = event.getEndpoint();
 
-		if (endpoint.getEndpointUri() == null || !metasfreshAPIURL.contains(endpoint.getEndpointUri()))
+		if (endpoint.getEndpointUri() == null
+				|| (!metasfreshAPIURL.contains(endpoint.getEndpointUri()) && !endpoint.getEndpointUri().contains(metasfreshAPIURL)))
 		{
-			return;
+			return; // this event is not about invoking the metasfresh-API; => nothing to do
 		}
 
 		final String authToken = metasfreshAuthProvider.getAuthToken();
