@@ -22,11 +22,7 @@
 
 package de.metas.camel.externalsystems.sap.config;
 
-import de.metas.common.rest_api.common.JsonMetasfreshId;
-
 public interface CreditLimitFileEndpointConfig
 {
 	String getCreditLimitFileEndpoint();
-
-	JsonMetasfreshId getCreditLimitResponsibleUser();
 }

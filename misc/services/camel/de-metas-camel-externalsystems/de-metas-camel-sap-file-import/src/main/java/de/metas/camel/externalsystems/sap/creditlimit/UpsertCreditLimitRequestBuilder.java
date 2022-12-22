@@ -127,8 +127,12 @@ public class UpsertCreditLimitRequestBuilder
 		jsonRequestCreditLimitUpsertItem.setAmount(getCreditLimitAmount(creditLimitRow));
 		jsonRequestCreditLimitUpsertItem.setDateFrom(creditLimitRow.getEffectiveDateFrom(DEFAULT_DATE_FORMAT).orElse(null));
 		jsonRequestCreditLimitUpsertItem.setProcessed(true);
-		jsonRequestCreditLimitUpsertItem.setApprovedBy(creditLimitResponsibleUser);
 		jsonRequestCreditLimitUpsertItem.setActive(computeIsActiveCreditLimit(creditLimitRow));
+
+		if (creditLimitResponsibleUser != null)
+		{
+			jsonRequestCreditLimitUpsertItem.setApprovedBy(creditLimitResponsibleUser);
+		}
 
 		return jsonRequestCreditLimitUpsertItem;
 	}

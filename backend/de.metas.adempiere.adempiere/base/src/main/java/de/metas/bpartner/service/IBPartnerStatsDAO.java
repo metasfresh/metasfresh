@@ -71,6 +71,4 @@ public interface IBPartnerStatsDAO extends ISingletonService
 	BigDecimal retrieveSOCreditUsed(BPartnerStats bpStats);
 
 	void updateBPartnerStatistics(BPartnerStats bpStats);
-
-	void setSOCreditStatus(BPartnerId bPartnerId);
 }

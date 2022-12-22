@@ -3,7 +3,7 @@ package de.metas.bpartner.model.interceptor;
 import de.metas.bpartner.BPartnerId;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater;
 import de.metas.bpartner.service.IBPartnerStatisticsUpdater.BPartnerStatisticsUpdateRequest;
-import de.metas.bpartner.service.IBPartnerStatsDAO;
+import de.metas.bpartner.service.IBPartnerStatsBL;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.ad.modelvalidator.annotations.Interceptor;
@@ -39,7 +39,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class C_BPartner_CreditLimit
 {
-	private final IBPartnerStatsDAO bPartnerStatsDAO = Services.get(IBPartnerStatsDAO.class);
+	private final IBPartnerStatsBL statsBL = Services.get(IBPartnerStatsBL.class);
 
 	@ModelChange(timings = { ModelValidator.TYPE_AFTER_CHANGE, ModelValidator.TYPE_AFTER_DELETE })
 	public void updateBPartnerStatsRecord(@NonNull final I_C_BPartner_CreditLimit bpCreditLimit)
@@ -73,6 +73,6 @@ public class C_BPartner_CreditLimit
 			return;
 		}
 
-		bPartnerStatsDAO.setSOCreditStatus(BPartnerId.ofRepoId(bpCreditLimit.getC_BPartner_ID()));
+		statsBL.enableCreditLimitCheck(BPartnerId.ofRepoId(bpCreditLimit.getC_BPartner_ID()));
 	}
 }

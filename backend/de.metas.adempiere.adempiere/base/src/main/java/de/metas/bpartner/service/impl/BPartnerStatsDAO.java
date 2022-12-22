@@ -206,19 +206,6 @@ public class BPartnerStatsDAO implements IBPartnerStatsDAO
 		updateCreditLimitIndicator(bpStats);
 	}
 
-	@Override
-	public void setSOCreditStatus(@NonNull final BPartnerId bPartnerId)
-	{
-		final BPartnerStats bPartnerStats = getCreateBPartnerStats(bPartnerId);
-
-		if (bPartnerStats.getSOCreditStatus() != null && !bPartnerStats.getSOCreditStatus().equals(X_C_BPartner_Stats.SOCREDITSTATUS_NoCreditCheck))
-		{
-			return;
-		}
-
-		setSOCreditStatus(bPartnerStats, X_C_BPartner_Stats.SOCREDITSTATUS_CreditWatch);
-	}
-
 	private void updateOpenItems(@NonNull final BPartnerStats bpStats)
 	{
 		// load the statistics

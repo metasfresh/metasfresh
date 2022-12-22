@@ -22,7 +22,6 @@
 
 package de.metas.camel.externalsystems.sap.config;
 
-import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.util.Check;
 import lombok.Builder;
 import lombok.NonNull;
@@ -71,9 +70,6 @@ public class LocalFileConfig implements BPartnerFileEndpointConfig, ProductFileE
 
 	@Nullable
 	String fileNamePatternCreditLimit;
-
-	@Nullable
-	JsonMetasfreshId creditLimitResponsibleUser;
 
 	@Override
 	@NonNull

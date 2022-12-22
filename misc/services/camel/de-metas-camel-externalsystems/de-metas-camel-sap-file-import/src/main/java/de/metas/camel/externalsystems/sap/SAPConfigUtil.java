@@ -26,7 +26,6 @@ import de.metas.camel.externalsystems.sap.config.LocalFileConfig;
 import de.metas.camel.externalsystems.sap.config.SFTPConfig;
 import de.metas.common.externalsystem.ExternalSystemConstants;
 import de.metas.common.externalsystem.JsonExternalSystemRequest;
-import de.metas.common.rest_api.common.JsonMetasfreshId;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.apache.camel.CamelContext;
@@ -68,8 +67,6 @@ public class SAPConfigUtil
 				.targetDirectoryCreditLimit(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_CREDIT_LIMIT_TARGET_DIRECTORY))
 				.fileNamePatternCreditLimit(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_CREDIT_LIMIT_FILENAME_PATTERN))
 
-				.creditLimitResponsibleUser(JsonMetasfreshId.ofOrNull(requestParameters.get(ExternalSystemConstants.PARAM_SFTP_APPROVED_BY)))
-
 				.build();
 	}
 
@@ -97,8 +94,6 @@ public class SAPConfigUtil
 
 				.targetDirectoryCreditLimit(requestParameters.get(ExternalSystemConstants.PARAM_LOCAL_FILE_CREDIT_LIMIT_TARGET_DIRECTORY))
 				.fileNamePatternCreditLimit(requestParameters.get(ExternalSystemConstants.PARAM_LOCAL_FILE_CREDIT_LIMIT_FILENAME_PATTERN))
-
-				.creditLimitResponsibleUser(JsonMetasfreshId.ofOrNull(requestParameters.get(ExternalSystemConstants.PARAM_LOCAL_FILE_APPROVED_BY)))
 
 				.build();
 	}
