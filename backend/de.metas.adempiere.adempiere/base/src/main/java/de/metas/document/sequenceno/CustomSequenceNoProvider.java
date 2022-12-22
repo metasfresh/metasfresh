@@ -1,5 +1,7 @@
 package de.metas.document.sequenceno;
 
+import de.metas.document.DocumentSequenceInfo;
+import lombok.NonNull;
 import org.compiere.util.Evaluatee;
 
 /*
@@ -26,12 +28,11 @@ import org.compiere.util.Evaluatee;
 
 public interface CustomSequenceNoProvider
 {
-
 	String DEFAULT_SEQUENCE_PREFIX = "-";
 
-	boolean isApplicable(Evaluatee context);
+	boolean isApplicable(@NonNull Evaluatee context, @NonNull final DocumentSequenceInfo docSeqInfo);
 
-	String provideSequenceNo(Evaluatee context);
+	String provideSequenceNo(@NonNull Evaluatee context, @NonNull final DocumentSequenceInfo docSeqInfo);
 
 	/**
 	 * Indicate to metasfresh if this implementation wants its sequence number to be "standalone" or, be the prefix for a "normal", incremental number.
@@ -47,11 +48,4 @@ public interface CustomSequenceNoProvider
 		return DEFAULT_SEQUENCE_PREFIX;
 	}
 
-	/**
-	 * If true, returned
-	 */
-	default boolean isFormatSequence()
-	{
-		return false;
-	}
 }

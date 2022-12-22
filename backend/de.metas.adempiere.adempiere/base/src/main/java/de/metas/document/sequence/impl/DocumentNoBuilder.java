@@ -282,7 +282,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 			logger.debug("getSequenceNoToUse - going to invoke customSequenceNoProvider={}", customSequenceNoProvider);
 
 			final Evaluatee evalContext = getEvaluationContext();
-			if (!customSequenceNoProvider.isApplicable(evalContext))
+			if (!customSequenceNoProvider.isApplicable(evalContext, docSeqInfo))
 			{
 				final ITranslatableString msg = msgBL.getTranslatableMsgText(MSG_PROVIDER_NOT_APPLICABLE, docSeqInfo.getName());
 				throw new DocumentNoBuilderException(msg)
@@ -290,7 +290,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 						.setParameter("context", evalContext);
 			}
 
-			final String customSequenceNumber = customSequenceNoProvider.provideSequenceNo(evalContext);
+			final String customSequenceNumber = customSequenceNoProvider.provideSequenceNo(evalContext, docSeqInfo);
 			logger.debug("getSequenceNoToUse - The customSequenceNoProvider returned customSequenceNumber={}" + customSequenceNumber);
 
 			if (customSequenceNoProvider.isUseIncrementSeqNoAsPrefix())
@@ -304,8 +304,7 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 							.setParameter("customSequenceNoProvider", customSequenceNoProvider)
 							.setParameter("docSeqInfo", docSeqInfo);
 				}
-				final String seqNo = getAndIncrementSeqNo(docSeqInfo, customSequenceNoProvider);
-				result = customSequenceNumber + customSequenceNoProvider.getSequenceSeparatorPrefix() + seqNo;
+				result = customSequenceNumber + customSequenceNoProvider.getSequenceSeparatorPrefix() + retrieveAndIncrementSeqNo(docSeqInfo);
 			}
 			else
 			{
@@ -331,19 +330,6 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 
 		logger.debug("getSequenceNoToUse - returning result={}", result);
 		return result;
-	}
-
-	@NonNull
-	private String getAndIncrementSeqNo(final DocumentSequenceInfo docSeqInfo, final CustomSequenceNoProvider customSequenceNoProvider)
-	{
-		final String seqNo = retrieveAndIncrementSeqNo(docSeqInfo);
-		final String decimalPattern = docSeqInfo.getDecimalPattern();
-		if (customSequenceNoProvider.isFormatSequence() && !Check.isEmpty(decimalPattern) && stringCanBeParsedAsInt(seqNo))
-		{
-			final int seqNoAsInt = Integer.parseInt(seqNo);
-			return new DecimalFormat(decimalPattern).format(seqNoAsInt);
-		}
-		return seqNo;
 	}
 
 	/**
@@ -403,10 +389,10 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 
 		final IMutable<Integer> currentSeq = new Mutable<>(-1);
 		DB.executeUpdateEx(sql,
-						   sqlParams.toArray(),
-						   trxName,
-						   QUERY_TIME_OUT,
-						   rs -> currentSeq.setValue(rs.getInt(1)));
+				sqlParams.toArray(),
+				trxName,
+				QUERY_TIME_OUT,
+				rs -> currentSeq.setValue(rs.getInt(1)));
 
 		return currentSeq.getValue();
 	}

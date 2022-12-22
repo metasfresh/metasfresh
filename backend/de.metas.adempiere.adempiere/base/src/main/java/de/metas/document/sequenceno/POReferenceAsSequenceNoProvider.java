@@ -1,5 +1,6 @@
 package de.metas.document.sequenceno;
 
+import de.metas.document.DocumentSequenceInfo;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
 import lombok.NonNull;
@@ -36,7 +37,7 @@ public class POReferenceAsSequenceNoProvider implements CustomSequenceNoProvider
 
 	/** @return {@code true} if the given {@code context} has a non-null {@code POReference} value. */
 	@Override
-	public boolean isApplicable(@NonNull final Evaluatee context)
+	public boolean isApplicable(@NonNull final Evaluatee context, @NonNull final DocumentSequenceInfo docSeqInfo)
 	{
 		final String poReference = getPOReferenceOrNull(context);
 		final boolean result = Check.isNotBlank(poReference);
@@ -47,7 +48,7 @@ public class POReferenceAsSequenceNoProvider implements CustomSequenceNoProvider
 
 	/** @return the given {@code context}'s {@code POReference} value. */
 	@Override
-	public String provideSequenceNo(@NonNull final Evaluatee context)
+	public String provideSequenceNo(@NonNull final Evaluatee context, @NonNull final DocumentSequenceInfo docSeqInfo)
 	{
 		final String poReference = getPOReferenceOrNull(context);
 		Check.assumeNotNull(poReference, "The given context needs to have a non-empty POreference value; context={}", context);

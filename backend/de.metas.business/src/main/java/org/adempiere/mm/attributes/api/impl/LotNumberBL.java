@@ -12,7 +12,6 @@ import org.adempiere.mm.attributes.api.ILotNumberDateAttributeDAO;
 import org.adempiere.mm.attributes.api.LotNoContext;
 import org.compiere.model.I_M_AttributeInstance;
 import org.compiere.model.I_M_AttributeSetInstance;
-import org.compiere.util.Env;
 import org.compiere.util.Evaluatees;
 import org.compiere.util.TimeUtil;
 
@@ -76,7 +75,6 @@ public class LotNumberBL implements ILotNumberBL
 				.setClientId(context.getClientId())
 				.setEvaluationContext(Evaluatees.mapBuilder()
 						.put("ProductNo", context.getProductNo())
-						.put("Date", Env.getZonedDateTime())
 						.build())
 				.build();
 
