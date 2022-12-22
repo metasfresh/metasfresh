@@ -321,7 +321,7 @@ public class WOProjectRepository
 				.woOwner(projectRecord.getWOOwner())
 
 				.isActive(projectRecord.isActive())
-				.specialistConsultantID(UserId.ofRepoIdOrNull(projectRecord.getSpecialist_Consultant_ID()))
+				.specialistConsultantID(UserId.ofRepoIdOrNullIfSystem(projectRecord.getSpecialist_Consultant_ID()))
 				.internalPriority(InternalPriority.ofNullableCode(projectRecord.getInternalPriority()))
 				.build();
 	}

@@ -23,53 +23,44 @@
 package de.metas.document.sequenceno;
 
 import de.metas.common.util.time.SystemTime;
-import de.metas.util.Check;
 import lombok.NonNull;
-import org.adempiere.exceptions.AdempiereException;
-import org.compiere.model.I_C_Project;
 import org.compiere.util.Evaluatee;
 
 import javax.annotation.Nullable;
 import java.text.DecimalFormat;
+import java.util.function.Supplier;
 
 public class ExternalProjectRefSequenceNoProvider implements CustomSequenceNoProvider
 {
 	@Override
 	public boolean isApplicable(@NonNull final Evaluatee context)
 	{
-		return Check.isNotBlank(context.get_ValueAsString(I_C_Project.COLUMNNAME_C_Project_Reference_Ext));
-	}
-
-	@Override
-	public String provideSequenceNo(@NonNull final Evaluatee context)
-	{
-		return String.valueOf(SystemTime.asLocalDate().getYear()).substring(2);
-	}
-
-	/** @return true */
-	@Override
-	public boolean isUseIncrementSeqNoAsSuffix()
-	{
 		return true;
 	}
 
-	/**
-	 * ExternalProjectRefSequenceNoProvider requires {@code AD_Sequence}'s decimal pattern for incrementSeqNo format.
-	 */
 	@Override
-	@NonNull
-	public String appendIncrementSeqNoAsSuffix(
-			@NonNull final String customSequenceNumber,
-			@NonNull final String incrementalSequenceNumber,
+	public @NonNull String provideSeqNo(
+			@NonNull final Supplier<String> incrementalSeqNoSupplier,
+			@NonNull final Evaluatee context,
 			@Nullable final String decimalPattern)
 	{
-		if (Check.isBlank(decimalPattern))
+		final String incrementalSeqNo = incrementalSeqNoSupplier.get();
+		final String customPart = getCustomPart();
+
+		if (decimalPattern == null)
 		{
-			throw new AdempiereException("ExternalProjectRefSequenceNoProvider requires that DecimalPattern be defined for incrementalSequenceNumber to be properly formatted!");
+			return customPart + "-" + incrementalSeqNo;
 		}
 
-		final int seqNoAsInt = Integer.parseInt(incrementalSequenceNumber);
+		final int incrementalSeqNoInt = Integer.parseInt(incrementalSeqNo);
 
-		return customSequenceNumber + "-" + new DecimalFormat(decimalPattern).format(seqNoAsInt);
+		return customPart + "-" + new DecimalFormat(decimalPattern).format(incrementalSeqNoInt);
+	}
+
+	@NonNull
+	private static String getCustomPart()
+	{
+		return String.valueOf(SystemTime.asLocalDate().getYear())
+				.substring(2);
 	}
 }

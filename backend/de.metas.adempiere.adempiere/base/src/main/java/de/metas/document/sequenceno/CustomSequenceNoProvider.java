@@ -1,6 +1,10 @@
 package de.metas.document.sequenceno;
 
+import lombok.NonNull;
 import org.compiere.util.Evaluatee;
+
+import javax.annotation.Nullable;
+import java.util.function.Supplier;
 
 /*
  * #%L
@@ -28,12 +32,9 @@ public interface CustomSequenceNoProvider
 {
 	boolean isApplicable(Evaluatee context);
 
-	String provideSequenceNo(Evaluatee context);
-
-	/**
-	 * Indicate to metasfresh if this implementation wants its sequence number to be "standalone" or, be the prefix for a "normal", incremental number.
-	 */
-	boolean isUseIncrementSeqNoAsSuffix();
-
-	String appendIncrementSeqNoAsSuffix(String customSequenceNumber, String actualSequenceNumber, String decimalPattern);
+	@NonNull
+	String provideSeqNo(
+			@NonNull Supplier<String> incrementalSeqNoSupplier,
+			@NonNull Evaluatee context,
+			@Nullable String decimalPattern);
 }

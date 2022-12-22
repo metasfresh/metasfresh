@@ -116,7 +116,7 @@ public final class POInfoColumn implements Serializable
 		AD_Sequence_ID = adSequenceID;
 	}   // Column
 
-	public static boolean isString(
+	private static boolean isString(
 			final String tableName,
 			final String columnName,
 			final int displayType,

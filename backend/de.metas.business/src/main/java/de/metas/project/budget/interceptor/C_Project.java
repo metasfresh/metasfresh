@@ -77,7 +77,7 @@ public class C_Project
 					I_C_Project.COLUMNNAME_Specialist_Consultant_ID,
 					I_C_Project.COLUMNNAME_C_Project_Reference_Ext,
 					I_C_Project.COLUMNNAME_InternalPriority })
-	public void propagateValuesToWOChildProjects(final I_C_Project record)
+	public void propagateValuesToWOChildProjects(@NonNull final I_C_Project record)
 	{
 		if (!ProjectCategory.ofNullableCodeOrGeneral(record.getProjectCategory()).isBudget())
 		{

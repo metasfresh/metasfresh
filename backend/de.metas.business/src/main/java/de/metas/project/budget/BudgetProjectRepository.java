@@ -123,7 +123,7 @@ public class BudgetProjectRepository
 				.dateContract(TimeUtil.asLocalDate(record.getDateContract(), projectOrgId))
 				.dateFinish(TimeUtil.asLocalDate(record.getDateFinish(), projectOrgId))
 				.bpartnerDepartment(record.getBPartnerDepartment())
-				.specialistConsultantID(UserId.ofRepoIdOrNull(record.getSpecialist_Consultant_ID()))
+				.specialistConsultantID(UserId.ofRepoIdOrNullIfSystem(record.getSpecialist_Consultant_ID()))
 				.internalPriority(InternalPriority.ofNullableCode(record.getInternalPriority()))
 				.build();
 	}

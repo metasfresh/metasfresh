@@ -530,8 +530,6 @@ public class GridFieldVO implements Serializable
 			vo.DisplayLogic = rs.getString("DisplayLogic");
 
 			vo.fieldEntityType = rs.getString("FieldEntityType");
-
-			vo.AD_Sequence_ID = rs.getInt(I_AD_Field.COLUMNNAME_AD_Sequence_ID);
 		}
 		catch (SQLException e)
 		{
@@ -587,7 +585,6 @@ public class GridFieldVO implements Serializable
 		voTo.fieldEntityType = vo.fieldEntityType;
 		voTo.useDocSequence = vo.useDocSequence;
 		voTo.isHiddenFromUI = vo.isHiddenFromUI;
-		voTo.AD_Sequence_ID = vo.AD_Sequence_ID;
 
 		voTo.initFinish();
 		return voTo;

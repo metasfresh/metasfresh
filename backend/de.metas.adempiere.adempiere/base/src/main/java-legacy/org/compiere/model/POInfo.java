@@ -1354,20 +1354,6 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 				.filter(poInfoColumnPredicate);
 	}
 
-	public int getColumnSequenceId(final String columnName)
-	{
-		final int columnIndex = getColumnIndex(columnName);
-		return getColumnSequenceId(columnIndex);
-	}
-	private int getColumnSequenceId(final int columnIndex)
-	{
-		if (columnIndex < 0 || columnIndex >= m_columns.size())
-		{
-			return -1;
-		}
-		return m_columns.get(columnIndex).getAD_Sequence_ID();
-	}
-
 	@NonNull
 	public Optional<String> computeColumnValueBasedOnSequenceIdIfProvided(@NonNull final String columnName, final int clientId)
 	{
@@ -1399,6 +1385,21 @@ public final class POInfo implements Serializable, ColumnDisplayTypeProvider
 		}
 
 		return Optional.empty();
+	}
+
+	private int getColumnSequenceId(final String columnName)
+	{
+		final int columnIndex = getColumnIndex(columnName);
+		return getColumnSequenceId(columnIndex);
+	}
+
+	private int getColumnSequenceId(final int columnIndex)
+	{
+		if (columnIndex < 0 || columnIndex >= m_columns.size())
+		{
+			return -1;
+		}
+		return m_columns.get(columnIndex).getAD_Sequence_ID();
 	}
 
 	@Value
