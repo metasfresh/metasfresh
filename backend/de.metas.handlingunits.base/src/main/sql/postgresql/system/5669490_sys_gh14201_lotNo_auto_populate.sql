@@ -346,3 +346,36 @@ UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=110,Updated=TO_TIMESTAMP
 -- 2022-12-22T09:14:27.011Z
 UPDATE AD_UI_Element SET IsDisplayedGrid='Y', SeqNoGrid=120,Updated=TO_TIMESTAMP('2022-12-22 11:14:27','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=546582
 ;
+
+-- Field: Belegart -> Belegart -> Nummernfolge für Lotnummer
+-- Column: C_DocType.LotNo_Sequence_ID
+-- Field: Belegart(135,D) -> Belegart(167,D) -> Nummernfolge für Lotnummer
+-- Column: C_DocType.LotNo_Sequence_ID
+-- 2022-12-22T16:06:16.738Z
+INSERT INTO AD_Field (AD_Client_ID,AD_Column_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,ColumnDisplayLength,Created,CreatedBy,DisplayLength,DisplayLogic,EntityType,IncludedTabHeight,IsActive,IsDisplayed,IsDisplayedGrid,IsEncrypted,IsFieldOnly,IsHeading,IsReadOnly,IsSameLine,Name,SeqNo,SeqNoGrid,SortNo,SpanX,SpanY,Updated,UpdatedBy) VALUES (0,585426,710064,0,167,0,TO_TIMESTAMP('2022-12-22 18:06:16','YYYY-MM-DD HH24:MI:SS'),100,0,'@DocBaseType/XXX@=MMR','D',0,'Y','Y','Y','N','N','N','N','N','Nummernfolge für Lotnummer',0,340,0,1,1,TO_TIMESTAMP('2022-12-22 18:06:16','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- 2022-12-22T16:06:16.740Z
+INSERT INTO AD_Field_Trl (AD_Language,AD_Field_ID, Description,Help,Name, IsTranslated,AD_Client_ID,AD_Org_ID,Created,Createdby,Updated,UpdatedBy,IsActive) SELECT l.AD_Language, t.AD_Field_ID, t.Description,t.Help,t.Name, 'N',t.AD_Client_ID,t.AD_Org_ID,t.Created,t.Createdby,t.Updated,t.UpdatedBy,'Y' FROM AD_Language l, AD_Field t WHERE l.IsActive='Y'AND (l.IsSystemLanguage='Y') AND t.AD_Field_ID=710064 AND NOT EXISTS (SELECT 1 FROM AD_Field_Trl tt WHERE tt.AD_Language=l.AD_Language AND tt.AD_Field_ID=t.AD_Field_ID)
+;
+
+-- 2022-12-22T16:06:16.767Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(581892)
+;
+
+-- 2022-12-22T16:06:16.778Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=710064
+;
+
+-- 2022-12-22T16:06:16.779Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(710064)
+;
+
+-- UI Element: Belegart -> Belegart.Nummernfolge für Lotnummer
+-- Column: C_DocType.LotNo_Sequence_ID
+-- UI Element: Belegart(135,D) -> Belegart(167,D) -> advanced edit -> 10 -> advanced edit.Nummernfolge für Lotnummer
+-- Column: C_DocType.LotNo_Sequence_ID
+-- 2022-12-22T16:07:07.339Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,710064,0,167,540402,614576,'F',TO_TIMESTAMP('2022-12-22 18:07:07','YYYY-MM-DD HH24:MI:SS'),100,'Y','Y','N','Y','N','N','N',0,'Nummernfolge für Lotnummer',300,0,0,TO_TIMESTAMP('2022-12-22 18:07:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
