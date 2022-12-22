@@ -76,16 +76,16 @@ Feature: create multiple production candidates
       | M_Product_ID.Identifier | FROM_C_UOM_ID.X12DE355 | TO_C_UOM_ID.X12DE355 | MultiplyRate |
       | p_1                     | PCE                    | KGM                  | 0.1          |
     When the order identified by o_1 is completed
-    And after not more than 30s, MD_Candidates are found
+    And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty  | Qty_AvailableToPromise |
       | c_1        | DEMAND            | SHIPMENT                      | p_1                     | 2021-04-16T21:00:00Z | -10  | -10                    |
       | c_2        | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 10   | 0                      |
       | c_l_1      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -100 | -100                   |
       | c_l_2      | SUPPLY            |                               | p_2                     | 2021-04-16T21:00:00Z | 100  | 0                      |
-    And after not more than 30s, PP_Order_Candidates are found
+    And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
       | oc_1       | false     | p_1                     | bom_1                        | ppln_1                            | 540006        | 10         | 10           | 0            | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
-    And after not more than 30s, PP_OrderLine_Candidates are found
+    And after not more than 60s, PP_OrderLine_Candidates are found
       | PP_Order_Candidate_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 | ComponentType | PP_Product_BOMLine_ID.Identifier |
       | oc_1                             | olc_1      | p_2                     | 100        | PCE               | CO            | boml_1                           |
     And the order identified by o_1 is reactivated
@@ -93,13 +93,13 @@ Feature: create multiple production candidates
       | C_OrderLine_ID.Identifier | OPT.QtyEntered |
       | ol_1                      | 12             |
     And the order identified by o_1 is completed
-    And after not more than 30s, PP_Order_Candidates are found
+    And after not more than 60s, PP_Order_Candidates are found
       | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
       | oc_2       | false     | p_1                     | bom_1                        | ppln_1                            | 540006        | 2          | 2            | 0            | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
-    And after not more than 30s, PP_OrderLine_Candidates are found
+    And after not more than 60s, PP_OrderLine_Candidates are found
       | PP_Order_Candidate_ID.Identifier | Identifier | M_Product_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 | ComponentType | PP_Product_BOMLine_ID.Identifier |
       | oc_2                             | olc_2      | p_2                     | 20         | PCE               | CO            | boml_1                           |
-    And after not more than 30s, MD_Candidates are found
+    And after not more than 60s, MD_Candidates are found
       | Identifier | MD_Candidate_Type | OPT.MD_Candidate_BusinessCase | M_Product_ID.Identifier | DateProjected        | Qty | Qty_AvailableToPromise |
       | c_3        | SUPPLY            | PRODUCTION                    | p_1                     | 2021-04-16T21:00:00Z | 2   | 0                      |
       | c_l_3      | DEMAND            | PRODUCTION                    | p_2                     | 2021-04-16T21:00:00Z | -20 | -20                    |
@@ -119,7 +119,7 @@ Feature: create multiple production candidates
       | oc_1                             |
       | oc_2                             |
 
-    Then after not more than 30s, PP_Orders are found
+    Then after not more than 60s, PP_Orders are found
       | Identifier | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyOrdered | C_UOM_ID.X12DE355 | C_BPartner_ID.Identifier | DatePromised         | OPT.DocStatus |
       | ppo_1      | p_1                     | bom_1                        | ppln_1                            | 540006        | 12         | 12         | PCE               | endcustomer_2            | 2021-04-16T21:00:00Z | DR            |
 
@@ -127,7 +127,7 @@ Feature: create multiple production candidates
       | Identifier | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
       | oc_1       | true      | p_1                     | bom_1                        | ppln_1                            | 540006        | 10         | 0            | 10           | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
       | oc_2       | true      | p_1                     | bom_1                        | ppln_1                            | 540006        | 2          | 0            | 2            | PCE               | 2021-04-16T21:00:00Z | 2021-04-16T21:00:00Z | false    |
-    And after not more than 30s, PP_OrderCandidate_PP_Order are found
+    And after not more than 60s, PP_OrderCandidate_PP_Order are found
       | PP_Order_Candidate_ID.Identifier | PP_Order_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 |
       | oc_1                             | ppo_1                  | 10         | PCE               |
       | oc_2                             | ppo_1                  | 2          | PCE               |
@@ -154,7 +154,7 @@ Feature: create multiple production candidates
 
     When the order identified by o_2 is completed
 
-    Then after not more than 30s, PP_Order_Candidates are found
+    Then after not more than 60s, PP_Order_Candidates are found
       | Identifier       | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
       | ppOrderCandidate | false     | p_1                     | bom_1                        | ppln_1                            | 540006        | 12         | 12           | 0            | PCE               | 2022-10-10T21:00:00Z | 2022-10-10T21:00:00Z | false    |
     And update PP_Order_Candidates
@@ -164,7 +164,7 @@ Feature: create multiple production candidates
       | PP_Order_Candidate_ID.Identifier |
       | ppOrderCandidate                 |
 
-    Then after not more than 30s, load PP_Order by candidate id: ppOrderCandidate
+    Then after not more than 60s, load PP_Order by candidate id: ppOrderCandidate
       | PP_Order_ID.Identifier | QtyEntered |
       | ppOrder_1              | 5          |
       | ppOrder_2              | 5          |
@@ -174,12 +174,12 @@ Feature: create multiple production candidates
       | Identifier       | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
       | ppOrderCandidate | false     | p_1                     | bom_1                        | ppln_1                            | 540006        | 12         | 1            | 11           | PCE               | 2022-10-10T21:00:00Z | 2022-10-10T21:00:00Z | false    |
 
-    And after not more than 30s, PP_Orders are found
+    And after not more than 60s, PP_Orders are found
       | Identifier | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyOrdered | C_UOM_ID.X12DE355 | C_BPartner_ID.Identifier | DatePromised         | OPT.DocStatus |
       | ppOrder_1  | p_1                     | bom_1                        | ppln_1                            | 540006        | 5          | 5          | PCE               | endcustomer_2            | 2022-10-10T21:00:00Z | CO            |
       | ppOrder_2  | p_1                     | bom_1                        | ppln_1                            | 540006        | 5          | 5          | PCE               | endcustomer_2            | 2022-10-10T21:00:00Z | CO            |
       | ppOrder_3  | p_1                     | bom_1                        | ppln_1                            | 540006        | 1          | 1          | PCE               | endcustomer_2            | 2022-10-10T21:00:00Z | CO            |
-    And after not more than 30s, PP_OrderCandidate_PP_Order are found
+    And after not more than 60s, PP_OrderCandidate_PP_Order are found
       | PP_Order_Candidate_ID.Identifier | PP_Order_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 |
       | ppOrderCandidate                 | ppOrder_1              | 5          | PCE               |
       | ppOrderCandidate                 | ppOrder_2              | 5          | PCE               |
@@ -211,7 +211,7 @@ Feature: create multiple production candidates
 
     When the order identified by o_3 is completed
 
-    Then after not more than 30s, PP_Order_Candidates are found
+    Then after not more than 60s, PP_Order_Candidates are found
       | Identifier           | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
       | ppOrderCandidate_3_1 | false     | p_1                     | bom_1                        | ppln_1                            | 540006        | 3          | 3            | 0            | PCE               | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    |
 
@@ -220,7 +220,7 @@ Feature: create multiple production candidates
       | C_OrderLine_ID.Identifier | OPT.QtyEntered |
       | ol_3                      | 12             |
     And the order identified by o_3 is completed
-    And after not more than 30s, PP_Order_Candidates are found
+    And after not more than 60s, PP_Order_Candidates are found
       | Identifier           | Processed | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
       | ppOrderCandidate_3_2 | false     | p_1                     | bom_1                        | ppln_1                            | 540006        | 9          | 9            | 0            | PCE               | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    |
 
@@ -233,7 +233,7 @@ Feature: create multiple production candidates
       | ppOrderCandidate_3_1             |
       | ppOrderCandidate_3_2             |
 
-    Then after not more than 30s, load PP_Order by candidate id: ppOrderCandidate_3_2
+    Then after not more than 90s, load PP_Order by candidate id: ppOrderCandidate_3_2
       | PP_Order_ID.Identifier | QtyEntered |
       | ppOrder_3_1            | 2          |
       | ppOrder_3_2            | 2          |
@@ -243,11 +243,11 @@ Feature: create multiple production candidates
       | ppOrderCandidate_3_1 | true      | p_1                     | bom_1                        | ppln_1                            | 540006        | 3          | 0            | 3            | PCE               | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    |
       | ppOrderCandidate_3_2 | true      | p_1                     | bom_1                        | ppln_1                            | 540006        | 9          | 5            | 4            | PCE               | 2022-11-07T21:00:00Z | 2022-11-07T21:00:00Z | false    |
 
-    And after not more than 30s, PP_Orders are found
+    And after not more than 60s, PP_Orders are found
       | Identifier  | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyOrdered | C_UOM_ID.X12DE355 | C_BPartner_ID.Identifier | DatePromised         | OPT.DocStatus |
       | ppOrder_3_1 | p_1                     | bom_1                        | ppln_1                            | 540006        | 5          | 5          | PCE               | endcustomer_2            | 2022-11-07T21:00:00Z | CO            |
       | ppOrder_3_2 | p_1                     | bom_1                        | ppln_1                            | 540006        | 2          | 2          | PCE               | endcustomer_2            | 2022-11-07T21:00:00Z | CO            |
-    And after not more than 30s, PP_OrderCandidate_PP_Order are found
+    And after not more than 60s, PP_OrderCandidate_PP_Order are found
       | PP_Order_Candidate_ID.Identifier | PP_Order_ID.Identifier | QtyEntered | C_UOM_ID.X12DE355 |
       | ppOrderCandidate_3_1             | ppOrder_3_1            | 3          | PCE               |
       | ppOrderCandidate_3_2             | ppOrder_3_1            | 2          | PCE               |
@@ -301,7 +301,7 @@ Feature: create multiple production candidates
 
     When the order identified by order_4_1 is completed
 
-    Then after not more than 30s, PP_Order_Candidates are found
+    Then after not more than 60s, PP_Order_Candidates are found
       | Identifier           | Processed | OPT.SeqNo | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
       | ppOrderCandidate_4_1 | false     | 20        | product_4               | bom_4                        | ppln_4                            | 540006        | 5          | 5            | 0            | PCE               | 2022-11-09T21:00:00Z | 2022-11-09T21:00:00Z | false    |
 
@@ -314,7 +314,7 @@ Feature: create multiple production candidates
 
     When the order identified by order_4_2 is completed
 
-    Then after not more than 30s, PP_Order_Candidates are found
+    Then after not more than 60s, PP_Order_Candidates are found
       | Identifier           | Processed | OPT.SeqNo | M_Product_ID.Identifier | PP_Product_BOM_ID.Identifier | PP_Product_Planning_ID.Identifier | S_Resource_ID | QtyEntered | QtyToProcess | QtyProcessed | C_UOM_ID.X12DE355 | DatePromised         | DateStartSchedule    | IsClosed |
       | ppOrderCandidate_4_2 | false     | 10        | p_1                     | bom_1                        | ppln_1                            | 540006        | 5          | 5            | 0            | PCE               | 2022-11-09T21:00:00Z | 2022-11-09T21:00:00Z | false    |
 
@@ -323,7 +323,7 @@ Feature: create multiple production candidates
       | ppOrderCandidate_4_1             |
       | ppOrderCandidate_4_2             |
 
-    And validate that after not more than 30s, PP_Orders are created for PP_Order_Candidate in the following order:
+    And validate that after not more than 60s, PP_Orders are created for PP_Order_Candidate in the following order:
       | PP_Order_Candidate_ID.Identifier | PP_Order_ID.Identifier |
       | ppOrderCandidate_4_2             | ppOrder_4_1            |
       | ppOrderCandidate_4_1             | ppOrder_4_2            |
