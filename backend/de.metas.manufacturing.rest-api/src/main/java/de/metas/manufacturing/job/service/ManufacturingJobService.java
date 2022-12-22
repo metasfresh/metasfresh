@@ -48,7 +48,6 @@ import org.adempiere.exceptions.AdempiereException;
 import org.adempiere.mm.attributes.api.IAttributeDAO;
 import org.adempiere.service.ISysConfigBL;
 import org.adempiere.warehouse.api.IWarehouseBL;
-import org.compiere.SpringContextHolder;
 import org.eevolution.api.IPPOrderRoutingRepository;
 import org.eevolution.api.ManufacturingOrderQuery;
 import org.eevolution.api.PPOrderId;
@@ -78,7 +77,7 @@ public class ManufacturingJobService
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IResourceDAO resourceDAO = Services.get(IResourceDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
-	private final ManufacturingComponentGeneratorService manufacturingComponentGeneratorService = SpringContextHolder.instance.getBean(ManufacturingComponentGeneratorService.class);
+	private final ManufacturingComponentGeneratorService manufacturingComponentGeneratorService;
 	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final IHUPPOrderBL ppOrderBL;
 	private final IPPOrderBOMBL ppOrderBOMBL;
@@ -94,6 +93,7 @@ public class ManufacturingJobService
 	private static final AdMessageKey MSG_ScaleDeviceNotRegistered = AdMessageKey.of("ScaleDeviceNotRegistered");
 
 	public ManufacturingJobService(
+			final @NonNull ManufacturingComponentGeneratorService manufacturingComponentGeneratorService,
 			final @NonNull PPOrderIssueScheduleService ppOrderIssueScheduleService,
 			final @NonNull HUReservationService huReservationService,
 			final @NonNull PPOrderSourceHUService ppOrderSourceHUService,
@@ -101,6 +101,7 @@ public class ManufacturingJobService
 			final @NonNull DeviceWebsocketNamingStrategy deviceWebsocketNamingStrategy,
 			final @NonNull HUQRCodesService huQRCodeService)
 	{
+		this.manufacturingComponentGeneratorService = manufacturingComponentGeneratorService;
 		this.ppOrderIssueScheduleService = ppOrderIssueScheduleService;
 		this.huReservationService = huReservationService;
 		this.ppOrderSourceHUService = ppOrderSourceHUService;
