@@ -205,3 +205,27 @@ UPDATE AD_Element_Trl SET Description='Falls eingestellt, werden synchronisierte
 /* DDL */  select update_TRL_Tables_On_AD_Element_TRL_Update(581889,'de_DE')
 ;
 
+-- UI Element: External system config SAP(541631,de.metas.externalsystem) -> SFTP(546672,de.metas.externalsystem) -> main -> 10 -> Credit-Limit.Approved By
+-- Column: ExternalSystem_Config_SAP_SFTP.ApprovedBy_ID
+-- 2022-12-22T18:02:46.654Z
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=550038, SeqNo=30,Updated=TO_TIMESTAMP('2022-12-22 20:02:46','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614568
+;
+
+-- UI Column: External system config SAP(541631,de.metas.externalsystem) -> SFTP(546672,de.metas.externalsystem) -> main -> 10
+-- UI Element Group: approval
+-- 2022-12-22T18:02:56.581Z
+DELETE FROM AD_UI_ElementGroup WHERE AD_UI_ElementGroup_ID=550196
+;
+
+-- UI Element: External system config SAP(541631,de.metas.externalsystem) -> Lokale Datei(546673,de.metas.externalsystem) -> main -> 10 -> Credit-Limit.Approved By
+-- Column: ExternalSystem_Config_SAP_LocalFile.ApprovedBy_ID
+-- 2022-12-22T18:04:52.898Z
+UPDATE AD_UI_Element SET AD_UI_ElementGroup_ID=550041, SeqNo=30,Updated=TO_TIMESTAMP('2022-12-22 20:04:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614569
+;
+
+-- UI Column: External system config SAP(541631,de.metas.externalsystem) -> Lokale Datei(546673,de.metas.externalsystem) -> main -> 10
+-- UI Element Group: approval
+-- 2022-12-22T18:05:00.940Z
+DELETE FROM AD_UI_ElementGroup WHERE AD_UI_ElementGroup_ID=550197
+;
+
