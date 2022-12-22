@@ -285,6 +285,7 @@ public class ProductRepository
 	{
 		queryBL.createQueryBuilder(I_C_BPartner_Product.class)
 				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_M_Product_ID, productId)
+				.addEqualsFilter(I_C_BPartner_Product.COLUMNNAME_IsCurrentVendor, true)
 				.addOnlyActiveRecordsFilter()
 				.create()
 				.updateDirectly()
