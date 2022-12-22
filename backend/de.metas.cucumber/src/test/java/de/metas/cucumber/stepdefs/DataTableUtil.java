@@ -405,4 +405,18 @@ public class DataTableUtil
 					.setParameter("dataTableRow", dataTableRow);
 		}
 	}
+
+	@Nullable
+	public static Boolean extractBooleanForColumnNameOrNull(
+			@NonNull final Map<String, String> dataTableRow,
+			@NonNull final String columnName)
+	{
+		final String string = extractStringOrNullForColumnName(dataTableRow, columnName);
+		if (Check.isBlank(string))
+		{
+			return null;
+		}
+
+		return StringUtils.toBoolean(string);
+	}
 }

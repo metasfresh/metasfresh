@@ -30,4 +30,6 @@ public interface SAPConstants
 	String DEFAULT_RENAME_PATTERN = "${date:now:yyyy-MM-dd_HH-mm-ss}_${file:name}";
 
 	String ROUTE_PROPERTY_CREDIT_LIMIT_ROUTE_CONTEXT = "CreditLimitRouteContext";
+
+	String BPARTNER_DEFAULT_LANGUAGE = "en_US";
 }

@@ -1151,6 +1151,17 @@ public class JsonPersisterService
 											  .orElse(null));
 		}
 
+		if (jsonBPartner.isSectionGroupPartnerIdentifierSet())
+		{
+			final BPartnerId sectionGroupPartnerId = Optional.ofNullable(StringUtils.trim(jsonBPartner.getSectionGroupPartnerIdentifier()))
+					.filter(Check::isNotBlank)
+					.map(ExternalIdentifier::of)
+					.flatMap(sectionGroupPartnerIdentifier -> jsonRetrieverService.resolveBPartnerExternalIdentifier(sectionGroupPartnerIdentifier, orgId))
+					.orElse(null);
+
+			bpartner.setSectionGroupPartnerId(sectionGroupPartnerId);
+		}
+
 		return BooleanWithReason.TRUE;
 	}
 
