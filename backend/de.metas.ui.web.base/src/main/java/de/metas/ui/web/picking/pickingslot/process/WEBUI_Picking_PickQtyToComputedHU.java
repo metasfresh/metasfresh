@@ -24,6 +24,7 @@ package de.metas.ui.web.picking.pickingslot.process;
 
 import de.metas.handlingunits.IHUCapacityBL;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
+import de.metas.process.IProcessDefaultParameter;
 import de.metas.process.IProcessParametersCallout;
 import de.metas.process.Param;
 import de.metas.process.ProcessPreconditionsResolution;
@@ -39,6 +40,7 @@ import org.adempiere.exceptions.AdempiereException;
 import org.compiere.model.I_C_UOM;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -65,6 +67,19 @@ public class WEBUI_Picking_PickQtyToComputedHU extends WEBUI_Picking_PickQtyToNe
 		if (parameterName.equals(PARAM_M_HU_PI_Item_Product_ID) || parameterName.equals(PARAM_QTY_CU))
 		{
 			noOfHUs = getQtyTU().toBigDecimal();
+		}
+	}
+
+	@Override
+	public Object getParameterDefaultValue(@NonNull final IProcessDefaultParameter parameter)
+	{
+		if (Objects.equals(PARAM_NO_HUs, parameter.getColumnName()))
+		{
+			return getDefaultNrOfHUs();
+		}
+		else
+		{
+			return super.getParameterDefaultValue(parameter);
 		}
 	}
 
@@ -149,5 +164,16 @@ public class WEBUI_Picking_PickQtyToComputedHU extends WEBUI_Picking_PickQtyToNe
 		final I_C_UOM stockUOM = productBL.getStockUOM(productId);
 
 		return huCapacityBL.getCapacity(huPIItemProduct, productId, stockUOM);
+	}
+
+	@NonNull
+	private BigDecimal getDefaultNrOfHUs()
+	{
+		if (qtyCU == null || huPIItemProduct == null)
+		{
+			return BigDecimal.ONE;
+		}
+
+		return getQtyTU().toBigDecimal();
 	}
 }
