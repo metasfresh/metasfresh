@@ -53,6 +53,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static de.metas.camel.externalsystems.sap.SAPConstants.BPARTNER_DEFAULT_LANGUAGE;
+
 @Value
 public class UpsertBPartnerRequestBuilder
 {
@@ -213,7 +215,8 @@ public class UpsertBPartnerRequestBuilder
 			jsonRequestBPartner.setStorageWarehouse(false);
 		}
 
-		jsonRequestBPartner.setParentIdentifier(getParentExternalIdentifier());
+		jsonRequestBPartner.setLanguage(BPARTNER_DEFAULT_LANGUAGE);
+		jsonRequestBPartner.setSectionGroupPartnerIdentifier(getParentExternalIdentifier());
 
 		return jsonRequestBPartner;
 	}
@@ -285,6 +288,7 @@ public class UpsertBPartnerRequestBuilder
 		jsonRequestBPartner.setName(bPartnerRow.getName1());
 		jsonRequestBPartner.setName2(bPartnerRow.getName2());
 		jsonRequestBPartner.setDescription(bPartnerRow.getSearchTerm());
+		jsonRequestBPartner.setLanguage(BPARTNER_DEFAULT_LANGUAGE);
 
 		final JsonRequestComposite.JsonRequestCompositeBuilder jsonRequestCompositeBuilder = JsonRequestComposite.builder()
 				.bpartner(jsonRequestBPartner)

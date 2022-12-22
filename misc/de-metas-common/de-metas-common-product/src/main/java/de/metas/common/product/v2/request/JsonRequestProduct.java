@@ -130,6 +130,12 @@ public class JsonRequestProduct
 	@ApiModelProperty(hidden = true)
 	private boolean sectionCodeSet;
 
+	@ApiModelProperty(position = 170, value = "Corresponding to `M_Product.IsPurchased`")
+	private Boolean purchased;
+
+	@ApiModelProperty(hidden = true)
+	private boolean purchasedSet;
+
 	public void setCode(final @NonNull String code)
 	{
 		this.code = code;
@@ -200,6 +206,12 @@ public class JsonRequestProduct
 	{
 		this.productCategoryIdentifier = productCategoryIdentifier;
 		this.productCategoryIdentifierSet = true;
+	}
+
+	public void setPurchased(final Boolean purchased)
+	{
+		this.purchased = purchased;
+		this.purchasedSet = true;
 	}
 
 	public void setSyncAdvise(final SyncAdvise syncAdvise)

@@ -368,6 +368,7 @@ final class BPartnerCompositesLoader
 				.incotermsVendorId(IncotermsId.ofRepoIdOrNull(bpartnerRecord.getC_Incoterms_Vendor_ID()))
 				.storageWarehouse(bpartnerRecord.isStorageWarehouse())
 				//
+				.sectionGroupPartnerId(BPartnerId.ofRepoIdOrNull(bpartnerRecord.getSection_Group_Partner_ID()))
 				.build();
 	}
 

@@ -325,6 +325,12 @@ public class M_Product_StepDef
 			assertThat(sectionCodeId).isNotNull();
 			assertThat(productRecord.getM_SectionCode_ID()).isEqualTo(sectionCodeId.getRepoId());
 		}
+
+		final Boolean purchased = DataTableUtil.extractBooleanForColumnNameOrNull(row, "OPT." + I_M_Product.COLUMNNAME_IsPurchased);
+		if (purchased != null)
+		{
+			assertThat(productRecord.isPurchased()).isEqualTo(purchased);
+		}
 	}
 
 	@NonNull

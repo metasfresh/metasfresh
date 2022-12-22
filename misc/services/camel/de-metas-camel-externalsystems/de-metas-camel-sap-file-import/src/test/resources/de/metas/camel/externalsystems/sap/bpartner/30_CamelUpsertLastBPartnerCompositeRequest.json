@@ -31,8 +31,8 @@
             "parentIdSet":false,
             "phone":null,
             "phoneSet":false,
-            "language":null,
-            "languageSet":false,
+            "language":"en_US",
+            "languageSet":true,
             "invoiceRule":null,
             "invoiceRuleSet":false,
             "poInvoiceRule":null,
@@ -76,7 +76,9 @@
             "paymentRulePO":null,
             "paymentRulePOSet":false,
             "syncAdvise":null,
-            "syncAdviseSet":false
+            "syncAdviseSet":false,
+            "sectionGroupPartnerIdentifier":null,
+            "sectionGroupPartnerIdentifierSet":false
           }
         }
       },
@@ -109,8 +111,8 @@
             "parentIdSet":false,
             "phone":null,
             "phoneSet":false,
-            "language":null,
-            "languageSet":false,
+            "language":"en_US",
+            "languageSet":true,
             "invoiceRule":null,
             "invoiceRuleSet":false,
             "poInvoiceRule":null,
@@ -147,8 +149,8 @@
             "customerPaymentTermIdentifierSet":true,
             "vendorPaymentTermIdentifier":"val-M000",
             "vendorPaymentTermIdentifierSet":true,
-            "parentIdentifier":"ext-SAP-DIFF_PARTNER_CODE00",
-            "parentIdentifierSet":true,
+            "sectionGroupPartnerIdentifier":"ext-SAP-DIFF_PARTNER_CODE00",
+            "sectionGroupPartnerIdentifierSet":true,
             "paymentRule":"OnCredit",
             "paymentRuleSet":true,
             "paymentRulePO":"OnCredit",
