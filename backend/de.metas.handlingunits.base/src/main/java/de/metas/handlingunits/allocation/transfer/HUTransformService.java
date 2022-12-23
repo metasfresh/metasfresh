@@ -47,6 +47,7 @@ import de.metas.handlingunits.allocation.impl.HUProducerDestination;
 import de.metas.handlingunits.allocation.spi.impl.AggregateHUTrxListener;
 import de.metas.handlingunits.allocation.transfer.impl.HUSplitBuilderCoreEngine;
 import de.metas.handlingunits.allocation.transfer.impl.LUTUProducerDestination;
+import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.weightable.IWeightable;
 import de.metas.handlingunits.attribute.weightable.Weightables;
@@ -87,6 +88,8 @@ import lombok.Value;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.mm.attributes.AttributeCode;
+import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
 import org.adempiere.util.lang.impl.TableRecordReference;
@@ -135,6 +138,7 @@ public class HUTransformService
 	private final IHUTrxBL huTrxBL = Services.get(IHUTrxBL.class);
 	private final IHUCapacityBL huCapacityBL = Services.get(IHUCapacityBL.class);
 	private final ITrxManager trxManager = Services.get(ITrxManager.class);
+	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final SpringContextHolder.Lazy<HUQRCodesService> huQRCodesService;
 
 	private final IHUContext huContext;
@@ -965,12 +969,21 @@ public class HUTransformService
 				InterfaceWrapperHelper.save(huItemOfLU);
 			}
 
+			copyAttributesToNewLU(newLuHU, sourceTuHU);
+
 			return ImmutableList.of(newLuHU);
 		}
 		else
 		{
 			return tuToTopLevelHUs(sourceTuHU, qtyTU, luPIItem, isOwnPackingMaterials);
 		}
+	}
+
+	private void copyAttributesToNewLU(final I_M_HU newLuHU, final I_M_HU sourceTuHU)
+	{
+		huAttributesBL.updateHUAttribute(HuId.ofRepoId(newLuHU.getM_HU_ID()),
+				HuId.ofRepoId(sourceTuHU.getM_HU_ID()),
+				AttributeCode.ofString(AttributeConstants.ATTR_LotNumber_String));
 	}
 
 	/**

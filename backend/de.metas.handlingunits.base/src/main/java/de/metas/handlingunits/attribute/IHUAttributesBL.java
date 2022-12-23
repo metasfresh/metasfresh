@@ -48,6 +48,8 @@ public interface IHUAttributesBL extends ISingletonService
 			@Nullable Object attributeValue,
 			@Nullable String onlyHUStatus);
 
+	void updateHUAttribute(@NonNull HuId destHUId, @NonNull HuId sourceHUId, @NonNull AttributeCode attributeCode);
+
 	/**
 	 * Iterates the HU-tree of the given HU and sets the given attribute to the given attributeValue.
 	 * <p>
