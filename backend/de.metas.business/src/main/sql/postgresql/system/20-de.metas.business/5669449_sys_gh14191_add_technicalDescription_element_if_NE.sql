@@ -94,42 +94,42 @@ $$
 ;
 
 
+
 -- Field: Produkt -> Produkt -> Sachbezeichnung
 -- Column: M_Product.TechnicalDescription
 -- Field: Produkt(140,D) -> Produkt(180,D) -> Sachbezeichnung
 -- Column: M_Product.TechnicalDescription
 -- 2022-12-22T16:58:47.473Z
 INSERT INTO AD_Field (AD_Client_ID, AD_Column_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID, ColumnDisplayLength, Created, CreatedBy, Description, DisplayLength, EntityType, IncludedTabHeight, IsActive, IsDisplayed, IsDisplayedGrid, IsEncrypted, IsFieldOnly, IsHeading, IsReadOnly, IsSameLine, Name, SeqNo, SeqNoGrid, SortNo, SpanX, SpanY, Updated, UpdatedBy)
-SELECT 0,
-       585430,
-       710065,
-       0,
-       180,
-       0,
-       TO_TIMESTAMP('2022-12-22 17:58:47', 'YYYY-MM-DD HH24:MI:SS'),
-       100,
-       'Technische Bezeichnung des Produktes',
-       0,
-       'D',
-       0,
-       'Y',
-       'Y',
-       'Y',
-       'N',
-       'N',
-       'N',
-       'N',
-       'N',
-       'Sachbezeichnung',
-       0,
-       600,
-       0,
-       1,
-       1,
-       TO_TIMESTAMP('2022-12-22 17:58:47', 'YYYY-MM-DD HH24:MI:SS'),
-       100
-FROM AD_Field
-WHERE NOT EXISTS(SELECT 1 FROM AD_Field WHERE name = 'Sachbezeichnung')
+VALUES (0,
+        585430,
+        710065,
+        0,
+        180,
+        0,
+        TO_TIMESTAMP('2022-12-22 17:58:47', 'YYYY-MM-DD HH24:MI:SS'),
+        100,
+        'Technische Bezeichnung des Produktes',
+        0,
+        'D',
+        0,
+        'Y',
+        'Y',
+        'Y',
+        'N',
+        'N',
+        'N',
+        'N',
+        'N',
+        'Sachbezeichnung',
+        0,
+        600,
+        0,
+        1,
+        1,
+        TO_TIMESTAMP('2022-12-22 17:58:47', 'YYYY-MM-DD HH24:MI:SS'),
+        100)
+ON CONFLICT DO NOTHING
 ;
 
 -- 2022-12-22T16:58:47.474Z
@@ -189,32 +189,31 @@ WHERE AD_Field_ID = 710065
 -- Column: M_Product.TechnicalDescription
 -- 2022-12-22T16:59:26.386Z
 INSERT INTO AD_UI_Element (AD_Client_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID, AD_UI_ElementGroup_ID, AD_UI_Element_ID, AD_UI_ElementType, Created, CreatedBy, Description, IsActive, IsAdvancedField, IsAllowFiltering, IsDisplayed, IsDisplayedGrid, IsDisplayed_SideList, IsMultiLine, MultiLine_LinesCount, Name, SeqNo, SeqNoGrid, SeqNo_SideList, Updated, UpdatedBy)
-SELECT 0,
-       710065,
-       0,
-       180,
-       1000040,
-       614577,
-       'F',
-       TO_TIMESTAMP('2022-12-22 17:59:26', 'YYYY-MM-DD HH24:MI:SS'),
-       100,
-       'Technische Bezeichnung des Produktes',
-       'Y',
-       'N',
-       'N',
-       'Y',
-       'N',
-       'N',
-       'N',
-       0,
-       'Sachbezeichnung',
-       155,
-       0,
-       0,
-       TO_TIMESTAMP('2022-12-22 17:59:26', 'YYYY-MM-DD HH24:MI:SS'),
-       100
-FROM AD_UI_Element
-WHERE NOT EXISTS(SELECT 1 FROM AD_UI_Element WHERE name = 'Sachbezeichnung')
+VALUES (0,
+        710065,
+        0,
+        180,
+        1000040,
+        614577,
+        'F',
+        TO_TIMESTAMP('2022-12-22 17:59:26', 'YYYY-MM-DD HH24:MI:SS'),
+        100,
+        'Technische Bezeichnung des Produktes',
+        'Y',
+        'N',
+        'N',
+        'Y',
+        'N',
+        'N',
+        'N',
+        0,
+        'Sachbezeichnung',
+        155,
+        0,
+        0,
+        TO_TIMESTAMP('2022-12-22 17:59:26', 'YYYY-MM-DD HH24:MI:SS'),
+        100)
+ON CONFLICT DO NOTHING
 ;
 
 
@@ -223,11 +222,15 @@ WHERE NOT EXISTS(SELECT 1 FROM AD_UI_Element WHERE name = 'Sachbezeichnung')
 -- UI Element: Produkt(140,D) -> Produkt(180,D) -> advanced edit -> 10 -> warehouse.Sachbezeichnung
 -- Column: M_Product.TechnicalDescription
 -- 2022-12-22T17:10:56.896Z
-UPDATE AD_UI_Element SET IsAdvancedField='Y',Updated=TO_TIMESTAMP('2022-12-22 18:10:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614577
+UPDATE AD_UI_Element
+SET IsAdvancedField='Y', Updated=TO_TIMESTAMP('2022-12-22 18:10:56', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_UI_Element_ID = 614577
 ;
 
 -- Column: M_Product.TechnicalDescription
 -- Column: M_Product.TechnicalDescription
 -- 2022-12-22T17:13:52.727Z
-UPDATE AD_Column SET IsTranslated='Y',Updated=TO_TIMESTAMP('2022-12-22 18:13:52','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Column_ID=585430
+UPDATE AD_Column
+SET IsTranslated='Y', Updated=TO_TIMESTAMP('2022-12-22 18:13:52', 'YYYY-MM-DD HH24:MI:SS'), UpdatedBy=100
+WHERE AD_Column_ID = 585430
 ;
