@@ -88,7 +88,6 @@ import lombok.Value;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.ad.trx.api.ITrxManager;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.mm.attributes.AttributeCode;
 import org.adempiere.mm.attributes.api.AttributeConstants;
 import org.adempiere.model.InterfaceWrapperHelper;
 import org.adempiere.util.lang.IAutoCloseable;
@@ -969,9 +968,7 @@ public class HUTransformService
 				InterfaceWrapperHelper.save(huItemOfLU);
 			}
 
-			huAttributesBL.updateHUAttribute(HuId.ofRepoId(newLuHU.getM_HU_ID()),
-					HuId.ofRepoId(sourceTuHU.getM_HU_ID()),
-					AttributeCode.ofString(AttributeConstants.ATTR_LotNumber_String));
+			huAttributesBL.updateHUAttribute(newLuHU, sourceTuHU, AttributeConstants.ATTR_LotNumber);
 
 			return ImmutableList.of(newLuHU);
 		}
