@@ -101,35 +101,44 @@ $$
 -- Column: M_Product.TechnicalDescription
 -- 2022-12-22T16:58:47.473Z
 INSERT INTO AD_Field (AD_Client_ID, AD_Column_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID, ColumnDisplayLength, Created, CreatedBy, Description, DisplayLength, EntityType, IncludedTabHeight, IsActive, IsDisplayed, IsDisplayedGrid, IsEncrypted, IsFieldOnly, IsHeading, IsReadOnly, IsSameLine, Name, SeqNo, SeqNoGrid, SortNo, SpanX, SpanY, Updated, UpdatedBy)
-VALUES (0,
-        585430,
-        710065,
-        0,
-        180,
-        0,
-        TO_TIMESTAMP('2022-12-22 17:58:47', 'YYYY-MM-DD HH24:MI:SS'),
-        100,
-        'Technische Bezeichnung des Produktes',
-        0,
-        'D',
-        0,
-        'Y',
-        'Y',
-        'Y',
-        'N',
-        'N',
-        'N',
-        'N',
-        'N',
-        'Sachbezeichnung',
-        0,
-        600,
-        0,
-        1,
-        1,
-        TO_TIMESTAMP('2022-12-22 17:58:47', 'YYYY-MM-DD HH24:MI:SS'),
-        100)
-ON CONFLICT DO NOTHING
+-- Field: Produkt -> Produkt -> Sachbezeichnung
+-- Column: M_Product.TechnicalDescription
+-- Field: Produkt(140,D) -> Produkt(180,D) -> Sachbezeichnung
+-- Column: M_Product.TechnicalDescription
+-- 2022-12-22T16:58:47.473Z
+INSERT INTO AD_Field (AD_Client_ID, AD_Column_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID, ColumnDisplayLength, Created, CreatedBy, Description, DisplayLength, EntityType, IncludedTabHeight, IsActive, IsDisplayed, IsDisplayedGrid, IsEncrypted, IsFieldOnly, IsHeading, IsReadOnly, IsSameLine, Name, SeqNo, SeqNoGrid, SortNo, SpanX, SpanY, Updated, UpdatedBy)
+SELECT 0,
+       585430,
+       710065,
+       0,
+       180,
+       0,
+       TO_TIMESTAMP('2022-12-22 17:58:47', 'YYYY-MM-DD HH24:MI:SS'),
+       100,
+       'Technische Bezeichnung des Produktes',
+       0,
+       'D',
+       0,
+       'Y',
+       'Y',
+       'Y',
+       'N',
+       'N',
+       'N',
+       'N',
+       'N',
+       'Sachbezeichnung',
+       0,
+       600,
+       0,
+       1,
+       1,
+       TO_TIMESTAMP('2022-12-22 17:58:47', 'YYYY-MM-DD HH24:MI:SS'),
+       100
+FROM ad_column
+WHERE ad_column_id = 585430
+  AND UPPER(columnname) = UPPER('TechnicalDescription')
+  AND NOT EXISTS(SELECT 1 FROM ad_field WHERE ad_field_id = 710065)
 ;
 
 -- 2022-12-22T16:58:47.474Z
@@ -170,8 +179,40 @@ WHERE AD_Field_ID = 710065
 -- 2022-12-22T16:58:47.498Z
 /* DDL */
 
-SELECT AD_Element_Link_Create_Missing_Field(710065)
+-- SELECT AD_Element_Link_Create_Missing_Field(710065)
+-- ;
+
+INSERT INTO AD_Element_Link
+(ad_window_id,
+ ad_tab_id,
+ ad_field_id,
+ ad_element_id,
+    --
+ ad_element_link_id,
+    --
+ ad_client_id, ad_org_id, created, createdby, isactive, updated, updatedby)
+SELECT tt.AD_Window_ID,
+       NULL                                    AS AD_Tab_ID, -- tt.AD_Tab_ID,
+       f.AD_Field_ID,
+       COALESCE(f.AD_Name_ID, c.AD_Element_ID) AS AD_Element_ID,
+       --
+       NEXTVAL('ad_element_link_seq')          AS AD_Element_Link_ID,
+       --
+       f.AD_Client_ID,
+       f.AD_Org_ID,
+       f.Created,
+       f.CreatedBy,
+       'Y',
+       f.Updated,
+       f.UpdatedBy
+FROM AD_Field f
+         LEFT OUTER JOIN AD_Column c ON (c.AD_Column_ID = f.AD_Column_ID)
+         INNER JOIN AD_Tab tt ON (tt.AD_Tab_ID = f.AD_Tab_ID)
+WHERE TRUE
+  AND (f.AD_Field_ID = 710065)
+  AND NOT EXISTS(SELECT 1 FROM AD_Element_Link l WHERE l.AD_Field_ID = 710065)
 ;
+
 
 -- Field: Produkt -> Produkt -> Sachbezeichnung
 -- Column: M_Product.TechnicalDescription
@@ -189,31 +230,33 @@ WHERE AD_Field_ID = 710065
 -- Column: M_Product.TechnicalDescription
 -- 2022-12-22T16:59:26.386Z
 INSERT INTO AD_UI_Element (AD_Client_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID, AD_UI_ElementGroup_ID, AD_UI_Element_ID, AD_UI_ElementType, Created, CreatedBy, Description, IsActive, IsAdvancedField, IsAllowFiltering, IsDisplayed, IsDisplayedGrid, IsDisplayed_SideList, IsMultiLine, MultiLine_LinesCount, Name, SeqNo, SeqNoGrid, SeqNo_SideList, Updated, UpdatedBy)
-VALUES (0,
-        710065,
-        0,
-        180,
-        1000040,
-        614577,
-        'F',
-        TO_TIMESTAMP('2022-12-22 17:59:26', 'YYYY-MM-DD HH24:MI:SS'),
-        100,
-        'Technische Bezeichnung des Produktes',
-        'Y',
-        'N',
-        'N',
-        'Y',
-        'N',
-        'N',
-        'N',
-        0,
-        'Sachbezeichnung',
-        155,
-        0,
-        0,
-        TO_TIMESTAMP('2022-12-22 17:59:26', 'YYYY-MM-DD HH24:MI:SS'),
-        100)
-ON CONFLICT DO NOTHING
+SELECT 0,
+       710065,
+       0,
+       180,
+       1000040,
+       614577,
+       'F',
+       TO_TIMESTAMP('2022-12-22 17:59:26', 'YYYY-MM-DD HH24:MI:SS'),
+       100,
+       'Technische Bezeichnung des Produktes',
+       'Y',
+       'N',
+       'N',
+       'Y',
+       'N',
+       'N',
+       'N',
+       0,
+       'Sachbezeichnung',
+       155,
+       0,
+       0,
+       TO_TIMESTAMP('2022-12-22 17:59:26', 'YYYY-MM-DD HH24:MI:SS'),
+       100
+FROM ad_field
+WHERE ad_field_id = 710065
+  AND NOT EXISTS(SELECT 1 FROM AD_UI_Element e WHERE e.ad_field_id = 710065)
 ;
 
 
