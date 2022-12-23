@@ -969,7 +969,9 @@ public class HUTransformService
 				InterfaceWrapperHelper.save(huItemOfLU);
 			}
 
-			copyAttributesToNewLU(newLuHU, sourceTuHU);
+			huAttributesBL.updateHUAttribute(HuId.ofRepoId(newLuHU.getM_HU_ID()),
+					HuId.ofRepoId(sourceTuHU.getM_HU_ID()),
+					AttributeCode.ofString(AttributeConstants.ATTR_LotNumber_String));
 
 			return ImmutableList.of(newLuHU);
 		}
@@ -977,13 +979,6 @@ public class HUTransformService
 		{
 			return tuToTopLevelHUs(sourceTuHU, qtyTU, luPIItem, isOwnPackingMaterials);
 		}
-	}
-
-	private void copyAttributesToNewLU(final I_M_HU newLuHU, final I_M_HU sourceTuHU)
-	{
-		huAttributesBL.updateHUAttribute(HuId.ofRepoId(newLuHU.getM_HU_ID()),
-				HuId.ofRepoId(sourceTuHU.getM_HU_ID()),
-				AttributeCode.ofString(AttributeConstants.ATTR_LotNumber_String));
 	}
 
 	/**
