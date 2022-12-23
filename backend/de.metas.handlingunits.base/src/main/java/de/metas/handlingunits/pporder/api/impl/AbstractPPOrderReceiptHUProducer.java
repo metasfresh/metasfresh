@@ -379,11 +379,13 @@ import java.util.Optional;
 		for (final I_M_HU hu : hus)
 		{
 			final IAttributeStorage huAttributes = huAttributeStorageFactory.getAttributeStorage(hu);
+			huAttributes.setSaveOnChange(true);
 
+			final HuId huId = HuId.ofRepoId(hu.getM_HU_ID());
 			if (Check.isNotBlank(lotNumber))
 			{
 				huAttributes.setValue(AttributeConstants.ATTR_LotNumber, lotNumber);
-				huAttributes.saveChangesIfNeeded();
+
 			}
 			else
 			{
@@ -391,7 +393,7 @@ import java.util.Optional;
 				if (Check.isNotBlank(lotNumber)
 						&& huAttributes.hasAttribute(AttributeConstants.ATTR_LotNumber))
 				{
-					huAttributesBL.updateHUAttributeRecursive(HuId.ofRepoId(hu.getM_HU_ID()), AttributeConstants.ATTR_LotNumber, lotNumber, null);
+					huAttributesBL.updateHUAttributeRecursive(huId, AttributeConstants.ATTR_LotNumber, lotNumber, null);
 				}
 			}
 			if (bestBeforeDate != null
@@ -401,7 +403,7 @@ import java.util.Optional;
 			}
 
 			huAttributesBL.updateHUAttributeRecursive(
-					HuId.ofRepoId(hu.getM_HU_ID()),
+					huId,
 					HUAttributeConstants.ATTR_PP_Order_ID,
 					ppOrderId.getRepoId(),
 					null);
