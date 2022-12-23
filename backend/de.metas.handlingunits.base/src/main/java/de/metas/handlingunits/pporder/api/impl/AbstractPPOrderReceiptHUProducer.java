@@ -418,16 +418,18 @@ import java.util.Optional;
 		{
 			final I_PP_Order_BOM ppOrderBom = ppOrderBOMDAO.getByOrderIdOrNull(ppOrderId);
 			final DocSequenceId sequenceId = DocSequenceId.ofRepoIdOrNull(ppOrderBom.getLotNo_Sequence_ID());
+			Optional<String> lotNumber = Optional.empty();
 			if (sequenceId != null)
 			{
 				final String finishedGoodsProductValue = productDAO.retrieveProductValueByProductId(getProductId());
-				final Optional<String> lotNumber = lotNumberBL.getAndIncrementLotNo(LotNoContext.builder()
+				lotNumber = lotNumberBL.getAndIncrementLotNo(LotNoContext.builder()
 						.sequenceId(sequenceId)
 						.clientId(ClientId.ofRepoId(ppOrderBom.getAD_Client_ID()))
 						.productNo(finishedGoodsProductValue)
 						.build());
-				this.lotNumberFromSequence = lotNumber;
+
 			}
+			this.lotNumberFromSequence = lotNumber;
 		}
 		return lotNumberFromSequence.orElse(null);
 	}
