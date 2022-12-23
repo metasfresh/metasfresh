@@ -2177,3 +2177,178 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=710121
 /* DDL */ select AD_Element_Link_Create_Missing_Field(710121)
 ;
 
+
+
+
+-- UI Column: Delivery Instruction(541657,D) -> Transportation Delivery(546732,D) -> main -> 10
+-- UI Element Group: address
+-- 2022-12-23T14:25:55.388Z
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,546539,550205,TO_TIMESTAMP('2022-12-23 16:25:54','YYYY-MM-DD HH24:MI:SS'),100,'Y','address',15,TO_TIMESTAMP('2022-12-23 16:25:54','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- UI Element: Delivery Instruction(541657,D) -> Transportation Delivery(546732,D) -> main -> 10 -> address.Loading Address
+-- Column: M_ShipperTransportation.C_BPartner_Location_Loading_ID
+-- 2022-12-23T14:26:26.664Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,710112,0,546732,550205,614614,'F',TO_TIMESTAMP('2022-12-23 16:26:26','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Loading Address',10,0,0,TO_TIMESTAMP('2022-12-23 16:26:26','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- UI Element: Delivery Instruction(541657,D) -> Transportation Delivery(546732,D) -> main -> 10 -> address.Delivery Address
+-- Column: M_ShipperTransportation.C_BPartner_Location_Delivery_ID
+-- 2022-12-23T14:26:43.678Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,710115,0,546732,550205,614615,'F',TO_TIMESTAMP('2022-12-23 16:26:43','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Delivery Address',20,0,0,TO_TIMESTAMP('2022-12-23 16:26:43','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- UI Element: Delivery Instruction(541657,D) -> Transportation Delivery(546732,D) -> main -> 20 -> doctype.Abholung am
+-- Column: M_ShipperTransportation.DateToBeFetched
+-- 2022-12-23T14:30:08.126Z
+UPDATE AD_UI_Element SET IsDisplayed='N',Updated=TO_TIMESTAMP('2022-12-23 16:30:08','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614592
+;
+
+-- UI Element: Delivery Instruction(541657,D) -> Transportation Delivery(546732,D) -> main -> 20 -> doctype.Pickup Time From
+-- Column: M_ShipperTransportation.PickupTimeFrom
+-- 2022-12-23T14:30:10.430Z
+UPDATE AD_UI_Element SET IsDisplayed='N',Updated=TO_TIMESTAMP('2022-12-23 16:30:10','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614593
+;
+
+-- UI Element: Delivery Instruction(541657,D) -> Transportation Delivery(546732,D) -> main -> 20 -> doctype.Pickup Time To
+-- Column: M_ShipperTransportation.PickupTimeTo
+-- 2022-12-23T14:30:18.237Z
+UPDATE AD_UI_Element SET IsDisplayed='N',Updated=TO_TIMESTAMP('2022-12-23 16:30:18','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614594
+;
+
+-- UI Column: Delivery Instruction(541657,D) -> Transportation Delivery(546732,D) -> main -> 20
+-- UI Element Group: delivery dates
+-- 2022-12-23T14:30:43.213Z
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,546540,550206,TO_TIMESTAMP('2022-12-23 16:30:42','YYYY-MM-DD HH24:MI:SS'),100,'Y','delivery dates',40,TO_TIMESTAMP('2022-12-23 16:30:42','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- UI Element: Delivery Instruction(541657,D) -> Transportation Delivery(546732,D) -> main -> 20 -> delivery dates.Loading Date
+-- Column: M_ShipperTransportation.LoadingDate
+-- 2022-12-23T14:31:14.411Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,710113,0,546732,550206,614616,'F',TO_TIMESTAMP('2022-12-23 16:31:13','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Loading Date',10,0,0,TO_TIMESTAMP('2022-12-23 16:31:13','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- UI Element: Delivery Instruction(541657,D) -> Transportation Delivery(546732,D) -> main -> 20 -> delivery dates.Loading Time
+-- Column: M_ShipperTransportation.LoadingTime
+-- 2022-12-23T14:31:33.509Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,710114,0,546732,550206,614617,'F',TO_TIMESTAMP('2022-12-23 16:31:32','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Loading Time',20,0,0,TO_TIMESTAMP('2022-12-23 16:31:32','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- UI Element: Delivery Instruction(541657,D) -> Transportation Delivery(546732,D) -> main -> 20 -> delivery dates.Shipmentdate
+-- Column: M_ShipperTransportation.DeliveryDate
+-- 2022-12-23T14:32:16.301Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,710116,0,546732,550206,614618,'F',TO_TIMESTAMP('2022-12-23 16:32:15','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Shipmentdate',30,0,0,TO_TIMESTAMP('2022-12-23 16:32:15','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- UI Element: Delivery Instruction(541657,D) -> Transportation Delivery(546732,D) -> main -> 20 -> delivery dates.Delivery Time
+-- Column: M_ShipperTransportation.DeliveryTime
+-- 2022-12-23T14:32:30.059Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,710117,0,546732,550206,614619,'F',TO_TIMESTAMP('2022-12-23 16:32:29','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Delivery Time',40,0,0,TO_TIMESTAMP('2022-12-23 16:32:29','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- Tab: Delivery Instruction(541657,D) -> Delivery Instruction
+-- Table: M_ShipperTransportation
+-- 2022-12-23T14:33:19.961Z
+UPDATE AD_Tab SET AD_Element_ID=581903, CommitWarning=NULL, Description=NULL, Help=NULL, Name='Delivery Instruction',Updated=TO_TIMESTAMP('2022-12-23 16:33:19','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Tab_ID=546732
+;
+
+-- 2022-12-23T14:33:20.004Z
+/* DDL */  select update_tab_translation_from_ad_element(581903) 
+;
+
+-- 2022-12-23T14:33:20.052Z
+/* DDL */ select AD_Element_Link_Create_Missing_Tab(546732)
+;
+
+-- Field: Delivery Instruction(541657,D) -> Delivery Instruction(546732,D) -> Delivery Date
+-- Column: M_ShipperTransportation.DeliveryDate
+-- 2022-12-23T14:34:04.900Z
+UPDATE AD_Field SET AD_Name_ID=581902, Description=NULL, Help=NULL, Name='Delivery Date',Updated=TO_TIMESTAMP('2022-12-23 16:34:04','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Field_ID=710116
+;
+
+-- 2022-12-23T14:34:04.942Z
+/* DDL */  select update_FieldTranslation_From_AD_Name_Element(581902) 
+;
+
+-- 2022-12-23T14:34:04.990Z
+DELETE FROM AD_Element_Link WHERE AD_Field_ID=710116
+;
+
+-- 2022-12-23T14:34:05.032Z
+/* DDL */ select AD_Element_Link_Create_Missing_Field(710116)
+;
+
+-- UI Column: Delivery Instruction(541657,D) -> Delivery Instruction(546732,D) -> main -> 10
+-- UI Element Group: incoterm
+-- 2022-12-23T14:35:08.450Z
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,546539,550207,TO_TIMESTAMP('2022-12-23 16:35:07','YYYY-MM-DD HH24:MI:SS'),100,'Y','incoterm',13,TO_TIMESTAMP('2022-12-23 16:35:07','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- UI Element: Delivery Instruction(541657,D) -> Delivery Instruction(546732,D) -> main -> 10 -> incoterm.Incoterms
+-- Column: M_ShipperTransportation.C_Incoterms_ID
+-- 2022-12-23T14:35:26.295Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,710118,0,546732,550207,614620,'F',TO_TIMESTAMP('2022-12-23 16:35:25','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Incoterms',10,0,0,TO_TIMESTAMP('2022-12-23 16:35:25','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- UI Element: Delivery Instruction(541657,D) -> Delivery Instruction(546732,D) -> main -> 10 -> incoterm.Incoterm Location
+-- Column: M_ShipperTransportation.IncotermLocation
+-- 2022-12-23T14:35:40.720Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,Description,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,710119,0,546732,550207,614621,'F',TO_TIMESTAMP('2022-12-23 16:35:40','YYYY-MM-DD HH24:MI:SS'),100,'Location to be specified for commercial clause','Y','N','N','Y','N','N','N',0,'Incoterm Location',20,0,0,TO_TIMESTAMP('2022-12-23 16:35:40','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- UI Column: Delivery Instruction(541657,D) -> Delivery Instruction(546732,D) -> main -> 10
+-- UI Element Group: delivery details
+-- 2022-12-23T14:36:29.485Z
+INSERT INTO AD_UI_ElementGroup (AD_Client_ID,AD_Org_ID,AD_UI_Column_ID,AD_UI_ElementGroup_ID,Created,CreatedBy,IsActive,Name,SeqNo,Updated,UpdatedBy) VALUES (0,0,546539,550208,TO_TIMESTAMP('2022-12-23 16:36:29','YYYY-MM-DD HH24:MI:SS'),100,'Y','delivery details',14,TO_TIMESTAMP('2022-12-23 16:36:29','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- UI Element: Delivery Instruction(541657,D) -> Delivery Instruction(546732,D) -> main -> 10 -> delivery details.Means of Transportation
+-- Column: M_ShipperTransportation.M_MeansOfTransportation_ID
+-- 2022-12-23T14:36:46.624Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,710120,0,546732,550208,614622,'F',TO_TIMESTAMP('2022-12-23 16:36:46','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Means of Transportation',10,0,0,TO_TIMESTAMP('2022-12-23 16:36:46','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+-- UI Element: Delivery Instruction(541657,D) -> Delivery Instruction(546732,D) -> main -> 10 -> delivery details.Forwarder
+-- Column: M_ShipperTransportation.M_Forwarder_ID
+-- 2022-12-23T14:37:02.085Z
+INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,710121,0,546732,550208,614623,'F',TO_TIMESTAMP('2022-12-23 16:37:01','YYYY-MM-DD HH24:MI:SS'),100,'Y','N','N','Y','N','N','N',0,'Forwarder',20,0,0,TO_TIMESTAMP('2022-12-23 16:37:01','YYYY-MM-DD HH24:MI:SS'),100)
+;
+
+
+
+
+
+
+
+-- UI Column: Delivery Instruction(541657,D) -> Delivery Instruction(546732,D) -> main -> 20
+-- UI Element Group: org
+-- 2022-12-23T14:39:30.059Z
+UPDATE AD_UI_ElementGroup SET SeqNo=60,Updated=TO_TIMESTAMP('2022-12-23 16:39:30','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_ElementGroup_ID=550201
+;
+
+-- UI Column: Delivery Instruction(541657,D) -> Delivery Instruction(546732,D) -> main -> 20
+-- UI Element Group: delivery details
+-- 2022-12-23T14:39:59.622Z
+UPDATE AD_UI_ElementGroup SET AD_UI_Column_ID=546540, SeqNo=70,Updated=TO_TIMESTAMP('2022-12-23 16:39:59','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_ElementGroup_ID=550208
+;
+
+-- UI Column: Delivery Instruction(541657,D) -> Delivery Instruction(546732,D) -> main -> 20
+-- UI Element Group: delivery details
+-- 2022-12-23T14:40:22.267Z
+UPDATE AD_UI_ElementGroup SET SeqNo=50,Updated=TO_TIMESTAMP('2022-12-23 16:40:22','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_ElementGroup_ID=550208
+;
+
+
+
+
+
+
+-- UI Element: Delivery Instruction(541657,D) -> Delivery Instruction(546732,D) -> main -> 10 -> description.Tour
+-- Column: M_ShipperTransportation.M_Tour_ID
+-- 2022-12-23T14:42:56.709Z
+UPDATE AD_UI_Element SET IsDisplayed='N',Updated=TO_TIMESTAMP('2022-12-23 16:42:56','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_UI_Element_ID=614588
+;
+
+
+
+
