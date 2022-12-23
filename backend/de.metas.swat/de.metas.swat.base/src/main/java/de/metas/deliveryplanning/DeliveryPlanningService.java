@@ -64,15 +64,14 @@ import java.math.RoundingMode;
 @Service
 public class DeliveryPlanningService
 {
-
 	public static final AdMessageKey MSG_M_Delivery_Planning_AllClosed = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.AllClosed");
-
 	public static final AdMessageKey MSG_M_Delivery_Planning_AllOpen = AdMessageKey.of("de.metas.deliveryplanning.DeliveryPlanningService.AllOpen");
+	private static final AdMessageKey MSG_M_Delivery_Planning_AtLeastOnePerOrderLine = AdMessageKey.of("M_Delivery_Planning_AtLeastOnePerOrderLine" + "");
 
 	private static final String SYSCONFIG_M_Delivery_Planning_CreateAutomatically = "de.metas.deliveryplanning.DeliveryPlanningService.M_Delivery_Planning_CreateAutomatically";
-	private static final AdMessageKey MSG_M_Delivery_Planning_AtLeastOnePerOrderLine = AdMessageKey.of("M_Delivery_Planning_AtLeastOnePerOrderLine");
 
 	public static final String PARAM_AdditionalLines = "AdditionalLines";
+
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
 	private final IProductBL productBL = Services.get(IProductBL.class);
@@ -160,6 +159,8 @@ public class DeliveryPlanningService
 				.actualLoadingDate(TimeUtil.asInstant(deliveryPlanningRecord.getActualLoadingDate()))
 				.plannedDeliveryDate(TimeUtil.asInstant(deliveryPlanningRecord.getPlannedDeliveryDate()))
 				.actualDeliveryDate(TimeUtil.asInstant(deliveryPlanningRecord.getActualDeliveryDate()))
+				.loadingTime(deliveryPlanningRecord.getLoadingTime())
+				.deliveryTime(deliveryPlanningRecord.getDeliveryTime())
 				.releaseNo(deliveryPlanningRecord.getReleaseNo())
 				.wayBillNo(deliveryPlanningRecord.getWayBillNo())
 				.batch(deliveryPlanningRecord.getBatch())
@@ -210,7 +211,7 @@ public class DeliveryPlanningService
 				.map(DeliveryPlanningService::extractPlannedLoadedQuantity)
 				.reduce(Quantity::add)
 				.orElse(null);
-		if(plannedLoadedQtySum != null && !plannedLoadedQtySum.isZero())
+		if (plannedLoadedQtySum != null && !plannedLoadedQtySum.isZero())
 		{
 			openQty = openQty.subtract(plannedLoadedQtySum);
 		}

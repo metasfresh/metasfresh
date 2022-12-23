@@ -82,6 +82,9 @@ public class DeliveryPlanningRepository
 		deliveryPlanningRecord.setPlannedLoadingDate(TimeUtil.asTimestamp(request.getPlannedLoadingDate()));
 		deliveryPlanningRecord.setActualLoadingDate(TimeUtil.asTimestamp(request.getActualLoadingDate()));
 
+		deliveryPlanningRecord.setLoadingTime(request.getLoadingTime());
+		deliveryPlanningRecord.setDeliveryTime(request.getDeliveryTime());
+
 		final Quantity qtyOrdered = request.getQtyOrdered();
 		final Quantity qtyTotalOpen = request.getQtyTotalOpen();
 		final Quantity actualDeliveredQty = request.getActualDeliveredQty();

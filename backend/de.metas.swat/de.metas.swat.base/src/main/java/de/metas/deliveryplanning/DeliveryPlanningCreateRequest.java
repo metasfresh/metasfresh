@@ -108,6 +108,12 @@ public class DeliveryPlanningCreateRequest
 	@Nullable
 	Instant actualDeliveryDate;
 
+	@Nullable
+	String loadingTime;
+
+	@Nullable
+	String deliveryTime;
+
 	@NonNull Quantity qtyOrdered;
 
 	@NonNull Quantity qtyTotalOpen;

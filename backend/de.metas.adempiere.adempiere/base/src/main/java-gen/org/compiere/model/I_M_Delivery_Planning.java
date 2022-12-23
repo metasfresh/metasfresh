@@ -417,6 +417,27 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_C_UOM_ID = "C_UOM_ID";
 
 	/**
+	 * Set Delivery Time.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setDeliveryTime (@Nullable java.lang.String DeliveryTime);
+
+	/**
+	 * Get Delivery Time.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getDeliveryTime();
+
+	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_DeliveryTime = new ModelColumn<>(I_M_Delivery_Planning.class, "DeliveryTime", null);
+	String COLUMNNAME_DeliveryTime = "DeliveryTime";
+
+	/**
 	 * Set Grade.
 	 *
 	 * <br>Type: String
@@ -505,6 +526,27 @@ public interface I_M_Delivery_Planning
 
 	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_IsClosed = new ModelColumn<>(I_M_Delivery_Planning.class, "IsClosed", null);
 	String COLUMNNAME_IsClosed = "IsClosed";
+
+	/**
+	 * Set Loading Time.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLoadingTime (@Nullable java.lang.String LoadingTime);
+
+	/**
+	 * Get Loading Time.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getLoadingTime();
+
+	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_LoadingTime = new ModelColumn<>(I_M_Delivery_Planning.class, "LoadingTime", null);
+	String COLUMNNAME_LoadingTime = "LoadingTime";
 
 	/**
 	 * Set Delivery Planning.

@@ -13,7 +13,7 @@ import javax.annotation.Nullable;
 public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_Delivery_Planning, org.compiere.model.I_Persistent 
 {
 
-	private static final long serialVersionUID = -1756575147L;
+	private static final long serialVersionUID = -798618325L;
 
     /** Standard Constructor */
     public X_M_Delivery_Planning (final Properties ctx, final int M_Delivery_Planning_ID, @Nullable final String trxName)
@@ -302,6 +302,18 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	}
 
 	@Override
+	public void setDeliveryTime (final @Nullable java.lang.String DeliveryTime)
+	{
+		set_Value (COLUMNNAME_DeliveryTime, DeliveryTime);
+	}
+
+	@Override
+	public java.lang.String getDeliveryTime() 
+	{
+		return get_ValueAsString(COLUMNNAME_DeliveryTime);
+	}
+
+	@Override
 	public void setGrade (final @Nullable java.lang.String Grade)
 	{
 		throw new IllegalArgumentException ("Grade is virtual column");	}
@@ -334,6 +346,18 @@ public class X_M_Delivery_Planning extends org.compiere.model.PO implements I_M_
 	public boolean isClosed() 
 	{
 		return get_ValueAsBoolean(COLUMNNAME_IsClosed);
+	}
+
+	@Override
+	public void setLoadingTime (final @Nullable java.lang.String LoadingTime)
+	{
+		set_Value (COLUMNNAME_LoadingTime, LoadingTime);
+	}
+
+	@Override
+	public java.lang.String getLoadingTime() 
+	{
+		return get_ValueAsString(COLUMNNAME_LoadingTime);
 	}
 
 	@Override
