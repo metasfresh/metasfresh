@@ -391,14 +391,13 @@ import java.util.Optional;
 				if (Check.isNotBlank(lotNumber)
 						&& huAttributes.hasAttribute(AttributeConstants.ATTR_LotNumber))
 				{
-					huAttributesBL.updateHUAttributeRecursive(HuId.ofRepoId(hu.getM_HU_ID()), AttributeConstants.ATTR_LotNumber,lotNumber,null);
+					huAttributesBL.updateHUAttributeRecursive(HuId.ofRepoId(hu.getM_HU_ID()), AttributeConstants.ATTR_LotNumber, lotNumber, null);
 				}
-
-				if (bestBeforeDate != null
-						&& huAttributes.hasAttribute(AttributeConstants.ATTR_BestBeforeDate))
-				{
-					huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, bestBeforeDate);
-				}
+			}
+			if (bestBeforeDate != null
+					&& huAttributes.hasAttribute(AttributeConstants.ATTR_BestBeforeDate))
+			{
+				huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, bestBeforeDate);
 			}
 
 			huAttributesBL.updateHUAttributeRecursive(
