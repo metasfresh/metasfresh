@@ -9,6 +9,7 @@ import de.metas.device.accessor.DeviceAccessorsHubFactory;
 import de.metas.device.accessor.DeviceId;
 import de.metas.device.websocket.DeviceWebsocketNamingStrategy;
 import de.metas.global_qrcodes.GlobalQRCode;
+import de.metas.handlingunits.IHUContextFactory;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.attribute.weightable.Weightables;
 import de.metas.handlingunits.pporder.api.IHUPPOrderBL;
@@ -20,6 +21,7 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
+import de.metas.manufacturing.generatedcomponents.ManufacturingComponentGeneratorService;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLineId;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivity;
@@ -75,6 +77,8 @@ public class ManufacturingJobService
 	private final IHandlingUnitsBL handlingUnitsBL = Services.get(IHandlingUnitsBL.class);
 	private final IResourceDAO resourceDAO = Services.get(IResourceDAO.class);
 	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
+	private final ManufacturingComponentGeneratorService manufacturingComponentGeneratorService;
+	private final IHUContextFactory huContextFactory = Services.get(IHUContextFactory.class);
 	private final IHUPPOrderBL ppOrderBL;
 	private final IPPOrderBOMBL ppOrderBOMBL;
 	private final PPOrderIssueScheduleService ppOrderIssueScheduleService;
@@ -89,6 +93,7 @@ public class ManufacturingJobService
 	private static final AdMessageKey MSG_ScaleDeviceNotRegistered = AdMessageKey.of("ScaleDeviceNotRegistered");
 
 	public ManufacturingJobService(
+			final @NonNull ManufacturingComponentGeneratorService manufacturingComponentGeneratorService,
 			final @NonNull PPOrderIssueScheduleService ppOrderIssueScheduleService,
 			final @NonNull HUReservationService huReservationService,
 			final @NonNull PPOrderSourceHUService ppOrderSourceHUService,
@@ -96,6 +101,7 @@ public class ManufacturingJobService
 			final @NonNull DeviceWebsocketNamingStrategy deviceWebsocketNamingStrategy,
 			final @NonNull HUQRCodesService huQRCodeService)
 	{
+		this.manufacturingComponentGeneratorService = manufacturingComponentGeneratorService;
 		this.ppOrderIssueScheduleService = ppOrderIssueScheduleService;
 		this.huReservationService = huReservationService;
 		this.ppOrderSourceHUService = ppOrderSourceHUService;
