@@ -77,7 +77,7 @@ public class DateSequenceProvider implements CustomSequenceNoProvider
 			final boolean stringCanBeParsedAsInt = autoIncrementedSeqNumber.matches("\\d+");
 			if (!Check.isEmpty(decimalPattern) && stringCanBeParsedAsInt)
 			{
-				final int seqNoAsInt = Integer.parseInt(result);
+				final int seqNoAsInt = Integer.parseInt(autoIncrementedSeqNumber);
 				final String formattedSeqNumber = new DecimalFormat(decimalPattern).format(seqNoAsInt);
 				logger.debug("provideSequenceNo - returning {};", result);
 				return result + formattedSeqNumber;

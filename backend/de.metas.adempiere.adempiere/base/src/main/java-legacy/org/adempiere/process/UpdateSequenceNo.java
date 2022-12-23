@@ -57,7 +57,7 @@ public class UpdateSequenceNo extends JavaProcess
 							"INSERT INTO AD_Sequence_No(AD_SEQUENCE_ID, CALENDARYEAR,CALENDARMONTH, "
 									+ "AD_CLIENT_ID, AD_ORG_ID, ISACTIVE, CREATED, CREATEDBY, "
 									+ "UPDATED, UPDATEDBY, CURRENTNEXT) "
-									+ "(SELECT AD_Sequence_ID, '?', '?', "
+									+ "(SELECT AD_Sequence_ID, ?, ?, "
 									+ "AD_Client_ID, AD_Org_ID, IsActive, Created, CreatedBy, "
 									+ "Updated, UpdatedBy, StartNo "
 									+ "FROM AD_Sequence a "

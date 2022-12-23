@@ -406,8 +406,6 @@ public class ManufacturingJobService
 					.ppOrderBL(ppOrderBL)
 					.ppOrderBOMBL(ppOrderBOMBL)
 					.loadingAndSavingSupportServices(loadingAndSavingSupportServices)
-					.manufacturingComponentGeneratorService(manufacturingComponentGeneratorService)
-					.huContextFactory(huContextFactory)
 					//
 					.ppOrderId(job.getPpOrderId())
 					.coProductBOMLineId(line.getCoProductBOMLineId())

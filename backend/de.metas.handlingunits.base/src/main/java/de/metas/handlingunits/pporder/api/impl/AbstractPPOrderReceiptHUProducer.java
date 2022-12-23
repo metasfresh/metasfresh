@@ -378,25 +378,11 @@ import java.util.Optional;
 		{
 			final IAttributeStorage huAttributes = huAttributeStorageFactory.getAttributeStorage(hu);
 
+			final String lotNumber = getOrLoadLotNumber();
 			if (lotNumber != null
 					&& huAttributes.hasAttribute(AttributeConstants.ATTR_LotNumber))
 			{
 				huAttributes.setValue(AttributeConstants.ATTR_LotNumber, lotNumber);
-			}
-			else
-			{
-				final I_PP_Order_BOM ppOrderBom = ppOrderBOMDAO.getByOrderIdOrNull(ppOrderId);
-				final DocSequenceId sequenceId = DocSequenceId.ofRepoIdOrNull(ppOrderBom.getLotNo_Sequence_ID());
-				if (sequenceId != null)
-				{
-					final String finishedGoodsProductValue = productDAO.retrieveProductValueByProductId(getProductId());
-					final Optional<String> lotNumber = lotNumberBL.getAndIncrementLotNo(LotNoContext.builder()
-							.sequenceId(sequenceId)
-							.clientId(ClientId.ofRepoId(ppOrderBom.getAD_Client_ID()))
-							.productNo(finishedGoodsProductValue)
-							.build());
-					lotNumber.ifPresent(s -> huAttributes.setValue(AttributeConstants.ATTR_LotNumber, s));
-				}
 			}
 
 			if (bestBeforeDate != null
@@ -417,6 +403,27 @@ import java.util.Optional;
 		//
 		// Assign HUs to PP_Order/PP_Order_BOMLine
 		addAssignedHUs(hus);
+	}
+
+	@Nullable
+	private String getOrLoadLotNumber()
+	{
+		if (lotNumber == null)
+		{
+			final I_PP_Order_BOM ppOrderBom = ppOrderBOMDAO.getByOrderIdOrNull(ppOrderId);
+			final DocSequenceId sequenceId = DocSequenceId.ofRepoIdOrNull(ppOrderBom.getLotNo_Sequence_ID());
+			if (sequenceId != null)
+			{
+				final String finishedGoodsProductValue = productDAO.retrieveProductValueByProductId(getProductId());
+				final Optional<String> lotNumber = lotNumberBL.getAndIncrementLotNo(LotNoContext.builder()
+						.sequenceId(sequenceId)
+						.clientId(ClientId.ofRepoId(ppOrderBom.getAD_Client_ID()))
+						.productNo(finishedGoodsProductValue)
+						.build());
+				this.lotNumber = lotNumber.orElse(null);
+			}
+		}
+		return lotNumber;
 	}
 
 	@Override
