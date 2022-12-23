@@ -139,6 +139,7 @@ public class DeliveryPlanningService
 				.bPartnerLocationId(BPartnerLocationId.ofRepoId(deliveryPlanningRecord.getC_BPartner_ID(), deliveryPlanningRecord.getC_BPartner_Location_ID()))
 				.shipperTransportationId(ShipperTransportationId.ofRepoIdOrNull(deliveryPlanningRecord.getM_ShipperTransportation_ID()))
 				.incotermsId(IncotermsId.ofRepoIdOrNull(deliveryPlanningRecord.getC_Incoterms_ID()))
+				.incotermLocation(deliveryPlanningRecord.getIncotermLocation())
 				.sectionCodeId(SectionCodeId.ofRepoIdOrNull(deliveryPlanningRecord.getM_SectionCode_ID()))
 				.warehouseId(WarehouseId.ofRepoId(deliveryPlanningRecord.getM_Warehouse_ID()))
 				.deliveryPlanningType(DeliveryPlanningType.ofNullableCode(deliveryPlanningRecord.getM_Delivery_Planning_Type()))

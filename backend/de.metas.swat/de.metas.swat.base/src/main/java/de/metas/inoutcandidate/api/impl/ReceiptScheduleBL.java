@@ -809,7 +809,8 @@ public class ReceiptScheduleBL implements IReceiptScheduleBL
 			final I_C_Order order = orderDAO.getById(orderId);
 
 			requestBuilder.isB2B(order.isDropShip())
-					.incotermsId(IncotermsId.ofRepoIdOrNull(order.getC_Incoterms_ID()));
+					.incotermsId(IncotermsId.ofRepoIdOrNull(order.getC_Incoterms_ID()))
+					.incotermLocation(order.getIncotermLocation());
 		}
 
 		if (orderLineId != null)

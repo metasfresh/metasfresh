@@ -90,6 +90,8 @@ public class DeliveryPlanningCreateRequest
 	@Nullable
 	IncotermsId incotermsId;
 
+	@Nullable String incotermLocation;
+
 	@Nullable
 	ShipmentScheduleId shipmentScheduleId;
 

@@ -463,6 +463,29 @@ public interface I_M_Delivery_Planning
 	String COLUMNNAME_Grade = "Grade";
 
 	/**
+	 * Set IncotermLocation.
+	 * Anzugebender Ort für Handelsklausel
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setIncotermLocation (@Nullable java.lang.String IncotermLocation);
+
+	/**
+	 * Get IncotermLocation.
+	 * Anzugebender Ort für Handelsklausel
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	@Nullable java.lang.String getIncotermLocation();
+
+	ModelColumn<I_M_Delivery_Planning, Object> COLUMN_IncotermLocation = new ModelColumn<>(I_M_Delivery_Planning.class, "IncotermLocation", null);
+	String COLUMNNAME_IncotermLocation = "IncotermLocation";
+
+	/**
 	 * Set Active.
 	 * The record is active in the system
 	 *

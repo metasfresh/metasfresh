@@ -75,6 +75,7 @@ public class DeliveryPlanningRepository
 		deliveryPlanningRecord.setC_BPartner_ID(BPartnerId.toRepoId(request.getPartnerId()));
 		deliveryPlanningRecord.setC_BPartner_Location_ID(BPartnerLocationId.toRepoId(request.getBPartnerLocationId()));
 		deliveryPlanningRecord.setC_Incoterms_ID(IncotermsId.toRepoId(request.getIncotermsId()));
+		deliveryPlanningRecord.setIncotermLocation(request.getIncotermLocation());
 		deliveryPlanningRecord.setM_SectionCode_ID(SectionCodeId.toRepoId(request.getSectionCodeId()));
 
 		deliveryPlanningRecord.setPlannedDeliveryDate(TimeUtil.asTimestamp(request.getPlannedDeliveryDate()));
