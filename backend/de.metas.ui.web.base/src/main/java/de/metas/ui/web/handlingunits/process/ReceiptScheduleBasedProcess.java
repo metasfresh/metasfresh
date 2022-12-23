@@ -1,28 +1,34 @@
 package de.metas.ui.web.handlingunits.process;
 
-import java.time.LocalDate;
-import java.util.Collection;
-
+import de.metas.document.DocTypeId;
+import de.metas.document.IDocTypeDAO;
+import de.metas.document.sequence.DocSequenceId;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactoryService;
+import de.metas.handlingunits.model.I_M_HU;
 import de.metas.handlingunits.model.I_M_ReceiptSchedule;
+import de.metas.process.IProcessPrecondition;
+import de.metas.process.JavaProcess;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductId;
+import de.metas.ui.web.receiptSchedule.HUsToReceiveViewFactory;
 import de.metas.util.Check;
 import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.mm.attributes.api.AttributeConstants;
+import org.adempiere.mm.attributes.api.ILotNumberBL;
+import org.adempiere.mm.attributes.api.LotNoContext;
+import org.adempiere.service.ClientId;
 import org.adempiere.util.lang.impl.TableRecordReference;
-
-import de.metas.handlingunits.model.I_M_HU;
-import de.metas.process.IProcessPrecondition;
-import de.metas.process.JavaProcess;
-import de.metas.ui.web.receiptSchedule.HUsToReceiveViewFactory;
+import org.compiere.model.I_C_DocType;
 import org.compiere.util.TimeUtil;
 
 import javax.annotation.Nullable;
+import java.time.LocalDate;
+import java.util.Collection;
+import java.util.Optional;
 
 /*
  * #%L
@@ -49,9 +55,13 @@ import javax.annotation.Nullable;
 public abstract class ReceiptScheduleBasedProcess extends JavaProcess implements IProcessPrecondition
 {
 	private final IAttributeStorageFactoryService attributeStorageFactoryService = Services.get(IAttributeStorageFactoryService.class);
+	private final IDocTypeDAO docTypeDAO = Services.get(IDocTypeDAO.class);
 	private final IAttributeStorageFactory attributeStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory();
 	private final IProductDAO productDAO = Services.get(IProductDAO.class);
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
+	private final ILotNumberBL lotNumberBL = Services.get(ILotNumberBL.class);
+
+	private Optional<String> lotNumberFromSeq = null;
 
 	protected final void openHUsToReceive(final Collection<I_M_HU> hus)
 	{
@@ -61,23 +71,49 @@ public abstract class ReceiptScheduleBasedProcess extends JavaProcess implements
 	protected void updateAttributes(@NonNull final I_M_HU hu, @NonNull final I_M_ReceiptSchedule receiptSchedule)
 	{
 		final IAttributeStorage huAttributes = attributeStorageFactory.getAttributeStorage(hu);
-		setAttributeLotNumber(hu, huAttributes);
+		setAttributeLotNumber(hu, receiptSchedule, huAttributes);
 		setAttributeBBD(receiptSchedule, huAttributes);
 		setVendorValueFromReceiptSchedule(receiptSchedule, huAttributes);
 	}
 
-	private void setAttributeLotNumber(final @NonNull I_M_HU hu, @NonNull final IAttributeStorage huAttributes)
+	private void setAttributeLotNumber(final @NonNull I_M_HU hu, final @NonNull I_M_ReceiptSchedule receiptSchedule, @NonNull final IAttributeStorage huAttributes)
 	{
-
+		final String lotNumberToSet;
 		if (huAttributes.hasAttribute(AttributeConstants.ATTR_LotNumber)
 				&& Check.isBlank(huAttributes.getValueAsString(AttributeConstants.ATTR_LotNumber))
 				&& huAttributesBL.isAutomaticallySetLotNumber()
 		)
 		{
-			final String lotNumberToSet = hu.getValue();
+			lotNumberToSet = hu.getValue();
 			huAttributes.setValue(AttributeConstants.ATTR_LotNumber, lotNumberToSet);
-			huAttributes.saveChangesIfNeeded();
 		}
+		else
+		{
+			final String lotNumber = getOrLoadLotNoFromSeq(receiptSchedule);
+			if (Check.isNotBlank(lotNumber))
+			{
+				huAttributes.setValue(AttributeConstants.ATTR_LotNumber, lotNumber);
+			}
+		}
+		huAttributes.saveChangesIfNeeded();
+	}
+
+	@Nullable
+	private String getOrLoadLotNoFromSeq(final @NonNull I_M_ReceiptSchedule receiptSchedule)
+	{
+		if (lotNumberFromSeq == null)
+		{
+			final I_C_DocType docType = docTypeDAO.getById(DocTypeId.ofRepoId(receiptSchedule.getC_DocType_ID()));
+			final DocSequenceId lotNoSequenceId = DocSequenceId.ofRepoIdOrNull(docType.getLotNo_Sequence_ID());
+			if (lotNoSequenceId != null)
+			{
+				lotNumberFromSeq = lotNumberBL.getAndIncrementLotNo(LotNoContext.builder()
+						.sequenceId(lotNoSequenceId)
+						.clientId(ClientId.ofRepoId(receiptSchedule.getAD_Client_ID()))
+						.build());
+			}
+		}
+		return lotNumberFromSeq.orElse(null);
 	}
 
 	private void setAttributeBBD(@NonNull final I_M_ReceiptSchedule receiptSchedule, @NonNull final IAttributeStorage huAttributes)
@@ -98,7 +134,7 @@ public abstract class ReceiptScheduleBasedProcess extends JavaProcess implements
 
 	private void setVendorValueFromReceiptSchedule(@NonNull final I_M_ReceiptSchedule receiptSchedule, @NonNull final IAttributeStorage huAttributes)
 	{
-			if (huAttributes.hasAttribute(AttributeConstants.ATTR_Vendor_BPartner_ID)
+		if (huAttributes.hasAttribute(AttributeConstants.ATTR_Vendor_BPartner_ID)
 				&& huAttributes.getValueAsInt(AttributeConstants.ATTR_Vendor_BPartner_ID) > -1)
 		{
 			final int bpId = receiptSchedule.getC_BPartner_ID();

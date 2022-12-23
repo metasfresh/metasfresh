@@ -132,6 +132,7 @@ final class PPOrderBOMCreateCommand
 		orderBOM.setDocumentNo(bom.getDocumentNo());
 		orderBOM.setC_UOM_ID(bom.getC_UOM_ID()); // the BOM's C_UOM_ID
 		orderBOM.setSerialNo_Sequence_ID(bom.getSerialNo_Sequence_ID());
+		orderBOM.setLotNo_Sequence_ID(bom.getLotNo_Sequence_ID());
 
 		ppOrderBOMsRepo.save(orderBOM);
 		return orderBOM;

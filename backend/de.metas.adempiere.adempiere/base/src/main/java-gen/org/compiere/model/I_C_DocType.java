@@ -835,6 +835,31 @@ public interface I_C_DocType
 	String COLUMNNAME_IsSplitWhenDifference = "IsSplitWhenDifference";
 
 	/**
+	 * Set Serial No. Sequence.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setLotNo_Sequence_ID (int LotNo_Sequence_ID);
+
+	/**
+	 * Get Serial No. Sequence.
+	 *
+	 * <br>Type: Search
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getLotNo_Sequence_ID();
+
+	@Nullable org.compiere.model.I_AD_Sequence getLotNo_Sequence();
+
+	void setLotNo_Sequence(@Nullable org.compiere.model.I_AD_Sequence LotNo_Sequence);
+
+	ModelColumn<I_C_DocType, org.compiere.model.I_AD_Sequence> COLUMN_LotNo_Sequence_ID = new ModelColumn<>(I_C_DocType.class, "LotNo_Sequence_ID", org.compiere.model.I_AD_Sequence.class);
+	String COLUMNNAME_LotNo_Sequence_ID = "LotNo_Sequence_ID";
+
+	/**
 	 * Set Name.
 	 *
 	 * <br>Type: String
