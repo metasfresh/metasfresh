@@ -101,12 +101,6 @@ $$
 -- Column: M_Product.TechnicalDescription
 -- 2022-12-22T16:58:47.473Z
 INSERT INTO AD_Field (AD_Client_ID, AD_Column_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID, ColumnDisplayLength, Created, CreatedBy, Description, DisplayLength, EntityType, IncludedTabHeight, IsActive, IsDisplayed, IsDisplayedGrid, IsEncrypted, IsFieldOnly, IsHeading, IsReadOnly, IsSameLine, Name, SeqNo, SeqNoGrid, SortNo, SpanX, SpanY, Updated, UpdatedBy)
--- Field: Produkt -> Produkt -> Sachbezeichnung
--- Column: M_Product.TechnicalDescription
--- Field: Produkt(140,D) -> Produkt(180,D) -> Sachbezeichnung
--- Column: M_Product.TechnicalDescription
--- 2022-12-22T16:58:47.473Z
-INSERT INTO AD_Field (AD_Client_ID, AD_Column_ID, AD_Field_ID, AD_Org_ID, AD_Tab_ID, ColumnDisplayLength, Created, CreatedBy, Description, DisplayLength, EntityType, IncludedTabHeight, IsActive, IsDisplayed, IsDisplayedGrid, IsEncrypted, IsFieldOnly, IsHeading, IsReadOnly, IsSameLine, Name, SeqNo, SeqNoGrid, SortNo, SpanX, SpanY, Updated, UpdatedBy)
 SELECT 0,
        585430,
        710065,
