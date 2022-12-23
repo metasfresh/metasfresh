@@ -94,11 +94,14 @@ public class HUAttributesBL implements IHUAttributesBL
 		final IHUStorageFactory storageFactory = handlingUnitsBL.getStorageFactory();
 		final IAttributeStorageFactory huAttributeStorageFactory = attributeStorageFactoryService.createHUAttributeStorageFactory(storageFactory);
 
-		final IAttributeStorage sourceHUAttrStorage = huAttributeStorageFactory.getAttributeStorage(sourceHUId);
+		final I_M_HU destHU = handlingUnitsDAO.getById(destHUId);
+		final I_M_HU sourceHU = handlingUnitsDAO.getById(sourceHUId);
+
+		final IAttributeStorage sourceHUAttrStorage = huAttributeStorageFactory.getAttributeStorage(sourceHU);
 		if (sourceHUAttrStorage.hasAttribute(attributeCode))
 		{
 			final IAttributeValue attributeValue = sourceHUAttrStorage.getAttributeValue(attributeCode);
-			final IAttributeStorage destHUAttrStorage = huAttributeStorageFactory.getAttributeStorage(destHUId);
+			final IAttributeStorage destHUAttrStorage = huAttributeStorageFactory.getAttributeStorage(destHU);
 			if (destHUAttrStorage.hasAttribute(attributeCode))
 			{
 				final IAttributeValue existingAttributeValue = sourceHUAttrStorage.getAttributeValue(attributeCode);
