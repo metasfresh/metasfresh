@@ -9,7 +9,6 @@ import de.metas.handlingunits.IHUContext;
 import de.metas.handlingunits.IHandlingUnitsBL;
 import de.metas.handlingunits.IHandlingUnitsDAO;
 import de.metas.handlingunits.attribute.HUAttributeConstants;
-import de.metas.handlingunits.attribute.IAttributeValue;
 import de.metas.handlingunits.attribute.IHUAttributesBL;
 import de.metas.handlingunits.attribute.storage.IAttributeStorage;
 import de.metas.handlingunits.attribute.storage.IAttributeStorageFactory;
@@ -100,11 +99,11 @@ public class HUAttributesBL implements IHUAttributesBL
 		final IAttributeStorage sourceHUAttrStorage = huAttributeStorageFactory.getAttributeStorage(sourceHU);
 		if (sourceHUAttrStorage.hasAttribute(attributeCode))
 		{
-			final IAttributeValue attributeValue = sourceHUAttrStorage.getAttributeValue(attributeCode);
+			final Object attributeValue = sourceHUAttrStorage.getValue(attributeCode);
 			final IAttributeStorage destHUAttrStorage = huAttributeStorageFactory.getAttributeStorage(destHU);
 			if (destHUAttrStorage.hasAttribute(attributeCode))
 			{
-				final IAttributeValue existingAttributeValue = sourceHUAttrStorage.getAttributeValue(attributeCode);
+				final Object existingAttributeValue = sourceHUAttrStorage.getValue(attributeCode);
 				loggable.addLog("for HUID={} overwriting attribute={} from {} to {}", destHUId, attributeCode, attributeValue,existingAttributeValue);
 			}
 			destHUAttrStorage.setValue(attributeCode, attributeValue);

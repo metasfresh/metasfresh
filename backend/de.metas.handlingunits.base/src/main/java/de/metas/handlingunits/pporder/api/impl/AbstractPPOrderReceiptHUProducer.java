@@ -380,20 +380,26 @@ import java.util.Optional;
 		{
 			final IAttributeStorage huAttributes = huAttributeStorageFactory.getAttributeStorage(hu);
 
-			final String lotNumber = getOrLoadLotNumber();
-			if (lotNumber != null
-					&& huAttributes.hasAttribute(AttributeConstants.ATTR_LotNumber))
+			if (Check.isNotBlank(lotNumber))
 			{
-				huAttributes.setValue(AttributeConstants.ATTR_LotNumber, lotNumber);
+				huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, lotNumber);
+				huAttributes.saveChangesIfNeeded();
 			}
-
-			if (bestBeforeDate != null
-					&& huAttributes.hasAttribute(AttributeConstants.ATTR_BestBeforeDate))
+			else
 			{
-				huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, bestBeforeDate);
-			}
+				final String lotNumber = getOrLoadLotNumberFromSeq();
+				if (Check.isNotBlank(lotNumber)
+						&& huAttributes.hasAttribute(AttributeConstants.ATTR_LotNumber))
+				{
+					huAttributesBL.updateHUAttributeRecursive(HuId.ofRepoId(hu.getM_HU_ID()), AttributeConstants.ATTR_LotNumber,lotNumber,null);
+				}
 
-			huAttributes.saveChangesIfNeeded();
+				if (bestBeforeDate != null
+						&& huAttributes.hasAttribute(AttributeConstants.ATTR_BestBeforeDate))
+				{
+					huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, bestBeforeDate);
+				}
+			}
 
 			huAttributesBL.updateHUAttributeRecursive(
 					HuId.ofRepoId(hu.getM_HU_ID()),
@@ -408,12 +414,8 @@ import java.util.Optional;
 	}
 
 	@Nullable
-	private String getOrLoadLotNumber()
+	private String getOrLoadLotNumberFromSeq()
 	{
-		if (Check.isNotBlank(lotNumber))
-		{
-			return lotNumber;
-		}
 		if (lotNumberFromSequence == null)
 		{
 			final I_PP_Order_BOM ppOrderBom = ppOrderBOMDAO.getByOrderIdOrNull(ppOrderId);
