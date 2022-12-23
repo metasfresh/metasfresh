@@ -61,6 +61,8 @@ public abstract class ReceiptScheduleBasedProcess extends JavaProcess implements
 	private final IHUAttributesBL huAttributesBL = Services.get(IHUAttributesBL.class);
 	private final ILotNumberBL lotNumberBL = Services.get(ILotNumberBL.class);
 
+	private Optional<String> lotNumberFromSeq = null;
+
 	protected final void openHUsToReceive(final Collection<I_M_HU> hus)
 	{
 		getResult().setRecordsToOpen(TableRecordReference.ofCollection(hus), HUsToReceiveViewFactory.WINDOW_ID_STRING);
@@ -87,20 +89,31 @@ public abstract class ReceiptScheduleBasedProcess extends JavaProcess implements
 		}
 		else
 		{
+			final String lotNumber = getOrLoadLotNoFromSeq(receiptSchedule);
+			if (Check.isNotBlank(lotNumber))
+			{
+				huAttributes.setValue(AttributeConstants.ATTR_LotNumber, lotNumber);
+			}
+		}
+		huAttributes.saveChangesIfNeeded();
+	}
+
+	@Nullable
+	private String getOrLoadLotNoFromSeq(final @NonNull I_M_ReceiptSchedule receiptSchedule)
+	{
+		if (lotNumberFromSeq == null)
+		{
 			final I_C_DocType docType = docTypeDAO.getById(DocTypeId.ofRepoId(receiptSchedule.getC_DocType_ID()));
 			final DocSequenceId lotNoSequenceId = DocSequenceId.ofRepoIdOrNull(docType.getLotNo_Sequence_ID());
 			if (lotNoSequenceId != null)
 			{
-				final String productValue = productDAO.retrieveProductValueByProductId(ProductId.ofRepoId(receiptSchedule.getM_Product_ID()));
-				final Optional<String> lotNumber = lotNumberBL.getAndIncrementLotNo(LotNoContext.builder()
+				lotNumberFromSeq = lotNumberBL.getAndIncrementLotNo(LotNoContext.builder()
 						.sequenceId(lotNoSequenceId)
 						.clientId(ClientId.ofRepoId(receiptSchedule.getAD_Client_ID()))
-						.productNo(productValue)
 						.build());
-				lotNumber.ifPresent(s -> huAttributes.setValue(AttributeConstants.ATTR_LotNumber, s));
 			}
 		}
-		huAttributes.saveChangesIfNeeded();
+		return lotNumberFromSeq.orElse(null);
 	}
 
 	private void setAttributeBBD(@NonNull final I_M_ReceiptSchedule receiptSchedule, @NonNull final IAttributeStorage huAttributes)
@@ -121,7 +134,7 @@ public abstract class ReceiptScheduleBasedProcess extends JavaProcess implements
 
 	private void setVendorValueFromReceiptSchedule(@NonNull final I_M_ReceiptSchedule receiptSchedule, @NonNull final IAttributeStorage huAttributes)
 	{
-			if (huAttributes.hasAttribute(AttributeConstants.ATTR_Vendor_BPartner_ID)
+		if (huAttributes.hasAttribute(AttributeConstants.ATTR_Vendor_BPartner_ID)
 				&& huAttributes.getValueAsInt(AttributeConstants.ATTR_Vendor_BPartner_ID) > -1)
 		{
 			final int bpId = receiptSchedule.getC_BPartner_ID();

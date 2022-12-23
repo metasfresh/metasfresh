@@ -423,11 +423,9 @@ import java.util.Optional;
 			Optional<String> lotNumber = Optional.empty();
 			if (sequenceId != null)
 			{
-				final String finishedGoodsProductValue = productDAO.retrieveProductValueByProductId(getProductId());
 				lotNumber = lotNumberBL.getAndIncrementLotNo(LotNoContext.builder()
 						.sequenceId(sequenceId)
 						.clientId(ClientId.ofRepoId(ppOrderBom.getAD_Client_ID()))
-						.productNo(finishedGoodsProductValue)
 						.build());
 
 			}

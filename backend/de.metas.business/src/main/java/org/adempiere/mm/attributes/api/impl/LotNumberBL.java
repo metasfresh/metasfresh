@@ -73,9 +73,7 @@ public class LotNumberBL implements ILotNumberBL
 		final String lotNo = documentNoFactory.forSequenceId(context.getSequenceId())
 				.setFailOnError(true)
 				.setClientId(context.getClientId())
-				.setEvaluationContext(Evaluatees.mapBuilder()
-						.put("ProductNo", context.getProductNo())
-						.build())
+				.setEvaluationContext(Evaluatees.empty())
 				.build();
 
 		return lotNo != null && !Objects.equals(lotNo, IDocumentNoBuilder.NO_DOCUMENTNO)

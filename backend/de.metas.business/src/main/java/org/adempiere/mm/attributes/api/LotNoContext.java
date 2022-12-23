@@ -38,6 +38,4 @@ public class LotNoContext
 	@NonNull
 	ClientId clientId;
 
-	@NonNull
-	String productNo;
 }
