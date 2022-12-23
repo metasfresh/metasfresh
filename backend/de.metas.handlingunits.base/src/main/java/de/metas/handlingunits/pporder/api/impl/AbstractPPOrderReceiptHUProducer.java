@@ -382,7 +382,7 @@ import java.util.Optional;
 
 			if (Check.isNotBlank(lotNumber))
 			{
-				huAttributes.setValue(AttributeConstants.ATTR_BestBeforeDate, lotNumber);
+				huAttributes.setValue(AttributeConstants.ATTR_LotNumber, lotNumber);
 				huAttributes.saveChangesIfNeeded();
 			}
 			else
