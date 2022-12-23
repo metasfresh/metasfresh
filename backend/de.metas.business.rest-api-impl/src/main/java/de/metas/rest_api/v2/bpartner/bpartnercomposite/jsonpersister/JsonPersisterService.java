@@ -2273,7 +2273,7 @@ public class JsonPersisterService
 		// approvedBy
 		if (jsonBPartnerCreditLimit.isApprovedBySet())
 		{
-			final UserId approvedById = UserId.ofRepoIdOrNull(JsonMetasfreshId.toValueInt(jsonBPartnerCreditLimit.getApprovedBy()));
+			final UserId approvedById = UserId.ofRepoIdOrNullIfSystem(JsonMetasfreshId.toValueInt(jsonBPartnerCreditLimit.getApprovedBy()));
 
 			creditLimitBuilder.approvedBy(approvedById);
 		}

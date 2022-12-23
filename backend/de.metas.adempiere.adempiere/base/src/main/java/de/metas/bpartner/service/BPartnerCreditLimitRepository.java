@@ -246,7 +246,7 @@ public class BPartnerCreditLimitRepository
 				.orgMappingId(OrgMappingId.ofRepoIdOrNull(creditLimit.getAD_Org_Mapping_ID()))
 				.active(creditLimit.isActive())
 				.processed(creditLimit.isProcessed())
-				.approvedBy(UserId.ofRepoIdOrNull(creditLimit.getApprovedBy_ID()))
+				.approvedBy(UserId.ofRepoIdOrNullIfSystem(creditLimit.getApprovedBy_ID()))
 				.build();
 	}
 

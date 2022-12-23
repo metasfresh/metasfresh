@@ -57,7 +57,7 @@ public class SAPConfigMapper
 				.erroredDirectory(externalSystemConfigSapSftp.getErroredDirectory())
 				.pollingFrequency(Duration.ofMillis(externalSystemConfigSapSftp.getPollingFrequencyInMs()))
 
-				.approvedBy(UserId.ofRepoIdOrNull(externalSystemConfigSapSftp.getApprovedBy_ID()))
+				.approvedBy(UserId.ofRepoIdOrNullIfSystem(externalSystemConfigSapSftp.getApprovedBy_ID()))
 
 				.build();
 	}
@@ -81,7 +81,7 @@ public class SAPConfigMapper
 				.erroredDirectory(externalSystemConfigSapLocalFile.getErroredDirectory())
 				.pollingFrequency(Duration.ofMillis(externalSystemConfigSapLocalFile.getPollingFrequencyInMs()))
 
-				.approvedBy(UserId.ofRepoIdOrNull(externalSystemConfigSapLocalFile.getApprovedBy_ID()))
+				.approvedBy(UserId.ofRepoIdOrNullIfSystem(externalSystemConfigSapLocalFile.getApprovedBy_ID()))
 
 				.build();
 	}
