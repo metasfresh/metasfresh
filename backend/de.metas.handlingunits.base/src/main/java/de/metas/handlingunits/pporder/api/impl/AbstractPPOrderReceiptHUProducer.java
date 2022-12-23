@@ -145,6 +145,8 @@ import java.util.Optional;
 	private PickingCandidateId pickingCandidateId;
 	@Nullable
 	private String lotNumber;
+
+	private Optional<String> lotNumberFromSequence = null;
 	@Nullable
 	private LocalDate bestBeforeDate;
 	//
@@ -408,7 +410,11 @@ import java.util.Optional;
 	@Nullable
 	private String getOrLoadLotNumber()
 	{
-		if (lotNumber == null)
+		if (Check.isNotBlank(lotNumber))
+		{
+			return lotNumber;
+		}
+		if (lotNumberFromSequence == null)
 		{
 			final I_PP_Order_BOM ppOrderBom = ppOrderBOMDAO.getByOrderIdOrNull(ppOrderId);
 			final DocSequenceId sequenceId = DocSequenceId.ofRepoIdOrNull(ppOrderBom.getLotNo_Sequence_ID());
@@ -420,10 +426,10 @@ import java.util.Optional;
 						.clientId(ClientId.ofRepoId(ppOrderBom.getAD_Client_ID()))
 						.productNo(finishedGoodsProductValue)
 						.build());
-				this.lotNumber = lotNumber.orElse(null);
+				this.lotNumberFromSequence = lotNumber;
 			}
 		}
-		return lotNumber;
+		return lotNumberFromSequence.orElse(null);
 	}
 
 	@Override
