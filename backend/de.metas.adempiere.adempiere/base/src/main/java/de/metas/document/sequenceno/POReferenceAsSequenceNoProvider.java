@@ -48,13 +48,21 @@ public class POReferenceAsSequenceNoProvider implements CustomSequenceNoProvider
 
 	/** @return the given {@code context}'s {@code POReference} value. */
 	@Override
-	public String provideSequenceNo(@NonNull final Evaluatee context, @NonNull final DocumentSequenceInfo docSeqInfo)
+	public String provideSequenceNo(@NonNull final Evaluatee context, @NonNull final DocumentSequenceInfo docSeqInfo, final String autoIncrementedSeqNumber)
 	{
 		final String poReference = getPOReferenceOrNull(context);
 		Check.assumeNotNull(poReference, "The given context needs to have a non-empty POreference value; context={}", context);
 
-		logger.debug("provideSequenceNo - returning {};", poReference);
-		return poReference;
+		final String poReferenceResult;
+		if (Check.isNotBlank(autoIncrementedSeqNumber))
+		{
+			poReferenceResult = poReference + "-" + autoIncrementedSeqNumber;
+		}
+		else {
+			poReferenceResult = poReference;
+		}
+		logger.debug("provideSequenceNo - returning {};", poReferenceResult);
+		return poReferenceResult;
 	}
 
 	private static String getPOReferenceOrNull(@NonNull final Evaluatee context)

@@ -290,9 +290,6 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 						.setParameter("context", evalContext);
 			}
 
-			final String customSequenceNumber = customSequenceNoProvider.provideSequenceNo(evalContext, docSeqInfo);
-			logger.debug("getSequenceNoToUse - The customSequenceNoProvider returned customSequenceNumber={}" + customSequenceNumber);
-
 			if (customSequenceNoProvider.isUseIncrementSeqNoAsPrefix())
 			{
 				logger.debug("getSequenceNoToUse - The customSequenceNoProvider.isUseIncrementSeqNoAsPrefix()=true; -> going to prepend an incremental sequence number to it");
@@ -304,10 +301,12 @@ class DocumentNoBuilder implements IDocumentNoBuilder
 							.setParameter("customSequenceNoProvider", customSequenceNoProvider)
 							.setParameter("docSeqInfo", docSeqInfo);
 				}
-				result = customSequenceNumber + customSequenceNoProvider.getSequenceSeparatorPrefix() + retrieveAndIncrementSeqNo(docSeqInfo);
+				result = customSequenceNoProvider.provideSequenceNo(evalContext, docSeqInfo,retrieveAndIncrementSeqNo(docSeqInfo) );
 			}
 			else
 			{
+				final String customSequenceNumber = customSequenceNoProvider.provideSequenceNo(evalContext, docSeqInfo, null);
+				logger.debug("getSequenceNoToUse - The customSequenceNoProvider returned customSequenceNumber={}" + customSequenceNumber);
 				result = customSequenceNumber;
 			}
 		}

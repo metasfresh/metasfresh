@@ -1,5 +1,6 @@
 package de.metas.document.sequenceno;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.document.DocumentSequenceInfo;
 import de.metas.logging.LogManager;
 import de.metas.util.Check;
@@ -61,7 +62,7 @@ public class DateSequenceProvider implements CustomSequenceNoProvider
 	 * @return the given prefix + {@code context}'s {@code Date} value.
 	 */
 	@Override
-	public String provideSequenceNo(@NonNull final Evaluatee context, @NonNull final DocumentSequenceInfo docSeqInfo)
+	public String provideSequenceNo(@NonNull final Evaluatee context, @NonNull final DocumentSequenceInfo docSeqInfo, @Nullable final String autoIncrementedSeqNumber)
 	{
 		final Date date = getDateOrNull(context, docSeqInfo);
 		Check.assumeNotNull(date, "The given context needs to have a non-empty Date value; context={}", context);
@@ -70,12 +71,17 @@ public class DateSequenceProvider implements CustomSequenceNoProvider
 		Check.assumeNotEmpty(dateFormatToUse, "{} sysconfig has not been defined", SYSCONFIG_DATE_FORMAT);
 		final String result = TimeUtil.formatDate(TimeUtil.asTimestamp(date), dateFormatToUse);
 
-		final String decimalPattern = docSeqInfo.getDecimalPattern();
-		final boolean stringCanBeParsedAsInt = result.matches("\\d+");
-		if (!Check.isEmpty(decimalPattern) && stringCanBeParsedAsInt)
+		if (Check.isNotBlank(autoIncrementedSeqNumber))
 		{
-			final int seqNoAsInt = Integer.parseInt(result);
-			return new DecimalFormat(decimalPattern).format(seqNoAsInt);
+			final String decimalPattern = docSeqInfo.getDecimalPattern();
+			final boolean stringCanBeParsedAsInt = autoIncrementedSeqNumber.matches("\\d+");
+			if (!Check.isEmpty(decimalPattern) && stringCanBeParsedAsInt)
+			{
+				final int seqNoAsInt = Integer.parseInt(result);
+				final String formattedSeqNumber = new DecimalFormat(decimalPattern).format(seqNoAsInt);
+				logger.debug("provideSequenceNo - returning {};", result);
+				return result + formattedSeqNumber;
+			}
 		}
 
 		logger.debug("provideSequenceNo - returning {};", result);
@@ -85,12 +91,7 @@ public class DateSequenceProvider implements CustomSequenceNoProvider
 	@Nullable
 	private static Date getDateOrNull(@NonNull final Evaluatee context, final @NonNull DocumentSequenceInfo docSeqInfo)
 	{
-		return context.get_ValueAsDate(docSeqInfo.getDateColumn(), null);
+		return context.get_ValueAsDate(docSeqInfo.getDateColumn(), SystemTime.asDate());
 	}
 
-	@Override
-	public String getSequenceSeparatorPrefix()
-	{
-		return "";
-	}
 }

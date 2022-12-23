@@ -4,6 +4,8 @@ import de.metas.document.DocumentSequenceInfo;
 import lombok.NonNull;
 import org.compiere.util.Evaluatee;
 
+import javax.annotation.Nullable;
+
 /*
  * #%L
  * de.metas.adempiere.adempiere.base
@@ -28,11 +30,10 @@ import org.compiere.util.Evaluatee;
 
 public interface CustomSequenceNoProvider
 {
-	String DEFAULT_SEQUENCE_PREFIX = "-";
 
 	boolean isApplicable(@NonNull Evaluatee context, @NonNull final DocumentSequenceInfo docSeqInfo);
 
-	String provideSequenceNo(@NonNull Evaluatee context, @NonNull final DocumentSequenceInfo docSeqInfo);
+	String provideSequenceNo(@NonNull Evaluatee context, @NonNull final DocumentSequenceInfo docSeqInfo, @Nullable final String autoIncrementedSeqNumber);
 
 	/**
 	 * Indicate to metasfresh if this implementation wants its sequence number to be "standalone" or, be the prefix for a "normal", incremental number.
@@ -41,11 +42,6 @@ public interface CustomSequenceNoProvider
 	default boolean isUseIncrementSeqNoAsPrefix()
 	{
 		return true;
-	}
-
-	default String getSequenceSeparatorPrefix()
-	{
-		return DEFAULT_SEQUENCE_PREFIX;
 	}
 
 }
