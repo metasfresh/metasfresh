@@ -193,7 +193,7 @@ INSERT INTO AD_Element_Trl (AD_Language,AD_Element_ID, CommitWarning,Description
 
 -- Element: LotNo_Sequence_ID
 -- 2022-12-21T11:39:16.048Z
-UPDATE AD_Element_Trl SET Name='Serial No. Sequence', PrintName='Serial No. Sequence',Updated=TO_TIMESTAMP('2022-12-21 13:39:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581892 AND AD_Language='en_US'
+UPDATE AD_Element_Trl SET Name='Lot No. Sequence', PrintName='Lot No. Sequence',Updated=TO_TIMESTAMP('2022-12-21 13:39:16','YYYY-MM-DD HH24:MI:SS'),UpdatedBy=100 WHERE AD_Element_ID=581892 AND AD_Language='en_US'
 ;
 
 -- 2022-12-21T11:39:16.049Z
@@ -378,4 +378,3 @@ DELETE FROM AD_Element_Link WHERE AD_Field_ID=710064
 -- 2022-12-22T16:07:07.339Z
 INSERT INTO AD_UI_Element (AD_Client_ID,AD_Field_ID,AD_Org_ID,AD_Tab_ID,AD_UI_ElementGroup_ID,AD_UI_Element_ID,AD_UI_ElementType,Created,CreatedBy,IsActive,IsAdvancedField,IsAllowFiltering,IsDisplayed,IsDisplayedGrid,IsDisplayed_SideList,IsMultiLine,MultiLine_LinesCount,Name,SeqNo,SeqNoGrid,SeqNo_SideList,Updated,UpdatedBy) VALUES (0,710064,0,167,540402,614576,'F',TO_TIMESTAMP('2022-12-22 18:07:07','YYYY-MM-DD HH24:MI:SS'),100,'Y','Y','N','Y','N','N','N',0,'Nummernfolge für Lotnummer',300,0,0,TO_TIMESTAMP('2022-12-22 18:07:07','YYYY-MM-DD HH24:MI:SS'),100)
 ;
-
