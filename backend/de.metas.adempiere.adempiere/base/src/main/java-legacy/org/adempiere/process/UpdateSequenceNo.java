@@ -13,6 +13,7 @@
  *****************************************************************************/
 package org.adempiere.process;
 
+import de.metas.common.util.time.SystemTime;
 import de.metas.process.JavaProcess;
 import de.metas.process.ProcessInfoParameter;
 import org.compiere.util.DB;
@@ -33,14 +34,16 @@ public class UpdateSequenceNo extends JavaProcess
 	@Override
 	protected void prepare()
 	{
-		ProcessInfoParameter[] parameters = this.getParametersAsArray();
-		for (ProcessInfoParameter p : parameters)
+		final ProcessInfoParameter[] parameters = this.getParametersAsArray();
+		for (final ProcessInfoParameter p : parameters)
 		{
 			if (p.getParameterName().equals("CalendarYear"))
 			{
 				year = p.getParameter().toString();
+				return;
 			}
 		}
+		year = SystemTime.asZonedDateTime().getYear() + "";
 	}
 
 	@Override
