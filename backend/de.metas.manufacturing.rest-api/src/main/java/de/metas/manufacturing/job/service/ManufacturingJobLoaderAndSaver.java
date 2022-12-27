@@ -216,6 +216,7 @@ public class ManufacturingJobLoaderAndSaver
 	{
 		return RawMaterialsIssueStep.builder()
 				.id(schedule.getId())
+				.scaleTolerance(supportingServices.getScaleTolerance(schedule.getPpOrderBOMLineId()).orElse(null))
 				.isAlternativeIssue(schedule.isAlternativeIssue())
 				.productId(schedule.getProductId())
 				.productName(supportingServices.getProductName(schedule.getProductId()))

@@ -55,5 +55,6 @@ export const computeStepScanPropsFromActivity = ({ activity, lineId, stepId }) =
     isIssueWholeHU,
     qtyRejectedReasons: isIssueWholeHU ? getQtyRejectedReasonsFromActivity(activity) : null,
     scaleDevice: isWeightable ? getScaleDeviceFromActivity(activity) : null,
+    scaleTolerance: isWeightable ? step.scaleTolerance : null,
   };
 };

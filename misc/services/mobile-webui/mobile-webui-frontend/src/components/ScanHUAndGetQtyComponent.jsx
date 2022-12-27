@@ -27,6 +27,7 @@ const ScanHUAndGetQtyComponent = ({
   uom,
   qtyRejectedReasons,
   scaleDevice,
+  scaleTolerance,
   //
   invalidBarcodeMessageKey,
   invalidQtyMessageKey,
@@ -43,11 +44,21 @@ const ScanHUAndGetQtyComponent = ({
     uom: null,
     qtyRejectedReasons: null,
     scaleDevice: null,
+    scaleTolerance: null,
   });
 
   useEffect(() => {
-    setResolvedBarcodeData({ userInfo, qtyCaption, qtyTarget, qtyMax, uom, qtyRejectedReasons, scaleDevice });
-  }, [userInfo, qtyCaption, qtyTarget, qtyMax, uom, qtyRejectedReasons, scaleDevice]);
+    setResolvedBarcodeData({
+      userInfo,
+      qtyCaption,
+      qtyTarget,
+      qtyMax,
+      uom,
+      qtyRejectedReasons,
+      scaleDevice,
+      scaleTolerance,
+    });
+  }, [userInfo, qtyCaption, qtyTarget, qtyMax, uom, qtyRejectedReasons, scaleDevice, scaleTolerance]);
 
   const handleResolveScannedBarcode = ({ scannedBarcode }) => {
     // console.log('handleResolveScannedBarcode', { scannedBarcode, eligibleBarcode });
@@ -147,6 +158,7 @@ const ScanHUAndGetQtyComponent = ({
           uom={resolvedBarcodeData.uom}
           qtyRejectedReasons={resolvedBarcodeData.qtyRejectedReasons}
           scaleDevice={resolvedBarcodeData.scaleDevice}
+          scaleTolerance={resolvedBarcodeData.scaleTolerance}
           //
           validateQtyEntered={validateQtyEntered}
           onQtyChange={onQtyEntered}
@@ -174,6 +186,7 @@ ScanHUAndGetQtyComponent.propTypes = {
   uom: PropTypes.string,
   qtyRejectedReasons: PropTypes.array,
   scaleDevice: PropTypes.object,
+  scaleTolerance: PropTypes.object,
   //
   // Error messages:
   invalidBarcodeMessageKey: PropTypes.string,
