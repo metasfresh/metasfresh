@@ -125,7 +125,7 @@ public class NumberUtils
 			}
 			try
 			{
-				return new BigDecimal(valueStr);
+				return new BigDecimal(valueStr.trim());
 			}
 			catch (final NumberFormatException numberFormatException)
 			{
