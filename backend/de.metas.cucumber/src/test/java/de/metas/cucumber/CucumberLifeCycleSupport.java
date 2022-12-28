@@ -25,7 +25,6 @@ package de.metas.cucumber;
 import de.metas.ServerBoot;
 import de.metas.migration.cli.workspace_migrate.WorkspaceMigrateConfig;
 import de.metas.migration.cli.workspace_migrate.WorkspaceMigrateConfig.OnScriptFailure;
-import lombok.Getter;
 import org.adempiere.service.ClientId;
 import org.compiere.util.Env;
 import org.springframework.util.SocketUtils;
@@ -37,55 +36,66 @@ import static de.metas.async.processor.impl.planner.QueueProcessorPlanner.SYSCON
 import static de.metas.util.web.audit.ApiAuditService.CFG_INTERNAL_PORT;
 import static org.adempiere.ad.housekeeping.HouseKeepingService.SYSCONFIG_SKIP_HOUSE_KEEPING;
 
+/**
+ * Starts - via {@link InfrastructureSupport} - the database and other docker-containers.
+ * Then starts {@link ServerBoot} (i.e. metasfresh {@code app}).
+ * Generally invoked by {@link de.metas.cucumber.stepdefs.CucumberLifeCycleSupport_StepDef}.
+ */
 public class CucumberLifeCycleSupport
 {
 	// keep in sync when moving cucumber OR the file {@code backend/.workspace-sql-scripts.properties}
 	public static final String RELATIVE_PATH_TO_METASFRESH_ROOT = "../..";
 
-	@Getter
-	private boolean beforeAllMethodDone;
+	private static boolean beforeAllMethodDone;
 
-	public void beforeAll()
+	public static void beforeAll()
 	{
-		final InfrastructureSupport infrastructureSupport = new InfrastructureSupport();
-		infrastructureSupport.start();
-
-		final String dbHost = infrastructureSupport.getDbHost();
-		final String dbPort = Integer.toString(infrastructureSupport.getDbPort());
-
-		if (infrastructureSupport.isRunAgainstDockerizedDatabase())
+		synchronized (CucumberLifeCycleSupport.class)
 		{
-			final File workspaceDir = new File(RELATIVE_PATH_TO_METASFRESH_ROOT);
-			final WorkspaceMigrateConfig migrateConfig = WorkspaceMigrateConfig.builder()
-					.workspaceDir(workspaceDir)
-					.onScriptFailure(OnScriptFailure.FAIL)
-					.dbUrl("jdbc:postgresql://" + dbHost + ":" + dbPort + "/metasfresh")
-					.build();
-			de.metas.migration.cli.workspace_migrate.Main.main(migrateConfig);
+			if (beforeAllMethodDone)
+			{
+				return; // nothing to do; we need to start metasfresh only once
+			}
+			final InfrastructureSupport infrastructureSupport = new InfrastructureSupport();
+			infrastructureSupport.start();
+
+			final String dbHost = infrastructureSupport.getDbHost();
+			final String dbPort = Integer.toString(infrastructureSupport.getDbPort());
+
+			if (infrastructureSupport.isRunAgainstDockerizedDatabase())
+			{
+				final File workspaceDir = new File(RELATIVE_PATH_TO_METASFRESH_ROOT);
+				final WorkspaceMigrateConfig migrateConfig = WorkspaceMigrateConfig.builder()
+						.workspaceDir(workspaceDir)
+						.onScriptFailure(OnScriptFailure.FAIL)
+						.dbUrl("jdbc:postgresql://" + dbHost + ":" + dbPort + "/metasfresh")
+						.build();
+				de.metas.migration.cli.workspace_migrate.Main.main(migrateConfig);
+			}
+
+			final int appServerPort = SocketUtils.findAvailableTcpPort(8080);
+			System.setProperty("server.port", Integer.toString(appServerPort));
+
+			System.setProperty("java.awt.headless", "true"); // "simulate headless mode
+			System.setProperty("app-server-run-headless", "true"); //
+			System.setProperty(CFG_INTERNAL_PORT, Integer.toString(appServerPort)); //
+			System.setProperty(SYSCONFIG_ASYNC_INIT_DELAY_MILLIS, "0"); // start the async processor right away; we want to get testing, and not wait
+			System.setProperty(SYSCONFIG_SKIP_HOUSE_KEEPING, "true"); // skip housekeeping tasks. assume they are not needed because the DB is fresh
+			System.setProperty(SYSCONFIG_POLLINTERVAL_MILLIS, "500");
+			final String[] args = { //
+					"-dbHost", dbHost,
+					"-dbPort", dbPort,
+					"-rabbitHost", infrastructureSupport.getRabbitHost(),
+					"-rabbitPort", Integer.toString(infrastructureSupport.getRabbitPort()),
+					"-rabbitUser", infrastructureSupport.getRabbitUser(),
+					"-rabbitPassword", infrastructureSupport.getRabbitPassword()
+			};
+			ServerBoot.main(args);
+
+			Env.setClientId(Env.getCtx(), ClientId.METASFRESH);
+
+			beforeAllMethodDone = true;
 		}
-
-		final int appServerPort = SocketUtils.findAvailableTcpPort(8080);
-		System.setProperty("server.port", Integer.toString(appServerPort));
-
-		System.setProperty("java.awt.headless", "true"); // "simulate headless mode
-		System.setProperty("app-server-run-headless", "true"); //
-		System.setProperty(CFG_INTERNAL_PORT, Integer.toString(appServerPort)); //
-		System.setProperty(SYSCONFIG_ASYNC_INIT_DELAY_MILLIS, "0"); // start the async processor right away; we want to get testing, and not wait
-		System.setProperty(SYSCONFIG_SKIP_HOUSE_KEEPING, "true"); // skip housekeeping tasks. assume they are not needed because the DB is fresh
-		System.setProperty(SYSCONFIG_POLLINTERVAL_MILLIS, "500");
-		final String[] args = { //
-				"-dbHost", dbHost,
-				"-dbPort", dbPort,
-				"-rabbitHost", infrastructureSupport.getRabbitHost(),
-				"-rabbitPort", Integer.toString(infrastructureSupport.getRabbitPort()),
-				"-rabbitUser", infrastructureSupport.getRabbitUser(),
-				"-rabbitPassword", infrastructureSupport.getRabbitPassword()
-		};
-		ServerBoot.main(args);
-
-		Env.setClientId(Env.getCtx(), ClientId.METASFRESH);
-
-		beforeAllMethodDone = true;
 	}
 
 	public void afterAll()
