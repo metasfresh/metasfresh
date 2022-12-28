@@ -2,7 +2,8 @@
 Feature: Camel-ExternalSystem authorization
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And AD_Note table is reset
     And metasfresh contains AD_Users:
       | AD_User_ID.Identifier | OPT.AD_User_ID | Name                    | OPT.EMail                         | OPT.Login |

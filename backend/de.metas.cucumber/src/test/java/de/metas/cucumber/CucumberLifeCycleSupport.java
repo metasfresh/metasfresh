@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -25,12 +25,9 @@ package de.metas.cucumber;
 import de.metas.ServerBoot;
 import de.metas.migration.cli.workspace_migrate.WorkspaceMigrateConfig;
 import de.metas.migration.cli.workspace_migrate.WorkspaceMigrateConfig.OnScriptFailure;
-import io.cucumber.plugin.ConcurrentEventListener;
-import io.cucumber.plugin.event.EventHandler;
-import io.cucumber.plugin.event.EventPublisher;
-import io.cucumber.plugin.event.TestRunFinished;
-import io.cucumber.plugin.event.TestRunStarted;
-import lombok.NonNull;
+import lombok.Getter;
+import org.adempiere.service.ClientId;
+import org.compiere.util.Env;
 import org.springframework.util.SocketUtils;
 
 import java.io.File;
@@ -40,26 +37,15 @@ import static de.metas.async.processor.impl.planner.QueueProcessorPlanner.SYSCON
 import static de.metas.util.web.audit.ApiAuditService.CFG_INTERNAL_PORT;
 import static org.adempiere.ad.housekeeping.HouseKeepingService.SYSCONFIG_SKIP_HOUSE_KEEPING;
 
-/**
- * Thx to https://medium.com/@hemanthsridhar/global-hooks-in-cucumber-jvm-afc1be13e487 !
- */
-public class CucumberLifeCycleSupport implements ConcurrentEventListener
+public class CucumberLifeCycleSupport
 {
 	// keep in sync when moving cucumber OR the file {@code backend/.workspace-sql-scripts.properties}
 	public static final String RELATIVE_PATH_TO_METASFRESH_ROOT = "../..";
 
-	private final EventHandler<TestRunStarted> setup = event -> beforeAll();
+	@Getter
+	private boolean beforeAllMethodDone;
 
-	private final EventHandler<TestRunFinished> teardown = event -> afterAll();
-
-	@Override
-	public void setEventPublisher(@NonNull final EventPublisher eventPublisher)
-	{
-		eventPublisher.registerHandlerFor(TestRunStarted.class, setup);
-		eventPublisher.registerHandlerFor(TestRunFinished.class, teardown);
-	}
-
-	private void beforeAll()
+	public void beforeAll()
 	{
 		final InfrastructureSupport infrastructureSupport = new InfrastructureSupport();
 		infrastructureSupport.start();
@@ -96,9 +82,13 @@ public class CucumberLifeCycleSupport implements ConcurrentEventListener
 				"-rabbitPassword", infrastructureSupport.getRabbitPassword()
 		};
 		ServerBoot.main(args);
+
+		Env.setClientId(Env.getCtx(), ClientId.METASFRESH);
+
+		beforeAllMethodDone = true;
 	}
 
-	private void afterAll()
+	public void afterAll()
 	{
 		// nothing to do, currently
 	}
