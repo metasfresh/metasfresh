@@ -24,24 +24,14 @@ package de.metas.cucumber.stepdefs;
 
 import de.metas.cucumber.CucumberLifeCycleSupport;
 import io.cucumber.java.en.Given;
-import lombok.NonNull;
 
 public class CucumberLifeCycleSupport_StepDef
 {
-	private final CucumberLifeCycleSupport cucumberLifeCycleSupport;
-
-	public CucumberLifeCycleSupport_StepDef(@NonNull final CucumberLifeCycleSupport cucumberLifeCycleSupport)
-	{
-		this.cucumberLifeCycleSupport = cucumberLifeCycleSupport;
-	}
-
 	@Given("infrastructure and metasfresh are running")
 	public void infrastructure()
 	{
-		if (cucumberLifeCycleSupport.isBeforeAllMethodDone())
-		{
-			return; // nothing to do; we need to start metasfresh only once
-		}
-		cucumberLifeCycleSupport.beforeAll();
+		// note: we can't use something like CucumberLifeCycleSupport_StepDefData,
+		// because the state needs to be shared not between StepDefs of the sae scenario, but between different Scenarios.
+		CucumberLifeCycleSupport.beforeAll();
 	}
 }
