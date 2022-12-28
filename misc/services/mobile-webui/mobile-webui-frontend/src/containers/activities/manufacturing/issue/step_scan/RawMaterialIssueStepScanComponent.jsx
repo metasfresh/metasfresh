@@ -42,6 +42,7 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
       isIssueWholeHU,
       qtyRejectedReasons,
       scaleDevice,
+      scaleTolerance,
     } = computeStepScanPropsFromActivity({ activity, lineId, stepId: step.id });
 
     return {
@@ -58,6 +59,7 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
       uom,
       qtyRejectedReasons,
       scaleDevice,
+      scaleTolerance,
       //
       // Props which are needed by `onResult` function (see below):
       stepId: step.id,

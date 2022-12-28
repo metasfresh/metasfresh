@@ -487,7 +487,22 @@ public class PPOrderBOMBL implements IPPOrderBOMBL
 		updateRecord(record, changedQtys);
 	}
 
+	@NonNull
+	public OrderBOMLineQuantities getQuantities(@NonNull final PPOrderBOMLineId ppOrderBOMLineId)
+	{
+		final I_PP_Order_BOMLine bomLineRecord = getOrderBOMLineById(ppOrderBOMLineId);
+		if (bomLineRecord == null)
+		{
+			throw new AdempiereException("No PP_Order_BOMLine found for PP_Order_BOMLine_ID!")
+					.appendParametersToMessage()
+					.setParameter("PPOrderBOMLineId", ppOrderBOMLineId);
+		}
+
+		return getQuantities(getOrderBOMLineById(ppOrderBOMLineId));
+	}
+
 	@Override
+	@NonNull
 	public OrderBOMLineQuantities getQuantities(@NonNull final I_PP_Order_BOMLine orderBOMLine)
 	{
 		final I_C_UOM uom = getBOMLineUOM(orderBOMLine);

@@ -14,6 +14,7 @@ import { useBooleanSetting } from '../../reducers/settings';
 const GetQuantityDialog = ({
   userInfo,
   qtyTarget,
+  scaleTolerance,
   qtyCaption,
   uom,
   qtyRejectedReasons,
@@ -62,6 +63,11 @@ const GetQuantityDialog = ({
               const { value } = JSON.parse(message.body);
               setQtyInfo(qtyInfos.invalidOfNumber(value));
             }
+          },
+          headers: {
+            qtyTarget: qtyTarget,
+            positiveTolerance: scaleTolerance?.positiveTolerance || '0',
+            negativeTolerance: scaleTolerance?.negativeTolerance || '0',
           },
         });
       }
@@ -187,6 +193,7 @@ GetQuantityDialog.propTypes = {
   uom: PropTypes.string.isRequired,
   qtyRejectedReasons: PropTypes.arrayOf(PropTypes.object),
   scaleDevice: PropTypes.object,
+  scaleTolerance: PropTypes.object,
 
   // Callbacks
   validateQtyEntered: PropTypes.func,

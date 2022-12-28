@@ -75,6 +75,8 @@ public interface IPPOrderBOMBL extends ISingletonService
 
 	@NonNull UomId getBOMLineUOMId(PPOrderBOMLineId orderBOMLineId);
 
+	OrderBOMLineQuantities getQuantities(PPOrderBOMLineId orderBOMLineId);
+	
 	OrderBOMLineQuantities getQuantities(I_PP_Order_BOMLine orderBOMLine);
 
 	/**

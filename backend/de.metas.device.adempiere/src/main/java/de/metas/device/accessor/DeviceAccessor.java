@@ -1,9 +1,12 @@
 package de.metas.device.accessor;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import de.metas.device.api.IDevice;
 import de.metas.device.api.IDeviceRequest;
 import de.metas.device.api.ISingleValueResponse;
+import de.metas.device.api.hook.BeforeAcquireValueHook;
+import de.metas.device.api.hook.RunParameters;
 import de.metas.i18n.ITranslatableString;
 import de.metas.logging.LogManager;
 import lombok.Builder;
@@ -13,7 +16,11 @@ import lombok.ToString;
 import org.adempiere.warehouse.WarehouseId;
 import org.slf4j.Logger;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /*
@@ -56,6 +63,7 @@ public final class DeviceAccessor
 	private final IDevice device;
 	private final ImmutableSet<WarehouseId> assignedWarehouseIds;
 	private final IDeviceRequest<ISingleValueResponse> request;
+	private final List<BeforeAcquireValueHook> beforeHooks;
 
 	@Builder
 	private DeviceAccessor(
@@ -63,13 +71,15 @@ public final class DeviceAccessor
 			@NonNull final ITranslatableString displayName,
 			@NonNull final IDevice device,
 			@NonNull final Set<WarehouseId> assignedWarehouseIds,
-			@NonNull final IDeviceRequest<ISingleValueResponse> request)
+			@NonNull final IDeviceRequest<ISingleValueResponse> request,
+			@Nullable final List<BeforeAcquireValueHook> beforeHooks)
 	{
 		this.id = id;
 		this.displayName = displayName;
 		this.device = device;
 		this.assignedWarehouseIds = ImmutableSet.copyOf(assignedWarehouseIds);
 		this.request = request;
+		this.beforeHooks = Optional.ofNullable(beforeHooks).orElseGet(ImmutableList::of);
 	}
 
 	public boolean isAvailableForWarehouse(final WarehouseId warehouseId)
@@ -85,5 +95,10 @@ public final class DeviceAccessor
 		logger.debug("Device {}; Response: {}", device, response);
 
 		return response.getSingleValue();
+	}
+
+	public synchronized void beforeAcquireValue(@NonNull final Map<String, List<String>> parameters)
+	{
+		beforeHooks.forEach(hook -> hook.run(RunParameters.of(parameters), device, request));
 	}
 }
