@@ -2280,6 +2280,14 @@ public class JsonPersisterService
 				creditLimitBuilder.processed(jsonBPartnerCreditLimit.getProcessed());
 			}
 		}
+
+		// approvedBy
+		if (jsonBPartnerCreditLimit.isApprovedBySet())
+		{
+			final UserId approvedById = UserId.ofRepoIdOrNullIfSystem(JsonMetasfreshId.toValueInt(jsonBPartnerCreditLimit.getApprovedBy()));
+
+			creditLimitBuilder.approvedBy(approvedById);
+		}
 	}
 
 	@NonNull

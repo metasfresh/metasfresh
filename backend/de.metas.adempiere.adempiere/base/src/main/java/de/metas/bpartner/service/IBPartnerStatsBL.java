@@ -1,17 +1,17 @@
 package de.metas.bpartner.service;
 
-import static java.math.BigDecimal.ZERO;
+import de.metas.bpartner.BPartnerId;
+import de.metas.common.util.CoalesceUtil;
+import de.metas.util.ISingletonService;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import org.compiere.model.I_C_BPartner;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
-import org.compiere.model.I_C_BPartner;
-
-import de.metas.util.ISingletonService;
-import de.metas.common.util.CoalesceUtil;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
+import static java.math.BigDecimal.ZERO;
 
 /*
  * #%L
@@ -98,4 +98,6 @@ public interface IBPartnerStatsBL extends ISingletonService
 	BigDecimal getCreditWatchRatio(BPartnerStats stats);
 
 	void resetCreditStatusFromBPGroup(I_C_BPartner bpartner);
+
+	void enableCreditLimitCheck(@NonNull BPartnerId bPartnerId);
 }

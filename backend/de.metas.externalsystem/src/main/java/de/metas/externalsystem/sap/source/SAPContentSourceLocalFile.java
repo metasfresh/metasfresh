@@ -29,6 +29,7 @@ import de.metas.i18n.AdMessageKey;
 import de.metas.i18n.BooleanWithReason;
 import de.metas.i18n.IMsgBL;
 import de.metas.i18n.ITranslatableString;
+import de.metas.user.UserId;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
@@ -75,6 +76,9 @@ public class SAPContentSourceLocalFile
 	@Nullable
 	String fileNamePatternCreditLimit;
 
+	@Nullable
+	UserId approvedBy;
+
 	@Builder
 	public SAPContentSourceLocalFile(
 			@NonNull final String rootLocation,
@@ -86,7 +90,8 @@ public class SAPContentSourceLocalFile
 			@Nullable final String targetDirectoryBPartner,
 			@Nullable final String fileNamePatternBPartner,
 			@Nullable final String targetDirectoryCreditLimit,
-			@Nullable final String fileNamePatternCreditLimit)
+			@Nullable final String fileNamePatternCreditLimit,
+			@Nullable final UserId approvedBy)
 	{
 		this.rootLocation = rootLocation;
 		this.processedDirectory = processedDirectory;
@@ -98,6 +103,7 @@ public class SAPContentSourceLocalFile
 		this.fileNamePatternBPartner = fileNamePatternBPartner;
 		this.targetDirectoryCreditLimit = targetDirectoryCreditLimit;
 		this.fileNamePatternCreditLimit = fileNamePatternCreditLimit;
+		this.approvedBy = approvedBy;
 	}
 
 	@NonNull

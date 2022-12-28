@@ -1,14 +1,13 @@
 package de.metas.bpartner.service;
 
-import java.math.BigDecimal;
-
-import org.compiere.model.I_C_BPartner;
-import org.compiere.model.I_C_BPartner_Stats;
-
 import de.metas.bpartner.BPartnerId;
 import de.metas.util.ISingletonService;
 import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.I_C_BPartner;
+import org.compiere.model.I_C_BPartner_Stats;
+
+import java.math.BigDecimal;
 
 /*
  * #%L
@@ -49,7 +48,7 @@ public interface IBPartnerStatsDAO extends ISingletonService
 		final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(bpartnerId);
 		return getCreateBPartnerStats(bpartner);
 	}
-	
+
 	default BPartnerStats getCreateBPartnerStats(@NonNull final BPartnerId bpartnerId)
 	{
 		final I_C_BPartner bpartner = Services.get(IBPartnerDAO.class).getById(bpartnerId);

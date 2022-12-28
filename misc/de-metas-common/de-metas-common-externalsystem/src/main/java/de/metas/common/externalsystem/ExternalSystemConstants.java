@@ -88,6 +88,8 @@ public class ExternalSystemConstants
 	public static final String PARAM_SFTP_CREDIT_LIMIT_TARGET_DIRECTORY = "SFTP_CreditLimit_Target_Directory";
 	public static final String PARAM_SFTP_CREDIT_LIMIT_FILENAME_PATTERN = "SFTPCreditLimitFileNamePattern";
 
+	public static final String PARAM_SFTP_APPROVED_BY = "SFTP_ApprovedBy";
+
 	// Local File Config
 	public static final String PARAM_LOCAL_FILE_PRODUCT_TARGET_DIRECTORY = "LocalFile_Product_Target_Directory";
 	public static final String PARAM_LOCAL_FILE_PRODUCT_FILE_NAME_PATTERN = "LocalFileProductFileNamePattern";
@@ -102,6 +104,8 @@ public class ExternalSystemConstants
 	public static final String PARAM_LOCAL_FILE_PROCESSED_DIRECTORY = "LocalFileProcessedDirectory";
 	public static final String PARAM_LOCAL_FILE_ERRORED_DIRECTORY = "LocalFileErroredDirectory";
 	public static final String PARAM_LOCAL_FILE_POLLING_FREQUENCY_MS = "LocalFilePollingFrequencyInMs";
+
+	public static final String PARAM_LOCAL_FILE_APPROVED_BY = "LocalFile_ApprovedBy";
 	//
 
 	public static final String QUEUE_NAME_MF_TO_ES = "MF_TO_ExternalSystem";

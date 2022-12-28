@@ -30,6 +30,7 @@ import de.metas.camel.externalsystems.sap.model.creditlimit.CreditLimitRow;
 import de.metas.common.bpartner.v2.request.creditLimit.JsonMoney;
 import de.metas.common.bpartner.v2.request.creditLimit.JsonRequestCreditLimitUpsert;
 import de.metas.common.bpartner.v2.request.creditLimit.JsonRequestCreditLimitUpsertItem;
+import de.metas.common.rest_api.common.JsonMetasfreshId;
 import de.metas.common.rest_api.v2.SyncAdvise;
 import de.metas.common.util.Check;
 import de.metas.common.util.NumberUtils;
@@ -37,6 +38,7 @@ import de.metas.common.util.time.SystemTime;
 import lombok.NonNull;
 import lombok.Value;
 
+import javax.annotation.Nullable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -60,15 +62,20 @@ public class UpsertCreditLimitRequestBuilder
 	@NonNull
 	ImmutableList.Builder<JsonRequestCreditLimitUpsertItem> creditLimitUpsertGroupBuilder = new ImmutableList.Builder<>();
 
+	@Nullable
+	JsonMetasfreshId creditLimitResponsibleUser;
+
 	@NonNull
 	public static UpsertCreditLimitRequestBuilder of(
 			@NonNull final CreditLimitRow creditLimitRow,
-			@NonNull final String orgCode)
+			@NonNull final String orgCode,
+			@Nullable final JsonMetasfreshId creditLimitResponsibleUser)
 	{
 		final UpsertCreditLimitRequestBuilder requestBuilder = new UpsertCreditLimitRequestBuilder(
 				creditLimitRow.getCreditAccount(),
 				creditLimitRow.getCreditControlArea(),
-				orgCode);
+				orgCode,
+				creditLimitResponsibleUser);
 
 		requestBuilder.addCreditLimitRow(creditLimitRow);
 
@@ -78,11 +85,13 @@ public class UpsertCreditLimitRequestBuilder
 	private UpsertCreditLimitRequestBuilder(
 			@NonNull final PartnerCode partnerCode,
 			@NonNull final String sectionCode,
-			@NonNull final String orgCode)
+			@NonNull final String orgCode,
+			@Nullable final JsonMetasfreshId creditLimitResponsibleUser)
 	{
 		this.partnerCode = partnerCode;
 		this.orgCode = orgCode;
 		this.sectionCode = sectionCode;
+		this.creditLimitResponsibleUser = creditLimitResponsibleUser;
 	}
 
 	public boolean addCreditLimitRow(@NonNull final CreditLimitRow creditLimitRow)
@@ -119,6 +128,11 @@ public class UpsertCreditLimitRequestBuilder
 		jsonRequestCreditLimitUpsertItem.setDateFrom(creditLimitRow.getEffectiveDateFrom(DEFAULT_DATE_FORMAT).orElse(null));
 		jsonRequestCreditLimitUpsertItem.setProcessed(true);
 		jsonRequestCreditLimitUpsertItem.setActive(computeIsActiveCreditLimit(creditLimitRow));
+
+		if (creditLimitResponsibleUser != null)
+		{
+			jsonRequestCreditLimitUpsertItem.setApprovedBy(creditLimitResponsibleUser);
+		}
 
 		return jsonRequestCreditLimitUpsertItem;
 	}
