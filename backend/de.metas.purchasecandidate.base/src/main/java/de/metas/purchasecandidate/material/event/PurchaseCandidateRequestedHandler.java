@@ -115,6 +115,7 @@ public class PurchaseCandidateRequestedHandler implements MaterialEventHandler<P
 				.activityId(ActivityId.ofRepoIdOrNull(event.getActivityId()))
 				.campaignId(event.getCampaignId())
 				.projectId(ProjectId.ofRepoIdOrNull(event.getProjectId()))
+				.productId(product.getId())
 				.userElement1Id(event.getUserElementId1())
 				.userElement2Id(event.getUserElementId2())
 				.userElementString1(event.getUserElementString1())
