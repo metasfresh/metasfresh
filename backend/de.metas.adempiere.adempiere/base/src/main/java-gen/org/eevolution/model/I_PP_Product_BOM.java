@@ -693,4 +693,25 @@ public interface I_PP_Product_BOM
 
 	ModelColumn<I_PP_Product_BOM, Object> COLUMN_Value = new ModelColumn<>(I_PP_Product_BOM.class, "Value", null);
 	String COLUMNNAME_Value = "Value";
+
+	/**
+	 * Set Preferred Resource.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	void setS_PreferredResource_ID(int S_PreferredResource_ID);
+
+	/**
+	 * Get Preferred Resource.
+	 *
+	 * <br>Type: String
+	 * <br>Mandatory: false
+	 * <br>Virtual Column: false
+	 */
+	int getS_PreferredResource_ID();
+
+	ModelColumn<I_PP_Product_BOM, Object> COLUMN_S_PreferredResource_ID = new ModelColumn<>(I_PP_Product_BOM.class, "S_PreferredResource_ID", null);
+	String COLUMNNAME_S_PreferredResource_ID = "S_PreferredResource_ID";
 }

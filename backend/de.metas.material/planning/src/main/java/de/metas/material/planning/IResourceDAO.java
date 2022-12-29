@@ -23,6 +23,7 @@ package de.metas.material.planning;
  */
 
 import com.google.common.collect.ImmutableSet;
+import de.metas.organization.OrgId;
 import de.metas.product.ResourceId;
 import de.metas.user.UserId;
 import de.metas.util.ISingletonService;
@@ -31,6 +32,7 @@ import org.compiere.model.I_S_Resource;
 import org.compiere.model.I_S_ResourceType;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -53,4 +55,6 @@ public interface IResourceDAO extends ISingletonService
 	void onResourceTypeChanged(I_S_ResourceType resourceType);
 
 	ImmutableSet<ResourceId> getResourceIdsByUserId(@NonNull UserId userId);
+
+	Optional<ResourceId> getResourceIdByValue(@NonNull String value, @NonNull OrgId orgId);
 }

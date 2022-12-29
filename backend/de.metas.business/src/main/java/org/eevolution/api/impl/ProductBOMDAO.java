@@ -312,6 +312,11 @@ public class ProductBOMDAO implements IProductBOMDAO
 			bomRecord.setBOMType(request.getBomType().getCode());
 		}
 
+		if (request.getResourceId() != null)
+		{
+			bomRecord.setS_PreferredResource_ID(request.getResourceId().getRepoId());
+		}
+
 		saveRecord(bomRecord);
 
 		final ProductBOMId bomId = ProductBOMId.ofRepoId(bomRecord.getPP_Product_BOM_ID());
@@ -373,6 +378,11 @@ public class ProductBOMDAO implements IProductBOMDAO
 		if (line.getLine() != null)
 		{
 			bomLineRecord.setLine(line.getLine());
+		}
+
+		if (line.getHelp() != null)
+		{
+			bomLineRecord.setHelp(line.getHelp());
 		}
 
 		saveRecord(bomLineRecord);

@@ -524,4 +524,19 @@ public class X_PP_Product_BOM extends org.compiere.model.PO implements I_PP_Prod
 	{
 		return get_ValueAsString(COLUMNNAME_Value);
 	}
+
+	@Override
+	public void setS_PreferredResource_ID(final int S_PreferredResource_ID)
+	{
+		if (S_PreferredResource_ID < 1)
+			set_ValueNoCheck(COLUMNNAME_S_PreferredResource_ID, null);
+		else
+			set_ValueNoCheck(COLUMNNAME_S_PreferredResource_ID, S_PreferredResource_ID);
+	}
+
+	@Override
+	public int getS_PreferredResource_ID()
+	{
+		return get_ValueAsInt(COLUMNNAME_S_PreferredResource_ID);
+	}
 }
