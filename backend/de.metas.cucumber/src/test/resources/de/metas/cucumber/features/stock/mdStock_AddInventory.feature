@@ -6,7 +6,8 @@ Feature: stock changes accordingly
   So that the QTY is always correct
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
     And no product with value 'product_value222' exists
     And metasfresh contains M_Products:
       | Identifier | Name               |

@@ -2,7 +2,8 @@
 Feature: import bank statement in camt53 import format
 
   Background:
-    Given the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
+    Given infrastructure and metasfresh are running
+    And the existing user with login 'metasfresh' receives a random a API token for the existing role with name 'WebUI'
 
     And metasfresh contains M_Products:
       | Identifier | Name                            |
