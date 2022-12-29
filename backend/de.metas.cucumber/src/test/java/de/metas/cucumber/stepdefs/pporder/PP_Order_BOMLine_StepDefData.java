@@ -20,15 +20,15 @@
  * #L%
  */
 
-package de.metas.cucumber.stepdefs.productionorder;
+package de.metas.cucumber.stepdefs.pporder;
 
 import de.metas.cucumber.stepdefs.StepDefData;
-import org.eevolution.model.I_PP_Order_Candidate;
+import org.eevolution.model.I_PP_Order_BOMLine;
 
-public class PP_Order_Candidate_StepDefData extends StepDefData<I_PP_Order_Candidate>
+public class PP_Order_BOMLine_StepDefData extends StepDefData<I_PP_Order_BOMLine>
 {
-	public PP_Order_Candidate_StepDefData()
+	public PP_Order_BOMLine_StepDefData()
 	{
-		super(I_PP_Order_Candidate.class);
+		super(I_PP_Order_BOMLine.class);
 	}
 }
