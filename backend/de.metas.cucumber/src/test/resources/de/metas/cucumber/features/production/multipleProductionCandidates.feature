@@ -189,7 +189,7 @@ Feature: create multiple production candidates
 
   @from:cucumber
   @Id:S0212.300
-  Scenario:  The manufacturing candidate is created for a sales order line and
+  Scenario: The manufacturing candidate is created for a sales order line and
   then the sales order is re-opened and the ordered quantity is increased,
   resulting in a second manufacturing candidate to supply the additional demand
   and openQty for the second candidate is decreased
@@ -234,9 +234,10 @@ Feature: create multiple production candidates
       | ppOrderCandidate_3_1             |
       | ppOrderCandidate_3_2             |
 
+    # we are expecting two PP_Orders, because CapacityPerProductionCycle=5, and the two candidates sum up to a quantity of 3+4=7
     Then after not more than 90s, load PP_Order by candidate id: ppOrderCandidate_3_2
       | PP_Order_ID.Identifier | QtyEntered |
-      | ppOrder_3_1            | 2          |
+      | ppOrder_3_1            | 5          |
       | ppOrder_3_2            | 2          |
 
     And after not more than 0s, PP_Order_Candidates are found
