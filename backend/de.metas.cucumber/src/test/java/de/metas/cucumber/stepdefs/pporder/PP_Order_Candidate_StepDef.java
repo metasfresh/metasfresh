@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -78,7 +78,6 @@ import org.eevolution.productioncandidate.async.PPOrderCandidateEnqueuer;
 import org.eevolution.productioncandidate.model.PPOrderCandidateId;
 import org.eevolution.productioncandidate.service.PPOrderCandidateService;
 import org.slf4j.Logger;
-import org.testcontainers.shaded.org.apache.commons.lang.text.StrBuilder;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -640,7 +639,7 @@ public class PP_Order_Candidate_StepDef
 				.create()
 				.listImmutable(I_PP_Order_Candidate.class);
 
-		final StrBuilder messageBuilder = new StrBuilder("\n");
+		final StringBuilder messageBuilder = new StringBuilder("\n");
 		candidatesForProductId
 				.forEach(candidate ->
 								 messageBuilder.append(" -> PP_Order_Candidate_ID: ")
