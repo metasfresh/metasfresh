@@ -189,8 +189,7 @@ Feature: create multiple production candidates
 
   @from:cucumber
   @Id:S0212.300
-  Scenario: The manufacturing candidate is created for a sales order line and
-  then the sales order is re-opened and the ordered quantity is increased,
+  Scenario: The manufacturing candidate is created for a sales order line and then the sales order is re-opened and the ordered quantity is increased,
   resulting in a second manufacturing candidate to supply the additional demand
   and openQty for the second candidate is decreased
   then `Generate PP_Order`process is invoked enforcing the candidates to be processed
@@ -234,10 +233,14 @@ Feature: create multiple production candidates
       | ppOrderCandidate_3_1             |
       | ppOrderCandidate_3_2             |
 
-    # we are expecting two PP_Orders, because CapacityPerProductionCycle=5, and the two candidates sum up to a quantity of 3+4=7
+    # we are expecting two PP_Orders for ppOrderCandidate_3_2, because
+    # CapacityPerProductionCycle=5, and the two candidates sum up to a quantity of 3+4=7
+    # so all (3) of ppOrderCandidate_3_1 end up in the first PP_Order, i.e. ppOrder_3_1.
+    # Then of ppOrderCandidate_3_2's 4PCE, 2 end up on the same PP_Order ppOrder_3_1 which then is (full) with 5 items,
+    # Therefore the remaining 2PCE of ppOrderCandidate_3_2 end up in a new PP_Order, i.e. ppOrder_3_2.
     Then after not more than 90s, load PP_Order by candidate id: ppOrderCandidate_3_2
       | PP_Order_ID.Identifier | QtyEntered |
-      | ppOrder_3_1            | 5          |
+      | ppOrder_3_1            | 2          |
       | ppOrder_3_2            | 2          |
 
     And after not more than 0s, PP_Order_Candidates are found
