@@ -101,7 +101,8 @@ public class PushBOMProductsProcessor implements Processor
 				.isQtyPercentage(Boolean.TRUE)
 				.help(jsonBOMLine.getAdditionalInfo())
 				.qtyBom(JsonQuantity.builder()
-								.qty(jsonBOMLine.getQtyBOM())
+								//dev-note: convert to percent
+								.qty(jsonBOMLine.getQtyBOM().multiply(new BigDecimal("100")))
 								.uomCode(jsonBOMLine.getUom())
 								.build())
 				.scrap(scrap);
