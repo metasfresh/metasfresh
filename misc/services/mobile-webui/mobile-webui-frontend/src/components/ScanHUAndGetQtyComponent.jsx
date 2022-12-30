@@ -24,6 +24,7 @@ const ScanHUAndGetQtyComponent = ({
   qtyCaption,
   qtyTarget,
   qtyMax,
+  lineQtyToIssue,
   uom,
   qtyRejectedReasons,
   scaleDevice,
@@ -41,6 +42,7 @@ const ScanHUAndGetQtyComponent = ({
     qtyCaption: null,
     qtyTarget: null,
     qtyMax: null,
+    lineQtyToIssue: null,
     uom: null,
     qtyRejectedReasons: null,
     scaleDevice: null,
@@ -53,12 +55,13 @@ const ScanHUAndGetQtyComponent = ({
       qtyCaption,
       qtyTarget,
       qtyMax,
+      lineQtyToIssue,
       uom,
       qtyRejectedReasons,
       scaleDevice,
       scaleTolerance,
     });
-  }, [userInfo, qtyCaption, qtyTarget, qtyMax, uom, qtyRejectedReasons, scaleDevice, scaleTolerance]);
+  }, [userInfo, qtyCaption, qtyTarget, qtyMax, lineQtyToIssue, uom, qtyRejectedReasons, scaleDevice, scaleTolerance]);
 
   const handleResolveScannedBarcode = ({ scannedBarcode }) => {
     // console.log('handleResolveScannedBarcode', { scannedBarcode, eligibleBarcode });
@@ -155,6 +158,7 @@ const ScanHUAndGetQtyComponent = ({
           userInfo={resolvedBarcodeData.userInfo}
           qtyTarget={resolvedBarcodeData.qtyTarget}
           qtyCaption={resolvedBarcodeData.qtyCaption}
+          totalQty={resolvedBarcodeData.lineQtyToIssue}
           uom={resolvedBarcodeData.uom}
           qtyRejectedReasons={resolvedBarcodeData.qtyRejectedReasons}
           scaleDevice={resolvedBarcodeData.scaleDevice}
@@ -183,6 +187,7 @@ ScanHUAndGetQtyComponent.propTypes = {
   qtyCaption: PropTypes.string,
   qtyMax: PropTypes.number,
   qtyTarget: PropTypes.number,
+  lineQtyToIssue: PropTypes.number,
   uom: PropTypes.string,
   qtyRejectedReasons: PropTypes.array,
   scaleDevice: PropTypes.object,

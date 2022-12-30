@@ -60,6 +60,7 @@ const RawMaterialIssueStepScanComponent = ({ wfProcessId, activityId, lineId, st
       qtyRejectedReasons,
       scaleDevice,
       scaleTolerance,
+      lineQtyToIssue,
       //
       // Props which are needed by `onResult` function (see below):
       stepId: step.id,

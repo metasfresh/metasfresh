@@ -19,6 +19,7 @@ const GetQuantityDialog = ({
   uom,
   qtyRejectedReasons,
   scaleDevice,
+  totalQty,
   //
   validateQtyEntered,
   onQtyChange,
@@ -67,7 +68,7 @@ const GetQuantityDialog = ({
             }
           },
           headers: {
-            qtyTarget: qtyTarget,
+            qtyTarget: totalQty || '0',
             positiveTolerance: scaleTolerance?.positiveTolerance || '0',
             negativeTolerance: scaleTolerance?.negativeTolerance || '0',
           },
@@ -191,6 +192,7 @@ GetQuantityDialog.propTypes = {
   // Properties
   userInfo: PropTypes.array,
   qtyTarget: PropTypes.number.isRequired,
+  totalQty: PropTypes.number,
   qtyCaption: PropTypes.string,
   uom: PropTypes.string.isRequired,
   qtyRejectedReasons: PropTypes.arrayOf(PropTypes.object),

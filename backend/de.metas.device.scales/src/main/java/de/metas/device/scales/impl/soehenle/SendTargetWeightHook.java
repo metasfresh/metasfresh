@@ -34,6 +34,7 @@ import lombok.NonNull;
 
 import java.math.BigDecimal;
 import java.util.Set;
+import java.util.function.Function;
 
 public class SendTargetWeightHook implements BeforeAcquireValueHook
 {
@@ -55,6 +56,8 @@ public class SendTargetWeightHook implements BeforeAcquireValueHook
 			return;
 		}
 
+		final Function<BigDecimal,BigDecimal> soehenleMultiplier = value -> value.multiply(new BigDecimal("100"));
+
 		final BigDecimal targetWeight = parameters.getSingleAsBigDecimal(QTY_TARGET_PARAM_NAME).orElse(null);
 
 		if (targetWeight == null)
@@ -63,9 +66,9 @@ public class SendTargetWeightHook implements BeforeAcquireValueHook
 		}
 
 		final SoehenleSendTargetWeightRequest sendTargetWeightRequest = SoehenleSendTargetWeightRequest.builder()
-				.targetWeight(targetWeight)
-				.positiveTolerance(parameters.getSingleAsBigDecimal(POSITIVE_TOLERANCE_PARAM_NAME).orElse(BigDecimal.ZERO))
-				.negativeTolerance(parameters.getSingleAsBigDecimal(NEGATIVE_TOLERANCE_PARAM_NAME).orElse(BigDecimal.ZERO))
+				.targetWeight(soehenleMultiplier.apply(targetWeight))
+				.positiveTolerance(parameters.getSingleAsBigDecimal(POSITIVE_TOLERANCE_PARAM_NAME).map(soehenleMultiplier).orElse(BigDecimal.ZERO))
+				.negativeTolerance(parameters.getSingleAsBigDecimal(NEGATIVE_TOLERANCE_PARAM_NAME).map(soehenleMultiplier).orElse(BigDecimal.ZERO))
 				.build();
 
 		device.accessDevice(sendTargetWeightRequest);
