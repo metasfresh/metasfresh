@@ -64,7 +64,16 @@ const GetQuantityDialog = ({
           onWebsocketMessage: (message) => {
             if (useScaleDevice) {
               const { value } = JSON.parse(message.body);
-              setQtyInfo(qtyInfos.invalidOfNumber(value));
+
+              const newQtyCandidate = qtyInfos.invalidOfNumber(value);
+
+              setQtyInfo((prev) => {
+                if (!prev || newQtyCandidate.qty !== prev.qty) {
+                  return newQtyCandidate;
+                }
+
+                return prev;
+              });
             }
           },
           headers: {
