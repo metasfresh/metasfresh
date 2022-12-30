@@ -164,8 +164,8 @@ Feature: Validate that PaymentRule is correctly set on C_Order and C_Invoice
       | Identifier | Name                        | OPT.IsVendor | OPT.IsCustomer | M_PricingSystem_ID.Identifier | OPT.PaymentRulePO | OPT.PO_InvoiceRule |
       | bpartner_1 | BPartnerTestPO_P_29_03_2022 | Y            | N              | pricingSys_1                  | P                 | I                  |
     And metasfresh contains C_BPartner_Locations:
-      | Identifier | GLN            | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
-      | location_1 | 04459113928111 | bpartner_1               | Y                   | Y                   |
+      | Identifier | GLN           | C_BPartner_ID.Identifier | OPT.IsShipToDefault | OPT.IsBillToDefault |
+      | location_1 | 0445911392811 | bpartner_1               | Y                   | Y                   |
 
     And metasfresh contains C_Orders:
       | Identifier | IsSOTrx | C_BPartner_ID.Identifier | DateOrdered | OPT.DocBaseType | OPT.M_PricingSystem_ID.Identifier | OPT.POReference |
