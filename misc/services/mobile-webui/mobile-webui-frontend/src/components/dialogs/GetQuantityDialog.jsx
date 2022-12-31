@@ -80,6 +80,7 @@ const GetQuantityDialog = ({
             qtyTarget: totalQty || '0',
             positiveTolerance: scaleTolerance?.positiveTolerance || '0',
             negativeTolerance: scaleTolerance?.negativeTolerance || '0',
+            uom: uom,
           },
         });
       }
