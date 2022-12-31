@@ -93,7 +93,7 @@ const getPropsFromState = ({ state, wfProcessId, activityId, lineId }) => {
 
   return {
     caption: activity?.caption ?? 'Issue',
-    userInstructions: activity?.userInstructions,
+    userInstructions: line?.userInstructions || activity?.userInstructions,
     productName: line?.productName,
     uom: line?.uom,
     qtyToIssue: line?.qtyToIssue,

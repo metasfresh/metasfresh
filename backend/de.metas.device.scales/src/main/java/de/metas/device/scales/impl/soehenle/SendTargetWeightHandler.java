@@ -25,20 +25,26 @@ package de.metas.device.scales.impl.soehenle;
 import de.metas.device.api.IDeviceRequestHandler;
 import de.metas.device.scales.endpoint.ITcpConnectionEndPoint;
 import de.metas.device.scales.request.NoDeviceResponse;
+import de.metas.logging.LogManager;
 import lombok.NonNull;
 import lombok.Value;
+import org.slf4j.Logger;
 
 import static de.metas.device.scales.impl.sics.ISiscCmd.SICS_CMD_TERMINATOR;
 
 @Value(staticConstructor = "of")
 public class SendTargetWeightHandler implements IDeviceRequestHandler<SoehenleSendTargetWeightRequest, NoDeviceResponse>
 {
+	private static final Logger logger = LogManager.getLogger(SendTargetWeightHandler.class);
+
 	@NonNull
 	ITcpConnectionEndPoint endpoint;
 
 	@Override
 	public NoDeviceResponse handleRequest(@NonNull final SoehenleSendTargetWeightRequest request)
 	{
+		logger.info("*** Sending SoehenleSendTargetWeightRequest request " + request.getCmd());
+
 		endpoint.sendCmd(request.getCmd() + SICS_CMD_TERMINATOR);
 
 		return new NoDeviceResponse();

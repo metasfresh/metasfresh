@@ -30,13 +30,34 @@ import de.metas.device.api.hook.BeforeAcquireValueHook;
 import de.metas.device.api.hook.RunParameters;
 import de.metas.device.scales.request.GetInstantGrossWeighRequest;
 import de.metas.device.scales.request.GetStableGrossWeighRequest;
+import de.metas.logging.LogManager;
+import de.metas.product.ProductId;
+import de.metas.quantity.Quantity;
+import de.metas.uom.IUOMConversionBL;
+import de.metas.uom.IUOMDAO;
+import de.metas.uom.UOMConversionContext;
+import de.metas.uom.UomId;
+import de.metas.util.Services;
 import lombok.NonNull;
+import org.compiere.model.I_C_UOM;
+import org.slf4j.Logger;
 
 import java.math.BigDecimal;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 
 public class SendTargetWeightHook implements BeforeAcquireValueHook
 {
+	private final static Logger logger = LogManager.getLogger(SendTargetWeightHook.class);
+
+	private final IUOMDAO uomDAO = Services.get(IUOMDAO.class);
+	private final IUOMConversionBL uomConversionBL = Services.get(IUOMConversionBL.class);
+
+	//FIXME: use sys config instead
+	private static final UomId HARDCODED_SCALE_UOM_ID = UomId.ofRepoId(540017); // kg
+	//FIXME: Use UomId or x12de355 instead
+	private static final String QTY_UOM_SYMBOL_PARAM_NAME = "uom";
 	private static final String QTY_TARGET_PARAM_NAME = "qtyTarget";
 	private static final String POSITIVE_TOLERANCE_PARAM_NAME = "positiveTolerance";
 	private static final String NEGATIVE_TOLERANCE_PARAM_NAME = "negativeTolerance";
@@ -62,12 +83,43 @@ public class SendTargetWeightHook implements BeforeAcquireValueHook
 			return;
 		}
 
+		final I_C_UOM weightUOM = getQtyUOM(parameters).orElse(null);
+		if (weightUOM == null)
+		{
+			logger.warn("*** SendTargetWeightHook: No weightUOM was found! See all parameters: {}!", parameters);
+			return;
+		}
+
+		final Function<BigDecimal, Quantity> toQty = bd -> Quantity.of(bd, weightUOM);
+
 		final SoehenleSendTargetWeightRequest sendTargetWeightRequest = SoehenleSendTargetWeightRequest.builder()
-				.targetWeight(targetWeight)
-				.positiveTolerance(parameters.getSingleAsBigDecimal(POSITIVE_TOLERANCE_PARAM_NAME).orElse(BigDecimal.ZERO))
-				.negativeTolerance(parameters.getSingleAsBigDecimal(NEGATIVE_TOLERANCE_PARAM_NAME).orElse(BigDecimal.ZERO))
+				.targetWeight(convertToScaleUOM(toQty.apply(targetWeight)))
+				.positiveTolerance(parameters.getSingleAsBigDecimal(POSITIVE_TOLERANCE_PARAM_NAME)
+										   .map(toQty)
+										   .map(this::convertToScaleUOM)
+										   .orElse(BigDecimal.ZERO))
+				.negativeTolerance(parameters.getSingleAsBigDecimal(NEGATIVE_TOLERANCE_PARAM_NAME)
+										   .map(toQty)
+										   .map(this::convertToScaleUOM)
+										   .orElse(BigDecimal.ZERO))
 				.build();
 
 		device.accessDevice(sendTargetWeightRequest);
+	}
+
+	@NonNull
+	private Optional<I_C_UOM> getQtyUOM(@NonNull final RunParameters parameters)
+	{
+		return parameters.getSingle(QTY_UOM_SYMBOL_PARAM_NAME)
+				.flatMap(uomDAO::getBySymbol);
+	}
+
+	@NonNull
+	private BigDecimal convertToScaleUOM(@NonNull final Quantity qtyToConvert)
+	{
+		return uomConversionBL.convertQuantityTo(
+				qtyToConvert,
+				UOMConversionContext.of((ProductId)null), //FIXME: send also the ProductId
+				HARDCODED_SCALE_UOM_ID).toBigDecimal();
 	}
 }

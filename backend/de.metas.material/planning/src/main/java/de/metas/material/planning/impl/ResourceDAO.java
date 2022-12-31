@@ -5,6 +5,7 @@ import de.metas.cache.annotation.CacheCtx;
 import de.metas.material.planning.IResourceDAO;
 import de.metas.material.planning.ResourceType;
 import de.metas.material.planning.ResourceTypeId;
+import de.metas.organization.OrgId;
 import de.metas.product.IProductDAO;
 import de.metas.product.ProductCategoryId;
 import de.metas.product.ResourceId;
@@ -29,6 +30,7 @@ import org.compiere.util.TimeUtil;
 import java.time.DayOfWeek;
 import java.time.temporal.TemporalUnit;
 import java.util.List;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 
@@ -249,5 +251,17 @@ public class ResourceDAO implements IResourceDAO
 				.addEqualsFilter(I_S_Resource.COLUMNNAME_AD_User_ID, userId)
 				.create()
 				.listIds(ResourceId::ofRepoId);
+	}
+
+	@Override
+	public Optional<ResourceId> getResourceIdByValue(@NonNull final String value, @NonNull final OrgId orgId)
+	{
+		final IQueryBL queryBL = Services.get(IQueryBL.class);
+		return queryBL.createQueryBuilder(I_S_Resource.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_S_Resource.COLUMNNAME_Value, value)
+				.addEqualsFilter(I_S_Resource.COLUMNNAME_AD_Org_ID, orgId)
+				.create()
+				.firstIdOnlyOptional(ResourceId::ofRepoId);
 	}
 }

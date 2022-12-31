@@ -30,6 +30,7 @@ import lombok.NonNull;
 import lombok.Value;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 @Value
 @Builder
@@ -66,7 +67,10 @@ public class SoehenleSendTargetWeightRequest implements IDeviceRequest<NoDeviceR
 	private static String format(@NonNull final BigDecimal value)
 	{
 		final BigDecimal absValue = value.abs();
+		final BigDecimal valueToUse = absValue.scale() == 0
+				? absValue.setScale(1, RoundingMode.UNNECESSARY)
+				: absValue;
 
-		return NumberUtils.toStringWithCustomDecimalSeparator(absValue, ',');
+		return NumberUtils.toStringWithCustomDecimalSeparator(valueToUse, ',');
 	}
 }

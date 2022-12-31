@@ -40,9 +40,15 @@ public class RunParameters
 	@NonNull
 	public Optional<BigDecimal> getSingleAsBigDecimal(@NonNull final String paramName)
 	{
+		return getSingle(paramName)
+				.map(value -> NumberUtils.asBigDecimal(value, null));
+	}
+
+	@NonNull
+	public Optional<String> getSingle(@NonNull final String paramName)
+	{
 		return Optional.ofNullable(parameters.get(paramName))
 				.filter(list -> list.size() == 1)
-				.map(list -> list.get(0))
-				.map(value -> NumberUtils.asBigDecimal(value, null));
+				.map(list -> list.get(0));
 	}
 }

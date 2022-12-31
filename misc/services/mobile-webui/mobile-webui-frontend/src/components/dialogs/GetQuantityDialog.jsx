@@ -19,12 +19,14 @@ const GetQuantityDialog = ({
   uom,
   qtyRejectedReasons,
   scaleDevice,
+  totalQty,
   //
   validateQtyEntered,
   onQtyChange,
   onCloseDialog,
 }) => {
   const allowManualInput = useBooleanSetting('qtyInput.AllowManualInputWhenScaleDeviceExists');
+  const doNotValidateQty = useBooleanSetting('qtyInput.DoNotValidate');
 
   const [qtyInfo, setQtyInfo] = useState(qtyInfos.invalidOfNumber(qtyTarget));
   const [rejectedReason, setRejectedReason] = useState(null);
@@ -39,7 +41,8 @@ const GetQuantityDialog = ({
       ? Math.max(qtyTarget - qtyInfos.toNumberOrString(qtyInfo), 0)
       : 0;
 
-  const allValid = qtyInfo != null && qtyInfo.isQtyValid && (qtyRejected === 0 || rejectedReason != null);
+  const allValid =
+    doNotValidateQty || (qtyInfo != null && qtyInfo.isQtyValid && (qtyRejected === 0 || rejectedReason != null));
 
   const onDialogYes = () => {
     if (allValid) {
@@ -61,13 +64,23 @@ const GetQuantityDialog = ({
           onWebsocketMessage: (message) => {
             if (useScaleDevice) {
               const { value } = JSON.parse(message.body);
-              setQtyInfo(qtyInfos.invalidOfNumber(value));
+
+              const newQtyCandidate = qtyInfos.invalidOfNumber(value);
+
+              setQtyInfo((prev) => {
+                if (!prev || newQtyCandidate.qty !== prev.qty) {
+                  return newQtyCandidate;
+                }
+
+                return prev;
+              });
             }
           },
           headers: {
-            qtyTarget: qtyTarget,
+            qtyTarget: totalQty || '0',
             positiveTolerance: scaleTolerance?.positiveTolerance || '0',
             negativeTolerance: scaleTolerance?.negativeTolerance || '0',
+            uom: uom,
           },
         });
       }
@@ -189,6 +202,7 @@ GetQuantityDialog.propTypes = {
   // Properties
   userInfo: PropTypes.array,
   qtyTarget: PropTypes.number.isRequired,
+  totalQty: PropTypes.number,
   qtyCaption: PropTypes.string,
   uom: PropTypes.string.isRequired,
   qtyRejectedReasons: PropTypes.arrayOf(PropTypes.object),
