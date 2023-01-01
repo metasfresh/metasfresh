@@ -25,16 +25,16 @@ rabbitmq:
   build: rabbitmq
   container_name: ${BRANCH_NAME}_rabbitmq
   expose:
-    - "5672"
     - "${RABBITMQ_PORT}"
+    - "${RABBITMQ_MGMT_PORT}"
   restart: always
   environment:
     RABBITMQ_DEFAULT_USER: "guest"
     RABBITMQ_DEFAULT_PASS: "guest"
     RABBITMQ_DEFAULT_VHOST: "/"
   ports:
-    - "5672:5672"
-    - "${RABBITMQ_PORT}:15672"
+    - "${RABBITMQ_PORT}:5672"
+    - "${RABBITMQ_MGMT_PORT}:15672"
 search:
   build: search
   container_name: ${BRANCH_NAME}_search
@@ -48,8 +48,7 @@ search:
   cap_add:
     - IPC_LOCK
   ports:
-    - "9200:9200"
-    - "9300:9300"
+    - "${SEARCH_PORT}:9200"
   volumes:
     - ${BRANCH_NAME}_metasfresh_elasticsearch:/usr/share/elasticsearch/data
   environment:
@@ -70,5 +69,5 @@ papercut-smtp:
   build: papercut-smtp
   container_name: ${BRANCH_NAME}_papercut-smtp
   ports:
-    - "25:25"
-    - "${PAPERCUT_PORT}:37408"
+    - "${PAPERCUT_SMTP_PORT}:25"
+    - "${PAPERCUT_MGMT_PORT}:37408"
