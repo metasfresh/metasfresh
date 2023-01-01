@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -87,6 +87,12 @@ public class CucumberLifeCycleSupport implements ConcurrentEventListener
 		System.setProperty(SYSCONFIG_ASYNC_INIT_DELAY_MILLIS, "0"); // start the async processor right away; we want to get testing, and not wait
 		System.setProperty(SYSCONFIG_SKIP_HOUSE_KEEPING, "true"); // skip housekeeping tasks. assume they are not needed because the DB is fresh
 		System.setProperty(SYSCONFIG_POLLINTERVAL_MILLIS, "500");
+
+			// This is a workaround;
+			// Apparently, backend/metasfresh-dist/serverRoot/src/main/resources/c3p0.properties is not found in the classpass when we run this on github.
+			// See https://www.mchange.com/projects/c3p0/#c3p0_properties for where in the classpath it needs to be
+			System.setProperty("c3p0.maxPoolSize", "99"); // set to a value different from c3p0.properties so it's clear from where the value is taken.
+
 		final String[] args = { //
 				"-dbHost", dbHost,
 				"-dbPort", dbPort,

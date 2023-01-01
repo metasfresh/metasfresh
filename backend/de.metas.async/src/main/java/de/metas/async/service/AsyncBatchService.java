@@ -2,7 +2,7 @@
  * #%L
  * de.metas.async
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -114,11 +114,19 @@ public class AsyncBatchService
 	 */
 	public <T> T executeBatch(@NonNull final Supplier<T> supplier, @NonNull final AsyncBatchId asyncBatchId)
 	{
-		asyncBatchObserver.observeOn(asyncBatchId);
+		final T result;
+		try
+		{
+			asyncBatchObserver.observeOn(asyncBatchId);
 
-		final T result = trxManager.callInNewTrx(supplier::get);
+			result = trxManager.callInNewTrx(supplier::get);
 
-		asyncBatchObserver.waitToBeProcessed(asyncBatchId);
+			asyncBatchObserver.waitToBeProcessed(asyncBatchId);
+		}
+		finally
+		{
+			asyncBatchObserver.removeObserver(asyncBatchId);
+		}
 
 		return result;
 	}

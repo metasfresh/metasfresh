@@ -1,8 +1,0 @@
-<component name="CopyrightManager">
-  <settings default="metasfresh">
-    <module2copyright>
-      <element module="All Java Files" copyright="metasfresh" />
-    </module2copyright>
-    <LanguageOptions name="JAVA" />
-  </settings>
-</component>
