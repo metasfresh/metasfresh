@@ -92,12 +92,14 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 	{
 		Loggables.withLogger(logger, Level.INFO).addLog("Observer registered for asyncBatchId: " + id.getRepoId());
 
+		final int timeoutMS = sysConfigBL.getIntValue(SYS_Config_WaitTimeOutMS, SYS_Config_WaitTimeOutMS_DEFAULT_VALUE);
+
 		//dev-note: make sure to wait for any work already enqueued with this async batch to finalize
 		Optional.ofNullable(asyncBatch2Completion.get(id))
 				.ifPresent(batchProgress -> {
 					try
 					{
-						batchProgress.getCompletableFuture().get();
+						batchProgress.getCompletableFuture().get(timeoutMS, TimeUnit.MILLISECONDS);
 					}
 					catch (final Throwable t)
 					{
@@ -106,8 +108,6 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 								.setParameter("AsyncBatchId", id);
 					}
 				});
-
-		final int timeoutMS = sysConfigBL.getIntValue(SYS_Config_WaitTimeOutMS, SYS_Config_WaitTimeOutMS_DEFAULT_VALUE);
 
 		//dev-note:acquire an owner related lock to make sure there is just one AsyncBatchObserver that's registering a certain async batch at a time
 		final ILock lock = lockBatch(id, Duration.ofMillis(timeoutMS));
@@ -177,17 +177,18 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 				.map(ExistingLockInfo::getCreated);
 	}
 
-	private void removeObserver(@NonNull final AsyncBatchId id)
+	public void removeObserver(@NonNull final AsyncBatchId id)
 	{
-		if (asyncBatch2Completion.get(id) == null)
+		final BatchProgress batchProgress = asyncBatch2Completion.remove(id);
+
+		if (batchProgress == null)
 		{
 			Loggables.withLogger(logger, Level.WARN).addLog("No observer registered that can be removed for asyncBatchId: {}", id.getRepoId());
 			return;
 		}
 
-		final BatchProgress batchProgress = asyncBatch2Completion.remove(id);
-
 		batchProgress.getLock().unlockAll();
+		batchProgress.forceCompletionIfNotAlreadyCompleted();
 
 		Loggables.withLogger(logger, Level.INFO).addLog("Observer removed for asyncBatchId: {}", id.getRepoId());
 	}
@@ -269,4 +270,6 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 		@NonNull
 		ILock lock;
 	}
+
+			return false;
 }
