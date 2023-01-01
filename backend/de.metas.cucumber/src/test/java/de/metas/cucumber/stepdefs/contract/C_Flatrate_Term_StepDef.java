@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -57,6 +57,7 @@ import org.compiere.model.I_M_Product;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
@@ -163,8 +164,9 @@ public class C_Flatrate_Term_StepDef
 
 			if (nrOfDaysFromNow != null)
 			{
-				contractRecord.setStartDate(Timestamp.from(SystemTime.asInstant().minus(1, ChronoUnit.DAYS)));
-				contractRecord.setEndDate(Timestamp.from(SystemTime.asInstant().plus(nrOfDaysFromNow, ChronoUnit.DAYS)));
+				final Instant today = SystemTime.asLocalDate(SystemTime.zoneId()).atStartOfDay(SystemTime.zoneId()).toInstant();
+				contractRecord.setStartDate(Timestamp.from(today.minus(1, ChronoUnit.DAYS)));
+				contractRecord.setEndDate(Timestamp.from(today.plus(nrOfDaysFromNow, ChronoUnit.DAYS)));
 			}
 			else
 			{

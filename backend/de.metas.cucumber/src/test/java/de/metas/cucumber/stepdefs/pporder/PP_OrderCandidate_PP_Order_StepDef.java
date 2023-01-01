@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2022 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -104,7 +104,7 @@ public class PP_OrderCandidate_PP_Order_StepDef
 	public void loadPPOrderByCandidateId(final int timeoutSec, @NonNull final String ppOrderCandidateIdentifier, @NonNull final DataTable dataTable) throws InterruptedException
 	{
 		final I_PP_Order_Candidate ppOrderCandidate = ppOrderCandidateTable.get(ppOrderCandidateIdentifier);
-		assertThat(ppOrderCandidate).isNotNull();
+		assertThat(ppOrderCandidate).as("Missing PP_Order_Candidate for identifier %s", ppOrderCandidateIdentifier).isNotNull();
 
 		final ItemProvider<ImmutableList<I_PP_OrderCandidate_PP_Order>> arePPOrdersCreated = () -> {
 
@@ -123,15 +123,16 @@ public class PP_OrderCandidate_PP_Order_StepDef
 
 		final Supplier<String> getLogContext = () -> {
 			final StringBuilder context = new StringBuilder("Found the following allocations for PP_Order_Candidate_ID: ")
-					.append(ppOrderCandidate.getPP_Order_Candidate_ID());
+					.append(ppOrderCandidate.getPP_Order_Candidate_ID())
+					.append(" (Identifier=").append(ppOrderCandidateIdentifier).append(")");
 
 			queryBL.createQueryBuilder(I_PP_OrderCandidate_PP_Order.class)
 					.addEqualsFilter(I_PP_OrderCandidate_PP_Order.COLUMN_PP_Order_Candidate_ID, ppOrderCandidate.getPP_Order_Candidate_ID())
 					.create()
 					.stream()
 					.forEach(ppOrderCandAlloc -> {
-						context.append("\nPP_Order_ID=").append(ppOrderCandAlloc.getPP_Order_ID());
-						context.append("\nQtyOrdered=").append(ppOrderCandAlloc.getQtyEntered());
+						context.append("\n\tPP_Order_ID=").append(ppOrderCandAlloc.getPP_Order_ID());
+						context.append("\n\tQtyOrdered=").append(ppOrderCandAlloc.getQtyEntered());
 					});
 
 			return context.toString();
@@ -158,7 +159,7 @@ public class PP_OrderCandidate_PP_Order_StepDef
 
 			if (record == null)
 			{
-				throw new RuntimeException("No I_PP_OrderCandidate_PP_Order record found for qtyEntered=" + qtyEntered);
+				throw new RuntimeException("No PP_OrderCandidate_PP_Order record found for qtyEntered=" + qtyEntered);
 			}
 
 			alreadySeenAllocRecordIds.add(record.getPP_OrderCandidate_PP_Order_ID());
