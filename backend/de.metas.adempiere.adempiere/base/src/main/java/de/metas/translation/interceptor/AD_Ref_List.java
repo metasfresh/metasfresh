@@ -2,7 +2,7 @@
  * #%L
  * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -29,57 +29,53 @@ import org.adempiere.ad.modelvalidator.annotations.Interceptor;
 import org.adempiere.ad.modelvalidator.annotations.ModelChange;
 import org.adempiere.ad.trx.api.ITrx;
 import org.adempiere.model.InterfaceWrapperHelper;
-import org.compiere.model.I_M_Product;
-import org.compiere.model.I_M_Product_Trl;
+import org.compiere.model.I_AD_Ref_List;
+import org.compiere.model.I_AD_Ref_List_Trl;
 import org.compiere.model.ModelValidator;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import static org.compiere.model.POInfo.getPOInfo;
 
 @Component
-@Interceptor(I_M_Product_Trl.class)
-public class M_Product_Trl
+@Interceptor(AD_Ref_List.class)
+public class AD_Ref_List
 {
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE)
-	public void beforeTrlChanged(final I_M_Product_Trl trlTable)
+	public void beforeTrlChanged(final I_AD_Ref_List baseTable)
 	{
 
 	}
 
 	@ModelChange(timings = ModelValidator.TYPE_AFTER_CHANGE)
-	public void afterTrlChanged(final I_M_Product_Trl trlTable)
+	public void afterTrlChanged(final I_AD_Ref_List baseTable)
 	{
-		final List<String> translatedColumnNames = getPOInfo(I_M_Product.Table_Name).getTranslatedColumnNames();
+		final List<String> translatedColumnNames = getPOInfo(I_AD_Ref_List.Table_Name).getTranslatedColumnNames();
 		final String baseLanguage = Language.getBaseLanguage().getAD_Language();
-		final int id = trlTable.getM_Product_ID();
-		final String language = trlTable.getAD_Language();
+		final int id = baseTable.getAD_Reference_ID();
 
-		if(Objects.equals(language, baseLanguage))
+		final I_AD_Ref_List_Trl trlTableToUpdate = Services.get(IQueryBL.class)
+				.createQueryBuilder(I_AD_Ref_List_Trl.class)
+				.addEqualsFilter(I_AD_Ref_List_Trl.COLUMNNAME_AD_Ref_List_ID, id)
+				.addEqualsFilter(I_AD_Ref_List_Trl.COLUMNNAME_AD_Language, baseLanguage)
+				.create()
+				.firstOnlyNotNull(I_AD_Ref_List_Trl.class);
+
+		final Map<String, Object> updates = new HashMap<>();
+		for (final String translatedColumnName:translatedColumnNames)
 		{
 
-			final I_M_Product baseTableToUpdate = Services.get(IQueryBL.class)
-					.createQueryBuilder(I_M_Product.class)
-					.addEqualsFilter(I_M_Product.COLUMNNAME_M_Product_ID, id)
-					.create()
-					.firstOnlyNotNull(I_M_Product.class);
+			final Object value = InterfaceWrapperHelper.getValueOrNull(baseTable, translatedColumnName);
 
-			final Map<String, Object> updates = new HashMap<>();
-			for (final String translatedColumnName:translatedColumnNames)
-			{
+			updates.put(translatedColumnName, value);
 
-				final Object value = InterfaceWrapperHelper.getValueOrNull(trlTable, translatedColumnName);
-
-				updates.put(translatedColumnName, value);
-
-			}
-
-			InterfaceWrapperHelper.setValues(baseTableToUpdate, updates);
-			InterfaceWrapperHelper.save(baseTableToUpdate, ITrx.TRXNAME_ThreadInherited);
 		}
+
+		InterfaceWrapperHelper.setValues(trlTableToUpdate, updates);
+		InterfaceWrapperHelper.save(trlTableToUpdate, ITrx.TRXNAME_ThreadInherited);
+
 	}
 }
