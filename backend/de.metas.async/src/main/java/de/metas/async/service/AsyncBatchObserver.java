@@ -294,29 +294,39 @@ public class AsyncBatchObserver implements AsyncBatchNotifyRequestHandler
 			checkIfBatchIsDone();
 		}
 
-		private synchronized void checkIfBatchIsDone()
+		private void forceCompletionIfNotAlreadyCompleted()
 		{
-			if (wpProgress == null || !isEnqueueingDone)
+			if (checkIfBatchIsDone())
 			{
 				return;
 			}
 
-			if (wpProgress.isProcessedSuccessfully())
-			{
-				Loggables.withLogger(logger, Level.INFO).addLog("AsyncBatchId={} completed successfully. ", batchId.getRepoId());
-				this.completableFuture.complete(null);
-			}
-			else if (wpProgress.isProcessedWithError())
-			{
-				this.completableFuture.completeExceptionally(new AdempiereException("WorkPackage completed with an exception")
-																.appendParametersToMessage()
-																.setParameter("AsyncBatchId", batchId.getRepoId()));
+			this.completableFuture.completeExceptionally(new AdempiereException("Forced exceptionally complete!")
+																 .appendParametersToMessage()
+																 .setParameter("AsyncBatchId", batchId.getRepoId()));
 		}
 
 		private synchronized boolean checkIfBatchIsDone()
 		{
 			if (wpProgress == null || !isEnqueueingDone)
 			{
+				return false;
+			}
+
+			if (wpProgress.isProcessedSuccessfully())
+			{
+				Loggables.withLogger(logger, Level.INFO).addLog("AsyncBatchId={} completed successfully. ", batchId.getRepoId());
+				this.completableFuture.complete(null);
+				return true;
+			}
+			else if (wpProgress.isProcessedWithError())
+			{
+				this.completableFuture.completeExceptionally(new AdempiereException("WorkPackage completed with an exception")
+																.appendParametersToMessage()
+																.setParameter("AsyncBatchId", batchId.getRepoId()));
+				return true;
+		}
+
 				return false;
 			}
 
