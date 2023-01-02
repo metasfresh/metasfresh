@@ -27,7 +27,6 @@ import com.google.common.collect.ImmutableList;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
 import de.metas.async.api.IAsyncBatchDAO;
-import de.metas.async.api.IEnqueueResult;
 import de.metas.async.eventbus.AsyncBatchEventBusService;
 import de.metas.async.eventbus.AsyncBatchNotifyRequest;
 import de.metas.async.model.I_C_Async_Batch;
@@ -87,23 +86,20 @@ public class AsyncBatchService
 				.filter(I_C_Queue_WorkPackage::isError)
 				.count();
 
-		final int workPackagesFinalized = workPackagesProcessedCount + workPackagesWithErrorCount;
-
 		Loggables.withLogger(logger, Level.INFO).addLog("*** processAsyncBatch for: asyncBatchID: " + asyncBatch.getC_Async_Batch_ID() +
 																" allWPSize: " + workPackages.size() +
 																" processedWPSize: " + workPackagesProcessedCount +
 																" erroredWPSize: " + workPackagesWithErrorCount);
 
-		if (workPackagesFinalized >= workPackages.size())
-		{
-			final AsyncBatchNotifyRequest request = AsyncBatchNotifyRequest.builder()
-					.clientId(Env.getClientId())
-					.asyncBatchId(AsyncBatchId.toRepoId(asyncBatchId))
-					.success(workPackagesWithErrorCount <= 0)
-					.build();
+		final AsyncBatchNotifyRequest request = AsyncBatchNotifyRequest.builder()
+				.clientId(Env.getClientId())
+				.asyncBatchId(AsyncBatchId.toRepoId(asyncBatchId))
+				.noOfProcessedWPs(workPackagesProcessedCount)
+				.noOfEnqueuedWPs(workPackages.size())
+				.noOfErrorWPs(workPackagesWithErrorCount)
+				.build();
 
-			asyncBatchEventBusService.postRequest(request);
-		}
+		asyncBatchEventBusService.postRequest(request);
 	}
 
 	/**
@@ -130,25 +126,6 @@ public class AsyncBatchService
 		finally
 		{
 			asyncBatchObserver.removeObserver(asyncBatchId);
-		}
-
-		return result;
-	}
-
-	@NonNull
-	public IEnqueueResult executeEnqueuedBatch(@NonNull final Supplier<IEnqueueResult> supplier, @NonNull final AsyncBatchId asyncBatchId)
-	{
-		asyncBatchObserver.observeOn(asyncBatchId);
-
-		final IEnqueueResult result = trxManager.callInNewTrx(supplier::get);
-
-		if (result.getEnqueuedWorkPackageIds().isEmpty())
-		{
-			asyncBatchObserver.removeObserver(asyncBatchId);
-		}
-		else
-		{
-			asyncBatchObserver.waitToBeProcessed(asyncBatchId);
 		}
 
 		return result;
@@ -183,19 +160,19 @@ public class AsyncBatchService
 	}
 
 	/**
-	 *
 	 * {@code wasCreatedAfterMonitorStarted} = true, if the {@link I_C_Queue_WorkPackage} was created after the monitoring of its async batch has started.
 	 * <br/>
-	 *   This is important as we want to avoid old "with-error" work packages failing a new async batch run.
+	 * This is important as we want to avoid old "with-error" work packages failing a new async batch run.
 	 * <br/>
 	 * <br/>
 	 * {@code wasProcessedAfterMonitorStarted} = true, if the {@link I_C_Queue_WorkPackage} was processed for the first time after the monitoring of its async batch has started.
 	 * <br/>
-	 *   This is important as we want to consider work packages that were created in the past but only run now.
+	 * This is important as we want to consider work packages that were created in the past but only run now.
 	 * <br/>
 	 * <br/>
 	 * {@code isPendingProcessingNoSkipping} = true, if the {@link I_C_Queue_WorkPackage} was never processed before and now it's ready for processing.
 	 * <br/>
+	 *
 	 * @return true, if {@code wasCreatedAfterMonitorStarted || wasProcessedAfterMonitorStarted || isPendingProcessingNoSkipping}
 	 */
 	private boolean qualifiesForBatchProcessingStatus(@NonNull final I_C_Queue_WorkPackage workPackage, @NonNull final Instant startMonitoringFrom)

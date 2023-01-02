@@ -158,7 +158,7 @@ public class OrderService
 	{
 		final Supplier<IEnqueueResult> action = () -> olCandToOrderEnqueuer.enqueueBatch(asyncBatchId);
 
-		asyncBatchService.executeEnqueuedBatch(action, asyncBatchId);
+		asyncBatchService.executeBatch(action, asyncBatchId);
 	}
 
 	private void generateMissingShipmentSchedulesFromOrder(@NonNull final I_C_Order order)
