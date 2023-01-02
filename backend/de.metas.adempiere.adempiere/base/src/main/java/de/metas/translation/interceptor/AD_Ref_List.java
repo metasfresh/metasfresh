@@ -41,7 +41,7 @@ import java.util.Map;
 import static org.compiere.model.POInfo.getPOInfo;
 
 @Component
-@Interceptor(AD_Ref_List.class)
+@Interceptor(I_AD_Ref_List.class)
 public class AD_Ref_List
 {
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE)

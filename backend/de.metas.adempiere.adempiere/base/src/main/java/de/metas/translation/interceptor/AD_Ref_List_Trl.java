@@ -42,7 +42,7 @@ import java.util.Objects;
 import static org.compiere.model.POInfo.getPOInfo;
 
 @Component
-@Interceptor(AD_Ref_List_Trl.class)
+@Interceptor(I_AD_Ref_List_Trl.class)
 public class AD_Ref_List_Trl
 {
 	@ModelChange(timings = ModelValidator.TYPE_BEFORE_CHANGE)
