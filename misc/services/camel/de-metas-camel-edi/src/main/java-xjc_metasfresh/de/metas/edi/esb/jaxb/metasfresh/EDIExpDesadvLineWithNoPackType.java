@@ -15,16 +15,16 @@ import javax.xml.bind.annotation.XmlType;
 
 
 /**
- * <p>Java class for EDI_Imp_C_UOM_Lookup_UOMSymbolType complex type.
+ * <p>Java class for EDI_Exp_DesadvLineWithNoPackType complex type.
  * 
  * <p>The following schema fragment specifies the expected content contained within this class.
  * 
  * <pre>
- * &lt;complexType name="EDI_Imp_C_UOM_Lookup_UOMSymbolType"&gt;
+ * &lt;complexType name="EDI_Exp_DesadvLineWithNoPackType"&gt;
  *   &lt;complexContent&gt;
  *     &lt;restriction base="{http://www.w3.org/2001/XMLSchema}anyType"&gt;
  *       &lt;sequence&gt;
- *         &lt;element name="X12DE355" type="{http://www.w3.org/2001/XMLSchema}string"/&gt;
+ *         &lt;element name="EDI_DesadvLine_ID" type="{}EDI_Exp_DesadvLineType" minOccurs="0"/&gt;
  *       &lt;/sequence&gt;
  *     &lt;/restriction&gt;
  *   &lt;/complexContent&gt;
@@ -34,36 +34,36 @@ import javax.xml.bind.annotation.XmlType;
  * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
-@XmlType(name = "EDI_Imp_C_UOM_Lookup_UOMSymbolType", propOrder = {
-    "x12DE355"
+@XmlType(name = "EDI_Exp_DesadvLineWithNoPackType", propOrder = {
+    "ediDesadvLineID"
 })
-public class EDIImpCUOMLookupUOMSymbolType {
+public class EDIExpDesadvLineWithNoPackType {
 
-    @XmlElement(name = "X12DE355", required = true)
-    protected String x12DE355;
+    @XmlElement(name = "EDI_DesadvLine_ID")
+    protected EDIExpDesadvLineType ediDesadvLineID;
 
     /**
-     * Gets the value of the x12DE355 property.
+     * Gets the value of the ediDesadvLineID property.
      * 
      * @return
      *     possible object is
-     *     {@link String }
+     *     {@link EDIExpDesadvLineType }
      *     
      */
-    public String getX12DE355() {
-        return x12DE355;
+    public EDIExpDesadvLineType getEDIDesadvLineID() {
+        return ediDesadvLineID;
     }
 
     /**
-     * Sets the value of the x12DE355 property.
+     * Sets the value of the ediDesadvLineID property.
      * 
      * @param value
      *     allowed object is
-     *     {@link String }
+     *     {@link EDIExpDesadvLineType }
      *     
      */
-    public void setX12DE355(String value) {
-        this.x12DE355 = value;
+    public void setEDIDesadvLineID(EDIExpDesadvLineType value) {
+        this.ediDesadvLineID = value;
     }
 
 }

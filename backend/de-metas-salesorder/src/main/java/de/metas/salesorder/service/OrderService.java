@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import de.metas.async.AsyncBatchId;
 import de.metas.async.api.IAsyncBatchBL;
+import de.metas.async.api.IEnqueueResult;
 import de.metas.async.service.AsyncBatchService;
 import de.metas.inout.ShipmentScheduleId;
 import de.metas.inoutcandidate.api.IShipmentSchedulePA;
@@ -156,10 +157,7 @@ public class OrderService
 
 	private void generateOrdersForBatch(@NonNull final AsyncBatchId asyncBatchId)
 	{
-		final Supplier<Void> action = () -> {
-			olCandToOrderEnqueuer.enqueue(C_OlCandProcessor_ID_Default, asyncBatchId);
-			return null;
-		};
+		final Supplier<IEnqueueResult> action = () -> olCandToOrderEnqueuer.enqueue(C_OlCandProcessor_ID_Default, asyncBatchId);
 
 		asyncBatchService.executeBatch(action, asyncBatchId);
 	}
