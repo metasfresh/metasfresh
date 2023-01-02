@@ -51,4 +51,7 @@ public class BPRetrieveCamelRequest
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	@JsonProperty("adPInstanceId")
 	JsonMetasfreshId adPInstanceId;
+
+	@JsonProperty("noCache")
+	boolean noCache;
 }

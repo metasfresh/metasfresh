@@ -1,8 +1,8 @@
 /*
  * #%L
- * de-metas-common-rest_api
+ * de.metas.adempiere.adempiere.base
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,11 +20,10 @@
  * #L%
  */
 
-package de.metas.common.rest_api.v2;
+package de.metas.cache;
 
-public interface APIConstants
+public enum CacheMode
 {
-	String ENDPOINT_MATERIAL = "/material";
-
-	String CACHE_CONTROL_NO_CACHE = "no-cache";
+	DEFAULT,
+	NO_CACHE
 }

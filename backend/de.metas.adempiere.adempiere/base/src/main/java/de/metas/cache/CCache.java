@@ -594,6 +594,11 @@ public class CCache<K, V> implements CacheInterface
 	{
 		try (final IAutoCloseable cacheIdMDC = CacheMDC.putCache(this))
 		{
+			if (mustRecomputeCache())
+			{
+				remove(key);
+			}
+
 			if (valueInitializer == null)
 			{
 				return cache.getIfPresent(key);
@@ -668,6 +673,11 @@ public class CCache<K, V> implements CacheInterface
 			{
 				logger.debug("getAllOrLoad - Given keys is empty; -> return empty list");
 				return ImmutableList.of();
+			}
+
+			if (mustRecomputeCache())
+			{
+				removeAll(keys);
 			}
 
 			//
@@ -834,6 +844,35 @@ public class CCache<K, V> implements CacheInterface
 	public CCacheStats stats()
 	{
 		return new CCacheStats(cacheId, cacheName, cache.size(), cache.stats());
+	}
+
+	private boolean mustRecomputeCache()
+	{
+		final boolean isNoCacheMode = ThreadLocalCacheController.instance.getCacheMode() == CacheMode.NO_CACHE;
+
+		if (!isNoCacheMode)
+		{
+			return false;
+		}
+
+		//don't recompute when dictionary tables are involved.
+		return !isDictionaryCache();
+	}
+
+	private boolean isDictionaryCache()
+	{
+		final Set<String> nonDictionaryTableNames = labels.stream()
+				.map(CacheLabel::getName)
+				.filter(label -> !(label.startsWith("AD_") || label.contains("$NoTableName$")))
+				//ignore the label created from this.cacheName as it's not necessary a table name
+				.filter(label -> !label.equals(cacheName))
+				.collect(ImmutableSet.toImmutableSet());
+
+		final boolean anyDictionaryTableNames = labels.stream()
+				.map(CacheLabel::getName)
+				.anyMatch(label -> label.startsWith("AD_"));
+
+		return anyDictionaryTableNames && nonDictionaryTableNames.isEmpty();
 	}
 
 	@SuppressWarnings("serial")
