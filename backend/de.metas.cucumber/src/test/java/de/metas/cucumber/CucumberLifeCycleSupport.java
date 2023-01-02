@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2020 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,8 +23,6 @@
 package de.metas.cucumber;
 
 import de.metas.ServerBoot;
-import de.metas.migration.cli.workspace_migrate.WorkspaceMigrateConfig;
-import de.metas.migration.cli.workspace_migrate.WorkspaceMigrateConfig.OnScriptFailure;
 import io.cucumber.plugin.ConcurrentEventListener;
 import io.cucumber.plugin.event.EventHandler;
 import io.cucumber.plugin.event.EventPublisher;
@@ -33,11 +31,9 @@ import io.cucumber.plugin.event.TestRunStarted;
 import lombok.NonNull;
 import org.springframework.util.SocketUtils;
 
-import java.io.File;
-
 import static de.metas.async.model.validator.Main.SYSCONFIG_ASYNC_INIT_DELAY_MILLIS;
-import static de.metas.async.processor.impl.planner.QueueProcessorPlanner.SYSCONFIG_POLLINTERVAL_MILLIS;
 import static de.metas.async.model.validator.Main.SYSCONFIG_DEBOUNCER_DELAY_MILLIS;
+import static de.metas.async.processor.impl.planner.QueueProcessorPlanner.SYSCONFIG_POLLINTERVAL_MILLIS;
 import static de.metas.util.web.audit.ApiAuditService.CFG_INTERNAL_PORT;
 import static org.adempiere.ad.housekeeping.HouseKeepingService.SYSCONFIG_SKIP_HOUSE_KEEPING;
 
@@ -46,9 +42,6 @@ import static org.adempiere.ad.housekeeping.HouseKeepingService.SYSCONFIG_SKIP_H
  */
 public class CucumberLifeCycleSupport implements ConcurrentEventListener
 {
-	// keep in sync when moving cucumber OR the file {@code backend/.workspace-sql-scripts.properties}
-	public static final String RELATIVE_PATH_TO_METASFRESH_ROOT = "../..";
-
 	private final EventHandler<TestRunStarted> setup = event -> beforeAll();
 
 	private final EventHandler<TestRunFinished> teardown = event -> afterAll();
@@ -67,17 +60,6 @@ public class CucumberLifeCycleSupport implements ConcurrentEventListener
 
 		final String dbHost = infrastructureSupport.getDbHost();
 		final String dbPort = Integer.toString(infrastructureSupport.getDbPort());
-
-		if (infrastructureSupport.isRunAgainstDockerizedDatabase())
-		{
-			final File workspaceDir = new File(RELATIVE_PATH_TO_METASFRESH_ROOT);
-			final WorkspaceMigrateConfig migrateConfig = WorkspaceMigrateConfig.builder()
-					.workspaceDir(workspaceDir)
-					.onScriptFailure(OnScriptFailure.FAIL)
-					.dbUrl("jdbc:postgresql://" + dbHost + ":" + dbPort + "/metasfresh")
-					.build();
-			de.metas.migration.cli.workspace_migrate.Main.main(migrateConfig);
-		}
 
 		final int appServerPort = SocketUtils.findAvailableTcpPort(8080);
 		System.setProperty("server.port", Integer.toString(appServerPort));

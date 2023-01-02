@@ -24,6 +24,7 @@ package de.metas.cucumber;
 
 import de.metas.common.util.CoalesceUtil;
 import de.metas.logging.LogManager;
+import de.metas.migration.cli.workspace_migrate.WorkspaceMigrateConfig;
 import de.metas.util.StringUtils;
 import lombok.Getter;
 import org.slf4j.Logger;
@@ -31,6 +32,7 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.RabbitMQContainer;
 import org.testcontainers.utility.DockerImageName;
 
+import java.io.File;
 import java.time.Duration;
 
 import static org.assertj.core.api.Assertions.*;
@@ -38,6 +40,9 @@ import static org.assertj.core.api.Assertions.*;
 public class InfrastructureSupport
 {
 	private final static transient Logger logger = LogManager.getLogger(InfrastructureSupport.class);
+
+	// keep in sync when moving cucumber OR the file {@code backend/.workspace-sql-scripts.properties}
+	public static final String RELATIVE_PATH_TO_METASFRESH_ROOT = "../..";
 	
 	/**
 	 * Can be set when running/developing cucumber-tests locally.
@@ -47,14 +52,18 @@ public class InfrastructureSupport
 	 * - it's easier to inspect the local DB. In fact you can start the webapi (not ServerRoot aka app-server) and the frontend, and inspect everything in the UI.
 	 * <p>
 	 * The drawback is that your DB is probably polluted which might be an additional reason for possible test failures.
-	 * To always run your cucumber-tests on an "unpolluted" DB, 
+	 * To always run your cucumber-tests on an "unpolluted" DB,
 	 * you can use (with git bash) the three shell scripts from {@code backend/de.metas.cucumber/dev-support}.
 	 */
 	public static final String ENV_DB_PORT_OF_EXTERNALLY_RUNNING_POSTGRESQL = "CUCUMBER_DB_PORT_OF_EXTERNALLY_RUNNING_POSTGRESQL";
 
+	/**
+	 * {@code true} means that a database with all required migration-scripts is already running 
+	 * {@code false} means that we need to start up our own postgresql and will also apply the location migration-scripts to bring that DB up to date.
+	 */
 	@Getter
-	private boolean runAgainstDockerizedDatabase = true;
-	
+	private boolean runAgainstProvidedDatabase = false;
+
 	@Getter
 	private boolean cucumberIsUsingProvidedInfrastructure;
 
@@ -87,7 +96,9 @@ public class InfrastructureSupport
 
 		// note that this will only matter if CUCUMBER_IS_USING_PROVIDED_INFRASTRUCTURE is false
 		final int dbPortFromEnvVar = StringUtils.toIntegerOrZero(System.getenv(ENV_DB_PORT_OF_EXTERNALLY_RUNNING_POSTGRESQL));
-		runAgainstDockerizedDatabase = dbPortFromEnvVar == 0; // if a DB port was provided, it means that we want to run against an externally provided DB
+		runAgainstProvidedDatabase =
+				dbPortFromEnvVar > 0 // if a DB port was provided, it means that we want to run against an externally provided DB
+						|| cucumberIsUsingProvidedInfrastructure;
 
 		dbPort = CoalesceUtil.firstGreaterThanZero(
 				dbPortFromEnvVar,
@@ -117,7 +128,7 @@ public class InfrastructureSupport
 		rabbitUser = rabbitMQContainer.getAdminUsername();
 		rabbitPassword = rabbitMQContainer.getAdminPassword();
 
-		if (runAgainstDockerizedDatabase)
+		if (!runAgainstProvidedDatabase)
 		{
 			// choose the docker tag such that no later scripts from other branches are already in this image 
 			final String fullImageName = "metasfresh/metasfresh-db:5.176.1_23146_master";
@@ -134,6 +145,15 @@ public class InfrastructureSupport
 			dbHost = db.getHost();
 			dbPort = db.getFirstMappedPort();
 			logger.info("dockerized metasfresh-db {} runs at {}:{}", fullImageName, dbHost, dbPort);
+
+			// apply our local migration scripts to get our DB up to date
+			final File workspaceDir = new File(RELATIVE_PATH_TO_METASFRESH_ROOT);
+			final WorkspaceMigrateConfig migrateConfig = WorkspaceMigrateConfig.builder()
+					.workspaceDir(workspaceDir)
+					.onScriptFailure(WorkspaceMigrateConfig.OnScriptFailure.FAIL)
+					.dbUrl("jdbc:postgresql://" + dbHost + ":" + dbPort + "/metasfresh")
+					.build();
+			de.metas.migration.cli.workspace_migrate.Main.main(migrateConfig);
 		}
 		else
 		{
