@@ -2,7 +2,7 @@
  * #%L
  * de.metas.cucumber
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -23,13 +23,9 @@
 package de.metas.cucumber;
 
 import de.metas.ServerBoot;
-import de.metas.migration.cli.workspace_migrate.WorkspaceMigrateConfig;
-import de.metas.migration.cli.workspace_migrate.WorkspaceMigrateConfig.OnScriptFailure;
 import org.adempiere.service.ClientId;
 import org.compiere.util.Env;
 import org.springframework.util.SocketUtils;
-
-import java.io.File;
 
 import static de.metas.async.model.validator.Main.SYSCONFIG_ASYNC_INIT_DELAY_MILLIS;
 import static de.metas.async.processor.impl.planner.QueueProcessorPlanner.SYSCONFIG_POLLINTERVAL_MILLIS;
@@ -43,9 +39,6 @@ import static org.adempiere.ad.housekeeping.HouseKeepingService.SYSCONFIG_SKIP_H
  */
 public class CucumberLifeCycleSupport
 {
-	// keep in sync when moving cucumber OR the file {@code backend/.workspace-sql-scripts.properties}
-	public static final String RELATIVE_PATH_TO_METASFRESH_ROOT = "../..";
-
 	private static boolean beforeAllMethodDone;
 
 	public static void beforeAll()
@@ -61,17 +54,6 @@ public class CucumberLifeCycleSupport
 
 			final String dbHost = infrastructureSupport.getDbHost();
 			final String dbPort = Integer.toString(infrastructureSupport.getDbPort());
-
-			if (infrastructureSupport.isRunAgainstDockerizedDatabase())
-			{
-				final File workspaceDir = new File(RELATIVE_PATH_TO_METASFRESH_ROOT);
-				final WorkspaceMigrateConfig migrateConfig = WorkspaceMigrateConfig.builder()
-						.workspaceDir(workspaceDir)
-						.onScriptFailure(OnScriptFailure.FAIL)
-						.dbUrl("jdbc:postgresql://" + dbHost + ":" + dbPort + "/metasfresh")
-						.build();
-				de.metas.migration.cli.workspace_migrate.Main.main(migrateConfig);
-			}
 
 			final int appServerPort = SocketUtils.findAvailableTcpPort(8080);
 			System.setProperty("server.port", Integer.toString(appServerPort));
