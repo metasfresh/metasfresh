@@ -106,6 +106,7 @@ public class AsyncBatchService
 	/**
 	 * Enqueues and waits for the workpackages to finish, successfully or exceptionally.
 	 * It's mandatory for the given Supplier<> to enqueue workpackages previously assigned to the given async batch.
+	 * If the supplier enqueues no workpackages
 	 *
 	 * @param supplier     Supplier<>
 	 * @param asyncBatchId C_Async_Batch_ID
@@ -124,8 +125,8 @@ public class AsyncBatchService
 
 			if (result.getWorkpackageEnqueuedCount() > 0)
 			{
-			asyncBatchObserver.waitToBeProcessed(asyncBatchId);
-		}
+				asyncBatchObserver.waitToBeProcessed(asyncBatchId);
+			}
 			else 
 			{
 				Loggables.withLogger(logger, Level.INFO).addLog("*** executeBatch: C_Async_Batch_ID: {} no workpackages were enqeued; Not waiting for asyncBatchObserver!", asyncBatchId.getRepoId());

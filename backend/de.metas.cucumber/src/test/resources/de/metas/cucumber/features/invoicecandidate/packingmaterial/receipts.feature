@@ -3309,6 +3309,7 @@ Feature: Packing material invoice candidates: receipts
 
   @Id:S0160_510
   @from:cucumber
+  @dev:runThisOne    
   Scenario: Void receipt similar with case 160
   _Given TU packing material (IFCO) x 10 CUs
   _And LU packing material (Tauschpalette) x 76 TUs

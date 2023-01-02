@@ -168,10 +168,7 @@ public class OrderService
 	{
 		final ImmutablePair<AsyncBatchId, I_C_Order> batchIdWithOrder = asyncBatchBL.assignPermAsyncBatchToModelIfMissing(order, C_Async_Batch_InternalName_EnqueueScheduleForOrder);
 
-		final Supplier<Void> action = () -> {
-			CreateMissingShipmentSchedulesWorkpackageProcessor.scheduleIfNotPostponed(batchIdWithOrder.getRight());
-			return null;
-		};
+		final Supplier<IEnqueueResult> action = () -> CreateMissingShipmentSchedulesWorkpackageProcessor.scheduleIfNotPostponed(batchIdWithOrder.getRight());
 
 		asyncBatchService.executeBatch(action, batchIdWithOrder.getLeft());
 	}

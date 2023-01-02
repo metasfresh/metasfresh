@@ -22,19 +22,19 @@ package de.metas.invoicecandidate.api;
  * #L%
  */
 
+import de.metas.async.api.IEnqueueResult;
+import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
+import de.metas.lock.api.ILock;
 
 import java.math.BigDecimal;
 import java.util.Properties;
-
-import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
-import de.metas.lock.api.ILock;
 
 /**
  * Result containing information about what was successfully enqueued by {@link IInvoiceCandidateEnqueuer}.
  *
  * @author al
  */
-public interface IInvoiceCandidateEnqueueResult
+public interface IInvoiceCandidateEnqueueResult extends IEnqueueResult
 {
 	/** @return user friendly (translated) summary about what was enqueued */
 	String getSummaryTranslated(final Properties ctx);
