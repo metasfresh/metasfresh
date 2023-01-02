@@ -4,6 +4,7 @@ import lombok.EqualsAndHashCode;
 import lombok.NonNull;
 import lombok.ToString;
 
+import javax.annotation.Nullable;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -22,17 +23,26 @@ public class InstantAndOrgId implements Comparable<InstantAndOrgId>
 		this.orgId = orgId;
 	}
 
-	public static InstantAndOrgId ofInstant(@NonNull final Instant instant, @NonNull final OrgId orgId)
+	public @NonNull static InstantAndOrgId ofInstant(@NonNull final Instant instant, @NonNull final OrgId orgId)
 	{
 		return new InstantAndOrgId(instant, orgId);
 	}
 
-	public static InstantAndOrgId ofTimestamp(@NonNull final java.sql.Timestamp timestamp, @NonNull final OrgId orgId)
+	public @Nullable static InstantAndOrgId ofTimestampOrNull(@Nullable final java.sql.Timestamp timestamp, @NonNull final OrgId orgId)
+	{
+		if(timestamp == null)
+		{
+			return null;
+		}
+		return ofTimestamp(timestamp, orgId);
+	}
+	
+	public @NonNull static InstantAndOrgId ofTimestamp(@NonNull final java.sql.Timestamp timestamp, @NonNull final OrgId orgId)
 	{
 		return new InstantAndOrgId(timestamp.toInstant(), orgId);
 	}
 
-	public static InstantAndOrgId ofTimestamp(@NonNull final java.sql.Timestamp timestamp, final int orgRepoId)
+	public @NonNull static InstantAndOrgId ofTimestamp(@NonNull final java.sql.Timestamp timestamp, final int orgRepoId)
 	{
 		return new InstantAndOrgId(timestamp.toInstant(), OrgId.ofRepoId(orgRepoId));
 	}
@@ -41,11 +51,11 @@ public class InstantAndOrgId implements Comparable<InstantAndOrgId>
 
 	public Instant toInstant() {return instant;}
 
-	public ZonedDateTime toZonedDateTime(@NonNull final ZoneId zoneId) {return instant.atZone(zoneId);}
+	public @NonNull ZonedDateTime toZonedDateTime(@NonNull final ZoneId zoneId) {return instant.atZone(zoneId);}
 
-	public ZonedDateTime toZonedDateTime(@NonNull final Function<OrgId, ZoneId> orgMapper) {return instant.atZone(orgMapper.apply(orgId));}
+	public @NonNull ZonedDateTime toZonedDateTime(@NonNull final Function<OrgId, ZoneId> orgMapper) {return instant.atZone(orgMapper.apply(orgId));}
 
-	public java.sql.Timestamp toTimestamp() {return java.sql.Timestamp.from(instant);}
+	public @NonNull java.sql.Timestamp toTimestamp() {return java.sql.Timestamp.from(instant);}
 
 	@Override
 	public int compareTo(@NonNull final InstantAndOrgId other) {return this.instant.compareTo(other.instant);}
