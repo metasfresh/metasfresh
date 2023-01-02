@@ -2,7 +2,7 @@
  * #%L
  * de.metas.async
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -86,24 +86,21 @@ public class AsyncBatchService
 				.filter(I_C_Queue_WorkPackage::isError)
 				.count();
 
-		final int workPackagesFinalized = workPackagesProcessedCount + workPackagesWithErrorCount;
-
 		Loggables.withLogger(logger, Level.INFO).addLog("*** processAsyncBatch for: asyncBatchID: " + asyncBatch.getC_Async_Batch_ID() +
 																" allWPSize: " + workPackages.size() +
 																" processedWPSize: " + workPackagesProcessedCount +
 																" erroredWPSize: " + workPackagesWithErrorCount);
 
-		if (workPackagesFinalized >= workPackages.size())
-		{
 			final AsyncBatchNotifyRequest request = AsyncBatchNotifyRequest.builder()
 					.clientId(Env.getClientId())
 					.asyncBatchId(AsyncBatchId.toRepoId(asyncBatchId))
-					.success(workPackagesWithErrorCount <= 0)
+				.noOfProcessedWPs(workPackagesProcessedCount)
+				.noOfEnqueuedWPs(workPackages.size())
+				.noOfErrorWPs(workPackagesWithErrorCount)
 					.build();
 
 			asyncBatchEventBusService.postRequest(request);
 		}
-	}
 
 	/**
 	 * Enqueues and waits for the workpackages to finish, successfully or exceptionally.
