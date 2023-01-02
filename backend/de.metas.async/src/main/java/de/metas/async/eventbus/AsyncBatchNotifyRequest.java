@@ -2,7 +2,7 @@
  * #%L
  * de.metas.async
  * %%
- * Copyright (C) 2021 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -42,19 +42,31 @@ public class AsyncBatchNotifyRequest
 	@NonNull
 	Integer asyncBatchId;
 
-	@JsonProperty("success")
+	@JsonProperty("noOfProcessedWPs")
 	@NonNull
-	Boolean success;
+	Integer noOfProcessedWPs;
+
+	@JsonProperty("noOfErrorWPs")
+	@NonNull
+	Integer noOfErrorWPs;
+
+	@JsonProperty("noOfEnqueuedWPs")
+	@NonNull
+	Integer noOfEnqueuedWPs;
 
 	@JsonCreator
 	@Builder
 	public AsyncBatchNotifyRequest(
 			@JsonProperty("clientId") @NonNull final ClientId clientId,
 			@JsonProperty("asyncBatchId") @NonNull final Integer asyncBatchId,
-			@JsonProperty("success") @NonNull final Boolean success)
+			@JsonProperty("noOfProcessedWPs") @NonNull final Integer noOfProcessedWPs,
+			@JsonProperty("noOfErrorWPs") @NonNull final Integer noOfErrorWPs,
+			@JsonProperty("noOfEnqueuedWPs") @NonNull final Integer noOfEnqueuedWPs)
 	{
 		this.clientId = clientId;
 		this.asyncBatchId = asyncBatchId;
-		this.success = success;
+		this.noOfProcessedWPs = noOfProcessedWPs;
+		this.noOfErrorWPs = noOfErrorWPs;
+		this.noOfEnqueuedWPs = noOfEnqueuedWPs;
 	}
 }

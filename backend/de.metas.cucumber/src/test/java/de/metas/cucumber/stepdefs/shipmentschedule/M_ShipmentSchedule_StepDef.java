@@ -30,6 +30,8 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import de.metas.async.AsyncBatchId;
+import de.metas.async.model.I_C_Queue_WorkPackage;
 import de.metas.common.rest_api.v2.JsonAttributeSetInstance;
 import de.metas.common.shipping.v2.JsonProduct;
 import de.metas.common.shipping.v2.shipmentcandidate.JsonCustomer;
@@ -61,6 +63,7 @@ import de.metas.inoutcandidate.invalidation.IShipmentScheduleInvalidateRepositor
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit;
 import de.metas.inoutcandidate.model.I_M_ShipmentSchedule_Recompute;
+import de.metas.logging.LogManager;
 import de.metas.material.event.commons.AttributesKey;
 import de.metas.order.OrderId;
 import de.metas.rest_api.v2.attributes.JsonAttributeService;
@@ -94,6 +97,7 @@ import org.compiere.model.I_M_Product;
 import org.compiere.model.I_M_Shipper;
 import org.compiere.util.Env;
 import org.compiere.util.Trx;
+import org.slf4j.Logger;
 
 import javax.annotation.Nullable;
 import java.math.BigDecimal;
@@ -104,6 +108,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import static de.metas.cucumber.stepdefs.StepDefConstants.TABLECOLUMN_IDENTIFIER;
+import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_C_Async_Batch_ID;
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID;
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule.COLUMNNAME_QtyToDeliver;
 import static de.metas.inoutcandidate.model.I_M_ShipmentSchedule_ExportAudit.COLUMNNAME_M_ShipmentSchedule_ExportAudit_ID;
@@ -115,6 +120,8 @@ import static org.junit.Assert.assertNotNull;
 
 public class M_ShipmentSchedule_StepDef
 {
+	private final static Logger logger = LogManager.getLogger(M_ShipmentSchedule_StepDef.class);
+
 	private static final String SHIP_BPARTNER = "shipBPartner";
 	private static final String BILL_BPARTNER = "billBPartner";
 
@@ -269,7 +276,15 @@ public class M_ShipmentSchedule_StepDef
 		final List<Map<String, String>> tableRows = dataTable.asMaps(String.class, String.class);
 		for (final Map<String, String> tableRow : tableRows)
 		{
-			generateShipmentForSchedule(tableRow);
+			try
+			{
+				generateShipmentForSchedule(tableRow);
+			}
+			catch (final Throwable e)
+			{
+				logWorkPackageProgressForShipmentSchedule(tableRow);
+				throw e;
+			}
 		}
 	}
 
@@ -834,5 +849,52 @@ public class M_ShipmentSchedule_StepDef
 		assertThat(jsonCustomer.getLanguage()).isEqualTo(language);
 		assertThat(jsonCustomer.isCompany()).isEqualTo(isCompany);
 		assertThat(jsonCustomer.getCompanyName()).isEqualTo(companyName);
+	}
+
+	private void logWorkPackageProgressForShipmentSchedule(@NonNull final Map<String, String> tableRow)
+	{
+		final String shipmentScheduleIdentifier = DataTableUtil.extractStringOrNullForColumnName(tableRow, I_M_ShipmentSchedule.COLUMNNAME_M_ShipmentSchedule_ID + "." + StepDefConstants.TABLECOLUMN_IDENTIFIER);
+
+		if (shipmentScheduleIdentifier == null)
+		{
+			logger.info("No shipment schedule identifier present --> Cannot log work package progress!");
+			return;
+		}
+
+		final I_M_ShipmentSchedule shipmentSchedule = shipmentScheduleTable.get(shipmentScheduleIdentifier);
+		assertThat(shipmentSchedule).isNotNull();
+
+		final AsyncBatchId asyncBatchId = AsyncBatchId.ofRepoIdOrNull(shipmentSchedule.getC_Async_Batch_ID());
+
+		if (asyncBatchId == null)
+		{
+			logger.info("M_ShipmentSchedule.C_AsyncBatch_ID = null --> Cannot log work package progress!");
+			return;
+		}
+
+		final StringBuilder message = new StringBuilder();
+
+		message.append("Looking for instance with:").append("\n")
+				.append(COLUMNNAME_C_Async_Batch_ID).append(" : ").append(asyncBatchId.getRepoId()).append("\n");
+
+		message.append("C_Queue_WorkPackage records:").append("\n");
+
+		queryBL.createQueryBuilder(I_C_Queue_WorkPackage.class)
+				.addOnlyActiveRecordsFilter()
+				.addEqualsFilter(I_C_Queue_WorkPackage.COLUMNNAME_C_Async_Batch_ID, asyncBatchId)
+				.create()
+				.stream(I_C_Queue_WorkPackage.class)
+				.forEach(wp -> message
+						.append(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_WorkPackage_ID).append(" : ").append(wp.getC_Queue_WorkPackage_ID()).append(" ; ")
+						.append(I_C_Queue_WorkPackage.COLUMNNAME_Created).append(" : ").append(wp.getCreated()).append(" ; ")
+						.append(I_C_Queue_WorkPackage.COLUMNNAME_Updated).append(" : ").append(wp.getUpdated()).append(" ; ")
+						.append(I_C_Queue_WorkPackage.COLUMNNAME_C_Queue_PackageProcessor_ID).append(" : ").append(wp.getC_Queue_PackageProcessor_ID()).append(" ; ")
+						.append(I_C_Queue_WorkPackage.COLUMNNAME_Processed).append(" : ").append(wp.isProcessed()).append(" ; ")
+						.append(I_C_Queue_WorkPackage.COLUMNNAME_IsError).append(" : ").append(wp.isError()).append(" ; ")
+						.append(I_C_Queue_WorkPackage.COLUMNNAME_IsReadyForProcessing).append(" : ").append(wp.isReadyForProcessing()).append(" ; ")
+						.append(I_C_Queue_WorkPackage.COLUMNNAME_SkippedAt).append(" : ").append(wp.getSkippedAt()).append(" ; ")
+						.append("\n"));
+
+		logger.error("*** Work package progress: \n" + message);
 	}
 }
