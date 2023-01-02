@@ -1,0 +1,20 @@
+{
+  "size": 58,
+  "page": 1,
+  "orderBy": [
+    {
+      "fieldName": "Name",
+      "ascending": true
+    },
+    {
+      "fieldName": "C_BPartner_ID",
+      "ascending": true
+    }
+  ],
+  "disablePaginationShortcuts": false,
+  "selected": [
+    "2156434"
+  ],
+  "pageLength": 20,
+  "rowLength": 20
+}

@@ -1,0 +1,18 @@
+{
+  "caption": "Drucken",
+  "okButtonCaption": "Drucken",
+  "options": [
+    {
+      "caption": "Logo drucken",
+      "description": "",
+      "internalName": "PRINTER_OPTS_IsPrintLogo",
+      "value": false
+    },
+    {
+      "caption": "Gesamtbeträge drucken",
+      "description": "",
+      "internalName": "PRINTER_OPTS_IsPrintTotals",
+      "value": true
+    }
+  ]
+}

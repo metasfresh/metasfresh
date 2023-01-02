@@ -1,0 +1,19 @@
+{
+  "top_actions1": {
+    "actions": [
+      {
+        "processId": "ADP_541038",
+        "caption": "Products Proposal",
+        "description": "",
+        "displayPlaces": [
+          "IncludedTabTopActionsMenu"
+        ],
+        "quickAction": false,
+        "defaultQuickAction": false,
+        "shortcut": "Alt-Z",
+        "evaluateDuration": "217.1 μs",
+        "internalName": "WEBUI_Order_ProductsProposal_Launcher"
+      }
+    ]
+  }
+}

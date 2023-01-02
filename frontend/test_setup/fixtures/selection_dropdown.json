@@ -1,0 +1,23 @@
+{
+  "data1": {
+    "options": [
+      {
+        "caption": "Hansen, Hansa",
+        "key": "2188251"
+      },
+      {
+        "caption": "Winterbottom, Martin",
+        "key": "2188243"
+      },
+      {
+        "caption": "none",
+        "key": null
+      }
+    ]
+  },
+  "widgetData1": {
+    "empty": "There is no choice available",
+    "loading": false,
+    "width": 190
+  }
+}

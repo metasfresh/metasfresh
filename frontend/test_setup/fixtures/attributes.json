@@ -1,0 +1,228 @@
+{
+  "data1": {
+    "widgetProps": {
+      "entity": "window",
+      "docType": "123",
+      "dataId": "1",
+      "tabId": "8",
+      "rowId": "2",
+      "fieldName": "C_Location_ID",
+      "value": "",
+      "attributeType": "address",
+      "tabIndex": 0
+    },
+    "newInstanceResponse": {
+      "id": "66",
+      "layout": {
+        "elements": [
+          {
+            "caption": "Address 1",
+            "description": "",
+            "widgetType": "Text",
+            "fields": [
+              {
+                "field": "Address1",
+                "emptyText": "none"
+              }
+            ]
+          },
+          {
+            "caption": "Address 2",
+            "description": "",
+            "widgetType": "Text",
+            "fields": [
+              {
+                "field": "Address2",
+                "emptyText": "none"
+              }
+            ]
+          },
+          {
+            "caption": "Address 3",
+            "description": "",
+            "widgetType": "Text",
+            "fields": [
+              {
+                "field": "Address3",
+                "emptyText": "none"
+              }
+            ]
+          },
+          {
+            "caption": "Address 4",
+            "description": "",
+            "widgetType": "Text",
+            "fields": [
+              {
+                "field": "Address4",
+                "emptyText": "none"
+              }
+            ]
+          },
+          {
+            "caption": "ZIP",
+            "description": "",
+            "widgetType": "Text",
+            "fields": [
+              {
+                "field": "Postal",
+                "emptyText": "none"
+              }
+            ]
+          },
+          {
+            "caption": "City",
+            "description": "",
+            "widgetType": "Text",
+            "fields": [
+              {
+                "field": "City",
+                "emptyText": "none"
+              }
+            ]
+          },
+          {
+            "caption": "Region",
+            "description": "",
+            "widgetType": "Lookup",
+            "fields": [
+              {
+                "field": "C_Region_ID",
+                "source": "lookup",
+                "emptyText": "none",
+                "supportZoomInto": true
+              }
+            ]
+          },
+          {
+            "caption": "Country",
+            "description": "",
+            "widgetType": "Lookup",
+            "fields": [
+              {
+                "field": "C_Country_ID",
+                "source": "lookup",
+                "emptyText": "none",
+                "supportZoomInto": true
+              }
+            ]
+          }
+        ]
+      },
+      "fieldsByName": {
+        "ID": {
+          "field": "ID",
+          "value": 66,
+          "widgetType": "Integer"
+        },
+        "Address1": {
+          "field": "Address1",
+          "value": null,
+          "readonly": false,
+          "mandatory": false,
+          "displayed": true,
+          "widgetType": "Text",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "Address1"
+          }
+        },
+        "Address2": {
+          "field": "Address2",
+          "value": null,
+          "readonly": false,
+          "mandatory": false,
+          "displayed": true,
+          "widgetType": "Text",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "Address2"
+          }
+        },
+        "Address3": {
+          "field": "Address3",
+          "value": null,
+          "readonly": false,
+          "mandatory": false,
+          "displayed": true,
+          "widgetType": "Text",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "Address3"
+          }
+        },
+        "Address4": {
+          "field": "Address4",
+          "value": null,
+          "readonly": false,
+          "mandatory": false,
+          "displayed": true,
+          "widgetType": "Text",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "Address4"
+          }
+        },
+        "Postal": {
+          "field": "Postal",
+          "value": null,
+          "readonly": false,
+          "mandatory": false,
+          "displayed": true,
+          "widgetType": "Text",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "Postal"
+          }
+        },
+        "City": {
+          "field": "City",
+          "value": null,
+          "readonly": false,
+          "mandatory": false,
+          "displayed": true,
+          "widgetType": "Text",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "City"
+          }
+        },
+        "C_Region_ID": {
+          "field": "C_Region_ID",
+          "value": null,
+          "readonly": false,
+          "mandatory": false,
+          "displayed": false,
+          "lookupValuesStale": true,
+          "widgetType": "Lookup",
+          "validStatus": {
+            "valid": true,
+            "initialValue": true,
+            "fieldName": "C_Region_ID"
+          }
+        },
+        "C_Country_ID": {
+          "field": "C_Country_ID",
+          "value": null,
+          "readonly": false,
+          "mandatory": true,
+          "displayed": true,
+          "lookupValuesStale": true,
+          "widgetType": "Lookup",
+          "validStatus": {
+            "valid": false,
+            "initialValue": true,
+            "reason": "Mandatory field C_Country_ID not filled",
+            "fieldName": "C_Country_ID"
+          }
+        }
+      }
+    }
+  }
+}

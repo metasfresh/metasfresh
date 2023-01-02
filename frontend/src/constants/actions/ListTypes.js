@@ -1,0 +1,7 @@
+export const SET_LIST_ID = 'SET_LIST_ID';
+
+export const SET_LIST_FILTERS = 'SET_LIST_FILTERS';
+
+export const SET_LIST_SORTING = 'SET_LIST_SORTING';
+
+export const SET_LIST_PAGINATION = 'SET_LIST_PAGINATION';

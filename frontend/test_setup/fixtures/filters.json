@@ -1,0 +1,875 @@
+{
+  "data1": {
+    "filters": [
+      {
+        "caption": "Filter",
+        "includedFilters": [
+          {
+            "filterId": "location-area-search",
+            "caption": "Area Search",
+            "inlineRenderMode": "button",
+            "parametersLayoutType": "panel",
+            "parameters": [
+              {
+                "caption": "Street & House No.",
+                "parameterName": "Address1",
+                "widgetType": "Text",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "ZIP",
+                "parameterName": "Postal",
+                "widgetType": "Text",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "City",
+                "parameterName": "City",
+                "widgetType": "Text",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Country",
+                "parameterName": "C_Country_ID",
+                "widgetType": "Lookup",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Distance",
+                "parameterName": "Distance",
+                "widgetType": "Integer",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Visitors Address",
+                "parameterName": "VisitorsAddress",
+                "widgetType": "YesNo",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primaryLongLabels"
+              }
+            ],
+            "debugProperties": {}
+          },
+          {
+            "filterId": "userquery-540039",
+            "caption": "Angebote",
+            "inlineRenderMode": "button",
+            "parametersLayoutType": "panel",
+            "debugProperties": {}
+          },
+          {
+            "filterId": "userquery-540040",
+            "caption": "Aufträge",
+            "inlineRenderMode": "button",
+            "parametersLayoutType": "panel",
+            "parameters": [
+              {
+                "caption": "Target Document Type",
+                "parameterName": "C_DocTypeTarget_ID",
+                "widgetType": "List",
+                "range": false,
+                "defaultValue": {
+                  "key": "1000030",
+                  "caption": "Sales Order",
+                  "description": "This text was recorded in the \"Description\" line of the data entry \"Sales Order\" under DOCUMENT TYPE TRANSLATION in the menu."
+                },
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              }
+            ],
+            "debugProperties": {}
+          },
+          {
+            "filterId": "userquery-1000016",
+            "caption": "Offene Aufträge",
+            "inlineRenderMode": "button",
+            "parametersLayoutType": "panel",
+            "debugProperties": {}
+          },
+          {
+            "filterId": "userquery-1000001",
+            "caption": "Test",
+            "inlineRenderMode": "button",
+            "parametersLayoutType": "panel",
+            "parameters": [
+              {
+                "caption": "Business Partner ",
+                "parameterName": "C_BPartner_ID",
+                "widgetType": "Lookup",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Date",
+                "parameterName": "DateOrdered",
+                "widgetType": "Date",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Target Document Type",
+                "parameterName": "C_DocTypeTarget_ID",
+                "widgetType": "List",
+                "range": false,
+                "defaultValue": {
+                  "key": "1000030",
+                  "caption": "Sales Order",
+                  "description": "This text was recorded in the \"Description\" line of the data entry \"Sales Order\" under DOCUMENT TYPE TRANSLATION in the menu."
+                },
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Document Status",
+                "parameterName": "DocStatus",
+                "widgetType": "List",
+                "range": false,
+                "defaultValue": {
+                  "key": "CO",
+                  "caption": "Completed"
+                },
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              }
+            ],
+            "debugProperties": {}
+          },
+          {
+            "filterId": "default",
+            "caption": "Default",
+            "inlineRenderMode": "button",
+            "parametersLayoutType": "panel",
+            "parameters": [
+              {
+                "caption": "Date Promised",
+                "parameterName": "DatePromised",
+                "widgetType": "Date",
+                "range": true,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Business Partner ",
+                "parameterName": "C_BPartner_ID",
+                "widgetType": "Lookup",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "No.",
+                "parameterName": "DocumentNo",
+                "widgetType": "Text",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Order Reference",
+                "parameterName": "POReference",
+                "widgetType": "Text",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Document Type",
+                "parameterName": "C_DocType_ID",
+                "widgetType": "List",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Document Status",
+                "parameterName": "DocStatus",
+                "widgetType": "List",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Created By",
+                "parameterName": "CreatedBy",
+                "widgetType": "List",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Organisation",
+                "parameterName": "AD_Org_ID",
+                "widgetType": "Lookup",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Tour",
+                "parameterName": "M_Tour_ID",
+                "widgetType": "Lookup",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Error",
+                "parameterName": "IsError",
+                "widgetType": "YesNo",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primaryLongLabels"
+              }
+            ],
+            "debugProperties": {}
+          }
+        ],
+        "debugProperties": {}
+      },
+      {
+        "filterId": "default-date",
+        "caption": "Date",
+        "inlineRenderMode": "button",
+        "parametersLayoutType": "panel",
+        "parameters": [
+          {
+            "caption": "Date",
+            "parameterName": "DateOrdered",
+            "widgetType": "Date",
+            "range": true,
+            "defaultValue": null,
+            "defaultValueTo": null,
+            "mandatory": false,
+            "displayed": true,
+            "readonly": false,
+            "type": "primary"
+          }
+        ],
+        "debugProperties": {}
+      }
+    ],
+    "filtersActive": {},
+    "initialValuesNulled": {},
+    "viewId": "143-O",
+    "windowType": "143"
+  },
+  "filtersActive1": [
+    {
+      "filterId": "default",
+      "parameters": [
+        {
+          "parameterName": "C_DocType_ID",
+          "value": {
+            "key": "540944",
+            "caption": "Akontozahlung"
+          },
+          "valueTo": null
+        },
+        {
+          "parameterName": "DocStatus",
+          "value": {
+            "key": "CO",
+            "caption": "Completed"
+          },
+          "valueTo": null
+        },
+        {
+          "parameterName": "IsError",
+          "value": true,
+          "valueTo": false
+        }
+      ]
+    }
+  ],
+  "filtersActive2": [
+    {
+      "filterId": "default",
+      "parameters": [
+        {
+          "parameterName": "C_DocType_ID",
+          "value": {
+            "key": "540944",
+            "caption": "Akontozahlung"
+          },
+          "valueTo": null
+        },
+        {
+          "parameterName": "DocStatus",
+          "value": {
+            "key": "CO",
+            "caption": "Completed"
+          },
+          "valueTo": null
+        }
+      ]
+    }
+  ],
+  "data2": {
+    "filters": [
+      {
+        "caption": "Filter",
+        "includedFilters": [
+          {
+            "filterId": "userquery-1000002",
+            "caption": "Abrechnung_2018",
+            "inlineRenderMode": "button",
+            "parametersLayoutType": "panel",
+            "parameters": [
+              {
+                "caption": "To invoice eff.( stock unit)",
+                "parameterName": "QtyToInvoice",
+                "widgetType": "Quantity",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              }
+            ],
+            "debugProperties": {}
+          },
+          {
+            "filterId": "default",
+            "caption": "Default",
+            "inlineRenderMode": "button",
+            "parametersLayoutType": "panel",
+            "parameters": [
+              {
+                "caption": "Bill Partner",
+                "parameterName": "Bill_BPartner_ID",
+                "widgetType": "Lookup",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Order Reference",
+                "parameterName": "POReference",
+                "widgetType": "Text",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "External Header ID",
+                "parameterName": "ExternalHeaderId",
+                "widgetType": "Text",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Activity",
+                "parameterName": "C_Activity_ID",
+                "widgetType": "List",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "DocType Invoice",
+                "parameterName": "C_DocTypeInvoice_ID",
+                "widgetType": "List",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Invoicecandidate Controller",
+                "parameterName": "C_ILCandHandler_ID",
+                "widgetType": "List",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Invoice Schedule",
+                "parameterName": "C_InvoiceSchedule_ID",
+                "widgetType": "List",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Order Partner",
+                "parameterName": "C_Order_BPartner",
+                "widgetType": "Lookup",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Sales/Purchase Order",
+                "parameterName": "C_Order_ID",
+                "widgetType": "Lookup",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Approved for Invoicing",
+                "parameterName": "ApprovalForInvoicing",
+                "widgetType": "YesNo",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primaryLongLabels"
+              },
+              {
+                "caption": "EDI INVOIC Receipient",
+                "parameterName": "IsEdiInvoicRecipient",
+                "widgetType": "YesNo",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primaryLongLabels"
+              },
+              {
+                "caption": "Error",
+                "parameterName": "IsError",
+                "widgetType": "YesNo",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primaryLongLabels"
+              },
+              {
+                "caption": "Material Tracking",
+                "parameterName": "IsMaterialTracking",
+                "widgetType": "YesNo",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primaryLongLabels"
+              },
+              {
+                "caption": "Processed",
+                "parameterName": "Processed",
+                "widgetType": "YesNo",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primaryLongLabels"
+              },
+              {
+                "caption": "Sales Invoice",
+                "parameterName": "IsSOTrx",
+                "widgetType": "YesNo",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primaryLongLabels"
+              },
+              {
+                "caption": "In Dispute",
+                "parameterName": "IsInDispute",
+                "widgetType": "YesNo",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primaryLongLabels"
+              },
+              {
+                "caption": "Shipment/Receipt",
+                "parameterName": "M_InOut_ID",
+                "widgetType": "Lookup",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Material Tracking ID",
+                "parameterName": "M_Material_Tracking_ID",
+                "widgetType": "Lookup",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Pricing System",
+                "parameterName": "M_PricingSystem_ID",
+                "widgetType": "Lookup",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Product Category",
+                "parameterName": "M_Product_Category_ID",
+                "widgetType": "Lookup",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Product",
+                "parameterName": "M_Product_ID",
+                "widgetType": "Lookup",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Delivered (stock unit)",
+                "parameterName": "QtyDelivered",
+                "widgetType": "Quantity",
+                "range": true,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Currency",
+                "parameterName": "C_Currency_ID",
+                "widgetType": "List",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              },
+              {
+                "caption": "Organisation",
+                "parameterName": "AD_Org_ID",
+                "widgetType": "Lookup",
+                "range": false,
+                "defaultValue": null,
+                "defaultValueTo": null,
+                "mandatory": false,
+                "displayed": true,
+                "readonly": false,
+                "type": "primary"
+              }
+            ],
+            "debugProperties": {}
+          }
+        ],
+        "debugProperties": {}
+      },
+      {
+        "filterId": "default-date",
+        "caption": "Shipmentdate",
+        "inlineRenderMode": "button",
+        "parametersLayoutType": "panel",
+        "parameters": [
+          {
+            "caption": "Shipmentdate",
+            "parameterName": "DeliveryDate",
+            "widgetType": "Date",
+            "range": true,
+            "defaultValue": null,
+            "defaultValueTo": null,
+            "mandatory": false,
+            "displayed": true,
+            "readonly": false,
+            "type": "primary"
+          }
+        ],
+        "debugProperties": {}
+      },
+      {
+        "filterId": "facet-C_Order_ID",
+        "caption": "Sales/Purchase Order",
+        "inlineRenderMode": "button",
+        "parametersLayoutType": "panel",
+        "parameters": [
+          {
+            "caption": "Sales/Purchase Order",
+            "parameterName": "C_Order_ID",
+            "widgetType": "List",
+            "multiListValue": true,
+            "range": false,
+            "defaultValue": null,
+            "defaultValueTo": null,
+            "mandatory": true,
+            "displayed": true,
+            "readonly": false,
+            "type": "primary"
+          }
+        ],
+        "debugProperties": {}
+      },
+      {
+        "filterId": "facet-DeliveryDate",
+        "caption": "Shipmentdate",
+        "inlineRenderMode": "button",
+        "parametersLayoutType": "panel",
+        "parameters": [
+          {
+            "caption": "Shipmentdate",
+            "parameterName": "DeliveryDate",
+            "widgetType": "List",
+            "multiListValue": true,
+            "range": false,
+            "defaultValue": null,
+            "defaultValueTo": null,
+            "mandatory": true,
+            "displayed": true,
+            "readonly": false,
+            "type": "primary"
+          }
+        ],
+        "debugProperties": {}
+      },
+      {
+        "filterId": "facet-IsPackagingMaterial",
+        "caption": "Packaging Material ",
+        "inlineRenderMode": "button",
+        "parametersLayoutType": "panel",
+        "parameters": [
+          {
+            "caption": "Packaging Material ",
+            "parameterName": "IsPackagingMaterial",
+            "widgetType": "List",
+            "multiListValue": true,
+            "range": false,
+            "defaultValue": null,
+            "defaultValueTo": null,
+            "mandatory": true,
+            "displayed": true,
+            "readonly": false,
+            "type": "primary"
+          }
+        ],
+        "debugProperties": {}
+      }
+    ],
+    "filtersActive": {},
+    "initialValuesNulled": {},
+    "windowType": "540092",
+    "viewId": "540092-Ih"
+  },
+  "filtersActive3": [
+    {
+      "filterId": "default",
+      "parameters": [
+        {
+          "parameterName": "Processed",
+          "value": true,
+          "valueTo": false
+        }
+      ]
+    }
+  ],
+  "data3": {
+    "filters": [
+      {
+        "filterId": "default-date",
+        "caption": "Shipmentdate",
+        "frequent": true,
+        "inlineRenderMode": "button",
+        "parametersLayoutType": "panel",
+        "parameters": [
+          {
+            "caption": "Shipmentdate",
+            "parameterName": "DeliveryDate",
+            "widgetType": "Date",
+            "range": true,
+            "defaultValue": null,
+            "defaultValueTo": null,
+            "mandatory": false,
+            "displayed": true,
+            "readonly": false,
+            "type": "primary"
+          }
+        ],
+        "debugProperties": {}
+      },
+      {
+        "caption": "Filters",
+        "includedFilters": [
+          {
+            "filterId": "userquery-540024",
+            "caption": "Abrechnung_offen_normal",
+            "frequent": false,
+            "inlineRenderMode": "button",
+            "parametersLayoutType": "panel",
+            "debugProperties": {}
+          }
+        ]
+      }
+    ],
+    "filtersActive": {},
+    "initialValuesNulled": {},
+    "windowType": "540165",
+    "viewId": "540165-JG"
+  }
+}

@@ -1,0 +1,404 @@
+.nav-tabs {
+    display: flex;
+
+    .nav-link {
+        border: 1px solid $brand-border-color;
+        background-color: #fdfdfd;
+        cursor: pointer;
+        padding: .6rem 1.2rem;
+        font-weight: 400;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+
+        &.active {
+            font-weight: 600;
+        }
+    }
+
+    .nav-item.nav-item {
+        margin-right: .5rem;
+        margin-left: 0;
+        position: relative;
+    }
+
+    &.nested-tabs {
+        background-color: white;
+        border: 1px solid $brand-border-color;
+        border-left: none;
+        border-top: none;
+
+        .nav-item {
+            padding: 0;
+        }
+
+        .nav-link {
+            border: none;
+            background-color: white;
+
+            &:first-of-type {
+                border-left: 1px solid $brand-border-color;
+            }
+
+            &.active {
+                border: 1px solid $brand-border-color;
+                border-color: #e9ecef #e9ecef $brand-border-color;
+                border-bottom: none;
+                border-top: 1px solid transparent;
+                border-radius: 0;
+            }
+        }
+    }
+}
+
+.section {
+    .panel-size-button {
+        display: block;
+        width: auto;
+        height: auto;
+        margin-left: 10px;
+        border: none;
+        padding: 0;
+        top: 0;
+        right: 0;
+        z-index: 100;
+        border-radius: 2px;
+
+        .btn {
+            border: none;
+            background: inherit;
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+            box-shadow: none;
+        }
+
+        .icon {
+            display: block;
+
+            &:before {
+                display: block;
+            }
+
+            &.meta-icon-flip-horizontally {
+                transform-origin: 10px center;
+            }
+        }
+    }
+
+    .collapsible-section {
+        transition: height, padding .25s ease-in-out;
+        margin-bottom: 20px;
+
+        &.collapsed {
+            padding: 0;
+            height: 0;
+            margin-bottom: 0;
+            overflow: hidden;
+            transition: height, padding .25s ease-in-out;
+
+            * {
+                visibility: hidden;
+                transition: visibility .25s ease-in-out;
+            }
+        }
+
+        * {
+            transition: visibility .25s ease-in-out;
+        }
+    }
+}
+
+.tab-sections {
+    flex-grow: 1;
+    flex-direction: column;
+    display: flex;
+    overflow: visible;
+    position: relative;
+    padding-top: 2.5rem;
+
+    .btn-fullscreen {
+        position: absolute;
+        top: 0px;
+        right: 0px;
+        background: white;
+    }
+
+    .section {
+        background: white;
+        border: none;
+    }
+
+    .separator {
+        background-color: $brand-color-secondary;
+        border: 1px solid $brand-border-color;
+        border-radius: 3px 3px 0 0;
+        margin-top: 0;
+        padding: .50rem .7rem;
+        height: 42px;
+
+        .separator-title {
+            color: white;
+            line-height: 22px;
+            vertical-align: middle;
+            position: relative;
+        }
+    }
+
+    .panel {
+        padding-bottom: 0 !important;
+        overflow: visible;
+        background: $brand-bright-color;
+        border-top: none;
+        padding: 8px 0;
+    }
+
+    .table {
+        width: 100%;
+        margin-bottom: 0;
+
+        .table-context {
+            width: 100%;
+            display: flex;
+
+            &:last-child {
+                border: none;
+            }
+        }
+
+        td {
+            position: relative;
+            height: auto;
+
+            .input-table {
+                .input-field {
+                    background: transparent;
+                }
+            }
+
+            &.field-LongText {
+                .col-sm-9 {
+                    max-width: 75%;
+                }
+
+                .input-body-container {
+                    height: 6.8rem;
+                }
+
+                .input-block {
+                    padding: 0;
+                    height: 100%;
+                }
+
+                .input-field {
+                    padding: 5px;
+                    background: white;
+                    height: 100%;
+                }
+            }
+
+            &.field-Number, &.field-Text {
+                .input-block {
+                    padding: 0;
+                }
+
+                input {
+                    padding: 3px;
+                }
+            }
+
+            .row {
+                margin: 0;
+                flex-wrap: nowrap;
+            }
+
+            .form-group {
+                .input-primary, .input-secondary {
+                    padding-bottom: 0;
+                }
+            }
+
+            .form-control-label {
+                padding-left: 25px;
+            }
+
+            .widget-tooltip {
+                img {
+                    position: absolute;
+                    top: 15px;
+                    left: 10px;
+                }
+            }
+        }
+    }
+
+    .tooltip-wrapp {
+        margin-left: auto;
+    }
+}
+
+.tab-content {
+    border: 1px solid;
+    border-color: transparent $brand-border-color $brand-border-color $brand-border-color;
+    background-color: #fff;
+    border-bottom-right-radius: 3px;
+    border-bottom-left-radius: 3px;
+    padding: 1rem 1.2rem;
+
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.tabs-fullscreen {
+    position: fixed;
+    top: 55px;
+    left: 0;
+    width: 100%;
+    height: calc(100% - 55px);
+    background-color: #fff;
+    z-index: 99;
+    overflow-y: overlay;
+
+    &.container-fluid {
+        height: calc(100% - 55px);
+    }
+}
+
+.tab-pane {
+    display: none;
+    
+    &.active {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .btn-fullscreen {
+        position: absolute;
+        top: 0px;
+        right: 7px;
+
+        @media (min-width: $breakpoint-sm){
+            right: 15px;
+        }
+    }
+
+    .panel:not(.panel-prompt):not(.table-content-empty) {
+        padding-bottom: 100px;
+    }
+
+    .input-dropdown-list {
+        max-height: 100px;
+    }
+
+    tbody tr:last-child {
+        border-bottom: 1px solid $brand-border-color;
+    }
+
+    .table-wrapper .table-flex-wrapper:first-child {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+}
+
+.tabs-wrapper,
+.tabs-wrapper>div {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/** Inline TAB **/
+.inline-tab-wrapper {
+    width: 100%;
+    box-sizing: border-box;
+    .main-label {
+      font-weight: bold; 
+      color: #495057;
+    }
+    .inlinetab-action-button {
+      float:left;
+    }
+    .inlinetab-showmore {
+      float: right;
+    }
+    .bottom-offset {
+      margin-bottom: 5px;
+    }
+}
+.inline-tab-fullscreen-top-offset {
+  padding-top: 20px !important;
+}
+.inline-tab {
+    background: #E3E1E2;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 15px 10px 15px;
+    border-radius: 3px;
+    cursor: pointer;
+    margin-bottom:5px;
+
+    .arrow-pointer {
+      display: block;
+      float: left;
+      margin: 6px 8px 8px 0px;
+      width: 8px;
+      height: 8px;
+      border-top: 2px solid #000;
+      border-left: 2px solid #000;
+      transform: rotate(135deg);
+    }
+    .offset-left {
+      margin-left:15px;
+    }
+}
+
+.inline-tab:hover {
+  background-color: light-gray;
+}
+
+.inline-tab-offset-top {
+  margin-top: -5px;
+}
+
+.inline-tab-active {
+  background: #F6F4EF;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 15px 10px 15px;
+  border-radius: 3px;
+  cursor: pointer;
+  margin-bottom:5px;
+
+  .arrow-pointer {
+    display: block;
+    float: left;
+    margin: 4px 8px 8px 0px;
+    width: 8px;
+    height: 8px;
+    border-top: 2px solid #000;
+    border-left: 2px solid #000;
+    transform: rotate(224deg);
+  }
+  .offset-left {
+    margin-left:15px;
+  }
+  .inline-tab-separator {
+    width:100%;
+    border-top: 1px solid $brand-light-color;
+    margin: 10px 0px 10px 0px;
+    box-sizing: border-box;
+  }
+  .full-width {
+    width: 100%;
+  }
+  .inlinetab-form-header {
+    float:left;
+  }
+  .inlinetab-close {
+    float: right;
+  }
+}
+/** END Inline TAB **/
