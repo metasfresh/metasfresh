@@ -37,16 +37,15 @@ const ScanHUAndGetQtyComponent = ({
 }) => {
   const [progressStatus, setProgressStatus] = useState(STATUS_READ_BARCODE);
   const [resolvedBarcodeData, setResolvedBarcodeData] = useState({
-    scannedBarcode: null,
-    userInfo: [],
-    qtyCaption: null,
-    qtyTarget: null,
-    qtyMax: null,
-    lineQtyToIssue: null,
-    uom: null,
-    qtyRejectedReasons: null,
-    scaleDevice: null,
-    scaleTolerance: null,
+    userInfo,
+    qtyCaption,
+    qtyTarget,
+    qtyMax,
+    lineQtyToIssue,
+    uom,
+    qtyRejectedReasons,
+    scaleDevice,
+    scaleTolerance,
   });
 
   const isProcessedQtyStillOnScale = useBooleanSetting('qtyInput.ProcessedQtyIsStillOnScale');
