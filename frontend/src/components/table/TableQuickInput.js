@@ -198,7 +198,6 @@ class TableQuickInput extends PureComponent {
     if (data && layout) {
       return layout.map((item, idx) => {
         const widgetData = item.fields.map((elem) => data[elem.field] || -1);
-        const lastFormField = idx === layout.length - 1;
 
         return (
           <WidgetWrapper
@@ -219,7 +218,7 @@ class TableQuickInput extends PureComponent {
             forceFullWidth={widgetData.length > 1}
             forceHeight={forceHeight}
             key={idx}
-            lastFormField={lastFormField}
+            propagateEnterKeyEvent={true} // make sure Enter key is propagated, so onSubmit is called
             caption={item.caption}
             handlePatch={this.handlePatch}
             handleChange={this.handleChange}
