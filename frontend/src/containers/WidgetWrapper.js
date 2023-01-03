@@ -184,6 +184,7 @@ WidgetWrapper.propTypes = {
   supportFieldEdit: PropTypes.bool,
   layoutId: PropTypes.string,
   isModal: PropTypes.bool,
+  propagateEnterKeyEvent: PropTypes.bool,
 
   //
   // Callbacks and other functions
