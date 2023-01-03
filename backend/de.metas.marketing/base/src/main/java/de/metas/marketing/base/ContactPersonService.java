@@ -1,26 +1,26 @@
 package de.metas.marketing.base;
 
+import de.metas.i18n.Language;
+import de.metas.marketing.base.model.CampaignId;
+import de.metas.marketing.base.model.ContactPerson;
+import de.metas.marketing.base.model.ContactPerson.ContactPersonBuilder;
+import de.metas.marketing.base.model.ContactPersonRepository;
+import de.metas.marketing.base.model.EmailAddress;
+import de.metas.marketing.base.model.I_MKTG_ContactPerson;
+import de.metas.marketing.base.model.SyncResult;
+import de.metas.user.User;
+import de.metas.user.UserId;
+import de.metas.user.UserRepository;
+import de.metas.util.Check;
+import lombok.NonNull;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Nullable;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import de.metas.marketing.base.model.CampaignId;
-import de.metas.marketing.base.model.SyncResult;
-import de.metas.user.UserId;
-import de.metas.user.UserRepository;
-import org.springframework.stereotype.Service;
-
-import de.metas.i18n.Language;
-import de.metas.marketing.base.model.ContactPerson;
-import de.metas.marketing.base.model.ContactPerson.ContactPersonBuilder;
-import de.metas.user.User;
-import de.metas.marketing.base.model.ContactPersonRepository;
-import de.metas.marketing.base.model.EmailAddress;
-import de.metas.util.Check;
-import lombok.NonNull;
 
 /*
  * #%L
@@ -169,5 +169,29 @@ public class ContactPersonService
 		}
 
 		return savedContactPersons;
+	}
+
+	@NonNull
+	public Iterator<I_MKTG_ContactPerson> iterateContactsWithRemoteId(@NonNull final CampaignId campaignId)
+	{
+		return contactPersonRepo.iterateContactsWithRemoteId(campaignId);
+	}
+
+	@NonNull
+	public Iterator<I_MKTG_ContactPerson> iterateContacts(@NonNull final CampaignId campaignId)
+	{
+		return contactPersonRepo.iterateContacts(campaignId);
+	}
+
+	@NonNull
+	public List<ContactPerson> retrieveByCampaignAndRemoteIds(@NonNull final CampaignId campaignId, @NonNull final Set<String> remoteIds)
+	{
+		return contactPersonRepo.retrieveByCampaignAndRemoteIds(campaignId, remoteIds);
+	}
+
+	@NonNull
+	public List<ContactPerson> retrieveByEmails(@NonNull final CampaignId campaignId, @NonNull final List<String> emails)
+	{
+		return contactPersonRepo.retrieveByEmails(campaignId, emails);
 	}
 }

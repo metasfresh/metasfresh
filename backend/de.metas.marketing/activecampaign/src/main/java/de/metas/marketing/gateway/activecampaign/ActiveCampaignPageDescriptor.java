@@ -2,7 +2,7 @@
  * #%L
  * marketing-activecampaign
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -22,26 +22,38 @@
 
 package de.metas.marketing.gateway.activecampaign;
 
-import de.metas.marketing.base.model.CampaignConfig;
-import de.metas.marketing.base.model.PlatformId;
-import de.metas.organization.OrgId;
+import de.metas.marketing.base.model.PageDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 @Value
 @Builder
-public class ActiveCampaignConfig implements CampaignConfig
+public class ActiveCampaignPageDescriptor implements PageDescriptor
 {
-	@NonNull
-	PlatformId platformId;
+	int limit;
+	int offset;
 
 	@NonNull
-	OrgId orgId;
+	public static ActiveCampaignPageDescriptor cast(@NonNull final PageDescriptor pageDescriptor)
+	{
+		return (ActiveCampaignPageDescriptor)pageDescriptor;
+	}
 
 	@NonNull
-	String baseUrl;
+	public static ActiveCampaignPageDescriptor createNew(final int limit)
+	{
+		return ActiveCampaignPageDescriptor.builder()
+				.limit(limit)
+				.build();
+	}
 
 	@NonNull
-	String apiKey;
+	public ActiveCampaignPageDescriptor createNext(final int pageSize)
+	{
+		return ActiveCampaignPageDescriptor.builder()
+				.limit(limit)
+				.offset(offset + pageSize)
+				.build();
+	}
 }

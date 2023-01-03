@@ -22,104 +22,65 @@
 
 package de.metas.marketing.base;
 
-import com.google.common.collect.ImmutableList;
+import de.metas.marketing.base.sync.CampaignServiceSync;
+import de.metas.marketing.base.sync.ContactPersonServiceSync;
 import de.metas.marketing.base.model.Campaign;
 import de.metas.marketing.base.model.CampaignId;
-import de.metas.marketing.base.model.ContactPerson;
-import de.metas.marketing.base.model.LocalToRemoteSyncResult;
 import de.metas.marketing.base.model.PlatformId;
 import de.metas.marketing.base.model.SyncDirection;
-import de.metas.marketing.base.model.SyncResult;
-import de.metas.marketing.base.spi.PlatformClient;
-import de.metas.util.collections.CollectionUtils;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 public class CampaignSyncService
 {
-	private final CampaignService campaignService;
-	private final ContactPersonService contactPersonService;
-	private final PlatformClientService platformClientService;
+	private final CampaignServiceSync campaignServiceSync;
+	private final ContactPersonServiceSync contactPersonServiceSync;
 
 	public CampaignSyncService(
-			@NonNull final CampaignService campaignService,
-			@NonNull final ContactPersonService contactPersonService,
-			@NonNull final PlatformClientService platformClientService)
+			@NonNull final CampaignServiceSync campaignServiceSync,
+			@NonNull final ContactPersonServiceSync contactPersonServiceSync)
 	{
-		this.campaignService = campaignService;
-		this.contactPersonService = contactPersonService;
-		this.platformClientService = platformClientService;
-	}
-
-	public Campaign syncCampaignLocalToRemote(@NonNull final Campaign campaign)
-	{
-		final PlatformClient platformClient = platformClientService.createPlatformClient(campaign.getPlatformId());
-		final List<LocalToRemoteSyncResult> syncResults = platformClient.syncCampaignsLocalToRemote(ImmutableList.of(campaign));
-		final LocalToRemoteSyncResult syncResult = CollectionUtils.singleElement(syncResults);
-		return campaignService.saveSyncResult(syncResult);
-	}
-
-	private Campaign syncCampaignLocalToRemoteIfRemoteIdMissing(@NonNull final Campaign campaign)
-	{
-		return campaign.getRemoteId() == null ? syncCampaignLocalToRemote(campaign) : campaign;
+		this.campaignServiceSync = campaignServiceSync;
+		this.contactPersonServiceSync = contactPersonServiceSync;
 	}
 
 	public void syncCampaigns(
 			@NonNull final PlatformId platformId,
 			@NonNull final SyncDirection syncDirection)
 	{
-
-		final PlatformClient platformClient = platformClientService.createPlatformClient(platformId);
-
-		final List<Campaign> locallyExistingCampaigns = campaignService.getByPlatformId(platformId);
-		final List<? extends SyncResult> syncResults;
 		if (SyncDirection.LOCAL_TO_REMOTE.equals(syncDirection))
 		{
-			syncResults = platformClient.syncCampaignsLocalToRemote(locallyExistingCampaigns);
+			campaignServiceSync.syncLocalToRemote(platformId);
 		}
 		else if (SyncDirection.REMOTE_TO_LOCAL.equals(syncDirection))
 		{
-			syncResults = platformClient.syncCampaignsRemoteToLocal(locallyExistingCampaigns);
+			campaignServiceSync.syncRemoteToLocal(platformId);
 		}
 		else
 		{
 			throw new AdempiereException("Invalid sync direction: " + syncDirection);
 		}
-
-		campaignService.saveSyncResults(syncResults);
 	}
 
 	public void syncContacts(
 			@NonNull final CampaignId campaignId,
 			@NonNull final SyncDirection syncDirection)
 	{
-		final List<ContactPerson> contactsToSync = contactPersonService.getByCampaignId(campaignId);
-		syncContacts(campaignId, contactsToSync, syncDirection);
-	}
+		final Campaign campaign = campaignServiceSync.syncCampaignLocalToRemoteIfRemoteIdMissing(campaignId);
 
-	public void syncContacts(
-			@NonNull final CampaignId campaignId,
-			@NonNull final List<ContactPerson> contactsToSync,
-			@NonNull final SyncDirection syncDirection)
-	{
-		final Campaign campaign = syncCampaignLocalToRemoteIfRemoteIdMissing(campaignService.getById(campaignId));
-
-		final PlatformClient platformClient = platformClientService.createPlatformClient(campaign.getPlatformId());
-
-		final List<? extends SyncResult> syncResults = syncDirection.map(new SyncDirection.CaseMapper<List<? extends SyncResult>>()
+		if (SyncDirection.LOCAL_TO_REMOTE.equals(syncDirection))
 		{
-			@Override
-			public List<? extends SyncResult> localToRemote() {return platformClient.syncContactPersonsLocalToRemote(campaign, contactsToSync);}
-
-			@Override
-			public List<? extends SyncResult> remoteToLocal() {return platformClient.syncContactPersonsRemoteToLocal(campaign, contactsToSync);}
-		});
-
-		final List<ContactPerson> savedContacts = contactPersonService.saveSyncResults(syncResults);
-		campaignService.addContactPersonsToCampaign(savedContacts, campaignId);
+			contactPersonServiceSync.syncLocalToRemote(campaign);
+		}
+		else if (SyncDirection.REMOTE_TO_LOCAL.equals(syncDirection))
+		{
+			contactPersonServiceSync.syncRemoteToLocal(campaign);
+		}
+		else
+		{
+			throw new AdempiereException("Invalid sync direction: " + syncDirection);
+		}
 	}
 }

@@ -11,6 +11,7 @@ import de.metas.marketing.base.model.CampaignRepository;
 import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.ContactPersonId;
 import de.metas.marketing.base.model.ContactPersonRepository;
+import de.metas.marketing.base.model.I_MKTG_Campaign;
 import de.metas.marketing.base.model.Platform;
 import de.metas.marketing.base.model.PlatformId;
 import de.metas.marketing.base.model.PlatformRepository;
@@ -23,7 +24,9 @@ import lombok.NonNull;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /*
@@ -199,5 +202,23 @@ public class CampaignService
 	public Campaign saveSyncResult(@NonNull final SyncResult syncResult)
 	{
 		return campaignRepository.saveCampaignSyncResult(syncResult);
+	}
+
+	@NonNull
+	public Iterator<I_MKTG_Campaign> iterateCampaignsWithRemoteId(@NonNull final PlatformId platformId)
+	{
+		return campaignRepository.iterateCampaignsWithRemoteId(platformId);
+	}
+
+	@NonNull
+	public Iterator<I_MKTG_Campaign> iterateCampaigns(@NonNull final PlatformId platformId)
+	{
+		return campaignRepository.iterateCampaigns(platformId);
+	}
+
+	@NonNull
+	public List<Campaign> retrieveByPlatformAndRemoteIds(@NonNull final PlatformId platformId, @NonNull final Set<String> remoteIds)
+	{
+		return campaignRepository.retrieveByPlatformAndRemoteIds(platformId, remoteIds);
 	}
 }

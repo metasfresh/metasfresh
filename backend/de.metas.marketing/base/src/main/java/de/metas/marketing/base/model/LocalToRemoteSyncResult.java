@@ -75,12 +75,23 @@ public class LocalToRemoteSyncResult implements SyncResult
 				.build();
 	}
 
+	public static LocalToRemoteSyncResult skipped(@NonNull final DataRecord datarecord)
+	{
+		return LocalToRemoteSyncResult.builder()
+				.synchedDataRecord(datarecord)
+				.localToRemoteStatus(LocalToRemoteStatus.SKIPPED)
+				.build();
+	}
+
 	public enum LocalToRemoteStatus
 	{
 		INSERTED_ON_REMOTE,
 		UPDATED_ON_REMOTE,
 		UPSERTED_ON_REMOTE,
-		DELETED_ON_REMOTE, UNCHANGED, ERROR;
+		DELETED_ON_REMOTE,
+		UNCHANGED,
+		ERROR,
+		SKIPPED;
 	}
 
 	LocalToRemoteStatus localToRemoteStatus;

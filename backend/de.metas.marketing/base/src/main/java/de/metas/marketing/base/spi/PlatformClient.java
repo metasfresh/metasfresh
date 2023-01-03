@@ -1,12 +1,20 @@
 package de.metas.marketing.base.spi;
 
 import de.metas.marketing.base.model.Campaign;
+import de.metas.marketing.base.model.CampaignConfig;
+import de.metas.marketing.base.model.CampaignRemoteUpdate;
+import de.metas.marketing.base.model.CampaignToUpsertPage;
 import de.metas.marketing.base.model.ContactPerson;
+import de.metas.marketing.base.model.ContactPersonRemoteUpdate;
+import de.metas.marketing.base.model.ContactPersonToUpsertPage;
 import de.metas.marketing.base.model.LocalToRemoteSyncResult;
+import de.metas.marketing.base.model.PageDescriptor;
+import de.metas.marketing.base.model.PlatformId;
 import de.metas.marketing.base.model.RemoteToLocalSyncResult;
 import lombok.NonNull;
 
 import java.util.List;
+import java.util.Optional;
 
 /*
  * #%L
@@ -32,13 +40,23 @@ import java.util.List;
 
 public interface PlatformClient
 {
-	List<LocalToRemoteSyncResult> syncCampaignsLocalToRemote(List<Campaign> campaigns);
+	CampaignConfig getCampaignConfig();
 
-	List<LocalToRemoteSyncResult> syncContactPersonsLocalToRemote(Campaign campaign, List<ContactPerson> contactPersons);
+	PageDescriptor getCampaignPageDescriptor();
 
-	List<RemoteToLocalSyncResult> syncContactPersonsRemoteToLocal(Campaign campaign, List<ContactPerson> contactPersons);
+	PageDescriptor getContactPersonPageDescriptor();
 
-	List<RemoteToLocalSyncResult> syncCampaignsRemoteToLocal(List<Campaign> campaigns);
+	Optional<CampaignRemoteUpdate> getCampaignById(String remoteId);
+
+	CampaignToUpsertPage getCampaignToUpsertPage(PageDescriptor pageDescriptor);
+
+	LocalToRemoteSyncResult upsertCampaign(Campaign campaign);
+
+	Optional<ContactPersonRemoteUpdate> getContactById(Campaign campaign, String remoteId);
+
+	ContactPersonToUpsertPage getContactPersonToUpsertPage(Campaign campaign, PageDescriptor pageDescriptor);
+
+	LocalToRemoteSyncResult upsertContact(Campaign campaign, ContactPerson contactPerson);
 
 	default void sendEmailActivationForm(@NonNull String formId, @NonNull String email)
 	{

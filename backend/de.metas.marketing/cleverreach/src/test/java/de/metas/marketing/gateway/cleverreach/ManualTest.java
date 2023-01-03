@@ -5,19 +5,25 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.io.Files;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.common.util.time.SystemTime;
+import de.metas.marketing.base.CampaignService;
 import de.metas.marketing.base.model.Campaign;
+import de.metas.marketing.base.model.CampaignRepository;
 import de.metas.marketing.base.model.ContactPerson;
+import de.metas.marketing.base.model.ContactPersonRepository;
 import de.metas.marketing.base.model.DeactivatedOnRemotePlatform;
 import de.metas.marketing.base.model.EmailAddress;
+import de.metas.marketing.base.model.I_MKTG_Campaign;
 import de.metas.marketing.base.model.LocalToRemoteSyncResult;
 import de.metas.marketing.base.model.LocalToRemoteSyncResult.LocalToRemoteStatus;
 import de.metas.marketing.base.model.PlatformId;
+import de.metas.marketing.base.model.PlatformRepository;
 import de.metas.marketing.base.model.RemoteToLocalSyncResult;
 import de.metas.marketing.base.model.RemoteToLocalSyncResult.RemoteToLocalStatus;
 import de.metas.marketing.base.model.SyncResult;
 import de.metas.marketing.gateway.cleverreach.restapi.models.Receiver;
-import de.metas.util.collections.CollectionUtils;
+import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
+import org.adempiere.model.InterfaceWrapperHelper;
 import org.assertj.core.api.Condition;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -29,7 +35,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 /*
  * #%L
@@ -93,15 +99,21 @@ public class ManualTest
 				"is contactperson with email=%s", email);
 	}
 
-	private Campaign createCampaignOnRemote(String namePrefix)
+	@NonNull
+	private Campaign createLocalCampaignRecord(@NonNull final String namePrefix)
 	{
-		final List<LocalToRemoteSyncResult> results = cleverReachClient.syncCampaignsLocalToRemote(
-				ImmutableList.of(
-						Campaign.builder().name(namePrefix + " - " + SystemTime.asInstant()).platformId(platformId).build()
-				)
-		);
-		final Campaign campaign = Campaign.cast(CollectionUtils.singleElement(results).getSynchedDataRecord());
+		final I_MKTG_Campaign campaignRecord = InterfaceWrapperHelper.newInstance(I_MKTG_Campaign.class);
+
+		campaignRecord.setMKTG_Platform_ID(platformId.getRepoId());
+		campaignRecord.setName(namePrefix + " - " + SystemTime.asInstant());
+
+		InterfaceWrapperHelper.save(campaignRecord);
+
+		InterfaceWrapperHelper.refresh(campaignRecord);
+
+		final Campaign campaign = CampaignRepository.fromRecord(campaignRecord);
 		System.out.println("Created campaign: " + campaign);
+
 		return campaign;
 	}
 
@@ -112,22 +124,19 @@ public class ManualTest
 		//
 		// Add one campaign
 		final Campaign addedCampaign;
+		I_MKTG_Campaign campaignRecord;
 		{
 			final String nameOfCampaignToAdd = "test-createUpdateDeleteCampaign-" + SystemTime.asInstant();
-			final List<LocalToRemoteSyncResult> addedCampaignResults = cleverReachClient.syncCampaignsLocalToRemote(
-					ImmutableList.of(
-							Campaign.builder().name(nameOfCampaignToAdd).platformId(platformId).build()
-					)
-			);
+			final Campaign campaignToAdd = createLocalCampaignRecord(nameOfCampaignToAdd);
+
+			cleverReachClient.syncCampaignsLocalToRemote();
 
 			// Check:
-			assertThat(addedCampaignResults).hasSize(1);
+			campaignRecord = InterfaceWrapperHelper.load(campaignToAdd.getCampaignId(), I_MKTG_Campaign.class);
+			assertThat(campaignRecord).isNotNull();
+			assertThat(campaignRecord.getLastSyncStatus()).isEqualTo(LocalToRemoteStatus.INSERTED_ON_REMOTE.name());
 
-			final LocalToRemoteSyncResult localToRemoteSyncResult = addedCampaignResults.get(0);
-			assertThat(localToRemoteSyncResult.getLocalToRemoteStatus()).isEqualTo(LocalToRemoteStatus.INSERTED_ON_REMOTE);
-			assertThat(localToRemoteSyncResult.getSynchedDataRecord()).isInstanceOf(Campaign.class);
-
-			addedCampaign = Campaign.cast(localToRemoteSyncResult.getSynchedDataRecord());
+			addedCampaign = CampaignRepository.fromRecord(campaignRecord);
 			assertThat(addedCampaign.getRemoteId()).isNotEmpty();
 			assertThat(addedCampaign.getName()).isEqualTo(nameOfCampaignToAdd);
 		}
@@ -137,15 +146,19 @@ public class ManualTest
 		final Campaign updatedCampaign;
 		{
 			final String nameOfCampaignToUpdate = "test-createUpdateDeleteCampaign-updated-" + SystemTime.asInstant();
-			final List<LocalToRemoteSyncResult> updatedCampaignResults = cleverReachClient.syncCampaignsLocalToRemote(
-					ImmutableList.of(
-							addedCampaign.toBuilder().name(nameOfCampaignToUpdate).build()
-					)
-			);
-			assertThat(updatedCampaignResults).hasSize(1);
-			assertThat(updatedCampaignResults.get(0).getLocalToRemoteStatus()).isEqualTo(LocalToRemoteStatus.UPDATED_ON_REMOTE);
 
-			updatedCampaign = Campaign.cast(updatedCampaignResults.get(0).getSynchedDataRecord());
+			campaignRecord.setName(nameOfCampaignToUpdate);
+
+			InterfaceWrapperHelper.save(addedCampaign);
+
+			cleverReachClient.syncCampaignsLocalToRemote();
+
+			campaignRecord = InterfaceWrapperHelper.load(addedCampaign.getCampaignId(), I_MKTG_Campaign.class);
+
+			assertThat(campaignRecord).isNotNull();
+			assertThat(campaignRecord.getLastSyncStatus()).isEqualTo(LocalToRemoteStatus.UPDATED_ON_REMOTE.name());
+
+			updatedCampaign = CampaignRepository.fromRecord(campaignRecord);
 			assertThat(updatedCampaign.getRemoteId()).isEqualTo(addedCampaign.getRemoteId());
 			assertThat(updatedCampaign.getName()).isEqualTo(nameOfCampaignToUpdate);
 		}
@@ -176,7 +189,7 @@ public class ManualTest
 	@Disabled
 	public void syncContactPersonsLocalToRemote()
 	{
-		final Campaign campaign = createCampaignOnRemote("ManualTest.syncContactPersonsLocalToRemote");
+		final Campaign campaign = createLocalCampaignRecord("ManualTest.syncContactPersonsLocalToRemote");
 
 		final ContactPerson.ContactPersonBuilder contactBuilder = ContactPerson.builder().platformId(platformId);
 		final List<LocalToRemoteSyncResult> syncContactsResults = cleverReachClient.syncContactPersonsLocalToRemote(
@@ -219,7 +232,7 @@ public class ManualTest
 	@Disabled
 	public void syncContactPersonsRemoteToLocal()
 	{
-		final Campaign campaign = createCampaignOnRemote("ManualTest.syncContactPersonsRemoteToLocal");
+		final Campaign campaign = createLocalCampaignRecord("ManualTest.syncContactPersonsRemoteToLocal");
 
 		final ContactPerson.ContactPersonBuilder contactBuilder = ContactPerson.builder().platformId(platformId);
 

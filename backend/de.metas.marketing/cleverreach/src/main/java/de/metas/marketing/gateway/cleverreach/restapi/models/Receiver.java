@@ -3,11 +3,11 @@ package de.metas.marketing.gateway.cleverreach.restapi.models;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.ContactPersonRemoteUpdate;
 import de.metas.marketing.base.model.DeactivatedOnRemotePlatform;
 import de.metas.marketing.base.model.EmailAddress;
-import de.metas.util.OptionalBoolean;
 import de.metas.util.StringUtils;
 import lombok.Builder;
 import lombok.NonNull;
@@ -38,8 +38,9 @@ import java.util.Map;
  * #L%
  */
 
-@JsonIgnoreProperties(ignoreUnknown = true)
 @Value
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonDeserialize(builder = Receiver.ReceiverBuilder.class)
 public class Receiver
 {
 	/**
@@ -72,8 +73,6 @@ public class Receiver
 	String source;
 	boolean active;
 	int stars;
-	Map<String, String> global_attributes;
-	Map<String, String> attributes;
 
 	@JsonCreator
 	@Builder
@@ -92,9 +91,7 @@ public class Receiver
 			@JsonProperty("deactivated") long deactivated,
 			@JsonProperty("source") String source,
 			@JsonProperty("active") boolean active,
-			@JsonProperty("stars") int stars,
-			@JsonProperty("global_attributes") @Singular Map<String, String> global_attributes,
-			@JsonProperty("attributes") @Singular Map<String, String> attributes)
+			@JsonProperty("stars") int stars)
 	{
 		this.id = id;
 		this.email = email;
@@ -111,8 +108,6 @@ public class Receiver
 		this.source = source;
 		this.active = active;
 		this.stars = stars;
-		this.global_attributes = global_attributes;
-		this.attributes = attributes;
 	}
 
 	public ContactPersonRemoteUpdate toContactPersonUpdate()
