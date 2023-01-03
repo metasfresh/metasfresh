@@ -272,6 +272,13 @@ public class CreateBPartnerV2_StepDef
 				softly.assertThat(bPartnerRecord.getPO_PaymentTerm_ID()).isEqualTo(vendorPaymentTerm.getC_PaymentTerm_ID());
 			}
 
+			final String sectionGroupPartnerIdentifier = DataTableUtil.extractStringOrNullForColumnName(dataTableRow, "OPT." + I_C_BPartner.COLUMNNAME_Section_Group_Partner_ID + "." + TABLECOLUMN_IDENTIFIER);
+			if (Check.isNotBlank(sectionGroupPartnerIdentifier))
+			{
+				final I_C_BPartner sectionGroupPartner = bPartnerTable.get(sectionGroupPartnerIdentifier);
+				softly.assertThat(bPartnerRecord.getSection_Group_Partner_ID()).isEqualTo(sectionGroupPartner.getC_BPartner_ID());
+			}
+
 			softly.assertAll();
 
 			if (org != null)

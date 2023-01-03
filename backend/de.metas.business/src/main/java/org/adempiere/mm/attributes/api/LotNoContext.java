@@ -1,6 +1,6 @@
 /*
  * #%L
- * de-metas-camel-sap
+ * de.metas.business
  * %%
  * Copyright (C) 2022 metas GmbH
  * %%
@@ -20,16 +20,22 @@
  * #L%
  */
 
-package de.metas.camel.externalsystems.sap;
+package org.adempiere.mm.attributes.api;
 
-public interface SAPConstants
+import de.metas.document.sequence.DocSequenceId;
+import lombok.Builder;
+import lombok.NonNull;
+import lombok.Value;
+import org.adempiere.service.ClientId;
+
+@Value
+@Builder
+public class LotNoContext
 {
-	String SAP_SYSTEM_NAME = "SAP";
+	@NonNull
+	DocSequenceId sequenceId;
 
-	String SEEN_FILE_RENAME_PATTERN_PROPERTY_NAME = "sap.sftp.processing.rename-pattern";
-	String DEFAULT_RENAME_PATTERN = "${date:now:yyyy-MM-dd_HH-mm-ss}_${file:name}";
+	@NonNull
+	ClientId clientId;
 
-	String ROUTE_PROPERTY_CREDIT_LIMIT_ROUTE_CONTEXT = "CreditLimitRouteContext";
-
-	String BPARTNER_DEFAULT_LANGUAGE = "en_US";
 }

@@ -38,8 +38,6 @@ import lombok.NonNull;
 import org.apache.camel.Exchange;
 import org.apache.camel.Processor;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 
 import static de.metas.camel.externalsystems.sap.common.ExternalIdentifierFormat.formatExternalId;
@@ -144,6 +142,7 @@ public class ProductUpsertProcessor implements Processor
 		jsonRequestProduct.setUomCode(resolvedUOMValue);
 		jsonRequestProduct.setType(JsonRequestProduct.Type.ofCode(resolvedProductTypeValue));
 		jsonRequestProduct.setProductCategoryIdentifier(String.valueOf(resolvedProductCategoryId.getValue()));
+		jsonRequestProduct.setPurchased(true);
 
 		return Optional.of(jsonRequestProduct);
 	}

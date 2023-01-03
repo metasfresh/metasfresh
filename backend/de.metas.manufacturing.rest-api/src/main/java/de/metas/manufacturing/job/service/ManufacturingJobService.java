@@ -20,6 +20,7 @@ import de.metas.handlingunits.qrcodes.service.HUQRCodesService;
 import de.metas.handlingunits.reservation.HUReservationService;
 import de.metas.i18n.AdMessageKey;
 import de.metas.logging.LogManager;
+import de.metas.manufacturing.generatedcomponents.ManufacturingComponentGeneratorService;
 import de.metas.manufacturing.job.model.FinishedGoodsReceiveLineId;
 import de.metas.manufacturing.job.model.ManufacturingJob;
 import de.metas.manufacturing.job.model.ManufacturingJobActivity;
@@ -90,6 +91,7 @@ public class ManufacturingJobService
 
 	public ManufacturingJobService(
 			final @NonNull ResourceService resourceService,
+			final @NonNull ManufacturingComponentGeneratorService manufacturingComponentGeneratorService,
 			final @NonNull PPOrderIssueScheduleService ppOrderIssueScheduleService,
 			final @NonNull HUReservationService huReservationService,
 			final @NonNull PPOrderSourceHUService ppOrderSourceHUService,
@@ -118,7 +120,10 @@ public class ManufacturingJobService
 				.build();
 	}
 
-	public ManufacturingJob getJobById(final PPOrderId ppOrderId) {return newLoader().load(ppOrderId);}
+	public ManufacturingJob getJobById(final PPOrderId ppOrderId)
+	{
+		return newLoader().load(ppOrderId);
+	}
 
 	public ManufacturingJob assignJob(@NonNull final PPOrderId ppOrderId, @NonNull final UserId newResponsibleId)
 	{
@@ -141,10 +146,16 @@ public class ManufacturingJobService
 	}
 
 	@NonNull
-	private ManufacturingJobLoaderAndSaver newLoader() {return new ManufacturingJobLoaderAndSaver(loadingAndSavingSupportServices);}
+	private ManufacturingJobLoaderAndSaver newLoader()
+	{
+		return new ManufacturingJobLoaderAndSaver(loadingAndSavingSupportServices);
+	}
 
 	@NonNull
-	private ManufacturingJobLoaderAndSaver newSaver() {return new ManufacturingJobLoaderAndSaver(loadingAndSavingSupportServices);}
+	private ManufacturingJobLoaderAndSaver newSaver()
+	{
+		return new ManufacturingJobLoaderAndSaver(loadingAndSavingSupportServices);
+	}
 
 	public Stream<ManufacturingJobReference> streamJobReferencesForUser(
 			final @NonNull UserId responsibleId,
@@ -479,7 +490,7 @@ public class ManufacturingJobService
 			@Nullable final GlobalQRCode scannedQRCode)
 	{
 		// No change
-		if(GlobalQRCode.equals(job.getActivityById(jobActivityId).getScannedQRCode(), scannedQRCode))
+		if (GlobalQRCode.equals(job.getActivityById(jobActivityId).getScannedQRCode(), scannedQRCode))
 		{
 			return job;
 		}

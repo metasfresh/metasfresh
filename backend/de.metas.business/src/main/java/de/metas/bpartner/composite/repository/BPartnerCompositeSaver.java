@@ -280,6 +280,7 @@ final class BPartnerCompositeSaver
 		bpartnerRecord.setIsStorageWarehouse(bpartner.isStorageWarehouse());
 		bpartnerRecord.setC_Incoterms_Customer_ID(IncotermsId.toRepoId(bpartner.getIncotermsCustomerId()));
 		bpartnerRecord.setC_Incoterms_Vendor_ID(IncotermsId.toRepoId(bpartner.getIncotermsVendorId()));
+		bpartnerRecord.setSection_Group_Partner_ID(BPartnerId.toRepoId(bpartner.getSectionGroupPartnerId()));
 
 		saveRecord(bpartnerRecord);
 

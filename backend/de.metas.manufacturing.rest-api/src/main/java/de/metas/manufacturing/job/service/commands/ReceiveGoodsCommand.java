@@ -35,6 +35,7 @@ import java.time.ZonedDateTime;
 
 public class ReceiveGoodsCommand
 {
+
 	//
 	// Services
 	private final IHandlingUnitsBL handlingUnitsBL;
@@ -83,7 +84,7 @@ public class ReceiveGoodsCommand
 	@Nullable
 	public ReceivingTarget execute()
 	{
-		@Nullable ReceivingTarget receivingTarget;
+		@Nullable final ReceivingTarget receivingTarget;
 		if (this.receivingTarget.getNewLU() != null)
 		{
 			receivingTarget = receiveToNewLU(this.receivingTarget.getNewLU());
@@ -157,7 +158,7 @@ public class ReceiveGoodsCommand
 			@NonNull final I_M_HU existingLU,
 			@Nullable final HUPIItemProductId suggestedTUPIItemProductId)
 	{
-		HUPIItemProductId tuPackingInstructionsId = getEffectiveTUPackingInstructionsId(suggestedTUPIItemProductId);
+		final HUPIItemProductId tuPackingInstructionsId = getEffectiveTUPackingInstructionsId(suggestedTUPIItemProductId);
 		final ReceiveTUsToLUResult receiveResult = newHUProducer().receiveTUsToExistingLU(getQtyToReceive(), tuPackingInstructionsId, existingLU);
 
 		return ReceivingTarget.builder()

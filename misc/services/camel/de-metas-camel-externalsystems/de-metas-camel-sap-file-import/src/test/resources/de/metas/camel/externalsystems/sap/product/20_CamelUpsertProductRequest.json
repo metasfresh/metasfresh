@@ -34,7 +34,9 @@
           "syncAdvise": null,
           "bpartnerProductItems": null,
           "sectionCode": "SCOD",
-          "sectionCodeSet": true
+          "sectionCodeSet": true,
+          "purchased": true,
+          "purchasedSet": true
         }
       }
     ],
