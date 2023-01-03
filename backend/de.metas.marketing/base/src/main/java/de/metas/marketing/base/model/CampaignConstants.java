@@ -1,8 +1,8 @@
 /*
  * #%L
- * marketing-activecampaign
+ * marketing-base
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,28 +20,9 @@
  * #L%
  */
 
-package de.metas.marketing.gateway.activecampaign;
+package de.metas.marketing.base.model;
 
-import de.metas.marketing.base.model.CampaignConfig;
-import de.metas.marketing.base.model.PlatformId;
-import de.metas.organization.OrgId;
-import lombok.Builder;
-import lombok.NonNull;
-import lombok.Value;
-
-@Value
-@Builder
-public class ActiveCampaignConfig implements CampaignConfig
+public interface CampaignConstants
 {
-	@NonNull
-	PlatformId platformId;
-
-	@NonNull
-	OrgId orgId;
-
-	@NonNull
-	String baseUrl;
-
-	@NonNull
-	String apiKey;
+	int ITERATOR_BUFFER_SIZE = 20;
 }

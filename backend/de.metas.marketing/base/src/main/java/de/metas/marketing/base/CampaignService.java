@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 /*
@@ -199,5 +200,23 @@ public class CampaignService
 	public Campaign saveSyncResult(@NonNull final SyncResult syncResult)
 	{
 		return campaignRepository.saveCampaignSyncResult(syncResult);
+	}
+
+	@NonNull
+	public Stream<Campaign> streamSyncedWithRemoteId(@NonNull final PlatformId platformId)
+	{
+		return campaignRepository.streamCampaignsWithRemoteId(platformId);
+	}
+
+	@NonNull
+	public Stream<Campaign> streamCampaigns(@NonNull final PlatformId platformId)
+	{
+		return campaignRepository.streamCampaigns(platformId);
+	}
+
+	@NonNull
+	public List<Campaign> retrieveByPlatformAndRemoteIds(@NonNull final PlatformId platformId, @NonNull final Set<String> remoteIds)
+	{
+		return campaignRepository.retrieveByPlatformAndRemoteIds(platformId, remoteIds);
 	}
 }

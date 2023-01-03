@@ -24,13 +24,12 @@ package de.metas.marketing.gateway.activecampaign.restapi.exception;
 
 import ch.qos.logback.classic.Level;
 import de.metas.logging.LogManager;
+import de.metas.marketing.gateway.activecampaign.ActiveCampaignConstants;
 import de.metas.util.Check;
 import de.metas.util.Loggables;
 import de.metas.util.NumberUtils;
-import de.metas.util.Services;
 import lombok.NonNull;
 import org.adempiere.exceptions.AdempiereException;
-import org.adempiere.service.ISysConfigBL;
 import org.slf4j.Logger;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
@@ -40,14 +39,11 @@ import java.util.List;
 import java.util.Optional;
 
 import static de.metas.marketing.gateway.activecampaign.ActiveCampaignConstants.ACTIVE_CAMPAIGN_API_RATE_LIMIT_RETRY_HEADER;
-import static de.metas.marketing.gateway.activecampaign.ActiveCampaignConstants.MAX_SECONDS_TO_WAIT_FOR_ACTIVE_CAMPAIGN_LIMIT_RESET;
 
 @Service
 public class RateLimitService
 {
 	private static final Logger log = LogManager.getLogger(RateLimitService.class);
-
-	private final ISysConfigBL sysConfigBL = Services.get(ISysConfigBL.class);
 
 	@NonNull
 	public Optional<Duration> extractRetryAfterDuration(final HttpHeaders httpHeaders)
@@ -68,9 +64,7 @@ public class RateLimitService
 	{
 		Loggables.withLogger(log, Level.DEBUG).addLog("RateLimitService.waitForLimitReset() with retryAfter seconds: {}", retryAfterDuration.getSeconds());
 
-		final int maxSecondsToWait = sysConfigBL.getIntValue(MAX_SECONDS_TO_WAIT_FOR_ACTIVE_CAMPAIGN_LIMIT_RESET, 3600);
-
-		if (retryAfterDuration.getSeconds() > maxSecondsToWait)
+		if (retryAfterDuration.getSeconds() > ActiveCampaignConstants.MAX_SECONDS_TO_WAIT_FOR_ACTIVE_CAMPAIGN_LIMIT_RESET)
 		{
 			throw new AdempiereException("API Rate limit exceeded! Please wait before syncing again.")
 					.appendParametersToMessage()

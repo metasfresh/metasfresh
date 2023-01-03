@@ -29,34 +29,16 @@ import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-import javax.annotation.Nullable;
-
 /**
- * JSON used when creating/retrieving 'list' information from/to ActiveCampaign API.
+ * JSON wrapper used when creating/retrieving a 'list' in ActiveCampaign.
  */
 @Value
 @Builder
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonDeserialize(builder = CampaignList.CampaignListBuilder.class)
-public class CampaignList
+@JsonDeserialize(builder = CampaignWrapper.CampaignWrapperBuilder.class)
+public class CampaignWrapper
 {
 	@NonNull
-	@JsonProperty("name")
-	String name;
-
-	@Nullable
-	@JsonProperty("id")
-	String id;
-
-	@Nullable
-	@JsonProperty("stringid")
-	String stringid;
-
-	@Nullable
-	@JsonProperty("sender_url")
-	String sender_url;
-
-	@Nullable
-	@JsonProperty("sender_reminder")
-	String sender_reminder;
+	@JsonProperty("list")
+	CampaignList list;
 }

@@ -1,8 +1,8 @@
 /*
  * #%L
- * marketing-activecampaign
+ * marketing-base
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,43 +20,22 @@
  * #L%
  */
 
-package de.metas.marketing.gateway.activecampaign.restapi.model;
+package de.metas.marketing.base.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
 import javax.annotation.Nullable;
+import java.util.List;
 
-/**
- * JSON used when creating/retrieving 'list' information from/to ActiveCampaign API.
- */
 @Value
 @Builder
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonDeserialize(builder = CampaignList.CampaignListBuilder.class)
-public class CampaignList
+public class ContactPersonToUpsertPage
 {
 	@NonNull
-	@JsonProperty("name")
-	String name;
+	List<ContactPersonRemoteUpdate> remoteContacts;
 
 	@Nullable
-	@JsonProperty("id")
-	String id;
-
-	@Nullable
-	@JsonProperty("stringid")
-	String stringid;
-
-	@Nullable
-	@JsonProperty("sender_url")
-	String sender_url;
-
-	@Nullable
-	@JsonProperty("sender_reminder")
-	String sender_reminder;
+	PageDescriptor next;
 }

@@ -1,8 +1,8 @@
 /*
  * #%L
- * marketing-activecampaign
+ * marketing-cleverreach
  * %%
- * Copyright (C) 2022 metas GmbH
+ * Copyright (C) 2023 metas GmbH
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
@@ -20,25 +20,40 @@
  * #L%
  */
 
-package de.metas.marketing.gateway.activecampaign.restapi.model;
+package de.metas.marketing.gateway.cleverreach;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import de.metas.marketing.base.model.PageDescriptor;
 import lombok.Builder;
 import lombok.NonNull;
 import lombok.Value;
 
-/**
- * JSON wrapper used when creating 'contacts' in ActiveCampaign.
- */
 @Value
 @Builder
-@JsonIgnoreProperties(ignoreUnknown = true)
-@JsonDeserialize(builder = CreateContact.CreateContactBuilder.class)
-public class CreateContact
+public class CleverReachPageDescriptor implements PageDescriptor
 {
+	int pageSize;
+	int page;
+
 	@NonNull
-	@JsonProperty("contact")
-	Contact contact;
+	public static CleverReachPageDescriptor cast(@NonNull final PageDescriptor pageDescriptor)
+	{
+		return (CleverReachPageDescriptor)pageDescriptor;
+	}
+
+	@NonNull
+	public static CleverReachPageDescriptor createNew(final int pageSize)
+	{
+		return CleverReachPageDescriptor.builder()
+				.pageSize(pageSize)
+				.build();
+	}
+
+	@NonNull
+	public CleverReachPageDescriptor createNext()
+	{
+		return CleverReachPageDescriptor.builder()
+				.pageSize(pageSize)
+				.page(page + 1)
+				.build();
+	}
 }

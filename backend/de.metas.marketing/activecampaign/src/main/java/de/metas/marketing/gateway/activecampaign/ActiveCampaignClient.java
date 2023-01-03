@@ -26,28 +26,28 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
 import de.metas.JsonObjectMapperHolder;
 import de.metas.logging.TableRecordMDC;
-import de.metas.marketing.base.helper.RemoteToLocalCampaignSync;
-import de.metas.marketing.base.helper.RemoteToLocalContactPersonSync;
-import de.metas.marketing.base.helper.SyncUtil;
 import de.metas.marketing.base.model.Campaign;
+import de.metas.marketing.base.model.CampaignConfig;
 import de.metas.marketing.base.model.CampaignRemoteUpdate;
+import de.metas.marketing.base.model.CampaignToUpsertPage;
 import de.metas.marketing.base.model.ContactPerson;
 import de.metas.marketing.base.model.ContactPersonRemoteUpdate;
+import de.metas.marketing.base.model.ContactPersonToUpsertPage;
 import de.metas.marketing.base.model.DeactivatedOnRemotePlatform;
 import de.metas.marketing.base.model.EmailAddress;
 import de.metas.marketing.base.model.I_MKTG_Campaign;
 import de.metas.marketing.base.model.LocalToRemoteSyncResult;
-import de.metas.marketing.base.model.RemoteToLocalSyncResult;
+import de.metas.marketing.base.model.PageDescriptor;
 import de.metas.marketing.base.spi.PlatformClient;
 import de.metas.marketing.gateway.activecampaign.restapi.RestService;
 import de.metas.marketing.gateway.activecampaign.restapi.model.AddContactToList;
 import de.metas.marketing.gateway.activecampaign.restapi.model.AddContactToListWrapper;
 import de.metas.marketing.gateway.activecampaign.restapi.model.CampaignList;
 import de.metas.marketing.gateway.activecampaign.restapi.model.CampaignLists;
+import de.metas.marketing.gateway.activecampaign.restapi.model.CampaignWrapper;
 import de.metas.marketing.gateway.activecampaign.restapi.model.Contact;
 import de.metas.marketing.gateway.activecampaign.restapi.model.ContactList;
-import de.metas.marketing.gateway.activecampaign.restapi.model.CreateCampaignList;
-import de.metas.marketing.gateway.activecampaign.restapi.model.CreateContact;
+import de.metas.marketing.gateway.activecampaign.restapi.model.ContactWrapper;
 import de.metas.marketing.gateway.activecampaign.restapi.model.Subscription;
 import de.metas.marketing.gateway.activecampaign.restapi.request.ApiRequest;
 import de.metas.util.Check;
@@ -56,11 +56,16 @@ import org.adempiere.exceptions.AdempiereException;
 import org.slf4j.MDC;
 import org.springframework.util.LinkedMultiValueMap;
 
+import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Optional;
 
 import static de.metas.marketing.gateway.activecampaign.ActiveCampaignConstants.ACTIVE_CAMPAIGN_API;
+import static de.metas.marketing.gateway.activecampaign.ActiveCampaignConstants.ACTIVE_CAMPAIGN_API_PAGINATION_LIMIT;
 import static de.metas.marketing.gateway.activecampaign.ActiveCampaignConstants.ACTIVE_CAMPAIGN_API_VERSION;
+import static de.metas.marketing.gateway.activecampaign.ActiveCampaignConstants.QueryParam.LIMIT;
 import static de.metas.marketing.gateway.activecampaign.ActiveCampaignConstants.QueryParam.LIST_ID;
+import static de.metas.marketing.gateway.activecampaign.ActiveCampaignConstants.QueryParam.OFFSET;
 import static de.metas.marketing.gateway.activecampaign.ActiveCampaignConstants.ResourcePath;
 
 public class ActiveCampaignClient implements PlatformClient
@@ -68,85 +73,91 @@ public class ActiveCampaignClient implements PlatformClient
 	@NonNull
 	private final RestService restService;
 	@NonNull
-	private final ActiveCampaignConfig campaignConfig;
+	private final ActiveCampaignConfig activeCampaignConfig;
 
 	public ActiveCampaignClient(
 			@NonNull final RestService restService,
-			@NonNull final ActiveCampaignConfig campaignConfig)
+			@NonNull final ActiveCampaignConfig activeCampaignConfig)
 	{
 		this.restService = restService;
-		this.campaignConfig = campaignConfig;
+		this.activeCampaignConfig = activeCampaignConfig;
 	}
 
 	@NonNull
 	@Override
-	public List<LocalToRemoteSyncResult> syncCampaignsLocalToRemote(@NonNull final List<Campaign> campaigns)
+	public CampaignConfig getCampaignConfig()
 	{
-		return campaigns.stream()
-				//dev-note: keep only campaigns without remoteId, to avoid duplicating campaigns on remote. the api doesn't support update only create
-				.filter(campaign -> Check.isBlank(campaign.getRemoteId()))
-				.map(this::createCampaignList)
+		return activeCampaignConfig;
+	}
+
+	@Override
+	public CampaignToUpsertPage getCampaignToUpsertPage(@Nullable final PageDescriptor pageDescriptor)
+	{
+		final ActiveCampaignPageDescriptor activeCampaignPageDescriptor = Optional.ofNullable(pageDescriptor)
+				.map(ActiveCampaignPageDescriptor::cast)
+				.orElseGet(() -> ActiveCampaignPageDescriptor.createNew(ACTIVE_CAMPAIGN_API_PAGINATION_LIMIT));
+
+		final List<CampaignRemoteUpdate> remoteCampaignsToUpdate = retrieveCampaignListsFromRemote(activeCampaignPageDescriptor)
+				.stream()
+				.map(ActiveCampaignClient::toCampaignUpdate)
 				.collect(ImmutableList.toImmutableList());
+
+		final int pageSize = remoteCampaignsToUpdate.size();
+
+		final ActiveCampaignPageDescriptor nextPage = pageSize >= activeCampaignPageDescriptor.getLimit()
+				? activeCampaignPageDescriptor.createNext(pageSize)
+				: null;
+
+		return CampaignToUpsertPage.builder()
+				.remoteCampaigns(remoteCampaignsToUpdate)
+				.next(nextPage)
+				.build();
 	}
 
 	@NonNull
 	@Override
-	public List<LocalToRemoteSyncResult> syncContactPersonsLocalToRemote(@NonNull final Campaign campaign, @NonNull final List<ContactPerson> contactPersons)
+	public Optional<LocalToRemoteSyncResult> upsertCampaign(@NonNull final Campaign campaign)
 	{
-		final ImmutableList.Builder<LocalToRemoteSyncResult> syncResults = ImmutableList.builder();
-		// make sure that we only send records that have a syntactically valid email and that have the correct platform-id
-		final List<ContactPerson> personsWithEmail = SyncUtil.filterForRecordsWithCorrectPlatformId(
-				campaignConfig.getPlatformId(),
-				SyncUtil.filterForPersonsWithEmail(
-						contactPersons,
-						syncResults),
-				syncResults);
+		//dev-note: keep only campaigns without remoteId, to avoid duplicating campaigns on remote. the api doesn't support update only create
+		if (Check.isNotBlank(campaign.getRemoteId()))
+		{
+			return Optional.empty();
+		}
 
-		personsWithEmail.stream()
-				.map(contactPerson -> createCampaignContactAndAddToList(campaign, contactPerson))
-				.forEach(syncResults::add);
-
-		return syncResults.build();
+		return Optional.of(createCampaignList(campaign));
 	}
 
 	@NonNull
 	@Override
-	public List<RemoteToLocalSyncResult> syncContactPersonsRemoteToLocal(@NonNull final Campaign campaign, @NonNull final List<ContactPerson> existingContactPersons)
+	public ContactPersonToUpsertPage getContactPersonToUpsertPage(@NonNull final Campaign campaign, @Nullable final PageDescriptor pageDescriptor)
 	{
-		final List<ContactPersonRemoteUpdate> remoteContactPersons = retrieveContactsFromRemote(campaign.getRemoteId())
+		final ActiveCampaignPageDescriptor activeCampaignPageDescriptor = Optional.ofNullable(pageDescriptor)
+				.map(ActiveCampaignPageDescriptor::cast)
+				.orElseGet(() -> ActiveCampaignPageDescriptor.createNew(ACTIVE_CAMPAIGN_API_PAGINATION_LIMIT));
+
+		final List<ContactPersonRemoteUpdate> remoteContacts = retrieveContactsFromRemote(campaign.getRemoteId(), activeCampaignPageDescriptor)
 				.getContacts()
 				.stream()
 				.map(ActiveCampaignClient::toContactPersonUpdate)
 				.collect(ImmutableList.toImmutableList());
 
-		final RemoteToLocalContactPersonSync.Request request = RemoteToLocalContactPersonSync.Request.builder()
-				.platformId(campaignConfig.getPlatformId())
-				.orgId(campaignConfig.getOrgId())
-				.existingContactPersons(existingContactPersons)
-				.remoteContactPersons(remoteContactPersons)
-				.build();
+		final int pageSize = remoteContacts.size();
 
-		return RemoteToLocalContactPersonSync.syncRemoteContacts(request);
+		final ActiveCampaignPageDescriptor nextPage = pageSize >= activeCampaignPageDescriptor.getLimit()
+				? activeCampaignPageDescriptor.createNext(pageSize)
+				: null;
+
+		return ContactPersonToUpsertPage.builder()
+				.remoteContacts(remoteContacts)
+				.next(nextPage)
+				.build();
 	}
 
 	@NonNull
 	@Override
-	public List<RemoteToLocalSyncResult> syncCampaignsRemoteToLocal(final List<Campaign> existingCampaigns)
+	public Optional<LocalToRemoteSyncResult> upsertContact(@NonNull final Campaign campaign, @NonNull final ContactPerson contactPerson)
 	{
-		final List<CampaignRemoteUpdate> remoteCampaigns = retrieveCampaignListsFromRemote()
-				.getLists()
-				.stream()
-				.map(ActiveCampaignClient::toCampaignUpdate)
-				.collect(ImmutableList.toImmutableList());
-
-		final RemoteToLocalCampaignSync.Request request = RemoteToLocalCampaignSync.Request.builder()
-				.platformId(campaignConfig.getPlatformId())
-				.orgId(campaignConfig.getOrgId())
-				.existingCampaigns(existingCampaigns)
-				.remoteCampaigns(remoteCampaigns)
-				.build();
-
-		return RemoteToLocalCampaignSync.syncRemoteCampaigns(request);
+		return Optional.of(createCampaignContactAndAddToList(campaign, contactPerson));
 	}
 
 	@NonNull
@@ -188,11 +199,11 @@ public class ActiveCampaignClient implements PlatformClient
 	}
 
 	@NonNull
-	private CreateContact createCampaignContactOnRemote(@NonNull final ContactPerson contactPerson)
+	private ContactWrapper createCampaignContactOnRemote(@NonNull final ContactPerson contactPerson)
 	{
 		try
 		{
-			final CreateContact createContactRequest = CreateContact.builder()
+			final ContactWrapper createContactRequest = ContactWrapper.builder()
 					.contact(ActiveCampaignClient.toContact(contactPerson))
 					.build();
 
@@ -200,8 +211,8 @@ public class ActiveCampaignClient implements PlatformClient
 					.writeValueAsString(createContactRequest);
 
 			final ApiRequest request = ApiRequest.builder()
-					.baseURL(campaignConfig.getBaseUrl())
-					.apiKey(campaignConfig.getApiKey())
+					.baseURL(activeCampaignConfig.getBaseUrl())
+					.apiKey(activeCampaignConfig.getApiKey())
 					.pathVariables(ImmutableList.of(ACTIVE_CAMPAIGN_API,
 													ACTIVE_CAMPAIGN_API_VERSION,
 													ResourcePath.CONTACT.getValue(),
@@ -209,7 +220,7 @@ public class ActiveCampaignClient implements PlatformClient
 					.requestBody(requestBody)
 					.build();
 
-			return restService.performPost(request, CreateContact.class).getBody();
+			return restService.performPost(request, ContactWrapper.class).getBody();
 		}
 		catch (final JsonProcessingException e)
 		{
@@ -234,8 +245,8 @@ public class ActiveCampaignClient implements PlatformClient
 				.writeValueAsString(addContactToListWrapper);
 
 		final ApiRequest request = ApiRequest.builder()
-				.baseURL(campaignConfig.getBaseUrl())
-				.apiKey(campaignConfig.getApiKey())
+				.baseURL(activeCampaignConfig.getBaseUrl())
+				.apiKey(activeCampaignConfig.getApiKey())
 				.pathVariables(ImmutableList.of(ACTIVE_CAMPAIGN_API,
 												ACTIVE_CAMPAIGN_API_VERSION,
 												ResourcePath.CONTACT_LISTS.getValue()))
@@ -246,50 +257,56 @@ public class ActiveCampaignClient implements PlatformClient
 	}
 
 	@NonNull
-	private CreateCampaignList createCampaignOnRemote(@NonNull final Campaign campaign) throws JsonProcessingException
+	private CampaignWrapper createCampaignOnRemote(@NonNull final Campaign campaign) throws JsonProcessingException
 	{
-		final CreateCampaignList createCampaignListRequest = CreateCampaignList.builder()
-				.list(ActiveCampaignClient.toCampaignItem(campaign, campaignConfig))
+		final CampaignWrapper createCampaignListRequest = CampaignWrapper.builder()
+				.list(ActiveCampaignClient.toCampaignItem(campaign, activeCampaignConfig))
 				.build();
 
 		final String requestBody = JsonObjectMapperHolder.sharedJsonObjectMapper()
 				.writeValueAsString(createCampaignListRequest);
 
 		final ApiRequest request = ApiRequest.builder()
-				.baseURL(campaignConfig.getBaseUrl())
-				.apiKey(campaignConfig.getApiKey())
+				.baseURL(activeCampaignConfig.getBaseUrl())
+				.apiKey(activeCampaignConfig.getApiKey())
 				.pathVariables(ImmutableList.of(ACTIVE_CAMPAIGN_API,
 												ACTIVE_CAMPAIGN_API_VERSION,
 												ResourcePath.LISTS.getValue()))
 				.requestBody(requestBody)
 				.build();
 
-		return restService.performPost(request, CreateCampaignList.class).getBody();
+		return restService.performPost(request, CampaignWrapper.class).getBody();
 	}
 
 	@NonNull
-	private CampaignLists retrieveCampaignListsFromRemote()
+	private List<CampaignList> retrieveCampaignListsFromRemote(@NonNull final ActiveCampaignPageDescriptor pageDescriptor)
 	{
 		final ApiRequest request = ApiRequest.builder()
-				.baseURL(campaignConfig.getBaseUrl())
-				.apiKey(campaignConfig.getApiKey())
+				.baseURL(activeCampaignConfig.getBaseUrl())
+				.apiKey(activeCampaignConfig.getApiKey())
 				.pathVariables(ImmutableList.of(ACTIVE_CAMPAIGN_API,
 												ACTIVE_CAMPAIGN_API_VERSION,
 												ResourcePath.LISTS.getValue()))
+				.queryParameters(buildQueryParams(pageDescriptor))
 				.build();
 
-		return restService.performGet(request, CampaignLists.class).getBody();
+		return restService.performGet(request, CampaignLists.class).getBody().getLists();
 	}
 
 	@NonNull
-	private ContactList retrieveContactsFromRemote(@NonNull final String campaignListRemoteId)
+	private ContactList retrieveContactsFromRemote(
+			@NonNull final String campaignListRemoteId,
+			@NonNull final ActiveCampaignPageDescriptor pageDescriptor)
 	{
-		final LinkedMultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
+		final LinkedMultiValueMap<String, String> queryParams = Optional.ofNullable(pageDescriptor)
+				.map(ActiveCampaignClient::buildQueryParams)
+				.orElse(new LinkedMultiValueMap<>());
+
 		queryParams.add(LIST_ID.getValue(), campaignListRemoteId);
 
 		final ApiRequest request = ApiRequest.builder()
-				.baseURL(campaignConfig.getBaseUrl())
-				.apiKey(campaignConfig.getApiKey())
+				.baseURL(activeCampaignConfig.getBaseUrl())
+				.apiKey(activeCampaignConfig.getApiKey())
 				.pathVariables(ImmutableList.of(ACTIVE_CAMPAIGN_API,
 												ACTIVE_CAMPAIGN_API_VERSION,
 												ResourcePath.CONTACTS.getValue()))
@@ -335,5 +352,23 @@ public class ActiveCampaignClient implements PlatformClient
 		return Contact.builder()
 				.email(contactPerson.getEmailAddressStringOrNull())
 				.build();
+	}
+
+	@NonNull
+	private static LinkedMultiValueMap<String, String> buildQueryParams(@NonNull final ActiveCampaignPageDescriptor pageDescriptor)
+	{
+		final LinkedMultiValueMap<String, String> queryParams = new LinkedMultiValueMap<>();
+
+		if (pageDescriptor.getLimit() > 0)
+		{
+			queryParams.add(LIMIT.getValue(), String.valueOf(pageDescriptor.getLimit()));
+		}
+
+		if (pageDescriptor.getOffset() > 0)
+		{
+			queryParams.add(OFFSET.getValue(), String.valueOf(pageDescriptor.getOffset()));
+		}
+
+		return queryParams;
 	}
 }
