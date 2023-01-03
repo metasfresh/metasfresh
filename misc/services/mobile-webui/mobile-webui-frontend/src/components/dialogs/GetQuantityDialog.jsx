@@ -20,6 +20,7 @@ const GetQuantityDialog = ({
   qtyRejectedReasons,
   scaleDevice,
   totalQty,
+  processedQty,
   //
   validateQtyEntered,
   onQtyChange,
@@ -27,7 +28,7 @@ const GetQuantityDialog = ({
 }) => {
   const allowManualInput = useBooleanSetting('qtyInput.AllowManualInputWhenScaleDeviceExists');
   const doNotValidateQty = useBooleanSetting('qtyInput.DoNotValidate');
-  const isProcessedQtyIsStillOnScale = useBooleanSetting('qtyInput.ProcessedQtyIsStillOnScale') && !!totalQty;
+  const isProcessedQtyIsStillOnScale = useBooleanSetting('qtyInput.ProcessedQtyIsStillOnScale') && !!processedQty;
 
   const [qtyInfo, setQtyInfo] = useState(qtyInfos.invalidOfNumber(qtyTarget));
   const [rejectedReason, setRejectedReason] = useState(null);
@@ -51,8 +52,7 @@ const GetQuantityDialog = ({
 
       let qtyEnteredAndValidated = inputQtyEnteredAndValidated;
       if (isProcessedQtyIsStillOnScale && typeof inputQtyEnteredAndValidated === 'number') {
-        const alreadyProcessedQty = totalQty - qtyTarget;
-        qtyEnteredAndValidated = Math.max(inputQtyEnteredAndValidated - alreadyProcessedQty, 0);
+        qtyEnteredAndValidated = Math.max(inputQtyEnteredAndValidated - processedQty, 0);
       }
 
       onQtyChange({
@@ -212,6 +212,7 @@ GetQuantityDialog.propTypes = {
   userInfo: PropTypes.array,
   qtyTarget: PropTypes.number.isRequired,
   totalQty: PropTypes.number,
+  processedQty: PropTypes.number,
   qtyCaption: PropTypes.string,
   uom: PropTypes.string.isRequired,
   qtyRejectedReasons: PropTypes.arrayOf(PropTypes.object),
