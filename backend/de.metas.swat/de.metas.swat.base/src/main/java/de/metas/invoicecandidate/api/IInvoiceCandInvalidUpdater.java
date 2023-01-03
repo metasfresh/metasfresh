@@ -22,17 +22,15 @@ package de.metas.invoicecandidate.api;
  * #L%
  */
 
-import java.util.Iterator;
-import java.util.Properties;
-
-import org.adempiere.model.InterfaceWrapperHelper;
-import org.adempiere.util.lang.IContextAware;
-
 import de.metas.invoicecandidate.model.I_C_Invoice_Candidate;
 import de.metas.invoicecandidate.spi.IInvoiceCandidateHandler.PriceAndTax;
 import de.metas.lock.api.ILock;
 import de.metas.util.lang.Percent;
 import lombok.NonNull;
+import org.adempiere.model.InterfaceWrapperHelper;
+import org.adempiere.util.lang.IContextAware;
+
+import java.util.Properties;
 
 /**
  * Updates {@link I_C_Invoice_Candidate}s which are scheduled to be recomputed.
@@ -46,6 +44,8 @@ public interface IInvoiceCandInvalidUpdater
 	/**
 	 * Updates invoice candidates (which were scheduled to be recomputed)
 	 *
+	 * @return the number of updated invoice candidates
+	 * 
 	 * NOTEs:
 	 * <ul>
 	 * <li>only those candidates will be updated that were previously invalidated
@@ -53,7 +53,7 @@ public interface IInvoiceCandInvalidUpdater
 	 * {@link InterfaceWrapperHelper#refresh(Object)}). That's because the implementation won't actually work with the instances from the provided iterator
 	 * </ul>
 	 */
-	void update();
+	int update();
 
 	IInvoiceCandInvalidUpdater setContext(final Properties ctx, final String trxName);
 

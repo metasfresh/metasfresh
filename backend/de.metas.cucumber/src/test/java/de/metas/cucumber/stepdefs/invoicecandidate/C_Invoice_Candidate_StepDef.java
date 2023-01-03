@@ -425,7 +425,7 @@ public class C_Invoice_Candidate_StepDef
 				}
 
 				final String internalName = DataTableUtil.extractStringOrNullForColumnName(row, "OPT." + I_C_Invoice_Candidate.COLUMNNAME_AD_InputDataSource_ID + "." + I_AD_InputDataSource.COLUMNNAME_InternalName);
-				if(Check.isNotBlank(internalName))
+				if (Check.isNotBlank(internalName))
 				{
 					final I_AD_InputDataSource dataSource = inputDataSourceDAO.retrieveInputDataSource(Env.getCtx(), internalName, true, Trx.TRXNAME_None);
 					assertThat(updatedInvoiceCandidate.getAD_InputDataSource_ID()).isEqualTo(dataSource.getAD_InputDataSource_ID());
@@ -578,7 +578,6 @@ public class C_Invoice_Candidate_StepDef
 					assertThat(updatedInvoiceCandidate.getM_Product_ID()).isEqualTo(product.getM_Product_ID());
 				}
 
-
 				final boolean processed = DataTableUtil.extractBooleanForColumnNameOr(row, "OPT." + COLUMNNAME_Processed, false);
 				assertThat(updatedInvoiceCandidate.isProcessed()).isEqualTo(processed);
 
@@ -674,11 +673,8 @@ public class C_Invoice_Candidate_StepDef
 	{
 		for (final Map<String, String> tableRow : dataTable.asMaps())
 		{
-			final Runnable logContext = () -> logger.error("C_Invoice_Candidate not found\n"
-																   + "**tableRow:**\n{}\n"
-																   + "**all candidates:**\n{}",
-														   tableRow, Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Candidate.class).create().list());
-			StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> isInvoiceCandidateUpdated(tableRow), logContext);
+			StepDefUtil.tryAndWaitForItem(timeoutSec, 500,
+										  () -> isInvoiceCandidateUpdated(tableRow));
 		}
 	}
 
@@ -909,14 +905,7 @@ public class C_Invoice_Candidate_StepDef
 		for (final Map<String, String> row : dataTable.asMaps())
 		{
 			final IQuery<I_C_Invoice_Candidate> candidatesQuery = createInvoiceCandidateQuery(row);
-			final Runnable logContext = () -> logger.error("C_Invoice_Candidate not found\n"
-																   + "**tableRow:**\n{}\n" + "**candidatesQuery:**\n{}\n"
-																   + "**query result:**\n{}\n"
-																   + "**all candidates:**\n{}",
-														   row, candidatesQuery,
-														   candidatesQuery.list(),
-														   Services.get(IQueryBL.class).createQueryBuilder(I_C_Invoice_Candidate.class).create().list());
-			final I_C_Invoice_Candidate invoiceCandidate = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> retrieveInvoiceCandidate(row, candidatesQuery), logContext);
+			final I_C_Invoice_Candidate invoiceCandidate = StepDefUtil.tryAndWaitForItem(timeoutSec, 500, () -> retrieveInvoiceCandidate(row, candidatesQuery));
 
 			final String invoiceCandIdentifier = DataTableUtil.extractStringForColumnName(row, I_C_Invoice_Candidate.COLUMNNAME_C_Invoice_Candidate_ID + "." + TABLECOLUMN_IDENTIFIER);
 			invoiceCandTable.putOrReplace(invoiceCandIdentifier, invoiceCandidate);
@@ -1188,8 +1177,8 @@ public class C_Invoice_Candidate_StepDef
 		final String rawSQLQuery = "select * from c_invoice_candidate where c_invoice_candidate_id = " + invCandidate.getC_Invoice_Candidate_ID();
 
 		final List<String> invCandidateDetailList = DB.retrieveRows(rawSQLQuery,
-																 new ArrayList<>(),
-																 (resultSet) -> this.getInvoiceCandidateExceptionDetails(invCandidate, resultSet, invoiceCandidateIdentifier));
+																	new ArrayList<>(),
+																	(resultSet) -> this.getInvoiceCandidateExceptionDetails(invCandidate, resultSet, invoiceCandidateIdentifier));
 
 		//query by id
 		final String invCandDetails = invCandidateDetailList.get(0);
@@ -1220,7 +1209,7 @@ public class C_Invoice_Candidate_StepDef
 
 	private void manuallyRecomputeInvoiceCandidate(
 			@NonNull final Throwable throwable,
-			@NonNull final Map<String,String> row,
+			@NonNull final Map<String, String> row,
 			final int timeoutSec) throws Throwable
 	{
 		logger.warn("*** C_Invoice_Candidate was not found within {} seconds, manually invalidate and try again if possible. "
@@ -1243,10 +1232,16 @@ public class C_Invoice_Candidate_StepDef
 		final InvoiceCandidateIdsSelection onlyInvoiceCandidateIds = InvoiceCandidateIdsSelection.ofIdsSet(
 				ImmutableSet.of(InvoiceCandidateId.ofRepoId(invoiceCandidate.get().getC_Invoice_Candidate_ID())));
 
-		invoiceCandBL.updateInvalid()
-				.setContext(Env.getCtx(), ITrx.TRXNAME_None)
-				.setTaggedWithAnyTag()
-				.setOnlyInvoiceCandidateIds(onlyInvoiceCandidateIds)
-				.update();
+		final Supplier<Boolean> recomputed = () -> {
+			logger.info("*** Recomputing C_Invoice_Candidate with ID=" + invoiceCandidate.get().getC_Invoice_Candidate_ID());
+
+			return invoiceCandBL.updateInvalid()
+					.setContext(Env.getCtx(), ITrx.TRXNAME_None)
+					.setTaggedWithAnyTag()
+					.setOnlyInvoiceCandidateIds(onlyInvoiceCandidateIds)
+					.update() == 1;
+		};
+
+		StepDefUtil.tryAndWait(timeoutSec, 500, recomputed);
 	}
 }
